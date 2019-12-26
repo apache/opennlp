@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSContextGenerator;
 import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSDictionary;
 import opennlp.tools.postag.DummyPOSTaggerFactory.DummyPOSSequenceValidator;
@@ -52,8 +53,11 @@ public class POSTaggerFactoryTest {
 
   private static POSModel trainPOSModel(POSTaggerFactory factory)
       throws IOException {
+    TrainingParameters params = TrainingParameters.defaultParams();
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
+
     return POSTaggerME.train("eng", createSampleStream(),
-        TrainingParameters.defaultParams(), factory);
+        params, factory);
   }
 
   @Test

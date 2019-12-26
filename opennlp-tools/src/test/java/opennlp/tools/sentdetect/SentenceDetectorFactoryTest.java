@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyDictionary;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyEOSScanner;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummySDContextGenerator;
@@ -55,8 +56,10 @@ public class SentenceDetectorFactoryTest {
 
   private static SentenceModel train(SentenceDetectorFactory factory)
       throws IOException {
+    TrainingParameters params = TrainingParameters.defaultParams();
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
     return SentenceDetectorME.train("eng", createSampleStream(), factory,
-        TrainingParameters.defaultParams());
+        params);
   }
 
   private static Dictionary loadAbbDictionary() throws IOException {
@@ -193,5 +196,4 @@ public class SentenceDetectorFactoryTest {
     Assert.assertTrue(factory.getEndOfSentenceScanner() instanceof DummyEOSScanner);
     Assert.assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));
   }
-
 }

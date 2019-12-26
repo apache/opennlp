@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
@@ -57,6 +58,8 @@ public class TokenNameFinderCrossValidatorTest {
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
 
+    mlParams.put(AbstractTrainer.VERBOSE_PARAM, false);
+
     TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng",
         TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor)null);
 
@@ -83,6 +86,7 @@ public class TokenNameFinderCrossValidatorTest {
 
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
+    mlParams.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     NameEvaluationErrorListener listener = new NameEvaluationErrorListener(out);
@@ -112,12 +116,11 @@ public class TokenNameFinderCrossValidatorTest {
 
     mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
+    mlParams.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng",
         TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor)null);
 
     cv.evaluate(sampleStream, 2);
-
   }
-  
 }

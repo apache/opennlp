@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
@@ -47,8 +48,12 @@ public class ChunkerFactoryTest {
 
   private static ChunkerModel trainModel(ModelType type, ChunkerFactory factory)
       throws IOException {
+
+    TrainingParameters params = TrainingParameters.defaultParams();
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
+
     return ChunkerME.train("eng", createSampleStream(),
-        TrainingParameters.defaultParams(), factory);
+        params, factory);
   }
 
   @Test

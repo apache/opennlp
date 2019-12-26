@@ -24,6 +24,7 @@ import java.util.SortedMap;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -45,6 +46,7 @@ public class DocumentCategorizerMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 0);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     DoccatModel model = DocumentCategorizerME.train("x-unspecified", samples,
             params, new DoccatFactory());
@@ -72,10 +74,9 @@ public class DocumentCategorizerMETest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 0);
-
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
+    
     DocumentCategorizerME.train("x-unspecified", samples,
         params, new DoccatFactory());
-
   }
-  
 }

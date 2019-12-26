@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -45,6 +46,7 @@ public class SentenceDetectorMETest {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
+    mlParams.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
 
@@ -145,6 +147,7 @@ public class SentenceDetectorMETest {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
+    mlParams.put("PrintMessages", false);
 
     SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
     
@@ -153,5 +156,4 @@ public class SentenceDetectorMETest {
             new PlainTextByLineStream(in, StandardCharsets.UTF_8)), factory, mlParams);
     
   }
-  
 }

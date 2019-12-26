@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -45,13 +46,19 @@ public class DoccatFactoryTest {
   }
 
   private static DoccatModel train() throws IOException {
+    TrainingParameters params = TrainingParameters.defaultParams();
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
+
     return DocumentCategorizerME.train("x-unspecified", createSampleStream(),
-        TrainingParameters.defaultParams(), new DoccatFactory());
+        params, new DoccatFactory());
   }
 
   private static DoccatModel train(DoccatFactory factory) throws IOException {
+    TrainingParameters params = TrainingParameters.defaultParams();
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
+
     return DocumentCategorizerME.train("x-unspecified", createSampleStream(),
-        TrainingParameters.defaultParams(), factory);
+        params, factory);
   }
 
   @Test
@@ -104,5 +111,4 @@ public class DoccatFactoryTest {
         factory.getFeatureGenerators()[1].getClass());
     Assert.assertEquals(NGramFeatureGenerator.class,factory.getFeatureGenerators()[2].getClass());
   }
-
 }

@@ -19,11 +19,13 @@ package opennlp.tools.lemmatizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
@@ -66,11 +68,12 @@ public class LemmatizerMETest {
 
     ObjectStream<LemmaSample> sampleStream = new LemmaSampleStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/lemmatizer/trial.old.tsv")), "UTF-8"));
+          new File("opennlp/tools/lemmatizer/trial.old.tsv")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
+    params.put("PrintMessages", false);
 
     LemmatizerModel lemmatizerModel = LemmatizerME.train("eng", sampleStream,
         params, new LemmatizerFactory());
@@ -92,11 +95,12 @@ public class LemmatizerMETest {
     ObjectStream<LemmaSample> sampleStream = new LemmaSampleStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
             new File("opennlp/tools/lemmatizer/trial.old-insufficient.tsv")),
-                "UTF-8"));
+            StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
     LemmatizerME.train("eng", sampleStream, params, new LemmatizerFactory());
 

@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.tokenize.DummyTokenizerFactory.DummyContextGenerator;
 import opennlp.tools.tokenize.DummyTokenizerFactory.DummyDictionary;
 import opennlp.tools.tokenize.lang.Factory;
@@ -52,7 +53,10 @@ public class TokenizerFactoryTest {
 
   private static TokenizerModel train(TokenizerFactory factory)
       throws IOException {
-    return TokenizerME.train(createSampleStream(), factory, TrainingParameters.defaultParams());
+    TrainingParameters params = TrainingParameters.defaultParams();
+    params.put(AbstractTrainer.VERBOSE_PARAM, false);
+
+    return TokenizerME.train(createSampleStream(), factory, params);
   }
 
   private static Dictionary loadAbbDictionary() throws IOException {

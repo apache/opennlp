@@ -45,8 +45,13 @@ public class ParserTest {
     ObjectStream<Parse> parseSamples = ParserTestUtil.openTestTrainingData();
     HeadRules headRules = ParserTestUtil.createTestHeadRules();
 
-    ParserModel model = Parser.train("eng", parseSamples, headRules,
-        TrainingParameters.defaultParams());
+    TrainingParameters params = TrainingParameters.defaultParams();
+    params.put("build.PrintMessages", false);
+    params.put("tagger.PrintMessages", false);
+    params.put("chunker.PrintMessages", false);
+    params.put("check.PrintMessages", false);
+
+    ParserModel model = Parser.train("eng", parseSamples, headRules, params);
 
     opennlp.tools.parser.Parser parser = ParserFactory.create(model);
 
