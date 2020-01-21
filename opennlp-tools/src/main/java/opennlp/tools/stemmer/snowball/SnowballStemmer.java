@@ -67,7 +67,7 @@ public class SnowballStemmer implements Stemmer {
       stemmer = new englishStemmer();
     }
     else if (ALGORITHM.FINNISH.equals(algorithm)) {
-      stemmer = finnishStemmer.methodObject;
+      stemmer = new finnishStemmer();
     }
     else if (ALGORITHM.FRENCH.equals(algorithm)) {
       stemmer = new frenchStemmer();
@@ -82,7 +82,7 @@ public class SnowballStemmer implements Stemmer {
       stemmer = new hungarianStemmer();
     }
     else if (ALGORITHM.INDONESIAN.equals(algorithm)) {
-      stemmer = indonesianStemmer.methodObject;
+      stemmer = new indonesianStemmer();
     }
     else if (ALGORITHM.IRISH.equals(algorithm)) {
       stemmer = new irishStemmer();

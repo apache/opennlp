@@ -1,3 +1,4 @@
+// CHECKSTYLE:OFF
 /*
 
 Copyright (c) 2010, Israel Olalla
@@ -28,6 +29,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
+
+// This file was generated automatically by the Snowball to Java compiler
 
 package opennlp.tools.stemmer.snowball;
 
