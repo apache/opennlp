@@ -45,13 +45,12 @@ $ opennlp Parser en-parser-chunking.bin]]>
 		Copy this sample sentence to the console.
 		<screen>
 				<![CDATA[
-The quick brown fox jumps over the lazy dog .]]>
+The cellphone was broken in two days .]]>
 		</screen>
 		The parser should now print the following to the console.
 				<screen>
 				<![CDATA[
-(TOP (NP (NP (DT The) (JJ quick) (JJ brown) (NN fox) (NNS jumps)) (PP (IN over) (NP (DT the)
-    (JJ lazy) (NN dog))) (. .)))]]>
+(TOP (S (NP (DT The) (NN cellphone)) (VP (VBD was) (VP (VBN broken) (PP (IN in) (NP (CD two) (NNS days))))) (. .)))]]>
 		</screen>
 		With the following command the input can be read from a file and be written to an output file.
 				<screen>
