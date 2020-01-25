@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.io.Serializable;
+
 /**
  * A char sequence normalizer, used to adjusting (prune, substitute, add, etc.)
  * characters in order to remove noise from text
@@ -23,7 +25,7 @@ package opennlp.tools.util.normalizer;
  * @see <a href="https://en.wikipedia.org/wiki/Text_normalization">Text normalization</a>
  *
  */
-public interface CharSequenceNormalizer {
+public interface CharSequenceNormalizer extends Serializable {
 
   /**
    * normalize a sequence of characters
