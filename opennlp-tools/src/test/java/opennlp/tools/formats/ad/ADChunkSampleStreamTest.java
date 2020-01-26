@@ -18,6 +18,7 @@
 package opennlp.tools.formats.ad;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,12 +36,12 @@ public class ADChunkSampleStreamTest {
   private List<ChunkSample> samples = new ArrayList<>();
 
   @Test
-  public void testSimpleCount() throws IOException {
+  public void testSimpleCount() {
     Assert.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
   }
 
   @Test
-  public void testChunks() throws IOException {
+  public void testChunks() {
 
     Assert.assertEquals("Inicia", samples.get(0).getSentence()[0]);
     Assert.assertEquals("v-fin", samples.get(0).getTags()[0]);
@@ -68,7 +69,8 @@ public class ADChunkSampleStreamTest {
     InputStreamFactory in = new ResourceAsStreamFactory(
         ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample");
 
-    try (ADChunkSampleStream stream = new ADChunkSampleStream(new PlainTextByLineStream(in, "UTF-8"))) {
+    try (ADChunkSampleStream stream = new ADChunkSampleStream(new PlainTextByLineStream(in,
+            StandardCharsets.UTF_8))) {
       ChunkSample sample;
       while ((sample = stream.read()) != null) {
         samples.add(sample);

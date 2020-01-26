@@ -19,6 +19,7 @@ package opennlp.tools.langdetect;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -128,7 +129,7 @@ public class LanguageDetectorMETest {
     ResourceAsStreamFactory streamFactory = new ResourceAsStreamFactory(
         LanguageDetectorMETest.class, "/opennlp/tools/doccat/DoccatSample.txt");
 
-    PlainTextByLineStream lineStream = new PlainTextByLineStream(streamFactory, "UTF-8");
+    PlainTextByLineStream lineStream = new PlainTextByLineStream(streamFactory, StandardCharsets.UTF_8);
 
     return new LanguageDetectorSampleStream(lineStream);
   }

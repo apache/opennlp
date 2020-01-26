@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import org.junit.Assert;
@@ -52,7 +53,7 @@ public class POSTaggerFactoryTest {
 
     ObjectStream<String> lineStream = null;
     try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, "UTF-8");
+      lineStream = new PlainTextByLineStream(sampleDataIn, StandardCharsets.UTF_8);
     } catch (IOException ex) {
       CmdLineUtil.handleCreateObjectStreamError(ex);
     }

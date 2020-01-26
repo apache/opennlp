@@ -18,6 +18,7 @@
 package opennlp.tools.namefind;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import org.junit.Assert;
@@ -164,7 +165,7 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
             new PlainTextByLineStream(new MockInputStreamFactory(
-              new File("opennlp/tools/namefind/OnlyWithNames.train")), "UTF-8"));
+              new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -185,7 +186,7 @@ public class NameFinderMETest {
     Assert.assertEquals(new Span(0, 2, DEFAULT), names1[0]);
     Assert.assertEquals(new Span(2, 4, DEFAULT), names1[1]);
     Assert.assertEquals(new Span(4, 6, DEFAULT), names1[2]);
-    Assert.assertTrue(!hasOtherAsOutcome(nameFinderModel));
+    Assert.assertFalse(hasOtherAsOutcome(nameFinderModel));
   }
 
   @Test
@@ -194,7 +195,7 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/OnlyWithNames.train")), "UTF-8"));
+          new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -215,7 +216,7 @@ public class NameFinderMETest {
     Assert.assertEquals(new Span(0, 2, TYPE_OVERRIDE), names1[0]);
     Assert.assertEquals(new Span(2, 4, TYPE_OVERRIDE), names1[1]);
     Assert.assertEquals(new Span(4, 6, TYPE_OVERRIDE), names1[2]);
-    Assert.assertTrue(!hasOtherAsOutcome(nameFinderModel));
+    Assert.assertFalse(hasOtherAsOutcome(nameFinderModel));
   }
 
   /**
@@ -229,7 +230,7 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), "UTF-8"));
+          new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -251,7 +252,7 @@ public class NameFinderMETest {
     Assert.assertEquals(new Span(2, 4, "person"), names1[1]);
     Assert.assertEquals(new Span(4, 6, "person"), names1[2]);
     Assert.assertEquals("person", names1[2].getType());
-    Assert.assertTrue(!hasOtherAsOutcome(nameFinderModel));
+    Assert.assertFalse(hasOtherAsOutcome(nameFinderModel));
   }
 
   /**
@@ -264,7 +265,7 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train")), "UTF-8"));
+          new File("opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
@@ -285,7 +286,7 @@ public class NameFinderMETest {
     Assert.assertEquals(new Span(0, 1, "organization"), names1[0]); // NATO
     Assert.assertEquals(new Span(1, 3, "location"), names1[1]); // United States
     Assert.assertEquals("person", names1[2].getType());
-    Assert.assertTrue(!hasOtherAsOutcome(nameFinderModel));
+    Assert.assertFalse(hasOtherAsOutcome(nameFinderModel));
   }
 
   private boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
@@ -316,7 +317,7 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/voa1.train")), "UTF-8"));
+          new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);

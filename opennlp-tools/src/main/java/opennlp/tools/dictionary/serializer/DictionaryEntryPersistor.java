@@ -20,6 +20,7 @@ package opennlp.tools.dictionary.serializer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -186,7 +187,7 @@ public class DictionaryEntryPersistor {
     }
   }
 
-  private static final String CHARSET = "UTF-8";
+  private static final String CHARSET = StandardCharsets.UTF_8.name();
 
   private static final String DICTIONARY_ELEMENT = "dictionary";
   private static final String ENTRY_ELEMENT = "entry";

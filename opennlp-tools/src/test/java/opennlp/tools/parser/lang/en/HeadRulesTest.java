@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,14 +35,14 @@ public class HeadRulesTest {
     InputStream headRulesIn =
         HeadRulesTest.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules");
 
-    HeadRules headRulesOrginal = new HeadRules(new InputStreamReader(headRulesIn, "UTF-8"));
+    HeadRules headRulesOrginal = new HeadRules(new InputStreamReader(headRulesIn, StandardCharsets.UTF_8));
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    headRulesOrginal.serialize(new OutputStreamWriter(out, "UTF-8"));
+    headRulesOrginal.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
     out.close();
 
     HeadRules headRulesRecreated = new HeadRules(new InputStreamReader(
-        new ByteArrayInputStream(out.toByteArray()), "UTF-8"));
+        new ByteArrayInputStream(out.toByteArray()), StandardCharsets.UTF_8));
 
     Assert.assertEquals(headRulesOrginal, headRulesRecreated);
   }
