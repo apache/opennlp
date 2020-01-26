@@ -18,6 +18,7 @@
 package opennlp.tools.cmdline;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 import org.junit.Assert;
@@ -81,9 +82,9 @@ public class ArgumentParserTest {
     String argsString = "-encoding UTF-8 -alphaNumOpt false";
     SimpleArguments args = ArgumentParser.parse(argsString.split(" "), SimpleArguments.class);
 
-    Assert.assertEquals("UTF-8", args.getEncoding());
+    Assert.assertEquals(StandardCharsets.UTF_8.name(), args.getEncoding());
     Assert.assertEquals(Integer.valueOf(100), args.getIterations());
-    Assert.assertEquals(null, args.getCutoff());
+    Assert.assertNull(args.getCutoff());
     Assert.assertEquals(false, args.getAlphaNumOpt());
   }
 
@@ -154,7 +155,7 @@ public class ArgumentParserTest {
   @Test
   public void testSetEncodingParameter() {
     Collection<Charset> availableCharset = Charset.availableCharsets().values();
-    String notTheDefaultCharset = "UTF-8";
+    String notTheDefaultCharset = StandardCharsets.UTF_8.name();
     for (Charset charset : availableCharset) {
       if (!charset.equals(Charset.defaultCharset())) {
         notTheDefaultCharset = charset.name();

@@ -57,7 +57,7 @@ public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
         CmdLineUtil.createInputStreamFactory(params.getData());
 
     try {
-      System.setOut(new PrintStream(System.out, true, "UTF-8"));
+      System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
 
       return new ConllXPOSSampleStream(inFactory, StandardCharsets.UTF_8);
     } catch (UnsupportedEncodingException e) {

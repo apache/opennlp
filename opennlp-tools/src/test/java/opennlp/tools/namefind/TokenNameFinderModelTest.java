@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -85,7 +86,7 @@ public class TokenNameFinderModelTest {
     // train a name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/namefind/voa1.train")), "UTF-8"));
+            new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
