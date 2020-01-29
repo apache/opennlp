@@ -44,6 +44,7 @@
 
   <module name="NewlineAtEndOfFile">
     <property name="severity" value="ignore" />
+    <property name="lineSeparator" value="lf"/>
   </module>
 
   <module name="RegexpMultiline">

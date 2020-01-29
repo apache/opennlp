@@ -18,6 +18,7 @@
 package opennlp.tools.ml.maxent.quasinewton;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +51,8 @@ public class NegLogLikelihoodTest {
   public void testDomainDimensionSanity() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
+            StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
@@ -64,7 +66,8 @@ public class NegLogLikelihoodTest {
   public void testInitialSanity() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
+            StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
@@ -79,7 +82,8 @@ public class NegLogLikelihoodTest {
   public void testGradientSanity() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
+            StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
@@ -107,7 +111,8 @@ public class NegLogLikelihoodTest {
   public void testValueAtNonInitialPoint01() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
+            StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
@@ -122,7 +127,8 @@ public class NegLogLikelihoodTest {
   public void testValueAtNonInitialPoint02() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
+            StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
@@ -139,7 +145,8 @@ public class NegLogLikelihoodTest {
   public void testGradientAtInitialPoint() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
+            StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
@@ -154,7 +161,8 @@ public class NegLogLikelihoodTest {
   public void testGradientAtNonInitialPoint() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
-        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt", "UTF-8");
+        "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
+            StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when

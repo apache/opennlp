@@ -39,7 +39,7 @@ public class ParserTestUtil {
         ParserTestUtil.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules");
 
     HeadRules headRules = new HeadRules(new BufferedReader(
-        new InputStreamReader(headRulesIn, "UTF-8")));
+        new InputStreamReader(headRulesIn, StandardCharsets.UTF_8)));
 
     headRulesIn.close();
 

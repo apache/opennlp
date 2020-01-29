@@ -81,7 +81,7 @@ public class OntoNotes4ParserEval extends AbstractEvalTest {
     try (InputStream headRulesIn =
              HeadRulesTest.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules")) {
       headRules = new opennlp.tools.parser.lang.en.HeadRules(
-          new InputStreamReader(headRulesIn, "UTF-8"));
+          new InputStreamReader(headRulesIn, StandardCharsets.UTF_8));
     }
 
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();

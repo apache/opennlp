@@ -20,8 +20,7 @@ package opennlp.tools.langdetect;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import opennlp.tools.ngram.NGramModel;
-import opennlp.tools.util.StringList;
+import opennlp.tools.ngram.NGramCharModel;
 import opennlp.tools.util.normalizer.AggregateCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
 
@@ -58,13 +57,11 @@ public class DefaultLanguageDetectorContextGenerator implements LanguageDetector
   public String[] getContext(CharSequence document) {
     Collection<String> context = new ArrayList<>();
 
-    NGramModel model = new NGramModel();
+    NGramCharModel model = new NGramCharModel();
     model.add(normalizer.normalize(document), minLength, maxLength);
 
-    for (StringList tokenList : model) {
-      if (tokenList.size() > 0) {
-        context.add(tokenList.getToken(0));
-      }
+    for (String token : model) {
+      context.add(token);
     }
     return context.toArray(new String[context.size()]);
   }

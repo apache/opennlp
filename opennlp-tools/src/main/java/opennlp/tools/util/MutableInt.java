@@ -15,13 +15,24 @@
  * limitations under the License.
  */
 
-package opennlp.tools.langdetect;
-
-import java.io.Serializable;
+package opennlp.tools.util;
 
 /**
- * A context generator interface for language detector.
+ * This is a non-thread safe mutable int.
  */
-public interface LanguageDetectorContextGenerator extends Serializable {
-  String[] getContext(CharSequence document);
+public class MutableInt {
+
+  private int i;
+
+  public MutableInt(int i) {
+    this.i = i;
+  }
+
+  public void increment() {
+    i++;
+  }
+
+  public int getValue() {
+    return i;
+  }
 }

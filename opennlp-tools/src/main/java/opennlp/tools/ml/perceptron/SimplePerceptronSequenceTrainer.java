@@ -303,7 +303,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
         }
         for (int oi = 0; oi < numOutcomes; oi++) {
           for (String feature : featureCounts.get(oi).keySet()) {
-            int pi = pmap.get(feature);
+            int pi = pmap.getOrDefault(feature, -1);
             if (pi != -1) {
               //System.err.println(si+" "+outcomeLabels[oi]+" "+feature+" "+featureCounts[oi].get(feature));
               params[pi].updateParameter(oi, featureCounts.get(oi).get(feature));

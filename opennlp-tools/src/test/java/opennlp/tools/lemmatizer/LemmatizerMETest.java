@@ -19,6 +19,7 @@ package opennlp.tools.lemmatizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,7 +67,7 @@ public class LemmatizerMETest {
 
     ObjectStream<LemmaSample> sampleStream = new LemmaSampleStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/lemmatizer/trial.old.tsv")), "UTF-8"));
+          new File("opennlp/tools/lemmatizer/trial.old.tsv")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
@@ -91,8 +92,7 @@ public class LemmatizerMETest {
  
     ObjectStream<LemmaSample> sampleStream = new LemmaSampleStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/lemmatizer/trial.old-insufficient.tsv")),
-                "UTF-8"));
+            new File("opennlp/tools/lemmatizer/trial.old-insufficient.tsv")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);

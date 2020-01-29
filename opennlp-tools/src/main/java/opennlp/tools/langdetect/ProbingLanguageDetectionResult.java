@@ -17,11 +17,25 @@
 
 package opennlp.tools.langdetect;
 
-import java.io.Serializable;
+public class ProbingLanguageDetectionResult {
+  private final Language[] languages;
+  private final int length;
 
-/**
- * A context generator interface for language detector.
- */
-public interface LanguageDetectorContextGenerator extends Serializable {
-  String[] getContext(CharSequence document);
+  public ProbingLanguageDetectionResult(Language[] languages, int length) {
+    this.languages = languages;
+    this.length = length;
+  }
+
+  public Language[] getLanguages() {
+    return languages;
+  }
+
+  /**
+   *
+   * @return length in codepoints of text processed
+   */
+  public int getLength() {
+    return length;
+  }
+
 }

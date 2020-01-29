@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,10 +50,10 @@ public class ADTokenSampleStreamTest {
     ADTokenSampleStreamFactory factory = new ADTokenSampleStreamFactory(
         ADTokenSampleStreamFactory.Parameters.class);
 
-    File dict = new File(getClass().getClassLoader()
-        .getResource("opennlp/tools/tokenize/latin-detokenizer.xml").toURI());
-    File data = new File(getClass().getClassLoader()
-        .getResource("opennlp/tools/formats/ad.sample").toURI());
+    File dict = new File(Objects.requireNonNull(getClass().getClassLoader()
+            .getResource("opennlp/tools/tokenize/latin-detokenizer.xml")).toURI());
+    File data = new File(Objects.requireNonNull(getClass().getClassLoader()
+            .getResource("opennlp/tools/formats/ad.sample")).toURI());
     String[] args = { "-data", data.getCanonicalPath(), "-encoding", "UTF-8",
         "-lang", "por", "-detokenizer", dict.getCanonicalPath() };
     ObjectStream<TokenSample> tokenSampleStream = factory.create(args);
