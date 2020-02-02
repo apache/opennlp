@@ -336,6 +336,7 @@
 							<show>public</show>
 							<quiet>false</quiet>
 							<use>false</use> <!-- Speeds up the build of the javadocs -->
+							<source>8</source>
 						</configuration>
 					</execution>
 				</executions>
