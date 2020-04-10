@@ -113,6 +113,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
    * Initializes the current instance with the given context.
    * <p>
    * Note: Do all initialization in this method, do not use the constructor.
+   * @param context context to initialize
    */
   public void initialize(UimaContext context)
       throws ResourceInitializationException {
@@ -146,6 +147,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
 
   /**
    * Initializes the type system.
+   * @param typeSystem type system to initialize
    */
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {

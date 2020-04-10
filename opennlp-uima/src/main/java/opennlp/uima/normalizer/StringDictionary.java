@@ -50,10 +50,17 @@ public class StringDictionary {
     });
   }
 
+  /**
+   * @param key key to get value with
+   */
   public String get(StringList key) {
     return entries.get(key);
   }
 
+  /**
+   * @param key key to put
+   * @param value value to put
+   */
   public void put(StringList key, String value) {
     entries.put(key, value);
   }
