@@ -51,6 +51,7 @@ public class StringDictionary {
   }
 
   /**
+   * Returns a corresponding String value from hash map.
    * @param key key to get value with
    */
   public String get(StringList key) {
@@ -58,6 +59,7 @@ public class StringDictionary {
   }
 
   /**
+   * Adds a new entry to hash map.
    * @param key key to put
    * @param value value to put
    */
