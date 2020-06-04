@@ -44,7 +44,7 @@ public class UniformPrior implements Prior {
 
   public void setLabels(String[] outcomeLabels, String[] contextLabels) {
     this.numOutcomes = outcomeLabels.length;
-    r = Math.log(1.0 / numOutcomes);
+    r = StrictMath.log(1.0 / numOutcomes);
   }
 
   @Override

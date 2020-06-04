@@ -42,7 +42,7 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
   protected static String[] getPrefixes(String lex) {
     String[] prefs = new String[PREFIX_LENGTH];
     for (int li = 1; li < PREFIX_LENGTH; li++) {
-      prefs[li] = lex.substring(0, Math.min(li + 1, lex.length()));
+      prefs[li] = lex.substring(0, StrictMath.min(li + 1, lex.length()));
     }
     return prefs;
   }
@@ -50,7 +50,7 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
   protected static String[] getSuffixes(String lex) {
     String[] suffs = new String[SUFFIX_LENGTH];
     for (int li = 1; li < SUFFIX_LENGTH; li++) {
-      suffs[li] = lex.substring(Math.max(lex.length() - li - 1, 0));
+      suffs[li] = lex.substring(StrictMath.max(lex.length() - li - 1, 0));
     }
     return suffs;
   }

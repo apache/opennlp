@@ -43,11 +43,11 @@ public class BrownTokenClasses {
     } else {
       String brownClass = brownLexicon.lookupToken(token);
       List<String> pathLengthsList = new ArrayList<>();
-      pathLengthsList.add(brownClass.substring(0, Math.min(brownClass.length(), pathLengths[0])));
+      pathLengthsList.add(brownClass.substring(0, StrictMath.min(brownClass.length(), pathLengths[0])));
       for (int i = 1; i < pathLengths.length; i++) {
         if (pathLengths[i - 1] < brownClass.length()) {
           pathLengthsList.add(brownClass.substring(0,
-              Math.min(brownClass.length(), pathLengths[i])));
+              StrictMath.min(brownClass.length(), pathLengths[i])));
         }
       }
       return pathLengthsList;

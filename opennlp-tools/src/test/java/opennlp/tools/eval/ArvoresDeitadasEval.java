@@ -153,7 +153,7 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
 
   @Test
   public void evalPortugueseSentenceDetectorMaxentQn() throws IOException {
-    sentenceCrossEval(createMaxentQnParams(), 0.99261110833375d);
+    sentenceCrossEval(createMaxentQnParams(), 0.9924715809679968d);
   }
 
   @Test

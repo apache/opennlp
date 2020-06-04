@@ -174,7 +174,7 @@ public class LineSearchTest {
 
     public double valueAt(double[] x) {
       // (x-2)^2 + 4;
-      return Math.pow(x[0] - 2, 2) + 4;
+      return StrictMath.pow(x[0] - 2, 2) + 4;
     }
 
     public double[] gradientAt(double[] x) {
@@ -194,7 +194,7 @@ public class LineSearchTest {
 
     public double valueAt(double[] x) {
       // x^2;
-      return Math.pow(x[0], 2);
+      return StrictMath.pow(x[0], 2);
     }
 
     public double[] gradientAt(double[] x) {

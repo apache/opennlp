@@ -414,7 +414,7 @@ public abstract class AbstractBottomUpParser implements Parser {
         // if (j != tags.length) {System.err.println(words[j]+" "
         // +ptags[j]+" "+tags[j]+" "+probs.get(j));}
         if (j != tags.length) {
-          newParses[si].addProb(Math.log(probs[j]));
+          newParses[si].addProb(StrictMath.log(probs[j]));
         }
         // if continue just update end chunking tag don't use contTypeMap
         if (j != tags.length && tags[j].startsWith(CONT)) {
@@ -484,7 +484,7 @@ public abstract class AbstractBottomUpParser implements Parser {
         //System.err.println("inserting tag "+tags[j]);
         double prob = probs[j];
         newParses[i].insert(new Parse(word.getText(), word.getSpan(), tags[j], prob,j));
-        newParses[i].addProb(Math.log(prob));
+        newParses[i].addProb(StrictMath.log(prob));
       }
     }
     return newParses;

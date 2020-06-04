@@ -36,7 +36,7 @@ import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
  *
  *    {@literal @}Override
  *    public double valueAt(double[] x) {
- *      return Math.pow(x[0]-1, 2) + 10;
+ *      return StrictMath.pow(x[0]-1, 2) + 10;
  *    }
  *
  *    {@literal @}Override
@@ -279,7 +279,7 @@ public class QNMinimizer {
     if (l1Cost > 0 && l2Cost > 0) {
       double[] x = lsr.getNextPoint();
       for (int i = 0; i < dimension; i++) {
-        x[i] = Math.sqrt(1 + l2Cost) * x[i];
+        x[i] = StrictMath.sqrt(1 + l2Cost) * x[i];
       }
     }
 
@@ -375,7 +375,7 @@ public class QNMinimizer {
     }
 
     // Check gradient's norm using the criteria: ||g(x)|| / max(1, ||x||) < threshold
-    double xNorm = Math.max(1, ArrayMath.l2norm(lsr.getNextPoint()));
+    double xNorm = StrictMath.max(1, ArrayMath.l2norm(lsr.getNextPoint()));
     double gradNorm = l1Cost > 0 ?
         ArrayMath.l2norm(lsr.getPseudoGradAtNext()) : ArrayMath.l2norm(lsr.getGradAtNext());
     if (gradNorm / xNorm < REL_GRAD_NORM_TOL) {

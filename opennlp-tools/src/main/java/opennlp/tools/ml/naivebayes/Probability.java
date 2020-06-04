@@ -88,7 +88,7 @@ public class Probability<T> {
    * @param probability the log probability to assign
    */
   public void setLog(double probability) {
-    set(Math.exp(probability));
+    set(StrictMath.exp(probability));
   }
 
   /**
@@ -115,7 +115,7 @@ public class Probability<T> {
    * @return the log probability associated with the label
    */
   public Double getLog() {
-    return Math.log(get());
+    return StrictMath.log(get());
   }
 
   /**

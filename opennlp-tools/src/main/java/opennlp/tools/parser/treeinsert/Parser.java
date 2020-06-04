@@ -274,7 +274,7 @@ public class Parser extends AbstractBottomUpParser {
           Parse newParse1 = (Parse) p.clone();
           Parse newNode = new Parse(p.getText(),advanceNode.getSpan(),tag,bprob,advanceNode.getHead());
           newParse1.insert(newNode);
-          newParse1.addProb(Math.log(bprob));
+          newParse1.addProb(StrictMath.log(bprob));
           newParsesList.add(newParse1);
           if (checkComplete) {
             cprobs = checkModel.eval(checkContextGenerator.getContext(newNode, children,
@@ -282,25 +282,25 @@ public class Parser extends AbstractBottomUpParser {
             if (debugOn) System.out.println("building " + tag + " " + bprob + " c=" + cprobs[completeIndex]);
             if (cprobs[completeIndex] > probMass) { //just complete advances
               setComplete(newNode);
-              newParse1.addProb(Math.log(cprobs[completeIndex]));
+              newParse1.addProb(StrictMath.log(cprobs[completeIndex]));
               if (debugOn) System.out.println("Only advancing complete node");
             }
             else if (1 - cprobs[completeIndex] > probMass) { //just incomplete advances
               setIncomplete(newNode);
-              newParse1.addProb(Math.log(1 - cprobs[completeIndex]));
+              newParse1.addProb(StrictMath.log(1 - cprobs[completeIndex]));
               if (debugOn) System.out.println("Only advancing incomplete node");
             }
             else { //both complete and incomplete advance
               if (debugOn) System.out.println("Advancing both complete and incomplete nodes");
               setComplete(newNode);
-              newParse1.addProb(Math.log(cprobs[completeIndex]));
+              newParse1.addProb(StrictMath.log(cprobs[completeIndex]));
 
               Parse newParse2 = (Parse) p.clone();
               Parse newNode2 = new Parse(p.getText(),advanceNode.getSpan(),tag,bprob,advanceNode.getHead());
               newParse2.insert(newNode2);
-              newParse2.addProb(Math.log(bprob));
+              newParse2.addProb(StrictMath.log(bprob));
               newParsesList.add(newParse2);
-              newParse2.addProb(Math.log(1 - cprobs[completeIndex]));
+              newParse2.addProb(StrictMath.log(1 - cprobs[completeIndex]));
               setIncomplete(newNode2); //set incomplete for non-clone
             }
           }
@@ -328,7 +328,7 @@ public class Parser extends AbstractBottomUpParser {
         //replace constituent being labeled to create new derivation
         newParse1.setChild(originalAdvanceIndex,Parser.BUILT);
       }
-      newParse1.addProb(Math.log(doneProb));
+      newParse1.addProb(StrictMath.log(doneProb));
       if (advanceNodeIndex == 0) { //no attach if first node.
         newParsesList.add(newParse1);
       }
@@ -387,28 +387,28 @@ public class Parser extends AbstractBottomUpParser {
                 node.updateSpan();
               }
               //if (debugOn) {System.out.print(ai+"-result: ");newParse2.show();System.out.println();}
-              newParse2.addProb(Math.log(prob));
+              newParse2.addProb(StrictMath.log(prob));
               newParsesList.add(newParse2);
               if (checkComplete) {
                 cprobs = checkModel.eval(
                     checkContextGenerator.getContext(updatedNode,newKids,advanceNodeIndex,true));
                 if (cprobs[completeIndex] > probMass) {
                   setComplete(updatedNode);
-                  newParse2.addProb(Math.log(cprobs[completeIndex]));
+                  newParse2.addProb(StrictMath.log(cprobs[completeIndex]));
                   if (debugOn) System.out.println("Only advancing complete node");
                 }
                 else if (1 - cprobs[completeIndex] > probMass) {
                   setIncomplete(updatedNode);
-                  newParse2.addProb(Math.log(1 - cprobs[completeIndex]));
+                  newParse2.addProb(StrictMath.log(1 - cprobs[completeIndex]));
                   if (debugOn) System.out.println("Only advancing incomplete node");
                 }
                 else {
                   setComplete(updatedNode);
                   Parse newParse3 = newParse2.cloneRoot(updatedNode,originalZeroIndex);
-                  newParse3.addProb(Math.log(cprobs[completeIndex]));
+                  newParse3.addProb(StrictMath.log(cprobs[completeIndex]));
                   newParsesList.add(newParse3);
                   setIncomplete(updatedNode);
-                  newParse2.addProb(Math.log(1 - cprobs[completeIndex]));
+                  newParse2.addProb(StrictMath.log(1 - cprobs[completeIndex]));
                   if (debugOn)
                     System.out.println("Advancing both complete and incomplete nodes; c="
                         + cprobs[completeIndex]);

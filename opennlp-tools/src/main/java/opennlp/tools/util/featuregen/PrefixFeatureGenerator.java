@@ -44,11 +44,11 @@ public class PrefixFeatureGenerator implements AdaptiveFeatureGenerator {
   
   private String[] getPrefixes(String lex) {
       
-    int prefixes = Math.min(prefixLength, lex.length());
+    int prefixes = StrictMath.min(prefixLength, lex.length());
     
     String[] prefs = new String[prefixes];
     for (int li = 0; li < prefixes; li++) {
-      prefs[li] = lex.substring(0, Math.min(li + 1, lex.length()));
+      prefs[li] = lex.substring(0, StrictMath.min(li + 1, lex.length()));
     }
     return prefs;
   }

@@ -51,7 +51,7 @@ public class Sequence implements Comparable<Sequence> {
     probs = new ArrayList<>(s.probs.size() + 1);
     probs.addAll(s.probs);
     probs.add(p);
-    score = s.score + Math.log(p);
+    score = s.score + StrictMath.log(p);
   }
 
   public Sequence(List<String> outcomes) {
@@ -78,7 +78,7 @@ public class Sequence implements Comparable<Sequence> {
       double epsilon = 0.0000001;
       return Objects.equals(outcomes, other.outcomes) &&
           Objects.equals(probs, other.probs) &&
-          Math.abs(score - other.score) < epsilon;
+          StrictMath.abs(score - other.score) < epsilon;
     }
 
     return false;
@@ -91,7 +91,7 @@ public class Sequence implements Comparable<Sequence> {
   public void add(String outcome, double p) {
     outcomes.add(outcome);
     probs.add(p);
-    score += Math.log(p);
+    score += StrictMath.log(p);
   }
 
   /** Returns a list of outcomes for this sequence.

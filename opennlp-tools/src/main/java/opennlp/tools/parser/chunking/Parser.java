@@ -125,9 +125,9 @@ public class Parser extends AbstractBottomUpParser {
   @Override
   protected void advanceTop(Parse p) {
     buildModel.eval(buildContextGenerator.getContext(p.getChildren(), 0), bprobs);
-    p.addProb(Math.log(bprobs[topStartIndex]));
+    p.addProb(StrictMath.log(bprobs[topStartIndex]));
     checkModel.eval(checkContextGenerator.getContext(p.getChildren(), TOP_NODE, 0, 0), cprobs);
-    p.addProb(Math.log(cprobs[completeIndex]));
+    p.addProb(StrictMath.log(cprobs[completeIndex]));
     p.setType(TOP_NODE);
   }
 
@@ -202,7 +202,7 @@ public class Parser extends AbstractBottomUpParser {
       if (createDerivationString) newParse1.getDerivation().append(max).append("-");
       //replace constituent being labeled to create new derivation
       newParse1.setChild(originalAdvanceIndex,tag);
-      newParse1.addProb(Math.log(bprob));
+      newParse1.addProb(StrictMath.log(bprob));
       //check
       //String[] context = checkContextGenerator.getContext(newParse1.getChildren(), lastStartType,
       // lastStartIndex, advanceNodeIndex);
@@ -215,7 +215,7 @@ public class Parser extends AbstractBottomUpParser {
       if (cprobs[completeIndex] > q) { //make sure a reduce is likely
         newParse2 = (Parse) newParse1.clone();
         if (createDerivationString) newParse2.getDerivation().append(1).append(".");
-        newParse2.addProb(Math.log(cprobs[completeIndex]));
+        newParse2.addProb(StrictMath.log(cprobs[completeIndex]));
         Parse[] cons = new Parse[advanceNodeIndex - lastStartIndex + 1];
         boolean flat = true;
         //first
@@ -249,7 +249,7 @@ public class Parser extends AbstractBottomUpParser {
       if (cprobs[incompleteIndex] > q) { //make sure a shift is likely
         if (createDerivationString) newParse1.getDerivation().append(0).append(".");
         if (advanceNodeIndex != numNodes - 1) { //can't shift last element
-          newParse1.addProb(Math.log(cprobs[incompleteIndex]));
+          newParse1.addProb(StrictMath.log(cprobs[incompleteIndex]));
           newParsesList.add(newParse1);
         }
       }

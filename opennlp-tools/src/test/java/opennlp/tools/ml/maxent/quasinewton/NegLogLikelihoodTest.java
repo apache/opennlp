@@ -252,7 +252,7 @@ public class NegLogLikelihoodTest {
     }
 
     for (int i = 0; i < alignedActual.length; i++) {
-      if (Math.abs(alignedActual[i] - expected[i]) > tolerance) {
+      if (StrictMath.abs(alignedActual[i] - expected[i]) > tolerance) {
         return false;
       }
     }

@@ -75,13 +75,13 @@ public class PerceptronModel extends AbstractModel {
       double maxPrior = 1;
 
       for (int oid = 0; oid < numOutcomes; oid++) {
-        if (maxPrior < Math.abs(prior[oid]))
-          maxPrior = Math.abs(prior[oid]);
+        if (maxPrior < StrictMath.abs(prior[oid]))
+          maxPrior = StrictMath.abs(prior[oid]);
       }
 
       double normal = 0.0;
       for (int oid = 0; oid < numOutcomes; oid++) {
-        prior[oid] = Math.exp(prior[oid] / maxPrior);
+        prior[oid] = StrictMath.exp(prior[oid] / maxPrior);
         normal += prior[oid];
       }
 

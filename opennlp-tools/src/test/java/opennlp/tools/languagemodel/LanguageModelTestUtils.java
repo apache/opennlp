@@ -70,12 +70,12 @@ public class LanguageModelTestUtils {
       }
     }
 
-    double p = Math.log(perplexity.doubleValue());
+    double p = StrictMath.log(perplexity.doubleValue());
     if (Double.isInfinite(p) || Double.isNaN(p)) {
       return Double.POSITIVE_INFINITY; // over/underflow -> too high perplexity
     } else {
       BigDecimal log = new BigDecimal(p);
-      return Math.pow(Math.E, log.divide(new BigDecimal(testSet.size()), CONTEXT).doubleValue());
+      return StrictMath.pow(StrictMath.E, log.divide(new BigDecimal(testSet.size()), CONTEXT).doubleValue());
     }
   }
 

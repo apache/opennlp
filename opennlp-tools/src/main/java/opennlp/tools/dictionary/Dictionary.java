@@ -124,8 +124,8 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
    */
   public void put(StringList tokens) {
     entrySet.add(new StringListWrapper(tokens));
-    minTokenCount = Math.min(minTokenCount, tokens.size());
-    maxTokenCount = Math.max(maxTokenCount, tokens.size());
+    minTokenCount = StrictMath.min(minTokenCount, tokens.size());
+    maxTokenCount = StrictMath.max(maxTokenCount, tokens.size());
   }
 
   /**

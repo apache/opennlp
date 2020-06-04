@@ -723,7 +723,7 @@ public abstract class FineGrainedReportListener {
      */
     public double getAccuracy() {
       // we save the accuracy because it is frequently used by the comparator
-      if (Math.abs(acc - 1.0d) < 0.0000000001) {
+      if (StrictMath.abs(acc - 1.0d) < 0.0000000001) {
         if (total == 0)
           acc = 0.0d;
         acc = (double) correct / (double) total;

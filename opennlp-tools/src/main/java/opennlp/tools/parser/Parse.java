@@ -408,7 +408,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
     //System.err.println("Parse.getTagSequenceProb: "+type+" "+this);
     if (parts.size() == 1 && (parts.get(0)).type.equals(AbstractBottomUpParser.TOK_NODE)) {
       //System.err.println(this+" "+prob);
-      return (Math.log(prob));
+      return (StrictMath.log(prob));
     }
     else if (parts.size() == 0) {
       System.err.println("Parse.getTagSequenceProb: Wrong base case!");

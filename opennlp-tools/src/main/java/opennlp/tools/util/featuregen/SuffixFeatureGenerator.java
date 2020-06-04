@@ -44,11 +44,11 @@ public class SuffixFeatureGenerator implements AdaptiveFeatureGenerator {
   
   private String[] getSuffixes(String lex) {
       
-    int suffixes = Math.min(suffixLength, lex.length());
+    int suffixes = StrictMath.min(suffixLength, lex.length());
       
     String[] suffs = new String[suffixes];
     for (int li = 0; li < suffixes; li++) {
-      suffs[li] = lex.substring(Math.max(lex.length() - li - 1, 0));
+      suffs[li] = lex.substring(StrictMath.max(lex.length() - li - 1, 0));
     }
     return suffs;
   }

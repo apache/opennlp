@@ -48,7 +48,7 @@ public class ComparableEvent implements Comparable<ComparableEvent> {
       return compareOutcome;
     }
 
-    int smallerLength = Math.min(predIndexes.length, ce.predIndexes.length);
+    int smallerLength = StrictMath.min(predIndexes.length, ce.predIndexes.length);
 
     for (int i = 0; i < smallerLength; i++) {
       int comparePredIndexes = Integer.compare(predIndexes[i], ce.predIndexes[i]);
