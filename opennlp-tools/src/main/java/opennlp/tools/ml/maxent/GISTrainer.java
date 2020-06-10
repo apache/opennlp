@@ -530,14 +530,14 @@ public class GISTrainer extends AbstractEventTrainer {
     double modelValue = modelExpects[0][predicate].getParameters()[oid];
     double observedValue = observedExpects[predicate].getParameters()[oid];
     for (int i = 0; i < 50; i++) {
-      double tmp = modelValue * Math.exp(correctionConstant * x0);
+      double tmp = modelValue * StrictMath.exp(correctionConstant * x0);
       double f = tmp + (param + x0) / sigma - observedValue;
       double fp = tmp * correctionConstant + 1 / sigma;
       if (fp == 0) {
         break;
       }
       double x = x0 - f / fp;
-      if (Math.abs(x - x0) < 0.000001) {
+      if (StrictMath.abs(x - x0) < 0.000001) {
         x0 = x;
         break;
       }
@@ -623,8 +623,8 @@ public class GISTrainer extends AbstractEventTrainer {
           if (model[aoi] == 0) {
             System.err.println("Model expects == 0 for " + predLabels[pi] + " " + outcomeLabels[aoi]);
           }
-          //params[pi].updateParameter(aoi,(Math.log(observed[aoi]) - Math.log(model[aoi])));
-          params[pi].updateParameter(aoi, ((Math.log(observed[aoi]) - Math.log(model[aoi]))
+          //params[pi].updateParameter(aoi,(StrictMath.log(observed[aoi]) - StrictMath.log(model[aoi])));
+          params[pi].updateParameter(aoi, ((StrictMath.log(observed[aoi]) - StrictMath.log(model[aoi]))
               / correctionConstant));
         }
 
@@ -695,7 +695,7 @@ public class GISTrainer extends AbstractEventTrainer {
           }
         }
 
-        loglikelihood += Math.log(modelDistribution[outcomeList[ei]]) * numTimesEventsSeen[ei];
+        loglikelihood += StrictMath.log(modelDistribution[outcomeList[ei]]) * numTimesEventsSeen[ei];
 
         numEvents += numTimesEventsSeen[ei];
         if (printMessages) {

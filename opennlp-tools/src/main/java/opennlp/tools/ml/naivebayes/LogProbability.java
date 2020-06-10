@@ -36,7 +36,7 @@ public class LogProbability<T> extends Probability<T> {
    * @param probability the probability to assign
    */
   public void set(double probability) {
-    this.probability = Math.log(probability);
+    this.probability = StrictMath.log(probability);
   }
 
   /**
@@ -55,7 +55,7 @@ public class LogProbability<T> extends Probability<T> {
    * @param probability the probability to assign
    */
   public void setIfLarger(double probability) {
-    double logP = Math.log(probability);
+    double logP = StrictMath.log(probability);
     if (this.probability < logP) {
       this.probability = logP;
     }
@@ -98,7 +98,7 @@ public class LogProbability<T> extends Probability<T> {
    * @param probability the probability weight to add
    */
   public void addIn(double probability) {
-    setLog(this.probability + Math.log(probability));
+    setLog(this.probability + StrictMath.log(probability));
   }
 
   /**
@@ -107,7 +107,7 @@ public class LogProbability<T> extends Probability<T> {
    * @return the probability associated with the label
    */
   public Double get() {
-    return Math.exp(probability);
+    return StrictMath.exp(probability);
   }
 
   /**

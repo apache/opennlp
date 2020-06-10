@@ -82,7 +82,7 @@ public abstract class Probabilities<T> {
    * @param probability the log probability to assign
    */
   public void setLog(T t, double probability) {
-    set(t, Math.exp(probability));
+    set(t, StrictMath.exp(probability));
   }
 
   /**
@@ -97,7 +97,7 @@ public abstract class Probabilities<T> {
     Double p = map.get(t);
     if (p == null)
       p = 1.0;
-    probability = Math.pow(probability, count);
+    probability = StrictMath.pow(probability, count);
     map.put(t, p * probability);
   }
 
@@ -121,7 +121,7 @@ public abstract class Probabilities<T> {
    * @return the log probability associated with the label
    */
   public Double getLog(T t) {
-    return Math.log(get(t));
+    return StrictMath.log(get(t));
   }
 
   /**

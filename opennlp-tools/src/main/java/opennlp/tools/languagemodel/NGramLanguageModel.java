@@ -62,13 +62,13 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
     if (size() > 0) {
       for (StringList ngram : NGramUtils.getNGrams(tokens, n)) {
         double score = stupidBackoff(ngram);
-        probability += Math.log(score);
+        probability += StrictMath.log(score);
         if (Double.isNaN(probability)) {
           probability = 0d;
           break;
         }
       }
-      probability = Math.exp(probability);
+      probability = StrictMath.exp(probability);
     }
     return probability;
   }
@@ -79,13 +79,13 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
     if (size() > 0) {
       for (String[] ngram : NGramUtils.getNGrams(tokens, n)) {
         double score = stupidBackoff(new StringList(ngram));
-        probability += Math.log(score);
+        probability += StrictMath.log(score);
         if (Double.isNaN(probability)) {
           probability = 0d;
           break;
         }
       }
-      probability = Math.exp(probability);
+      probability = StrictMath.exp(probability);
     }
     return probability;
   }

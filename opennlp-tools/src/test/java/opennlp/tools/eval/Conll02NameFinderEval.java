@@ -419,10 +419,10 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.682961897915169d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.6904593639575972d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7776447105788423d);
+        Conll02NameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 0.7843601895734598d);
   }
 
   @Test
@@ -503,7 +503,7 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES);
 
     eval(maxentModel, spanishTestAFile, LANGUAGE.SPA,
-        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.470219435736677d);
+        Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.46467817896389324d);
 
     eval(maxentModel, spanishTestBFile, LANGUAGE.SPA,
         Conll02NameSampleStream.GENERATE_MISC_ENTITIES, 0.5020576131687243d);

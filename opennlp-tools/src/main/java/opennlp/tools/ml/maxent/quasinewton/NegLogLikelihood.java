@@ -137,7 +137,7 @@ public class NegLogLikelihood implements Function {
       logSumOfExps = ArrayMath.logSumOfExps(expectation);
 
       for (oi = 0; oi < numOutcomes; oi++) {
-        expectation[oi] = Math.exp(expectation[oi] - logSumOfExps);
+        expectation[oi] = StrictMath.exp(expectation[oi] - logSumOfExps);
       }
 
       for (oi = 0; oi < numOutcomes; oi++) {

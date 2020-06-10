@@ -43,7 +43,7 @@ public class ArrayMath {
   public static double l1norm(double[] v) {
     double norm = 0;
     for (int i = 0; i < v.length; i++)
-      norm += Math.abs(v[i]);
+      norm += StrictMath.abs(v[i]);
     return norm;
   }
 
@@ -51,7 +51,7 @@ public class ArrayMath {
    * L2-norm
    */
   public static double l2norm(double[] v) {
-    return Math.sqrt(innerProduct(v, v));
+    return StrictMath.sqrt(innerProduct(v, v));
   }
 
   /**
@@ -73,9 +73,9 @@ public class ArrayMath {
     double sum = 0.0;
     for (int i = 0; i < x.length; i++) {
       if (x[i] != Double.NEGATIVE_INFINITY)
-        sum += Math.exp(x[i] - max);
+        sum += StrictMath.exp(x[i] - max);
     }
-    return max + Math.log(sum);
+    return max + StrictMath.log(sum);
   }
 
   public static double max(double[] x) {

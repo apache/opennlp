@@ -203,7 +203,7 @@ public final class CLI {
 
       System.out.print("  " + tool.getName());
 
-      for (int i = 0; i < Math.abs(tool.getName().length() - numberOfSpaces); i++) {
+      for (int i = 0; i < StrictMath.abs(tool.getName().length() - numberOfSpaces); i++) {
         System.out.print(" ");
       }
 

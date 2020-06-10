@@ -188,7 +188,7 @@ public final class GISModel extends AbstractModel {
 
     double normal = 0.0;
     for (int oid = 0; oid < model.getNumOutcomes(); oid++) {
-      prior[oid] = Math.exp(prior[oid]);
+      prior[oid] = StrictMath.exp(prior[oid]);
       normal += prior[oid];
     }
 

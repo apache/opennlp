@@ -344,9 +344,9 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       // If the tolerance is greater than the difference between the
       // current training accuracy and all of the previous three
       // training accuracies, stop training.
-      if (Math.abs(prevAccuracy1 - trainingAccuracy) < tolerance
-          && Math.abs(prevAccuracy2 - trainingAccuracy) < tolerance
-          && Math.abs(prevAccuracy3 - trainingAccuracy) < tolerance) {
+      if (StrictMath.abs(prevAccuracy1 - trainingAccuracy) < tolerance
+          && StrictMath.abs(prevAccuracy2 - trainingAccuracy) < tolerance
+          && StrictMath.abs(prevAccuracy3 - trainingAccuracy) < tolerance) {
         display("Stopping: change in training set accuracy less than " + tolerance + "\n");
         break;
       }
@@ -414,7 +414,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   // See whether a number is a perfect square. Inefficient, but fine
   // for our purposes.
   private static boolean isPerfectSquare(int n) {
-    int root = (int) Math.sqrt(n);
+    int root = (int) StrictMath.sqrt(n);
     return root * root == n;
   }
 

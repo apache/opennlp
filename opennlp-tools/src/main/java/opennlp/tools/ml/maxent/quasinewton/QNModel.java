@@ -80,7 +80,7 @@ public class QNModel extends AbstractModel {
 
     double logSumExp = ArrayMath.logSumOfExps(probs);
     for (int oi = 0; oi < outcomeNames.length; oi++) {
-      probs[oi] = Math.exp(probs[oi] - logSumExp);
+      probs[oi] = StrictMath.exp(probs[oi] - logSumExp);
     }
     return probs;
   }
@@ -117,7 +117,7 @@ public class QNModel extends AbstractModel {
     double logSumExp = ArrayMath.logSumOfExps(probs);
 
     for (int oi = 0; oi < nOutcomes; oi++) {
-      probs[oi] = Math.exp(probs[oi] - logSumExp);
+      probs[oi] = StrictMath.exp(probs[oi] - logSumExp);
     }
 
     return probs;

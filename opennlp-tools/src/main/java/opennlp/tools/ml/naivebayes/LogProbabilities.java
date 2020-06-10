@@ -113,7 +113,7 @@ public class LogProbabilities<T> extends Probabilities<T> {
       T t = entry.getKey();
       Double p = entry.getValue();
       if (p != null) {
-        double temp_p = Math.exp(p - highestLogProbability);
+        double temp_p = StrictMath.exp(p - highestLogProbability);
         if (!Double.isNaN(temp_p)) {
           sum += temp_p;
           temp.put(t, temp_p);
@@ -133,7 +133,7 @@ public class LogProbabilities<T> extends Probabilities<T> {
   }
 
   private double log(double prob) {
-    return Math.log(prob);
+    return StrictMath.log(prob);
   }
 
   /**
@@ -163,7 +163,7 @@ public class LogProbabilities<T> extends Probabilities<T> {
   }
 
   public void discardCountsBelow(double i) {
-    i = Math.log(i);
+    i = StrictMath.log(i);
     ArrayList<T> labelsToRemove = new ArrayList<>();
     for (Entry<T, Double> entry : map.entrySet()) {
       final T label = entry.getKey();

@@ -96,7 +96,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
     }
 
     for (int i = 0; i < sequence.length; i++) {
-      int sz = Math.min(size, prev.size());
+      int sz = StrictMath.min(size, prev.size());
 
       for (int sc = 0; prev.size() > 0 && sc < sz; sc++) {
         Sequence top = prev.remove();
@@ -115,7 +115,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
 
         Arrays.sort(temp_scores);
 
-        double min = temp_scores[Math.max(0,scores.length - size)];
+        double min = temp_scores[StrictMath.max(0,scores.length - size)];
 
         for (int p = 0; p < scores.length; p++) {
           if (scores[p] >= min) {
@@ -149,7 +149,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
       next = tmp;
     }
 
-    int numSeq = Math.min(numSequences, prev.size());
+    int numSeq = StrictMath.min(numSequences, prev.size());
     Sequence[] topSequences = new Sequence[numSeq];
 
     for (int seqIndex = 0; seqIndex < numSeq; seqIndex++) {

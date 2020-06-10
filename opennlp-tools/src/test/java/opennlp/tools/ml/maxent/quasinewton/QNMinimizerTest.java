@@ -58,7 +58,7 @@ public class QNMinimizerTest {
 
     @Override
     public double valueAt(double[] x) {
-      return Math.pow(x[0] - 1, 2) + Math.pow(x[1] - 5, 2) + 10;
+      return StrictMath.pow(x[0] - 1, 2) + StrictMath.pow(x[1] - 5, 2) + 10;
     }
 
     @Override
@@ -84,14 +84,14 @@ public class QNMinimizerTest {
 
     @Override
     public double valueAt(double[] x) {
-      return Math.pow(1 - x[0], 2) + 100 * Math.pow(x[1] - Math.pow(x[0], 2), 2);
+      return StrictMath.pow(1 - x[0], 2) + 100 * StrictMath.pow(x[1] - StrictMath.pow(x[0], 2), 2);
     }
 
     @Override
     public double[] gradientAt(double[] x) {
       double[] g = new double[2];
-      g[0] = -2 * (1 - x[0]) - 400 * (x[1] - Math.pow(x[0], 2)) * x[0];
-      g[1] = 200 * (x[1] - Math.pow(x[0], 2));
+      g[0] = -2 * (1 - x[0]) - 400 * (x[1] - StrictMath.pow(x[0], 2)) * x[0];
+      g[1] = 200 * (x[1] - StrictMath.pow(x[0], 2));
       return g;
     }
 
