@@ -66,20 +66,15 @@ public class StringUtil {
 
   /**
    * Converts to lower case independent of the current locale via
-   * {@link Character#toLowerCase(char)} which uses mapping information
+   * {@link Character#toLowerCase(int)} which uses mapping information
    * from the UnicodeData file.
    *
    * @param string
    * @return lower cased String
    */
   public static String toLowerCase(CharSequence string) {
-    char[] lowerCaseChars = new char[string.length()];
-
-    for (int i = 0; i < string.length(); i++) {
-      lowerCaseChars[i] = Character.toLowerCase(string.charAt(i));
-    }
-
-    return new String(lowerCaseChars);
+    int[] cp = string.codePoints().map(Character::toLowerCase).toArray();
+    return new String(cp, 0, cp.length);
   }
 
   /**

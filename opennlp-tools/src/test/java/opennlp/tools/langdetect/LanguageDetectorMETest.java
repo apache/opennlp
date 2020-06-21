@@ -19,6 +19,7 @@ package opennlp.tools.langdetect;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,6 +51,25 @@ public class LanguageDetectorMETest {
     Assert.assertEquals("ita", languages[1].getLang());
     Assert.assertEquals("spa", languages[2].getLang());
     Assert.assertEquals("fra", languages[3].getLang());
+  }
+
+  @Test
+  public void testProbingPredictLanguages() {
+    LanguageDetectorME ld = new LanguageDetectorME(this.model);
+    for (int i = 0; i < 10000; i += 1000) {
+      StringBuilder sb = new StringBuilder();
+      for (int j = 0; j <= i; j++) {
+        sb.append("estava em uma marcenaria na Rua Bruno ");
+      }
+      ProbingLanguageDetectionResult result = ld.probingPredictLanguages(sb.toString());
+      Assert.assertTrue(result.getLength() <= 600);
+      Language[] languages = result.getLanguages();
+      Assert.assertEquals(4, languages.length);
+      Assert.assertEquals("pob", languages[0].getLang());
+      Assert.assertEquals("ita", languages[1].getLang());
+      Assert.assertEquals("spa", languages[2].getLang());
+      Assert.assertEquals("fra", languages[3].getLang());
+    }
   }
 
   @Test
@@ -109,7 +129,7 @@ public class LanguageDetectorMETest {
     ResourceAsStreamFactory streamFactory = new ResourceAsStreamFactory(
         LanguageDetectorMETest.class, "/opennlp/tools/doccat/DoccatSample.txt");
 
-    PlainTextByLineStream lineStream = new PlainTextByLineStream(streamFactory, "UTF-8");
+    PlainTextByLineStream lineStream = new PlainTextByLineStream(streamFactory, StandardCharsets.UTF_8);
 
     return new LanguageDetectorSampleStream(lineStream);
   }

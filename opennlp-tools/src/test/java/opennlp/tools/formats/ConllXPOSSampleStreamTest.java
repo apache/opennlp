@@ -18,7 +18,7 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ public class ConllXPOSSampleStreamTest {
     InputStreamFactory in = new ResourceAsStreamFactory(ConllXPOSSampleStreamTest.class,
         "/opennlp/tools/formats/conllx.sample");
 
-    try (ObjectStream<POSSample> sampleStream = new ConllXPOSSampleStream(in,Charset.forName("UTF-8"))) {
+    try (ObjectStream<POSSample> sampleStream = new ConllXPOSSampleStream(in, StandardCharsets.UTF_8)) {
       POSSample a = sampleStream.read();
 
       String[] aSentence = a.getSentence();

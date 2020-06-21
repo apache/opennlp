@@ -17,10 +17,12 @@
 
 package opennlp.tools.langdetect;
 
+import java.io.Serializable;
+
 /**
  * The interface for LanguageDetector which provide the @{@link Language} according to the context.
  */
-public interface LanguageDetector {
+public interface LanguageDetector extends Serializable {
 
   Language[] predictLanguages(CharSequence content);
 

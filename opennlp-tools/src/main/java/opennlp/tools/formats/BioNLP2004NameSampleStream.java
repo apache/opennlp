@@ -56,7 +56,7 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
   public BioNLP2004NameSampleStream(InputStreamFactory in, int types) throws IOException {
     try {
       this.lineStream = new PlainTextByLineStream(in, StandardCharsets.UTF_8);
-      System.setOut(new PrintStream(System.out, true, "UTF-8"));
+      System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
     } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);

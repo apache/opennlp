@@ -20,6 +20,7 @@ package opennlp.tools.doccat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,7 +42,7 @@ public class DoccatFactoryTest {
     InputStreamFactory isf = new ResourceAsStreamFactory(
         DoccatFactoryTest.class, "/opennlp/tools/doccat/DoccatSample.txt");
 
-    return new DocumentSampleStream(new PlainTextByLineStream(isf, "UTF-8"));
+    return new DocumentSampleStream(new PlainTextByLineStream(isf, StandardCharsets.UTF_8));
   }
 
   private static DoccatModel train() throws IOException {

@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,7 +51,7 @@ public class LemmatizerEvaluatorTest {
     String inPredicted = "opennlp/tools/lemmatizer/output.txt";
     String inExpected = "opennlp/tools/lemmatizer/output.txt";
 
-    String encoding = "UTF-8";
+    String encoding = StandardCharsets.UTF_8.name();
 
     DummyLemmaSampleStream predictedSample = new DummyLemmaSampleStream(
         new PlainTextByLineStream(

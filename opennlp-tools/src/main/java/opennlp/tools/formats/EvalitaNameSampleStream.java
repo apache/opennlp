@@ -84,7 +84,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
     this.lang = lang;
     try {
       this.lineStream = new PlainTextByLineStream(in, StandardCharsets.UTF_8);
-      System.setOut(new PrintStream(System.out, true, "UTF-8"));
+      System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
     } catch (UnsupportedEncodingException e) {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);

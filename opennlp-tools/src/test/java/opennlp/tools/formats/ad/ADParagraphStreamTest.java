@@ -18,6 +18,7 @@
 package opennlp.tools.formats.ad;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -67,6 +68,6 @@ public class ADParagraphStreamTest {
     InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class,
         "/opennlp/tools/formats/ad.sample");
 
-    return new ADSentenceStream(new PlainTextByLineStream(in, "UTF-8"));
+    return new ADSentenceStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
   }
 }

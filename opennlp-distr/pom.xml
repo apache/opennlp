@@ -24,7 +24,7 @@
 	<parent>
 		<groupId>org.apache.opennlp</groupId>
 		<artifactId>opennlp</artifactId>
-		<version>1.9.1-SNAPSHOT</version>
+		<version>1.9.3-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -33,7 +33,7 @@
 	<name>Apache OpenNLP Distribution</name>
 
 	<properties>
-		<opennlp.version>${pom.version}</opennlp.version>
+		<opennlp.version>${project.version}</opennlp.version>
 	</properties>
 
 	<!--  Versions will automatically be updated by the release plugin -->
@@ -107,7 +107,7 @@
 			</plugin>
 			<plugin> 
 	        <artifactId>maven-antrun-plugin</artifactId> 
-	        <version>1.6</version> 
+	        <version>1.8</version>
 	        <executions> 
 	          <execution> 
 	            <id>generate checksums for binary artifacts</id> 
@@ -115,7 +115,7 @@
 	            <phase>verify</phase> 
 	            <configuration> 
 	              <target> 
-	                <checksum algorithm="sha1" format="MD5SUM">
+	                <checksum algorithm="sha-512" format="MD5SUM" fileext=".sha512">
 	                  <fileset dir="${project.build.directory}"> 
 	                    <include name="*.zip" /> 
 	                    <include name="*.gz" /> 

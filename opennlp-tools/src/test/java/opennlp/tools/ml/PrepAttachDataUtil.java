@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class PrepAttachDataUtil {
 
     try (InputStream in = PerceptronPrepAttachTest.class.getResourceAsStream("/data/ppa/" +
             filename)) {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+      BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
       String line;
       while ((line = reader.readLine()) != null) {
         String[] items = line.split("\\s+");

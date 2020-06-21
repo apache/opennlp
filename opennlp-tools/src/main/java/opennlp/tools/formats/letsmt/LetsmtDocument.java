@@ -124,6 +124,7 @@ public class LetsmtDocument {
       XMLReader xmlReader = saxParser.getXMLReader();
       LetsmtDocumentHandler docHandler = new LetsmtDocumentHandler();
       xmlReader.setContentHandler(docHandler);
+      xmlReader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
       xmlReader.parse(new InputSource(letsmtXmlIn));
       return new LetsmtDocument(docHandler.sentences);
     } catch (SAXException e) {
