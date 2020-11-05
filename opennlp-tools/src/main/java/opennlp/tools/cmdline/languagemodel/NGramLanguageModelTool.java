@@ -44,9 +44,7 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
   @Override
   public void run(String[] args) {
     File lmFile = new File(args[0]);
-    FileInputStream stream = null;
-    try {
-      stream = new FileInputStream(lmFile);
+    try (FileInputStream stream = new FileInputStream(lmFile)) {
       NGramLanguageModel nGramLanguageModel = new NGramLanguageModel(stream);
 
       ObjectStream<String> lineStream;
@@ -54,7 +52,7 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
 
       try {
         lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
-            SystemInputStreamFactory.encoding());
+                SystemInputStreamFactory.encoding());
         perfMon = new PerformanceMonitor(System.err, "nglm");
         perfMon.start();
         String line;
@@ -73,7 +71,7 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
           }
 
           System.out.println(Arrays.toString(tokens) + " -> prob:" + probability + ", " +
-              "next:" + Arrays.toString(predicted));
+                  "next:" + Arrays.toString(predicted));
 
           perfMon.incrementCounter();
         }
@@ -83,17 +81,10 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
 
       perfMon.stopAndPrintFinalResult();
 
-    } catch (java.io.IOException e) {
+    } catch (IOException e) {
       System.err.println(e.getLocalizedMessage());
-    } finally {
-      if (stream != null) {
-        try {
-          stream.close();
-        } catch (IOException e) {
-          // do nothing
-        }
-      }
     }
+    // do nothing
   }
 
   @Override

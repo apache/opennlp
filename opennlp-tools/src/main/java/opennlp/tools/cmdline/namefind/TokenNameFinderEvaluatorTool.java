@@ -106,7 +106,7 @@ public final class TokenNameFinderEvaluatorTool
 
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");
 
-    ObjectStream<NameSample> measuredSampleStream = new ObjectStream<NameSample>() {
+    try (ObjectStream<NameSample> measuredSampleStream = new ObjectStream<NameSample>() {
 
       public NameSample read() throws IOException {
         monitor.incrementCounter();
@@ -120,22 +120,14 @@ public final class TokenNameFinderEvaluatorTool
       public void close() throws IOException {
         sampleStream.close();
       }
-    };
-
-    monitor.startAndPrintThroughput();
-
-    try {
+    }) {
+      monitor.startAndPrintThroughput();
       evaluator.evaluate(measuredSampleStream);
     } catch (IOException e) {
       System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
-    } finally {
-      try {
-        measuredSampleStream.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
     }
+    // sorry that this can fail
 
     monitor.stopAndPrintFinalResult();
 

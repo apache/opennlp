@@ -85,7 +85,7 @@ public final class LanguageDetectorEvaluatorTool extends
 
     final PerformanceMonitor monitor = new PerformanceMonitor("doc");
 
-    ObjectStream<LanguageSample> measuredSampleStream = new ObjectStream<LanguageSample>() {
+    try (ObjectStream<LanguageSample> measuredSampleStream = new ObjectStream<LanguageSample>() {
 
       public LanguageSample read() throws IOException {
         monitor.incrementCounter();
@@ -99,23 +99,15 @@ public final class LanguageDetectorEvaluatorTool extends
       public void close() throws IOException {
         sampleStream.close();
       }
-    };
-
-    monitor.startAndPrintThroughput();
-
-    try {
+    }) {
+      monitor.startAndPrintThroughput();
       evaluator.evaluate(measuredSampleStream);
     } catch (IOException e) {
       System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: "
-          + e.getMessage(), e);
-    } finally {
-      try {
-        measuredSampleStream.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
+              + e.getMessage(), e);
     }
+    // sorry that this can fail
 
     monitor.stopAndPrintFinalResult();
 
