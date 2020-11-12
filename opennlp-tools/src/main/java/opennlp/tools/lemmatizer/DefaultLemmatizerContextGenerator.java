@@ -89,13 +89,13 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
 
     // do some basic suffix analysis
     String[] suffs = getSuffixes(lex);
-    for (int i = 0; i < suffs.length; i++) {
-      features.add("suf=" + suffs[i]);
+    for (String suff : suffs) {
+      features.add("suf=" + suff);
     }
 
     String[] prefs = getPrefixes(lex);
-    for (int i = 0; i < prefs.length; i++) {
-      features.add("pre=" + prefs[i]);
+    for (String pref : prefs) {
+      features.add("pre=" + pref);
     }
     // see if the word has any special characters
     if (lex.indexOf('-') != -1) {

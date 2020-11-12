@@ -39,8 +39,8 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
     else {
       Parse[] kids = p.getChildren();
       boolean allKidsAreTags = true;
-      for (int ci = 0, cl = kids.length; ci < cl; ci++) {
-        if (!kids[ci].isPosTag()) {
+      for (Parse kid : kids) {
+        if (!kid.isPosTag()) {
           allKidsAreTags = false;
           break;
         }
@@ -49,8 +49,8 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
         ichunks.add(p);
       }
       else {
-        for (int ci = 0, cl = kids.length; ci < cl; ci++) {
-          getInitialChunks(kids[ci], ichunks);
+        for (Parse kid : kids) {
+          getInitialChunks(kid, ichunks);
         }
       }
     }
@@ -71,26 +71,22 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
       List<String> toks = new ArrayList<>();
       List<String> tags = new ArrayList<>();
       List<String> preds = new ArrayList<>();
-      for (int ci = 0, cl = chunks.length; ci < cl; ci++) {
-        Parse c = chunks[ci];
+      for (Parse c : chunks) {
         if (c.isPosTag()) {
           toks.add(c.getCoveredText());
           tags.add(c.getType());
           preds.add(Parser.OTHER);
-        }
-        else {
+        } else {
           boolean start = true;
           String ctype = c.getType();
           Parse[] kids = c.getChildren();
-          for (int ti = 0, tl = kids.length; ti < tl; ti++) {
-            Parse tok = kids[ti];
+          for (Parse tok : kids) {
             toks.add(tok.getCoveredText());
             tags.add(tok.getType());
             if (start) {
               preds.add(Parser.START + ctype);
               start = false;
-            }
-            else {
+            } else {
               preds.add(Parser.CONT + ctype);
             }
           }

@@ -126,11 +126,11 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
       List<String> target) {
     if (root != null) {
       TreeElement[] elements = root.getElements();
-      for (int i = 0; i < elements.length; i++) {
-        if (elements[i].isLeaf()) {
-          processLeaf((Leaf) elements[i], false, OTHER, sentence, tags, target);
+      for (TreeElement element : elements) {
+        if (element.isLeaf()) {
+          processLeaf((Leaf) element, false, OTHER, sentence, tags, target);
         } else {
-          processNode((Node) elements[i], sentence, tags, target, null);
+          processNode((Node) element, sentence, tags, target, null);
         }
       }
     }

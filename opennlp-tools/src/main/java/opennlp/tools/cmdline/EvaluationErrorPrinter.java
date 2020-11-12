@@ -219,15 +219,13 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
     falseNegatives.addAll(Arrays.asList(references));
     falsePositives.addAll(Arrays.asList(predictions));
 
-    for (int referenceIndex = 0; referenceIndex < references.length; referenceIndex++) {
+    for (Span referenceName : references) {
 
-      Span referenceName = references[referenceIndex];
-
-      for (int predictedIndex = 0; predictedIndex < predictions.length; predictedIndex++) {
-        if (referenceName.equals(predictions[predictedIndex])) {
+      for (Span prediction : predictions) {
+        if (referenceName.equals(prediction)) {
           // got it, remove from fn and fp
           falseNegatives.remove(referenceName);
-          falsePositives.remove(predictions[predictedIndex]);
+          falsePositives.remove(prediction);
         }
       }
     }

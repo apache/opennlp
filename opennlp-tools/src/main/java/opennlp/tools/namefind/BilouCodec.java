@@ -131,20 +131,19 @@ public class BilouCodec implements SequenceCodec<String> {
     Set<String> last = new HashSet<>();
     Set<String> unit = new HashSet<>();
 
-    for (int i = 0; i < outcomes.length; i++) {
-      String outcome = outcomes[i];
+    for (String outcome : outcomes) {
       if (outcome.endsWith(BilouCodec.START)) {
         start.add(outcome.substring(0, outcome.length()
-            - BilouCodec.START.length()));
+                - BilouCodec.START.length()));
       } else if (outcome.endsWith(BilouCodec.CONTINUE)) {
         cont.add(outcome.substring(0, outcome.length()
-            - BilouCodec.CONTINUE.length()));
+                - BilouCodec.CONTINUE.length()));
       } else if (outcome.endsWith(BilouCodec.LAST)) {
         last.add(outcome.substring(0, outcome.length()
-            - BilouCodec.LAST.length()));
+                - BilouCodec.LAST.length()));
       } else if (outcome.endsWith(BilouCodec.UNIT)) {
         unit.add(outcome.substring(0, outcome.length()
-            - BilouCodec.UNIT.length()));
+                - BilouCodec.UNIT.length()));
       } else if (!outcome.equals(BilouCodec.OTHER)) {
         return false;
       }

@@ -36,8 +36,8 @@ public class BrownTokenClassFeatureGenerator implements AdaptiveFeatureGenerator
     String wordShape = FeatureGeneratorUtil.tokenFeature(tokens[index]);
     List<String> wordClasses = BrownTokenClasses.getWordClasses(tokens[index], brownLexicon);
 
-    for (int i = 0; i < wordClasses.size(); i++) {
-      features.add("c," + "browncluster" + "=" + wordShape + "," + wordClasses.get(i));
+    for (String wordClass : wordClasses) {
+      features.add("c," + "browncluster" + "=" + wordShape + "," + wordClass);
     }
   }
 

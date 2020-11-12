@@ -203,9 +203,9 @@ public abstract class AbstractBottomUpParser implements Parser {
    */
   public static void setParents(Parse p) {
     Parse[] children = p.getChildren();
-    for (int ci = 0; ci < children.length; ci++) {
-      children[ci].setParent(p);
-      setParents(children[ci]);
+    for (Parse child : children) {
+      child.setParent(p);
+      setParents(child);
     }
   }
 
@@ -318,19 +318,18 @@ public abstract class AbstractBottomUpParser implements Parser {
           nd = advanceParses(tp, Q);
         }
         if (nd != null) {
-          for (int k = 0, kl = nd.length; k < kl; k++) {
-            if (nd[k].complete()) {
-              advanceTop(nd[k]);
-              if (nd[k].getProb() > bestComplete) {
-                bestComplete = nd[k].getProb();
+          for (Parse parse : nd) {
+            if (parse.complete()) {
+              advanceTop(parse);
+              if (parse.getProb() > bestComplete) {
+                bestComplete = parse.getProb();
               }
-              if (nd[k].getProb() < minComplete) {
-                minComplete = nd[k].getProb();
+              if (parse.getProb() < minComplete) {
+                minComplete = parse.getProb();
               }
-              completeParses.add(nd[k]);
-            }
-            else {
-              ndh.add(nd[k]);
+              completeParses.add(parse);
+            } else {
+              ndh.add(parse);
             }
           }
         }

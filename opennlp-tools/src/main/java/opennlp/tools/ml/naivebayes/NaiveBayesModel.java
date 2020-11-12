@@ -50,8 +50,7 @@ public class NaiveBayesModel extends AbstractModel {
 
   protected double[] initOutcomeTotals(String[] outcomeNames, Context[] params) {
     double[] outcomeTotals = new double[outcomeNames.length];
-    for (int i = 0; i < params.length; ++i) {
-      Context context = params[i];
+    for (Context context : params) {
       for (int j = 0; j < context.getOutcomes().length; ++j) {
         int outcome = context.getOutcomes()[j];
         double count = context.getParameters()[j];
@@ -114,8 +113,8 @@ public class NaiveBayesModel extends AbstractModel {
       }
     }
     double total = 0;
-    for (int i = 0; i < outcomeTotals.length; ++i) {
-      total += outcomeTotals[i];
+    for (double outcomeTotal : outcomeTotals) {
+      total += outcomeTotal;
     }
     for (int i = 0; i < outcomeTotals.length; ++i) {
       double numerator = outcomeTotals[i];

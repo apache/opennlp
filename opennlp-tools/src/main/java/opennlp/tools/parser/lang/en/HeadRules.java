@@ -149,9 +149,9 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
           }
         }
       }
-      for (int ci = 0; ci < constituents.length; ci++) {
-        if (constituents[ci].getType().equals("NP")) {
-          return constituents[ci].getHead();
+      for (Parse constituent : constituents) {
+        if (constituent.getType().equals("NP")) {
+          return constituent.getHead();
         }
       }
       String[] tags2 = { "$", "ADJP", "PRN" };
