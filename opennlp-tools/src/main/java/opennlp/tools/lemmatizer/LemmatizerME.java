@@ -99,8 +99,8 @@ public class LemmatizerME implements Lemmatizer {
     String[] posTags = tags.toArray(new String[tags.size()]);
     String[][] allLemmas = predictLemmas(LEMMA_NUMBER, tokens, posTags);
     List<List<String>> predictedLemmas = new ArrayList<>();
-    for (int i = 0; i < allLemmas.length; i++) {
-      predictedLemmas.add(Arrays.asList(allLemmas[i]));
+    for (String[] allLemma : allLemmas) {
+      predictedLemmas.add(Arrays.asList(allLemma));
     }
     return predictedLemmas;
   }

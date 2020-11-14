@@ -147,10 +147,10 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
     if (type.equals("SN") || type.equals("GRUP.NOM")) {
       String[] tags1 = {"AQA.*","AQC.*","GRUP\\.A","S\\.A","NC.*S.*", "NP.*","NC.*P.*", "GRUP\\.NOM"};
 
-      for (int i = 0; i < constituents.length; i++) {
+      for (Parse constituent : constituents) {
         for (int t = tags1.length - 1; t >= 0; t--) {
-          if (constituents[i].getType().matches(tags1[t])) {
-            return constituents[i];
+          if (constituent.getType().matches(tags1[t])) {
+            return constituent;
           }
         }
       }

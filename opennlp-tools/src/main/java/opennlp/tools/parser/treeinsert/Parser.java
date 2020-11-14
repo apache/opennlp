@@ -206,8 +206,8 @@ public class Parser extends AbstractBottomUpParser {
     Parse[] parses = super.advanceChunks(p, minChunkScore);
     for (Parse parse : parses) {
       Parse[] chunks = parse.getChildren();
-      for (int ci = 0; ci < chunks.length; ci++) {
-        setComplete(chunks[ci]);
+      for (Parse chunk : chunks) {
+        setComplete(chunk);
       }
     }
     return parses;
@@ -344,40 +344,38 @@ public class Parser extends AbstractBottomUpParser {
                 + " " + fn + " <- " + advanceNode.getType() + " " + advanceNode + " d="
                 + aprobs[daughterAttachIndex] + " s=" + aprobs[sisterAttachIndex] + " ");
           }
-          for (int ai = 0; ai < attachments.length; ai++) {
-            double prob = aprobs[attachments[ai]];
+          for (int attachment : attachments) {
+            double prob = aprobs[attachment];
             //should we try an attach if p > threshold and
             // if !checkComplete then prevent daughter attaching to chunk
             // if checkComplete then prevent daughter attacing to complete node or
             //    sister attaching to an incomplete node
             if (prob > q && (
-                (!checkComplete && (attachments[ai] != daughterAttachIndex || !isComplete(fn)))
-                ||
-                (checkComplete && ((attachments[ai] == daughterAttachIndex && !isComplete(fn))
-                    || (attachments[ai] == sisterAttachIndex && isComplete(fn)))))) {
-              Parse newParse2 = newParse1.cloneRoot(fn,originalZeroIndex);
-              Parse[] newKids = Parser.collapsePunctuation(newParse2.getChildren(),punctSet);
+                    (!checkComplete && (attachment != daughterAttachIndex || !isComplete(fn)))
+                            ||
+                            (checkComplete && ((attachment == daughterAttachIndex && !isComplete(fn))
+                                    || (attachment == sisterAttachIndex && isComplete(fn)))))) {
+              Parse newParse2 = newParse1.cloneRoot(fn, originalZeroIndex);
+              Parse[] newKids = Parser.collapsePunctuation(newParse2.getChildren(), punctSet);
               //remove node from top level since were going to attach it (including punct)
               for (int ri = originalZeroIndex + 1; ri <= originalAdvanceIndex; ri++) {
                 //System.out.println(at"-removing "+(originalZeroIndex+1)+" "
                 // +newParse2.getChildren()[originalZeroIndex+1]);
                 newParse2.remove(originalZeroIndex + 1);
               }
-              List<Parse> crf = getRightFrontier(newParse2,punctSet);
+              List<Parse> crf = getRightFrontier(newParse2, punctSet);
               Parse updatedNode;
-              if (attachments[ai] == daughterAttachIndex) { //attach daughter
+              if (attachment == daughterAttachIndex) { //attach daughter
                 updatedNode = crf.get(fi);
-                updatedNode.add(advanceNode,headRules);
-              }
-              else { //attach sister
+                updatedNode.add(advanceNode, headRules);
+              } else { //attach sister
                 Parse psite;
                 if (fi + 1 < crf.size()) {
                   psite = crf.get(fi + 1);
-                  updatedNode = psite.adjoin(advanceNode,headRules);
-                }
-                else {
+                  updatedNode = psite.adjoin(advanceNode, headRules);
+                } else {
                   psite = newParse2;
-                  updatedNode = psite.adjoinRoot(advanceNode,headRules,originalZeroIndex);
+                  updatedNode = psite.adjoinRoot(advanceNode, headRules, originalZeroIndex);
                   newKids[0] = updatedNode;
                 }
               }
@@ -391,35 +389,32 @@ public class Parser extends AbstractBottomUpParser {
               newParsesList.add(newParse2);
               if (checkComplete) {
                 cprobs = checkModel.eval(
-                    checkContextGenerator.getContext(updatedNode,newKids,advanceNodeIndex,true));
+                        checkContextGenerator.getContext(updatedNode, newKids, advanceNodeIndex, true));
                 if (cprobs[completeIndex] > probMass) {
                   setComplete(updatedNode);
                   newParse2.addProb(StrictMath.log(cprobs[completeIndex]));
                   if (debugOn) System.out.println("Only advancing complete node");
-                }
-                else if (1 - cprobs[completeIndex] > probMass) {
+                } else if (1 - cprobs[completeIndex] > probMass) {
                   setIncomplete(updatedNode);
                   newParse2.addProb(StrictMath.log(1 - cprobs[completeIndex]));
                   if (debugOn) System.out.println("Only advancing incomplete node");
-                }
-                else {
+                } else {
                   setComplete(updatedNode);
-                  Parse newParse3 = newParse2.cloneRoot(updatedNode,originalZeroIndex);
+                  Parse newParse3 = newParse2.cloneRoot(updatedNode, originalZeroIndex);
                   newParse3.addProb(StrictMath.log(cprobs[completeIndex]));
                   newParsesList.add(newParse3);
                   setIncomplete(updatedNode);
                   newParse2.addProb(StrictMath.log(1 - cprobs[completeIndex]));
                   if (debugOn)
                     System.out.println("Advancing both complete and incomplete nodes; c="
-                        + cprobs[completeIndex]);
+                            + cprobs[completeIndex]);
                 }
               }
-            }
-            else {
+            } else {
               if (debugOn)
                 System.out.println("Skipping " + fn.getType() + "." + fn.getLabel() + " "
-                    + fn + " daughter=" + (attachments[ai] == daughterAttachIndex)
-                    + " complete=" + isComplete(fn) + " prob=" + prob);
+                        + fn + " daughter=" + (attachment == daughterAttachIndex)
+                        + " complete=" + isComplete(fn) + " prob=" + prob);
             }
           }
           if (checkComplete && !isComplete(fn)) {

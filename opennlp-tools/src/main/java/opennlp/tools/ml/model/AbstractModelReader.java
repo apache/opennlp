@@ -130,18 +130,18 @@ public abstract class AbstractModelReader {
   protected Context[] getParameters(int[][] outcomePatterns) throws java.io.IOException {
     Context[] params = new Context[NUM_PREDS];
     int pid = 0;
-    for (int i = 0; i < outcomePatterns.length; i++) {
+    for (int[] pattern : outcomePatterns) {
       //construct outcome pattern
-      int[] outcomePattern = new int[outcomePatterns[i].length - 1];
-      System.arraycopy(outcomePatterns[i], 1, outcomePattern, 0, outcomePatterns[i].length - 1);
+      int[] outcomePattern = new int[pattern.length - 1];
+      System.arraycopy(pattern, 1, outcomePattern, 0, pattern.length - 1);
 
       //populate parameters for each context which uses this outcome pattern.
-      for (int j = 0; j < outcomePatterns[i][0]; j++) {
-        double[] contextParameters = new double[outcomePatterns[i].length - 1];
-        for (int k = 1; k < outcomePatterns[i].length; k++) {
+      for (int j = 0; j < pattern[0]; j++) {
+        double[] contextParameters = new double[pattern.length - 1];
+        for (int k = 1; k < pattern.length; k++) {
           contextParameters[k - 1] = readDouble();
         }
-        params[pid] = new Context(outcomePattern,contextParameters);
+        params[pid] = new Context(outcomePattern, contextParameters);
         pid++;
       }
     }

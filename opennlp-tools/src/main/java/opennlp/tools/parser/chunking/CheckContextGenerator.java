@@ -19,7 +19,6 @@ package opennlp.tools.parser.chunking;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import opennlp.tools.parser.AbstractContextGenerator;
@@ -76,8 +75,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
       punctProduction.append(p.getType()).append(",");
       Collection<Parse> nextPunct = p.getNextPunctuationSet();
       if (nextPunct != null) {
-        for (Iterator<Parse> pit = nextPunct.iterator(); pit.hasNext();) {
-          Parse punct = pit.next();
+        for (Parse punct : nextPunct) {
           punctProduction.append(punct.getType()).append(",");
         }
       }

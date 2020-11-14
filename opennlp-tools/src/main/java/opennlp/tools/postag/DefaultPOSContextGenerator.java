@@ -151,13 +151,13 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     if (dict == null || !dict.contains(new StringList(lex))) {
       // do some basic suffix analysis
       String[] suffs = getSuffixes(lex);
-      for (int i = 0; i < suffs.length; i++) {
-        e.add("suf=" + suffs[i]);
+      for (String suff : suffs) {
+        e.add("suf=" + suff);
       }
 
       String[] prefs = getPrefixes(lex);
-      for (int i = 0; i < prefs.length; i++) {
-        e.add("pre=" + prefs[i]);
+      for (String pref : prefs) {
+        e.add("pre=" + pref);
       }
       // see if the word has any special characters
       if (lex.indexOf('-') != -1) {

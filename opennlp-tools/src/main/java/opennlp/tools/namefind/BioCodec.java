@@ -116,14 +116,13 @@ public class BioCodec implements SequenceCodec<String> {
     List<String> start = new ArrayList<>();
     List<String> cont = new ArrayList<>();
 
-    for (int i = 0; i < outcomes.length; i++) {
-      String outcome = outcomes[i];
+    for (String outcome : outcomes) {
       if (outcome.endsWith(BioCodec.START)) {
         start.add(outcome.substring(0, outcome.length()
-            - BioCodec.START.length()));
+                - BioCodec.START.length()));
       } else if (outcome.endsWith(BioCodec.CONTINUE)) {
         cont.add(outcome.substring(0, outcome.length()
-            - BioCodec.CONTINUE.length()));
+                - BioCodec.CONTINUE.length()));
       } else if (!outcome.equals(BioCodec.OTHER)) {
         // got unexpected outcome
         return false;

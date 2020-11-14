@@ -31,11 +31,10 @@ public class ParserChunkerSequenceValidator implements SequenceValidator<TokenTa
   public ParserChunkerSequenceValidator(String[] outcomes) {
 
     continueStartMap = new HashMap<>(outcomes.length);
-    for (int oi = 0, on = outcomes.length; oi < on; oi++) {
-      String outcome = outcomes[oi];
+    for (String outcome : outcomes) {
       if (outcome.startsWith(Parser.CONT)) {
-        continueStartMap.put(outcome,Parser.START + outcome.substring(
-            Parser.CONT.length()));
+        continueStartMap.put(outcome, Parser.START + outcome.substring(
+                Parser.CONT.length()));
       }
     }
   }

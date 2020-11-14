@@ -167,14 +167,13 @@ class ConstitDocumentHandler extends DefaultHandler {
         String txt = text.toString();
         int tokenIndex = -1;
         Parse p = new Parse(txt, new Span(0, txt.length()), AbstractBottomUpParser.TOP_NODE, 1,0);
-        for (int ci = 0; ci < cons.size(); ci++) {
-          Constituent con = cons.get(ci);
+        for (Constituent con : cons) {
           String type = con.getLabel();
           if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {
             if (AbstractBottomUpParser.TOK_NODE.equals(type)) {
               tokenIndex++;
             }
-            Parse c = new Parse(txt, con.getSpan(), type, 1,tokenIndex);
+            Parse c = new Parse(txt, con.getSpan(), type, 1, tokenIndex);
             p.insert(c);
           }
         }
