@@ -38,14 +38,8 @@ public class EntityLinkerProperties {
    * @throws IOException
    */
   public EntityLinkerProperties(File propertiesfile) throws IOException {
-    InputStream stream = null;
-    try {
-      stream = new FileInputStream(propertiesfile);
+    try (InputStream stream = new FileInputStream(propertiesfile)) {
       init(stream);
-    } finally {
-      if (stream != null) {
-        stream.close();
-      }
     }
   }
 

@@ -86,7 +86,7 @@ public final class DoccatEvaluatorTool extends
 
     final PerformanceMonitor monitor = new PerformanceMonitor("doc");
 
-    ObjectStream<DocumentSample> measuredSampleStream = new ObjectStream<DocumentSample>() {
+    try (ObjectStream<DocumentSample> measuredSampleStream = new ObjectStream<DocumentSample>() {
 
       public DocumentSample read() throws IOException {
         monitor.incrementCounter();
@@ -100,23 +100,15 @@ public final class DoccatEvaluatorTool extends
       public void close() throws IOException {
         sampleStream.close();
       }
-    };
-
-    monitor.startAndPrintThroughput();
-
-    try {
+    }) {
+      monitor.startAndPrintThroughput();
       evaluator.evaluate(measuredSampleStream);
     } catch (IOException e) {
       System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: "
-          + e.getMessage(), e);
-    } finally {
-      try {
-        measuredSampleStream.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
+              + e.getMessage(), e);
     }
+    // sorry that this can fail
 
     monitor.stopAndPrintFinalResult();
 
