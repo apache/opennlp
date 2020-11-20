@@ -369,7 +369,7 @@ public class ArgumentParser {
 
     if (details.length() > 0) {
       details.setLength(details.length() - 1);
-      usage.append("\n\nArguments description:\n").append(details.toString());
+      usage.append("\n\nArguments description:\n").append(details);
     }
 
     return usage.toString();
@@ -456,7 +456,7 @@ public class ArgumentParser {
     }
 
     if (args.length / 2 > argumentCount) {
-      return "Unrecognized parameters encountered: " + parameters.toString();
+      return "Unrecognized parameters encountered: " + parameters;
     }
 
     return null;

@@ -89,6 +89,6 @@ public final class SentenceDetectorCrossValidatorTool
 
     FMeasure result = validator.getFMeasure();
 
-    System.out.println(result.toString());
+    System.out.println(result);
   }
 }

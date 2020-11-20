@@ -115,7 +115,7 @@ public class SnowballStemmer implements Stemmer {
       stemmer = new turkishStemmer();
     }
     else {
-      throw new IllegalStateException("Unexpected stemmer algorithm: " + algorithm.toString());
+      throw new IllegalStateException("Unexpected stemmer algorithm: " + algorithm);
     }
   }
 

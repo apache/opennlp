@@ -60,7 +60,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
       if (!dir.isDirectory()) {
         throw new IllegalArgumentException(
             "All passed in directories must be directories, but \""
-            + dir.toString() + "\" is not!");
+            + dir + "\" is not!");
       }
 
       inputDirectoryList.add(dir);

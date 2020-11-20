@@ -76,7 +76,7 @@ public class LemmatizerMETool extends BasicCmdLineTool {
               posSample.getTags());
 
           System.out.println(new LemmaSample(posSample.getSentence(),
-              posSample.getTags(), lemmas).toString());
+              posSample.getTags(), lemmas));
 
           perfMon.incrementCounter();
         }

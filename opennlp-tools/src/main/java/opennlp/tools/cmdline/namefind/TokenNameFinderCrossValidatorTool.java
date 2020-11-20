@@ -161,7 +161,7 @@ public final class TokenNameFinderCrossValidatorTool
     if (detailedFListener == null) {
       System.out.println(validator.getFMeasure());
     } else {
-      System.out.println(detailedFListener.toString());
+      System.out.println(detailedFListener);
     }
   }
 }

@@ -129,6 +129,6 @@ public class LogProbability<T> extends Probability<T> {
   }
 
   public String toString() {
-    return label.toString() + ":" + probability;
+    return label + ":" + probability;
   }
 }

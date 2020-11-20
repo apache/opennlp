@@ -140,7 +140,7 @@ public final class TokenNameFinderEvaluatorTool
     if (detailedFListener == null) {
       System.out.println(evaluator.getFMeasure());
     } else {
-      System.out.println(detailedFListener.toString());
+      System.out.println(detailedFListener);
     }
   }
 }

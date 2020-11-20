@@ -90,9 +90,9 @@ public final class ChunkerCrossValidatorTool
 
     if (detailedFMeasureListener == null) {
       FMeasure result = validator.getFMeasure();
-      System.out.println(result.toString());
+      System.out.println(result);
     } else {
-      System.out.println(detailedFMeasureListener.toString());
+      System.out.println(detailedFMeasureListener);
     }
   }
 }

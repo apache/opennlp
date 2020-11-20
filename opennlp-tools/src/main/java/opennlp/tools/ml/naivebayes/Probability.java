@@ -128,6 +128,6 @@ public class Probability<T> {
   }
 
   public String toString() {
-    return label == null ? "" + probability : label.toString() + ":" + probability;
+    return label == null ? "" + probability : label + ":" + probability;
   }
 }

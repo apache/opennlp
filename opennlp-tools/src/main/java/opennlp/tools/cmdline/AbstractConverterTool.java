@@ -48,7 +48,7 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
           help.append(format);
         }
       }
-      return "converts " + help.toString() + " data format to native OpenNLP format";
+      return "converts " + help + " data format to native OpenNLP format";
     } else if (2 < factories.keySet().size()) {
       for (String format : factories.keySet()) {
         if (!StreamFactoryRegistry.DEFAULT_FORMAT.equals(format)) {
@@ -106,7 +106,7 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
       try (ObjectStream<T> sampleStream = streamFactory.create(formatArgs)) {
         Object sample;
         while ((sample = sampleStream.read()) != null) {
-          System.out.println(sample.toString());
+          System.out.println(sample);
         }
       }
       catch (IOException e) {
