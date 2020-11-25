@@ -99,7 +99,7 @@ public final class ChunkerEvaluatorTool
     if (detailedFMeasureListener == null) {
       System.out.println(evaluator.getFMeasure());
     } else {
-      System.out.println(detailedFMeasureListener.toString());
+      System.out.println(detailedFMeasureListener);
     }
   }
 }

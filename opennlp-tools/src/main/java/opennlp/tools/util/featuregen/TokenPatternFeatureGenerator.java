@@ -84,6 +84,6 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
       }
     }
 
-    feats.add("pta=" + pattern.toString());
+    feats.add("pta=" + pattern);
   }
 }

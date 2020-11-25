@@ -84,6 +84,6 @@ public final class TokenizerCrossValidatorTool
 
     FMeasure result = validator.getFMeasure();
 
-    System.out.println(result.toString());
+    System.out.println(result);
   }
 }

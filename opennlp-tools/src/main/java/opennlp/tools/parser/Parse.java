@@ -183,7 +183,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
     if (derivation != null) {
       p.derivation = new StringBuffer(100);
-      p.derivation.append(this.derivation.toString());
+      p.derivation.append(this.derivation);
     }
     p.label = this.label;
     return (p);

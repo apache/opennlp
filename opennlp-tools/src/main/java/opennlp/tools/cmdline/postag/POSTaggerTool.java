@@ -67,7 +67,7 @@ public final class POSTaggerTool extends BasicCmdLineTool {
           String[] tags = tagger.tag(whitespaceTokenizerLine);
 
           POSSample sample = new POSSample(whitespaceTokenizerLine, tags);
-          System.out.println(sample.toString());
+          System.out.println(sample);
 
           perfMon.incrementCounter();
         }

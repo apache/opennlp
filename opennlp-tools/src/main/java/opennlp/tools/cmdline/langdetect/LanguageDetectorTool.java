@@ -74,7 +74,7 @@ public class LanguageDetectorTool extends BasicCmdLineTool {
           Language lang = langDetectME.predictLanguage(document);
 
           LanguageSample sample = new LanguageSample(lang, document);
-          System.out.println(sample.toString());
+          System.out.println(sample);
 
           perfMon.incrementCounter();
         }

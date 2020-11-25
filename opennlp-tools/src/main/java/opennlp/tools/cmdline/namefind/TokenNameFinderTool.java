@@ -97,7 +97,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
           NameSample nameSample = new NameSample(whitespaceTokenizerLine,
                   reducedNames, false);
 
-          System.out.println(nameSample.toString());
+          System.out.println(nameSample);
 
           perfMon.incrementCounter();
         }
