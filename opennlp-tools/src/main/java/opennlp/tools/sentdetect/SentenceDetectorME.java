@@ -32,6 +32,7 @@ import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.sentdetect.lang.Factory;
+import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
@@ -77,6 +78,11 @@ public class SentenceDetectorME implements SentenceDetector {
   private List<Double> sentProbs = new ArrayList<>();
 
   protected boolean useTokenEnd;
+
+  public SentenceDetectorME(String language) throws IOException {
+    this((SentenceModel) DownloadUtil.downloadModel(DownloadUtil.ModelType.SENTENCE_DETECTOR, language,
+            SentenceModel.class));
+  }
 
   /**
    * Initializes the current instance.

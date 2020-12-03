@@ -30,6 +30,7 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
@@ -105,6 +106,11 @@ public class ChunkerME implements Chunker {
       this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
           model.getChunkerModel(), 0);
     }
+  }
+
+  public ChunkerME(String language) throws IOException {
+    this((ChunkerModel) DownloadUtil.downloadModel(DownloadUtil.ModelType.CHUNKER, language,
+            ChunkerModel.class));
   }
 
   /**

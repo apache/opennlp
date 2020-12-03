@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -107,6 +108,21 @@ public class NameFinderMETest {
     Assert.assertEquals(2, names.length);
     Assert.assertEquals(new Span(1, 2, DEFAULT), names[0]);
     Assert.assertEquals(new Span(4, 6, DEFAULT), names[1]);
+  }
+
+  @Test
+  public void testNameFinderWithDownloadedModel() throws Exception {
+
+    String input = "Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .";
+    String[] sentence = input.split(" ");
+
+    TokenNameFinder nameFinder = new NameFinderME("en", DownloadUtil.EntityType.PERSON);
+    Span[] names = nameFinder.find(sentence);
+
+    Assert.assertEquals(1, names.length);
+    Assert.assertEquals(new Span(0, 2, "person"), names[0]);
+    Assert.assertEquals("person", names[0].getType());
+
   }
 
   /**

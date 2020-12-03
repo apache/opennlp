@@ -36,6 +36,7 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ngram.NGramModel;
+import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
@@ -85,6 +86,10 @@ public class POSTaggerME implements POSTagger {
   private SequenceClassificationModel<String> model;
 
   private SequenceValidator<String> sequenceValidator;
+
+  public POSTaggerME(String language) throws IOException {
+    this((POSModel) DownloadUtil.downloadModel(DownloadUtil.ModelType.POS, language, POSModel.class));
+  }
 
   /**
    * Initializes the current instance with the provided model.
