@@ -56,6 +56,18 @@ public class TokenizerMETest {
   }
 
   @Test
+  public void testTokenizerDownloadedModel() throws IOException {
+
+    TokenizerME tokenizer = new TokenizerME("en");
+
+    String[] tokens = tokenizer.tokenize("test,");
+
+    Assert.assertEquals(2, tokens.length);
+    Assert.assertEquals("test", tokens[0]);
+    Assert.assertEquals(",", tokens[1]);
+  }
+
+  @Test
   public void testTokenizer() throws IOException {
     TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
 

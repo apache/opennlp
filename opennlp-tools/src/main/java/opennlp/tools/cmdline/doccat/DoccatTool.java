@@ -75,7 +75,7 @@ public class DoccatTool extends BasicCmdLineTool {
           String category = documentCategorizerME.getBestCategory(prob);
 
           DocumentSample sample = new DocumentSample(category, tokens);
-          System.out.println(sample.toString());
+          System.out.println(sample);
 
           perfMon.incrementCounter();
         }

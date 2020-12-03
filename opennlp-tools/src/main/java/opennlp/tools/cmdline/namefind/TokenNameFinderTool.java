@@ -69,7 +69,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
 
       try {
         untokenizedLineStream = new PlainTextByLineStream(
-            new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+                new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
         String line;
         while ((line = untokenizedLineStream.read()) != null) {
           String[] whitespaceTokenizerLine = WhitespaceTokenizer.INSTANCE.tokenize(line);
@@ -97,7 +97,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
           NameSample nameSample = new NameSample(whitespaceTokenizerLine,
                   reducedNames, false);
 
-          System.out.println(nameSample.toString());
+          System.out.println(nameSample);
 
           perfMon.incrementCounter();
         }

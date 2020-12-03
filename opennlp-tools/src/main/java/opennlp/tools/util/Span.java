@@ -227,7 +227,7 @@ public class Span implements Comparable<Span>, Serializable {
    */
   public CharSequence getCoveredText(CharSequence text) {
     if (getEnd() > text.length()) {
-      throw new IllegalArgumentException("The span " + toString()
+      throw new IllegalArgumentException("The span " + this
               + " is outside the given text which has length " + text.length() + "!");
     }
 

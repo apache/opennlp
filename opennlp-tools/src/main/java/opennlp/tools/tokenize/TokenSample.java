@@ -55,7 +55,7 @@ public class TokenSample implements Serializable {
     for (Span tokenSpan : tokenSpans) {
       if (tokenSpan.getStart() < 0 || tokenSpan.getStart() > text.length() ||
           tokenSpan.getEnd() > text.length() || tokenSpan.getEnd() < 0) {
-        throw new IllegalArgumentException("Span " + tokenSpan.toString() +
+        throw new IllegalArgumentException("Span " + tokenSpan +
             " is out of bounds, text length: " + text.length() + "!");
       }
     }

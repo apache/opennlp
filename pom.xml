@@ -150,6 +150,7 @@
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.7.9</jacoco.maven.plugin>
 		<maven.surefire.plugin>2.22.2</maven.surefire.plugin>
+		<maven.failsafe.plugin>2.22.2</maven.failsafe.plugin>
 	</properties>
 
 	<build>
@@ -261,7 +262,31 @@
 						<excludes>
 							<exclude>**/stemmer/*</exclude>
 							<exclude>**/stemmer/snowball/*</exclude>
+							<exclude>**/*IT.java</exclude>
 						</excludes>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>${maven.failsafe.plugin}</version>
+					<executions>
+						<execution>
+							<id>integration-test</id>
+							<goals>
+								<goal>integration-test</goal>
+								<goal>verify</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<excludes>
+							<exclude>**/*Test.java</exclude>
+						</excludes>
+						<includes>
+							<include>**/*IT.java</include>
+						</includes>
 					</configuration>
 				</plugin>
 
