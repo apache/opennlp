@@ -27,10 +27,17 @@ import java.nio.file.StandardCopyOption;
 
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.postag.POSModel;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.model.BaseModel;
 
+/**
+ * This class facilitates the downloading of OpenNLP models
+ * from SourceForge to the local computer. Downloaded models
+ * are stored in the user's home directory under an
+ * .opennlp/ subdirectory.
+ */
 public class DownloadUtil {
 
   /**
@@ -119,6 +126,8 @@ public class DownloadUtil {
       return new ChunkerModel(localFile);
     } else if (type == SentenceModel.class) {
       return new SentenceModel(localFile);
+    } else if (type == POSModel.class) {
+      return new POSModel(localFile);
     } else {
       return new TokenNameFinderModel(localFile);
     }
