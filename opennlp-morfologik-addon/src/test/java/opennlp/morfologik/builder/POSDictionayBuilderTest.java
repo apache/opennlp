@@ -22,7 +22,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import morfologik.stemming.DictionaryMetadata;
 
@@ -50,16 +52,15 @@ public class POSDictionayBuilderTest {
     return builder.build(tabFilePath);
   }
 
-  public static void main(String[] args) throws Exception {
-
+  @Test
+  public void testMultithread() throws Exception {
     // Part 1: compile a FSA lemma dictionary
     // we need the tabular dictionary. It is mandatory to have info
     //  file with same name, but .info extension
-    Path textLemmaDictionary = Paths.get(
-        "/Users/wcolen/git/opennlp/opennlp-morfologik-addon/src/test/resources/dictionaryWithLemma.txt");
 
     // this will build a binary dictionary located in compiledLemmaDictionary
-    Path compiledLemmaDictionary = new MorfologikDictionayBuilder().build(textLemmaDictionary);
+    Path compiledLemmaDictionary = new MorfologikDictionayBuilder().build(
+        Paths.get(POSDictionayBuilderTest.class.getResource("/dictionaryWithLemma.txt").getPath()));
 
     // Part 2: load a MorfologikLemmatizer and use it
     MorfologikLemmatizer lemmatizer = new MorfologikLemmatizer(compiledLemmaDictionary);
@@ -67,8 +68,17 @@ public class POSDictionayBuilderTest {
     String[] toks = {"casa", "casa"};
     String[] tags = {"NOUN", "V"};
 
-    String[] lemmas = lemmatizer.lemmatize(toks, tags);
-    System.out.println(Arrays.toString(lemmas)); // outputs [casa, casar]
+    Runnable runnable = () -> {
+      String[] lemmas = lemmatizer.lemmatize(toks, tags);
+      Assert.assertEquals("casa", lemmas[0]);
+      Assert.assertEquals("casar", lemmas[1]);
+    };
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
+    for (int i = 0; i < 1000; i++) {
+      executorService.execute(runnable);
+    }
+    executorService.shutdown();
+    executorService.awaitTermination(1, TimeUnit.SECONDS);
   }
 
   @Test
