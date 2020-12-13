@@ -20,7 +20,7 @@ package opennlp.tools.ngram;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -42,7 +42,7 @@ public class NGramModel implements Iterable<StringList> {
 
   protected static final String COUNT = "count";
 
-  private Map<StringList, Integer> mNGrams = new HashMap<>();
+  private Map<StringList, Integer> mNGrams = new LinkedHashMap<>();
 
   /**
    * Initializes an empty instance.
