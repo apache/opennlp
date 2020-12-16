@@ -89,8 +89,7 @@ public class LemmatizerME implements Lemmatizer {
 
   public String[] lemmatize(String[] toks, String[] tags) {
     String[] ses = predictSES(toks, tags);
-    String[] lemmas = decodeLemmas(toks, ses);
-    return lemmas;
+    return decodeLemmas(toks, ses);
   }
 
   @Override public List<List<String>> lemmatize(List<String> toks,

@@ -116,10 +116,6 @@ public class NKJPSegmentationDocument {
             Pointer pointer = fromSeg(n);
             segments.put(segid, pointer);
           } else if (n.getNodeName().equals("choice")) {
-            boolean have_seg = false;
-            if (have_seg) {
-              continue;
-            }
 
             NodeList choices = n.getChildNodes();
 
@@ -128,7 +124,6 @@ public class NKJPSegmentationDocument {
                 if (!checkRejectedParen(choices.item(k))) {
                   NodeList paren_segs = (NodeList) SEG_NODES_ONLY.evaluate(choices.item(k),
                       XPathConstants.NODESET);
-                  have_seg = true;
 
                   for (int l = 0; l < paren_segs.getLength(); l++) {
                     String segid = xmlID(paren_segs.item(l));
@@ -138,7 +133,6 @@ public class NKJPSegmentationDocument {
                 }
               } else if (choices.item(k).getNodeName().equals("seg")) {
                 if (!checkRejected(choices.item(k))) {
-                  have_seg = true;
                   String segid = xmlID(choices.item(k));
                   Pointer pointer = fromSeg(choices.item(k));
                   segments.put(segid, pointer);
