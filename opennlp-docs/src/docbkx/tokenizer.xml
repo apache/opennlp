@@ -400,7 +400,7 @@ He said "This is a test".]]>
 		<section id="tools.tokenizer.detokenizing.api">
 			<title>Detokenizing API</title>
 			<para>
-				The Detokenizer can be use to detokenize the tokens to String.
+				The Detokenizer can be used to detokenize the tokens to String.
 				To instantiate the Detokenizer (a rule based detokenizer)
 				a DetokenizationDictionary (the rule of dictionary) must be created first.
 				The following code sample shows how a rule dictionary can be loaded.
@@ -421,7 +421,7 @@ String[] tokens = new String[]{"A", "co", "-", "worker", "helped", "."};
 String sentence = detokenizer.detokenize(tokens, null);
 Assert.assertEquals("A co-worker helped.", sentence);]]>
 				</programlisting>
-				Tokens which are connected without a space inbetween can be spearated by a split marker.
+				Tokens which are connected without a space in-between can be separated by a split marker.
 				<programlisting language="java">
 					<![CDATA[
 String sentence = detokenizer.detokenize(tokens, "<SPLIT>");
