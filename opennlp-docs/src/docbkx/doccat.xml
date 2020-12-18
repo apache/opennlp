@@ -129,12 +129,15 @@ $ opennlp DoccatTrainer -model en-doccat.bin -lang en -data en-doccat.train -enc
 DoccatModel model = null;
 InputStreamFactory dataIn = null;
 
-try (dataIn = new MarkableFileInputStreamFactory(new File("en-sentiment.train"))) {
-  ObjectStream<String> lineStream =
-		new PlainTextByLineStream(dataIn, StandardCharsets.UTF_8);
+try {
+  dataIn = new MarkableFileInputStreamFactory(new File("en-sentiment.train"));
+  ObjectStream<String> lineStream = new PlainTextByLineStream(dataIn, StandardCharsets.UTF_8);
   ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
 
-  model = DocumentCategorizerME.train("en", sampleStream, TrainingParameters.defaultParams(), new DoccatFactory());
+  model = DocumentCategorizerME.train("en", sampleStream,
+      TrainingParameters.defaultParams(), new DoccatFactory());
+} catch (IOException e) {
+  e.printStackTrace();
 }
 ]]>
 	</programlisting>
