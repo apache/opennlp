@@ -276,8 +276,7 @@ public final class CmdLineUtil {
   }
 
   public static void checkLanguageCode(String code) {
-    List<String> languageCodes  = new ArrayList<>();
-    languageCodes.addAll(Arrays.asList(Locale.getISOLanguages()));
+    List<String> languageCodes = new ArrayList<>(Arrays.asList(Locale.getISOLanguages()));
     languageCodes.add("x-unspecified");
 
     if (!languageCodes.contains(code)) {
