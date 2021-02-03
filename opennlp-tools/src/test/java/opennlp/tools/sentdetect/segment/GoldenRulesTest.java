@@ -17,6 +17,8 @@
 
 package opennlp.tools.sentdetect.segment;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,8 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import opennlp.tools.util.featuregen.GeneratorFactory;
 
 /**
  * Thanks for the GoldenRules of
@@ -37,11 +41,21 @@ public class GoldenRulesTest {
     if (cleaner != null) {
       text = cleaner.clean(text);
     }
-    LanguageRule languageRule = new EnglishRule().getLanguageRule();
+
+    InputStream inputStream = getClass().getResourceAsStream(
+        "/opennlp/tools/sentdetect/segment/rules.xml");
+    Map<String, LanguageRule> languageRuleMap = null;
+    try {
+      languageRuleMap = GeneratorFactory.getLanguageRules(inputStream);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    LanguageRule languageRule = languageRuleMap.get("eng");
+
     Map<String, Object> paramMap = new HashMap<>();
     paramMap.put(LanguageTool.MAX_LOOKBEHIND_LENGTH_PARAM, 50);
     LanguageTool languageTool = new LanguageTool("eng", languageRule, paramMap);
-    SentenceTokenizer sentenceTokenizer = new SentenceTokenizer(languageTool, text);
+    SentenceTokenizer sentenceTokenizer = new SentenceTokenizerME(languageTool, text);
 
     return sentenceTokenizer.sentenceTokenizer();
   }
