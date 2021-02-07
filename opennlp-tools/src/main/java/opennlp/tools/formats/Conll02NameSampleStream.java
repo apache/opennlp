@@ -88,20 +88,21 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
     String type = beginTag.substring(2);
 
-    if ("PER".equals(type)) {
-      type = "person";
-    }
-    else if ("LOC".equals(type)) {
-      type = "location";
-    }
-    else if ("MISC".equals(type)) {
-      type = "misc";
-    }
-    else if ("ORG".equals(type)) {
-      type = "organization";
-    }
-    else {
-      throw new InvalidFormatException("Unknown type: " + type);
+    switch (type) {
+      case "PER":
+        type = "person";
+        break;
+      case "LOC":
+        type = "location";
+        break;
+      case "MISC":
+        type = "misc";
+        break;
+      case "ORG":
+        type = "organization";
+        break;
+      default:
+        throw new InvalidFormatException("Unknown type: " + type);
     }
 
     return new Span(begin, end, type);
