@@ -27,7 +27,6 @@ import opennlp.tools.ml.model.DataReader;
 
 /**
  * Abstract parent class for readers of Perceptron.
- *
  */
 public class PerceptronModelReader extends AbstractModelReader {
 
@@ -58,7 +57,7 @@ public class PerceptronModelReader extends AbstractModelReader {
    * other methods provided in this abstract class.
    *
    * @return The PerceptronModel stored in the format and location specified to
-   *         this PerceptronModelReader (usually via its the constructor).
+   * this PerceptronModelReader (usually via its the constructor).
    */
   public AbstractModel constructModel() throws IOException {
     String[] outcomeLabels = getOutcomes();

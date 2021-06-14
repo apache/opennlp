@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
  * Features based on Grzegorz Chrupała. 2008. Towards a Machine-Learning
  * Architecture for Lexical Functional Grammar Parsing. PhD dissertation,
  * Dublin City University
+ *
  * @version 2016-02-15
  */
 public class DefaultLemmatizerContextGenerator implements LemmatizerContextGenerator {
@@ -56,7 +57,7 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
   }
 
   public String[] getContext(int index, String[] sequence, String[] priorDecisions,
-      Object[] additionalContext) {
+                             Object[] additionalContext) {
     return getContext(index, sequence, (String[]) additionalContext[0], priorDecisions);
   }
 
@@ -71,8 +72,7 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
     String lex = toks[index];
     if (index < 1) {
       p_1 = "p_1=bos";
-    }
-    else {
+    } else {
       p_1 = "p_1=" + preds[index - 1];
     }
 

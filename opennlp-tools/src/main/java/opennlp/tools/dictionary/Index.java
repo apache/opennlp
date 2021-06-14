@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import opennlp.tools.util.StringList;
+import opennlp.common.util.StringList;
 
 /**
  * This classes indexes {@link StringList}s. This makes it possible
@@ -55,7 +55,6 @@ public class Index {
    * given token.
    *
    * @param token
-   *
    * @return true if the token is contained otherwise false.
    */
   public boolean contains(String token) {

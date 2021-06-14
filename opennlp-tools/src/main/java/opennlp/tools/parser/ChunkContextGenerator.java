@@ -53,7 +53,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
 
   @Deprecated
   public String[] getContext(int i, String[] words, String[] prevDecisions, Object[] ac) {
-    return getContext(i,words,(String[]) ac[0],prevDecisions);
+    return getContext(i, words, (String[]) ac[0], prevDecisions);
   }
 
   public String[] getContext(int i, String[] words, String[] tags, String[] preds) {
@@ -63,17 +63,16 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     int x2 = i + 2;
     int x1 = i + 1;
 
-    String w_2,w_1,w0,w1,w2;
-    String t_2,t_1,t0,t1,t2;
-    String p_2,p_1;
+    String w_2, w_1, w0, w1, w2;
+    String t_2, t_1, t0, t1, t2;
+    String p_2, p_1;
 
     // chunkandpostag(-2)
     if (x_2 >= 0) {
       t_2 = tags[x_2];
       p_2 = preds[x_2];
       w_2 = words[x_2];
-    }
-    else {
+    } else {
       t_2 = EOS;
       p_2 = EOS;
       w_2 = EOS;
@@ -84,8 +83,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
       t_1 = tags[x_1];
       p_1 = preds[x_1];
       w_1 = words[x_1];
-    }
-    else {
+    } else {
       t_1 = EOS;
       p_1 = EOS;
       w_1 = EOS;
@@ -99,8 +97,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     if (x1 < tags.length) {
       t1 = tags[x1];
       w1 = words[x1];
-    }
-    else {
+    } else {
       t1 = EOS;
       w1 = EOS;
     }
@@ -109,8 +106,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     if (x2 < tags.length) {
       t2 = tags[x2];
       w2 = words[x2];
-    }
-    else {
+    } else {
       t2 = EOS;
       w2 = EOS;
     }
@@ -122,8 +118,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
         if (contexts != null) {
           return contexts;
         }
-      }
-      else {
+      } else {
         contextsCache.clear();
         wordsKey = words;
       }
@@ -165,7 +160,7 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     features.add(ctbo0 + "," + ctbo1);
     String[] contexts = features.toArray(new String[features.size()]);
     if (contextsCache != null) {
-      contextsCache.put(cacheKey,contexts);
+      contextsCache.put(cacheKey, contexts);
     }
     return contexts;
   }

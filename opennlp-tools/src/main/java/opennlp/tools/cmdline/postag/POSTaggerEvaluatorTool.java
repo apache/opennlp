@@ -37,9 +37,6 @@ import opennlp.tools.postag.POSTaggerEvaluationMonitor;
 public final class POSTaggerEvaluatorTool
     extends AbstractEvaluatorTool<POSSample, EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams, FineGrainedEvaluatorParams {
-  }
-
   public POSTaggerEvaluatorTool() {
     super(POSSample.class, EvalToolParams.class);
   }
@@ -81,8 +78,7 @@ public final class POSTaggerEvaluatorTool
     System.out.print("Evaluating ... ");
     try {
       evaluator.evaluate(sampleStream);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
     } finally {
@@ -111,5 +107,8 @@ public final class POSTaggerEvaluatorTool
     System.out.println();
 
     System.out.println("Accuracy: " + evaluator.getWordAccuracy());
+  }
+
+  interface EvalToolParams extends EvaluatorParams, FineGrainedEvaluatorParams {
   }
 }

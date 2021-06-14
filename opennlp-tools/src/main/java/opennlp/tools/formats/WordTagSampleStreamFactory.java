@@ -34,16 +34,13 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class WordTagSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
 
-  public static interface Parameters extends BasicFormatParams {
+  protected <P> WordTagSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
         StreamFactoryRegistry.DEFAULT_FORMAT, new WordTagSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> WordTagSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<POSSample> create(String[] args) {
@@ -60,5 +57,8 @@ public class WordTagSampleStreamFactory extends AbstractSampleStreamFactory<POSS
     }
 
     return new WordTagSampleStream(lineStream);
+  }
+
+  public static interface Parameters extends BasicFormatParams {
   }
 }

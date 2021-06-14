@@ -38,16 +38,13 @@ public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
 
   public static final String CONLLX_FORMAT = "conllx";
 
-  interface Parameters extends BasicFormatParams {
+  protected <P> ConllXPOSSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
         CONLLX_FORMAT, new ConllXPOSSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> ConllXPOSSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<POSSample> create(String[] args) {
@@ -63,11 +60,13 @@ public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
     } catch (UnsupportedEncodingException e) {
       // this shouldn't happen
       throw new TerminateToolException(-1, "UTF-8 encoding is not supported: " + e.getMessage(), e);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       // That will throw an exception
       CmdLineUtil.handleCreateObjectStreamError(e);
       return null;
     }
+  }
+
+  interface Parameters extends BasicFormatParams {
   }
 }

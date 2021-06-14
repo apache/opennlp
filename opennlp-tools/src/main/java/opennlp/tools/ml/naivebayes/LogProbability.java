@@ -21,7 +21,6 @@ package opennlp.tools.ml.naivebayes;
  * Class implementing the probability for a label.
  *
  * @param <T> the label (category) class
- *
  */
 public class LogProbability<T> extends Probability<T> {
 
@@ -83,15 +82,6 @@ public class LogProbability<T> extends Probability<T> {
   }
 
   /**
-   * Assigns a log probability to a label, discarding any previously assigned probability.
-   *
-   * @param probability the log probability to assign
-   */
-  public void setLog(double probability) {
-    this.probability = probability;
-  }
-
-  /**
    * Compounds the existing probability mass on the label with the new
    * probability passed in to the method.
    *
@@ -117,6 +107,15 @@ public class LogProbability<T> extends Probability<T> {
    */
   public Double getLog() {
     return probability;
+  }
+
+  /**
+   * Assigns a log probability to a label, discarding any previously assigned probability.
+   *
+   * @param probability the log probability to assign
+   */
+  public void setLog(double probability) {
+    this.probability = probability;
   }
 
   /**

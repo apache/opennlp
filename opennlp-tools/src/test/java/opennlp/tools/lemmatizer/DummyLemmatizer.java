@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import opennlp.common.lemmatizer.Lemmatizer;
+
 /**
  * This dummy lemmatizer implementation simulates a LemmatizerME. The file has
  * samples of sentences, with target and predicted values.
@@ -59,7 +61,7 @@ public class DummyLemmatizer implements Lemmatizer {
 
   @Override
   public List<List<String>> lemmatize(List<String> toks,
-      List<String> tags) {
+                                      List<String> tags) {
     return null;
   }
 

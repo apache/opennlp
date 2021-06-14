@@ -34,16 +34,13 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class ChunkerSampleStreamFactory extends AbstractSampleStreamFactory<ChunkSample> {
 
-  interface Parameters extends BasicFormatParams {
+  protected <P> ChunkerSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(ChunkSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new ChunkerSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> ChunkerSampleStreamFactory(Class<P> params) {
-    super(params);
+        StreamFactoryRegistry.DEFAULT_FORMAT, new ChunkerSampleStreamFactory(Parameters.class));
   }
 
   public ObjectStream<ChunkSample> create(String[] args) {
@@ -60,5 +57,8 @@ public class ChunkerSampleStreamFactory extends AbstractSampleStreamFactory<Chun
     }
 
     return new ChunkSampleStream(lineStream);
+  }
+
+  interface Parameters extends BasicFormatParams {
   }
 }

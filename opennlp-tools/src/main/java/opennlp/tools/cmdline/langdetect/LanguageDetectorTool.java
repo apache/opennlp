@@ -20,13 +20,13 @@ package opennlp.tools.cmdline.langdetect;
 import java.io.File;
 import java.io.IOException;
 
+import opennlp.common.langdetect.Language;
+import opennlp.common.langdetect.LanguageDetector;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
-import opennlp.tools.langdetect.Language;
-import opennlp.tools.langdetect.LanguageDetector;
 import opennlp.tools.langdetect.LanguageDetectorME;
 import opennlp.tools.langdetect.LanguageDetectorModel;
 import opennlp.tools.langdetect.LanguageSample;

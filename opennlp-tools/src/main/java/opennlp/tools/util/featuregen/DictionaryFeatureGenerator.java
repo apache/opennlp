@@ -36,15 +36,15 @@ public class DictionaryFeatureGenerator implements AdaptiveFeatureGenerator {
   private InSpanGenerator isg;
 
   public DictionaryFeatureGenerator(Dictionary dict) {
-    this("",dict);
+    this("", dict);
   }
 
   public DictionaryFeatureGenerator(String prefix, Dictionary dict) {
-    setDictionary(prefix,dict);
+    setDictionary(prefix, dict);
   }
 
   public void setDictionary(Dictionary dict) {
-    setDictionary("",dict);
+    setDictionary("", dict);
   }
 
   public void setDictionary(String name, Dictionary dict) {

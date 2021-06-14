@@ -41,15 +41,8 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerToolParams> {
 
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams, EncodingParameter {
-  }
-
   public ParserTrainerTool() {
     super(Parse.class, TrainerToolParams.class);
-  }
-
-  public String getShortDescription() {
-    return "trains the learnable parser";
   }
 
   static Dictionary buildDictionary(ObjectStream<Parse> parseSamples, HeadRules headRules, int cutoff) {
@@ -87,16 +80,13 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
 
     if (params.getHeadRulesSerializerImpl() != null) {
       headRulesSerializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class,
-              params.getHeadRulesSerializerImpl());
-    }
-    else {
+          params.getHeadRulesSerializerImpl());
+    } else {
       if ("en".equals(params.getLang()) || "eng".equals(params.getLang())) {
         headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
-      }
-      else if ("es".equals(params.getLang()) || "spa".equals(params.getLang())) {
+      } else if ("es".equals(params.getLang()) || "spa".equals(params.getLang())) {
         headRulesSerializer = new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules.HeadRulesSerializer();
-      }
-      else {
+      } else {
         // default for now, this case should probably cause an error ...
         headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
       }
@@ -106,11 +96,14 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
 
     if (headRulesObject instanceof HeadRules) {
       return (HeadRules) headRulesObject;
-    }
-    else {
+    } else {
       throw new TerminateToolException(-1,
           "HeadRules Artifact Serializer must create an object of type HeadRules!");
     }
+  }
+
+  public String getShortDescription() {
+    return "trains the learnable parser";
   }
 
   // TODO: Add param to train tree insert parser
@@ -161,19 +154,15 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
         model = opennlp.tools.parser.chunking.Parser.train(
             params.getLang(), sampleStream, rules,
             mlParams);
-      }
-      else if (ParserType.TREEINSERT.equals(type)) {
+      } else if (ParserType.TREEINSERT.equals(type)) {
         model = opennlp.tools.parser.treeinsert.Parser.train(params.getLang(), sampleStream, rules,
             mlParams);
-      }
-      else {
+      } else {
         throw new IllegalStateException();
       }
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw createTerminationIOException(e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -182,5 +171,8 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     }
 
     CmdLineUtil.writeModel("parser", modelOutFile, model);
+  }
+
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams, EncodingParameter {
   }
 }

@@ -31,7 +31,7 @@ public class LemmaSampleSequenceStream implements SequenceStream {
   private final LemmatizerContextGenerator contextGenerator;
 
   public LemmaSampleSequenceStream(ObjectStream<LemmaSample> samples,
-      LemmatizerContextGenerator contextGenerator) {
+                                   LemmatizerContextGenerator contextGenerator) {
     this.samples = samples;
     this.contextGenerator = contextGenerator;
   }
@@ -53,7 +53,7 @@ public class LemmaSampleSequenceStream implements SequenceStream {
 
         events[i] = new Event(tags[i], context);
       }
-      return new Sequence<>(events,sample);
+      return new Sequence<>(events, sample);
     }
 
     return null;

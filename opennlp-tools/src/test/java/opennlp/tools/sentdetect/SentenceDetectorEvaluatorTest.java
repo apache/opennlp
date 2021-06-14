@@ -23,9 +23,9 @@ import java.io.OutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.Span;
 import opennlp.tools.cmdline.sentdetect.SentenceEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.Span;
 
 public class SentenceDetectorEvaluatorTest {
 

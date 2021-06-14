@@ -22,12 +22,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.common.util.Span;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.CollectionObjectStream;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -38,18 +38,18 @@ public class TokenizerTestUtil {
   static TokenizerModel createSimpleMaxentTokenModel() throws IOException {
     List<TokenSample> samples = new ArrayList<>();
 
-    samples.add(new TokenSample("year", new Span[]{new Span(0, 4)}));
-    samples.add(new TokenSample("year,", new Span[]{
+    samples.add(new TokenSample("year", new Span[] {new Span(0, 4)}));
+    samples.add(new TokenSample("year,", new Span[] {
         new Span(0, 4),
         new Span(4, 5)}));
-    samples.add(new TokenSample("it,", new Span[]{
+    samples.add(new TokenSample("it,", new Span[] {
         new Span(0, 2),
         new Span(2, 3)}));
-    samples.add(new TokenSample("it", new Span[]{
+    samples.add(new TokenSample("it", new Span[] {
         new Span(0, 2)}));
-    samples.add(new TokenSample("yes", new Span[]{
+    samples.add(new TokenSample("yes", new Span[] {
         new Span(0, 3)}));
-    samples.add(new TokenSample("yes,", new Span[]{
+    samples.add(new TokenSample("yes,", new Span[] {
         new Span(0, 3),
         new Span(3, 4)}));
 
@@ -58,7 +58,7 @@ public class TokenizerTestUtil {
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
 
     return TokenizerME.train(new CollectionObjectStream<>(samples),
-      TokenizerFactory.create(null, "eng", null, true, null), mlParams);
+        TokenizerFactory.create(null, "eng", null, true, null), mlParams);
   }
 
   static TokenizerModel createMaxentTokenModel() throws IOException {

@@ -39,8 +39,7 @@ public class POSDictionaryTest {
 
     try {
       dict.serialize(out);
-    }
-    finally {
+    } finally {
       out.close();
     }
 
@@ -59,7 +58,7 @@ public class POSDictionaryTest {
     dictionary.put("a", "1", "2", "3");
     dictionary.put("b", "4", "5", "6");
     dictionary.put("c", "7", "8", "9");
-    dictionary.put("Always", "RB","NNP");
+    dictionary.put("Always", "RB", "NNP");
 
     Assert.assertTrue(dictionary.equals(serializeDeserializeDict(dictionary)));
   }
@@ -68,7 +67,7 @@ public class POSDictionaryTest {
   public void testLoadingDictionaryWithoutCaseAttribute() throws IOException {
     POSDictionary dict = loadDictionary("TagDictionaryWithoutCaseAttribute.xml");
 
-    Assert.assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
+    Assert.assertArrayEquals(new String[] {"NNP"}, dict.getTags("McKinsey"));
     Assert.assertNull(dict.getTags("Mckinsey"));
   }
 
@@ -76,12 +75,12 @@ public class POSDictionaryTest {
   public void testCaseSensitiveDictionary() throws IOException {
     POSDictionary dict = loadDictionary("TagDictionaryCaseSensitive.xml");
 
-    Assert.assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
+    Assert.assertArrayEquals(new String[] {"NNP"}, dict.getTags("McKinsey"));
     Assert.assertNull(dict.getTags("Mckinsey"));
 
     dict = serializeDeserializeDict(dict);
 
-    Assert.assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
+    Assert.assertArrayEquals(new String[] {"NNP"}, dict.getTags("McKinsey"));
     Assert.assertNull(dict.getTags("Mckinsey"));
   }
 
@@ -89,15 +88,15 @@ public class POSDictionaryTest {
   public void testCaseInsensitiveDictionary() throws IOException {
     POSDictionary dict = loadDictionary("TagDictionaryCaseInsensitive.xml");
 
-    Assert.assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
-    Assert.assertArrayEquals(new String[]{"NNP"}, dict.getTags("Mckinsey"));
-    Assert.assertArrayEquals(new String[]{"NNP"}, dict.getTags("MCKINSEY"));
-    Assert.assertArrayEquals(new String[]{"NNP"}, dict.getTags("mckinsey"));
+    Assert.assertArrayEquals(new String[] {"NNP"}, dict.getTags("McKinsey"));
+    Assert.assertArrayEquals(new String[] {"NNP"}, dict.getTags("Mckinsey"));
+    Assert.assertArrayEquals(new String[] {"NNP"}, dict.getTags("MCKINSEY"));
+    Assert.assertArrayEquals(new String[] {"NNP"}, dict.getTags("mckinsey"));
 
     dict = serializeDeserializeDict(dict);
 
-    Assert.assertArrayEquals(new String[]{"NNP"}, dict.getTags("McKinsey"));
-    Assert.assertArrayEquals(new String[]{"NNP"}, dict.getTags("Mckinsey"));
+    Assert.assertArrayEquals(new String[] {"NNP"}, dict.getTags("McKinsey"));
+    Assert.assertArrayEquals(new String[] {"NNP"}, dict.getTags("Mckinsey"));
   }
 
   @Test

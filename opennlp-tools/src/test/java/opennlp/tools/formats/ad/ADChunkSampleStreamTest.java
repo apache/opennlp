@@ -70,7 +70,7 @@ public class ADChunkSampleStreamTest {
         ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample");
 
     try (ADChunkSampleStream stream = new ADChunkSampleStream(new PlainTextByLineStream(in,
-            StandardCharsets.UTF_8))) {
+        StandardCharsets.UTF_8))) {
       ChunkSample sample;
       while ((sample = stream.read()) != null) {
         samples.add(sample);

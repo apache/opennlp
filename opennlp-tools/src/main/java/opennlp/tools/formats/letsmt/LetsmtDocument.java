@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import javax.xml.parsers.SAXParser;
 
 import org.xml.sax.InputSource;
@@ -43,6 +42,37 @@ import opennlp.tools.util.XmlUtil;
  * <a href="http://project.letsmt.eu/uploads/Deliverables/D2.1%20%20Specification%20of%20data%20formats%20v1%20final.pdf">here</a>.
  */
 public class LetsmtDocument {
+
+  private List<LetsmtSentence> sentences = new ArrayList<>();
+
+  private LetsmtDocument(List<LetsmtSentence> sentences) {
+    this.sentences = sentences;
+  }
+
+  static LetsmtDocument parse(InputStream letsmtXmlIn) throws IOException {
+    SAXParser saxParser = XmlUtil.createSaxParser();
+
+    try {
+      XMLReader xmlReader = saxParser.getXMLReader();
+      LetsmtDocumentHandler docHandler = new LetsmtDocumentHandler();
+      xmlReader.setContentHandler(docHandler);
+      xmlReader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      xmlReader.parse(new InputSource(letsmtXmlIn));
+      return new LetsmtDocument(docHandler.sentences);
+    } catch (SAXException e) {
+      throw new IOException("Failed to parse letsmt xml!", e);
+    }
+  }
+
+  static LetsmtDocument parse(File file) throws IOException {
+    try (InputStream in = new FileInputStream(file)) {
+      return parse(in);
+    }
+  }
+
+  public List<LetsmtSentence> getSentences() {
+    return Collections.unmodifiableList(sentences);
+  }
 
   public static class LetsmtSentence {
     private String nonTokenizedText;
@@ -95,8 +125,7 @@ public class LetsmtDocument {
           if (tokens.size() > 0) {
             sentence.tokens = tokens.toArray(new String[tokens.size()]);
             tokens = new ArrayList<>();
-          }
-          else {
+          } else {
             sentence.nonTokenizedText = chars.toString().trim();
           }
 
@@ -104,37 +133,6 @@ public class LetsmtDocument {
 
           chars.setLength(0);
       }
-    }
-  }
-
-  private List<LetsmtSentence> sentences = new ArrayList<>();
-
-  private LetsmtDocument(List<LetsmtSentence> sentences) {
-    this.sentences = sentences;
-  }
-
-  public List<LetsmtSentence> getSentences() {
-    return Collections.unmodifiableList(sentences);
-  }
-
-  static LetsmtDocument parse(InputStream letsmtXmlIn) throws IOException {
-    SAXParser saxParser = XmlUtil.createSaxParser();
-
-    try {
-      XMLReader xmlReader = saxParser.getXMLReader();
-      LetsmtDocumentHandler docHandler = new LetsmtDocumentHandler();
-      xmlReader.setContentHandler(docHandler);
-      xmlReader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-      xmlReader.parse(new InputSource(letsmtXmlIn));
-      return new LetsmtDocument(docHandler.sentences);
-    } catch (SAXException e) {
-      throw new IOException("Failed to parse letsmt xml!", e);
-    }
-  }
-
-  static LetsmtDocument parse(File file) throws IOException {
-    try (InputStream in = new FileInputStream(file)) {
-      return parse(in);
     }
   }
 }

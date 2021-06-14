@@ -39,6 +39,7 @@ import opennlp.tools.util.TrainingParameters;
 public class MaxentPrepAttachTest {
 
   private DataIndexer testDataIndexer;
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
@@ -47,7 +48,7 @@ public class MaxentPrepAttachTest {
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
-  
+
   @Test
   public void testMaxentOnPrepAttachData() throws IOException {
     testDataIndexer.index(PrepAttachDataUtil.createTrainingStream());
@@ -56,8 +57,8 @@ public class MaxentPrepAttachTest {
     // cutoff value passed here are equal.
     AbstractModel model =
         new GISTrainer(true).trainModel(100,
-        testDataIndexer,
-        new UniformPrior(), 1);
+            testDataIndexer,
+            new UniformPrior(), 1);
     PrepAttachDataUtil.testModel(model, 0.7997028967566229);
   }
 
@@ -95,9 +96,9 @@ public class MaxentPrepAttachTest {
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
 
-    PrepAttachDataUtil.testModel(model, 0.8086159940579352 );
+    PrepAttachDataUtil.testModel(model, 0.8086159940579352);
   }
-  
+
   @Test
   public void testMaxentOnPrepAttachDataWithParamsLLThreshold() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
@@ -107,6 +108,6 @@ public class MaxentPrepAttachTest {
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
 
-    PrepAttachDataUtil.testModel(model, 0.8103490963109681 );
+    PrepAttachDataUtil.testModel(model, 0.8103490963109681);
   }
 }

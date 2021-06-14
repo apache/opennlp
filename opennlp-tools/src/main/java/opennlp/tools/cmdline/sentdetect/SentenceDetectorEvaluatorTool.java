@@ -32,9 +32,6 @@ import opennlp.tools.sentdetect.SentenceSample;
 public final class SentenceDetectorEvaluatorTool
     extends AbstractEvaluatorTool<SentenceSample, EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams {
-  }
-
   public SentenceDetectorEvaluatorTool() {
     super(SentenceSample.class, EvalToolParams.class);
   }
@@ -59,12 +56,10 @@ public final class SentenceDetectorEvaluatorTool
     System.out.print("Evaluating ... ");
     try {
       evaluator.evaluate(sampleStream);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " +
           e.getMessage(), e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -77,5 +72,8 @@ public final class SentenceDetectorEvaluatorTool
     System.out.println();
 
     System.out.println(evaluator.getFMeasure());
+  }
+
+  interface EvalToolParams extends EvaluatorParams {
   }
 }

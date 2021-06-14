@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import opennlp.tools.langdetect.Language;
+import opennlp.common.langdetect.Language;
 import opennlp.tools.langdetect.LanguageSample;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
@@ -42,6 +42,65 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample> {
+
+  private final int sentencesPerSample;
+  private final Random random;
+  private Map<String, Integer> langSampleCounts;
+  private File[] sentencesFiles;
+
+  private Iterator<File> sentencesFilesIt;
+  private ObjectStream<LanguageSample> sampleStream;
+
+  public LeipzigLanguageSampleStream(File leipzigFolder, final int sentencesPerSample,
+                                     final int samplesPerLanguage) throws IOException {
+    this.sentencesPerSample = sentencesPerSample;
+
+    sentencesFiles = leipzigFolder.listFiles(new FileFilter() {
+      @Override
+      public boolean accept(File pathname) {
+        return !pathname.isHidden() && pathname.isFile()
+            && pathname.getName().length() >= 3
+            && pathname.getName().substring(0, 3).matches("[a-z]+");
+      }
+    });
+    Arrays.sort(sentencesFiles);
+
+    Map<String, Integer> langCounts = Arrays.stream(sentencesFiles)
+        .map(file -> file.getName().substring(0, 3))
+        .collect(Collectors.groupingBy(String::toString, Collectors.summingInt(v -> 1)));
+
+    langSampleCounts = langCounts.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, e -> samplesPerLanguage / e.getValue()));
+
+    random = new Random(23);
+
+    reset();
+  }
+
+  public LanguageSample read() throws IOException {
+    LanguageSample sample;
+    if (sampleStream != null && (sample = sampleStream.read()) != null) {
+      return sample;
+    } else {
+      if (sentencesFilesIt.hasNext()) {
+        File sentencesFile = sentencesFilesIt.next();
+
+        String lang = sentencesFile.getName().substring(0, 3);
+
+        sampleStream = new LeipzigSentencesStream(lang, sentencesFile,
+            sentencesPerSample, langSampleCounts.get(lang));
+
+        return read();
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void reset() throws IOException {
+    sentencesFilesIt = Arrays.asList(sentencesFiles).iterator();
+    sampleStream = null;
+  }
 
   private class LeipzigSentencesStream implements ObjectStream<LanguageSample> {
 
@@ -61,8 +120,8 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
 
       if (totalLineCount < requiredLines)
         throw new InvalidFormatException(
-                String.format("%s does not contain enough lines (%d lines < %d required lines).",
-                        sentencesFile.getPath(), totalLineCount, requiredLines));
+            String.format("%s does not contain enough lines (%d lines < %d required lines).",
+                sentencesFile.getPath(), totalLineCount, requiredLines));
 
       List<Integer> indexes = IntStream.range(0, totalLineCount)
           .boxed().collect(Collectors.toList());
@@ -117,67 +176,5 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
 
       return null;
     }
-  }
-
-  private final int sentencesPerSample;
-
-  private Map<String, Integer> langSampleCounts;
-  private File[] sentencesFiles;
-
-  private Iterator<File> sentencesFilesIt;
-  private ObjectStream<LanguageSample> sampleStream;
-
-  private final Random random;
-
-  public LeipzigLanguageSampleStream(File leipzigFolder, final int sentencesPerSample,
-                                     final int samplesPerLanguage) throws IOException {
-    this.sentencesPerSample = sentencesPerSample;
-
-    sentencesFiles = leipzigFolder.listFiles(new FileFilter() {
-      @Override
-      public boolean accept(File pathname) {
-        return !pathname.isHidden() && pathname.isFile()
-                && pathname.getName().length() >= 3
-                && pathname.getName().substring(0,3).matches("[a-z]+");
-      }
-    });
-    Arrays.sort(sentencesFiles);
-
-    Map<String, Integer> langCounts = Arrays.stream(sentencesFiles)
-        .map(file -> file.getName().substring(0, 3))
-        .collect(Collectors.groupingBy(String::toString, Collectors.summingInt(v -> 1)));
-
-    langSampleCounts = langCounts.entrySet().stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, e -> samplesPerLanguage / e.getValue()));
-
-    random = new Random(23);
-
-    reset();
-  }
-
-  public LanguageSample read() throws IOException {
-    LanguageSample sample;
-    if (sampleStream != null && (sample = sampleStream.read()) != null) {
-      return sample;
-    }
-    else {
-      if (sentencesFilesIt.hasNext()) {
-        File sentencesFile = sentencesFilesIt.next();
-
-        String lang = sentencesFile.getName().substring(0, 3);
-
-        sampleStream = new LeipzigSentencesStream(lang, sentencesFile,
-            sentencesPerSample, langSampleCounts.get(lang));
-
-        return read();
-      }
-    }
-    return null;
-  }
-
-  @Override
-  public void reset() throws IOException {
-    sentencesFilesIt = Arrays.asList(sentencesFiles).iterator();
-    sampleStream = null;
   }
 }

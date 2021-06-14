@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStreamUtils;
 
 public class ConstitParseSampleStreamTest {
 
-  private String[] sample1Tokens = new String[]{
+  private String[] sample1Tokens = new String[] {
       "L'",
       "autonomie",
       "de",
@@ -91,7 +91,7 @@ public class ConstitParseSampleStreamTest {
     byte[] buffer = new byte[1024];
     int length;
     try (InputStream sampleIn =
-        ConstitParseSampleStreamTest.class.getResourceAsStream("sample1.xml")) {
+             ConstitParseSampleStreamTest.class.getResourceAsStream("sample1.xml")) {
       while ((length = sampleIn.read(buffer)) > 0) {
         out.write(buffer, 0, length);
       }
@@ -103,7 +103,7 @@ public class ConstitParseSampleStreamTest {
   @Test
   public void testThereIsExactlyOneSent() throws IOException {
     try (ObjectStream<Parse> samples =
-        new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
+             new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
       Assert.assertNotNull(samples.read());
       Assert.assertNull(samples.read());
       Assert.assertNull(samples.read());
@@ -114,7 +114,7 @@ public class ConstitParseSampleStreamTest {
   public void testTokensAreCorrect() throws IOException {
 
     try (ObjectStream<Parse> samples =
-        new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
+             new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
       Parse p = samples.read();
 
       Parse[] tagNodes = p.getTagNodes();

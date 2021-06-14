@@ -28,7 +28,6 @@ import opennlp.tools.postag.POSTaggerEvaluationMonitor;
  * <p>
  * It is possible to use it from an API and access the statistics using the
  * provided getters
- *
  */
 public class POSTaggerFineGrainedReportListener
     extends FineGrainedReportListener implements POSTaggerEvaluationMonitor {

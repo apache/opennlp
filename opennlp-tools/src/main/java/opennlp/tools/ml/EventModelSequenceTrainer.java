@@ -30,6 +30,7 @@ public interface EventModelSequenceTrainer {
 
   @Deprecated
   void init(Map<String, String> trainParams, Map<String, String> reportMap);
+
   void init(TrainingParameters trainParams, Map<String, String> reportMap);
 
   MaxentModel train(SequenceStream events) throws IOException;

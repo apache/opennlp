@@ -47,8 +47,7 @@ public class PosSampleStream extends FilterObjectStream<Parse, POSSample> {
       }
 
       return new POSSample(toks, preds);
-    }
-    else {
+    } else {
       return null;
     }
   }

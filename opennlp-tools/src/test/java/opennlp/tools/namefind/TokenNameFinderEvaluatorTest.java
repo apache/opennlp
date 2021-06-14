@@ -23,14 +23,40 @@ import java.io.OutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.namefind.TokenNameFinder;
+import opennlp.common.util.Span;
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
-import opennlp.tools.util.Span;
 
 /**
  * This is the test class for {@link TokenNameFinderEvaluator}..
  */
 public class TokenNameFinderEvaluatorTest {
 
+
+  private static String[] sentence = {"U", ".", "S", ".", "President", "Barack", "Obama", "is",
+      "considering", "sending", "additional", "American", "forces",
+      "to", "Afghanistan", "."};
+
+  private static NameSample createSimpleNameSampleA() {
+
+    Span[] names = {new Span(0, 4, "Location"), new Span(5, 7, "Person"),
+        new Span(14, 15, "Location")};
+
+    NameSample nameSample;
+    nameSample = new NameSample(sentence, names, false);
+
+    return nameSample;
+  }
+
+  private static NameSample createSimpleNameSampleB() {
+
+    Span[] names = {new Span(0, 4, "Location"), new Span(14, 15, "Location")};
+
+    NameSample nameSample;
+    nameSample = new NameSample(sentence, names, false);
+
+    return nameSample;
+  }
 
   @Test
   public void testPositive() {
@@ -64,34 +90,9 @@ public class TokenNameFinderEvaluatorTest {
     Assert.assertNotSame(0, stream.toString().length());
   }
 
-
-
-  private static String[] sentence = {"U", ".", "S", ".", "President", "Barack", "Obama", "is",
-      "considering", "sending", "additional", "American", "forces",
-      "to", "Afghanistan", "."};
-
-  private static NameSample createSimpleNameSampleA() {
-
-    Span[] names = { new Span(0, 4, "Location"), new Span(5, 7, "Person"),
-        new Span(14, 15, "Location") };
-
-    NameSample nameSample;
-    nameSample = new NameSample(sentence, names, false);
-
-    return nameSample;
-  }
-
-  private static NameSample createSimpleNameSampleB() {
-
-    Span[] names = { new Span(0, 4, "Location"), new Span(14, 15, "Location") };
-
-    NameSample nameSample;
-    nameSample = new NameSample(sentence, names, false);
-
-    return nameSample;
-  }
-
-  /** a dummy name finder that always return something expected */
+  /**
+   * a dummy name finder that always return something expected
+   */
   class DummyNameFinder implements TokenNameFinder {
 
     private Span[] ret;

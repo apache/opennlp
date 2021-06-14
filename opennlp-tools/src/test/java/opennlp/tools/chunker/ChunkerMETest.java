@@ -25,13 +25,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import opennlp.common.chunker.Chunker;
+import opennlp.common.util.Sequence;
+import opennlp.common.util.Span;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Sequence;
-import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -51,18 +52,15 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class ChunkerMETest {
 
-  private Chunker chunker;
-
-  private static String[] toks1 = { "Rockwell", "said", "the", "agreement", "calls", "for",
+  private static String[] toks1 = {"Rockwell", "said", "the", "agreement", "calls", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipsets",
-      "for", "the", "planes", "." };
-
-  private static String[] tags1 = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
-      "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "." };
-
-  private static String[] expect1 = { "B-NP", "B-VP", "B-NP", "I-NP", "B-VP", "B-SBAR",
+      "for", "the", "planes", "."};
+  private static String[] tags1 = {"NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
+      "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "."};
+  private static String[] expect1 = {"B-NP", "B-VP", "B-NP", "I-NP", "B-VP", "B-SBAR",
       "B-NP", "B-VP", "I-VP", "B-NP", "I-NP", "I-NP", "I-NP", "B-PP", "B-NP",
-      "I-NP", "O" };
+      "I-NP", "O"};
+  private Chunker chunker;
 
   @Before
   public void startup() throws IOException {
@@ -129,7 +127,7 @@ public class ChunkerMETest {
     Assert.assertEquals(Arrays.asList(expect1), preds[0].getOutcomes());
     Assert.assertNotSame(Arrays.asList(expect1), preds[1].getOutcomes());
   }
-  
+
   @Test(expected = InsufficientTrainingDataException.class)
   public void testInsufficientData() throws IOException {
 

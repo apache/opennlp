@@ -31,9 +31,6 @@ import opennlp.tools.tokenize.TokenizerModel;
 public final class TokenizerMEEvaluatorTool
     extends AbstractEvaluatorTool<TokenSample, EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams {
-  }
-
   public TokenizerMEEvaluatorTool() {
     super(TokenSample.class, EvalToolParams.class);
   }
@@ -75,5 +72,8 @@ public final class TokenizerMEEvaluatorTool
     System.out.println();
 
     System.out.println(evaluator.getFMeasure());
+  }
+
+  interface EvalToolParams extends EvaluatorParams {
   }
 }

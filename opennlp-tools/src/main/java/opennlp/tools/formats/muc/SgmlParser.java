@@ -22,8 +22,8 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.common.util.StringUtil;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringUtil;
 
 /**
  * SAX style SGML parser.
@@ -34,18 +34,6 @@ import opennlp.tools.util.StringUtil;
  * a different SGML corpora.
  */
 public class SgmlParser {
-
-  public static abstract class ContentHandler {
-
-    public void startElement(String name, Map<String, String> attributes) throws InvalidFormatException {
-    }
-
-    public void characters(CharSequence chars) throws InvalidFormatException{
-    }
-
-    public void endElement(String name) throws InvalidFormatException {
-    }
-  }
 
   private static String extractTagName(CharSequence tagChars) throws InvalidFormatException {
 
@@ -159,8 +147,7 @@ public class SgmlParser {
 
         if (isStartTag) {
           handler.startElement(extractTagName(buffer), getAttributes(buffer));
-        }
-        else {
+        } else {
           handler.endElement(extractTagName(buffer));
         }
 
@@ -174,6 +161,18 @@ public class SgmlParser {
 
     if (isInsideTag) {
       throw new InvalidFormatException("Did not find matching > char!");
+    }
+  }
+
+  public static abstract class ContentHandler {
+
+    public void startElement(String name, Map<String, String> attributes) throws InvalidFormatException {
+    }
+
+    public void characters(CharSequence chars) throws InvalidFormatException {
+    }
+
+    public void endElement(String name) throws InvalidFormatException {
     }
   }
 }

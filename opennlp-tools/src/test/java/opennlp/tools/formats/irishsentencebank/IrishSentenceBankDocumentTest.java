@@ -24,15 +24,15 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.Span;
 import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.util.Span;
 
 public class IrishSentenceBankDocumentTest {
 
   @Test
   public void testParsingSimpleDoc() throws IOException {
-    try (InputStream irishSBXmlIn = 
-          IrishSentenceBankDocumentTest.class.getResourceAsStream("irishsentencebank-sample.xml")) {
+    try (InputStream irishSBXmlIn =
+             IrishSentenceBankDocumentTest.class.getResourceAsStream("irishsentencebank-sample.xml")) {
 
       IrishSentenceBankDocument doc = IrishSentenceBankDocument.parse(irishSBXmlIn);
 
@@ -48,11 +48,11 @@ public class IrishSentenceBankDocumentTest {
       IrishSentenceBankDocument.IrishSentenceBankFlex[] flex = sent1.getFlex();
       Assert.assertEquals(7, flex.length);
       Assert.assertEquals("A", flex[0].getSurface());
-      Assert.assertArrayEquals(new String[]{"a"}, flex[0].getFlex());
+      Assert.assertArrayEquals(new String[] {"a"}, flex[0].getFlex());
 
       IrishSentenceBankDocument.IrishSentenceBankFlex[] flex2 = sent2.getFlex();
       Assert.assertEquals("ón", flex2[4].getSurface());
-      Assert.assertArrayEquals(new String[]{"ó", "an"}, flex2[4].getFlex());
+      Assert.assertArrayEquals(new String[] {"ó", "an"}, flex2[4].getFlex());
 
       Assert.assertEquals("Excuse me, are you from the stone age?", sent2.getTranslation());
 

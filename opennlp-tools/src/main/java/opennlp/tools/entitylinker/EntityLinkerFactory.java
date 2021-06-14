@@ -20,17 +20,16 @@ package opennlp.tools.entitylinker;
 import java.io.IOException;
 import java.util.Objects;
 
+import opennlp.common.entitylinker.EntityLinker;
+import opennlp.common.entitylinker.EntityLinkerProperties;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
  * Generates an EntityLinker implementation via properties file configuration
- *
  */
 public class EntityLinkerFactory {
 
   /**
-   *
-   *
    * @param entityType The type of entity being linked to. This value is used to
    *                   retrieve the implementation of the entitylinker from the
    *                   entitylinker properties file.
@@ -59,9 +58,6 @@ public class EntityLinkerFactory {
   }
 
   /**
-   *
-   *
-   *
    * @param properties An object that extends EntityLinkerProperties. This
    *                   object will be passed into the implemented EntityLinker
    *                   init(..) method, so it is an appropriate place to put

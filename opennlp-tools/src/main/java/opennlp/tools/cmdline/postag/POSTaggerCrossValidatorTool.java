@@ -39,9 +39,6 @@ import opennlp.tools.util.model.ModelUtil;
 public final class POSTaggerCrossValidatorTool
     extends AbstractCrossValidatorTool<POSSample, CVToolParams> {
 
-  interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
-  }
-
   public POSTaggerCrossValidatorTool() {
     super(POSSample.class, CVToolParams.class);
   }
@@ -80,9 +77,8 @@ public final class POSTaggerCrossValidatorTool
     Map<String, Object> resources;
     try {
       resources = TokenNameFinderTrainerTool.loadResources(params.getResources(), params.getFeaturegen());
-    }
-    catch (IOException e) {
-      throw new TerminateToolException(-1,"IO error while loading resources", e);
+    } catch (IOException e) {
+      throw new TerminateToolException(-1, "IO error while loading resources", e);
     }
 
     byte[] featureGeneratorBytes =
@@ -124,5 +120,8 @@ public final class POSTaggerCrossValidatorTool
     System.out.println();
 
     System.out.println("Accuracy: " + validator.getWordAccuracy());
+  }
+
+  interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
   }
 }

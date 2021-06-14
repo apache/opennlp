@@ -63,6 +63,12 @@ public class OntoNotes4NameFinderEval extends AbstractEvalTest {
         documentStream, StandardCharsets.UTF_8));
   }
 
+  @BeforeClass
+  public static void verifyTrainingData() throws Exception {
+    verifyDirectoryChecksum(new File(getOpennlpDataDir(), "ontonotes4/data/files/data/english").toPath(),
+        ".name", new BigInteger("74675117716526375898817028829433420680"));
+  }
+
   private void crossEval(TrainingParameters params, String type, double expectedScore)
       throws IOException {
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
@@ -73,8 +79,7 @@ public class OntoNotes4NameFinderEval extends AbstractEvalTest {
       ObjectStream<NameSample> filteredSamples;
       if (type != null) {
         filteredSamples = new NameSampleTypeFilter(new String[] {type}, samples);
-      }
-      else {
+      } else {
         filteredSamples = samples;
       }
 
@@ -82,12 +87,6 @@ public class OntoNotes4NameFinderEval extends AbstractEvalTest {
 
       Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
     }
-  }
-
-  @BeforeClass
-  public static void verifyTrainingData() throws Exception {
-    verifyDirectoryChecksum(new File(getOpennlpDataDir(), "ontonotes4/data/files/data/english").toPath(),
-        ".name", new BigInteger("74675117716526375898817028829433420680"));
   }
 
   @Test
@@ -136,7 +135,7 @@ public class OntoNotes4NameFinderEval extends AbstractEvalTest {
         StandardCopyOption.REPLACE_EXISTING);
 
     Map<String, Object> resources = TokenNameFinderTrainerTool.loadResources(resourcesPath.toFile(),
-          Paths.get(this.getClass().getResource("ner-en_pos-features.xml").toURI()).toFile());
+        Paths.get(this.getClass().getResource("ner-en_pos-features.xml").toURI()).toFile());
 
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
 

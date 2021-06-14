@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util;
+package opennlp.common.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -31,24 +31,24 @@ public class StringList implements Iterable<String> {
 
   /**
    * Initializes the current instance.
-   *
+   * <p>
    * Note: <br>
    * Token String will be replaced by identical internal String object.
    *
    * @param singleToken one single token
    */
   public StringList(String singleToken) {
-    tokens = new String[]{singleToken.intern()};
+    tokens = new String[] {singleToken.intern()};
   }
 
   /**
    * Initializes the current instance.
-   *
+   * <p>
    * Note: <br>
    * Token Strings will be replaced by identical internal String object.
    *
    * @param tokens the string parts of the new {@link StringList}, an empty
-   *     tokens array or null is not permitted.
+   *               tokens array or null is not permitted.
    */
   public StringList(String... tokens) {
 
@@ -69,7 +69,6 @@ public class StringList implements Iterable<String> {
    * Retrieves a token from the given index.
    *
    * @param index
-   *
    * @return token at the given index
    */
   public String getToken(int index) {
@@ -103,8 +102,7 @@ public class StringList implements Iterable<String> {
 
         if (hasNext()) {
           return getToken(index++);
-        }
-        else {
+        } else {
           throw new NoSuchElementException();
         }
       }
@@ -118,11 +116,10 @@ public class StringList implements Iterable<String> {
 
   /**
    * Compares to tokens list and ignores the case of the tokens.
-   *
+   * <p>
    * Note: This can cause problems with some locals.
    *
    * @param tokens
-   *
    * @return true if identically with ignore the case otherwise false
    */
   public boolean compareToIgnoreCase(StringList tokens) {
@@ -135,8 +132,7 @@ public class StringList implements Iterable<String> {
           return false;
         }
       }
-    }
-    else {
+    } else {
       return false;
     }
 

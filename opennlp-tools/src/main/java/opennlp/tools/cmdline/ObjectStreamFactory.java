@@ -25,7 +25,6 @@ public interface ObjectStreamFactory<T> {
    * Returns interface with parameters description.
    *
    * @param <P> interfaces which describes the parameters.
-   *
    * @return interface with parameters description
    */
   <P> Class<P> getParameters();

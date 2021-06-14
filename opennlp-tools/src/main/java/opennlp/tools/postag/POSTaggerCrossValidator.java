@@ -73,8 +73,8 @@ public class POSTaggerCrossValidator {
    * {@link POSTaggerFactory}.
    */
   public POSTaggerCrossValidator(String languageCode,
-      TrainingParameters trainParam, POSTaggerFactory factory,
-      POSTaggerEvaluationMonitor... listeners) {
+                                 TrainingParameters trainParam, POSTaggerFactory factory,
+                                 POSTaggerEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = trainParam;
     this.listeners = listeners;
@@ -82,14 +82,15 @@ public class POSTaggerCrossValidator {
     this.tagdicCutoff = null;
   }
 
+  private static POSTaggerFactory create(Dictionary ngram, TagDictionary pos) {
+    return new POSTaggerFactory(ngram, pos);
+  }
+
   /**
    * Starts the evaluation.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   *
+   * @param samples the data to train and test
+   * @param nFolds  number of folds
    * @throws IOException
    */
   public void evaluate(ObjectStream<POSSample> samples, int nFolds) throws IOException {
@@ -116,7 +117,7 @@ public class POSTaggerCrossValidator {
           dict = this.factory.createEmptyTagDictionary();
         }
         if (dict instanceof MutableTagDictionary) {
-          POSTaggerME.populatePOSDictionary(trainingSampleStream, (MutableTagDictionary)dict,
+          POSTaggerME.populatePOSDictionary(trainingSampleStream, (MutableTagDictionary) dict,
               this.tagdicCutoff);
         } else {
           throw new IllegalArgumentException(
@@ -164,9 +165,5 @@ public class POSTaggerCrossValidator {
    */
   public long getWordCount() {
     return wordAccuracy.count();
-  }
-
-  private static POSTaggerFactory create(Dictionary ngram, TagDictionary pos) {
-    return new POSTaggerFactory(ngram, pos);
   }
 }

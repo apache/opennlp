@@ -33,14 +33,13 @@ import opennlp.tools.util.ext.ExtensionLoader;
  */
 public class SentenceDetectorFactory extends BaseToolFactory {
 
+  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
+  private static final String EOS_CHARACTERS_PROPERTY = "eosCharacters";
+  private static final String TOKEN_END_PROPERTY = "useTokenEnd";
   private String languageCode;
   private char[] eosCharacters;
   private Dictionary abbreviationDictionary;
   private Boolean useTokenEnd = null;
-
-  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
-  private static final String EOS_CHARACTERS_PROPERTY = "eosCharacters";
-  private static final String TOKEN_END_PROPERTY = "useTokenEnd";
 
   /**
    * Creates a {@link SentenceDetectorFactory} that provides the default
@@ -58,12 +57,36 @@ public class SentenceDetectorFactory extends BaseToolFactory {
    * @param eosCharacters
    */
   public SentenceDetectorFactory(String languageCode, boolean useTokenEnd,
-      Dictionary abbreviationDictionary, char[] eosCharacters) {
+                                 Dictionary abbreviationDictionary, char[] eosCharacters) {
     this.init(languageCode, useTokenEnd, abbreviationDictionary, eosCharacters);
   }
 
+  public static SentenceDetectorFactory create(String subclassName,
+                                               String languageCode, boolean useTokenEnd,
+                                               Dictionary abbreviationDictionary, char[] eosCharacters)
+      throws InvalidFormatException {
+    if (subclassName == null) {
+      // will create the default factory
+      return new SentenceDetectorFactory(languageCode, useTokenEnd,
+          abbreviationDictionary, eosCharacters);
+    }
+    try {
+      SentenceDetectorFactory theFactory = ExtensionLoader
+          .instantiateExtension(SentenceDetectorFactory.class, subclassName);
+      theFactory.init(languageCode, useTokenEnd, abbreviationDictionary,
+          eosCharacters);
+      return theFactory;
+    } catch (Exception e) {
+      String msg = "Could not instantiate the " + subclassName
+          + ". The initialization throw an exception.";
+      System.err.println(msg);
+      e.printStackTrace();
+      throw new InvalidFormatException(msg, e);
+    }
+  }
+
   protected void init(String languageCode, boolean useTokenEnd,
-      Dictionary abbreviationDictionary, char[] eosCharacters) {
+                      Dictionary abbreviationDictionary, char[] eosCharacters) {
     this.languageCode = languageCode;
     this.useTokenEnd = useTokenEnd;
     this.eosCharacters = eosCharacters;
@@ -109,30 +132,6 @@ public class SentenceDetectorFactory extends BaseToolFactory {
           eosCharArrayToString(getEOSCharacters()));
 
     return manifestEntries;
-  }
-
-  public static SentenceDetectorFactory create(String subclassName,
-      String languageCode, boolean useTokenEnd,
-      Dictionary abbreviationDictionary, char[] eosCharacters)
-      throws InvalidFormatException {
-    if (subclassName == null) {
-      // will create the default factory
-      return new SentenceDetectorFactory(languageCode, useTokenEnd,
-          abbreviationDictionary, eosCharacters);
-    }
-    try {
-      SentenceDetectorFactory theFactory = ExtensionLoader
-          .instantiateExtension(SentenceDetectorFactory.class, subclassName);
-      theFactory.init(languageCode, useTokenEnd, abbreviationDictionary,
-          eosCharacters);
-      return theFactory;
-    } catch (Exception e) {
-      String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
-      throw new InvalidFormatException(msg, e);
-    }
   }
 
   public char[] getEOSCharacters() {

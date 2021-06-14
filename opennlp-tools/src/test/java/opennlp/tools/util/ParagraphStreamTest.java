@@ -27,13 +27,13 @@ public class ParagraphStreamTest {
   @Test
   public void testSimpleReading() throws IOException {
     try (ParagraphStream paraStream = new ParagraphStream(
-            ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5"))) {
+        ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5"))) {
       Assert.assertEquals("1\n2\n", paraStream.read());
       Assert.assertEquals("4\n5\n", paraStream.read());
       Assert.assertNull(paraStream.read());
     }
     try (ParagraphStream paraStream = new ParagraphStream(
-              ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""))) {
+        ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""))) {
       Assert.assertEquals("1\n2\n", paraStream.read());
       Assert.assertEquals("4\n5\n", paraStream.read());
       Assert.assertNull(paraStream.read());
@@ -43,7 +43,7 @@ public class ParagraphStreamTest {
   @Test
   public void testReset() throws IOException {
     try (ParagraphStream paraStream = new ParagraphStream(
-            ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""))) {
+        ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""))) {
       Assert.assertEquals("1\n2\n", paraStream.read());
       paraStream.reset();
 

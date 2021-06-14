@@ -86,7 +86,7 @@ public class POSTaggerMETest {
     ObjectStream<POSSample> samples = createSampleStream();
     POSTaggerME.buildNGramDictionary(samples, 0);
   }
-  
+
   @Test(expected = InsufficientTrainingDataException.class)
   public void insufficientTestData() throws IOException {
 
@@ -95,7 +95,7 @@ public class POSTaggerMETest {
 
     ObjectStream<POSSample> stream = new WordTagSampleStream(
         new PlainTextByLineStream(in, StandardCharsets.UTF_8));
- 
+
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, ModelType.MAXENT.name());
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
@@ -104,5 +104,5 @@ public class POSTaggerMETest {
     POSTaggerME.train("eng", stream, params, new POSTaggerFactory());
 
   }
-  
+
 }

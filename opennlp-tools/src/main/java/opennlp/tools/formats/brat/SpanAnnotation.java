@@ -19,7 +19,7 @@ package opennlp.tools.formats.brat;
 
 import java.util.Arrays;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 public class SpanAnnotation extends BratAnnotation {
 

@@ -55,23 +55,15 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
   /**
    * Initializes the current instance with given samples
    * and a {@link DefaultPOSContextGenerator}.
+   *
    * @param samples
    */
   public POSSampleEventStream(ObjectStream<POSSample> samples) {
     this(samples, new DefaultPOSContextGenerator(null));
   }
 
-  @Override
-  protected Iterator<Event> createEvents(POSSample sample) {
-    String[] sentence = sample.getSentence();
-    String[] tags = sample.getTags();
-    Object[] ac = sample.getAddictionalContext();
-    List<Event> events = generateEvents(sentence, tags, ac, cg);
-    return events.iterator();
-  }
-
   public static List<Event> generateEvents(String[] sentence, String[] tags,
-      Object[] additionalContext, POSContextGenerator cg) {
+                                           Object[] additionalContext, POSContextGenerator cg) {
     List<Event> events = new ArrayList<Event>(sentence.length);
 
     for (int i = 0; i < sentence.length; i++) {
@@ -86,7 +78,16 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
   }
 
   public static List<Event> generateEvents(String[] sentence, String[] tags,
-      POSContextGenerator cg) {
+                                           POSContextGenerator cg) {
     return generateEvents(sentence, tags, null, cg);
+  }
+
+  @Override
+  protected Iterator<Event> createEvents(POSSample sample) {
+    String[] sentence = sample.getSentence();
+    String[] tags = sample.getTags();
+    Object[] ac = sample.getAddictionalContext();
+    List<Event> events = generateEvents(sentence, tags, ac, cg);
+    return events.iterator();
   }
 }

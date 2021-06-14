@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import opennlp.common.tokenize.AbstractTokenizer;
+import opennlp.common.tokenize.Tokenizer;
+import opennlp.common.util.Span;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -33,7 +36,6 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -87,23 +89,21 @@ public class TokenizerME extends AbstractTokenizer {
 
   /**
    * Alpha-Numeric Pattern
+   *
    * @deprecated As of release 1.5.2, replaced by {@link Factory#getAlphanumeric(String)}
    */
   @Deprecated
   public static final Pattern alphaNumeric = Pattern.compile(Factory.DEFAULT_ALPHANUMERIC);
 
   private final Pattern alphanumeric;
-
-  /**
-   * The maximum entropy model to use to evaluate contexts.
-   */
-  private MaxentModel model;
-
   /**
    * The context generator.
    */
   private final TokenContextGenerator cg;
-
+  /**
+   * The maximum entropy model to use to evaluate contexts.
+   */
+  private MaxentModel model;
   /**
    * Optimization flag to skip alpha numeric tokens for further
    * tokenization
@@ -131,7 +131,7 @@ public class TokenizerME extends AbstractTokenizer {
 
   /**
    * @deprecated use {@link TokenizerFactory} to extend the Tokenizer
-   *             functionality
+   * functionality
    */
   public TokenizerME(TokenizerModel model, Factory factory) {
     String languageCode = model.getLanguage();
@@ -155,11 +155,40 @@ public class TokenizerME extends AbstractTokenizer {
   }
 
   /**
+   * Trains a model for the {@link TokenizerME}.
+   *
+   * @param samples  the samples used for the training.
+   * @param factory  a {@link TokenizerFactory} to get resources from
+   * @param mlParams the machine learning train parameters
+   * @return the trained {@link TokenizerModel}
+   * @throws IOException it throws an {@link IOException} if an {@link IOException} is
+   *                     thrown during IO operations on a temp file which is created
+   *                     during training. Or if reading from the {@link ObjectStream}
+   *                     fails.
+   */
+  public static TokenizerModel train(ObjectStream<TokenSample> samples, TokenizerFactory factory,
+                                     TrainingParameters mlParams) throws IOException {
+
+    Map<String, String> manifestInfoEntries = new HashMap<>();
+
+    ObjectStream<Event> eventStream = new TokSpanEventStream(samples,
+        factory.isUseAlphaNumericOptmization(),
+        factory.getAlphaNumericPattern(), factory.getContextGenerator());
+
+    EventTrainer trainer = TrainerFactory.getEventTrainer(
+        mlParams, manifestInfoEntries);
+
+    MaxentModel maxentModel = trainer.train(eventStream);
+
+    return new TokenizerModel(maxentModel, manifestInfoEntries, factory);
+  }
+
+  /**
    * Returns the probabilities associated with the most recent
    * calls to {@link TokenizerME#tokenize(String)} or {@link TokenizerME#tokenizePos(String)}.
    *
    * @return probability for each token returned for the most recent
-   *     call to tokenize.  If not applicable an empty array is returned.
+   * call to tokenize.  If not applicable an empty array is returned.
    */
   public double[] getTokenProbabilities() {
     double[] tokProbArray = new double[tokProbs.size()];
@@ -172,9 +201,8 @@ public class TokenizerME extends AbstractTokenizer {
   /**
    * Tokenizes the string.
    *
-   * @param d  The string to be tokenized.
-   *
-   * @return   A span array containing individual tokens as elements.
+   * @param d The string to be tokenized.
+   * @return A span array containing individual tokens as elements.
    */
   public Span[] tokenizePos(String d) {
     Span[] tokens = WhitespaceTokenizer.INSTANCE.tokenizePos(d);
@@ -214,39 +242,6 @@ public class TokenizerME extends AbstractTokenizer {
     Span[] spans = new Span[newTokens.size()];
     newTokens.toArray(spans);
     return spans;
-  }
-
-  /**
-   * Trains a model for the {@link TokenizerME}.
-   *
-   * @param samples
-   *          the samples used for the training.
-   * @param factory
-   *          a {@link TokenizerFactory} to get resources from
-   * @param mlParams
-   *          the machine learning train parameters
-   * @return the trained {@link TokenizerModel}
-   * @throws IOException
-   *           it throws an {@link IOException} if an {@link IOException} is
-   *           thrown during IO operations on a temp file which is created
-   *           during training. Or if reading from the {@link ObjectStream}
-   *           fails.
-   */
-  public static TokenizerModel train(ObjectStream<TokenSample> samples, TokenizerFactory factory,
-      TrainingParameters mlParams) throws IOException {
-
-    Map<String, String> manifestInfoEntries = new HashMap<>();
-
-    ObjectStream<Event> eventStream = new TokSpanEventStream(samples,
-        factory.isUseAlphaNumericOptmization(),
-        factory.getAlphaNumericPattern(), factory.getContextGenerator());
-
-    EventTrainer trainer = TrainerFactory.getEventTrainer(
-        mlParams, manifestInfoEntries);
-
-    MaxentModel maxentModel = trainer.train(eventStream);
-
-    return new TokenizerModel(maxentModel, manifestInfoEntries, factory);
   }
 
   /**

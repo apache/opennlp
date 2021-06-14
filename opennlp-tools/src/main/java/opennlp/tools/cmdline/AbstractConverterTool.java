@@ -26,7 +26,7 @@ import opennlp.tools.util.ObjectStream;
  * Base class for format conversion tools.
  *
  * @param <T> class of data sample the tool converts, for example {@link opennlp.tools.postag
- * .POSSample}
+ *            .POSSample}
  */
 public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
 
@@ -55,7 +55,7 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
           help.append(format).append(",");
         }
       }
-      return "converts foreign data formats (" + help.substring(0, help.length() - 1 ) +
+      return "converts foreign data formats (" + help.substring(0, help.length() - 1) +
           ") to native OpenNLP format";
     } else {
       throw new AssertionError("There should be more than 1 factory registered for converter " +
@@ -108,8 +108,7 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
         while ((sample = sampleStream.read()) != null) {
           System.out.println(sample);
         }
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         throw new TerminateToolException(-1, "IO error while converting data : " + e.getMessage(), e);
       }
     }

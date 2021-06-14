@@ -50,7 +50,6 @@ public class TwitterCharSequenceNormalizerTest {
   }
 
 
-
   @Test
   public void normalizeFace() throws Exception {
     Assert.assertEquals("hello   hello", normalizer.normalize("hello :-) hello"));

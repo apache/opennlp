@@ -32,15 +32,6 @@ import opennlp.tools.util.model.ModelUtil;
 public class LanguageDetectorTrainerTool
     extends AbstractTrainerTool<LanguageSample, LanguageDetectorTrainerTool.TrainerToolParams> {
 
-  interface TrainerToolParams extends TrainingParams {
-    @ArgumentParser.ParameterDescription(valueName = "modelFile", description = "output model file.")
-    File getModel();
-
-    @ArgumentParser.ParameterDescription(valueName = "paramsFile", description = "training parameters file.")
-    @ArgumentParser.OptionalParameter()
-    String getParams();
-  }
-
   public LanguageDetectorTrainerTool() {
     super(LanguageSample.class, TrainerToolParams.class);
   }
@@ -69,8 +60,7 @@ public class LanguageDetectorTrainerTool
       model = LanguageDetectorME.train(sampleStream, mlParams, factory);
     } catch (IOException e) {
       throw createTerminationIOException(e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -79,5 +69,14 @@ public class LanguageDetectorTrainerTool
     }
 
     CmdLineUtil.writeModel("language detector", modelOutFile, model);
+  }
+
+  interface TrainerToolParams extends TrainingParams {
+    @ArgumentParser.ParameterDescription(valueName = "modelFile", description = "output model file.")
+    File getModel();
+
+    @ArgumentParser.ParameterDescription(valueName = "paramsFile", description = "training parameters file.")
+    @ArgumentParser.OptionalParameter()
+    String getParams();
   }
 }

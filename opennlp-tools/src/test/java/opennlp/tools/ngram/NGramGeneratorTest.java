@@ -35,7 +35,7 @@ public class NGramGeneratorTest {
 
     final List<String> ngrams = NGramGenerator.generate(input, window, separator);
 
-    Assert.assertEquals(4,  ngrams.size());
+    Assert.assertEquals(4, ngrams.size());
     Assert.assertEquals("This", ngrams.get(0));
     Assert.assertEquals("is", ngrams.get(1));
     Assert.assertEquals("a", ngrams.get(2));
@@ -52,7 +52,7 @@ public class NGramGeneratorTest {
 
     final List<String> ngrams = NGramGenerator.generate(input, window, separator);
 
-    Assert.assertEquals(3,  ngrams.size());
+    Assert.assertEquals(3, ngrams.size());
     Assert.assertEquals("This-is", ngrams.get(0));
     Assert.assertEquals("is-a", ngrams.get(1));
     Assert.assertEquals("a-sentence", ngrams.get(2));
@@ -114,7 +114,7 @@ public class NGramGeneratorTest {
 
     final List<String> ngrams = NGramGenerator.generate(input, window, separator);
 
-    Assert.assertEquals(3,  ngrams.size());
+    Assert.assertEquals(3, ngrams.size());
     Assert.assertEquals("T-e", ngrams.get(0));
     Assert.assertEquals("e-s", ngrams.get(1));
     Assert.assertEquals("s-t", ngrams.get(2));
@@ -130,7 +130,7 @@ public class NGramGeneratorTest {
 
     final List<String> ngrams = NGramGenerator.generate(input, window, separator);
 
-    Assert.assertEquals(2,  ngrams.size());
+    Assert.assertEquals(2, ngrams.size());
     Assert.assertEquals("T-e-s", ngrams.get(0));
     Assert.assertEquals("e-s-t", ngrams.get(1));
 
@@ -145,7 +145,7 @@ public class NGramGeneratorTest {
 
     final List<String> ngrams = NGramGenerator.generate(input, window, separator);
 
-    Assert.assertEquals(1,  ngrams.size());
+    Assert.assertEquals(1, ngrams.size());
     Assert.assertEquals("T-e-s-t", ngrams.get(0));
 
   }
@@ -159,7 +159,7 @@ public class NGramGeneratorTest {
 
     final List<String> ngrams = NGramGenerator.generate(input, window, separator);
 
-    Assert.assertEquals(7,  ngrams.size());
+    Assert.assertEquals(7, ngrams.size());
     Assert.assertEquals(("T-e-s-t"), ngrams.get(0));
     Assert.assertEquals(("e-s-t- "), ngrams.get(1));
     Assert.assertEquals(("s-t- -a"), ngrams.get(2));
@@ -172,28 +172,28 @@ public class NGramGeneratorTest {
 
   @Test
   public void generateLargerWindowThanListTest() {
-    
+
     final List<String> input = Arrays.asList("One", "two");
     final int window = 3;
     final String separator = "-";
-    
-    final List<String> ngrams = NGramGenerator.generate(input, window, separator);
-    
-    Assert.assertTrue(ngrams.isEmpty());
-    
-  }
-  
-  @Test
-  public void emptyTest() {
-    
-    final List<String> input = new ArrayList<>();
-    final int window = 2;
-    final String separator = "-";
-    
+
     final List<String> ngrams = NGramGenerator.generate(input, window, separator);
 
     Assert.assertTrue(ngrams.isEmpty());
-    
+
   }
-  
+
+  @Test
+  public void emptyTest() {
+
+    final List<String> input = new ArrayList<>();
+    final int window = 2;
+    final String separator = "-";
+
+    final List<String> ngrams = NGramGenerator.generate(input, window, separator);
+
+    Assert.assertTrue(ngrams.isEmpty());
+
+  }
+
 }

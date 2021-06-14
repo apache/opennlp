@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * The {@link FMeasure} is an utility class for evaluators
  * which measure precision, recall and the resulting f-measure.
- *
+ * <p>
  * Evaluation results are the arithmetic mean of the precision
  * scores calculated for each reference sample and
  * the arithmetic mean of the recall scores calculated for
@@ -50,86 +50,12 @@ public final class FMeasure {
   private long truePositive;
 
   /**
-   * Retrieves the arithmetic mean of the precision scores calculated for each
-   * evaluated sample.
-   *
-   * @return the arithmetic mean of all precision scores
-   */
-  public double getPrecisionScore() {
-    return selected > 0 ? (double) truePositive / (double) selected : 0;
-  }
-
-  /**
-   * Retrieves the arithmetic mean of the recall score calculated for each
-   * evaluated sample.
-   *
-   * @return the arithmetic mean of all recall scores
-   */
-  public double getRecallScore() {
-    return target > 0 ? (double) truePositive / (double) target : 0;
-  }
-
-  /**
-   * Retrieves the f-measure score.
-   *
-   * f-measure = 2 * precision * recall / (precision + recall)
-   * @return the f-measure or -1 if precision + recall &lt;= 0
-   */
-  public double getFMeasure() {
-
-    if (getPrecisionScore() + getRecallScore() > 0) {
-      return 2 * (getPrecisionScore() * getRecallScore())
-          / (getPrecisionScore() + getRecallScore());
-    } else {
-      // cannot divide by zero, return error code
-      return -1;
-    }
-  }
-
-  /**
-   * Updates the score based on the number of true positives and
-   * the number of predictions and references.
-   *
-   * @param references the provided references
-   * @param predictions the predicted spans
-   */
-  public void updateScores(final Object[] references, final Object[] predictions) {
-
-    truePositive += countTruePositives(references, predictions);
-    selected += predictions.length;
-    target += references.length;
-  }
-
-  /**
-   * Merge results into fmeasure metric.
-   * @param measure the fmeasure
-   */
-  public void mergeInto(final FMeasure measure) {
-    this.selected += measure.selected;
-    this.target += measure.target;
-    this.truePositive += measure.truePositive;
-  }
-
-  /**
-   * Creates a human read-able {@link String} representation.
-   * @return the results
-   */
-  @Override
-  public String toString() {
-    return "Precision: " + Double.toString(getPrecisionScore()) + "\n"
-        + "Recall: " + Double.toString(getRecallScore()) + "\n" + "F-Measure: "
-        + Double.toString(getFMeasure());
-  }
-
-  /**
    * This method counts the number of objects which are equal and occur in the
    * references and predictions arrays.
    * Matched items are removed from the prediction list.
    *
-   * @param references
-   *          the gold standard
-   * @param predictions
-   *          the predictions
+   * @param references  the gold standard
+   * @param predictions the predictions
    * @return number of true positives
    */
   static int countTruePositives(final Object[] references, final Object[] predictions) {
@@ -153,14 +79,11 @@ public final class FMeasure {
     return truePositives;
   }
 
-
   /**
    * Calculates the precision score for the given reference and predicted spans.
    *
-   * @param references
-   *          the gold standard spans
-   * @param predictions
-   *          the predicted spans
+   * @param references  the gold standard spans
+   * @param predictions the predicted spans
    * @return the precision score or NaN if there are no predicted spans
    */
   public static double precision(final Object[] references, final Object[] predictions) {
@@ -176,11 +99,8 @@ public final class FMeasure {
   /**
    * Calculates the recall score for the given reference and predicted spans.
    *
-   * @param references
-   *          the gold standard spans
-   * @param predictions
-   *          the predicted spans
-   *
+   * @param references  the gold standard spans
+   * @param predictions the predicted spans
    * @return the recall score or NaN if there are no reference spans
    */
   public static double recall(final Object[] references, final Object[] predictions) {
@@ -191,5 +111,80 @@ public final class FMeasure {
     } else {
       return Double.NaN;
     }
+  }
+
+  /**
+   * Retrieves the arithmetic mean of the precision scores calculated for each
+   * evaluated sample.
+   *
+   * @return the arithmetic mean of all precision scores
+   */
+  public double getPrecisionScore() {
+    return selected > 0 ? (double) truePositive / (double) selected : 0;
+  }
+
+  /**
+   * Retrieves the arithmetic mean of the recall score calculated for each
+   * evaluated sample.
+   *
+   * @return the arithmetic mean of all recall scores
+   */
+  public double getRecallScore() {
+    return target > 0 ? (double) truePositive / (double) target : 0;
+  }
+
+  /**
+   * Retrieves the f-measure score.
+   * <p>
+   * f-measure = 2 * precision * recall / (precision + recall)
+   *
+   * @return the f-measure or -1 if precision + recall &lt;= 0
+   */
+  public double getFMeasure() {
+
+    if (getPrecisionScore() + getRecallScore() > 0) {
+      return 2 * (getPrecisionScore() * getRecallScore())
+          / (getPrecisionScore() + getRecallScore());
+    } else {
+      // cannot divide by zero, return error code
+      return -1;
+    }
+  }
+
+  /**
+   * Updates the score based on the number of true positives and
+   * the number of predictions and references.
+   *
+   * @param references  the provided references
+   * @param predictions the predicted spans
+   */
+  public void updateScores(final Object[] references, final Object[] predictions) {
+
+    truePositive += countTruePositives(references, predictions);
+    selected += predictions.length;
+    target += references.length;
+  }
+
+  /**
+   * Merge results into fmeasure metric.
+   *
+   * @param measure the fmeasure
+   */
+  public void mergeInto(final FMeasure measure) {
+    this.selected += measure.selected;
+    this.target += measure.target;
+    this.truePositive += measure.truePositive;
+  }
+
+  /**
+   * Creates a human read-able {@link String} representation.
+   *
+   * @return the results
+   */
+  @Override
+  public String toString() {
+    return "Precision: " + Double.toString(getPrecisionScore()) + "\n"
+        + "Recall: " + Double.toString(getRecallScore()) + "\n" + "F-Measure: "
+        + Double.toString(getFMeasure());
   }
 }

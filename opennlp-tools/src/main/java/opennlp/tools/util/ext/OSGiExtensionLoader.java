@@ -36,6 +36,10 @@ public class OSGiExtensionLoader implements BundleActivator {
 
   private BundleContext context;
 
+  static OSGiExtensionLoader getInstance() {
+    return instance;
+  }
+
   public void start(BundleContext context) throws Exception {
     instance = this;
     this.context = context;
@@ -91,9 +95,5 @@ public class OSGiExtensionLoader implements BundleActivator {
     }
 
     return extension;
-  }
-
-  static OSGiExtensionLoader getInstance() {
-    return instance;
   }
 }

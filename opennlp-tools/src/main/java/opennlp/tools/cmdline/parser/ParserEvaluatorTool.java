@@ -52,8 +52,7 @@ public class ParserEvaluatorTool extends AbstractEvaluatorTool<Parse, EvaluatorP
     System.out.print("Evaluating ... ");
     try {
       evaluator.evaluate(sampleStream);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
     } finally {

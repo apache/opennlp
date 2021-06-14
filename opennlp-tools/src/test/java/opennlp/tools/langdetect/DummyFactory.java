@@ -17,19 +17,17 @@
 
 package opennlp.tools.langdetect;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.util.StringList;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
 
 public class DummyFactory extends LanguageDetectorFactory {
-
 
   public DummyFactory() {
     super();

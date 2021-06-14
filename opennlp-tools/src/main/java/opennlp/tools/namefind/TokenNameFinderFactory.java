@@ -59,15 +59,8 @@ public class TokenNameFinderFactory extends BaseToolFactory {
   }
 
   public TokenNameFinderFactory(byte[] featureGeneratorBytes, final Map<String, Object> resources,
-      SequenceCodec<String> seqCodec) {
+                                SequenceCodec<String> seqCodec) {
     init(featureGeneratorBytes, resources, seqCodec);
-  }
-
-  void init(byte[] featureGeneratorBytes, final Map<String, Object> resources,
-      SequenceCodec<String> seqCodec) {
-    this.featureGeneratorBytes = featureGeneratorBytes;
-    this.resources = resources;
-    this.seqCodec = seqCodec;
   }
 
   private static byte[] loadDefaultFeatureGeneratorBytes() {
@@ -85,28 +78,16 @@ public class TokenNameFinderFactory extends BaseToolFactory {
       while ((len = in.read(buf)) > 0) {
         bytes.write(buf, 0, len);
       }
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new IllegalStateException("Failed reading from ner-default-features.xml file on classpath!");
     }
 
     return bytes.toByteArray();
   }
 
-  protected SequenceCodec<String> getSequenceCodec() {
-    return seqCodec;
-  }
-
-  protected Map<String, Object> getResources() {
-    return resources;
-  }
-
-  protected byte[] getFeatureGenerator() {
-    return featureGeneratorBytes;
-  }
-
   public static TokenNameFinderFactory create(String subclassName, byte[] featureGeneratorBytes,
-      final Map<String, Object> resources, SequenceCodec<String> seqCodec)
+                                              final Map<String, Object> resources,
+                                              SequenceCodec<String> seqCodec)
       throws InvalidFormatException {
     TokenNameFinderFactory theFactory;
     if (subclassName == null) {
@@ -128,6 +109,37 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     return theFactory;
   }
 
+  public static SequenceCodec<String> instantiateSequenceCodec(
+      String sequenceCodecImplName) {
+
+    if (sequenceCodecImplName != null) {
+      return ExtensionLoader.instantiateExtension(
+          SequenceCodec.class, sequenceCodecImplName);
+    } else {
+      // If nothing is specified return old default!
+      return new BioCodec();
+    }
+  }
+
+  void init(byte[] featureGeneratorBytes, final Map<String, Object> resources,
+            SequenceCodec<String> seqCodec) {
+    this.featureGeneratorBytes = featureGeneratorBytes;
+    this.resources = resources;
+    this.seqCodec = seqCodec;
+  }
+
+  protected SequenceCodec<String> getSequenceCodec() {
+    return seqCodec;
+  }
+
+  protected Map<String, Object> getResources() {
+    return resources;
+  }
+
+  protected byte[] getFeatureGenerator() {
+    return featureGeneratorBytes;
+  }
+
   @Override
   public void validateArtifactMap() throws InvalidFormatException {
     // no additional artifacts
@@ -139,8 +151,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
       String sequeceCodecImplName = artifactProvider.getManifestProperty(
           TokenNameFinderModel.SEQUENCE_CODEC_CLASS_NAME_PARAMETER);
       return instantiateSequenceCodec(sequeceCodecImplName);
-    }
-    else {
+    } else {
       return seqCodec;
     }
   }
@@ -165,7 +176,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
   /**
    * Creates the {@link AdaptiveFeatureGenerator}. Usually this
    * is a set of generators contained in the {@link AggregatedFeatureGenerator}.
-   *
+   * <p>
    * Note:
    * The generators are created on every call to this method.
    *
@@ -189,8 +200,7 @@ public class TokenNameFinderFactory extends BaseToolFactory {
       generator = GeneratorFactory.create(descriptorIn, key -> {
         if (artifactProvider != null) {
           return artifactProvider.getArtifact(key);
-        }
-        else {
+        } else {
           return resources.get(key);
         }
       });
@@ -212,19 +222,6 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     }
 
     return generator;
-  }
-
-  public static SequenceCodec<String> instantiateSequenceCodec(
-      String sequenceCodecImplName) {
-
-    if (sequenceCodecImplName != null) {
-      return ExtensionLoader.instantiateExtension(
-          SequenceCodec.class, sequenceCodecImplName);
-    }
-    else {
-      // If nothing is specified return old default!
-      return new BioCodec();
-    }
   }
 }
 

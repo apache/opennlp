@@ -52,7 +52,7 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
 
       try {
         lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
-                SystemInputStreamFactory.encoding());
+            SystemInputStreamFactory.encoding());
         perfMon = new PerformanceMonitor(System.err, "nglm");
         perfMon.start();
         String line;
@@ -71,7 +71,7 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
           }
 
           System.out.println(Arrays.toString(tokens) + " -> prob:" + probability + ", " +
-                  "next:" + Arrays.toString(predicted));
+              "next:" + Arrays.toString(predicted));
 
           perfMon.incrementCounter();
         }

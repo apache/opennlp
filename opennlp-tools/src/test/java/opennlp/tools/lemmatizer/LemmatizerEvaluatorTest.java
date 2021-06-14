@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.lemmatizer.Lemmatizer;
 import opennlp.tools.cmdline.lemmatizer.LemmaEvaluationErrorListener;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -55,11 +56,11 @@ public class LemmatizerEvaluatorTest {
 
     DummyLemmaSampleStream predictedSample = new DummyLemmaSampleStream(
         new PlainTextByLineStream(
-          new MockInputStreamFactory(new File(inPredicted)), encoding), true);
+            new MockInputStreamFactory(new File(inPredicted)), encoding), true);
 
     DummyLemmaSampleStream expectedSample = new DummyLemmaSampleStream(
         new PlainTextByLineStream(
-          new MockInputStreamFactory(new File(inExpected)), encoding), false);
+            new MockInputStreamFactory(new File(inExpected)), encoding), false);
 
     Lemmatizer dummyLemmatizer = new DummyLemmatizer(predictedSample);
 

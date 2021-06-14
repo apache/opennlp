@@ -34,21 +34,13 @@ import opennlp.tools.util.ObjectStream;
  */
 public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
 
-  interface Parameters extends BasicFormatParams {
-    @ParameterDescription(valueName = "spa|nld")
-    String getLang();
-
-    @ParameterDescription(valueName = "per,loc,org,misc")
-    String getTypes();
+  protected <P> Conll02NameSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
         "conll02", new Conll02NameSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> Conll02NameSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<NameSample> create(String[] args) {
@@ -59,12 +51,10 @@ public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<
     if ("nl".equals(params.getLang()) || "nld".equals(params.getLang())) {
       lang = LANGUAGE.NLD;
       language = params.getLang();
-    }
-    else if ("es".equals(params.getLang()) || "spa".equals(params.getLang())) {
+    } else if ("es".equals(params.getLang()) || "spa".equals(params.getLang())) {
       lang = LANGUAGE.SPA;
       language = params.getLang();
-    }
-    else {
+    } else {
       throw new TerminateToolException(1, "Unsupported language: " + params.getLang());
     }
 
@@ -94,5 +84,13 @@ public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<
     } catch (IOException e) {
       throw CmdLineUtil.createObjectStreamError(e);
     }
+  }
+
+  interface Parameters extends BasicFormatParams {
+    @ParameterDescription(valueName = "spa|nld")
+    String getLang();
+
+    @ParameterDescription(valueName = "per,loc,org,misc")
+    String getTypes();
   }
 }

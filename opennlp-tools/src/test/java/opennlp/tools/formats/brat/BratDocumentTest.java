@@ -47,13 +47,13 @@ public class BratDocumentTest {
     Assert.assertTrue(doc.getText().endsWith("multinational process . \n"));
 
     Assert.assertEquals(18, doc.getAnnotations().size());
-    
+
     BratAnnotation annotation = doc.getAnnotation("T2");
     checkNote(annotation, "Barack Obama", "President Obama was the 44th U.S. president");
     annotation = doc.getAnnotation("T3");
-    checkNote(annotation,"South Korea","The capital of South Korea is Seoul");
+    checkNote(annotation, "South Korea", "The capital of South Korea is Seoul");
   }
-  
+
   private void checkNote(BratAnnotation annotation, String expectedCoveredText, String expectedNote) {
     Assert.assertTrue(annotation instanceof SpanAnnotation);
     SpanAnnotation spanAnn = (SpanAnnotation) annotation;
@@ -63,7 +63,7 @@ public class BratDocumentTest {
 
   /**
    * Parse spans that have multiple fragments and ensure they are matched to the correct tokens.
-   *
+   * <p>
    * Test to ensure OPENNLP-1193 works.
    */
   @Test

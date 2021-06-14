@@ -15,13 +15,31 @@
  * limitations under the License.
  */
 
-package opennlp.tools.tokenize;
+package opennlp.common.sentdetect;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
-abstract class AbstractTokenizer implements Tokenizer {
+/**
+ * The interface for sentence detectors, which find the sentence boundaries in
+ * a text.
+ */
+public interface SentenceDetector {
 
-  public String[] tokenize(String s) {
-    return Span.spansToStrings(tokenizePos(s), s);
-  }
+  /**
+   * Sentence detect a string.
+   *
+   * @param s The string to be sentence detected.
+   * @return The String[] with the individual sentences as the array
+   * elements.
+   */
+  String[] sentDetect(String s);
+
+  /**
+   * Sentence detect a string.
+   *
+   * @param s The string to be sentence detected.
+   * @return The Span[] with the spans (offsets into s) for each
+   * detected sentence as the individuals array elements.
+   */
+  Span[] sentPosDetect(String s);
 }

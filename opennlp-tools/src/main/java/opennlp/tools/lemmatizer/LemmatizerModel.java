@@ -45,19 +45,19 @@ public class LemmatizerModel extends BaseModel {
   private static final String LEMMATIZER_MODEL_ENTRY_NAME = "lemmatizer.model";
 
   public LemmatizerModel(String languageCode, SequenceClassificationModel<String> lemmatizerModel,
-      Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
+                         Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
     artifactMap.put(LEMMATIZER_MODEL_ENTRY_NAME, lemmatizerModel);
     checkArtifactMap();
   }
 
   public LemmatizerModel(String languageCode, MaxentModel lemmatizerModel,
-      Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
+                         Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
     this(languageCode, lemmatizerModel, LemmatizerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, factory);
   }
 
   public LemmatizerModel(String languageCode, MaxentModel lemmatizerModel, int beamSize,
-      Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
+                         Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
     artifactMap.put(LEMMATIZER_MODEL_ENTRY_NAME, lemmatizerModel);
 
@@ -108,11 +108,9 @@ public class LemmatizerModel extends BaseModel {
       }
 
       return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME));
-    }
-    else if (artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+    } else if (artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
       return (SequenceClassificationModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME);
-    }
-    else {
+    } else {
       return null;
     }
   }

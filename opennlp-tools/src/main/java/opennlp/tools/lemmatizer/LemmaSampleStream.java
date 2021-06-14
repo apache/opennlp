@@ -28,6 +28,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * Reads data for training and testing the lemmatizer. The format consists of:
  * word\tpostag\tlemma.
+ *
  * @version 2016-02-16
  */
 public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
@@ -46,8 +47,7 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
       String[] parts = line.split("\t");
       if (parts.length != 3) {
         System.err.println("Skipping corrupt line: " + line);
-      }
-      else {
+      } else {
         toks.add(parts[0]);
         tags.add(parts[1]);
         preds.add(parts[2]);
@@ -56,8 +56,7 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
     if (toks.size() > 0) {
       return new LemmaSample(toks.toArray(new String[toks.size()]), tags.toArray(new String[tags.size()]),
           preds.toArray(new String[preds.size()]));
-    }
-    else {
+    } else {
       return null;
     }
   }

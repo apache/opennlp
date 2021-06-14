@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import opennlp.common.tokenize.Tokenizer;
 import opennlp.tools.doccat.DocumentSample;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
 
 

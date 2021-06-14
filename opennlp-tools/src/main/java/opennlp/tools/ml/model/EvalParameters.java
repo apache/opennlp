@@ -27,17 +27,18 @@ import java.util.Objects;
 public class EvalParameters {
 
   /**
+   * The number of outcomes being predicted.
+   */
+  private final int numOutcomes;
+  /**
    * Mapping between outcomes and parameter values for each context.
    * The integer representation of the context can be found using <code>pmap</code>.
    */
   private Context[] params;
   /**
-   * The number of outcomes being predicted.
-   */
-  private final int numOutcomes;
-  /**
    * The maximum number of features fired in an event. Usually referred to as C.
-   * This is used to normalize the number of features which occur in an event. */
+   * This is used to normalize the number of features which occur in an event.
+   */
   private double correctionConstant;
 
   public EvalParameters(Context[] params, int numOutcomes) {

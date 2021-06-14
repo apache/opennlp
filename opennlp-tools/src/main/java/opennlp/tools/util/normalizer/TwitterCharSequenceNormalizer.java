@@ -41,7 +41,7 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
-  public CharSequence normalize (CharSequence text) {
+  public CharSequence normalize(CharSequence text) {
     String modified = HASH_USER_REGEX.matcher(text).replaceAll(" ");
     modified = RT_REGEX.matcher(modified).replaceAll(" ");
     modified = FACE_REGEX.matcher(modified).replaceAll(" ");

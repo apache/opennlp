@@ -34,20 +34,19 @@ public class ParserChunkerSequenceValidator implements SequenceValidator<TokenTa
     for (String outcome : outcomes) {
       if (outcome.startsWith(Parser.CONT)) {
         continueStartMap.put(outcome, Parser.START + outcome.substring(
-                Parser.CONT.length()));
+            Parser.CONT.length()));
       }
     }
   }
 
   public boolean validSequence(int i, String[] inputSequence,
-      String[] tagList, String outcome) {
+                               String[] tagList, String outcome) {
     if (continueStartMap.containsKey(outcome)) {
       int lti = tagList.length - 1;
 
       if (lti == -1) {
         return false;
-      }
-      else {
+      } else {
         String lastTag = tagList[lti];
 
         if (lastTag.equals(outcome)) {

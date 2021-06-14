@@ -32,11 +32,9 @@ import opennlp.tools.util.InvalidFormatException;
  */
 public class POSSample implements Serializable {
 
-  private List<String> sentence;
-
-  private List<String> tags;
-
   private final String[][] additionalContext;
+  private List<String> sentence;
+  private List<String> tags;
 
   public POSSample(String[] sentence, String[] tags) {
     this(sentence, tags, null);
@@ -47,7 +45,7 @@ public class POSSample implements Serializable {
   }
 
   public POSSample(List<String> sentence, List<String> tags,
-      String[][] additionalContext) {
+                   String[][] additionalContext) {
     this.sentence = Collections.unmodifiableList(sentence);
     this.tags = Collections.unmodifiableList(tags);
 
@@ -68,15 +66,36 @@ public class POSSample implements Serializable {
   }
 
   public POSSample(String[] sentence, String[] tags,
-      String[][] additionalContext) {
+                   String[][] additionalContext) {
     this(Arrays.asList(sentence), Arrays.asList(tags), additionalContext);
+  }
+
+  public static POSSample parse(String sentenceString) throws InvalidFormatException {
+
+    String[] tokenTags = WhitespaceTokenizer.INSTANCE.tokenize(sentenceString);
+
+    String[] sentence = new String[tokenTags.length];
+    String[] tags = new String[tokenTags.length];
+
+    for (int i = 0; i < tokenTags.length; i++) {
+      int split = tokenTags[i].lastIndexOf("_");
+
+      if (split == -1) {
+        throw new InvalidFormatException("Cannot find \"_\" inside token '" + tokenTags[i] + "'!");
+      }
+
+      sentence[i] = tokenTags[i].substring(0, split);
+      tags[i] = tokenTags[i].substring(split + 1);
+    }
+
+    return new POSSample(sentence, tags);
   }
 
   private void checkArguments() {
     if (sentence.size() != tags.size()) {
       throw new IllegalArgumentException(
-        "There must be exactly one tag for each token. tokens: " + sentence.size() +
-            ", tags: " + tags.size());
+          "There must be exactly one tag for each token. tokens: " + sentence.size() +
+              ", tags: " + tags.size());
     }
 
     if (sentence.contains(null)) {
@@ -117,27 +136,6 @@ public class POSSample implements Serializable {
     }
 
     return result.toString();
-  }
-
-  public static POSSample parse(String sentenceString) throws InvalidFormatException {
-
-    String[] tokenTags = WhitespaceTokenizer.INSTANCE.tokenize(sentenceString);
-
-    String[] sentence = new String[tokenTags.length];
-    String[] tags = new String[tokenTags.length];
-
-    for (int i = 0; i < tokenTags.length; i++) {
-      int split = tokenTags[i].lastIndexOf("_");
-
-      if (split == -1) {
-        throw new InvalidFormatException("Cannot find \"_\" inside token '" + tokenTags[i] + "'!");
-      }
-
-      sentence[i] = tokenTags[i].substring(0, split);
-      tags[i] = tokenTags[i].substring(split + 1);
-    }
-
-    return new POSSample(sentence, tags);
   }
 
   @Override

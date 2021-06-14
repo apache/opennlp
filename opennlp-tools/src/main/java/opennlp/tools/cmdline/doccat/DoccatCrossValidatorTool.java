@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import opennlp.common.doccat.FeatureGenerator;
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -35,15 +36,11 @@ import opennlp.tools.doccat.DoccatCrossValidator;
 import opennlp.tools.doccat.DoccatEvaluationMonitor;
 import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.DocumentSample;
-import opennlp.tools.doccat.FeatureGenerator;
 import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.model.ModelUtil;
 
 public final class DoccatCrossValidatorTool extends
     AbstractCrossValidatorTool<DocumentSample, CVToolParams> {
-
-  interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
-  }
 
   public DoccatCrossValidatorTool() {
     super(DocumentSample.class, CVToolParams.class);
@@ -123,5 +120,8 @@ public final class DoccatCrossValidatorTool extends
 
     System.out.println("Accuracy: " + validator.getDocumentAccuracy() + "\n" +
         "Number of documents: " + validator.getDocumentCount());
+  }
+
+  interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
   }
 }

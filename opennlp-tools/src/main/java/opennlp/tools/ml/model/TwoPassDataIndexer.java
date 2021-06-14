@@ -44,7 +44,8 @@ import opennlp.tools.util.ObjectStream;
  */
 public class TwoPassDataIndexer extends AbstractDataIndexer {
 
-  public TwoPassDataIndexer() {}
+  public TwoPassDataIndexer() {
+  }
 
   @Override
   public void index(ObjectStream<Event> eventStream) throws IOException {
@@ -57,7 +58,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
 
     display("\tComputing event counts...  ");
 
-    Map<String,Integer> predicateIndex = new HashMap<>();
+    Map<String, Integer> predicateIndex = new HashMap<>();
 
     File tmp = File.createTempFile("events", null);
     tmp.deleteOnExit();
@@ -88,11 +89,10 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
 
     if (sort) {
       display("Sorting and merging events... ");
-    }
-    else {
+    } else {
       display("Collecting events... ");
     }
-    sortAndMerge(eventsToCompare,sort);
+    sortAndMerge(eventsToCompare, sort);
     display(String.format("Done indexing in %.2f s.\n", (System.currentTimeMillis() - start) / 1000d));
   }
 
@@ -101,22 +101,22 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
    * predicates associated with each event are counted and any which
    * occur at least <tt>cutoff</tt> times are added to the
    * <tt>predicatesInOut</tt> map along with a unique integer index.
-   *
+   * <p>
    * Protocol:
-   *  1 - (utf string) - Event outcome
-   *  2 - (int) - Event context array length
-   *  3+ - (utf string) - Event context string
-   *  4 - (int) - Event values array length
-   *  5+ - (float) - Event value
+   * 1 - (utf string) - Event outcome
+   * 2 - (int) - Event context array length
+   * 3+ - (utf string) - Event context string
+   * 4 - (int) - Event values array length
+   * 5+ - (float) - Event value
    *
-   * @param eventStream an <code>EventStream</code> value
-   * @param eventStore a writer to which the events are written to for later processing.
+   * @param eventStream     an <code>EventStream</code> value
+   * @param eventStore      a writer to which the events are written to for later processing.
    * @param predicatesInOut a <code>TObjectIntHashMap</code> value
-   * @param cutoff an <code>int</code> value
+   * @param cutoff          an <code>int</code> value
    */
   private int computeEventCounts(ObjectStream<Event> eventStream, DataOutputStream eventStore,
-      Map<String,Integer> predicatesInOut, int cutoff) throws IOException {
-    Map<String,Integer> counter = new HashMap<>();
+                                 Map<String, Integer> predicatesInOut, int cutoff) throws IOException {
+    Map<String, Integer> counter = new HashMap<>();
     int eventCount = 0;
 
     Event ev;
@@ -133,8 +133,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
 
       if (ev.getValues() == null) {
         eventStore.writeInt(0);
-      }
-      else {
+      } else {
         eventStore.writeInt(ev.getValues().length);
         for (float value : ev.getValues())
           eventStore.writeFloat(value);
@@ -179,8 +178,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
             values[i] = inputStream.readFloat();
         }
         return new Event(outcome, context, values);
-      }
-      else {
+      } else {
         return null;
       }
     }

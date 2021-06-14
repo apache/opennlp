@@ -35,14 +35,13 @@ import opennlp.tools.util.ext.ExtensionLoader;
  */
 public class TokenizerFactory extends BaseToolFactory {
 
+  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
+  private static final String USE_ALPHA_NUMERIC_OPTIMIZATION = "useAlphaNumericOptimization";
+  private static final String ALPHA_NUMERIC_PATTERN = "alphaNumericPattern";
   private String languageCode;
   private Dictionary abbreviationDictionary;
   private Boolean useAlphaNumericOptimization = false;
   private Pattern alphaNumericPattern;
-
-  private static final String ABBREVIATIONS_ENTRY_NAME = "abbreviations.dictionary";
-  private static final String USE_ALPHA_NUMERIC_OPTIMIZATION = "useAlphaNumericOptimization";
-  private static final String ALPHA_NUMERIC_PATTERN = "alphaNumericPattern";
 
   /**
    * Creates a {@link TokenizerFactory} that provides the default implementation
@@ -55,25 +54,58 @@ public class TokenizerFactory extends BaseToolFactory {
    * Creates a {@link TokenizerFactory}. Use this constructor to
    * programmatically create a factory.
    *
-   * @param languageCode
-   *          the language of the natural text
-   * @param abbreviationDictionary
-   *          an abbreviations dictionary
-   * @param useAlphaNumericOptimization
-   *          if true alpha numerics are skipped
-   * @param alphaNumericPattern
-   *          null or a custom alphanumeric pattern (default is:
-   *          "^[A-Za-z0-9]+$", provided by {@link Factory#DEFAULT_ALPHANUMERIC}
+   * @param languageCode                the language of the natural text
+   * @param abbreviationDictionary      an abbreviations dictionary
+   * @param useAlphaNumericOptimization if true alpha numerics are skipped
+   * @param alphaNumericPattern         null or a custom alphanumeric pattern (default is:
+   *                                    "^[A-Za-z0-9]+$", provided by {@link Factory#DEFAULT_ALPHANUMERIC}
    */
   public TokenizerFactory(String languageCode,
-      Dictionary abbreviationDictionary, boolean useAlphaNumericOptimization,
-      Pattern alphaNumericPattern) {
+                          Dictionary abbreviationDictionary, boolean useAlphaNumericOptimization,
+                          Pattern alphaNumericPattern) {
     this.init(languageCode, abbreviationDictionary,
         useAlphaNumericOptimization, alphaNumericPattern);
   }
 
+  /**
+   * Factory method the framework uses create a new {@link TokenizerFactory}.
+   *
+   * @param subclassName                the name of the class implementing the {@link TokenizerFactory}
+   * @param languageCode                the language code the tokenizer should use
+   * @param abbreviationDictionary      an optional dictionary containing abbreviations, or null if not
+   *                                    present
+   * @param useAlphaNumericOptimization indicate if the alpha numeric optimization
+   *                                    should be enabled or disabled
+   * @param alphaNumericPattern         the pattern the alpha numeric optimization should use
+   * @return the instance of the Tokenizer Factory
+   * @throws InvalidFormatException if once of the input parameters doesn't comply if the expected format
+   */
+  public static TokenizerFactory create(String subclassName,
+                                        String languageCode, Dictionary abbreviationDictionary,
+                                        boolean useAlphaNumericOptimization, Pattern alphaNumericPattern)
+      throws InvalidFormatException {
+    if (subclassName == null) {
+      // will create the default factory
+      return new TokenizerFactory(languageCode, abbreviationDictionary,
+          useAlphaNumericOptimization, alphaNumericPattern);
+    }
+    try {
+      TokenizerFactory theFactory = ExtensionLoader.instantiateExtension(
+          TokenizerFactory.class, subclassName);
+      theFactory.init(languageCode, abbreviationDictionary,
+          useAlphaNumericOptimization, alphaNumericPattern);
+      return theFactory;
+    } catch (Exception e) {
+      String msg = "Could not instantiate the " + subclassName
+          + ". The initialization throw an exception.";
+      System.err.println(msg);
+      e.printStackTrace();
+      throw new InvalidFormatException(msg, e);
+    }
+  }
+
   protected void init(String languageCode, Dictionary abbreviationDictionary,
-      boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
+                      boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
     this.languageCode = languageCode;
     this.useAlphaNumericOptimization = useAlphaNumericOptimization;
     this.alphaNumericPattern = alphaNumericPattern;
@@ -90,7 +122,7 @@ public class TokenizerFactory extends BaseToolFactory {
 
     if (abbreviationsEntry != null && !(abbreviationsEntry instanceof Dictionary)) {
       throw new InvalidFormatException("Abbreviations dictionary '" + abbreviationsEntry +
-              "' has wrong type, needs to be of type Dictionary!");
+          "' has wrong type, needs to be of type Dictionary!");
     }
   }
 
@@ -119,44 +151,6 @@ public class TokenizerFactory extends BaseToolFactory {
     }
 
     return manifestEntries;
-  }
-
-  /**
-   * Factory method the framework uses create a new {@link TokenizerFactory}.
-   *
-   * @param subclassName the name of the class implementing the {@link TokenizerFactory}
-   * @param languageCode the language code the tokenizer should use
-   * @param abbreviationDictionary an optional dictionary containing abbreviations, or null if not present
-   * @param useAlphaNumericOptimization indicate if the alpha numeric optimization
-   *     should be enabled or disabled
-   * @param alphaNumericPattern the pattern the alpha numeric optimization should use
-   *
-   * @return the instance of the Tokenizer Factory
-   *
-   * @throws InvalidFormatException if once of the input parameters doesn't comply if the expected format
-   */
-  public static TokenizerFactory create(String subclassName,
-      String languageCode, Dictionary abbreviationDictionary,
-      boolean useAlphaNumericOptimization, Pattern alphaNumericPattern)
-      throws InvalidFormatException {
-    if (subclassName == null) {
-      // will create the default factory
-      return new TokenizerFactory(languageCode, abbreviationDictionary,
-          useAlphaNumericOptimization, alphaNumericPattern);
-    }
-    try {
-      TokenizerFactory theFactory = ExtensionLoader.instantiateExtension(
-          TokenizerFactory.class, subclassName);
-      theFactory.init(languageCode, abbreviationDictionary,
-          useAlphaNumericOptimization, alphaNumericPattern);
-      return theFactory;
-    } catch (Exception e) {
-      String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
-      throw new InvalidFormatException(msg, e);
-    }
   }
 
   /**

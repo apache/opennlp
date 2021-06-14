@@ -32,7 +32,6 @@ public interface ArtifactProvider {
    * entry.
    *
    * @param key
-   *
    * @return the value
    */
   public String getManifestProperty(String key);

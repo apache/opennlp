@@ -33,13 +33,12 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.ResourceSpecifier;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.XMLInputSource;
-
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import opennlp.tools.util.StringList;
+import opennlp.common.util.StringList;
 import opennlp.uima.util.CasUtil;
 
 public class DictionaryResourceTest {

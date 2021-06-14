@@ -30,6 +30,14 @@ import org.junit.Test;
 
 public class DocumentSampleTest {
 
+  public static DocumentSample createGoldSample() {
+    return new DocumentSample("aCategory", new String[] {"a", "small", "text"});
+  }
+
+  public static DocumentSample createPredSample() {
+    return new DocumentSample("anotherCategory", new String[] {"a", "small", "text"});
+  }
+
   @Test
   public void testEquals() {
     Assert.assertFalse(createGoldSample() == createGoldSample());
@@ -60,14 +68,6 @@ public class DocumentSampleTest {
     Assert.assertNotNull(deSerializedDocumentSample);
     Assert.assertEquals(documentSample.getCategory(), deSerializedDocumentSample.getCategory());
     Assert.assertArrayEquals(documentSample.getText(), deSerializedDocumentSample.getText());
-  }
-
-  public static DocumentSample createGoldSample() {
-    return new DocumentSample("aCategory", new String[]{"a", "small", "text"});
-  }
-
-  public static DocumentSample createPredSample() {
-    return new DocumentSample("anotherCategory", new String[]{"a", "small", "text"});
   }
 
 }

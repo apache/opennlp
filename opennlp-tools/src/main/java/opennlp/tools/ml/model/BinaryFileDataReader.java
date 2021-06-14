@@ -33,8 +33,7 @@ public class BinaryFileDataReader implements DataReader {
     if (f.getName().endsWith(".gz")) {
       input = new DataInputStream(new BufferedInputStream(
           new GZIPInputStream(new BufferedInputStream(new FileInputStream(f)))));
-    }
-    else {
+    } else {
       input = new DataInputStream(new BufferedInputStream(new FileInputStream(f)));
     }
   }

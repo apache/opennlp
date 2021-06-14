@@ -31,7 +31,7 @@ public class BrownTokenFeatureGenerator implements AdaptiveFeatureGenerator {
   }
 
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
 
     List<String> wordClasses = BrownTokenClasses.getWordClasses(tokens[index], brownLexicon);
 

@@ -21,11 +21,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.common.tokenize.Tokenizer;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
@@ -39,9 +39,10 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
 
   /**
    * Creates a new {@link BratNameSampleStream}.
+   *
    * @param sentDetector a {@link SentenceDetector} instance
-   * @param tokenizer a {@link Tokenizer} instance
-   * @param samples a {@link BratDocument} {@link ObjectStream}
+   * @param tokenizer    a {@link Tokenizer} instance
+   * @param samples      a {@link BratDocument} {@link ObjectStream}
    */
   public BratNameSampleStream(SentenceDetector sentDetector,
                               Tokenizer tokenizer, ObjectStream<BratDocument> samples) {
@@ -52,9 +53,10 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
 
   /**
    * Creates a new {@link BratNameSampleStream}.
-   * @param sentModel a {@link SentenceModel} model
+   *
+   * @param sentModel  a {@link SentenceModel} model
    * @param tokenModel a {@link TokenizerModel} model
-   * @param samples a {@link BratDocument} {@link ObjectStream}
+   * @param samples    a {@link BratDocument} {@link ObjectStream}
    */
   public BratNameSampleStream(SentenceModel sentModel, TokenizerModel tokenModel,
                               ObjectStream<BratDocument> samples) {
@@ -67,13 +69,15 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
 
   /**
    * Creates a new {@link BratNameSampleStream}.
+   *
    * @param sentDetector a {@link SentenceDetector} instance
-   * @param tokenizer a {@link Tokenizer} instance
-   * @param samples a {@link BratDocument} {@link ObjectStream}
-   * @param nameTypes the name types to use or null if all name types
+   * @param tokenizer    a {@link Tokenizer} instance
+   * @param samples      a {@link BratDocument} {@link ObjectStream}
+   * @param nameTypes    the name types to use or null if all name types
    */
   public BratNameSampleStream(SentenceDetector sentDetector,
-      Tokenizer tokenizer, ObjectStream<BratDocument> samples, Set<String> nameTypes) {
+                              Tokenizer tokenizer, ObjectStream<BratDocument> samples,
+                              Set<String> nameTypes) {
     super(samples);
 
     this.parser = new BratDocumentParser(sentDetector, tokenizer, nameTypes);
@@ -81,13 +85,14 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
 
   /**
    * Creates a new {@link BratNameSampleStream}.
-   * @param sentModel a {@link SentenceModel} model
+   *
+   * @param sentModel  a {@link SentenceModel} model
    * @param tokenModel a {@link TokenizerModel} model
-   * @param samples a {@link BratDocument} {@link ObjectStream}
-   * @param nameTypes the name types to use or null if all name types
+   * @param samples    a {@link BratDocument} {@link ObjectStream}
+   * @param nameTypes  the name types to use or null if all name types
    */
   public BratNameSampleStream(SentenceModel sentModel, TokenizerModel tokenModel,
-      ObjectStream<BratDocument> samples, Set<String> nameTypes) {
+                              ObjectStream<BratDocument> samples, Set<String> nameTypes) {
     super(samples);
 
     // TODO: We can pass in custom validators here ...

@@ -53,15 +53,12 @@ class DocumentSplitterStream extends FilterObjectStream<String, String> {
             if (startDocElement < endDocElement) {
               docs.add(newDocs.substring(startDocElement, endDocElement + DOC_END_ELEMENT.length()));
               docStartOffset = endDocElement + DOC_END_ELEMENT.length();
-            }
-            else {
+            } else {
               throw new InvalidFormatException("<DOC> element is not closed!");
             }
-          }
-          else if (startDocElement != endDocElement) {
+          } else if (startDocElement != endDocElement) {
             throw new InvalidFormatException("Missing <DOC> or </DOC> element!");
-          }
-          else {
+          } else {
             break;
           }
         }
@@ -70,8 +67,7 @@ class DocumentSplitterStream extends FilterObjectStream<String, String> {
 
     if (docs.size() > 0) {
       return docs.remove(0);
-    }
-    else {
+    } else {
       return null;
     }
   }

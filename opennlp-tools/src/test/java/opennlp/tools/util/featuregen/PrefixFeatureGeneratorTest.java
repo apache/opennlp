@@ -35,58 +35,58 @@ public class PrefixFeatureGeneratorTest {
 
   @Test
   public void lengthTest1() {
-      
+
     String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
 
     int testTokenIndex = 0;
     int suffixLength = 2;
-      
-    AdaptiveFeatureGenerator generator = new PrefixFeatureGenerator(suffixLength);    
+
+    AdaptiveFeatureGenerator generator = new PrefixFeatureGenerator(suffixLength);
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
-    
+
     Assert.assertEquals(2, features.size());
     Assert.assertEquals("pre=T", features.get(0));
     Assert.assertEquals("pre=Th", features.get(1));
-    
+
   }
-  
+
   @Test
   public void lengthTest2() {
-      
+
     String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
 
     int testTokenIndex = 3;
     int suffixLength = 5;
-      
-    AdaptiveFeatureGenerator generator = new PrefixFeatureGenerator(suffixLength);    
+
+    AdaptiveFeatureGenerator generator = new PrefixFeatureGenerator(suffixLength);
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
-    
+
     Assert.assertEquals(5, features.size());
     Assert.assertEquals("pre=e", features.get(0));
     Assert.assertEquals("pre=ex", features.get(1));
     Assert.assertEquals("pre=exa", features.get(2));
     Assert.assertEquals("pre=exam", features.get(3));
     Assert.assertEquals("pre=examp", features.get(4));
-    
+
   }
-  
+
   @Test
   public void lengthTest3() {
-      
+
     String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
 
     int testTokenIndex = 1;
     int suffixLength = 5;
-      
-    AdaptiveFeatureGenerator generator = new PrefixFeatureGenerator(suffixLength);    
+
+    AdaptiveFeatureGenerator generator = new PrefixFeatureGenerator(suffixLength);
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
-        
+
     Assert.assertEquals(2, features.size());
     Assert.assertEquals("pre=i", features.get(0));
     Assert.assertEquals("pre=is", features.get(1));
-    
+
   }
 }

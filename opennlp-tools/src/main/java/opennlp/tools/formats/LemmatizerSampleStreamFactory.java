@@ -34,16 +34,13 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class LemmatizerSampleStreamFactory extends AbstractSampleStreamFactory<LemmaSample> {
 
-  interface Parameters extends BasicFormatParams {
+  protected <P> LemmatizerSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LemmaSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new LemmatizerSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> LemmatizerSampleStreamFactory(Class<P> params) {
-    super(params);
+        StreamFactoryRegistry.DEFAULT_FORMAT, new LemmatizerSampleStreamFactory(Parameters.class));
   }
 
   public ObjectStream<LemmaSample> create(String[] args) {
@@ -60,5 +57,8 @@ public class LemmatizerSampleStreamFactory extends AbstractSampleStreamFactory<L
     }
 
     return new LemmaSampleStream(lineStream);
+  }
+
+  interface Parameters extends BasicFormatParams {
   }
 }

@@ -32,7 +32,7 @@ public class NaiveBayesModel extends AbstractModel {
   protected long vocabulary;
 
   NaiveBayesModel(Context[] params, String[] predLabels, Map<String, Context> pmap,
-                         String[] outcomeNames) {
+                  String[] outcomeNames) {
     super(params, predLabels, pmap, outcomeNames);
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
     this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length,
@@ -46,39 +46,6 @@ public class NaiveBayesModel extends AbstractModel {
     this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length,
         outcomeTotals, predLabels.length);
     modelType = ModelType.NaiveBayes;
-  }
-
-  protected double[] initOutcomeTotals(String[] outcomeNames, Context[] params) {
-    double[] outcomeTotals = new double[outcomeNames.length];
-    for (Context context : params) {
-      for (int j = 0; j < context.getOutcomes().length; ++j) {
-        int outcome = context.getOutcomes()[j];
-        double count = context.getParameters()[j];
-        outcomeTotals[outcome] += count;
-      }
-    }
-    return outcomeTotals;
-  }
-
-  public double[] eval(String[] context) {
-    return eval(context, new double[evalParams.getNumOutcomes()]);
-  }
-
-  public double[] eval(String[] context, float[] values) {
-    return eval(context, values, new double[evalParams.getNumOutcomes()]);
-  }
-
-  public double[] eval(String[] context, double[] probs) {
-    return eval(context, null, probs);
-  }
-
-  public double[] eval(String[] context, float[] values, double[] outsums) {
-    Context[] scontexts = new Context[context.length];
-    java.util.Arrays.fill(outsums, 0);
-    for (int i = 0; i < context.length; i++) {
-      scontexts[i] = pmap.get(context[i]);
-    }
-    return eval(scontexts, values, outsums, evalParams, true);
   }
 
   public static double[] eval(int[] context, double[] prior, EvalParameters model) {
@@ -127,7 +94,7 @@ public class NaiveBayesModel extends AbstractModel {
   }
 
   static double[] eval(int[] context, float[] values, double[] prior,
-                              EvalParameters model, boolean normalize) {
+                       EvalParameters model, boolean normalize) {
     Context[] scontexts = new Context[context.length];
     for (int i = 0; i < context.length; i++) {
       scontexts[i] = model.getParams()[context[i]];
@@ -150,5 +117,38 @@ public class NaiveBayesModel extends AbstractModel {
     final double delta = 0.05; // Lidstone smoothing
 
     return 1.0 * (numerator + delta) / (denominator + delta * vocabulary);
+  }
+
+  protected double[] initOutcomeTotals(String[] outcomeNames, Context[] params) {
+    double[] outcomeTotals = new double[outcomeNames.length];
+    for (Context context : params) {
+      for (int j = 0; j < context.getOutcomes().length; ++j) {
+        int outcome = context.getOutcomes()[j];
+        double count = context.getParameters()[j];
+        outcomeTotals[outcome] += count;
+      }
+    }
+    return outcomeTotals;
+  }
+
+  public double[] eval(String[] context) {
+    return eval(context, new double[evalParams.getNumOutcomes()]);
+  }
+
+  public double[] eval(String[] context, float[] values) {
+    return eval(context, values, new double[evalParams.getNumOutcomes()]);
+  }
+
+  public double[] eval(String[] context, double[] probs) {
+    return eval(context, null, probs);
+  }
+
+  public double[] eval(String[] context, float[] values, double[] outsums) {
+    Context[] scontexts = new Context[context.length];
+    java.util.Arrays.fill(outsums, 0);
+    for (int i = 0; i < context.length; i++) {
+      scontexts[i] = pmap.get(context[i]);
+    }
+    return eval(scontexts, values, outsums, evalParams, true);
   }
 }

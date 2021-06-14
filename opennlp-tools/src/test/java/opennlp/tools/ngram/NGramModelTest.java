@@ -26,9 +26,9 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringList;
 
 /**
  * Tests for {@link opennlp.tools.ngram.NGramModel}
@@ -170,7 +170,7 @@ public class NGramModelTest {
     Assert.assertEquals(1, dictionary.getMinTokenCount());
     Assert.assertEquals(3, dictionary.getMaxTokenCount());
   }
-  
+
   @Test(expected = InvalidFormatException.class)
   public void testInvalidFormat() throws Exception {
     InputStream stream = new ByteArrayInputStream("inputstring".getBytes(StandardCharsets.UTF_8));
@@ -178,7 +178,7 @@ public class NGramModelTest {
     stream.close();
     ngramModel.toDictionary(true);
   }
-  
+
   @Test
   public void testFromFile() throws Exception {
     InputStream stream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model.xml");
@@ -190,42 +190,42 @@ public class NGramModelTest {
     Assert.assertEquals(3, dictionary.getMaxTokenCount());
     Assert.assertEquals(1, dictionary.getMinTokenCount());
   }
-  
+
   @Test
   public void testSerialize() throws Exception {
-   
+
     InputStream stream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model.xml");
-    
+
     NGramModel ngramModel1 = new NGramModel(stream);
     stream.close();
-    
+
     Dictionary dictionary = ngramModel1.toDictionary(true);
     Assert.assertNotNull(dictionary);
     Assert.assertEquals(14, dictionary.size());
     Assert.assertEquals(3, dictionary.getMaxTokenCount());
     Assert.assertEquals(1, dictionary.getMinTokenCount());
-    
+
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ngramModel1.serialize(baos);
-    
+
     final String serialized = new String(baos.toByteArray(), Charset.defaultCharset());
     InputStream inputStream = new ByteArrayInputStream(serialized.getBytes(StandardCharsets.UTF_8));
-        
+
     NGramModel ngramModel2 = new NGramModel(inputStream);
     stream.close();
-        
+
     Assert.assertEquals(ngramModel2.numberOfGrams(), ngramModel2.numberOfGrams());
     Assert.assertEquals(ngramModel2.size(), ngramModel2.size());
-    
+
     dictionary = ngramModel2.toDictionary(true);
-    
+
     Assert.assertNotNull(dictionary);
     Assert.assertEquals(14, dictionary.size());
     Assert.assertEquals(3, dictionary.getMaxTokenCount());
     Assert.assertEquals(1, dictionary.getMinTokenCount());
-    
+
   }
-  
+
   @Test(expected = InvalidFormatException.class)
   public void testFromInvalidFileMissingCount() throws Exception {
     InputStream stream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model-no-count.xml");
@@ -233,7 +233,7 @@ public class NGramModelTest {
     stream.close();
     ngramModel.toDictionary(true);
   }
-  
+
   @Test(expected = InvalidFormatException.class)
   public void testFromInvalidFileNotANumber() throws Exception {
     InputStream stream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model-not-a-number.xml");

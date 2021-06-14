@@ -23,7 +23,7 @@ import opennlp.tools.cmdline.ArgumentParser;
 
 /**
  * Common evaluation parameters.
- *
+ * <p>
  * Note: Do not use this class, internal use only!
  */
 public interface FineGrainedEvaluatorParams {

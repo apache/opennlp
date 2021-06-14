@@ -32,11 +32,13 @@ import opennlp.tools.util.ObjectStream;
  */
 public class ParseToTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
 
-  interface Parameters extends ParseSampleStreamFactory.Parameters, DetokenizerParameter {
-  }
-
   private ParseToTokenSampleStreamFactory() {
     super(Parameters.class);
+  }
+
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(TokenSample.class,
+        "parse", new ParseToTokenSampleStreamFactory());
   }
 
   public ObjectStream<TokenSample> create(String[] args) {
@@ -50,8 +52,6 @@ public class ParseToTokenSampleStreamFactory extends DetokenizerSampleStreamFact
         new ParseToPOSSampleStream(parseSampleStream));
   }
 
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(TokenSample.class,
-        "parse", new ParseToTokenSampleStreamFactory());
+  interface Parameters extends ParseSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 }

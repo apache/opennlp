@@ -28,7 +28,8 @@ import java.io.ObjectOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import opennlp.tools.util.Span;
+import opennlp.common.tokenize.Detokenizer;
+import opennlp.common.util.Span;
 
 public class TokenSampleTest {
 

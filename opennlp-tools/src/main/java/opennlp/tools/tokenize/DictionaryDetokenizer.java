@@ -20,6 +20,8 @@ package opennlp.tools.tokenize;
 import java.util.HashSet;
 import java.util.Set;
 
+import opennlp.common.tokenize.Detokenizer;
+
 /**
  * A rule based detokenizer. Simple rules which indicate in which direction a token should be
  * moved are looked up in a {@link DetokenizationDictionary} object.
@@ -46,32 +48,26 @@ public class DictionaryDetokenizer implements Detokenizer {
 
       if (dictOperation == null) {
         operations[i] = Detokenizer.DetokenizationOperation.NO_OPERATION;
-      }
-      else if (DetokenizationDictionary.Operation.MOVE_LEFT.equals(dictOperation)) {
+      } else if (DetokenizationDictionary.Operation.MOVE_LEFT.equals(dictOperation)) {
         operations[i] = Detokenizer.DetokenizationOperation.MERGE_TO_LEFT;
-      }
-      else if (DetokenizationDictionary.Operation.MOVE_RIGHT.equals(dictOperation)) {
+      } else if (DetokenizationDictionary.Operation.MOVE_RIGHT.equals(dictOperation)) {
         operations[i] = Detokenizer.DetokenizationOperation.MERGE_TO_RIGHT;
-      }
-      else if (DetokenizationDictionary.Operation.MOVE_BOTH.equals(dictOperation)) {
+      } else if (DetokenizationDictionary.Operation.MOVE_BOTH.equals(dictOperation)) {
         operations[i] = Detokenizer.DetokenizationOperation.MERGE_BOTH;
-      }
-      else if (DetokenizationDictionary.Operation.RIGHT_LEFT_MATCHING.equals(dictOperation)) {
+      } else if (DetokenizationDictionary.Operation.RIGHT_LEFT_MATCHING.equals(dictOperation)) {
 
         if (matchingTokens.contains(tokens[i])) {
           // The token already occurred once, move it to the left
           // and clear the occurrence flag
           operations[i] = Detokenizer.DetokenizationOperation.MERGE_TO_LEFT;
           matchingTokens.remove(tokens[i]);
-        }
-        else {
+        } else {
           // First time this token is seen, move it to the right
           // and remember it
           operations[i] = Detokenizer.DetokenizationOperation.MERGE_TO_RIGHT;
           matchingTokens.add(tokens[i]);
         }
-      }
-      else {
+      } else {
         throw new IllegalStateException("Unknown operation: " + dictOperation);
       }
     }
@@ -115,8 +111,7 @@ public class DictionaryDetokenizer implements Detokenizer {
           || operations[i].equals(DetokenizationOperation.MERGE_BOTH)) {
         isAppendSpace = false;
         isAppendSplitMarker = true;
-      }
-      else {
+      } else {
         isAppendSpace = true;
         isAppendSplitMarker = false;
       }

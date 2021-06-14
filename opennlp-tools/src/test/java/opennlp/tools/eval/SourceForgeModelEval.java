@@ -32,12 +32,14 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import opennlp.tools.chunker.Chunker;
+import opennlp.common.chunker.Chunker;
+import opennlp.common.namefind.TokenNameFinder;
+import opennlp.common.tokenize.Tokenizer;
+import opennlp.common.util.Span;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.cmdline.parser.ParserTool;
 import opennlp.tools.namefind.NameFinderME;
-import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.Parser;
@@ -51,7 +53,6 @@ import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
@@ -60,7 +61,6 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 
 /**
  * This tests ensures that the existing SourceForge models perform
@@ -87,83 +87,11 @@ import opennlp.tools.util.Span;
  */
 public class SourceForgeModelEval extends AbstractEvalTest {
 
-  private static class LeipzigTestSample {
-    private final List<String> text;
-
-    private LeipzigTestSample(String[] text) {
-      Objects.requireNonNull(text, "text must not be null");
-      this.text = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(text)));
-    }
-
-    public String[] getText() {
-      return text.toArray(new String[text.size()]);
-    }
-
-    @Override
-    public String toString() {
-
-      StringBuilder sampleString = new StringBuilder("eng");
-
-      sampleString.append('\t');
-
-      for (String s : text) {
-        sampleString.append(s).append(' ');
-      }
-
-      if (sampleString.length() > 0) {
-        // remove last space
-        sampleString.setLength(sampleString.length() - 1);
-      }
-
-      return sampleString.toString();
-    }
-  }
-
-  private static class LeipzigTestSampleStream extends FilterObjectStream<String, LeipzigTestSample> {
-
-    private final int sentencePerDocument;
-    private final Tokenizer tokenizer;
-
-    private LeipzigTestSampleStream(int sentencePerDocument, Tokenizer tokenizer, InputStreamFactory in)
-            throws IOException {
-      super(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
-      this.sentencePerDocument = sentencePerDocument;
-      this.tokenizer = tokenizer;
-    }
-
-    @Override
-    public LeipzigTestSample read() throws IOException {
-      int count = 0;
-      List<String> tokensList = new ArrayList<>();
-
-      String line;
-      while (count < sentencePerDocument && (line = samples.read()) != null) {
-
-        String[] tokens = tokenizer.tokenize(line);
-
-        if (tokens.length == 0) {
-          throw new IOException("Empty lines are not allowed!");
-        }
-
-        // Always skip first token, that is the sentence number!
-        tokensList.addAll(Arrays.asList(tokens).subList(1, tokens.length));
-
-        count++;
-      }
-
-      if (tokensList.size() > 0) {
-        return new LeipzigTestSample(tokensList.toArray(new String[tokensList.size()]));
-      }
-
-      return null;
-    }
-  }
-
   @BeforeClass
   public static void verifyTrainingData() throws Exception {
     verifyTrainingData(new LeipzigTestSampleStream(25, SimpleTokenizer.INSTANCE,
             new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                    "leipzig/eng_news_2010_300K-sentences.txt"))),
+                "leipzig/eng_news_2010_300K-sentences.txt"))),
         new BigInteger("172812413483919324675263268750583851712"));
   }
 
@@ -171,7 +99,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
   public void evalSentenceModel() throws Exception {
 
     SentenceModel model = new SentenceModel(
-            new File(getOpennlpDataDir(), "models-sf/en-sent.bin"));
+        new File(getOpennlpDataDir(), "models-sf/en-sent.bin"));
 
     MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
 
@@ -180,9 +108,9 @@ public class SourceForgeModelEval extends AbstractEvalTest {
     StringBuilder text = new StringBuilder();
 
     try (ObjectStream<LeipzigTestSample> lineBatches = new LeipzigTestSampleStream(25,
-            SimpleTokenizer.INSTANCE,
-            new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                    "leipzig/eng_news_2010_300K-sentences.txt")))) {
+        SimpleTokenizer.INSTANCE,
+        new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
+            "leipzig/eng_news_2010_300K-sentences.txt")))) {
 
       LeipzigTestSample lineBatch;
       while ((lineBatch = lineBatches.read()) != null) {
@@ -197,7 +125,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
     }
 
     Assert.assertEquals(new BigInteger("228544068397077998410949364710969159291"),
-            new BigInteger(1, digest.digest()));
+        new BigInteger(1, digest.digest()));
   }
 
   @Test
@@ -208,16 +136,16 @@ public class SourceForgeModelEval extends AbstractEvalTest {
     // and then tokenize it here
 
     TokenizerModel model = new TokenizerModel(
-            new File(getOpennlpDataDir(), "models-sf/en-token.bin"));
+        new File(getOpennlpDataDir(), "models-sf/en-token.bin"));
 
     MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
 
     Tokenizer tokenizer = new TokenizerME(model);
 
     try (ObjectStream<LeipzigTestSample> lines = new LeipzigTestSampleStream(1,
-            WhitespaceTokenizer.INSTANCE,
-            new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                    "leipzig/eng_news_2010_300K-sentences.txt")))) {
+        WhitespaceTokenizer.INSTANCE,
+        new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
+            "leipzig/eng_news_2010_300K-sentences.txt")))) {
 
       LeipzigTestSample line;
       while ((line = lines.read()) != null) {
@@ -229,7 +157,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
     }
 
     Assert.assertEquals(new BigInteger("180602607571756839321060482558626151930"),
-            new BigInteger(1, digest.digest()));
+        new BigInteger(1, digest.digest()));
   }
 
   private ObjectStream<LeipzigTestSample> createLineWiseStream() throws IOException {
@@ -238,7 +166,6 @@ public class SourceForgeModelEval extends AbstractEvalTest {
         new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
             "leipzig/eng_news_2010_300K-sentences.txt")));
   }
-
 
   private void evalNameFinder(TokenNameFinderModel model, BigInteger expectedHash)
       throws Exception {
@@ -412,5 +339,77 @@ public class SourceForgeModelEval extends AbstractEvalTest {
 
     Assert.assertEquals(new BigInteger("68039262350771988792233880373220954061"),
         new BigInteger(1, digest.digest()));
+  }
+
+  private static class LeipzigTestSample {
+    private final List<String> text;
+
+    private LeipzigTestSample(String[] text) {
+      Objects.requireNonNull(text, "text must not be null");
+      this.text = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(text)));
+    }
+
+    public String[] getText() {
+      return text.toArray(new String[text.size()]);
+    }
+
+    @Override
+    public String toString() {
+
+      StringBuilder sampleString = new StringBuilder("eng");
+
+      sampleString.append('\t');
+
+      for (String s : text) {
+        sampleString.append(s).append(' ');
+      }
+
+      if (sampleString.length() > 0) {
+        // remove last space
+        sampleString.setLength(sampleString.length() - 1);
+      }
+
+      return sampleString.toString();
+    }
+  }
+
+  private static class LeipzigTestSampleStream extends FilterObjectStream<String, LeipzigTestSample> {
+
+    private final int sentencePerDocument;
+    private final Tokenizer tokenizer;
+
+    private LeipzigTestSampleStream(int sentencePerDocument, Tokenizer tokenizer, InputStreamFactory in)
+        throws IOException {
+      super(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
+      this.sentencePerDocument = sentencePerDocument;
+      this.tokenizer = tokenizer;
+    }
+
+    @Override
+    public LeipzigTestSample read() throws IOException {
+      int count = 0;
+      List<String> tokensList = new ArrayList<>();
+
+      String line;
+      while (count < sentencePerDocument && (line = samples.read()) != null) {
+
+        String[] tokens = tokenizer.tokenize(line);
+
+        if (tokens.length == 0) {
+          throw new IOException("Empty lines are not allowed!");
+        }
+
+        // Always skip first token, that is the sentence number!
+        tokensList.addAll(Arrays.asList(tokens).subList(1, tokens.length));
+
+        count++;
+      }
+
+      if (tokensList.size() > 0) {
+        return new LeipzigTestSample(tokensList.toArray(new String[tokensList.size()]));
+      }
+
+      return null;
+    }
   }
 }

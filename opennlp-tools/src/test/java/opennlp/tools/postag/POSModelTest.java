@@ -35,8 +35,7 @@ public class POSModelTest {
 
     try {
       posModel.serialize(out);
-    }
-    finally {
+    } finally {
       out.close();
     }
 
@@ -53,8 +52,7 @@ public class POSModelTest {
 
     try {
       posModel.serialize(out);
-    }
-    finally {
+    } finally {
       out.close();
     }
 

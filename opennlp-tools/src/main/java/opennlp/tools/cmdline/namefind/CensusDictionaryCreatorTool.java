@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.BasicCmdLineTool;
@@ -32,7 +33,6 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.NameFinderCensus90NameStream;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.StringList;
 
 /**
  * This tool helps create a loadable dictionary for the {@code NameFinder},
@@ -45,40 +45,11 @@ import opennlp.tools.util.StringList;
 public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
 
   /**
-   * Create a list of expected parameters.
-   */
-  interface Parameters {
-
-    @ParameterDescription(valueName = "code")
-    @OptionalParameter(defaultValue = "eng")
-    String getLang();
-
-    @ParameterDescription(valueName = "charsetName")
-    @OptionalParameter(defaultValue = "UTF-8")
-    String getEncoding();
-
-    @ParameterDescription(valueName = "censusDict")
-    String getCensusData();
-
-    @ParameterDescription(valueName = "dict")
-    String getDict();
-  }
-
-  public String getShortDescription() {
-    return "Converts 1990 US Census names into a dictionary";
-  }
-
-
-  public String getHelp() {
-    return getBasicHelp(Parameters.class);
-  }
-
-  /**
    * Creates a dictionary.
    *
    * @param sampleStream stream of samples.
    * @return a {@code Dictionary} class containing the name dictionary
-   *     built from the input file.
+   * built from the input file.
    * @throws IOException IOException
    */
   public static Dictionary createDictionary(ObjectStream<StringList> sampleStream) throws IOException {
@@ -95,6 +66,15 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
     }
 
     return mNameDictionary;
+  }
+
+  public String getShortDescription() {
+    return "Converts 1990 US Census names into a dictionary";
+  }
+
+
+  public String getHelp() {
+    return getBasicHelp(Parameters.class);
   }
 
   public void run(String[] args) {
@@ -127,5 +107,25 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
       throw new TerminateToolException(-1, "IO error while writing dictionary file: "
           + e.getMessage(), e);
     }
+  }
+
+  /**
+   * Create a list of expected parameters.
+   */
+  interface Parameters {
+
+    @ParameterDescription(valueName = "code")
+    @OptionalParameter(defaultValue = "eng")
+    String getLang();
+
+    @ParameterDescription(valueName = "charsetName")
+    @OptionalParameter(defaultValue = "UTF-8")
+    String getEncoding();
+
+    @ParameterDescription(valueName = "censusDict")
+    String getCensusData();
+
+    @ParameterDescription(valueName = "dict")
+    String getDict();
   }
 }

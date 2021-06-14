@@ -26,8 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import opennlp.common.util.Span;
 import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.util.Span;
 
 /**
  * Class which produces an Iterator&lt;TokenSample&gt; from a file of space delimited token.
@@ -44,6 +44,11 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   public TokenSampleStream(InputStream is) throws IOException {
     this.in = new BufferedReader(new InputStreamReader(is));
     line = in.readLine();
+  }
+
+  private static void usage() {
+    System.err.println("TokenSampleStream [-spans] < in");
+    System.err.println("Where in is a space delimited list of tokens.");
   }
 
   public boolean hasNext() {
@@ -78,14 +83,13 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       if (sb.length() != 0) {
         if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
           if ((token.equals("``") || token.equals("--") || token.equals("$") ||
-              token.equals("(")  || token.equals("&")  || token.equals("#") ||
+              token.equals("(") || token.equals("&") || token.equals("#") ||
               (token.equals("\"") && (evenq && ti != tokens.length - 1)))
               && (!lastToken.equals("(") || !lastToken.equals("{"))) {
             //System.out.print(" "+token);
             length++;
           }
-        }
-        else {
+        } else {
           if (!lastToken.equals("``") && (!lastToken.equals("\"") || evenq) && !lastToken.equals("(")
               && !lastToken.equals("{") && !lastToken.equals("$") && !lastToken.equals("#")) {
             length++;
@@ -109,16 +113,10 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       e.printStackTrace();
       line = null;
     }
-    return new TokenSample(sb.toString(),spans.toArray(new Span[spans.size()]));
+    return new TokenSample(sb.toString(), spans.toArray(new Span[spans.size()]));
   }
-
 
   public void remove() {
     throw new UnsupportedOperationException();
-  }
-
-  private static void usage() {
-    System.err.println("TokenSampleStream [-spans] < in");
-    System.err.println("Where in is a space delimited list of tokens.");
   }
 }

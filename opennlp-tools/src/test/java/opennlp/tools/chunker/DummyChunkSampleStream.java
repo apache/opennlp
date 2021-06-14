@@ -75,7 +75,7 @@ public class DummyChunkSampleStream extends
         return new ChunkSample(toks.toArray(new String[toks.size()]),
             posTags.toArray(new String[posTags.size()]),
             predictedChunkTags
-            .toArray(new String[predictedChunkTags.size()]));
+                .toArray(new String[predictedChunkTags.size()]));
       } else
         return new ChunkSample(toks.toArray(new String[toks.size()]),
             posTags.toArray(new String[posTags.size()]),

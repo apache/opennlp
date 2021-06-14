@@ -39,21 +39,21 @@ public class POSTaggerNameFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("tokenpos", new POSTaggerNameFeatureGeneratorFactory());
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager)
+                                         FeatureGeneratorResourceProvider resourceManager)
       throws InvalidFormatException {
 
     String modelResourceKey = generatorElement.getAttribute("model");
 
-    POSModel model = (POSModel)resourceManager.getResource(modelResourceKey);
+    POSModel model = (POSModel) resourceManager.getResource(modelResourceKey);
 
     return new POSTaggerNameFeatureGenerator(model);
 
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("tokenpos", new POSTaggerNameFeatureGeneratorFactory());
   }
 
   @Override
@@ -63,7 +63,7 @@ public class POSTaggerNameFeatureGeneratorFactory
       return null;
 
     String modelResourceKey = getStr("model");
-    POSModel model = (POSModel)resourceManager.getResource(modelResourceKey);
+    POSModel model = (POSModel) resourceManager.getResource(modelResourceKey);
     return new POSTaggerNameFeatureGenerator(model);
   }
 

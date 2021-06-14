@@ -20,9 +20,10 @@ package opennlp.tools.chunker;
 
 import opennlp.tools.util.TokenTag;
 
-/** Features based on chunking model described in Fei Sha and Fernando Pereira. Shallow
- *  parsing with conditional random fields. In Proceedings of HLT-NAACL 2003. Association
- *  for Computational Linguistics, 2003.
+/**
+ * Features based on chunking model described in Fei Sha and Fernando Pereira. Shallow
+ * parsing with conditional random fields. In Proceedings of HLT-NAACL 2003. Association
+ * for Computational Linguistics, 2003.
  */
 public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
 
@@ -33,7 +34,7 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
   }
 
   public String[] getContext(int index, String[] tokens, String[] postags,
-      String[] priorDecisions, Object[] additionalContext) {
+                             String[] priorDecisions, Object[] additionalContext) {
     return getContext(index, tokens, postags, priorDecisions);
   }
 
@@ -51,8 +52,7 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
       w_2 = "w_2=bos";
       t_2 = "t_2=bos";
       p_2 = "p_2=bos";
-    }
-    else {
+    } else {
       w_2 = "w_2=" + toks[i - 2];
       t_2 = "t_2=" + tags[i - 2];
       p_2 = "p_2" + preds[i - 2];
@@ -62,8 +62,7 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
       w_1 = "w_1=bos";
       t_1 = "t_1=bos";
       p_1 = "p_1=bos";
-    }
-    else {
+    } else {
       w_1 = "w_1=" + toks[i - 1];
       t_1 = "t_1=" + tags[i - 1];
       p_1 = "p_1=" + preds[i - 1];
@@ -75,8 +74,7 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
     if (i + 1 >= toks.length) {
       w1 = "w1=eos";
       t1 = "t1=eos";
-    }
-    else {
+    } else {
       w1 = "w1=" + toks[i + 1];
       t1 = "t1=" + tags[i + 1];
     }
@@ -84,8 +82,7 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
     if (i + 2 >= toks.length) {
       w2 = "w2=eos";
       t2 = "t2=eos";
-    }
-    else {
+    } else {
       w2 = "w2=" + toks[i + 2];
       t2 = "t2=" + tags[i + 2];
     }

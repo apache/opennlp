@@ -32,14 +32,14 @@ public class PosTaggerFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) {
-    return new PosTaggerFeatureGenerator();
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("postagger", new PosTaggerFeatureGeneratorFactory());
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("postagger", new PosTaggerFeatureGeneratorFactory());
+  public AdaptiveFeatureGenerator create(Element generatorElement,
+                                         FeatureGeneratorResourceProvider resourceManager) {
+    return new PosTaggerFeatureGenerator();
   }
 
   @Override

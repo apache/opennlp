@@ -39,8 +39,7 @@ public abstract class SegmenterObjectStream<S, T> extends FilterObjectStream<S, 
 
     if (sampleIt.hasNext()) {
       return sampleIt.next();
-    }
-    else {
+    } else {
       S inSample = samples.read();
 
       if (inSample != null) {

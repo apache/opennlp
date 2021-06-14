@@ -46,12 +46,12 @@ import opennlp.tools.util.model.SerializableArtifact;
  */
 public final class POSModel extends BaseModel implements SerializableArtifact {
 
-  private static final String COMPONENT_NAME = "POSTaggerME";
   static final String POS_MODEL_ENTRY_NAME = "pos.model";
   static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
+  private static final String COMPONENT_NAME = "POSTaggerME";
 
   public POSModel(String languageCode, SequenceClassificationModel<String> posModel,
-      Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
+                  Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
 
@@ -69,12 +69,12 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
   }
 
   public POSModel(String languageCode, MaxentModel posModel,
-      Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
+                  Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
     this(languageCode, posModel, POSTaggerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, posFactory);
   }
 
   public POSModel(String languageCode, MaxentModel posModel, int beamSize,
-      Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
+                  Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
 
@@ -131,8 +131,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
   public MaxentModel getPosModel() {
     if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       return (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
-    }
-    else {
+    } else {
       return null;
     }
   }
@@ -150,11 +149,9 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
       }
 
       return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME));
-    }
-    else if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+    } else if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
       return (SequenceClassificationModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
-    }
-    else {
+    } else {
       return null;
     }
   }

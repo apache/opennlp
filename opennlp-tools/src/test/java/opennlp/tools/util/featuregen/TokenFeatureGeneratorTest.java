@@ -26,8 +26,8 @@ import org.junit.Test;
 
 public class TokenFeatureGeneratorTest {
 
-  private List<String> features;
   static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
+  private List<String> features;
 
   @Before
   public void setUp() throws Exception {

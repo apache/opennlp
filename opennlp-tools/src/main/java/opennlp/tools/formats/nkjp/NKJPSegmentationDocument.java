@@ -35,40 +35,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 import opennlp.tools.util.XmlUtil;
 
 public class NKJPSegmentationDocument {
-
-  public static class Pointer {
-    String doc;
-    String id;
-    int offset;
-    int length;
-    boolean space_after;
-
-    public Pointer(String doc, String id, int offset, int length, boolean space_after) {
-      this.doc = doc;
-      this.id = id;
-      this.offset = offset;
-      this.length = length;
-      this.space_after = space_after;
-    }
-
-    public Span toSpan() {
-      return new Span(this.offset, this.offset + this.length);
-    }
-
-    @Override
-    public String toString() {
-      return doc + "#string-range(" + id + "," + Integer.toString(offset)
-          + "," + Integer.toString(length) + ")";
-    }
-  }
-
-  public Map<String, Map<String, Pointer>> getSegments() {
-    return segments;
-  }
 
   Map<String, Map<String, Pointer>> segments;
 
@@ -86,7 +56,8 @@ public class NKJPSegmentationDocument {
     Map<String, Map<String, Pointer>> sentences = new LinkedHashMap<>();
 
     try {
-      DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();;
+      DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();
+      ;
       Document doc = docBuilder.parse(is);
 
       XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -255,6 +226,36 @@ public class NKJPSegmentationDocument {
   static NKJPSegmentationDocument parse(File file) throws IOException {
     try (InputStream in = new FileInputStream(file)) {
       return parse(in);
+    }
+  }
+
+  public Map<String, Map<String, Pointer>> getSegments() {
+    return segments;
+  }
+
+  public static class Pointer {
+    String doc;
+    String id;
+    int offset;
+    int length;
+    boolean space_after;
+
+    public Pointer(String doc, String id, int offset, int length, boolean space_after) {
+      this.doc = doc;
+      this.id = id;
+      this.offset = offset;
+      this.length = length;
+      this.space_after = space_after;
+    }
+
+    public Span toSpan() {
+      return new Span(this.offset, this.offset + this.length);
+    }
+
+    @Override
+    public String toString() {
+      return doc + "#string-range(" + id + "," + Integer.toString(offset)
+          + "," + Integer.toString(length) + ")";
     }
   }
 }

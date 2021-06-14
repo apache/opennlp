@@ -31,7 +31,7 @@ public class FeatureGenWithSerializerMapping extends CustomFeatureGenerator
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
   }
 
   @Override
@@ -51,7 +51,7 @@ public class FeatureGenWithSerializerMapping extends CustomFeatureGenerator
 
   @Override
   public void init(Map<String, String> properties,
-      FeatureGeneratorResourceProvider resourceProvider)
+                   FeatureGeneratorResourceProvider resourceProvider)
       throws InvalidFormatException {
   }
 }

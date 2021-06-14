@@ -46,37 +46,40 @@ import opennlp.tools.ml.model.SequenceStreamEventStream;
 public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceTrainer {
 
   public static final String PERCEPTRON_SEQUENCE_VALUE = "PERCEPTRON_SEQUENCE";
-
-  private int iterations;
-  private SequenceStream sequenceStream;
-  /** Number of events in the event set. */
-  private int numEvents;
-
-  /** Number of predicates. */
-  private int numPreds;
-  private int numOutcomes;
-
-  /** List of outcomes for each event i, in context[i]. */
-  private int[] outcomeList;
-
-  private String[] outcomeLabels;
-
-  /** Stores the average parameter values of each predicate during iteration. */
-  private MutableContext[] averageParams;
-
-  /** Mapping between context and an integer */
-  private Map<String, Integer> pmap;
-
-  private Map<String,Integer> omap;
-
-  /** Stores the estimated parameter value of each predicate during iteration. */
-  private MutableContext[] params;
-  private boolean useAverage;
-  private int[][][] updates;
   private static final int VALUE = 0;
   private static final int ITER = 1;
   private static final int EVENT = 2;
-
+  private int iterations;
+  private SequenceStream sequenceStream;
+  /**
+   * Number of events in the event set.
+   */
+  private int numEvents;
+  /**
+   * Number of predicates.
+   */
+  private int numPreds;
+  private int numOutcomes;
+  /**
+   * List of outcomes for each event i, in context[i].
+   */
+  private int[] outcomeList;
+  private String[] outcomeLabels;
+  /**
+   * Stores the average parameter values of each predicate during iteration.
+   */
+  private MutableContext[] averageParams;
+  /**
+   * Mapping between context and an integer
+   */
+  private Map<String, Integer> pmap;
+  private Map<String, Integer> omap;
+  /**
+   * Stores the estimated parameter value of each predicate during iteration.
+   */
+  private MutableContext[] params;
+  private boolean useAverage;
+  private int[][][] updates;
   private String[] predLabels;
   private int numSequences;
 
@@ -101,8 +104,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     try {
       validate();
       return true;
-    }
-    catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       return false;
     }
   }
@@ -126,7 +128,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     trainingParameters.put(AbstractDataIndexer.CUTOFF_PARAM, cutoff);
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     DataIndexer di = new OnePassDataIndexer();
-    di.init(trainingParameters,reportMap);
+    di.init(trainingParameters, reportMap);
     di.index(new SequenceStreamEventStream(sequenceStream));
     numSequences = 0;
 
@@ -136,7 +138,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
       numSequences++;
     }
 
-    outcomeList  = di.getOutcomeList();
+    outcomeList = di.getOutcomeList();
     predLabels = di.getPredLabels();
     pmap = new HashMap<>();
 
@@ -179,7 +181,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
 
     for (int pi = 0; pi < numPreds; pi++) {
       params[pi] = new MutableContext(allOutcomesPattern, new double[numOutcomes]);
-      if (useAverage) averageParams[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
+      if (useAverage) averageParams[pi] = new MutableContext(allOutcomesPattern, new double[numOutcomes]);
       for (int aoi = 0; aoi < numOutcomes; aoi++) {
         params[pi].setParameter(aoi, 0.0);
         if (useAverage) averageParams[pi].setParameter(aoi, 0.0);
@@ -196,8 +198,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
 
     if (useAverage) {
       return new PerceptronModel(averageParams, updatedPredLabels, outcomeLabels);
-    }
-    else {
+    } else {
       return new PerceptronModel(params, updatedPredLabels, outcomeLabels);
     }
   }
@@ -215,8 +216,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     }
     if (useAverage) {
       trainingStats(averageParams);
-    }
-    else {
+    } else {
       trainingStats(params);
     }
   }
@@ -226,11 +226,11 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     int numCorrect = 0;
     int oei = 0;
     int si = 0;
-    List<Map<String,Float>> featureCounts = new ArrayList<>(numOutcomes);
+    List<Map<String, Float>> featureCounts = new ArrayList<>(numOutcomes);
     for (int oi = 0; oi < numOutcomes; oi++) {
       featureCounts.add(new HashMap<>());
     }
-    PerceptronModel model = new PerceptronModel(params,predLabels,outcomeLabels);
+    PerceptronModel model = new PerceptronModel(params, predLabels, outcomeLabels);
 
     sequenceStream.reset();
 
@@ -243,8 +243,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
         if (!taggerEvents[ei].getOutcome().equals(events[ei].getOutcome())) {
           update = true;
           //break;
-        }
-        else {
+        } else {
           numCorrect++;
         }
       }
@@ -267,8 +266,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
             Float c = featureCounts.get(oi).get(contextStrings[ci]);
             if (c == null) {
               c = value;
-            }
-            else {
+            } else {
               c += value;
             }
             featureCounts.get(oi).put(contextStrings[ci], c);
@@ -289,14 +287,12 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
             Float c = featureCounts.get(oi).get(contextStrings[ci]);
             if (c == null) {
               c = -1 * value;
-            }
-            else {
+            } else {
               c -= value;
             }
             if (c == 0f) {
               featureCounts.get(oi).remove(contextStrings[ci]);
-            }
-            else {
+            } else {
               featureCounts.get(oi).put(contextStrings[ci], c);
             }
           }
@@ -309,7 +305,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
               params[pi].updateParameter(oi, featureCounts.get(oi).get(feature));
               if (useAverage) {
                 if (updates[pi][oi][VALUE] != 0) {
-                  averageParams[pi].updateParameter(oi,updates[pi][oi][VALUE] * (numSequences
+                  averageParams[pi].updateParameter(oi, updates[pi][oi][VALUE] * (numSequences
                       * (iteration - updates[pi][oi][ITER]) + (si - updates[pi][oi][EVENT])));
                   //System.err.println("p avp["+pi+"]."+oi+"="+averageParams[pi].getParameters()[oi]);
                 }
@@ -323,7 +319,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
             }
           }
         }
-        model = new PerceptronModel(params,predLabels,outcomeLabels);
+        model = new PerceptronModel(params, predLabels, outcomeLabels);
       }
       si++;
     }
@@ -359,11 +355,11 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     Sequence sequence;
     while ((sequence = sequenceStream.read()) != null) {
       Event[] taggerEvents = sequenceStream.updateContext(sequence,
-          new PerceptronModel(params,predLabels,outcomeLabels));
+          new PerceptronModel(params, predLabels, outcomeLabels));
       for (int ei = 0; ei < taggerEvents.length; ei++, oei++) {
         int max = omap.get(taggerEvents[ei].getOutcome());
         if (max == outcomeList[oei]) {
-          numCorrect ++;
+          numCorrect++;
         }
       }
     }

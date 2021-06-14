@@ -36,8 +36,13 @@ public class TokenClassFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("tokenclass", new TokenClassFeatureGeneratorFactory());
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) {
+                                         FeatureGeneratorResourceProvider resourceManager) {
 
     String attribute = generatorElement.getAttribute("wordAndClass");
 
@@ -52,11 +57,6 @@ public class TokenClassFeatureGeneratorFactory
     }
 
     return new TokenClassFeatureGenerator(generateWordAndClassFeature);
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("tokenclass", new TokenClassFeatureGeneratorFactory());
   }
 
   @Override

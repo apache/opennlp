@@ -34,9 +34,8 @@ import opennlp.tools.ngram.NGramUtils;
 public class LanguageModelTestUtils {
 
   private static final java.math.MathContext CONTEXT = MathContext.DECIMAL128;
+  private static final char[] chars = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
   private static Random r = new Random();
-
-  private static final char[] chars = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
 
   public static Collection<String[]> generateRandomVocabulary(int size) {
     Collection<String[]> vocabulary = new LinkedList<>();

@@ -22,8 +22,6 @@ import java.util.Objects;
 
 /**
  * Stores a minimal tuple of information. Intended to be used with LinkedSpan
- *
- *
  */
 public abstract class BaseLink {
 
@@ -45,6 +43,7 @@ public abstract class BaseLink {
 
   /**
    * Any parent ID for the linked item
+   *
    * @return
    */
   public String getItemParentID() {
@@ -53,6 +52,7 @@ public abstract class BaseLink {
 
   /**
    * returns the parent ID of the linked item
+   *
    * @param itemParentID
    */
   public void setItemParentID(String itemParentID) {

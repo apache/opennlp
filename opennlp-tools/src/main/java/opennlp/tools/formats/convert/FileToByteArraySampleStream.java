@@ -54,8 +54,7 @@ public class FileToByteArraySampleStream extends FilterObjectStream<File, byte[]
 
     if (sampleFile != null) {
       return readFile(sampleFile);
-    }
-    else {
+    } else {
       return null;
     }
   }

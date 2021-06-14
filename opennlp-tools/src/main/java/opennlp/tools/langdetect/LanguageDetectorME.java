@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.common.langdetect.Language;
+import opennlp.common.langdetect.LanguageDetector;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -58,7 +60,6 @@ import opennlp.tools.util.TrainingParameters;
  * <a href="https://github.com/kkrugler/yalder">Yalder</a>}
  * for the inspiration for many of the design
  * components of this detector.
- *
  */
 public class LanguageDetectorME implements LanguageDetector {
 
@@ -76,6 +77,25 @@ public class LanguageDetectorME implements LanguageDetector {
     this.mContextGenerator = model.getFactory().getContextGenerator();
   }
 
+  public static LanguageDetectorModel train(ObjectStream<LanguageSample> samples,
+                                            TrainingParameters mlParams,
+                                            LanguageDetectorFactory factory)
+      throws IOException {
+
+    Map<String, String> manifestInfoEntries = new HashMap<>();
+
+    mlParams.putIfAbsent(AbstractEventTrainer.DATA_INDEXER_PARAM,
+        AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE);
+
+    EventTrainer trainer = TrainerFactory.getEventTrainer(
+        mlParams, manifestInfoEntries);
+
+    MaxentModel model = trainer.train(
+        new LanguageDetectorEventStream(samples, factory.getContextGenerator()));
+
+    return new LanguageDetectorModel(model, manifestInfoEntries, factory);
+  }
+
   /**
    * This will process the full content length.
    *
@@ -85,7 +105,7 @@ public class LanguageDetectorME implements LanguageDetector {
   @Override
   public Language[] predictLanguages(CharSequence content) {
     return predict(arrayToCounts(
-            mContextGenerator.getContext(content)));
+        mContextGenerator.getContext(content)));
   }
 
   /**
@@ -119,7 +139,7 @@ public class LanguageDetectorME implements LanguageDetector {
    */
   public ProbingLanguageDetectionResult probingPredictLanguages(CharSequence content) {
     return probingPredictLanguages(content,
-            LanguageDetectorConfig.DEFAULT_LANGUAGE_DETECTOR_CONFIG);
+        LanguageDetectorConfig.DEFAULT_LANGUAGE_DETECTOR_CONFIG);
   }
 
   /**
@@ -128,7 +148,7 @@ public class LanguageDetectorME implements LanguageDetector {
    * are met.
    *
    * @param content content to process
-   * @param config config to customize detection
+   * @param config  config to customize detection
    * @return
    */
   public ProbingLanguageDetectionResult probingPredictLanguages(CharSequence content,
@@ -142,8 +162,8 @@ public class LanguageDetectorME implements LanguageDetector {
     Map<String, MutableInt> ngramCounts = new HashMap<>();
     while (true) {
       int actualChunkSize =
-              (start + config.getChunkSize() > config.getMaxLength()) ?
-                      config.getMaxLength() - start : config.getChunkSize();
+          (start + config.getChunkSize() > config.getMaxLength()) ?
+              config.getMaxLength() - start : config.getChunkSize();
       StringCPLengthPair chunk = chunk(content, start, actualChunkSize);
 
       if (chunk.length() == 0) {
@@ -206,8 +226,8 @@ public class LanguageDetectorME implements LanguageDetector {
    * confidence in the predictions to stop.
    *
    * @param predictionsQueue queue of earlier predictions
-   * @param newPredictions most recent predictions
-   * @param ngramCounts -- not currently used, but might be useful
+   * @param newPredictions   most recent predictions
+   * @param ngramCounts      -- not currently used, but might be useful
    * @return whether or not enough text has been processed to make a determination
    */
   boolean seenEnough(List<Language[]> predictionsQueue, Language[] newPredictions,
@@ -217,13 +237,13 @@ public class LanguageDetectorME implements LanguageDetector {
       predictionsQueue.add(newPredictions);
       return false;
     } else if (predictionsQueue.size() > config.getMinConsecImprovements()
-            && predictionsQueue.size() > 0) {
+        && predictionsQueue.size() > 0) {
       predictionsQueue.remove(0);
     }
     predictionsQueue.add(newPredictions);
     if (config.getMinDiff() > 0.0 &&
-            newPredictions[0].getConfidence() -
-                    newPredictions[1].getConfidence() < config.getMinDiff()) {
+        newPredictions[0].getConfidence() -
+            newPredictions[1].getConfidence() < config.getMinDiff()) {
       return false;
     }
     String lastLang = null;
@@ -256,32 +276,13 @@ public class LanguageDetectorME implements LanguageDetector {
       String s = content.toString();
       int codePointLength = s.codePointCount(0, s.length());
       return
-              new StringCPLengthPair(s, codePointLength);
+          new StringCPLengthPair(s, codePointLength);
     }
     int[] codepoints = content.codePoints().skip(start).limit(chunkSize).toArray();
     return
-            new StringCPLengthPair(
-                    new String(codepoints, 0, codepoints.length),
-                    codepoints.length);
-  }
-
-  public static LanguageDetectorModel train(ObjectStream<LanguageSample> samples,
-                                            TrainingParameters mlParams,
-                                            LanguageDetectorFactory factory)
-      throws IOException {
-
-    Map<String, String> manifestInfoEntries = new HashMap<>();
-
-    mlParams.putIfAbsent(AbstractEventTrainer.DATA_INDEXER_PARAM,
-        AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE);
-
-    EventTrainer trainer = TrainerFactory.getEventTrainer(
-        mlParams, manifestInfoEntries);
-
-    MaxentModel model = trainer.train(
-        new LanguageDetectorEventStream(samples, factory.getContextGenerator()));
-
-    return new LanguageDetectorModel(model, manifestInfoEntries, factory);
+        new StringCPLengthPair(
+            new String(codepoints, 0, codepoints.length),
+            codepoints.length);
   }
 
   private static class StringCPLengthPair {

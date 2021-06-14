@@ -21,13 +21,13 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-import morfologik.stemming.Dictionary;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import opennlp.tools.postag.TagDictionary;
+
+import morfologik.stemming.Dictionary;
 
 public class MorfologikTagDictionaryTest {
 
@@ -82,7 +82,7 @@ public class MorfologikTagDictionaryTest {
   }
 
   private MorfologikTagDictionary createDictionary(boolean caseSensitive,
-      List<String> constant) throws Exception {
+                                                   List<String> constant) throws Exception {
     Path output = POSDictionayBuilderTest.createMorfologikDictionary();
     output.toFile().deleteOnExit();
     Dictionary dic = Dictionary.read(output);

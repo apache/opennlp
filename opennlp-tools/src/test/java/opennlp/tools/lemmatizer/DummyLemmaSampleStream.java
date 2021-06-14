@@ -38,7 +38,7 @@ public class DummyLemmaSampleStream
   // the predicted flag sets if the stream will contain the expected or the
   // predicted tags.
   public DummyLemmaSampleStream(ObjectStream<String> samples,
-      boolean isPredicted) {
+                                boolean isPredicted) {
     super(samples);
     mIsPredicted = isPredicted;
   }

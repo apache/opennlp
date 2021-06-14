@@ -27,10 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import opennlp.common.tokenize.Tokenizer;
+import opennlp.common.util.Span;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.Span;
 
 public class MucNameContentHandler extends SgmlParser.ContentHandler {
 
@@ -64,16 +64,14 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
 
   private final Tokenizer tokenizer;
   private final List<NameSample> storedSamples;
-
-  private boolean isInsideContentElement = false;
   private final List<String> text = new ArrayList<>();
-  private boolean isClearAdaptiveData = false;
   private final Stack<Span> incompleteNames = new Stack<>();
-
+  private boolean isInsideContentElement = false;
+  private boolean isClearAdaptiveData = false;
   private List<Span> names = new ArrayList<>();
 
   public MucNameContentHandler(Tokenizer tokenizer,
-      List<NameSample> storedSamples) {
+                               List<NameSample> storedSamples) {
     this.tokenizer = tokenizer;
     this.storedSamples = storedSamples;
   }

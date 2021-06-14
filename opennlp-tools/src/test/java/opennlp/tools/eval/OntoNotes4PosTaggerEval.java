@@ -20,7 +20,6 @@ package opennlp.tools.eval;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
@@ -57,6 +56,11 @@ public class OntoNotes4PosTaggerEval extends AbstractEvalTest {
             new FileToStringSampleStream(documentStream, StandardCharsets.UTF_8))));
   }
 
+  @BeforeClass
+  public static void verifyTrainingData() throws Exception {
+    verifyTrainingData(createPOSSampleStream(), new BigInteger("300430765214895870888056958221353356972"));
+  }
+
   private void crossEval(TrainingParameters params, double expectedScore)
       throws IOException {
     try (ObjectStream<POSSample> samples = createPOSSampleStream()) {
@@ -67,11 +71,6 @@ public class OntoNotes4PosTaggerEval extends AbstractEvalTest {
     }
   }
 
-  @BeforeClass
-  public static void verifyTrainingData() throws Exception {
-    verifyTrainingData(createPOSSampleStream(), new BigInteger("300430765214895870888056958221353356972"));
-  }
-  
   @Test
   public void evalEnglishMaxentTagger() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();

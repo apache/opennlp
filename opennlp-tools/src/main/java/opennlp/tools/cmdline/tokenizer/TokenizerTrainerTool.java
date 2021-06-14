@@ -37,15 +37,8 @@ import opennlp.tools.util.model.ModelUtil;
 public final class TokenizerTrainerTool
     extends AbstractTrainerTool<TokenSample, TrainerToolParams> {
 
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
-  }
-
   public TokenizerTrainerTool() {
     super(TokenSample.class, TrainerToolParams.class);
-  }
-
-  public String getShortDescription() {
-    return "trainer for the learnable tokenizer";
   }
 
   static Dictionary loadDict(File f) throws IOException {
@@ -55,6 +48,10 @@ public final class TokenizerTrainerTool
       dict = new Dictionary(new FileInputStream(f));
     }
     return dict;
+  }
+
+  public String getShortDescription() {
+    return "trainer for the learnable tokenizer";
   }
 
   public void run(String format, String[] args) {
@@ -92,8 +89,7 @@ public final class TokenizerTrainerTool
 
     } catch (IOException e) {
       throw createTerminationIOException(e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -102,5 +98,8 @@ public final class TokenizerTrainerTool
     }
 
     CmdLineUtil.writeModel("tokenizer", modelOutFile, model);
+  }
+
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 }

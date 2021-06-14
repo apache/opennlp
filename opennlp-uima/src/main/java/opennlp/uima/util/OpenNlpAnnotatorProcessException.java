@@ -29,7 +29,7 @@ public class OpenNlpAnnotatorProcessException extends
   }
 
   public OpenNlpAnnotatorProcessException(String messageKey,
-      Object[] arguments, Throwable t) {
+                                          Object[] arguments, Throwable t) {
     super(ExceptionMessages.MESSAGE_CATALOG, messageKey, arguments, t);
   }
 

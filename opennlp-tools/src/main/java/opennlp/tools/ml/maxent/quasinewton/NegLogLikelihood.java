@@ -28,17 +28,15 @@ import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
  */
 public class NegLogLikelihood implements Function {
 
-  protected int dimension;
-  protected int numOutcomes;
-  protected int numFeatures;
-  protected int numContexts;
-
   // Information from data index
   protected final float[][] values;
   protected final int[][] contexts;
   protected final int[] outcomeList;
   protected final int[] numTimesEventsSeen;
-
+  protected int dimension;
+  protected int numOutcomes;
+  protected int numFeatures;
+  protected int numContexts;
   // For calculating negLogLikelihood and gradient
   protected double[] tempSums;
   protected double[] expectation;
@@ -54,18 +52,18 @@ public class NegLogLikelihood implements Function {
       this.values = null;
     }
 
-    this.contexts    = indexer.getContexts();
+    this.contexts = indexer.getContexts();
     this.outcomeList = indexer.getOutcomeList();
     this.numTimesEventsSeen = indexer.getNumTimesEventsSeen();
 
     this.numOutcomes = indexer.getOutcomeLabels().length;
     this.numFeatures = indexer.getPredLabels().length;
     this.numContexts = this.contexts.length;
-    this.dimension   = numOutcomes * numFeatures;
+    this.dimension = numOutcomes * numFeatures;
 
     this.expectation = new double[numOutcomes];
-    this.tempSums    = new double[numOutcomes];
-    this.gradient    = new double[dimension];
+    this.tempSums = new double[numOutcomes];
+    this.gradient = new double[dimension];
   }
 
   public int getDimension() {

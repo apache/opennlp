@@ -34,6 +34,11 @@ public class OntoNotesParseSampleStreamFactory extends AbstractSampleStreamFacto
     super(OntoNotesFormatParameters.class);
   }
 
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(Parse.class, "ontonotes",
+        new OntoNotesParseSampleStreamFactory());
+  }
+
   public ObjectStream<Parse> create(String[] args) {
 
     OntoNotesFormatParameters params = ArgumentParser.parse(args, OntoNotesFormatParameters.class);
@@ -54,10 +59,5 @@ public class OntoNotesParseSampleStreamFactory extends AbstractSampleStreamFacto
 
     return new OntoNotesParseSampleStream(new DocumentToLineStream(new FileToStringSampleStream(
         documentStream, StandardCharsets.UTF_8)));
-  }
-
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(Parse.class, "ontonotes",
-        new OntoNotesParseSampleStreamFactory());
   }
 }

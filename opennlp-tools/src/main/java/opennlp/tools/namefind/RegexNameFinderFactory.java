@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- *
  * Returns a RegexNameFinder based on A selection of
  * defaults or a configuration and a selection of defaults
  */
@@ -70,13 +69,6 @@ public class RegexNameFinderFactory {
       regexMap.putAll(def.getRegexMap());
     }
     return regexMap;
-  }
-
-  public interface RegexAble {
-
-    Map<String, Pattern[]> getRegexMap();
-
-    String getType();
   }
 
   public enum DEFAULT_REGEX_NAME_FINDER implements RegexAble {
@@ -165,8 +157,8 @@ public class RegexNameFinderFactory {
       public Map<String, Pattern[]> getRegexMap() {
         Pattern[] p = new Pattern[1];
         p[0] = Pattern.compile("([-|\\+]?\\d{1,3}[d|D|\\u00B0|\\s](\\s*\\d{1,2}['|\\u2019|\\s])" +
-            "?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[N|n|S|s]?)(\\s*|,|,\\s*)([-|\\+]?\\d{1,3}[d|D|\\u00B0|" +
-            "\\s](\\s*\\d{1,2}['|\\u2019|\\s])?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[E|e|W|w]?)",
+                "?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[N|n|S|s]?)(\\s*|,|,\\s*)([-|\\+]?\\d{1,3}[d|D|\\u00B0|" +
+                "\\s](\\s*\\d{1,2}['|\\u2019|\\s])?(\\s*\\d{1,2}[\\\"|\\u201d])?\\s*[E|e|W|w]?)",
             Pattern.CASE_INSENSITIVE);
         Map<String, Pattern[]> regexMap = new HashMap<>();
         regexMap.put(getType(), p);
@@ -178,5 +170,12 @@ public class RegexNameFinderFactory {
         return "DEGREES_MIN_SEC_LAT_LON";
       }
     }
+  }
+
+  public interface RegexAble {
+
+    Map<String, Pattern[]> getRegexMap();
+
+    String getType();
   }
 }

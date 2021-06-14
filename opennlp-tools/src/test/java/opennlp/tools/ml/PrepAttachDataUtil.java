@@ -40,7 +40,7 @@ public class PrepAttachDataUtil {
     List<Event> events = new ArrayList<>();
 
     try (InputStream in = PerceptronPrepAttachTest.class.getResourceAsStream("/data/ppa/" +
-            filename)) {
+        filename)) {
       BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
       String line;
       while ((line = reader.readLine()) != null) {
@@ -66,7 +66,7 @@ public class PrepAttachDataUtil {
 
     int total = 0;
     int correct = 0;
-    for (Event ev: devEvents) {
+    for (Event ev : devEvents) {
       String targetLabel = ev.getOutcome();
       double[] ocs = model.eval(ev.getContext());
 

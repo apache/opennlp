@@ -32,14 +32,14 @@ public class DocumentBeginFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) {
-    return new DocumentBeginFeatureGenerator();
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("docbegin", new DocumentBeginFeatureGeneratorFactory());
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("docbegin", new DocumentBeginFeatureGeneratorFactory());
+  public AdaptiveFeatureGenerator create(Element generatorElement,
+                                         FeatureGeneratorResourceProvider resourceManager) {
+    return new DocumentBeginFeatureGenerator();
   }
 
   @Override

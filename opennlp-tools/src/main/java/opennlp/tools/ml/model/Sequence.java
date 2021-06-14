@@ -19,6 +19,7 @@ package opennlp.tools.ml.model;
 
 /**
  * Class which models a sequence.
+ *
  * @param <T> The type of the object which is the source of this sequence.
  */
 public class Sequence<T> {
@@ -30,10 +31,8 @@ public class Sequence<T> {
    * Creates a new sequence made up of the specified events and derived from the
    * specified source.
    *
-   * @param events
-   *          The events of the sequence.
-   * @param source
-   *          The source object for this sequence.
+   * @param events The events of the sequence.
+   * @param source The source object for this sequence.
    */
   public Sequence(Event[] events, T source) {
     this.events = events;

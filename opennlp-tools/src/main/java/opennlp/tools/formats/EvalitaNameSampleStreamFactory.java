@@ -34,21 +34,13 @@ import opennlp.tools.util.ObjectStream;
  */
 public class EvalitaNameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
 
-  interface Parameters extends BasicFormatParams {
-    @ParameterDescription(valueName = "it")
-    String getLang();
-
-    @ParameterDescription(valueName = "per,loc,org,gpe")
-    String getTypes();
+  protected <P> EvalitaNameSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
         "evalita", new EvalitaNameSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> EvalitaNameSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<NameSample> create(String[] args) {
@@ -59,8 +51,7 @@ public class EvalitaNameSampleStreamFactory extends LanguageSampleStreamFactory<
     if ("it".equals(params.getLang())) {
       lang = LANGUAGE.IT;
       language = params.getLang();
-    }
-    else {
+    } else {
       throw new TerminateToolException(1, "Unsupported language: " + params.getLang());
     }
 
@@ -89,6 +80,14 @@ public class EvalitaNameSampleStreamFactory extends LanguageSampleStreamFactory<
     } catch (IOException e) {
       throw CmdLineUtil.createObjectStreamError(e);
     }
+  }
+
+  interface Parameters extends BasicFormatParams {
+    @ParameterDescription(valueName = "it")
+    String getLang();
+
+    @ParameterDescription(valueName = "per,loc,org,gpe")
+    String getTypes();
   }
 }
 

@@ -135,7 +135,7 @@ public class PerceptronPrepAttachTest {
     Assert.assertEquals(modelA, modelB);
     Assert.assertEquals(modelA.hashCode(), modelB.hashCode());
   }
-  
+
   @Test
   public void verifyReportMap() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
@@ -144,11 +144,11 @@ public class PerceptronPrepAttachTest {
     // Since we are verifying the report map, we don't need to have more than 1 iteration
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, 1);
     trainParams.put("UseSkippedAveraging", true);
-    
-    Map<String,String> reportMap = new HashMap<>();
+
+    Map<String, String> reportMap = new HashMap<>();
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, reportMap);
     trainer.train(PrepAttachDataUtil.createTrainingStream());
     Assert.assertTrue("Report Map does not contain the training event hash",
-        reportMap.containsKey("Training-Eventhash")); 
+        reportMap.containsKey("Training-Eventhash"));
   }
 }

@@ -22,7 +22,7 @@ import java.util.List;
 class IdentityFeatureGenerator implements AdaptiveFeatureGenerator {
 
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
     features.add(tokens[index]);
   }
 }

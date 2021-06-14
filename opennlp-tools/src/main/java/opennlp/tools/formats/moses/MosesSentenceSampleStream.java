@@ -21,11 +21,11 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import opennlp.common.util.Span;
 import opennlp.tools.sentdetect.EmptyLinePreprocessorStream;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 public class MosesSentenceSampleStream extends FilterObjectStream<String, SentenceSample> {
 

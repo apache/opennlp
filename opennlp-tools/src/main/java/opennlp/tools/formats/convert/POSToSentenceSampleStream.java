@@ -17,8 +17,8 @@
 
 package opennlp.tools.formats.convert;
 
+import opennlp.common.tokenize.Detokenizer;
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.util.ObjectStream;
 
 /**

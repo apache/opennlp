@@ -40,35 +40,13 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class ADChunkSampleStreamFactory extends LanguageSampleStreamFactory<ChunkSample> {
 
-  interface Parameters {
-    //all have to be repeated, because encoding is not optional,
-    //according to the check if (encoding == null) { below (now removed)
-    @ParameterDescription(valueName = "charsetName",
-        description = "encoding for reading and writing text, if absent the system default is used.")
-    Charset getEncoding();
-
-    @ParameterDescription(valueName = "sampleData", description = "data to be used, usually a file name.")
-    File getData();
-
-    @ParameterDescription(valueName = "language", description = "language which is being processed.")
-    String getLang();
-
-    @ParameterDescription(valueName = "start", description = "index of first sentence")
-    @OptionalParameter
-    Integer getStart();
-
-    @ParameterDescription(valueName = "end", description = "index of last sentence")
-    @OptionalParameter
-    Integer getEnd();
+  protected <P> ADChunkSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(ChunkSample.class,
         "ad", new ADChunkSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> ADChunkSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<ChunkSample> create(String[] args) {
@@ -97,5 +75,27 @@ public class ADChunkSampleStreamFactory extends LanguageSampleStreamFactory<Chun
     }
 
     return sampleStream;
+  }
+
+  interface Parameters {
+    //all have to be repeated, because encoding is not optional,
+    //according to the check if (encoding == null) { below (now removed)
+    @ParameterDescription(valueName = "charsetName",
+        description = "encoding for reading and writing text, if absent the system default is used.")
+    Charset getEncoding();
+
+    @ParameterDescription(valueName = "sampleData", description = "data to be used, usually a file name.")
+    File getData();
+
+    @ParameterDescription(valueName = "language", description = "language which is being processed.")
+    String getLang();
+
+    @ParameterDescription(valueName = "start", description = "index of first sentence")
+    @OptionalParameter
+    Integer getStart();
+
+    @ParameterDescription(valueName = "end", description = "index of last sentence")
+    @OptionalParameter
+    Integer getEnd();
   }
 }

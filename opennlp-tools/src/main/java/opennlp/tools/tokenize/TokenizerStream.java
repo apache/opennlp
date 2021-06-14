@@ -20,8 +20,9 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 
+import opennlp.common.tokenize.Tokenizer;
+import opennlp.common.util.Span;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 /**
  * The {@link TokenizerStream} uses a tokenizer to tokenize the

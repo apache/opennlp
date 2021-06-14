@@ -24,8 +24,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.lemmatizer.Lemmatizer;
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
-import opennlp.tools.lemmatizer.Lemmatizer;
 
 public class MorfologikLemmatizerTest {
 

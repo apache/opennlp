@@ -16,9 +16,9 @@
  */
 
 
-package opennlp.tools.tokenize;
+package opennlp.common.tokenize;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * The interface for tokenizers, which segment a string into its tokens.
@@ -49,8 +49,8 @@ public interface Tokenizer {
    * Splits a string into its atomic parts
    *
    * @param s The string to be tokenized.
-   * @return  The String[] with the individual tokens as the array
-   *          elements.
+   * @return The String[] with the individual tokens as the array
+   * elements.
    */
   String[] tokenize(String s);
 

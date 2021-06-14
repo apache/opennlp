@@ -26,10 +26,9 @@ public interface TokenContextGenerator {
    * Returns an array of features for the specified sentence string at the specified index.
    *
    * @param sentence The string for a sentence.
-   * @param index The index to consider splitting as a token.
-   *
+   * @param index    The index to consider splitting as a token.
    * @return an array of features for the specified sentence string at the
-   *   specified index.
+   * specified index.
    */
   String[] getContext(String sentence, int index);
 }

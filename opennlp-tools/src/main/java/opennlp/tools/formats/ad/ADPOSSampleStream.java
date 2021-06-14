@@ -47,17 +47,14 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
    * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
    * {@link PlainTextByLineStream} object.
    *
-   * @param lineStream
-   *          a stream of lines as {@link String}
-   * @param expandME
-   *          if true will expand the multiword expressions, each word of the
-   *          expression will have the POS Tag that was attributed to the
-   *          expression plus the prefix B- or I- (CONLL convention)
-   * @param includeFeatures
-   *          if true will combine the POS Tag with the feature tags
+   * @param lineStream      a stream of lines as {@link String}
+   * @param expandME        if true will expand the multiword expressions, each word of the
+   *                        expression will have the POS Tag that was attributed to the
+   *                        expression plus the prefix B- or I- (CONLL convention)
+   * @param includeFeatures if true will combine the POS Tag with the feature tags
    */
   public ADPOSSampleStream(ObjectStream<String> lineStream, boolean expandME,
-      boolean includeFeatures) {
+                           boolean includeFeatures) {
     this.adSentenceStream = new ADSentenceStream(lineStream);
     this.expandME = expandME;
     this.isIncludeFeatures = includeFeatures;
@@ -66,19 +63,15 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
   /**
    * Creates a new {@link POSSample} stream from a {@link InputStream}
    *
-   * @param in
-   *          the Corpus {@link InputStream}
-   * @param charsetName
-   *          the charset of the Arvores Deitadas Corpus
-   * @param expandME
-   *          if true will expand the multiword expressions, each word of the
-   *          expression will have the POS Tag that was attributed to the
-   *          expression plus the prefix B- or I- (CONLL convention)
-   * @param includeFeatures
-   *          if true will combine the POS Tag with the feature tags
+   * @param in              the Corpus {@link InputStream}
+   * @param charsetName     the charset of the Arvores Deitadas Corpus
+   * @param expandME        if true will expand the multiword expressions, each word of the
+   *                        expression will have the POS Tag that was attributed to the
+   *                        expression plus the prefix B- or I- (CONLL convention)
+   * @param includeFeatures if true will combine the POS Tag with the feature tags
    */
   public ADPOSSampleStream(InputStreamFactory in, String charsetName,
-      boolean expandME, boolean includeFeatures) throws IOException {
+                           boolean expandME, boolean includeFeatures) throws IOException {
 
     try {
       this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(in, charsetName));

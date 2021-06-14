@@ -19,9 +19,9 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+import opennlp.common.util.StringList;
+import opennlp.common.util.StringUtil;
 import opennlp.tools.ngram.NGramModel;
-import opennlp.tools.util.StringList;
-import opennlp.tools.util.StringUtil;
 
 /**
  * The {@link CharacterNgramFeatureGenerator} uses character ngrams to

@@ -26,7 +26,6 @@ import java.util.List;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -56,7 +55,7 @@ public class AnnotationComboIteratorTest {
 
     AnnotationComboIterator comboIterator = new AnnotationComboIterator(cas,
         cas.getTypeSystem().getType("opennlp.uima.Sentence"), cas
-            .getTypeSystem().getType("opennlp.uima.Token"));
+        .getTypeSystem().getType("opennlp.uima.Token"));
 
     List<List<String>> tokensBySentence = new ArrayList<>();
 

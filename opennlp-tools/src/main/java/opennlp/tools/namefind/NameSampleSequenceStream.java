@@ -20,6 +20,7 @@ package opennlp.tools.namefind;
 import java.io.IOException;
 import java.util.Collections;
 
+import opennlp.common.namefind.TokenNameFinder;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.Sequence;
@@ -30,8 +31,8 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 public class NameSampleSequenceStream implements SequenceStream {
 
-  private NameContextGenerator pcg;
   private final boolean useOutcomes;
+  private NameContextGenerator pcg;
   private ObjectStream<NameSample> psi;
   private SequenceCodec<String> seqCodec;
 
@@ -45,7 +46,7 @@ public class NameSampleSequenceStream implements SequenceStream {
   }
 
   public NameSampleSequenceStream(ObjectStream<NameSample> psi,
-      AdaptiveFeatureGenerator featureGen, boolean useOutcomes)
+                                  AdaptiveFeatureGenerator featureGen, boolean useOutcomes)
       throws IOException {
     this(psi, new DefaultNameContextGenerator(featureGen), useOutcomes);
   }
@@ -61,8 +62,8 @@ public class NameSampleSequenceStream implements SequenceStream {
   }
 
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg, boolean useOutcomes,
-      SequenceCodec<String> seqCodec)
-          throws IOException {
+                                  SequenceCodec<String> seqCodec)
+      throws IOException {
     this.psi = psi;
     this.useOutcomes = useOutcomes;
     this.pcg = pcg;
@@ -77,7 +78,7 @@ public class NameSampleSequenceStream implements SequenceStream {
     String[] tags = seqCodec.encode(tagger.find(sentence), sentence.length);
     Event[] events = new Event[sentence.length];
 
-    NameFinderEventStream.generateEvents(sentence,tags,pcg).toArray(events);
+    NameFinderEventStream.generateEvents(sentence, tags, pcg).toArray(events);
 
     return events;
   }
@@ -97,16 +98,14 @@ public class NameSampleSequenceStream implements SequenceStream {
         String[] context;
         if (useOutcomes) {
           context = pcg.getContext(i, sentence, tags, null);
-        }
-        else {
+        } else {
           context = pcg.getContext(i, sentence, null, null);
         }
 
         events[i] = new Event(tags[i], context);
       }
-      return new Sequence<>(events,sample);
-    }
-    else {
+      return new Sequence<>(events, sample);
+    } else {
       return null;
     }
   }

@@ -40,6 +40,7 @@ public class ExtensionLoader {
   }
 
   // Pass in the type (interface) of the class to load
+
   /**
    * Instantiates an user provided extension to OpenNLP.
    * <p>
@@ -53,7 +54,6 @@ public class ExtensionLoader {
    *
    * @param clazz
    * @param extensionClassName
-   *
    * @return the instance of the extension class
    */
   // TODO: Throw custom exception if loading fails ...
@@ -87,10 +87,9 @@ public class ExtensionLoader {
           }
           throw new ExtensionNotLoadedException(e);
         }
-      }
-      else {
+      } else {
         throw new ExtensionNotLoadedException("Extension class '" + extClazz.getName() +
-                "' needs to have type: " + clazz.getName());
+            "' needs to have type: " + clazz.getName());
       }
     } catch (ClassNotFoundException e) {
       // Class is not on classpath
@@ -116,7 +115,7 @@ public class ExtensionLoader {
     }
 
     throw new ExtensionNotLoadedException("Unable to find implementation for " +
-          clazz.getName() + ", the class or service " + extensionClassName +
-          " could not be located!");
+        clazz.getName() + ", the class or service " + extensionClassName +
+        " could not be located!");
   }
 }

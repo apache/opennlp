@@ -26,13 +26,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.common.util.Span;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
@@ -40,7 +40,7 @@ import opennlp.tools.util.Span;
 public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
-
+  private final char[] ptEosCharacters;
   private int text = -1;
   private int para = -1;
   private boolean isSameText;
@@ -48,18 +48,18 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   private Sentence sent;
   private boolean isIncludeTitles = true;
   private boolean isTitle;
-
-  private final char[] ptEosCharacters;
+  // there are some different types of metadata depending on the corpus.
+  // todo: merge this patterns
+  private Pattern meta1 = Pattern
+      .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
 
   /**
    * Creates a new {@link SentenceSample} stream from a line stream, i.e.
    * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
    * {@link PlainTextByLineStream} object.
    *
-   * @param lineStream
-   *          a stream of lines as {@link String}
-   * @param includeHeadlines
-   *          if true will output the sentences marked as news headlines
+   * @param lineStream       a stream of lines as {@link String}
+   * @param includeHeadlines if true will output the sentences marked as news headlines
    */
   public ADSentenceSampleStream(ObjectStream<String> lineStream, boolean includeHeadlines) {
     this.adSentenceStream = new ADSentenceStream(lineStream);
@@ -71,15 +71,12 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   /**
    * Creates a new {@link SentenceSample} stream from a {@link FileInputStream}
    *
-   * @param in
-   *          input stream from the corpus
-   * @param charsetName
-   *          the charset to use while reading the corpus
-   * @param includeHeadlines
-   *          if true will output the sentences marked as news headlines
+   * @param in               input stream from the corpus
+   * @param charsetName      the charset to use while reading the corpus
+   * @param includeHeadlines if true will output the sentences marked as news headlines
    */
   public ADSentenceSampleStream(InputStreamFactory in, String charsetName,
-      boolean includeHeadlines) throws IOException {
+                                boolean includeHeadlines) throws IOException {
     try {
       this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
           in, charsetName));
@@ -145,11 +142,6 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     }
     return false;
   }
-
-  // there are some different types of metadata depending on the corpus.
-  // todo: merge this patterns
-  private Pattern meta1 = Pattern
-      .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
 
   private void updateMeta() {
     if (this.sent != null) {

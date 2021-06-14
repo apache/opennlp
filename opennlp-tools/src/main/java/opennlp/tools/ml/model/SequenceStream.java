@@ -20,13 +20,14 @@ package opennlp.tools.ml.model;
 import opennlp.tools.util.ObjectStream;
 
 /**
- *  Interface for streams of sequences used to train sequence models.
+ * Interface for streams of sequences used to train sequence models.
  */
 public interface SequenceStream extends ObjectStream<Sequence> {
 
   /**
    * Creates a new event array based on the outcomes predicted by the specified parameters
    * for the specified sequence.
+   *
    * @param sequence The sequence to be evaluated.
    * @return event array
    */

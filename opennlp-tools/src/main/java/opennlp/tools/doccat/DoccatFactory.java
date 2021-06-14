@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.common.doccat.FeatureGenerator;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
@@ -39,10 +40,31 @@ public class DoccatFactory extends BaseToolFactory {
    * Creates a {@link DoccatFactory} that provides the default implementation of
    * the resources.
    */
-  public DoccatFactory() {}
+  public DoccatFactory() {
+  }
 
   public DoccatFactory(final FeatureGenerator[] featureGenerators) {
     this.featureGenerators = featureGenerators;
+  }
+
+  public static DoccatFactory create(String subclassName, FeatureGenerator[] featureGenerators)
+      throws InvalidFormatException {
+    if (subclassName == null) {
+      // will create the default factory
+      return new DoccatFactory(featureGenerators);
+    }
+    try {
+      DoccatFactory theFactory = ExtensionLoader.instantiateExtension(
+          DoccatFactory.class, subclassName);
+      theFactory.init(featureGenerators);
+      return theFactory;
+    } catch (Exception e) {
+      String msg = "Could not instantiate the " + subclassName
+          + ". The initialization throw an exception.";
+      System.err.println(msg);
+      e.printStackTrace();
+      throw new InvalidFormatException(msg, e);
+    }
   }
 
   protected void init(FeatureGenerator[] featureGenerators) {
@@ -78,26 +100,6 @@ public class DoccatFactory extends BaseToolFactory {
     // nothing to validate
   }
 
-  public static DoccatFactory create(String subclassName, FeatureGenerator[] featureGenerators)
-      throws InvalidFormatException {
-    if (subclassName == null) {
-      // will create the default factory
-      return new DoccatFactory(featureGenerators);
-    }
-    try {
-      DoccatFactory theFactory = ExtensionLoader.instantiateExtension(
-          DoccatFactory.class, subclassName);
-      theFactory.init(featureGenerators);
-      return theFactory;
-    } catch (Exception e) {
-      String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
-      throw new InvalidFormatException(msg, e);
-    }
-  }
-
   private FeatureGenerator[] loadFeatureGenerators(String classNames) {
     String[] classes = classNames.split(",");
     FeatureGenerator[] fgs = new FeatureGenerator[classes.length];
@@ -120,7 +122,7 @@ public class DoccatFactory extends BaseToolFactory {
       }
       if (featureGenerators == null) { // could not load using artifact provider
         // load bag of words as default
-        this.featureGenerators = new FeatureGenerator[]{new BagOfWordsFeatureGenerator()};
+        this.featureGenerators = new FeatureGenerator[] {new BagOfWordsFeatureGenerator()};
       }
     }
     return featureGenerators;

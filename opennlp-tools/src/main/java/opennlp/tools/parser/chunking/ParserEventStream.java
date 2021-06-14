@@ -40,43 +40,22 @@ public class ParserEventStream extends AbstractParserEventStream {
   /**
    * Create an event stream based on the specified data stream of the specified type using
    * the specified head rules.
-   * @param d A 1-parse-per-line Penn Treebank Style parse.
+   *
+   * @param d     A 1-parse-per-line Penn Treebank Style parse.
    * @param rules The head rules.
    * @param etype The type of events desired (tag, chunk, build, or check).
-   * @param dict A tri-gram dictionary to reduce feature generation.
+   * @param dict  A tri-gram dictionary to reduce feature generation.
    */
   public ParserEventStream(ObjectStream<Parse> d, HeadRules rules,
                            ParserEventTypeEnum etype, Dictionary dict) {
-    super(d,rules,etype,dict);
+    super(d, rules, etype, dict);
   }
-
-  @Override
-  protected void init() {
-    if (etype == ParserEventTypeEnum.BUILD) {
-      this.bcg = new BuildContextGenerator(dict);
-    }
-    else if (etype == ParserEventTypeEnum.CHECK) {
-      this.kcg = new CheckContextGenerator();
-    }
-  }
-
-
 
   public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
-    this (d,rules,etype,null);
+    this(d, rules, etype, null);
   }
 
-  /**
-   * Returns true if the specified child is the first child of the specified parent.
-   * @param child The child parse.
-   * @param parent The parent parse.
-   * @return true if the specified child is the first child of the specified parent; false otherwise.
-   */
-  protected boolean firstChild(Parse child, Parse parent) {
-    return AbstractBottomUpParser.collapsePunctuation(parent.getChildren(), punctSet)[0] == child;
-  }
-
-  public static  Parse[] reduceChunks(Parse[] chunks, int ci, Parse parent) {
+  public static Parse[] reduceChunks(Parse[] chunks, int ci, Parse parent) {
     String type = parent.getType();
     //  perform reduce
     int reduceStart = ci;
@@ -103,18 +82,38 @@ public class ParserEventStream extends AbstractParserEventStream {
         ri++;
       }
       ci = reduceStart - 1; //ci will be incremented at end of loop
-    }
-    else {
+    } else {
       reducedChunks = new Parse[0];
     }
     return reducedChunks;
   }
 
+  @Override
+  protected void init() {
+    if (etype == ParserEventTypeEnum.BUILD) {
+      this.bcg = new BuildContextGenerator(dict);
+    } else if (etype == ParserEventTypeEnum.CHECK) {
+      this.kcg = new CheckContextGenerator();
+    }
+  }
+
+  /**
+   * Returns true if the specified child is the first child of the specified parent.
+   *
+   * @param child  The child parse.
+   * @param parent The parent parse.
+   * @return true if the specified child is the first child of the specified parent; false otherwise.
+   */
+  protected boolean firstChild(Parse child, Parse parent) {
+    return AbstractBottomUpParser.collapsePunctuation(parent.getChildren(), punctSet)[0] == child;
+  }
+
   /**
    * Adds events for parsing (post tagging and chunking to the specified list of events for
    * the specified parse chunks.
+   *
    * @param parseEvents The events for the specified chunks.
-   * @param chunks The incomplete parses to be parsed.
+   * @param chunks      The incomplete parses to be parsed.
    */
   @Override
   protected void addParseEvents(List<Event> parseEvents, Parse[] chunks) {
@@ -128,8 +127,7 @@ public class ParserEventStream extends AbstractParserEventStream {
         String outcome;
         if (firstChild(c, parent)) {
           outcome = AbstractBottomUpParser.START + type;
-        }
-        else {
+        } else {
           outcome = AbstractBottomUpParser.CONT + type;
         }
         // System.err.println("parserEventStream.addParseEvents: chunks["+ci+"]="+c+" label="
@@ -144,7 +142,7 @@ public class ParserEventStream extends AbstractParserEventStream {
         }
         if (lastChild(c, parent)) {
           if (etype == ParserEventTypeEnum.CHECK) {
-            parseEvents.add(new Event(Parser.COMPLETE, kcg.getContext( chunks, type, start + 1, ci)));
+            parseEvents.add(new Event(Parser.COMPLETE, kcg.getContext(chunks, type, start + 1, ci)));
           }
           //perform reduce
           int reduceStart = ci;
@@ -152,10 +150,9 @@ public class ParserEventStream extends AbstractParserEventStream {
             reduceStart--;
           }
           reduceStart++;
-          chunks = reduceChunks(chunks,ci,parent);
+          chunks = reduceChunks(chunks, ci, parent);
           ci = reduceStart - 1; //ci will be incremented at end of loop
-        }
-        else {
+        } else {
           if (etype == ParserEventTypeEnum.CHECK) {
             parseEvents.add(new Event(Parser.INCOMPLETE, kcg.getContext(chunks, type, start + 1, ci)));
           }

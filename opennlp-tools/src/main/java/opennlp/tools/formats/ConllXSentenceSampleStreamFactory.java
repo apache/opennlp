@@ -31,17 +31,13 @@ import opennlp.tools.util.ObjectStream;
 public class ConllXSentenceSampleStreamFactory extends
     DetokenizerSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
-    // TODO: make chunk size configurable
+  protected <P> ConllXSentenceSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         ConllXPOSSampleStreamFactory.CONLLX_FORMAT, new ConllXSentenceSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> ConllXSentenceSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<SentenceSample> create(String[] args) {
@@ -51,5 +47,9 @@ public class ConllXSentenceSampleStreamFactory extends
         ConllXPOSSampleStreamFactory.CONLLX_FORMAT).create(
         ArgumentParser.filter(args, ConllXPOSSampleStreamFactory.Parameters.class));
     return new POSToSentenceSampleStream(createDetokenizer(params), posSampleStream, 30);
+  }
+
+  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
+    // TODO: make chunk size configurable
   }
 }

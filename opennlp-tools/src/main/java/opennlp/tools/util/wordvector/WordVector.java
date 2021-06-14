@@ -33,9 +33,11 @@ public interface WordVector {
   WordVectorType getDataType();
 
   float getAsFloat(int index);
+
   double getAsDouble(int index);
 
   FloatBuffer toFloatBuffer();
+
   DoubleBuffer toDoubleBuffer();
 
   int dimension();

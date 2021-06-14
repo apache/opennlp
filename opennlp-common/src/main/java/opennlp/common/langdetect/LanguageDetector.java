@@ -15,23 +15,19 @@
  * limitations under the License.
  */
 
+package opennlp.common.langdetect;
 
-package opennlp.tools.doccat;
-
-import java.util.Collection;
-import java.util.Map;
+import java.io.Serializable;
 
 /**
- * Interface for generating features for document categorization.
+ * The interface for LanguageDetector which provide the @{@link Language} according to the context.
  */
-public interface FeatureGenerator {
+public interface LanguageDetector extends Serializable {
 
-  /**
-   * Extract features from given text fragments
-   *
-   * @param text             the text fragments to extract features from
-   * @param extraInformation optional extra information to be used by the feature generator
-   * @return a collection of features
-   */
-  Collection<String> extractFeatures(String[] text, Map<String, Object> extraInformation);
+  Language[] predictLanguages(CharSequence content);
+
+  Language predictLanguage(CharSequence content);
+
+  String[] getSupportedLanguages();
+
 }

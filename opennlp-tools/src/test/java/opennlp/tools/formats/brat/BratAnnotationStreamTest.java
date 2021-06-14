@@ -27,18 +27,18 @@ import opennlp.tools.util.ObjectStream;
 
 public class BratAnnotationStreamTest {
 
-  private ObjectStream<BratAnnotation> creatBratAnnotationStream(
-      AnnotationConfiguration conf, String file) {
-
-    InputStream in = BratAnnotationStreamTest.class.getResourceAsStream(file);
-    return new BratAnnotationStream(conf, "testing", in);
-  }
-
   static void addEntityTypes(Map<String, String> typeToClassMap) {
     typeToClassMap.put("Person", AnnotationConfiguration.ENTITY_TYPE);
     typeToClassMap.put("Location", AnnotationConfiguration.ENTITY_TYPE);
     typeToClassMap.put("Organization", AnnotationConfiguration.ENTITY_TYPE);
     typeToClassMap.put("Date", AnnotationConfiguration.ENTITY_TYPE);
+  }
+
+  private ObjectStream<BratAnnotation> creatBratAnnotationStream(
+      AnnotationConfiguration conf, String file) {
+
+    InputStream in = BratAnnotationStreamTest.class.getResourceAsStream(file);
+    return new BratAnnotationStream(conf, "testing", in);
   }
 
   @Test

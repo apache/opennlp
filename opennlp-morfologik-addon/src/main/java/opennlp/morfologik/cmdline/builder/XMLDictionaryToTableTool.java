@@ -27,12 +27,12 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Properties;
 
-import morfologik.stemming.DictionaryMetadata;
-
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.postag.POSDictionary;
+
+import morfologik.stemming.DictionaryMetadata;
 
 public class XMLDictionaryToTableTool extends BasicCmdLineTool {
 

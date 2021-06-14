@@ -26,8 +26,15 @@ import org.junit.Test;
 
 public class CharacterNgramFeatureGeneratorTest {
 
-  private List<String> features;
   static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
+  private List<String> features;
+
+  private static void assertContainsNg(List<String> features, String... elements) {
+    Assert.assertEquals(elements.length, features.size());
+    for (String e : elements) {
+      Assert.assertTrue(features.contains("ng=" + e));
+    }
+  }
 
   @Before
   public void setUp() throws Exception {
@@ -44,18 +51,11 @@ public class CharacterNgramFeatureGeneratorTest {
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
     assertContainsNg(features,
-            "ex", "exa", "exam", "examp",
-            "xa", "xam", "xamp", "xampl",
-            "am", "amp", "ampl", "ample",
-            "mp", "mpl", "mple",
-            "pl", "ple",
-            "le");
-  }
-
-  private static void assertContainsNg(List<String> features, String... elements) {
-    Assert.assertEquals(elements.length, features.size());
-    for (String e: elements) {
-      Assert.assertTrue(features.contains("ng=" + e));
-    }
+        "ex", "exa", "exam", "examp",
+        "xa", "xam", "xamp", "xampl",
+        "am", "amp", "ampl", "ample",
+        "mp", "mpl", "mple",
+        "pl", "ple",
+        "le");
   }
 }

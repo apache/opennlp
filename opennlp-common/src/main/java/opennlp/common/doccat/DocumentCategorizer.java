@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.doccat;
+package opennlp.common.doccat;
 
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +30,7 @@ public interface DocumentCategorizer {
    * Categorize the given text provided as tokens along with
    * the provided extra information
    *
-   * @param text the tokens of text to categorize
+   * @param text             the tokens of text to categorize
    * @param extraInformation extra information
    * @return per category probabilities
    */
@@ -38,6 +38,7 @@ public interface DocumentCategorizer {
 
   /**
    * Categorizes the given text, provided in separate tokens.
+   *
    * @param text the tokens of text to categorize
    * @return per category probabilities
    */

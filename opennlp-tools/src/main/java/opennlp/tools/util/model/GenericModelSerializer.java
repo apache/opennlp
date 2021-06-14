@@ -28,15 +28,15 @@ import opennlp.tools.ml.model.GenericModelReader;
 
 public class GenericModelSerializer implements ArtifactSerializer<AbstractModel> {
 
+  public static void register(Map<String, ArtifactSerializer> factories) {
+    factories.put("model", new GenericModelSerializer());
+  }
+
   public AbstractModel create(InputStream in) throws IOException {
     return new GenericModelReader(new BinaryFileDataReader(in)).getModel();
   }
 
   public void serialize(AbstractModel artifact, OutputStream out) throws IOException {
     ModelUtil.writeModel(artifact, out);
-  }
-
-  public static void register(Map<String, ArtifactSerializer> factories) {
-    factories.put("model", new GenericModelSerializer());
   }
 }

@@ -34,9 +34,6 @@ import opennlp.tools.util.model.ModelUtil;
 public final class TokenizerCrossValidatorTool
     extends AbstractCrossValidatorTool<TokenSample, CVToolParams> {
 
-  interface CVToolParams extends CVParams, TrainingParams {
-  }
-
   public TokenizerCrossValidatorTool() {
     super(TokenSample.class, CVToolParams.class);
   }
@@ -70,11 +67,9 @@ public final class TokenizerCrossValidatorTool
           tokFactory, listener);
 
       validator.evaluate(sampleStream, params.getFolds());
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw createTerminationIOException(e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -85,5 +80,8 @@ public final class TokenizerCrossValidatorTool
     FMeasure result = validator.getFMeasure();
 
     System.out.println(result);
+  }
+
+  interface CVToolParams extends CVParams, TrainingParams {
   }
 }

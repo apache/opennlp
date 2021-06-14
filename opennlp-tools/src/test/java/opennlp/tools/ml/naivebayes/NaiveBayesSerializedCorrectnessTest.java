@@ -45,11 +45,47 @@ public class NaiveBayesSerializedCorrectnessTest {
 
   private DataIndexer testDataIndexer;
 
+  protected static NaiveBayesModel persistedModel(NaiveBayesModel model) throws IOException {
+    Path tempFilePath = Files.createTempFile("ptnb-", ".bin");
+    File file = tempFilePath.toFile();
+    try {
+      NaiveBayesModelWriter modelWriter = new BinaryNaiveBayesModelWriter(model, file);
+      modelWriter.persist();
+      NaiveBayesModelReader reader = new BinaryNaiveBayesModelReader(file);
+      reader.checkModelType();
+      return (NaiveBayesModel) reader.constructModel();
+    } finally {
+      file.delete();
+    }
+  }
+
+  protected static void testModelOutcome(NaiveBayesModel model1, NaiveBayesModel model2, Event event) {
+    String[] labels1 = extractLabels(model1);
+    String[] labels2 = extractLabels(model2);
+
+    Assert.assertArrayEquals(labels1, labels2);
+
+    double[] outcomes1 = model1.eval(event.getContext());
+    double[] outcomes2 = model2.eval(event.getContext());
+
+    Assert.assertArrayEquals(outcomes1, outcomes2, 0.000000000001);
+
+  }
+
+  private static String[] extractLabels(NaiveBayesModel model) {
+    String[] labels = new String[model.getNumOutcomes()];
+    for (int i = 0; i < model.getNumOutcomes(); i++) {
+      labels[i] = model.getOutcome(i);
+    }
+    return labels;
+  }
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
-    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);;
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
+    ;
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
@@ -122,7 +158,6 @@ public class NaiveBayesSerializedCorrectnessTest {
 
   }
 
-
   @Test
   public void testPlainTextModel() throws IOException {
     testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
@@ -140,7 +175,7 @@ public class NaiveBayesSerializedCorrectnessTest {
         new PlainTextNaiveBayesModelReader(new BufferedReader(new StringReader(sw1.toString())));
     reader.checkModelType();
 
-    NaiveBayesModel model2 = (NaiveBayesModel)reader.constructModel();
+    NaiveBayesModel model2 = (NaiveBayesModel) reader.constructModel();
 
     StringWriter sw2 = new StringWriter();
     modelWriter = new PlainTextNaiveBayesModelWriter(model2, new BufferedWriter(sw2));
@@ -149,41 +184,5 @@ public class NaiveBayesSerializedCorrectnessTest {
     System.out.println(sw1.toString());
     Assert.assertEquals(sw1.toString(), sw2.toString());
 
-  }
-
-  protected static NaiveBayesModel persistedModel(NaiveBayesModel model) throws IOException {
-    Path tempFilePath = Files.createTempFile("ptnb-", ".bin");
-    File file = tempFilePath.toFile();
-    try {
-      NaiveBayesModelWriter modelWriter = new BinaryNaiveBayesModelWriter(model, file);
-      modelWriter.persist();
-      NaiveBayesModelReader reader = new BinaryNaiveBayesModelReader(file);
-      reader.checkModelType();
-      return (NaiveBayesModel)reader.constructModel();
-    }
-    finally {
-      file.delete();
-    }
-  }
-
-  protected static void testModelOutcome(NaiveBayesModel model1, NaiveBayesModel model2, Event event) {
-    String[] labels1 = extractLabels(model1);
-    String[] labels2 = extractLabels(model2);
-
-    Assert.assertArrayEquals(labels1, labels2);
-
-    double[] outcomes1 = model1.eval(event.getContext());
-    double[] outcomes2 = model2.eval(event.getContext());
-
-    Assert.assertArrayEquals(outcomes1, outcomes2, 0.000000000001);
-
-  }
-
-  private static String[] extractLabels(NaiveBayesModel model) {
-    String[] labels = new String[model.getNumOutcomes()];
-    for (int i = 0; i < model.getNumOutcomes(); i++) {
-      labels[i] = model.getOutcome(i);
-    }
-    return labels;
   }
 }

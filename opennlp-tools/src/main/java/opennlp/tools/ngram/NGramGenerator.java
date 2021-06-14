@@ -43,7 +43,7 @@ public class NGramGenerator {
     List<String> outGrams = new ArrayList<>();
     for (int i = 0; i < input.size() - (n - 1); i++) {
       final StringBuilder sb = new StringBuilder();
-      
+
       for (int x = i; x < (n + i); x++) {
         sb.append(input.get(x));
         sb.append(separator);
@@ -51,15 +51,16 @@ public class NGramGenerator {
       String gram = sb.toString();
       gram = gram.substring(0, gram.lastIndexOf(separator));
       outGrams.add(gram);
-      
+
     }
     return outGrams;
   }
 
   /**
-   *Generates an nGram based on a char[] input
-   * @param input the array of chars to convert to nGram
-   * @param n The number of grams (chars) that each output gram will consist of
+   * Generates an nGram based on a char[] input
+   *
+   * @param input     the array of chars to convert to nGram
+   * @param n         The number of grams (chars) that each output gram will consist of
    * @param separator each char in each gram will be separated by this value if desired.
    *                  Pass in empty string if no separator is desired
    * @return
@@ -69,7 +70,7 @@ public class NGramGenerator {
     List<String> outGrams = new ArrayList<>();
     for (int i = 0; i < input.length - (n - 1); i++) {
       final StringBuilder sb = new StringBuilder();
-     
+
       for (int x = i; x < (n + i); x++) {
         sb.append(input[x]);
         sb.append(separator);

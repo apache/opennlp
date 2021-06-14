@@ -23,11 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import opennlp.common.util.Span;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 /**
  * This class reads the {@link TokenSample}s from the given {@link Iterator}
@@ -36,11 +36,9 @@ import opennlp.tools.util.Span;
  */
 public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
 
-  private TokenContextGenerator cg;
-
-  private boolean skipAlphaNumerics;
-
   private final Pattern alphaNumeric;
+  private TokenContextGenerator cg;
+  private boolean skipAlphaNumerics;
 
   /**
    * Initializes the current instance.
@@ -50,7 +48,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    * @param cg
    */
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
-        boolean skipAlphaNumerics, Pattern alphaNumeric, TokenContextGenerator cg) {
+                            boolean skipAlphaNumerics, Pattern alphaNumeric, TokenContextGenerator cg) {
     super(tokenSamples);
     this.alphaNumeric = alphaNumeric;
     this.skipAlphaNumerics = skipAlphaNumerics;
@@ -65,7 +63,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    * @param cg
    */
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
-        boolean skipAlphaNumerics, TokenContextGenerator cg) {
+                            boolean skipAlphaNumerics, TokenContextGenerator cg) {
     super(tokenSamples);
     Factory factory = new Factory();
     this.alphaNumeric = factory.getAlphanumeric(null);
@@ -80,7 +78,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
    * @param skipAlphaNumerics
    */
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
-      boolean skipAlphaNumerics) {
+                            boolean skipAlphaNumerics) {
     this(tokenSamples, skipAlphaNumerics, new DefaultTokenContextGenerator());
   }
 
@@ -126,14 +124,11 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
                 foundTrainingTokens = true;
               }
               lastTrainingToken = ti;
-            }
-            else if (cSpan.getEnd() < tokens[ti].getEnd()) {
+            } else if (cSpan.getEnd() < tokens[ti].getEnd()) {
               break;
-            }
-            else if (tokens[ti].getEnd() < cSpan.getStart()) {
+            } else if (tokens[ti].getEnd() < cSpan.getStart()) {
               //keep looking
-            }
-            else {
+            } else {
               System.out.println("Bad training token: " + tokens[ti] + " cand: " + cSpan +
                   " token=" + text.substring(tokens[ti].getStart(), tokens[ti].getEnd()));
             }

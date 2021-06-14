@@ -25,13 +25,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import opennlp.common.util.StringList;
+import opennlp.common.util.StringUtil;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringList;
-import opennlp.tools.util.StringUtil;
 
 /**
  * The {@link NGramModel} can be used to crate ngrams and character ngrams.
@@ -86,7 +86,6 @@ public class NGramModel implements Iterable<StringList> {
    *
    * @param ngram an ngram
    * @return count of the ngram or 0 if it is not contained
-   *
    */
   public int getCount(StringList ngram) {
 
@@ -131,8 +130,8 @@ public class NGramModel implements Iterable<StringList> {
   /**
    * Adds NGrams up to the specified length to the current instance.
    *
-   * @param ngram the tokens to build the uni-grams, bi-grams, tri-grams, ..
-   *     from.
+   * @param ngram     the tokens to build the uni-grams, bi-grams, tri-grams, ..
+   *                  from.
    * @param minLength - minimal length
    * @param maxLength - maximal length
    */
@@ -148,7 +147,7 @@ public class NGramModel implements Iterable<StringList> {
 
     for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
       for (int textIndex = 0;
-          textIndex + lengthIndex - 1 < ngram.size(); textIndex++) {
+           textIndex + lengthIndex - 1 < ngram.size(); textIndex++) {
 
         String[] grams = new String[lengthIndex];
 
@@ -172,12 +171,12 @@ public class NGramModel implements Iterable<StringList> {
 
     for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
       for (int textIndex = 0;
-          textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
+           textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
 
         String gram = StringUtil.toLowerCase(
             chars.subSequence(textIndex, textIndex + lengthIndex));
 
-        add(new StringList(new String[]{gram}));
+        add(new StringList(new String[] {gram}));
       }
     }
   }
@@ -195,7 +194,6 @@ public class NGramModel implements Iterable<StringList> {
    * Checks fit he given tokens are contained by the current instance.
    *
    * @param tokens
-   *
    * @return true if the ngram is contained
    */
   public boolean contains(StringList tokens) {
@@ -264,9 +262,9 @@ public class NGramModel implements Iterable<StringList> {
   /**
    * Creates a dictionary which contain all {@link StringList} which
    * are in the current {@link NGramModel}.
-   *
+   * <p>
    * Entries which are only different in the case are merged into one.
-   *
+   * <p>
    * Calling this method is the same as calling {@link #toDictionary(boolean)} with true.
    *
    * @return a dictionary of the ngrams
@@ -281,7 +279,6 @@ public class NGramModel implements Iterable<StringList> {
    *
    * @param caseSensitive Specifies whether case distinctions should be kept
    *                      in the creation of the dictionary.
-   *
    * @return a dictionary of the ngrams
    */
   public Dictionary toDictionary(boolean caseSensitive) {
@@ -299,12 +296,10 @@ public class NGramModel implements Iterable<StringList> {
    * Writes the ngram instance to the given {@link OutputStream}.
    *
    * @param out
-   *
    * @throws IOException if an I/O Error during writing occurs
    */
   public void serialize(OutputStream out) throws IOException {
-    Iterator<Entry> entryIterator = new Iterator<Entry>()
-    {
+    Iterator<Entry> entryIterator = new Iterator<Entry>() {
       private Iterator<StringList> mDictionaryIterator = NGramModel.this.iterator();
 
       @Override
@@ -320,7 +315,7 @@ public class NGramModel implements Iterable<StringList> {
         Attributes attributes = new Attributes();
 
         attributes.setValue(COUNT, Integer.toString(getCount(tokens)));
-        
+
         return new Entry(tokens, attributes);
       }
 
@@ -340,13 +335,11 @@ public class NGramModel implements Iterable<StringList> {
 
     if (obj == this) {
       result = true;
-    }
-    else if (obj instanceof NGramModel) {
-      NGramModel model  = (NGramModel) obj;
+    } else if (obj instanceof NGramModel) {
+      NGramModel model = (NGramModel) obj;
 
       result = mNGrams.equals(model.mNGrams);
-    }
-    else {
+    } else {
       result = false;
     }
 

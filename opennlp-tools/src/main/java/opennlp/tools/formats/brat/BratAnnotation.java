@@ -24,7 +24,7 @@ public abstract class BratAnnotation {
   private final String id;
   private final String type;
   private String note;
-  
+
   protected BratAnnotation(String id, String type) {
     this.id = Objects.requireNonNull(id);
     this.type = Objects.requireNonNull(type);
@@ -39,14 +39,14 @@ public abstract class BratAnnotation {
     return type;
   }
 
-  public void setNote(String note) {
-    this.note = note;
-  }
-  
   public String getNote() {
     return note;
   }
-  
+
+  public void setNote(String note) {
+    this.note = note;
+  }
+
   @Override
   public String toString() {
     return (id + " " + type + " " + note).trim();

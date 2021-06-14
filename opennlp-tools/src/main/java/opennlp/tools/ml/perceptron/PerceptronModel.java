@@ -25,37 +25,16 @@ import opennlp.tools.ml.model.EvalParameters;
 public class PerceptronModel extends AbstractModel {
 
   public PerceptronModel(Context[] params, String[] predLabels, String[] outcomeNames) {
-    super(params,predLabels,outcomeNames);
+    super(params, predLabels, outcomeNames);
     modelType = ModelType.Perceptron;
   }
 
-  public double[] eval(String[] context) {
-    return eval(context,new double[evalParams.getNumOutcomes()]);
-  }
-
-  public double[] eval(String[] context, float[] values) {
-    return eval(context,values,new double[evalParams.getNumOutcomes()]);
-  }
-
-  public double[] eval(String[] context, double[] probs) {
-    return eval(context,null,probs);
-  }
-
-  public double[] eval(String[] context, float[] values,double[] outsums) {
-    Context[] scontexts = new Context[context.length];
-    java.util.Arrays.fill(outsums, 0);
-    for (int i = 0; i < context.length; i++) {
-      scontexts[i] = pmap.get(context[i]);
-    }
-    return eval(scontexts,values,outsums,evalParams,true);
-  }
-
   public static double[] eval(int[] context, double[] prior, EvalParameters model) {
-    return eval(context,null,prior,model,true);
+    return eval(context, null, prior, model, true);
   }
 
   static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model,
-                              boolean normalize) {
+                       boolean normalize) {
     Context[] scontexts = new Context[context.length];
     for (int i = 0; i < context.length; i++) {
       scontexts[i] = model.getParams()[context[i]];
@@ -90,5 +69,26 @@ public class PerceptronModel extends AbstractModel {
       }
     }
     return prior;
+  }
+
+  public double[] eval(String[] context) {
+    return eval(context, new double[evalParams.getNumOutcomes()]);
+  }
+
+  public double[] eval(String[] context, float[] values) {
+    return eval(context, values, new double[evalParams.getNumOutcomes()]);
+  }
+
+  public double[] eval(String[] context, double[] probs) {
+    return eval(context, null, probs);
+  }
+
+  public double[] eval(String[] context, float[] values, double[] outsums) {
+    Context[] scontexts = new Context[context.length];
+    java.util.Arrays.fill(outsums, 0);
+    for (int i = 0; i < context.length; i++) {
+      scontexts[i] = pmap.get(context[i]);
+    }
+    return eval(scontexts, values, outsums, evalParams, true);
   }
 }

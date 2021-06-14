@@ -39,18 +39,8 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
  * <li> {@link NumberCharSequenceNormalizer}
  * <li> {@link ShrinkCharSequenceNormalizer}
  * </ul>
- *
  */
 public class LanguageDetectorFactory extends BaseToolFactory {
-
-  public LanguageDetectorContextGenerator getContextGenerator() {
-    return new DefaultLanguageDetectorContextGenerator(1, 3,
-        EmojiCharSequenceNormalizer.getInstance(),
-        UrlCharSequenceNormalizer.getInstance(),
-        TwitterCharSequenceNormalizer.getInstance(),
-        NumberCharSequenceNormalizer.getInstance(),
-        ShrinkCharSequenceNormalizer.getInstance());
-  }
 
   public static LanguageDetectorFactory create(String subclassName)
       throws InvalidFormatException {
@@ -68,6 +58,15 @@ public class LanguageDetectorFactory extends BaseToolFactory {
           + ". The initialization throw an exception.";
       throw new InvalidFormatException(msg, e);
     }
+  }
+
+  public LanguageDetectorContextGenerator getContextGenerator() {
+    return new DefaultLanguageDetectorContextGenerator(1, 3,
+        EmojiCharSequenceNormalizer.getInstance(),
+        UrlCharSequenceNormalizer.getInstance(),
+        TwitterCharSequenceNormalizer.getInstance(),
+        NumberCharSequenceNormalizer.getInstance(),
+        ShrinkCharSequenceNormalizer.getInstance());
   }
 
   public void init() {

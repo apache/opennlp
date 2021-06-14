@@ -17,11 +17,11 @@
 
 package opennlp.tools.languagemodel;
 
-import opennlp.tools.util.StringList;
+import opennlp.common.util.StringList;
 
 /**
  * A language model can calculate the probability <i>p</i> (between 0 and 1) of a
- * certain {@link opennlp.tools.util.StringList sequence of tokens}, given its underlying vocabulary.
+ * certain {@link StringList sequence of tokens}, given its underlying vocabulary.
  */
 public interface LanguageModel {
 

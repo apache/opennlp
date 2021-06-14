@@ -23,9 +23,10 @@ import java.io.OutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.tokenize.Tokenizer;
+import opennlp.common.util.Span;
 import opennlp.tools.cmdline.tokenizer.TokenEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.Span;
 
 public class TokenizerEvaluatorTest {
 

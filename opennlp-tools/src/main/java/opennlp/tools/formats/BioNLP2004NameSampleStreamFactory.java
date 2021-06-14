@@ -29,18 +29,13 @@ import opennlp.tools.util.ObjectStream;
 
 public class BioNLP2004NameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
 
-  interface Parameters extends BasicFormatParams {
-    @ParameterDescription(valueName = "DNA,protein,cell_type,cell_line,RNA")
-    String getTypes();
+  protected <P> BioNLP2004NameSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
         "bionlp2004", new BioNLP2004NameSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> BioNLP2004NameSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<NameSample> create(String[] args) {
@@ -52,20 +47,16 @@ public class BioNLP2004NameSampleStreamFactory extends AbstractSampleStreamFacto
     if (params.getTypes().contains("DNA")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_DNA_ENTITIES;
-    }
-    else if (params.getTypes().contains("protein")) {
+    } else if (params.getTypes().contains("protein")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_PROTEIN_ENTITIES;
-    }
-    else if (params.getTypes().contains("cell_type")) {
+    } else if (params.getTypes().contains("cell_type")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_CELLTYPE_ENTITIES;
-    }
-    else if (params.getTypes().contains("cell_line")) {
+    } else if (params.getTypes().contains("cell_line")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_CELLLINE_ENTITIES;
-    }
-    else if (params.getTypes().contains("RNA")) {
+    } else if (params.getTypes().contains("RNA")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_RNA_ENTITIES;
     }
@@ -76,5 +67,10 @@ public class BioNLP2004NameSampleStreamFactory extends AbstractSampleStreamFacto
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  interface Parameters extends BasicFormatParams {
+    @ParameterDescription(valueName = "DNA,protein,cell_type,cell_line,RNA")
+    String getTypes();
   }
 }

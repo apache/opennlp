@@ -22,23 +22,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.Cache;
-import opennlp.tools.util.StringList;
 
 /**
  * A context generator for the POS Tagger.
  */
 public class DefaultPOSContextGenerator implements POSContextGenerator {
 
-  protected final String SE = "*SE*";
-  protected final String SB = "*SB*";
   private static final int PREFIX_LENGTH = 4;
   private static final int SUFFIX_LENGTH = 4;
-
   private static Pattern hasCap = Pattern.compile("[A-Z]");
   private static Pattern hasNum = Pattern.compile("[0-9]");
-
+  protected final String SE = "*SE*";
+  protected final String SB = "*SB*";
   private Cache<String, String[]> contextsCache;
   private Object wordsKey;
 
@@ -50,7 +48,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
    * @param dict
    */
   public DefaultPOSContextGenerator(Dictionary dict) {
-    this(0,dict);
+    this(0, dict);
   }
 
   /**
@@ -84,18 +82,19 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
   }
 
   public String[] getContext(int index, String[] sequence, String[] priorDecisions,
-      Object[] additionalContext) {
-    return getContext(index,sequence,priorDecisions);
+                             Object[] additionalContext) {
+    return getContext(index, sequence, priorDecisions);
   }
 
   /**
    * Returns the context for making a pos tag decision at the specified token index
    * given the specified tokens and previous tags.
-   * @param index The index of the token for which the context is provided.
+   *
+   * @param index  The index of the token for which the context is provided.
    * @param tokens The tokens in the sentence.
-   * @param tags The tags assigned to the previous words in the sentence.
+   * @param tags   The tags assigned to the previous words in the sentence.
    * @return The context for making a pos tag decision at the specified token index
-   *     given the specified tokens and previous tags.
+   * given the specified tokens and previous tags.
    */
   public String[] getContext(int index, Object[] tokens, String[] tags) {
     String next, nextnext = null, lex, prev, prevprev = null;
@@ -110,24 +109,21 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
       else
         nextnext = SE; // Sentence End
 
-    }
-    else {
+    } else {
       next = SE; // Sentence End
     }
 
     if (index - 1 >= 0) {
-      prev =  tokens[index - 1].toString();
-      tagprev =  tags[index - 1];
+      prev = tokens[index - 1].toString();
+      tagprev = tags[index - 1];
 
       if (index - 2 >= 0) {
         prevprev = tokens[index - 2].toString();
         tagprevprev = tags[index - 2];
-      }
-      else {
+      } else {
         prevprev = SB; // Sentence Beginning
       }
-    }
-    else {
+    } else {
       prev = SB; // Sentence Beginning
     }
     String cacheKey = index + tagprev + tagprevprev;
@@ -137,8 +133,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
         if (cachedContexts != null) {
           return cachedContexts;
         }
-      }
-      else {
+      } else {
         contextsCache.clear();
         wordsKey = tokens;
       }
@@ -194,7 +189,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     }
     String[] contexts = e.toArray(new String[e.size()]);
     if (contextsCache != null) {
-      contextsCache.put(cacheKey,contexts);
+      contextsCache.put(cacheKey, contexts);
     }
     return contexts;
   }

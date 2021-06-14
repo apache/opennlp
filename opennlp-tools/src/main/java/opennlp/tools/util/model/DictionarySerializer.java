@@ -26,15 +26,15 @@ import opennlp.tools.dictionary.Dictionary;
 
 public class DictionarySerializer implements ArtifactSerializer<Dictionary> {
 
+  static void register(Map<String, ArtifactSerializer> factories) {
+    factories.put("dictionary", new DictionarySerializer());
+  }
+
   public Dictionary create(InputStream in) throws IOException {
     return new Dictionary(in);
   }
 
   public void serialize(Dictionary dictionary, OutputStream out) throws IOException {
     dictionary.serialize(out);
-  }
-
-  static void register(Map<String, ArtifactSerializer> factories) {
-    factories.put("dictionary", new DictionarySerializer());
   }
 }

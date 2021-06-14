@@ -35,8 +35,14 @@ public class CharacterNgramFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("charngram", new CharacterNgramFeatureGeneratorFactory());
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
+                                         FeatureGeneratorResourceProvider resourceManager)
+      throws InvalidFormatException {
 
     String minString = generatorElement.getAttribute("min");
 
@@ -59,11 +65,6 @@ public class CharacterNgramFeatureGeneratorFactory
     }
 
     return new CharacterNgramFeatureGenerator(min, max);
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("charngram", new CharacterNgramFeatureGeneratorFactory());
   }
 
   @Override

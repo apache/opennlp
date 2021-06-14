@@ -39,7 +39,7 @@ public class LetsmtDocumentTest {
       LetsmtDocument.LetsmtSentence sent1 = sents.get(0);
       Assert.assertNull(sent1.getNonTokenizedText());
 
-      Assert.assertArrayEquals(new String[]{
+      Assert.assertArrayEquals(new String[] {
           "The",
           "Apache",
           "Software",
@@ -72,12 +72,12 @@ public class LetsmtDocumentTest {
           "software",
           "products",
           "."
-          }, sent1.getTokens());
+      }, sent1.getTokens());
 
       LetsmtDocument.LetsmtSentence sent2 = sents.get(1);
       Assert.assertNull(sent2.getNonTokenizedText());
 
-      Assert.assertArrayEquals(new String[]{
+      Assert.assertArrayEquals(new String[] {
           "All",
           "software",
           "produced",
@@ -105,7 +105,7 @@ public class LetsmtDocumentTest {
           "listed",
           "below",
           "."
-          }, sent2.getTokens());
+      }, sent2.getTokens());
     }
   }
 }

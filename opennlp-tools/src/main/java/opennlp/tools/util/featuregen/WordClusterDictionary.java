@@ -34,21 +34,11 @@ import opennlp.tools.util.model.SerializableArtifact;
 
 public class WordClusterDictionary implements SerializableArtifact {
 
-  public static class WordClusterDictionarySerializer implements ArtifactSerializer<WordClusterDictionary> {
-
-    public WordClusterDictionary create(InputStream in) throws IOException {
-      return new WordClusterDictionary(in);
-    }
-
-    public void serialize(WordClusterDictionary artifact, OutputStream out) throws IOException {
-      artifact.serialize(out);
-    }
-  }
-
   private Map<String, String> tokenToClusterMap = new HashMap<>();
 
   /**
    * Read word2vec and clark clustering style lexicons.
+   *
    * @param in the inputstream
    * @throws IOException the io exception
    */
@@ -81,5 +71,16 @@ public class WordClusterDictionary implements SerializableArtifact {
 
   public Class<?> getArtifactSerializerClass() {
     return WordClusterDictionarySerializer.class;
+  }
+
+  public static class WordClusterDictionarySerializer implements ArtifactSerializer<WordClusterDictionary> {
+
+    public WordClusterDictionary create(InputStream in) throws IOException {
+      return new WordClusterDictionary(in);
+    }
+
+    public void serialize(WordClusterDictionary artifact, OutputStream out) throws IOException {
+      artifact.serialize(out);
+    }
   }
 }

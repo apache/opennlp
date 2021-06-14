@@ -25,9 +25,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.Sequence;
 import opennlp.tools.cmdline.postag.POSEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.Sequence;
 
 public class POSEvaluatorTest {
 

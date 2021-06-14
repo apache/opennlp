@@ -36,22 +36,17 @@ import java.util.concurrent.TimeUnit;
  */
 public class PerformanceMonitor {
 
+  private final String unit;
+  private final PrintStream out;
   private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, runnable -> {
     Thread thread = new Thread(runnable);
     thread.setName("opennlp.tools.cmdline.PerformanceMonitor");
     thread.setDaemon(true);
     return thread;
   });
-
-  private final String unit;
-
   private ScheduledFuture<?> beeperHandle;
-
   private volatile long startTime = -1;
-
   private volatile int counter;
-
-  private final PrintStream out;
 
   public PerformanceMonitor(PrintStream out, String unit) {
     this.out = out;
@@ -119,8 +114,7 @@ public class PerformanceMonitor {
         double averageThroughput;
         if (totalTimePassed > 0) {
           averageThroughput = counter / (((double) totalTimePassed) / 1000);
-        }
-        else {
+        } else {
           averageThroughput = 0;
         }
 
@@ -153,8 +147,7 @@ public class PerformanceMonitor {
     double average;
     if (timePassed > 0) {
       average = counter / (timePassed / 1000d);
-    }
-    else {
+    } else {
       average = 0;
     }
 

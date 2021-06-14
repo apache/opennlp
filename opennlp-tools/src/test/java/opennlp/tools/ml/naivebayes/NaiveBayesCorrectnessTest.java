@@ -43,11 +43,34 @@ public class NaiveBayesCorrectnessTest {
 
   private DataIndexer testDataIndexer;
 
+  public static ObjectStream<Event> createTrainingStream() throws IOException {
+    List<Event> trainingEvents = new ArrayList<>();
+
+    String label1 = "politics";
+    String[] context1 = {"bow=the", "bow=united", "bow=nations"};
+    trainingEvents.add(new Event(label1, context1));
+
+    String label2 = "politics";
+    String[] context2 = {"bow=the", "bow=united", "bow=states", "bow=and"};
+    trainingEvents.add(new Event(label2, context2));
+
+    String label3 = "sports";
+    String[] context3 = {"bow=manchester", "bow=united"};
+    trainingEvents.add(new Event(label3, context3));
+
+    String label4 = "sports";
+    String[] context4 = {"bow=manchester", "bow=and", "bow=barca"};
+    trainingEvents.add(new Event(label4, context4));
+
+    return ObjectStreamUtils.createObjectStream(trainingEvents);
+  }
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
-    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);;
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
+    ;
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
@@ -132,28 +155,6 @@ public class NaiveBayesCorrectnessTest {
     if (!event.getOutcome().equals(model.getOutcome(1))) {
       Assert.assertEquals(1.0 - higher_probability, outcomes[1], 0.0001);
     }
-  }
-
-  public static ObjectStream<Event> createTrainingStream() throws IOException {
-    List<Event> trainingEvents = new ArrayList<>();
-
-    String label1 = "politics";
-    String[] context1 = {"bow=the", "bow=united", "bow=nations"};
-    trainingEvents.add(new Event(label1, context1));
-
-    String label2 = "politics";
-    String[] context2 = {"bow=the", "bow=united", "bow=states", "bow=and"};
-    trainingEvents.add(new Event(label2, context2));
-
-    String label3 = "sports";
-    String[] context3 = {"bow=manchester", "bow=united"};
-    trainingEvents.add(new Event(label3, context3));
-
-    String label4 = "sports";
-    String[] context4 = {"bow=manchester", "bow=and", "bow=barca"};
-    trainingEvents.add(new Event(label4, context4));
-
-    return ObjectStreamUtils.createObjectStream(trainingEvents);
   }
 
 }

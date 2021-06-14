@@ -31,6 +31,13 @@ public class ADParagraphStreamTest {
 
   public static final int NUM_SENTENCES = 8;
 
+  private static ADSentenceStream openData() throws IOException {
+    InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class,
+        "/opennlp/tools/formats/ad.sample");
+
+    return new ADSentenceStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
+  }
+
   @Test
   public void testSimpleReading() throws IOException {
     int count = 0;
@@ -62,12 +69,5 @@ public class ADParagraphStreamTest {
     }
 
     Assert.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
-  }
-
-  private static ADSentenceStream openData() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class,
-        "/opennlp/tools/formats/ad.sample");
-
-    return new ADSentenceStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
   }
 }

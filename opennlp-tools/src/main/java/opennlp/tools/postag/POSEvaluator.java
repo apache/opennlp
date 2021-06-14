@@ -38,20 +38,19 @@ public class POSEvaluator extends Evaluator<POSSample> {
    * @param tagger
    * @param listeners an array of evaluation listeners
    */
-  public POSEvaluator(POSTagger tagger, POSTaggerEvaluationMonitor ... listeners) {
+  public POSEvaluator(POSTagger tagger, POSTaggerEvaluationMonitor... listeners) {
     super(listeners);
     this.tagger = tagger;
   }
 
   /**
    * Evaluates the given reference {@link POSSample} object.
-   *
+   * <p>
    * This is done by tagging the sentence from the reference
    * {@link POSSample} with the {@link POSTagger}. The
    * tags are then used to update the word accuracy score.
    *
    * @param reference the reference {@link POSSample}.
-   *
    * @return the predicted {@link POSSample}.
    */
   @Override
@@ -63,8 +62,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
     for (int i = 0; i < referenceTags.length; i++) {
       if (referenceTags[i].equals(predictedTags[i])) {
         wordAccuracy.add(1);
-      }
-      else {
+      } else {
         wordAccuracy.add(0);
       }
     }
@@ -74,7 +72,7 @@ public class POSEvaluator extends Evaluator<POSSample> {
 
   /**
    * Retrieves the word accuracy.
-   *
+   * <p>
    * This is defined as:
    * word accuracy = correctly detected tags / total words
    *

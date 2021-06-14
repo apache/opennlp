@@ -26,16 +26,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.common.tokenize.Tokenizer;
+import opennlp.common.util.Span;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.SentenceDetector;
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.util.Span;
 
 public class BratDocumentParser {
 
+  private final Set<String> nameTypes;
   private SentenceDetector sentDetector;
   private Tokenizer tokenizer;
-  private final Set<String> nameTypes;
 
   public BratDocumentParser(SentenceDetector sentenceDetector, Tokenizer tokenizer) {
     this(sentenceDetector, tokenizer, null);
@@ -88,8 +88,7 @@ public class BratDocumentParser {
 
         System.out.println("Correcting sentence segmentation in document " +
             sample.getId());
-      }
-      else {
+      } else {
         sentences.add(sentence);
       }
     }
@@ -163,7 +162,7 @@ public class BratDocumentParser {
           }
 
           for (Span span : mappedFragments) {
-            if (span != null ) {
+            if (span != null) {
               names.add(span);
             }
           }

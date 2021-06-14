@@ -15,19 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.langdetect;
-
-import java.io.Serializable;
-
 /**
- * The interface for LanguageDetector which provide the @{@link Language} according to the context.
+ * Package related to language models
  */
-public interface LanguageDetector extends Serializable {
-
-  Language[] predictLanguages(CharSequence content);
-
-  Language predictLanguage(CharSequence content);
-
-  String[] getSupportedLanguages();
-
-}
+package opennlp.common.languagemodel;

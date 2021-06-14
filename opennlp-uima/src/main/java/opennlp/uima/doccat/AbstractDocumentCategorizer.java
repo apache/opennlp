@@ -46,7 +46,7 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
 
   private UimaContext context;
 
-  private opennlp.tools.doccat.DocumentCategorizer mCategorizer;
+  private opennlp.common.doccat.DocumentCategorizer mCategorizer;
 
   private Type mTokenType;
 

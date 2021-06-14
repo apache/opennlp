@@ -37,8 +37,14 @@ public class BrownClusterTokenClassFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("brownclustertokenclass", new BrownClusterTokenClassFeatureGeneratorFactory());
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
+                                         FeatureGeneratorResourceProvider resourceManager)
+      throws InvalidFormatException {
 
     String dictResourceKey = generatorElement.getAttribute("dict");
 
@@ -50,11 +56,6 @@ public class BrownClusterTokenClassFeatureGeneratorFactory
     }
 
     return new BrownTokenClassFeatureGenerator((BrownCluster) dictResource);
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("brownclustertokenclass", new BrownClusterTokenClassFeatureGeneratorFactory());
   }
 
   @Override

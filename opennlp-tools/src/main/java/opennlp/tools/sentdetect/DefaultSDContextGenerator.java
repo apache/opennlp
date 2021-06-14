@@ -23,11 +23,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.util.StringUtil;
+import opennlp.common.util.StringUtil;
 
 /**
  * Generate event contexts for maxent decisions for sentence detection.
- *
  */
 public class DefaultSDContextGenerator implements SDContextGenerator {
 
@@ -60,15 +59,14 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    * the set of induced abbreviations.
    *
    * @param inducedAbbreviations a <code>Set</code> of Strings
-   *     representing induced abbreviations in the training data.
-   *     Example: &quot;Mr.&quot;
-   *
+   *                             representing induced abbreviations in the training data.
+   *                             Example: &quot;Mr.&quot;
    * @param eosCharacters
    */
   public DefaultSDContextGenerator(Set<String> inducedAbbreviations, char[] eosCharacters) {
     this.inducedAbbreviations = inducedAbbreviations;
     this.eosCharacters = new HashSet<>();
-    for (char eosChar: eosCharacters) {
+    for (char eosChar : eosCharacters) {
       this.eosCharacters.add(eosChar);
     }
     buf = new StringBuffer();
@@ -84,7 +82,54 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
       return "<CR>";
     }
 
-    return new String(new char[]{c});
+    return new String(new char[] {c});
+  }
+
+  private static boolean isFirstUpper(String s) {
+    return Character.isUpperCase(s.charAt(0));
+  }
+
+  /**
+   * Finds the index of the nearest space before a specified index which is not itself preceded by a space.
+   *
+   * @param sb   The string buffer which contains the text being examined.
+   * @param seek The index to begin searching from.
+   * @return The index which contains the nearest space.
+   */
+  private static int previousSpaceIndex(CharSequence sb, int seek) {
+    seek--;
+    while (seek > 0 && !StringUtil.isWhitespace(sb.charAt(seek))) {
+      seek--;
+    }
+    if (seek > 0 && StringUtil.isWhitespace(sb.charAt(seek))) {
+      while (seek > 0 && StringUtil.isWhitespace(sb.charAt(seek - 1)))
+        seek--;
+      return seek;
+    }
+    return 0;
+  }
+
+  /**
+   * Finds the index of the nearest space after a specified index.
+   *
+   * @param sb        The string buffer which contains the text being examined.
+   * @param seek      The index to begin searching from.
+   * @param lastIndex The highest index of the StringBuffer sb.
+   * @return The index which contains the nearest space.
+   */
+  private static int nextSpaceIndex(CharSequence sb, int seek, int lastIndex) {
+    seek++;
+    char c;
+    while (seek < lastIndex) {
+      c = sb.charAt(seek);
+      if (StringUtil.isWhitespace(c)) {
+        while (sb.length() > seek + 1 && StringUtil.isWhitespace(sb.charAt(seek + 1)))
+          seek++;
+        return seek;
+      }
+      seek++;
+    }
+    return lastIndex;
   }
 
   /* (non-Javadoc)
@@ -149,13 +194,12 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     if (position == lastIndex) {
       suffix = "";
       next = "";
-    }
-    else {
+    } else {
       suffix = String.valueOf(sb.subSequence(position + 1, suffixEnd)).trim();
       next = String.valueOf(sb.subSequence(suffixEnd + 1, nextEnd)).trim();
     }
 
-    collectFeatures(prefix,suffix,previous,next, sb.charAt(position));
+    collectFeatures(prefix, suffix, previous, next, sb.charAt(position));
 
     String[] context = new String[collectFeats.size()];
     context = collectFeats.toArray(context);
@@ -166,11 +210,10 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   /**
    * Determines some of the features for the sentence detector and adds them to list features.
    *
-   * @param prefix String preceding the eos character in the eos token.
-   * @param suffix String following the eos character in the eos token.
+   * @param prefix   String preceding the eos character in the eos token.
+   * @param suffix   String following the eos character in the eos token.
    * @param previous Space delimited token preceding token containing eos character.
-   * @param next Space delimited token following token containing eos character.
-   *
+   * @param next     Space delimited token following token containing eos character.
    * @deprecated use {@link #collectFeatures(String, String, String, String, Character)} instead.
    */
   protected void collectFeatures(String prefix, String suffix, String previous, String next) {
@@ -180,14 +223,14 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   /**
    * Determines some of the features for the sentence detector and adds them to list features.
    *
-   * @param prefix String preceding the eos character in the eos token.
-   * @param suffix String following the eos character in the eos token.
+   * @param prefix   String preceding the eos character in the eos token.
+   * @param suffix   String following the eos character in the eos token.
    * @param previous Space delimited token preceding token containing eos character.
-   * @param next Space delimited token following token containing eos character.
-   * @param eosChar the EOS character been analyzed
+   * @param next     Space delimited token following token containing eos character.
+   * @param eosChar  the EOS character been analyzed
    */
   protected void collectFeatures(String prefix, String suffix, String previous,
-      String next, Character eosChar) {
+                                 String next, Character eosChar) {
     buf.append("x=");
     buf.append(prefix);
     collectFeats.add(buf.toString());
@@ -240,52 +283,5 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
         collectFeats.add("nabbrev");
       }
     }
-  }
-
-  private static boolean isFirstUpper(String s) {
-    return Character.isUpperCase(s.charAt(0));
-  }
-
-  /**
-   * Finds the index of the nearest space before a specified index which is not itself preceded by a space.
-   *
-   * @param sb   The string buffer which contains the text being examined.
-   * @param seek The index to begin searching from.
-   * @return The index which contains the nearest space.
-   */
-  private static int previousSpaceIndex(CharSequence sb, int seek) {
-    seek--;
-    while (seek > 0 && !StringUtil.isWhitespace(sb.charAt(seek))) {
-      seek--;
-    }
-    if (seek > 0 && StringUtil.isWhitespace(sb.charAt(seek))) {
-      while (seek > 0 && StringUtil.isWhitespace(sb.charAt(seek - 1)))
-        seek--;
-      return seek;
-    }
-    return 0;
-  }
-
-  /**
-   * Finds the index of the nearest space after a specified index.
-   *
-   * @param sb The string buffer which contains the text being examined.
-   * @param seek The index to begin searching from.
-   * @param lastIndex The highest index of the StringBuffer sb.
-   * @return The index which contains the nearest space.
-   */
-  private static int nextSpaceIndex(CharSequence sb, int seek, int lastIndex) {
-    seek++;
-    char c;
-    while (seek < lastIndex) {
-      c = sb.charAt(seek);
-      if (StringUtil.isWhitespace(c)) {
-        while (sb.length() > seek + 1 && StringUtil.isWhitespace(sb.charAt(seek + 1)))
-          seek++;
-        return seek;
-      }
-      seek++;
-    }
-    return lastIndex;
   }
 }

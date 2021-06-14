@@ -22,35 +22,35 @@ import java.util.List;
 public class SuffixFeatureGenerator implements AdaptiveFeatureGenerator {
 
   static final int DEFAULT_MAX_LENGTH = 4;
-    
+
   private final int suffixLength;
-  
+
   public SuffixFeatureGenerator() {
     suffixLength = DEFAULT_MAX_LENGTH;
   }
-  
+
   public SuffixFeatureGenerator(int suffixLength) {
     this.suffixLength = suffixLength;
   }
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
     String[] suffs = getSuffixes(tokens[index]);
     for (String suff : suffs) {
       features.add("suf=" + suff);
     }
   }
-  
+
   private String[] getSuffixes(String lex) {
-      
+
     int suffixes = StrictMath.min(suffixLength, lex.length());
-      
+
     String[] suffs = new String[suffixes];
     for (int li = 0; li < suffixes; li++) {
       suffs[li] = lex.substring(StrictMath.max(lex.length() - li - 1, 0));
     }
     return suffs;
   }
-  
+
 }

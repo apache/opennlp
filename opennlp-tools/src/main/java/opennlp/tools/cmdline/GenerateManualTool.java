@@ -79,7 +79,7 @@ public class GenerateManualTool {
    */
   private static String getUsage() {
     return "Requires one argument: \n" +
-            "  Path to the output XML file \n";
+        "  Path to the output XML file \n";
   }
 
   /**
@@ -90,7 +90,7 @@ public class GenerateManualTool {
    * @param sb
    */
   private static void appendToolGroup(String groupName,
-      Map<String, CmdLineTool> toolsMap, StringBuilder sb) {
+                                      Map<String, CmdLineTool> toolsMap, StringBuilder sb) {
     sb.append("<section id='tools.cli.").append(groupName).append("'>\n\n");
     sb.append("<title>").append(firstCaps(groupName)).append("</title>\n\n");
 
@@ -111,7 +111,7 @@ public class GenerateManualTool {
    * @param sb
    */
   private static void appendTool(String groupName, String toolName,
-      CmdLineTool tool, StringBuilder sb) {
+                                 CmdLineTool tool, StringBuilder sb) {
     sb.append("<section id='tools.cli.").append(groupName).append(".")
         .append(toolName).append("'>\n\n");
     sb.append("<title>").append(toolName).append("</title>\n\n");
@@ -127,7 +127,7 @@ public class GenerateManualTool {
   }
 
   private static void appendHelpForTool(TypedCmdLineTool<?> tool,
-      StringBuilder sb) {
+                                        StringBuilder sb) {
     Class<?> type = tool.type;
 
     Set<String> formats = StreamFactoryRegistry.getFactories(type).keySet();

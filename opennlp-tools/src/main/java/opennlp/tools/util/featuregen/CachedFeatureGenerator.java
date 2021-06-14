@@ -49,7 +49,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
   }
 
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
 
     List<String> cacheFeatures;
 

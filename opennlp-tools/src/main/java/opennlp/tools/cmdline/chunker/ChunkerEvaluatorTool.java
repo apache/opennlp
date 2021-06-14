@@ -38,9 +38,6 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public final class ChunkerEvaluatorTool
     extends AbstractEvaluatorTool<ChunkSample, EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
-  }
-
   public ChunkerEvaluatorTool() {
     super(ChunkSample.class, EvalToolParams.class);
   }
@@ -101,5 +98,8 @@ public final class ChunkerEvaluatorTool
     } else {
       System.out.println(detailedFMeasureListener);
     }
+  }
+
+  interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
   }
 }

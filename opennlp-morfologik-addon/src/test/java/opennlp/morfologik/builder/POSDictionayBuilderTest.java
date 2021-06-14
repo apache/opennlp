@@ -24,12 +24,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
-import morfologik.stemming.DictionaryMetadata;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
+
+import morfologik.stemming.DictionaryMetadata;
 
 public class POSDictionayBuilderTest {
 

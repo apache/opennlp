@@ -28,7 +28,7 @@ public class NKJPSegmentationDocumentTest {
   @Test
   public void testParsingSimpleDoc() throws IOException {
     try (InputStream nkjpSegXmlIn =
-           NKJPSegmentationDocumentTest.class.getResourceAsStream("ann_segmentation.xml")) {
+             NKJPSegmentationDocumentTest.class.getResourceAsStream("ann_segmentation.xml")) {
 
       NKJPSegmentationDocument doc = NKJPSegmentationDocument.parse(nkjpSegXmlIn);
 

@@ -30,20 +30,14 @@ import opennlp.tools.util.ObjectStream;
 
 public class NKJPSentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends BasicFormatParams {
-    @ArgumentParser.ParameterDescription(valueName = "text",
-        description = "file containing NKJP text")
-    File getTextFile();
+  protected <P> NKJPSentenceSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         "nkjp", new NKJPSentenceSampleStreamFactory(
-        NKJPSentenceSampleStreamFactory.Parameters.class));
-  }
-
-  protected <P> NKJPSentenceSampleStreamFactory(Class<P> params) {
-    super(params);
+            NKJPSentenceSampleStreamFactory.Parameters.class));
   }
 
   @Override
@@ -65,5 +59,11 @@ public class NKJPSentenceSampleStreamFactory extends AbstractSampleStreamFactory
     }
 
     return new NKJPSentenceSampleStream(segDoc, textDoc);
+  }
+
+  interface Parameters extends BasicFormatParams {
+    @ArgumentParser.ParameterDescription(valueName = "text",
+        description = "file containing NKJP text")
+    File getTextFile();
   }
 }

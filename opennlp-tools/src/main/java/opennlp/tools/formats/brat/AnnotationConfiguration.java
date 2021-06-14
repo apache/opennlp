@@ -46,11 +46,6 @@ public class AnnotationConfiguration {
     this.typeToClassMap = Collections.unmodifiableMap(new HashMap<>(typeToClassMap));
   }
 
-  public String getTypeClass(String type) {
-    return typeToClassMap.get(type);
-  }
-
-
   public static AnnotationConfiguration parse(InputStream in) throws IOException {
     Map<String, String> typeToClassMap = new HashMap<>();
 
@@ -67,8 +62,7 @@ public class AnnotationConfiguration {
         if (!line.startsWith("#")) {
           if (line.startsWith("[") && line.endsWith("]")) {
             sectionType = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
-          }
-          else {
+          } else {
             String typeName = WhitespaceTokenizer.INSTANCE.tokenize(line)[0];
 
             switch (sectionType) {
@@ -103,5 +97,9 @@ public class AnnotationConfiguration {
     try (InputStream in = new BufferedInputStream(new FileInputStream(annConfigFile))) {
       return parse(in);
     }
+  }
+
+  public String getTypeClass(String type) {
+    return typeToClassMap.get(type);
   }
 }

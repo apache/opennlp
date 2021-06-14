@@ -63,7 +63,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
     if (trainingParameters.getIntParameter(CUTOFF_PARAM, -1) == -1) {
       trainingParameters.put(CUTOFF_PARAM, 5);
     }
-    
+
     DataIndexer indexer = DataIndexerFactory.getDataIndexer(trainingParameters, reportMap);
     indexer.index(events);
     return indexer;

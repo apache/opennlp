@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.tokenize.Detokenizer;
 import opennlp.tools.cmdline.tokenizer.DetokenEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
 
@@ -70,7 +71,7 @@ public class DetokenizerEvaluatorTest {
       this.sample = sample;
     }
 
-    public DetokenizationOperation[] detokenize(String[] tokens) {
+    public Detokenizer.DetokenizationOperation[] detokenize(String[] tokens) {
       return null;
     }
 

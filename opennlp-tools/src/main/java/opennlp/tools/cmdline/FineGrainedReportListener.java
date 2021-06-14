@@ -35,15 +35,15 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.eval.Mean;
 
 public abstract class FineGrainedReportListener {
 
-  private static final char[] alpha = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+  private static final char[] alpha = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
       'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-      'w', 'x', 'y', 'z' };
+      'w', 'x', 'y', 'z'};
   private final PrintStream printStream;
   private final Stats stats = new Stats();
 
@@ -433,22 +433,36 @@ public abstract class FineGrainedReportListener {
     printFooter("Confusion matrix for tokens");
   }
 
-  /** Auxiliary method that prints a emphasised report header */
+  /**
+   * Auxiliary method that prints a emphasised report header
+   */
   private void printHeader(String text) {
     printStream.append("=== ").append(text).append(" ===\n");
   }
 
-  /** Auxiliary method that prints a marker to the end of a report */
+  /**
+   * Auxiliary method that prints a marker to the end of a report
+   */
   private void printFooter(String text) {
     printStream.append("\n<-end> ").append(text).append("\n\n");
   }
 
-  /** Auxiliary method that prints a horizontal line of a given size */
+  /**
+   * Auxiliary method that prints a horizontal line of a given size
+   */
   private void printLine(int size) {
     for (int i = 0; i < size; i++) {
       printStream.append("-");
     }
     printStream.append("\n");
+  }
+
+  public Comparator<String> getMatrixLabelComparator(Map<String, ConfusionMatrixLine> confusionMatrix) {
+    return new MatrixLabelComparator(confusionMatrix);
+  }
+
+  public Comparator<String> getLabelComparator(Map<String, Counter> map) {
+    return new SimpleLabelComparator(map);
   }
 
   /**
@@ -567,10 +581,6 @@ public abstract class FineGrainedReportListener {
     }
   }
 
-  public Comparator<String> getMatrixLabelComparator(Map<String, ConfusionMatrixLine> confusionMatrix) {
-    return new MatrixLabelComparator(confusionMatrix);
-  }
-
   public static class SimpleLabelComparator implements Comparator<String> {
 
     private Map<String, Counter> map;
@@ -594,10 +604,6 @@ public abstract class FineGrainedReportListener {
       }
       return e2 - e1;
     }
-  }
-
-  public Comparator<String> getLabelComparator(Map<String, Counter> map) {
-    return new SimpleLabelComparator(map);
   }
 
   public static class GroupedLabelComparator implements Comparator<String> {
@@ -693,8 +699,7 @@ public abstract class FineGrainedReportListener {
     /**
      * Creates a new {@link ConfusionMatrixLine}
      *
-     * @param ref
-     *          the reference column
+     * @param ref the reference column
      */
     private ConfusionMatrixLine(String ref) {
       this.ref = ref;
@@ -703,8 +708,7 @@ public abstract class FineGrainedReportListener {
     /**
      * Increments the counter for the given column and updates the statistics.
      *
-     * @param column
-     *          the column to be incremented
+     * @param column the column to be incremented
      */
     private void increment(String column) {
       total++;
@@ -734,8 +738,7 @@ public abstract class FineGrainedReportListener {
     /**
      * Gets the value given a column
      *
-     * @param column
-     *          the column
+     * @param column the column
      * @return the counter value
      */
     public int getValue(String column) {
@@ -811,8 +814,8 @@ public abstract class FineGrainedReportListener {
       }
 
       // String[] toks = reference.getSentence();
-      String[] refs = { ref };
-      String[] preds = { pred };
+      String[] refs = {ref};
+      String[] preds = {pred};
 
       updateTagFMeasure(refs, preds);
 
@@ -833,12 +836,9 @@ public abstract class FineGrainedReportListener {
     /**
      * Includes a new evaluation data
      *
-     * @param tok
-     *          the evaluated token
-     * @param ref
-     *          the reference pos tag
-     * @param pred
-     *          the predicted pos tag
+     * @param tok  the evaluated token
+     * @param ref  the reference pos tag
+     * @param pred the predicted pos tag
      */
     private void commit(String tok, String ref, String pred) {
       // token stats

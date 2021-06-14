@@ -41,6 +41,7 @@ public abstract class CmdLineTool {
 
   /**
    * Returns whether the tool has any command line params.
+   *
    * @return whether the tool has any command line params
    */
   public boolean hasParams() {
@@ -48,7 +49,7 @@ public abstract class CmdLineTool {
   }
 
   protected String getBasicHelp(Class<?> argProxyInterface) {
-    return getBasicHelp(new Class[]{argProxyInterface});
+    return getBasicHelp(new Class[] {argProxyInterface});
   }
 
   protected String getBasicHelp(Class<?>... argProxyInterfaces) {

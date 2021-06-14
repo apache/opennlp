@@ -36,14 +36,6 @@ import opennlp.tools.util.InvalidFormatException;
  */
 public class POSSampleTest {
 
-  @Test
-  public void testEquals() throws InvalidFormatException {
-    Assert.assertFalse(createGoldSample() == createGoldSample());
-    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
-    Assert.assertFalse(createPredSample().equals(createGoldSample()));
-    Assert.assertFalse(createPredSample().equals(new Object()));
-  }
-
   public static POSSample createGoldSample() throws InvalidFormatException {
     String sentence = "the_DT stories_NNS about_IN well-heeled_JJ "
         + "communities_NNS and_CC developers_NNS";
@@ -54,6 +46,14 @@ public class POSSampleTest {
     String sentence = "the_DT stories_NNS about_NNS well-heeled_JJ "
         + "communities_NNS and_CC developers_CC";
     return POSSample.parse(sentence);
+  }
+
+  @Test
+  public void testEquals() throws InvalidFormatException {
+    Assert.assertFalse(createGoldSample() == createGoldSample());
+    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(new Object()));
   }
 
   @Test
@@ -84,7 +84,6 @@ public class POSSampleTest {
 
   /**
    * Tests if it can parse a valid token_tag sentence.
-   *
    */
   @Test
   public void testParse() throws InvalidFormatException {
@@ -109,7 +108,6 @@ public class POSSampleTest {
 
   /**
    * Tests if it can parse an empty token.
-   *
    */
   @Test
   public void testParseEmtpyToken() throws InvalidFormatException {
@@ -120,7 +118,6 @@ public class POSSampleTest {
 
   /**
    * Tests if it can parse an empty tag.
-   *
    */
   @Test
   public void testParseEmtpyTag() throws InvalidFormatException {

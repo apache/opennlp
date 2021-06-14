@@ -63,8 +63,7 @@ class MarkableFileInputStream extends InputStream {
 
     if (markedPosition >= 0) {
       in.getChannel().position(markedPosition);
-    }
-    else {
+    } else {
       throw new IOException("Stream has to be marked before it can be reset!");
     }
   }

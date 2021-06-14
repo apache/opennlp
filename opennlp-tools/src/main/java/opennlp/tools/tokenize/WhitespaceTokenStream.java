@@ -19,9 +19,9 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 
+import opennlp.common.util.Span;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 /**
  * This stream formats a {@link TokenSample}s into whitespace
@@ -48,7 +48,7 @@ public class WhitespaceTokenStream extends FilterObjectStream<TokenSample, Strin
       // Shorten string by one to get rid of last space
       if (whitespaceSeparatedTokenString.length() > 0) {
         whitespaceSeparatedTokenString.setLength(
-            whitespaceSeparatedTokenString.length() - 1 );
+            whitespaceSeparatedTokenString.length() - 1);
       }
 
       return whitespaceSeparatedTokenString.toString();

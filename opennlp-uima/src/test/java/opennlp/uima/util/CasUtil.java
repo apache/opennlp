@@ -20,7 +20,6 @@ package opennlp.uima.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -38,7 +37,6 @@ import org.apache.uima.util.CasCreationUtils;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.XMLInputSource;
 import org.apache.uima.util.XMLParser;
-
 import org.xml.sax.SAXException;
 
 public class CasUtil {
@@ -82,7 +80,7 @@ public class CasUtil {
     CAS cas;
     try {
       cas = CasCreationUtils.createCas(typeSystem, typePriorities,
-          new FsIndexDescription[] { indexDesciptor });
+          new FsIndexDescription[] {indexDesciptor});
     } catch (ResourceInitializationException e) {
       e.printStackTrace();
       cas = null;

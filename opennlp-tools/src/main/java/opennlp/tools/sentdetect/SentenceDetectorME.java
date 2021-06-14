@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.common.util.Span;
+import opennlp.common.util.StringUtil;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -33,8 +35,6 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -55,28 +55,23 @@ public class SentenceDetectorME implements SentenceDetector {
    * Constant indicates no sentence split.
    */
   public static final String NO_SPLIT = "n";
-
-  /**
-   * The maximum entropy model to use to evaluate contexts.
-   */
-  private MaxentModel model;
-
   /**
    * The feature context generator.
    */
   private final SDContextGenerator cgen;
-
   /**
    * The {@link EndOfSentenceScanner} to use when scanning for end of sentence offsets.
    */
   private final EndOfSentenceScanner scanner;
-
+  protected boolean useTokenEnd;
+  /**
+   * The maximum entropy model to use to evaluate contexts.
+   */
+  private MaxentModel model;
   /**
    * The list of probabilities associated with each decision.
    */
   private List<Double> sentProbs = new ArrayList<>();
-
-  protected boolean useTokenEnd;
 
   /**
    * Initializes the current instance.
@@ -93,7 +88,7 @@ public class SentenceDetectorME implements SentenceDetector {
 
   /**
    * @deprecated Use a {@link SentenceDetectorFactory} to extend
-   *             SentenceDetector functionality.
+   * SentenceDetector functionality.
    */
   public SentenceDetectorME(SentenceModel model, Factory factory) {
     this.model = model.getMaxentModel();
@@ -120,11 +115,53 @@ public class SentenceDetectorME implements SentenceDetector {
   }
 
   /**
+   * @deprecated Use
+   * {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
+   * and pass in af {@link SentenceDetectorFactory}.
+   */
+  public static SentenceModel train(String languageCode,
+                                    ObjectStream<SentenceSample> samples, boolean useTokenEnd,
+                                    Dictionary abbreviations, TrainingParameters mlParams)
+      throws IOException {
+    SentenceDetectorFactory sdFactory = new SentenceDetectorFactory(
+        languageCode, useTokenEnd, abbreviations, null);
+    return train(languageCode, samples, sdFactory, mlParams);
+  }
+
+  public static SentenceModel train(String languageCode,
+                                    ObjectStream<SentenceSample> samples, SentenceDetectorFactory sdFactory,
+                                    TrainingParameters mlParams) throws IOException {
+
+    Map<String, String> manifestInfoEntries = new HashMap<>();
+
+    // TODO: Fix the EventStream to throw exceptions when training goes wrong
+    ObjectStream<Event> eventStream = new SDEventStream(samples,
+        sdFactory.getSDContextGenerator(), sdFactory.getEndOfSentenceScanner());
+
+    EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams, manifestInfoEntries);
+
+    MaxentModel sentModel = trainer.train(eventStream);
+
+    return new SentenceModel(languageCode, sentModel, manifestInfoEntries, sdFactory);
+  }
+
+  /**
+   * @deprecated Use
+   * {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
+   * and pass in af {@link SentenceDetectorFactory}.
+   */
+  @Deprecated
+  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
+                                    boolean useTokenEnd, Dictionary abbreviations) throws IOException {
+    return train(languageCode, samples, useTokenEnd, abbreviations,
+        ModelUtil.createDefaultTrainingParameters());
+  }
+
+  /**
    * Detect sentences in a String.
    *
-   * @param s  The string to be processed.
-   *
-   * @return   A string array containing individual sentences as elements.
+   * @param s The string to be processed.
+   * @return A string array containing individual sentences as elements.
    */
   public String[] sentDetect(String s) {
     Span[] spans = sentPosDetect(s);
@@ -134,8 +171,7 @@ public class SentenceDetectorME implements SentenceDetector {
       for (int si = 0; si < spans.length; si++) {
         sentences[si] = spans[si].getCoveredText(s).toString();
       }
-    }
-    else {
+    } else {
       sentences = new String[] {};
     }
     return sentences;
@@ -156,10 +192,9 @@ public class SentenceDetectorME implements SentenceDetector {
   /**
    * Detect the position of the first words of sentences in a String.
    *
-   * @param s  The string to be processed.
-   * @return   A integer array containing the positions of the end index of
-   *          every sentence
-   *
+   * @param s The string to be processed.
+   * @return A integer array containing the positions of the end index of
+   * every sentence
    */
   public Span[] sentPosDetect(String s) {
     sentProbs.clear();
@@ -170,7 +205,7 @@ public class SentenceDetectorME implements SentenceDetector {
     for (int i = 0, end = enders.size(), index = 0; i < end; i++) {
       int cint = enders.get(i);
       // skip over the leading parts of non-token final delimiters
-      int fws = getFirstWS(s,cint + 1);
+      int fws = getFirstWS(s, cint + 1);
       if (i + 1 < end && enders.get(i + 1) < fws) {
         continue;
       }
@@ -182,9 +217,8 @@ public class SentenceDetectorME implements SentenceDetector {
       if (bestOutcome.equals(SPLIT) && isAcceptableBreak(s, index, cint)) {
         if (index != cint) {
           if (useTokenEnd) {
-            positions.add(getFirstNonWS(s, getFirstWS(s,cint + 1)));
-          }
-          else {
+            positions.add(getFirstNonWS(s, getFirstWS(s, cint + 1)));
+          } else {
             positions.add(getFirstNonWS(s, cint + 1));
           }
           sentProbs.add(probs[model.getIndex(bestOutcome)]);
@@ -215,8 +249,7 @@ public class SentenceDetectorME implements SentenceDetector {
       if (end - start > 0) {
         sentProbs.add(1d);
         return new Span[] {new Span(start, end)};
-      }
-      else
+      } else
         return new Span[0];
     }
 
@@ -230,8 +263,7 @@ public class SentenceDetectorME implements SentenceDetector {
 
       if (si == 0) {
         start = 0;
-      }
-      else {
+      } else {
         start = starts[si - 1];
       }
 
@@ -240,8 +272,7 @@ public class SentenceDetectorME implements SentenceDetector {
       Span span = new Span(start, starts[si]).trim(s);
       if (span.length() > 0) {
         spans[si] = span;
-      }
-      else {
+      } else {
         sentProbs.remove(si);
       }
     }
@@ -270,7 +301,7 @@ public class SentenceDetectorME implements SentenceDetector {
    * calls to sentDetect().
    *
    * @return probability for each sentence returned for the most recent
-   *     call to sentDetect.  If not applicable an empty array is returned.
+   * call to sentDetect.  If not applicable an empty array is returned.
    */
   public double[] getSentenceProbabilities() {
     double[] sentProbArray = new double[sentProbs.size()];
@@ -288,54 +319,12 @@ public class SentenceDetectorME implements SentenceDetector {
    * <p>The implementation here always returns true, which means
    * that the MaxentModel's outcome is taken as is.</p>
    *
-   * @param s the string in which the break occurred.
-   * @param fromIndex the start of the segment currently being evaluated
+   * @param s              the string in which the break occurred.
+   * @param fromIndex      the start of the segment currently being evaluated
    * @param candidateIndex the index of the candidate sentence ending
    * @return true if the break is acceptable
    */
   protected boolean isAcceptableBreak(String s, int fromIndex, int candidateIndex) {
     return true;
-  }
-
-  /**
-   * @deprecated Use
-   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
-   *             and pass in af {@link SentenceDetectorFactory}.
-   */
-  public static SentenceModel train(String languageCode,
-      ObjectStream<SentenceSample> samples, boolean useTokenEnd,
-      Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
-    SentenceDetectorFactory sdFactory = new SentenceDetectorFactory(
-        languageCode, useTokenEnd, abbreviations, null);
-    return train(languageCode, samples, sdFactory, mlParams);
-  }
-
-  public static SentenceModel train(String languageCode,
-      ObjectStream<SentenceSample> samples, SentenceDetectorFactory sdFactory,
-      TrainingParameters mlParams) throws IOException {
-
-    Map<String, String> manifestInfoEntries = new HashMap<>();
-
-    // TODO: Fix the EventStream to throw exceptions when training goes wrong
-    ObjectStream<Event> eventStream = new SDEventStream(samples,
-        sdFactory.getSDContextGenerator(), sdFactory.getEndOfSentenceScanner());
-
-    EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams, manifestInfoEntries);
-
-    MaxentModel sentModel = trainer.train(eventStream);
-
-    return new SentenceModel(languageCode, sentModel, manifestInfoEntries, sdFactory);
-  }
-
-  /**
-   * @deprecated Use
-   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
-   *             and pass in af {@link SentenceDetectorFactory}.
-   */
-  @Deprecated
-  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-      boolean useTokenEnd, Dictionary abbreviations) throws IOException {
-    return train(languageCode, samples, useTokenEnd, abbreviations,
-        ModelUtil.createDefaultTrainingParameters());
   }
 }

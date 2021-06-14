@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -40,14 +39,151 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringList;
 import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
  * This class is used by for reading and writing dictionaries of all kinds.
  */
 public class DictionaryEntryPersistor {
+
+  private static final String CHARSET = StandardCharsets.UTF_8.name();
+  private static final String DICTIONARY_ELEMENT = "dictionary";
+  private static final String ENTRY_ELEMENT = "entry";
+  private static final String TOKEN_ELEMENT = "token";
+  private static final String ATTRIBUTE_CASE_SENSITIVE = "case_sensitive";
+
+  /**
+   * Creates {@link Entry}s from the given {@link InputStream} and
+   * forwards these {@link Entry}s to the {@link EntryInserter}.
+   * <p>
+   * After creation is finished the provided {@link InputStream} is closed.
+   *
+   * @param in       stream to read entries from
+   * @param inserter inserter to forward entries to
+   * @return isCaseSensitive attribute for Dictionary
+   * @throws IOException
+   * @throws InvalidFormatException
+   */
+  public static boolean create(InputStream in, EntryInserter inserter)
+      throws IOException {
+
+    DictionaryContenthandler profileContentHandler =
+        new DictionaryContenthandler(inserter);
+
+    XMLReader xmlReader;
+    try {
+      xmlReader = XMLReaderFactory.createXMLReader();
+      xmlReader.setContentHandler(profileContentHandler);
+      xmlReader.parse(new InputSource(new UncloseableInputStream(in)));
+    } catch (SAXException e) {
+      throw new InvalidFormatException("The profile data stream has " +
+          "an invalid format!", e);
+    }
+    return profileContentHandler.mIsCaseSensitiveDictionary;
+  }
+
+  /**
+   * Serializes the given entries to the given {@link OutputStream}.
+   * <p>
+   * After the serialization is finished the provided
+   * {@link OutputStream} remains open.
+   *
+   * @param out     stream to serialize to
+   * @param entries entries to serialize
+   * @throws IOException If an I/O error occurs
+   * @deprecated Use
+   * {@link DictionaryEntryPersistor#serialize(java.io.OutputStream, java.util.Iterator, boolean)} instead
+   */
+  @Deprecated
+  public static void serialize(OutputStream out, Iterator<Entry> entries)
+      throws IOException {
+    DictionaryEntryPersistor.serialize(out, entries, true);
+  }
+
+  /**
+   * Serializes the given entries to the given {@link OutputStream}.
+   * <p>
+   * After the serialization is finished the provided
+   * {@link OutputStream} remains open.
+   *
+   * @param out           stream to serialize to
+   * @param entries       entries to serialize
+   * @param casesensitive indicates if the written dictionary
+   *                      should be case sensitive or case insensitive.
+   * @throws IOException If an I/O error occurs
+   */
+  public static void serialize(OutputStream out, Iterator<Entry> entries,
+                               boolean casesensitive) throws IOException {
+    StreamResult streamResult = new StreamResult(out);
+    SAXTransformerFactory tf = (SAXTransformerFactory)
+        SAXTransformerFactory.newInstance();
+
+    TransformerHandler hd;
+    try {
+      hd = tf.newTransformerHandler();
+    } catch (TransformerConfigurationException e) {
+      throw new AssertionError("The Transformer configuration must be valid!");
+    }
+
+    Transformer serializer = hd.getTransformer();
+    serializer.setOutputProperty(OutputKeys.ENCODING, CHARSET);
+    serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+    hd.setResult(streamResult);
+
+
+    try {
+      hd.startDocument();
+
+      AttributesImpl dictionaryAttributes = new AttributesImpl();
+
+      dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE_SENSITIVE,
+          "", String.valueOf(casesensitive));
+      hd.startElement("", "", DICTIONARY_ELEMENT, dictionaryAttributes);
+
+      while (entries.hasNext()) {
+        Entry entry = entries.next();
+
+        serializeEntry(hd, entry);
+      }
+
+      hd.endElement("", "", DICTIONARY_ELEMENT);
+
+      hd.endDocument();
+    } catch (SAXException e) {
+      throw new IOException("Error during serialization: " + e.getMessage(), e);
+    }
+  }
+
+  private static void serializeEntry(TransformerHandler hd, Entry entry)
+      throws SAXException {
+
+    AttributesImpl entryAttributes = new AttributesImpl();
+
+    for (Iterator<String> it = entry.getAttributes().iterator(); it.hasNext(); ) {
+      String key = it.next();
+
+      entryAttributes.addAttribute("", "", key,
+          "", entry.getAttributes().getValue(key));
+    }
+
+    hd.startElement("", "", ENTRY_ELEMENT, entryAttributes);
+
+    StringList tokens = entry.getTokens();
+
+    for (String token : tokens) {
+
+      hd.startElement("", "", TOKEN_ELEMENT, new AttributesImpl());
+
+      hd.characters(token.toCharArray(), 0, token.length());
+
+      hd.endElement("", "", TOKEN_ELEMENT);
+    }
+
+    hd.endElement("", "", ENTRY_ELEMENT);
+  }
 
   // TODO: should check for invalid format, make it save
   private static class DictionaryContenthandler implements ContentHandler {
@@ -84,7 +220,7 @@ public class DictionaryEntryPersistor {
     }
 
     public void startElement(String uri, String localName, String qName,
-        org.xml.sax.Attributes atts) throws SAXException {
+                             org.xml.sax.Attributes atts) throws SAXException {
       if (DICTIONARY_ELEMENT.equals(localName)) {
 
         mAttributes = new Attributes();
@@ -97,16 +233,14 @@ public class DictionaryEntryPersistor {
           mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));
         }
         mAttributes = null;
-      }
-      else if (ENTRY_ELEMENT.equals(localName)) {
+      } else if (ENTRY_ELEMENT.equals(localName)) {
 
         mAttributes = new Attributes();
 
         for (int i = 0; i < atts.getLength(); i++) {
           mAttributes.setValue(atts.getLocalName(i), atts.getValue(i));
         }
-      }
-      else if (TOKEN_ELEMENT.equals(localName)) {
+      } else if (TOKEN_ELEMENT.equals(localName)) {
         mIsInsideTokenElement = true;
       }
     }
@@ -129,8 +263,7 @@ public class DictionaryEntryPersistor {
         mTokenList.add(token.toString().trim());
         token.setLength(0);
         mIsInsideTokenElement = false;
-      }
-      else if (ENTRY_ELEMENT.equals(localName)) {
+      } else if (ENTRY_ELEMENT.equals(localName)) {
 
         String[] tokens = mTokenList.toArray(
             new String[mTokenList.size()]);
@@ -185,150 +318,5 @@ public class DictionaryEntryPersistor {
     public void startPrefixMapping(String prefix, String uri)
         throws SAXException {
     }
-  }
-
-  private static final String CHARSET = StandardCharsets.UTF_8.name();
-
-  private static final String DICTIONARY_ELEMENT = "dictionary";
-  private static final String ENTRY_ELEMENT = "entry";
-  private static final String TOKEN_ELEMENT = "token";
-  private static final String ATTRIBUTE_CASE_SENSITIVE = "case_sensitive";
-
-
-  /**
-   * Creates {@link Entry}s from the given {@link InputStream} and
-   * forwards these {@link Entry}s to the {@link EntryInserter}.
-   *
-   * After creation is finished the provided {@link InputStream} is closed.
-   *
-   * @param in stream to read entries from
-   * @param inserter inserter to forward entries to
-   *
-   * @return isCaseSensitive attribute for Dictionary
-   *
-   * @throws IOException
-   * @throws InvalidFormatException
-   */
-  public static boolean create(InputStream in, EntryInserter inserter)
-      throws IOException {
-
-    DictionaryContenthandler profileContentHandler =
-        new DictionaryContenthandler(inserter);
-
-    XMLReader xmlReader;
-    try {
-      xmlReader = XMLReaderFactory.createXMLReader();
-      xmlReader.setContentHandler(profileContentHandler);
-      xmlReader.parse(new InputSource(new UncloseableInputStream(in)));
-    }
-    catch (SAXException e) {
-      throw new InvalidFormatException("The profile data stream has " +
-          "an invalid format!", e);
-    }
-    return profileContentHandler.mIsCaseSensitiveDictionary;
-  }
-
-  /**
-   * Serializes the given entries to the given {@link OutputStream}.
-   *
-   * After the serialization is finished the provided
-   * {@link OutputStream} remains open.
-   *
-   * @param out stream to serialize to
-   * @param entries entries to serialize
-   *
-   * @throws IOException If an I/O error occurs
-   * @deprecated Use
-   *     {@link DictionaryEntryPersistor#serialize(java.io.OutputStream, java.util.Iterator, boolean)} instead
-   */
-  @Deprecated
-  public static void serialize(OutputStream out, Iterator<Entry> entries)
-      throws IOException {
-    DictionaryEntryPersistor.serialize(out, entries, true);
-  }
-
-  /**
-   * Serializes the given entries to the given {@link OutputStream}.
-   *
-   * After the serialization is finished the provided
-   * {@link OutputStream} remains open.
-   *
-   * @param out stream to serialize to
-   * @param entries entries to serialize
-   * @param casesensitive indicates if the written dictionary
-   *        should be case sensitive or case insensitive.
-   *
-   * @throws IOException If an I/O error occurs
-   */
-  public static void serialize(OutputStream out, Iterator<Entry> entries,
-      boolean casesensitive) throws IOException {
-    StreamResult streamResult = new StreamResult(out);
-    SAXTransformerFactory tf = (SAXTransformerFactory)
-        SAXTransformerFactory.newInstance();
-
-    TransformerHandler hd;
-    try {
-      hd = tf.newTransformerHandler();
-    } catch (TransformerConfigurationException e) {
-      throw new AssertionError("The Transformer configuration must be valid!");
-    }
-
-    Transformer serializer = hd.getTransformer();
-    serializer.setOutputProperty(OutputKeys.ENCODING, CHARSET);
-    serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-    hd.setResult(streamResult);
-
-
-    try {
-      hd.startDocument();
-
-      AttributesImpl dictionaryAttributes = new AttributesImpl();
-
-      dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE_SENSITIVE,
-          "", String.valueOf(casesensitive));
-      hd.startElement("", "", DICTIONARY_ELEMENT, dictionaryAttributes);
-
-      while (entries.hasNext()) {
-        Entry entry = entries.next();
-
-        serializeEntry(hd, entry);
-      }
-
-      hd.endElement("", "", DICTIONARY_ELEMENT);
-
-      hd.endDocument();
-    }
-    catch (SAXException e) {
-      throw new IOException("Error during serialization: " + e.getMessage(), e);
-    }
-  }
-
-  private static void serializeEntry(TransformerHandler hd, Entry entry)
-      throws SAXException {
-
-    AttributesImpl entryAttributes = new AttributesImpl();
-
-    for (Iterator<String> it = entry.getAttributes().iterator(); it.hasNext();) {
-      String key = it.next();
-
-      entryAttributes.addAttribute("", "", key,
-          "", entry.getAttributes().getValue(key));
-    }
-
-    hd.startElement("", "", ENTRY_ELEMENT, entryAttributes);
-
-    StringList tokens = entry.getTokens();
-
-    for (String token : tokens) {
-
-      hd.startElement("", "", TOKEN_ELEMENT, new AttributesImpl());
-
-      hd.characters(token.toCharArray(), 0, token.length());
-
-      hd.endElement("", "", TOKEN_ELEMENT);
-    }
-
-    hd.endElement("", "", ENTRY_ELEMENT);
   }
 }

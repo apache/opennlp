@@ -39,16 +39,16 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
   /**
    * Creates a BratDocumentStream which reads the documents from the given input directory.
    *
-   * @param config the annotation.conf from the brat project as an Annotation Configuration object
+   * @param config              the annotation.conf from the brat project as an Annotation Configuration
+   *                            object
    * @param bratCorpusDirectory the directory containing all the brat training data files
-   * @param searchRecursive specifies if the corpus directory should be traversed recursively
-   *     to find training data files.
-   * @param fileFilter  a custom file filter to filter out certain files or null to accept all files
-   *
+   * @param searchRecursive     specifies if the corpus directory should be traversed recursively
+   *                            to find training data files.
+   * @param fileFilter          a custom file filter to filter out certain files or null to accept all files
    * @throws IOException if reading from the brat directory fails in anyway
    */
   public BratDocumentStream(AnnotationConfiguration config, File bratCorpusDirectory,
-      boolean searchRecursive, FileFilter fileFilter) throws IOException {
+                            boolean searchRecursive, FileFilter fileFilter) throws IOException {
 
     if (!bratCorpusDirectory.isDirectory()) {
       throw new IOException("Input corpus directory must be a directory " +
@@ -76,8 +76,7 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
               documentIds.add(documentId);
             }
           }
-        }
-        else if (searchRecursive && file.isDirectory()) {
+        } else if (searchRecursive && file.isDirectory()) {
           directoryStack.push(file);
         }
       }
@@ -94,7 +93,7 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
       String id = documentIdIterator.next();
 
       try (InputStream txtIn = new BufferedInputStream(new FileInputStream(id + ".txt"));
-          InputStream annIn = new BufferedInputStream(new FileInputStream(id + ".ann"))) {
+           InputStream annIn = new BufferedInputStream(new FileInputStream(id + ".ann"))) {
         doc = BratDocument.parseDocument(config, id, txtIn, annIn);
       }
     }

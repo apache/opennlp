@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import opennlp.tools.util.StringUtil;
+import opennlp.common.util.StringUtil;
 
 /**
  * Generate events for maxent decisions for tokenization.
@@ -62,12 +62,10 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
    * at the specified index. Extensions of this class can override this method
    * to create a customized {@link TokenContextGenerator}
    *
-   * @param sentence
-   *          the token been analyzed
-   * @param index
-   *          the index of the character been analyzed
+   * @param sentence the token been analyzed
+   * @param index    the index of the character been analyzed
    * @return an {@link ArrayList} of features for the specified sentence string
-   *         at the specified index.
+   * at the specified index.
    */
   protected List<String> createContext(String sentence, int index) {
     List<String> preds = new ArrayList<>();
@@ -80,21 +78,18 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
       if (index > 1) {
         addCharPreds("p2", sentence.charAt(index - 2), preds);
         preds.add("p21=" + sentence.charAt(index - 2) + sentence.charAt(index - 1));
-      }
-      else {
+      } else {
         preds.add("p2=bok");
       }
       preds.add("p1f1=" + sentence.charAt(index - 1) + sentence.charAt(index));
-    }
-    else {
+    } else {
       preds.add("p1=bok");
     }
     addCharPreds("f1", sentence.charAt(index), preds);
     if (index + 1 < sentence.length()) {
       addCharPreds("f2", sentence.charAt(index + 1), preds);
       preds.add("f12=" + sentence.charAt(index) + sentence.charAt(index + 1));
-    }
-    else {
+    } else {
       preds.add("f2=bok");
     }
     if (sentence.charAt(0) == '&' && sentence.charAt(sentence.length() - 1) == ';') {
@@ -119,24 +114,18 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
       if (Character.isUpperCase(c)) {
         preds.add(key + "_caps");
       }
-    }
-    else if (Character.isDigit(c)) {
+    } else if (Character.isDigit(c)) {
       preds.add(key + "_num");
-    }
-    else if (StringUtil.isWhitespace(c)) {
+    } else if (StringUtil.isWhitespace(c)) {
       preds.add(key + "_ws");
-    }
-    else {
+    } else {
       if (c == '.' || c == '?' || c == '!') {
         preds.add(key + "_eos");
-      }
-      else if (c == '`' || c == '"' || c == '\'') {
+      } else if (c == '`' || c == '"' || c == '\'') {
         preds.add(key + "_quote");
-      }
-      else if (c == '[' || c == '{' || c == '(') {
+      } else if (c == '[' || c == '{' || c == '(') {
         preds.add(key + "_lp");
-      }
-      else if (c == ']' || c == '}' || c == ')') {
+      } else if (c == ']' || c == '}' || c == ')') {
         preds.add(key + "_rp");
       }
     }

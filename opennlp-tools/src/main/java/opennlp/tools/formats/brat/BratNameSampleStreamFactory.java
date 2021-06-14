@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import opennlp.common.tokenize.Tokenizer;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
@@ -35,7 +36,6 @@ import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
@@ -43,36 +43,13 @@ import opennlp.tools.util.ObjectStream;
 
 public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
 
-  interface Parameters {
-    @ParameterDescription(valueName = "bratDataDir", description = "location of brat data dir")
-    File getBratDataDir();
-
-    @ParameterDescription(valueName = "annConfFile")
-    File getAnnotationConfig();
-
-    @ParameterDescription(valueName = "modelFile")
-    @OptionalParameter
-    File getSentenceDetectorModel();
-
-    @ParameterDescription(valueName = "modelFile")
-    @OptionalParameter
-    File getTokenizerModel();
-
-    @ParameterDescription(valueName = "name")
-    @OptionalParameter
-    String getRuleBasedTokenizer();
-
-    @ParameterDescription(valueName = "value")
-    @OptionalParameter(defaultValue = "false")
-    Boolean getRecursive();
-
-    @ParameterDescription(valueName = "names")
-    @OptionalParameter
-    String getNameTypes();
-  }
-
   protected BratNameSampleStreamFactory() {
     super(Parameters.class);
+  }
+
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(NameSample.class, "brat",
+        new BratNameSampleStreamFactory());
   }
 
   /**
@@ -103,8 +80,7 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     AnnotationConfiguration annConfig;
     try {
       annConfig = AnnotationConfiguration.parse(params.getAnnotationConfig());
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new TerminateToolException(1, "Failed to parse annotation.conf file!");
     }
 
@@ -126,8 +102,7 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Failed to load sentence detector model!", e);
       }
-    }
-    else {
+    } else {
       sentDetector = new NewlineSentenceDetector();
     }
 
@@ -139,17 +114,14 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Failed to load tokenizer model!", e);
       }
-    }
-    else if (params.getRuleBasedTokenizer() != null) {
+    } else if (params.getRuleBasedTokenizer() != null) {
       String tokenizerName = params.getRuleBasedTokenizer();
 
       if ("simple".equals(tokenizerName)) {
         tokenizer = SimpleTokenizer.INSTANCE;
-      }
-      else if ("whitespace".equals(tokenizerName)) {
+      } else if ("whitespace".equals(tokenizerName)) {
         tokenizer = WhitespaceTokenizer.INSTANCE;
-      }
-      else {
+      } else {
         throw new TerminateToolException(-1, "Unkown tokenizer: " + tokenizerName);
       }
     }
@@ -165,8 +137,31 @@ public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<Nam
     return new BratNameSampleStream(sentDetector, tokenizer, samples, nameTypes);
   }
 
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(NameSample.class, "brat",
-        new BratNameSampleStreamFactory());
+  interface Parameters {
+    @ParameterDescription(valueName = "bratDataDir", description = "location of brat data dir")
+    File getBratDataDir();
+
+    @ParameterDescription(valueName = "annConfFile")
+    File getAnnotationConfig();
+
+    @ParameterDescription(valueName = "modelFile")
+    @OptionalParameter
+    File getSentenceDetectorModel();
+
+    @ParameterDescription(valueName = "modelFile")
+    @OptionalParameter
+    File getTokenizerModel();
+
+    @ParameterDescription(valueName = "name")
+    @OptionalParameter
+    String getRuleBasedTokenizer();
+
+    @ParameterDescription(valueName = "value")
+    @OptionalParameter(defaultValue = "false")
+    Boolean getRecursive();
+
+    @ParameterDescription(valueName = "names")
+    @OptionalParameter
+    String getNameTypes();
   }
 }

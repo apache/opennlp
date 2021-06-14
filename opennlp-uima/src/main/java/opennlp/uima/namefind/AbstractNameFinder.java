@@ -34,7 +34,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 import opennlp.uima.util.AnnotationComboIterator;
 import opennlp.uima.util.AnnotationIteratorPair;
 import opennlp.uima.util.AnnotatorUtil;
@@ -106,7 +106,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
         NameFinder.NAME_TYPE_PARAMETER);
 
     String typeMapString = (String) context.getConfigParameterValue(
-            NameFinder.NAME_TYPE_MAP_PARAMETER);
+        NameFinder.NAME_TYPE_MAP_PARAMETER);
 
     if (typeMapString != null) {
       Map<String, Type> nameTypeMap = new HashMap<>();
@@ -118,8 +118,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
 
         if (parts.length == 2) {
           nameTypeMap.put(parts[0].trim(), typeSystem.getType(parts[1].trim()));
-        }
-        else {
+        } else {
           mLogger.log(Level.WARNING,
               String.format("Failed to parse a part of the type mapping [%s]", mapping));
         }
@@ -135,7 +134,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
   }
 
   protected void postProcessAnnotations(Span[] detectedNames,
-      AnnotationFS[] nameAnnotations) {
+                                        AnnotationFS[] nameAnnotations) {
   }
 
   /**
@@ -183,7 +182,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
         sentenceTokenList.add(tokenAnnotation.getCoveredText());
       }
 
-      Span[] names  = find(cas,
+      Span[] names = find(cas,
           sentenceTokenList.toArray(new String[sentenceTokenList.size()]));
 
       AnnotationFS[] nameAnnotations = new AnnotationFS[names.length];

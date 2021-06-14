@@ -31,5 +31,5 @@ public abstract class CustomFeatureGenerator implements AdaptiveFeatureGenerator
    * @param resourceProvider
    */
   public abstract void init(Map<String, String> properties, FeatureGeneratorResourceProvider resourceProvider)
-        throws InvalidFormatException;
+      throws InvalidFormatException;
 }

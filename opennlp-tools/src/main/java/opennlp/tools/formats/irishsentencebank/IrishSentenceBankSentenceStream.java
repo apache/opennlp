@@ -22,11 +22,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import opennlp.common.util.Span;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
-class IrishSentenceBankSentenceStream implements ObjectStream<SentenceSample>  {
+class IrishSentenceBankSentenceStream implements ObjectStream<SentenceSample> {
 
   private final IrishSentenceBankDocument source;
 

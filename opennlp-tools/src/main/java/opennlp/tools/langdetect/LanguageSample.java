@@ -20,6 +20,8 @@ package opennlp.tools.langdetect;
 import java.io.Serializable;
 import java.util.Objects;
 
+import opennlp.common.langdetect.Language;
+
 /**
  * Class which holds a classified document and its @{@link Language}.
  */
@@ -43,7 +45,7 @@ public class LanguageSample implements Serializable {
 
   @Override
   public String toString() {
-    return language.getLang() + '\t' +  context;
+    return language.getLang() + '\t' + context;
   }
 
   @Override

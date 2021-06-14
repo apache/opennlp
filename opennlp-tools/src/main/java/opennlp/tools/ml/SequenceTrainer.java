@@ -30,6 +30,7 @@ public interface SequenceTrainer {
 
   @Deprecated
   void init(Map<String, String> trainParams, Map<String, String> reportMap);
+
   void init(TrainingParameters trainParams, Map<String, String> reportMap);
 
   SequenceClassificationModel<String> train(SequenceStream events) throws IOException;

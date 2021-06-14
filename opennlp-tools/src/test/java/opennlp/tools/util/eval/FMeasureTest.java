@@ -20,7 +20,7 @@ package opennlp.tools.util.eval;
 import org.junit.Assert;
 import org.junit.Test;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * Tests for the {@link FMeasure} class.

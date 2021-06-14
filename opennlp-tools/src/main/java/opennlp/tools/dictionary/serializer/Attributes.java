@@ -24,7 +24,7 @@ import java.util.Objects;
 
 /**
  * The {@link Attributes} class stores name value pairs.
- *
+ * <p>
  * Problem: The HashMap for storing the name value pairs has a very high
  * memory footprint, replace it.
  */
@@ -36,10 +36,9 @@ public class Attributes {
    * Retrieves the value for the given key or null if attribute it not set.
    *
    * @param key
-   *
    * @return the value
    */
-  public  String getValue(String key) {
+  public String getValue(String key) {
     return mNameValueMap.get(key);
   }
 

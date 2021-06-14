@@ -62,7 +62,7 @@ public class GISModelReader extends AbstractModelReader {
    * methods provided in this abstract class.
    *
    * @return The GISModel stored in the format and location specified to this
-   *         GISModelReader (usually via its the constructor).
+   * GISModelReader (usually via its the constructor).
    */
   public AbstractModel constructModel() throws IOException {
 

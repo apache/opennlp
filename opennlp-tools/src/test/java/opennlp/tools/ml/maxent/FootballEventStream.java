@@ -26,22 +26,22 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class FootballEventStream implements ObjectStream<Event> {
   ObjectStream<String> textStream;
-  
+
   public FootballEventStream() throws IOException {
     textStream = new PlainTextByLineStream(
         new URLInputStreamFactory(this.getClass().getResource("/opennlp/tools/ml/maxent/football.dat")),
-        StandardCharsets.US_ASCII );    
+        StandardCharsets.US_ASCII);
   }
-  
+
   @Override
   public Event read() throws IOException {
     String line = textStream.read();
     if (line == null) return null;
     String[] tokens = line.split("\\s+");
-    
+
     return new Event(tokens[tokens.length - 1], Arrays.copyOf(tokens, tokens.length - 1));
   }
-  
+
   @Override
   public void reset() throws IOException, UnsupportedOperationException {
     textStream.reset();

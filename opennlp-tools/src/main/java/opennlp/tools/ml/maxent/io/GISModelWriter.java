@@ -134,7 +134,7 @@ public abstract class GISModelWriter extends AbstractModelWriter {
        * PARAMS[pid].getParams(oid); id++; }
        */
       sortPreds[pid] = new ComparablePredicate(PRED_LABELS[pid],
-        predkeys, activeParams);
+          predkeys, activeParams);
     }
 
     Arrays.sort(sortPreds);

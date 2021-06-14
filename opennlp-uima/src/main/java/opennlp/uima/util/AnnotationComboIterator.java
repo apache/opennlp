@@ -51,7 +51,7 @@ import org.apache.uima.cas.text.AnnotationFS;
  *   }
  * }
  * </pre>
- *
+ * <p>
  * The combo iterator returns in its <code>next()</code> method a pair of an annotation of the upper
  * type (e.g., sentence), and an iterator over annotations of the lower type (e.g., tokens). Note
  * that both the upper and lower iterator also implement the Iterable interface and can be use
@@ -65,6 +65,68 @@ import org.apache.uima.cas.text.AnnotationFS;
  */
 public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>,
     Iterator<AnnotationIteratorPair> {
+
+  // The upper iterator (e.g., sentence iterator)
+  private final FSIterator<AnnotationFS> upperIt;
+  // The lower iterator (e.g., token iterator)
+  private final FSIterator<AnnotationFS> lowerIt;
+  // Start position of current upper (e.g., sentence) annotation. Together with the end position,
+  // this determines the boundaries for the lower iterator.
+  private int upperBegin;
+  // End position of current upper annotation.
+  private int upperEnd;
+  // Have we already checked that a next lower annotation is available? Premature optimization...
+  private boolean nextLowerChecked = false;
+  // State variable that holds the status of the lower iterator only in case that nextLowerChecked
+  // is true.
+  private boolean nextLowerAvailable = false;
+
+  /**
+   * Create a new combo iterator.
+   *
+   * @param cas   The CAS we're operating on.
+   * @param upper The type of the upper iterator, e.g., sentence.
+   * @param lower The type of the lower iterator, e.g., token.
+   */
+  public AnnotationComboIterator(CAS cas, Type upper, Type lower) {
+    this.upperIt = cas.getAnnotationIndex(upper).iterator();
+    this.lowerIt = cas.getAnnotationIndex(lower).iterator();
+    this.upperIt.moveToFirst();
+    this.lowerIt.moveToFirst();
+    if (this.upperIt.isValid()) {
+      final AnnotationFS upperFS = this.upperIt.get();
+      this.upperBegin = upperFS.getBegin();
+      this.upperEnd = upperFS.getEnd();
+    } else {
+      this.nextLowerChecked = true;
+    }
+  }
+
+  public boolean hasNext() {
+    return this.upperIt.hasNext();
+  }
+
+  public AnnotationIteratorPair next() {
+    if (!this.upperIt.hasNext()) {
+      throw new NoSuchElementException();
+    }
+    final AnnotationFS upperFS = this.upperIt.next();
+    this.upperBegin = upperFS.getBegin();
+    this.upperEnd = upperFS.getEnd();
+    this.nextLowerChecked = false;
+    return new AnnotationIteratorPair(upperFS, new AnnotationIterator());
+  }
+
+  public Iterator<AnnotationIteratorPair> iterator() {
+    return this;
+  }
+
+  /**
+   * Not supported.
+   */
+  public void remove() {
+    throw new UnsupportedOperationException();
+  }
 
   // Internal implementation of subiterator
   private class AnnotationIterator implements Iterable<AnnotationFS>, Iterator<AnnotationFS> {
@@ -120,76 +182,6 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
       throw new UnsupportedOperationException();
     }
 
-  }
-
-  // The upper iterator (e.g., sentence iterator)
-  private final FSIterator<AnnotationFS> upperIt;
-
-  // The lower iterator (e.g., token iterator)
-  private final FSIterator<AnnotationFS> lowerIt;
-
-  // Start position of current upper (e.g., sentence) annotation. Together with the end position,
-  // this determines the boundaries for the lower iterator.
-  private int upperBegin;
-
-  // End position of current upper annotation.
-  private int upperEnd;
-
-  // Have we already checked that a next lower annotation is available? Premature optimization...
-  private boolean nextLowerChecked = false;
-
-  // State variable that holds the status of the lower iterator only in case that nextLowerChecked
-  // is true.
-  private boolean nextLowerAvailable = false;
-
-  /**
-   * Create a new combo iterator.
-   *
-   * @param cas
-   *          The CAS we're operating on.
-   * @param upper
-   *          The type of the upper iterator, e.g., sentence.
-   * @param lower
-   *          The type of the lower iterator, e.g., token.
-   */
-  public AnnotationComboIterator(CAS cas, Type upper, Type lower) {
-    this.upperIt = cas.getAnnotationIndex(upper).iterator();
-    this.lowerIt = cas.getAnnotationIndex(lower).iterator();
-    this.upperIt.moveToFirst();
-    this.lowerIt.moveToFirst();
-    if (this.upperIt.isValid()) {
-      final AnnotationFS upperFS = this.upperIt.get();
-      this.upperBegin = upperFS.getBegin();
-      this.upperEnd = upperFS.getEnd();
-    } else {
-      this.nextLowerChecked = true;
-    }
-  }
-
-  public boolean hasNext() {
-    return this.upperIt.hasNext();
-  }
-
-  public AnnotationIteratorPair next() {
-    if (!this.upperIt.hasNext()) {
-      throw new NoSuchElementException();
-    }
-    final AnnotationFS upperFS = this.upperIt.next();
-    this.upperBegin = upperFS.getBegin();
-    this.upperEnd = upperFS.getEnd();
-    this.nextLowerChecked = false;
-    return new AnnotationIteratorPair(upperFS, new AnnotationIterator());
-  }
-
-  public Iterator<AnnotationIteratorPair> iterator() {
-    return this;
-  }
-
-  /**
-   * Not supported.
-   */
-  public void remove() {
-    throw new UnsupportedOperationException();
   }
 
 }

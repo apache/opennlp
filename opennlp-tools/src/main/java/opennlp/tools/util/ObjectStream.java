@@ -50,7 +50,6 @@ public interface ObjectStream<T> extends AutoCloseable {
    * null will return each object from the underlying source exactly once.
    *
    * @return the next object or null to signal that the stream is exhausted
-   *
    * @throws IOException if there is an error during reading
    */
   T read() throws IOException;
@@ -59,7 +58,7 @@ public interface ObjectStream<T> extends AutoCloseable {
    * Repositions the stream at the beginning and the previously seen object sequence
    * will be repeated exactly. This method can be used to re-read
    * the stream if multiple passes over the objects are required.
-   *
+   * <p>
    * The implementation of this method is optional.
    *
    * @throws IOException if there is an error during reseting the stream
@@ -75,5 +74,6 @@ public interface ObjectStream<T> extends AutoCloseable {
    *
    * @throws IOException if there is an error during closing the stream
    */
-  default void close() throws IOException {}
+  default void close() throws IOException {
+  }
 }

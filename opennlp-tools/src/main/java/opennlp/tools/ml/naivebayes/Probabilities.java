@@ -28,7 +28,6 @@ import java.util.Set;
  * Class implementing the probability distribution over labels returned by a classifier.
  *
  * @param <T> the label (category) class
- *
  */
 public abstract class Probabilities<T> {
   protected Map<T, Double> map = new HashMap<>();

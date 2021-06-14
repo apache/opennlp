@@ -36,7 +36,6 @@ import opennlp.tools.util.TrainingParameters;
 
 /**
  * Abstract class for collecting event and context counts used in training.
- *
  */
 public abstract class AbstractDataIndexer implements DataIndexer {
 
@@ -47,11 +46,83 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   public static final boolean SORT_DEFAULT = true;
 
   protected TrainingParameters trainingParameters;
-  protected Map<String,String> reportMap;
+  protected Map<String, String> reportMap;
 
   protected boolean printMessages;
+  /**
+   * The integer contexts associated with each unique event.
+   */
+  protected int[][] contexts;
+  /**
+   * The integer outcome associated with each unique event.
+   */
+  protected int[] outcomeList;
+  /**
+   * The number of times an event occured in the training data.
+   */
+  protected int[] numTimesEventsSeen;
+  /**
+   * The predicate/context names.
+   */
+  protected String[] predLabels;
+  /**
+   * The names of the outcomes.
+   */
+  protected String[] outcomeLabels;
+  /**
+   * The number of times each predicate occured.
+   */
+  protected int[] predCounts;
+  private int numEvents;
 
-  public void init(TrainingParameters indexingParameters,Map<String, String> reportMap) {
+  /**
+   * Updates the set of predicated and counter with the specified event contexts and cutoff.
+   *
+   * @param ec           The contexts/features which occur in a event.
+   * @param predicateSet The set of predicates which will be used for model building.
+   * @param counter      The predicate counters.
+   * @param cutoff       The cutoff which determines whether a predicate is included.
+   * @deprecated will be removed after 1.8.1 release
+   */
+  @Deprecated
+  protected static void update(String[] ec, Set<String> predicateSet,
+                               Map<String, Integer> counter, int cutoff) {
+    for (String s : ec) {
+      counter.merge(s, 1, (value, one) -> value + one);
+
+      if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
+        predicateSet.add(s);
+      }
+    }
+  }
+
+  /**
+   * Updates the set of predicated and counter with the specified event contexts.
+   *
+   * @param ec      The contexts/features which occur in a event.
+   * @param counter The predicate counters.
+   */
+  protected static void update(String[] ec, Map<String, Integer> counter) {
+    for (String s : ec) {
+      counter.merge(s, 1, (value, one) -> value + one);
+    }
+  }
+
+  /**
+   * Utility method for creating a String[] array from a map whose
+   * keys are labels (Strings) to be stored in the array and whose
+   * values are the indices (Integers) at which the corresponding
+   * labels should be inserted.
+   *
+   * @param labelToIndexMap a <code>TObjectIntHashMap</code> value
+   * @return a <code>String[]</code> value
+   */
+  protected static String[] toIndexedStringArray(Map<String, Integer> labelToIndexMap) {
+    return labelToIndexMap.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue))
+        .map(Map.Entry::getKey).toArray(String[]::new);
+  }
+
+  public void init(TrainingParameters indexingParameters, Map<String, String> reportMap) {
     this.reportMap = reportMap;
     if (this.reportMap == null) reportMap = new HashMap<>();
     trainingParameters = indexingParameters;
@@ -59,20 +130,6 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     printMessages = trainingParameters.getBooleanParameter(AbstractTrainer.VERBOSE_PARAM,
         AbstractTrainer.VERBOSE_DEFAULT);
   }
-
-  private int numEvents;
-  /** The integer contexts associated with each unique event. */
-  protected int[][] contexts;
-  /** The integer outcome associated with each unique event. */
-  protected int[] outcomeList;
-  /** The number of times an event occured in the training data. */
-  protected int[] numTimesEventsSeen;
-  /** The predicate/context names. */
-  protected String[] predLabels;
-  /** The names of the outcomes. */
-  protected String[] outcomeLabels;
-  /** The number of times each predicate occured. */
-  protected int[] predCounts;
 
   public int[][] getContexts() {
     return contexts;
@@ -123,15 +180,13 @@ public abstract class AbstractDataIndexer implements DataIndexer {
         if (ce.compareTo(ce2) == 0) {
           ce.seen++; // increment the seen count
           eventsToCompare.set(i, null); // kill the duplicate
-        }
-        else {
+        } else {
           ce = ce2; // a new champion emerges...
           numUniqueEvents++; // increment the # of unique events
         }
       }
 
-    }
-    else {
+    } else {
       numUniqueEvents = eventsToCompare.size();
     }
 
@@ -190,51 +245,6 @@ public abstract class AbstractDataIndexer implements DataIndexer {
 
   public int getNumEvents() {
     return numEvents;
-  }
-
-  /**
-   * Updates the set of predicated and counter with the specified event contexts and cutoff.
-   * @param ec The contexts/features which occur in a event.
-   * @param predicateSet The set of predicates which will be used for model building.
-   * @param counter The predicate counters.
-   * @param cutoff The cutoff which determines whether a predicate is included.
-   * @deprecated will be removed after 1.8.1 release
-   */
-  @Deprecated
-  protected static void update(String[] ec, Set<String> predicateSet,
-      Map<String,Integer> counter, int cutoff) {
-    for (String s : ec) {
-      counter.merge(s, 1, (value, one) -> value + one);
-
-      if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
-        predicateSet.add(s);
-      }
-    }
-  }
-
-  /**
-   * Updates the set of predicated and counter with the specified event contexts.
-   * @param ec The contexts/features which occur in a event.
-   * @param counter The predicate counters.
-   */
-  protected static void update(String[] ec, Map<String,Integer> counter) {
-    for (String s : ec) {
-      counter.merge(s, 1, (value, one) -> value + one);
-    }
-  }
-
-  /**
-   * Utility method for creating a String[] array from a map whose
-   * keys are labels (Strings) to be stored in the array and whose
-   * values are the indices (Integers) at which the corresponding
-   * labels should be inserted.
-   *
-   * @param labelToIndexMap a <code>TObjectIntHashMap</code> value
-   * @return a <code>String[]</code> value
-   */
-  protected static String[] toIndexedStringArray(Map<String, Integer> labelToIndexMap) {
-    return labelToIndexMap.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue))
-        .map(Map.Entry::getKey).toArray(String[]::new);
   }
 
   public float[][] getValues() {

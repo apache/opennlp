@@ -48,79 +48,26 @@ import opennlp.tools.util.model.SerializableArtifact;
  * Class for storing the Ancora Spanish head rules associated with parsing. In this class
  * headrules for noun phrases are specified. The rest of the rules are
  * in opennlp-tools/lang/es/parser/es-head-rules
- *
+ * <p>
  * NOTE: This class has been adapted from opennlp.tools.parser.lang.en.HeadRules
- *
+ * <p>
  * The main change is the constituents search direction in the first for loop.
- *
+ * <p>
  * Note also the change in the return of the getHead() method:
  * In the lang.en.HeadRules class: return constituents[ci].getHead();
  * Now: return constituents[ci];
- *
+ * <p>
  * Other changes include removal of deprecated methods.
- *
  */
 public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, SerializableArtifact {
 
-  public static class HeadRulesSerializer implements ArtifactSerializer<AncoraSpanishHeadRules> {
-
-    public AncoraSpanishHeadRules create(InputStream in) throws IOException {
-      return new AncoraSpanishHeadRules(new BufferedReader(
-          new InputStreamReader(in, StandardCharsets.UTF_8)));
-    }
-
-    public void serialize(opennlp.tools.parser.lang.es.AncoraSpanishHeadRules artifact, OutputStream out)
-        throws IOException {
-      artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-    }
-  }
-
-  private static class HeadRule {
-    public boolean leftToRight;
-    public String[] tags;
-
-    public HeadRule(boolean l2r, String[] tags) {
-      leftToRight = l2r;
-
-      for (String tag : tags) {
-        Objects.requireNonNull(tag, "tags must not contain null values!");
-      }
-
-      this.tags = tags;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(leftToRight, Arrays.hashCode(tags));
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj == this) {
-        return true;
-      }
-
-      if (obj instanceof HeadRule) {
-        HeadRule rule = (HeadRule) obj;
-
-        return (rule.leftToRight == leftToRight) &&
-            Arrays.equals(rule.tags, tags);
-      }
-
-      return false;
-    }
-  }
-
   private Map<String, HeadRule> headRules;
   private Set<String> punctSet;
-
-
 
   /**
    * Creates a new set of head rules based on the specified reader.
    *
    * @param rulesReader the head rules reader.
-   *
    * @throws IOException if the head rules reader can not be read.
    */
   public AncoraSpanishHeadRules(Reader rulesReader) throws IOException {
@@ -145,7 +92,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
     }
     HeadRule hr;
     if (type.equals("SN") || type.equals("GRUP.NOM")) {
-      String[] tags1 = {"AQA.*","AQC.*","GRUP\\.A","S\\.A","NC.*S.*", "NP.*","NC.*P.*", "GRUP\\.NOM"};
+      String[] tags1 = {"AQA.*", "AQC.*", "GRUP\\.A", "S\\.A", "NC.*S.*", "NP.*", "NC.*P.*", "GRUP\\.NOM"};
 
       for (Parse constituent : constituents) {
         for (int t = tags1.length - 1; t >= 0; t--) {
@@ -159,7 +106,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
           return constituents[ci];
         }
       }
-      String[] tags2 = {"\\$","GRUP\\.A","SA"};
+      String[] tags2 = {"\\$", "GRUP\\.A", "SA"};
       for (int ci = constituents.length - 1; ci >= 0; ci--) {
         for (int ti = tags2.length - 1; ti >= 0; ti--) {
           if (constituents[ci].getType().matches(tags2[ti])) {
@@ -167,7 +114,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
           }
         }
       }
-      String[] tags3 = {"AQ0.*", "AQ[AC].*","AO.*","GRUP\\.A","S\\.A","RG","RN","GRUP\\.NOM"};
+      String[] tags3 = {"AQ0.*", "AQ[AC].*", "AO.*", "GRUP\\.A", "S\\.A", "RG", "RN", "GRUP\\.NOM"};
       for (int ci = constituents.length - 1; ci >= 0; ci--) {
         for (int ti = tags3.length - 1; ti >= 0; ti--) {
           if (constituents[ci].getType().matches(tags3[ti])) {
@@ -176,8 +123,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
         }
       }
       return constituents[constituents.length - 1].getHead();
-    }
-    else if ((hr = headRules.get(type)) != null) {
+    } else if ((hr = headRules.get(type)) != null) {
       String[] tags = hr.tags;
       int cl = constituents.length;
       int tl = tags.length;
@@ -190,8 +136,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
           }
         }
         return constituents[0].getHead();
-      }
-      else {
+      } else {
         for (int ti = 0; ti < tl; ti++) {
           for (int ci = cl - 1; ci >= 0; ci--) {
             if (constituents[ci].getType().matches(tags[ti])) {
@@ -316,5 +261,54 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   @Override
   public Class<?> getArtifactSerializerClass() {
     return HeadRulesSerializer.class;
+  }
+
+  public static class HeadRulesSerializer implements ArtifactSerializer<AncoraSpanishHeadRules> {
+
+    public AncoraSpanishHeadRules create(InputStream in) throws IOException {
+      return new AncoraSpanishHeadRules(new BufferedReader(
+          new InputStreamReader(in, StandardCharsets.UTF_8)));
+    }
+
+    public void serialize(opennlp.tools.parser.lang.es.AncoraSpanishHeadRules artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
+    }
+  }
+
+  private static class HeadRule {
+    public boolean leftToRight;
+    public String[] tags;
+
+    public HeadRule(boolean l2r, String[] tags) {
+      leftToRight = l2r;
+
+      for (String tag : tags) {
+        Objects.requireNonNull(tag, "tags must not contain null values!");
+      }
+
+      this.tags = tags;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(leftToRight, Arrays.hashCode(tags));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == this) {
+        return true;
+      }
+
+      if (obj instanceof HeadRule) {
+        HeadRule rule = (HeadRule) obj;
+
+        return (rule.leftToRight == leftToRight) &&
+            Arrays.equals(rule.tags, tags);
+      }
+
+      return false;
+    }
   }
 }

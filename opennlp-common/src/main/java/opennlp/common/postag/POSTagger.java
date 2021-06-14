@@ -15,33 +15,26 @@
  * limitations under the License.
  */
 
-package opennlp.tools.lemmatizer;
+package opennlp.common.postag;
 
-import java.util.List;
+import opennlp.common.util.Sequence;
 
 /**
- * The interface for lemmatizers.
+ * The interface for part of speech taggers.
  */
-public interface Lemmatizer {
+public interface POSTagger {
 
   /**
-   * Generates lemmas for the word and postag returning the result in an array.
+   * Assigns the sentence of tokens pos tags.
    *
-   * @param toks an array of the tokens
-   * @param tags an array of the pos tags
-   *
-   * @return an array of possible lemmas for each token in the sequence.
+   * @param sentence The sentece of tokens to be tagged.
+   * @return an array of pos tags for each token provided in sentence.
    */
-  String[] lemmatize(String[] toks, String[] tags);
+  String[] tag(String[] sentence);
 
-  /**
-   * Generates a lemma tags for the word and postag returning the result in a list
-   * of every possible lemma for each token and postag.
-   *
-   * @param toks an array of the tokens
-   * @param tags an array of the pos tags
-   * @return a list of every possible lemma for each token in the sequence.
-   */
-  List<List<String>> lemmatize(List<String> toks, List<String> tags);
+  String[] tag(String[] sentence, Object[] additionaContext);
 
+  Sequence[] topKSequences(String[] sentence);
+
+  Sequence[] topKSequences(String[] sentence, Object[] additionaContext);
 }

@@ -26,12 +26,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
+import opennlp.common.util.StringList;
+import opennlp.common.util.StringUtil;
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringList;
-import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
@@ -53,51 +53,12 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
 
   /**
    * Initializes an empty {@link POSDictionary}.
+   *
    * @param caseSensitive the {@link POSDictionary} case sensitivity
    */
   public POSDictionary(boolean caseSensitive) {
     dictionary = new HashMap<>();
     this.caseSensitive = caseSensitive;
-  }
-
-  /**
-   * Returns a list of valid tags for the specified word.
-   *
-   * @param word The word.
-   *
-   * @return A list of valid tags for the specified word or
-   *     null if no information is available for that word.
-   */
-  public String[] getTags(String word) {
-    if (caseSensitive) {
-      return dictionary.get(word);
-    }
-    else {
-      return dictionary.get(StringUtil.toLowerCase(word));
-    }
-  }
-
-  /**
-   * Associates the specified tags with the specified word. If the dictionary
-   * previously contained the word, the old tags are replaced by the specified
-   * ones.
-   *
-   * @param word
-   *          The word to be added to the dictionary.
-   * @param tags
-   *          The set of tags associated with the specified word.
-   *
-   * @deprecated Use {@link #put(String, String[])} instead
-   */
-  void addTags(String word, String... tags) {
-    put(word, tags);
-  }
-
-  /**
-   * Retrieves an iterator over all words in the dictionary.
-   */
-  public Iterator<String> iterator() {
-    return dictionary.keySet().iterator();
   }
 
   private static String tagsToString(String[] tags) {
@@ -118,16 +79,92 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
   }
 
   /**
-   * Writes the {@link POSDictionary} to the given {@link OutputStream};
+   * Creates a new {@link POSDictionary} from a provided {@link InputStream}.
+   * <p>
+   * After creation is finished the provided {@link InputStream} is closed.
    *
+   * @param in
+   * @return the pos dictionary
+   * @throws IOException
+   * @throws InvalidFormatException
+   */
+  public static POSDictionary create(InputStream in) throws IOException {
+
+    final POSDictionary newPosDict = new POSDictionary();
+
+    boolean isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> {
+
+      String tagString = entry.getAttributes().getValue("tags");
+
+      String[] tags = tagString.split(" ");
+
+      StringList word = entry.getTokens();
+
+      if (word.size() != 1)
+        throw new InvalidFormatException("Each entry must have exactly one token! " + word);
+
+      newPosDict.dictionary.put(word.getToken(0), tags);
+    });
+
+    newPosDict.caseSensitive = isCaseSensitive;
+
+    // TODO: The dictionary API needs to be improved to do this better!
+    if (!isCaseSensitive) {
+      Map<String, String[]> lowerCasedDictionary = new HashMap<>();
+
+      for (Map.Entry<String, String[]> entry : newPosDict.dictionary.entrySet()) {
+        lowerCasedDictionary.put(StringUtil.toLowerCase(entry.getKey()), entry.getValue());
+      }
+
+      newPosDict.dictionary = lowerCasedDictionary;
+    }
+
+    return newPosDict;
+  }
+
+  /**
+   * Returns a list of valid tags for the specified word.
+   *
+   * @param word The word.
+   * @return A list of valid tags for the specified word or
+   * null if no information is available for that word.
+   */
+  public String[] getTags(String word) {
+    if (caseSensitive) {
+      return dictionary.get(word);
+    } else {
+      return dictionary.get(StringUtil.toLowerCase(word));
+    }
+  }
+
+  /**
+   * Associates the specified tags with the specified word. If the dictionary
+   * previously contained the word, the old tags are replaced by the specified
+   * ones.
+   *
+   * @param word The word to be added to the dictionary.
+   * @param tags The set of tags associated with the specified word.
+   * @deprecated Use {@link #put(String, String[])} instead
+   */
+  void addTags(String word, String... tags) {
+    put(word, tags);
+  }
+
+  /**
+   * Retrieves an iterator over all words in the dictionary.
+   */
+  public Iterator<String> iterator() {
+    return dictionary.keySet().iterator();
+  }
+
+  /**
+   * Writes the {@link POSDictionary} to the given {@link OutputStream};
+   * <p>
    * After the serialization is finished the provided
    * {@link OutputStream} remains open.
    *
-   * @param out
-   *            the {@link OutputStream} to write the dictionary into.
-   *
-   * @throws IOException
-   *             if writing to the {@link OutputStream} fails
+   * @param out the {@link OutputStream} to write the dictionary into.
+   * @throws IOException if writing to the {@link OutputStream} fails
    */
   public void serialize(OutputStream out) throws IOException {
     Iterator<Entry> entries = new Iterator<Entry>() {
@@ -207,52 +244,6 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
 
     return "POSDictionary{size=" + dictionary.size() + ", caseSensitive="
         + this.caseSensitive + "}";
-  }
-
-  /**
-   * Creates a new {@link POSDictionary} from a provided {@link InputStream}.
-   *
-   * After creation is finished the provided {@link InputStream} is closed.
-   *
-   * @param in
-   *
-   * @return the pos dictionary
-   *
-   * @throws IOException
-   * @throws InvalidFormatException
-   */
-  public static POSDictionary create(InputStream in) throws IOException {
-
-    final POSDictionary newPosDict = new POSDictionary();
-
-    boolean isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> {
-
-      String tagString = entry.getAttributes().getValue("tags");
-
-      String[] tags = tagString.split(" ");
-
-      StringList word = entry.getTokens();
-
-      if (word.size() != 1)
-        throw new InvalidFormatException("Each entry must have exactly one token! " + word);
-
-      newPosDict.dictionary.put(word.getToken(0), tags);
-    });
-
-    newPosDict.caseSensitive = isCaseSensitive;
-
-    // TODO: The dictionary API needs to be improved to do this better!
-    if (!isCaseSensitive) {
-      Map<String, String[]> lowerCasedDictionary = new HashMap<>();
-
-      for (Map.Entry<String, String[]> entry : newPosDict.dictionary.entrySet()) {
-        lowerCasedDictionary.put(StringUtil.toLowerCase(entry.getKey()), entry.getValue());
-      }
-
-      newPosDict.dictionary = lowerCasedDictionary;
-    }
-
-    return newPosDict;
   }
 
   public String[] put(String word, String... tags) {

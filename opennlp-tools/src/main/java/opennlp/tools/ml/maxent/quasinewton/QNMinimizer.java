@@ -121,22 +121,22 @@ public class QNMinimizer {
   }
 
   public QNMinimizer(double l1Cost, double l2Cost,
-      int iterations, int m, int maxFctEval) {
+                     int iterations, int m, int maxFctEval) {
     this(l1Cost, l2Cost, iterations, m, maxFctEval, true);
   }
 
   /**
    * Constructor
-   * @param l1Cost L1-regularization cost
-   * @param l2Cost L2-regularization cost
+   *
+   * @param l1Cost     L1-regularization cost
+   * @param l2Cost     L2-regularization cost
    * @param iterations maximum number of iterations
-   * @param m number of Hessian updates to store
+   * @param m          number of Hessian updates to store
    * @param maxFctEval maximum number of function evaluations
-   * @param verbose verbose output
+   * @param verbose    verbose output
    */
   public QNMinimizer(double l1Cost, double l2Cost, int iterations,
-      int m, int maxFctEval, boolean verbose)
-  {
+                     int m, int maxFctEval, boolean verbose) {
     // Check arguments
     if (l1Cost < 0 || l2Cost < 0)
       throw new IllegalArgumentException(
@@ -154,12 +154,12 @@ public class QNMinimizer {
       throw new IllegalArgumentException(
           "Maximum number of function evaluations must be larger than zero");
 
-    this.l1Cost     = l1Cost;
-    this.l2Cost     = l2Cost;
+    this.l1Cost = l1Cost;
+    this.l2Cost = l2Cost;
     this.iterations = iterations;
-    this.m          = m;
+    this.m = m;
     this.maxFctEval = maxFctEval;
-    this.verbose    = verbose;
+    this.verbose = verbose;
   }
 
   public Evaluator getEvaluator() {
@@ -172,13 +172,14 @@ public class QNMinimizer {
 
   /**
    * Find the parameters that minimize the objective function
+   *
    * @param function objective function
    * @return minimizing parameters
    */
   public double[] minimize(Function function) {
 
     Function l2RegFunction = new L2RegFunction(function, l2Cost);
-    this.dimension  = l2RegFunction.getDimension();
+    this.dimension = l2RegFunction.getDimension();
     this.updateInfo = new UpdateInfo(this.m, this.dimension);
 
     // Current point is at the origin
@@ -221,7 +222,7 @@ public class QNMinimizer {
     // Initial step size for the 1st iteration
     double initialStepSize = l1Cost > 0 ?
         ArrayMath.invL2norm(lsr.getPseudoGradAtNext()) :
-          ArrayMath.invL2norm(lsr.getGradAtNext());
+        ArrayMath.invL2norm(lsr.getGradAtNext());
 
     for (int iter = 1; iter <= iterations; iter++) {
       // Find direction
@@ -244,8 +245,7 @@ public class QNMinimizer {
         LineSearch.doConstrainedLineSearch(l2RegFunction, direction, lsr, l1Cost, initialStepSize);
         computePseudoGrad(lsr.getNextPoint(), lsr.getGradAtNext(), pseudoGrad);
         lsr.setPseudoGradAtNext(pseudoGrad);
-      }
-      else {
+      } else {
         LineSearch.doLineSearch(l2RegFunction, direction, lsr, initialStepSize);
       }
 
@@ -303,28 +303,24 @@ public class QNMinimizer {
    * Pseudo-gradient for L1-regularization (see equation 4 in the paper
    * "Scalable Training of L1-Regularized Log-Linear Models", Andrew et al. 2007)
    *
-   * @param x current point
-   * @param g gradient at x
+   * @param x  current point
+   * @param g  gradient at x
    * @param pg pseudo-gradient at x which is to be computed
    */
   private void computePseudoGrad(double[] x, double[] g, double[] pg) {
     for (int i = 0; i < dimension; i++) {
       if (x[i] < 0) {
         pg[i] = g[i] - l1Cost;
-      }
-      else if (x[i] > 0) {
+      } else if (x[i] > 0) {
         pg[i] = g[i] + l1Cost;
-      }
-      else {
+      } else {
         if (g[i] < -l1Cost) {
           // right partial derivative
           pg[i] = g[i] + l1Cost;
-        }
-        else if (g[i] > l1Cost) {
+        } else if (g[i] > l1Cost) {
           // left partial derivative
           pg[i] = g[i] - l1Cost;
-        }
-        else {
+        } else {
           pg[i] = 0;
         }
       }
@@ -338,10 +334,10 @@ public class QNMinimizer {
 
     // Implemented two-loop Hessian update method.
     int k = updateInfo.kCounter;
-    double[] rho    = updateInfo.rho;
-    double[] alpha  = updateInfo.alpha; // just to avoid recreating alpha
-    double[][] S    = updateInfo.S;
-    double[][] Y    = updateInfo.Y;
+    double[] rho = updateInfo.rho;
+    double[] alpha = updateInfo.alpha; // just to avoid recreating alpha
+    double[][] S = updateInfo.S;
+    double[][] Y = updateInfo.Y;
 
     // First loop
     for (int i = k - 1; i >= 0; i--) {
@@ -412,63 +408,18 @@ public class QNMinimizer {
   }
 
   /**
-   * Class to store vectors for Hessian approximation update.
+   * Evaluate quality of training parameters. For example,
+   * it can be used to report model's training accuracy when
+   * we train a Maximum Entropy classifier.
    */
-  private class UpdateInfo {
-    private double[][] S;
-    private double[][] Y;
-    private double[] rho;
-    private double[] alpha;
-    private int m;
-
-    private int kCounter;
-
-    // Constructor
-    UpdateInfo(int numCorrection, int dimension) {
-      this.m = numCorrection;
-      this.kCounter = 0;
-      S     = new double[this.m][dimension];
-      Y     = new double[this.m][dimension];
-      rho   = new double[this.m];
-      alpha = new double[this.m];
-    }
-
-    public void update(LineSearchResult lsr) {
-      double[] currPoint  = lsr.getCurrPoint();
-      double[] gradAtCurr = lsr.getGradAtCurr();
-      double[] nextPoint  = lsr.getNextPoint();
-      double[] gradAtNext = lsr.getGradAtNext();
-
-      // Inner product of S_k and Y_k
-      double SYk = 0.0;
-
-      // Add new ones.
-      if (kCounter < m) {
-        for (int j = 0; j < dimension; j++) {
-          S[kCounter][j] = nextPoint[j] - currPoint[j];
-          Y[kCounter][j] = gradAtNext[j] - gradAtCurr[j];
-          SYk += S[kCounter][j] * Y[kCounter][j];
-        }
-        rho[kCounter] = 1.0 / SYk;
-      }
-      else {
-        // Discard oldest vectors and add new ones.
-        for (int i = 0; i < m - 1; i++) {
-          S[i] = S[i + 1];
-          Y[i] = Y[i + 1];
-          rho[i] = rho[i + 1];
-        }
-        for (int j = 0; j < dimension; j++) {
-          S[m - 1][j] = nextPoint[j] - currPoint[j];
-          Y[m - 1][j] = gradAtNext[j] - gradAtCurr[j];
-          SYk += S[m - 1][j] * Y[m - 1][j];
-        }
-        rho[m - 1] = 1.0 / SYk;
-      }
-
-      if (kCounter < m)
-        kCounter++;
-    }
+  public interface Evaluator {
+    /**
+     * Measure quality of the training parameters
+     *
+     * @param parameters
+     * @return evaluated result
+     */
+    double evaluate(double[] parameters);
   }
 
   /**
@@ -518,16 +469,61 @@ public class QNMinimizer {
   }
 
   /**
-   * Evaluate quality of training parameters. For example,
-   * it can be used to report model's training accuracy when
-   * we train a Maximum Entropy classifier.
+   * Class to store vectors for Hessian approximation update.
    */
-  public interface Evaluator {
-    /**
-     * Measure quality of the training parameters
-     * @param parameters
-     * @return evaluated result
-     */
-    double evaluate(double[] parameters);
+  private class UpdateInfo {
+    private double[][] S;
+    private double[][] Y;
+    private double[] rho;
+    private double[] alpha;
+    private int m;
+
+    private int kCounter;
+
+    // Constructor
+    UpdateInfo(int numCorrection, int dimension) {
+      this.m = numCorrection;
+      this.kCounter = 0;
+      S = new double[this.m][dimension];
+      Y = new double[this.m][dimension];
+      rho = new double[this.m];
+      alpha = new double[this.m];
+    }
+
+    public void update(LineSearchResult lsr) {
+      double[] currPoint = lsr.getCurrPoint();
+      double[] gradAtCurr = lsr.getGradAtCurr();
+      double[] nextPoint = lsr.getNextPoint();
+      double[] gradAtNext = lsr.getGradAtNext();
+
+      // Inner product of S_k and Y_k
+      double SYk = 0.0;
+
+      // Add new ones.
+      if (kCounter < m) {
+        for (int j = 0; j < dimension; j++) {
+          S[kCounter][j] = nextPoint[j] - currPoint[j];
+          Y[kCounter][j] = gradAtNext[j] - gradAtCurr[j];
+          SYk += S[kCounter][j] * Y[kCounter][j];
+        }
+        rho[kCounter] = 1.0 / SYk;
+      } else {
+        // Discard oldest vectors and add new ones.
+        for (int i = 0; i < m - 1; i++) {
+          S[i] = S[i + 1];
+          Y[i] = Y[i + 1];
+          rho[i] = rho[i + 1];
+        }
+        for (int j = 0; j < dimension; j++) {
+          S[m - 1][j] = nextPoint[j] - currPoint[j];
+          Y[m - 1][j] = gradAtNext[j] - gradAtCurr[j];
+          SYk += S[m - 1][j] * Y[m - 1][j];
+        }
+        rho[m - 1] = 1.0 / SYk;
+      }
+
+      if (kCounter < m)
+        kCounter++;
+    }
   }
 }

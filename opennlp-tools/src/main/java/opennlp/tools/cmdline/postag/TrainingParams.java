@@ -25,7 +25,7 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
 
 /**
  * TrainingParameters for Name Finder.
- *
+ * <p>
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams extends BasicTrainingParams {

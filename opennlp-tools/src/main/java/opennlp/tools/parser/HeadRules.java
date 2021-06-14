@@ -29,7 +29,7 @@ public interface HeadRules {
    * Returns the head constituent for the specified constituents of the specified type.
    *
    * @param constituents The constituents which make up a constituent of the specified type.
-   * @param type The type of a constituent which is made up of the specified constituents.
+   * @param type         The type of a constituent which is made up of the specified constituents.
    * @return The constituent which is the head.
    */
   Parse getHead(Parse[] constituents, String type);

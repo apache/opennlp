@@ -25,7 +25,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import opennlp.tools.util.StringList;
+import opennlp.common.util.StringList;
 
 public class DictionaryAsSetCaseSensitiveTest {
 

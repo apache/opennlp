@@ -30,7 +30,7 @@ public class DefaultPOSSequenceValidator implements SequenceValidator<String> {
   }
 
   public boolean validSequence(int i, String[] inputSequence,
-      String[] outcomesSequence, String outcome) {
+                               String[] outcomesSequence, String outcome) {
     if (tagDictionary == null) {
       return true;
     } else {

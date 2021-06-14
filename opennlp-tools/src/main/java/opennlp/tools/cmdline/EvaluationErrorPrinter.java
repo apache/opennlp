@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
@@ -39,7 +39,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
   // for the sentence detector
   protected void printError(Span[] references, Span[] predictions,
-      T referenceSample, T predictedSample, String sentence) {
+                            T referenceSample, T predictedSample, String sentence) {
     List<Span> falseNegatives = new ArrayList<>();
     List<Span> falsePositives = new ArrayList<>();
 
@@ -56,7 +56,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
 
   // for namefinder, chunker...
   protected void printError(String id, Span[] references, Span[] predictions,
-      T referenceSample, T predictedSample, String[] sentenceTokens) {
+                            T referenceSample, T predictedSample, String[] sentenceTokens) {
     List<Span> falseNegatives = new ArrayList<>();
     List<Span> falsePositives = new ArrayList<>();
 
@@ -76,13 +76,13 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   }
 
   protected void printError(Span[] references, Span[] predictions,
-      T referenceSample, T predictedSample, String[] sentenceTokens) {
+                            T referenceSample, T predictedSample, String[] sentenceTokens) {
     printError(null, references, predictions, referenceSample, predictedSample, sentenceTokens);
   }
 
   // for pos tagger
   protected void printError(String[] references, String[] predictions,
-      T referenceSample, T predictedSample, String[] sentenceTokens) {
+                            T referenceSample, T predictedSample, String[] sentenceTokens) {
     List<String> filteredDoc = new ArrayList<>();
     List<String> filteredRefs = new ArrayList<>();
     List<String> filteredPreds = new ArrayList<>();
@@ -113,15 +113,12 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   /**
    * Auxiliary method to print tag errors
    *
-   * @param filteredDoc
-   *          the document tokens which were tagged wrong
-   * @param filteredRefs
-   *          the reference tags
-   * @param filteredPreds
-   *          the predicted tags
+   * @param filteredDoc   the document tokens which were tagged wrong
+   * @param filteredRefs  the reference tags
+   * @param filteredPreds the predicted tags
    */
   private void printErrors(List<String> filteredDoc, List<String> filteredRefs,
-      List<String> filteredPreds) {
+                           List<String> filteredPreds) {
     printStream.println("Errors: {");
     printStream.println("Tok: Ref | Pred");
     printStream.println("---------------");
@@ -135,15 +132,12 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   /**
    * Auxiliary method to print span errors
    *
-   * @param falsePositives
-   *          false positives span
-   * @param falseNegatives
-   *          false negative span
-   * @param doc
-   *          the document text
+   * @param falsePositives false positives span
+   * @param falseNegatives false negative span
+   * @param doc            the document text
    */
   private void printErrors(List<Span> falsePositives,
-      List<Span> falseNegatives, String doc) {
+                           List<Span> falseNegatives, String doc) {
     printStream.println("False positives: {");
     for (Span span : falsePositives) {
       printStream.println(span.getCoveredText(doc));
@@ -158,15 +152,12 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   /**
    * Auxiliary method to print span errors
    *
-   * @param falsePositives
-   *          false positives span
-   * @param falseNegatives
-   *          false negative span
-   * @param toks
-   *          the document tokens
+   * @param falsePositives false positives span
+   * @param falseNegatives false negative span
+   * @param toks           the document tokens
    */
   private void printErrors(List<Span> falsePositives,
-      List<Span> falseNegatives, String[] toks) {
+                           List<Span> falseNegatives, String[] toks) {
     printStream.println("False positives: {");
     printStream.println(print(falsePositives, toks));
     printStream.println("} False negatives: {");
@@ -177,10 +168,8 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   /**
    * Auxiliary method to print spans
    *
-   * @param spans
-   *          the span list
-   * @param toks
-   *          the tokens array
+   * @param spans the span list
+   * @param toks  the tokens array
    * @return the spans as string
    */
   private String print(List<Span> spans, String[] toks) {
@@ -191,10 +180,8 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   /**
    * Auxiliary method to print expected and predicted samples.
    *
-   * @param referenceSample
-   *          the reference sample
-   * @param predictedSample
-   *          the predicted sample
+   * @param referenceSample the reference sample
+   * @param predictedSample the predicted sample
    */
   private <S> void printSamples(S referenceSample, S predictedSample) {
     String details = "Expected: {\n" + referenceSample + "}\nPredicted: {\n"
@@ -208,13 +195,11 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
    *
    * @param references
    * @param predictions
-   * @param falseNegatives
-   *          [out] the false negatives list
-   * @param falsePositives
-   *          [out] the false positives list
+   * @param falseNegatives [out] the false negatives list
+   * @param falsePositives [out] the false positives list
    */
   private void findErrors(Span[] references, Span[] predictions,
-      List<Span> falseNegatives, List<Span> falsePositives) {
+                          List<Span> falseNegatives, List<Span> falsePositives) {
 
     falseNegatives.addAll(Arrays.asList(references));
     falsePositives.addAll(Arrays.asList(predictions));
@@ -235,6 +220,6 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
     // do nothing
   }
 
-  public abstract void missclassified(T reference, T prediction) ;
+  public abstract void missclassified(T reference, T prediction);
 
 }

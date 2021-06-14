@@ -96,7 +96,7 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
   static class DummyPOSSequenceValidator implements SequenceValidator<String> {
 
     public boolean validSequence(int i, String[] inputSequence,
-        String[] outcomesSequence, String outcome) {
+                                 String[] outcomesSequence, String outcome) {
       return true;
     }
 

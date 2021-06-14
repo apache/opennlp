@@ -58,7 +58,7 @@ public class TokenNameFinderCrossValidatorTest {
         ModelType.MAXENT.toString());
 
     TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng",
-        TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor)null);
+        TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor) null);
 
     cv.evaluate(sampleStream, 2);
 
@@ -96,7 +96,7 @@ public class TokenNameFinderCrossValidatorTest {
     Assert.assertTrue(out.size() > 0);
     Assert.assertNotNull(cv.getFMeasure());
   }
-  
+
   @Test(expected = InsufficientTrainingDataException.class)
   public void testWithInsufficientData() throws Exception {
 
@@ -114,10 +114,10 @@ public class TokenNameFinderCrossValidatorTest {
         ModelType.MAXENT.toString());
 
     TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng",
-        TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor)null);
+        TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor) null);
 
     cv.evaluate(sampleStream, 2);
 
   }
-  
+
 }

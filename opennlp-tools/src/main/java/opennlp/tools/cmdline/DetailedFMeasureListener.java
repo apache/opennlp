@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
@@ -39,6 +39,11 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public abstract class DetailedFMeasureListener<T> implements
     EvaluationMonitor<T> {
 
+  private static final String PERCENT = "%\u00207.2f%%";
+  private static final String FORMAT = "%12s: precision: " + PERCENT
+      + ";  recall: " + PERCENT + "; F1: " + PERCENT + ".";
+  private static final String FORMAT_EXTRA = FORMAT
+      + " [target: %3d; tp: %3d; fp: %3d]";
   private int samples = 0;
   private Stats generalStats = new Stats();
   private Map<String, Stats> statsForOutcome = new HashMap<>();
@@ -105,12 +110,6 @@ public abstract class DetailedFMeasureListener<T> implements
     }
     return statsForOutcome.get(type);
   }
-
-  private static final String PERCENT = "%\u00207.2f%%";
-  private static final String FORMAT = "%12s: precision: " + PERCENT
-      + ";  recall: " + PERCENT + "; F1: " + PERCENT + ".";
-  private static final String FORMAT_EXTRA = FORMAT
-      + " [target: %3d; tp: %3d; fp: %3d]";
 
   public String createReport() {
     return createReport(Locale.getDefault());
@@ -245,7 +244,7 @@ public abstract class DetailedFMeasureListener<T> implements
 
     /**
      * Retrieves the f-measure score.
-     *
+     * <p>
      * f-measure = 2 * precision * recall / (precision + recall)
      *
      * @return the f-measure or -1 if precision + recall <= 0

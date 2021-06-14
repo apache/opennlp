@@ -22,30 +22,30 @@ import java.util.List;
 public class PrefixFeatureGenerator implements AdaptiveFeatureGenerator {
 
   static final int DEFAULT_MAX_LENGTH = 4;
-  
+
   private final int prefixLength;
-  
+
   public PrefixFeatureGenerator() {
     prefixLength = DEFAULT_MAX_LENGTH;
   }
-  
+
   public PrefixFeatureGenerator(int prefixLength) {
     this.prefixLength = prefixLength;
   }
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
     String[] prefs = getPrefixes(tokens[index]);
     for (String pref : prefs) {
       features.add("pre=" + pref);
     }
   }
-  
+
   private String[] getPrefixes(String lex) {
-      
+
     int prefixes = StrictMath.min(prefixLength, lex.length());
-    
+
     String[] prefs = new String[prefixes];
     for (int li = 0; li < prefixes; li++) {
       prefs[li] = lex.substring(0, StrictMath.min(li + 1, lex.length()));

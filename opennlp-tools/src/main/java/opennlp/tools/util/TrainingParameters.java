@@ -48,30 +48,26 @@ public class TrainingParameters {
   }
 
   /**
-   *
    * @deprecated
    */
-  public TrainingParameters(Map<String,String> map) {
+  public TrainingParameters(Map<String, String> map) {
     //parameters.putAll(map);
     // try to respect their original type...
-    for (String key: map.keySet()) {
+    for (String key : map.keySet()) {
       String value = map.get(key);
       try {
         int intValue = Integer.parseInt(value);
         parameters.put(key, intValue);
-      }
-      catch (NumberFormatException ei) {
+      } catch (NumberFormatException ei) {
         try {
           double doubleValue = Double.parseDouble(value);
           parameters.put(key, doubleValue);
-        }
-        catch (NumberFormatException ed) {
+        } catch (NumberFormatException ed) {
           // Because Boolean.parseBoolean() doesn't throw NFE, it just checks the value is either
           // true or yes. So let's see their letters here.
           if (value.toLowerCase().equals("true") || value.toLowerCase().equals("false")) {
             parameters.put(key, Boolean.parseBoolean(value));
-          }
-          else {
+          } else {
             parameters.put(key, value);
           }
         }
@@ -95,13 +91,43 @@ public class TrainingParameters {
     }
   }
 
+  private static String getStringValue(Object value) {
+    if (value instanceof Integer) {
+      return Integer.toString((Integer) value);
+    } else if (value instanceof Double) {
+      return Double.toString((Double) value);
+    } else if (value instanceof Boolean) {
+      return Boolean.toString((Boolean) value);
+    } else {
+      return (String) value;
+    }
+  }
+
+  public static TrainingParameters defaultParams() {
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
+
+    return mlParams;
+  }
+
+  static String getKey(String namespace, String key) {
+    if (namespace == null) {
+      return key;
+    } else {
+      return namespace + "." + key;
+    }
+  }
+
   /**
    * Retrieves the training algorithm name for a given name space.
    *
    * @return the name or null if not set.
    */
   public String algorithm(String namespace) {
-    return (String)parameters.get(getKey(namespace, ALGORITHM_PARAM));
+    return (String) parameters.get(getKey(namespace, ALGORITHM_PARAM));
   }
 
   /**
@@ -110,16 +136,14 @@ public class TrainingParameters {
    * @return the name or null if not set.
    */
   public String algorithm() {
-    return (String)parameters.get(ALGORITHM_PARAM);
+    return (String) parameters.get(ALGORITHM_PARAM);
   }
 
   /**
    * Retrieves a map with the training parameters which have the passed name space.
    *
    * @param namespace
-   *
    * @return a parameter map which can be passed to the train and validate methods.
-   *
    * @deprecated use {@link #getObjectSettings(String)} instead
    */
   public Map<String, String> getSettings(String namespace) {
@@ -131,11 +155,10 @@ public class TrainingParameters {
       String key = entry.getKey();
 
       if (namespace != null) {
-        if (key.startsWith(prefix))  {
+        if (key.startsWith(prefix)) {
           trainingParams.put(key.substring(prefix.length()), getStringValue(entry.getValue()));
         }
-      }
-      else {
+      } else {
         if (!key.contains(".")) {
           trainingParams.put(key, getStringValue(entry.getValue()));
         }
@@ -145,26 +168,10 @@ public class TrainingParameters {
     return Collections.unmodifiableMap(trainingParams);
   }
 
-  private static String getStringValue(Object value) {
-    if (value instanceof Integer) {
-      return Integer.toString((Integer)value);
-    }
-    else if (value instanceof Double) {
-      return Double.toString((Double)value);
-    }
-    else if (value instanceof Boolean) {
-      return Boolean.toString((Boolean)value);
-    }
-    else {
-      return (String)value;
-    }
-  }
-
   /**
    * Retrieves all parameters without a name space.
    *
    * @return the settings map
-   *
    * @deprecated use {@link #getObjectSettings()} instead
    */
   public Map<String, String> getSettings() {
@@ -175,7 +182,6 @@ public class TrainingParameters {
    * Retrieves a map with the training parameters which have the passed name space.
    *
    * @param namespace
-   *
    * @return a parameter map which can be passed to the train and validate methods.
    */
   public Map<String, Object> getObjectSettings(String namespace) {
@@ -187,11 +193,10 @@ public class TrainingParameters {
       String key = entry.getKey();
 
       if (namespace != null) {
-        if (key.startsWith(prefix))  {
+        if (key.startsWith(prefix)) {
           trainingParams.put(key.substring(prefix.length()), entry.getValue());
         }
-      }
-      else {
+      } else {
         if (!key.contains(".")) {
           trainingParams.put(key, entry.getValue());
         }
@@ -216,20 +221,18 @@ public class TrainingParameters {
     TrainingParameters params = new TrainingParameters();
     Map<String, Object> settings = getObjectSettings(namespace);
 
-    for (Entry<String, Object> entry: settings.entrySet()) {
+    for (Entry<String, Object> entry : settings.entrySet()) {
       String key = entry.getKey();
-      Object value = entry.getValue();;
+      Object value = entry.getValue();
+      ;
       if (value instanceof Integer) {
-        params.put(key, (Integer)value);
-      }
-      else if (value instanceof Double) {
-        params.put(key, (Double)value);
-      }
-      else if (value instanceof Boolean) {
-        params.put(key, (Boolean)value);
-      }
-      else {
-        params.put(key, (String)value);
+        params.put(key, (Integer) value);
+      } else if (value instanceof Double) {
+        params.put(key, (Double) value);
+      } else if (value instanceof Boolean) {
+        params.put(key, (Boolean) value);
+      } else {
+        params.put(key, (String) value);
       }
     }
 
@@ -303,7 +306,7 @@ public class TrainingParameters {
   public void serialize(OutputStream out) throws IOException {
     Properties properties = new Properties();
 
-    for (Map.Entry<String, Object> entry: parameters.entrySet()) {
+    for (Map.Entry<String, Object> entry : parameters.entrySet()) {
       properties.put(entry.getKey(), entry.getValue());
     }
 
@@ -312,8 +315,9 @@ public class TrainingParameters {
 
   /**
    * get a String parameter.
-   *
+   * <p>
    * {@link java.lang.ClassCastException} can be thrown if the value is not {@code String}
+   *
    * @param key
    * @param defaultValue
    * @return
@@ -324,8 +328,9 @@ public class TrainingParameters {
 
   /**
    * get a String parameter in the specified namespace.
-   *
+   * <p>
    * {@link java.lang.ClassCastException} can be thrown if the value is not {@link String}
+   *
    * @param namespace
    * @param key
    * @param defaultValue
@@ -335,14 +340,14 @@ public class TrainingParameters {
     Object value = parameters.get(getKey(namespace, key));
     if (value == null) {
       return defaultValue;
-    }
-    else {
-      return (String)value;
+    } else {
+      return (String) value;
     }
   }
 
   /**
    * get an Integer parameter
+   *
    * @param key
    * @param defaultValue
    * @return
@@ -353,6 +358,7 @@ public class TrainingParameters {
 
   /**
    * get an Integer parameter in the specified namespace
+   *
    * @param namespace
    * @param key
    * @param defaultValue
@@ -362,21 +368,20 @@ public class TrainingParameters {
     Object value = parameters.get(getKey(namespace, key));
     if (value == null) {
       return defaultValue;
-    }
-    else {
+    } else {
       // TODO: We have this try-catch for back-compat reason. After removing deprecated flag,
       // we can remove try-catch block and just return (Integer)value;
       try {
         return (Integer) value;
-      }
-      catch (ClassCastException e) {
-        return Integer.parseInt((String)value);
+      } catch (ClassCastException e) {
+        return Integer.parseInt((String) value);
       }
     }
   }
 
   /**
    * get a Double parameter
+   *
    * @param key
    * @param defaultValue
    * @return
@@ -387,6 +392,7 @@ public class TrainingParameters {
 
   /**
    * get a Double parameter in the specified namespace
+   *
    * @param namespace
    * @param key
    * @param defaultValue
@@ -396,21 +402,20 @@ public class TrainingParameters {
     Object value = parameters.get(getKey(namespace, key));
     if (value == null) {
       return defaultValue;
-    }
-    else {
+    } else {
       // TODO: We have this try-catch for back-compat reason. After removing deprecated flag,
       // we can remove try-catch block and just return (Double)value;
       try {
         return (Double) value;
-      }
-      catch (ClassCastException e) {
-        return Double.parseDouble((String)value);
+      } catch (ClassCastException e) {
+        return Double.parseDouble((String) value);
       }
     }
   }
 
   /**
    * get a Boolean parameter
+   *
    * @param key
    * @param defaultValue
    * @return
@@ -421,6 +426,7 @@ public class TrainingParameters {
 
   /**
    * get a Boolean parameter in the specified namespace
+   *
    * @param namespace
    * @param key
    * @param defaultValue
@@ -430,35 +436,14 @@ public class TrainingParameters {
     Object value = parameters.get(getKey(namespace, key));
     if (value == null) {
       return defaultValue;
-    }
-    else {
+    } else {
       // TODO: We have this try-catch for back-compat reason. After removing deprecated flag,
       // we can remove try-catch block and just return (Boolean)value;
       try {
         return (Boolean) value;
+      } catch (ClassCastException e) {
+        return Boolean.parseBoolean((String) value);
       }
-      catch (ClassCastException e) {
-        return Boolean.parseBoolean((String)value);
-      }
-    }
-  }
-  
-  public static TrainingParameters defaultParams() {
-    TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-    mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
-
-    return mlParams;
-  }
-
-  static String getKey(String namespace, String key) {
-    if (namespace == null) {
-      return key;
-    }
-    else {
-      return namespace + "." + key;
     }
   }
 }

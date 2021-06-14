@@ -34,16 +34,13 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class NameSampleDataStreamFactory extends AbstractSampleStreamFactory<NameSample> {
 
-  public static interface Parameters extends BasicFormatParams {
+  protected <P> NameSampleDataStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new NameSampleDataStreamFactory(Parameters.class));
-  }
-
-  protected <P> NameSampleDataStreamFactory(Class<P> params) {
-    super(params);
+        StreamFactoryRegistry.DEFAULT_FORMAT, new NameSampleDataStreamFactory(Parameters.class));
   }
 
   public ObjectStream<NameSample> create(String[] args) {
@@ -61,5 +58,8 @@ public class NameSampleDataStreamFactory extends AbstractSampleStreamFactory<Nam
     }
 
     return new NameSampleDataStream(lineStream);
+  }
+
+  public static interface Parameters extends BasicFormatParams {
   }
 }

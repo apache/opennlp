@@ -17,7 +17,7 @@
 
 package opennlp.tools.postag;
 
-import opennlp.tools.util.Sequence;
+import opennlp.common.util.Sequence;
 
 /**
  * The interface for part of speech taggers.
@@ -26,6 +26,7 @@ public interface POSTagger {
 
   /**
    * Assigns the sentence of tokens pos tags.
+   *
    * @param sentence The sentece of tokens to be tagged.
    * @return an array of pos tags for each token provided in sentence.
    */

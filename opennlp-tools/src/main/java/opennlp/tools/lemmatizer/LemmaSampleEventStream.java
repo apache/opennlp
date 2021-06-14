@@ -35,7 +35,8 @@ public class LemmaSampleEventStream extends AbstractEventStream<LemmaSample> {
 
   /**
    * Creates a new event stream based on the specified data stream using the specified context generator.
-   * @param d The data stream for this event stream.
+   *
+   * @param d  The data stream for this event stream.
    * @param cg The context generator which should be used in the creation of events for this event stream.
    */
   public LemmaSampleEventStream(ObjectStream<LemmaSample> d, LemmatizerContextGenerator cg) {
@@ -49,14 +50,13 @@ public class LemmaSampleEventStream extends AbstractEventStream<LemmaSample> {
       List<Event> events = new ArrayList<>();
       String[] toksArray = sample.getTokens();
       String[] tagsArray = sample.getTags();
-      String[] lemmasArray = LemmatizerME.encodeLemmas(toksArray,sample.getLemmas());
+      String[] lemmasArray = LemmatizerME.encodeLemmas(toksArray, sample.getLemmas());
       for (int ei = 0, el = sample.getTokens().length; ei < el; ei++) {
         events.add(new Event(lemmasArray[ei],
-            contextGenerator.getContext(ei,toksArray,tagsArray,lemmasArray)));
+            contextGenerator.getContext(ei, toksArray, tagsArray, lemmasArray)));
       }
       return events.iterator();
-    }
-    else {
+    } else {
       return Collections.emptyListIterator();
     }
   }

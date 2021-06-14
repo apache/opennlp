@@ -34,35 +34,21 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
- *
  * Class to load a Brown cluster document: word\tword_class\tprob
  * http://metaoptimize.com/projects/wordreprs/
- *
+ * <p>
  * The file containing the clustering lexicon has to be passed as the
  * value of the dict attribute of each BrownCluster feature generator.
- *
  */
 public class BrownCluster implements SerializableArtifact {
 
   private static final Pattern tabPattern = Pattern.compile("\t");
-
-  public static class BrownClusterSerializer implements ArtifactSerializer<BrownCluster> {
-
-    public BrownCluster create(InputStream in) throws IOException {
-      return new BrownCluster(in);
-    }
-
-    public void serialize(BrownCluster artifact, OutputStream out)
-        throws IOException {
-      artifact.serialize(out);
-    }
-  }
-
   private Map<String, String> tokenToClusterMap = new HashMap<>();
 
   /**
    * Generates the token to cluster map from Brown cluster input file.
    * NOTE: we only add those tokens with frequency bigger than 5.
+   *
    * @param in the inputstream
    * @throws IOException the io exception
    */
@@ -75,11 +61,10 @@ public class BrownCluster implements SerializableArtifact {
       String[] lineArray = tabPattern.split(line);
       if (lineArray.length == 3) {
         int freq = Integer.parseInt(lineArray[2]);
-        if (freq > 5 ) {
+        if (freq > 5) {
           tokenToClusterMap.put(lineArray[1], lineArray[0]);
         }
-      }
-      else if (lineArray.length == 2) {
+      } else if (lineArray.length == 2) {
         tokenToClusterMap.put(lineArray[0], lineArray[1]);
       }
     }
@@ -87,6 +72,7 @@ public class BrownCluster implements SerializableArtifact {
 
   /**
    * Check if a token is in the Brown:paths, token map.
+   *
    * @param string the token to look-up
    * @return the brown class if such token is in the brown cluster map
    */
@@ -105,5 +91,17 @@ public class BrownCluster implements SerializableArtifact {
 
   public Class<?> getArtifactSerializerClass() {
     return BrownClusterSerializer.class;
+  }
+
+  public static class BrownClusterSerializer implements ArtifactSerializer<BrownCluster> {
+
+    public BrownCluster create(InputStream in) throws IOException {
+      return new BrownCluster(in);
+    }
+
+    public void serialize(BrownCluster artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(out);
+    }
   }
 }

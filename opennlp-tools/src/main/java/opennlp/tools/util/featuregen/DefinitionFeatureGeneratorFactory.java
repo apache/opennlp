@@ -37,14 +37,15 @@ public class DefinitionFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
-    return new OutcomePriorFeatureGenerator();
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put(ELEMENT_NAME, new DefinitionFeatureGeneratorFactory());
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put(ELEMENT_NAME, new DefinitionFeatureGeneratorFactory());
+  public AdaptiveFeatureGenerator create(Element generatorElement,
+                                         FeatureGeneratorResourceProvider resourceManager)
+      throws InvalidFormatException {
+    return new OutcomePriorFeatureGenerator();
   }
 
   @Override

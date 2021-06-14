@@ -19,7 +19,6 @@ package opennlp.tools.eval;
 
 import java.io.File;
 import java.io.IOException;
-
 import java.math.BigInteger;
 
 import org.junit.Assert;
@@ -45,7 +44,7 @@ import opennlp.tools.util.model.ModelUtil;
  * <a href="http://www.cnts.ua.ac.be/conll2002/ner/"> site </a>
  * and decompress it into this directory: $OPENNLP_DATA_DIR/conll2002.
  * Also decompress the training files.
- *
+ * <p>
  * TODO:
  * - Files are provided in gzipped. It would be better if they would not be unpacked by the user.
  * - Double check the encoding which is used to open the files. Currently that is UTF-8.
@@ -59,30 +58,7 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
   private static File spanishTrainingFile;
   private static File spanishTestAFile;
   private static File spanishTestBFile;
-      
 
-  private TokenNameFinderModel train(File trainFile, LANGUAGE lang,
-      TrainingParameters params, int types) throws IOException {
-
-    ObjectStream<NameSample> samples = new Conll02NameSampleStream(
-        lang,new MarkableFileInputStreamFactory(trainFile), types);
-
-    return  NameFinderME.train(lang.toString().toLowerCase(), null, samples,
-        params, new TokenNameFinderFactory());
-  }
-
-  private void eval(TokenNameFinderModel model, File testData, LANGUAGE lang,
-      int types, double expectedFMeasure) throws IOException {
-
-    ObjectStream<NameSample> samples = new Conll02NameSampleStream(
-        lang, new MarkableFileInputStreamFactory(testData), types);
-
-    TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(new NameFinderME(model));
-    evaluator.evaluate(samples);
-
-    Assert.assertEquals(expectedFMeasure, evaluator.getFMeasure().getFMeasure(), 0.0001);
-  }
-  
   @BeforeClass
   public static void verifyTrainingData() throws Exception {
 
@@ -92,33 +68,55 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     spanishTrainingFile = new File(getOpennlpDataDir(), "conll02/ner/data/esp.train");
     spanishTestAFile = new File(getOpennlpDataDir(), "conll02/ner/data/esp.testa");
     spanishTestBFile = new File(getOpennlpDataDir(), "conll02/ner/data/esp.testb");
-    
-    verifyTrainingData(new Conll02NameSampleStream(
-        LANGUAGE.NLD, new MarkableFileInputStreamFactory(dutchTrainingFile),
-          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
-            new BigInteger("109687424525847313767541246922170457976"));
-    verifyTrainingData(new Conll02NameSampleStream(
-        LANGUAGE.NLD, new MarkableFileInputStreamFactory(dutchTestAFile),
-          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
-            new BigInteger("12942966701628852910737840182656846323"));
-    verifyTrainingData(new Conll02NameSampleStream(
-        LANGUAGE.NLD, new MarkableFileInputStreamFactory(dutchTestBFile),
-          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
-            new BigInteger("223206987942490952427646331013509976957"));
-    
-    verifyTrainingData(new Conll02NameSampleStream(
-        LANGUAGE.SPA, new MarkableFileInputStreamFactory(spanishTrainingFile),
-          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
-            new BigInteger("226089384066775461905386060946810714487"));  
-    verifyTrainingData(new Conll02NameSampleStream(
-        LANGUAGE.SPA, new MarkableFileInputStreamFactory(spanishTestAFile),
-          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
-            new BigInteger("313879596837181728494732341737647284762"));
-    verifyTrainingData(new Conll02NameSampleStream(
-        LANGUAGE.SPA, new MarkableFileInputStreamFactory(spanishTestBFile),
-          Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
-            new BigInteger("24037715705115461166858183817622459974"));
 
+    verifyTrainingData(new Conll02NameSampleStream(
+            LANGUAGE.NLD, new MarkableFileInputStreamFactory(dutchTrainingFile),
+            Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+        new BigInteger("109687424525847313767541246922170457976"));
+    verifyTrainingData(new Conll02NameSampleStream(
+            LANGUAGE.NLD, new MarkableFileInputStreamFactory(dutchTestAFile),
+            Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+        new BigInteger("12942966701628852910737840182656846323"));
+    verifyTrainingData(new Conll02NameSampleStream(
+            LANGUAGE.NLD, new MarkableFileInputStreamFactory(dutchTestBFile),
+            Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+        new BigInteger("223206987942490952427646331013509976957"));
+
+    verifyTrainingData(new Conll02NameSampleStream(
+            LANGUAGE.SPA, new MarkableFileInputStreamFactory(spanishTrainingFile),
+            Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+        new BigInteger("226089384066775461905386060946810714487"));
+    verifyTrainingData(new Conll02NameSampleStream(
+            LANGUAGE.SPA, new MarkableFileInputStreamFactory(spanishTestAFile),
+            Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+        new BigInteger("313879596837181728494732341737647284762"));
+    verifyTrainingData(new Conll02NameSampleStream(
+            LANGUAGE.SPA, new MarkableFileInputStreamFactory(spanishTestBFile),
+            Conll02NameSampleStream.GENERATE_PERSON_ENTITIES),
+        new BigInteger("24037715705115461166858183817622459974"));
+
+  }
+
+  private TokenNameFinderModel train(File trainFile, LANGUAGE lang,
+                                     TrainingParameters params, int types) throws IOException {
+
+    ObjectStream<NameSample> samples = new Conll02NameSampleStream(
+        lang, new MarkableFileInputStreamFactory(trainFile), types);
+
+    return NameFinderME.train(lang.toString().toLowerCase(), null, samples,
+        params, new TokenNameFinderFactory());
+  }
+
+  private void eval(TokenNameFinderModel model, File testData, LANGUAGE lang,
+                    int types, double expectedFMeasure) throws IOException {
+
+    ObjectStream<NameSample> samples = new Conll02NameSampleStream(
+        lang, new MarkableFileInputStreamFactory(testData), types);
+
+    TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(new NameFinderME(model));
+    evaluator.evaluate(samples);
+
+    Assert.assertEquals(expectedFMeasure, evaluator.getFMeasure().getFMeasure(), 0.0001);
   }
 
   @Test
@@ -301,7 +299,7 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         combinedType);
 
-    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,   combinedType, 0.727808326787117d);
+    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD, combinedType, 0.727808326787117d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.7388253638253639d);
   }
@@ -318,7 +316,7 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         combinedType);
 
-    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,   combinedType, 0.6673209028459275d);
+    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD, combinedType, 0.6673209028459275d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.6984085910208306d);
   }
@@ -335,7 +333,7 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     TokenNameFinderModel maxentModel = train(dutchTrainingFile, LANGUAGE.NLD, params,
         combinedType);
 
-    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD,   combinedType, 0.6999800915787379d);
+    eval(maxentModel, dutchTestAFile, LANGUAGE.NLD, combinedType, 0.6999800915787379d);
 
     eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.7101430258496261d);
   }

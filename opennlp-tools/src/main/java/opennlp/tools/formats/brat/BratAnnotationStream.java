@@ -27,187 +27,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.common.util.Span;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 /**
  * Reads the annotations from the brat .ann annotation file.
  */
 public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
 
-  static abstract class BratAnnotationParser {
-
-    static final int ID_OFFSET = 0;
-    static final int TYPE_OFFSET = 1;
-    static final String NOTES_TYPE = "AnnotatorNotes";
-
-    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
-      return null;
-    }
-
-    protected int parseInt(String intString) throws InvalidFormatException {
-      try {
-        return Integer.parseInt(intString);
-      }
-      catch (NumberFormatException e) {
-        throw new InvalidFormatException(e);
-      }
-    }
-  }
-
-  static class SpanAnnotationParser extends BratAnnotationParser {
-
-    private static final int BEGIN_OFFSET = 2;
-    private static final int END_OFFSET = 3;
-
-    @Override
-    BratAnnotation parse(Span[] values, CharSequence line) throws IOException {
-
-      if (values.length > 4) {
-        String type = values[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString();
-
-        int firstTextTokenIndex = -1;
-
-        int beginIndex = parseInt(values[BEGIN_OFFSET].getCoveredText(line).toString());
-
-        List<Span> fragments = new ArrayList<>();
-
-        for (int i = END_OFFSET; i < values.length; i++) {
-
-          int endOffset;
-          int nextBeginOffset = -1;
-          if (values[i].getCoveredText(line).toString().contains(";")) {
-            String[] parts = values[i].getCoveredText(line).toString().split(";");
-            endOffset = parseInt(parts[0]);
-            fragments.add(new Span(beginIndex, endOffset, type));
-            beginIndex = parseInt(parts[1]);
-          }
-          else {
-            endOffset = parseInt(values[i].getCoveredText(line).toString());
-            firstTextTokenIndex = i + 1;
-            fragments.add(new Span(beginIndex, endOffset, type));
-            break;
-          }
-        }
-
-        String id = values[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString();
-
-        String coveredText = line.subSequence(values[firstTextTokenIndex].getStart(),
-            values[values.length - 1].getEnd()).toString();
-
-        try {
-          return new SpanAnnotation(id, type, fragments.toArray(new Span[fragments.size()]), coveredText);
-        }
-        catch (IllegalArgumentException e) {
-          throw new InvalidFormatException(e);
-        }
-      }
-      else {
-        throw new InvalidFormatException("Line must have at least 5 fields");
-      }
-    }
-  }
-
-  static class RelationAnnotationParser extends BratAnnotationParser {
-
-    private static final int ARG1_OFFSET = 2;
-    private static final int ARG2_OFFSET = 3;
-
-    private String parseArg(String arg) throws InvalidFormatException {
-      if (arg.length() > 4) {
-        return arg.substring(5).trim();
-      }
-      else {
-        throw new InvalidFormatException("Failed to parse argument: " + arg);
-      }
-    }
-
-    @Override
-    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
-      return new RelationAnnotation(tokens[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString(),
-          tokens[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString(),
-          parseArg(tokens[ARG1_OFFSET].getCoveredText(line).toString()),
-          parseArg(tokens[ARG2_OFFSET].getCoveredText(line).toString()));
-    }
-  }
-
-  static class EventAnnotationParser extends BratAnnotationParser {
-
-    @Override
-    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
-
-      String[] typeParts = tokens[TYPE_OFFSET].getCoveredText(line).toString().split(":");
-
-      if (typeParts.length != 2) {
-        throw new InvalidFormatException(String.format(
-            "Failed to parse [%s], type part must be in the format type:trigger", line));
-      }
-
-      String type = typeParts[0];
-      String eventTrigger = typeParts[1];
-
-      Map<String, String> arguments = new HashMap<>();
-
-      for (int i = TYPE_OFFSET + 1; i < tokens.length; i++) {
-        String[] parts = tokens[i].getCoveredText(line).toString().split(":");
-
-        if (parts.length != 2) {
-          throw new InvalidFormatException(String.format(
-              "Failed to parse [%s], argument parts must be in form argument:value", line));
-        }
-
-        arguments.put(parts[0], parts[1]);
-      }
-
-      return new EventAnnotation(tokens[ID_OFFSET].getCoveredText(line).toString(),type, eventTrigger,
-          arguments);
-    }
-  }
-
-  static class AttributeAnnotationParser extends BratAnnotationParser {
-
-    private static final int ATTACHED_TO_OFFSET = 2;
-    private static final int VALUE_OFFSET = 3;
-
-    @Override
-    BratAnnotation parse(Span[] values, CharSequence line) throws IOException {
-
-      if (values.length == 3 || values.length == 4) {
-
-        String value = null;
-
-        if (values.length == 4) {
-          value = values[VALUE_OFFSET].getCoveredText(line).toString();
-        }
-
-        return new AttributeAnnotation(values[ID_OFFSET].getCoveredText(line).toString(),
-            values[TYPE_OFFSET].getCoveredText(line).toString(),
-            values[ATTACHED_TO_OFFSET].getCoveredText(line).toString(), value);
-      }
-      else {
-        throw new InvalidFormatException("Line must have 3 or 4 fields");
-      }
-    }
-  }
-
-  static class AnnotatorNoteParser extends BratAnnotationParser {
-    private static final int ATTACH_TO_OFFSET = 2;
-    private static final int START_VALUE_OFFSET = 3;
-
-    @Override
-    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
-
-      
-      Span noteSpan = new Span( tokens[START_VALUE_OFFSET].getStart(), 
-          tokens[tokens.length - 1].getEnd() );      
-
-      return new AnnotatorNoteAnnotation(tokens[ID_OFFSET].getCoveredText(line).toString(), 
-          tokens[ATTACH_TO_OFFSET].getCoveredText(line).toString(), 
-          noteSpan.getCoveredText(line).toString());
-    }
-  }
   private final AnnotationConfiguration config;
   private final BufferedReader reader;
   private final String id;
@@ -251,22 +80,21 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
             break;
           case '#':
             // the # can be a Note or a comment... if a note, handle it, otherwise skip the unsupported type..
-            if ( tokens[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString().equals(
-                BratAnnotationParser.NOTES_TYPE) ) {
+            if (tokens[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString().equals(
+                BratAnnotationParser.NOTES_TYPE)) {
               parser = new AnnotatorNoteParser();
             } else {
               return read();
             }
             break;
           default:
-          // Skip it, do that for everything unsupported (e.g. "*" id)
+            // Skip it, do that for everything unsupported (e.g. "*" id)
             return read();
         }
 
         try {
           return parser.parse(tokens, line);
-        }
-        catch (IOException e)  {
+        } catch (IOException e) {
           throw new IOException(String.format("Failed to parse ann document with id [%s.ann]", id), e);
         }
       }
@@ -281,5 +109,171 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
 
   public void close() throws IOException {
     reader.close();
+  }
+
+  static abstract class BratAnnotationParser {
+
+    static final int ID_OFFSET = 0;
+    static final int TYPE_OFFSET = 1;
+    static final String NOTES_TYPE = "AnnotatorNotes";
+
+    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
+      return null;
+    }
+
+    protected int parseInt(String intString) throws InvalidFormatException {
+      try {
+        return Integer.parseInt(intString);
+      } catch (NumberFormatException e) {
+        throw new InvalidFormatException(e);
+      }
+    }
+  }
+
+  static class SpanAnnotationParser extends BratAnnotationParser {
+
+    private static final int BEGIN_OFFSET = 2;
+    private static final int END_OFFSET = 3;
+
+    @Override
+    BratAnnotation parse(Span[] values, CharSequence line) throws IOException {
+
+      if (values.length > 4) {
+        String type = values[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString();
+
+        int firstTextTokenIndex = -1;
+
+        int beginIndex = parseInt(values[BEGIN_OFFSET].getCoveredText(line).toString());
+
+        List<Span> fragments = new ArrayList<>();
+
+        for (int i = END_OFFSET; i < values.length; i++) {
+
+          int endOffset;
+          int nextBeginOffset = -1;
+          if (values[i].getCoveredText(line).toString().contains(";")) {
+            String[] parts = values[i].getCoveredText(line).toString().split(";");
+            endOffset = parseInt(parts[0]);
+            fragments.add(new Span(beginIndex, endOffset, type));
+            beginIndex = parseInt(parts[1]);
+          } else {
+            endOffset = parseInt(values[i].getCoveredText(line).toString());
+            firstTextTokenIndex = i + 1;
+            fragments.add(new Span(beginIndex, endOffset, type));
+            break;
+          }
+        }
+
+        String id = values[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString();
+
+        String coveredText = line.subSequence(values[firstTextTokenIndex].getStart(),
+            values[values.length - 1].getEnd()).toString();
+
+        try {
+          return new SpanAnnotation(id, type, fragments.toArray(new Span[fragments.size()]), coveredText);
+        } catch (IllegalArgumentException e) {
+          throw new InvalidFormatException(e);
+        }
+      } else {
+        throw new InvalidFormatException("Line must have at least 5 fields");
+      }
+    }
+  }
+
+  static class RelationAnnotationParser extends BratAnnotationParser {
+
+    private static final int ARG1_OFFSET = 2;
+    private static final int ARG2_OFFSET = 3;
+
+    private String parseArg(String arg) throws InvalidFormatException {
+      if (arg.length() > 4) {
+        return arg.substring(5).trim();
+      } else {
+        throw new InvalidFormatException("Failed to parse argument: " + arg);
+      }
+    }
+
+    @Override
+    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
+      return new RelationAnnotation(tokens[BratAnnotationParser.ID_OFFSET].getCoveredText(line).toString(),
+          tokens[BratAnnotationParser.TYPE_OFFSET].getCoveredText(line).toString(),
+          parseArg(tokens[ARG1_OFFSET].getCoveredText(line).toString()),
+          parseArg(tokens[ARG2_OFFSET].getCoveredText(line).toString()));
+    }
+  }
+
+  static class EventAnnotationParser extends BratAnnotationParser {
+
+    @Override
+    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
+
+      String[] typeParts = tokens[TYPE_OFFSET].getCoveredText(line).toString().split(":");
+
+      if (typeParts.length != 2) {
+        throw new InvalidFormatException(String.format(
+            "Failed to parse [%s], type part must be in the format type:trigger", line));
+      }
+
+      String type = typeParts[0];
+      String eventTrigger = typeParts[1];
+
+      Map<String, String> arguments = new HashMap<>();
+
+      for (int i = TYPE_OFFSET + 1; i < tokens.length; i++) {
+        String[] parts = tokens[i].getCoveredText(line).toString().split(":");
+
+        if (parts.length != 2) {
+          throw new InvalidFormatException(String.format(
+              "Failed to parse [%s], argument parts must be in form argument:value", line));
+        }
+
+        arguments.put(parts[0], parts[1]);
+      }
+
+      return new EventAnnotation(tokens[ID_OFFSET].getCoveredText(line).toString(), type, eventTrigger,
+          arguments);
+    }
+  }
+
+  static class AttributeAnnotationParser extends BratAnnotationParser {
+
+    private static final int ATTACHED_TO_OFFSET = 2;
+    private static final int VALUE_OFFSET = 3;
+
+    @Override
+    BratAnnotation parse(Span[] values, CharSequence line) throws IOException {
+
+      if (values.length == 3 || values.length == 4) {
+
+        String value = null;
+
+        if (values.length == 4) {
+          value = values[VALUE_OFFSET].getCoveredText(line).toString();
+        }
+
+        return new AttributeAnnotation(values[ID_OFFSET].getCoveredText(line).toString(),
+            values[TYPE_OFFSET].getCoveredText(line).toString(),
+            values[ATTACHED_TO_OFFSET].getCoveredText(line).toString(), value);
+      } else {
+        throw new InvalidFormatException("Line must have 3 or 4 fields");
+      }
+    }
+  }
+
+  static class AnnotatorNoteParser extends BratAnnotationParser {
+    private static final int ATTACH_TO_OFFSET = 2;
+    private static final int START_VALUE_OFFSET = 3;
+
+    @Override
+    BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
+
+
+      Span noteSpan = new Span(tokens[START_VALUE_OFFSET].getStart(),
+          tokens[tokens.length - 1].getEnd());
+
+      return new AnnotatorNoteAnnotation(tokens[ID_OFFSET].getCoveredText(line).toString(),
+          tokens[ATTACH_TO_OFFSET].getCoveredText(line).toString(),
+          noteSpan.getCoveredText(line).toString());
+    }
   }
 }

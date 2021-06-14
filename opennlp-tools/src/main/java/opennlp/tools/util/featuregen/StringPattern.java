@@ -120,18 +120,14 @@ public class StringPattern {
       if (us != Character.UnicodeScript.COMMON) {
         if (us == Character.UnicodeScript.LATIN) {
           pattern &= ~(ALL_HIRAGANA | ALL_KATAKANA);
-        }
-        else if (us == Character.UnicodeScript.HAN) {
+        } else if (us == Character.UnicodeScript.HAN) {
           pattern &= ~(ALL_HIRAGANA | ALL_KATAKANA | ALL_LOWERCASE_LETTER);
-        }
-        else if (us == Character.UnicodeScript.HIRAGANA) {
+        } else if (us == Character.UnicodeScript.HIRAGANA) {
           pattern &= ~(ALL_KATAKANA | ALL_LOWERCASE_LETTER);
-        }
-        else if (us == Character.UnicodeScript.KATAKANA) {
+        } else if (us == Character.UnicodeScript.KATAKANA) {
           pattern &= ~(ALL_HIRAGANA | ALL_LOWERCASE_LETTER);
         }
-      }
-      else {
+      } else {
         if (ch != '・' && ch != 'ー' && ch != '〜')
           pattern &= ~(ALL_HIRAGANA | ALL_KATAKANA);
       }

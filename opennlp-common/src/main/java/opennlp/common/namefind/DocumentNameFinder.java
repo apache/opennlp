@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package opennlp.tools.namefind;
+package opennlp.common.namefind;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * Name finding interface which processes an entire document allowing the name finder to use context

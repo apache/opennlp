@@ -25,10 +25,9 @@ public class EventTest {
   @Test
   public void testNullOutcome() {
     try {
-      new Event(null, new String[]{"aa", "bb", "cc"});
+      new Event(null, new String[] {"aa", "bb", "cc"});
       Assert.fail("NPE must be thrown");
-    }
-    catch (NullPointerException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -37,18 +36,17 @@ public class EventTest {
     try {
       new Event("o1", null);
       Assert.fail("NPE must be thrown");
-    }
-    catch (NullPointerException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
   @Test
   public void testWithValues() {
     Event event = new Event("o1",
-            new String[]{"aa", "bb", "cc"});
+        new String[] {"aa", "bb", "cc"});
 
     Assert.assertEquals("o1", event.getOutcome());
-    Assert.assertArrayEquals(new String[]{"aa", "bb", "cc"}, event.getContext());
+    Assert.assertArrayEquals(new String[] {"aa", "bb", "cc"}, event.getContext());
     Assert.assertNull(event.getValues());
     Assert.assertEquals("o1 [aa bb cc]", event.toString());
   }
@@ -56,12 +54,12 @@ public class EventTest {
   @Test
   public void testWithoutValues() {
     Event event = new Event("o1",
-            new String[]{"aa", "bb", "cc"},
-            new float[]{0.2F, 0.4F, 0.4F});
+        new String[] {"aa", "bb", "cc"},
+        new float[] {0.2F, 0.4F, 0.4F});
 
     Assert.assertEquals("o1", event.getOutcome());
-    Assert.assertArrayEquals(new String[]{"aa", "bb", "cc"}, event.getContext());
-    Assert.assertArrayEquals(new float[]{0.2F, 0.4F, 0.4F}, event.getValues(), 0.001F);
+    Assert.assertArrayEquals(new String[] {"aa", "bb", "cc"}, event.getContext());
+    Assert.assertArrayEquals(new float[] {0.2F, 0.4F, 0.4F}, event.getValues(), 0.001F);
     Assert.assertEquals("o1 [aa=0.2 bb=0.4 cc=0.4]", event.toString());
   }
 }

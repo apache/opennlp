@@ -40,10 +40,8 @@ package opennlp.tools.stemmer.snowball;
 
 public class indonesianStemmer extends opennlp.tools.stemmer.snowball.AbstractSnowballStemmer {
 
-  private static final long serialVersionUID = 1L;
-
   public final static indonesianStemmer methodObject = new indonesianStemmer();
-
+  private static final long serialVersionUID = 1L;
   private final static Among a_0[] = {
       new Among("kah", -1, 1, "", methodObject),
       new Among("lah", -1, 1, "", methodObject),

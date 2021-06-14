@@ -18,7 +18,7 @@
 
 package opennlp.tools.parser;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * Class used to hold constituents when reading parses.
@@ -36,6 +36,7 @@ public class Constituent {
 
   /**
    * Returns the label of the constituent.
+   *
    * @return the label of the constituent.
    */
   public String getLabel() {
@@ -45,6 +46,7 @@ public class Constituent {
 
   /**
    * Assigns the label to the constituent.
+   *
    * @param label The label to set.
    */
   public void setLabel(String label) {
@@ -54,6 +56,7 @@ public class Constituent {
 
   /**
    * Returns the span of the constituent.
+   *
    * @return the span of the constituent.
    */
   public Span getSpan() {

@@ -24,7 +24,7 @@ import opennlp.tools.cmdline.params.EncodingParameter;
 
 /**
  * Params for Dictionary tools.
- *
+ * <p>
  * Note: Do not use this class, internal use only!
  */
 interface DictionaryBuilderParams extends EncodingParameter {

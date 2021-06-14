@@ -21,14 +21,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import javax.xml.parsers.DocumentBuilder;
 
 import org.w3c.dom.Document;
@@ -36,8 +34,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import opennlp.common.util.Span;
 import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.util.Span;
 import opennlp.tools.util.XmlUtil;
 
 /**
@@ -49,72 +47,16 @@ import opennlp.tools.util.XmlUtil;
  */
 public class IrishSentenceBankDocument {
 
-  public static class IrishSentenceBankFlex {
-    String surface;
-    String[] flex;
-    public String getSurface() {
-      return surface;
-    }
-    public String[] getFlex() {
-      return flex;
-    }
-    public IrishSentenceBankFlex(String sf, String[] fl) {
-      this.surface = sf;
-      this.flex = fl;
-    }
-  }
-
-  public static class IrishSentenceBankSentence {
-    private String source;
-    private String translation;
-    private String original;
-    private Span[] tokens;
-    private IrishSentenceBankFlex[] flex;
-    public String getSource() {
-      return source;
-    }
-    public String getTranslation() {
-      return translation;
-    }
-    public String getOriginal() {
-      return original;
-    }
-    public Span[] getTokens() {
-      return tokens;
-    }
-    public IrishSentenceBankFlex[] getFlex() {
-      return flex;
-    }
-    public TokenSample getTokenSample() {
-      return new TokenSample(original, tokens);
-    }
-    public IrishSentenceBankSentence(String src, String trans, String orig, 
-                                     Span[] toks, IrishSentenceBankFlex[] flx) {
-      this.source = src;
-      this.translation = trans;
-      this.original = orig;
-      this.tokens = toks;
-      this.flex = flx;
-    }
-  }
-
   private List<IrishSentenceBankSentence> sentences;
 
   public IrishSentenceBankDocument() {
     sentences = new ArrayList<IrishSentenceBankSentence>();
   }
 
-  public void add(IrishSentenceBankSentence sent) {
-    this.sentences.add(sent);
-  }
-
-  public List<IrishSentenceBankSentence> getSentences() {
-    return Collections.unmodifiableList(sentences);
-  }
-
   /**
    * Helper to adjust the span of punctuation tokens: ignores spaces to the left of the string
-   * @param s the string to check
+   *
+   * @param s     the string to check
    * @param start the offset of the start of the string
    * @return the offset adjusted to ignore spaces to the left
    */
@@ -132,7 +74,8 @@ public class IrishSentenceBankDocument {
 
   /**
    * Helper to adjust the span of punctuation tokens: ignores spaces to the right of the string
-   * @param s the string to check
+   *
+   * @param s     the string to check
    * @param start the offset of the start of the string
    * @return the offset of the end of the string, adjusted to ignore spaces to the right
    */
@@ -268,6 +211,73 @@ public class IrishSentenceBankDocument {
   static IrishSentenceBankDocument parse(File file) throws IOException {
     try (InputStream in = new FileInputStream(file)) {
       return parse(in);
+    }
+  }
+
+  public void add(IrishSentenceBankSentence sent) {
+    this.sentences.add(sent);
+  }
+
+  public List<IrishSentenceBankSentence> getSentences() {
+    return Collections.unmodifiableList(sentences);
+  }
+
+  public static class IrishSentenceBankFlex {
+    String surface;
+    String[] flex;
+
+    public IrishSentenceBankFlex(String sf, String[] fl) {
+      this.surface = sf;
+      this.flex = fl;
+    }
+
+    public String getSurface() {
+      return surface;
+    }
+
+    public String[] getFlex() {
+      return flex;
+    }
+  }
+
+  public static class IrishSentenceBankSentence {
+    private String source;
+    private String translation;
+    private String original;
+    private Span[] tokens;
+    private IrishSentenceBankFlex[] flex;
+
+    public IrishSentenceBankSentence(String src, String trans, String orig,
+                                     Span[] toks, IrishSentenceBankFlex[] flx) {
+      this.source = src;
+      this.translation = trans;
+      this.original = orig;
+      this.tokens = toks;
+      this.flex = flx;
+    }
+
+    public String getSource() {
+      return source;
+    }
+
+    public String getTranslation() {
+      return translation;
+    }
+
+    public String getOriginal() {
+      return original;
+    }
+
+    public Span[] getTokens() {
+      return tokens;
+    }
+
+    public IrishSentenceBankFlex[] getFlex() {
+      return flex;
+    }
+
+    public TokenSample getTokenSample() {
+      return new TokenSample(original, tokens);
     }
   }
 }

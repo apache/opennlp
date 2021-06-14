@@ -27,13 +27,12 @@ import opennlp.tools.util.eval.FMeasure;
 public class TokenizerCrossValidator {
 
   private final TrainingParameters params;
-
+  private final TokenizerFactory factory;
   private FMeasure fmeasure = new FMeasure();
   private TokenizerEvaluationMonitor[] listeners;
-  private final TokenizerFactory factory;
 
   public TokenizerCrossValidator(TrainingParameters params,
-      TokenizerFactory factory, TokenizerEvaluationMonitor... listeners) {
+                                 TokenizerFactory factory, TokenizerEvaluationMonitor... listeners) {
     this.params = params;
     this.listeners = listeners;
     this.factory = factory;
@@ -42,11 +41,8 @@ public class TokenizerCrossValidator {
   /**
    * Starts the evaluation.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   *
+   * @param samples the data to train and test
+   * @param nFolds  number of folds
    * @throws IOException
    */
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds) throws IOException {

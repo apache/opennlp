@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
@@ -33,7 +32,6 @@ import opennlp.tools.ml.model.Context;
  * Abstract parent class for Perceptron writers.  It provides the persist method
  * which takes care of the structure of a stored document, and requires an
  * extending class to define precisely how the data should be stored.
- *
  */
 public abstract class PerceptronModelWriter extends AbstractModelWriter {
   protected Context[] PARAMS;
@@ -89,7 +87,7 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
         activeParams[pi] = tmpParams[pi];
       }
       if (numParams != 0) {
-        tmpPreds[numPreds] = new ComparablePredicate(PRED_LABELS[pid],activeOutcomes,activeParams);
+        tmpPreds[numPreds] = new ComparablePredicate(PRED_LABELS[pid], activeOutcomes, activeParams);
         numPreds++;
       }
     }

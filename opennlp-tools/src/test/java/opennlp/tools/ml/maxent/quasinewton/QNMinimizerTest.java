@@ -63,7 +63,7 @@ public class QNMinimizerTest {
 
     @Override
     public double[] gradientAt(double[] x) {
-      return new double[] { 2 * (x[0] - 1), 2 * (x[1] - 5) };
+      return new double[] {2 * (x[0] - 1), 2 * (x[1] - 5)};
     }
   }
 
@@ -71,7 +71,7 @@ public class QNMinimizerTest {
    * Rosenbrock function (http://en.wikipedia.org/wiki/Rosenbrock_function)
    * f(x,y) = (1-x)^2 + 100*(y-x^2)^2
    * f(x,y) is non-convex and has global minimum at (x,y) = (1,1) where f(x,y) = 0
-   *
+   * <p>
    * f_x = -2*(1-x) - 400*(y-x^2)*x
    * f_y = 200*(y-x^2)
    */

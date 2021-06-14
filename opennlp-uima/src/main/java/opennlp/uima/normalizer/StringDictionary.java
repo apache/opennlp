@@ -24,10 +24,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
-import opennlp.tools.util.StringList;
 
 // lookup a string for given token list
 public class StringDictionary {
@@ -52,6 +52,7 @@ public class StringDictionary {
 
   /**
    * Returns a corresponding String value from hash map.
+   *
    * @param key key to get value with
    */
   public String get(StringList key) {
@@ -60,7 +61,8 @@ public class StringDictionary {
 
   /**
    * Adds a new entry to hash map.
-   * @param key key to put
+   *
+   * @param key   key to put
    * @param value value to put
    */
   public void put(StringList key, String value) {
@@ -75,8 +77,7 @@ public class StringDictionary {
    * Writes the ngram instance to the given {@link OutputStream}.
    *
    * @param out
-   * @throws IOException
-   *           if an I/O Error during writing occures
+   * @throws IOException if an I/O Error during writing occures
    */
   public void serialize(OutputStream out) throws IOException {
     Iterator<Entry> entryIterator = new Iterator<Entry>() {

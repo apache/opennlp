@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import opennlp.tools.util.StringUtil;
+import opennlp.common.util.StringUtil;
 
 /**
  * The {@link NGramCharModel} can be used to create character ngrams.
@@ -46,7 +46,6 @@ public class NGramCharModel implements Iterable<String> {
    *
    * @param ngram an ngram
    * @return count of the ngram or 0 if it is not contained
-   *
    */
   public int getCount(String ngram) {
 
@@ -99,7 +98,7 @@ public class NGramCharModel implements Iterable<String> {
 
     for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
       for (int textIndex = 0;
-          textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
+           textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
 
         String gram = StringUtil.toLowerCase(
             chars.subSequence(textIndex, textIndex + lengthIndex));
@@ -122,7 +121,6 @@ public class NGramCharModel implements Iterable<String> {
    * Checks fit he given tokens are contained by the current instance.
    *
    * @param ngram
-   *
    * @return true if the ngram is contained
    */
   public boolean contains(String ngram) {
@@ -194,13 +192,11 @@ public class NGramCharModel implements Iterable<String> {
 
     if (obj == this) {
       result = true;
-    }
-    else if (obj instanceof NGramCharModel) {
-      NGramCharModel model  = (NGramCharModel) obj;
+    } else if (obj instanceof NGramCharModel) {
+      NGramCharModel model = (NGramCharModel) obj;
 
       result = mNGrams.equals(model.mNGrams);
-    }
-    else {
+    } else {
       result = false;
     }
 

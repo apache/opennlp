@@ -36,20 +36,13 @@ public class ConlluPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
 
   public static final String CONLLU_FORMAT = "conllu";
 
-  interface Parameters extends BasicFormatParams {
-    @ArgumentParser.ParameterDescription(valueName = "tagset",
-        description = "u|x u for unified tags and x for language-specific part-of-speech tags")
-    @ArgumentParser.OptionalParameter(defaultValue = "u")
-    String getTagset();
+  protected <P> ConlluPOSSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
         CONLLU_FORMAT, new ConlluPOSSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> ConlluPOSSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<POSSample> create(String[] args) {
@@ -61,7 +54,7 @@ public class ConlluPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
       case "u":
         tagset = ConlluTagset.U;
         break;
-      case  "x":
+      case "x":
         tagset = ConlluTagset.X;
         break;
       default:
@@ -78,5 +71,12 @@ public class ConlluPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
       CmdLineUtil.handleCreateObjectStreamError(e);
     }
     return null;
+  }
+
+  interface Parameters extends BasicFormatParams {
+    @ArgumentParser.ParameterDescription(valueName = "tagset",
+        description = "u|x u for unified tags and x for language-specific part-of-speech tags")
+    @ArgumentParser.OptionalParameter(defaultValue = "u")
+    String getTagset();
   }
 }

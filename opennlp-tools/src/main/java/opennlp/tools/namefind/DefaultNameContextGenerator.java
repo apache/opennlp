@@ -36,8 +36,6 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
-  protected AdaptiveFeatureGenerator[] featureGenerators;
-
   @Deprecated
   private static AdaptiveFeatureGenerator windowFeatures = new CachedFeatureGenerator(
       new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
@@ -45,9 +43,11 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
       new OutcomePriorFeatureGenerator(),
       new PreviousMapFeatureGenerator(),
       new BigramNameFeatureGenerator());
+  protected AdaptiveFeatureGenerator[] featureGenerators;
 
   /**
    * Creates a name context generator.
+   *
    * @deprecated use the other constructor and always provide the feature generators
    */
   @Deprecated
@@ -62,11 +62,10 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
     if (featureGenerators != null) {
       this.featureGenerators = featureGenerators;
-    }
-    else {
+    } else {
       // use defaults
 
-      this.featureGenerators = new AdaptiveFeatureGenerator[]{
+      this.featureGenerators = new AdaptiveFeatureGenerator[] {
           windowFeatures,
           new PreviousMapFeatureGenerator()};
     }
@@ -102,14 +101,14 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
   /**
    * Return the context for finding names at the specified index.
-   * @param index The index of the token in the specified toks array for which the
-   *              context should be constructed.
-   * @param tokens The tokens of the sentence.  The <code>toString</code> methods
-   *               of these objects should return the token text.
-   * @param preds The previous decisions made in the tagging of this sequence.
-   *              Only indices less than i will be examined.
-   * @param additionalContext Addition features which may be based on a context outside of the sentence.
    *
+   * @param index             The index of the token in the specified toks array for which the
+   *                          context should be constructed.
+   * @param tokens            The tokens of the sentence.  The <code>toString</code> methods
+   *                          of these objects should return the token text.
+   * @param preds             The previous decisions made in the tagging of this sequence.
+   *                          Only indices less than i will be examined.
+   * @param additionalContext Addition features which may be based on a context outside of the sentence.
    * @return the context for finding names at the specified index.
    */
   public String[] getContext(int index, String[] tokens, String[] preds, Object[] additionalContext) {

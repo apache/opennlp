@@ -28,13 +28,10 @@ public interface MutableTagDictionary extends TagDictionary {
    * previously contained keys for the word, the old tags are replaced by the
    * specified tags.
    *
-   * @param word
-   *          word with which the specified tags is to be associated
-   * @param tags
-   *          tags to be associated with the specified word
-   *
+   * @param word word with which the specified tags is to be associated
+   * @param tags tags to be associated with the specified word
    * @return the previous tags associated with the word, or null if there was no
-   *         mapping for word.
+   * mapping for word.
    */
   String[] put(String word, String... tags);
 

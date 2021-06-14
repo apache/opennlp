@@ -26,9 +26,9 @@ import org.junit.Test;
 
 public class SentenceFeatureGeneratorTest {
 
-  private List<String> features;
   static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
   static String[] testShort = new String[] {"word"};
+  private List<String> features;
 
   @Before
   public void setUp() throws Exception {

@@ -30,7 +30,7 @@ public class DefaultEndOfSentenceScannerTest {
   @Test
   public void testScanning() {
     EndOfSentenceScanner scanner = new DefaultEndOfSentenceScanner(
-        new char[]{'.', '!', '?'});
+        new char[] {'.', '!', '?'});
 
     List<Integer> eosPositions =
         scanner.getPositions("... um die Wertmarken zu auswählen !?");

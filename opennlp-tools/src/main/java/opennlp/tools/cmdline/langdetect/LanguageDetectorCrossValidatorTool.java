@@ -41,9 +41,6 @@ public final class LanguageDetectorCrossValidatorTool extends
     AbstractCrossValidatorTool<LanguageSample,
         LanguageDetectorCrossValidatorTool.CVToolParams> {
 
-  interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
-  }
-
   public LanguageDetectorCrossValidatorTool() {
     super(LanguageSample.class, CVToolParams.class);
   }
@@ -119,5 +116,8 @@ public final class LanguageDetectorCrossValidatorTool extends
 
     System.out.println("Accuracy: " + validator.getDocumentAccuracy() + "\n" +
         "Number of documents: " + validator.getDocumentCount());
+  }
+
+  interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
   }
 }

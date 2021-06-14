@@ -37,18 +37,6 @@ public class TokenTag {
     }
   }
 
-  public String getToken() {
-    return token;
-  }
-
-  public String getTag() {
-    return tag;
-  }
-
-  public String[] getAddtionalData() {
-    return addtionalData;
-  }
-
   public static String[] extractTokens(TokenTag[] tuples) {
     String[] tokens = new String[tuples.length];
     for (int i = 0; i < tuples.length; i++) {
@@ -73,6 +61,18 @@ public class TokenTag {
       tuples[i] = new TokenTag(toks[i], tags[i], null);
     }
     return tuples;
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public String getTag() {
+    return tag;
+  }
+
+  public String[] getAddtionalData() {
+    return addtionalData;
   }
 
   @Override

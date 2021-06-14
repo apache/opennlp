@@ -24,7 +24,7 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
  * Common evaluation parameters.
- *
+ * <p>
  * Note: Do not use this class, internal use only!
  */
 public interface EvaluatorParams {

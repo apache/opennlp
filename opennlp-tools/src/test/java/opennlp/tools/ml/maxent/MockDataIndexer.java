@@ -70,7 +70,7 @@ public class MockDataIndexer implements DataIndexer {
 
   @Override
   public void init(TrainingParameters trainParams,
-      Map<String, String> reportMap) {
+                   Map<String, String> reportMap) {
   }
 
   @Override

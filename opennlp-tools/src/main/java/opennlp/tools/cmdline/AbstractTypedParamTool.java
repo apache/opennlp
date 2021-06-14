@@ -30,7 +30,7 @@ public abstract class AbstractTypedParamTool<T, P> extends TypedCmdLineTool<T> {
   /**
    * Constructor with type parameters.
    *
-   * @param sampleType class of the template parameter
+   * @param sampleType  class of the template parameter
    * @param paramsClass interface with parameters
    */
   protected AbstractTypedParamTool(Class<T> sampleType, Class<P> paramsClass) {

@@ -25,8 +25,8 @@ import java.io.StringReader;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringList;
 
 /**
  * Tests for the {@link Dictionary} class.
@@ -128,7 +128,7 @@ public class DictionaryTest {
     Assert.assertTrue(dictionay.size() == 4);
     Assert.assertTrue(dictionay.contains(new StringList("1a", "1b", "1c", "1d")));
     Assert.assertTrue(dictionay.contains(new StringList("2a", "2b", "2c")));
-    Assert.assertTrue(dictionay.contains(new StringList(new String[]{"3a"})));
+    Assert.assertTrue(dictionay.contains(new StringList(new String[] {"3a"})));
     Assert.assertTrue(dictionay.contains(new StringList("4a", "4b")));
   }
 

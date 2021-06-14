@@ -29,16 +29,15 @@ import java.util.Objects;
  */
 public class LemmaSample implements Serializable {
 
-  private List<String> tokens;
-
-  private List<String> tags;
-
   private final List<String> lemmas;
+  private List<String> tokens;
+  private List<String> tags;
 
   /**
    * Represents one lemma sample.
+   *
    * @param tokens the token
-   * @param tags the postags
+   * @param tags   the postags
    * @param lemmas the lemmas
    */
   public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
@@ -52,8 +51,9 @@ public class LemmaSample implements Serializable {
 
   /**
    * Lemma Sample constructor.
+   *
    * @param tokens the tokens
-   * @param tags the postags
+   * @param tags   the postags
    * @param lemmas the lemmas
    */
   public LemmaSample(List<String> tokens, List<String> tags, List<String> lemmas) {
@@ -94,7 +94,7 @@ public class LemmaSample implements Serializable {
 
     for (int ci = 0; ci < lemmas.size(); ci++) {
       lemmaString.append(tokens.get(ci)).append("\t").append(tags.get(ci))
-           .append("\t").append(lemmas.get(ci)).append("\n");
+          .append("\t").append(lemmas.get(ci)).append("\n");
     }
     return lemmaString.toString();
   }

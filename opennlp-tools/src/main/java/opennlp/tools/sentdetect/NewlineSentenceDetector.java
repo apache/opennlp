@@ -20,7 +20,7 @@ package opennlp.tools.sentdetect;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * The Newline Sentence Detector assumes that sentences are line delimited and

@@ -28,7 +28,6 @@ public class ObjectStreamUtils {
    *
    * @param <T>
    * @param array
-   *
    * @return the object stream over the array elements
    */
   @SafeVarargs
@@ -59,7 +58,6 @@ public class ObjectStreamUtils {
    *
    * @param <T>
    * @param collection
-   *
    * @return the object stream over the collection elements
    */
   public static <T> ObjectStream<T> createObjectStream(final Collection<T> collection) {

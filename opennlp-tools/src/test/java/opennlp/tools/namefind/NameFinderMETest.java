@@ -24,11 +24,12 @@ import java.util.Collections;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.namefind.TokenNameFinder;
+import opennlp.common.util.Span;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -63,7 +64,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream =
         new NameSampleDataStream(
             new PlainTextByLineStream(new MockInputStreamFactory(
-              new File("opennlp/tools/namefind/AnnotatedSentences.txt")), encoding));
+                new File("opennlp/tools/namefind/AnnotatedSentences.txt")), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -121,7 +122,7 @@ public class NameFinderMETest {
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")), encoding));
+            new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -134,8 +135,8 @@ public class NameFinderMETest {
 
     // now test if it can detect the sample sentences
 
-    String[] sentence2 = new String[] { "Hi", "Mike", ",", "it's", "Stefanie",
-        "Schmidt", "." };
+    String[] sentence2 = new String[] {"Hi", "Mike", ",", "it's", "Stefanie",
+        "Schmidt", "."};
 
     Span[] names2 = nameFinder.find(sentence2);
 
@@ -145,8 +146,8 @@ public class NameFinderMETest {
     Assert.assertEquals("person", names2[0].getType());
     Assert.assertEquals("person", names2[1].getType());
 
-    String[] sentence = { "Alisa", "appreciated", "the", "hint", "and",
-        "enjoyed", "a", "delicious", "traditional", "meal." };
+    String[] sentence = {"Alisa", "appreciated", "the", "hint", "and",
+        "enjoyed", "a", "delicious", "traditional", "meal."};
 
     Span[] names = nameFinder.find(sentence);
 
@@ -164,22 +165,22 @@ public class NameFinderMETest {
 
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-            new PlainTextByLineStream(new MockInputStreamFactory(
-              new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
+        new PlainTextByLineStream(new MockInputStreamFactory(
+            new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
-            params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
+        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
 
     String[] sentence = ("Neil Abercrombie Anibal Acevedo-Vila Gary Ackerman " +
-            "Robert Aderholt Daniel Akaka Todd Akin Lamar Alexander Rodney Alexander").split("\\s+");
+        "Robert Aderholt Daniel Akaka Todd Akin Lamar Alexander Rodney Alexander").split("\\s+");
 
     Span[] names1 = nameFinder.find(sentence);
 
@@ -195,7 +196,7 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
+            new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -230,7 +231,7 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), StandardCharsets.UTF_8));
+            new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -265,7 +266,7 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train")), StandardCharsets.UTF_8));
+            new File("opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
@@ -302,7 +303,7 @@ public class NameFinderMETest {
 
   @Test
   public void testDropOverlappingSpans() {
-    Span[] spans = new Span[] {new Span(1, 10), new Span(1,11), new Span(1,11), new Span(5, 15)};
+    Span[] spans = new Span[] {new Span(1, 10), new Span(1, 11), new Span(1, 11), new Span(5, 15)};
     Span[] remainingSpan = NameFinderME.dropOverlappingSpans(spans);
     Assert.assertEquals(new Span(1, 11), remainingSpan[0]);
   }
@@ -317,7 +318,7 @@ public class NameFinderMETest {
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
+            new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -330,12 +331,12 @@ public class NameFinderMETest {
 
     // now test if it can detect the sample sentences
 
-    String[] sentence = new String[] { "U", ".", "S", ".", "President",
+    String[] sentence = new String[] {"U", ".", "S", ".", "President",
         "Barack", "Obama", "has", "arrived", "in", "South", "Korea", ",",
         "where", "he", "is", "expected", "to", "show", "solidarity", "with",
         "the", "country", "'", "s", "president", "in", "demanding", "North",
         "Korea", "move", "toward", "ending", "its", "nuclear", "weapons",
-        "programs", "." };
+        "programs", "."};
 
     Span[] names1 = nameFinder.find(sentence);
 
@@ -348,8 +349,8 @@ public class NameFinderMETest {
     Assert.assertEquals("location", names1[2].getType());
     Assert.assertEquals("location", names1[3].getType());
 
-    sentence = new String[] { "Scott", "Snyder", "is", "the", "director", "of",
-        "the", "Center", "for", "U", ".", "S", ".", "Korea", "Policy", "." };
+    sentence = new String[] {"Scott", "Snyder", "is", "the", "director", "of",
+        "the", "Center", "for", "U", ".", "S", ".", "Korea", "Policy", "."};
 
     Span[] names2 = nameFinder.find(sentence);
 

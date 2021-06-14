@@ -33,12 +33,6 @@ import opennlp.tools.util.ext.ExtensionNotLoadedException;
 
 public class TrainerFactory {
 
-  public enum TrainerType {
-    EVENT_MODEL_TRAINER,
-    EVENT_MODEL_SEQUENCE_TRAINER,
-    SEQUENCE_TRAINER
-  }
-
   // built-in trainers
   private static final Map<String, Class> BUILTIN_TRAINERS;
 
@@ -62,7 +56,7 @@ public class TrainerFactory {
    */
   public static TrainerType getTrainerType(TrainingParameters trainParams) {
 
-    String algorithmValue = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
+    String algorithmValue = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM, null);
 
     // Check if it is defaulting to the MAXENT trainer
     if (algorithmValue == null) {
@@ -75,11 +69,9 @@ public class TrainerFactory {
 
       if (EventTrainer.class.isAssignableFrom(trainerClass)) {
         return TrainerType.EVENT_MODEL_TRAINER;
-      }
-      else if (EventModelSequenceTrainer.class.isAssignableFrom(trainerClass)) {
+      } else if (EventModelSequenceTrainer.class.isAssignableFrom(trainerClass)) {
         return TrainerType.EVENT_MODEL_SEQUENCE_TRAINER;
-      }
-      else if (SequenceTrainer.class.isAssignableFrom(trainerClass)) {
+      } else if (SequenceTrainer.class.isAssignableFrom(trainerClass)) {
         return TrainerType.SEQUENCE_TRAINER;
       }
     }
@@ -89,24 +81,21 @@ public class TrainerFactory {
     try {
       ExtensionLoader.instantiateExtension(EventTrainer.class, algorithmValue);
       return TrainerType.EVENT_MODEL_TRAINER;
-    }
-    catch (ExtensionNotLoadedException ignored) {
+    } catch (ExtensionNotLoadedException ignored) {
       // this is ignored
     }
 
     try {
       ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, algorithmValue);
       return TrainerType.EVENT_MODEL_SEQUENCE_TRAINER;
-    }
-    catch (ExtensionNotLoadedException ignored) {
+    } catch (ExtensionNotLoadedException ignored) {
       // this is ignored
     }
 
     try {
       ExtensionLoader.instantiateExtension(SequenceTrainer.class, algorithmValue);
       return TrainerType.SEQUENCE_TRAINER;
-    }
-    catch (ExtensionNotLoadedException ignored) {
+    } catch (ExtensionNotLoadedException ignored) {
       // this is ignored
     }
 
@@ -114,12 +103,12 @@ public class TrainerFactory {
   }
 
   public static SequenceTrainer getSequenceModelTrainer(TrainingParameters trainParams,
-      Map<String, String> reportMap) {
-    String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
+                                                        Map<String, String> reportMap) {
+    String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM, null);
 
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        SequenceTrainer trainer =  TrainerFactory.<SequenceTrainer>createBuiltinTrainer(
+        SequenceTrainer trainer = TrainerFactory.<SequenceTrainer>createBuiltinTrainer(
             BUILTIN_TRAINERS.get(trainerType));
         trainer.init(trainParams, reportMap);
         return trainer;
@@ -129,15 +118,14 @@ public class TrainerFactory {
         trainer.init(trainParams, reportMap);
         return trainer;
       }
-    }
-    else {
+    } else {
       throw new IllegalArgumentException("Trainer type couldn't be determined!");
     }
   }
 
   public static EventModelSequenceTrainer getEventModelSequenceTrainer(TrainingParameters trainParams,
-      Map<String, String> reportMap) {
-    String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
+                                                                       Map<String, String> reportMap) {
+    String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM, null);
 
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
@@ -151,17 +139,16 @@ public class TrainerFactory {
         trainer.init(trainParams, reportMap);
         return trainer;
       }
-    }
-    else {
+    } else {
       throw new IllegalArgumentException("Trainer type couldn't be determined!");
     }
   }
 
   public static EventTrainer getEventTrainer(TrainingParameters trainParams,
-      Map<String, String> reportMap) {
+                                             Map<String, String> reportMap) {
 
     // if the trainerType is not defined -- use the GISTrainer.
-    String trainerType = 
+    String trainerType =
         trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
 
     if (BUILTIN_TRAINERS.containsKey(trainerType)) {
@@ -180,7 +167,7 @@ public class TrainerFactory {
   public static boolean isValid(TrainingParameters trainParams) {
 
     // TODO: Need to validate all parameters correctly ... error prone?!
-    String algorithmName = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
+    String algorithmName = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM, null);
 
     // If a trainer type can be determined, then the trainer is valid!
     if (algorithmName != null &&
@@ -193,8 +180,7 @@ public class TrainerFactory {
       // if they are not set, the default values will be ok.
       trainParams.getIntParameter(AbstractTrainer.CUTOFF_PARAM, 0);
       trainParams.getIntParameter(AbstractTrainer.ITERATIONS_PARAM, 0);
-    }
-    catch (NumberFormatException e) {
+    } catch (NumberFormatException e) {
       return false;
     }
 
@@ -222,5 +208,11 @@ public class TrainerFactory {
     }
 
     return theTrainer;
+  }
+
+  public enum TrainerType {
+    EVENT_MODEL_TRAINER,
+    EVENT_MODEL_SEQUENCE_TRAINER,
+    SEQUENCE_TRAINER
   }
 }

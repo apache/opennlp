@@ -28,6 +28,39 @@ public class QNModel extends AbstractModel {
     this.modelType = ModelType.MaxentQn;
   }
 
+  /**
+   * Model evaluation which should be used during training to report model accuracy.
+   *
+   * @param context     Indices of the predicates which have been observed at the present
+   *                    decision point.
+   * @param values      Weights of the predicates which have been observed at
+   *                    the present decision point.
+   * @param probs       Probability for outcomes
+   * @param nOutcomes   Number of outcomes
+   * @param nPredLabels Number of unique predicates
+   * @param parameters  Model parameters
+   * @return Normalized probabilities for the outcomes given the context.
+   */
+  static double[] eval(int[] context, float[] values, double[] probs,
+                       int nOutcomes, int nPredLabels, double[] parameters) {
+
+    for (int i = 0; i < context.length; i++) {
+      int predIdx = context[i];
+      double predValue = values != null ? values[i] : 1.0;
+      for (int oi = 0; oi < nOutcomes; oi++) {
+        probs[oi] += predValue * parameters[oi * nPredLabels + predIdx];
+      }
+    }
+
+    double logSumExp = ArrayMath.logSumOfExps(probs);
+
+    for (int oi = 0; oi < nOutcomes; oi++) {
+      probs[oi] = StrictMath.exp(probs[oi] - logSumExp);
+    }
+
+    return probs;
+  }
+
   public int getNumOutcomes() {
     return this.outcomeNames.length;
   }
@@ -50,14 +83,12 @@ public class QNModel extends AbstractModel {
 
   /**
    * Model evaluation which should be used during inference.
-   * @param context
-   *          The predicates which have been observed at the present
-   *          decision point.
-   * @param values
-   *          Weights of the predicates which have been observed at
-   *          the present decision point.
-   * @param probs
-   *          Probability for outcomes.
+   *
+   * @param context The predicates which have been observed at the present
+   *                decision point.
+   * @param values  Weights of the predicates which have been observed at
+   *                the present decision point.
+   * @param probs   Probability for outcomes.
    * @return Normalized probabilities for the outcomes given the context.
    */
   private double[] eval(String[] context, float[] values, double[] probs) {
@@ -82,44 +113,6 @@ public class QNModel extends AbstractModel {
     for (int oi = 0; oi < outcomeNames.length; oi++) {
       probs[oi] = StrictMath.exp(probs[oi] - logSumExp);
     }
-    return probs;
-  }
-
-  /**
-   * Model evaluation which should be used during training to report model accuracy.
-   * @param context
-   *          Indices of the predicates which have been observed at the present
-   *          decision point.
-   * @param values
-   *          Weights of the predicates which have been observed at
-   *          the present decision point.
-   * @param probs
-   *          Probability for outcomes
-   * @param nOutcomes
-   *          Number of outcomes
-   * @param nPredLabels
-   *          Number of unique predicates
-   * @param parameters
-   *          Model parameters
-   * @return Normalized probabilities for the outcomes given the context.
-   */
-  static double[] eval(int[] context, float[] values, double[] probs,
-      int nOutcomes, int nPredLabels, double[] parameters) {
-
-    for (int i = 0; i < context.length; i++) {
-      int predIdx = context[i];
-      double predValue = values != null ? values[i] : 1.0;
-      for (int oi = 0; oi < nOutcomes; oi++) {
-        probs[oi] += predValue * parameters[oi * nPredLabels + predIdx];
-      }
-    }
-
-    double logSumExp = ArrayMath.logSumOfExps(probs);
-
-    for (int oi = 0; oi < nOutcomes; oi++) {
-      probs[oi] = StrictMath.exp(probs[oi] - logSumExp);
-    }
-
     return probs;
   }
 }

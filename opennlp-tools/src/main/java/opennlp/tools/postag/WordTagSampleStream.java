@@ -42,11 +42,11 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
   /**
    * Parses the next sentence and return the next
    * {@link POSSample} object.
-   *
+   * <p>
    * If an error occurs an empty {@link POSSample} object is returned
    * and an warning message is logged. Usually it does not matter if one
    * of many sentences is ignored.
-   *
+   * <p>
    * TODO: An exception in error case should be thrown.
    */
   public POSSample read() throws IOException {
@@ -60,12 +60,11 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
       } catch (InvalidFormatException e) {
         System.out.println("Error during parsing, ignoring sentence: " + sentence);
 
-        sample = new POSSample(new String[]{}, new String[]{});
+        sample = new POSSample(new String[] {}, new String[] {});
       }
 
       return sample;
-    }
-    else {
+    } else {
       // sentences stream is exhausted
       return null;
     }

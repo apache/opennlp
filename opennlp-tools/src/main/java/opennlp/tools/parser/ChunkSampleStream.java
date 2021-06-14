@@ -35,8 +35,7 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
   private static void getInitialChunks(Parse p, List<Parse> ichunks) {
     if (p.isPosTag()) {
       ichunks.add(p);
-    }
-    else {
+    } else {
       Parse[] kids = p.getChildren();
       boolean allKidsAreTags = true;
       for (Parse kid : kids) {
@@ -47,8 +46,7 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
       }
       if (allKidsAreTags) {
         ichunks.add(p);
-      }
-      else {
+      } else {
         for (Parse kid : kids) {
           getInitialChunks(kid, ichunks);
         }
@@ -96,8 +94,7 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
       return new ChunkSample(toks.toArray(new String[toks.size()]),
           tags.toArray(new String[tags.size()]),
           preds.toArray(new String[preds.size()]));
-    }
-    else {
+    } else {
       return null;
     }
   }

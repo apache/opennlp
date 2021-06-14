@@ -26,7 +26,7 @@ import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
  * Base class for all tool factories.
- *
+ * <p>
  * Extensions of this class should:
  * <ul>
  *  <li>implement an empty constructor (TODO is it necessary?)
@@ -44,6 +44,42 @@ public abstract class BaseToolFactory {
    * All sub-classes should have an empty constructor
    */
   public BaseToolFactory() {
+  }
+
+  public static BaseToolFactory create(String subclassName,
+                                       ArtifactProvider artifactProvider) throws InvalidFormatException {
+    BaseToolFactory theFactory;
+
+    try {
+      // load the ToolFactory using the default constructor
+      theFactory = ExtensionLoader.instantiateExtension(BaseToolFactory.class, subclassName);
+
+      if (theFactory != null) {
+        theFactory.init(artifactProvider);
+      }
+    } catch (Exception e) {
+      String msg = "Could not instantiate the " + subclassName
+          + ". The initialization throw an exception.";
+      throw new InvalidFormatException(msg, e);
+    }
+    return theFactory;
+  }
+
+  public static BaseToolFactory create(Class<? extends BaseToolFactory> factoryClass,
+                                       ArtifactProvider artifactProvider) throws InvalidFormatException {
+    BaseToolFactory theFactory = null;
+    if (factoryClass != null) {
+      try {
+        theFactory = factoryClass.newInstance();
+        theFactory.init(artifactProvider);
+      } catch (Exception e) {
+        String msg = "Could not instantiate the "
+            + factoryClass.getCanonicalName()
+            + ". The initialization throw an exception.";
+        throw new InvalidFormatException(msg, e);
+      }
+    }
+    return theFactory;
   }
 
   /**
@@ -90,7 +126,7 @@ public abstract class BaseToolFactory {
   /**
    * Validates the parsed artifacts. If something is not
    * valid subclasses should throw an {@link InvalidFormatException}.
-   *
+   * <p>
    * Note:
    * Subclasses should generally invoke super.validateArtifactMap at the beginning
    * of this method.
@@ -98,40 +134,4 @@ public abstract class BaseToolFactory {
    * @throws InvalidFormatException
    */
   public abstract void validateArtifactMap() throws InvalidFormatException;
-
-  public static BaseToolFactory create(String subclassName,
-      ArtifactProvider artifactProvider) throws InvalidFormatException {
-    BaseToolFactory theFactory;
-
-    try {
-      // load the ToolFactory using the default constructor
-      theFactory = ExtensionLoader.instantiateExtension(BaseToolFactory.class, subclassName);
-
-      if (theFactory != null) {
-        theFactory.init(artifactProvider);
-      }
-    } catch (Exception e) {
-      String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      throw new InvalidFormatException(msg, e);
-    }
-    return theFactory;
-  }
-
-  public static BaseToolFactory create(Class<? extends BaseToolFactory> factoryClass,
-      ArtifactProvider artifactProvider) throws InvalidFormatException {
-    BaseToolFactory theFactory = null;
-    if (factoryClass != null) {
-      try {
-        theFactory = factoryClass.newInstance();
-        theFactory.init(artifactProvider);
-      } catch (Exception e) {
-        String msg = "Could not instantiate the "
-            + factoryClass.getCanonicalName()
-            + ". The initialization throw an exception.";
-        throw new InvalidFormatException(msg, e);
-      }
-    }
-    return theFactory;
-  }
 }

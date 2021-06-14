@@ -48,10 +48,6 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public final class TokenNameFinderCrossValidatorTool
     extends AbstractCrossValidatorTool<NameSample, CVToolParams> {
 
-  interface CVToolParams extends TrainingParams, CVParams,
-      DetailedFMeasureEvaluatorParams, FineGrainedEvaluatorParams {
-  }
-
   public TokenNameFinderCrossValidatorTool() {
     super(NameSample.class, CVToolParams.class);
   }
@@ -75,9 +71,8 @@ public final class TokenNameFinderCrossValidatorTool
 
     try {
       resources = TokenNameFinderTrainerTool.loadResources(params.getResources(), params.getFeaturegen());
-    }
-    catch (IOException e) {
-      throw new TerminateToolException(-1,"IO error while loading resources", e);
+    } catch (IOException e) {
+      throw new TerminateToolException(-1, "IO error while loading resources", e);
     }
 
     if (params.getNameTypes() != null) {
@@ -99,8 +94,7 @@ public final class TokenNameFinderCrossValidatorTool
 
     if ("BIO".equals(sequenceCodecImplName)) {
       sequenceCodecImplName = BioCodec.class.getName();
-    }
-    else if ("BILOU".equals(sequenceCodecImplName)) {
+    } else if ("BILOU".equals(sequenceCodecImplName)) {
       sequenceCodecImplName = BilouCodec.class.getName();
     }
 
@@ -163,5 +157,9 @@ public final class TokenNameFinderCrossValidatorTool
     } else {
       System.out.println(detailedFListener);
     }
+  }
+
+  interface CVToolParams extends TrainingParams, CVParams,
+      DetailedFMeasureEvaluatorParams, FineGrainedEvaluatorParams {
   }
 }

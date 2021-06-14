@@ -31,16 +31,13 @@ import opennlp.tools.util.ObjectStream;
  */
 public class NameToTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
 
-  interface Parameters extends NameSampleDataStreamFactory.Parameters, DetokenizerParameter {
+  protected <P> NameToTokenSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
         "namefinder", new NameToTokenSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> NameToTokenSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<TokenSample> create(String[] args) {
@@ -50,5 +47,8 @@ public class NameToTokenSampleStreamFactory extends DetokenizerSampleStreamFacto
         NameSample.class, StreamFactoryRegistry.DEFAULT_FORMAT).create(
         ArgumentParser.filter(args, NameSampleDataStreamFactory.Parameters.class));
     return new NameToTokenSampleStream(createDetokenizer(params), nameSampleStream);
+  }
+
+  interface Parameters extends NameSampleDataStreamFactory.Parameters, DetokenizerParameter {
   }
 }

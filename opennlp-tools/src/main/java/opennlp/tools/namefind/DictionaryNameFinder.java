@@ -21,9 +21,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import opennlp.common.namefind.TokenNameFinder;
+import opennlp.common.util.Span;
+import opennlp.common.util.StringList;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringList;
 
 /**
  * This is a dictionary based name finder, it scans text
@@ -32,16 +33,15 @@ import opennlp.tools.util.StringList;
 public class DictionaryNameFinder implements TokenNameFinder {
 
   private static final String DEFAULT_TYPE = "default";
-
-  private Dictionary mDictionary;
   private final String type;
+  private Dictionary mDictionary;
 
   /**
    * Initialized the current instance with he provided dictionary
    * and a type.
    *
    * @param dictionary
-   * @param type the name type used for the produced spans
+   * @param type       the name type used for the produced spans
    */
   public DictionaryNameFinder(Dictionary dictionary, String type) {
     mDictionary = Objects.requireNonNull(dictionary, "dictionary must not be null");

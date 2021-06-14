@@ -36,15 +36,13 @@ import opennlp.tools.util.ObjectStream;
 abstract class ModelUpdaterTool
     extends AbstractTypedParamTool<Parse, ModelUpdaterTool.ModelUpdaterParams> {
 
-  interface ModelUpdaterParams extends TrainingToolParams {
-  }
-
   protected ModelUpdaterTool() {
     super(Parse.class, ModelUpdaterParams.class);
   }
 
   protected abstract ParserModel trainAndUpdate(ParserModel originalModel,
-      ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
+                                                ObjectStream<Parse> parseSamples,
+                                                ModelUpdaterParams parameters)
       throws IOException;
 
   public final void run(String format, String[] args) {
@@ -63,12 +61,10 @@ abstract class ModelUpdaterTool
     ParserModel updatedParserModel;
     try {
       updatedParserModel = trainAndUpdate(originalParserModel, sampleStream, params);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
           + e.getMessage(), e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -77,5 +73,8 @@ abstract class ModelUpdaterTool
     }
 
     CmdLineUtil.writeModel("parser", modelFile, updatedParserModel);
+  }
+
+  interface ModelUpdaterParams extends TrainingToolParams {
   }
 }

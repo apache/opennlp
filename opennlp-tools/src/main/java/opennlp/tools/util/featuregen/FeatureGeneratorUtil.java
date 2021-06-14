@@ -50,6 +50,7 @@ public class FeatureGeneratorUtil {
    * <li>ic - initial capital letter </li>
    * <li>other - other </li>
    * </ul>
+   *
    * @param token A token or word.
    * @return The class name that the specified token belongs in.
    */
@@ -60,54 +61,39 @@ public class FeatureGeneratorUtil {
     String feat;
     if (pattern.isAllHiragana()) {
       feat = "jah";
-    }
-    else if (pattern.isAllKatakana()) {
+    } else if (pattern.isAllKatakana()) {
       feat = "jak";
-    }
-    else if (pattern.isAllLowerCaseLetter()) {
+    } else if (pattern.isAllLowerCaseLetter()) {
       feat = "lc";
-    }
-    else if (pattern.digits() == 2) {
+    } else if (pattern.digits() == 2) {
       feat = "2d";
-    }
-    else if (pattern.digits() == 4) {
+    } else if (pattern.digits() == 4) {
       feat = "4d";
-    }
-    else if (pattern.containsDigit()) {
+    } else if (pattern.containsDigit()) {
       if (pattern.containsLetters()) {
         feat = "an";
-      }
-      else if (pattern.containsHyphen()) {
+      } else if (pattern.containsHyphen()) {
         feat = "dd";
-      }
-      else if (pattern.containsSlash()) {
+      } else if (pattern.containsSlash()) {
         feat = "ds";
-      }
-      else if (pattern.containsComma()) {
+      } else if (pattern.containsComma()) {
         feat = "dc";
-      }
-      else if (pattern.containsPeriod()) {
+      } else if (pattern.containsPeriod()) {
         feat = "dp";
-      }
-      else {
+      } else {
         feat = "num";
       }
-    }
-    else if (pattern.isAllCapitalLetter()) {
+    } else if (pattern.isAllCapitalLetter()) {
       if (token.length() == 1) {
         feat = "sc";
-      }
-      else {
+      } else {
         feat = "ac";
       }
-    }
-    else if (capPeriod.matcher(token).find()) {
+    } else if (capPeriod.matcher(token).find()) {
       feat = "cp";
-    }
-    else if (pattern.isInitialCapitalLetter()) {
+    } else if (pattern.isInitialCapitalLetter()) {
       feat = "ic";
-    }
-    else {
+    } else {
       feat = "other";
     }
 

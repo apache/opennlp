@@ -24,7 +24,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * This is the test class for {@link BilouCodec}.
@@ -61,7 +61,7 @@ public class BilouCodecTest {
   @Test
   public void testEncodeSingleUnitTokenSpan() {
     String[] sentence = "I called Julie again.".split(" ");
-    Span[] singleSpan = new Span[] { new Span(2,3, A_TYPE)};
+    Span[] singleSpan = new Span[] {new Span(2, 3, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, singleSpan, true);
     String[] expected = new String[] {OTHER, OTHER, A_UNIT, OTHER};
     String[] acutal = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
@@ -71,7 +71,7 @@ public class BilouCodecTest {
   @Test
   public void testEncodeDoubleTokenSpan() {
     String[] sentence = "I saw Stefanie Schmidt today.".split(" ");
-    Span[] singleSpan = new Span[] { new Span(2,4, A_TYPE)};
+    Span[] singleSpan = new Span[] {new Span(2, 4, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, singleSpan, true);
     String[] expected = new String[] {OTHER, OTHER, A_START, A_LAST, OTHER};
     String[] acutal = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
@@ -82,7 +82,7 @@ public class BilouCodecTest {
   @Test
   public void testEncodeTripleTokenSpan() {
     String[] sentence = "Secretary - General Anders Fogh Rasmussen is from Denmark.".split(" ");
-    Span[] singleSpan = new Span[] { new Span(3,6, A_TYPE)};
+    Span[] singleSpan = new Span[] {new Span(3, 6, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, singleSpan, true);
     String[] expected = new String[] {OTHER, OTHER, OTHER, A_START, A_CONTINUE,
         A_LAST, OTHER, OTHER, OTHER};
@@ -94,7 +94,7 @@ public class BilouCodecTest {
   @Test
   public void testEncodeAdjacentUnitSpans() {
     String[] sentence = "word PersonA PersonB word".split(" ");
-    Span[] singleSpan = new Span[] { new Span(1,2, A_TYPE), new Span(2, 3, A_TYPE)};
+    Span[] singleSpan = new Span[] {new Span(1, 2, A_TYPE), new Span(2, 3, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, singleSpan, true);
     String[] expected = new String[] {OTHER, A_UNIT, A_UNIT, OTHER};
     String[] acutal = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
@@ -120,7 +120,7 @@ public class BilouCodecTest {
   public void testDecodeSingletonFirst() {
 
     List<String> encoded = Arrays.asList(A_UNIT, OTHER);
-    Span[] expected = new Span[] {new Span(0,1, A_TYPE)};
+    Span[] expected = new Span[] {new Span(0, 1, A_TYPE)};
     Span[] actual = codec.decode(encoded);
     Assert.assertArrayEquals(expected, actual);
   }
@@ -201,7 +201,7 @@ public class BilouCodecTest {
     List<String> encoded = Arrays.asList(OTHER, A_START, A_CONTINUE, A_LAST, OTHER,
         B_START, B_LAST, OTHER, C_UNIT, OTHER);
     Span[] expected = new Span[] {new Span(1, 4, A_TYPE),
-        new Span(5, 7, B_TYPE), new Span(8,9, C_TYPE)};
+        new Span(5, 7, B_TYPE), new Span(8, 9, C_TYPE)};
     Span[] actual = codec.decode(encoded);
     Assert.assertArrayEquals(expected, actual);
   }
@@ -278,7 +278,7 @@ public class BilouCodecTest {
 
   /**
    * Doubles and doubles in combination with other valid type (unit/start+last)
-   *
+   * <p>
    * B-Start, B-Continue => Fail
    * A-Unit, B-Start, B-Continue => Fail
    * A-Start, A-Last, B-Start, B-Continue => Fail
@@ -400,7 +400,7 @@ public class BilouCodecTest {
 
   /**
    * Triples and triples in combination with other valid type (unit/start+last)
-   *
+   * <p>
    * B-Start, B-Continue, B-Last => Pass
    * A-Unit, B-Start, B-Continue, B-Last => Pass
    * A-Start, A-Last, B-Start, B-Continue, B-Last => Pass
@@ -492,7 +492,7 @@ public class BilouCodecTest {
 
   /**
    * Quadruples and quadruple in combination of unit/start+last
-   *
+   * <p>
    * B-Start, B-Continue, B-Last, Other => Pass
    * A-Unit, B-Start, B-Continue, B-Last, Other => Pass
    * A-Start, A-Last, B-Start, B-Continue, B-Last, Other => Pass
@@ -540,7 +540,7 @@ public class BilouCodecTest {
 
   /**
    * Quintuple
-   *
+   * <p>
    * B-Start, B-Continue, B-Last, Other, B-Unit => Pass
    * A-Unit, B-Start, B-Continue, B-Last, Other, B-Unit => Pass
    * A-Staart, A-Last, B-Start, B-Continue, B-Last, Other, B-Unit => Pass
@@ -578,7 +578,6 @@ public class BilouCodecTest {
   public void testCompatibilityWrongClass() {
     Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, B_LAST, OTHER}));
   }
-
 
 
 }

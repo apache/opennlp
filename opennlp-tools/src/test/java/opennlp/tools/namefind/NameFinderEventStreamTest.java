@@ -22,10 +22,10 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.Span;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
-import opennlp.tools.util.Span;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 /**
@@ -38,7 +38,7 @@ public class NameFinderEventStreamTest {
       "."};
 
   private static final NameContextGenerator CG = new DefaultNameContextGenerator(
-          (AdaptiveFeatureGenerator[]) null);
+      (AdaptiveFeatureGenerator[]) null);
 
   /**
    * Tests the correctly generated outcomes for a test sentence.
@@ -47,7 +47,7 @@ public class NameFinderEventStreamTest {
   public void testOutcomesForSingleTypeSentence() throws IOException {
 
     NameSample nameSample = new NameSample(SENTENCE,
-        new Span[]{new Span(0, 2, "person")}, false);
+        new Span[] {new Span(0, 2, "person")}, false);
 
     try (ObjectStream<Event> eventStream = new NameFinderEventStream(
         ObjectStreamUtils.createObjectStream(nameSample))) {
@@ -73,15 +73,15 @@ public class NameFinderEventStreamTest {
     String type = "XYZ";
 
     NameSample nameSample = new NameSample(SENTENCE,
-            new Span[] { new Span(0, 2, "person") }, false);
+        new Span[] {new Span(0, 2, "person")}, false);
 
     ObjectStream<Event> eventStream = new NameFinderEventStream(
-            ObjectStreamUtils.createObjectStream(nameSample), type, CG, null);
+        ObjectStreamUtils.createObjectStream(nameSample), type, CG, null);
 
     String prefix = type + "-";
     Assert.assertEquals(prefix + NameFinderME.START, eventStream.read().getOutcome());
     Assert.assertEquals(prefix + NameFinderME.CONTINUE,
-            eventStream.read().getOutcome());
+        eventStream.read().getOutcome());
 
     for (int i = 0; i < 10; i++) {
       Assert.assertEquals(NameFinderME.OTHER, eventStream.read().getOutcome());
@@ -101,15 +101,15 @@ public class NameFinderEventStreamTest {
     String type = "XYZ";
 
     NameSample nameSample = new NameSample(SENTENCE,
-            new Span[] { new Span(0, 2) }, false);
+        new Span[] {new Span(0, 2)}, false);
 
     ObjectStream<Event> eventStream = new NameFinderEventStream(
-            ObjectStreamUtils.createObjectStream(nameSample), type, CG, null);
+        ObjectStreamUtils.createObjectStream(nameSample), type, CG, null);
 
     String prefix = type + "-";
     Assert.assertEquals(prefix + NameFinderME.START, eventStream.read().getOutcome());
     Assert.assertEquals(prefix + NameFinderME.CONTINUE,
-            eventStream.read().getOutcome());
+        eventStream.read().getOutcome());
 
     for (int i = 0; i < 10; i++) {
       Assert.assertEquals(NameFinderME.OTHER, eventStream.read().getOutcome());
@@ -128,15 +128,15 @@ public class NameFinderEventStreamTest {
   public void testOutcomesTypeEmpty() throws IOException {
 
     NameSample nameSample = new NameSample(SENTENCE,
-            new Span[] { new Span(0, 2) }, false);
+        new Span[] {new Span(0, 2)}, false);
 
     ObjectStream<Event> eventStream = new NameFinderEventStream(
-            ObjectStreamUtils.createObjectStream(nameSample), null, CG, null);
+        ObjectStreamUtils.createObjectStream(nameSample), null, CG, null);
 
     String prefix = "default-";
     Assert.assertEquals(prefix + NameFinderME.START, eventStream.read().getOutcome());
     Assert.assertEquals(prefix + NameFinderME.CONTINUE,
-            eventStream.read().getOutcome());
+        eventStream.read().getOutcome());
 
     for (int i = 0; i < 10; i++) {
       Assert.assertEquals(NameFinderME.OTHER, eventStream.read().getOutcome());

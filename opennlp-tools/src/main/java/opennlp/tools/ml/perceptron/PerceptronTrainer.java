@@ -33,44 +33,63 @@ import opennlp.tools.util.TrainingParameters;
  * average weighting as described in:
  * Discriminative Training Methods for Hidden Markov Models: Theory and Experiments
  * with the Perceptron Algorithm. Michael Collins, EMNLP 2002.
- *
  */
 public class PerceptronTrainer extends AbstractEventTrainer {
 
   public static final String PERCEPTRON_VALUE = "PERCEPTRON";
   public static final double TOLERANCE_DEFAULT = .00001;
 
-  /** Number of unique events which occurred in the event set. */
+  /**
+   * Number of unique events which occurred in the event set.
+   */
   private int numUniqueEvents;
-  /** Number of events in the event set. */
+  /**
+   * Number of events in the event set.
+   */
   private int numEvents;
 
-  /** Number of predicates. */
+  /**
+   * Number of predicates.
+   */
   private int numPreds;
-  /** Number of outcomes. */
+  /**
+   * Number of outcomes.
+   */
   private int numOutcomes;
-  /** Records the array of predicates seen in each event. */
+  /**
+   * Records the array of predicates seen in each event.
+   */
   private int[][] contexts;
 
-  /** The value associates with each context. If null then context values are assumes to be 1. */
+  /**
+   * The value associates with each context. If null then context values are assumes to be 1.
+   */
   private float[][] values;
 
-  /** List of outcomes for each event i, in context[i]. */
+  /**
+   * List of outcomes for each event i, in context[i].
+   */
   private int[] outcomeList;
 
-  /** Records the num of times an event has been seen for each event i, in context[i]. */
+  /**
+   * Records the num of times an event has been seen for each event i, in context[i].
+   */
   private int[] numTimesEventsSeen;
 
-  /** Stores the String names of the outcomes.  The GIS only tracks outcomes
-  as ints, and so this array is needed to save the model to disk and
-  thereby allow users to know what the outcome was in human
-  understandable terms. */
+  /**
+   * Stores the String names of the outcomes.  The GIS only tracks outcomes
+   * as ints, and so this array is needed to save the model to disk and
+   * thereby allow users to know what the outcome was in human
+   * understandable terms.
+   */
   private String[] outcomeLabels;
 
-  /** Stores the String names of the predicates. The GIS only tracks
-  predicates as ints, and so this array is needed to save the model to
-  disk and thereby allow users to know what the outcome was in human
-  understandable terms. */
+  /**
+   * Stores the String names of the predicates. The GIS only tracks
+   * predicates as ints, and so this array is needed to save the model to
+   * disk and thereby allow users to know what the outcome was in human
+   * understandable terms.
+   */
   private String[] predLabels;
 
   private double tolerance = TOLERANCE_DEFAULT;
@@ -84,6 +103,13 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   public PerceptronTrainer(TrainingParameters parameters) {
     super(parameters);
+  }
+
+  // See whether a number is a perfect square. Inefficient, but fine
+  // for our purposes.
+  private static boolean isPerfectSquare(int n) {
+    int root = (int) StrictMath.sqrt(n);
+    return root * root == n;
   }
 
   @Override
@@ -108,8 +134,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     String algorithmName = getAlgorithm();
     if (algorithmName != null) {
       return PERCEPTRON_VALUE.equals(algorithmName);
-    }
-    else {
+    } else {
       return true;
     }
   }
@@ -117,6 +142,8 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   public boolean isSortAndMerge() {
     return false;
   }
+
+  // << members related to AbstractSequenceTrainer
 
   public AbstractModel doTrain(DataIndexer indexer) throws IOException {
     int iterations = getIterations();
@@ -148,8 +175,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
     return model;
   }
-
-  // << members related to AbstractSequenceTrainer
 
   /**
    * Specifies the tolerance. If the change in training set accuracy
@@ -203,7 +228,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   }
 
   public AbstractModel trainModel(int iterations, DataIndexer di, int cutoff) {
-    return trainModel(iterations,di,cutoff,true);
+    return trainModel(iterations, di, cutoff, true);
   }
 
   public AbstractModel trainModel(int iterations, DataIndexer di, int cutoff, boolean useAverage) {
@@ -248,7 +273,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     /* Stores the estimated parameter value of each predicate during iteration. */
     MutableContext[] params = new MutableContext[numPreds];
     for (int pi = 0; pi < numPreds; pi++) {
-      params[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
+      params[pi] = new MutableContext(allOutcomesPattern, new double[numOutcomes]);
       for (int aoi = 0; aoi < numOutcomes; aoi++)
         params[pi].setParameter(aoi, 0.0);
     }
@@ -259,7 +284,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     MutableContext[] summedParams = new MutableContext[numPreds];
     if (useAverage) {
       for (int pi = 0; pi < numPreds; pi++) {
-        summedParams[pi] = new MutableContext(allOutcomesPattern,new double[numOutcomes]);
+        summedParams[pi] = new MutableContext(allOutcomesPattern, new double[numOutcomes]);
         for (int aoi = 0; aoi < numOutcomes; aoi++)
           summedParams[pi].setParameter(aoi, 0.0);
       }
@@ -385,7 +410,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
         double[] modelDistribution = new double[numOutcomes];
 
         if (values != null)
-          PerceptronModel.eval(contexts[ei], values[ei], modelDistribution, evalParams,false);
+          PerceptronModel.eval(contexts[ei], values[ei], modelDistribution, evalParams, false);
         else
           PerceptronModel.eval(contexts[ei], null, modelDistribution, evalParams, false);
 
@@ -409,13 +434,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       display(" " + i + ":  ");
     else
       display(i + ":  ");
-  }
-
-  // See whether a number is a perfect square. Inefficient, but fine
-  // for our purposes.
-  private static boolean isPerfectSquare(int n) {
-    int root = (int) StrictMath.sqrt(n);
-    return root * root == n;
   }
 
 }

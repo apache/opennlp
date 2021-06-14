@@ -18,7 +18,8 @@
 
 package opennlp.tools.namefind;
 
-import opennlp.tools.util.Span;
+import opennlp.common.namefind.TokenNameFinder;
+import opennlp.common.util.Span;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -46,24 +47,23 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
    * {@link TokenNameFinder}.
    *
    * @param nameFinder the {@link TokenNameFinder} to evaluate.
-   * @param listeners evaluation sample listeners
+   * @param listeners  evaluation sample listeners
    */
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder,
-      TokenNameFinderEvaluationMonitor ... listeners) {
+                                  TokenNameFinderEvaluationMonitor... listeners) {
     super(listeners);
     this.nameFinder = nameFinder;
   }
 
   /**
    * Evaluates the given reference {@link NameSample} object.
-   *
+   * <p>
    * This is done by finding the names with the
    * {@link TokenNameFinder} in the sentence from the reference
    * {@link NameSample}. The found names are then used to
    * calculate and update the scores.
    *
    * @param reference the reference {@link NameSample}.
-   *
    * @return the predicted {@link NameSample}.
    */
   @Override

@@ -50,8 +50,9 @@ public class BuildContextGenerator extends AbstractContextGenerator {
   /**
    * Returns the contexts/features for the decision to build a new constituent for the specified parse
    * at the specified index.
+   *
    * @param constituents The constituents of the parse so far.
-   * @param index The index of the constituent where a build decision is being made.
+   * @param index        The index of the constituent where a build decision is being made.
    * @return the contexts/features for the decision to build a new constituent.
    */
   public String[] getContext(Parse[] constituents, int index) {
@@ -65,7 +66,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     }
 
     Parse p2 = null;
-    if (index  + 2 < ps) {
+    if (index + 2 < ps) {
       p2 = constituents[index + 2];
     }
 
@@ -82,13 +83,12 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     List<Parse> rf;
     if (index == 0) {
       rf = Collections.emptyList();
-    }
-    else {
+    } else {
       //this isn't a root node so, punctSet won't be used and can be passed as empty.
       Set<String> emptyPunctSet = Collections.emptySet();
       rf = Parser.getRightFrontier(constituents[0], emptyPunctSet);
     }
-    getFrontierNodes(rf,leftNodes);
+    getFrontierNodes(rf, leftNodes);
     Parse p_1 = leftNodes[0];
     Parse p_2 = leftNodes[1];
 
@@ -109,11 +109,11 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     String consbop1 = consbo(p1, 1);
     String consbop2 = consbo(p2, 2);
 
-    Cons c_2 = new Cons(consp_2,consbop_2,-2,true);
-    Cons c_1 = new Cons(consp_1,consbop_1,-1,true);
-    Cons c0 = new Cons(consp0,consbop0,0,true);
-    Cons c1 = new Cons(consp1,consbop1,1,true);
-    Cons c2 = new Cons(consp2,consbop2,2,true);
+    Cons c_2 = new Cons(consp_2, consbop_2, -2, true);
+    Cons c_1 = new Cons(consp_1, consbop_1, -1, true);
+    Cons c0 = new Cons(consp0, consbop0, 0, true);
+    Cons c1 = new Cons(consp1, consbop1, 1, true);
+    Cons c2 = new Cons(consp2, consbop2, 2, true);
 
     List<String> features = new ArrayList<>();
     features.add("default");
@@ -131,13 +131,13 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     features.add(consbop2);
 
     //cons(0),cons(1)
-    cons2(features,c0,c1,punct1s,true);
+    cons2(features, c0, c1, punct1s, true);
     //cons(-1),cons(0)
-    cons2(features,c_1,c0,punct_1s,true);
+    cons2(features, c_1, c0, punct_1s, true);
     //features.add("stage=cons(0),cons(1),cons(2)");
-    cons3(features,c0,c1,c2,punct1s,punct2s,true,true,true);
-    cons3(features,c_2,c_1,c0,punct_2s,punct_1s,true,true,true);
-    cons3(features,c_1,c0,c1,punct_1s,punct_1s,true,true,true);
+    cons3(features, c0, c1, c2, punct1s, punct2s, true, true, true);
+    cons3(features, c_2, c_1, c0, punct_2s, punct_1s, true, true, true);
+    cons3(features, c_1, c0, c1, punct_1s, punct_1s, true, true, true);
 
     if (rf.isEmpty()) {
       features.add(EOS + "," + consp0);

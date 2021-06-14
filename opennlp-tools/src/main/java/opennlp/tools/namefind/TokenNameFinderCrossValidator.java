@@ -35,6 +35,98 @@ import opennlp.tools.util.eval.FMeasure;
 
 public class TokenNameFinderCrossValidator {
 
+  private final String languageCode;
+  private final TrainingParameters params;
+  private final String type;
+  private byte[] featureGeneratorBytes;
+  private Map<String, Object> resources;
+  private TokenNameFinderEvaluationMonitor[] listeners;
+  private FMeasure fmeasure = new FMeasure();
+  private TokenNameFinderFactory factory;
+
+  /**
+   * Name finder cross validator
+   *
+   * @param languageCode          the language of the training data
+   * @param type                  null or an override type for all types in the training data
+   * @param trainParams           machine learning train parameters
+   * @param featureGeneratorBytes descriptor to configure the feature generation or null
+   * @param listeners             a list of listeners
+   * @param resources             the resources for the name finder or null if none
+   */
+  public TokenNameFinderCrossValidator(String languageCode, String type,
+                                       TrainingParameters trainParams, byte[] featureGeneratorBytes,
+                                       Map<String, Object> resources, SequenceCodec<String> codec,
+                                       TokenNameFinderEvaluationMonitor... listeners) {
+
+    this.languageCode = languageCode;
+    this.type = type;
+    this.featureGeneratorBytes = featureGeneratorBytes;
+    this.resources = resources;
+    this.params = trainParams;
+    this.listeners = listeners;
+  }
+
+  public TokenNameFinderCrossValidator(String languageCode, String type,
+                                       TrainingParameters trainParams, byte[] featureGeneratorBytes,
+                                       Map<String, Object> resources,
+                                       TokenNameFinderEvaluationMonitor... listeners) {
+    this(languageCode, type, trainParams, featureGeneratorBytes, resources, new BioCodec(), listeners);
+  }
+
+  public TokenNameFinderCrossValidator(String languageCode, String type,
+                                       TrainingParameters trainParams, TokenNameFinderFactory factory,
+                                       TokenNameFinderEvaluationMonitor... listeners) {
+    this.languageCode = languageCode;
+    this.type = type;
+    this.params = trainParams;
+    this.factory = factory;
+    this.listeners = listeners;
+  }
+
+  /**
+   * Starts the evaluation.
+   *
+   * @param samples the data to train and test
+   * @param nFolds  number of folds
+   * @throws IOException
+   */
+  public void evaluate(ObjectStream<NameSample> samples, int nFolds)
+      throws IOException {
+
+    // Note: The name samples need to be grouped on a document basis.
+
+    CrossValidationPartitioner<DocumentSample> partitioner = new CrossValidationPartitioner<>(
+        new NameToDocumentSampleStream(samples), nFolds);
+
+    while (partitioner.hasNext()) {
+
+      CrossValidationPartitioner.TrainingSampleStream<DocumentSample> trainingSampleStream =
+          partitioner.next();
+
+      TokenNameFinderModel model;
+      if (factory != null) {
+        model = NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream),
+            params, factory);
+      } else {
+        model = NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream),
+            params, TokenNameFinderFactory.create(null, featureGeneratorBytes, resources, new BioCodec()));
+      }
+
+      // do testing
+      TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
+          new NameFinderME(model), listeners);
+
+      evaluator.evaluate(new DocumentToNameSampleStream(trainingSampleStream.getTestSampleStream()));
+
+      fmeasure.mergeInto(evaluator.getFMeasure());
+    }
+  }
+
+  public FMeasure getFMeasure() {
+    return fmeasure;
+  }
+
   private static class DocumentSample implements Serializable {
 
     private NameSample[] samples;
@@ -108,11 +200,11 @@ public class TokenNameFinderCrossValidator {
    */
   private static class DocumentToNameSampleStream extends FilterObjectStream<DocumentSample, NameSample> {
 
+    private Iterator<NameSample> documentSamples = Collections.<NameSample>emptyList().iterator();
+
     protected DocumentToNameSampleStream(ObjectStream<DocumentSample> samples) {
       super(samples);
     }
-
-    private Iterator<NameSample> documentSamples = Collections.<NameSample>emptyList().iterator();
 
     public NameSample read() throws IOException {
 
@@ -120,121 +212,17 @@ public class TokenNameFinderCrossValidator {
 
       if (documentSamples.hasNext()) {
         return documentSamples.next();
-      }
-      else {
+      } else {
         DocumentSample docSample = samples.read();
 
         if (docSample != null) {
           documentSamples = Arrays.asList(docSample.getSamples()).iterator();
 
           return read();
-        }
-        else {
+        } else {
           return null;
         }
       }
     }
-  }
-
-  private final String languageCode;
-  private final TrainingParameters params;
-  private final String type;
-  private byte[] featureGeneratorBytes;
-  private Map<String, Object> resources;
-  private TokenNameFinderEvaluationMonitor[] listeners;
-
-  private FMeasure fmeasure = new FMeasure();
-  private TokenNameFinderFactory factory;
-
-  /**
-   * Name finder cross validator
-   *
-   * @param languageCode
-   *          the language of the training data
-   * @param type
-   *          null or an override type for all types in the training data
-   * @param trainParams
-   *          machine learning train parameters
-   * @param featureGeneratorBytes
-   *          descriptor to configure the feature generation or null
-   * @param listeners
-   *          a list of listeners
-   * @param resources
-   *          the resources for the name finder or null if none
-   */
-  public TokenNameFinderCrossValidator(String languageCode, String type,
-      TrainingParameters trainParams, byte[] featureGeneratorBytes,
-      Map<String, Object> resources, SequenceCodec<String> codec,
-      TokenNameFinderEvaluationMonitor... listeners) {
-
-    this.languageCode = languageCode;
-    this.type = type;
-    this.featureGeneratorBytes = featureGeneratorBytes;
-    this.resources = resources;
-    this.params = trainParams;
-    this.listeners = listeners;
-  }
-
-  public TokenNameFinderCrossValidator(String languageCode, String type,
-      TrainingParameters trainParams, byte[] featureGeneratorBytes,
-      Map<String, Object> resources,
-      TokenNameFinderEvaluationMonitor... listeners) {
-    this(languageCode, type, trainParams, featureGeneratorBytes, resources, new BioCodec(), listeners);
-  }
-
-  public TokenNameFinderCrossValidator(String languageCode, String type,
-      TrainingParameters trainParams, TokenNameFinderFactory factory,
-      TokenNameFinderEvaluationMonitor... listeners) {
-    this.languageCode = languageCode;
-    this.type = type;
-    this.params = trainParams;
-    this.factory = factory;
-    this.listeners = listeners;
-  }
-
-  /**
-   * Starts the evaluation.
-   *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   * @throws IOException
-   */
-  public void evaluate(ObjectStream<NameSample> samples, int nFolds)
-      throws IOException {
-
-    // Note: The name samples need to be grouped on a document basis.
-
-    CrossValidationPartitioner<DocumentSample> partitioner = new CrossValidationPartitioner<>(
-        new NameToDocumentSampleStream(samples), nFolds);
-
-    while (partitioner.hasNext()) {
-
-      CrossValidationPartitioner.TrainingSampleStream<DocumentSample> trainingSampleStream =
-          partitioner.next();
-
-      TokenNameFinderModel model;
-      if (factory != null) {
-        model = NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream),
-            params, factory);
-      }
-      else {
-        model = NameFinderME.train(languageCode, type, new DocumentToNameSampleStream(trainingSampleStream),
-            params, TokenNameFinderFactory.create(null, featureGeneratorBytes, resources, new BioCodec()));
-      }
-
-      // do testing
-      TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
-          new NameFinderME(model), listeners);
-
-      evaluator.evaluate(new DocumentToNameSampleStream(trainingSampleStream.getTestSampleStream()));
-
-      fmeasure.mergeInto(evaluator.getFMeasure());
-    }
-  }
-
-  public FMeasure getFMeasure() {
-    return fmeasure;
   }
 }

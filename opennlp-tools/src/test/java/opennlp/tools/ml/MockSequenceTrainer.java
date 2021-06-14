@@ -32,12 +32,12 @@ public class MockSequenceTrainer implements EventModelSequenceTrainer {
 
   @Override
   public void init(Map<String, String> trainParams,
-      Map<String, String> reportMap) {
+                   Map<String, String> reportMap) {
   }
 
   @Override
   public void init(TrainingParameters trainParams,
-      Map<String, String> reportMap) {
+                   Map<String, String> reportMap) {
   }
-  
+
 }

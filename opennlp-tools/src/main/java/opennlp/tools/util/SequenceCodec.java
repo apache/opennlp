@@ -19,13 +19,14 @@ package opennlp.tools.util;
 
 import java.util.List;
 
+import opennlp.common.util.Span;
+
 public interface SequenceCodec<T> {
 
   /**
    * Decodes a sequence T objects into Span objects.
    *
    * @param c
-   *
    * @return
    */
   Span[] decode(List<T> c);
@@ -35,7 +36,6 @@ public interface SequenceCodec<T> {
    *
    * @param names
    * @param length
-   *
    * @return
    */
   T[] encode(Span[] names, int length);
@@ -51,7 +51,6 @@ public interface SequenceCodec<T> {
    * Checks if the outcomes of the model are compatible with the codec.
    *
    * @param outcomes all possible model outcomes
-   *
    * @return
    */
   boolean areOutcomesCompatible(String[] outcomes);

@@ -22,19 +22,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.common.entitylinker.EntityLinker;
+import opennlp.common.entitylinker.EntityLinkerProperties;
+import opennlp.common.util.Span;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.entitylinker.EntityLinker;
 import opennlp.tools.entitylinker.EntityLinkerFactory;
-import opennlp.tools.entitylinker.EntityLinkerProperties;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 
 public class EntityLinkerTool extends BasicCmdLineTool {
 
@@ -48,8 +48,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
 
     if (0 == args.length) {
       System.out.println(getHelp());
-    }
-    else {
+    } else {
       // TODO: Ask Mark if we can remove the type, the user knows upfront if he tries
       // to link place names or company mentions ...
       String entityType = "location";
@@ -61,8 +60,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
       EntityLinkerProperties properties;
       try {
         properties = new EntityLinkerProperties(new File(args[0]));
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         throw new TerminateToolException(-1, "Failed to load the properties file!");
       }
 
@@ -71,8 +69,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
       EntityLinker entityLinker;
       try {
         entityLinker = EntityLinkerFactory.getLinker(entityType, properties);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         throw new TerminateToolException(-1, "Failed to instantiate the Entity Linker: " + e.getMessage());
       }
 
@@ -128,13 +125,11 @@ public class EntityLinkerTool extends BasicCmdLineTool {
 
             perfMon.incrementCounter(document.size());
             document.clear();
-          }
-          else {
+          } else {
             document.add(NameSample.parse(line, false));
           }
         }
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);
       }
 

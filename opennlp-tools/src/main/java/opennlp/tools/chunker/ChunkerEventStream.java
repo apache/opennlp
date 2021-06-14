@@ -35,7 +35,8 @@ public class ChunkerEventStream extends AbstractEventStream<ChunkSample> {
 
   /**
    * Creates a new event stream based on the specified data stream using the specified context generator.
-   * @param d The data stream for this event stream.
+   *
+   * @param d  The data stream for this event stream.
    * @param cg The context generator which should be used in the creation of events for this event stream.
    */
   public ChunkerEventStream(ObjectStream<ChunkSample> d, ChunkerContextGenerator cg) {
@@ -52,12 +53,11 @@ public class ChunkerEventStream extends AbstractEventStream<ChunkSample> {
       String[] tagsArray = sample.getTags();
       String[] predsArray = sample.getPreds();
       for (int ei = 0, el = sample.getSentence().length; ei < el; ei++) {
-        events.add(new Event(predsArray[ei], cg.getContext(ei,toksArray,tagsArray,predsArray)));
+        events.add(new Event(predsArray[ei], cg.getContext(ei, toksArray, tagsArray, predsArray)));
       }
 
       return events.iterator();
-    }
-    else {
+    } else {
       return Collections.emptyListIterator();
     }
   }

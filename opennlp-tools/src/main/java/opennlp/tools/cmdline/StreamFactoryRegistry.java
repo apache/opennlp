@@ -71,6 +71,7 @@ import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStreamFactory;
  */
 public final class StreamFactoryRegistry {
 
+  public static final String DEFAULT_FORMAT = "opennlp";
   private static final Map<Class, Map<String, ObjectStreamFactory>> registry = new HashMap<>();
 
   static {
@@ -131,8 +132,6 @@ public final class StreamFactoryRegistry {
     LeipzigLanguageSampleStreamFactory.registerFactory();
     NKJPSentenceSampleStreamFactory.registerFactory();
   }
-
-  public static final String DEFAULT_FORMAT = "opennlp";
 
   private StreamFactoryRegistry() {
     // not intended to be instantiated
@@ -202,7 +201,7 @@ public final class StreamFactoryRegistry {
    */
   @SuppressWarnings("unchecked")
   public static <T> ObjectStreamFactory<T> getFactory(Class<T> sampleClass,
-                                                          String formatName) {
+                                                      String formatName) {
     if (null == formatName) {
       formatName = DEFAULT_FORMAT;
     }
@@ -212,8 +211,7 @@ public final class StreamFactoryRegistry {
 
     if (factory != null) {
       return factory;
-    }
-    else {
+    } else {
       try {
         Class<?> factoryClazz = Class.forName(formatName);
 

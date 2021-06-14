@@ -39,8 +39,14 @@ public class WordClusterFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("wordcluster", new WordClusterFeatureGeneratorFactory());
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
+                                         FeatureGeneratorResourceProvider resourceManager)
+      throws InvalidFormatException {
 
     String dictResourceKey = generatorElement.getAttribute("dict");
     boolean lowerCaseDictionary = "true".equals(generatorElement.getAttribute("lowerCase"));
@@ -55,11 +61,6 @@ public class WordClusterFeatureGeneratorFactory
 
     return new WordClusterFeatureGenerator((WordClusterDictionary) dictResource,
         dictResourceKey, lowerCaseDictionary);
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("wordcluster", new WordClusterFeatureGeneratorFactory());
   }
 
   @Override

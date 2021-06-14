@@ -35,8 +35,9 @@ public class DefaultLanguageDetectorContextGenerator implements LanguageDetector
 
   /**
    * Creates a customizable @{@link DefaultLanguageDetectorContextGenerator} that computes ngrams from text
-   * @param minLength min ngrams chars
-   * @param maxLength max ngrams chars
+   *
+   * @param minLength   min ngrams chars
+   * @param maxLength   max ngrams chars
    * @param normalizers zero or more normalizers to
    *                    be applied in to the text before extracting ngrams
    */
@@ -50,6 +51,7 @@ public class DefaultLanguageDetectorContextGenerator implements LanguageDetector
 
   /**
    * Generates the context for a document using character ngrams.
+   *
    * @param document document to extract context from
    * @return the generated context
    */

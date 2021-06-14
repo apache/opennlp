@@ -37,7 +37,7 @@ public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
    * based on whether the suffix contains ".gz".
    *
    * @param model The GISModel which is to be persisted.
-   * @param f The File in which the model is to be persisted.
+   * @param f     The File in which the model is to be persisted.
    */
   public BinaryPerceptronModelWriter(AbstractModel model, File f) throws IOException {
 
@@ -46,8 +46,7 @@ public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
     if (f.getName().endsWith(".gz")) {
       output = new DataOutputStream(
           new GZIPOutputStream(new FileOutputStream(f)));
-    }
-    else {
+    } else {
       output = new DataOutputStream(new FileOutputStream(f));
     }
   }
@@ -57,7 +56,7 @@ public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
    * itself to write the model to that stream.
    *
    * @param model The GISModel which is to be persisted.
-   * @param dos The stream which will be used to persist the model.
+   * @param dos   The stream which will be used to persist the model.
    */
   public BinaryPerceptronModelWriter(AbstractModel model, DataOutputStream dos) {
     super(model);

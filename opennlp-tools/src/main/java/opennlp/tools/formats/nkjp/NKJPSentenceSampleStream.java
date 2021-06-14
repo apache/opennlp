@@ -23,9 +23,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.common.util.Span;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 public class NKJPSentenceSampleStream implements ObjectStream<SentenceSample> {
   private final NKJPSegmentationDocument segments;
@@ -94,7 +94,7 @@ public class NKJPSentenceSampleStream implements ObjectStream<SentenceSample> {
     }
 
     return new SentenceSample(sentencesString.toString(),
-      sentenceSpans.toArray(new Span[sentenceSpans.size()]));
+        sentenceSpans.toArray(new Span[sentenceSpans.size()]));
   }
 
   @Override

@@ -20,32 +20,15 @@ package opennlp.tools.tokenize;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
+import opennlp.common.tokenize.AbstractTokenizer;
+import opennlp.common.util.Span;
+import opennlp.common.util.StringUtil;
 
 /**
  * Performs tokenization using character classes.
  */
 public class SimpleTokenizer extends AbstractTokenizer {
 
-  static class CharacterEnum {
-    static final CharacterEnum WHITESPACE = new CharacterEnum("whitespace");
-    static final CharacterEnum ALPHABETIC = new CharacterEnum("alphabetic");
-    static final CharacterEnum NUMERIC = new CharacterEnum("numeric");
-    static final CharacterEnum OTHER = new CharacterEnum("other");
-
-    private String name;
-
-    private CharacterEnum(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public String toString() {
-      return name;
-    }
-  }
-  
   public static final SimpleTokenizer INSTANCE;
 
   static {
@@ -54,7 +37,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
 
   /**
    * @deprecated Use INSTANCE field instead to obtain an instance, constructor
-   *     will be made private in the future.
+   * will be made private in the future.
    */
   @Deprecated
   public SimpleTokenizer() {
@@ -72,22 +55,18 @@ public class SimpleTokenizer extends AbstractTokenizer {
       char c = s.charAt(ci);
       if (StringUtil.isWhitespace(c)) {
         charType = CharacterEnum.WHITESPACE;
-      }
-      else if (Character.isLetter(c)) {
+      } else if (Character.isLetter(c)) {
         charType = CharacterEnum.ALPHABETIC;
-      }
-      else if (Character.isDigit(c)) {
+      } else if (Character.isDigit(c)) {
         charType = CharacterEnum.NUMERIC;
-      }
-      else {
+      } else {
         charType = CharacterEnum.OTHER;
       }
       if (state == CharacterEnum.WHITESPACE) {
         if (charType != CharacterEnum.WHITESPACE) {
           start = ci;
         }
-      }
-      else {
+      } else {
         if (charType != state || charType == CharacterEnum.OTHER && c != pc) {
           tokens.add(new Span(start, ci));
           start = ci;
@@ -100,5 +79,23 @@ public class SimpleTokenizer extends AbstractTokenizer {
       tokens.add(new Span(start, sl));
     }
     return tokens.toArray(new Span[tokens.size()]);
+  }
+
+  static class CharacterEnum {
+    static final CharacterEnum WHITESPACE = new CharacterEnum("whitespace");
+    static final CharacterEnum ALPHABETIC = new CharacterEnum("alphabetic");
+    static final CharacterEnum NUMERIC = new CharacterEnum("numeric");
+    static final CharacterEnum OTHER = new CharacterEnum("other");
+
+    private String name;
+
+    private CharacterEnum(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
   }
 }

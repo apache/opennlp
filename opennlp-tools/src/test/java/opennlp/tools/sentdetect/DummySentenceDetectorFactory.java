@@ -35,13 +35,13 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
   }
 
   public DummySentenceDetectorFactory(String languageCode, boolean useTokenEnd,
-      Dictionary abbreviationDictionary, char[] eosCharacters) {
+                                      Dictionary abbreviationDictionary, char[] eosCharacters) {
     super(languageCode, useTokenEnd, abbreviationDictionary, eosCharacters);
   }
 
   @Override
   protected void init(String languageCode, boolean useTokenEnd,
-      Dictionary abbreviationDictionary, char[] eosCharacters) {
+                      Dictionary abbreviationDictionary, char[] eosCharacters) {
     super.init(languageCode, useTokenEnd, abbreviationDictionary, eosCharacters);
     this.dict = new DummyDictionary(abbreviationDictionary);
   }
@@ -122,7 +122,7 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
   static class DummySDContextGenerator extends DefaultSDContextGenerator {
 
     public DummySDContextGenerator(Set<String> inducedAbbreviations,
-        char[] eosCharacters) {
+                                   char[] eosCharacters) {
       super(inducedAbbreviations, eosCharacters);
     }
 

@@ -34,16 +34,13 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class TokenSampleStreamFactory extends LanguageSampleStreamFactory<TokenSample> {
 
-  interface Parameters extends BasicFormatParams {
+  protected <P> TokenSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new TokenSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> TokenSampleStreamFactory(Class<P> params) {
-    super(params);
+        StreamFactoryRegistry.DEFAULT_FORMAT, new TokenSampleStreamFactory(Parameters.class));
   }
 
   public ObjectStream<TokenSample> create(String[] args) {
@@ -60,5 +57,8 @@ public class TokenSampleStreamFactory extends LanguageSampleStreamFactory<TokenS
     }
 
     return new TokenSampleStream(lineStream);
+  }
+
+  interface Parameters extends BasicFormatParams {
   }
 }

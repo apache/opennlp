@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import opennlp.tools.util.StringList;
+import opennlp.common.util.StringList;
 
 /**
  * Utility class for ngrams.
@@ -39,7 +39,7 @@ public class NGramUtils {
    * @see <a href="https://en.wikipedia.org/wiki/Additive_smoothing">Additive Smoothing</a>
    */
   public static double calculateLaplaceSmoothingProbability(StringList ngram,
-      Iterable<StringList> set, Double k) {
+                                                            Iterable<StringList> set, Double k) {
     return (count(ngram, set) + k) / (count(getNMinusOneTokenFirst(ngram), set) + k * 1);
   }
 
@@ -125,7 +125,8 @@ public class NGramUtils {
    */
   public static double calculateTrigramLinearInterpolationProbability(String x0, String x1,
                                                                       String x2, Collection<StringList> set,
-      Double lambda1, Double lambda2, Double lambda3) {
+                                                                      Double lambda1, Double lambda2,
+                                                                      Double lambda3) {
     assert lambda1 + lambda2 + lambda3 == 1 : "lambdas sum should be equals to 1";
     assert lambda1 > 0 && lambda2 > 0 && lambda3 > 0 : "lambdas should all be greater than 0";
 

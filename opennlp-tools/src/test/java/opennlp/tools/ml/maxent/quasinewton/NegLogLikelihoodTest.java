@@ -52,7 +52,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
-            StandardCharsets.UTF_8.name());
+        StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
@@ -67,7 +67,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
-            StandardCharsets.UTF_8.name());
+        StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
@@ -83,7 +83,7 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
-            StandardCharsets.UTF_8.name());
+        StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
@@ -112,11 +112,11 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
-            StandardCharsets.UTF_8.name());
+        StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
-    double[] nonInitialPoint = new double[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+    double[] nonInitialPoint = new double[] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     double value = objectFunction.valueAt(nonInitialPoint);
     double expectedValue = 13.862943611198894;
     // then
@@ -128,11 +128,11 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
-            StandardCharsets.UTF_8.name());
+        StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
-    double[] nonInitialPoint = new double[] { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 };
+    double[] nonInitialPoint = new double[] {3, 2, 3, 2, 3, 2, 3, 2, 3, 2};
     double value = objectFunction.valueAt(dealignDoubleArrayForTestData(nonInitialPoint,
         testDataIndexer.getPredLabels(),
         testDataIndexer.getOutcomeLabels()));
@@ -146,12 +146,12 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
-            StandardCharsets.UTF_8.name());
+        StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
     double[] gradientAtInitialPoint = objectFunction.gradientAt(objectFunction.getInitialPoint());
-    double[] expectedGradient = new double[] { -9.0, -14.0, -17.0, 20.0, 8.5, 9.0, 14.0, 17.0, -20.0, -8.5 };
+    double[] expectedGradient = new double[] {-9.0, -14.0, -17.0, 20.0, 8.5, 9.0, 14.0, 17.0, -20.0, -8.5};
     // then
     Assert.assertTrue(compareDoubleArray(expectedGradient, gradientAtInitialPoint,
         testDataIndexer, TOLERANCE01));
@@ -162,32 +162,32 @@ public class NegLogLikelihoodTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt",
-            StandardCharsets.UTF_8.name());
+        StandardCharsets.UTF_8.name());
     testDataIndexer.index(rvfes1);
     NegLogLikelihood objectFunction = new NegLogLikelihood(testDataIndexer);
     // when
-    double[] nonInitialPoint = new double[] { 0.2, 0.5, 0.2, 0.5, 0.2, 0.5, 0.2, 0.5, 0.2, 0.5 };
+    double[] nonInitialPoint = new double[] {0.2, 0.5, 0.2, 0.5, 0.2, 0.5, 0.2, 0.5, 0.2, 0.5};
     double[] gradientAtNonInitialPoint =
         objectFunction.gradientAt(dealignDoubleArrayForTestData(nonInitialPoint,
             testDataIndexer.getPredLabels(),
             testDataIndexer.getOutcomeLabels()));
     double[] expectedGradient =
-        new double[] { -12.755042847945553, -21.227127506102434,
-            -72.57790706276435,   38.03525795198456,
-            15.348650889354925,  12.755042847945557,
-            21.22712750610244,   72.57790706276438,
-            -38.03525795198456,  -15.348650889354925 };
+        new double[] {-12.755042847945553, -21.227127506102434,
+            -72.57790706276435, 38.03525795198456,
+            15.348650889354925, 12.755042847945557,
+            21.22712750610244, 72.57790706276438,
+            -38.03525795198456, -15.348650889354925};
     // then
     Assert.assertTrue(compareDoubleArray(expectedGradient, gradientAtNonInitialPoint,
         testDataIndexer, TOLERANCE01));
   }
 
   private double[] alignDoubleArrayForTestData(double[] expected,
-      String[] predLabels, String[] outcomeLabels) {
+                                               String[] predLabels, String[] outcomeLabels) {
     double[] aligned = new double[predLabels.length * outcomeLabels.length];
 
     String[] sortedPredLabels = predLabels.clone();
-    String[] sortedOutcomeLabels =  outcomeLabels.clone();
+    String[] sortedOutcomeLabels = outcomeLabels.clone();
     Arrays.sort(sortedPredLabels);
     Arrays.sort(sortedOutcomeLabels);
 
@@ -203,16 +203,16 @@ public class NegLogLikelihoodTest {
     for (int i = 0; i < sortedOutcomeLabels.length; i++) {
       for (int j = 0; j < sortedPredLabels.length; j++) {
         aligned[i * sortedPredLabels.length + j] = expected[invertedOutcomeIndex
-                                                            .get(sortedOutcomeLabels[i])
-                                                            * sortedPredLabels.length
-                                                            + invertedPredIndex.get(sortedPredLabels[j])];
+            .get(sortedOutcomeLabels[i])
+            * sortedPredLabels.length
+            + invertedPredIndex.get(sortedPredLabels[j])];
       }
     }
     return aligned;
   }
 
   private double[] dealignDoubleArrayForTestData(double[] expected,
-      String[] predLabels, String[] outcomeLabels) {
+                                                 String[] predLabels, String[] outcomeLabels) {
     double[] dealigned = new double[predLabels.length * outcomeLabels.length];
 
     String[] sortedPredLabels = predLabels.clone();
@@ -242,8 +242,7 @@ public class NegLogLikelihoodTest {
   }
 
   private boolean compareDoubleArray(double[] expected, double[] actual,
-      DataIndexer indexer, double tolerance)
-  {
+                                     DataIndexer indexer, double tolerance) {
     double[] alignedActual = alignDoubleArrayForTestData(
         actual, indexer.getPredLabels(), indexer.getOutcomeLabels());
 

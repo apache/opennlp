@@ -35,7 +35,7 @@ public class ADPOSSampleStreamTest {
     try (ADPOSSampleStream stream = new ADPOSSampleStream(
         new PlainTextByLineStream(new ResourceAsStreamFactory(
             ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample"),
-                StandardCharsets.UTF_8), false, false)) {
+            StandardCharsets.UTF_8), false, false)) {
       POSSample sample = stream.read();
 
       Assert.assertEquals(23, sample.getSentence().length);
@@ -60,7 +60,7 @@ public class ADPOSSampleStreamTest {
     try (ADPOSSampleStream stream = new ADPOSSampleStream(
         new PlainTextByLineStream(new ResourceAsStreamFactory(
             ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample"),
-                StandardCharsets.UTF_8), true, false)) {
+            StandardCharsets.UTF_8), true, false)) {
 
       POSSample sample = stream.read();
 
@@ -89,7 +89,7 @@ public class ADPOSSampleStreamTest {
     try (ADPOSSampleStream stream = new ADPOSSampleStream(
         new PlainTextByLineStream(new ResourceAsStreamFactory(
             ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample"),
-                StandardCharsets.UTF_8), false, true)) {
+            StandardCharsets.UTF_8), false, true)) {
 
       POSSample sample = stream.read();
 

@@ -29,10 +29,9 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
  */
 public class ConfigurablePOSContextGenerator implements POSContextGenerator {
 
+  private final AdaptiveFeatureGenerator featureGenerator;
   private Cache<String, String[]> contextsCache;
   private Object wordsKey;
-
-  private final AdaptiveFeatureGenerator featureGenerator;
 
   /**
    * Initializes the current instance.
@@ -49,7 +48,6 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
 
   /**
    * Initializes the current instance.
-   *
    */
   public ConfigurablePOSContextGenerator(AdaptiveFeatureGenerator featureGenerator) {
     this(0, featureGenerator);
@@ -58,20 +56,21 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
   /**
    * Returns the context for making a pos tag decision at the specified token index
    * given the specified tokens and previous tags.
-   * @param index The index of the token for which the context is provided.
+   *
+   * @param index  The index of the token for which the context is provided.
    * @param tokens The tokens in the sentence.
-   * @param tags The tags assigned to the previous words in the sentence.
+   * @param tags   The tags assigned to the previous words in the sentence.
    * @return The context for making a pos tag decision at the specified token index
-   *     given the specified tokens and previous tags.
+   * given the specified tokens and previous tags.
    */
   public String[] getContext(int index, String[] tokens, String[] tags,
-      Object[] additionalContext) {
+                             Object[] additionalContext) {
 
     String tagprev = null;
     String tagprevprev = null;
 
     if (index - 1 >= 0) {
-      tagprev =  tags[index - 1];
+      tagprev = tags[index - 1];
 
       if (index - 2 >= 0) {
         tagprevprev = tags[index - 2];
@@ -85,8 +84,7 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
         if (cachedContexts != null) {
           return cachedContexts;
         }
-      }
-      else {
+      } else {
         contextsCache.clear();
         wordsKey = tokens;
       }

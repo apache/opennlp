@@ -25,7 +25,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import opennlp.tools.util.Span;
+import opennlp.common.namefind.TokenNameFinder;
+import opennlp.common.util.Span;
 
 /**
  * Name finder based on a series of regular expressions.

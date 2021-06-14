@@ -263,8 +263,7 @@ public final class CLI {
       } else {
         throw new TerminateToolException(1, "Tool " + toolName + " is not supported.");
       }
-    }
-    catch (TerminateToolException e) {
+    } catch (TerminateToolException e) {
 
       if (e.getMessage() != null) {
         System.err.println(e.getMessage());

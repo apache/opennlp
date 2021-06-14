@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import opennlp.tools.util.StringUtil;
+import opennlp.common.util.StringUtil;
 
 /**
  * Utility class to handle Portuguese contractions.
@@ -154,10 +154,8 @@ public class PortugueseContractionUtility {
   /**
    * Merges a contraction
    *
-   * @param left
-   *          the left component
-   * @param right
-   *          the right component
+   * @param left  the left component
+   * @param right the right component
    * @return the merged contraction
    */
   public static String toContraction(String left, String right) {

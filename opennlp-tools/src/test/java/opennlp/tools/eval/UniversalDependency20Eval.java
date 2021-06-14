@@ -40,14 +40,14 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class UniversalDependency20Eval extends AbstractEvalTest {
 
-  private static File SPA_ANCORA_TRAIN;      
+  private static File SPA_ANCORA_TRAIN;
   private static File SPA_ANCORA_DEV;
 
   @BeforeClass
   public static void verifyTrainingData() throws Exception {
 
-    SPA_ANCORA_TRAIN = new File(getOpennlpDataDir(),"ud20/UD_Spanish-AnCora/es_ancora-ud-train.conllu");
-    SPA_ANCORA_DEV = new File(getOpennlpDataDir(),"ud20/UD_Spanish-AnCora/es_ancora-ud-dev.conllu");
+    SPA_ANCORA_TRAIN = new File(getOpennlpDataDir(), "ud20/UD_Spanish-AnCora/es_ancora-ud-train.conllu");
+    SPA_ANCORA_DEV = new File(getOpennlpDataDir(), "ud20/UD_Spanish-AnCora/es_ancora-ud-dev.conllu");
 
     verifyFileChecksum(SPA_ANCORA_TRAIN.toPath(),
         new BigInteger("224942804200733453179524127037951530195"));
@@ -56,7 +56,7 @@ public class UniversalDependency20Eval extends AbstractEvalTest {
   }
 
   private double trainAndEval(String lang, File trainFile, TrainingParameters params,
-                                     File evalFile) throws IOException {
+                              File evalFile) throws IOException {
     ConlluTagset tagset = ConlluTagset.X;
 
     ObjectStream<LemmaSample> trainSamples = new ConlluLemmaSampleStream(new ConlluStream(

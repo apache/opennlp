@@ -29,17 +29,14 @@ import opennlp.tools.util.ObjectStream;
 
 public class IrishSentenceBankSentenceStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends BasicFormatParams {
+  protected <P> IrishSentenceBankSentenceStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         "irishsentencebank", new IrishSentenceBankSentenceStreamFactory(
-        IrishSentenceBankSentenceStreamFactory.Parameters.class));
-  }
-
-  protected <P> IrishSentenceBankSentenceStreamFactory(Class<P> params) {
-    super(params);
+            IrishSentenceBankSentenceStreamFactory.Parameters.class));
   }
 
   @Override
@@ -57,5 +54,8 @@ public class IrishSentenceBankSentenceStreamFactory extends AbstractSampleStream
     }
 
     return new IrishSentenceBankSentenceStream(isbDoc);
+  }
+
+  interface Parameters extends BasicFormatParams {
   }
 }

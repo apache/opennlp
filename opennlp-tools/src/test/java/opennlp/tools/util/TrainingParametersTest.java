@@ -28,6 +28,45 @@ import opennlp.tools.ml.EventTrainer;
 
 public class TrainingParametersTest {
 
+  // format: k1=v1,k2=v2,...
+  private static Map<String, String> buildMap(String str) {
+    String[] pairs = str.split(",");
+    Map<String, String> map = new HashMap<>(pairs.length);
+    for (String pair : pairs) {
+      String[] keyValue = pair.split("=");
+      map.put(keyValue[0], keyValue[1]);
+    }
+
+    return map;
+  }
+
+  // format: k1=v1,k2=v2,...
+  private static TrainingParameters build(String str) {
+    return new TrainingParameters(buildMap(str));
+  }
+
+  private static void assertEquals(Map<String, String> map1, Map<String, String> map2) {
+    Assert.assertNotNull(map1);
+    Assert.assertNotNull(map2);
+    Assert.assertEquals(map1.size(), map2.size());
+    for (String key : map1.keySet()) {
+      Assert.assertEquals(map1.get(key), map2.get(key));
+    }
+  }
+
+  private static void assertEquals(Map<String, String> map, TrainingParameters actual) {
+    Assert.assertNotNull(actual);
+    assertEquals(map, actual.getSettings());
+  }
+
+  private static void assertEquals(TrainingParameters expected, TrainingParameters actual) {
+    if (expected == null) {
+      Assert.assertNull(actual);
+    } else {
+      assertEquals(expected.getSettings(), actual);
+    }
+  }
+
   @Test
   public void testConstructors() throws Exception {
     TrainingParameters tp1 =
@@ -115,44 +154,5 @@ public class TrainingParametersTest {
     tp.put("k31", false);
     Assert.assertEquals(false, tp.getBooleanParameter("k31", true));
     Assert.assertEquals(false, tp.getBooleanParameter("boolean", "k4", true));
-  }
-
-  // format: k1=v1,k2=v2,...
-  private static Map<String, String> buildMap(String str) {
-    String[] pairs = str.split(",");
-    Map<String, String> map = new HashMap<>(pairs.length);
-    for (String pair : pairs) {
-      String[] keyValue = pair.split("=");
-      map.put(keyValue[0], keyValue[1]);
-    }
-
-    return map;
-  }
-
-  // format: k1=v1,k2=v2,...
-  private static TrainingParameters build(String str) {
-    return new TrainingParameters(buildMap(str));
-  }
-
-  private static void assertEquals(Map<String, String> map1, Map<String, String> map2) {
-    Assert.assertNotNull(map1);
-    Assert.assertNotNull(map2);
-    Assert.assertEquals(map1.size(), map2.size());
-    for (String key : map1.keySet()) {
-      Assert.assertEquals(map1.get(key), map2.get(key));
-    }
-  }
-
-  private static void assertEquals(Map<String, String> map, TrainingParameters actual) {
-    Assert.assertNotNull(actual);
-    assertEquals(map, actual.getSettings());
-  }
-
-  private static void assertEquals(TrainingParameters expected, TrainingParameters actual) {
-    if (expected == null) {
-      Assert.assertNull(actual);
-    } else {
-      assertEquals(expected.getSettings(), actual);
-    }
   }
 }

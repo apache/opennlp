@@ -58,7 +58,7 @@ public class HashSumEventStream extends AbstractObjectStream<Event> {
    *
    * @return the hash sum
    * @throws IllegalStateException if the stream is not consumed completely,
-   *     completely means that hasNext() returns false
+   *                               completely means that hasNext() returns false
    */
   public BigInteger calculateHashSum() {
     return new BigInteger(1, digest.digest());

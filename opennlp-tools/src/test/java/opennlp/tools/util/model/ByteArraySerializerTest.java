@@ -37,7 +37,7 @@ public class ByteArraySerializerTest {
     ByteArraySerializer serializer = new ByteArraySerializer();
 
     ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-    serializer.serialize(Arrays.copyOf(b, b.length), bOut) ;
+    serializer.serialize(Arrays.copyOf(b, b.length), bOut);
 
     Assert.assertArrayEquals(b, bOut.toByteArray());
     Assert.assertArrayEquals(b, serializer.create(new ByteArrayInputStream(b)));

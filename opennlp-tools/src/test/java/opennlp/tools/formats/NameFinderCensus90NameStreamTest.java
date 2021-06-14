@@ -22,9 +22,9 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.StringList;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

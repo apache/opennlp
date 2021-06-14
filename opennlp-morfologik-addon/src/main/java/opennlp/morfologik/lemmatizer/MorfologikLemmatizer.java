@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import opennlp.common.lemmatizer.Lemmatizer;
+
 import morfologik.stemming.Dictionary;
 import morfologik.stemming.DictionaryLookup;
 import morfologik.stemming.IStemmer;
 import morfologik.stemming.WordData;
-
-import opennlp.tools.lemmatizer.Lemmatizer;
 
 public class MorfologikLemmatizer implements Lemmatizer {
 

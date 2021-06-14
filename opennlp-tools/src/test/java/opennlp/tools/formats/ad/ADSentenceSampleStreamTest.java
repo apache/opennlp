@@ -26,11 +26,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import opennlp.common.util.Span;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 
 public class ADSentenceSampleStreamTest {
 
@@ -56,7 +56,7 @@ public class ADSentenceSampleStreamTest {
         "/opennlp/tools/formats/ad.sample");
 
     try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
-          new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
+        new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
 
       SentenceSample sample;
 

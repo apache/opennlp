@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import org.junit.Assert;
 import org.junit.Test;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * Tests for the {@link RegexNameFinder} class.
@@ -35,17 +35,17 @@ public class RegexNameFinderTest {
   public void testFindSingleTokenPattern() {
 
     Pattern testPattern = Pattern.compile("test");
-    String[] sentence = new String[]{"a", "test", "b", "c"};
+    String[] sentence = new String[] {"a", "test", "b", "c"};
 
 
-    Pattern[] patterns = new Pattern[]{testPattern};
+    Pattern[] patterns = new Pattern[] {testPattern};
     Map<String, Pattern[]> regexMap = new HashMap<>();
     String type = "testtype";
 
     regexMap.put(type, patterns);
 
     RegexNameFinder finder =
-            new RegexNameFinder(regexMap);
+        new RegexNameFinder(regexMap);
 
     Span[] result = finder.find(sentence);
 
@@ -59,16 +59,16 @@ public class RegexNameFinderTest {
   public void testFindTokenizdPattern() {
     Pattern testPattern = Pattern.compile("[0-9]+ year");
 
-    String[] sentence = new String[]{"a", "80", "year", "b", "c"};
+    String[] sentence = new String[] {"a", "80", "year", "b", "c"};
 
-    Pattern[] patterns = new Pattern[]{testPattern};
+    Pattern[] patterns = new Pattern[] {testPattern};
     Map<String, Pattern[]> regexMap = new HashMap<>();
     String type = "match";
 
     regexMap.put(type, patterns);
 
     RegexNameFinder finder =
-            new RegexNameFinder(regexMap);
+        new RegexNameFinder(regexMap);
 
     Span[] result = finder.find(sentence);
 
@@ -83,8 +83,8 @@ public class RegexNameFinderTest {
   public void testFindMatchingPatternWithoutMatchingTokenBounds() {
     Pattern testPattern = Pattern.compile("[0-8] year"); // does match "0 year"
 
-    String[] sentence = new String[]{"a", "80", "year", "c"};
-    Pattern[] patterns = new Pattern[]{testPattern};
+    String[] sentence = new String[] {"a", "80", "year", "c"};
+    Pattern[] patterns = new Pattern[] {testPattern};
     Map<String, Pattern[]> regexMap = new HashMap<>();
     String type = "testtype";
 

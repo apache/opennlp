@@ -49,54 +49,6 @@ import opennlp.tools.util.model.SerializableArtifact;
  */
 public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, SerializableArtifact {
 
-  public static class HeadRulesSerializer implements ArtifactSerializer<HeadRules> {
-
-    public HeadRules create(InputStream in) throws IOException {
-      return new HeadRules(new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)));
-    }
-
-    public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact, OutputStream out)
-        throws IOException {
-      artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-    }
-  }
-
-  private static class HeadRule {
-    public boolean leftToRight;
-    public String[] tags;
-
-    public HeadRule(boolean l2r, String[] tags) {
-      leftToRight = l2r;
-
-      for (String tag : tags) {
-        Objects.requireNonNull(tag, "tags must not contain null values");
-      }
-
-      this.tags = tags;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(leftToRight, Arrays.hashCode(tags));
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj == this) {
-        return true;
-      }
-
-      if (obj instanceof HeadRule) {
-        HeadRule rule = (HeadRule) obj;
-
-        return rule.leftToRight == leftToRight &&
-            Arrays.equals(rule.tags, tags);
-      }
-
-      return false;
-    }
-  }
-
   private Map<String, HeadRule> headRules;
   private Set<String> punctSet;
 
@@ -104,7 +56,6 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
    * Creates a new set of head rules based on the specified head rules file.
    *
    * @param ruleFile the head rules file.
-   *
    * @throws IOException if the head rules file can not be read.
    */
   @Deprecated
@@ -116,7 +67,6 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
    * Creates a new set of head rules based on the specified reader.
    *
    * @param rulesReader the head rules reader.
-   *
    * @throws IOException if the head rules reader can not be read.
    */
   public HeadRules(Reader rulesReader) throws IOException {
@@ -141,7 +91,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
     }
     HeadRule hr;
     if (type.equals("NP") || type.equals("NX")) {
-      String[] tags1 = { "NN", "NNP", "NNPS", "NNS", "NX", "JJR", "POS" };
+      String[] tags1 = {"NN", "NNP", "NNPS", "NNS", "NX", "JJR", "POS"};
       for (int ci = constituents.length - 1; ci >= 0; ci--) {
         for (int ti = tags1.length - 1; ti >= 0; ti--) {
           if (constituents[ci].getType().equals(tags1[ti])) {
@@ -154,7 +104,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
           return constituent.getHead();
         }
       }
-      String[] tags2 = { "$", "ADJP", "PRN" };
+      String[] tags2 = {"$", "ADJP", "PRN"};
       for (int ci = constituents.length - 1; ci >= 0; ci--) {
         for (int ti = tags2.length - 1; ti >= 0; ti--) {
           if (constituents[ci].getType().equals(tags2[ti])) {
@@ -162,7 +112,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
           }
         }
       }
-      String[] tags3 = { "JJ", "JJS", "RB", "QP" };
+      String[] tags3 = {"JJ", "JJS", "RB", "QP"};
       for (int ci = constituents.length - 1; ci >= 0; ci--) {
         for (int ti = tags3.length - 1; ti >= 0; ti--) {
           if (constituents[ci].getType().equals(tags3[ti])) {
@@ -171,8 +121,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
         }
       }
       return constituents[constituents.length - 1].getHead();
-    }
-    else if ((hr = headRules.get(type)) != null) {
+    } else if ((hr = headRules.get(type)) != null) {
       String[] tags = hr.tags;
       int cl = constituents.length;
       int tl = tags.length;
@@ -185,8 +134,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
           }
         }
         return constituents[0].getHead();
-      }
-      else {
+      } else {
         for (int ti = 0; ti < tl; ti++) {
           for (int ci = cl - 1; ci >= 0; ci--) {
             if (constituents[ci].getType().equals(tags[ti])) {
@@ -311,5 +259,53 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
   @Override
   public Class<?> getArtifactSerializerClass() {
     return HeadRulesSerializer.class;
+  }
+
+  public static class HeadRulesSerializer implements ArtifactSerializer<HeadRules> {
+
+    public HeadRules create(InputStream in) throws IOException {
+      return new HeadRules(new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)));
+    }
+
+    public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
+    }
+  }
+
+  private static class HeadRule {
+    public boolean leftToRight;
+    public String[] tags;
+
+    public HeadRule(boolean l2r, String[] tags) {
+      leftToRight = l2r;
+
+      for (String tag : tags) {
+        Objects.requireNonNull(tag, "tags must not contain null values");
+      }
+
+      this.tags = tags;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(leftToRight, Arrays.hashCode(tags));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == this) {
+        return true;
+      }
+
+      if (obj instanceof HeadRule) {
+        HeadRule rule = (HeadRule) obj;
+
+        return rule.leftToRight == leftToRight &&
+            Arrays.equals(rule.tags, tags);
+      }
+
+      return false;
+    }
   }
 }

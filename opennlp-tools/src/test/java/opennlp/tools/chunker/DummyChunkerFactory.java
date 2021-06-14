@@ -39,7 +39,7 @@ public class DummyChunkerFactory extends ChunkerFactory {
 
     @Override
     public String[] getContext(int i, String[] toks, String[] tags,
-        String[] preds) {
+                               String[] preds) {
       return super.getContext(i, toks, tags, preds);
     }
   }
@@ -48,7 +48,7 @@ public class DummyChunkerFactory extends ChunkerFactory {
 
     @Override
     public boolean validSequence(int i, TokenTag[] sequence, String[] s,
-        String outcome) {
+                                 String outcome) {
       return super.validSequence(i, sequence, s, outcome);
     }
   }

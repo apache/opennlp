@@ -30,8 +30,7 @@ public class BagOfWordsFeatureGeneratorTest {
     try {
       generator.extractFeatures(null, Collections.emptyMap());
       Assert.fail("NullPointerException must be thrown");
-    }
-    catch (NullPointerException expected) {
+    } catch (NullPointerException expected) {
     }
   }
 
@@ -39,15 +38,15 @@ public class BagOfWordsFeatureGeneratorTest {
   public void testEmpty() {
     BagOfWordsFeatureGenerator generator = new BagOfWordsFeatureGenerator();
 
-    Assert.assertEquals(0, generator.extractFeatures(new String[]{}, Collections.emptyMap()).size());
+    Assert.assertEquals(0, generator.extractFeatures(new String[] {}, Collections.emptyMap()).size());
   }
 
   @Test
   public void testUseAllTokens() {
     BagOfWordsFeatureGenerator generator = new BagOfWordsFeatureGenerator();
 
-    Assert.assertArrayEquals(new String[]{"bow=it", "bow=is", "bow=12.345", "bow=feet", "bow=long"},
-        generator.extractFeatures(new String[]{"it", "is", "12.345", "feet", "long"},
+    Assert.assertArrayEquals(new String[] {"bow=it", "bow=is", "bow=12.345", "bow=feet", "bow=long"},
+        generator.extractFeatures(new String[] {"it", "is", "12.345", "feet", "long"},
             Collections.emptyMap()).toArray());
   }
 
@@ -55,8 +54,8 @@ public class BagOfWordsFeatureGeneratorTest {
   public void testOnlyLetterTokens() {
     BagOfWordsFeatureGenerator generator = new BagOfWordsFeatureGenerator(true);
 
-    Assert.assertArrayEquals(new String[]{"bow=it", "bow=is", "bow=feet", "bow=long"},
-            generator.extractFeatures(new String[]{"it", "is", "12.345", "feet", "long"},
-                    Collections.emptyMap()).toArray());
+    Assert.assertArrayEquals(new String[] {"bow=it", "bow=is", "bow=feet", "bow=long"},
+        generator.extractFeatures(new String[] {"it", "is", "12.345", "feet", "long"},
+            Collections.emptyMap()).toArray());
   }
 }

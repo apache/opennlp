@@ -22,11 +22,11 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.Span;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 public class ConlluSentenceSampleStreamTest {
 
@@ -59,8 +59,8 @@ public class ConlluSentenceSampleStreamTest {
       SentenceSample sample = stream.read();
 
       Assert.assertEquals("Fachlich kompetent, sehr gute Beratung und ein freundliches Team."
-           + " Beiden Zahnärzten verdanke ich einen neuen Biss und dadurch endlich keine "
-           + "Rückenschmerzen mehr.",
+              + " Beiden Zahnärzten verdanke ich einen neuen Biss und dadurch endlich keine "
+              + "Rückenschmerzen mehr.",
           sample.getDocument());
 
       Assert.assertNull("Stream must be exhausted", stream.read());

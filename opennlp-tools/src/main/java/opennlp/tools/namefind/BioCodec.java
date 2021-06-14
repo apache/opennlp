@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.common.util.Span;
 import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.Span;
 
 public class BioCodec implements SequenceCodec<String> {
 
@@ -56,11 +56,9 @@ public class BioCodec implements SequenceCodec<String> {
         start = li;
         end = li + 1;
 
-      }
-      else if (chunkTag.endsWith(BioCodec.CONTINUE)) {
+      } else if (chunkTag.endsWith(BioCodec.CONTINUE)) {
         end = li + 1;
-      }
-      else if (chunkTag.endsWith(BioCodec.OTHER)) {
+      } else if (chunkTag.endsWith(BioCodec.OTHER)) {
         if (start != -1) {
           spans.add(new Span(start, end, extractNameType(c.get(li - 1))));
           start = -1;
@@ -84,16 +82,14 @@ public class BioCodec implements SequenceCodec<String> {
     for (Span name : names) {
       if (name.getType() == null) {
         outcomes[name.getStart()] = "default" + "-" + BioCodec.START;
-      }
-      else {
+      } else {
         outcomes[name.getStart()] = name.getType() + "-" + BioCodec.START;
       }
       // now iterate from begin + 1 till end
       for (int i = name.getStart() + 1; i < name.getEnd(); i++) {
         if (name.getType() == null) {
           outcomes[i] = "default" + "-" + BioCodec.CONTINUE;
-        }
-        else {
+        } else {
           outcomes[i] = name.getType() + "-" + BioCodec.CONTINUE;
         }
       }
@@ -119,10 +115,10 @@ public class BioCodec implements SequenceCodec<String> {
     for (String outcome : outcomes) {
       if (outcome.endsWith(BioCodec.START)) {
         start.add(outcome.substring(0, outcome.length()
-                - BioCodec.START.length()));
+            - BioCodec.START.length()));
       } else if (outcome.endsWith(BioCodec.CONTINUE)) {
         cont.add(outcome.substring(0, outcome.length()
-                - BioCodec.CONTINUE.length()));
+            - BioCodec.CONTINUE.length()));
       } else if (!outcome.equals(BioCodec.OTHER)) {
         // got unexpected outcome
         return false;

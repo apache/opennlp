@@ -47,33 +47,26 @@ import opennlp.tools.util.ext.ExtensionLoader;
 /**
  * This model is a common based which can be used by the components
  * model classes.
- *
+ * <p>
  * TODO:
  * Provide sub classes access to serializers already in constructor
  */
 public abstract class BaseModel implements ArtifactProvider, Serializable {
 
+  public static final String TRAINING_CUTOFF_PROPERTY = "Training-Cutoff";
+  public static final String TRAINING_ITERATIONS_PROPERTY = "Training-Iterations";
+  public static final String TRAINING_EVENTHASH_PROPERTY = "Training-Eventhash";
   protected static final String MANIFEST_ENTRY = "manifest.properties";
   protected static final String FACTORY_NAME = "factory";
-
   private static final String MANIFEST_VERSION_PROPERTY = "Manifest-Version";
   private static final String COMPONENT_NAME_PROPERTY = "Component-Name";
   private static final String VERSION_PROPERTY = "OpenNLP-Version";
   private static final String TIMESTAMP_PROPERTY = "Timestamp";
   private static final String LANGUAGE_PROPERTY = "Language";
-
-  public static final String TRAINING_CUTOFF_PROPERTY = "Training-Cutoff";
-  public static final String TRAINING_ITERATIONS_PROPERTY = "Training-Iterations";
-  public static final String TRAINING_EVENTHASH_PROPERTY = "Training-Eventhash";
-
   private static String SERIALIZER_CLASS_NAME_PREFIX = "serializer-class-";
-
-  private Map<String, ArtifactSerializer> artifactSerializers = new HashMap<>();
-
   protected Map<String, Object> artifactMap = new HashMap<>();
-
   protected BaseToolFactory toolFactory;
-
+  private Map<String, ArtifactSerializer> artifactSerializers = new HashMap<>();
   private String componentName;
 
   private boolean subclassSerializersInitiated = false;
@@ -94,17 +87,13 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * Sub-classes will have access to custom artifacts and serializers provided
    * by the factory.
    *
-   * @param componentName
-   *          the component name
-   * @param languageCode
-   *          the language code
-   * @param manifestInfoEntries
-   *          additional information in the manifest
-   * @param factory
-   *          the factory
+   * @param componentName       the component name
+   * @param languageCode        the language code
+   * @param manifestInfoEntries additional information in the manifest
+   * @param factory             the factory
    */
   protected BaseModel(String componentName, String languageCode,
-      Map<String, String> manifestInfoEntries, BaseToolFactory factory) {
+                      Map<String, String> manifestInfoEntries, BaseToolFactory factory) {
 
     this(componentName, false);
 
@@ -151,12 +140,9 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * Initializes the current instance. The sub-class constructor should call the
    * method {@link #checkArtifactMap()} to check the artifact map is OK.
    *
-   * @param componentName
-   *          the component name
-   * @param languageCode
-   *          the language code
-   * @param manifestInfoEntries
-   *          additional information in the manifest
+   * @param componentName       the component name
+   * @param languageCode        the language code
+   * @param manifestInfoEntries additional information in the manifest
    */
   protected BaseModel(String componentName, String languageCode, Map<String, String> manifestInfoEntries) {
     this(componentName, languageCode, manifestInfoEntries, null);
@@ -166,8 +152,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * Initializes the current instance.
    *
    * @param componentName the component name
-   * @param in the input stream containing the model
-   *
+   * @param in            the input stream containing the model
    * @throws IOException
    */
   protected BaseModel(String componentName, InputStream in) throws IOException {
@@ -176,7 +161,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     loadModel(in);
   }
 
-  protected BaseModel(String componentName, File modelFile) throws IOException  {
+  protected BaseModel(String componentName, File modelFile) throws IOException {
     this(componentName, true);
 
     try (InputStream in = new BufferedInputStream(new FileInputStream(modelFile))) {
@@ -184,12 +169,24 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
   }
 
-  protected BaseModel(String componentName, URL modelURL) throws IOException  {
+  protected BaseModel(String componentName, URL modelURL) throws IOException {
     this(componentName, true);
 
     try (InputStream in = new BufferedInputStream(modelURL.openStream())) {
       loadModel(in);
     }
+  }
+
+  protected static Map<String, ArtifactSerializer> createArtifactSerializers() {
+    Map<String, ArtifactSerializer> serializers = new HashMap<>();
+
+    GenericModelSerializer.register(serializers);
+    PropertiesSerializer.register(serializers);
+    DictionarySerializer.register(serializers);
+    serializers.put("txt", new ByteArraySerializer());
+    serializers.put("html", new ByteArraySerializer());
+
+    return serializers;
   }
 
   private void loadModel(InputStream in) throws IOException {
@@ -291,7 +288,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     Map<String, Object> artifactMap = new HashMap<>();
 
     ZipEntry entry;
-    while ((entry = zip.getNextEntry()) != null ) {
+    while ((entry = zip.getNextEntry()) != null) {
 
       // Note: The manifest.properties file will be read here again,
       // there should be no need to prevent that.
@@ -326,16 +323,14 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * Extracts the "." extension from an entry name.
    *
    * @param entry the entry name which contains the extension
-   *
    * @return the extension
-   *
    * @throws InvalidFormatException if no extension can be extracted
    */
   private String getEntryExtension(String entry) throws InvalidFormatException {
     int extensionIndex = entry.lastIndexOf('.') + 1;
 
     if (extensionIndex == -1 || extensionIndex >= entry.length())
-        throw new InvalidFormatException("Entry name must have type extension: " + entry);
+      throw new InvalidFormatException("Entry name must have type extension: " + entry);
 
     return entry.substring(extensionIndex);
   }
@@ -348,33 +343,21 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
   }
 
-  protected static Map<String, ArtifactSerializer> createArtifactSerializers() {
-    Map<String, ArtifactSerializer> serializers = new HashMap<>();
-
-    GenericModelSerializer.register(serializers);
-    PropertiesSerializer.register(serializers);
-    DictionarySerializer.register(serializers);
-    serializers.put("txt", new ByteArraySerializer());
-    serializers.put("html", new ByteArraySerializer());
-
-    return serializers;
-  }
-
   /**
    * Registers all {@link ArtifactSerializer} for their artifact file name extensions.
    * The registered {@link ArtifactSerializer} are used to create and serialize
    * resources in the model package.
-   *
+   * <p>
    * Override this method to register custom {@link ArtifactSerializer}s.
-   *
+   * <p>
    * Note:
    * Subclasses should generally invoke super.createArtifactSerializers at the beginning
    * of this method.
-   *
+   * <p>
    * This method is called during construction.
    *
    * @param serializers the key of the map is the file extension used to lookup
-   *     the {@link ArtifactSerializer}.
+   *                    the {@link ArtifactSerializer}.
    */
   protected void createArtifactSerializers(
       Map<String, ArtifactSerializer> serializers) {
@@ -390,7 +373,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   /**
    * Validates the parsed artifacts. If something is not
    * valid subclasses should throw an {@link InvalidFormatException}.
-   *
+   * <p>
    * Note:
    * Subclasses should generally invoke super.validateArtifactMap at the beginning
    * of this method.
@@ -409,8 +392,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
       try {
         version = Version.parse(versionString);
-      }
-      catch (NumberFormatException e) {
+      } catch (NumberFormatException e) {
         throw new InvalidFormatException("Unable to parse model version '" + versionString + "'!", e);
       }
 
@@ -431,19 +413,18 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
               + Version.currentVersion() + ") of OpenNLP!");
         }
       }
-    }
-    else {
+    } else {
       throw new InvalidFormatException("Missing " + VERSION_PROPERTY + " property in " +
-            MANIFEST_ENTRY + "!");
+          MANIFEST_ENTRY + "!");
     }
 
     if (getManifestProperty(COMPONENT_NAME_PROPERTY) == null)
       throw new InvalidFormatException("Missing " + COMPONENT_NAME_PROPERTY + " property in " +
-            MANIFEST_ENTRY + "!");
+          MANIFEST_ENTRY + "!");
 
     if (!getManifestProperty(COMPONENT_NAME_PROPERTY).equals(componentName))
-        throw new InvalidFormatException("The " + componentName + " cannot load a model for the " +
-            getManifestProperty(COMPONENT_NAME_PROPERTY) + "!");
+      throw new InvalidFormatException("The " + componentName + " cannot load a model for the " +
+          getManifestProperty(COMPONENT_NAME_PROPERTY) + "!");
 
     if (getManifestProperty(LANGUAGE_PROPERTY) == null)
       throw new InvalidFormatException("Missing " + LANGUAGE_PROPERTY + " property in " +
@@ -497,7 +478,6 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * entry.
    *
    * @param key
-   *
    * @return the value
    */
   public final String getManifestProperty(String key) {

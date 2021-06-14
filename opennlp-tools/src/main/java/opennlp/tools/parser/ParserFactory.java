@@ -26,11 +26,9 @@ public class ParserFactory {
 
     if (ParserType.CHUNKING.equals(model.getParserType())) {
       return new opennlp.tools.parser.chunking.Parser(model, beamSize, advancePercentage);
-    }
-    else if (ParserType.TREEINSERT.equals(model.getParserType())) {
+    } else if (ParserType.TREEINSERT.equals(model.getParserType())) {
       return new opennlp.tools.parser.treeinsert.Parser(model, beamSize, advancePercentage);
-    }
-    else {
+    } else {
       throw new IllegalStateException("Unexpected ParserType: " +
           model.getParserType().name());
     }

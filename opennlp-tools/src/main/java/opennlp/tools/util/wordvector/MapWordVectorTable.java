@@ -47,8 +47,7 @@ class MapWordVectorTable implements WordVectorTable {
   public int dimension() {
     if (vectors.size() > 0) {
       return vectors.values().iterator().next().dimension();
-    }
-    else {
+    } else {
       return -1;
     }
   }

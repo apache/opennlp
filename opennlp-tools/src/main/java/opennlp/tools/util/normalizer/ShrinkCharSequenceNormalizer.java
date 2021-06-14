@@ -34,7 +34,7 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
-  public CharSequence normalize (CharSequence text) {
+  public CharSequence normalize(CharSequence text) {
     text = SPACE_REGEX.matcher(text).replaceAll(" ");
     return REPEATED_CHAR_REGEX.matcher(text).replaceAll("$1$1").trim();
   }

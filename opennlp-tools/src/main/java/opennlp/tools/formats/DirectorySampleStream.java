@@ -43,12 +43,13 @@ public class DirectorySampleStream implements ObjectStream<File> {
   private Stack<File> directories = new Stack<>();
 
   private Stack<File> textFiles = new Stack<>();
-  
+
   /**
    * Creates a new directory sample stream.
-   * @param dirs The directories to read.
+   *
+   * @param dirs       The directories to read.
    * @param fileFilter The {@link FileFilter filter} to apply while enumerating files.
-   * @param recursive Enables or disables recursive file listing.
+   * @param recursive  Enables or disables recursive file listing.
    */
   public DirectorySampleStream(File[] dirs, FileFilter fileFilter, boolean recursive) {
     this.fileFilter = fileFilter;
@@ -60,7 +61,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
       if (!dir.isDirectory()) {
         throw new IllegalArgumentException(
             "All passed in directories must be directories, but \""
-            + dir + "\" is not!");
+                + dir + "\" is not!");
       }
 
       inputDirectoryList.add(dir);
@@ -73,12 +74,13 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
   /**
    * Creates a new directory sample stream.
-   * @param dir The {@link File directory}.
+   *
+   * @param dir        The {@link File directory}.
    * @param fileFilter The {@link FileFilter filter} to apply while enumerating files.
-   * @param recursive Enables or disables recursive file listing.
+   * @param recursive  Enables or disables recursive file listing.
    */
   public DirectorySampleStream(File dir, FileFilter fileFilter, boolean recursive) {
-    this(new File[]{dir}, fileFilter, recursive);
+    this(new File[] {dir}, fileFilter, recursive);
   }
 
   @Override
@@ -91,8 +93,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
       if (fileFilter != null) {
         files = dir.listFiles(fileFilter);
-      }
-      else {
+      } else {
         files = dir.listFiles();
       }
 
@@ -101,8 +102,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
       for (File file : files) {
         if (file.isFile()) {
           textFiles.push(file);
-        }
-        else if (recursive && file.isDirectory()) {
+        } else if (recursive && file.isDirectory()) {
           directories.push(file);
         }
       }
@@ -110,8 +110,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
     if (!textFiles.isEmpty()) {
       return textFiles.pop();
-    }
-    else {
+    } else {
       return null;
     }
   }

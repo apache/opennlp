@@ -20,12 +20,12 @@ package opennlp.tools.cmdline.tokenizer;
 import java.io.File;
 import java.io.IOException;
 
+import opennlp.common.tokenize.Detokenizer;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
-import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
@@ -46,7 +46,8 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
             new DetokenizationDictionaryLoader().load(new File(args[0])));
 
         try (ObjectStream<String> tokenizedLineStream =
-            new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
+                 new PlainTextByLineStream(new SystemInputStreamFactory(),
+                     SystemInputStreamFactory.encoding())) {
 
           PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
           perfMon.start();
@@ -63,8 +64,7 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
           }
           perfMon.stopAndPrintFinalResult();
         }
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);
       }
     }

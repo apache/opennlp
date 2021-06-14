@@ -21,12 +21,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.postag.TagDictionary;
+
 import morfologik.stemming.Dictionary;
 import morfologik.stemming.DictionaryLookup;
 import morfologik.stemming.IStemmer;
 import morfologik.stemming.WordData;
-
-import opennlp.tools.postag.TagDictionary;
 
 /**
  * A POS Tagger dictionary implementation based on Morfologik binary
@@ -40,12 +40,9 @@ public class MorfologikTagDictionary implements TagDictionary {
   /**
    * Creates a case sensitive {@link MorfologikTagDictionary}
    *
-   * @param dict
-   *          a Morfologik FSA dictionary
-   * @throws IllegalArgumentException
-   *           if FSA's root node cannot be acquired (dictionary is empty).
-   * @throws IOException
-   *           could not read dictionary from dictURL
+   * @param dict a Morfologik FSA dictionary
+   * @throws IllegalArgumentException if FSA's root node cannot be acquired (dictionary is empty).
+   * @throws IOException              could not read dictionary from dictURL
    */
   public MorfologikTagDictionary(Dictionary dict)
       throws IllegalArgumentException, IOException {
@@ -55,14 +52,10 @@ public class MorfologikTagDictionary implements TagDictionary {
   /**
    * Creates MorfologikLemmatizer
    *
-   * @param dict
-   *          a Morfologik FSA dictionary
-   * @param caseSensitive
-   *          if true it performs case sensitive lookup
-   * @throws IllegalArgumentException
-   *           if FSA's root node cannot be acquired (dictionary is empty).
-   * @throws IOException
-   *           could not read dictionary from dictURL
+   * @param dict          a Morfologik FSA dictionary
+   * @param caseSensitive if true it performs case sensitive lookup
+   * @throws IllegalArgumentException if FSA's root node cannot be acquired (dictionary is empty).
+   * @throws IOException              could not read dictionary from dictURL
    */
   public MorfologikTagDictionary(Dictionary dict, boolean caseSensitive)
       throws IllegalArgumentException, IOException {

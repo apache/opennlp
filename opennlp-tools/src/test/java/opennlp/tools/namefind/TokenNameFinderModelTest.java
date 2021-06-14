@@ -53,7 +53,7 @@ public class TokenNameFinderModelTest {
 
     // save a POS model there
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
-    File posModelFile = new File(resourcesFolder.toFile(),"pos-model.bin");
+    File posModelFile = new File(resourcesFolder.toFile(), "pos-model.bin");
 
     posModel.serialize(posModelFile);
 
@@ -74,11 +74,9 @@ public class TokenNameFinderModelTest {
     try {
       resources = TokenNameFinderTrainerTool.loadResources(resourcesFolder.toFile(),
           featureGenerator.toAbsolutePath().toFile());
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new TerminateToolException(-1, e.getMessage(), e);
-    }
-    finally {
+    } finally {
       Files.delete(featureGenerator);
     }
 
@@ -105,8 +103,7 @@ public class TokenNameFinderModelTest {
       modelOut.close();
 
       Assert.assertTrue(model.exists());
-    }
-    finally {
+    } finally {
       model.delete();
       FileUtil.deleteDirectory(resourcesFolder.toFile());
     }

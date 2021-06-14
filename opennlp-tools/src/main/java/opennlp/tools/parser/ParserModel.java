@@ -46,41 +46,19 @@ import opennlp.tools.util.model.POSModelSerializer;
 // TODO: Model should validate the artifact map
 public class ParserModel extends BaseModel {
 
-  private static class HeadRulesSerializer implements
-      ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
-
-    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in)
-        throws IOException, InvalidFormatException {
-      return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(
-          new InputStreamReader(in, StandardCharsets.UTF_8)));
-    }
-
-    public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact,
-        OutputStream out) throws IOException {
-      artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-    }
-  }
-
   private static final String COMPONENT_NAME = "Parser";
-
   private static final String BUILD_MODEL_ENTRY_NAME = "build.model";
-
   private static final String CHECK_MODEL_ENTRY_NAME = "check.model";
-
   private static final String ATTACH_MODEL_ENTRY_NAME = "attach.model";
-
   private static final String PARSER_TAGGER_MODEL_ENTRY_NAME = "parsertager.postagger";
-
   private static final String CHUNKER_TAGGER_MODEL_ENTRY_NAME = "parserchunker.chunker";
-
   private static final String HEAD_RULES_MODEL_ENTRY_NAME = "head-rules.headrules";
-
   private static final String PARSER_TYPE = "parser-type";
 
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
-      MaxentModel attachModel, POSModel parserTagger,
-      ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
-      ParserType modelType, Map<String, String> manifestInfoEntries) {
+                     MaxentModel attachModel, POSModel parserTagger,
+                     ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
+                     ParserType modelType, Map<String, String> manifestInfoEntries) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
@@ -92,13 +70,11 @@ public class ParserModel extends BaseModel {
 
     if (ParserType.CHUNKING.equals(modelType)) {
       if (attachModel != null)
-          throw new IllegalArgumentException("attachModel must be null for chunking parser!");
-    }
-    else if (ParserType.TREEINSERT.equals(modelType)) {
+        throw new IllegalArgumentException("attachModel must be null for chunking parser!");
+    } else if (ParserType.TREEINSERT.equals(modelType)) {
       Objects.requireNonNull(attachModel, "attachModel must not be null");
       artifactMap.put(ATTACH_MODEL_ENTRY_NAME, attachModel);
-    }
-    else {
+    } else {
       throw new IllegalStateException("Unknown ParserType '" + modelType + "'!");
     }
 
@@ -111,18 +87,18 @@ public class ParserModel extends BaseModel {
   }
 
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
-      MaxentModel attachModel, POSModel parserTagger,
-      ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
-      ParserType modelType) {
-    this (languageCode, buildModel, checkModel, attachModel, parserTagger,
+                     MaxentModel attachModel, POSModel parserTagger,
+                     ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
+                     ParserType modelType) {
+    this(languageCode, buildModel, checkModel, attachModel, parserTagger,
         chunkerTagger, headRules, modelType, null);
   }
 
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
-      POSModel parserTagger, ChunkerModel chunkerTagger,
-      opennlp.tools.parser.HeadRules headRules, ParserType type,
-      Map<String, String> manifestInfoEntries) {
-    this (languageCode, buildModel, checkModel, null, parserTagger,
+                     POSModel parserTagger, ChunkerModel chunkerTagger,
+                     opennlp.tools.parser.HeadRules headRules, ParserType type,
+                     Map<String, String> manifestInfoEntries) {
+    this(languageCode, buildModel, checkModel, null, parserTagger,
         chunkerTagger, headRules, type, manifestInfoEntries);
   }
 
@@ -218,7 +194,7 @@ public class ParserModel extends BaseModel {
   protected void validateArtifactMap() throws InvalidFormatException {
     super.validateArtifactMap();
 
-    if (!(artifactMap.get(BUILD_MODEL_ENTRY_NAME)  instanceof AbstractModel)) {
+    if (!(artifactMap.get(BUILD_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
       throw new InvalidFormatException("Missing the build model!");
     }
 
@@ -227,34 +203,46 @@ public class ParserModel extends BaseModel {
     if (modelType != null) {
       if (ParserType.CHUNKING.equals(modelType)) {
         if (artifactMap.get(ATTACH_MODEL_ENTRY_NAME) != null)
-            throw new InvalidFormatException("attachModel must be null for chunking parser!");
-      }
-      else if (ParserType.TREEINSERT.equals(modelType)) {
-        if (!(artifactMap.get(ATTACH_MODEL_ENTRY_NAME)  instanceof AbstractModel))
+          throw new InvalidFormatException("attachModel must be null for chunking parser!");
+      } else if (ParserType.TREEINSERT.equals(modelType)) {
+        if (!(artifactMap.get(ATTACH_MODEL_ENTRY_NAME) instanceof AbstractModel))
           throw new InvalidFormatException("attachModel must not be null!");
-      }
-      else {
+      } else {
         throw new InvalidFormatException("Unknown ParserType '" + modelType + "'!");
       }
-    }
-    else {
+    } else {
       throw new InvalidFormatException("Missing the parser type property!");
     }
 
-    if (!(artifactMap.get(CHECK_MODEL_ENTRY_NAME)  instanceof AbstractModel)) {
+    if (!(artifactMap.get(CHECK_MODEL_ENTRY_NAME) instanceof AbstractModel)) {
       throw new InvalidFormatException("Missing the check model!");
     }
 
-    if (!(artifactMap.get(PARSER_TAGGER_MODEL_ENTRY_NAME)  instanceof POSModel)) {
+    if (!(artifactMap.get(PARSER_TAGGER_MODEL_ENTRY_NAME) instanceof POSModel)) {
       throw new InvalidFormatException("Missing the tagger model!");
     }
 
-    if (!(artifactMap.get(CHUNKER_TAGGER_MODEL_ENTRY_NAME)  instanceof ChunkerModel)) {
+    if (!(artifactMap.get(CHUNKER_TAGGER_MODEL_ENTRY_NAME) instanceof ChunkerModel)) {
       throw new InvalidFormatException("Missing the chunker model!");
     }
 
-    if (!(artifactMap.get(HEAD_RULES_MODEL_ENTRY_NAME)  instanceof HeadRules)) {
+    if (!(artifactMap.get(HEAD_RULES_MODEL_ENTRY_NAME) instanceof HeadRules)) {
       throw new InvalidFormatException("Missing the head rules!");
+    }
+  }
+
+  private static class HeadRulesSerializer implements
+      ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
+
+    public opennlp.tools.parser.lang.en.HeadRules create(InputStream in)
+        throws IOException, InvalidFormatException {
+      return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(
+          new InputStreamReader(in, StandardCharsets.UTF_8)));
+    }
+
+    public void serialize(opennlp.tools.parser.lang.en.HeadRules artifact,
+                          OutputStream out) throws IOException {
+      artifact.serialize(new OutputStreamWriter(out, StandardCharsets.UTF_8));
     }
   }
 }

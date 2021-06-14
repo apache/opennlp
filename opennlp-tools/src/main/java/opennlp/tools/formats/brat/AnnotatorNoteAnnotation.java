@@ -19,17 +19,17 @@ package opennlp.tools.formats.brat;
 
 
 public class AnnotatorNoteAnnotation extends BratAnnotation {
-  
+
   private final String attachedId;
-  
+
   protected AnnotatorNoteAnnotation(String id, String attachedId, String note) {
     super(id, "#AnnotationNote");
     this.attachedId = attachedId;
     this.setNote(note);
   }
-  
+
   public String getAttachedId() {
     return attachedId;
   }
-  
+
 }

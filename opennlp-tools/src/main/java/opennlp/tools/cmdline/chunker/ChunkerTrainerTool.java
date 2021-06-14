@@ -33,9 +33,6 @@ import opennlp.tools.util.model.ModelUtil;
 public class ChunkerTrainerTool
     extends AbstractTrainerTool<ChunkSample, TrainerToolParams> {
 
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
-  }
-
   public ChunkerTrainerTool() {
     super(ChunkSample.class, TrainerToolParams.class);
   }
@@ -67,8 +64,7 @@ public class ChunkerTrainerTool
           chunkerFactory);
     } catch (IOException e) {
       throw createTerminationIOException(e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -77,5 +73,8 @@ public class ChunkerTrainerTool
     }
 
     CmdLineUtil.writeModel("chunker", modelOutFile, model);
+  }
+
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 }

@@ -27,7 +27,7 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * The {@link Evaluator} is an abstract base class for evaluators.
- *
+ * <p>
  * Evaluation results are the arithmetic mean of the
  * scores calculated for each reference sample.
  */
@@ -52,11 +52,10 @@ public abstract class Evaluator<T> {
 
   /**
    * Evaluates the given reference sample object.
-   *
+   * <p>
    * The implementation has to update the score after every invocation.
    *
    * @param reference the reference sample.
-   *
    * @return the predicted sample
    */
   protected abstract T processSample(T reference);
@@ -72,8 +71,7 @@ public abstract class Evaluator<T> {
    * after every invocation.
    * </p>
    *
-   * @param sample
-   *          the sample to be evaluated
+   * @param sample the sample to be evaluated
    */
   public void evaluateSample(T sample) {
     T predicted = processSample(sample);
@@ -96,8 +94,7 @@ public abstract class Evaluator<T> {
    * {@link #evaluateSample(Object)} method.
    *
    * @param samples the stream of reference which
-   *     should be evaluated.
-   *
+   *                should be evaluated.
    * @throws IOException IOException
    */
   public void evaluate(ObjectStream<T> samples) throws IOException {

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package opennlp.tools.entitylinker;
+package opennlp.common.entitylinker;
 
 import java.io.IOException;
 import java.util.List;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * EntityLinkers establish connections to external data to enrich extracted
@@ -86,10 +86,10 @@ public interface EntityLinker<T extends Span> {
    *                         same sentence.Similar in nature to
    *                         Map&lt;SentenceIndex,List&lt;Name Spans For This
    *                         Sentence's Tokens&gt;&gt; @ return
-   * @param sentenceIndex the index to the sentence span that the tokens[]
-   *                      Span[] corresponds to
+   * @param sentenceIndex    the index to the sentence span that the tokens[]
+   *                         Span[] corresponds to
    * @return
    */
   List<T> find(String doctext, Span[] sentences, Span[][] tokensBySentence,
-      Span[][] namesBySentence, int sentenceIndex);
+               Span[][] namesBySentence, int sentenceIndex);
 }

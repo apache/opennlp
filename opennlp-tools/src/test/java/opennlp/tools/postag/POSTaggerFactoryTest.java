@@ -84,7 +84,7 @@ public class POSTaggerFactoryTest {
   @Test
   public void testPOSTaggerWithDefaultFactory() throws IOException {
     POSDictionary posDict = POSDictionary.create(POSDictionaryTest.class
-            .getResourceAsStream("TagDictionaryCaseSensitive.xml"));
+        .getResourceAsStream("TagDictionaryCaseSensitive.xml"));
     POSModel posModel = trainPOSModel(new POSTaggerFactory(null, null, posDict));
 
     POSTaggerFactory factory = posModel.getFactory();

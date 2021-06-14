@@ -37,7 +37,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
-import opennlp.tools.util.StringList;
+import opennlp.common.util.StringList;
 import opennlp.uima.namefind.NameFinder;
 import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.ExceptionMessages;
@@ -113,6 +113,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
    * Initializes the current instance with the given context.
    * <p>
    * Note: Do all initialization in this method, do not use the constructor.
+   *
    * @param context context to initialize
    */
   public void initialize(UimaContext context)
@@ -147,6 +148,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
 
   /**
    * Initializes the type system.
+   *
    * @param typeSystem type system to initialize
    */
   public void typeSystemInit(TypeSystem typeSystem)

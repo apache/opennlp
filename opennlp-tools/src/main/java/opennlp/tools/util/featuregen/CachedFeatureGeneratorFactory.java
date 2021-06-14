@@ -38,8 +38,14 @@ public class CachedFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("cache", new CachedFeatureGeneratorFactory());
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
+                                         FeatureGeneratorResourceProvider resourceManager)
+      throws InvalidFormatException {
 
     Element cachedGeneratorElement = null;
 
@@ -64,14 +70,9 @@ public class CachedFeatureGeneratorFactory
     return new CachedFeatureGenerator(cachedGenerator);
   }
 
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("cache", new CachedFeatureGeneratorFactory());
-  }
-
   @Override
   public AdaptiveFeatureGenerator create() throws InvalidFormatException {
-    AdaptiveFeatureGenerator generator = (AdaptiveFeatureGenerator)args.get("generator#0");
+    AdaptiveFeatureGenerator generator = (AdaptiveFeatureGenerator) args.get("generator#0");
     if (generator == null) {
       throw new InvalidFormatException("Could not find containing generator element!");
     }

@@ -30,15 +30,18 @@ public abstract class AbstractContextGenerator {
   protected static final String EOS = "eos";
 
   protected boolean zeroBackOff;
-  /** Set of punctuation to be used in generating features. */
+  /**
+   * Set of punctuation to be used in generating features.
+   */
   protected Set<String> punctSet;
   protected boolean useLabel;
 
   /**
    * Creates punctuation feature for the specified punctuation at the specified index
    * based on the punctuation mark.
+   *
    * @param punct The punctuation which is in context.
-   * @param i The index of the punctuation with relative to the parse.
+   * @param i     The index of the punctuation with relative to the parse.
    * @return Punctuation feature for the specified parse and the specified punctuation at the specfied index.
    */
   protected String punct(Parse punct, int i) {
@@ -48,8 +51,9 @@ public abstract class AbstractContextGenerator {
   /**
    * Creates punctuation feature for the specified punctuation at the specfied index
    * based on the punctuation's tag.
+   *
    * @param punct The punctuation which is in context.
-   * @param i The index of the punctuation relative to the parse.
+   * @param i     The index of the punctuation relative to the parse.
    * @return Punctuation feature for the specified parse and the specified punctuation at the specfied index.
    */
   protected String punctbo(Parse punct, int i) {
@@ -64,8 +68,7 @@ public abstract class AbstractContextGenerator {
         feat.append(p.getLabel()).append("|");
       }
       feat.append(p.getType()).append("|").append(p.getHead().getCoveredText());
-    }
-    else {
+    } else {
       feat.append(EOS);
     }
     return feat.toString();
@@ -79,8 +82,7 @@ public abstract class AbstractContextGenerator {
         feat.append(p.getLabel()).append("|");
       }
       feat.append(p.getType());
-    }
-    else {
+    } else {
       feat.append(EOS);
     }
     return feat.toString();
@@ -89,15 +91,16 @@ public abstract class AbstractContextGenerator {
   /**
    * Generates a string representing the grammar rule production that the specified parse
    * is starting.  The rule is of the form p.type -&gt; c.children[0..n].type.
-   * @param p The parse which stats teh production.
+   *
+   * @param p                  The parse which stats teh production.
    * @param includePunctuation Whether punctuation should be included in the production.
    * @return a string representing the grammar rule production that the specified parse
-   *     is starting.
+   * is starting.
    */
   protected String production(Parse p, boolean includePunctuation) {
     StringBuilder production = new StringBuilder(20);
     production.append(p.getType()).append("->");
-    Parse[] children = AbstractBottomUpParser.collapsePunctuation(p.getChildren(),punctSet);
+    Parse[] children = AbstractBottomUpParser.collapsePunctuation(p.getChildren(), punctSet);
     for (int ci = 0; ci < children.length; ci++) {
       production.append(children[ci].getType());
       if (ci + 1 != children.length) {
@@ -138,32 +141,32 @@ public abstract class AbstractContextGenerator {
         if (c0.unigram) features.add(c0.cons + "," + punctbo + "," + c1.consbo);
         features.add(c0.consbo + "," + punctbo + "," + c1.consbo);
       }
-    }
-    else {
+    } else {
       //cons(0),cons(1)
       if (bigram) features.add(c0.cons + "," + c1.cons);
-      if (c1.unigram)  features.add(c0.consbo + "," + c1.cons);
-      if (c0.unigram)  features.add(c0.cons + "," + c1.consbo);
+      if (c1.unigram) features.add(c0.consbo + "," + c1.cons);
+      if (c0.unigram) features.add(c0.cons + "," + c1.consbo);
       features.add(c0.consbo + "," + c1.consbo);
     }
   }
 
   /**
    * Creates cons features involving the 3 specified nodes and adds them to the specified feature list.
+   *
    * @param features The list of features.
-   * @param c0 The first node.
-   * @param c1 The second node.
-   * @param c2 The third node.
-   * @param punct1s The punctuation between the first and second node.
-   * @param punct2s The punctuation between the second and third node.
-   * @param trigram Specifies whether lexical tri-gram features between these nodes should be generated.
-   * @param bigram1 Specifies whether lexical bi-gram features between the first and second
-   *                node should be generated.
-   * @param bigram2 Specifies whether lexical bi-gram features between the second and third
-   *                node should be generated.
+   * @param c0       The first node.
+   * @param c1       The second node.
+   * @param c2       The third node.
+   * @param punct1s  The punctuation between the first and second node.
+   * @param punct2s  The punctuation between the second and third node.
+   * @param trigram  Specifies whether lexical tri-gram features between these nodes should be generated.
+   * @param bigram1  Specifies whether lexical bi-gram features between the first and second
+   *                 node should be generated.
+   * @param bigram2  Specifies whether lexical bi-gram features between the second and third
+   *                 node should be generated.
    */
   protected void cons3(List<String> features, Cons c0, Cons c1, Cons c2, Collection<Parse> punct1s,
-      Collection<Parse> punct2s, boolean trigram, boolean bigram1, boolean bigram2) {
+                       Collection<Parse> punct2s, boolean trigram, boolean bigram1, boolean bigram2) {
     //  features.add("stage=cons(0),cons(1),cons(2)");
     if (punct1s != null) {
       if (c0.index == -2) {
@@ -225,8 +228,7 @@ public abstract class AbstractContextGenerator {
             }
           }
         }
-      }
-      else { //punct1s == null
+      } else { //punct1s == null
         //cons(0),cons(1),punctbo(2),cons(2)
         for (Parse punct2 : punct2s) {
           String punctbo2 = punctbo(punct2, c2.index <= 0 ? c2.index - 1 : c2.index);
@@ -252,8 +254,7 @@ public abstract class AbstractContextGenerator {
           }
         }
       }
-    }
-    else {
+    } else {
       if (punct1s != null) {
         //cons(0),punctbo(1),cons(1),cons(2)
         for (Parse punct1 : punct1s) {
@@ -279,18 +280,17 @@ public abstract class AbstractContextGenerator {
 
           //zero backoff case covered by cons(0)cons(1)
         }
-      }
-      else {
+      } else {
         //cons(0),cons(1),cons(2)
-        if (trigram) features.add(c0.cons   + "," + c1.cons   + "," + c2.cons);
+        if (trigram) features.add(c0.cons + "," + c1.cons + "," + c2.cons);
 
-        if (bigram2) features.add(c0.consbo + "," + c1.cons   + "," + c2.cons);
-        if (c0.unigram && c2.unigram) features.add(c0.cons   + "," + c1.consbo + "," + c2.cons);
-        if (bigram1) features.add(c0.cons   + "," + c1.cons   + "," + c2.consbo);
+        if (bigram2) features.add(c0.consbo + "," + c1.cons + "," + c2.cons);
+        if (c0.unigram && c2.unigram) features.add(c0.cons + "," + c1.consbo + "," + c2.cons);
+        if (bigram1) features.add(c0.cons + "," + c1.cons + "," + c2.consbo);
 
         if (c2.unigram) features.add(c0.consbo + "," + c1.consbo + "," + c2.cons);
-        if (c1.unigram) features.add(c0.consbo + "," + c1.cons   + "," + c2.consbo);
-        if (c0.unigram) features.add(c0.cons   + "," + c1.consbo + "," + c2.consbo);
+        if (c1.unigram) features.add(c0.consbo + "," + c1.cons + "," + c2.consbo);
+        if (c0.unigram) features.add(c0.cons + "," + c1.consbo + "," + c2.consbo);
 
         features.add(c0.consbo + "," + c1.consbo + "," + c2.consbo);
       }
@@ -299,21 +299,22 @@ public abstract class AbstractContextGenerator {
 
   /**
    * Generates features for nodes surrounding a completed node of the specified type.
-   * @param node A surrounding node.
-   * @param i The index of the surrounding node with respect to the completed node.
-   * @param type The type of the completed node.
+   *
+   * @param node        A surrounding node.
+   * @param i           The index of the surrounding node with respect to the completed node.
+   * @param type        The type of the completed node.
    * @param punctuation The punctuation adjacent and between the specified surrounding node.
-   * @param features A list to which features are added.
+   * @param features    A list to which features are added.
    */
   protected void surround(Parse node, int i, String type, Collection<Parse> punctuation,
-      List<String> features) {
+                          List<String> features) {
     StringBuilder feat = new StringBuilder(20);
     feat.append("s").append(i).append("=");
     if (punctuation != null) {
       for (Parse punct : punctuation) {
         if (node != null) {
           feat.append(node.getHead().getCoveredText()).append("|").append(type)
-                  .append("|").append(node.getType()).append("|").append(punct.getType());
+              .append("|").append(node.getType()).append("|").append(punct.getType());
         } else {
           feat.append(type).append("|").append(EOS).append("|").append(punct.getType());
         }
@@ -333,13 +334,11 @@ public abstract class AbstractContextGenerator {
         feat.append(type).append("|").append(punct.getType());
         features.add(feat.toString());
       }
-    }
-    else {
+    } else {
       if (node != null) {
         feat.append(node.getHead().getCoveredText()).append("|").append(type)
             .append("|").append(node.getType());
-      }
-      else {
+      } else {
         feat.append(type).append("|").append(EOS);
       }
       features.add(feat.toString());
@@ -347,8 +346,7 @@ public abstract class AbstractContextGenerator {
       feat.append("s").append(i).append("*=");
       if (node != null) {
         feat.append(type).append("|").append(node.getType());
-      }
-      else {
+      } else {
         feat.append(type).append("|").append(EOS);
       }
       features.add(feat.toString());
@@ -359,9 +357,10 @@ public abstract class AbstractContextGenerator {
    * Produces features to determine whether the specified child node is part of
    * a complete constituent of the specified type and adds those features to the
    * specfied list.
-   * @param child The parse node to consider.
-   * @param i A string indicating the position of the child node.
-   * @param type The type of constituent being built.
+   *
+   * @param child    The parse node to consider.
+   * @param i        A string indicating the position of the child node.
+   * @param type     The type of constituent being built.
    * @param features List to add features to.
    */
   protected void checkcons(Parse child, String i, String type, List<String> features) {
@@ -398,7 +397,8 @@ public abstract class AbstractContextGenerator {
    * Populates specified nodes array with left-most right frontier
    * node with a unique head. If the right frontier doesn't contain
    * enough nodes, then nulls are placed in the array elements.
-   * @param rf The current right frontier.
+   *
+   * @param rf    The current right frontier.
    * @param nodes The array to be populated.
    */
   protected void getFrontierNodes(List<Parse> rf, Parse[] nodes) {

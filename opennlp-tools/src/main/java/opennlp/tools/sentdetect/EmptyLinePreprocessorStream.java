@@ -24,7 +24,7 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * Stream to to clean up empty lines for empty line separated document streams.<br>
- *
+ * <p>
  * - Skips empty line at training data start<br>
  * - Transforms multiple empty lines in a row into one <br>
  * - Replaces white space lines with empty lines <br>

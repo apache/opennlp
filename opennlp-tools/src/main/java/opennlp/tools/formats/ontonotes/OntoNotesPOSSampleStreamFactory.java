@@ -33,13 +33,13 @@ public class OntoNotesPOSSampleStreamFactory extends AbstractSampleStreamFactory
     super(OntoNotesFormatParameters.class);
   }
 
-  public ObjectStream<POSSample> create(String[] args) {
-    ObjectStream<Parse> parseSampleStream = parseSampleStreamFactory.create(args);
-    return new ParseToPOSSampleStream(parseSampleStream);
-  }
-
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class, "ontonotes",
         new OntoNotesPOSSampleStreamFactory());
+  }
+
+  public ObjectStream<POSSample> create(String[] args) {
+    ObjectStream<Parse> parseSampleStream = parseSampleStreamFactory.create(args);
+    return new ParseToPOSSampleStream(parseSampleStream);
   }
 }

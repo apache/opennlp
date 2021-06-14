@@ -27,68 +27,25 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.StringList;
 
 public class DetokenizationDictionary {
-
-  public enum Operation {
-
-    /**
-     * Attaches the token to the token on the right side.
-     */
-    MOVE_RIGHT,
-
-    /**
-     * Attaches the token to the token on the left side.
-     */
-    MOVE_LEFT,
-
-    /**
-     * Attaches the token to the token on the left and right sides.
-     */
-    MOVE_BOTH,
-
-    /**
-     * Attaches the token token to the right token on first occurrence, and
-     * to the token on the left side on the second occurrence.
-     */
-    RIGHT_LEFT_MATCHING;
-
-    public static Operation parse(String operation) {
-
-      if (MOVE_RIGHT.toString().equals(operation)) {
-        return MOVE_RIGHT;
-      }
-      else if (MOVE_LEFT.toString().equals(operation)) {
-        return MOVE_LEFT;
-      }
-      else if (MOVE_BOTH.toString().equals(operation)) {
-        return MOVE_BOTH;
-      }
-      else if (RIGHT_LEFT_MATCHING.toString().equals(operation)) {
-        return RIGHT_LEFT_MATCHING;
-      }
-      else {
-        return null;
-      }
-    }
-  }
 
   private final Map<String, DetokenizationDictionary.Operation> operationTable = new HashMap<>();
 
   /**
    * Initializes the current instance.
    *
-   * @param tokens an array of tokens that should be detokenized according to an operation
+   * @param tokens     an array of tokens that should be detokenized according to an operation
    * @param operations an array of operations which specifies which operation
-   *        should be used for the provided tokens
+   *                   should be used for the provided tokens
    */
   public DetokenizationDictionary(String[] tokens,
-      DetokenizationDictionary.Operation[] operations) {
+                                  DetokenizationDictionary.Operation[] operations) {
     if (tokens.length != operations.length)
       throw new IllegalArgumentException("tokens and ops must have the same length: tokens=" +
           tokens.length + ", operations=" + operations.length + "!");
@@ -167,5 +124,44 @@ public class DetokenizationDictionary {
     };
 
     DictionaryEntryPersistor.serialize(out, entries, false);
+  }
+
+  public enum Operation {
+
+    /**
+     * Attaches the token to the token on the right side.
+     */
+    MOVE_RIGHT,
+
+    /**
+     * Attaches the token to the token on the left side.
+     */
+    MOVE_LEFT,
+
+    /**
+     * Attaches the token to the token on the left and right sides.
+     */
+    MOVE_BOTH,
+
+    /**
+     * Attaches the token token to the right token on first occurrence, and
+     * to the token on the left side on the second occurrence.
+     */
+    RIGHT_LEFT_MATCHING;
+
+    public static Operation parse(String operation) {
+
+      if (MOVE_RIGHT.toString().equals(operation)) {
+        return MOVE_RIGHT;
+      } else if (MOVE_LEFT.toString().equals(operation)) {
+        return MOVE_LEFT;
+      } else if (MOVE_BOTH.toString().equals(operation)) {
+        return MOVE_BOTH;
+      } else if (RIGHT_LEFT_MATCHING.toString().equals(operation)) {
+        return RIGHT_LEFT_MATCHING;
+      } else {
+        return null;
+      }
+    }
   }
 }

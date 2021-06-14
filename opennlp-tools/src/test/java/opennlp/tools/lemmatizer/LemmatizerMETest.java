@@ -48,18 +48,15 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class LemmatizerMETest {
 
-  private LemmatizerME lemmatizer;
-
-  private static String[] tokens = { "Rockwell", "said", "the", "agreement", "calls", "for",
+  private static String[] tokens = {"Rockwell", "said", "the", "agreement", "calls", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipsets", "for",
-      "the", "planes", "." };
-
-  private static String[] postags = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
-      "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "." };
-
-  private static String[] expect = { "rockwell", "say", "the", "agreement", "call", "for",
+      "the", "planes", "."};
+  private static String[] postags = {"NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
+      "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "."};
+  private static String[] expect = {"rockwell", "say", "the", "agreement", "call", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipset", "for",
-      "the", "plane", "." };
+      "the", "plane", "."};
+  private LemmatizerME lemmatizer;
 
   @Before
   public void startup() throws IOException {
@@ -67,7 +64,7 @@ public class LemmatizerMETest {
 
     ObjectStream<LemmaSample> sampleStream = new LemmaSampleStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-          new File("opennlp/tools/lemmatizer/trial.old.tsv")), StandardCharsets.UTF_8));
+            new File("opennlp/tools/lemmatizer/trial.old.tsv")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
@@ -86,10 +83,10 @@ public class LemmatizerMETest {
 
     Assert.assertArrayEquals(expect, lemmas);
   }
-  
+
   @Test(expected = InsufficientTrainingDataException.class)
   public void testInsufficientData() throws IOException {
- 
+
     ObjectStream<LemmaSample> sampleStream = new LemmaSampleStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
             new File("opennlp/tools/lemmatizer/trial.old-insufficient.tsv")), StandardCharsets.UTF_8));

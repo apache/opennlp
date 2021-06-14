@@ -26,6 +26,10 @@ import java.util.Properties;
 
 class PropertiesSerializer implements ArtifactSerializer<Properties> {
 
+  static void register(Map<String, ArtifactSerializer> factories) {
+    factories.put("properties", new PropertiesSerializer());
+  }
+
   public Properties create(InputStream in) throws IOException {
     Properties properties = new Properties();
     properties.load(in);
@@ -34,9 +38,5 @@ class PropertiesSerializer implements ArtifactSerializer<Properties> {
 
   public void serialize(Properties properties, OutputStream out) throws IOException {
     properties.store(out, "");
-  }
-
-  static void register(Map<String, ArtifactSerializer> factories) {
-    factories.put("properties", new PropertiesSerializer());
   }
 }

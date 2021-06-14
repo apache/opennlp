@@ -32,25 +32,35 @@ import org.junit.Test;
 
 public class LemmaSampleTest {
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testParameterValidation() {
-    new LemmaSample(new String[] { "" }, new String[] { "" },
-        new String[] { "test", "one element to much" });
-  }
-
   private static String[] createSentence() {
-    return new String[] { "Forecasts", "for", "the", "trade", "figures",
-        "range", "widely", "." };
+    return new String[] {"Forecasts", "for", "the", "trade", "figures",
+        "range", "widely", "."};
   }
 
   private static String[] createTags() {
 
-    return new String[] { "NNS", "IN", "DT", "NN", "NNS", "VBP", "RB", "." };
+    return new String[] {"NNS", "IN", "DT", "NN", "NNS", "VBP", "RB", "."};
   }
 
   private static String[] createLemmas() {
-    return new String[] { "Forecast", "for", "the", "trade", "figure", "range",
-        "widely", "." };
+    return new String[] {"Forecast", "for", "the", "trade", "figure", "range",
+        "widely", "."};
+  }
+
+  public static LemmaSample createGoldSample() {
+    return new LemmaSample(createSentence(), createTags(), createLemmas());
+  }
+
+  public static LemmaSample createPredSample() {
+    String[] lemmas = createLemmas();
+    lemmas[5] = "figure";
+    return new LemmaSample(createSentence(), createTags(), lemmas);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParameterValidation() {
+    new LemmaSample(new String[] {""}, new String[] {""},
+        new String[] {"test", "one element to much"});
   }
 
   @Test
@@ -114,16 +124,6 @@ public class LemmaSampleTest {
     Assert.assertTrue(createGoldSample().equals(createGoldSample()));
     Assert.assertFalse(createPredSample().equals(createGoldSample()));
     Assert.assertFalse(createPredSample().equals(new Object()));
-  }
-
-  public static LemmaSample createGoldSample() {
-    return new LemmaSample(createSentence(), createTags(), createLemmas());
-  }
-
-  public static LemmaSample createPredSample() {
-    String[] lemmas = createLemmas();
-    lemmas[5] = "figure";
-    return new LemmaSample(createSentence(), createTags(), lemmas);
   }
 
 }

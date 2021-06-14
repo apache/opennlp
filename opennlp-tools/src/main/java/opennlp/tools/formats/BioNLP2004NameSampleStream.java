@@ -24,12 +24,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.common.util.Span;
+import opennlp.common.util.StringUtil;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for the training files of the BioNLP/NLPBA 2004 shared task.
@@ -92,8 +92,7 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
       if (fields.length == 2) {
         sentence.add(fields[0]);
         tags.add(fields[1]);
-      }
-      else {
+      } else {
         throw new IOException("Expected two fields per line in training data, got " +
             fields.length + " for line '" + line + "'!");
       }
@@ -134,18 +133,15 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
 
           beginIndex = i;
           endIndex = i + 1;
-        }
-        else if (tag.startsWith("I-")) {
+        } else if (tag.startsWith("I-")) {
           endIndex++;
-        }
-        else if (tag.equals("O")) {
+        } else if (tag.equals("O")) {
           if (beginIndex != -1) {
             names.add(new Span(beginIndex, endIndex, tags.get(beginIndex).substring(2)));
             beginIndex = -1;
             endIndex = -1;
           }
-        }
-        else {
+        } else {
           throw new IOException("Invalid tag: " + tag);
         }
       }
@@ -156,12 +152,10 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
 
       return new NameSample(sentence.toArray(new String[sentence.size()]),
           names.toArray(new Span[names.size()]), isClearAdaptiveData);
-    }
-    else if (line != null) {
+    } else if (line != null) {
       // Just filter out empty events, if two lines in a row are empty
       return read();
-    }
-    else {
+    } else {
       // source stream is not returning anymore lines
       return null;
     }

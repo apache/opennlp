@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Generates previous and next features for a given {@link AdaptiveFeatureGenerator}.
  * The window size can be specified.
- *
+ * <p>
  * Features:
  * Current token is always included unchanged
  * Previous tokens are prefixed with p distance
@@ -43,11 +43,11 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
   /**
    * Initializes the current instance with the given parameters.
    *
-   * @param generator Feature generator to apply to the window.
+   * @param generator      Feature generator to apply to the window.
    * @param prevWindowSize Size of the window to the left of the current token.
    * @param nextWindowSize Size of the window to the right of the current token.
    */
-  public WindowFeatureGenerator(AdaptiveFeatureGenerator generator, int prevWindowSize,  int nextWindowSize) {
+  public WindowFeatureGenerator(AdaptiveFeatureGenerator generator, int prevWindowSize, int nextWindowSize) {
     this.generator = generator;
     this.prevWindowSize = prevWindowSize;
     this.nextWindowSize = nextWindowSize;
@@ -61,7 +61,7 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
    * @param generators
    */
   public WindowFeatureGenerator(int prevWindowSize, int nextWindowSize,
-      AdaptiveFeatureGenerator... generators) {
+                                AdaptiveFeatureGenerator... generators) {
     this(new AggregatedFeatureGenerator(generators), prevWindowSize, nextWindowSize);
   }
 

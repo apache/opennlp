@@ -24,13 +24,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.common.util.Span;
+import opennlp.common.util.StringUtil;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for the Italian NER training files of the Evalita 2007 and 2009 NER  shared tasks.
@@ -42,10 +42,10 @@ import opennlp.tools.util.StringUtil;
  * <p>
  * The Named Entity tag consists of two parts:
  * 1. The  IOB2 tag: 'B'  (for 'begin')  denotes the  first token  of a
- *    Named Entity,  I (for 'inside')  is used for  all other tokens  in a
- *    Named Entity, and 'O' (for 'outside') is used for all other words;
+ * Named Entity,  I (for 'inside')  is used for  all other tokens  in a
+ * Named Entity, and 'O' (for 'outside') is used for all other words;
  * 2. The Entity  type tag: PER  (for Person), ORG  (for Organization),
- *    GPE (for Geo-Political Entity), or LOC (for Location).
+ * GPE (for Geo-Political Entity), or LOC (for Location).
  * <p>
  * Each file  consists of four  columns separated by a  blank, containing
  * respectively the  token, the Elsnet  PoS-tag, the Adige news  story to
@@ -58,20 +58,13 @@ import opennlp.tools.util.StringUtil;
  */
 public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
-  public enum LANGUAGE {
-    IT
-  }
-
   public static final int GENERATE_PERSON_ENTITIES = 0x01;
   public static final int GENERATE_ORGANIZATION_ENTITIES = 0x01 << 1;
   public static final int GENERATE_LOCATION_ENTITIES = 0x01 << 2;
   public static final int GENERATE_GPE_ENTITIES = 0x01 << 3;
-
   public static final String DOCSTART = "-DOCSTART-";
-
   private final LANGUAGE lang;
   private final ObjectStream<String> lineStream;
-
   private final int types;
 
   public EvalitaNameSampleStream(LANGUAGE lang, ObjectStream<String> lineStream, int types) {
@@ -98,23 +91,18 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
     if ("PER".equals(type)) {
       type = "person";
-    }
-    else if ("LOC".equals(type)) {
+    } else if ("LOC".equals(type)) {
       type = "location";
-    }
-    else if ("GPE".equals(type)) {
+    } else if ("GPE".equals(type)) {
       type = "gpe";
-    }
-    else if ("ORG".equals(type)) {
+    } else if ("ORG".equals(type)) {
       type = "organization";
-    }
-    else {
+    } else {
       throw new InvalidFormatException("Unknown type: " + type);
     }
 
     return new Span(begin, end, type);
   }
-
 
   public NameSample read() throws IOException {
 
@@ -144,8 +132,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
       if (LANGUAGE.IT.equals(lang) && fields.length == 4) {
         sentence.add(fields[0]);
         tags.add(fields[3]); // 3 is NE-TAG
-      }
-      else {
+      } else {
         throw new IOException("Incorrect number of fields per line for language: '" + line + "'!");
       }
     }
@@ -187,18 +174,15 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
           beginIndex = i;
           endIndex = i + 1;
-        }
-        else if (tag.startsWith("I-")) {
+        } else if (tag.startsWith("I-")) {
           endIndex++;
-        }
-        else if (tag.equals("O")) {
+        } else if (tag.equals("O")) {
           if (beginIndex != -1) {
             names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
             beginIndex = -1;
             endIndex = -1;
           }
-        }
-        else {
+        } else {
           throw new IOException("Invalid tag: " + tag);
         }
       }
@@ -209,12 +193,10 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
       return new NameSample(sentence.toArray(new String[sentence.size()]),
           names.toArray(new Span[names.size()]), isClearAdaptiveData);
-    }
-    else if (line != null) {
+    } else if (line != null) {
       // Just filter out empty events, if two lines in a row are empty
       return read();
-    }
-    else {
+    } else {
       // source stream is not returning anymore lines
       return null;
     }
@@ -226,6 +208,10 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
   public void close() throws IOException {
     lineStream.close();
+  }
+
+  public enum LANGUAGE {
+    IT
   }
 }
 

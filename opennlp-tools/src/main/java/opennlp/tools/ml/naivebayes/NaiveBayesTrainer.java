@@ -96,7 +96,7 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
   public NaiveBayesTrainer(TrainingParameters parameters) {
     super(parameters);
   }
-  
+
   public boolean isSortAndMerge() {
     return false;
   }

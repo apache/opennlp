@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.entitylinker;
+package opennlp.common.entitylinker;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,7 +25,6 @@ import java.util.Properties;
 
 /**
  * Properties wrapper for the EntityLinker framework
- *
  */
 public class EntityLinkerProperties {
 
@@ -44,11 +43,9 @@ public class EntityLinkerProperties {
   }
 
   /**
-   *
    * @param propertiesIn inputstream of properties file. Stream will not be
-   *                       closed
+   *                     closed
    * @throws IOException
-   *
    */
   public EntityLinkerProperties(InputStream propertiesIn) throws IOException {
     init(propertiesIn);
@@ -67,7 +64,6 @@ public class EntityLinkerProperties {
    * @param defaultValue a default value in case the key, or the value are
    *                     missing
    * @return a property value in the form of a string
-
    * @throws IOException when the  properties object was somehow not initialized properly
    */
   public String getProperty(String key, String defaultValue) throws IOException {

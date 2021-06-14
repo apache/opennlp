@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import opennlp.common.tokenize.Detokenizer;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
@@ -35,7 +35,7 @@ public abstract class AbstractToSentenceSampleStream<T> extends
   private final int chunkSize;
 
   AbstractToSentenceSampleStream(Detokenizer detokenizer,
-      ObjectStream<T> samples, int chunkSize) {
+                                 ObjectStream<T> samples, int chunkSize) {
     super(samples);
 
     this.detokenizer = Objects.requireNonNull(detokenizer, "detokenizer must not be null");
@@ -46,8 +46,7 @@ public abstract class AbstractToSentenceSampleStream<T> extends
 
     if (chunkSize > 0) {
       this.chunkSize = chunkSize;
-    }
-    else {
+    } else {
       this.chunkSize = Integer.MAX_VALUE;
     }
   }
@@ -67,8 +66,7 @@ public abstract class AbstractToSentenceSampleStream<T> extends
     if (sentences.size() > 0) {
       return new SentenceSample(detokenizer,
           sentences.toArray(new String[sentences.size()][]));
-    }
-    else if (posSample != null) {
+    } else if (posSample != null) {
       return read(); // filter out empty line
     }
 

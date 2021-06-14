@@ -31,7 +31,7 @@ import opennlp.tools.util.InvalidFormatException;
 public class LeipzigLanguageSampleStreamTest {
 
   private static String testDataPath = LeipzigLanguageSampleStreamTest.class
-          .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
+      .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
 
   @Test
   public void testReadSentenceFiles() {
@@ -40,7 +40,7 @@ public class LeipzigLanguageSampleStreamTest {
     int sentencesPerSample = 1;
     try {
       LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(new File(testDataPath),
-              sentencesPerSample, samplesPerLanguage);
+          sentencesPerSample, samplesPerLanguage);
       int count = 0;
       while (stream.read() != null)
         count++;
@@ -58,9 +58,9 @@ public class LeipzigLanguageSampleStreamTest {
     int sentencesPerSample = 2;
 
     LeipzigLanguageSampleStream stream =
-            new LeipzigLanguageSampleStream(new File(testDataPath),
-              sentencesPerSample, samplesPerLanguage);
-    while (stream.read() != null);
+        new LeipzigLanguageSampleStream(new File(testDataPath),
+            sentencesPerSample, samplesPerLanguage);
+    while (stream.read() != null) ;
 
   }
 

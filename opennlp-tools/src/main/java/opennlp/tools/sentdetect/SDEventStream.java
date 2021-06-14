@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import opennlp.common.util.Span;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
@@ -37,7 +37,7 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
    * @param samples
    */
   public SDEventStream(ObjectStream<SentenceSample> samples, SDContextGenerator cg,
-      EndOfSentenceScanner scanner) {
+                       EndOfSentenceScanner scanner) {
     super(samples);
 
     this.cg = cg;
@@ -53,7 +53,7 @@ public class SDEventStream extends AbstractEventStream<SentenceSample> {
       String sentenceString = sentenceSpan.getCoveredText(sample.getDocument()).toString();
 
       for (Iterator<Integer> it = scanner.getPositions(
-          sentenceString).iterator(); it.hasNext();) {
+          sentenceString).iterator(); it.hasNext(); ) {
 
         int candidate = it.next();
         String type = SentenceDetectorME.NO_SPLIT;

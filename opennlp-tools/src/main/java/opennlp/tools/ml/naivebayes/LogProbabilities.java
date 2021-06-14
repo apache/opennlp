@@ -28,7 +28,6 @@ import java.util.Map.Entry;
  * representation of very low probabilities such as would occur in a text categorizer.
  *
  * @param <T> the label (category) class
- *
  */
 public class LogProbabilities<T> extends Probabilities<T> {
 

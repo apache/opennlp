@@ -28,11 +28,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import opennlp.common.util.StringList;
+import opennlp.common.util.StringUtil;
 import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
-import opennlp.tools.util.StringList;
-import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.model.DictionarySerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
@@ -41,60 +41,10 @@ import opennlp.tools.util.model.SerializableArtifact;
  */
 public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
-  private class StringListWrapper {
-
-    private final StringList stringList;
-
-    private StringListWrapper(StringList stringList) {
-      this.stringList = stringList;
-    }
-
-    private StringList getStringList() {
-      return stringList;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-
-      boolean result;
-
-      if (obj == this) {
-        result = true;
-      }
-      else if (obj instanceof StringListWrapper) {
-        StringListWrapper other = (StringListWrapper) obj;
-
-        if (isCaseSensitive) {
-          result = this.stringList.equals(other.getStringList());
-        }
-        else {
-          result = this.stringList.compareToIgnoreCase(other.getStringList());
-        }
-      }
-      else {
-        result = false;
-      }
-
-      return result;
-    }
-
-    @Override
-    public int hashCode() {
-      // if lookup is too slow optimize this
-      return StringUtil.toLowerCase(this.stringList.toString()).hashCode();
-    }
-
-    @Override
-    public String toString() {
-      return this.stringList.toString();
-    }
-  }
-
-  private Set<StringListWrapper> entrySet = new HashSet<>();
   private final boolean isCaseSensitive;
+  private Set<StringListWrapper> entrySet = new HashSet<>();
   private int minTokenCount = 99999;
   private int maxTokenCount = 0;
-
 
   /**
    * Initializes an empty {@link Dictionary}.
@@ -102,6 +52,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   public Dictionary() {
     this(false);
   }
+
 
   public Dictionary(boolean caseSensitive) {
     isCaseSensitive = caseSensitive;
@@ -118,6 +69,39 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
+   * Reads a dictionary which has one entry per line. The tokens inside an
+   * entry are whitespace delimited.
+   *
+   * @param in {@link Reader}
+   * @return the parsed dictionary
+   * @throws IOException
+   */
+  public static Dictionary parseOneEntryPerLine(Reader in) throws IOException {
+    BufferedReader lineReader = new BufferedReader(in);
+
+    Dictionary dictionary = new Dictionary();
+
+    String line;
+
+    while ((line = lineReader.readLine()) != null) {
+      StringTokenizer whiteSpaceTokenizer = new StringTokenizer(line, " ");
+
+      String[] tokens = new String[whiteSpaceTokenizer.countTokens()];
+
+      if (tokens.length > 0) {
+        int tokenIndex = 0;
+        while (whiteSpaceTokenizer.hasMoreTokens()) {
+          tokens[tokenIndex++] = whiteSpaceTokenizer.nextToken();
+        }
+
+        dictionary.put(new StringList(tokens));
+      }
+    }
+
+    return dictionary;
+  }
+
+  /**
    * Adds the tokens to the dictionary as one new entry.
    *
    * @param tokens the new entry
@@ -129,7 +113,6 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
-   *
    * @return minimum token count in the dictionary
    */
   public int getMinTokenCount() {
@@ -137,7 +120,6 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
-   *
    * @return maximum token count in the dictionary
    */
   public int getMaxTokenCount() {
@@ -234,13 +216,11 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
     if (obj == this) {
       result = true;
-    }
-    else if (obj instanceof Dictionary) {
-      Dictionary dictionary  = (Dictionary) obj;
+    } else if (obj instanceof Dictionary) {
+      Dictionary dictionary = (Dictionary) obj;
 
       result = entrySet.equals(dictionary.entrySet);
-    }
-    else {
+    } else {
       result = false;
     }
 
@@ -258,42 +238,9 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
-   * Reads a dictionary which has one entry per line. The tokens inside an
-   * entry are whitespace delimited.
-   *
-   * @param in {@link Reader}
-   * @return the parsed dictionary
-   * @throws IOException
-   */
-  public static Dictionary parseOneEntryPerLine(Reader in) throws IOException {
-    BufferedReader lineReader = new BufferedReader(in);
-
-    Dictionary dictionary = new Dictionary();
-
-    String line;
-
-    while ((line = lineReader.readLine()) != null) {
-      StringTokenizer whiteSpaceTokenizer = new StringTokenizer(line, " ");
-
-      String[] tokens = new String[whiteSpaceTokenizer.countTokens()];
-
-      if (tokens.length > 0) {
-        int tokenIndex = 0;
-        while (whiteSpaceTokenizer.hasMoreTokens()) {
-          tokens[tokenIndex++] = whiteSpaceTokenizer.nextToken();
-        }
-
-        dictionary.put(new StringList(tokens));
-      }
-    }
-
-    return dictionary;
-  }
-
-  /**
    * Gets this dictionary as a {@code Set<String>}. Only {@code iterator()},
    * {@code size()} and {@code contains(Object)} methods are implemented.
-   *
+   * <p>
    * If this dictionary entries are multi tokens only the first token of the
    * entry will be part of the Set.
    *
@@ -345,10 +292,57 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
   /**
    * Gets the Serializer Class for {@link Dictionary}
+   *
    * @return {@link DictionarySerializer}
    */
   @Override
   public Class<?> getArtifactSerializerClass() {
     return DictionarySerializer.class;
+  }
+
+  private class StringListWrapper {
+
+    private final StringList stringList;
+
+    private StringListWrapper(StringList stringList) {
+      this.stringList = stringList;
+    }
+
+    private StringList getStringList() {
+      return stringList;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+      boolean result;
+
+      if (obj == this) {
+        result = true;
+      } else if (obj instanceof StringListWrapper) {
+        StringListWrapper other = (StringListWrapper) obj;
+
+        if (isCaseSensitive) {
+          result = this.stringList.equals(other.getStringList());
+        } else {
+          result = this.stringList.compareToIgnoreCase(other.getStringList());
+        }
+      } else {
+        result = false;
+      }
+
+      return result;
+    }
+
+    @Override
+    public int hashCode() {
+      // if lookup is too slow optimize this
+      return StringUtil.toLowerCase(this.stringList.toString()).hashCode();
+    }
+
+    @Override
+    public String toString() {
+      return this.stringList.toString();
+    }
   }
 }

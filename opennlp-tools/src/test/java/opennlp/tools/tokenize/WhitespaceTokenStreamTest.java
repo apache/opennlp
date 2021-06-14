@@ -22,9 +22,9 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.Span;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
-import opennlp.tools.util.Span;
 
 public class WhitespaceTokenStreamTest {
 
@@ -35,7 +35,7 @@ public class WhitespaceTokenStreamTest {
   public void testWhitespace() throws IOException {
     String text = " a b c  d    e        f     ";
     ObjectStream<TokenSample> sampleStream = new TokenSampleStream(
-            ObjectStreamUtils.createObjectStream(text));
+        ObjectStreamUtils.createObjectStream(text));
     WhitespaceTokenStream tokenStream = new WhitespaceTokenStream(sampleStream);
     String read = tokenStream.read();
     Assert.assertEquals("a b c d e f", read);
@@ -45,7 +45,7 @@ public class WhitespaceTokenStreamTest {
   public void testSeparatedString() throws IOException {
     String text = " a b<SPLIT>c   d<SPLIT>e   ";
     ObjectStream<TokenSample> sampleStream = new TokenSampleStream(
-            ObjectStreamUtils.createObjectStream(text));
+        ObjectStreamUtils.createObjectStream(text));
     WhitespaceTokenStream tokenStream = new WhitespaceTokenStream(sampleStream);
     String read = tokenStream.read();
     Assert.assertEquals("a b c d e", read);
@@ -65,18 +65,18 @@ public class WhitespaceTokenStreamTest {
     Assert.assertEquals(5, tokenSpans.length);
 
     Assert.assertEquals("a", tokenSpans[0].getCoveredText(read.getText()));
-    Assert.assertEquals(new Span(1,2), tokenSpans[0]);
+    Assert.assertEquals(new Span(1, 2), tokenSpans[0]);
 
     Assert.assertEquals("b", tokenSpans[1].getCoveredText(read.getText()));
-    Assert.assertEquals(new Span(3,4), tokenSpans[1]);
+    Assert.assertEquals(new Span(3, 4), tokenSpans[1]);
 
     Assert.assertEquals("c", tokenSpans[2].getCoveredText(read.getText()));
-    Assert.assertEquals(new Span(5,6), tokenSpans[2]);
+    Assert.assertEquals(new Span(5, 6), tokenSpans[2]);
 
     Assert.assertEquals("d", tokenSpans[3].getCoveredText(read.getText()));
-    Assert.assertEquals(new Span(8,9), tokenSpans[3]);
+    Assert.assertEquals(new Span(8, 9), tokenSpans[3]);
 
     Assert.assertEquals("e", tokenSpans[4].getCoveredText(read.getText()));
-    Assert.assertEquals(new Span(13,14), tokenSpans[4]);
+    Assert.assertEquals(new Span(13, 14), tokenSpans[4]);
   }
 }

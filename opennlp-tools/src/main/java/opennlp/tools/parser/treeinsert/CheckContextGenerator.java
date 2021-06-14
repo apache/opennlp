@@ -45,14 +45,14 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     List<String> features = new ArrayList<>(100);
     //default
     features.add("default");
-    Parse[] children = Parser.collapsePunctuation(parent.getChildren(),punctSet);
+    Parse[] children = Parser.collapsePunctuation(parent.getChildren(), punctSet);
     Parse pstart = children[0];
     Parse pend = children[children.length - 1];
     String type = parent.getType();
     checkcons(pstart, "begin", type, features);
     checkcons(pend, "last", type, features);
-    String production = "p=" + production(parent,false);
-    String punctProduction = "pp=" + production(parent,true);
+    String production = "p=" + production(parent, false);
+    String punctProduction = "pp=" + production(parent, true);
     features.add(production);
     features.add(punctProduction);
 
@@ -66,15 +66,13 @@ public class CheckContextGenerator extends AbstractContextGenerator {
     List<Parse> rf;
     if (index == 0) {
       rf = Collections.emptyList();
-    }
-    else {
+    } else {
       rf = Parser.getRightFrontier(constituents[0], punctSet);
       if (trimFrontier) {
         int pi = rf.indexOf(parent);
         if (pi == -1) {
           throw new RuntimeException("Parent not found in right frontier:" + parent + " rf=" + rf);
-        }
-        else {
+        } else {
           for (int ri = 0; ri <= pi; ri++) {
             rf.remove(0);
           }
@@ -82,7 +80,7 @@ public class CheckContextGenerator extends AbstractContextGenerator {
       }
     }
 
-    getFrontierNodes(rf,leftNodes);
+    getFrontierNodes(rf, leftNodes);
     Parse p_1 = leftNodes[0];
     Parse p_2 = leftNodes[1];
     int ps = constituents.length;

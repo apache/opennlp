@@ -47,19 +47,19 @@ public class ChunkerModel extends BaseModel {
   private static final String CHUNKER_MODEL_ENTRY_NAME = "chunker.model";
 
   public ChunkerModel(String languageCode, SequenceClassificationModel<String> chunkerModel,
-      Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
+                      Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
     checkArtifactMap();
   }
 
   public ChunkerModel(String languageCode, MaxentModel chunkerModel,
-      Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
+                      Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     this(languageCode, chunkerModel, ChunkerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, factory);
   }
 
   public ChunkerModel(String languageCode, MaxentModel chunkerModel, int beamSize,
-      Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
+                      Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
 
@@ -99,12 +99,12 @@ public class ChunkerModel extends BaseModel {
 
     // Since 1.8.0 we changed the ChunkerFactory signature. This will check the if the model
     // declares a not default factory, and if yes, check if it was created before 1.8
-    if ( (getManifestProperty(FACTORY_NAME) != null
-            && !getManifestProperty(FACTORY_NAME).equals("opennlp.tools.chunker.ChunkerFactory") )
+    if ((getManifestProperty(FACTORY_NAME) != null
+        && !getManifestProperty(FACTORY_NAME).equals("opennlp.tools.chunker.ChunkerFactory"))
         && this.getVersion().getMajor() <= 1
         && this.getVersion().getMinor() < 8) {
       throw new InvalidFormatException("The Chunker factory '" + getManifestProperty(FACTORY_NAME) +
-      "' is no longer compatible. Please update it to match the latest ChunkerFactory.");
+          "' is no longer compatible. Please update it to match the latest ChunkerFactory.");
     }
 
   }
@@ -116,8 +116,7 @@ public class ChunkerModel extends BaseModel {
   public MaxentModel getChunkerModel() {
     if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof MaxentModel) {
       return (MaxentModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
-    }
-    else {
+    } else {
       return null;
     }
   }
@@ -135,11 +134,9 @@ public class ChunkerModel extends BaseModel {
       }
 
       return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME));
-    }
-    else if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+    } else if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
       return (SequenceClassificationModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
-    }
-    else {
+    } else {
       return null;
     }
   }

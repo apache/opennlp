@@ -26,6 +26,83 @@ import org.junit.Test;
 
 public class CLITest {
 
+  private final SecurityManager originalSecurityManager = System.getSecurityManager();
+
+  @Before
+  public void installNoExitSecurityManager() {
+    System.setSecurityManager(new NoExitSecurityManager());
+  }
+
+  /**
+   * Ensure the main method does not fail to print help message.
+   */
+  @Test
+  public void testMainHelpMessage() {
+
+    try {
+      CLI.main(new String[] {});
+    } catch (ExitException e) {
+      Assert.assertEquals(0, e.status());
+    }
+  }
+
+  /**
+   * Ensure the main method prints error and returns 1.
+   */
+  @Test
+  public void testUnknownToolMessage() {
+    try {
+      CLI.main(new String[] {"unknown name"});
+    } catch (ExitException e) {
+      Assert.assertEquals(1, e.status());
+    }
+  }
+
+  /**
+   * Ensure the tool checks the parameter and returns 1.
+   */
+  @Test
+  public void testToolParameterMessage() {
+    try {
+      CLI.main(new String[] {"DoccatTrainer", "-param", "value"});
+    } catch (ExitException e) {
+      Assert.assertEquals(1, e.status());
+    }
+  }
+
+  /**
+   * Ensure the main method prints error and returns -1
+   */
+  @Test
+  public void testUnknownFileMessage() {
+    try {
+      CLI.main(new String[] {"Doccat", "unknown.model"});
+    } catch (ExitException e) {
+      Assert.assertEquals(-1, e.status());
+    }
+  }
+
+  /**
+   * Ensure all tools do not fail printing help message;
+   */
+  @Test
+  public void testHelpMessageOfTools() {
+
+    for (String toolName : CLI.getToolNames()) {
+      System.err.println("-> ToolName" + toolName);
+      try {
+        CLI.main(new String[] {toolName, "help"});
+      } catch (ExitException e) {
+        Assert.assertEquals(0, e.status());
+      }
+    }
+  }
+
+  @After
+  public void restoreSecurityManager() {
+    System.setSecurityManager(originalSecurityManager);
+  }
+
   private static class ExitException extends SecurityException {
     private final int status;
 
@@ -57,84 +134,6 @@ public class CLITest {
 
       throw new ExitException(status);
     }
-  }
-
-  private final SecurityManager originalSecurityManager = System.getSecurityManager();
-
-  @Before
-  public void installNoExitSecurityManager() {
-    System.setSecurityManager(new NoExitSecurityManager());
-  }
-
-  /**
-   * Ensure the main method does not fail to print help message.
-   */
-  @Test
-  public void testMainHelpMessage() {
-
-    try {
-      CLI.main(new String[]{});
-    } catch (ExitException e) {
-      Assert.assertEquals(0, e.status());
-    }
-  }
-
-  /**
-   * Ensure the main method prints error and returns 1.
-   */
-  @Test
-  public void testUnknownToolMessage() {
-    try {
-      CLI.main(new String[]{"unknown name"});
-    } catch (ExitException e) {
-      Assert.assertEquals(1, e.status());
-    }
-  }
-
-  /**
-   * Ensure the tool checks the parameter and returns 1.
-   */
-  @Test
-  public void testToolParameterMessage() {
-    try {
-      CLI.main(new String[]{"DoccatTrainer", "-param", "value"});
-    } catch (ExitException e) {
-      Assert.assertEquals(1, e.status());
-    }
-  }
-
-  /**
-   * Ensure the main method prints error and returns -1
-   */
-  @Test
-  public void testUnknownFileMessage() {
-    try {
-      CLI.main(new String[]{"Doccat", "unknown.model"});
-    } catch (ExitException e) {
-      Assert.assertEquals(-1, e.status());
-    }
-  }
-
-
-  /**
-   * Ensure all tools do not fail printing help message;
-   */
-  @Test
-  public void testHelpMessageOfTools() {
-
-    for (String toolName : CLI.getToolNames()) {
-      System.err.println("-> ToolName" + toolName);
-      try {
-        CLI.main(new String[]{toolName, "help"});
-      } catch (ExitException e) {
-        Assert.assertEquals(0, e.status());
-      }
-    }
-  }
-
-  @After
-  public void restoreSecurityManager() {
-    System.setSecurityManager(originalSecurityManager);
   }
 
 }

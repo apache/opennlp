@@ -55,7 +55,7 @@ public class PlainTextByLineStream implements ObjectStream<String> {
   public void reset() throws IOException {
 
     in = new BufferedReader(new InputStreamReader(inputStreamFactory.createInputStream(),
-          encoding));
+        encoding));
   }
 
   public void close() throws IOException {

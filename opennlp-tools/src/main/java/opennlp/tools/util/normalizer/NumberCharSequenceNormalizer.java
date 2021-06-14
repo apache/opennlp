@@ -31,7 +31,7 @@ public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
-  public CharSequence normalize (CharSequence text) {
+  public CharSequence normalize(CharSequence text) {
     return NUMBER_REGEX.matcher(text).replaceAll(" ");
   }
 }

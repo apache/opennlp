@@ -36,25 +36,6 @@ import opennlp.tools.util.ObjectStream;
 public class LeipzigLanguageSampleStreamFactory
     extends AbstractSampleStreamFactory<LanguageSample> {
 
-  interface Parameters extends EncodingParameter {
-    @ParameterDescription(valueName = "sentencesDir",
-        description = "dir with Leipig sentences to be used")
-    File getSentencesDir();
-
-    @ParameterDescription(valueName = "sentencesPerSample",
-        description = "number of sentences per sample")
-    String getSentencesPerSample();
-
-    @ParameterDescription(valueName = "samplesPerLanguage",
-        description = "number of samples per language")
-    String getSamplesPerLanguage();
-
-    @ParameterDescription(valueName = "samplesToSkip",
-        description = "number of samples to skip before returning")
-    @OptionalParameter(defaultValue = "0")
-    String getSamplesToSkip();
-  }
-
   protected <P> LeipzigLanguageSampleStreamFactory(Class<P> params) {
     super(params);
   }
@@ -72,11 +53,31 @@ public class LeipzigLanguageSampleStreamFactory
     try {
       return new SampleSkipStream(new SampleShuffleStream(
           new LeipzigLanguageSampleStream(sentencesFileDir,
-          Integer.parseInt(params.getSentencesPerSample()),
-          Integer.parseInt(params.getSamplesPerLanguage()) + Integer.parseInt(params.getSamplesToSkip()))),
+              Integer.parseInt(params.getSentencesPerSample()),
+              Integer.parseInt(params.getSamplesPerLanguage()) +
+                  Integer.parseInt(params.getSamplesToSkip()))),
           Integer.parseInt(params.getSamplesToSkip()));
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while opening sample data.", e);
     }
+  }
+
+  interface Parameters extends EncodingParameter {
+    @ParameterDescription(valueName = "sentencesDir",
+        description = "dir with Leipig sentences to be used")
+    File getSentencesDir();
+
+    @ParameterDescription(valueName = "sentencesPerSample",
+        description = "number of sentences per sample")
+    String getSentencesPerSample();
+
+    @ParameterDescription(valueName = "samplesPerLanguage",
+        description = "number of samples per language")
+    String getSamplesPerLanguage();
+
+    @ParameterDescription(valueName = "samplesToSkip",
+        description = "number of samples to skip before returning")
+    @OptionalParameter(defaultValue = "0")
+    String getSamplesToSkip();
   }
 }

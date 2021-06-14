@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.parser.AbstractContextGenerator;
 import opennlp.tools.parser.Cons;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.util.StringList;
 
 /**
  * Class to generator predictive contexts for deciding how constituents should be combined together.
@@ -39,7 +39,6 @@ public class BuildContextGenerator extends AbstractContextGenerator {
 
   /**
    * Creates a new context generator for making decisions about combining constitients togehter.
-   *
    */
   public BuildContextGenerator() {
     super();
@@ -63,8 +62,9 @@ public class BuildContextGenerator extends AbstractContextGenerator {
   /**
    * Returns the predictive context used to determine how constituent at the specified index
    * should be combined with other contisuents.
+   *
    * @param constituents The constituents which have yet to be combined into new constituents.
-   * @param index The index of the constituent whcihi is being considered.
+   * @param index        The index of the constituent whcihi is being considered.
    * @return the context for building constituents at the specified index.
    */
   public String[] getContext(Parse[] constituents, int index) {
@@ -197,11 +197,11 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     String consbop1 = consbo(p1, 1);
     String consbop2 = consbo(p2, 2);
 
-    Cons c_2 = new Cons(consp_2,consbop_2,-2,u_2);
-    Cons c_1 = new Cons(consp_1,consbop_1,-1,u_1);
-    Cons c0 = new Cons(consp0,consbop0,0,u0);
-    Cons c1 = new Cons(consp1,consbop1,1,u1);
-    Cons c2 = new Cons(consp2,consbop2,2,u2);
+    Cons c_2 = new Cons(consp_2, consbop_2, -2, u_2);
+    Cons c_1 = new Cons(consp_1, consbop_1, -1, u_1);
+    Cons c0 = new Cons(consp0, consbop0, 0, u0);
+    Cons c1 = new Cons(consp1, consbop1, 1, u1);
+    Cons c2 = new Cons(consp2, consbop2, 2, u2);
 
     //default
     features.add("default");
@@ -223,13 +223,13 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     features.add(consbop2);
 
     //cons(0),cons(1)
-    cons2(features,c0,c1,punct1s,b01);
+    cons2(features, c0, c1, punct1s, b01);
     //cons(-1),cons(0)
-    cons2(features,c_1,c0,punct_1s,b_10);
+    cons2(features, c_1, c0, punct_1s, b_10);
     //features.add("stage=cons(0),cons(1),cons(2)");
-    cons3(features,c0,c1,c2,punct1s,punct2s,t012,b01,b12);
-    cons3(features,c_2,c_1,c0,punct_2s,punct_1s,t_2_10,b_2_1,b_10);
-    cons3(features,c_1,c0,c1,punct_1s,punct1s,t_101,b_10,b01);
+    cons3(features, c0, c1, c2, punct1s, punct2s, t012, b01, b12);
+    cons3(features, c_2, c_1, c0, punct_2s, punct_1s, t_2_10, b_2_1, b_10);
+    cons3(features, c_1, c0, c1, punct_1s, punct1s, t_101, b_10, b01);
     //features.add("stage=other");
     String p0Tag = p0.getType();
     if (p0Tag.equals("-RRB-")) {

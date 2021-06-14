@@ -35,7 +35,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
 
   public String[] getContext(Object o) {
     Object[] parts = (Object[]) o;
-    return getContext((Parse[]) parts[0], (Integer) parts[1],(List<Parse>) parts[2], (Integer) parts[3]);
+    return getContext((Parse[]) parts[0], (Integer) parts[1], (List<Parse>) parts[2], (Integer) parts[3]);
   }
 
   private boolean containsPunct(Collection<Parse> puncts, String punct) {
@@ -50,9 +50,8 @@ public class AttachContextGenerator extends AbstractContextGenerator {
   }
 
   /**
-   *
-   * @param constituents The constituents as they have been constructed so far.
-   * @param index The constituent index of the node being attached.
+   * @param constituents  The constituents as they have been constructed so far.
+   * @param index         The constituent index of the node being attached.
    * @param rightFrontier The nodes which have been not attach to so far.
    * @return A set of contextual features about this attachment.
    */
@@ -89,11 +88,11 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     String consbop0 = consbo(p0, 0);
     String consbop1 = consbo(p1, 1);
 
-    Cons cfp = new Cons(consfp,consbofp,-3,true);
-    Cons cf = new Cons(consf,consbof,-2,true);
-    Cons c_1 = new Cons(consp_1,consbop_1,-1,true);
-    Cons c0 = new Cons(consp0,consbop0,0,true);
-    Cons c1 = new Cons(consp1,consbop1,1,true);
+    Cons cfp = new Cons(consfp, consbofp, -3, true);
+    Cons cf = new Cons(consf, consbof, -2, true);
+    Cons c_1 = new Cons(consp_1, consbop_1, -1, true);
+    Cons c0 = new Cons(consp0, consbop0, 0, true);
+    Cons c1 = new Cons(consp1, consbop1, 1, true);
 
     //default
     features.add("default");
@@ -111,7 +110,7 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     features.add(consbop1);
 
     //productions
-    String prod = production(fn,false);
+    String prod = production(fn, false);
     //String punctProd = production(fn,true,punctSet);
     features.add("pn=" + prod);
     features.add("pd=" + prod + "," + p0.getType());
@@ -127,13 +126,13 @@ public class AttachContextGenerator extends AbstractContextGenerator {
 
     //bi-grams
     //cons(fn),cons(0)
-    cons2(features,cfp,c0,punct_1s,true);
-    cons2(features,cf,c0,punct_1s,true);
-    cons2(features,c_1,c0,punct_1s,true);
-    cons2(features,c0,c1,punct1s,true);
-    cons3(features,cf,c_1,c0,null,punct_1s,true,true,true);
-    cons3(features,cf,c0,c1,punct_1s,punct1s,true,true,true);
-    cons3(features,cfp,cf,c0,null,punct_1s,true,true,true);
+    cons2(features, cfp, c0, punct_1s, true);
+    cons2(features, cf, c0, punct_1s, true);
+    cons2(features, c_1, c0, punct_1s, true);
+    cons2(features, c0, c1, punct1s, true);
+    cons3(features, cf, c_1, c0, null, punct_1s, true, true, true);
+    cons3(features, cf, c0, c1, punct_1s, punct1s, true, true, true);
+    cons3(features, cfp, cf, c0, null, punct_1s, true, true, true);
     /*
     for (int ri=0;ri<rfi;ri++) {
       Parse jn = (Parse) rightFrontier.get(ri);
@@ -148,8 +147,8 @@ public class AttachContextGenerator extends AbstractContextGenerator {
     features.add("hd=" + p0.getType() + "." + headDistance);
     //features.add("fs="+rightFrontier.size());
     //paired punct features
-    if (containsPunct(punct_1s,"''")) {
-      if (containsPunct(punct_1fs,"``")) {
+    if (containsPunct(punct_1s, "''")) {
+      if (containsPunct(punct_1fs, "``")) {
         features.add("quotematch");//? not generating feature correctly
 
       }

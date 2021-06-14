@@ -43,7 +43,7 @@ public class BilouNameFinderSequenceValidatorTest {
   public void testStartAsFirstLabel() {
     String outcome = START_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "something"};
-    String[] outcomesSequence = new String[] { };
+    String[] outcomesSequence = new String[] {};
     Assert.assertTrue(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
@@ -51,7 +51,7 @@ public class BilouNameFinderSequenceValidatorTest {
   public void testContinueAsFirstLabel() {
     String outcome = CONTINUE_A;
     String[] inputSequence = new String[] {"TypeA", "something", "something"};
-    String[] outcomesSequence = new String[] { };
+    String[] outcomesSequence = new String[] {};
     Assert.assertFalse(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
@@ -59,7 +59,7 @@ public class BilouNameFinderSequenceValidatorTest {
   public void testLastAsFirstLabel() {
     String outcome = LAST_A;
     String[] inputSequence = new String[] {"TypeA", "something", "something"};
-    String[] outcomesSequence = new String[] { };
+    String[] outcomesSequence = new String[] {};
     Assert.assertFalse(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
@@ -67,7 +67,7 @@ public class BilouNameFinderSequenceValidatorTest {
   public void testUnitAsFirstLabel() {
     String outcome = UNIT_A;
     String[] inputSequence = new String[] {"TypeA", "something", "something"};
-    String[] outcomesSequence = new String[] { };
+    String[] outcomesSequence = new String[] {};
     Assert.assertTrue(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
@@ -75,7 +75,7 @@ public class BilouNameFinderSequenceValidatorTest {
   public void testOtherAsFirstLabel() {
     String outcome = OTHER;
     String[] inputSequence = new String[] {"something", "TypeA", "something"};
-    String[] outcomesSequence = new String[] { };
+    String[] outcomesSequence = new String[] {};
     Assert.assertTrue(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
@@ -150,7 +150,7 @@ public class BilouNameFinderSequenceValidatorTest {
   }
 
   /**
-   *    Start, Unit => Invalid
+   * Start, Unit => Invalid
    */
   @Test
   public void testStartFollowedByUnit() {
@@ -262,7 +262,7 @@ public class BilouNameFinderSequenceValidatorTest {
   }
 
   /**
-   *    Last, Any Continue => Invalid
+   * Last, Any Continue => Invalid
    */
   @Test
   public void testLastFollowedByContinue() {
@@ -280,7 +280,7 @@ public class BilouNameFinderSequenceValidatorTest {
   }
 
   /**
-   *    Last, Any Last => Invalid
+   * Last, Any Last => Invalid
    */
   @Test
   public void testLastFollowedByLast() {

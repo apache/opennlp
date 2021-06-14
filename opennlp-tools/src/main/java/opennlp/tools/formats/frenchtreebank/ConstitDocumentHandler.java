@@ -25,10 +25,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import opennlp.common.util.Span;
 import opennlp.tools.parser.AbstractBottomUpParser;
 import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.Parse;
-import opennlp.tools.util.Span;
 
 class ConstitDocumentHandler extends DefaultHandler {
 
@@ -38,31 +38,26 @@ class ConstitDocumentHandler extends DefaultHandler {
   private static final String SENT_TYPE_NAME = "S";
 
   private final List<Parse> parses;
-
-  private boolean insideSentenceElement;
-
   /**
    * A token buffer, a token might be build up by multiple
    * {@link #characters(char[], int, int)} calls.
    */
   private final StringBuilder tokenBuffer = new StringBuilder();
-
   private final StringBuilder text = new StringBuilder();
-
-  private int offset;
   private final Stack<Constituent> stack = new Stack<>();
   private final List<Constituent> cons = new LinkedList<>();
+  private boolean insideSentenceElement;
+  private int offset;
+  private String cat;
+  private String subcat;
 
   ConstitDocumentHandler(List<Parse> parses) {
     this.parses = parses;
   }
 
-  private String cat;
-  private String subcat;
-
   @Override
   public void startElement(String uri, String localName, String qName,
-      Attributes attributes) throws SAXException {
+                           Attributes attributes) throws SAXException {
 
     String type = qName;
 
@@ -76,8 +71,7 @@ class ConstitDocumentHandler extends DefaultHandler {
       type = SENT_TYPE_NAME;
 
       insideSentenceElement = true;
-    }
-    else if (WORD_ELEMENT_NAME.equals(qName)) {
+    } else if (WORD_ELEMENT_NAME.equals(qName)) {
 
       // Note:
       // If there are compound words they are represented in a couple
@@ -107,13 +101,11 @@ class ConstitDocumentHandler extends DefaultHandler {
 
       if (cat != null) {
         type = cat + (subcat != null ? subcat : "");
-      }
-      else {
+      } else {
         String catint = attributes.getValue("catint");
         if (catint != null) {
           type = cat + catint;
-        }
-        else {
+        } else {
           type = cat + subcat;
         }
       }
@@ -145,8 +137,7 @@ class ConstitDocumentHandler extends DefaultHandler {
 
           text.append(token).append(" ");
           offset += token.length() + 1;
-        }
-        else {
+        } else {
           isCreateConstituent = false;
         }
       }
@@ -166,7 +157,7 @@ class ConstitDocumentHandler extends DefaultHandler {
 
         String txt = text.toString();
         int tokenIndex = -1;
-        Parse p = new Parse(txt, new Span(0, txt.length()), AbstractBottomUpParser.TOP_NODE, 1,0);
+        Parse p = new Parse(txt, new Span(0, txt.length()), AbstractBottomUpParser.TOP_NODE, 1, 0);
         for (Constituent con : cons) {
           String type = con.getLabel();
           if (!type.equals(AbstractBottomUpParser.TOP_NODE)) {

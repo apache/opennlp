@@ -54,12 +54,10 @@ public abstract class ModelLoader<T> {
     try (InputStream modelIn = new BufferedInputStream(
         CmdLineUtil.openInFile(modelFile), CmdLineUtil.IO_BUFFER_SIZE)) {
       model = loadModel(modelIn);
-    }
-    catch (InvalidFormatException e) {
+    } catch (InvalidFormatException e) {
       System.err.println("failed");
       throw new TerminateToolException(-1, "Model has invalid format", e);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while loading model file '" + modelFile + "'", e);
     }

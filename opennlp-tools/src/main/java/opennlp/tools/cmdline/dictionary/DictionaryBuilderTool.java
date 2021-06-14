@@ -32,9 +32,6 @@ import opennlp.tools.dictionary.Dictionary;
 
 public class DictionaryBuilderTool extends BasicCmdLineTool {
 
-  interface Params extends DictionaryBuilderParams {
-  }
-
   public String getShortDescription() {
     return "builds a new dictionary";
   }
@@ -54,7 +51,7 @@ public class DictionaryBuilderTool extends BasicCmdLineTool {
     CmdLineUtil.checkOutputFile("dictionary output file", dictOutFile);
 
     try (InputStreamReader in = new InputStreamReader(new FileInputStream(dictInFile), encoding);
-        OutputStream out = new FileOutputStream(dictOutFile)) {
+         OutputStream out = new FileOutputStream(dictOutFile)) {
 
       Dictionary dict = Dictionary.parseOneEntryPerLine(in);
       dict.serialize(out);
@@ -63,5 +60,8 @@ public class DictionaryBuilderTool extends BasicCmdLineTool {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
           + e.getMessage(), e);
     }
+  }
+
+  interface Params extends DictionaryBuilderParams {
   }
 }

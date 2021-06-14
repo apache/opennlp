@@ -42,20 +42,20 @@ public class FileToStringSampleStreamTest {
 
     final String sentence1 = "This is a sentence.";
     final String sentence2 = "This is another sentence.";
-  
+
     List<String> sentences = Arrays.asList(sentence1, sentence2);
-    
+
     DirectorySampleStream directorySampleStream =
         new DirectorySampleStream(directory.getRoot(), null, false);
-      
+
     File tempFile1 = directory.newFile();
     FileUtils.writeStringToFile(tempFile1, sentence1);
-    
+
     File tempFile2 = directory.newFile();
     FileUtils.writeStringToFile(tempFile2, sentence2);
-    
+
     try (FileToStringSampleStream stream =
-        new FileToStringSampleStream(directorySampleStream, Charset.defaultCharset())) {
+             new FileToStringSampleStream(directorySampleStream, Charset.defaultCharset())) {
 
       String read = stream.read();
       Assert.assertTrue(sentences.contains(read));

@@ -45,13 +45,107 @@ import opennlp.tools.util.ObjectStream;
  */
 public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStream.Sentence> {
 
+  /**
+   * The start sentence pattern
+   */
+  private static final Pattern sentStart = Pattern.compile("<s[^>]*>");
+  /**
+   * The end sentence pattern
+   */
+  private static final Pattern sentEnd = Pattern.compile("</s>");
+  private static final Pattern extEnd = Pattern.compile("</ext>");
+  /**
+   * The start sentence pattern
+   */
+  private static final Pattern titleStart = Pattern.compile("<t[^>]*>");
+  /**
+   * The end sentence pattern
+   */
+  private static final Pattern titleEnd = Pattern.compile("</t>");
+  /**
+   * The start sentence pattern
+   */
+  private static final Pattern boxStart = Pattern.compile("<caixa[^>]*>");
+  /**
+   * The end sentence pattern
+   */
+  private static final Pattern boxEnd = Pattern.compile("</caixa>");
+  /**
+   * The start sentence pattern
+   */
+  private static final Pattern paraStart = Pattern.compile("<p[^>]*>");
+  /**
+   * The start sentence pattern
+   */
+  private static final Pattern textStart = Pattern.compile("<ext[^>]*>");
+  private SentenceParser parser;
+  private int paraID = 0;
+  private boolean isTitle = false;
+  private boolean isBox = false;
+
+  public ADSentenceStream(ObjectStream<String> lineStream) {
+    super(lineStream);
+    parser = new SentenceParser();
+  }
+
+  public Sentence read() throws IOException {
+
+    StringBuilder sentence = new StringBuilder();
+    boolean sentenceStarted = false;
+
+    while (true) {
+      String line = samples.read();
+
+      if (line != null) {
+
+        if (sentenceStarted) {
+          if (sentEnd.matcher(line).matches() || extEnd.matcher(line).matches()) {
+            sentenceStarted = false;
+          } else if (!line.startsWith("A1")) {
+            sentence.append(line).append('\n');
+          }
+        } else {
+          if (sentStart.matcher(line).matches()) {
+            sentenceStarted = true;
+          } else if (paraStart.matcher(line).matches()) {
+            paraID++;
+          } else if (titleStart.matcher(line).matches()) {
+            isTitle = true;
+          } else if (titleEnd.matcher(line).matches()) {
+            isTitle = false;
+          } else if (textStart.matcher(line).matches()) {
+            paraID = 0;
+          } else if (boxStart.matcher(line).matches()) {
+            isBox = true;
+          } else if (boxEnd.matcher(line).matches()) {
+            isBox = false;
+          }
+        }
+
+
+        if (!sentenceStarted && sentence.length() > 0) {
+          return parser.parse(sentence.toString(), paraID, isTitle, isBox);
+        }
+
+      } else {
+        // handle end of file
+        if (sentenceStarted) {
+          if (sentence.length() > 0) {
+            return parser.parse(sentence.toString(), paraID, isTitle, isBox);
+          }
+        } else {
+          return null;
+        }
+      }
+    }
+  }
+
   public static class Sentence {
 
+    public static final String META_LABEL_FINAL = "final";
     private String text;
     private Node root;
     private String metadata;
-
-    public static final String META_LABEL_FINAL = "final";
 
     public String getText() {
       return text;
@@ -69,12 +163,12 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       this.root = root;
     }
 
-    public void setMetadata(String metadata) {
-      this.metadata = metadata;
-    }
-
     public String getMetadata() {
       return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+      this.metadata = metadata;
     }
 
   }
@@ -94,7 +188,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         .compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
     private Pattern punctuationPattern = Pattern.compile("^(=*)(\\W+)$");
 
-    private String text,meta;
+    private String text, meta;
 
     /**
      * Parse the sentence
@@ -173,7 +267,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
               Node nephew = nodeStack.pop();
             }
 
-            if (element.isLeaf() ) {
+            if (element.isLeaf()) {
               // 2a) If the element is a leaf and there is no parent candidate,
               // add it as a daughter of the root.
               if (nodeStack.isEmpty()) {
@@ -237,8 +331,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     /**
      * Parse a tree element from a AD line
      *
-     * @param line
-     *          the AD line
+     * @param line the AD line
      * @return the tree element
      */
     public TreeElement getElement(String line) {
@@ -340,7 +433,9 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       return leaf;
     }
 
-    /** Represents a tree element, Node or Leaf */
+    /**
+     * Represents a tree element, Node or Leaf
+     */
     public abstract class TreeElement {
 
       private String syntacticTag;
@@ -351,32 +446,34 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return false;
       }
 
-      public void setSyntacticTag(String syntacticTag) {
-        this.syntacticTag = syntacticTag;
-      }
-
       public String getSyntacticTag() {
         return syntacticTag;
       }
 
-      public void setLevel(int level) {
-        this.level = level;
+      public void setSyntacticTag(String syntacticTag) {
+        this.syntacticTag = syntacticTag;
       }
 
       public int getLevel() {
         return level;
       }
 
-      public void setMorphologicalTag(String morphologicalTag) {
-        this.morphologicalTag = morphologicalTag;
+      public void setLevel(int level) {
+        this.level = level;
       }
 
       public String getMorphologicalTag() {
         return morphologicalTag;
       }
+
+      public void setMorphologicalTag(String morphologicalTag) {
+        this.morphologicalTag = morphologicalTag;
+      }
     }
 
-    /** Represents the AD node */
+    /**
+     * Represents the AD node
+     */
     public class Node extends TreeElement {
       private List<TreeElement> elems = new ArrayList<>();
 
@@ -407,7 +504,9 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       }
     }
 
-    /** Represents the AD leaf */
+    /**
+     * Represents the AD leaf
+     */
     public class Leaf extends TreeElement {
 
       private String word;
@@ -420,28 +519,28 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return true;
       }
 
-      public void setFunctionalTag(String funcTag) {
-        this.functionalTag = funcTag;
-      }
-
       public String getFunctionalTag() {
         return this.functionalTag;
       }
 
-      public void setSecondaryTag(String secondaryTag) {
-        this.secondaryTag = secondaryTag;
+      public void setFunctionalTag(String funcTag) {
+        this.functionalTag = funcTag;
       }
 
       public String getSecondaryTag() {
         return this.secondaryTag;
       }
 
-      public void setLexeme(String lexeme) {
-        this.word = lexeme;
+      public void setSecondaryTag(String secondaryTag) {
+        this.secondaryTag = secondaryTag;
       }
 
       public String getLexeme() {
         return word;
+      }
+
+      public void setLexeme(String lexeme) {
+        this.word = lexeme;
       }
 
       private String emptyOrString(String value, String prefix, String suffix) {
@@ -467,120 +566,14 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return sb.toString();
       }
 
-      public void setLemma(String lemma) {
-        this.lemma = lemma;
-      }
-
       public String getLemma() {
         return lemma;
       }
-    }
 
-  }
-
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern sentStart = Pattern.compile("<s[^>]*>");
-
-  /**
-   * The end sentence pattern
-   */
-  private static final Pattern sentEnd = Pattern.compile("</s>");
-  private static final Pattern extEnd = Pattern.compile("</ext>");
-
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern titleStart = Pattern.compile("<t[^>]*>");
-
-  /**
-   * The end sentence pattern
-   */
-  private static final Pattern titleEnd = Pattern.compile("</t>");
-
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern boxStart = Pattern.compile("<caixa[^>]*>");
-
-  /**
-   * The end sentence pattern
-   */
-  private static final Pattern boxEnd = Pattern.compile("</caixa>");
-
-
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern paraStart = Pattern.compile("<p[^>]*>");
-
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern textStart = Pattern.compile("<ext[^>]*>");
-
-  private SentenceParser parser;
-
-  private int paraID = 0;
-  private boolean isTitle = false;
-  private boolean isBox = false;
-
-  public ADSentenceStream(ObjectStream<String> lineStream) {
-    super(lineStream);
-    parser = new SentenceParser();
-  }
-
-
-  public Sentence read() throws IOException {
-
-    StringBuilder sentence = new StringBuilder();
-    boolean sentenceStarted = false;
-
-    while (true) {
-      String line = samples.read();
-
-      if (line != null) {
-
-        if (sentenceStarted) {
-          if (sentEnd.matcher(line).matches() || extEnd.matcher(line).matches()) {
-            sentenceStarted = false;
-          } else if (!line.startsWith("A1")) {
-            sentence.append(line).append('\n');
-          }
-        } else {
-          if (sentStart.matcher(line).matches()) {
-            sentenceStarted = true;
-          } else if (paraStart.matcher(line).matches()) {
-            paraID++;
-          } else if (titleStart.matcher(line).matches()) {
-            isTitle = true;
-          } else if (titleEnd.matcher(line).matches()) {
-            isTitle = false;
-          } else if (textStart.matcher(line).matches()) {
-            paraID = 0;
-          } else if (boxStart.matcher(line).matches()) {
-            isBox = true;
-          } else if (boxEnd.matcher(line).matches()) {
-            isBox = false;
-          }
-        }
-
-
-        if (!sentenceStarted && sentence.length() > 0) {
-          return parser.parse(sentence.toString(), paraID, isTitle, isBox);
-        }
-
-      } else {
-        // handle end of file
-        if (sentenceStarted) {
-          if (sentence.length() > 0) {
-            return parser.parse(sentence.toString(), paraID, isTitle, isBox);
-          }
-        } else {
-          return null;
-        }
+      public void setLemma(String lemma) {
+        this.lemma = lemma;
       }
     }
+
   }
 }

@@ -33,7 +33,8 @@ import opennlp.tools.util.ObjectStreamUtils;
  */
 public class OnePassDataIndexer extends AbstractDataIndexer {
 
-  public OnePassDataIndexer(){}
+  public OnePassDataIndexer() {
+  }
 
   @Override
   public void index(ObjectStream<Event> eventStream) throws IOException {
@@ -66,16 +67,14 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
    * <tt>cutoff</tt> times are added to the <tt>predicatesInOut</tt> map along
    * with a unique integer index.
    *
-   * @param eventStream
-   *          an <code>EventStream</code> value
-   * @param predicatesInOut
-   *          a <code>TObjectIntHashMap</code> value
-   * @param cutoff
-   *          an <code>int</code> value
+   * @param eventStream     an <code>EventStream</code> value
+   * @param predicatesInOut a <code>TObjectIntHashMap</code> value
+   * @param cutoff          an <code>int</code> value
    * @return a <code>TLinkedList</code> value
    */
   private List<Event> computeEventCounts(ObjectStream<Event> eventStream,
-      Map<String, Integer> predicatesInOut, int cutoff) throws IOException {
+                                         Map<String, Integer> predicatesInOut, int cutoff)
+      throws IOException {
 
     Map<String, Integer> counter = new HashMap<>();
     List<Event> events = new LinkedList<>();

@@ -33,6 +33,7 @@ public interface EndOfSentenceScanner {
 
   /**
    * Returns an array of character which can indicate the end of a sentence.
+   *
    * @return an array of character which can indicate the end of a sentence.
    */
   @Deprecated
@@ -40,6 +41,7 @@ public interface EndOfSentenceScanner {
 
   /**
    * Returns a set of character which can indicate the end of a sentence.
+   *
    * @return a set of character which can indicate the end of a sentence.
    */
   Set<Character> getEOSCharacters();

@@ -41,7 +41,7 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
    */
   public DefaultEndOfSentenceScanner(char[] eosCharacters) {
     this.eosCharacters = new HashSet<>();
-    for (char eosChar: eosCharacters) {
+    for (char eosChar : eosCharacters) {
       this.eosCharacters.add(eosChar);
     }
     this.eosChars = eosCharacters;

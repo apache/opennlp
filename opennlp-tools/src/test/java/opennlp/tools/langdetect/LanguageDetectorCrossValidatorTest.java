@@ -34,7 +34,6 @@ public class LanguageDetectorCrossValidatorTest {
     params.put(TrainingParameters.CUTOFF_PARAM, 5);
     params.put("PrintMessages", false);
 
-
     final AtomicInteger correctCount = new AtomicInteger();
     final AtomicInteger incorrectCount = new AtomicInteger();
 
@@ -42,13 +41,13 @@ public class LanguageDetectorCrossValidatorTest {
         new LanguageDetectorFactory(), new LanguageDetectorEvaluationMonitor() {
           @Override
           public void correctlyClassified(LanguageSample reference,
-                                          LanguageSample prediction) {
+                                      LanguageSample prediction) {
             correctCount.incrementAndGet();
           }
 
           @Override
           public void missclassified(LanguageSample reference,
-                                     LanguageSample prediction) {
+                                 LanguageSample prediction) {
             incorrectCount.incrementAndGet();
           }
         });

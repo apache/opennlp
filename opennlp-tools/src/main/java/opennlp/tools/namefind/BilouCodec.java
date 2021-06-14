@@ -23,9 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.common.util.Span;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
-import opennlp.tools.util.Span;
 
 public class BilouCodec implements SequenceCodec<String> {
 
@@ -45,18 +45,15 @@ public class BilouCodec implements SequenceCodec<String> {
       if (chunkTag.endsWith(BilouCodec.START)) {
         start = li;
         end = li + 1;
-      }
-      else if (chunkTag.endsWith(BilouCodec.CONTINUE)) {
+      } else if (chunkTag.endsWith(BilouCodec.CONTINUE)) {
         end = li + 1;
-      }
-      else if (chunkTag.endsWith(LAST)) {
+      } else if (chunkTag.endsWith(LAST)) {
         if (start != -1) {
           spans.add(new Span(start, end + 1, BioCodec.extractNameType(c.get(li - 1))));
           start = -1;
           end = -1;
         }
-      }
-      else if (chunkTag.endsWith(UNIT)) {
+      } else if (chunkTag.endsWith(UNIT)) {
         spans.add(new Span(li, li + 1, BioCodec.extractNameType(c.get(li))));
       }
     }
@@ -74,32 +71,27 @@ public class BilouCodec implements SequenceCodec<String> {
       if (name.length() > 1) {
         if (name.getType() == null) {
           outcomes[name.getStart()] = "default" + "-" + BilouCodec.START;
-        }
-        else {
+        } else {
           outcomes[name.getStart()] = name.getType() + "-" + BilouCodec.START;
         }
         // now iterate from begin + 1 till end
         for (int i = name.getStart() + 1; i < name.getEnd() - 1; i++) {
           if (name.getType() == null) {
             outcomes[i] = "default" + "-" + BilouCodec.CONTINUE;
-          }
-          else {
+          } else {
             outcomes[i] = name.getType() + "-" + BilouCodec.CONTINUE;
           }
         }
 
         if (name.getType() == null) {
           outcomes[name.getEnd() - 1] = "default" + "-" + BilouCodec.LAST;
-        }
-        else {
+        } else {
           outcomes[name.getEnd() - 1] = name.getType() + "-" + BilouCodec.LAST;
         }
-      }
-      else {
+      } else {
         if (name.getType() == null) {
           outcomes[name.getEnd() - 1] = "default" + "-" + BilouCodec.UNIT;
-        }
-        else {
+        } else {
           outcomes[name.getEnd() - 1] = name.getType() + "-" + BilouCodec.UNIT;
         }
       }
@@ -121,7 +113,6 @@ public class BilouCodec implements SequenceCodec<String> {
    * U requires none
    *
    * @param outcomes all possible model outcomes
-   *
    * @return true, if model outcomes are compatible
    */
   @Override
@@ -134,16 +125,16 @@ public class BilouCodec implements SequenceCodec<String> {
     for (String outcome : outcomes) {
       if (outcome.endsWith(BilouCodec.START)) {
         start.add(outcome.substring(0, outcome.length()
-                - BilouCodec.START.length()));
+            - BilouCodec.START.length()));
       } else if (outcome.endsWith(BilouCodec.CONTINUE)) {
         cont.add(outcome.substring(0, outcome.length()
-                - BilouCodec.CONTINUE.length()));
+            - BilouCodec.CONTINUE.length()));
       } else if (outcome.endsWith(BilouCodec.LAST)) {
         last.add(outcome.substring(0, outcome.length()
-                - BilouCodec.LAST.length()));
+            - BilouCodec.LAST.length()));
       } else if (outcome.endsWith(BilouCodec.UNIT)) {
         unit.add(outcome.substring(0, outcome.length()
-                - BilouCodec.UNIT.length()));
+            - BilouCodec.UNIT.length()));
       } else if (!outcome.equals(BilouCodec.OTHER)) {
         return false;
       }

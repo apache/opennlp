@@ -30,7 +30,7 @@ public class Event {
   private final float[] values;
 
   public Event(String outcome, String[] context) {
-    this(outcome,context,null);
+    this(outcome, context, null);
   }
 
   public Event(String outcome, String[] context, float[] values) {

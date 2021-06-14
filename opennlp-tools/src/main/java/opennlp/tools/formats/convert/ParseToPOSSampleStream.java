@@ -29,7 +29,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ParseToPOSSampleStream extends FilterObjectStream<Parse, POSSample>  {
+public class ParseToPOSSampleStream extends FilterObjectStream<Parse, POSSample> {
 
   public ParseToPOSSampleStream(ObjectStream<Parse> samples) {
     super(samples);
@@ -50,8 +50,7 @@ public class ParseToPOSSampleStream extends FilterObjectStream<Parse, POSSample>
       }
 
       return new POSSample(sentence, tags);
-    }
-    else {
+    } else {
       return null;
     }
   }

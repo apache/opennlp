@@ -32,18 +32,16 @@ public class PosTaggerFeatureGenerator implements AdaptiveFeatureGenerator {
     tagprev = tagprevprev = null;
 
     if (index - 1 >= 0) {
-      prev =  tokens[index - 1];
-      tagprev =  tags[index - 1];
+      prev = tokens[index - 1];
+      tagprev = tags[index - 1];
 
       if (index - 2 >= 0) {
         prevprev = tokens[index - 2];
         tagprevprev = tags[index - 2];
-      }
-      else {
+      } else {
         prevprev = SB;
       }
-    }
-    else {
+    } else {
       prev = SB;
     }
 

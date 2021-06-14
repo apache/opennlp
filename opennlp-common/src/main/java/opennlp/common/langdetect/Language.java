@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.langdetect;
+package opennlp.common.langdetect;
 
 import java.io.Serializable;
 import java.util.Objects;

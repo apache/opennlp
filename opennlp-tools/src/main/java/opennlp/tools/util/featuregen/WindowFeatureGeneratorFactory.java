@@ -37,8 +37,14 @@ public class WindowFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("window", new WindowFeatureGeneratorFactory());
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager)  throws InvalidFormatException {
+                                         FeatureGeneratorResourceProvider resourceManager)
+      throws InvalidFormatException {
 
     Element nestedGeneratorElement = null;
 
@@ -86,14 +92,9 @@ public class WindowFeatureGeneratorFactory
     return new WindowFeatureGenerator(nestedGenerator, prevLength, nextLength);
   }
 
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("window", new WindowFeatureGeneratorFactory());
-  }
-
   @Override
   public AdaptiveFeatureGenerator create() throws InvalidFormatException {
-    AdaptiveFeatureGenerator generator = (AdaptiveFeatureGenerator)args.get("generator#0");
+    AdaptiveFeatureGenerator generator = (AdaptiveFeatureGenerator) args.get("generator#0");
     if (generator == null) {
       throw new InvalidFormatException("window feature generator must contain" +
           " an aggregator element");

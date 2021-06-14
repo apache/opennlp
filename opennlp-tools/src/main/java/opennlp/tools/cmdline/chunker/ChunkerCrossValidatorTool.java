@@ -37,9 +37,6 @@ import opennlp.tools.util.model.ModelUtil;
 public final class ChunkerCrossValidatorTool
     extends AbstractCrossValidatorTool<ChunkSample, CVToolParams> {
 
-  interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
-  }
-
   public ChunkerCrossValidatorTool() {
     super(ChunkSample.class, CVToolParams.class);
   }
@@ -76,11 +73,9 @@ public final class ChunkerCrossValidatorTool
           chunkerFactory,
           listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
       validator.evaluate(sampleStream, params.getFolds());
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw createTerminationIOException(e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -94,5 +89,8 @@ public final class ChunkerCrossValidatorTool
     } else {
       System.out.println(detailedFMeasureListener);
     }
+  }
+
+  interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
   }
 }

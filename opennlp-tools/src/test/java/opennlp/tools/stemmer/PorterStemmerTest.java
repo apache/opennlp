@@ -31,10 +31,10 @@ public class PorterStemmerTest {
 
   @Test
   public void testStemming() {
-    Assert.assertEquals(stemmer.stem("deny"), "deni" );
-    Assert.assertEquals(stemmer.stem("declining"), "declin" );
-    Assert.assertEquals(stemmer.stem("diversity"), "divers" );
-    Assert.assertEquals(stemmer.stem("divers"), "diver" );
-    Assert.assertEquals(stemmer.stem("dental"), "dental" );
+    Assert.assertEquals(stemmer.stem("deny"), "deni");
+    Assert.assertEquals(stemmer.stem("declining"), "declin");
+    Assert.assertEquals(stemmer.stem("diversity"), "divers");
+    Assert.assertEquals(stemmer.stem("divers"), "diver");
+    Assert.assertEquals(stemmer.stem("dental"), "dental");
   }
 }

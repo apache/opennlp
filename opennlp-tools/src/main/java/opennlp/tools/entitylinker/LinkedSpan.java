@@ -19,11 +19,10 @@ package opennlp.tools.entitylinker;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * An "default" extended span that holds additional information about the Span
- *
  *
  * @param <T>
  */
@@ -67,7 +66,6 @@ public class LinkedSpan<T extends BaseLink> extends Span {
   /**
    * Sets the n best linked entries from an external data source. For instance,
    * this will hold gazateer entries for a search into a geonames gazateer
-   *
    */
   public void setLinkedEntries(ArrayList<T> linkedEntries) {
     this.linkedEntries = linkedEntries;

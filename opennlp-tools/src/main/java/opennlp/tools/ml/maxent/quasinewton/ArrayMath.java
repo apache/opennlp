@@ -25,9 +25,10 @@ public class ArrayMath extends opennlp.tools.ml.ArrayMath {
 
   /**
    * Find index of maximum element in the vector x
+   *
    * @param x input vector
    * @return index of the maximum element. Index of the first
-   *     maximum element is returned if multiple maximums are found.
+   * maximum element is returned if multiple maximums are found.
    */
   public static int maxIdx(double[] x) {
     return opennlp.tools.ml.ArrayMath.argmax(x);

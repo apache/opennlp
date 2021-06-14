@@ -31,9 +31,8 @@ public class Factory {
    * Gets the alpha numeric pattern for the language. Please save the value
    * locally because this call is expensive.
    *
-   * @param languageCode
-   *          the language code. If null or unknow the default pattern will be
-   *          returned.
+   * @param languageCode the language code. If null or unknow the default pattern will be
+   *                     returned.
    * @return the alpha numeric pattern for the language or the default pattern.
    */
   public Pattern getAlphanumeric(String languageCode) {

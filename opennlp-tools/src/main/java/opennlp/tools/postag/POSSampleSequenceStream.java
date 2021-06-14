@@ -71,7 +71,7 @@ public class POSSampleSequenceStream implements SequenceStream {
 
         events[i] = new Event(tags[i], context);
       }
-      Sequence<POSSample> sequence = new Sequence<POSSample>(events,sample);
+      Sequence<POSSample> sequence = new Sequence<POSSample>(events, sample);
       return sequence;
     }
 

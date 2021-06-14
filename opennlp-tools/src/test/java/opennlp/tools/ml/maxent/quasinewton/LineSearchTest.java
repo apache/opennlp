@@ -29,10 +29,10 @@ public class LineSearchTest {
   public void testLineSearchDeterminesSaneStepLength1() {
     Function objectiveFunction = new QuadraticFunction1();
     // given
-    double[] testX = new double[] { 0 };
+    double[] testX = new double[] {0};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
@@ -46,10 +46,10 @@ public class LineSearchTest {
   public void testLineSearchDeterminesSaneStepLength2() {
     Function objectiveFunction = new QuadraticFunction2();
     // given
-    double[] testX = new double[] { -2 };
+    double[] testX = new double[] {-2};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
@@ -61,12 +61,12 @@ public class LineSearchTest {
 
   @Test
   public void testLineSearchFailsWithWrongDirection1() {
-    Function  objectiveFunction = new QuadraticFunction1();
+    Function objectiveFunction = new QuadraticFunction1();
     // given
-    double[] testX = new double[] { 0 };
+    double[] testX = new double[] {0};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { -1 };
+    double[] testDirection = new double[] {-1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
@@ -81,10 +81,10 @@ public class LineSearchTest {
   public void testLineSearchFailsWithWrongDirection2() {
     Function objectiveFunction = new QuadraticFunction2();
     // given
-    double[] testX = new double[] { -2 };
+    double[] testX = new double[] {-2};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { -1 };
+    double[] testDirection = new double[] {-1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
@@ -99,10 +99,10 @@ public class LineSearchTest {
   public void testLineSearchFailsWithWrongDirection3() {
     Function objectiveFunction = new QuadraticFunction1();
     // given
-    double[] testX = new double[] { 4 };
+    double[] testX = new double[] {4};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
@@ -117,10 +117,10 @@ public class LineSearchTest {
   public void testLineSearchFailsWithWrongDirection4() {
     Function objectiveFunction = new QuadraticFunction2();
     // given
-    double[] testX = new double[] { 2 };
+    double[] testX = new double[] {2};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
@@ -135,10 +135,10 @@ public class LineSearchTest {
   public void testLineSearchFailsAtMinimum1() {
     Function objectiveFunction = new QuadraticFunction2();
     // given
-    double[] testX = new double[] { 0 };
+    double[] testX = new double[] {0};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { -1 };
+    double[] testDirection = new double[] {-1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
@@ -153,10 +153,10 @@ public class LineSearchTest {
   public void testLineSearchFailsAtMinimum2() {
     Function objectiveFunction = new QuadraticFunction2();
     // given
-    double[] testX = new double[] { 0 };
+    double[] testX = new double[] {0};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);

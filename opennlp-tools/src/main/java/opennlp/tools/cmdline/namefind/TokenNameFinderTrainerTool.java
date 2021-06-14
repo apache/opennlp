@@ -44,16 +44,8 @@ import opennlp.tools.util.model.ModelUtil;
 public final class TokenNameFinderTrainerTool
     extends AbstractTrainerTool<NameSample, TrainerToolParams> {
 
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
-
-  }
-
   public TokenNameFinderTrainerTool() {
     super(NameSample.class, TrainerToolParams.class);
-  }
-
-  public String getShortDescription() {
-    return "trainer for the learnable name finder";
   }
 
   static byte[] openFeatureGeneratorBytes(String featureGenDescriptorFile) {
@@ -81,7 +73,8 @@ public final class TokenNameFinderTrainerTool
   /**
    * Load the resources, such as dictionaries, by reading the feature xml descriptor
    * and looking into the directory passed as argument.
-   * @param resourcePath the directory in which the resources are to be found
+   *
+   * @param resourcePath         the directory in which the resources are to be found
    * @param featureGenDescriptor the feature xml descriptor
    * @return a map consisting of the file name of the resource and its corresponding Object
    */
@@ -110,6 +103,10 @@ public final class TokenNameFinderTrainerTool
     return resources;
   }
 
+  public String getShortDescription() {
+    return "trainer for the learnable name finder";
+  }
+
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -129,8 +126,7 @@ public final class TokenNameFinderTrainerTool
     Map<String, Object> resources;
     try {
       resources = loadResources(params.getResources(), params.getFeaturegen());
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new TerminateToolException(-1, e.getMessage(), e);
     }
 
@@ -145,8 +141,7 @@ public final class TokenNameFinderTrainerTool
 
     if ("BIO".equals(sequenceCodecImplName)) {
       sequenceCodecImplName = BioCodec.class.getName();
-    }
-    else if ("BILOU".equals(sequenceCodecImplName)) {
+    } else if ("BILOU".equals(sequenceCodecImplName)) {
       sequenceCodecImplName = BilouCodec.class.getName();
     }
 
@@ -169,11 +164,9 @@ public final class TokenNameFinderTrainerTool
       model = opennlp.tools.namefind.NameFinderME.train(
           params.getLang(), params.getType(), sampleStream, mlParams,
           nameFinderFactory);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw createTerminationIOException(e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -186,6 +179,10 @@ public final class TokenNameFinderTrainerTool
     System.out.println();
 
     CmdLineUtil.writeModel("name finder", modelOutFile, model);
+
+  }
+
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
 
   }
 }

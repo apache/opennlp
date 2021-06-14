@@ -35,16 +35,13 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class SentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends BasicFormatParams {
+  protected <P> SentenceSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         StreamFactoryRegistry.DEFAULT_FORMAT, new SentenceSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> SentenceSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<SentenceSample> create(String[] args) {
@@ -61,5 +58,8 @@ public class SentenceSampleStreamFactory extends AbstractSampleStreamFactory<Sen
     }
 
     return new SentenceSampleStream(lineStream);
+  }
+
+  interface Parameters extends BasicFormatParams {
   }
 }

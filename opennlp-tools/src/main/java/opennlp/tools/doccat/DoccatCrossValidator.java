@@ -45,7 +45,7 @@ public class DoccatCrossValidator {
    * {@link FeatureGenerator}s.
    */
   public DoccatCrossValidator(String languageCode, TrainingParameters mlParams,
-      DoccatFactory factory, DoccatEvaluationMonitor ... listeners) {
+                              DoccatFactory factory, DoccatEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = mlParams;
     this.listeners = listeners;
@@ -55,11 +55,8 @@ public class DoccatCrossValidator {
   /**
    * Starts the evaluation.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   *
+   * @param samples the data to train and test
+   * @param nFolds  number of folds
    * @throws IOException
    */
   public void evaluate(ObjectStream<DocumentSample> samples, int nFolds)

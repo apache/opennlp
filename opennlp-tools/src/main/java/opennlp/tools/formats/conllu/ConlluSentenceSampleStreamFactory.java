@@ -30,20 +30,14 @@ import opennlp.tools.util.ObjectStream;
 
 public class ConlluSentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends BasicFormatParams {
-    @ArgumentParser.ParameterDescription(valueName = "sentencesPerSample",
-        description = "number of sentences per sample")
-    String getSentencesPerSample();
+  protected <P> ConlluSentenceSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
         new ConlluSentenceSampleStreamFactory(ConlluSentenceSampleStreamFactory.Parameters.class));
-  }
-
-  protected <P> ConlluSentenceSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   @Override
@@ -61,5 +55,11 @@ public class ConlluSentenceSampleStreamFactory extends AbstractSampleStreamFacto
       CmdLineUtil.handleCreateObjectStreamError(e);
     }
     return null;
+  }
+
+  interface Parameters extends BasicFormatParams {
+    @ArgumentParser.ParameterDescription(valueName = "sentencesPerSample",
+        description = "number of sentences per sample")
+    String getSentencesPerSample();
   }
 }

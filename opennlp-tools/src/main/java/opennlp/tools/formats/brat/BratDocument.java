@@ -39,7 +39,7 @@ public class BratDocument {
   private final Map<String, BratAnnotation> annotationMap;
 
   public BratDocument(AnnotationConfiguration config, String id, String text,
-      Collection<BratAnnotation> annotations) {
+                      Collection<BratAnnotation> annotations) {
     this.config = config;
     this.id = id;
     this.text = text;
@@ -48,7 +48,7 @@ public class BratDocument {
     List<AnnotatorNoteAnnotation> noteList = new ArrayList<>();
     for (BratAnnotation annotation : annotations) {
       if (annotation instanceof AnnotatorNoteAnnotation) {
-        noteList.add((AnnotatorNoteAnnotation)annotation);
+        noteList.add((AnnotatorNoteAnnotation) annotation);
       } else {
         annMap.put(annotation.getId(), annotation);
       }
@@ -57,38 +57,18 @@ public class BratDocument {
     // attach AnnotatorNote to the appropriate Annotation.
     // the note should ALWAYS have an appropriate id in the map,
     // but just to be safe, check for null.
-    for (AnnotatorNoteAnnotation note: noteList) {
+    for (AnnotatorNoteAnnotation note : noteList) {
       BratAnnotation annotation = annMap.get(note.getAttachedId());
       if (annotation != null) {
         annotation.setNote(note.getNote());
       }
     }
-    
+
     annotationMap = Collections.unmodifiableMap(annMap);
   }
 
-  public AnnotationConfiguration getConfig() {
-    return config;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public String getText() {
-    return text;
-  }
-
-  public BratAnnotation getAnnotation(String id) {
-    return annotationMap.get(id);
-  }
-
-  public Collection<BratAnnotation> getAnnotations() {
-    return annotationMap.values();
-  }
-
   public static BratDocument parseDocument(AnnotationConfiguration config, String id,
-      InputStream txtIn, InputStream annIn) throws IOException {
+                                           InputStream txtIn, InputStream annIn) throws IOException {
 
     Reader txtReader = new InputStreamReader(txtIn, StandardCharsets.UTF_8);
 
@@ -110,5 +90,25 @@ public class BratDocument {
     annStream.close();
 
     return new BratDocument(config, id, text.toString(), annotations);
+  }
+
+  public AnnotationConfiguration getConfig() {
+    return config;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public String getText() {
+    return text;
+  }
+
+  public BratAnnotation getAnnotation(String id) {
+    return annotationMap.get(id);
+  }
+
+  public Collection<BratAnnotation> getAnnotations() {
+    return annotationMap.values();
   }
 }

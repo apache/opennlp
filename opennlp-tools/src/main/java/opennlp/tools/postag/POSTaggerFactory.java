@@ -54,9 +54,9 @@ public class POSTaggerFactory extends BaseToolFactory {
 
 
   protected Dictionary ngramDictionary;
+  protected TagDictionary posDictionary;
   private byte[] featureGeneratorBytes;
   private Map<String, Object> resources;
-  protected TagDictionary posDictionary;
 
   /**
    * Creates a {@link POSTaggerFactory} that provides the default implementation
@@ -71,9 +71,8 @@ public class POSTaggerFactory extends BaseToolFactory {
    *
    * @param ngramDictionary
    * @param posDictionary
-   *
    * @deprecated this constructor is here for backward compatibility and
-   *             is not functional anymore in the training of 1.8.x series models
+   * is not functional anymore in the training of 1.8.x series models
    */
   @Deprecated
   public POSTaggerFactory(Dictionary ngramDictionary, TagDictionary posDictionary) {
@@ -95,18 +94,6 @@ public class POSTaggerFactory extends BaseToolFactory {
     this.posDictionary = posDictionary;
   }
 
-  @Deprecated // will be removed when only 8 series models are supported
-  protected void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
-    this.ngramDictionary = ngramDictionary;
-    this.posDictionary = posDictionary;
-  }
-
-  protected void init(byte[] featureGeneratorBytes, final Map<String, Object> resources,
-                      TagDictionary posDictionary) {
-    this.featureGeneratorBytes = featureGeneratorBytes;
-    this.resources = resources;
-    this.posDictionary = posDictionary;
-  }
   private static byte[] loadDefaultFeatureGeneratorBytes() {
 
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -122,18 +109,75 @@ public class POSTaggerFactory extends BaseToolFactory {
       while ((len = in.read(buf)) > 0) {
         bytes.write(buf, 0, len);
       }
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new IllegalStateException("Failed reading from pos-default-features.xml file on classpath!");
     }
 
     return bytes.toByteArray();
   }
 
+  @Deprecated
+  public static POSTaggerFactory create(String subclassName,
+                                        Dictionary ngramDictionary, TagDictionary posDictionary)
+      throws InvalidFormatException {
+    if (subclassName == null) {
+      // will create the default factory
+      return new POSTaggerFactory(ngramDictionary, posDictionary);
+    }
+    try {
+      POSTaggerFactory theFactory = ExtensionLoader.instantiateExtension(
+          POSTaggerFactory.class, subclassName);
+      theFactory.init(ngramDictionary, posDictionary);
+      return theFactory;
+    } catch (Exception e) {
+      String msg = "Could not instantiate the " + subclassName
+          + ". The initialization throw an exception.";
+      throw new InvalidFormatException(msg, e);
+    }
+  }
+
+  public static POSTaggerFactory create(String subclassName, byte[] featureGeneratorBytes,
+                                        Map<String, Object> resources, TagDictionary posDictionary)
+      throws InvalidFormatException {
+
+    POSTaggerFactory theFactory;
+
+    if (subclassName == null) {
+      // will create the default factory
+      theFactory = new POSTaggerFactory(null, posDictionary);
+    } else {
+      try {
+        theFactory = ExtensionLoader.instantiateExtension(
+            POSTaggerFactory.class, subclassName);
+      } catch (Exception e) {
+        String msg = "Could not instantiate the " + subclassName
+            + ". The initialization throw an exception.";
+        throw new InvalidFormatException(msg, e);
+      }
+    }
+
+    theFactory.init(featureGeneratorBytes, resources, posDictionary);
+
+    return theFactory;
+  }
+
+  @Deprecated // will be removed when only 8 series models are supported
+  protected void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
+    this.ngramDictionary = ngramDictionary;
+    this.posDictionary = posDictionary;
+  }
+
+  protected void init(byte[] featureGeneratorBytes, final Map<String, Object> resources,
+                      TagDictionary posDictionary) {
+    this.featureGeneratorBytes = featureGeneratorBytes;
+    this.resources = resources;
+    this.posDictionary = posDictionary;
+  }
+
   /**
    * Creates the {@link AdaptiveFeatureGenerator}. Usually this
    * is a set of generators contained in the {@link AggregatedFeatureGenerator}.
-   *
+   * <p>
    * Note:
    * The generators are created on every call to this method.
    *
@@ -157,8 +201,7 @@ public class POSTaggerFactory extends BaseToolFactory {
       generator = GeneratorFactory.create(descriptorIn, key -> {
         if (artifactProvider != null) {
           return artifactProvider.getArtifact(key);
-        }
-        else {
+        } else {
           return resources.get(key);
         }
       });
@@ -217,14 +260,6 @@ public class POSTaggerFactory extends BaseToolFactory {
     return POSDictionary.create(in);
   }
 
-  public void setTagDictionary(TagDictionary dictionary) {
-    if (artifactProvider != null) {
-      throw new IllegalStateException(
-          "Can not set tag dictionary while using artifact provider.");
-    }
-    this.posDictionary = dictionary;
-  }
-
   protected Map<String, Object> getResources() {
 
 
@@ -243,6 +278,14 @@ public class POSTaggerFactory extends BaseToolFactory {
     if (this.posDictionary == null && artifactProvider != null)
       this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
     return this.posDictionary;
+  }
+
+  public void setTagDictionary(TagDictionary dictionary) {
+    if (artifactProvider != null) {
+      throw new IllegalStateException(
+          "Can not set tag dictionary while using artifact provider.");
+    }
+    this.posDictionary = dictionary;
   }
 
   /**
@@ -279,7 +322,7 @@ public class POSTaggerFactory extends BaseToolFactory {
         return new DefaultPOSContextGenerator(cacheSize, getDictionary());
       }
     }
-    
+
     return new ConfigurablePOSContextGenerator(cacheSize, createFeatureGenerators());
 
   }
@@ -288,27 +331,8 @@ public class POSTaggerFactory extends BaseToolFactory {
     return new DefaultPOSSequenceValidator(getTagDictionary());
   }
 
-  // TODO: This should not be done anymore for 8 models, they can just
-  // use the SerializableArtifact interface
-  public static class POSDictionarySerializer implements ArtifactSerializer<POSDictionary> {
-
-    public POSDictionary create(InputStream in) throws IOException {
-      return POSDictionary.create(new UncloseableInputStream(in));
-    }
-
-    public void serialize(POSDictionary artifact, OutputStream out)
-        throws IOException {
-      artifact.serialize(out);
-    }
-
-    @SuppressWarnings("rawtypes")
-    static void register(Map<String, ArtifactSerializer> factories) {
-      factories.put("tagdict", new POSDictionarySerializer());
-    }
-  }
-
   protected void validatePOSDictionary(POSDictionary posDict,
-      AbstractModel posModel) throws InvalidFormatException {
+                                       AbstractModel posModel) throws InvalidFormatException {
     Set<String> dictTags = new HashSet<>();
 
     for (String word : posDict) {
@@ -365,54 +389,27 @@ public class POSTaggerFactory extends BaseToolFactory {
 
   }
 
-  @Deprecated
-  public static POSTaggerFactory create(String subclassName,
-      Dictionary ngramDictionary, TagDictionary posDictionary)
-      throws InvalidFormatException {
-    if (subclassName == null) {
-      // will create the default factory
-      return new POSTaggerFactory(ngramDictionary, posDictionary);
-    }
-    try {
-      POSTaggerFactory theFactory = ExtensionLoader.instantiateExtension(
-          POSTaggerFactory.class, subclassName);
-      theFactory.init(ngramDictionary, posDictionary);
-      return theFactory;
-    } catch (Exception e) {
-      String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      throw new InvalidFormatException(msg, e);
-    }
-  }
-
-  public static POSTaggerFactory create(String subclassName, byte[] featureGeneratorBytes,
-                                        Map<String, Object> resources, TagDictionary posDictionary)
-      throws InvalidFormatException {
-
-    POSTaggerFactory theFactory;
-
-    if (subclassName == null) {
-      // will create the default factory
-      theFactory = new POSTaggerFactory(null, posDictionary);
-    }
-    else {
-      try {
-        theFactory = ExtensionLoader.instantiateExtension(
-            POSTaggerFactory.class, subclassName);
-      } catch (Exception e) {
-        String msg = "Could not instantiate the " + subclassName
-            + ". The initialization throw an exception.";
-        throw new InvalidFormatException(msg, e);
-      }
-    }
-
-    theFactory.init(featureGeneratorBytes, resources, posDictionary);
-
-    return theFactory;
-  }
-
   public TagDictionary createEmptyTagDictionary() {
     this.posDictionary = new POSDictionary(true);
     return this.posDictionary;
+  }
+
+  // TODO: This should not be done anymore for 8 models, they can just
+  // use the SerializableArtifact interface
+  public static class POSDictionarySerializer implements ArtifactSerializer<POSDictionary> {
+
+    @SuppressWarnings("rawtypes")
+    static void register(Map<String, ArtifactSerializer> factories) {
+      factories.put("tagdict", new POSDictionarySerializer());
+    }
+
+    public POSDictionary create(InputStream in) throws IOException {
+      return POSDictionary.create(new UncloseableInputStream(in));
+    }
+
+    public void serialize(POSDictionary artifact, OutputStream out)
+        throws IOException {
+      artifact.serialize(out);
+    }
   }
 }

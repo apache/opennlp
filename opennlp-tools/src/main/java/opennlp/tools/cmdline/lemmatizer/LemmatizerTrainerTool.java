@@ -33,9 +33,6 @@ import opennlp.tools.util.model.ModelUtil;
 public class LemmatizerTrainerTool
     extends AbstractTrainerTool<LemmaSample, TrainerToolParams> {
 
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
-  }
-
   public LemmatizerTrainerTool() {
     super(LemmaSample.class, TrainerToolParams.class);
   }
@@ -75,5 +72,8 @@ public class LemmatizerTrainerTool
       }
     }
     CmdLineUtil.writeModel("lemmatizer", modelOutFile, model);
+  }
+
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 }

@@ -42,7 +42,7 @@ public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {
 
   public TokenSampleStream(ObjectStream<String> sampleStrings, String separatorChars) {
     super(Objects.requireNonNull(sampleStrings, "sampleStrings must not be null"));
-    this.separatorChars = Objects.requireNonNull(separatorChars,"separatorChars must not be null");
+    this.separatorChars = Objects.requireNonNull(separatorChars, "separatorChars must not be null");
   }
 
   public TokenSampleStream(ObjectStream<String> sentences) {
@@ -54,8 +54,7 @@ public class TokenSampleStream extends FilterObjectStream<String, TokenSample> {
 
     if (sampleString != null) {
       return TokenSample.parse(sampleString, separatorChars);
-    }
-    else {
+    } else {
       return null;
     }
   }

@@ -42,9 +42,6 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public final class LanguageDetectorEvaluatorTool extends
     AbstractEvaluatorTool<LanguageSample, LanguageDetectorEvaluatorTool.EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams, FineGrainedEvaluatorParams {
-  }
-
   public LanguageDetectorEvaluatorTool() {
     super(LanguageSample.class, EvalToolParams.class);
   }
@@ -105,7 +102,7 @@ public final class LanguageDetectorEvaluatorTool extends
     } catch (IOException e) {
       System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: "
-              + e.getMessage(), e);
+          + e.getMessage(), e);
     }
     // sorry that this can fail
 
@@ -127,5 +124,8 @@ public final class LanguageDetectorEvaluatorTool extends
         // nothing to do
       }
     }
+  }
+
+  interface EvalToolParams extends EvaluatorParams, FineGrainedEvaluatorParams {
   }
 }

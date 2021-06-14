@@ -19,10 +19,10 @@ package opennlp.tools.formats.conllu;
 
 import java.io.IOException;
 
+import opennlp.common.util.StringUtil;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.StringUtil;
 
 public class ConlluTokenSampleStream extends FilterObjectStream<ConlluSentence, TokenSample> {
 
@@ -62,8 +62,7 @@ public class ConlluTokenSampleStream extends FilterObjectStream<ConlluSentence, 
           }
         }
         return TokenSample.parse(text.toString(), TokenSample.DEFAULT_SEPARATOR_CHARS);
-      }
-      else {
+      } else {
         throw new IOException("Sentence is missing raw text sample!");
       }
     }

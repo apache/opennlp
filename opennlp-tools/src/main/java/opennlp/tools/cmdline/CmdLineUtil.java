@@ -57,13 +57,11 @@ public final class CmdLineUtil {
    * - not be a directory<br>
    * - accessibly<br>
    *
-   * @param name the name which is used to refer to the file in an error message, it
-   *     should start with a capital letter.
-   *
+   * @param name   the name which is used to refer to the file in an error message, it
+   *               should start with a capital letter.
    * @param inFile the particular file to check to qualify an input file
-   *
-   * @throws TerminateToolException  if test does not pass this exception is
-   *     thrown and an error message is printed to the console.
+   * @throws TerminateToolException if test does not pass this exception is
+   *                                thrown and an error message is printed to the console.
    */
   public static void checkInputFile(String name, File inFile) {
 
@@ -71,11 +69,9 @@ public final class CmdLineUtil {
 
     if (inFile.isDirectory()) {
       isFailure = "The " + name + " file is a directory!";
-    }
-    else if (!inFile.exists()) {
+    } else if (!inFile.exists()) {
       isFailure = "The " + name + " file does not exist!";
-    }
-    else if (!inFile.canRead()) {
+    } else if (!inFile.canRead()) {
       isFailure = "No permissions to read the " + name + " file!";
     }
 
@@ -95,7 +91,7 @@ public final class CmdLineUtil {
    * possible to be able to fail fast if not. If this validation is only done after a time
    * consuming computation it could frustrate the user.
    *
-   * @param name human-friendly file name. for example perceptron model
+   * @param name    human-friendly file name. for example perceptron model
    * @param outFile file
    */
   public static void checkOutputFile(String name, File outFile) {
@@ -109,17 +105,14 @@ public final class CmdLineUtil {
 
       if (outFile.isDirectory()) {
         isFailure = "The " + name + " file is a directory!";
-      }
-      else if (outFile.isFile()) {
+      } else if (outFile.isFile()) {
         if (!outFile.canWrite()) {
           isFailure = "No permissions to write the " + name + " file!";
         }
-      }
-      else {
+      } else {
         isFailure = "The " + name + " file is not a normal file!";
       }
-    }
-    else {
+    } else {
 
       // The file does not exist ensure its parent
       // directory exists and has write permissions to create
@@ -132,8 +125,7 @@ public final class CmdLineUtil {
         if (!parentDir.canWrite()) {
           isFailure = "No permissions to create the " + name + " file!";
         }
-      }
-      else {
+      } else {
         isFailure = "The parent directory of the " + name + " file does not exist, " +
             "please create it first!";
       }
@@ -167,7 +159,7 @@ public final class CmdLineUtil {
    *
    * @param modelName type of the model, name is used in error messages.
    * @param modelFile output file of the model
-   * @param model the model itself which should be written to disk
+   * @param model     the model itself which should be written to disk
    */
   public static void writeModel(String modelName, File modelFile, BaseModel model) {
 
@@ -201,7 +193,7 @@ public final class CmdLineUtil {
    * Returns the index of the parameter in the arguments, or -1 if the parameter is not found.
    *
    * @param param parameter name
-   * @param args arguments
+   * @param args  arguments
    * @return the index of the parameter in the arguments, or -1 if the parameter is not found
    */
   public static int getParameterIndex(String param, String[] args) {
@@ -218,7 +210,7 @@ public final class CmdLineUtil {
    * Retrieves the specified parameter from the given arguments.
    *
    * @param param parameter name
-   * @param args arguments
+   * @param args  arguments
    * @return parameter value
    */
   public static String getParameter(String param, String[] args) {
@@ -237,7 +229,7 @@ public final class CmdLineUtil {
    * Retrieves the specified parameter from the specified arguments.
    *
    * @param param parameter name
-   * @param args arguments
+   * @param args  arguments
    * @return parameter value
    */
   public static Integer getIntParameter(String param, String[] args) {
@@ -246,8 +238,7 @@ public final class CmdLineUtil {
     try {
       if (value != null)
         return Integer.parseInt(value);
-    }
-    catch (NumberFormatException ignored) {
+    } catch (NumberFormatException ignored) {
       // in this case return null
     }
 
@@ -258,7 +249,7 @@ public final class CmdLineUtil {
    * Retrieves the specified parameter from the specified arguments.
    *
    * @param param parameter name
-   * @param args arguments
+   * @param args  arguments
    * @return parameter value
    */
   public static Double getDoubleParameter(String param, String[] args) {
@@ -267,8 +258,7 @@ public final class CmdLineUtil {
     try {
       if (value != null)
         return Double.parseDouble(value);
-    }
-    catch (NumberFormatException ignored) {
+    } catch (NumberFormatException ignored) {
       // in this case return null
     }
 
@@ -276,7 +266,7 @@ public final class CmdLineUtil {
   }
 
   public static void checkLanguageCode(String code) {
-    List<String> languageCodes  = new ArrayList<>();
+    List<String> languageCodes = new ArrayList<>();
     languageCodes.addAll(Arrays.asList(Locale.getISOLanguages()));
     languageCodes.add("x-unspecified");
 
@@ -310,7 +300,7 @@ public final class CmdLineUtil {
 
   // its optional, passing null is allowed
   public static TrainingParameters loadTrainingParameters(String paramFile,
-      boolean supportSequenceTraining) {
+                                                          boolean supportSequenceTraining) {
 
     TrainingParameters params = null;
 
@@ -318,7 +308,7 @@ public final class CmdLineUtil {
 
       checkInputFile("Training Parameter", new File(paramFile));
 
-      try (InputStream paramsIn  = new FileInputStream(new File(paramFile))) {
+      try (InputStream paramsIn = new FileInputStream(new File(paramFile))) {
         params = new opennlp.tools.util.TrainingParameters(paramsIn);
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Error during parameters loading: " + e.getMessage(), e);

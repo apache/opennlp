@@ -41,8 +41,14 @@ public class AggregatedFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("generators", new AggregatedFeatureGeneratorFactory());
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager)  throws InvalidFormatException {
+                                         FeatureGeneratorResourceProvider resourceManager)
+      throws InvalidFormatException {
 
     Collection<AdaptiveFeatureGenerator> aggregatedGenerators = new LinkedList<>();
 
@@ -61,17 +67,12 @@ public class AggregatedFeatureGeneratorFactory
         new AdaptiveFeatureGenerator[aggregatedGenerators.size()]));
   }
 
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("generators", new AggregatedFeatureGeneratorFactory());
-  }
-
   @Override
   public AdaptiveFeatureGenerator create() throws InvalidFormatException {
     List<AdaptiveFeatureGenerator> aggregatedGenerators = new ArrayList<>();
-    for (Map.Entry<String, Object> arg: args.entrySet()) {
+    for (Map.Entry<String, Object> arg : args.entrySet()) {
       if (arg.getKey().startsWith("generator#")) {
-        aggregatedGenerators.add((AdaptiveFeatureGenerator)arg.getValue());
+        aggregatedGenerators.add((AdaptiveFeatureGenerator) arg.getValue());
       }
     }
     return new AggregatedFeatureGenerator(aggregatedGenerators.toArray(

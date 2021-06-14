@@ -39,7 +39,7 @@ import java.util.Set;
  * can be access via a command line argument interface.
  *
  * <p>
- *
+ * <p>
  * The command line argument proxy interface must follow these conventions:<br>
  * - Methods do not define arguments<br>
  * - Method names must start with get<br>
@@ -48,102 +48,6 @@ import java.util.Set;
  * <b>Note:</b> Do not use this class, internal use only!
  */
 public class ArgumentParser {
-
-  public @Retention(RetentionPolicy.RUNTIME) @interface OptionalParameter {
-    // CHECKSTYLE:OFF
-    String DEFAULT_CHARSET = "DEFAULT_CHARSET";
-    // CHECKSTYLE:ON
-    String defaultValue() default "";
-  }
-
-  public @Retention(RetentionPolicy.RUNTIME) @interface ParameterDescription {
-    String valueName();
-    String description() default "";
-  }
-
-  private interface ArgumentFactory {
-
-    String INVALID_ARG = "Invalid argument: %s %s \n";
-
-    Object parseArgument(Method method, String argName, String argValue);
-  }
-
-  private static class IntegerArgumentFactory  implements ArgumentFactory {
-
-    public Object parseArgument(Method method, String argName, String argValue) {
-
-      Object value;
-
-      try {
-        value = Integer.parseInt(argValue);
-      }
-      catch (NumberFormatException e) {
-        throw new TerminateToolException(1, String.format(INVALID_ARG, argName, argValue) +
-            "Value must be an integer!", e);
-      }
-
-      return value;
-    }
-  }
-
-  private static class BooleanArgumentFactory implements ArgumentFactory {
-
-    public Object parseArgument(Method method, String argName, String argValue) {
-      return Boolean.parseBoolean(argValue);
-    }
-  }
-
-  private static class StringArgumentFactory implements ArgumentFactory {
-
-    public Object parseArgument(Method method, String argName, String argValue) {
-      return argValue;
-    }
-  }
-
-  private static class FileArgumentFactory implements ArgumentFactory {
-
-    public Object parseArgument(Method method, String argName, String argValue) {
-      return new File(argValue);
-    }
-  }
-
-  private static class CharsetArgumentFactory implements ArgumentFactory {
-
-    public Object parseArgument(Method method, String argName, String charsetName) {
-
-      try {
-        if (OptionalParameter.DEFAULT_CHARSET.equals(charsetName)) {
-          return Charset.defaultCharset();
-        } else if (Charset.isSupported(charsetName)) {
-          return Charset.forName(charsetName);
-        } else {
-          throw new TerminateToolException(1,  String.format(INVALID_ARG, argName, charsetName) +
-              "Encoding not supported on this platform.");
-        }
-      } catch (IllegalCharsetNameException e) {
-        throw new TerminateToolException(1, String.format(INVALID_ARG, argName, charsetName) +
-            "Illegal encoding name.");
-      }
-    }
-  }
-
-  private static class ArgumentProxy implements InvocationHandler {
-
-    private final Map<String, Object> arguments;
-
-    ArgumentProxy(Map<String, Object> arguments) {
-      this.arguments = arguments;
-    }
-
-    public Object invoke(Object proxy, Method method, Object[] args)
-        throws Throwable {
-
-      if (args != null)
-        throw new IllegalStateException();
-
-      return arguments.get(method.getName());
-    }
-  }
 
   private static final Map<Class<?>, ArgumentFactory> argumentFactories;
 
@@ -222,46 +126,8 @@ public class ArgumentParser {
    */
   @SuppressWarnings({"unchecked"})
   public static <T> String createUsage(Class<T> argProxyInterface) {
-    return createUsage(new Class[]{argProxyInterface});
+    return createUsage(new Class[] {argProxyInterface});
   }
-
-  /**
-   * Auxiliary class that holds information about an argument. This is used by the
-   * GenerateManualTool, which creates a Docbook for the CLI automatically.
-   */
-  static class Argument {
-    private final String argument;
-    private final String value;
-    private final String description;
-    private final boolean optional;
-
-    public Argument(String argument, String value, String description,
-        boolean optional) {
-      super();
-      this.argument = argument;
-      this.value = value;
-      this.description = description;
-      this.optional = optional;
-    }
-
-    public String getArgument() {
-      return argument;
-    }
-
-    public String getValue() {
-      return value;
-    }
-
-    public String getDescription() {
-      return description;
-    }
-
-    public boolean getOptional() {
-      return optional;
-    }
-  }
-
-
 
   /**
    * Outputs the arguments as a data structure so it can be used to create documentation.
@@ -289,8 +155,7 @@ public class ArgumentParser {
 
             if (duplicateFilter.contains(paramName)) {
               continue;
-            }
-            else {
+            } else {
               duplicateFilter.add(paramName);
             }
 
@@ -341,8 +206,7 @@ public class ArgumentParser {
 
             if (duplicateFilter.contains(paramName)) {
               continue;
-            }
-            else {
+            } else {
               duplicateFilter.add(paramName);
             }
 
@@ -380,13 +244,13 @@ public class ArgumentParser {
    * there are unknown arguments. The argument value itself can also be incorrect, but this
    * is checked by the {@link ArgumentParser#parse(String[], Class)} method and reported accordingly.
    *
-   * @param args command line arguments
+   * @param args              command line arguments
    * @param argProxyInterface interface with parameters description
    * @return true, if arguments are valid
    */
   @SuppressWarnings({"unchecked"})
   public static <T> boolean validateArguments(String[] args, Class<T> argProxyInterface) {
-    return validateArguments(args, new Class[]{argProxyInterface});
+    return validateArguments(args, new Class[] {argProxyInterface});
   }
 
   /**
@@ -394,7 +258,7 @@ public class ArgumentParser {
    * there are unknown arguments. The argument value itself can also be incorrect, but this
    * is checked by the {@link ArgumentParser#parse(String[], Class)} method and reported accordingly.
    *
-   * @param args command line arguments
+   * @param args               command line arguments
    * @param argProxyInterfaces interfaces with parameters description
    * @return true, if arguments are valid
    */
@@ -405,18 +269,18 @@ public class ArgumentParser {
   /**
    * Tests if the arguments are correct or incorrect.
    *
-   * @param args command line arguments
+   * @param args              command line arguments
    * @param argProxyInterface interface with parameters description
    * @return null, if arguments are valid or error message otherwise
    */
   public static String validateArgumentsLoudly(String[] args, Class<?> argProxyInterface) {
-    return validateArgumentsLoudly(args, new Class[]{argProxyInterface});
+    return validateArgumentsLoudly(args, new Class[] {argProxyInterface});
   }
 
   /**
    * Tests if the arguments are correct or incorrect.
    *
-   * @param args command line arguments
+   * @param args               command line arguments
    * @param argProxyInterfaces interfaces with parameters description
    * @return null, if arguments are valid or error message otherwise
    */
@@ -446,8 +310,7 @@ public class ArgumentParser {
           } else {
             parameters.remove("-" + paramName);
           }
-        }
-        else {
+        } else {
           parameters.remove(paramName);
           parameters.remove(valueString);
           argumentCount++;
@@ -468,14 +331,12 @@ public class ArgumentParser {
    * In case an argument value cannot be parsed a {@link TerminateToolException} is
    * thrown which contains an error message which explains the problems.
    *
-   * @param args arguments
+   * @param args              arguments
    * @param argProxyInterface interface with parameters description
-   *
    * @return parsed parameters
-   *
-   * @throws TerminateToolException if an argument value cannot be parsed.
+   * @throws TerminateToolException   if an argument value cannot be parsed.
    * @throws IllegalArgumentException if validateArguments returns false,
-   *     if the proxy interface is not compatible.
+   *                                  if the proxy interface is not compatible.
    */
   @SuppressWarnings("unchecked")
   public static <T> T parse(String[] args, Class<T> argProxyInterface) {
@@ -512,8 +373,7 @@ public class ArgumentParser {
           throw new IllegalStateException("factory for '" + returnType + "' must not be null");
 
         value = factory.parseArgument(method, parameterName, valueString);
-      }
-      else
+      } else
         value = null;
 
       arguments.put(method.getName(), value);
@@ -521,16 +381,16 @@ public class ArgumentParser {
 
     return (T) java.lang.reflect.Proxy.newProxyInstance(
         argProxyInterface.getClassLoader(),
-        new Class[]{argProxyInterface},
+        new Class[] {argProxyInterface},
         new ArgumentProxy(arguments));
   }
 
   /**
    * Filters arguments leaving only those pertaining to argProxyInterface.
    *
-   * @param args arguments
+   * @param args              arguments
    * @param argProxyInterface interface with parameters description
-   * @param <T> T
+   * @param <T>               T
    * @return arguments pertaining to argProxyInterface
    */
   public static <T> String[] filter(String[] args, Class<T> argProxyInterface) {
@@ -550,5 +410,141 @@ public class ArgumentParser {
     }
 
     return parameters.toArray(new String[parameters.size()]);
+  }
+
+  public @Retention(RetentionPolicy.RUNTIME)
+  @interface OptionalParameter {
+    // CHECKSTYLE:OFF
+    String DEFAULT_CHARSET = "DEFAULT_CHARSET";
+
+    // CHECKSTYLE:ON
+    String defaultValue() default "";
+  }
+
+  public @Retention(RetentionPolicy.RUNTIME)
+  @interface ParameterDescription {
+    String valueName();
+
+    String description() default "";
+  }
+
+
+  private interface ArgumentFactory {
+
+    String INVALID_ARG = "Invalid argument: %s %s \n";
+
+    Object parseArgument(Method method, String argName, String argValue);
+  }
+
+  private static class IntegerArgumentFactory implements ArgumentFactory {
+
+    public Object parseArgument(Method method, String argName, String argValue) {
+
+      Object value;
+
+      try {
+        value = Integer.parseInt(argValue);
+      } catch (NumberFormatException e) {
+        throw new TerminateToolException(1, String.format(INVALID_ARG, argName, argValue) +
+            "Value must be an integer!", e);
+      }
+
+      return value;
+    }
+  }
+
+  private static class BooleanArgumentFactory implements ArgumentFactory {
+
+    public Object parseArgument(Method method, String argName, String argValue) {
+      return Boolean.parseBoolean(argValue);
+    }
+  }
+
+  private static class StringArgumentFactory implements ArgumentFactory {
+
+    public Object parseArgument(Method method, String argName, String argValue) {
+      return argValue;
+    }
+  }
+
+  private static class FileArgumentFactory implements ArgumentFactory {
+
+    public Object parseArgument(Method method, String argName, String argValue) {
+      return new File(argValue);
+    }
+  }
+
+  private static class CharsetArgumentFactory implements ArgumentFactory {
+
+    public Object parseArgument(Method method, String argName, String charsetName) {
+
+      try {
+        if (OptionalParameter.DEFAULT_CHARSET.equals(charsetName)) {
+          return Charset.defaultCharset();
+        } else if (Charset.isSupported(charsetName)) {
+          return Charset.forName(charsetName);
+        } else {
+          throw new TerminateToolException(1, String.format(INVALID_ARG, argName, charsetName) +
+              "Encoding not supported on this platform.");
+        }
+      } catch (IllegalCharsetNameException e) {
+        throw new TerminateToolException(1, String.format(INVALID_ARG, argName, charsetName) +
+            "Illegal encoding name.");
+      }
+    }
+  }
+
+  private static class ArgumentProxy implements InvocationHandler {
+
+    private final Map<String, Object> arguments;
+
+    ArgumentProxy(Map<String, Object> arguments) {
+      this.arguments = arguments;
+    }
+
+    public Object invoke(Object proxy, Method method, Object[] args)
+        throws Throwable {
+
+      if (args != null)
+        throw new IllegalStateException();
+
+      return arguments.get(method.getName());
+    }
+  }
+
+  /**
+   * Auxiliary class that holds information about an argument. This is used by the
+   * GenerateManualTool, which creates a Docbook for the CLI automatically.
+   */
+  static class Argument {
+    private final String argument;
+    private final String value;
+    private final String description;
+    private final boolean optional;
+
+    public Argument(String argument, String value, String description,
+                    boolean optional) {
+      super();
+      this.argument = argument;
+      this.value = value;
+      this.description = description;
+      this.optional = optional;
+    }
+
+    public String getArgument() {
+      return argument;
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    public String getDescription() {
+      return description;
+    }
+
+    public boolean getOptional() {
+      return optional;
+    }
   }
 }

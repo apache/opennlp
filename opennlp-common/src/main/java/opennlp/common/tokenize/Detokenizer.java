@@ -15,13 +15,31 @@
  * limitations under the License.
  */
 
-package opennlp.tools.tokenize;
+package opennlp.common.tokenize;
 
 /**
  * A Detokenizer merges tokens back to their untokenized representation.
- *
  */
 public interface Detokenizer {
+
+  /**
+   * Detokenize the input tokens.
+   *
+   * @param tokens the tokens to detokenize.
+   * @return the merge operations to detokenize the input tokens.
+   */
+  DetokenizationOperation[] detokenize(String[] tokens);
+
+  /**
+   * Detokenize the input tokens into a String. Tokens which
+   * are connected without a space inbetween can be separated by
+   * a split marker.
+   *
+   * @param tokens      the token which should be concatenated
+   * @param splitMarker the split marker or null
+   * @return the concatenated tokens
+   */
+  String detokenize(String[] tokens, String splitMarker);
 
   /**
    * This enum contains an operation for every token to merge the
@@ -50,24 +68,4 @@ public interface Detokenizer {
      */
     NO_OPERATION
   }
-
-  /**
-   * Detokenize the input tokens.
-   *
-   * @param tokens the tokens to detokenize.
-   * @return the merge operations to detokenize the input tokens.
-   */
-  DetokenizationOperation[] detokenize(String[] tokens);
-
-  /**
-   * Detokenize the input tokens into a String. Tokens which
-   * are connected without a space inbetween can be separated by
-   * a split marker.
-   *
-   * @param tokens the token which should be concatenated
-   * @param splitMarker the split marker or null
-   *
-   * @return the concatenated tokens
-   */
-  String detokenize(String[] tokens, String splitMarker);
 }

@@ -41,7 +41,7 @@ public class SDCrossValidator {
   private SentenceDetectorFactory sdFactory;
 
   public SDCrossValidator(String languageCode, TrainingParameters params,
-      SentenceDetectorFactory sdFactory, SentenceDetectorEvaluationMonitor... listeners) {
+                          SentenceDetectorFactory sdFactory, SentenceDetectorEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = params;
     this.listeners = listeners;
@@ -50,9 +50,9 @@ public class SDCrossValidator {
 
   /**
    * @deprecated Use
-   *             {@link #SDCrossValidator(String, TrainingParameters,
-   *             SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
-   *             and pass in a {@link SentenceDetectorFactory}.
+   * {@link #SDCrossValidator(String, TrainingParameters,
+   * SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
+   * and pass in a {@link SentenceDetectorFactory}.
    */
   public SDCrossValidator(String languageCode, TrainingParameters params) {
     this(languageCode, params, new SentenceDetectorFactory(languageCode, true,
@@ -61,20 +61,20 @@ public class SDCrossValidator {
 
   /**
    * @deprecated use
-   *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory,
-   *             SentenceDetectorEvaluationMonitor...)}
-   *             instead and pass in a TrainingParameters object.
+   * {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory,
+   * SentenceDetectorEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
    */
   public SDCrossValidator(String languageCode, TrainingParameters params,
-      SentenceDetectorEvaluationMonitor... listeners) {
+                          SentenceDetectorEvaluationMonitor... listeners) {
     this(languageCode, params, new SentenceDetectorFactory(languageCode, true,
         null, null), listeners);
   }
 
   /**
    * @deprecated use {@link #SDCrossValidator(String, TrainingParameters,
-   *     SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
-   *     instead and pass in a TrainingParameters object.
+   * SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
+   * instead and pass in a TrainingParameters object.
    */
   public SDCrossValidator(String languageCode) {
     this(languageCode, ModelUtil.createDefaultTrainingParameters());
@@ -83,11 +83,8 @@ public class SDCrossValidator {
   /**
    * Starts the evaluation.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   *
+   * @param samples the data to train and test
+   * @param nFolds  number of folds
    * @throws IOException
    */
   public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws IOException {

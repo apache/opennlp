@@ -31,7 +31,6 @@ import opennlp.tools.util.ObjectStream;
 /**
  * Provides the ability to read the contents of files
  * contained in an object stream of files.
- *
  */
 public class FileToStringSampleStream extends FilterObjectStream<File, String> {
 
@@ -39,7 +38,8 @@ public class FileToStringSampleStream extends FilterObjectStream<File, String> {
 
   /**
    * Creates a new file-to-string sample stream.
-   * @param samples The {@link ObjectStream} containing the files.
+   *
+   * @param samples  The {@link ObjectStream} containing the files.
    * @param encoding The {@link Charset} encoding of the files.
    */
   public FileToStringSampleStream(ObjectStream<File> samples, Charset encoding) {
@@ -50,6 +50,7 @@ public class FileToStringSampleStream extends FilterObjectStream<File, String> {
 
   /**
    * Reads the contents of a file to a string.
+   *
    * @param textFile The {@link File} to read.
    * @param encoding The {@link Charset} for the file.
    * @return The string contents of the file.
@@ -67,12 +68,10 @@ public class FileToStringSampleStream extends FilterObjectStream<File, String> {
       while ((length = in.read(buffer, 0, buffer.length)) > 0) {
         text.append(buffer, 0, length);
       }
-    }
-    finally {
+    } finally {
       try {
         in.close();
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         // sorry that this can fail!
       }
     }
@@ -87,10 +86,9 @@ public class FileToStringSampleStream extends FilterObjectStream<File, String> {
 
     if (sampleFile != null) {
       return readFile(sampleFile, encoding);
-    }
-    else {
+    } else {
       return null;
     }
   }
-  
+
 }

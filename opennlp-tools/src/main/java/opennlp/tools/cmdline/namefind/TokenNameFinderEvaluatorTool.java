@@ -47,13 +47,6 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public final class TokenNameFinderEvaluatorTool
     extends AbstractEvaluatorTool<NameSample, EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams,
-      DetailedFMeasureEvaluatorParams, FineGrainedEvaluatorParams {
-    @OptionalParameter
-    @ParameterDescription(valueName = "types", description = "name types to use for evaluation")
-    String getNameTypes();
-  }
-
   public TokenNameFinderEvaluatorTool() {
     super(NameSample.class, EvalToolParams.class);
   }
@@ -142,5 +135,12 @@ public final class TokenNameFinderEvaluatorTool
     } else {
       System.out.println(detailedFListener);
     }
+  }
+
+  interface EvalToolParams extends EvaluatorParams,
+      DetailedFMeasureEvaluatorParams, FineGrainedEvaluatorParams {
+    @OptionalParameter
+    @ParameterDescription(valueName = "types", description = "name types to use for evaluation")
+    String getNameTypes();
   }
 }

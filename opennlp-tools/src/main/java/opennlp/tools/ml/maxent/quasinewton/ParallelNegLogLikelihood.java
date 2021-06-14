@@ -50,9 +50,9 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
       throw new IllegalArgumentException(
           "Number of threads must 1 or larger");
 
-    this.threads                = threads;
+    this.threads = threads;
     this.negLogLikelihoodThread = new double[threads];
-    this.gradientThread         = new double[threads][dimension];
+    this.gradientThread = new double[threads][dimension];
   }
 
   /**
@@ -131,7 +131,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
               cons.newInstance(this, i, i * taskSize, taskSize + leftOver, x)));
       }
 
-      for (Future<?> future: futures)
+      for (Future<?> future : futures)
         future.get();
 
     } catch (Exception e) {
@@ -158,9 +158,9 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
 
     public ComputeTask(int threadIndex, int startIndex, int length, double[] x) {
       this.threadIndex = threadIndex;
-      this.startIndex  = startIndex;
-      this.length      = length;
-      this.x           = x;
+      this.startIndex = startIndex;
+      this.length = length;
+      this.x = x;
     }
   }
 

@@ -48,12 +48,12 @@ public final class TokenizerModel extends BaseModel {
   /**
    * Initializes the current instance.
    *
-   * @param tokenizerModel the model
+   * @param tokenizerModel      the model
    * @param manifestInfoEntries the manifest
-   * @param tokenizerFactory the factory
+   * @param tokenizerFactory    the factory
    */
   public TokenizerModel(MaxentModel tokenizerModel,
-      Map<String, String> manifestInfoEntries, TokenizerFactory tokenizerFactory) {
+                        Map<String, String> manifestInfoEntries, TokenizerFactory tokenizerFactory) {
     super(COMPONENT_NAME, tokenizerFactory.getLanguageCode(), manifestInfoEntries, tokenizerFactory);
     artifactMap.put(TOKENIZER_MODEL_ENTRY, tokenizerModel);
     checkArtifactMap();
@@ -63,8 +63,7 @@ public final class TokenizerModel extends BaseModel {
    * Initializes the current instance.
    *
    * @param in the Input Stream to load the model from
-   *
-   * @throws IOException if reading from the stream fails in anyway
+   * @throws IOException            if reading from the stream fails in anyway
    * @throws InvalidFormatException if the stream doesn't have the expected format
    */
   public TokenizerModel(InputStream in) throws IOException {
@@ -75,7 +74,6 @@ public final class TokenizerModel extends BaseModel {
    * Initializes the current instance.
    *
    * @param modelFile the file containing the tokenizer model
-   *
    * @throws IOException if reading from the stream fails in anyway
    */
   public TokenizerModel(File modelFile) throws IOException {
@@ -90,7 +88,6 @@ public final class TokenizerModel extends BaseModel {
    * Initializes the current instance.
    *
    * @param modelURL the URL pointing to the tokenizer model
-   *
    * @throws IOException if reading from the stream fails in anyway
    */
   public TokenizerModel(URL modelURL) throws IOException {

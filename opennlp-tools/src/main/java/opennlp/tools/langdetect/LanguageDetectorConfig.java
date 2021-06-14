@@ -27,7 +27,7 @@ public class LanguageDetectorConfig {
   public static final double DEFAULT_MIN_DIFF = 0.20;
 
   public static final LanguageDetectorConfig DEFAULT_LANGUAGE_DETECTOR_CONFIG =
-            new ImmutableLanguageDetectorConfig();
+      new ImmutableLanguageDetectorConfig();
 
   private int maxLength = DEFAULT_MAX_LENGTH;
   private int chunkSize = DEFAULT_CHUNK_SIZE;
@@ -87,7 +87,7 @@ public class LanguageDetectorConfig {
   /**
    * Minimum difference in confidence between the top predicted
    * language and the next most likely language.
-     * <p>
+   * <p>
    * If this value equals 0, probing detection will
    * rely solely on {@link #getMinConsecImprovements()}
    *
@@ -102,7 +102,7 @@ public class LanguageDetectorConfig {
   }
 
   private static class ImmutableLanguageDetectorConfig
-          extends LanguageDetectorConfig {
+      extends LanguageDetectorConfig {
 
     @Override
     public void setMaxLength(int maxLength) {

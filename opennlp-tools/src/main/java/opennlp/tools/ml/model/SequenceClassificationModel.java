@@ -17,8 +17,8 @@
 
 package opennlp.tools.ml.model;
 
+import opennlp.common.util.Sequence;
 import opennlp.tools.util.BeamSearchContextGenerator;
-import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 
 /**
@@ -35,11 +35,10 @@ public interface SequenceClassificationModel<T> {
    * @param additionalContext
    * @param cg
    * @param validator
-   *
    * @return
    */
   Sequence bestSequence(T[] sequence, Object[] additionalContext,
-      BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
+                        BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
 
   /**
    * Finds the n most probable sequences.
@@ -48,11 +47,11 @@ public interface SequenceClassificationModel<T> {
    * @param additionalContext
    * @param cg
    * @param validator
-   *
    * @return
    */
   Sequence[] bestSequences(int numSequences, T[] sequence, Object[] additionalContext,
-      double minSequenceScore, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
+                           double minSequenceScore, BeamSearchContextGenerator<T> cg,
+                           SequenceValidator<T> validator);
 
   /**
    * Finds the n most probable sequences.
@@ -61,11 +60,11 @@ public interface SequenceClassificationModel<T> {
    * @param additionalContext
    * @param cg
    * @param validator
-   *
    * @return
    */
   Sequence[] bestSequences(int numSequences, T[] sequence,
-      Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
+                           Object[] additionalContext, BeamSearchContextGenerator<T> cg,
+                           SequenceValidator<T> validator);
 
   /**
    * Returns all possible outcomes.

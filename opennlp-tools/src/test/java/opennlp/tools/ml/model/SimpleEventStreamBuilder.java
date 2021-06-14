@@ -48,14 +48,13 @@ public class SimpleEventStreamBuilder {
         String[] pair = cvPairs[i].split(";");
         if (pair.length != 2) {
           throw new RuntimeException(String.format("format error of the event \"%s\". "
-                       + "\"%s\" doesn't have value", event, pair));
+              + "\"%s\" doesn't have value", event, pair));
         }
         context[i] = pair[0];
         values[i] = Float.parseFloat(pair[1]);
       }
       eventList.add(new Event(ss[0], context, values));
-    }
-    else {
+    } else {
       eventList.add(new Event(ss[0], cvPairs));
     }
 

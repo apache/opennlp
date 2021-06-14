@@ -18,7 +18,7 @@
 
 package opennlp.tools.sentdetect;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * The interface for sentence detectors, which find the sentence boundaries in
@@ -26,22 +26,21 @@ import opennlp.tools.util.Span;
  */
 public interface SentenceDetector {
 
-    /**
-     * Sentence detect a string.
-     *
-     * @param s The string to be sentence detected.
-     * @return  The String[] with the individual sentences as the array
-     *          elements.
-     */
-    String[] sentDetect(String s);
+  /**
+   * Sentence detect a string.
+   *
+   * @param s The string to be sentence detected.
+   * @return The String[] with the individual sentences as the array
+   * elements.
+   */
+  String[] sentDetect(String s);
 
-    /**
-     * Sentence detect a string.
-     *
-     * @param s The string to be sentence detected.
-     *
-     * @return The Span[] with the spans (offsets into s) for each
-     * detected sentence as the individuals array elements.
-     */
-    Span[] sentPosDetect(String s);
+  /**
+   * Sentence detect a string.
+   *
+   * @param s The string to be sentence detected.
+   * @return The Span[] with the spans (offsets into s) for each
+   * detected sentence as the individuals array elements.
+   */
+  Span[] sentPosDetect(String s);
 }

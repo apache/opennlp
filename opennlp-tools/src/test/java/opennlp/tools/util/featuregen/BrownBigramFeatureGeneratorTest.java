@@ -30,15 +30,15 @@ import opennlp.tools.formats.ResourceAsStreamFactory;
 public class BrownBigramFeatureGeneratorTest {
 
   private AdaptiveFeatureGenerator generator;
-  
+
   @Before
   public void setup() throws IOException {
 
     ResourceAsStreamFactory stream = new ResourceAsStreamFactory(
         getClass(), "/opennlp/tools/formats/brown-cluster.txt");
 
-    BrownCluster brownCluster = new BrownCluster(stream.createInputStream()); 
-    
+    BrownCluster brownCluster = new BrownCluster(stream.createInputStream());
+
     generator = new BrownBigramFeatureGenerator(brownCluster);
 
   }
@@ -54,9 +54,9 @@ public class BrownBigramFeatureGeneratorTest {
     Assert.assertEquals(2, features.size());
     Assert.assertTrue(features.contains("pbrowncluster,browncluster=0101,0010"));
     Assert.assertTrue(features.contains("pbrowncluster,browncluster=01010,00101"));
-    
+
   }
-  
+
   @Test
   public void createFeaturesSuccessiveTokensTest() throws IOException {
 
@@ -69,9 +69,9 @@ public class BrownBigramFeatureGeneratorTest {
     Assert.assertTrue(features.contains("pbrowncluster,browncluster=0101,0010"));
     Assert.assertTrue(features.contains("pbrowncluster,browncluster=01010,00101"));
     Assert.assertTrue(features.contains("browncluster,nbrowncluster=0010,0000"));
-    
+
   }
-  
+
   @Test
   public void noFeaturesTest() throws IOException {
 
@@ -81,7 +81,7 @@ public class BrownBigramFeatureGeneratorTest {
     generator.createFeatures(features, testSentence, 0, null);
 
     Assert.assertEquals(0, features.size());
-    
+
   }
 
 }

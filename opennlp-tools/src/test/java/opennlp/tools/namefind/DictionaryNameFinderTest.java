@@ -21,14 +21,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import opennlp.common.namefind.TokenNameFinder;
+import opennlp.common.util.Span;
+import opennlp.common.util.StringList;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringList;
 
 /**
-  *Tests for the {@link DictionaryNameFinder} class.
-  */
+ * Tests for the {@link DictionaryNameFinder} class.
+ */
 public class DictionaryNameFinderTest {
 
   private Dictionary mDictionary = new Dictionary();
@@ -36,13 +37,13 @@ public class DictionaryNameFinderTest {
 
   public DictionaryNameFinderTest() {
 
-    StringList vanessa = new StringList(new String[]{"Vanessa"});
+    StringList vanessa = new StringList(new String[] {"Vanessa"});
     mDictionary.put(vanessa);
 
     StringList vanessaWilliams = new StringList("Vanessa", "Williams");
     mDictionary.put(vanessaWilliams);
 
-    StringList max = new StringList(new String[]{"Max"});
+    StringList max = new StringList(new String[] {"Max"});
     mDictionary.put(max);
 
     StringList michaelJordan = new

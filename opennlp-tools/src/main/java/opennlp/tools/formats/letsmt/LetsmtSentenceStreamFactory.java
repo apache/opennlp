@@ -20,6 +20,7 @@ package opennlp.tools.formats.letsmt;
 import java.io.File;
 import java.io.IOException;
 
+import opennlp.common.tokenize.Detokenizer;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -28,27 +29,19 @@ import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.tokenize.DetokenizationDictionary;
-import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.util.ObjectStream;
 
 public class LetsmtSentenceStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends BasicFormatParams {
-    @ArgumentParser.ParameterDescription(valueName = "dictionary",
-        description = "specifies the file with detokenizer dictionary.")
-    @ArgumentParser.OptionalParameter
-    File getDetokenizer();
+  protected <P> LetsmtSentenceStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         "letsmt", new LetsmtSentenceStreamFactory(
-        LetsmtSentenceStreamFactory.Parameters.class));
-  }
-
-  protected <P> LetsmtSentenceStreamFactory(Class<P> params) {
-    super(params);
+            LetsmtSentenceStreamFactory.Parameters.class));
   }
 
   @Override
@@ -82,5 +75,12 @@ public class LetsmtSentenceStreamFactory extends AbstractSampleStreamFactory<Sen
     }
 
     return samples;
+  }
+
+  interface Parameters extends BasicFormatParams {
+    @ArgumentParser.ParameterDescription(valueName = "dictionary",
+        description = "specifies the file with detokenizer dictionary.")
+    @ArgumentParser.OptionalParameter
+    File getDetokenizer();
   }
 }

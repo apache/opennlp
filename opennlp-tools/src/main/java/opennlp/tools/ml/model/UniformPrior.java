@@ -39,7 +39,7 @@ public class UniformPrior implements Prior {
   }
 
   public void logPrior(double[] dist, int[] context) {
-    logPrior(dist,context,null);
+    logPrior(dist, context, null);
   }
 
   public void setLabels(String[] outcomeLabels, String[] contextLabels) {

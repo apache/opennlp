@@ -26,13 +26,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import morfologik.stemming.DictionaryMetadata;
-
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.TagDictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ByteArraySerializer;
+
+import morfologik.stemming.DictionaryMetadata;
 
 public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
 

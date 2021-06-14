@@ -72,7 +72,7 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    * method on all aggregated {@link AdaptiveFeatureGenerator}s.
    */
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
 
     for (AdaptiveFeatureGenerator generator : generators) {
       generator.createFeatures(features, tokens, index, previousOutcomes);

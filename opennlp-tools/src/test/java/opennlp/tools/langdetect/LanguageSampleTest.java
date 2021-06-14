@@ -28,6 +28,8 @@ import java.io.ObjectOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.langdetect.Language;
+
 public class LanguageSampleTest {
 
   @Test

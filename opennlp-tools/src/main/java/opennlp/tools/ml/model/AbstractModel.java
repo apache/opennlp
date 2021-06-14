@@ -27,25 +27,32 @@ import opennlp.tools.ml.ArrayMath;
 
 public abstract class AbstractModel implements MaxentModel {
 
-  /** Mapping between predicates/contexts and an integer representing them. */
+  /**
+   * Mapping between predicates/contexts and an integer representing them.
+   */
   protected Map<String, Context> pmap;
-  /** The names of the outcomes. */
+  /**
+   * The names of the outcomes.
+   */
   protected String[] outcomeNames;
-  /** Parameters for the model. */
+  /**
+   * Parameters for the model.
+   */
   protected EvalParameters evalParams;
-  /** Prior distribution for this model. */
+  /**
+   * Prior distribution for this model.
+   */
   protected Prior prior;
-
-  public enum ModelType { Maxent,Perceptron,MaxentQn,NaiveBayes }
-
-  /** The type of the model. */
+  /**
+   * The type of the model.
+   */
   protected ModelType modelType;
 
   protected AbstractModel(Context[] params, String[] predLabels,
-      Map<String, Context> pmap, String[] outcomeNames) {
+                          Map<String, Context> pmap, String[] outcomeNames) {
     this.pmap = pmap;
-    this.outcomeNames =  outcomeNames;
-    this.evalParams = new EvalParameters(params,outcomeNames.length);
+    this.outcomeNames = outcomeNames;
+    this.evalParams = new EvalParameters(params, outcomeNames.length);
   }
 
   public AbstractModel(Context[] params, String[] predLabels, String[] outcomeNames) {
@@ -60,9 +67,8 @@ public abstract class AbstractModel implements MaxentModel {
       pmap.put(predLabels[i], params[i]);
     }
 
-    this.outcomeNames =  outcomeNames;
+    this.outcomeNames = outcomeNames;
   }
-
 
   /**
    * Return the name of the outcome corresponding to the highest likelihood
@@ -70,7 +76,7 @@ public abstract class AbstractModel implements MaxentModel {
    *
    * @param ocs A double[] as returned by the eval(String[] context)
    *            method.
-   * @return    The name of the most likely outcome.
+   * @return The name of the most likely outcome.
    */
   public final String getBestOutcome(double[] ocs) {
     return outcomeNames[ArrayMath.argmax(ocs)];
@@ -88,17 +94,16 @@ public abstract class AbstractModel implements MaxentModel {
    * @param ocs A <code>double[]</code> as returned by the
    *            <code>eval(String[] context)</code>
    *            method.
-   * @return    String containing outcome names paired with the normalized
-   *            probability (contained in the <code>double[] ocs</code>)
-   *            for each one.
+   * @return String containing outcome names paired with the normalized
+   * probability (contained in the <code>double[] ocs</code>)
+   * for each one.
    */
   public final String getAllOutcomes(double[] ocs) {
     if (ocs.length != outcomeNames.length) {
       return "The double array sent as a parameter to GISModel.getAllOutcomes() " +
           "must not have been produced by this model.";
-    }
-    else {
-      DecimalFormat df =  new DecimalFormat("0.0000");
+    } else {
+      DecimalFormat df = new DecimalFormat("0.0000");
       StringBuilder sb = new StringBuilder(ocs.length * 2);
       sb.append(outcomeNames[0]).append("[").append(df.format(ocs[0])).append("]");
       for (int i = 1; i < ocs.length; i++) {
@@ -112,7 +117,7 @@ public abstract class AbstractModel implements MaxentModel {
    * Return the name of an outcome corresponding to an int id.
    *
    * @param i An outcome id.
-   * @return  The name of the outcome associated with that id.
+   * @return The name of the outcome associated with that id.
    */
   public final String getOutcome(int i) {
     return outcomeNames[i];
@@ -122,9 +127,9 @@ public abstract class AbstractModel implements MaxentModel {
    * Gets the index associated with the String name of the given outcome.
    *
    * @param outcome the String name of the outcome for which the
-   *          index is desired
+   *                index is desired
    * @return the index if the given outcome label exists for this
-   *     model, -1 if it does not.
+   * model, -1 if it does not.
    **/
   public int getIndex(String outcome) {
     for (int i = 0; i < outcomeNames.length; i++) {
@@ -183,4 +188,6 @@ public abstract class AbstractModel implements MaxentModel {
 
     return false;
   }
+
+  public enum ModelType { Maxent, Perceptron, MaxentQn, NaiveBayes }
 }

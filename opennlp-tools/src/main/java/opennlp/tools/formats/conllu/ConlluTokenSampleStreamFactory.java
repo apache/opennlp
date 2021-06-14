@@ -30,17 +30,14 @@ import opennlp.tools.util.ObjectStream;
 
 public class ConlluTokenSampleStreamFactory extends AbstractSampleStreamFactory<TokenSample> {
 
-  interface Parameters extends BasicFormatParams {
+  protected <P> ConlluTokenSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
         new ConlluTokenSampleStreamFactory(ConlluTokenSampleStreamFactory.Parameters.class));
-  }
-
-  protected <P> ConlluTokenSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   @Override
@@ -57,5 +54,8 @@ public class ConlluTokenSampleStreamFactory extends AbstractSampleStreamFactory<
       CmdLineUtil.handleCreateObjectStreamError(e);
     }
     return null;
+  }
+
+  interface Parameters extends BasicFormatParams {
   }
 }

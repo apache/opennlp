@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
+import opennlp.common.doccat.FeatureGenerator;
 import opennlp.tools.util.featuregen.StringPattern;
 
 /**
@@ -51,8 +52,7 @@ public class BagOfWordsFeatureGenerator implements FeatureGenerator {
 
         if (pattern.isAllLetter())
           bagOfWords.add("bow=" + word);
-      }
-      else {
+      } else {
         bagOfWords.add("bow=" + word);
       }
     }

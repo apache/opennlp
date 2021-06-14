@@ -59,10 +59,10 @@ public abstract class TypedCmdLineTool<T>
    * Validates arguments using parameters from <code>argProxyInterface</code> and the parameters of the
    * <code>format</code>.
    *
-   * @param args arguments
+   * @param args              arguments
    * @param argProxyInterface interface with parameter descriptions
-   * @param format data format name
-   * @param <A> A
+   * @param format            data format name
+   * @param <A>               A
    */
   @SuppressWarnings({"unchecked"})
   protected <A> void validateAllArgs(String[] args, Class<A> argProxyInterface, String format) {
@@ -76,8 +76,9 @@ public abstract class TypedCmdLineTool<T>
 
   /**
    * Validates arguments for a format processed by the <code>factory</code>.
+   *
    * @param factory a stream factory
-   * @param args arguments
+   * @param args    arguments
    */
   protected void validateFactoryArgs(ObjectStreamFactory<T> factory, String[] args) {
     String errMessage = ArgumentParser.validateArgumentsLoudly(args, factory.getParameters());
@@ -114,7 +115,7 @@ public abstract class TypedCmdLineTool<T>
    * Executes the tool with the given parameters.
    *
    * @param format format to work with
-   * @param args command line arguments
+   * @param args   command line arguments
    */
   public abstract void run(String format, String[] args);
 

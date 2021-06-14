@@ -27,6 +27,7 @@ import java.util.Stack;
 public interface GapLabeler {
   /**
    * Labels the constituents found in the stack with gap labels if appropriate.
+   *
    * @param stack The stack of un-completed constituents.
    */
   void labelGaps(Stack<Constituent> stack);

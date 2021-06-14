@@ -36,7 +36,7 @@ public class GISTrainerTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testGaussianSmoothing() throws Exception {
-   
+
     TrainingParameters params = new TrainingParameters();
     params.put("Algorithm", "MAXENT");
     params.put("DataIndexer", "OnePass");
@@ -46,27 +46,27 @@ public class GISTrainerTest {
 
     Map<String, String> reportMap = new HashMap<>();
     EventTrainer trainer = TrainerFactory.getEventTrainer(params, reportMap);
-    
-    ObjectStream<Event> eventStream = new FootballEventStream();
-    AbstractModel smoothedModel = (AbstractModel)trainer.train(eventStream);
-    Map<String, Context> predMap = (Map<String, Context>)smoothedModel.getDataStructures()[1];
 
-    double[] nevilleFalseExpected = new double[] {-0.17,.10,0.05};
-    double[] nevilleTrueExpected = new double[] {0.080,-0.047,-0.080};
+    ObjectStream<Event> eventStream = new FootballEventStream();
+    AbstractModel smoothedModel = (AbstractModel) trainer.train(eventStream);
+    Map<String, Context> predMap = (Map<String, Context>) smoothedModel.getDataStructures()[1];
+
+    double[] nevilleFalseExpected = new double[] {-0.17, .10, 0.05};
+    double[] nevilleTrueExpected = new double[] {0.080, -0.047, -0.080};
 
     String predicateToTest = "Neville=false";
     Assert.assertArrayEquals(nevilleFalseExpected, predMap.get(predicateToTest).getParameters(), 0.01);
     predicateToTest = "Neville=true";
     Assert.assertArrayEquals(nevilleTrueExpected, predMap.get(predicateToTest).getParameters(), 0.001);
-    
+
     eventStream.reset();
     params.put("GaussianSmoothing", false);
     trainer = TrainerFactory.getEventTrainer(params, reportMap);
-    AbstractModel unsmoothedModel = (AbstractModel)trainer.train(eventStream);
-    predMap = (Map<String, Context>)unsmoothedModel.getDataStructures()[1];
-    
-    nevilleFalseExpected = new double[] {-0.19,0.11,0.06};
-    nevilleTrueExpected = new double[] {0.081,-0.050,-0.084};
+    AbstractModel unsmoothedModel = (AbstractModel) trainer.train(eventStream);
+    predMap = (Map<String, Context>) unsmoothedModel.getDataStructures()[1];
+
+    nevilleFalseExpected = new double[] {-0.19, 0.11, 0.06};
+    nevilleTrueExpected = new double[] {0.081, -0.050, -0.084};
 
     predicateToTest = "Neville=false";
     Assert.assertArrayEquals(nevilleFalseExpected, predMap.get(predicateToTest).getParameters(), 0.01);
@@ -75,5 +75,5 @@ public class GISTrainerTest {
 
     eventStream.close();
   }
-  
+
 }

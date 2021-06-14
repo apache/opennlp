@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -61,7 +60,8 @@ public class NKJPTextDocument {
     Map<String, Map<String, Map<String, String>>> texts = new HashMap<>();
 
     try {
-      DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();;
+      DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();
+      ;
       Document doc = docBuilder.parse(is);
 
       XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -131,36 +131,11 @@ public class NKJPTextDocument {
     }
   }
 
-  Map<String, String> getDivtypes() {
-    return Collections.unmodifiableMap(this.divtypes);
-  }
-
-  Map<String, Map<String, Map<String, String>>> getTexts() {
-    return Collections.unmodifiableMap(this.texts);
-  }
-
-  /**
-   * Segmentation etc. is done only in relation to the paragraph,
-   * which are unique within a document. This is to simplify
-   * working with the paragraphs within the document
-   * @return a map of paragaph IDs and their text
-   */
-  Map<String, String> getParagraphs() {
-    Map<String, String> paragraphs = new HashMap<>();
-    for (String dockey : texts.keySet()) {
-      for (String divkey : texts.get(dockey).keySet()) {
-        for (String pkey : texts.get(dockey).get(divkey).keySet()) {
-          paragraphs.put(pkey, texts.get(dockey).get(divkey).get(pkey));
-        }
-      }
-    }
-    return paragraphs;
-  }
-
   /**
    * Helper method to get the value of an attribute
-   * @param n The node being processed
-   * @param attrib The name of the attribute
+   *
+   * @param n        The node being processed
+   * @param attrib   The name of the attribute
    * @param required Whether or not the attribute is required
    * @return The value of the attribute, or null if not required and not present
    * @throws Exception
@@ -178,5 +153,32 @@ public class NKJPTextDocument {
         return null;
       }
     }
+  }
+
+  Map<String, String> getDivtypes() {
+    return Collections.unmodifiableMap(this.divtypes);
+  }
+
+  Map<String, Map<String, Map<String, String>>> getTexts() {
+    return Collections.unmodifiableMap(this.texts);
+  }
+
+  /**
+   * Segmentation etc. is done only in relation to the paragraph,
+   * which are unique within a document. This is to simplify
+   * working with the paragraphs within the document
+   *
+   * @return a map of paragaph IDs and their text
+   */
+  Map<String, String> getParagraphs() {
+    Map<String, String> paragraphs = new HashMap<>();
+    for (String dockey : texts.keySet()) {
+      for (String divkey : texts.get(dockey).keySet()) {
+        for (String pkey : texts.get(dockey).get(divkey).keySet()) {
+          paragraphs.put(pkey, texts.get(dockey).get(divkey).get(pkey));
+        }
+      }
+    }
+    return paragraphs;
   }
 }

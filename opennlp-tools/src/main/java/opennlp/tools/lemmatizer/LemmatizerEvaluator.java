@@ -17,6 +17,7 @@
 
 package opennlp.tools.lemmatizer;
 
+import opennlp.common.lemmatizer.Lemmatizer;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.Mean;
 
@@ -35,22 +36,21 @@ public class LemmatizerEvaluator extends Evaluator<LemmaSample> {
    * Initializes the current instance.
    *
    * @param aLemmatizer a lemmatizer
-   * @param listeners an array of evaluation listeners
+   * @param listeners   an array of evaluation listeners
    */
-  public LemmatizerEvaluator(Lemmatizer aLemmatizer, LemmatizerEvaluationMonitor ... listeners) {
+  public LemmatizerEvaluator(Lemmatizer aLemmatizer, LemmatizerEvaluationMonitor... listeners) {
     super(listeners);
     this.lemmatizer = aLemmatizer;
   }
 
   /**
    * Evaluates the given reference {@link LemmaSample} object.
-   *
+   * <p>
    * This is done by tagging the sentence from the reference
    * {@link LemmaSample} with the {@link Lemmatizer}. The
    * tags are then used to update the word accuracy score.
    *
    * @param reference the reference {@link LemmaSample}.
-   *
    * @return the predicted {@link LemmaSample}.
    */
   @Override
@@ -62,8 +62,7 @@ public class LemmatizerEvaluator extends Evaluator<LemmaSample> {
     for (int i = 0; i < referenceLemmas.length; i++) {
       if (referenceLemmas[i].equals(predictedLemmas[i])) {
         wordAccuracy.add(1);
-      }
-      else {
+      } else {
         wordAccuracy.add(0);
       }
     }
@@ -72,7 +71,7 @@ public class LemmatizerEvaluator extends Evaluator<LemmaSample> {
 
   /**
    * Retrieves the word accuracy.
-   *
+   * <p>
    * This is defined as:
    * word accuracy = correctly detected tags / total words
    *

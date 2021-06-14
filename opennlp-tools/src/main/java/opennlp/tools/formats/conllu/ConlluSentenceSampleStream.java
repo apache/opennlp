@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.common.util.Span;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 public class ConlluSentenceSampleStream extends FilterObjectStream<ConlluSentence, SentenceSample> {
 
@@ -42,7 +42,7 @@ public class ConlluSentenceSampleStream extends FilterObjectStream<ConlluSentenc
     List<Span> sentenceSpans = new ArrayList<>();
 
     ConlluSentence sentence;
-    for (int i = 0; i <  sentencesPerSample && (sentence = samples.read()) != null; i++) {
+    for (int i = 0; i < sentencesPerSample && (sentence = samples.read()) != null; i++) {
 
       int startIndex = documentText.length();
       documentText.append(sentence.getTextComment()).append(' ');

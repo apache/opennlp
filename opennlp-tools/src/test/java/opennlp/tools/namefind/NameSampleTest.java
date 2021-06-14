@@ -28,7 +28,7 @@ import java.io.ObjectOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * This is the test class for {@link NameSample}.
@@ -53,8 +53,7 @@ public class NameSampleTest {
     NameSample nameSample;
     if (useTypes) {
       nameSample = new NameSample(sentence, names, false);
-    }
-    else {
+    } else {
       Span[] namesWithoutType = new Span[names.length];
       for (int i = 0; i < names.length; i++) {
         namesWithoutType[i] = new Span(names[i].getStart(),
@@ -65,6 +64,14 @@ public class NameSampleTest {
     }
 
     return nameSample;
+  }
+
+  public static NameSample createGoldSample() {
+    return createSimpleNameSample(true);
+  }
+
+  public static NameSample createPredSample() {
+    return createSimpleNameSample(false);
   }
 
   @Test
@@ -165,12 +172,12 @@ public class NameSampleTest {
     String nameSampleStr = createSimpleNameSample(true).toString();
     Assert.assertEquals("<START:Location> U . S . <END> President <START:Person>" +
             " Barack Obama <END> " +
-        "is considering sending additional American forces to <START:Location> Afghanistan <END> .",
+            "is considering sending additional American forces to <START:Location> Afghanistan <END> .",
         nameSampleStr);
 
     NameSample parsedSample = NameSample.parse("<START:Location> U . S . <END> " +
-        "President <START:Person> Barack Obama <END> is considering sending " +
-        "additional American forces to <START:Location> Afghanistan <END> .",
+            "President <START:Person> Barack Obama <END> is considering sending " +
+            "additional American forces to <START:Location> Afghanistan <END> .",
         false);
 
     Assert.assertEquals(createSimpleNameSample(true), parsedSample);
@@ -190,7 +197,7 @@ public class NameSampleTest {
         "Anna"
     };
 
-    NameSample sample = new NameSample(sentence, new Span[]{new Span(3, 4)}, false);
+    NameSample sample = new NameSample(sentence, new Span[] {new Span(3, 4)}, false);
 
     Assert.assertEquals("My name is <START> Anna <END>", sample.toString());
   }
@@ -237,6 +244,7 @@ public class NameSampleTest {
 
   /**
    * Test if it fails to parse type with space
+   *
    * @throws Exception
    */
   @Test(expected = IOException.class)
@@ -246,6 +254,7 @@ public class NameSampleTest {
 
   /**
    * Test if it fails to parse type with new line
+   *
    * @throws Exception
    */
   @Test(expected = IOException.class)
@@ -255,6 +264,7 @@ public class NameSampleTest {
 
   /**
    * Test if it fails to parse type with :
+   *
    * @throws Exception
    */
   @Test(expected = IOException.class)
@@ -264,6 +274,7 @@ public class NameSampleTest {
 
   /**
    * Test if it fails to parse type with >
+   *
    * @throws Exception
    */
   @Test(expected = IOException.class)
@@ -273,6 +284,7 @@ public class NameSampleTest {
 
   /**
    * Test if it fails to parse nested names
+   *
    * @throws Exception
    */
   @Test(expected = IOException.class)
@@ -286,13 +298,5 @@ public class NameSampleTest {
     Assert.assertTrue(createGoldSample().equals(createGoldSample()));
     Assert.assertFalse(createGoldSample().equals(createPredSample()));
     Assert.assertFalse(createPredSample().equals(new Object()));
-  }
-
-  public static NameSample createGoldSample() {
-    return createSimpleNameSample(true);
-  }
-
-  public static NameSample createPredSample() {
-    return createSimpleNameSample(false);
   }
 }

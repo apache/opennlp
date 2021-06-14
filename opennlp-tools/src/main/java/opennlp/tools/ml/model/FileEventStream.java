@@ -38,16 +38,17 @@ public class FileEventStream implements ObjectStream<Event> {
 
   /**
    * Creates a new file event stream from the specified file name.
+   *
    * @param fileName the name fo the file containing the events.
    * @throws IOException When the specified file can not be read.
    */
   public FileEventStream(String fileName, String encoding) throws IOException {
     this(encoding == null ?
-      new FileReader(fileName) : new InputStreamReader(new FileInputStream(fileName), encoding));
+        new FileReader(fileName) : new InputStreamReader(new FileInputStream(fileName), encoding));
   }
 
   public FileEventStream(String fileName) throws IOException {
-    this(fileName,null);
+    this(fileName, null);
   }
 
   public FileEventStream(Reader reader) throws IOException {
@@ -56,11 +57,29 @@ public class FileEventStream implements ObjectStream<Event> {
 
   /**
    * Creates a new file event stream from the specified file.
+   *
    * @param file the file containing the events.
    * @throws IOException When the specified file can not be read.
    */
   public FileEventStream(File file) throws IOException {
-    reader = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF8"));
+    reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
+  }
+
+  /**
+   * Generates a string representing the specified event.
+   *
+   * @param event The event for which a string representation is needed.
+   * @return A string representing the specified event.
+   */
+  public static String toLine(Event event) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(event.getOutcome());
+    String[] context = event.getContext();
+    for (int ci = 0, cl = context.length; ci < cl; ci++) {
+      sb.append(" ").append(context[ci]);
+    }
+    sb.append(System.getProperty("line.separator"));
+    return sb.toString();
   }
 
   @Override
@@ -76,30 +95,13 @@ public class FileEventStream implements ObjectStream<Event> {
       }
 
       return new Event(outcome, context);
-    }
-    else {
+    } else {
       return null;
     }
   }
 
   public void close() throws IOException {
     reader.close();
-  }
-
-  /**
-   * Generates a string representing the specified event.
-   * @param event The event for which a string representation is needed.
-   * @return A string representing the specified event.
-   */
-  public static String toLine(Event event) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(event.getOutcome());
-    String[] context = event.getContext();
-    for (int ci = 0,cl = context.length; ci < cl; ci++) {
-      sb.append(" ").append(context[ci]);
-    }
-    sb.append(System.getProperty("line.separator"));
-    return sb.toString();
   }
 
   @Override

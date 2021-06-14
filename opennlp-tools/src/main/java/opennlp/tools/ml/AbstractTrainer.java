@@ -39,7 +39,7 @@ public abstract class AbstractTrainer {
   public static final boolean VERBOSE_DEFAULT = true;
 
   protected TrainingParameters trainingParameters;
-  protected Map<String,String> reportMap;
+  protected Map<String, String> reportMap;
 
   protected boolean printMessages;
 
@@ -47,19 +47,19 @@ public abstract class AbstractTrainer {
   }
 
   public AbstractTrainer(TrainingParameters parameters) {
-    init(parameters,new HashMap<>());
+    init(parameters, new HashMap<>());
   }
-  
-  public void init(TrainingParameters trainingParameters, Map<String,String> reportMap) {
+
+  public void init(TrainingParameters trainingParameters, Map<String, String> reportMap) {
     this.trainingParameters = trainingParameters;
     if (reportMap == null) reportMap = new HashMap<>();
     this.reportMap = reportMap;
     printMessages = trainingParameters.getBooleanParameter(VERBOSE_PARAM, VERBOSE_DEFAULT);
   }
-  
+
   @Deprecated
   public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
-    init(new TrainingParameters(trainParams),reportMap);
+    init(new TrainingParameters(trainParams), reportMap);
   }
 
   public String getAlgorithm() {
@@ -92,22 +92,22 @@ public abstract class AbstractTrainer {
   }
 
   /**
-   * @deprecated Use {@link #validate()} instead.
    * @return
+   * @deprecated Use {@link #validate()} instead.
    */
   @Deprecated
   public boolean isValid() {
     try {
       validate();
       return true;
-    }
-    catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       return false;
     }
   }
 
-/**
+  /**
    * Use the TrainingParameters directly...
+   *
    * @param key
    * @param defaultValue
    */
@@ -118,6 +118,7 @@ public abstract class AbstractTrainer {
 
   /**
    * Use the PluggableParameters directly...
+   *
    * @param key
    * @param defaultValue
    */
@@ -125,9 +126,10 @@ public abstract class AbstractTrainer {
   protected int TrainingParameters(String key, int defaultValue) {
     return trainingParameters.getIntParameter(key, defaultValue);
   }
-  
+
   /**
    * Use the PluggableParameters directly...
+   *
    * @param key
    * @param defaultValue
    */
@@ -138,6 +140,7 @@ public abstract class AbstractTrainer {
 
   /**
    * Use the PluggableParameters directly...
+   *
    * @param key
    * @param defaultValue
    */
@@ -148,6 +151,7 @@ public abstract class AbstractTrainer {
 
   /**
    * Adds the key/Value to the report map.
+   *
    * @param key
    * @param value
    */

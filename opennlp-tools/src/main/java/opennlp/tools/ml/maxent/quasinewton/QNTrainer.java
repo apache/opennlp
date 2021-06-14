@@ -38,21 +38,21 @@ public class QNTrainer extends AbstractEventTrainer {
   public static final String MAXENT_QN_VALUE = "MAXENT_QN";
 
   public static final String THREADS_PARAM = "Threads";
-  public static final int THREADS_DEFAULT  = 1;
+  public static final int THREADS_DEFAULT = 1;
 
-  public static final String L1COST_PARAM   = "L1Cost";
+  public static final String L1COST_PARAM = "L1Cost";
   public static final double L1COST_DEFAULT = 0.1;
 
-  public static final String L2COST_PARAM   = "L2Cost";
+  public static final String L2COST_PARAM = "L2Cost";
   public static final double L2COST_DEFAULT = 0.1;
 
   // Number of Hessian updates to store
   public static final String M_PARAM = "NumOfUpdates";
-  public static final int M_DEFAULT  = 15;
+  public static final int M_DEFAULT = 15;
 
   // Maximum number of function evaluations
   public static final String MAX_FCT_EVAL_PARAM = "MaxFctEval";
-  public static final int MAX_FCT_EVAL_DEFAULT  = 30000;
+  public static final int MAX_FCT_EVAL_DEFAULT = 30000;
 
   // Number of threads
   private int threads;
@@ -70,7 +70,7 @@ public class QNTrainer extends AbstractEventTrainer {
   public QNTrainer(TrainingParameters parameters) {
     super(parameters);
   }
-  
+
   // Constructor -- to log. For testing purpose
   public QNTrainer(boolean printMessages) {
     this(M_DEFAULT, printMessages);
@@ -88,12 +88,12 @@ public class QNTrainer extends AbstractEventTrainer {
 
   // For testing purpose
   public QNTrainer(int m, int maxFctEval, boolean printMessages) {
-    this.printMessages    = printMessages;
-    this.m          = m < 0 ? M_DEFAULT : m;
+    this.printMessages = printMessages;
+    this.m = m < 0 ? M_DEFAULT : m;
     this.maxFctEval = maxFctEval < 0 ? MAX_FCT_EVAL_DEFAULT : maxFctEval;
-    this.threads    = THREADS_DEFAULT;
-    this.l1Cost     = L1COST_DEFAULT;
-    this.l2Cost     = L2COST_DEFAULT;
+    this.threads = THREADS_DEFAULT;
+    this.l1Cost = L1COST_DEFAULT;
+    this.l2Cost = L2COST_DEFAULT;
   }
 
   // >> Members related to AbstractEventTrainer
@@ -102,18 +102,18 @@ public class QNTrainer extends AbstractEventTrainer {
 
   @Override
   public void init(TrainingParameters trainingParameters, Map<String, String> reportMap) {
-    super.init(trainingParameters,reportMap);
+    super.init(trainingParameters, reportMap);
     this.m = trainingParameters.getIntParameter(M_PARAM, M_DEFAULT);
     this.maxFctEval = trainingParameters.getIntParameter(MAX_FCT_EVAL_PARAM, MAX_FCT_EVAL_DEFAULT);
     this.threads = trainingParameters.getIntParameter(THREADS_PARAM, THREADS_DEFAULT);
     this.l1Cost = trainingParameters.getDoubleParameter(L1COST_PARAM, L1COST_DEFAULT);
     this.l2Cost = trainingParameters.getDoubleParameter(L2COST_PARAM, L2COST_DEFAULT);
   }
-  
+
   @Override
   @Deprecated
   public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
-    init(new TrainingParameters(trainParams),reportMap);
+    init(new TrainingParameters(trainParams), reportMap);
   }
 
   @Override
@@ -158,8 +158,7 @@ public class QNTrainer extends AbstractEventTrainer {
     try {
       validate();
       return true;
-    }
-    catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       return false;
     }
   }
@@ -228,23 +227,24 @@ public class QNTrainer extends AbstractEventTrainer {
 
     /**
      * Evaluate the current model on training data set
+     *
      * @return model's training accuracy
      */
     @Override
     public double evaluate(double[] parameters) {
-      int[][] contexts  = indexer.getContexts();
-      float[][] values  = indexer.getValues();
+      int[][] contexts = indexer.getContexts();
+      float[][] values = indexer.getValues();
       int[] nEventsSeen = indexer.getNumTimesEventsSeen();
       int[] outcomeList = indexer.getOutcomeList();
-      int nOutcomes     = indexer.getOutcomeLabels().length;
-      int nPredLabels   = indexer.getPredLabels().length;
+      int nOutcomes = indexer.getOutcomeLabels().length;
+      int nPredLabels = indexer.getPredLabels().length;
 
-      int nCorrect     = 0;
+      int nCorrect = 0;
       int nTotalEvents = 0;
 
       for (int ei = 0; ei < contexts.length; ei++) {
-        int[] context  = contexts[ei];
-        float[] value  = values == null ? null : values[ei];
+        int[] context = contexts[ei];
+        float[] value = values == null ? null : values[ei];
 
         double[] probs = new double[nOutcomes];
         QNModel.eval(context, value, probs, nOutcomes, nPredLabels, parameters);

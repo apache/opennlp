@@ -68,14 +68,15 @@ public class QNTrainerTest {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
-    testDataIndexer.index(rvfes1);;
+    testDataIndexer.index(rvfes1);
+    ;
     // when
     QNModel trainedModel = new QNTrainer(15, true).trainModel(ITERATIONS, testDataIndexer);
     String[] features2Classify = new String[] {
-        "feature2","feature3", "feature3",
-        "feature3","feature3", "feature3",
-        "feature3","feature3", "feature3",
-        "feature3","feature3", "feature3"};
+        "feature2", "feature3", "feature3",
+        "feature3", "feature3", "feature3",
+        "feature3", "feature3", "feature3",
+        "feature3", "feature3", "feature3"};
     double[] eval = trainedModel.eval(features2Classify);
     // then
     Assert.assertNotNull(eval);
@@ -117,10 +118,10 @@ public class QNTrainerTest {
     Assert.assertTrue(trainedModel.equals(deserModel));
 
     String[] features2Classify = new String[] {
-        "feature2","feature3", "feature3",
-        "feature3","feature3", "feature3",
-        "feature3","feature3", "feature3",
-        "feature3","feature3", "feature3"};
+        "feature2", "feature3", "feature3",
+        "feature3", "feature3", "feature3",
+        "feature3", "feature3", "feature3",
+        "feature3", "feature3", "feature3"};
     double[] eval01 = trainedModel.eval(features2Classify);
     double[] eval02 = deserModel.eval(features2Classify);
 

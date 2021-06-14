@@ -30,8 +30,7 @@ public class BinaryQNModelReader extends QNModelReader {
    * Constructor which directly instantiates the DataInputStream containing the
    * model contents.
    *
-   * @param dis
-   *          The DataInputStream containing the model information.
+   * @param dis The DataInputStream containing the model information.
    */
   public BinaryQNModelReader(DataInputStream dis) {
     super(new BinaryFileDataReader(dis));

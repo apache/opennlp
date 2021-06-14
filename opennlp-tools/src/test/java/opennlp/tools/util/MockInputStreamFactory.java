@@ -21,7 +21,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -51,8 +50,7 @@ public class MockInputStreamFactory implements InputStreamFactory {
   public InputStream createInputStream() throws IOException {
     if (inputSourceFile != null) {
       return getClass().getClassLoader().getResourceAsStream(inputSourceFile.getPath());
-    }
-    else {
+    } else {
       return new ByteArrayInputStream(inputSourceStr.getBytes(charset));
     }
   }

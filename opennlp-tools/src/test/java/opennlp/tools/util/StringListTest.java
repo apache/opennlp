@@ -22,6 +22,8 @@ import java.util.Iterator;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.StringList;
+
 /**
  * Tests for the {@link StringList} class.
  */

@@ -25,9 +25,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.common.util.Span;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 /**
  * A stream which removes Name Samples which do not have a certain type.
@@ -62,8 +62,7 @@ public class NameSampleTypeFilter extends FilterObjectStream<NameSample, NameSam
 
       return new NameSample(sample.getId(), sample.getSentence(),
           filteredNames.toArray(new Span[filteredNames.size()]), null, sample.isClearAdaptiveDataSet());
-    }
-    else {
+    } else {
       return null;
     }
   }

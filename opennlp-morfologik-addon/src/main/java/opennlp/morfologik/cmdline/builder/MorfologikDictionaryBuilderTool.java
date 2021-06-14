@@ -20,17 +20,14 @@ package opennlp.morfologik.cmdline.builder;
 import java.io.File;
 import java.nio.file.Path;
 
-import morfologik.stemming.DictionaryMetadata;
-
 import opennlp.morfologik.builder.MorfologikDictionayBuilder;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 
-public class MorfologikDictionaryBuilderTool extends BasicCmdLineTool {
+import morfologik.stemming.DictionaryMetadata;
 
-  interface Params extends MorfologikDictionaryBuilderParams {
-  }
+public class MorfologikDictionaryBuilderTool extends BasicCmdLineTool {
 
   public String getShortDescription() {
     return "builds a binary POS Dictionary using Morfologik";
@@ -59,5 +56,8 @@ public class MorfologikDictionaryBuilderTool extends BasicCmdLineTool {
           "Error while creating Morfologik POS Dictionay: " + e.getMessage(), e);
     }
 
+  }
+
+  interface Params extends MorfologikDictionaryBuilderParams {
   }
 }

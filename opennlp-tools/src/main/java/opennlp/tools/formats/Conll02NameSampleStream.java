@@ -24,13 +24,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.common.util.Span;
+import opennlp.common.util.StringUtil;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for the dutch and spanish ner training files of the CONLL 2002 shared task.
@@ -49,21 +49,13 @@ import opennlp.tools.util.StringUtil;
  */
 public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
-  public enum LANGUAGE {
-    NLD,
-    SPA
-  }
-
   public static final int GENERATE_PERSON_ENTITIES = 0x01;
   public static final int GENERATE_ORGANIZATION_ENTITIES = 0x01 << 1;
   public static final int GENERATE_LOCATION_ENTITIES = 0x01 << 2;
   public static final int GENERATE_MISC_ENTITIES = 0x01 << 3;
-
   public static final String DOCSTART = "-DOCSTART-";
-
   private final LANGUAGE lang;
   private final ObjectStream<String> lineStream;
-
   private final int types;
 
   public Conll02NameSampleStream(LANGUAGE lang, ObjectStream<String> lineStream, int types) {
@@ -90,23 +82,18 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
     if ("PER".equals(type)) {
       type = "person";
-    }
-    else if ("LOC".equals(type)) {
+    } else if ("LOC".equals(type)) {
       type = "location";
-    }
-    else if ("MISC".equals(type)) {
+    } else if ("MISC".equals(type)) {
       type = "misc";
-    }
-    else if ("ORG".equals(type)) {
+    } else if ("ORG".equals(type)) {
       type = "organization";
-    }
-    else {
+    } else {
       throw new InvalidFormatException("Unknown type: " + type);
     }
 
     return new Span(begin, end, type);
   }
-
 
   public NameSample read() throws IOException {
 
@@ -130,8 +117,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
       if (fields.length == 3) {
         sentence.add(fields[0]);
         tags.add(fields[2]);
-      }
-      else {
+      } else {
         throw new IOException("Expected three fields per line in training data, got " +
             fields.length + " for line '" + line + "'!");
       }
@@ -174,18 +160,15 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
           beginIndex = i;
           endIndex = i + 1;
-        }
-        else if (tag.startsWith("I-")) {
+        } else if (tag.startsWith("I-")) {
           endIndex++;
-        }
-        else if (tag.equals("O")) {
+        } else if (tag.equals("O")) {
           if (beginIndex != -1) {
             names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
             beginIndex = -1;
             endIndex = -1;
           }
-        }
-        else {
+        } else {
           throw new IOException("Invalid tag: " + tag);
         }
       }
@@ -196,12 +179,10 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
       return new NameSample(sentence.toArray(new String[sentence.size()]),
           names.toArray(new Span[names.size()]), isClearAdaptiveData);
-    }
-    else if (line != null) {
+    } else if (line != null) {
       // Just filter out empty events, if two lines in a row are empty
       return read();
-    }
-    else {
+    } else {
       // source stream is not returning anymore lines
       return null;
     }
@@ -213,5 +194,10 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
   public void close() throws IOException {
     lineStream.close();
+  }
+
+  public enum LANGUAGE {
+    NLD,
+    SPA
   }
 }

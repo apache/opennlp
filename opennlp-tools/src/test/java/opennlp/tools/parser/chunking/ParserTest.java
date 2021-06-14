@@ -61,7 +61,7 @@ public class ParserTest {
     model.serialize(outArray);
     outArray.close();
 
-    ParserModel outputModel =  new ParserModel(new ByteArrayInputStream(outArray.toByteArray()));
+    ParserModel outputModel = new ParserModel(new ByteArrayInputStream(outArray.toByteArray()));
 
     // TODO: compare both models
   }

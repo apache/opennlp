@@ -27,16 +27,21 @@ import java.util.Objects;
  */
 public class Context {
 
-  /** The real valued parameters or expected values for this context. */
+  /**
+   * The real valued parameters or expected values for this context.
+   */
   protected double[] parameters;
-  /** The outcomes which occur with this context. */
+  /**
+   * The outcomes which occur with this context.
+   */
   protected int[] outcomes;
 
   /**
    * Creates a new parameters object with the specified parameters associated with the specified
    * outcome pattern.
+   *
    * @param outcomePattern Array of outcomes for which parameters exists for this context.
-   * @param parameters Parameters for the outcomes specified.
+   * @param parameters     Parameters for the outcomes specified.
    */
   public Context(int[] outcomePattern, double[] parameters) {
     this.outcomes = outcomePattern;
@@ -45,6 +50,7 @@ public class Context {
 
   /**
    * Returns the outcomes for which parameters exists for this context.
+   *
    * @return Array of outcomes for which parameters exists for this context.
    */
   public int[] getOutcomes() {
@@ -53,6 +59,7 @@ public class Context {
 
   /**
    * Returns the parameters or expected values for the outcomes which occur with this context.
+   *
    * @return Array of parameters for the outcomes of this context.
    */
   public double[] getParameters() {
@@ -74,7 +81,7 @@ public class Context {
       Context context = (Context) obj;
 
       return Arrays.equals(parameters, context.parameters)
-           && Arrays.equals(outcomes, context.outcomes);
+          && Arrays.equals(outcomes, context.outcomes);
     }
 
     return false;

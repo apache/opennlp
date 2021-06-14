@@ -72,7 +72,7 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
       List<String> tags = new ArrayList<>(100);
 
       String line;
-      while ((line = reader.readLine())  != null) {
+      while ((line = reader.readLine()) != null) {
 
         final int minNumberOfFields = 5;
 
@@ -81,8 +81,7 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
         if (parts.length >= minNumberOfFields) {
           tokens.add(parts[1]);
           tags.add(parts[4]);
-        }
-        else {
+        } else {
           throw new InvalidFormatException("Every non-empty line must have at least " +
               minNumberOfFields + " fields: '" + line + "'!");
         }

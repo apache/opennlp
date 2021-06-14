@@ -15,21 +15,25 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util;
+package opennlp.common.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-/** Represents a weighted sequence of outcomes. */
+/**
+ * Represents a weighted sequence of outcomes.
+ */
 public class Sequence implements Comparable<Sequence> {
+  private static final Double ONE = 1.0d;
   private double score;
   private List<String> outcomes;
   private List<Double> probs;
-  private static final Double ONE = 1.0d;
 
-  /** Creates a new sequence of outcomes. */
+  /**
+   * Creates a new sequence of outcomes.
+   */
   public Sequence() {
     outcomes = new ArrayList<>(1);
     probs = new ArrayList<>(1);
@@ -44,7 +48,7 @@ public class Sequence implements Comparable<Sequence> {
     score = s.score;
   }
 
-  public Sequence(Sequence s,String outcome, double p) {
+  public Sequence(Sequence s, String outcome, double p) {
     outcomes = new ArrayList<>(s.outcomes.size() + 1);
     outcomes.addAll(s.outcomes);
     outcomes.add(outcome);
@@ -56,7 +60,7 @@ public class Sequence implements Comparable<Sequence> {
 
   public Sequence(List<String> outcomes) {
     this.outcomes = outcomes;
-    this.probs = Collections.nCopies(outcomes.size(),ONE);
+    this.probs = Collections.nCopies(outcomes.size(), ONE);
   }
 
   public int compareTo(Sequence s) {
@@ -84,9 +88,11 @@ public class Sequence implements Comparable<Sequence> {
     return false;
   }
 
-/** Adds an outcome and probability to this sequence.
+  /**
+   * Adds an outcome and probability to this sequence.
+   *
    * @param outcome the outcome to be added.
-   * @param p the probability associated with this outcome.
+   * @param p       the probability associated with this outcome.
    */
   public void add(String outcome, double p) {
     outcomes.add(outcome);
@@ -94,14 +100,18 @@ public class Sequence implements Comparable<Sequence> {
     score += StrictMath.log(p);
   }
 
-  /** Returns a list of outcomes for this sequence.
+  /**
+   * Returns a list of outcomes for this sequence.
+   *
    * @return a list of outcomes.
    */
   public List<String> getOutcomes() {
     return outcomes;
   }
 
-  /** Returns an array of probabilities associated with the outcomes of this sequence.
+  /**
+   * Returns an array of probabilities associated with the outcomes of this sequence.
+   *
    * @return an array of probabilities.
    */
   public double[] getProbs() {
@@ -112,13 +122,16 @@ public class Sequence implements Comparable<Sequence> {
 
   /**
    * Returns the score of this sequence.
+   *
    * @return The score of this sequence.
    */
   public double getScore() {
     return score;
   }
 
-  /** Populates  an array with the probabilities associated with the outcomes of this sequence.
+  /**
+   * Populates  an array with the probabilities associated with the outcomes of this sequence.
+   *
    * @param ps a pre-allocated array to use to hold the values of the
    *           probabilities of the outcomes for this sequence.
    */

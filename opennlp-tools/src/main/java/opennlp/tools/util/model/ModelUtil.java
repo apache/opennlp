@@ -45,17 +45,16 @@ public final class ModelUtil {
 
   /**
    * Writes the given model to the given {@link OutputStream}.
-   *
+   * <p>
    * This methods does not closes the provided stream.
    *
    * @param model the model to be written
-   * @param out the stream the model should be written to
-   *
+   * @param out   the stream the model should be written to
    * @throws IOException
    * @throws IllegalArgumentException in case one of the parameters is null
    */
   public static void writeModel(MaxentModel model, final OutputStream out)
-          throws IOException, IllegalArgumentException {
+      throws IOException, IllegalArgumentException {
 
     Objects.requireNonNull(model, "model parameter must not be null");
     Objects.requireNonNull(out, "out parameter must not be null");
@@ -76,7 +75,6 @@ public final class ModelUtil {
    *
    * @param model
    * @param expectedOutcomes
-   *
    * @return true if all expected outcomes are the only outcomes of the model.
    */
   public static boolean validateOutcomes(MaxentModel model, String... expectedOutcomes) {
@@ -94,8 +92,7 @@ public final class ModelUtil {
           break;
         }
       }
-    }
-    else {
+    } else {
       result = false;
     }
 
@@ -108,9 +105,8 @@ public final class ModelUtil {
    *
    * @param in stream to read data for the byte array from
    * @return byte array with the contents of the stream
-   *
    * @throws IOException if an exception is thrown while reading
-   *     from the provided {@link InputStream}
+   *                     from the provided {@link InputStream}
    */
   public static byte[] read(InputStream in) throws IOException {
     ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
@@ -126,16 +122,15 @@ public final class ModelUtil {
   }
 
   public static void addCutoffAndIterations(Map<String, String> manifestInfoEntries,
-      int cutoff, int iterations) {
+                                            int cutoff, int iterations) {
     manifestInfoEntries.put(BaseModel.TRAINING_CUTOFF_PROPERTY, Integer.toString(cutoff));
     manifestInfoEntries.put(BaseModel.TRAINING_ITERATIONS_PROPERTY, Integer.toString(iterations));
   }
 
   /**
    * Creates the default training parameters in case they are not provided.
-   *
+   * <p>
    * Note: Do not use this method, internal use only!
-   *
    *
    * @return training parameters instance
    */

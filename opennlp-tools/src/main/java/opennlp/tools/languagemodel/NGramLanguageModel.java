@@ -20,9 +20,9 @@ package opennlp.tools.languagemodel;
 import java.io.IOException;
 import java.io.InputStream;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.ngram.NGramUtils;
-import opennlp.tools.util.StringList;
 
 /**
  * A {@link opennlp.tools.languagemodel.LanguageModel} based on a {@link opennlp.tools.ngram.NGramModel}

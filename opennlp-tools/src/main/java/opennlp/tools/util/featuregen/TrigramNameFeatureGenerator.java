@@ -21,12 +21,11 @@ import java.util.List;
 
 /**
  * Adds trigram features based on tokens and token classes.
- *
  */
 public class TrigramNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
     String wc = FeatureGeneratorUtil.tokenFeature(tokens[index]);
     // trigram features
     if (index > 1) {

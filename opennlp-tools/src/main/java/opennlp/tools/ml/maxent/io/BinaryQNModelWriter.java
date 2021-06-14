@@ -33,10 +33,8 @@ public class BinaryQNModelWriter extends QNModelWriter {
    * the model to that file. Detects whether the file is gzipped or not based on
    * whether the suffix contains ".gz".
    *
-   * @param model
-   *          The GISModel which is to be persisted.
-   * @param f
-   *          The File in which the model is to be persisted.
+   * @param model The GISModel which is to be persisted.
+   * @param f     The File in which the model is to be persisted.
    */
   public BinaryQNModelWriter(AbstractModel model, File f) throws IOException {
 
@@ -53,10 +51,8 @@ public class BinaryQNModelWriter extends QNModelWriter {
    * Constructor which takes a GISModel and a DataOutputStream and prepares
    * itself to write the model to that stream.
    *
-   * @param model
-   *          The GISModel which is to be persisted.
-   * @param dos
-   *          The stream which will be used to persist the model.
+   * @param model The GISModel which is to be persisted.
+   * @param dos   The stream which will be used to persist the model.
    */
   public BinaryQNModelWriter(AbstractModel model, DataOutputStream dos) {
     super(model);

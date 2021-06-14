@@ -27,25 +27,27 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.common.util.Span;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
-import opennlp.tools.util.Span;
 
 /**
  * Class for holding names for a single unit of text.
  */
 public class NameSample implements Serializable {
 
+  /**
+   * The a default type value when there is no type in training data.
+   */
+  public static final String DEFAULT_TYPE = "default";
+  private static final Pattern START_TAG_PATTERN = Pattern.compile("<START(:([^:>\\s]*))?>");
   private final String id;
   private final List<String> sentence;
   private final List<Span> names;
   private final String[][] additionalContext;
   private final boolean isClearAdaptiveData;
 
-  /** The a default type value when there is no type in training data. */
-  public static final String DEFAULT_TYPE = "default";
-
   public NameSample(String id, String[] sentence, Span[] names,
-      String[][] additionalContext, boolean clearAdaptiveData) {
+                    String[][] additionalContext, boolean clearAdaptiveData) {
     this.id = id;
 
     Objects.requireNonNull(sentence, "sentence must not be null");
@@ -66,8 +68,7 @@ public class NameSample implements Serializable {
         this.additionalContext[i] = new String[additionalContext[i].length];
         System.arraycopy(additionalContext[i], 0, this.additionalContext[i], 0, additionalContext[i].length);
       }
-    }
-    else {
+    } else {
       this.additionalContext = null;
     }
     isClearAdaptiveData = clearAdaptiveData;
@@ -86,19 +87,103 @@ public class NameSample implements Serializable {
   /**
    * Initializes the current instance.
    *
-   * @param sentence training sentence
+   * @param sentence          training sentence
    * @param names
    * @param additionalContext
    * @param clearAdaptiveData if true the adaptive data of the
-   *     feature generators is cleared
+   *                          feature generators is cleared
    */
   public NameSample(String[] sentence, Span[] names,
-      String[][] additionalContext, boolean clearAdaptiveData) {
+                    String[][] additionalContext, boolean clearAdaptiveData) {
     this(null, sentence, names, additionalContext, clearAdaptiveData);
   }
 
   public NameSample(String[] sentence, Span[] names, boolean clearAdaptiveData) {
     this(sentence, names, null, clearAdaptiveData);
+  }
+
+  private static String errorTokenWithContext(String[] sentence, int index) {
+
+    StringBuilder errorString = new StringBuilder();
+
+    // two token before
+    if (index > 1)
+      errorString.append(sentence[index - 2]).append(" ");
+
+    if (index > 0)
+      errorString.append(sentence[index - 1]).append(" ");
+
+    // token itself
+    errorString.append("###");
+    errorString.append(sentence[index]);
+    errorString.append("###").append(" ");
+
+    // two token after
+    if (index + 1 < sentence.length)
+      errorString.append(sentence[index + 1]).append(" ");
+
+    if (index + 2 < sentence.length)
+      errorString.append(sentence[index + 2]);
+
+    return errorString.toString();
+  }
+
+  public static NameSample parse(String taggedTokens,
+                                 boolean isClearAdaptiveData) throws IOException {
+    return parse(taggedTokens, DEFAULT_TYPE, isClearAdaptiveData);
+  }
+
+  public static NameSample parse(String taggedTokens, String defaultType,
+                                 boolean isClearAdaptiveData) throws IOException {
+    // TODO: Should throw another exception, and then convert it into an IOException in the stream
+
+    String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(taggedTokens);
+
+    List<String> tokenList = new ArrayList<>(parts.length);
+    List<Span> nameList = new ArrayList<>();
+
+    String nameType = defaultType;
+    int startIndex = -1;
+    int wordIndex = 0;
+
+    // we check if at least one name has the a type. If no one has, we will
+    // leave the NameType property of NameSample null.
+    boolean catchingName = false;
+
+    for (int pi = 0; pi < parts.length; pi++) {
+      Matcher startMatcher = START_TAG_PATTERN.matcher(parts[pi]);
+      if (startMatcher.matches()) {
+        if (catchingName) {
+          throw new IOException("Found unexpected annotation" +
+              " while handling a name sequence: " + errorTokenWithContext(parts, pi));
+        }
+        catchingName = true;
+        startIndex = wordIndex;
+        String nameTypeFromSample = startMatcher.group(2);
+        if (nameTypeFromSample != null) {
+          if (nameTypeFromSample.length() == 0) {
+            throw new IOException("Missing a name type: " + errorTokenWithContext(parts, pi));
+          }
+          nameType = nameTypeFromSample;
+        }
+
+      } else if (parts[pi].equals(NameSampleDataStream.END_TAG)) {
+        if (!catchingName) {
+          throw new IOException("Found unexpected annotation: " + errorTokenWithContext(parts, pi));
+        }
+        catchingName = false;
+        // create name
+        nameList.add(new Span(startIndex, wordIndex, nameType));
+
+      } else {
+        tokenList.add(parts[pi]);
+        wordIndex++;
+      }
+    }
+    String[] sentence = tokenList.toArray(new String[tokenList.size()]);
+    Span[] names = nameList.toArray(new Span[nameList.size()]);
+
+    return new NameSample(sentence, names, isClearAdaptiveData);
   }
 
   public String getId() {
@@ -164,8 +249,7 @@ public class NameSample implements Serializable {
           // entity is empty. If it is, we leave the nameType blank.
           if (name.getType() == null) {
             result.append(NameSampleDataStream.START_TAG).append(' ');
-          }
-          else {
+          } else {
             result.append(NameSampleDataStream.START_TAG_PREFIX).append(name.getType()).append("> ");
           }
         }
@@ -187,93 +271,5 @@ public class NameSample implements Serializable {
     }
 
     return result.toString();
-  }
-
-  private static String errorTokenWithContext(String[] sentence, int index) {
-
-    StringBuilder errorString = new StringBuilder();
-
-    // two token before
-    if (index > 1)
-      errorString.append(sentence[index - 2]).append(" ");
-
-    if (index > 0)
-      errorString.append(sentence[index - 1]).append(" ");
-
-    // token itself
-    errorString.append("###");
-    errorString.append(sentence[index]);
-    errorString.append("###").append(" ");
-
-    // two token after
-    if (index + 1 < sentence.length)
-      errorString.append(sentence[index + 1]).append(" ");
-
-    if (index + 2 < sentence.length)
-      errorString.append(sentence[index + 2]);
-
-    return errorString.toString();
-  }
-
-  private static final Pattern START_TAG_PATTERN = Pattern.compile("<START(:([^:>\\s]*))?>");
-
-  public static NameSample parse(String taggedTokens,
-      boolean isClearAdaptiveData) throws IOException {
-    return parse(taggedTokens, DEFAULT_TYPE, isClearAdaptiveData);
-  }
-
-  public static NameSample parse(String taggedTokens, String defaultType,
-      boolean isClearAdaptiveData) throws IOException {
-    // TODO: Should throw another exception, and then convert it into an IOException in the stream
-
-    String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(taggedTokens);
-
-    List<String> tokenList = new ArrayList<>(parts.length);
-    List<Span> nameList = new ArrayList<>();
-
-    String nameType = defaultType;
-    int startIndex = -1;
-    int wordIndex = 0;
-
-    // we check if at least one name has the a type. If no one has, we will
-    // leave the NameType property of NameSample null.
-    boolean catchingName = false;
-
-    for (int pi = 0; pi < parts.length; pi++) {
-      Matcher startMatcher = START_TAG_PATTERN.matcher(parts[pi]);
-      if (startMatcher.matches()) {
-        if (catchingName) {
-          throw new IOException("Found unexpected annotation" +
-              " while handling a name sequence: " + errorTokenWithContext(parts, pi));
-        }
-        catchingName = true;
-        startIndex = wordIndex;
-        String nameTypeFromSample = startMatcher.group(2);
-        if (nameTypeFromSample != null) {
-          if (nameTypeFromSample.length() == 0) {
-            throw new IOException("Missing a name type: " + errorTokenWithContext(parts, pi));
-          }
-          nameType = nameTypeFromSample;
-        }
-
-      }
-      else if (parts[pi].equals(NameSampleDataStream.END_TAG)) {
-        if (!catchingName) {
-          throw new IOException("Found unexpected annotation: " + errorTokenWithContext(parts, pi));
-        }
-        catchingName = false;
-        // create name
-        nameList.add(new Span(startIndex, wordIndex, nameType));
-
-      }
-      else {
-        tokenList.add(parts[pi]);
-        wordIndex++;
-      }
-    }
-    String[] sentence = tokenList.toArray(new String[tokenList.size()]);
-    Span[] names = nameList.toArray(new Span[nameList.size()]);
-
-    return new NameSample(sentence, names, isClearAdaptiveData);
   }
 }

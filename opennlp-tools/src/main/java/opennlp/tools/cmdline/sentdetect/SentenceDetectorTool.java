@@ -46,7 +46,7 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
 
   /**
    * Perform sentence detection the input stream.
-   *
+   * <p>
    * A newline will be treated as a paragraph boundary.
    */
   public void run(String[] args) {
@@ -63,7 +63,7 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
       perfMon.start();
 
       try (ObjectStream<String> paraStream = new ParagraphStream(new PlainTextByLineStream(
-            new SystemInputStreamFactory(), SystemInputStreamFactory.encoding()))) {
+          new SystemInputStreamFactory(), SystemInputStreamFactory.encoding()))) {
 
         String para;
         while ((para = paraStream.read()) != null) {
@@ -77,8 +77,7 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
 
           System.out.println();
         }
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         CmdLineUtil.handleStdinIoError(e);
       }
 

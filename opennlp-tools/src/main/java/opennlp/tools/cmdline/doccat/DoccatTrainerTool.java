@@ -20,6 +20,7 @@ package opennlp.tools.cmdline.doccat;
 import java.io.File;
 import java.io.IOException;
 
+import opennlp.common.doccat.FeatureGenerator;
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool.TrainerToolParams;
@@ -29,18 +30,27 @@ import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.tools.doccat.DocumentCategorizerME;
 import opennlp.tools.doccat.DocumentSample;
-import opennlp.tools.doccat.FeatureGenerator;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ModelUtil;
 
 public class DoccatTrainerTool
     extends AbstractTrainerTool<DocumentSample, TrainerToolParams> {
 
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
-  }
-
   public DoccatTrainerTool() {
     super(DocumentSample.class, TrainerToolParams.class);
+  }
+
+  static FeatureGenerator[] createFeatureGenerators(String featureGeneratorsNames) {
+    if (featureGeneratorsNames == null) {
+      return new FeatureGenerator[] {new BagOfWordsFeatureGenerator()};
+    }
+    String[] classes = featureGeneratorsNames.split(",");
+    FeatureGenerator[] featureGenerators = new FeatureGenerator[classes.length];
+    for (int i = 0; i < featureGenerators.length; i++) {
+      featureGenerators[i] = ExtensionLoader.instantiateExtension(
+          FeatureGenerator.class, classes[i]);
+    }
+    return featureGenerators;
   }
 
   @Override
@@ -71,8 +81,7 @@ public class DoccatTrainerTool
           mlParams, factory);
     } catch (IOException e) {
       throw createTerminationIOException(e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -83,16 +92,6 @@ public class DoccatTrainerTool
     CmdLineUtil.writeModel("document categorizer", modelOutFile, model);
   }
 
-  static FeatureGenerator[] createFeatureGenerators(String featureGeneratorsNames) {
-    if (featureGeneratorsNames == null) {
-      return new FeatureGenerator[]{new BagOfWordsFeatureGenerator()};
-    }
-    String[] classes = featureGeneratorsNames.split(",");
-    FeatureGenerator[] featureGenerators = new FeatureGenerator[classes.length];
-    for (int i = 0; i < featureGenerators.length; i++) {
-      featureGenerators[i] = ExtensionLoader.instantiateExtension(
-          FeatureGenerator.class, classes[i]);
-    }
-    return featureGenerators;
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 }

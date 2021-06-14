@@ -32,7 +32,7 @@ import opennlp.tools.util.TrainingParameters;
 
 /**
  * Tests for the {@link TokenizerME} class.
- *
+ * <p>
  * This test trains the tokenizer with a few sample tokens
  * and then predicts a token. This test checks if the
  * tokenizer code can be executed.
@@ -73,7 +73,7 @@ public class TokenizerMETest {
     Assert.assertEquals("through", tokens[7]);
     Assert.assertEquals("!", tokens[8]);
   }
-  
+
   @Test(expected = InsufficientTrainingDataException.class)
   public void testInsufficientData() throws IOException {
 
@@ -90,5 +90,5 @@ public class TokenizerMETest {
     TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true, null), mlParams);
 
   }
-  
+
 }

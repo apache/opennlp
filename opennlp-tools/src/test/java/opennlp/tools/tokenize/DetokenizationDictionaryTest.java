@@ -31,6 +31,13 @@ public class DetokenizationDictionaryTest {
 
   private DetokenizationDictionary dict;
 
+  private static void testEntries(DetokenizationDictionary dict) {
+    Assert.assertEquals(Operation.RIGHT_LEFT_MATCHING, dict.getOperation("\""));
+    Assert.assertEquals(Operation.MOVE_RIGHT, dict.getOperation("("));
+    Assert.assertEquals(Operation.MOVE_LEFT, dict.getOperation(")"));
+    Assert.assertEquals(Operation.MOVE_BOTH, dict.getOperation("-"));
+  }
+
   @Before
   public void setUp() throws Exception {
 
@@ -40,13 +47,6 @@ public class DetokenizationDictionaryTest {
         Operation.MOVE_RIGHT, Operation.MOVE_LEFT, Operation.MOVE_BOTH};
 
     dict = new DetokenizationDictionary(tokens, operations);
-  }
-
-  private static void testEntries(DetokenizationDictionary dict) {
-    Assert.assertEquals(Operation.RIGHT_LEFT_MATCHING, dict.getOperation("\""));
-    Assert.assertEquals(Operation.MOVE_RIGHT, dict.getOperation("("));
-    Assert.assertEquals(Operation.MOVE_LEFT, dict.getOperation(")"));
-    Assert.assertEquals(Operation.MOVE_BOTH, dict.getOperation("-"));
   }
 
   @Test

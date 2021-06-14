@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.common.util.StringUtil;
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
@@ -31,7 +32,6 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.StringUtil;
 
 /**
  * Parser for Floresta Sita(c)tica Arvores Deitadas corpus, output to for the
@@ -58,22 +58,18 @@ import opennlp.tools.util.StringUtil;
  */
 public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
+  public static final String OTHER = "O";
   protected final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
-
   private int start = -1;
   private int end = -1;
-
   private int index = 0;
-
-  public static final String OTHER = "O";
 
   /**
    * Creates a new {@link NameSample} stream from a line stream, i.e.
    * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
    * {@link PlainTextByLineStream} object.
    *
-   * @param lineStream
-   *          a stream of lines as {@link String}
+   * @param lineStream a stream of lines as {@link String}
    */
   public ADChunkSampleStream(ObjectStream<String> lineStream) {
     this.adSentenceStream = new ADSentenceStream(lineStream);
@@ -88,6 +84,15 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
       // UTF-8 is available on all JVMs, will never happen
       throw new IllegalStateException(e);
     }
+  }
+
+  public static String convertFuncTag(String t, boolean useCGTags) {
+    if (useCGTags) {
+      if ("art".equals(t) || "pron-det".equals(t) || "pron-indef".equals(t)) {
+        t = "det";
+      }
+    }
+    return t;
   }
 
   public ChunkSample read() throws IOException {
@@ -123,7 +128,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
   }
 
   protected void processRoot(Node root, List<String> sentence, List<String> tags,
-      List<String> target) {
+                             List<String> target) {
     if (root != null) {
       TreeElement[] elements = root.getElements();
       for (TreeElement element : elements) {
@@ -137,7 +142,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
   }
 
   private void processNode(Node node, List<String> sentence, List<String> tags,
-      List<String> target, String inheritedTag) {
+                           List<String> target, String inheritedTag) {
     String phraseTag = getChunkTag(node);
 
     boolean inherited = false;
@@ -163,10 +168,10 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
         }
         if (!isIncludePunctuations() && leaf.getFunctionalTag() == null &&
             (
-                !( i + 1 < elements.length && elements[i + 1].isLeaf() ) ||
-                !( i > 0 && elements[i - 1].isLeaf() )
-                )
-            ) {
+                !(i + 1 < elements.length && elements[i + 1].isLeaf()) ||
+                    !(i > 0 && elements[i - 1].isLeaf())
+            )
+        ) {
           isIntermediate = false;
           tag = OTHER;
         }
@@ -187,9 +192,8 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     }
   }
 
-
   protected void processLeaf(Leaf leaf, boolean isIntermediate, String phraseTag,
-      List<String> sentence, List<String> tags, List<String> target) {
+                             List<String> sentence, List<String> tags, List<String> target) {
     String chunkTag;
 
     if (leaf.getFunctionalTag() != null
@@ -223,15 +227,6 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
       return "NP";
     }
     return OTHER;
-  }
-
-  public static String convertFuncTag(String t, boolean useCGTags) {
-    if (useCGTags) {
-      if ("art".equals(t) || "pron-det".equals(t) || "pron-indef".equals(t)) {
-        t = "det";
-      }
-    }
-    return t;
   }
 
   protected String getChunkTag(Leaf leaf) {
@@ -283,7 +278,7 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
   }
 
   protected boolean isIntermediate(List<String> tags, List<String> target,
-      String phraseTag) {
+                                   String phraseTag) {
     return target.size() > 0
         && target.get(target.size() - 1).endsWith("-" + phraseTag);
   }

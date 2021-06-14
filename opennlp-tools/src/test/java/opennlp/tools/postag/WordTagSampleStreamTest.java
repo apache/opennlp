@@ -38,7 +38,7 @@ public class WordTagSampleStreamTest {
     sampleString.add("This_x1 is_x2 a_x3 test_x4 sentence_x5 ._x6");
 
     try (WordTagSampleStream stream =
-        new WordTagSampleStream(new CollectionObjectStream<>(sampleString))) {
+             new WordTagSampleStream(new CollectionObjectStream<>(sampleString))) {
       POSSample sample = stream.read();
       String[] words = sample.getSentence();
 

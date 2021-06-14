@@ -28,13 +28,13 @@ public class SentenceFeatureGenerator implements AdaptiveFeatureGenerator {
   private final boolean isGenerateLastWordFeature;
 
   public SentenceFeatureGenerator(boolean isGenerateFirstWordFeature,
-      boolean isGenerateLastWordFeature) {
+                                  boolean isGenerateLastWordFeature) {
     this.isGenerateFirstWordFeature = isGenerateFirstWordFeature;
     this.isGenerateLastWordFeature = isGenerateLastWordFeature;
   }
 
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
 
     if (isGenerateFirstWordFeature && index == 0) {
       features.add("S=begin");

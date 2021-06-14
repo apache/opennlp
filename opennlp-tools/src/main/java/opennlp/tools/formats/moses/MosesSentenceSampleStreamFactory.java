@@ -34,16 +34,13 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class MosesSentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
 
-  interface Parameters extends BasicFormatParams {
+  protected <P> MosesSentenceSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         "moses", new MosesSentenceSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> MosesSentenceSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<SentenceSample> create(String[] args) {
@@ -60,5 +57,8 @@ public class MosesSentenceSampleStreamFactory extends AbstractSampleStreamFactor
     }
 
     return new MosesSentenceSampleStream(lineStream);
+  }
+
+  interface Parameters extends BasicFormatParams {
   }
 }

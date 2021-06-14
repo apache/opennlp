@@ -30,9 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.common.lemmatizer.Lemmatizer;
+
 /**
  * Lemmatize by simple dictionary lookup into a hashmap built from a file
  * containing, for each line, word\tabpostag\tablemma.
+ *
  * @version 2014-07-08
  */
 public class DictionaryLemmatizer implements Lemmatizer {
@@ -44,13 +47,12 @@ public class DictionaryLemmatizer implements Lemmatizer {
 
   /**
    * Construct a hashmap from the input tab separated dictionary.
-   *
+   * <p>
    * The input file should have, for each line, word\tabpostag\tablemma.
    * Alternatively, if multiple lemmas are possible for each word,postag pair,
    * then the format should be word\tab\postag\tablemma01#lemma02#lemma03
    *
-   * @param dictionary
-   *          the input dictionary via inputstream
+   * @param dictionary the input dictionary via inputstream
    */
   public DictionaryLemmatizer(final InputStream dictionary) throws IOException {
     init(dictionary);
@@ -76,6 +78,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
       this.dictMap.put(Arrays.asList(elems[0], elems[1]), Arrays.asList(lemmas));
     }
   }
+
   /**
    * Get the Map containing the dictionary.
    *
@@ -88,10 +91,8 @@ public class DictionaryLemmatizer implements Lemmatizer {
   /**
    * Get the dictionary keys (word and postag).
    *
-   * @param word
-   *          the surface form word
-   * @param postag
-   *          the assigned postag
+   * @param word   the surface form word
+   * @param postag the assigned postag
    * @return returns the dictionary keys
    */
   private List<String> getDictKeys(final String word, final String postag) {
@@ -120,10 +121,8 @@ public class DictionaryLemmatizer implements Lemmatizer {
   /**
    * Lookup lemma in a dictionary. Outputs "O" if not found.
    *
-   * @param word
-   *          the token
-   * @param postag
-   *          the postag
+   * @param word   the token
+   * @param postag the postag
    * @return the lemma
    */
   private String lemmatize(final String word, final String postag) {
@@ -131,7 +130,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
     final List<String> keys = this.getDictKeys(word, postag);
     // lookup lemma as value of the map
     final List<String> keyValues = this.dictMap.get(keys);
-    if ( keyValues != null && !keyValues.isEmpty()) {
+    if (keyValues != null && !keyValues.isEmpty()) {
       lemma = keyValues.get(0);
     } else {
       lemma = "O";
@@ -143,10 +142,8 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * Lookup every lemma for a word,pos tag in a dictionary. Outputs "O" if not
    * found.
    *
-   * @param word
-   *          the token
-   * @param postag
-   *          the postag
+   * @param word   the token
+   * @param postag the postag
    * @return every lemma
    */
   private List<String> getAllLemmas(final String word, final String postag) {

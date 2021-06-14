@@ -24,15 +24,14 @@ import java.util.regex.Pattern;
 public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final EmojiCharSequenceNormalizer INSTANCE = new EmojiCharSequenceNormalizer();
+  private static final Pattern EMOJI_REGEX =
+      Pattern.compile("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+");
 
   public static EmojiCharSequenceNormalizer getInstance() {
     return INSTANCE;
   }
 
-  private static final Pattern EMOJI_REGEX =
-      Pattern.compile("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+");
-
-  public CharSequence normalize (CharSequence text) {
+  public CharSequence normalize(CharSequence text) {
     return EMOJI_REGEX.matcher(text).replaceAll(" ");
   }
 }

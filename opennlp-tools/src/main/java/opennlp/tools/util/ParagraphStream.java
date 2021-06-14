@@ -44,8 +44,7 @@ public class ParagraphStream extends FilterObjectStream<String, String> {
         if (paragraph.length() > 0) {
           return paragraph.toString();
         }
-      }
-      else {
+      } else {
         paragraph.append(line).append('\n');
       }
 

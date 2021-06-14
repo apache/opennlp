@@ -49,9 +49,9 @@ import opennlp.tools.util.model.ModelUtil;
  */
 public class Conll00ChunkerEval extends AbstractEvalTest {
 
-  private static File TEST_DATA_FILE; 
+  private static File TEST_DATA_FILE;
   private static File TRAIN_DATA_FILE;
-  
+
   private static ChunkerModel train(File trainFile, TrainingParameters params)
       throws IOException {
 
@@ -73,22 +73,22 @@ public class Conll00ChunkerEval extends AbstractEvalTest {
     Assert.assertEquals(expectedFMeasure,
         evaluator.getFMeasure().getFMeasure(), 0.0001);
   }
-  
+
   @BeforeClass
   public static void verifyTrainingData() throws Exception {
-    
+
     TEST_DATA_FILE = new File(getOpennlpDataDir(), "conll00/test.txt");
     TRAIN_DATA_FILE = new File(getOpennlpDataDir(), "conll00/train.txt");
 
     verifyTrainingData(new ChunkSampleStream(
             new PlainTextByLineStream(new MarkableFileInputStreamFactory(TEST_DATA_FILE),
-                    StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8)),
         new BigInteger("84610235226433393380477662908529306002"));
 
     verifyTrainingData(new ChunkSampleStream(
             new PlainTextByLineStream(new MarkableFileInputStreamFactory(TEST_DATA_FILE),
-                    StandardCharsets.UTF_8)),
-        new BigInteger("84610235226433393380477662908529306002"));    
+                StandardCharsets.UTF_8)),
+        new BigInteger("84610235226433393380477662908529306002"));
 
   }
 

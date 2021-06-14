@@ -22,7 +22,7 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
  * TrainingParams for Language Detector.
- *
+ * <p>
  * Note: Do not use this class, internal use only!
  */
 interface TrainingParams {

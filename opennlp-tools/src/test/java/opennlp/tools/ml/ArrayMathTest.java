@@ -27,9 +27,10 @@ public class ArrayMathTest {
 
   @Test
   public void testInnerProductDoubleNaN() throws Exception {
-    Assert.assertTrue(Double.isNaN(ArrayMath.innerProduct(null, new double[]{0})));
-    Assert.assertTrue(Double.isNaN(ArrayMath.innerProduct(new double[]{0}, null)));
-    Assert.assertTrue(Double.isNaN(ArrayMath.innerProduct(new double[]{0, 1, 2}, new double[]{0, 1, 2, 3})));
+    Assert.assertTrue(Double.isNaN(ArrayMath.innerProduct(null, new double[] {0})));
+    Assert.assertTrue(Double.isNaN(ArrayMath.innerProduct(new double[] {0}, null)));
+    Assert
+        .assertTrue(Double.isNaN(ArrayMath.innerProduct(new double[] {0, 1, 2}, new double[] {0, 1, 2, 3})));
   }
 
   @Test
@@ -41,7 +42,7 @@ public class ArrayMathTest {
 
   @Test
   public void testL1Norm() throws Exception {
-    Assert.assertEquals(0, ArrayMath.l1norm(new double[]{}), 0);
+    Assert.assertEquals(0, ArrayMath.l1norm(new double[] {}), 0);
     Assert.assertEquals(0, ArrayMath.l1norm(new double[] {0}), 0);
     Assert.assertEquals(2, ArrayMath.l1norm(new double[] {1, -1}), 0);
     Assert.assertEquals(55, ArrayMath.l1norm(new double[] {1, -2, 3, -4, 5, -6, 7, -8, 9, -10}), 0);
@@ -85,7 +86,7 @@ public class ArrayMathTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testArgmaxException2() throws Exception {
-    ArrayMath.argmax(new double[]{});
+    ArrayMath.argmax(new double[] {});
   }
 
   @Test

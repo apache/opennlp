@@ -30,17 +30,16 @@ public class LineSearch {
    * Backtracking line search (see Nocedal &amp; Wright 2006, Numerical Optimization, p. 37)
    */
   public static void doLineSearch(Function function,
-      double[] direction, LineSearchResult lsr, double initialStepSize)
-  {
-    double stepSize      = initialStepSize;
+                                  double[] direction, LineSearchResult lsr, double initialStepSize) {
+    double stepSize = initialStepSize;
     int currFctEvalCount = lsr.getFctEvalCount();
-    double[] x           = lsr.getNextPoint();
-    double[] gradAtX     = lsr.getGradAtNext();
-    double valueAtX      = lsr.getValueAtNext();
-    int dimension        = x.length;
+    double[] x = lsr.getNextPoint();
+    double[] gradAtX = lsr.getGradAtNext();
+    double valueAtX = lsr.getValueAtNext();
+    int dimension = x.length;
 
     // Retrieve current points and gradient for array reuse purpose
-    double[] nextPoint       = lsr.getCurrPoint();
+    double[] nextPoint = lsr.getCurrPoint();
     double[] gradAtNextPoint = lsr.getGradAtCurr();
     double valueAtNextPoint;
 
@@ -82,19 +81,19 @@ public class LineSearch {
    * of L1-Regularized Log-Linear Models", Andrew et al. 2007)
    */
   public static void doConstrainedLineSearch(Function function,
-      double[] direction, LineSearchResult lsr, double l1Cost, double initialStepSize)
-  {
-    double stepSize        = initialStepSize;
-    int currFctEvalCount   = lsr.getFctEvalCount();
-    double[] x             = lsr.getNextPoint();
-    double[] signX         = lsr.getSignVector(); // existing sign vector
-    double[] gradAtX       = lsr.getGradAtNext();
+                                             double[] direction, LineSearchResult lsr, double l1Cost,
+                                             double initialStepSize) {
+    double stepSize = initialStepSize;
+    int currFctEvalCount = lsr.getFctEvalCount();
+    double[] x = lsr.getNextPoint();
+    double[] signX = lsr.getSignVector(); // existing sign vector
+    double[] gradAtX = lsr.getGradAtNext();
     double[] pseudoGradAtX = lsr.getPseudoGradAtNext();
-    double valueAtX        = lsr.getValueAtNext();
-    int dimension          = x.length;
+    double valueAtX = lsr.getValueAtNext();
+    int dimension = x.length;
 
     // Retrieve current points and gradient for array reuse purpose
-    double[] nextPoint       = lsr.getCurrPoint();
+    double[] nextPoint = lsr.getCurrPoint();
     double[] gradAtNextPoint = lsr.getGradAtCurr();
     double valueAtNextPoint;
 
@@ -174,8 +173,7 @@ public class LineSearch {
         double[] gradAtNext,
         double[] currPoint,
         double[] nextPoint,
-        int fctEvalCount)
-    {
+        int fctEvalCount) {
       setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
           currPoint, nextPoint, fctEvalCount);
     }
@@ -193,10 +191,41 @@ public class LineSearch {
         double[] currPoint,
         double[] nextPoint,
         double[] signVector,
-        int fctEvalCount)
-    {
+        int fctEvalCount) {
       setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
           pseudoGradAtNext, currPoint, nextPoint, signVector, fctEvalCount);
+    }
+
+    /**
+     * Initial linear search object.
+     */
+    public static LineSearchResult getInitialObject(
+        double valueAtX,
+        double[] gradAtX,
+        double[] x) {
+      return getInitialObject(valueAtX, gradAtX, null, x, null, 0);
+    }
+
+    /**
+     * Initial linear search object for L1-regularization.
+     */
+    public static LineSearchResult getInitialObjectForL1(
+        double valueAtX,
+        double[] gradAtX,
+        double[] pseudoGradAtX,
+        double[] x) {
+      return getInitialObject(valueAtX, gradAtX, pseudoGradAtX, x, new double[x.length], 0);
+    }
+
+    public static LineSearchResult getInitialObject(
+        double valueAtX,
+        double[] gradAtX,
+        double[] pseudoGradAtX,
+        double[] x,
+        double[] signX,
+        int fctEvalCount) {
+      return new LineSearchResult(0.0, 0.0, valueAtX, new double[x.length], gradAtX,
+          pseudoGradAtX, new double[x.length], x, signX, fctEvalCount);
     }
 
     /**
@@ -210,8 +239,7 @@ public class LineSearch {
         double[] gradAtNext,
         double[] currPoint,
         double[] nextPoint,
-        int fctEvalCount)
-    {
+        int fctEvalCount) {
       setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
           null, currPoint, nextPoint, null, fctEvalCount);
     }
@@ -229,18 +257,17 @@ public class LineSearch {
         double[] currPoint,
         double[] nextPoint,
         double[] signVector,
-        int fctEvalCount)
-    {
-      this.stepSize         = stepSize;
-      this.valueAtCurr      = valueAtCurr;
-      this.valueAtNext      = valueAtNext;
-      this.gradAtCurr       = gradAtCurr;
-      this.gradAtNext       = gradAtNext;
+        int fctEvalCount) {
+      this.stepSize = stepSize;
+      this.valueAtCurr = valueAtCurr;
+      this.valueAtNext = valueAtNext;
+      this.gradAtCurr = gradAtCurr;
+      this.gradAtNext = gradAtNext;
       this.pseudoGradAtNext = pseudoGradAtNext;
-      this.currPoint        = currPoint;
-      this.nextPoint        = nextPoint;
-      this.signVector       = signVector;
-      this.fctEvalCount     = fctEvalCount;
+      this.currPoint = currPoint;
+      this.nextPoint = nextPoint;
+      this.signVector = signVector;
+      this.fctEvalCount = fctEvalCount;
     }
 
     public double getFuncChangeRate() {
@@ -325,40 +352,6 @@ public class LineSearch {
 
     public void setFctEvalCount(int fctEvalCount) {
       this.fctEvalCount = fctEvalCount;
-    }
-
-    /**
-     * Initial linear search object.
-     */
-    public static LineSearchResult getInitialObject(
-        double valueAtX,
-        double[] gradAtX,
-        double[] x)
-    {
-      return getInitialObject(valueAtX, gradAtX, null, x, null, 0);
-    }
-
-    /**
-     * Initial linear search object for L1-regularization.
-     */
-    public static LineSearchResult getInitialObjectForL1(
-        double valueAtX,
-        double[] gradAtX,
-        double[] pseudoGradAtX,
-        double[] x)
-    {
-      return getInitialObject(valueAtX, gradAtX, pseudoGradAtX, x, new double[x.length], 0);
-    }
-
-    public static LineSearchResult getInitialObject(
-        double valueAtX,
-        double[] gradAtX,
-        double[] pseudoGradAtX,
-        double[] x,
-        double[] signX,
-        int fctEvalCount) {
-      return new LineSearchResult(0.0, 0.0, valueAtX, new double[x.length], gradAtX,
-          pseudoGradAtX, new double[x.length], x, signX, fctEvalCount);
     }
   }
 }

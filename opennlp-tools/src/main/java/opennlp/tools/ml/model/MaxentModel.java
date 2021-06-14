@@ -28,27 +28,27 @@ public interface MaxentModel {
    * @param context A list of String names of the contextual predicates
    *                which are to be evaluated together.
    * @return an array of the probabilities for each of the different
-   *         outcomes, all of which sum to 1.
-   *
+   * outcomes, all of which sum to 1.
    **/
   double[] eval(String[] context);
 
   /**
-     * Evaluates a context.
-     *
-     * @param context A list of String names of the contextual predicates
-     *                which are to be evaluated together.
-     * @param probs An array which is populated with the probabilities for each of the different
-     *         outcomes, all of which sum to 1.
-     * @return an array of the probabilities for each of the different outcomes, all of which sum to 1.
-     **/
+   * Evaluates a context.
+   *
+   * @param context A list of String names of the contextual predicates
+   *                which are to be evaluated together.
+   * @param probs   An array which is populated with the probabilities for each of the different
+   *                outcomes, all of which sum to 1.
+   * @return an array of the probabilities for each of the different outcomes, all of which sum to 1.
+   **/
   double[] eval(String[] context, double[] probs);
 
   /**
    * Evaluates a contexts with the specified context values.
+   *
    * @param context A list of String names of the contextual predicates
-     *                which are to be evaluated together.
-   * @param values The values associated with each context.
+   *                which are to be evaluated together.
+   * @param values  The values associated with each context.
    * @return an array of the probabilities for each of the different outcomes, all of which sum to 1.
    */
   double[] eval(String[] context, float[] values);
@@ -58,8 +58,8 @@ public interface MaxentModel {
    * containing the highest probability in the double[].
    *
    * @param outcomes A <code>double[]</code> as returned by the
-   *            <code>eval(String[] context)</code>
-   *            method.
+   *                 <code>eval(String[] context)</code>
+   *                 method.
    * @return the String name of the best outcome
    **/
   String getBestOutcome(double[] outcomes);
@@ -70,11 +70,11 @@ public interface MaxentModel {
    * context)</code> method.
    *
    * @param outcomes A <code>double[]</code> as returned by the
-   *            <code>eval(String[] context)</code>
-   *            method.
-   * @return    String containing outcome names paired with the normalized
-   *            probability (contained in the <code>double[] ocs</code>)
-   *            for each one.
+   *                 <code>eval(String[] context)</code>
+   *                 method.
+   * @return String containing outcome names paired with the normalized
+   * probability (contained in the <code>double[] ocs</code>)
+   * for each one.
    **/
   // TODO: This should be removed, can't be used anyway without format spec
   String getAllOutcomes(double[] outcomes);
@@ -94,9 +94,9 @@ public interface MaxentModel {
    * outcome.
    *
    * @param outcome the String name of the outcome for which the
-   *          index is desired
+   *                index is desired
    * @return the index if the given outcome label exists for this
-   *     model, -1 if it does not.
+   * model, -1 if it does not.
    **/
   int getIndex(String outcome);
 
@@ -105,8 +105,10 @@ public interface MaxentModel {
    **/
   // public Object[] getDataStructures();
 
-  /** Returns the number of outcomes for this model.
-   *  @return The number of outcomes.
+  /**
+   * Returns the number of outcomes for this model.
+   *
+   * @return The number of outcomes.
    **/
   int getNumOutcomes();
 

@@ -24,7 +24,7 @@ public class DocumentBeginFeatureGenerator implements AdaptiveFeatureGenerator {
   private String[] firstSentence;
 
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
 
     if (firstSentence == null) {
       firstSentence = tokens;

@@ -36,8 +36,13 @@ public class SuffixFeatureGeneratorFactory
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
+  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
+    factoryMap.put("suffix", new SuffixFeatureGeneratorFactory());
+  }
+
+  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) {
+                                         FeatureGeneratorResourceProvider resourceManager) {
 
     String attribute = generatorElement.getAttribute("length");
 
@@ -48,11 +53,6 @@ public class SuffixFeatureGeneratorFactory
     }
 
     return new SuffixFeatureGenerator(suffixLength);
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("suffix", new SuffixFeatureGeneratorFactory());
   }
 
   @Override

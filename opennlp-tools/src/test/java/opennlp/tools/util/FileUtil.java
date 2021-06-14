@@ -23,18 +23,18 @@ public class FileUtil {
 
   /**
    * delete the specified directory and its child directories and files
+   *
    * @param file specify the file or directory to be deleted
    */
   public static void deleteDirectory(File file) {
     if (file.exists()) {
       if (file.isDirectory()) {
         File[] files = file.listFiles();
-        for (File f: files) {
+        for (File f : files) {
           deleteDirectory(f);
         }
         file.delete();
-      }
-      else if (file.isFile()) {
+      } else if (file.isFile()) {
         file.delete();
       }
     }

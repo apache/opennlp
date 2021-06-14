@@ -22,11 +22,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import opennlp.common.util.Span;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
-class LetsmtSentenceStream implements ObjectStream<SentenceSample>  {
+class LetsmtSentenceStream implements ObjectStream<SentenceSample> {
 
   private final LetsmtDocument source;
 
@@ -43,7 +43,7 @@ class LetsmtSentenceStream implements ObjectStream<SentenceSample>  {
     StringBuilder sentencesString = new StringBuilder();
     List<Span> sentenceSpans = new LinkedList<>();
 
-    for (int i = 0; sentenceIt.hasNext() && i < 25 ; i++) {
+    for (int i = 0; sentenceIt.hasNext() && i < 25; i++) {
       LetsmtDocument.LetsmtSentence sentence = sentenceIt.next();
 
       int begin = sentencesString.length();

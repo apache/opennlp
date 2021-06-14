@@ -85,9 +85,10 @@ public class ArrayMath {
 
   /**
    * Find index of maximum element in the vector x
+   *
    * @param x input vector
    * @return index of the maximum element. Index of the first
-   *     maximum element is returned if multiple maximums are found.
+   * maximum element is returned if multiple maximums are found.
    */
   public static int argmax(double[] x) {
     if (x == null || x.length == 0) {
@@ -121,6 +122,7 @@ public class ArrayMath {
   }
 
   // === Not really related to math ===
+
   /**
    * Convert a list of Double objects into an array of primitive doubles
    */
@@ -133,7 +135,7 @@ public class ArrayMath {
   }
 
   /**
-   *  Convert a list of Integer objects into an array of primitive integers
+   * Convert a list of Integer objects into an array of primitive integers
    */
   public static int[] toIntArray(List<Integer> list) {
     int[] arr = new int[list.size()];

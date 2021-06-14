@@ -34,6 +34,11 @@ public class ParseToPOSSampleStreamFactory extends LanguageSampleStreamFactory<P
     super(ParseSampleStreamFactory.Parameters.class);
   }
 
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(POSSample.class,
+        "parse", new ParseToPOSSampleStreamFactory());
+  }
+
   public ObjectStream<POSSample> create(String[] args) {
 
     ParseSampleStreamFactory.Parameters params =
@@ -44,10 +49,5 @@ public class ParseToPOSSampleStreamFactory extends LanguageSampleStreamFactory<P
         ArgumentParser.filter(args, ParseSampleStreamFactory.Parameters.class));
 
     return new ParseToPOSSampleStream(parseSampleStream);
-  }
-
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(POSSample.class,
-        "parse", new ParseToPOSSampleStreamFactory());
   }
 }

@@ -61,8 +61,7 @@ public class Glove {
 
       if (dimension == -1) {
         dimension = parts.length - 1;
-      }
-      else if (dimension != parts.length - 1) {
+      } else if (dimension != parts.length - 1) {
         throw new IOException("Vector dimension must be constant!");
       }
 

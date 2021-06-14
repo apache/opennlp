@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import opennlp.common.util.Span;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Span;
 
 /**
  * This class is a stream filter which reads a sentence by line samples from

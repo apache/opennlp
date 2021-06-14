@@ -39,17 +39,15 @@ public abstract class AbstractModelReader {
     // handle the zipped/not zipped distinction
     if (filename.endsWith(".gz")) {
       input = new GZIPInputStream(new FileInputStream(f));
-      filename = filename.substring(0,filename.length() - 3);
-    }
-    else {
+      filename = filename.substring(0, filename.length() - 3);
+    } else {
       input = new FileInputStream(f);
     }
 
     // handle the different formats
     if (filename.endsWith(".bin")) {
       this.dataReader = new BinaryFileDataReader(input);
-    }
-    else {  // filename ends with ".txt"
+    } else {  // filename ends with ".txt"
       this.dataReader = new PlainTextFileDataReader(input);
     }
   }
@@ -114,16 +112,18 @@ public abstract class AbstractModelReader {
     NUM_PREDS = readInt();
     String[] predLabels = new String[NUM_PREDS];
     for (int i = 0; i < NUM_PREDS; i++)
-        predLabels[i] = readUTF();
+      predLabels[i] = readUTF();
     return predLabels;
   }
 
   /**
    * Reads the parameters from a file and populates an array of context objects.
+   *
    * @param outcomePatterns The outcomes patterns for the model.  The first index refers to which
-   *     outcome pattern (a set of outcomes that occurs with a context) is being specified.  The
-   *     second index specifies the number of contexts which use this pattern at index 0, and the
-   *     index of each outcomes which make up this pattern in indicies 1-n.
+   *                        outcome pattern (a set of outcomes that occurs with a context) is being
+   *                        specified. The second index specifies the number of contexts which use
+   *                        this pattern at index 0, and the index of each outcomes which make up
+   *                        this pattern in indicies 1-n.
    * @return An array of context objects.
    * @throws java.io.IOException when the model file does not match the outcome patterns or can not be read.
    */

@@ -22,11 +22,11 @@ public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private final CharSequenceNormalizer[] normalizers;
 
-  public AggregateCharSequenceNormalizer(CharSequenceNormalizer ... normalizers) {
+  public AggregateCharSequenceNormalizer(CharSequenceNormalizer... normalizers) {
     this.normalizers = normalizers;
   }
 
-  public CharSequence normalize (CharSequence text) {
+  public CharSequence normalize(CharSequence text) {
 
     for (CharSequenceNormalizer normalizers :
         normalizers) {

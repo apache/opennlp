@@ -26,11 +26,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import opennlp.common.util.Span;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 
 public class ADNameSampleStreamTest {
 
@@ -116,7 +116,7 @@ public class ADNameSampleStreamTest {
         "/opennlp/tools/formats/ad.sample");
 
     try (ADNameSampleStream stream =
-            new ADNameSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
+             new ADNameSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
       NameSample sample;
       while ((sample = stream.read()) != null) {
         samples.add(sample);

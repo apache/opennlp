@@ -47,9 +47,9 @@ public class RealBasicEventStream implements ObjectStream<Event> {
     if (lastSpace == -1)
       return null;
     else {
-      String[] contexts = obs.substring(0,lastSpace).split("\\s+");
+      String[] contexts = obs.substring(0, lastSpace).split("\\s+");
       float[] values = RealValueFileEventStream.parseContexts(contexts);
-      return new Event(obs.substring(lastSpace + 1),contexts,values);
+      return new Event(obs.substring(lastSpace + 1), contexts, values);
     }
   }
 

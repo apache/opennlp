@@ -51,7 +51,7 @@ class FloatArrayVector implements WordVector {
   @Override
   public DoubleBuffer toDoubleBuffer() {
     double[] doubleVector = new double[vector.length];
-    for (int i = 0; i < doubleVector.length ; i++) {
+    for (int i = 0; i < doubleVector.length; i++) {
       doubleVector[i] = vector[i];
     }
     return DoubleBuffer.wrap(doubleVector).asReadOnlyBuffer();

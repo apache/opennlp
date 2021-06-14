@@ -63,9 +63,23 @@ public class GISTrainer extends AbstractEventTrainer {
 
   @Deprecated
   public static final String OLD_LL_THRESHOLD_PARAM = "llthreshold";
-  
+
   public static final String LOG_LIKELIHOOD_THRESHOLD_PARAM = "LLThreshold";
   public static final double LOG_LIKELIHOOD_THRESHOLD_DEFAULT = 0.0001;
+  public static final String MAXENT_VALUE = "MAXENT";
+  /**
+   * If we are using smoothing, this is used as the "number" of times we want
+   * the trainer to imagine that it saw a feature that it actually didn't see.
+   * Defaulted to 0.1.
+   */
+  private static final String SMOOTHING_PARAM = "Smoothing";
+  private static final boolean SMOOTHING_DEFAULT = false;
+  private static final String SMOOTHING_OBSERVATION_PARAM = "SmoothingObservation";
+  private static final double SMOOTHING_OBSERVATION = 0.1;
+  private static final String GAUSSIAN_SMOOTHING_PARAM = "GaussianSmoothing";
+  private static final boolean GAUSSIAN_SMOOTHING_DEFAULT = false;
+  private static final String GAUSSIAN_SMOOTHING_SIGMA_PARAM = "GaussianSmoothingSigma";
+  private static final double GAUSSIAN_SMOOTHING_SIGMA_DEFAULT = 2.0;
   private double llThreshold = 0.0001;
   /**
    * Specifies whether unseen context/outcome pairs should be estimated as occur very infrequently.
@@ -142,29 +156,22 @@ public class GISTrainer extends AbstractEventTrainer {
    */
   private EvalParameters evalParams;
 
-  public static final String MAXENT_VALUE = "MAXENT";
-
-  /**
-   * If we are using smoothing, this is used as the "number" of times we want
-   * the trainer to imagine that it saw a feature that it actually didn't see.
-   * Defaulted to 0.1.
-   */
-  private static final String SMOOTHING_PARAM = "Smoothing";
-  private static final boolean SMOOTHING_DEFAULT = false;
-  private static final String SMOOTHING_OBSERVATION_PARAM = "SmoothingObservation";
-  private static final double SMOOTHING_OBSERVATION = 0.1;
-
-  private static final String GAUSSIAN_SMOOTHING_PARAM = "GaussianSmoothing";
-  private static final boolean GAUSSIAN_SMOOTHING_DEFAULT = false;
-  private static final String GAUSSIAN_SMOOTHING_SIGMA_PARAM = "GaussianSmoothingSigma";
-  private static final double GAUSSIAN_SMOOTHING_SIGMA_DEFAULT = 2.0;
-  
   /**
    * Creates a new <code>GISTrainer</code> instance which does not print
    * progress messages about training to STDOUT.
    */
   public GISTrainer() {
     printMessages = false;
+  }
+
+  /**
+   * Creates a new <code>GISTrainer</code> instance.
+   *
+   * @param printMessages sends progress messages about training to
+   *                      STDOUT when true; trains silently otherwise.
+   */
+  GISTrainer(boolean printMessages) {
+    this.printMessages = printMessages;
   }
 
   @Override
@@ -178,37 +185,37 @@ public class GISTrainer extends AbstractEventTrainer {
 
     // Just in case someone is using "llthreshold" instead of LLThreshold...
     // this warning can be removed in a future version of OpenNLP.
-    if (trainingParameters.getDoubleParameter(OLD_LL_THRESHOLD_PARAM, -1.) > 0. ) {
-      display("WARNING: the training parameter: " + OLD_LL_THRESHOLD_PARAM + 
+    if (trainingParameters.getDoubleParameter(OLD_LL_THRESHOLD_PARAM, -1.) > 0.) {
+      display("WARNING: the training parameter: " + OLD_LL_THRESHOLD_PARAM +
           " has been deprecated.  Please use " +
           LOG_LIKELIHOOD_THRESHOLD_DEFAULT + " instead");
       // if they didn't supply a value for both llthreshold AND LLThreshold  copy it over..
-      if (trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, -1.) < 0. ) {
+      if (trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, -1.) < 0.) {
         trainingParameters.put(LOG_LIKELIHOOD_THRESHOLD_PARAM,
             trainingParameters.getDoubleParameter(OLD_LL_THRESHOLD_PARAM, LOG_LIKELIHOOD_THRESHOLD_DEFAULT));
       }
     }
 
-    llThreshold = trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, 
+    llThreshold = trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM,
         LOG_LIKELIHOOD_THRESHOLD_DEFAULT);
 
     useSimpleSmoothing = trainingParameters.getBooleanParameter(SMOOTHING_PARAM, SMOOTHING_DEFAULT);
     if (useSimpleSmoothing) {
-      _smoothingObservation = 
+      _smoothingObservation =
           trainingParameters.getDoubleParameter(SMOOTHING_OBSERVATION_PARAM, SMOOTHING_OBSERVATION);
     }
-    
-    useGaussianSmoothing = 
+
+    useGaussianSmoothing =
         trainingParameters.getBooleanParameter(GAUSSIAN_SMOOTHING_PARAM, GAUSSIAN_SMOOTHING_DEFAULT);
     if (useGaussianSmoothing) {
       sigma = trainingParameters.getDoubleParameter(
           GAUSSIAN_SMOOTHING_SIGMA_PARAM, GAUSSIAN_SMOOTHING_SIGMA_DEFAULT);
     }
-    
-    if (useSimpleSmoothing && useGaussianSmoothing) 
+
+    if (useSimpleSmoothing && useGaussianSmoothing)
       throw new RuntimeException("Cannot set both Gaussian smoothing and Simple smoothing");
   }
-  
+
   @Override
   public MaxentModel doTrain(DataIndexer indexer) throws IOException {
     int iterations = getIterations();
@@ -217,16 +224,6 @@ public class GISTrainer extends AbstractEventTrainer {
     AbstractModel model = trainModel(iterations, indexer, threads);
 
     return model;
-  }
-
-  /**
-   * Creates a new <code>GISTrainer</code> instance.
-   *
-   * @param printMessages sends progress messages about training to
-   *                      STDOUT when true; trains silently otherwise.
-   */
-  GISTrainer(boolean printMessages) {
-    this.printMessages = printMessages;
   }
 
   /**
@@ -266,11 +263,10 @@ public class GISTrainer extends AbstractEventTrainer {
    * Train a model using the GIS algorithm, assuming 100 iterations and no
    * cutoff.
    *
-   * @param eventStream
-   *          The EventStream holding the data on which this model will be
-   *          trained.
+   * @param eventStream The EventStream holding the data on which this model will be
+   *                    trained.
    * @return The newly trained model, which can be used immediately or saved to
-   *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
+   * disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
    */
   public GISModel trainModel(ObjectStream<Event> eventStream) throws IOException {
     return trainModel(eventStream, 100, 0);

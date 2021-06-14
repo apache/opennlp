@@ -38,29 +38,13 @@ import opennlp.tools.util.PlainTextByLineStream;
 public class ADSentenceSampleStreamFactory extends
     LanguageSampleStreamFactory<SentenceSample> {
 
-  interface Parameters {
-    @ParameterDescription(valueName = "charsetName", description = "encoding for reading and writing text.")
-    Charset getEncoding();
-
-    @ParameterDescription(valueName = "sampleData", description = "data to be used, usually a file name.")
-    File getData();
-
-    @ParameterDescription(valueName = "language", description = "language which is being processed.")
-    String getLang();
-
-    @ParameterDescription(valueName = "includeTitles",
-        description = "if true will include sentences marked as headlines.")
-    @OptionalParameter(defaultValue = "false")
-    Boolean getIncludeTitles();
+  protected <P> ADSentenceSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class, "ad",
         new ADSentenceSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> ADSentenceSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<SentenceSample> create(String[] args) {
@@ -81,5 +65,21 @@ public class ADSentenceSampleStreamFactory extends
     }
 
     return new ADSentenceSampleStream(lineStream, includeTitle);
+  }
+
+  interface Parameters {
+    @ParameterDescription(valueName = "charsetName", description = "encoding for reading and writing text.")
+    Charset getEncoding();
+
+    @ParameterDescription(valueName = "sampleData", description = "data to be used, usually a file name.")
+    File getData();
+
+    @ParameterDescription(valueName = "language", description = "language which is being processed.")
+    String getLang();
+
+    @ParameterDescription(valueName = "includeTitles",
+        description = "if true will include sentences marked as headlines.")
+    @OptionalParameter(defaultValue = "false")
+    Boolean getIncludeTitles();
   }
 }

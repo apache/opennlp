@@ -73,7 +73,7 @@ public final class NumberUtil {
   /**
    * Gives its best to parse the provided number.
    *
-   * @param number number to parse
+   * @param number       number to parse
    * @param languageCode language code, e.g. "en", "pt"
    * @return parsed number
    * @throws ParseException ParseException

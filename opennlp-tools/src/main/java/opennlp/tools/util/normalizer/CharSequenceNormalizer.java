@@ -23,12 +23,12 @@ import java.io.Serializable;
  * characters in order to remove noise from text
  *
  * @see <a href="https://en.wikipedia.org/wiki/Text_normalization">Text normalization</a>
- *
  */
 public interface CharSequenceNormalizer extends Serializable {
 
   /**
    * normalize a sequence of characters
+   *
    * @param text the char sequence to normalize
    * @return the normalized char sequence
    */

@@ -39,7 +39,7 @@ public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
   protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort)
       throws InsufficientTrainingDataException {
-    int numUniqueEvents = super.sortAndMerge(eventsToCompare,sort);
+    int numUniqueEvents = super.sortAndMerge(eventsToCompare, sort);
     values = new float[numUniqueEvents][];
     int numEvents = eventsToCompare.size();
     for (int i = 0, j = 0; i < numEvents; i++) {

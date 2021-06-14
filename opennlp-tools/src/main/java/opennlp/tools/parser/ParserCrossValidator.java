@@ -39,7 +39,7 @@ public class ParserCrossValidator {
   private ParserEvaluationMonitor[] monitors;
 
   public ParserCrossValidator(String languageCode, TrainingParameters params,
-      HeadRules rules, ParserType parserType, ParserEvaluationMonitor... monitors) {
+                              HeadRules rules, ParserType parserType, ParserEvaluationMonitor... monitors) {
     this.languageCode = languageCode;
     this.params = params;
     this.rules = rules;
@@ -57,11 +57,9 @@ public class ParserCrossValidator {
 
       if (ParserType.CHUNKING.equals(parserType)) {
         model = opennlp.tools.parser.chunking.Parser.train(languageCode, samples, rules, params);
-      }
-      else if (ParserType.TREEINSERT.equals(parserType)) {
+      } else if (ParserType.TREEINSERT.equals(parserType)) {
         model = opennlp.tools.parser.treeinsert.Parser.train(languageCode, samples, rules, params);
-      }
-      else {
+      } else {
         throw new IllegalStateException("Unexpected parser type: " + parserType);
       }
 

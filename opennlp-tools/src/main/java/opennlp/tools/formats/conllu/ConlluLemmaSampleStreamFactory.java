@@ -34,21 +34,14 @@ import opennlp.tools.util.ObjectStream;
  */
 public class ConlluLemmaSampleStreamFactory extends AbstractSampleStreamFactory<LemmaSample> {
 
-  interface Parameters extends BasicFormatParams {
-    @ArgumentParser.ParameterDescription(valueName = "tagset",
-        description = "u|x u for unified tags and x for language-specific part-of-speech tags")
-    @ArgumentParser.OptionalParameter(defaultValue = "u")
-    String getTagset();
+  protected <P> ConlluLemmaSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LemmaSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
         new ConlluLemmaSampleStreamFactory(Parameters.class));
-  }
-
-  protected <P> ConlluLemmaSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   public ObjectStream<LemmaSample> create(String[] args) {
@@ -60,7 +53,7 @@ public class ConlluLemmaSampleStreamFactory extends AbstractSampleStreamFactory<
       case "u":
         tagset = ConlluTagset.U;
         break;
-      case  "x":
+      case "x":
         tagset = ConlluTagset.X;
         break;
       default:
@@ -77,5 +70,12 @@ public class ConlluLemmaSampleStreamFactory extends AbstractSampleStreamFactory<
       CmdLineUtil.handleCreateObjectStreamError(e);
     }
     return null;
+  }
+
+  interface Parameters extends BasicFormatParams {
+    @ArgumentParser.ParameterDescription(valueName = "tagset",
+        description = "u|x u for unified tags and x for language-specific part-of-speech tags")
+    @ArgumentParser.OptionalParameter(defaultValue = "u")
+    String getTagset();
   }
 }

@@ -59,6 +59,11 @@ public class OntoNotes4ParserEval extends AbstractEvalTest {
             documentStream, StandardCharsets.UTF_8)));
   }
 
+  @BeforeClass
+  public static void verifyTrainingData() throws Exception {
+    verifyTrainingData(createParseSampleStream(), new BigInteger("83833369887442127665956850482411800415"));
+  }
+
   private void crossEval(TrainingParameters params, HeadRules rules, double expectedScore)
       throws IOException {
     try (ObjectStream<Parse> samples = createParseSampleStream()) {
@@ -67,11 +72,6 @@ public class OntoNotes4ParserEval extends AbstractEvalTest {
 
       Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
     }
-  }
-
-  @BeforeClass
-  public static void verifyTrainingData() throws Exception {
-    verifyTrainingData(createParseSampleStream(), new BigInteger("83833369887442127665956850482411800415"));
   }
 
   @Test

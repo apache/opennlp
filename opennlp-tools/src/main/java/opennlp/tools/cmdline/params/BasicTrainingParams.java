@@ -22,7 +22,7 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 
 /**
  * Common training parameters.
- *
+ * <p>
  * Note: Do not use this class, internal use only!
  */
 public interface BasicTrainingParams extends LanguageParams {

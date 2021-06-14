@@ -24,7 +24,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * This is the test class for {@link BioCodec}.
@@ -49,7 +49,7 @@ public class BioCodecTest {
   @Test
   public void testEncodeNoNames() {
     NameSample nameSample = new NameSample("Once upon a time.".split(" "), new Span[] {}, true);
-    String[] expected = new String[] { OTHER, OTHER, OTHER, OTHER};
+    String[] expected = new String[] {OTHER, OTHER, OTHER, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
     Assert.assertArrayEquals("Only 'Other' is expected.", expected, actual);
   }
@@ -57,7 +57,7 @@ public class BioCodecTest {
   @Test
   public void testEncodeSingleTokenSpan() {
     String[] sentence = "I called Julie again.".split(" ");
-    Span[] spans = new Span[] { new Span(2,3, A_TYPE)};
+    Span[] spans = new Span[] {new Span(2, 3, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, spans, true);
     String[] expected = new String[] {OTHER, OTHER, A_START, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
@@ -67,7 +67,7 @@ public class BioCodecTest {
   @Test
   public void testEncodeDoubleTokenSpan() {
     String[] sentence = "I saw Stefanie Schmidt today.".split(" ");
-    Span[] span = new Span[] { new Span(2,4, A_TYPE)};
+    Span[] span = new Span[] {new Span(2, 4, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, span, true);
     String[] expected = new String[] {OTHER, OTHER, A_START, A_CONTINUE, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
@@ -80,7 +80,7 @@ public class BioCodecTest {
     final String DEFAULT_START = "default" + "-" + BioCodec.START;
     final String DEFAULT_CONTINUE = "default" + "-" + BioCodec.CONTINUE;
     String[] sentence = "I saw Stefanie Schmidt today.".split(" ");
-    Span[] span = new Span[] { new Span(2,4, null)};
+    Span[] span = new Span[] {new Span(2, 4, null)};
     NameSample nameSample = new NameSample(sentence, span, true);
     String[] expected = new String[] {OTHER, OTHER, DEFAULT_START, DEFAULT_CONTINUE, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
@@ -91,7 +91,7 @@ public class BioCodecTest {
   @Test
   public void testEncodeAdjacentSingleSpans() {
     String[] sentence = "something PersonA PersonB Something".split(" ");
-    Span[] span = new Span[] { new Span(1,2, A_TYPE), new Span(2, 3, A_TYPE) };
+    Span[] span = new Span[] {new Span(1, 2, A_TYPE), new Span(2, 3, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, span, true);
     String[] expected = new String[] {OTHER, A_START, A_START, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
@@ -101,7 +101,7 @@ public class BioCodecTest {
   @Test
   public void testEncodeAdjacentSpans() {
     String[] sentence = "something PersonA PersonA PersonB Something".split(" ");
-    Span[] span = new Span[] { new Span(1,3, A_TYPE), new Span(3, 4, A_TYPE) };
+    Span[] span = new Span[] {new Span(1, 3, A_TYPE), new Span(3, 4, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, span, true);
     String[] expected = new String[] {OTHER, A_START, A_CONTINUE, A_START, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
@@ -120,6 +120,7 @@ public class BioCodecTest {
     Span[] actual = codec.decode(new ArrayList<String>());
     Assert.assertArrayEquals(expected, actual);
   }
+
   /**
    * Start, Other
    */

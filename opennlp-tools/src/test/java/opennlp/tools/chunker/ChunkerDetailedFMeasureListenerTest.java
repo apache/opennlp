@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.chunker.Chunker;
 import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;

@@ -22,9 +22,9 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.Span;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
-import opennlp.tools.util.Span;
 
 /**
  * Tests for the {@link TokenSampleStream} class.
@@ -34,7 +34,6 @@ public class TokenSampleStreamTest {
   /**
    * Tests if the {@link TokenSample} correctly tokenizes tokens which
    * are separated by a whitespace.
-   *
    */
   @Test
   public void testParsingWhitespaceSeparatedTokens() throws IOException {
@@ -58,7 +57,6 @@ public class TokenSampleStreamTest {
   /**
    * Tests if the {@link TokenSample} correctly tokenizes tokens which
    * are separated by the split chars.
-   *
    */
   @Test
   public void testParsingSeparatedString() throws IOException {
@@ -74,23 +72,22 @@ public class TokenSampleStreamTest {
     Assert.assertEquals(4, tokenSpans.length);
 
     Assert.assertEquals("a", tokenSpans[0].getCoveredText(tokenSample.getText()));
-    Assert.assertEquals(new Span(0,1), tokenSpans[0]);
+    Assert.assertEquals(new Span(0, 1), tokenSpans[0]);
 
     Assert.assertEquals("b", tokenSpans[1].getCoveredText(tokenSample.getText()));
-    Assert.assertEquals(new Span(1,2), tokenSpans[1]);
+    Assert.assertEquals(new Span(1, 2), tokenSpans[1]);
 
     Assert.assertEquals("c", tokenSpans[2].getCoveredText(tokenSample.getText()));
-    Assert.assertEquals(new Span(2,3), tokenSpans[2]);
+    Assert.assertEquals(new Span(2, 3), tokenSpans[2]);
 
     Assert.assertEquals("d", tokenSpans[3].getCoveredText(tokenSample.getText()));
-    Assert.assertEquals(new Span(3,4), tokenSpans[3]);
+    Assert.assertEquals(new Span(3, 4), tokenSpans[3]);
 
   }
 
   /**
    * Tests if the {@link TokenSample} correctly tokenizes tokens which
    * are separated by whitespace and by the split chars.
-   *
    */
   @Test
   public void testParsingWhitespaceAndSeparatedString() throws IOException {

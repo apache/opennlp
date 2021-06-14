@@ -19,8 +19,8 @@ package opennlp.tools.formats.convert;
 
 import java.io.IOException;
 
+import opennlp.common.tokenize.Detokenizer;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
@@ -43,7 +43,7 @@ public class NameToTokenSampleStream extends FilterObjectStream<NameSample, Toke
 
     TokenSample tokenSample = null;
 
-    if (nameSample != null ) {
+    if (nameSample != null) {
       tokenSample = new TokenSample(detokenizer, nameSample.getSentence());
     }
 

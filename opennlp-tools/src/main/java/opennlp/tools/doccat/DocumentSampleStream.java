@@ -55,8 +55,7 @@ public class DocumentSampleStream extends FilterObjectStream<String, DocumentSam
         System.arraycopy(tokens, 1, docTokens, 0, tokens.length - 1);
 
         sample = new DocumentSample(category, docTokens);
-      }
-      else {
+      } else {
         throw new IOException("Empty lines, or lines with only a category string are not allowed!");
       }
 

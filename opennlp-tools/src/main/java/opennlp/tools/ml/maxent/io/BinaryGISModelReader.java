@@ -30,8 +30,7 @@ public class BinaryGISModelReader extends GISModelReader {
    * Constructor which directly instantiates the DataInputStream containing the
    * model contents.
    *
-   * @param dis
-   *          The DataInputStream containing the model information.
+   * @param dis The DataInputStream containing the model information.
    */
   public BinaryGISModelReader(DataInputStream dis) {
     super(new BinaryFileDataReader(dis));

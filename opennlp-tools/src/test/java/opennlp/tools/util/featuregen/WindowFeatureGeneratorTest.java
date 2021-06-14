@@ -47,7 +47,7 @@ public class WindowFeatureGeneratorTest {
   public void testWithoutWindow() {
 
     AdaptiveFeatureGenerator windowFeatureGenerator = new WindowFeatureGenerator(
-          new IdentityFeatureGenerator(), 0, 0);
+        new IdentityFeatureGenerator(), 0, 0);
 
     int testTokenIndex = 2;
 

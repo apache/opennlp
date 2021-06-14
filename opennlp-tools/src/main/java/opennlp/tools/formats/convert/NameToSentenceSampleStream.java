@@ -17,8 +17,8 @@
 
 package opennlp.tools.formats.convert;
 
+import opennlp.common.tokenize.Detokenizer;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -27,7 +27,7 @@ import opennlp.tools.util.ObjectStream;
 public class NameToSentenceSampleStream extends AbstractToSentenceSampleStream<NameSample> {
 
   public NameToSentenceSampleStream(Detokenizer detokenizer,
-      ObjectStream<NameSample> samples, int chunkSize) {
+                                    ObjectStream<NameSample> samples, int chunkSize) {
     super(detokenizer, samples, chunkSize);
   }
 

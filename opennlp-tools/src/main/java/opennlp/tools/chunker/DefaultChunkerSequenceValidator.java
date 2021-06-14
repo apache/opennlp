@@ -26,8 +26,7 @@ public class DefaultChunkerSequenceValidator implements SequenceValidator<TokenT
     if (outcome.startsWith("I-")) {
       if (prevOutcome == null) {
         return false;
-      }
-      else {
+      } else {
         if (prevOutcome.equals("O")) {
           return false;
         }
@@ -44,7 +43,7 @@ public class DefaultChunkerSequenceValidator implements SequenceValidator<TokenT
     if (sequence.length > 0) {
       prevOutcome = sequence[sequence.length - 1];
     }
-    return validOutcome(outcome,prevOutcome);
+    return validOutcome(outcome, prevOutcome);
   }
 
   public boolean validSequence(int i, TokenTag[] sequence, String[] s, String outcome) {

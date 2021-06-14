@@ -19,6 +19,7 @@ package opennlp.tools.langdetect;
 
 import java.io.IOException;
 
+import opennlp.common.langdetect.Language;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 

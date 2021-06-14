@@ -56,8 +56,7 @@ public class CrossValidationPartitionerTest {
 
       // ups, hasn't thrown one
       Assert.fail();
-    }
-    catch (NoSuchElementException e) {
+    } catch (NoSuchElementException e) {
       // expected
     }
   }
@@ -166,16 +165,14 @@ public class CrossValidationPartitionerTest {
     try {
       firstTraining.read();
       Assert.fail();
-    }
-    catch (IllegalStateException expected) {
+    } catch (IllegalStateException expected) {
       // the read above is expected to throw an exception
     }
 
     try {
       firstTraining.getTestSampleStream();
       Assert.fail();
-    }
-    catch (IllegalStateException expected) {
+    } catch (IllegalStateException expected) {
       // the read above is expected to throw an exception
     }
 
@@ -185,8 +182,7 @@ public class CrossValidationPartitionerTest {
     try {
       secondTraining.read();
       Assert.fail();
-    }
-    catch (IllegalStateException expected) {
+    } catch (IllegalStateException expected) {
       // the read above is expected to throw an exception
     }
 
@@ -201,8 +197,7 @@ public class CrossValidationPartitionerTest {
     try {
       thridTest.read();
       Assert.fail();
-    }
-    catch (IllegalStateException expected) {
+    } catch (IllegalStateException expected) {
       // the read above is expected to throw an exception
     }
   }

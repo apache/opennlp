@@ -57,7 +57,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
       String text = null;
 
       String line;
-      while ((line = reader.readLine())  != null) {
+      while ((line = reader.readLine()) != null) {
         // # indicates a comment line and contains additional data
         if (line.trim().startsWith("#")) {
           String commentLine = line.trim().substring(1);
@@ -79,8 +79,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
               }
             }
           }
-        }
-        else {
+        } else {
           wordLines.add(new ConlluWordLine(line));
         }
       }
@@ -141,7 +140,8 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
   /**
    * Merges token level annotations
-   * @param contraction the line that receives the annotation
+   *
+   * @param contraction   the line that receives the annotation
    * @param expandedParts the lines to get annotation
    * @return the merged line
    */
@@ -174,7 +174,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     String deps = contraction.getDeps();
     String misc = contraction.getMisc();
 
-    return new ConlluWordLine(id, form, lemma, uPosTag, xPosTag, feats,head, deprel, deps, misc);
+    return new ConlluWordLine(id, form, lemma, uPosTag, xPosTag, feats, head, deprel, deps, misc);
   }
 
   @Override

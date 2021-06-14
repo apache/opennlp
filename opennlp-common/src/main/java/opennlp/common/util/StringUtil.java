@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util;
+package opennlp.common.util;
 
 public class StringUtil {
 
   /**
    * Determines if the specified character is a whitespace.
-   *
+   * <p>
    * A character is considered a whitespace when one
    * of the following conditions is meet:
    *
@@ -37,13 +37,13 @@ public class StringUtil {
    * @return true if white space otherwise false
    */
   public static boolean isWhitespace(char charCode) {
-    return Character.isWhitespace(charCode)  ||
+    return Character.isWhitespace(charCode) ||
         Character.getType(charCode) == Character.SPACE_SEPARATOR;
   }
 
   /**
    * Determines if the specified character is a whitespace.
-   *
+   * <p>
    * A character is considered a whitespace when one
    * of the following conditions is meet:
    *
@@ -59,7 +59,7 @@ public class StringUtil {
    * @return true if white space otherwise false
    */
   public static boolean isWhitespace(int charCode) {
-    return Character.isWhitespace(charCode)  ||
+    return Character.isWhitespace(charCode) ||
         Character.getType(charCode) == Character.SPACE_SEPARATOR;
   }
 
@@ -100,8 +100,7 @@ public class StringUtil {
    * {@code 0} or {@code null}.
    *
    * @return {@code true} if {@link CharSequence#length()} is {@code 0}, otherwise
-   *         {@code false}
-   *
+   * {@code false}
    * @since 1.5.1
    */
   public static boolean isEmpty(CharSequence theString) {
@@ -110,6 +109,7 @@ public class StringUtil {
 
   /**
    * Get mininum of three values.
+   *
    * @param a number a
    * @param b number b
    * @param c number c
@@ -133,8 +133,9 @@ public class StringUtil {
    * https://en.wikipedia.org/wiki/Levenshtein_distance#Computing_Levenshtein_distance
    * which in turn is based on the paper Wagner, Robert A.; Fischer, Michael J. (1974),
    * "The String-to-String Correction Problem", Journal of the ACM 21 (1): 168-173
+   *
    * @param wordForm the form
-   * @param lemma the lemma
+   * @param lemma    the lemma
    * @return the distance
    */
   public static int[][] levenshteinDistance(String wordForm, String lemma) {
@@ -177,13 +178,14 @@ public class StringUtil {
   /**
    * Computes the Shortest Edit Script (SES) to convert a word into its lemma.
    * This is based on Chrupala's PhD thesis (2008).
-   * @param wordForm the token
-   * @param lemma the target lemma
-   * @param distance the levenshtein distance
+   *
+   * @param wordForm     the token
+   * @param lemma        the target lemma
+   * @param distance     the levenshtein distance
    * @param permutations the number of permutations
    */
   public static void computeShortestEditScript(String wordForm, String lemma,
-      int[][] distance, StringBuffer permutations) {
+                                               int[][] distance, StringBuffer permutations) {
 
     int n = distance.length;
     int m = distance[0].length;
@@ -221,7 +223,7 @@ public class StringUtil {
           == distance[wordFormLength][lemmaLength])) {
         wordFormLength--;
         lemmaLength--;
-        continue ;
+        continue;
       }
       if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength]
           == distance[wordFormLength][lemmaLength])) {
@@ -238,7 +240,8 @@ public class StringUtil {
   /**
    * Read predicted SES by the lemmatizer model and apply the
    * permutations to obtain the lemma from the wordForm.
-   * @param wordForm the wordForm
+   *
+   * @param wordForm     the wordForm
    * @param permutations the permutations predicted by the lemmatizer model
    * @return the lemma
    */
@@ -309,8 +312,9 @@ public class StringUtil {
 
   /**
    * Get the SES required to go from a word to a lemma.
+   *
    * @param wordForm the word
-   * @param lemma the lemma
+   * @param lemma    the lemma
    * @return the shortest edit script
    */
   public static String getShortestEditScript(String wordForm, String lemma) {
@@ -319,7 +323,7 @@ public class StringUtil {
     StringBuffer permutations = new StringBuffer();
     String ses;
     if (!reversedWF.equals(reversedLemma)) {
-      int[][]levenDistance = StringUtil.levenshteinDistance(reversedWF, reversedLemma);
+      int[][] levenDistance = StringUtil.levenshteinDistance(reversedWF, reversedLemma);
       StringUtil.computeShortestEditScript(reversedWF, reversedLemma, levenDistance, permutations);
       ses = permutations.toString();
     } else {

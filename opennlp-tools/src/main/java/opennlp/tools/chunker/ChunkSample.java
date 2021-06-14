@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import opennlp.tools.util.Span;
+import opennlp.common.util.Span;
 
 /**
  * Class for holding chunks for a single unit of text.
@@ -38,12 +38,9 @@ public class ChunkSample implements Serializable {
   /**
    * Initializes the current instance.
    *
-   * @param sentence
-   *          training sentence
-   * @param tags
-   *          POS Tags for the sentence
-   * @param preds
-   *          Chunk tags in B-* I-* notation
+   * @param sentence training sentence
+   * @param tags     POS Tags for the sentence
+   * @param preds    Chunk tags in B-* I-* notation
    */
   public ChunkSample(String[] sentence, String[] tags, String[] preds) {
 
@@ -57,12 +54,9 @@ public class ChunkSample implements Serializable {
   /**
    * Initializes the current instance.
    *
-   * @param sentence
-   *          training sentence
-   * @param tags
-   *          POS Tags for the sentence
-   * @param preds
-   *          Chunk tags in B-* I-* notation
+   * @param sentence training sentence
+   * @param tags     POS Tags for the sentence
+   * @param preds    Chunk tags in B-* I-* notation
    */
   public ChunkSample(List<String> sentence, List<String> tags, List<String> preds) {
 
@@ -73,40 +67,16 @@ public class ChunkSample implements Serializable {
     this.preds = Collections.unmodifiableList(new ArrayList<>(preds));
   }
 
-  /** Gets the training sentence */
-  public String[] getSentence() {
-    return sentence.toArray(new String[sentence.size()]);
-  }
-
-  /** Gets the POS Tags for the sentence */
-  public String[] getTags() {
-    return tags.toArray(new String[tags.size()]);
-  }
-
-  /** Gets the Chunk tags in B-* I-* notation */
-  public String[] getPreds() {
-    return preds.toArray(new String[preds.size()]);
-  }
-
-  /** Gets the phrases as an array of spans */
-  public Span[] getPhrasesAsSpanList() {
-    return phrasesAsSpanList(getSentence(), getTags(), getPreds());
-  }
-
   /**
    * Static method to create arrays of spans of phrases
    *
-   * @param aSentence
-   *          training sentence
-   * @param aTags
-   *          POS Tags for the sentence
-   * @param aPreds
-   *          Chunk tags in B-* I-* notation
-   *
+   * @param aSentence training sentence
+   * @param aTags     POS Tags for the sentence
+   * @param aPreds    Chunk tags in B-* I-* notation
    * @return the phrases as an array of spans
    */
   public static Span[] phrasesAsSpanList(String[] aSentence, String[] aTags,
-      String[] aPreds) {
+                                         String[] aPreds) {
 
     validateArguments(aSentence.length, aTags.length, aPreds.length);
 
@@ -149,6 +119,34 @@ public class ChunkSample implements Serializable {
               "sentenceSize: " + sentenceSize +
               ", tagsSize: " + tagsSize +
               ", predsSize: " + predsSize + "!");
+  }
+
+  /**
+   * Gets the training sentence
+   */
+  public String[] getSentence() {
+    return sentence.toArray(new String[sentence.size()]);
+  }
+
+  /**
+   * Gets the POS Tags for the sentence
+   */
+  public String[] getTags() {
+    return tags.toArray(new String[tags.size()]);
+  }
+
+  /**
+   * Gets the Chunk tags in B-* I-* notation
+   */
+  public String[] getPreds() {
+    return preds.toArray(new String[preds.size()]);
+  }
+
+  /**
+   * Gets the phrases as an array of spans
+   */
+  public Span[] getPhrasesAsSpanList() {
+    return phrasesAsSpanList(getSentence(), getTags(), getPreds());
   }
 
   /**

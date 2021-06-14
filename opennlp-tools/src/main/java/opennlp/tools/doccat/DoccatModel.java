@@ -39,7 +39,7 @@ public class DoccatModel extends BaseModel {
   private static final String DOCCAT_MODEL_ENTRY_NAME = "doccat.model";
 
   public DoccatModel(String languageCode, MaxentModel doccatModel,
-      Map<String, String> manifestInfoEntries, DoccatFactory factory) {
+                     Map<String, String> manifestInfoEntries, DoccatFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
 
     artifactMap.put(DOCCAT_MODEL_ENTRY_NAME, doccatModel);

@@ -23,7 +23,6 @@ import opennlp.tools.util.InvalidFormatException;
 public interface EntryInserter {
 
   /**
-   *
    * @param entry
    * @throws InvalidFormatException
    */

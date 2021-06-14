@@ -30,16 +30,9 @@ import opennlp.tools.cmdline.params.EncodingParameter;
 
 public class ArgumentParserTest {
 
-  interface ZeroMethods {
-  }
-
   @Test(expected = IllegalArgumentException.class)
   public void testZeroMethods() {
     ArgumentParser.createUsage(ZeroMethods.class);
-  }
-
-  interface InvalidMethodName {
-    String invalidMethodName();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -47,35 +40,10 @@ public class ArgumentParserTest {
     ArgumentParser.createUsage(InvalidMethodName.class);
   }
 
-  interface InvalidReturnType {
-    Exception getTest();
-  }
-
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidReturnType() {
     ArgumentParser.createUsage(InvalidReturnType.class);
   }
-
-  interface SimpleArguments extends AllOptionalArguments {
-
-    @ParameterDescription(valueName = "charset", description = "a charset encoding")
-    String getEncoding();
-
-    @OptionalParameter
-    Integer getCutoff();
-  }
-
-  interface AllOptionalArguments {
-
-    @ParameterDescription(valueName = "num")
-    @OptionalParameter(defaultValue = "100")
-    Integer getIterations();
-
-    @ParameterDescription(valueName = "true|false")
-    @OptionalParameter(defaultValue = "true")
-    Boolean getAlphaNumOpt();
-  }
-
 
   @Test
   public void testSimpleArguments() {
@@ -137,11 +105,6 @@ public class ArgumentParserTest {
     Assert.assertTrue(expectedLength < usage.length());
   }
 
-  interface ExtendsEncodingParameter extends EncodingParameter {
-    @ParameterDescription(valueName = "value")
-    String getSomething();
-  }
-
   @Test
   public void testDefaultEncodingParameter() {
 
@@ -168,5 +131,41 @@ public class ArgumentParserTest {
 
     ExtendsEncodingParameter params = ArgumentParser.parse(args, ExtendsEncodingParameter.class);
     Assert.assertEquals(Charset.forName(notTheDefaultCharset), params.getEncoding());
+  }
+
+  interface ZeroMethods {
+  }
+
+  interface InvalidMethodName {
+    String invalidMethodName();
+  }
+
+  interface InvalidReturnType {
+    Exception getTest();
+  }
+
+  interface SimpleArguments extends AllOptionalArguments {
+
+    @ParameterDescription(valueName = "charset", description = "a charset encoding")
+    String getEncoding();
+
+    @OptionalParameter
+    Integer getCutoff();
+  }
+
+  interface AllOptionalArguments {
+
+    @ParameterDescription(valueName = "num")
+    @OptionalParameter(defaultValue = "100")
+    Integer getIterations();
+
+    @ParameterDescription(valueName = "true|false")
+    @OptionalParameter(defaultValue = "true")
+    Boolean getAlphaNumOpt();
+  }
+
+  interface ExtendsEncodingParameter extends EncodingParameter {
+    @ParameterDescription(valueName = "value")
+    String getSomething();
   }
 }

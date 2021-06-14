@@ -17,6 +17,8 @@
 
 package opennlp.tools.langdetect;
 
+import opennlp.common.langdetect.Language;
+
 public class ProbingLanguageDetectionResult {
   private final Language[] languages;
   private final int length;
@@ -31,7 +33,6 @@ public class ProbingLanguageDetectionResult {
   }
 
   /**
-   *
    * @return length in codepoints of text processed
    */
   public int getLength() {

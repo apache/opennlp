@@ -45,8 +45,7 @@ public class OntoNotesParseSampleStream extends FilterObjectStream<String, Parse
       if (parse == null || parse.isEmpty()) {
         if (parseString.length() > 0) {
           return Parse.parseParse(parseString.toString());
-        }
-        else {
+        } else {
           return null;
         }
       }

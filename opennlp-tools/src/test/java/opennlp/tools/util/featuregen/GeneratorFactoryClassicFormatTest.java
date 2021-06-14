@@ -68,7 +68,6 @@ public class GeneratorFactoryClassicFormatTest {
         (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
 
 
-
     for (AdaptiveFeatureGenerator generator : aggregatedGenerator.getGenerators()) {
 
       expectedGenerators.remove(generator.getClass().getName());

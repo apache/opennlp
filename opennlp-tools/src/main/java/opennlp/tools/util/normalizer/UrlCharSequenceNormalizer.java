@@ -34,7 +34,7 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
-  public CharSequence normalize (CharSequence text) {
+  public CharSequence normalize(CharSequence text) {
     String modified = URL_REGEX.matcher(text).replaceAll(" ");
     return MAIL_REGEX.matcher(modified).replaceAll(" ");
   }

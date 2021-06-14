@@ -19,10 +19,10 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.IOException;
 
+import opennlp.common.tokenize.Tokenizer;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerStream;
 import opennlp.tools.tokenize.WhitespaceTokenStream;
 import opennlp.tools.util.ObjectStream;
@@ -43,10 +43,10 @@ final class CommandLineTokenizer {
     PerformanceMonitor perfMon = null;
     try {
       untokenizedLineStream =
-              new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+          new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
 
       tokenizedLineStream = new WhitespaceTokenStream(
-              new TokenizerStream(tokenizer, untokenizedLineStream));
+          new TokenizerStream(tokenizer, untokenizedLineStream));
 
       perfMon = new PerformanceMonitor(System.err, "sent");
       perfMon.start();

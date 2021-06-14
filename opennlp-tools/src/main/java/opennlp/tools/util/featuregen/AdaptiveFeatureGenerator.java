@@ -37,9 +37,9 @@ public interface AdaptiveFeatureGenerator {
    * Adds the appropriate features for the token at the specified index with the
    * specified array of previous outcomes to the specified list of features.
    *
-   * @param features The list of features to be added to.
-   * @param tokens The tokens of the sentence or other text unit being processed.
-   * @param index The index of the token which is currently being processed.
+   * @param features         The list of features to be added to.
+   * @param tokens           The tokens of the sentence or other text unit being processed.
+   * @param index            The index of the token which is currently being processed.
    * @param previousOutcomes The outcomes for the tokens prior to the specified index.
    */
   void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes);
@@ -48,14 +48,20 @@ public interface AdaptiveFeatureGenerator {
    * Informs the feature generator that the specified tokens have been classified with the
    * corresponding set of specified outcomes.
    *
-   * @param tokens The tokens of the sentence or other text unit which has been processed.
+   * @param tokens   The tokens of the sentence or other text unit which has been processed.
    * @param outcomes The outcomes associated with the specified tokens.
    */
-  default void updateAdaptiveData(String[] tokens, String[] outcomes) {};
+  default void updateAdaptiveData(String[] tokens, String[] outcomes) {
+  }
+
+  ;
 
   /**
    * Informs the feature generator that the context of the adaptive data (typically a document)
    * is no longer valid.
    */
-  default void clearAdaptiveData() {};
+  default void clearAdaptiveData() {
+  }
+
+  ;
 }

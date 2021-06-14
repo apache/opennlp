@@ -23,7 +23,7 @@ import java.util.Iterator;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
-class IrishSentenceBankTokenSampleStream implements ObjectStream<TokenSample>  {
+class IrishSentenceBankTokenSampleStream implements ObjectStream<TokenSample> {
 
   private final IrishSentenceBankDocument source;
 

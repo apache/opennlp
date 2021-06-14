@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import opennlp.common.util.Span;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.Span;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
@@ -36,19 +36,17 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  */
 public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStream<NameSample> {
 
+  private final String defaultType;
   private NameContextGenerator contextGenerator;
-
   private AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
       new AdditionalContextFeatureGenerator();
-
   private SequenceCodec<String> codec;
-
-  private final String defaultType;
 
   /**
    * Creates a new name finder event stream using the specified data stream and context generator.
-   * @param dataStream The data stream of events.
-   * @param type null or overrides the type parameter in the provided samples
+   *
+   * @param dataStream       The data stream of events.
+   * @param type             null or overrides the type parameter in the provided samples
    * @param contextGenerator The context generator used to generate features for the event stream.
    */
   public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type,
@@ -75,11 +73,11 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   /**
    * Generates the name tag outcomes (start, continue, other) for each token in a sentence
    * with the specified length using the specified name spans.
-   * @param names Token spans for each of the names.
-   * @param type null or overrides the type parameter in the provided samples
+   *
+   * @param names  Token spans for each of the names.
+   * @param type   null or overrides the type parameter in the provided samples
    * @param length The length of the sentence.
    * @return An array of start, continue, other outcomes based on the specified names and sentence length.
-   *
    * @deprecated use the BioCodec implementation of the SequenceValidator instead!
    */
   @Deprecated
@@ -91,16 +89,14 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     for (Span name : names) {
       if (name.getType() == null) {
         outcomes[name.getStart()] = type + "-" + NameFinderME.START;
-      }
-      else {
+      } else {
         outcomes[name.getStart()] = name.getType() + "-" + NameFinderME.START;
       }
       // now iterate from begin + 1 till end
       for (int i = name.getStart() + 1; i < name.getEnd(); i++) {
         if (name.getType() == null) {
           outcomes[i] = type + "-" + NameFinderME.CONTINUE;
-        }
-        else {
+        } else {
           outcomes[i] = name.getType() + "-" + NameFinderME.CONTINUE;
         }
       }
@@ -112,12 +108,28 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
                                            NameContextGenerator cg) {
     List<Event> events = new ArrayList<>(outcomes.length);
     for (int i = 0; i < outcomes.length; i++) {
-      events.add(new Event(outcomes[i], cg.getContext(i, sentence, outcomes,null)));
+      events.add(new Event(outcomes[i], cg.getContext(i, sentence, outcomes, null)));
     }
 
     cg.updateAdaptiveData(sentence, outcomes);
 
     return events;
+  }
+
+  /**
+   * Generated previous decision features for each token based on contents of the specified map.
+   *
+   * @param tokens  The token for which the context is generated.
+   * @param prevMap A mapping of tokens to their previous decisions.
+   * @return An additional context array with features for each token.
+   */
+  public static String[][] additionalContext(String[] tokens, Map<String, String> prevMap) {
+    String[][] ac = new String[tokens.length][1];
+    for (int ti = 0; ti < tokens.length; ti++) {
+      String pt = prevMap.get(tokens[ti]);
+      ac[ti][0] = "pd=" + pt;
+    }
+    return ac;
   }
 
   @Override
@@ -148,22 +160,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     for (int i = 0; i < names.length; i++) {
       Span n = names[i];
       names[i] = new Span(n.getStart(), n.getEnd(), this.defaultType,
-              n.getProb());
+          n.getProb());
     }
-  }
-
-  /**
-   * Generated previous decision features for each token based on contents of the specified map.
-   * @param tokens The token for which the context is generated.
-   * @param prevMap A mapping of tokens to their previous decisions.
-   * @return An additional context array with features for each token.
-   */
-  public static String[][] additionalContext(String[] tokens, Map<String, String> prevMap) {
-    String[][] ac = new String[tokens.length][1];
-    for (int ti = 0; ti < tokens.length; ti++) {
-      String pt = prevMap.get(tokens[ti]);
-      ac[ti][0] = "pd=" + pt;
-    }
-    return ac;
   }
 }

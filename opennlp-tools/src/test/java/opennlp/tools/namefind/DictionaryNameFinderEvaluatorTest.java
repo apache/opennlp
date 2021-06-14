@@ -26,36 +26,20 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.Span;
+import opennlp.common.util.StringList;
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
-import opennlp.tools.util.StringList;
 import opennlp.tools.util.eval.FMeasure;
 
 /**
  * Tests the evaluation of a {@link DictionaryNameFinder}.
  */
 public class DictionaryNameFinderEvaluatorTest {
-
-  @Test
-  public void testEvaluator() throws IOException, URISyntaxException {
-    DictionaryNameFinder nameFinder = new DictionaryNameFinder(
-        createDictionary());
-    TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
-        nameFinder, new NameEvaluationErrorListener());
-    ObjectStream<NameSample> sample = createSample();
-
-    evaluator.evaluate(sample);
-    sample.close();
-    FMeasure fmeasure = evaluator.getFMeasure();
-
-    Assert.assertTrue(fmeasure.getFMeasure() == 1);
-    Assert.assertTrue(fmeasure.getRecallScore() == 1);
-  }
 
   /**
    * Creates a NameSample stream using an annotated corpus
@@ -105,5 +89,21 @@ public class DictionaryNameFinderEvaluatorTest {
       dictionary.put(dicEntry);
     }
     return dictionary;
+  }
+
+  @Test
+  public void testEvaluator() throws IOException, URISyntaxException {
+    DictionaryNameFinder nameFinder = new DictionaryNameFinder(
+        createDictionary());
+    TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
+        nameFinder, new NameEvaluationErrorListener());
+    ObjectStream<NameSample> sample = createSample();
+
+    evaluator.evaluate(sample);
+    sample.close();
+    FMeasure fmeasure = evaluator.getFMeasure();
+
+    Assert.assertTrue(fmeasure.getFMeasure() == 1);
+    Assert.assertTrue(fmeasure.getRecallScore() == 1);
   }
 }

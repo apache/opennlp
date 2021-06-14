@@ -51,11 +51,11 @@ public class ADTokenSampleStreamTest {
         ADTokenSampleStreamFactory.Parameters.class);
 
     File dict = new File(Objects.requireNonNull(getClass().getClassLoader()
-            .getResource("opennlp/tools/tokenize/latin-detokenizer.xml")).toURI());
+        .getResource("opennlp/tools/tokenize/latin-detokenizer.xml")).toURI());
     File data = new File(Objects.requireNonNull(getClass().getClassLoader()
-            .getResource("opennlp/tools/formats/ad.sample")).toURI());
-    String[] args = { "-data", data.getCanonicalPath(), "-encoding", "UTF-8",
-        "-lang", "por", "-detokenizer", dict.getCanonicalPath() };
+        .getResource("opennlp/tools/formats/ad.sample")).toURI());
+    String[] args = {"-data", data.getCanonicalPath(), "-encoding", "UTF-8",
+        "-lang", "por", "-detokenizer", dict.getCanonicalPath()};
     ObjectStream<TokenSample> tokenSampleStream = factory.create(args);
 
     TokenSample sample = tokenSampleStream.read();

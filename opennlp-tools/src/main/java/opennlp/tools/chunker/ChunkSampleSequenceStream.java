@@ -31,7 +31,7 @@ public class ChunkSampleSequenceStream implements SequenceStream {
   private final ChunkerContextGenerator contextGenerator;
 
   public ChunkSampleSequenceStream(ObjectStream<ChunkSample> samples,
-      ChunkerContextGenerator contextGenerator) {
+                                   ChunkerContextGenerator contextGenerator) {
     this.samples = samples;
     this.contextGenerator = contextGenerator;
   }
@@ -53,7 +53,7 @@ public class ChunkSampleSequenceStream implements SequenceStream {
 
         events[i] = new Event(tags[i], context);
       }
-      return new Sequence<>(events,sample);
+      return new Sequence<>(events, sample);
     }
 
     return null;

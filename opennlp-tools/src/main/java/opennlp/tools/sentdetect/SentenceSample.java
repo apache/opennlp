@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import opennlp.tools.tokenize.Detokenizer;
-import opennlp.tools.util.Span;
+import opennlp.common.tokenize.Detokenizer;
+import opennlp.common.util.Span;
 
 /**
  * A {@link SentenceSample} contains a document with
@@ -51,7 +51,7 @@ public class SentenceSample implements Serializable {
       if (sentence.getEnd() > document.length()) {
         throw new IllegalArgumentException(
             String.format("Sentence span is outside of document text [len %d] and span %s",
-            document.length(), sentence));
+                document.length(), sentence));
       }
     }
   }
@@ -89,7 +89,6 @@ public class SentenceSample implements Serializable {
    * Retrieves the sentences.
    *
    * @return the begin indexes of the sentences in the document.
-
    */
   public Span[] getSentences() {
     return sentences.toArray(new Span[sentences.size()]);

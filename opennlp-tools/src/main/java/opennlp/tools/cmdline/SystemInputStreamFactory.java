@@ -37,8 +37,7 @@ public class SystemInputStreamFactory implements InputStreamFactory {
     if (!isTainted) {
       isTainted = true;
       return System.in;
-    }
-    else {
+    } else {
       throw new UnsupportedOperationException(
           "The System.in stream can't be re-created to read from the beginning!");
     }

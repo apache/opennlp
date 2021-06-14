@@ -28,7 +28,7 @@ public class NKJPTextDocumentTest {
   @Test
   public void testParsingSimpleDoc() throws Exception {
     try (InputStream nkjpTextXmlIn =
-           NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
+             NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
 
       NKJPTextDocument doc = NKJPTextDocument.parse(nkjpTextXmlIn);
 
@@ -47,7 +47,7 @@ public class NKJPTextDocumentTest {
   @Test
   public void testGetParagraphs() throws Exception {
     try (InputStream nkjpTextXmlIn =
-           NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
+             NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
 
       NKJPTextDocument doc = NKJPTextDocument.parse(nkjpTextXmlIn);
       Map<String, String> paras = doc.getParagraphs();

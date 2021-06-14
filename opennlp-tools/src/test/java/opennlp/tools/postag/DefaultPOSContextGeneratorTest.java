@@ -32,21 +32,19 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import opennlp.common.util.StringList;
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.StringList;
 
 /**
- *
  * We encountered a concurrency issue in the pos tagger module in the class
  * DefaultPOSContextGenerator.
-
- The issue is demonstrated in DefaultPOSContextGeneratorTest.java. The test "multithreading()"
- consistently fails on our system with the current code if the number of threads
- (NUMBER_OF_THREADS) is set to 10. If the number of threads is set to 1 (effectively disabling
- multithreading), the test consistently passes.
-
- We resolved the issue by removing a field in DefaultPOSContextGenerator.java.
- *
+ * <p>
+ * The issue is demonstrated in DefaultPOSContextGeneratorTest.java. The test "multithreading()"
+ * consistently fails on our system with the current code if the number of threads
+ * (NUMBER_OF_THREADS) is set to 10. If the number of threads is set to 1 (effectively disabling
+ * multithreading), the test consistently passes.
+ * <p>
+ * We resolved the issue by removing a field in DefaultPOSContextGenerator.java.
  */
 
 

@@ -51,7 +51,7 @@ final public class OpennlpUtil {
   public static void serialize(BaseModel model, File modelFile)
       throws IOException {
     try (OutputStream fileOut = new FileOutputStream(modelFile);
-        OutputStream modelOut = new BufferedOutputStream(fileOut)) {
+         OutputStream modelOut = new BufferedOutputStream(fileOut)) {
       model.serialize(modelOut);
     }
   }
@@ -72,7 +72,8 @@ final public class OpennlpUtil {
   }
 
   public static TrainingParameters loadTrainingParams(String inFileValue,
-      boolean isSequenceTrainingAllowed) throws ResourceInitializationException {
+                                                      boolean isSequenceTrainingAllowed)
+      throws ResourceInitializationException {
 
     TrainingParameters params;
     if (inFileValue != null) {
@@ -90,8 +91,7 @@ final public class OpennlpUtil {
       if (!isSequenceTrainingAllowed && TrainerFactory.TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
         throw new ResourceInitializationException(new Exception("Sequence training is not supported!"));
       }
-    }
-    else {
+    } else {
       params = TrainingParameters.defaultParams();
     }
 

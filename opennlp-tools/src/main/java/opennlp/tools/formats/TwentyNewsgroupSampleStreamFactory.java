@@ -20,13 +20,13 @@ package opennlp.tools.formats;
 import java.io.File;
 import java.io.IOException;
 
+import opennlp.common.tokenize.Tokenizer;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EncodingParameter;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
@@ -34,14 +34,14 @@ import opennlp.tools.util.ObjectStream;
 
 public class TwentyNewsgroupSampleStreamFactory extends AbstractSampleStreamFactory<DocumentSample> {
 
+  protected <P> TwentyNewsgroupSampleStreamFactory(Class<P> params) {
+    super(params);
+  }
+
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(DocumentSample.class,
         "20newsgroup",
         new TwentyNewsgroupSampleStreamFactory(TwentyNewsgroupSampleStreamFactory.Parameters.class));
-  }
-
-  protected <P> TwentyNewsgroupSampleStreamFactory(Class<P> params) {
-    super(params);
   }
 
   @Override
@@ -58,17 +58,14 @@ public class TwentyNewsgroupSampleStreamFactory extends AbstractSampleStreamFact
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Failed to load tokenizer model!", e);
       }
-    }
-    else if (params.getRuleBasedTokenizer() != null) {
+    } else if (params.getRuleBasedTokenizer() != null) {
       String tokenizerName = params.getRuleBasedTokenizer();
 
       if ("simple".equals(tokenizerName)) {
         tokenizer = SimpleTokenizer.INSTANCE;
-      }
-      else if ("whitespace".equals(tokenizerName)) {
+      } else if ("whitespace".equals(tokenizerName)) {
         tokenizer = WhitespaceTokenizer.INSTANCE;
-      }
-      else {
+      } else {
         throw new TerminateToolException(-1, "Unkown tokenizer: " + tokenizerName);
       }
     }

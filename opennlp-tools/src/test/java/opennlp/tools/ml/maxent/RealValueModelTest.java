@@ -35,6 +35,7 @@ import opennlp.tools.util.TrainingParameters;
 public class RealValueModelTest {
 
   private DataIndexer testDataIndexer;
+
   @Before
   public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
@@ -42,7 +43,7 @@ public class RealValueModelTest {
     testDataIndexer = new OnePassRealValueDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
-  
+
   @Test
   public void testRealValuedWeightsVsRepeatWeighting() throws IOException {
     GISModel realModel;
@@ -57,10 +58,10 @@ public class RealValueModelTest {
     try (FileEventStream rvfes2 = new FileEventStream(
         "src/test/resources/data/opennlp/maxent/repeat-weighting-training-data.txt")) {
       testDataIndexer.index(rvfes2);
-      repeatModel = gisTrainer.trainModel(100,testDataIndexer);
+      repeatModel = gisTrainer.trainModel(100, testDataIndexer);
     }
 
-    String[] features2Classify = new String[] {"feature2","feature5"};
+    String[] features2Classify = new String[] {"feature2", "feature5"};
     double[] realResults = realModel.eval(features2Classify);
     double[] repeatResults = repeatModel.eval(features2Classify);
 
@@ -73,7 +74,7 @@ public class RealValueModelTest {
       Assert.assertEquals(realResults[i], repeatResults[i], 0.01f);
     }
 
-    features2Classify = new String[] {"feature1","feature2","feature3","feature4","feature5"};
+    features2Classify = new String[] {"feature1", "feature2", "feature3", "feature4", "feature5"};
     realResults = realModel.eval(features2Classify, new float[] {5.5f, 6.1f, 9.1f, 4.0f, 1.8f});
     repeatResults = repeatModel.eval(features2Classify, new float[] {5.5f, 6.1f, 9.1f, 4.0f, 1.8f});
 

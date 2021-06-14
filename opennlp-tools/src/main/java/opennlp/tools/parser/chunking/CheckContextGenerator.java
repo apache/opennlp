@@ -47,9 +47,9 @@ public class CheckContextGenerator extends AbstractContextGenerator {
    * specified start and end index can be combined to form a new constituent of the specified type.
    *
    * @param constituents The constituents which have yet to be combined into new constituents.
-   * @param type The type of the new constituent proposed.
-   * @param start The first constituent of the proposed constituent.
-   * @param end The last constituent of the proposed constituent.
+   * @param type         The type of the new constituent proposed.
+   * @param start        The first constituent of the proposed constituent.
+   * @param end          The last constituent of the proposed constituent.
    * @return The predictive context for deciding whether a new constituent should be created.
    */
   public String[] getContext(Parse[] constituents, String type, int start, int end) {

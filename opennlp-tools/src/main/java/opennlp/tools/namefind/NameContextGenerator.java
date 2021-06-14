@@ -22,12 +22,12 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 /**
  * Interface for generating the context for an name finder by specifying a set of geature generators.
- *
  */
 public interface NameContextGenerator extends BeamSearchContextGenerator<String> {
 
   /**
    * Adds a feature generator to this set of feature generators.
+   *
    * @param generator The feature generator to add.
    */
   void addFeatureGenerator(AdaptiveFeatureGenerator generator);
@@ -35,7 +35,8 @@ public interface NameContextGenerator extends BeamSearchContextGenerator<String>
   /**
    * Informs all the feature generators for a name finder that the specified tokens have
    * been classified with the coorisponds set of specified outcomes.
-   * @param tokens The tokens of the sentence or other text unit which has been processed.
+   *
+   * @param tokens   The tokens of the sentence or other text unit which has been processed.
    * @param outcomes The outcomes associated with the specified tokens.
    */
   void updateAdaptiveData(String[] tokens, String[] outcomes);

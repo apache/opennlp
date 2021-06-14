@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import opennlp.common.util.Sequence;
+import opennlp.common.util.StringList;
+import opennlp.common.util.StringUtil;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
@@ -37,10 +40,7 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
-import opennlp.tools.util.StringList;
-import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.featuregen.StringPattern;
 
@@ -48,38 +48,29 @@ import opennlp.tools.util.featuregen.StringPattern;
  * A part-of-speech tagger that uses maximum entropy.  Tries to predict whether
  * words are nouns, verbs, or any of 70 other POS tags depending on their
  * surrounding context.
- *
  */
 public class POSTaggerME implements POSTagger {
 
   public static final int DEFAULT_BEAM_SIZE = 3;
-
-  private POSModel modelPackage;
-
   /**
    * The feature context generator.
    */
   protected POSContextGenerator contextGen;
-
   /**
    * Tag dictionary used for restricting words to a fixed set of tags.
    */
   protected TagDictionary tagDictionary;
-
   protected Dictionary ngramDictionary;
-
   /**
    * Says whether a filter should be used to check whether a tag assignment
    * is to a word outside of a closed class.
    */
   protected boolean useClosedClassTagsFilter = false;
-
-
   /**
    * The size of the beam to be used in determining the best sequence of pos tags.
    */
   protected int size;
-
+  private POSModel modelPackage;
   private Sequence bestSequence;
 
   private SequenceClassificationModel<String> model;
@@ -112,118 +103,16 @@ public class POSTaggerME implements POSTagger {
 
     if (model.getPosSequenceModel() != null) {
       this.model = model.getPosSequenceModel();
-    }
-    else {
+    } else {
       this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
           model.getPosModel(), 0);
     }
 
   }
 
-  /**
-   * Retrieves an array of all possible part-of-speech tags from the
-   * tagger.
-   *
-   * @return String[]
-   */
-  public String[] getAllPosTags() {
-    return model.getOutcomes();
-  }
-
-  public String[] tag(String[] sentence) {
-    return this.tag(sentence, null);
-  }
-
-  public String[] tag(String[] sentence, Object[] additionaContext) {
-    bestSequence = model.bestSequence(sentence, additionaContext, contextGen, sequenceValidator);
-    List<String> t = bestSequence.getOutcomes();
-    return t.toArray(new String[t.size()]);
-  }
-
-  /**
-   * Returns at most the specified number of taggings for the specified sentence.
-   *
-   * @param numTaggings The number of tagging to be returned.
-   * @param sentence An array of tokens which make up a sentence.
-   *
-   * @return At most the specified number of taggings for the specified sentence.
-   */
-  public String[][] tag(int numTaggings, String[] sentence) {
-    Sequence[] bestSequences = model.bestSequences(numTaggings, sentence, null,
-        contextGen, sequenceValidator);
-    String[][] tags = new String[bestSequences.length][];
-    for (int si = 0; si < tags.length; si++) {
-      List<String> t = bestSequences[si].getOutcomes();
-      tags[si] = t.toArray(new String[t.size()]);
-    }
-    return tags;
-  }
-
-  public Sequence[] topKSequences(String[] sentence) {
-    return this.topKSequences(sentence, null);
-  }
-
-  public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
-    return model.bestSequences(size, sentence, additionaContext, contextGen, sequenceValidator);
-  }
-
-  /**
-   * Populates the specified array with the probabilities for each tag of the last tagged sentence.
-   *
-   * @param probs An array to put the probabilities into.
-   */
-  public void probs(double[] probs) {
-    bestSequence.getProbs(probs);
-  }
-
-  /**
-   * Returns an array with the probabilities for each tag of the last tagged sentence.
-   *
-   * @return an array with the probabilities for each tag of the last tagged sentence.
-   */
-  public double[] probs() {
-    return bestSequence.getProbs();
-  }
-
-  public String[] getOrderedTags(List<String> words, List<String> tags, int index) {
-    return getOrderedTags(words,tags,index,null);
-  }
-
-  public String[] getOrderedTags(List<String> words, List<String> tags, int index,double[] tprobs) {
-
-    if (modelPackage.getPosModel() != null) {
-
-      MaxentModel posModel = modelPackage.getPosModel();
-
-      double[] probs = posModel.eval(contextGen.getContext(index,
-          words.toArray(new String[words.size()]),
-          tags.toArray(new String[tags.size()]),null));
-
-      String[] orderedTags = new String[probs.length];
-      for (int i = 0; i < probs.length; i++) {
-        int max = 0;
-        for (int ti = 1; ti < probs.length; ti++) {
-          if (probs[ti] > probs[max]) {
-            max = ti;
-          }
-        }
-        orderedTags[i] = posModel.getOutcome(max);
-        if (tprobs != null) {
-          tprobs[i] = probs[max];
-        }
-        probs[max] = 0;
-      }
-      return orderedTags;
-    }
-    else {
-      throw new UnsupportedOperationException("This method can only be called if the "
-          + "classifcation model is an event model!");
-    }
-  }
-
   public static POSModel train(String languageCode,
-      ObjectStream<POSSample> samples, TrainingParameters trainParams,
-      POSTaggerFactory posFactory) throws IOException {
+                               ObjectStream<POSSample> samples, TrainingParameters trainParams,
+                               POSTaggerFactory posFactory) throws IOException {
 
     int beamSize = trainParams.getIntParameter(BeamSearch.BEAM_SIZE_PARAMETER, POSTaggerME.DEFAULT_BEAM_SIZE);
 
@@ -241,14 +130,12 @@ public class POSTaggerME implements POSTagger {
       EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams,
           manifestInfoEntries);
       posModel = trainer.train(es);
-    }
-    else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
+    } else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
       EventModelSequenceTrainer trainer =
           TrainerFactory.getEventModelSequenceTrainer(trainParams, manifestInfoEntries);
       posModel = trainer.train(ss);
-    }
-    else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
+    } else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
           trainParams, manifestInfoEntries);
 
@@ -256,15 +143,13 @@ public class POSTaggerME implements POSTagger {
 
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
       seqPosModel = trainer.train(ss);
-    }
-    else {
+    } else {
       throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);
     }
 
     if (posModel != null) {
       return new POSModel(languageCode, posModel, beamSize, manifestInfoEntries, posFactory);
-    }
-    else {
+    } else {
       return new POSModel(languageCode, seqPosModel, manifestInfoEntries, posFactory);
     }
   }
@@ -288,7 +173,7 @@ public class POSTaggerME implements POSTagger {
   }
 
   public static void populatePOSDictionary(ObjectStream<POSSample> samples,
-      MutableTagDictionary dict, int cutoff) throws IOException {
+                                           MutableTagDictionary dict, int cutoff) throws IOException {
     System.out.println("Expanding POS Dictionary ...");
     long start = System.nanoTime();
 
@@ -352,5 +237,104 @@ public class POSTaggerME implements POSTagger {
 
     System.out.println("... finished expanding POS Dictionary. ["
         + (System.nanoTime() - start) / 1000000 + "ms]");
+  }
+
+  /**
+   * Retrieves an array of all possible part-of-speech tags from the
+   * tagger.
+   *
+   * @return String[]
+   */
+  public String[] getAllPosTags() {
+    return model.getOutcomes();
+  }
+
+  public String[] tag(String[] sentence) {
+    return this.tag(sentence, null);
+  }
+
+  public String[] tag(String[] sentence, Object[] additionaContext) {
+    bestSequence = model.bestSequence(sentence, additionaContext, contextGen, sequenceValidator);
+    List<String> t = bestSequence.getOutcomes();
+    return t.toArray(new String[t.size()]);
+  }
+
+  /**
+   * Returns at most the specified number of taggings for the specified sentence.
+   *
+   * @param numTaggings The number of tagging to be returned.
+   * @param sentence    An array of tokens which make up a sentence.
+   * @return At most the specified number of taggings for the specified sentence.
+   */
+  public String[][] tag(int numTaggings, String[] sentence) {
+    Sequence[] bestSequences = model.bestSequences(numTaggings, sentence, null,
+        contextGen, sequenceValidator);
+    String[][] tags = new String[bestSequences.length][];
+    for (int si = 0; si < tags.length; si++) {
+      List<String> t = bestSequences[si].getOutcomes();
+      tags[si] = t.toArray(new String[t.size()]);
+    }
+    return tags;
+  }
+
+  public Sequence[] topKSequences(String[] sentence) {
+    return this.topKSequences(sentence, null);
+  }
+
+  public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
+    return model.bestSequences(size, sentence, additionaContext, contextGen, sequenceValidator);
+  }
+
+  /**
+   * Populates the specified array with the probabilities for each tag of the last tagged sentence.
+   *
+   * @param probs An array to put the probabilities into.
+   */
+  public void probs(double[] probs) {
+    bestSequence.getProbs(probs);
+  }
+
+  /**
+   * Returns an array with the probabilities for each tag of the last tagged sentence.
+   *
+   * @return an array with the probabilities for each tag of the last tagged sentence.
+   */
+  public double[] probs() {
+    return bestSequence.getProbs();
+  }
+
+  public String[] getOrderedTags(List<String> words, List<String> tags, int index) {
+    return getOrderedTags(words, tags, index, null);
+  }
+
+  public String[] getOrderedTags(List<String> words, List<String> tags, int index, double[] tprobs) {
+
+    if (modelPackage.getPosModel() != null) {
+
+      MaxentModel posModel = modelPackage.getPosModel();
+
+      double[] probs = posModel.eval(contextGen.getContext(index,
+          words.toArray(new String[words.size()]),
+          tags.toArray(new String[tags.size()]), null));
+
+      String[] orderedTags = new String[probs.length];
+      for (int i = 0; i < probs.length; i++) {
+        int max = 0;
+        for (int ti = 1; ti < probs.length; ti++) {
+          if (probs[ti] > probs[max]) {
+            max = ti;
+          }
+        }
+        orderedTags[i] = posModel.getOutcome(max);
+        if (tprobs != null) {
+          tprobs[i] = probs[max];
+        }
+        probs[max] = 0;
+      }
+      return orderedTags;
+    } else {
+      throw new UnsupportedOperationException("This method can only be called if the "
+          + "classifcation model is an event model!");
+    }
   }
 }

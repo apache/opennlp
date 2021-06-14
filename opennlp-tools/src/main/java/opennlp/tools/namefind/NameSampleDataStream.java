@@ -54,8 +54,7 @@ public class NameSampleDataStream extends FilterObjectStream<String, NameSample>
 
     if (token != null) {
       return NameSample.parse(token, isClearAdaptiveData);
-    }
-    else {
+    } else {
       return null;
     }
   }

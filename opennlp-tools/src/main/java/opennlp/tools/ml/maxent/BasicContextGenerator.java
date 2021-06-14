@@ -31,7 +31,8 @@ public class BasicContextGenerator implements ContextGenerator<String> {
 
   private String separator = " ";
 
-  public BasicContextGenerator() {}
+  public BasicContextGenerator() {
+  }
 
   public BasicContextGenerator(String sep) {
     separator = sep;

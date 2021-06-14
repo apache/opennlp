@@ -47,22 +47,15 @@ import opennlp.tools.util.model.ByteArraySerializer;
 // TODO: Fix the model validation, on loading via constructors and input streams
 public class TokenNameFinderModel extends BaseModel {
 
-  public static class FeatureGeneratorCreationError extends RuntimeException {
-    FeatureGeneratorCreationError(Throwable t) {
-      super(t);
-    }
-  }
-
+  static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
+  static final String SEQUENCE_CODEC_CLASS_NAME_PARAMETER = "sequenceCodecImplName";
   private static final String COMPONENT_NAME = "NameFinderME";
   private static final String MAXENT_MODEL_ENTRY_NAME = "nameFinder.model";
 
-  static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
-
-  static final String SEQUENCE_CODEC_CLASS_NAME_PARAMETER = "sequenceCodecImplName";
-
   public TokenNameFinderModel(String languageCode, SequenceClassificationModel<String> nameFinderModel,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
-      SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
+                              byte[] generatorDescriptor, Map<String, Object> resources,
+                              Map<String, String> manifestInfoEntries,
+                              SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
 
     init(nameFinderModel, generatorDescriptor, resources, manifestInfoEntries, seqCodec);
@@ -73,8 +66,9 @@ public class TokenNameFinderModel extends BaseModel {
   }
 
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel, int beamSize,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
-      SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
+                              byte[] generatorDescriptor, Map<String, Object> resources,
+                              Map<String, String> manifestInfoEntries,
+                              SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
 
 
@@ -90,13 +84,14 @@ public class TokenNameFinderModel extends BaseModel {
 
   // TODO: Extend this one with beam size!
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+                              byte[] generatorDescriptor, Map<String, Object> resources,
+                              Map<String, String> manifestInfoEntries) {
     this(languageCode, nameFinderModel, NameFinderME.DEFAULT_BEAM_SIZE,
         generatorDescriptor, resources, manifestInfoEntries, new BioCodec(), new TokenNameFinderFactory());
   }
 
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
-      Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+                              Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     this(languageCode, nameFinderModel, null, resources, manifestInfoEntries);
   }
 
@@ -116,9 +111,40 @@ public class TokenNameFinderModel extends BaseModel {
     super(COMPONENT_NAME, modelURL);
   }
 
+  /**
+   * Create the artifact serializers. Currently for serializers related to
+   * features that require external resources, such as {@code W2VClassesDictionary}
+   * objects, the convention is to add its element tag name as key of the serializer map.
+   * For example, the element tag name for the {@code WordClusterFeatureGenerator} which
+   * uses {@code W2VClassesDictionary} objects serialized by the {@code W2VClassesDictionarySerializer}
+   * is 'wordcluster', which is the key used to add the serializer to the map.
+   *
+   * @return the map containing the added serializers
+   */
+  public static Map<String, ArtifactSerializer> createArtifactSerializers() {
+
+    // TODO: Not so nice, because code cannot really be reused by the other create serializer method
+    //       Has to be redesigned, we need static access to default serializers
+    //       and these should be able to extend during runtime ?!
+    //
+    //       The XML feature generator factory should provide these mappings.
+    //       Usually the feature generators should know what type of resource they expect.
+
+    Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
+
+    serializers.put("featuregen", new ByteArraySerializer());
+    serializers.put("wordcluster", new WordClusterDictionary.WordClusterDictionarySerializer());
+    serializers.put("brownclustertoken", new BrownCluster.BrownClusterSerializer());
+    serializers.put("brownclustertokenclass", new BrownCluster.BrownClusterSerializer());
+    serializers.put("brownclusterbigram", new BrownCluster.BrownClusterSerializer());
+
+    return serializers;
+  }
+
   private void init(Object nameFinderModel,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
-      SequenceCodec<String> seqCodec) {
+                    byte[] generatorDescriptor, Map<String, Object> resources,
+                    Map<String, String> manifestInfoEntries,
+                    SequenceCodec<String> seqCodec) {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     manifest.put(SEQUENCE_CODEC_CLASS_NAME_PARAMETER, seqCodec.getClass().getName());
@@ -156,11 +182,9 @@ public class TokenNameFinderModel extends BaseModel {
       }
 
       return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME));
-    }
-    else if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
+    } else if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
       return (SequenceClassificationModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
-    }
-    else {
+    } else {
       return null;
     }
   }
@@ -185,35 +209,6 @@ public class TokenNameFinderModel extends BaseModel {
     serializers.put("featuregen", new ByteArraySerializer());
   }
 
-  /**
-   * Create the artifact serializers. Currently for serializers related to
-   * features that require external resources, such as {@code W2VClassesDictionary}
-   * objects, the convention is to add its element tag name as key of the serializer map.
-   * For example, the element tag name for the {@code WordClusterFeatureGenerator} which
-   * uses {@code W2VClassesDictionary} objects serialized by the {@code W2VClassesDictionarySerializer}
-   * is 'wordcluster', which is the key used to add the serializer to the map.
-   * @return the map containing the added serializers
-   */
-  public static Map<String, ArtifactSerializer> createArtifactSerializers()  {
-
-    // TODO: Not so nice, because code cannot really be reused by the other create serializer method
-    //       Has to be redesigned, we need static access to default serializers
-    //       and these should be able to extend during runtime ?!
-    //
-    //       The XML feature generator factory should provide these mappings.
-    //       Usually the feature generators should know what type of resource they expect.
-
-    Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
-
-    serializers.put("featuregen", new ByteArraySerializer());
-    serializers.put("wordcluster", new WordClusterDictionary.WordClusterDictionarySerializer());
-    serializers.put("brownclustertoken", new BrownCluster.BrownClusterSerializer());
-    serializers.put("brownclustertokenclass", new BrownCluster.BrownClusterSerializer());
-    serializers.put("brownclusterbigram", new BrownCluster.BrownClusterSerializer());
-
-    return serializers;
-  }
-
   private boolean isModelValid(MaxentModel model) {
 
     String[] outcomes = new String[model.getNumOutcomes()];
@@ -232,6 +227,12 @@ public class TokenNameFinderModel extends BaseModel {
     if (!(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof MaxentModel) &&
         !(artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel)) {
       throw new InvalidFormatException("Token Name Finder model is incomplete!");
+    }
+  }
+
+  public static class FeatureGeneratorCreationError extends RuntimeException {
+    FeatureGeneratorCreationError(Throwable t) {
+      super(t);
     }
   }
 }

@@ -29,17 +29,14 @@ import opennlp.tools.util.ObjectStream;
 
 public class IrishSentenceBankTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
 
-  interface Parameters extends BasicFormatParams {
+  protected <P> IrishSentenceBankTokenSampleStreamFactory(Class<P> params) {
+    super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
         "irishsentencebank", new IrishSentenceBankTokenSampleStreamFactory(
-        IrishSentenceBankTokenSampleStreamFactory.Parameters.class));
-  }
-
-  protected <P> IrishSentenceBankTokenSampleStreamFactory(Class<P> params) {
-    super(params);
+            IrishSentenceBankTokenSampleStreamFactory.Parameters.class));
   }
 
   public ObjectStream<TokenSample> create(String[] args) {
@@ -56,5 +53,8 @@ public class IrishSentenceBankTokenSampleStreamFactory extends DetokenizerSample
     }
 
     return new IrishSentenceBankTokenSampleStream(isbDoc);
+  }
+
+  interface Parameters extends BasicFormatParams {
   }
 }

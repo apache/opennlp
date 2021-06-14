@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import opennlp.common.util.Span;
 import opennlp.tools.cmdline.parser.ParserTool;
-import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
@@ -33,21 +33,21 @@ import opennlp.tools.util.eval.FMeasure;
  * (as in COLLINS convention). To follow parsing evaluation conventions
  * (Bikel, Collins, Charniak, etc.) as in EVALB, options are to be added
  * to the {@code ParserEvaluatorTool}.
- *
  */
 public class ParserEvaluator extends Evaluator<Parse> {
 
   /**
-   * fmeasure.
-   */
-  private FMeasure fmeasure = new FMeasure();
-  /**
    * The parser to evaluate.
    */
   private final Parser parser;
+  /**
+   * fmeasure.
+   */
+  private FMeasure fmeasure = new FMeasure();
 
   /**
    * Construct a parser with some evaluation monitors.
+   *
    * @param aParser
    * @param monitors the evaluation monitors
    */
@@ -58,6 +58,7 @@ public class ParserEvaluator extends Evaluator<Parse> {
 
   /**
    * Obtain {@code Span}s for every parse in the sentence.
+   *
    * @param parse the parse from which to obtain the spans
    * @return an array containing every span for the parse
    */
@@ -109,6 +110,7 @@ public class ParserEvaluator extends Evaluator<Parse> {
 
   /**
    * It returns the fmeasure result.
+   *
    * @return the fmeasure value
    */
   public final FMeasure getFMeasure() {

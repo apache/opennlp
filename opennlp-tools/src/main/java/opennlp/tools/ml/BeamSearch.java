@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+import opennlp.common.util.Sequence;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BeamSearchContextGenerator;
 import opennlp.tools.util.Cache;
-import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 
 /**
@@ -42,18 +42,16 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
   public static final String BEAM_SIZE_PARAMETER = "BeamSize";
 
   private static final Object[] EMPTY_ADDITIONAL_CONTEXT = new Object[0];
-
+  private static final int zeroLog = -100000;
   protected int size;
   protected MaxentModel model;
-
   private double[] probs;
   private Cache<String[], double[]> contextsCache;
-  private static final int zeroLog = -100000;
 
   /**
    * Creates new search object.
    *
-   * @param size The size of the beam (k).
+   * @param size  The size of the beam (k).
    * @param model the model for assigning probabilities to the sequence outcomes.
    */
   public BeamSearch(int size, MaxentModel model) {
@@ -75,16 +73,15 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
   /**
    * Returns the best sequence of outcomes based on model for this object.
    *
-   * @param sequence The input sequence.
+   * @param sequence          The input sequence.
    * @param additionalContext An Object[] of additional context.
-   *     This is passed to the context generator blindly with the
-   *     assumption that the context are appropiate.
-   *
+   *                          This is passed to the context generator blindly with the
+   *                          assumption that the context are appropiate.
    * @return The top ranked sequence of outcomes or null if no sequence could be found
    */
   public Sequence[] bestSequences(int numSequences, T[] sequence,
-      Object[] additionalContext, double minSequenceScore,
-      BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
+                                  Object[] additionalContext, double minSequenceScore,
+                                  BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
 
     Queue<Sequence> prev = new PriorityQueue<>(size);
     Queue<Sequence> next = new PriorityQueue<>(size);
@@ -115,7 +112,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
 
         Arrays.sort(temp_scores);
 
-        double min = temp_scores[StrictMath.max(0,scores.length - size)];
+        double min = temp_scores[StrictMath.max(0, scores.length - size)];
 
         for (int p = 0; p < scores.length; p++) {
           if (scores[p] >= min) {
@@ -160,13 +157,14 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
   }
 
   public Sequence[] bestSequences(int numSequences, T[] sequence,
-      Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
+                                  Object[] additionalContext, BeamSearchContextGenerator<T> cg,
+                                  SequenceValidator<T> validator) {
     return bestSequences(numSequences, sequence, additionalContext, zeroLog, cg, validator);
   }
 
   public Sequence bestSequence(T[] sequence, Object[] additionalContext,
-      BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
-    Sequence[] sequences =  bestSequences(1, sequence, additionalContext, cg, validator);
+                               BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
+    Sequence[] sequences = bestSequences(1, sequence, additionalContext, cg, validator);
 
     if (sequences.length > 0)
       return sequences[0];

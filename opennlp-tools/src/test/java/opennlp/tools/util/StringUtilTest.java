@@ -20,6 +20,8 @@ package opennlp.tools.util;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.common.util.StringUtil;
+
 /**
  * Tests for the {@link StringUtil} class.
  */
@@ -62,8 +64,8 @@ public class StringUtilTest {
 
   @Test
   public void testLowercaseBeyondBMP() throws Exception {
-    int[] codePoints = new int[]{65,66578,67};    //A,Deseret capital BEE,C
-    int[] expectedCodePoints = new int[]{97,66618,99};//a,Deseret lowercase b,c
+    int[] codePoints = new int[] {65, 66578, 67};    //A,Deseret capital BEE,C
+    int[] expectedCodePoints = new int[] {97, 66618, 99};//a,Deseret lowercase b,c
     String input = new String(codePoints, 0, codePoints.length);
     String lc = StringUtil.toLowerCase(input);
     Assert.assertArrayEquals(expectedCodePoints, lc.codePoints().toArray());

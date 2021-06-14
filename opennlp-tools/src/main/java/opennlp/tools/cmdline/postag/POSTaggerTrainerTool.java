@@ -40,9 +40,6 @@ import opennlp.tools.util.model.ModelUtil;
 public final class POSTaggerTrainerTool
     extends AbstractTrainerTool<POSSample, TrainerToolParams> {
 
-  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
-  }
-
   public POSTaggerTrainerTool() {
     super(POSSample.class, TrainerToolParams.class);
   }
@@ -72,9 +69,8 @@ public final class POSTaggerTrainerTool
     try {
       resources = TokenNameFinderTrainerTool.loadResources(
           params.getResources(), params.getFeaturegen());
-    }
-    catch (IOException e) {
-      throw new TerminateToolException(-1,"IO error while loading resources", e);
+    } catch (IOException e) {
+      throw new TerminateToolException(-1, "IO error while loading resources", e);
     }
 
     byte[] featureGeneratorBytes =
@@ -106,7 +102,7 @@ public final class POSTaggerTrainerTool
           postaggerFactory.setTagDictionary(dict);
         }
         if (dict instanceof MutableTagDictionary) {
-          POSTaggerME.populatePOSDictionary(sampleStream, (MutableTagDictionary)dict,
+          POSTaggerME.populatePOSDictionary(sampleStream, (MutableTagDictionary) dict,
               params.getTagDictCutoff());
         } else {
           throw new IllegalArgumentException(
@@ -124,11 +120,9 @@ public final class POSTaggerTrainerTool
     try {
       model = opennlp.tools.postag.POSTaggerME.train(params.getLang(),
           sampleStream, mlParams, postaggerFactory);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw createTerminationIOException(e);
-    }
-    finally {
+    } finally {
       try {
         sampleStream.close();
       } catch (IOException e) {
@@ -137,5 +131,8 @@ public final class POSTaggerTrainerTool
     }
 
     CmdLineUtil.writeModel("pos tagger", modelOutFile, model);
+  }
+
+  interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
 }
