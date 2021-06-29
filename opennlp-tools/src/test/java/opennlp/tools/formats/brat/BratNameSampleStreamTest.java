@@ -20,6 +20,7 @@ package opennlp.tools.formats.brat;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +42,12 @@ public class BratNameSampleStreamTest {
     BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
-    File dir = new File(this.getClass().getResource("/opennlp/tools/formats/brat/").getFile());
+    File dir;
+    try {
+      dir = new File(this.getClass().getResource("/opennlp/tools/formats/brat/").toURI().getPath());
+    } catch (URISyntaxException e) {
+      throw new IOException(e);
+    }
     FileFilter fileFilter = pathname -> pathname.getName().contains(nameContainsFilter);
 
     ObjectStream<BratDocument> bratDocumentStream = new BratDocumentStream(config, dir,

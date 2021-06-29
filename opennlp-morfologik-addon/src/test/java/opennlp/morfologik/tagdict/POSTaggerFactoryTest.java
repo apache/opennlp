@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -48,9 +49,16 @@ public class POSTaggerFactoryTest {
 
   private static ObjectStream<POSSample> createSampleStream()
       throws IOException {
-    MarkableFileInputStreamFactory sampleDataIn = new MarkableFileInputStreamFactory(
-        new File(POSTaggerFactory.class.getResource("/AnnotatedSentences.txt").getFile()));
 
+    MarkableFileInputStreamFactory sampleDataIn;
+    try {
+      sampleDataIn =
+              new MarkableFileInputStreamFactory(
+                      new File(POSTaggerFactory.class.getResource(
+                              "/AnnotatedSentences.txt").toURI().getPath()));
+    } catch (URISyntaxException e) {
+      throw new IOException(e);
+    }
     ObjectStream<String> lineStream = null;
     try {
       lineStream = new PlainTextByLineStream(sampleDataIn, StandardCharsets.UTF_8);
