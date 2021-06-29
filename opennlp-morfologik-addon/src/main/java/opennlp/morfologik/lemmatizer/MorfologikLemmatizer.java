@@ -47,7 +47,7 @@ public class MorfologikLemmatizer implements Lemmatizer {
     dictLookup = new DictionaryLookup(dictionary);
   }
 
-  private List<String> lemmatize(String word, String postag) {
+  private synchronized List<String> lemmatize(String word, String postag) {
     List<WordData> dictMap = dictLookup.lookup(word.toLowerCase());
     Set<String> lemmas = new HashSet<>();
     for (WordData wordData : dictMap) {
