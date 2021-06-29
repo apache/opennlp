@@ -312,14 +312,15 @@ Path: en-token.bin]]>
                 The following sample code illustrates these steps:
                 <programlisting language="java">
                     <![CDATA[
-ObjectStream<String> lineStream = new PlainTextByLineStream(new FileInputStream("en-sent.train"),
-    StandardCharsets.UTF_8);
+ObjectStream<String> lineStream = new PlainTextByLineStream(
+	new MarkableFileInputStreamFactory(new File("en-sent.train")), StandardCharsets.UTF_8);
 ObjectStream<TokenSample> sampleStream = new TokenSampleStream(lineStream);
 
 TokenizerModel model;
 
 try {
-  model = TokenizerME.train("en", sampleStream, true, TrainingParameters.defaultParams());
+  model = TokenizerME.train(sampleStream,
+  	TokenizerFactory.create(null, "eng", null, true, null), TrainingParameters.defaultParams());
 }
 finally {
   sampleStream.close();

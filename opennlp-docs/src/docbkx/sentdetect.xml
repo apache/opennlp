@@ -207,13 +207,14 @@ Path: en-sent.bin
 			The following sample code illustrates these steps:
 					<programlisting language="java">
 				<![CDATA[
-ObjectStream<String> lineStream =
-  new PlainTextByLineStream(new FileInputStream("en-sent.train"), StandardCharsets.UTF_8);
+ObjectStream<String> lineStream = new PlainTextByLineStream(
+	new MarkableFileInputStreamFactory(new File("en-sent.train")), StandardCharsets.UTF_8);
 
 SentenceModel model;
 
 try (ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineStream)) {
-  model = SentenceDetectorME.train("en", sampleStream, true, null, TrainingParameters.defaultParams());
+  model = SentenceDetectorME.train("eng", sampleStream,
+      new SentenceDetectorFactory("eng", true, null, null), TrainingParameters.defaultParams());
 }
 
 try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {

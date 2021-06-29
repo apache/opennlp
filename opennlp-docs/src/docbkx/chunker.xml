@@ -231,14 +231,14 @@ $ opennlp ChunkerTrainerME -model en-chunker.bin -lang en -data en-chunker.train
                 illustrates how to do it:
                 <programlisting language="java">
                     <![CDATA[
-ObjectStream<String> lineStream =
-    new PlainTextByLineStream(new FileInputStream("en-chunker.train"), StandardCharsets.UTF_8);
+ObjectStream<String> lineStream = new PlainTextByLineStream(
+	new MarkableFileInputStreamFactory(new File("en-chunker.train")), StandardCharsets.UTF_8);
 
 ChunkerModel model;
 
 try(ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(lineStream)) {
   model = ChunkerME.train("en", sampleStream,
-      new DefaultChunkerContextGenerator(), TrainingParameters.defaultParams());
+       TrainingParameters.defaultParams(), new ChunkerFactory());
 }
 
 try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {

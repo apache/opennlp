@@ -206,11 +206,14 @@ $ opennlp POSTaggerTrainer -type maxent -model en-pos-maxent.bin \
 				<![CDATA[
 POSModel model = null;
 
-try (InputStream dataIn = new FileInputStream("en-pos.train")){
+try {
+  InputStreamFactory dataIn = new MarkableFileInputStreamFactory(new File("en-pos.train"));
   ObjectStream<String> lineStream = new PlainTextByLineStream(dataIn, StandardCharsets.UTF_8);
   ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
 
-  model = POSTaggerME.train("en", sampleStream, TrainingParameters.defaultParams(), null, null);
+  model = POSTaggerME.train("en", sampleStream, TrainingParameters.defaultParams(), new POSTaggerFactory());
+} catch (IOException e) {
+  e.printStackTrace();
 }]]>
 	</programlisting>
 	The above code performs the first two steps, opening the data and training
