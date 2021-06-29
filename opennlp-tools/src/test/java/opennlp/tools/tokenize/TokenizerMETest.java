@@ -90,5 +90,46 @@ public class TokenizerMETest {
     TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true, null), mlParams);
 
   }
-  
+
+  @Test
+  public void testNewLineAwareTokenization() throws IOException {
+    TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
+    TokenizerME tokenizer = new TokenizerME(model);
+    tokenizer.setKeepNewLines(true);
+
+    Assert.assertEquals(2, tokenizer.tokenize("a\n").length);
+    Assert.assertArrayEquals(new String[] {"a", "\n"}, tokenizer.tokenize("a\n"));
+    
+    Assert.assertEquals(3, tokenizer.tokenize("a\nb").length);
+    Assert.assertArrayEquals(new String[] {"a", "\n", "b"}, tokenizer.tokenize("a\nb"));
+    
+    Assert.assertEquals(4, tokenizer.tokenize("a\n\n b").length);
+    Assert.assertArrayEquals(new String[] {"a", "\n", "\n", "b"}, tokenizer.tokenize("a\n\n b"));
+    
+    Assert.assertEquals(7, tokenizer.tokenize("a\n\n b\n\n c").length);
+    Assert.assertArrayEquals(new String[] {"a", "\n", "\n", "b", "\n", "\n", "c"},
+                             tokenizer.tokenize("a\n\n b\n\n c"));
+  }
+
+  @Test
+  public void testTokenizationOfStringWithWindowsNewLineTokens() throws IOException {
+    TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
+    TokenizerME tokenizer = new TokenizerME(model);
+    tokenizer.setKeepNewLines(true);
+
+    Assert.assertEquals(3, tokenizer.tokenize("a\r\n").length);
+    Assert.assertArrayEquals(new String[] {"a", "\r", "\n"}, tokenizer.tokenize("a\r\n"));
+
+    Assert.assertEquals(4, tokenizer.tokenize("a\r\nb").length);
+    Assert.assertArrayEquals(new String[] {"a", "\r", "\n", "b"}, tokenizer.tokenize("a\r\nb"));
+
+    Assert.assertEquals(6, tokenizer.tokenize("a\r\n\r\n b").length);
+    Assert.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b"}, tokenizer
+        .tokenize("a\r\n\r\n b"));
+
+    Assert.assertEquals(11, tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c").length);
+    Assert.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b", "\r", "\n", "\r", "\n", "c"},
+                             tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c"));
+  }
+
 }

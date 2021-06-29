@@ -36,6 +36,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
    * {@link WhitespaceTokenizer}.
    */
   public static final WhitespaceTokenizer INSTANCE = new WhitespaceTokenizer();
+  private boolean keepNewLines = false;
 
   /**
    * Use the {@link WhitespaceTokenizer#INSTANCE} field to retrieve an instance.
@@ -57,8 +58,12 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
           inTok = false;
           tokStart = -1;
         }
-      }
-      else {
+        if (keepNewLines && isLineSeparator(d.charAt(i))) {
+          tokStart = i;
+          tokens.add(new Span(tokStart, tokStart + 1));
+          tokStart = -1;
+        }
+      } else {
         if (!inTok) {
           tokStart = i;
           inTok = true;
@@ -71,5 +76,13 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     }
 
     return tokens.toArray(new Span[tokens.size()]);
+  }
+
+  private boolean isLineSeparator(char character) {
+    return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
+  }
+
+  public void setKeepNewLines(boolean keepNewLines) {
+    this.keepNewLines = keepNewLines;
   }
 }
