@@ -1,0 +1,37 @@
+<documentHeader xmlns="http://www.xces.org/ns/GrAF/1.0/" docId="MASCF-00046" creator="JZ" date.created="2019-08-27"
+                version="1.0.4">
+    <fileDesc>
+        <titleStmt>
+            <title>FakeMASC</title>
+        </titleStmt>
+        <extent count="10" unit="word"/>
+        <sourceDesc>
+            <title>A fake MASC file to test the OpenNLP MASC-Format tools</title>
+            <publisher>None</publisher>
+            <eAddress type="web">http://github.com/</eAddress>
+            <pubPlace>http://github.com/apache/opennlp</pubPlace>
+        </sourceDesc>
+    </fileDesc>
+    <profileDesc>
+        <textClass catRef="SP TR ">
+            <domain>None</domain>
+            <subdomain>None at all</subdomain>
+            <subject>Unit test</subject>
+            <audience>Adult</audience>
+        </textClass>
+        <primaryData f.id="f.text" loc="fakeMASC.txt"/>
+        <annotations>
+            <annotation loc="fakeMASC-s.xml" f.id="f.s">sentence boundaries</annotation>
+            <annotation loc="fakeMASC-seg.xml" f.id="f.seg">word segments: quarks</annotation>
+            <annotation loc="fakeMASC-penn.xml" f.id="f.penn">Penn POS tags</annotation>
+            <annotation loc="fakeMASC-ne.xml" f.id="f.ne">Named entity annotation</annotation>
+        </annotations>
+    </profileDesc>
+    <revisionDesc>
+        <change>
+            <changeDate>2019-08-27</changeDate>
+            <respName>Jiri Zamecnik</respName>
+            <item>Created the fake file to test the standoff markup</item>
+        </change>
+    </revisionDesc>
+</documentHeader>

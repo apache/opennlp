@@ -1,0 +1,29 @@
+<graph xmlns="http://www.xces.org/ns/GrAF/1.0/">
+    <graphHeader>
+        <labelsDecl>
+            <labelUsage label="s" occurs="2"/>
+        </labelsDecl>
+        <annotationSpaces>
+            <annotationSpace as.id="anc"/>
+        </annotationSpaces>
+    </graphHeader>
+    <region xml:id="s-r0" anchors="1 25"/>
+    <region xml:id="s-r1" anchors="27 57"/>
+
+    <node xml:id="s-n0">
+        <link targets="s-r0"/>
+    </node>
+    <a xml:id="s-N65697" label="s" ref="s-n0" as="anc">
+        <fs>
+            <f name="id" value="s0.1"/>
+        </fs>
+    </a>
+    <node xml:id="s-n1">
+        <link targets="s-r1"/>
+    </node>
+    <a xml:id="s-N65717" label="s" ref="s-n1" as="anc">
+        <fs>
+            <f name="id" value="p1s1"/>
+        </fs>
+    </a>
+</graph>
