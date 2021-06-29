@@ -44,4 +44,15 @@ public class UrlCharSequenceNormalizerTest {
         "asdf   2nnfdf  ", normalizer.normalize("asdf asd.fdfa@hasdk23.com.br" +
             " 2nnfdf asd.fdfa@hasdk23.com.br"));
   }
+
+  @Test(timeout = 10000)
+  public void testLongNonSpacedAsciiString() throws Exception {
+    //OPENNLP-1266
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < 30000; i++) {
+      sb.append("a");
+    }
+    CharSequence norm = normalizer.normalize(sb);
+    Assert.assertEquals(30000, norm.length());
+  }
 }
