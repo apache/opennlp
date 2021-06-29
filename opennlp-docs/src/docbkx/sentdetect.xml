@@ -208,7 +208,7 @@ Path: en-sent.bin
 					<programlisting language="java">
 				<![CDATA[
 ObjectStream<String> lineStream =
-  new PlainTextByLineStream(new FileInputStream("en-sent.train"), StandardCharsets.UTF_8);
+  new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-sent.train")), StandardCharsets.UTF_8);
 
 SentenceModel model;
 
