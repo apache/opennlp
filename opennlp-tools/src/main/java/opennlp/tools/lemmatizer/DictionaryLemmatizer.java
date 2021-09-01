@@ -96,8 +96,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * @return returns the dictionary keys
    */
   private List<String> getDictKeys(final String word, final String postag) {
-    final List<String> keys = new ArrayList<>();
-    keys.addAll(Arrays.asList(word.toLowerCase(), postag));
+    final List<String> keys = new ArrayList<>(Arrays.asList(word.toLowerCase(), postag));
     return keys;
   }
 

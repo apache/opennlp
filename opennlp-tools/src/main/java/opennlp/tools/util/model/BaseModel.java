@@ -329,8 +329,8 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   private String getEntryExtension(String entry) throws InvalidFormatException {
     int extensionIndex = entry.lastIndexOf('.') + 1;
 
-    if (extensionIndex == -1 || extensionIndex >= entry.length())
-      throw new InvalidFormatException("Entry name must have type extension: " + entry);
+    if (extensionIndex >= entry.length())
+        throw new InvalidFormatException("Entry name must have type extension: " + entry);
 
     return entry.substring(extensionIndex);
   }

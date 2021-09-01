@@ -939,8 +939,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    */
   public Parse[] getTagNodes() {
     List<Parse> tags = new LinkedList<>();
-    List<Parse> nodes = new LinkedList<>();
-    nodes.addAll(this.parts);
+    List<Parse> nodes = new LinkedList<>(this.parts);
     while (nodes.size() != 0) {
       Parse p = nodes.remove(0);
       if (p.isPosTag()) {
@@ -954,8 +953,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   public Parse[] getTokenNodes() {
     List<Parse> tokens = new LinkedList<>();
-    List<Parse> nodes = new LinkedList<>();
-    nodes.addAll(this.parts);
+    List<Parse> nodes = new LinkedList<>(this.parts);
     while (nodes.size() != 0) {
       Parse p = nodes.remove(0);
       if (p.getType().equals(AbstractBottomUpParser.TOK_NODE)) {

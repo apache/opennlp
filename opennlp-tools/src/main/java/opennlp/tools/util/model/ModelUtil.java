@@ -83,8 +83,7 @@ public final class ModelUtil {
 
     if (expectedOutcomes.length == model.getNumOutcomes()) {
 
-      Set<String> expectedOutcomesSet = new HashSet<>();
-      expectedOutcomesSet.addAll(Arrays.asList(expectedOutcomes));
+      Set<String> expectedOutcomesSet = new HashSet<>(Arrays.asList(expectedOutcomes));
 
       for (int i = 0; i < model.getNumOutcomes(); i++) {
         if (!expectedOutcomesSet.contains(model.getOutcome(i))) {

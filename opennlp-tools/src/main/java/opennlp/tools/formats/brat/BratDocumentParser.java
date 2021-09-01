@@ -182,10 +182,7 @@ public class BratDocumentParser {
   }
 
   private boolean isSpanAnnotation(BratAnnotation ann) {
-    if (ann instanceof SpanAnnotation && (nameTypes == null || nameTypes.contains(ann.getType()))) {
-      return true;
-    }
-    return false;
+    return ann instanceof SpanAnnotation && (nameTypes == null || nameTypes.contains(ann.getType()));
   }
 }
 

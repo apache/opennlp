@@ -104,7 +104,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     List<Span> sentences = new ArrayList<>();
     do {
       do {
-        if (!isTitle || (isTitle && isIncludeTitles)) {
+        if (!isTitle || isIncludeTitles) {
           if (hasPunctuation(sent.getText())) {
             int start = document.length();
             document.append(sent.getText());
@@ -136,9 +136,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     text = text.trim();
     if (text.length() > 0) {
       char lastChar = text.charAt(text.length() - 1);
-      if (Arrays.binarySearch(ptEosCharacters, lastChar) >= 0) {
-        return true;
-      }
+      return Arrays.binarySearch(ptEosCharacters, lastChar) >= 0;
     }
     return false;
   }

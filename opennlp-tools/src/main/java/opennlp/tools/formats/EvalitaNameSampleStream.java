@@ -58,6 +58,10 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
+  public enum LANGUAGE {
+    IT
+  }
+
   public static final int GENERATE_PERSON_ENTITIES = 0x01;
   public static final int GENERATE_ORGANIZATION_ENTITIES = 0x01 << 1;
   public static final int GENERATE_LOCATION_ENTITIES = 0x01 << 2;
@@ -89,16 +93,21 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
     String type = beginTag.substring(2);
 
-    if ("PER".equals(type)) {
-      type = "person";
-    } else if ("LOC".equals(type)) {
-      type = "location";
-    } else if ("GPE".equals(type)) {
-      type = "gpe";
-    } else if ("ORG".equals(type)) {
-      type = "organization";
-    } else {
-      throw new InvalidFormatException("Unknown type: " + type);
+    switch (type) {
+      case "PER":
+        type = "person";
+        break;
+      case "LOC":
+        type = "location";
+        break;
+      case "GPE":
+        type = "gpe";
+        break;
+      case "ORG":
+        type = "organization";
+        break;
+      default:
+        throw new InvalidFormatException("Unknown type: " + type);
     }
 
     return new Span(begin, end, type);
@@ -210,8 +219,5 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
     lineStream.close();
   }
 
-  public enum LANGUAGE {
-    IT
-  }
 }
 

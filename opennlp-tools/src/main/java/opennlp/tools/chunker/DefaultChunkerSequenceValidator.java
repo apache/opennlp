@@ -30,9 +30,7 @@ public class DefaultChunkerSequenceValidator implements SequenceValidator<TokenT
         if (prevOutcome.equals("O")) {
           return false;
         }
-        if (!prevOutcome.substring(2).equals(outcome.substring(2))) {
-          return false;
-        }
+        return prevOutcome.substring(2).equals(outcome.substring(2));
       }
     }
     return true;

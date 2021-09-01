@@ -440,7 +440,7 @@ public abstract class AbstractBottomUpParser implements Parser {
     } else {
       List<Parse> topParses = new ArrayList<>(numParses);
       while (!completeParses.isEmpty() && topParses.size() < numParses) {
-        Parse tp = completeParses.last();
+        Parse tp = completeParses.first();
         completeParses.remove(tp);
         topParses.add(tp);
         //parses.remove(tp);

@@ -146,7 +146,7 @@ public class ParserEventStream extends AbstractParserEventStream {
       }
       //perform build stages
       while (!parent.getType().equals(AbstractBottomUpParser.TOP_NODE) && parent.getLabel() == null) {
-        if (parent.getLabel() == null && !prevParent.getType().equals(parent.getType())) {
+        if (!prevParent.getType().equals(parent.getType())) {
           //build level
           if (debug) System.err.println("Build: " + parent.getType() + " for: " + currentChunks[ci]);
           if (etype == ParserEventTypeEnum.BUILD) {

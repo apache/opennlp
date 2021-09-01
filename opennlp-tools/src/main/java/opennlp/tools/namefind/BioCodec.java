@@ -18,6 +18,7 @@
 package opennlp.tools.namefind;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,9 +77,7 @@ public class BioCodec implements SequenceCodec<String> {
 
   public String[] encode(Span[] names, int length) {
     String[] outcomes = new String[length];
-    for (int i = 0; i < outcomes.length; i++) {
-      outcomes[i] = BioCodec.OTHER;
-    }
+    Arrays.fill(outcomes, BioCodec.OTHER);
     for (Span name : names) {
       if (name.getType() == null) {
         outcomes[name.getStart()] = "default" + "-" + BioCodec.START;

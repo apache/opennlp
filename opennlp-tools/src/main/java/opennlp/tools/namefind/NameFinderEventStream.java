@@ -18,6 +18,7 @@
 package opennlp.tools.namefind;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -83,9 +84,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   @Deprecated
   public static String[] generateOutcomes(Span[] names, String type, int length) {
     String[] outcomes = new String[length];
-    for (int i = 0; i < outcomes.length; i++) {
-      outcomes[i] = NameFinderME.OTHER;
-    }
+    Arrays.fill(outcomes, NameFinderME.OTHER);
     for (Span name : names) {
       if (name.getType() == null) {
         outcomes[name.getStart()] = type + "-" + NameFinderME.START;

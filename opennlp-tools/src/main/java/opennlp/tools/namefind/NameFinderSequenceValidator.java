@@ -43,11 +43,9 @@ public class NameFinderSequenceValidator implements
         // if it is continue or start, we have to check if previous match was of the same type
         String previousNameType = NameFinderME.extractNameType(outcomesSequence[li]);
         String nameType = NameFinderME.extractNameType(outcome);
-        if (previousNameType != null || nameType != null) {
-          if (nameType != null) {
-            if (nameType.equals(previousNameType)) {
-              return true;
-            }
+        if (previousNameType != null || nameType != null ) {
+          if (nameType != null ) {
+            return nameType.equals(previousNameType);
           }
           return false; // outcomes types are not equal
         }
