@@ -27,35 +27,21 @@ import opennlp.common.namefind.TokenNameFinder;
 import opennlp.common.util.Span;
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 /**
  * This is the test class for {@link TokenNameFinderEvaluator}..
  */
 public class TokenNameFinderEvaluatorTest {
 
 
-  private static String[] sentence = {"U", ".", "S", ".", "President", "Barack", "Obama", "is",
-      "considering", "sending", "additional", "American", "forces",
-      "to", "Afghanistan", "."};
-
-  private static NameSample createSimpleNameSampleA() {
-
-    Span[] names = {new Span(0, 4, "Location"), new Span(5, 7, "Person"),
-        new Span(14, 15, "Location")};
-
-    NameSample nameSample;
-    nameSample = new NameSample(sentence, names, false);
-
-    return nameSample;
-  }
-
-  private static NameSample createSimpleNameSampleB() {
-
-    Span[] names = {new Span(0, 4, "Location"), new Span(14, 15, "Location")};
-
-    NameSample nameSample;
-    nameSample = new NameSample(sentence, names, false);
-
-    return nameSample;
+  /** Return a dummy name finder that always return something expected */
+  public TokenNameFinder mockTokenNameFinder(Span[] ret) {
+    TokenNameFinder mockInstance = mock(TokenNameFinder.class);
+    when(mockInstance.find(any(String[].class))).thenReturn(ret);
+    return mockInstance;
   }
 
   @Test
@@ -64,8 +50,8 @@ public class TokenNameFinderEvaluatorTest {
     TokenNameFinderEvaluationMonitor listener = new NameEvaluationErrorListener(stream);
 
     Span[] pred = createSimpleNameSampleA().getNames();
-    TokenNameFinderEvaluator eval =
-        new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
+    // Construct mock object
+    TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(mockTokenNameFinder(pred), listener);
 
     eval.evaluateSample(createSimpleNameSampleA());
 
@@ -80,8 +66,8 @@ public class TokenNameFinderEvaluatorTest {
     TokenNameFinderEvaluationMonitor listener = new NameEvaluationErrorListener(stream);
 
     Span[] pred = createSimpleNameSampleB().getNames();
-    TokenNameFinderEvaluator eval =
-        new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
+    // Construct mock object
+    TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(mockTokenNameFinder(pred), listener);
 
     eval.evaluateSample(createSimpleNameSampleA());
 
@@ -90,24 +76,31 @@ public class TokenNameFinderEvaluatorTest {
     Assert.assertNotSame(0, stream.toString().length());
   }
 
-  /**
-   * a dummy name finder that always return something expected
-   */
-  class DummyNameFinder implements TokenNameFinder {
 
-    private Span[] ret;
 
-    public DummyNameFinder(Span[] ret) {
-      this.ret = ret;
-    }
+  private static String[] sentence = {"U", ".", "S", ".", "President", "Barack", "Obama", "is",
+      "considering", "sending", "additional", "American", "forces",
+      "to", "Afghanistan", "."};
 
-    public Span[] find(String[] tokens) {
-      return ret;
-    }
+  private static NameSample createSimpleNameSampleA() {
 
-    public void clearAdaptiveData() {
-    }
+    Span[] names = { new Span(0, 4, "Location"), new Span(5, 7, "Person"),
+        new Span(14, 15, "Location") };
 
+    NameSample nameSample;
+    nameSample = new NameSample(sentence, names, false);
+
+    return nameSample;
+  }
+
+  private static NameSample createSimpleNameSampleB() {
+
+    Span[] names = { new Span(0, 4, "Location"), new Span(14, 15, "Location") };
+
+    NameSample nameSample;
+    nameSample = new NameSample(sentence, names, false);
+
+    return nameSample;
   }
 
 }
