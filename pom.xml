@@ -299,6 +299,8 @@
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 					<compilerArgument>-Xlint</compilerArgument>
+					<fork>true</fork>
+					<useIncrementalCompilation>true</useIncrementalCompilation>
 				</configuration>
 			</plugin>
 
