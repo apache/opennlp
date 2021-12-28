@@ -50,4 +50,28 @@ public class DocumentCategorizerInference extends Inference {
 
     }
 
+    @Override
+    public Tokens tokenize(String text) {
+
+        final FullTokenizer tokenizer = new FullTokenizer(vocab, true);
+
+        final List<String> tokensList = new ArrayList<>();
+
+        tokensList.add("[CLS]");
+        tokensList.addAll(Arrays.asList(tokenizer.tokenize(text)));
+        tokensList.add("[SEP]");
+
+        final int[] ids = tokenizer.convert(tokensList.toArray(new String[0]));
+        final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
+
+        final long[] mask = new long[ids.length];
+        Arrays.fill(mask, 1);
+
+        final long[] types = new long[ids.length];
+        Arrays.fill(types, 0);
+
+        return new Tokens(lids, mask, types);
+
+    }
+
 }

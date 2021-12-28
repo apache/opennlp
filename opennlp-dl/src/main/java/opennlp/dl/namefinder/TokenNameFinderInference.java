@@ -18,8 +18,6 @@
 package opennlp.dl.namefinder;
 
 import ai.onnxruntime.OnnxTensor;
-import ai.onnxruntime.OrtEnvironment;
-import ai.onnxruntime.OrtSession;
 import com.robrua.nlp.bert.FullTokenizer;
 import opennlp.dl.Inference;
 import opennlp.dl.Tokens;
@@ -70,6 +68,31 @@ public class TokenNameFinderInference extends Inference {
 
         return null;
        // return convertFloatsToDoubles(v);
+
+    }
+
+    @Override
+    public Tokens tokenize(String text) {
+
+        final FullTokenizer tokenizer = new FullTokenizer(vocab, true);
+
+        final List<String> tokensList = new ArrayList<>();
+
+        tokensList.add("[CLS]");
+        tokensList.addAll(Arrays.asList(text.split(" ")));
+        tokensList.add("[SEP]");
+
+
+        final int[] ids = tokenizer.convert(tokensList.toArray(new String[0]));
+        final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
+
+        final long[] mask = new long[ids.length];
+        Arrays.fill(mask, 1);
+
+        final long[] types = new long[ids.length];
+        Arrays.fill(types, 0);
+
+        return new Tokens(lids, mask, types);
 
     }
 

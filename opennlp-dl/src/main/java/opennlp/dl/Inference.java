@@ -20,12 +20,8 @@ package opennlp.dl;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
-import com.robrua.nlp.bert.FullTokenizer;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public abstract class Inference {
 
@@ -35,39 +31,13 @@ public abstract class Inference {
 
     public abstract double[][] infer(String text) throws Exception;
 
+    public abstract Tokens tokenize(String text);
+
     public Inference(File model, File vocab) throws OrtException {
 
         this.env = OrtEnvironment.getEnvironment();
         this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
         this.vocab = vocab;
-
-    }
-
-    public Tokens tokenize(String text) {
-
-        final FullTokenizer tokenizer = new FullTokenizer(vocab, true);
-
-        final List<String> tokensList = new ArrayList<>();
-
-        tokensList.add("[CLS]");
-        tokensList.addAll(Arrays.asList(tokenizer.tokenize(text)));
-        //tokensList.addAll(Arrays.asList(text.split(" ")));
-        tokensList.add("[SEP]");
-
-        /*for(String s : tokensList) {
-            System.out.println(s);
-        }*/
-
-        final int[] ids = tokenizer.convert(tokensList.toArray(new String[0]));
-        final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
-//System.out.println(Arrays.toString(ids));
-        final long[] mask = new long[ids.length];
-        Arrays.fill(mask, 1);
-
-        final long[] types = new long[ids.length];
-        Arrays.fill(types, 0);
-
-        return new Tokens(lids, mask, types);
 
     }
 
