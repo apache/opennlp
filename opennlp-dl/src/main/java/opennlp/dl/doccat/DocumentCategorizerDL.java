@@ -27,13 +27,15 @@ import java.util.SortedMap;
 
 public class DocumentCategorizerDL implements DocumentCategorizer {
 
-    private File model;
-    private File vocab;
+    private final File model;
+    private final File vocab;
+    private final boolean doLowerCase;
 
-    public DocumentCategorizerDL(File model, File vocab) {
+    public DocumentCategorizerDL(File model, File vocab, boolean doLowerCase) {
 
         this.model = model;
         this.vocab = vocab;
+        this.doLowerCase = doLowerCase;
 
     }
 
@@ -42,7 +44,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
         try {
 
-            final DocumentCategorizerInference inference = new DocumentCategorizerInference(model, vocab);
+            final DocumentCategorizerInference inference = new DocumentCategorizerInference(model, vocab, doLowerCase);
 
             final double[][] v1 = inference.infer(strings[0]);
 

@@ -30,9 +30,13 @@ import java.util.*;
 
 public class DocumentCategorizerInference extends Inference {
 
-    public DocumentCategorizerInference(File model, File vocab) throws Exception {
+    private final FullTokenizer fullTokenizer;
+
+    public DocumentCategorizerInference(File model, File vocab, boolean doLowerCase) throws Exception {
 
         super(model, vocab);
+
+        this.fullTokenizer = new FullTokenizer(vocab, doLowerCase);
 
     }
 
@@ -53,15 +57,13 @@ public class DocumentCategorizerInference extends Inference {
     @Override
     public Tokens tokenize(String text) {
 
-        final FullTokenizer tokenizer = new FullTokenizer(vocab, true);
-
         final List<String> tokensList = new ArrayList<>();
 
         tokensList.add("[CLS]");
-        tokensList.addAll(Arrays.asList(tokenizer.tokenize(text)));
+        tokensList.addAll(Arrays.asList(fullTokenizer.tokenize(text)));
         tokensList.add("[SEP]");
 
-        final int[] ids = tokenizer.convert(tokensList.toArray(new String[0]));
+        final int[] ids = fullTokenizer.convert(tokensList.toArray(new String[0]));
         final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
 
         final long[] mask = new long[ids.length];

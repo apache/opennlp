@@ -45,7 +45,7 @@ public class NameFinderDLTest {
 
         final String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States"};
 
-        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, ids2Labels);
+        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, ids2Labels);
         nameFinderDL.find(tokens);
 
     }

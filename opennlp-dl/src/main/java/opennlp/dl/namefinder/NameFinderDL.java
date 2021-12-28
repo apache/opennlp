@@ -27,9 +27,9 @@ public class NameFinderDL implements TokenNameFinder {
 
     final TokenNameFinderInference inference;
 
-    public NameFinderDL(File model, File vocab, Map<Integer, String> ids2Labels) throws Exception {
+    public NameFinderDL(File model, File vocab, boolean doLowerCase, Map<Integer, String> ids2Labels) throws Exception {
 
-        inference = new TokenNameFinderInference(model, vocab, ids2Labels);
+        inference = new TokenNameFinderInference(model, vocab, doLowerCase, ids2Labels);
 
     }
 

@@ -28,12 +28,15 @@ import java.util.*;
 
 public class TokenNameFinderInference extends Inference {
 
-    private Map<Integer, String> classes;
+    private final Map<Integer, String> classes;
+    private final FullTokenizer fullTokenizer;
 
-    public TokenNameFinderInference(File model, File vocab, Map<Integer, String> classes) throws Exception {
+    public TokenNameFinderInference(File model, File vocab, boolean doLowerCase, Map<Integer, String> classes) throws Exception {
 
         super(model, vocab);
+
         this.classes = classes;
+        this.fullTokenizer = new FullTokenizer(vocab, doLowerCase);
 
     }
 
@@ -74,16 +77,13 @@ public class TokenNameFinderInference extends Inference {
     @Override
     public Tokens tokenize(String text) {
 
-        final FullTokenizer tokenizer = new FullTokenizer(vocab, true);
-
         final List<String> tokensList = new ArrayList<>();
 
         tokensList.add("[CLS]");
         tokensList.addAll(Arrays.asList(text.split(" ")));
         tokensList.add("[SEP]");
 
-
-        final int[] ids = tokenizer.convert(tokensList.toArray(new String[0]));
+        final int[] ids = fullTokenizer.convert(tokensList.toArray(new String[0]));
         final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
 
         final long[] mask = new long[ids.length];
