@@ -21,7 +21,12 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Inference {
 
@@ -31,13 +36,32 @@ public abstract class Inference {
 
     public abstract double[][] infer(String text) throws Exception;
 
-    public abstract Tokens tokenize(String text);
-
     public Inference(File model, File vocab) throws OrtException {
 
         this.env = OrtEnvironment.getEnvironment();
         this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
         this.vocab = vocab;
+
+    }
+
+    public Map<String, Integer> loadVocab(File vocab) throws IOException {
+
+        final Map<String, Integer> v = new HashMap<>();
+
+        BufferedReader br = new BufferedReader(new FileReader(vocab.getPath()));
+        String line = br.readLine();
+        int x = 0;
+
+        while(line != null) {
+
+            line = br.readLine();
+            x++;
+
+            v.put(line, x);
+
+        }
+
+        return v;
 
     }
 

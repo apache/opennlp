@@ -19,6 +19,7 @@ package opennlp.dl.namefinder;
 
 import ai.onnxruntime.OnnxTensor;
 import com.robrua.nlp.bert.FullTokenizer;
+import com.robrua.nlp.bert.WordpieceTokenizer;
 import opennlp.dl.Inference;
 import opennlp.dl.Tokens;
 
@@ -29,14 +30,16 @@ import java.util.*;
 public class TokenNameFinderInference extends Inference {
 
     private final Map<Integer, String> classes;
-    private final FullTokenizer fullTokenizer;
+    private final WordpieceTokenizer tokenizer;
+    private final Map<String, Integer> vocabulary;
 
     public TokenNameFinderInference(File model, File vocab, boolean doLowerCase, Map<Integer, String> classes) throws Exception {
 
         super(model, vocab);
 
         this.classes = classes;
-        this.fullTokenizer = new FullTokenizer(vocab, doLowerCase);
+        this.vocabulary = loadVocab(vocab);
+        this.tokenizer = new WordpieceTokenizer(vocabulary);
 
     }
 
@@ -74,16 +77,24 @@ public class TokenNameFinderInference extends Inference {
 
     }
 
-    @Override
     public Tokens tokenize(String text) {
 
         final List<String> tokensList = new ArrayList<>();
 
         tokensList.add("[CLS]");
-        tokensList.addAll(Arrays.asList(text.split(" ")));
+        tokensList.addAll(Arrays.asList(tokenizer.tokenize(text)));
         tokensList.add("[SEP]");
 
-        final int[] ids = fullTokenizer.convert(tokensList.toArray(new String[0]));
+        //tokensList.stream().forEach(System.out::println);
+
+        final String[] tokens = tokensList.toArray(new String[0]);
+
+        final int[] ids = new int[tokens.length];//tokenizer.convert(tokens);
+
+        for(int x = 0; x < tokens.length; x++) {
+            ids[x] = vocabulary.get(tokens[x]);
+        }
+
         final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
 
         final long[] mask = new long[ids.length];
@@ -92,7 +103,7 @@ public class TokenNameFinderInference extends Inference {
         final long[] types = new long[ids.length];
         Arrays.fill(types, 0);
 
-        return new Tokens(lids, mask, types);
+        return new Tokens(tokens, lids, mask, types);
 
     }
 

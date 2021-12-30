@@ -18,9 +18,8 @@
 package opennlp.dl.doccat;
 
 import ai.onnxruntime.OnnxTensor;
-import ai.onnxruntime.OrtEnvironment;
-import ai.onnxruntime.OrtSession;
 import com.robrua.nlp.bert.FullTokenizer;
+import com.robrua.nlp.bert.WordpieceTokenizer;
 import opennlp.dl.Inference;
 import opennlp.dl.Tokens;
 
@@ -30,13 +29,15 @@ import java.util.*;
 
 public class DocumentCategorizerInference extends Inference {
 
-    private final FullTokenizer fullTokenizer;
+    private final WordpieceTokenizer tokenizer;
+    private final Map<String, Integer> vocabulary;
 
     public DocumentCategorizerInference(File model, File vocab, boolean doLowerCase) throws Exception {
 
         super(model, vocab);
 
-        this.fullTokenizer = new FullTokenizer(vocab, doLowerCase);
+        this.vocabulary = loadVocab(vocab);
+        this.tokenizer = new WordpieceTokenizer(vocabulary);
 
     }
 
@@ -51,28 +52,6 @@ public class DocumentCategorizerInference extends Inference {
         inputs.put("token_type_ids", OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getTypes()), new long[]{1, tokens.getTypes().length}));
 
         return convertFloatsToDoubles((float[][]) session.run(inputs).get(0).getValue());
-
-    }
-
-    @Override
-    public Tokens tokenize(String text) {
-
-        final List<String> tokensList = new ArrayList<>();
-
-        tokensList.add("[CLS]");
-        tokensList.addAll(Arrays.asList(fullTokenizer.tokenize(text)));
-        tokensList.add("[SEP]");
-
-        final int[] ids = fullTokenizer.convert(tokensList.toArray(new String[0]));
-        final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
-
-        final long[] mask = new long[ids.length];
-        Arrays.fill(mask, 1);
-
-        final long[] types = new long[ids.length];
-        Arrays.fill(types, 0);
-
-        return new Tokens(lids, mask, types);
 
     }
 
