@@ -1,6 +1,6 @@
 # OpenNLP DL
 
-This module provides OpenNLP interface implementations for ONNX models.
+This module provides OpenNLP interface implementations for ONNX models using the `onnxruntime` dependency.
 
 ## TokenNameFinder
 
