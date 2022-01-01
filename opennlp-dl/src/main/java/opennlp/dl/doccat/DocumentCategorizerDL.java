@@ -29,13 +29,11 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
     private final File model;
     private final File vocab;
-    private final boolean doLowerCase;
 
-    public DocumentCategorizerDL(File model, File vocab, boolean doLowerCase) {
+    public DocumentCategorizerDL(File model, File vocab) {
 
         this.model = model;
         this.vocab = vocab;
-        this.doLowerCase = doLowerCase;
 
     }
 
@@ -44,7 +42,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
         try {
 
-            final DocumentCategorizerInference inference = new DocumentCategorizerInference(model, vocab, doLowerCase);
+            final DocumentCategorizerInference inference = new DocumentCategorizerInference(model, vocab);
 
             final double[][] v1 = inference.infer(strings[0]);
 

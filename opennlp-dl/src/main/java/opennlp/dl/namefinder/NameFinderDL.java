@@ -18,6 +18,8 @@
 package opennlp.dl.namefinder;
 
 import opennlp.tools.namefind.TokenNameFinder;
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 
 import java.io.File;
@@ -25,7 +27,7 @@ import java.util.Map;
 
 public class NameFinderDL implements TokenNameFinder {
 
-    final TokenNameFinderInference inference;
+    private final TokenNameFinderInference inference;
 
     public NameFinderDL(File model, File vocab, boolean doLowerCase, Map<Integer, String> ids2Labels) throws Exception {
 

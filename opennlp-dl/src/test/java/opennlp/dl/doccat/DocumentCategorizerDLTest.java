@@ -32,7 +32,7 @@ public class DocumentCategorizerDLTest {
         final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
         final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
 
-        final DocumentCategorizerDL documentCategorizerDL = new DocumentCategorizerDL(model, vocab, true);
+        final DocumentCategorizerDL documentCategorizerDL = new DocumentCategorizerDL(model, vocab);
         final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
 
         System.out.println(Arrays.toString(result));

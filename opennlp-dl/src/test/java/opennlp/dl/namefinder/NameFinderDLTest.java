@@ -17,6 +17,8 @@
 
 package opennlp.dl.namefinder;
 
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.WordpieceTokenizer;
 import org.junit.Test;
 
 import java.io.File;

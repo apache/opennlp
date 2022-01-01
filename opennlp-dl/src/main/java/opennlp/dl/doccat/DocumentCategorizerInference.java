@@ -18,26 +18,24 @@
 package opennlp.dl.doccat;
 
 import ai.onnxruntime.OnnxTensor;
-import com.robrua.nlp.bert.FullTokenizer;
-import com.robrua.nlp.bert.WordpieceTokenizer;
 import opennlp.dl.Inference;
 import opennlp.dl.Tokens;
+import opennlp.tools.tokenize.Tokenizer;
 
 import java.io.File;
 import java.nio.LongBuffer;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DocumentCategorizerInference extends Inference {
 
-    private final WordpieceTokenizer tokenizer;
     private final Map<String, Integer> vocabulary;
 
-    public DocumentCategorizerInference(File model, File vocab, boolean doLowerCase) throws Exception {
+    public DocumentCategorizerInference(File model, File vocab) throws Exception {
 
         super(model, vocab);
 
         this.vocabulary = loadVocab(vocab);
-        this.tokenizer = new WordpieceTokenizer(vocabulary);
 
     }
 

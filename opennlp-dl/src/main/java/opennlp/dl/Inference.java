@@ -20,11 +20,14 @@ package opennlp.dl;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.WordpieceTokenizer;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,15 +35,18 @@ public abstract class Inference {
 
     protected final OrtEnvironment env;
     protected final OrtSession session;
-    protected final File vocab;
+
+    private final Tokenizer tokenizer;
+    private final Map<String, Integer> vocabulary;
 
     public abstract double[][] infer(String text) throws Exception;
 
-    public Inference(File model, File vocab) throws OrtException {
+    public Inference(File model, File vocab) throws OrtException, IOException {
 
         this.env = OrtEnvironment.getEnvironment();
         this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
-        this.vocab = vocab;
+        this.vocabulary = loadVocab(vocab);
+        this.tokenizer = new WordpieceTokenizer(vocabulary.keySet());
 
     }
 
@@ -62,6 +68,28 @@ public abstract class Inference {
         }
 
         return v;
+
+    }
+
+    public Tokens tokenize(String text) {
+
+        final String[] tokens = tokenizer.tokenize(text);
+
+        final int[] ids = new int[tokens.length];
+
+        for(int x = 0; x < tokens.length; x++) {
+            ids[x] = vocabulary.get(tokens[x]);
+        }
+
+        final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
+
+        final long[] mask = new long[ids.length];
+        Arrays.fill(mask, 1);
+
+        final long[] types = new long[ids.length];
+        Arrays.fill(types, 0);
+
+        return new Tokens(tokens, lids, mask, types);
 
     }
 
