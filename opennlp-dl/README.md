@@ -10,7 +10,7 @@ This module provides OpenNLP interface implementations for ONNX models.
 python -m transformers.onnx --model=dslim/bert-base-NER --feature token-classification exported
 ```
 
-* Copy the exported module to `src/test/resources/namefinder/model.onnx`.
+* Copy the exported model to `src/test/resources/namefinder/model.onnx`.
 * Copy the model's [vocab.txt](https://huggingface.co/dslim/bert-base-NER/tree/main) to `src/test/resources/namefinder/vocab.txt`.
 
 Now you can run the tests in `NameFinderDLTest`.
@@ -23,7 +23,7 @@ Now you can run the tests in `NameFinderDLTest`.
 python -m transformers.onnx --model=nlptown/bert-base-multilingual-uncased-sentiment --feature sequence-classification exported
 ```
 
-* Copy the exported module to `src/test/resources/doccat/model.onnx`.
+* Copy the exported model to `src/test/resources/doccat/model.onnx`.
 * Copy the model's [vocab.txt](https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment/tree/main) to `src/test/resources/namefinder/vocab.txt`.
 
 Now you can run the tests in `DocumentCategorizerDLTest`.
