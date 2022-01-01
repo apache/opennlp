@@ -28,7 +28,7 @@
 
 	<groupId>org.apache.opennlp</groupId>
 	<artifactId>opennlp</artifactId>
-	<version>1.9.4-SNAPSHOT</version>
+	<version>1.9.5-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Apache OpenNLP Reactor</name>

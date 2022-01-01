@@ -24,11 +24,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -53,8 +58,14 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
       BufferedReader reader = new BufferedReader(new StringReader(sentence));
 
+      boolean newDocument = false;
+      boolean newParagraph = false;
+      String documentId = null;
+      String paragraphId = null;
       String sentenceId = null;
       String text = null;
+      Map<Locale, String> textLang = null;
+      String translit = null;
 
       String line;
       while ((line = reader.readLine())  != null) {
@@ -70,13 +81,41 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
             if (!secondPart.isEmpty()) {
               switch (firstPart) {
+                case "newdoc id":
+                  newDocument = true;
+                  documentId = secondPart;
+                  break;
+                case "newpar id":
+                  newParagraph = true;
+                  paragraphId = secondPart;
+                  break;
                 case "sent_id":
                   sentenceId = secondPart;
                   break;
                 case "text":
                   text = secondPart;
                   break;
+                case "translit":
+                  translit = secondPart;
+                  break;
               }
+            }
+
+            if (firstPart.startsWith("text_")) {
+              if (textLang == null) {
+                textLang = new HashMap<>();
+              }
+              addTextLang(firstPart, secondPart, textLang);
+            }
+          }
+          else {
+            switch (commentLine.trim()) {
+              case "newdoc":
+                newDocument = true;
+                break;
+              case "newpar":
+                newParagraph = true;
+                break;
             }
           }
         }
@@ -87,7 +126,8 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
       wordLines = postProcessContractions(wordLines);
 
-      return new ConlluSentence(wordLines, sentenceId, text);
+      return new ConlluSentence(wordLines, sentenceId, text, newDocument, documentId, newParagraph,
+              paragraphId, textLang, translit);
     }
 
     return null;
@@ -175,6 +215,27 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     String misc = contraction.getMisc();
 
     return new ConlluWordLine(id, form, lemma, uPosTag, xPosTag, feats,head, deprel, deps, misc);
+  }
+
+  private Map<Locale, String> addTextLang(String firstPart, String secondPart,
+                                          Map<Locale, String> textLang) throws InvalidFormatException {
+    String lang = "";
+    try {
+      Pattern regex = Pattern.compile("text_([a-z]{2,3})");
+      Matcher regexMatcher = regex.matcher(firstPart);
+      if (regexMatcher.find()) {
+        lang = regexMatcher.group(1);
+      }
+    } catch (PatternSyntaxException e) {
+      throw new InvalidFormatException(e);
+    }
+    if (!lang.isEmpty()) {
+      textLang.put(new Locale(lang), secondPart);
+    }
+    else {
+      throw new InvalidFormatException(String.format("Locale language code is invalid: %s", lang));
+    }
+    return textLang;
   }
 
   @Override
