@@ -17,12 +17,10 @@
 
 package opennlp.dl.namefinder;
 
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.Span;
 import org.junit.Test;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +28,9 @@ public class NameFinderDLTest {
 
     @Test
     public void ner() throws Exception {
+
+        // This test was written using the dslim/bert-base-NER model.
+        // You will need to update the ids2Labels and assertions if you use a different model.
 
         final File model = new File(getClass().getClassLoader().getResource("namefinder/model.onnx").toURI());
         final File vocab = new File(getClass().getClassLoader().getResource("namefinder/vocab.txt").toURI());
@@ -48,7 +49,7 @@ public class NameFinderDLTest {
         final String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States"};
 
         final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, ids2Labels);
-        nameFinderDL.find(tokens);
+        final Span[] spans = nameFinderDL.find(tokens);
 
     }
 

@@ -18,8 +18,6 @@
 package opennlp.dl.namefinder;
 
 import opennlp.tools.namefind.TokenNameFinder;
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 
 import java.io.File;
@@ -42,14 +40,13 @@ public class NameFinderDL implements TokenNameFinder {
 
             final double[][] v1 = inference.infer(String.join(" ", tokens));
 
-            //System.out.println(Arrays.toString(v1));
-            //return results;
+            // TODO: Convert the results to Spans.
 
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
         }
 
-        System.out.println("Returned null - something wrong");
+        System.out.println("Returning null");
         return null;
 
     }

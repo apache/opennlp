@@ -29,6 +29,9 @@ public class DocumentCategorizerDLTest {
     @Test
     public void doccat() throws URISyntaxException {
 
+        // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
+        // You will need to update the assertions if you use a different model.
+
         final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
         final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
 
