@@ -33,16 +33,19 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
     private final File model;
     private final File vocab;
+    private final Map<Integer, String> categories;
 
     /**
      * Creates a new document categorizer using ONNX models.
      * @param model The ONNX model file.
      * @param vocab The model's vocabulary file.
+     * @param categories The categories.
      */
-    public DocumentCategorizerDL(File model, File vocab) {
+    public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories) {
 
         this.model = model;
         this.vocab = vocab;
+        this.categories = categories;
 
     }
 
@@ -55,7 +58,9 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
             final double[][] v1 = inference.infer(strings[0]);
 
-            return inference.softmax(v1[0]);
+            final double[] results = inference.softmax(v1[0]);
+
+            return results;
 
         } catch (Exception ex) {
             System.err.println("Unload to perform document classification inference: " + ex.getMessage());
@@ -72,22 +77,22 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
     @Override
     public String getBestCategory(double[] doubles) {
-        return Arrays.stream(doubles).boxed().max(Double::compare).get().toString();
+        return categories.get(maxIndex(doubles));
     }
 
     @Override
     public int getIndex(String s) {
-        return 0;
+        return getKey(s);
     }
 
     @Override
     public String getCategory(int i) {
-        return null;
+        return categories.get(i);
     }
 
     @Override
     public int getNumberOfCategories() {
-       return 0;
+       return categories.size();
     }
 
     @Override
@@ -103,6 +108,37 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
     @Override
     public SortedMap<Double, Set<String>> sortedScoreMap(String[] strings) {
         return null;
+    }
+
+    private int getKey(String value) {
+
+        for (Map.Entry<Integer, String> entry : categories.entrySet()) {
+
+            if (entry.getValue().equals(value)) {
+                return entry.getKey();
+            }
+
+        }
+
+        // The String wasn't found as a value in the map.
+        return -1;
+
+    }
+
+    private int maxIndex(double[] arr) {
+
+        double max = Double.NEGATIVE_INFINITY;
+        int index = -1;
+
+        for(int x = 0; x < arr.length; x++) {
+            if(arr[x] > max) {
+                index = x;
+                max = arr[x];
+            }
+        }
+
+        return index;
+
     }
 
 }
