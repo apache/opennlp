@@ -23,8 +23,33 @@ import org.junit.Test;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DocumentCategorizerDLTest {
+
+    @Test
+    public void categorize() throws URISyntaxException {
+
+        // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
+        // You will need to update the assertions if you use a different model.
+
+        final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
+        final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
+
+        final DocumentCategorizerDL documentCategorizerDL = new DocumentCategorizerDL(model, vocab, getCategories());
+        final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
+
+        System.out.println(Arrays.toString(result));
+
+        final double[] expected = new double[]{0.007819971069693565, 0.006593209225684404, 0.04995147883892059, 0.3003573715686798, 0.6352779865264893};
+        Assert.assertTrue(Arrays.equals(expected, result));
+        Assert.assertEquals(5, result.length);
+
+        final String category = documentCategorizerDL.getBestCategory(result);
+        Assert.assertEquals("very good", category);
+
+    }
 
     @Test
     public void doccat() throws URISyntaxException {
@@ -35,14 +60,30 @@ public class DocumentCategorizerDLTest {
         final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
         final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
 
-        final DocumentCategorizerDL documentCategorizerDL = new DocumentCategorizerDL(model, vocab);
-        final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
+        final DocumentCategorizerDL documentCategorizerDL = new DocumentCategorizerDL(model, vocab, getCategories());
 
-        System.out.println(Arrays.toString(result));
+        final int index = documentCategorizerDL.getIndex("bad");
+        Assert.assertEquals(1, index);
 
-        final double[] expected = new double[]{0.00752239441499114, 0.0074586994014680386, 0.05470007658004761, 0.3344593346118927, 0.5958595275878906};
-        Assert.assertTrue(Arrays.equals(expected, result));
-        Assert.assertEquals(5, result.length);
+        final String category = documentCategorizerDL.getCategory(3);
+        Assert.assertEquals("neutral", category);
+
+        final int number = documentCategorizerDL.getNumberOfCategories();
+        Assert.assertEquals(5, number);
+
+    }
+
+    private Map<Integer, String> getCategories() {
+
+        final Map<Integer, String> categories = new HashMap<>();
+
+        categories.put(0, "very bad");
+        categories.put(1, "bad");
+        categories.put(2, "neutral");
+        categories.put(3, "good");
+        categories.put(4, "very good");
+
+        return categories;
 
     }
 
