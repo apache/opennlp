@@ -39,7 +39,7 @@ public abstract class Inference {
     private final Tokenizer tokenizer;
     private final Map<String, Integer> vocabulary;
 
-    public abstract double[][] infer(String text) throws Exception;
+    public abstract double[][] infer(String input) throws Exception;
 
     public Inference(File model, File vocab) throws OrtException, IOException {
 
@@ -47,27 +47,6 @@ public abstract class Inference {
         this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
         this.vocabulary = loadVocab(vocab);
         this.tokenizer = new WordpieceTokenizer(vocabulary.keySet());
-
-    }
-
-    public Map<String, Integer> loadVocab(File vocab) throws IOException {
-
-        final Map<String, Integer> v = new HashMap<>();
-
-        BufferedReader br = new BufferedReader(new FileReader(vocab.getPath()));
-        String line = br.readLine();
-        int x = 0;
-
-        while(line != null) {
-
-            line = br.readLine();
-            x++;
-
-            v.put(line, x);
-
-        }
-
-        return v;
 
     }
 
@@ -93,6 +72,27 @@ public abstract class Inference {
 
     }
 
+    public Map<String, Integer> loadVocab(File vocab) throws IOException {
+
+        final Map<String, Integer> v = new HashMap<>();
+
+        BufferedReader br = new BufferedReader(new FileReader(vocab.getPath()));
+        String line = br.readLine();
+        int x = 0;
+
+        while(line != null) {
+
+            line = br.readLine();
+            x++;
+
+            v.put(line, x);
+
+        }
+
+        return v;
+
+    }
+
     public double[] softmax(final double[] input) {
 
         final double[] t = new double[input.length];
@@ -114,7 +114,7 @@ public abstract class Inference {
 
     }
 
-    protected double[][] convertFloatsToDoubles(float[][] inputs) {
+    public double[][] convertFloatsToDoubles(float[][] inputs) {
 
         final double[][] outputs = new double[inputs.length][inputs[0].length];
 
@@ -128,7 +128,7 @@ public abstract class Inference {
 
     }
 
-    protected double[] convertFloatsToDoubles(float[] input) {
+    public double[] convertFloatsToDoubles(float[] input) {
 
         final double[] output = new double[input.length];
 
@@ -137,24 +137,6 @@ public abstract class Inference {
         }
 
         return output;
-
-    }
-
-    protected int max(float[] arr) {
-
-        float max = Float.NEGATIVE_INFINITY;
-        int index = -1;
-
-        for(int x = 0; x < arr.length; x++) {
-            if(arr[x] > max) {
-                index = x;
-                max = arr[x];
-            }
-        }
-
-        System.out.println("max index = " + index);
-
-        return index;
 
     }
 

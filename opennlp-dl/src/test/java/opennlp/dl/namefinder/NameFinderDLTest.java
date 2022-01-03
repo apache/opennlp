@@ -18,6 +18,7 @@
 package opennlp.dl.namefinder;
 
 import opennlp.tools.util.Span;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -35,6 +36,23 @@ public class NameFinderDLTest {
         final File model = new File(getClass().getClassLoader().getResource("namefinder/model.onnx").toURI());
         final File vocab = new File(getClass().getClassLoader().getResource("namefinder/vocab.txt").toURI());
 
+        final String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States"};
+
+        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, getIds2Labels());
+        final Span[] spans = nameFinderDL.find(tokens);
+
+        for(Span span : spans) {
+            System.out.println(span.toString());
+        }
+
+        Assert.assertEquals(1, spans.length);
+        Assert.assertEquals(0, spans[0].getStart());
+        Assert.assertEquals(2, spans[0].getEnd());
+
+    }
+
+    private Map<Integer, String> getIds2Labels() {
+
         final Map<Integer, String> ids2Labels = new HashMap<>();
         ids2Labels.put(0, "O");
         ids2Labels.put(1, "B-MISC");
@@ -46,10 +64,7 @@ public class NameFinderDLTest {
         ids2Labels.put(7, "B-LOC");
         ids2Labels.put(8, "I-LOC");
 
-        final String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States"};
-
-        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, ids2Labels);
-        final Span[] spans = nameFinderDL.find(tokens);
+        return ids2Labels;
 
     }
 

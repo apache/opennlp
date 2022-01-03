@@ -20,7 +20,6 @@ package opennlp.dl.doccat;
 import ai.onnxruntime.OnnxTensor;
 import opennlp.dl.Inference;
 import opennlp.dl.Tokens;
-import opennlp.tools.tokenize.Tokenizer;
 
 import java.io.File;
 import java.nio.LongBuffer;

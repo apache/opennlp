@@ -20,24 +20,22 @@ package opennlp.dl.namefinder;
 import ai.onnxruntime.OnnxTensor;
 import opennlp.dl.Inference;
 import opennlp.dl.Tokens;
-import opennlp.tools.tokenize.Tokenizer;
 
 import java.io.File;
 import java.nio.LongBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TokenNameFinderInference extends Inference {
 
-    private final Map<Integer, String> classes;
+    private final Map<Integer, String> id2Labels;
     private final Map<String, Integer> vocabulary;
 
-    public TokenNameFinderInference(File model, File vocab, boolean doLowerCase, Map<Integer, String> classes) throws Exception {
+    public TokenNameFinderInference(File model, File vocab, boolean doLowerCase, Map<Integer, String> id2Labels) throws Exception {
 
         super(model, vocab);
 
-        this.classes = classes;
+        this.id2Labels = id2Labels;
         this.vocabulary = loadVocab(vocab);
 
     }
@@ -53,26 +51,8 @@ public class TokenNameFinderInference extends Inference {
         inputs.put("token_type_ids", OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getTypes()), new long[]{1, tokens.getTypes().length}));
 
         final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
-        //final double[][] d = convertFloatsToDoubles(v);
 
-        System.out.println(v.length);
-        System.out.println(v[0].length);
-
-        System.out.println("--------");
-
-        for(int x = 0; x < v[0].length; x++) {
-            System.out.println(Arrays.toString(v[0][x]));
-
-            float[] arr = v[0][x];
-            int max = max(arr);
-            System.out.println(classes.get(max));
-
-        }
-
-        System.out.println("--------");
-
-        return null;
-       // return convertFloatsToDoubles(v);
+        return convertFloatsToDoubles(v[0]);
 
     }
 

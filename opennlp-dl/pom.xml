@@ -2,9 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>opennlp</artifactId>
     <groupId>org.apache.opennlp</groupId>
-    <version>1.9.4-SNAPSHOT</version>
+    <artifactId>opennlp</artifactId>
+    <version>1.9.5-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>org.apache.opennlp</groupId>
   <artifactId>opennlp-dl</artifactId>
@@ -18,13 +19,17 @@
     <dependency>
       <groupId>com.microsoft.onnxruntime</groupId>
       <artifactId>onnxruntime</artifactId>
-      <version>1.10.0</version>
+      <version>${onnxruntime.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-tools</artifactId>
     </dependency>
   </dependencies>
 </project>
