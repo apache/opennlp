@@ -17,6 +17,7 @@
 
 package opennlp.dl.namefinder;
 
+import ai.onnxruntime.OrtException;
 import opennlp.tools.util.Span;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class NameFinderDLTest {
 
         final String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States"};
 
-        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, getIds2Labels());
+        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
         final Span[] spans = nameFinderDL.find(tokens);
 
         for(Span span : spans) {
@@ -62,7 +63,7 @@ public class NameFinderDLTest {
 
         final String[] tokens = new String[]{"His", "name", "was", "George", "Washington"};
 
-        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, getIds2Labels());
+        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
         final Span[] spans = nameFinderDL.find(tokens);
 
         for(Span span : spans) {
@@ -86,7 +87,7 @@ public class NameFinderDLTest {
 
         final String[] tokens = new String[]{"His", "name", "was", "George"};
 
-        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, getIds2Labels());
+        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
         final Span[] spans = nameFinderDL.find(tokens);
 
         for(Span span : spans) {
@@ -96,6 +97,21 @@ public class NameFinderDLTest {
         Assert.assertEquals(1, spans.length);
         Assert.assertEquals(3, spans[0].getStart());
         Assert.assertEquals(4, spans[0].getEnd());
+
+    }
+
+    @Test(expected = OrtException.class)
+    public void invalidModel() throws Exception {
+
+        // This test was written using the dslim/bert-base-NER model.
+        // You will need to update the ids2Labels and assertions if you use a different model.
+
+        final File model = new File("invalid.onnx");
+        final File vocab = new File("vocab.txt");
+
+        final String[] tokens = new String[]{"His", "name", "was", "George"};
+
+        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, getIds2Labels());
 
     }
 
