@@ -53,9 +53,8 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
             final DocumentCategorizerInference inference = new DocumentCategorizerInference(model, vocab);
 
-            final double[][] v1 = inference.infer(strings[0]);
-
-            final double[] results = inference.softmax(v1[0]);
+            final double[][] vectors = inference.infer(strings[0]);
+            final double[] results = inference.softmax(vectors[0]);
 
             return results;
 
