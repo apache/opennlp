@@ -39,7 +39,7 @@ public class NameFinderDL implements TokenNameFinder {
     public NameFinderDL(File model, File vocab, boolean doLowerCase, Map<Integer, String> ids2Labels) throws Exception {
 
         this.ids2Labels = ids2Labels;
-        this.inference = new TokenNameFinderInference(model, vocab, doLowerCase, ids2Labels);
+        this.inference = new TokenNameFinderInference(model, vocab, doLowerCase);
 
     }
 

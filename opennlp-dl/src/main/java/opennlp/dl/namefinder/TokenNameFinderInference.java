@@ -24,24 +24,27 @@ import opennlp.dl.Tokens;
 import java.io.File;
 import java.nio.LongBuffer;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class TokenNameFinderInference extends Inference {
 
-    private final Map<Integer, String> id2Labels;
-    private final Map<String, Integer> vocabulary;
+    private final boolean doLowerCase;
 
-    public TokenNameFinderInference(File model, File vocab, boolean doLowerCase, Map<Integer, String> id2Labels) throws Exception {
+    public TokenNameFinderInference(File model, File vocab, boolean doLowerCase) throws Exception {
 
         super(model, vocab);
 
-        this.id2Labels = id2Labels;
-        this.vocabulary = loadVocab(vocab);
+        this.doLowerCase = doLowerCase;
 
     }
 
     @Override
     public double[][] infer(String text) throws Exception {
+
+        if(doLowerCase) {
+            text = text.toLowerCase(Locale.ROOT);
+        }
 
         final Tokens tokens = tokenize(text);
 
