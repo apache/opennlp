@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class DocumentCategorizerDLTest {
+public class DocumentCategorizerDLEval {
 
     @Test
     public void categorize() throws URISyntaxException {
@@ -39,9 +39,7 @@ public class DocumentCategorizerDLTest {
         final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
 
         final DocumentCategorizerDL documentCategorizerDL = new DocumentCategorizerDL(model, vocab, getCategories());
-        final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
-
-        System.out.println(Arrays.toString(result));
+        final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});System.out.println(Arrays.toString(result));
 
         final double[] expected = new double[]{0.007819971069693565, 0.006593209225684404, 0.04995147883892059, 0.3003573715686798, 0.6352779865264893};
         Assert.assertTrue(Arrays.equals(expected, result));

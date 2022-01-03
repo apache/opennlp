@@ -26,7 +26,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NameFinderDLTest {
+public class NameFinderDLEval {
 
     @Test
     public void tokenNameFinder1Test() throws Exception {
