@@ -21,6 +21,8 @@ import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,7 +60,7 @@ public class NameFinderDL implements TokenNameFinder {
             // We are looping over the vector for each word,
             // finding the index of the array that has the maximum value,
             // and then finding the token classification that corresponds to that index.
-            for(int x = 0; x < v[0].length; x++) {
+            for(int x = 0; x < v.length; x++) {
 
                 final double[] arr = v[x];
                 final int maxIndex = maxIndex(arr);
@@ -101,7 +103,7 @@ public class NameFinderDL implements TokenNameFinder {
             }
 
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
+            System.err.println("Error performing namefinder inference: " + ex.getMessage());
         }
 
         return spans.toArray(new Span[0]);

@@ -46,16 +46,13 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
             final double[][] v1 = inference.infer(strings[0]);
 
-            final double[] results = inference.softmax(v1[0]);
-
-            return results;
+            return inference.softmax(v1[0]);
 
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
+            System.err.println("Unload to perform document classification inference: " + ex.getMessage());
         }
 
-        System.out.println("Something wrong!");
-        return null;
+        return new double[]{};
 
     }
 
@@ -81,7 +78,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
     @Override
     public int getNumberOfCategories() {
-        return 0;
+       return 0;
     }
 
     @Override

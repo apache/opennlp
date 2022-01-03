@@ -28,7 +28,7 @@ import java.util.Map;
 public class NameFinderDLTest {
 
     @Test
-    public void ner() throws Exception {
+    public void tokenNameFinder1Test() throws Exception {
 
         // This test was written using the dslim/bert-base-NER model.
         // You will need to update the ids2Labels and assertions if you use a different model.
@@ -48,6 +48,54 @@ public class NameFinderDLTest {
         Assert.assertEquals(1, spans.length);
         Assert.assertEquals(0, spans[0].getStart());
         Assert.assertEquals(2, spans[0].getEnd());
+
+    }
+
+    @Test
+    public void tokenNameFinder2Test() throws Exception {
+
+        // This test was written using the dslim/bert-base-NER model.
+        // You will need to update the ids2Labels and assertions if you use a different model.
+
+        final File model = new File(getClass().getClassLoader().getResource("namefinder/model.onnx").toURI());
+        final File vocab = new File(getClass().getClassLoader().getResource("namefinder/vocab.txt").toURI());
+
+        final String[] tokens = new String[]{"His", "name", "was", "George", "Washington"};
+
+        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, getIds2Labels());
+        final Span[] spans = nameFinderDL.find(tokens);
+
+        for(Span span : spans) {
+            System.out.println(span.toString());
+        }
+
+        Assert.assertEquals(1, spans.length);
+        Assert.assertEquals(3, spans[0].getStart());
+        Assert.assertEquals(5, spans[0].getEnd());
+
+    }
+
+    @Test
+    public void tokenNameFinder3Test() throws Exception {
+
+        // This test was written using the dslim/bert-base-NER model.
+        // You will need to update the ids2Labels and assertions if you use a different model.
+
+        final File model = new File(getClass().getClassLoader().getResource("namefinder/model.onnx").toURI());
+        final File vocab = new File(getClass().getClassLoader().getResource("namefinder/vocab.txt").toURI());
+
+        final String[] tokens = new String[]{"His", "name", "was", "George"};
+
+        final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, getIds2Labels());
+        final Span[] spans = nameFinderDL.find(tokens);
+
+        for(Span span : spans) {
+            System.out.println(span.toString());
+        }
+
+        Assert.assertEquals(1, spans.length);
+        Assert.assertEquals(3, spans[0].getStart());
+        Assert.assertEquals(4, spans[0].getEnd());
 
     }
 
