@@ -18,12 +18,10 @@
 package opennlp.dl.doccat;
 
 import opennlp.tools.doccat.DocumentCategorizer;
+import sun.reflect.generics.tree.Tree;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * An implementation of {@link DocumentCategorizer} that performs document classification
@@ -102,12 +100,38 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
     @Override
     public Map<String, Double> scoreMap(String[] strings) {
-        return null;
+
+        final double[] scores = categorize(strings);
+
+        final Map<String, Double> scoreMap = new HashMap<>();
+
+        for(int x : categories.keySet()) {
+            scoreMap.put(categories.get(x), scores[x]);
+        }
+
+        return scoreMap;
+
     }
 
     @Override
     public SortedMap<Double, Set<String>> sortedScoreMap(String[] strings) {
-        return null;
+
+        final double[] scores = categorize(strings);
+
+        final SortedMap<Double, Set<String>> scoreMap = new TreeMap<>();
+
+        for(int x : categories.keySet()) {
+
+            if(scoreMap.get(categories.get(x)) == null) {
+                scoreMap.put(scores[x], new HashSet<>());
+            }
+
+            scoreMap.get(categories).add(categories.get(x));
+
+        }
+
+        return scoreMap;
+
     }
 
     private int getKey(String value) {
