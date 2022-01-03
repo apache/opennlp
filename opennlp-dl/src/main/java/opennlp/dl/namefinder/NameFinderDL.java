@@ -30,6 +30,9 @@ import java.util.Map;
 
 public class NameFinderDL implements TokenNameFinder {
 
+    public static final String I_PER = "I-PER";
+    public static final String B_PER = "B-PER";
+
     private final TokenNameFinderInference inference;
     private final Map<Integer, String> ids2Labels;
 
@@ -69,13 +72,13 @@ public class NameFinderDL implements TokenNameFinder {
                 // TODO: Need to make sure this value is between 0 and 1?
                 final double probability = arr[maxIndex] / 10;
 
-                if (label.equalsIgnoreCase("B-PER")) {
+                if (B_PER.equalsIgnoreCase(label)) {
 
                     // This is the start of a person entity.
                     final String spanText;
 
                     // Find the end index of the span in the array (where the label is not I-PER).
-                    final int endIndex = findSpanEnd(v, x, ids2Labels, tokens);
+                    final int endIndex = findSpanEnd(v, x, ids2Labels);
 
                     // If the end is -1 it means this is a single-span token.
                     // If the end is != -1 it means this is a multi-span token.
@@ -112,11 +115,12 @@ public class NameFinderDL implements TokenNameFinder {
 
     @Override
     public void clearAdaptiveData() {
-        // No use for this here.
+        // No use for this in this implementation.
     }
 
-    private int findSpanEnd(double[][] v, int startIndex, Map<Integer, String> id2Labels, String[] tokens) {
+    private int findSpanEnd(double[][] v, int startIndex, Map<Integer, String> id2Labels) {
 
+        // This will be the index of the last token in the span.
         // -1 means there is no follow-up token, so it is a single-token span.
         int index = -1;
 
@@ -133,7 +137,7 @@ public class NameFinderDL implements TokenNameFinder {
             // See if the next token has an I-PER label.
             final String nextTokenClassification = id2Labels.get(maxIndex(arr));
 
-            if(!nextTokenClassification.equalsIgnoreCase("I-PER")) {
+            if(!I_PER.equalsIgnoreCase(nextTokenClassification)) {
                 index = x - 1;
                 break;
             }
