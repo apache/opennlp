@@ -31,6 +31,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * An abstract class used by OpenNLP implementations using ONNX models.
+ */
 public abstract class Inference {
 
     protected final OrtEnvironment env;
@@ -41,6 +44,13 @@ public abstract class Inference {
 
     public abstract double[][] infer(String input) throws Exception;
 
+    /**
+     * Instantiates a new inference class.
+     * @param model The ONNX model file.
+     * @param vocab The model's vocabulary file.
+     * @throws OrtException Thrown if the ONNX model cannot be loaded.
+     * @throws IOException Thrown if the ONNX model or vocabulary files cannot be opened or read.
+     */
     public Inference(File model, File vocab) throws OrtException, IOException {
 
         this.env = OrtEnvironment.getEnvironment();
@@ -50,6 +60,11 @@ public abstract class Inference {
 
     }
 
+    /**
+     * Tokenize the input text using the {@link WordpieceTokenizer}.
+     * @param text The input text.
+     * @return The input text's {@link Tokens}.
+     */
     public Tokens tokenize(String text) {
 
         final String[] tokens = tokenizer.tokenize(text);
@@ -72,6 +87,12 @@ public abstract class Inference {
 
     }
 
+    /**
+     * Loads a vocabulary file from disk.
+     * @param vocab The vocabulary file.
+     * @return A map of vocabulary words to integer IDs.
+     * @throws IOException Thrown if the vocabulary file cannot be opened and read.
+     */
     public Map<String, Integer> loadVocab(File vocab) throws IOException {
 
         final Map<String, Integer> v = new HashMap<>();
@@ -93,6 +114,11 @@ public abstract class Inference {
 
     }
 
+    /**
+     * Applies softmax to an array of values.
+     * @param input An array of values.
+     * @return The output array.
+     */
     public double[] softmax(final double[] input) {
 
         final double[] t = new double[input.length];
@@ -114,13 +140,18 @@ public abstract class Inference {
 
     }
 
-    public double[][] convertFloatsToDoubles(float[][] inputs) {
+    /**
+     * Converts a two-dimensional float array to doubles.
+     * @param input The input array.
+     * @return The converted array.
+     */
+    public double[][] convertFloatsToDoubles(float[][] input) {
 
-        final double[][] outputs = new double[inputs.length][inputs[0].length];
+        final double[][] outputs = new double[input.length][input[0].length];
 
-        for(int i = 0; i < inputs.length; i++) {
-            for(int j = 0; j < inputs[0].length; j++) {
-                outputs[i][j] = (double) inputs[i][j];
+        for(int i = 0; i < input.length; i++) {
+            for(int j = 0; j < input[0].length; j++) {
+                outputs[i][j] = (double) input[i][j];
             }
         }
 
@@ -128,6 +159,11 @@ public abstract class Inference {
 
     }
 
+    /**
+     * Converts a three-dimensional float array to doubles.
+     * @param input The input array.
+     * @return The converted array.
+     */
     public double[] convertFloatsToDoubles(float[] input) {
 
         final double[] output = new double[input.length];
