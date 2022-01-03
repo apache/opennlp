@@ -18,7 +18,6 @@
 package opennlp.dl.doccat;
 
 import opennlp.tools.doccat.DocumentCategorizer;
-import sun.reflect.generics.tree.Tree;
 
 import java.io.File;
 import java.util.*;
@@ -122,11 +121,11 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
         for(int x : categories.keySet()) {
 
-            if(scoreMap.get(categories.get(x)) == null) {
+            if(scoreMap.get(scores[x]) == null) {
                 scoreMap.put(scores[x], new HashSet<>());
             }
 
-            scoreMap.get(categories).add(categories.get(x));
+            scoreMap.get(scores[x]).add(categories.get(x));
 
         }
 

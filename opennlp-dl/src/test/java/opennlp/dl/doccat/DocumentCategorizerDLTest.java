@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class DocumentCategorizerDLTest {
 
@@ -52,6 +53,46 @@ public class DocumentCategorizerDLTest {
     }
 
     @Test
+    public void scoreMap() throws URISyntaxException {
+
+        // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
+        // You will need to update the assertions if you use a different model.
+
+        final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
+        final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
+
+        final DocumentCategorizerDL documentCategorizerDL = new DocumentCategorizerDL(model, vocab, getCategories());
+        final Map<String, Double> result = documentCategorizerDL.scoreMap(new String[]{"I am happy"});
+
+        Assert.assertEquals(0.6352779865264893, result.get("very good").doubleValue(), 0);
+        Assert.assertEquals(0.3003573715686798, result.get("good").doubleValue(), 0);
+        Assert.assertEquals(0.04995147883892059, result.get("neutral").doubleValue(), 0);
+        Assert.assertEquals(0.006593209225684404, result.get("bad").doubleValue(), 0);
+        Assert.assertEquals(0.007819971069693565, result.get("very bad").doubleValue(), 0);
+
+    }
+
+    @Test
+    public void sortedScoreMap() throws URISyntaxException {
+
+        // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
+        // You will need to update the assertions if you use a different model.
+
+        final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
+        final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
+
+        final DocumentCategorizerDL documentCategorizerDL = new DocumentCategorizerDL(model, vocab, getCategories());
+        final Map<Double, Set<String>> result = documentCategorizerDL.sortedScoreMap(new String[]{"I am happy"});
+
+        Assert.assertEquals(result.get(0.6352779865264893).size(), 1);
+        Assert.assertEquals(result.get(0.3003573715686798).size(), 1);
+        Assert.assertEquals(result.get(0.04995147883892059).size(), 1);
+        Assert.assertEquals(result.get(0.006593209225684404).size(), 1);
+        Assert.assertEquals(result.get(0.007819971069693565).size(), 1);
+
+    }
+
+    @Test
     public void doccat() throws URISyntaxException {
 
         // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
@@ -66,7 +107,7 @@ public class DocumentCategorizerDLTest {
         Assert.assertEquals(1, index);
 
         final String category = documentCategorizerDL.getCategory(3);
-        Assert.assertEquals("neutral", category);
+        Assert.assertEquals("good", category);
 
         final int number = documentCategorizerDL.getNumberOfCategories();
         Assert.assertEquals(5, number);
