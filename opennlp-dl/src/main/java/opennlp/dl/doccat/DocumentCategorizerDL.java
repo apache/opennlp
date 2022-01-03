@@ -25,11 +25,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 
+/**
+ * An implementation of {@link DocumentCategorizer} that performs document classification
+ * using ONNX models.
+ */
 public class DocumentCategorizerDL implements DocumentCategorizer {
 
     private final File model;
     private final File vocab;
 
+    /**
+     * Creates a new document categorizer using ONNX models.
+     * @param model The ONNX model file.
+     * @param vocab The model's vocabulary file.
+     */
     public DocumentCategorizerDL(File model, File vocab) {
 
         this.model = model;

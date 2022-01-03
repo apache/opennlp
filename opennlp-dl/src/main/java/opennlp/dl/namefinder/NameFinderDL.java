@@ -28,6 +28,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * An implementation of {@link TokenNameFinder} that uses ONNX models.
+ */
 public class NameFinderDL implements TokenNameFinder {
 
     public static final String I_PER = "I-PER";
@@ -36,6 +39,14 @@ public class NameFinderDL implements TokenNameFinder {
     private final TokenNameFinderInference inference;
     private final Map<Integer, String> ids2Labels;
 
+    /**
+     * Creates a new NameFinderDL for entity recognition using ONNX models.
+     * @param model The ONNX model file.
+     * @param vocab The model's vocabulary file.
+     * @param doLowerCase Whether or not to lowercase the text prior to inference.
+     * @param ids2Labels A map of values and their assigned labels used to train the model.
+     * @throws Exception Thrown if the models cannot be loaded.
+     */
     public NameFinderDL(File model, File vocab, boolean doLowerCase, Map<Integer, String> ids2Labels) throws Exception {
 
         this.ids2Labels = ids2Labels;
