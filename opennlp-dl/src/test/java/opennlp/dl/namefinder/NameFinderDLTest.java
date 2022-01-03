@@ -37,7 +37,7 @@ public class NameFinderDLTest {
         final File model = new File(getClass().getClassLoader().getResource("namefinder/model.onnx").toURI());
         final File vocab = new File(getClass().getClassLoader().getResource("namefinder/vocab.txt").toURI());
 
-        final String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States"};
+        final String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
 
         final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
         final Span[] spans = nameFinderDL.find(tokens);
@@ -49,6 +49,7 @@ public class NameFinderDLTest {
         Assert.assertEquals(1, spans.length);
         Assert.assertEquals(0, spans[0].getStart());
         Assert.assertEquals(2, spans[0].getEnd());
+        Assert.assertEquals(0.8251646041870118, spans[0].getProb(), 0.0);
 
     }
 

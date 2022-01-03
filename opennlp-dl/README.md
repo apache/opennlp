@@ -2,6 +2,8 @@
 
 This module provides OpenNLP interface implementations for ONNX models using the `onnxruntime` dependency.
 
+**Important**: This does not provide the ability to train models. Model training is done outside of OpenNLP. This code provides the ability to use ONNX models from OpenNLP.
+
 To build with example models, download the models to the `/src/test/resources` directory. (These are the exported models described below.)
 
 ```
