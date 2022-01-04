@@ -7,13 +7,17 @@ This module provides OpenNLP interface implementations for ONNX models using the
 To build with example models, download the models to the `/src/test/resources` directory. (These are the exported models described below.)
 
 ```
+
+export OPENNLP_DATA=/tmp/
+mkdir /tmp/dl-doccat /tmp/dl-namefinder
+
 # Document categorizer model
-wget https://www.dropbox.com/s/n9uzs8r4xm9rhxb/model.onnx?dl=0 -O ./src/test/resources/doccat/model.onnx
-wget https://www.dropbox.com/s/aw6yjc68jw0jts6/vocab.txt?dl=0 -O ./src/test/resources/doccat/vocab.txt
+wget https://www.dropbox.com/s/n9uzs8r4xm9rhxb/model.onnx?dl=0 -O $OPENNLP_DATA/dl-doccat/model.onnx
+wget https://www.dropbox.com/s/aw6yjc68jw0jts6/vocab.txt?dl=0 -O $OPENNLP_DATA/dl-doccat/vocab.txt
 
 # Namefinder model
-wget https://www.dropbox.com/s/zgogq65gs9tyfm1/model.onnx?dl=0 -O ./src/test/resources/namefinder/model.onnx
-wget https://www.dropbox.com/s/3byt1jggly1dg98/vocab.txt?dl=0 -O ./src/test/resources/namefinder/vocab.txt
+wget https://www.dropbox.com/s/zgogq65gs9tyfm1/model.onnx?dl=0 -O $OPENNLP_DATA/dl-namefinder/model.onnx
+wget https://www.dropbox.com/s/3byt1jggly1dg98/vocab.txt?dl=0 -O $OPENNLP_DATA/dl-/namefinder/vocab.txt
 ```
 
 ## TokenNameFinder

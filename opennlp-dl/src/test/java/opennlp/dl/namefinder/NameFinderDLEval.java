@@ -26,9 +26,11 @@ import ai.onnxruntime.OrtException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import opennlp.dl.AbstactDLTest;
+
 import opennlp.tools.util.Span;
 
-public class NameFinderDLEval {
+public class NameFinderDLEval extends AbstactDLTest {
 
   @Test
   public void tokenNameFinder1Test() throws Exception {
@@ -36,8 +38,8 @@ public class NameFinderDLEval {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getClass().getClassLoader().getResource("namefinder/model.onnx").toURI());
-    final File vocab = new File(getClass().getClassLoader().getResource("namefinder/vocab.txt").toURI());
+    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt.onnx");
 
     final String[] tokens = new String[]
         {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
@@ -62,8 +64,8 @@ public class NameFinderDLEval {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getClass().getClassLoader().getResource("namefinder/model.onnx").toURI());
-    final File vocab = new File(getClass().getClassLoader().getResource("namefinder/vocab.txt").toURI());
+    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt.onnx");
 
     final String[] tokens = new String[]{"His", "name", "was", "George", "Washington"};
 
@@ -86,8 +88,8 @@ public class NameFinderDLEval {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getClass().getClassLoader().getResource("namefinder/model.onnx").toURI());
-    final File vocab = new File(getClass().getClassLoader().getResource("namefinder/vocab.txt").toURI());
+    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt.onnx");
 
     final String[] tokens = new String[]{"His", "name", "was", "George"};
 

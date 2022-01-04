@@ -18,7 +18,7 @@
 package opennlp.dl.doccat;
 
 import java.io.File;
-import java.net.URISyntaxException;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,16 +27,18 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class DocumentCategorizerDLEval {
+import opennlp.dl.AbstactDLTest;
+
+public class DocumentCategorizerDLEval extends AbstactDLTest {
 
   @Test
-  public void categorize() throws URISyntaxException {
+  public void categorize() throws FileNotFoundException {
 
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
 
-    final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
-    final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
+    final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt.onnx");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -60,13 +62,13 @@ public class DocumentCategorizerDLEval {
   }
 
   @Test
-  public void scoreMap() throws URISyntaxException {
+  public void scoreMap() throws FileNotFoundException {
 
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
 
-    final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
-    final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
+    final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt.onnx");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -82,13 +84,13 @@ public class DocumentCategorizerDLEval {
   }
 
   @Test
-  public void sortedScoreMap() throws URISyntaxException {
+  public void sortedScoreMap() throws FileNotFoundException {
 
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
 
-    final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
-    final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
+    final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt.onnx");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -104,13 +106,13 @@ public class DocumentCategorizerDLEval {
   }
 
   @Test
-  public void doccat() throws URISyntaxException {
+  public void doccat() throws FileNotFoundException {
 
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
 
-    final File model = new File(getClass().getClassLoader().getResource("doccat/model.onnx").toURI());
-    final File vocab = new File(getClass().getClassLoader().getResource("doccat/vocab.txt").toURI());
+    final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt.onnx");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
