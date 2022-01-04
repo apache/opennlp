@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 /**
  * An abstract class used by OpenNLP implementations using ONNX models.
@@ -116,6 +117,12 @@ public abstract class Inference {
 
         return v;
 
+    }
+
+    public static int maxIndex(double[] arr) {
+        return IntStream.range(0, arr.length)
+                .reduce((i, j) -> arr[i] > arr[j] ? i : j)
+                .orElse(-1);
     }
 
     /**

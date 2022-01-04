@@ -27,6 +27,10 @@ import java.util.Set;
  * A WordPiece tokenizer.
  *
  * Adapted from https://github.com/robrua/easy-bert under the MIT license.
+ *
+ * For reference see:
+ *  - https://www.tensorflow.org/text/guide/subwords_tokenizer#applying_wordpiece
+ *  - https://cran.r-project.org/web/packages/wordpiece/vignettes/basic_usage.html
  */
 public class WordpieceTokenizer implements Tokenizer {
 
@@ -45,9 +49,6 @@ public class WordpieceTokenizer implements Tokenizer {
         this.vocabulary = vocabulary;
         this.maxTokenLength = maxTokenLength;
     }
-
-    // https://www.tensorflow.org/text/guide/subwords_tokenizer#applying_wordpiece
-    // https://cran.r-project.org/web/packages/wordpiece/vignettes/basic_usage.html
 
     @Override
     public Span[] tokenizePos(final String text) {

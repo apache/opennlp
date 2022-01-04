@@ -17,10 +17,12 @@
 
 package opennlp.dl.doccat;
 
+import opennlp.dl.Inference;
 import opennlp.tools.doccat.DocumentCategorizer;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * An implementation of {@link DocumentCategorizer} that performs document classification
@@ -73,7 +75,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
     @Override
     public String getBestCategory(double[] doubles) {
-        return categories.get(maxIndex(doubles));
+        return categories.get(Inference.maxIndex(doubles));
     }
 
     @Override
@@ -144,22 +146,6 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
         // The String wasn't found as a value in the map.
         return -1;
-
-    }
-
-    private int maxIndex(double[] arr) {
-
-        double max = Double.NEGATIVE_INFINITY;
-        int index = -1;
-
-        for(int x = 0; x < arr.length; x++) {
-            if(arr[x] > max) {
-                index = x;
-                max = arr[x];
-            }
-        }
-
-        return index;
 
     }
 

@@ -17,6 +17,7 @@
 
 package opennlp.dl.namefinder;
 
+import opennlp.dl.Inference;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
 
@@ -27,6 +28,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 /**
  * An implementation of {@link TokenNameFinder} that uses ONNX models.
@@ -41,10 +43,11 @@ public class NameFinderDL implements TokenNameFinder {
 
     /**
      * Creates a new NameFinderDL for entity recognition using ONNX models.
-     * @param model The ONNX model file.
-     * @param vocab The model's vocabulary file.
+     *
+     * @param model       The ONNX model file.
+     * @param vocab       The model's vocabulary file.
      * @param doLowerCase Whether or not to lowercase the text prior to inference.
-     * @param ids2Labels A map of values and their assigned labels used to train the model.
+     * @param ids2Labels  A map of values and their assigned labels used to train the model.
      * @throws Exception Thrown if the models cannot be loaded.
      */
     public NameFinderDL(File model, File vocab, boolean doLowerCase, Map<Integer, String> ids2Labels) throws Exception {
@@ -74,14 +77,13 @@ public class NameFinderDL implements TokenNameFinder {
             // We are looping over the vector for each word,
             // finding the index of the array that has the maximum value,
             // and then finding the token classification that corresponds to that index.
-            for(int x = 0; x < v.length; x++) {
+            for (int x = 0; x < v.length; x++) {
 
                 final double[] arr = v[x];
-                final int maxIndex = maxIndex(arr);
+                final int maxIndex = Inference.maxIndex(arr);
                 final String label = ids2Labels.get(maxIndex);
 
-                // TODO: Need to make sure this value is between 0 and 1?
-                final double probability = arr[maxIndex] / 10;
+                final double probability = arr[maxIndex];
 
                 if (B_PER.equalsIgnoreCase(label)) {
 
@@ -93,7 +95,7 @@ public class NameFinderDL implements TokenNameFinder {
 
                     // If the end is -1 it means this is a single-span token.
                     // If the end is != -1 it means this is a multi-span token.
-                    if(endIndex != -1) {
+                    if (endIndex != -1) {
 
                         // Subtract one for the beginning token not part of the text.
                         spanText = String.join(" ", Arrays.copyOfRange(tokens, x - 1, endIndex));
@@ -140,35 +142,19 @@ public class NameFinderDL implements TokenNameFinder {
         // Go until the next token is something other than I-PER.
         // When the next token is not I-PER, return the previous index.
 
-        for(int x = startIndex + 1; x < v[0].length; x++) {
+        for (int x = startIndex + 1; x < v[0].length; x++) {
 
             // Get the next item.
             final double[] arr = v[x];
 
             // See if the next token has an I-PER label.
-            final String nextTokenClassification = id2Labels.get(maxIndex(arr));
+            final String nextTokenClassification = id2Labels.get(Inference.maxIndex(arr));
 
-            if(!I_PER.equalsIgnoreCase(nextTokenClassification)) {
+            if (!I_PER.equalsIgnoreCase(nextTokenClassification)) {
                 index = x - 1;
                 break;
             }
 
-        }
-
-        return index;
-
-    }
-
-    private int maxIndex(double[] arr) {
-
-        double max = Double.NEGATIVE_INFINITY;
-        int index = -1;
-
-        for(int x = 0; x < arr.length; x++) {
-            if(arr[x] > max) {
-                index = x;
-                max = arr[x];
-            }
         }
 
         return index;
