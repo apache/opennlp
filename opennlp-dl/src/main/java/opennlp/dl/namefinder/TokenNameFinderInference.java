@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,46 +17,52 @@
 
 package opennlp.dl.namefinder;
 
-import ai.onnxruntime.OnnxTensor;
-import opennlp.dl.Inference;
-import opennlp.dl.Tokens;
-
 import java.io.File;
 import java.nio.LongBuffer;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import ai.onnxruntime.OnnxTensor;
+
+import opennlp.dl.Inference;
+import opennlp.dl.Tokens;
+
 public class TokenNameFinderInference extends Inference {
 
-    private final boolean doLowerCase;
+  private final boolean doLowerCase;
 
-    public TokenNameFinderInference(File model, File vocab, boolean doLowerCase) throws Exception {
+  public TokenNameFinderInference(File model, File vocab, boolean doLowerCase) throws Exception {
 
-        super(model, vocab);
+    super(model, vocab);
 
-        this.doLowerCase = doLowerCase;
+    this.doLowerCase = doLowerCase;
 
+  }
+
+  @Override
+  public double[][] infer(String text) throws Exception {
+
+    if (doLowerCase) {
+      text = text.toLowerCase(Locale.ROOT);
     }
 
-    @Override
-    public double[][] infer(String text) throws Exception {
+    final Tokens tokens = tokenize(text);
 
-        if(doLowerCase) {
-            text = text.toLowerCase(Locale.ROOT);
-        }
+    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
+            LongBuffer.wrap(tokens.getIds()), new long[]{1, tokens.getIds().length}));
 
-        final Tokens tokens = tokenize(text);
+    inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+            LongBuffer.wrap(tokens.getMask()), new long[]{1, tokens.getMask().length}));
 
-        final Map<String, OnnxTensor> inputs = new HashMap<>();
-        inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getIds()), new long[]{1, tokens.getIds().length}));
-        inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getMask()), new long[]{1, tokens.getMask().length}));
-        inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getTypes()), new long[]{1, tokens.getTypes().length}));
+    inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+            LongBuffer.wrap(tokens.getTypes()), new long[]{1, tokens.getTypes().length}));
 
-        final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
+    final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
 
-        return convertFloatsToDoubles(v[0]);
+    return convertFloatsToDoubles(v[0]);
 
-    }
+  }
 
 }
