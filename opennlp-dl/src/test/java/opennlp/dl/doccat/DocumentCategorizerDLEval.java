@@ -38,7 +38,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     // You will need to update the assertions if you use a different model.
 
     final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -68,7 +68,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     // You will need to update the assertions if you use a different model.
 
     final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -90,7 +90,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     // You will need to update the assertions if you use a different model.
 
     final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -112,7 +112,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     // You will need to update the assertions if you use a different model.
 
     final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());

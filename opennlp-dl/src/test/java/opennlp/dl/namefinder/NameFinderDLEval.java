@@ -39,7 +39,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     // You will need to update the ids2Labels and assertions if you use a different model.
 
     final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
 
     final String[] tokens = new String[]
         {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
@@ -65,7 +65,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     // You will need to update the ids2Labels and assertions if you use a different model.
 
     final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
 
     final String[] tokens = new String[]{"His", "name", "was", "George", "Washington"};
 
@@ -89,7 +89,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     // You will need to update the ids2Labels and assertions if you use a different model.
 
     final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
 
     final String[] tokens = new String[]{"His", "name", "was", "George"};
 
@@ -106,6 +106,68 @@ public class NameFinderDLEval extends AbstactDLTest {
 
   }
 
+  @Test
+  public void tokenNameFinderNoInputTest() throws Exception {
+
+    // This test was written using the dslim/bert-base-NER model.
+    // You will need to update the ids2Labels and assertions if you use a different model.
+
+    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
+
+    final String[] tokens = new String[]{};
+
+    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+    final Span[] spans = nameFinderDL.find(tokens);
+
+    Assert.assertEquals(0, spans.length);
+
+  }
+
+  @Test
+  public void tokenNameFinderNoEntitiesTest() throws Exception {
+
+    // This test was written using the dslim/bert-base-NER model.
+    // You will need to update the ids2Labels and assertions if you use a different model.
+
+    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
+
+    final String[] tokens = new String[]{"I", "went", "to", "the", "park"};
+
+    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+    final Span[] spans = nameFinderDL.find(tokens);
+
+    Assert.assertEquals(0, spans.length);
+
+  }
+
+  @Test
+  public void tokenNameFinderMultipleEntitiesTest() throws Exception {
+
+    // This test was written using the dslim/bert-base-NER model.
+    // You will need to update the ids2Labels and assertions if you use a different model.
+
+    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
+
+    final String[] tokens = new String[]{"George", "Washington", "and", "Abraham", "Lincoln", "were", "presidents"};
+
+    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+    final Span[] spans = nameFinderDL.find(tokens);
+
+    for (Span span : spans) {
+      System.out.println(span.toString());
+    }
+
+    Assert.assertEquals(2, spans.length);
+    Assert.assertEquals(0, spans[0].getStart());
+    Assert.assertEquals(2, spans[0].getEnd());
+    Assert.assertEquals(3, spans[1].getStart());
+    Assert.assertEquals(5, spans[1].getEnd());
+
+  }
+
   @Test(expected = OrtException.class)
   public void invalidModel() throws Exception {
 
@@ -115,9 +177,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final File model = new File("invalid.onnx");
     final File vocab = new File("vocab.txt");
 
-    final String[] tokens = new String[]{"His", "name", "was", "George"};
-
-    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, true, getIds2Labels());
+    new NameFinderDL(model, vocab, true, getIds2Labels());
 
   }
 
