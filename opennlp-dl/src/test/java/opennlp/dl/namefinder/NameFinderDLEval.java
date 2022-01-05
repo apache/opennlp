@@ -151,7 +151,8 @@ public class NameFinderDLEval extends AbstactDLTest {
     final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
     final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
 
-    final String[] tokens = new String[]{"George", "Washington", "and", "Abraham", "Lincoln", "were", "presidents"};
+    final String[] tokens = new String[]{"George", "Washington", "and", "Abraham", "Lincoln",
+        "were", "presidents"};
 
     final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
     final Span[] spans = nameFinderDL.find(tokens);
