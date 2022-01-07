@@ -26,7 +26,7 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
   private static final Pattern URL_REGEX =
       Pattern.compile("https?://[-_.?&~;+=/#0-9A-Za-z]+");
   private static final Pattern MAIL_REGEX =
-      Pattern.compile("[-_.0-9A-Za-z]+@[-_0-9A-Za-z]+[-_.0-9A-Za-z]+");
+      Pattern.compile("(?<![-+_.0-9A-Za-z])[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+[-.0-9A-Za-z]+");
 
   private static final UrlCharSequenceNormalizer INSTANCE = new UrlCharSequenceNormalizer();
 
