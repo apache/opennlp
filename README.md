@@ -18,6 +18,7 @@ limitations under the License.
 Welcome to Apache OpenNLP!
 ===========
 
+[![Build Status](https://github.com/apache/opennlp/workflows/Java%20CI/badge.svg)](https://github.com/apache/opennlp/actions)
 [![Build Status](https://api.travis-ci.org/apache/opennlp.svg?branch=master)](https://travis-ci.org/apache/opennlp)
 [![Coverage Status](https://coveralls.io/repos/github/apache/opennlp/badge.svg?branch=master)](https://coveralls.io/github/apache/opennlp?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp)
