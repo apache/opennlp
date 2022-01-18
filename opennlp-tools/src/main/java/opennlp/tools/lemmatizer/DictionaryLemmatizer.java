@@ -17,18 +17,11 @@
 
 package opennlp.tools.lemmatizer;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Lemmatize by simple dictionary lookup into a hashmap built from a file
@@ -49,16 +42,24 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * Alternatively, if multiple lemmas are possible for each word,postag pair,
    * then the format should be word\tab\postag\tablemma01#lemma02#lemma03
    *
-   * @param dictionary
-   *          the input dictionary via inputstream
+   * @param dictionary the input dictionary via inputstream
+   * @param charset the encoding of the inputstream
    */
+  public DictionaryLemmatizer(final InputStream dictionary, Charset charset) throws IOException {
+    init(dictionary, charset);
+  }
+
   public DictionaryLemmatizer(final InputStream dictionary) throws IOException {
-    init(dictionary);
+    this(dictionary, StandardCharsets.UTF_8);
   }
 
   public DictionaryLemmatizer(File dictionaryFile) throws IOException {
+    this(dictionaryFile, StandardCharsets.UTF_8);
+  }
+
+  public DictionaryLemmatizer(File dictionaryFile, Charset charset) throws IOException {
     try (InputStream in = new FileInputStream(dictionaryFile)) {
-      init(in);
+      init(in, charset);
     }
   }
 
@@ -66,9 +67,9 @@ public class DictionaryLemmatizer implements Lemmatizer {
     this(dictionaryFile.toFile());
   }
 
-  private void init(InputStream dictionary) throws IOException {
+  private void init(InputStream dictionary, Charset charset) throws IOException {
     final BufferedReader breader = new BufferedReader(
-        new InputStreamReader(dictionary));
+        new InputStreamReader(dictionary, charset));
     String line;
     while ((line = breader.readLine()) != null) {
       final String[] elems = line.split("\t");
