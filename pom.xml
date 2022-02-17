@@ -26,7 +26,7 @@
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
 		<version>18</version>
-		<relativePath />
+		<relativePath/>
 	</parent>
 
 	<groupId>org.apache.opennlp</groupId>
@@ -146,6 +146,7 @@
 		<morfologik.version>2.1.7</morfologik.version>
 		<osgi.version>4.2.0</osgi.version>
 		<checkstyle.plugin.version>2.17</checkstyle.plugin.version>
+		<onnxruntime.version>1.10.0</onnxruntime.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.7.9</jacoco.maven.plugin>
@@ -505,6 +506,7 @@
 		<module>opennlp-morfologik-addon</module>
 		<module>opennlp-docs</module>
 		<module>opennlp-distr</module>
-	</modules>
+		<module>opennlp-dl</module>
+  </modules>
 
 </project>
