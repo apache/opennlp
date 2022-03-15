@@ -297,4 +297,30 @@ $ opennlp ToolNameEvaluator -model en-model-name.bin -lang en -data input.test -
         </section>
     </section>
 
+    <section id="intro.models">
+    <title>OpenNLP Models</title>
+        <section id="intro.models.native">
+            <title>OpenNLP Models</title>
+            <para>
+                OpenNLP supports training NLP models that can be used by OpenNLP. In this
+                documentation we will refer to these models as "OpenNLP models." All NLP
+                components of OpenNLP support this type of model. The sections below in
+                this documentation describe how to train and use these models. <ulink url="https://opennlp.apache.org/models.html">Pre-trained
+                models</ulink> are available for some languages and some of the OpenNLP components.
+            </para>
+        </section>
+        <section id="intro.models.onnx">
+            <title>ONNX Models</title>
+            <para>
+                OpenNLP supports ONNX models via the ONNX Runtime for the <link linkend="tools.namefind">Name Finder</link>.
+                and <link linkend="tools.doccat">Document Categorizer</link>. This allows models trained by other frameworks
+                such as PyTorch and Tensorflow to be used by OpenNLP. The documentation for
+                each of the OpenNLP components that supports ONNX models describes how to
+                use ONNX models for inference. Note that OpenNLP does not support training
+                models that can be used by the ONNX Runtime - ONNX models must be created
+                outside of OpenNLP using other tools.
+            </para>
+        </section>
+    </section>
+
 </chapter>
