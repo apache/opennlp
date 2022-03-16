@@ -49,8 +49,13 @@ adjustments to obligations towards dealers.]]>
 	<section id="tools.doccat.classifying.cmdline">
 		<title>Document Categorizer Tool</title>
 		<para>
+			Note that ONNX model support is not available through the command line tool. The models that can be trained
+			using the tool are OpenNLP models. ONNX models are trained through deep learning frameworks and then
+			utilized by OpenNLP.
+		</para>
+		<para>
 		The easiest way to try out the document categorizer is the command line tool. The tool is only
-		intended for demonstration and testing. The following command shows how to use the document categorizer tool. 
+		intended for demonstration and testing. The following command shows how to use the document categorizer tool.
 		  <screen>
 			<![CDATA[
 $ opennlp Doccat model]]>
@@ -63,11 +68,11 @@ $ opennlp Doccat model]]>
 		<title>Document Categorizer API</title>
 		<para>
 			To perform classification you will need a maxent model -
-			these are encapsulated in the DoccatModel class of OpenNLP tools.
+			these are encapsulated in the DoccatModel class of OpenNLP tools - or an ONNX model trained
+			for document classification.
 		</para>
 		<para>
-			First you need to grab the bytes from the serialized model on an InputStream - 
-			we'll leave it you to do that, since you were the one who serialized it to begin with. Now for the easy part:
+			Using an OpenNLP model, first you need to grab the bytes from the serialized model on an InputStream:
 						<programlisting language="java">
 				<![CDATA[
 InputStream is = ...
@@ -82,6 +87,25 @@ double[] outcomes = myCategorizer.categorize(inputText);
 String category = myCategorizer.getBestCategory(outcomes);]]>
 				</programlisting>
 		</para>
+		<section id="tools.namefind.api.onnx">
+			<title>Using an ONNX Model</title>
+			<para>
+				Using an ONNX model is similar, except we will utilize the <code>DocumentCategorizerDL</code> class instead.
+				You must provide the path to the model file and the vocabulary file to the document categorizer.
+				(There is no need to load the model as an InputStream as in the previous example.)
+				<programlisting language="java">
+					<![CDATA[
+File model = new File("/path/to/model.onnx");
+File vocab = new File("/path/to/vocab.txt");
+Map<Integer, String> categories = new HashMap<>();
+String[] inputText = new String[]{"My input text is great."};
+final DocumentCategorizerDL myCategorizer = new DocumentCategorizerDL(model, vocab, categories);
+double[] outcomes = myCategorizer.categorize(inputText);
+String category = myCategorizer.getBestCategory(outcomes);]]>
+				</programlisting>
+				For additional examples, refer to the <code>DocumentCategorizerDLEval</code> class.
+			</para>
+		</section>
 	</section>
 	</section>
 	<section id="tools.doccat.training">

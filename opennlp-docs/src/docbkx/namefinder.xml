@@ -149,9 +149,25 @@ Span nameSpans[] = nameFinder.find(sentence);]]>
 			Additionally to the statistical Name Finder, OpenNLP also offers a dictionary and a regular
 			expression name finder implementation.
 		</para>
-		<para>
-			TODO: Explain how to retrieve probs from the name finder for names and for non recognized names
-		</para>
+			<section id="tools.namefind.api.onnx">
+			<title>Using an ONNX Model</title>
+				<para>
+					Using an ONNX model is similar, except we will utilize the <code>NameFinderDL</code> class instead.
+					You must provide the path to the model file and the vocabulary file to the name finder.
+					(There is no need to load the model as an InputStream as in the previous example.) The name finder
+					requires a tokenized list of strings as input. The output will be an array of spans.
+					<programlisting language="java">
+						<![CDATA[
+File model = new File("/path/to/model.onnx");
+File vocab = new File("/path/to/vocab.txt");
+Map<Integer, String> categories = new HashMap<>();
+String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
+NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+Span[] spans = nameFinderDL.find(tokens);]]>
+					</programlisting>
+					For additional examples, refer to the <code>NameFinderDLEval</code> class.
+				</para>
+			</section>
 	</section>
 	</section>
 	<section id="tools.namefind.training">
@@ -168,6 +184,11 @@ Span nameSpans[] = nameFinder.find(sentence);]]>
 		<para>
 			OpenNLP has a command line tool which is used to train the models available from the model
 			download page on various corpora.
+		</para>
+		<para>
+			Note that ONNX model support is not available through the command line tool. The models that can be trained
+			using the tool are OpenNLP models. ONNX models are trained through deep learning frameworks and then
+			utilized by OpenNLP.
 		</para>
 		<para>
 			The data can be converted to the OpenNLP name finder training format. Which is one
