@@ -288,8 +288,8 @@ $ opennlp TokenNameFinderTrainer -featuregen brown.xml -sequenceCodec BILOU -res
 			The three steps are illustrated by the following sample code:
 			<programlisting language="java">
 				<![CDATA[
-ObjectStream<String> lineStream =
-		new PlainTextByLineStream(new FileInputStream("en-ner-person.train"), StandardCharsets.UTF_8);
+ObjectStream<String> lineStream = new PlainTextByLineStream(
+		new MarkableFileInputStreamFactory(new File("en-ner-person.train")), StandardCharsets.UTF_8);
 
 TokenNameFinderModel model;
 
@@ -303,7 +303,7 @@ try (ObjectStream modelOut = new BufferedOutputStream(new FileOutputStream(model
 			 </programlisting>
 		</para>
 		</section>
-		
+
 		<section id="tools.namefind.training.featuregen">
 		<title>Custom Feature Generation</title>
 			<para>
@@ -347,7 +347,7 @@ public static TokenNameFinderModel train(String languageCode, String type,
 				<programlisting language="java">
 					<![CDATA[
 new NameFinderME(model);]]>
-				 </programlisting>	 
+				 </programlisting>
 			</para>
 			</section>
 			<section id="tools.namefind.training.featuregen.xml">
@@ -357,7 +357,7 @@ new NameFinderME(model);]]>
             descriptor
 			file is stored inside the model after training and the feature generators are configured
 			correctly when the name finder is instantiated.
-			
+
 			The following sample shows a xml descriptor which contains the default feature generator plus several types of clustering features:
 				<programlisting language="xml">
 					<![CDATA[
@@ -527,9 +527,11 @@ System.out.println(result.toString());]]>
 			To perform cross validation the ObjectStream must be resettable.
 			<programlisting language="java">
 				<![CDATA[
-FileInputStream sampleDataIn = new FileInputStream("en-ner-person.train");
-ObjectStream<NameSample> sampleStream = new PlainTextByLineStream(sampleDataIn.getChannel(), StandardCharsets.UTF_8);
-TokenNameFinderCrossValidator evaluator = new TokenNameFinderCrossValidator("en", 100, 5);
+InputStreamFactory dataIn = new MarkableFileInputStreamFactory(new File("en-ner-person.train"));
+ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
+    new PlainTextByLineStream(dataIn, StandardCharsets.UTF_8));
+TokenNameFinderCrossValidator evaluator = new TokenNameFinderCrossValidator("eng",
+    null, TrainingParameters.defaultParams(), null, (TokenNameFinderEvaluationMonitor) null);
 evaluator.evaluate(sampleStream, 10);
 
 FMeasure result = evaluator.getFMeasure();
