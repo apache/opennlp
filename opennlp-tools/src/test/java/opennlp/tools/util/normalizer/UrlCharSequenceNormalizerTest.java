@@ -43,5 +43,9 @@ public class UrlCharSequenceNormalizerTest {
     Assert.assertEquals(
         "asdf   2nnfdf  ", normalizer.normalize("asdf asd.fdfa@hasdk23.com.br" +
             " 2nnfdf asd.fdfa@hasdk23.com.br"));
+    Assert.assertEquals(
+        "asdf   2nnfdf", normalizer.normalize("asdf asd+fdfa@hasdk23.com.br 2nnfdf"));
+    Assert.assertEquals(
+        "asdf  _br 2nnfdf", normalizer.normalize("asdf asd.fdfa@hasdk23.com_br 2nnfdf"));
   }
 }

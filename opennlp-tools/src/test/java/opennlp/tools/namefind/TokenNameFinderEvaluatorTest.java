@@ -26,11 +26,22 @@ import org.junit.Test;
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.util.Span;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 /**
  * This is the test class for {@link TokenNameFinderEvaluator}..
  */
 public class TokenNameFinderEvaluatorTest {
 
+
+  /** Return a dummy name finder that always return something expected */
+  public TokenNameFinder mockTokenNameFinder(Span[] ret) {
+    TokenNameFinder mockInstance = mock(TokenNameFinder.class);
+    when(mockInstance.find(any(String[].class))).thenReturn(ret);
+    return mockInstance;
+  }
 
   @Test
   public void testPositive() {
@@ -38,8 +49,8 @@ public class TokenNameFinderEvaluatorTest {
     TokenNameFinderEvaluationMonitor listener = new NameEvaluationErrorListener(stream);
 
     Span[] pred = createSimpleNameSampleA().getNames();
-    TokenNameFinderEvaluator eval =
-        new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
+    // Construct mock object
+    TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(mockTokenNameFinder(pred), listener);
 
     eval.evaluateSample(createSimpleNameSampleA());
 
@@ -54,8 +65,8 @@ public class TokenNameFinderEvaluatorTest {
     TokenNameFinderEvaluationMonitor listener = new NameEvaluationErrorListener(stream);
 
     Span[] pred = createSimpleNameSampleB().getNames();
-    TokenNameFinderEvaluator eval =
-        new TokenNameFinderEvaluator(new DummyNameFinder(pred), listener);
+    // Construct mock object
+    TokenNameFinderEvaluator eval = new TokenNameFinderEvaluator(mockTokenNameFinder(pred), listener);
 
     eval.evaluateSample(createSimpleNameSampleA());
 
@@ -89,24 +100,6 @@ public class TokenNameFinderEvaluatorTest {
     nameSample = new NameSample(sentence, names, false);
 
     return nameSample;
-  }
-
-  /** a dummy name finder that always return something expected */
-  class DummyNameFinder implements TokenNameFinder {
-
-    private Span[] ret;
-
-    public DummyNameFinder(Span[] ret) {
-      this.ret = ret;
-    }
-
-    public Span[] find(String[] tokens) {
-      return ret;
-    }
-
-    public void clearAdaptiveData() {
-    }
-
   }
 
 }

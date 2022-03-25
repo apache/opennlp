@@ -45,9 +45,7 @@ public class NameFinderSequenceValidator implements
         String nameType = NameFinderME.extractNameType(outcome);
         if (previousNameType != null || nameType != null ) {
           if (nameType != null ) {
-            if (nameType.equals(previousNameType)) {
-              return true;
-            }
+            return nameType.equals(previousNameType);
           }
           return false; // outcomes types are not equal
         }

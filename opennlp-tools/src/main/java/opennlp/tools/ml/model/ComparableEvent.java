@@ -73,12 +73,7 @@ public class ComparableEvent implements Comparable<ComparableEvent> {
       }
     }
 
-    int comparePredIndexesLength = Integer.compare(predIndexes.length, ce.predIndexes.length);
-    if (comparePredIndexesLength != 0) {
-      return comparePredIndexesLength;
-    }
-
-    return 0;
+    return Integer.compare(predIndexes.length, ce.predIndexes.length);
   }
 
   @Override

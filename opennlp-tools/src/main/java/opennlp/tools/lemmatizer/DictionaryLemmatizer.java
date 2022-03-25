@@ -23,6 +23,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,16 +51,24 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * Alternatively, if multiple lemmas are possible for each word,postag pair,
    * then the format should be word\tab\postag\tablemma01#lemma02#lemma03
    *
-   * @param dictionary
-   *          the input dictionary via inputstream
+   * @param dictionary the input dictionary via inputstream
+   * @param charset the encoding of the inputstream
    */
+  public DictionaryLemmatizer(final InputStream dictionary, Charset charset) throws IOException {
+    init(dictionary, charset);
+  }
+
   public DictionaryLemmatizer(final InputStream dictionary) throws IOException {
-    init(dictionary);
+    this(dictionary, StandardCharsets.UTF_8);
   }
 
   public DictionaryLemmatizer(File dictionaryFile) throws IOException {
+    this(dictionaryFile, StandardCharsets.UTF_8);
+  }
+
+  public DictionaryLemmatizer(File dictionaryFile, Charset charset) throws IOException {
     try (InputStream in = new FileInputStream(dictionaryFile)) {
-      init(in);
+      init(in, charset);
     }
   }
 
@@ -66,9 +76,9 @@ public class DictionaryLemmatizer implements Lemmatizer {
     this(dictionaryFile.toFile());
   }
 
-  private void init(InputStream dictionary) throws IOException {
+  private void init(InputStream dictionary, Charset charset) throws IOException {
     final BufferedReader breader = new BufferedReader(
-        new InputStreamReader(dictionary));
+        new InputStreamReader(dictionary, charset));
     String line;
     while ((line = breader.readLine()) != null) {
       final String[] elems = line.split("\t");
@@ -95,8 +105,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
    * @return returns the dictionary keys
    */
   private List<String> getDictKeys(final String word, final String postag) {
-    final List<String> keys = new ArrayList<>();
-    keys.addAll(Arrays.asList(word.toLowerCase(), postag));
+    final List<String> keys = new ArrayList<>(Arrays.asList(word.toLowerCase(), postag));
     return keys;
   }
 

@@ -19,7 +19,7 @@ package opennlp.tools.ml.model;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -54,7 +54,7 @@ public abstract class AbstractModel implements MaxentModel {
   }
 
   private void init(String[] predLabels, Context[] params, String[] outcomeNames) {
-    this.pmap = new HashMap<>(predLabels.length);
+    this.pmap = new LinkedHashMap<>(predLabels.length);
 
     for (int i = 0; i < predLabels.length; i++) {
       pmap.put(predLabels[i], params[i]);

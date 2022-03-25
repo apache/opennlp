@@ -158,6 +158,6 @@ public class POSSample implements Serializable {
           && Arrays.equals(getTags(), a.getTags());
     }
 
-    return this == obj;
+    return false;
   }
 }

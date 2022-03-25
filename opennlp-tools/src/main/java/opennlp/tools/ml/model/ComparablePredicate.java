@@ -46,12 +46,7 @@ public class ComparablePredicate implements Comparable<ComparablePredicate> {
       }
     }
 
-    int compareOutcomesLength = Integer.compare(outcomes.length, cp.outcomes.length);
-    if (compareOutcomesLength != 0) {
-      return compareOutcomesLength;
-    }
-
-    return 0;
+    return Integer.compare(outcomes.length, cp.outcomes.length);
   }
 
   @Override

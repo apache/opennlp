@@ -536,13 +536,8 @@ public class GeneratorFactory {
               (AbstractXmlFeatureGeneratorFactory)constructor.newInstance();
           factory.init(generatorElement, resourceManager);
           return factory.create();
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-          throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-          throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+            | IllegalAccessException e) {
           throw new RuntimeException(e);
         }
       } catch (ClassNotFoundException e) {
@@ -635,13 +630,8 @@ public class GeneratorFactory {
           Map<String, ArtifactSerializer<?>> map = factory.getArtifactSerializerMapping();
           if (map != null)
             mapping.putAll(map);
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-          throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-          throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+            | IllegalAccessException e) {
           throw new RuntimeException(e);
         } catch (InvalidFormatException ignored) {
         }
@@ -732,10 +722,8 @@ public class GeneratorFactory {
         String modelName = xmlElement.getAttribute("model");
         if (modelName != null) {
 
-          switch (xmlElement.getTagName()) {
-            case "tokenpos":
-              mapping.put(modelName, new POSModelSerializer());
-              break;
+          if ("tokenpos".equals(xmlElement.getTagName())) {
+            mapping.put(modelName, new POSModelSerializer());
           }
         }
       }

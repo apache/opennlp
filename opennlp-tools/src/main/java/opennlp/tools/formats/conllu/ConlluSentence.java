@@ -18,6 +18,9 @@
 package opennlp.tools.formats.conllu;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 public class ConlluSentence {
 
@@ -25,11 +28,31 @@ public class ConlluSentence {
 
   private String sentenceIdComment;
   private String textComment;
+  private boolean newDocument;
+  private String documentId;
+  private boolean newParagraph;
+  private String paragraphId;
+  private Map<Locale, String> textLang;
+  private String translit;
 
   ConlluSentence(List<ConlluWordLine> wordLines, String sentenceIdComment, String textComment) {
     this.wordLines = wordLines;
     this.sentenceIdComment = sentenceIdComment;
     this.textComment = textComment;
+  }
+
+  public ConlluSentence(List<ConlluWordLine> wordLines, String sentenceIdComment, String textComment,
+                        boolean newDocument, String documentId, boolean newParagraph, String paragraphId,
+                        Map<Locale, String> textLang, String translit) {
+    this.wordLines = wordLines;
+    this.sentenceIdComment = sentenceIdComment;
+    this.textComment = textComment;
+    this.newDocument = newDocument;
+    this.documentId = documentId;
+    this.newParagraph = newParagraph;
+    this.paragraphId = paragraphId;
+    this.textLang = textLang;
+    this.translit = translit;
   }
 
   public List<ConlluWordLine> getWordLines() {
@@ -42,5 +65,29 @@ public class ConlluSentence {
 
   public String getTextComment() {
     return textComment;
+  }
+
+  public boolean isNewDocument() {
+    return newDocument;
+  }
+
+  public Optional<String> getDocumentId() {
+    return Optional.ofNullable(documentId);
+  }
+
+  public boolean isNewParagraph() {
+    return newParagraph;
+  }
+
+  public Optional<String> getParagraphId() {
+    return Optional.ofNullable(paragraphId);
+  }
+
+  public Optional<Map<Locale, String>> getTextLang() {
+    return Optional.ofNullable(textLang);
+  }
+
+  public Optional<String> getTranslit() {
+    return Optional.ofNullable(translit);
   }
 }

@@ -44,9 +44,7 @@ public class BilouNameFinderSequenceValidator implements
         String nameType = NameFinderME.extractNameType(outcome);
         if (previousNameType != null || nameType != null) {
           if (nameType != null) {
-            if (nameType.equals(previousNameType)) {
-              return true;
-            }
+            return nameType.equals(previousNameType);
           }
           return false; // outcomes types are not equal
         }
@@ -57,10 +55,8 @@ public class BilouNameFinderSequenceValidator implements
       if (outcome.endsWith(BilouCodec.START)
           || outcome.endsWith(BilouCodec.OTHER)
           || outcome.endsWith(BilouCodec.UNIT)) {
-        if (outcomesSequence[outcomesSequence.length - 1].endsWith(BilouCodec.START)
-            || outcomesSequence[outcomesSequence.length - 1].endsWith(BilouCodec.CONTINUE)) {
-          return false;
-        }
+        return !outcomesSequence[outcomesSequence.length - 1].endsWith(BilouCodec.START)
+                && !outcomesSequence[outcomesSequence.length - 1].endsWith(BilouCodec.CONTINUE);
       }
     }
 
