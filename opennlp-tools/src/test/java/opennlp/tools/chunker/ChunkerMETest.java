@@ -64,8 +64,8 @@ public class ChunkerMETest {
       "B-NP", "B-VP", "I-VP", "B-NP", "I-NP", "I-NP", "I-NP", "B-PP", "B-NP",
       "I-NP", "O" };
 
-  @Test
-  public void downloadModel() throws IOException {
+  @Test(expected = IOException.class)
+  public void downloadNonExistentModel() throws IOException {
 
     ChunkerME chunker = new ChunkerME("en");
 

@@ -57,25 +57,6 @@ public class DownloadUtil {
     }
   }
 
-  /**
-   * The entity type of the NER model.
-   */
-  public enum EntityType {
-    DATE("date"),
-    PERSON("person"),
-    ORGANIZATION("organization"),
-    LOCATION("location"),
-    MISC("misc"),
-    MONEY("money"),
-    PERCENTAGE("percentage");
-
-    private String entityType;
-
-    EntityType(String entityType) {
-      this.entityType = entityType;
-    }
-  }
-
   private static final String baseUrl = "https://dlcdn.apache.org/opennlp/";
 
   public static Map<String, Map<ModelType, String>> available_models = new HashMap<>();
@@ -83,33 +64,48 @@ public class DownloadUtil {
   static {
 
     final Map<ModelType, String> frenchModels = new HashMap<>();
-    frenchModels.put(ModelType.SENTENCE_DETECTOR, baseUrl + "models/ud-models-1.0/opennlp-1.0-1.9.3fr-ud-ftb-sentence-1.0-1.9.3.bin");
-    frenchModels.put(ModelType.POS, baseUrl + "models/ud-models-1.0/opennlp-fr-ud-ftb-pos-1.0-1.9.3.bin");
-    frenchModels.put(ModelType.TOKENIZER, baseUrl + "models/ud-models-1.0/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin");
+    frenchModels.put(ModelType.SENTENCE_DETECTOR,
+        baseUrl + "models/ud-models-1.0/opennlp-1.0-1.9.3fr-ud-ftb-sentence-1.0-1.9.3.bin");
+    frenchModels.put(ModelType.POS,
+        baseUrl + "models/ud-models-1.0/opennlp-fr-ud-ftb-pos-1.0-1.9.3.bin");
+    frenchModels.put(ModelType.TOKENIZER,
+        baseUrl + "models/ud-models-1.0/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin");
     available_models.put("fr", frenchModels);
 
     final Map<ModelType, String> germanModels = new HashMap<>();
-    germanModels.put(ModelType.SENTENCE_DETECTOR, baseUrl + "models/ud-models-1.0/opennlp-de-ud-gsd-sentence-1.0-1.9.3.bin");
-    germanModels.put(ModelType.POS, baseUrl + "models/ud-models-1.0/opennlp-de-ud-gsd-pos-1.0-1.9.3.bin");
-    germanModels.put(ModelType.TOKENIZER, baseUrl + "models/ud-models-1.0/opennlp-de-ud-gsd-tokens-1.0-1.9.3.bin");
+    germanModels.put(ModelType.SENTENCE_DETECTOR,
+        baseUrl + "models/ud-models-1.0/opennlp-de-ud-gsd-sentence-1.0-1.9.3.bin");
+    germanModels.put(ModelType.POS,
+        baseUrl + "models/ud-models-1.0/opennlp-de-ud-gsd-pos-1.0-1.9.3.bin");
+    germanModels.put(ModelType.TOKENIZER,
+        baseUrl + "models/ud-models-1.0/opennlp-de-ud-gsd-tokens-1.0-1.9.3.bin");
     available_models.put("de", germanModels);
 
     final Map<ModelType, String> englishModels = new HashMap<>();
-    englishModels.put(ModelType.SENTENCE_DETECTOR, baseUrl + "models/ud-models-1.0/opennlp-en-ud-ewt-sentence-1.0-1.9.3.bin");
-    englishModels.put(ModelType.POS, baseUrl + "models/ud-models-1.0/opennlp-en-ud-ewt-pos-1.0-1.9.3.bin");
-    englishModels.put(ModelType.TOKENIZER, baseUrl + "models/ud-models-1.0/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin");
+    englishModels.put(ModelType.SENTENCE_DETECTOR,
+        baseUrl + "models/ud-models-1.0/opennlp-en-ud-ewt-sentence-1.0-1.9.3.bin");
+    englishModels.put(ModelType.POS,
+        baseUrl + "models/ud-models-1.0/opennlp-en-ud-ewt-pos-1.0-1.9.3.bin");
+    englishModels.put(ModelType.TOKENIZER,
+        baseUrl + "models/ud-models-1.0/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin");
     available_models.put("en", englishModels);
 
     final Map<ModelType, String> italianModels = new HashMap<>();
-    italianModels.put(ModelType.SENTENCE_DETECTOR, baseUrl + "models/ud-models-1.0/opennlp-it-ud-vit-sentence-1.0-1.9.3.bin");
-    italianModels.put(ModelType.POS, baseUrl + "models/ud-models-1.0/opennlp-it-ud-vit-pos-1.0-1.9.3.bin");
-    italianModels.put(ModelType.TOKENIZER, baseUrl + "models/ud-models-1.0/opennlp-it-ud-vit-sentence-1.0-1.9.3.bin");
+    italianModels.put(ModelType.SENTENCE_DETECTOR,
+        baseUrl + "models/ud-models-1.0/opennlp-it-ud-vit-sentence-1.0-1.9.3.bin");
+    italianModels.put(ModelType.POS,
+        baseUrl + "models/ud-models-1.0/opennlp-it-ud-vit-pos-1.0-1.9.3.bin");
+    italianModels.put(ModelType.TOKENIZER,
+        baseUrl + "models/ud-models-1.0/opennlp-it-ud-vit-sentence-1.0-1.9.3.bin");
     available_models.put("it", italianModels);
 
     final Map<ModelType, String> dutchModels = new HashMap<>();
-    dutchModels.put(ModelType.SENTENCE_DETECTOR, baseUrl + "models/opennlp-nl-ud-alpino-sentence-1.0-1.9.3.bin");
-    dutchModels.put(ModelType.POS, baseUrl + "models/ud-models-1.0/opennlp-nl-ud-alpino-pos-1.0-1.9.3.bin");
-    dutchModels.put(ModelType.TOKENIZER, baseUrl + "models/ud-models-1.0/opennlp-nl-ud-alpino-tokens-1.0-1.9.3.bin");
+    dutchModels.put(ModelType.SENTENCE_DETECTOR,
+        baseUrl + "models/opennlp-nl-ud-alpino-sentence-1.0-1.9.3.bin");
+    dutchModels.put(ModelType.POS,
+        baseUrl + "models/ud-models-1.0/opennlp-nl-ud-alpino-pos-1.0-1.9.3.bin");
+    dutchModels.put(ModelType.TOKENIZER,
+        baseUrl + "models/ud-models-1.0/opennlp-nl-ud-alpino-tokens-1.0-1.9.3.bin");
     available_models.put("nl", dutchModels);
 
   }
@@ -117,11 +113,10 @@ public class DownloadUtil {
   public static BaseModel downloadModel(String language, ModelType modelType, Class type)
           throws IOException {
 
-    if(available_models.containsKey(language)) {
-      final URL modelUrl = new URL(available_models.get(language).get(modelType));
-
-      if(modelUrl != null) {
-        return downloadModel(modelUrl, type);
+    if (available_models.containsKey(language)) {
+      final String url = (available_models.get(language).get(modelType));
+      if (url != null) {
+        return downloadModel(new URL(url), type);
       }
     }
 

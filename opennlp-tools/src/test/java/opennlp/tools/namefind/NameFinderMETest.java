@@ -25,7 +25,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.tools.ml.model.SequenceClassificationModel;
-import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
