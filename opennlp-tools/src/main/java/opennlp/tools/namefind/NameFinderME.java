@@ -74,11 +74,6 @@ public class NameFinderME implements TokenNameFinder {
           = new AdditionalContextFeatureGenerator();
   private SequenceValidator<String> sequenceValidator;
 
-  public NameFinderME(String language, DownloadUtil.EntityType entityType) throws IOException {
-    this((TokenNameFinderModel) DownloadUtil.downloadModel(DownloadUtil.ModelType.NAME_FINDER,
-            entityType, language));
-  }
-
   public NameFinderME(TokenNameFinderModel model) {
 
     TokenNameFinderFactory factory = model.getFactory();

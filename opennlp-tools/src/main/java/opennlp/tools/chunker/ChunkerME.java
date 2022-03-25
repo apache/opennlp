@@ -108,8 +108,13 @@ public class ChunkerME implements Chunker {
     }
   }
 
+  /**
+   * Initializes the chunker by downloading a default model.
+   * @param language The language of the model.
+   * @throws IOException Thrown if the model cannot be downloaded or saved.
+   */
   public ChunkerME(String language) throws IOException {
-    this((ChunkerModel) DownloadUtil.downloadModel(DownloadUtil.ModelType.CHUNKER, language,
+    this((ChunkerModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.CHUNKER,
             ChunkerModel.class));
   }
 

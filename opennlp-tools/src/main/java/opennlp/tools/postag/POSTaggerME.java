@@ -87,8 +87,13 @@ public class POSTaggerME implements POSTagger {
 
   private SequenceValidator<String> sequenceValidator;
 
+  /**
+   * Initializes the sentence detector by downloading a default model.
+   * @param language The language of the POS tagger
+   * @throws IOException Thrown if the model cannot be downloaded or saved.
+   */
   public POSTaggerME(String language) throws IOException {
-    this((POSModel) DownloadUtil.downloadModel(DownloadUtil.ModelType.POS, language, POSModel.class));
+    this((POSModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.POS, POSModel.class));
   }
 
   /**

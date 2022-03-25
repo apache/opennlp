@@ -119,8 +119,13 @@ public class TokenizerME extends AbstractTokenizer {
 
   private List<Span> newTokens;
 
+  /**
+   * Initializes the tokenizer by downloading a default model.
+   * @param language The language of the tokenizer.
+   * @throws IOException Thrown if the model cannot be downloaded or saved.
+   */
   public TokenizerME(String language) throws IOException {
-    this((TokenizerModel) DownloadUtil.downloadModel(DownloadUtil.ModelType.TOKENIZER, language,
+    this((TokenizerModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.TOKENIZER,
             TokenizerModel.class));
   }
 

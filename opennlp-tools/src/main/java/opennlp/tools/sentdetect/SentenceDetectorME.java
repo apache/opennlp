@@ -79,8 +79,13 @@ public class SentenceDetectorME implements SentenceDetector {
 
   protected boolean useTokenEnd;
 
+  /**
+   * Initializes the sentence detector by downloading a default model.
+   * @param language The language of the sentence detector.
+   * @throws IOException Thrown if the model cannot be downloaded or saved.
+   */
   public SentenceDetectorME(String language) throws IOException {
-    this((SentenceModel) DownloadUtil.downloadModel(DownloadUtil.ModelType.SENTENCE_DETECTOR, language,
+    this((SentenceModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.SENTENCE_DETECTOR,
             SentenceModel.class));
   }
 

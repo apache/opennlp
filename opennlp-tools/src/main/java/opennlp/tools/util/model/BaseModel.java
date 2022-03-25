@@ -502,7 +502,6 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    */
   public final String getManifestProperty(String key) {
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
-
     return manifest.getProperty(key);
   }
 
