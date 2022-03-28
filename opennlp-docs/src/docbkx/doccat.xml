@@ -151,11 +151,10 @@ $ opennlp DoccatTrainer -model en-doccat.bin -lang en -data en-doccat.train -enc
 		<programlisting language="java">
 						<![CDATA[
 DoccatModel model = null;
-InputStreamFactory dataIn = null;
-
 try {
-  dataIn = new MarkableFileInputStreamFactory(new File("en-sentiment.train"));
-  ObjectStream<String> lineStream = new PlainTextByLineStream(dataIn, StandardCharsets.UTF_8);
+  ObjectStream<String> lineStream =
+		new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-sentiment.train")), StandardCharsets.UTF_8);
+
   ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
 
   model = DocumentCategorizerME.train("en", sampleStream,

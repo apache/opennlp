@@ -207,8 +207,8 @@ $ opennlp POSTaggerTrainer -type maxent -model en-pos-maxent.bin \
 POSModel model = null;
 
 try {
-  InputStreamFactory dataIn = new MarkableFileInputStreamFactory(new File("en-pos.train"));
-  ObjectStream<String> lineStream = new PlainTextByLineStream(dataIn, StandardCharsets.UTF_8);
+  ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-pos.train")), StandardCharsets.UTF_8);
+
   ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
 
   model = POSTaggerME.train("en", sampleStream, TrainingParameters.defaultParams(), new POSTaggerFactory());
