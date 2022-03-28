@@ -136,8 +136,7 @@
 
 	<properties>
 		<!-- Build Properties -->
-		<java.version>1.8</java.version>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<java.version>11</java.version>
 		<maven.version>3.3.9</maven.version>
 		<commons.io.version>2.6</commons.io.version>
 		<enforcer.plugin.version>3.0.0-M2</enforcer.plugin.version>
@@ -295,10 +294,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.10.1</version>
 				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
+					<release>${java.version}</release>
 					<compilerArgument>-Xlint</compilerArgument>
 				</configuration>
 			</plugin>
