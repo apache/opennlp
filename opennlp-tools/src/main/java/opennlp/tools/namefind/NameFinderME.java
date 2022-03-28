@@ -218,8 +218,8 @@ public class NameFinderME implements TokenNameFinder {
   }
 
   public static TokenNameFinderModel train(String languageCode, String type,
-          ObjectStream<NameSample> samples, TrainingParameters trainParams,
-          TokenNameFinderFactory factory) throws IOException {
+                                           ObjectStream<NameSample> samples, TrainingParameters trainParams,
+                                           TokenNameFinderFactory factory) throws IOException {
 
     trainParams.putIfAbsent(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.putIfAbsent(TrainingParameters.CUTOFF_PARAM, 0);

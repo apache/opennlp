@@ -67,7 +67,7 @@ public class TokenNameFinderToolTest {
 
     model1.delete();
   }
-  
+
   @Test(expected = TerminateToolException.class)
   public void invalidModel() {
 

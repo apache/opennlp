@@ -32,6 +32,7 @@ import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.tokenize.lang.Factory;
+import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
@@ -117,6 +118,16 @@ public class TokenizerME extends AbstractTokenizer {
   private List<Double> tokProbs;
 
   private List<Span> newTokens;
+
+  /**
+   * Initializes the tokenizer by downloading a default model.
+   * @param language The language of the tokenizer.
+   * @throws IOException Thrown if the model cannot be downloaded or saved.
+   */
+  public TokenizerME(String language) throws IOException {
+    this((TokenizerModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.TOKENIZER,
+            TokenizerModel.class));
+  }
 
   public TokenizerME(TokenizerModel model) {
     TokenizerFactory factory = model.getFactory();

@@ -64,6 +64,16 @@ public class ChunkerMETest {
       "B-NP", "B-VP", "I-VP", "B-NP", "I-NP", "I-NP", "I-NP", "B-PP", "B-NP",
       "I-NP", "O" };
 
+  @Test(expected = IOException.class)
+  public void downloadNonExistentModel() throws IOException {
+
+    ChunkerME chunker = new ChunkerME("en");
+
+    String[] preds = chunker.chunk(toks1, tags1);
+
+    Assert.assertArrayEquals(expect1, preds);
+  }
+
   @Before
   public void startup() throws IOException {
     // train the chunker
