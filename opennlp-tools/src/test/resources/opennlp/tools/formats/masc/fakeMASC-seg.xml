@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graph xmlns="http://www.xces.org/ns/GrAF/1.0/">
+    <graphHeader>
+        <labelsDecl>
+        </labelsDecl>
+    </graphHeader>
+    <region xml:id="seg-r0" anchors="1 5"/>
+    <region xml:id="seg-r2" anchors="6 8"/>
+    <region xml:id="seg-r4" anchors="9 10"/>
+    <region xml:id="seg-r6" anchors="11 15"/>
+    <region xml:id="seg-r8" anchors="16 24"/>
+    <region xml:id="seg-r9" anchors="24 25"/>
+    <region xml:id="seg-r11" anchors="27 31"/>
+    <region xml:id="seg-r13" anchors="32 34"/>
+    <region xml:id="seg-r15" anchors="35 36"/>
+    <region xml:id="seg-r16" anchors="36 42"/>
+    <region xml:id="seg-r18" anchors="43 47"/>
+    <region xml:id="seg-r20" anchors="48 56"/>
+    <region xml:id="seg-r21" anchors="56 57"/>
+</graph>
