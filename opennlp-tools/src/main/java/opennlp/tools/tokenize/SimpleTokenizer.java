@@ -28,6 +28,8 @@ import opennlp.tools.util.StringUtil;
  */
 public class SimpleTokenizer extends AbstractTokenizer {
 
+  private boolean keepNewLines = false;
+
   static class CharacterEnum {
     static final CharacterEnum WHITESPACE = new CharacterEnum("whitespace");
     static final CharacterEnum ALPHABETIC = new CharacterEnum("alphabetic");
@@ -93,6 +95,10 @@ public class SimpleTokenizer extends AbstractTokenizer {
           start = ci;
         }
       }
+      if (keepNewLines && isLineSeparator(c)) {
+        tokens.add(new Span(start, start + 1));
+        start = start + 1;
+      }
       state = charType;
       pc = c;
     }
@@ -100,5 +106,13 @@ public class SimpleTokenizer extends AbstractTokenizer {
       tokens.add(new Span(start, sl));
     }
     return tokens.toArray(new Span[tokens.size()]);
+  }
+
+  private boolean isLineSeparator(char character) {
+    return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
+  }
+
+  public void setKeepNewLines(boolean keepNewLines) {
+    this.keepNewLines = keepNewLines;
   }
 }

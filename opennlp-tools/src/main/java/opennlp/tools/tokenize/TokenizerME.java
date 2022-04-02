@@ -118,6 +118,7 @@ public class TokenizerME extends AbstractTokenizer {
   private List<Double> tokProbs;
 
   private List<Span> newTokens;
+  private boolean keepNewLines = false;
 
   /**
    * Initializes the tokenizer by downloading a default model.
@@ -188,7 +189,9 @@ public class TokenizerME extends AbstractTokenizer {
    * @return   A span array containing individual tokens as elements.
    */
   public Span[] tokenizePos(String d) {
-    Span[] tokens = WhitespaceTokenizer.INSTANCE.tokenizePos(d);
+    WhitespaceTokenizer whitespaceTokenizer = WhitespaceTokenizer.INSTANCE;
+    whitespaceTokenizer.setKeepNewLines(keepNewLines);
+    Span[] tokens = whitespaceTokenizer.tokenizePos(d);
     newTokens.clear();
     tokProbs.clear();
     for (Span s : tokens) {
@@ -267,5 +270,9 @@ public class TokenizerME extends AbstractTokenizer {
    */
   public boolean useAlphaNumericOptimization() {
     return useAlphaNumericOptimization;
+  }
+
+  public void setKeepNewLines(boolean keepNewLines) {
+    this.keepNewLines = keepNewLines;
   }
 }
