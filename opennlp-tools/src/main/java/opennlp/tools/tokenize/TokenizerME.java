@@ -118,7 +118,6 @@ public class TokenizerME extends AbstractTokenizer {
   private List<Double> tokProbs;
 
   private List<Span> newTokens;
-  private boolean keepNewLines = false;
 
   /**
    * Initializes the tokenizer by downloading a default model.
@@ -272,7 +271,4 @@ public class TokenizerME extends AbstractTokenizer {
     return useAlphaNumericOptimization;
   }
 
-  public void setKeepNewLines(boolean keepNewLines) {
-    this.keepNewLines = keepNewLines;
-  }
 }

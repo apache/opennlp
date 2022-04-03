@@ -21,7 +21,14 @@ import opennlp.tools.util.Span;
 
 abstract class AbstractTokenizer implements Tokenizer {
 
+  protected boolean keepNewLines = false;
+
   public String[] tokenize(String s) {
     return Span.spansToStrings(tokenizePos(s), s);
   }
+
+  public void setKeepNewLines(boolean keepNewLines) {
+    this.keepNewLines = keepNewLines;
+  }
+
 }

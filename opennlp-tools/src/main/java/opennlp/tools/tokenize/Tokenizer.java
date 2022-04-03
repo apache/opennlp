@@ -62,4 +62,5 @@ public interface Tokenizer {
    * token as the individuals array elements.
    */
   Span[] tokenizePos(String s);
+
 }
