@@ -36,7 +36,6 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
    * {@link WhitespaceTokenizer}.
    */
   public static final WhitespaceTokenizer INSTANCE = new WhitespaceTokenizer();
-  private boolean keepNewLines = false;
 
   /**
    * Use the {@link WhitespaceTokenizer#INSTANCE} field to retrieve an instance.
@@ -82,7 +81,4 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
   }
 
-  public void setKeepNewLines(boolean keepNewLines) {
-    this.keepNewLines = keepNewLines;
-  }
 }

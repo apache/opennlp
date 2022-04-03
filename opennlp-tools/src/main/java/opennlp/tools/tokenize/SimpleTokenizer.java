@@ -28,8 +28,6 @@ import opennlp.tools.util.StringUtil;
  */
 public class SimpleTokenizer extends AbstractTokenizer {
 
-  private boolean keepNewLines = false;
-
   static class CharacterEnum {
     static final CharacterEnum WHITESPACE = new CharacterEnum("whitespace");
     static final CharacterEnum ALPHABETIC = new CharacterEnum("alphabetic");
@@ -112,7 +110,4 @@ public class SimpleTokenizer extends AbstractTokenizer {
     return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
   }
 
-  public void setKeepNewLines(boolean keepNewLines) {
-    this.keepNewLines = keepNewLines;
-  }
 }
