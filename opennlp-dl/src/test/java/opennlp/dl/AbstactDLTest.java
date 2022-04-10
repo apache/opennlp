@@ -29,7 +29,7 @@ public abstract class AbstactDLTest {
     if (StringUtil.isEmpty(dataDirectory)) {
       throw new IllegalArgumentException("The OPENNLP_DATA_DIR is not set.");
     }
-    final File file = new File(System.getProperty("OPENNLP_DATA_DIR"));
+    final File file = new File(dataDirectory);
     if (!file.exists()) {
       throw new FileNotFoundException("The OPENNLP_DATA_DIR path of " + dataDirectory + " was not found.");
     }

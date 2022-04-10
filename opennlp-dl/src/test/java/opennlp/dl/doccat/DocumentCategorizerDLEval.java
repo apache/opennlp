@@ -37,8 +37,8 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/doccat/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/doccat/vocab.txt");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -67,8 +67,8 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/doccat/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/doccat/vocab.txt");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -89,8 +89,8 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/doccat/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/doccat/vocab.txt");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -111,8 +111,8 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "dl-doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "dl-doccat/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/doccat/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/doccat/vocab.txt");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
