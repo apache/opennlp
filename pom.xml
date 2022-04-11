@@ -352,6 +352,8 @@
 				<version>3.1.1</version>
 				<configuration>
 					<doclint>none</doclint>
+					<source>8</source>
+					<sourcepath>src/main/java</sourcepath>
 				</configuration>
 				<executions>
 					<execution>
@@ -364,7 +366,6 @@
 							<show>public</show>
 							<quiet>false</quiet>
 							<use>false</use> <!-- Speeds up the build of the javadocs -->
-							<source>8</source>
 						</configuration>
 					</execution>
 				</executions>
