@@ -38,8 +38,8 @@ public class NameFinderDLEval extends AbstactDLTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
 
     final String[] tokens = new String[]
         {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
@@ -54,7 +54,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     Assert.assertEquals(1, spans.length);
     Assert.assertEquals(0, spans[0].getStart());
     Assert.assertEquals(2, spans[0].getEnd());
-    Assert.assertEquals(0.8251646041870118, spans[0].getProb(), 0.0);
+    Assert.assertEquals(8.251646041870117, spans[0].getProb(), 0.0);
 
   }
 
@@ -64,8 +64,8 @@ public class NameFinderDLEval extends AbstactDLTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
 
     final String[] tokens = new String[]{"His", "name", "was", "George", "Washington"};
 
@@ -88,8 +88,8 @@ public class NameFinderDLEval extends AbstactDLTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
 
     final String[] tokens = new String[]{"His", "name", "was", "George"};
 
@@ -112,8 +112,8 @@ public class NameFinderDLEval extends AbstactDLTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
 
     final String[] tokens = new String[]{};
 
@@ -130,8 +130,8 @@ public class NameFinderDLEval extends AbstactDLTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
 
     final String[] tokens = new String[]{"I", "went", "to", "the", "park"};
 
@@ -148,8 +148,8 @@ public class NameFinderDLEval extends AbstactDLTest {
     // This test was written using the dslim/bert-base-NER model.
     // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File(getOpennlpDataDir(), "namefinder/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "namefinder/vocab.txt");
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
 
     final String[] tokens = new String[]{"George", "Washington", "and", "Abraham", "Lincoln",
         "were", "presidents"};
