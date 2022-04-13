@@ -231,8 +231,8 @@ $ opennlp ChunkerTrainerME -model en-chunker.bin -lang en -data en-chunker.train
                 illustrates how to do it:
                 <programlisting language="java">
                     <![CDATA[
-ObjectStream<String> lineStream = new PlainTextByLineStream(
-	new MarkableFileInputStreamFactory(new File("en-chunker.train")), StandardCharsets.UTF_8);
+ObjectStream<String> lineStream =
+    new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-chunker.train")), StandardCharsets.UTF_8);
 
 ChunkerModel model;
 

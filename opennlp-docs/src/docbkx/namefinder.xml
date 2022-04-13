@@ -288,8 +288,8 @@ $ opennlp TokenNameFinderTrainer -featuregen brown.xml -sequenceCodec BILOU -res
 			The three steps are illustrated by the following sample code:
 			<programlisting language="java">
 				<![CDATA[
-ObjectStream<String> lineStream = new PlainTextByLineStream(
-		new MarkableFileInputStreamFactory(new File("en-ner-person.train")), StandardCharsets.UTF_8);
+ObjectStream<String> lineStream =
+		new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-ner-person.train")), StandardCharsets.UTF_8);
 
 TokenNameFinderModel model;
 
