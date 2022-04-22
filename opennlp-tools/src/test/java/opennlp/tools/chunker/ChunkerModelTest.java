@@ -43,6 +43,7 @@ public class ChunkerModelTest {
   @Test
   public void test170DefaultFactory() throws Exception {
 
+    // This is an OpenNLP 1.x model. It should load with OpenNLP 2.x.
     Assert.assertNotNull(
         new ChunkerModel(this.getClass().getResourceAsStream("chunker170default.bin")));
 
@@ -51,6 +52,7 @@ public class ChunkerModelTest {
   @Test
   public void test180CustomFactory() throws Exception {
 
+    // This is an OpenNLP 1.x model. It should load with OpenNLP 2.x.
     Assert.assertNotNull(
         new ChunkerModel(this.getClass().getResourceAsStream("chunker180custom.bin")));
 
