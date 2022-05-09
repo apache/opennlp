@@ -574,6 +574,10 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
       Object artifact = entry.getValue();
 
+      if (artifact == null) {
+        continue;
+      }
+
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
       // If model is serialize-able always use the provided serializer
