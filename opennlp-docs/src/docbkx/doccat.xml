@@ -157,7 +157,7 @@ try {
 
   ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
 
-  model = DocumentCategorizerME.train("en", sampleStream,
+  model = DocumentCategorizerME.train("eng", sampleStream,
       TrainingParameters.defaultParams(), new DoccatFactory());
 } catch (IOException e) {
   e.printStackTrace();

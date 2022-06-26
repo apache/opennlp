@@ -294,7 +294,7 @@ ObjectStream<String> lineStream =
 TokenNameFinderModel model;
 
 try (ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream)) {
-  model = NameFinderME.train("en", "person", sampleStream, TrainingParameters.defaultParams(), nameFinderFactory);
+  model = NameFinderME.train("eng", "person", sampleStream, TrainingParameters.defaultParams(), nameFinderFactory);
 }
 
 try (ObjectStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile)){
