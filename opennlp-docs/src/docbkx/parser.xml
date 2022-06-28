@@ -240,7 +240,7 @@ static HeadRules createHeadRules(TrainerToolParams params) throws IOException {
               params.getHeadRulesSerializerImpl());
     }
     else {
-      if ("en".equals(params.getLang())) {
+      if ("eng".equals(params.getLang())) {
         headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
       }
       else if ("es".equals(params.getLang())) {
@@ -375,7 +375,7 @@ System.out.println(result.toString());]]>
 InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("parsing.train"));
 ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
 ObjectStream<Parse> sampleStream = new ParseSample(stringStream);
-ParserCrossValidator evaluator = new ParserCrossValidator("en", trainParameters, headRules, \
+ParserCrossValidator evaluator = new ParserCrossValidator("eng", trainParameters, headRules, \
 parserType, listeners.toArray(new ParserEvaluationMonitor[listeners.size()])));
 evaluator.evaluate(sampleStream, 10);
 
