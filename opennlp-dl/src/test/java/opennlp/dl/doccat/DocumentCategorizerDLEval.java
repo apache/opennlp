@@ -19,6 +19,7 @@ package opennlp.dl.doccat;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,10 +30,14 @@ import org.junit.Test;
 
 import opennlp.dl.AbstactDLTest;
 
+import ai.onnxruntime.OrtException;
+import com.thedeanda.lorem.Lorem;
+import com.thedeanda.lorem.LoremIpsum;
+
 public class DocumentCategorizerDLEval extends AbstactDLTest {
 
   @Test
-  public void categorize() throws FileNotFoundException {
+  public void categorize() throws IOException, OrtException {
 
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
@@ -43,8 +48,10 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
 
-    final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
-    System.out.println(Arrays.toString(result));
+    final Lorem lorem = LoremIpsum.getInstance();
+    final String text = lorem.getParagraphs(100, 250);
+
+    final double[] result = documentCategorizerDL.categorize(new String[]{text});
 
     final double[] expected = new double[]
         {0.007819971069693565,
@@ -57,12 +64,12 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     Assert.assertEquals(5, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
-    Assert.assertEquals("very good", category);
+    Assert.assertEquals(text, category);
 
   }
 
   @Test
-  public void scoreMap() throws FileNotFoundException {
+  public void scoreMap() throws IOException, OrtException {
 
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
@@ -84,7 +91,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
   }
 
   @Test
-  public void sortedScoreMap() throws FileNotFoundException {
+  public void sortedScoreMap() throws IOException, OrtException {
 
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.
@@ -106,7 +113,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
   }
 
   @Test
-  public void doccat() throws FileNotFoundException {
+  public void doccat() throws IOException, OrtException {
 
     // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
     // You will need to update the assertions if you use a different model.

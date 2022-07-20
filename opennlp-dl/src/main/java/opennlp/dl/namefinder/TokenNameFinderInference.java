@@ -18,58 +18,22 @@
 package opennlp.dl.namefinder;
 
 import java.io.File;
-import java.nio.LongBuffer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import ai.onnxruntime.OnnxTensor;
+import java.io.IOException;
 
 import opennlp.dl.Inference;
-import opennlp.dl.Tokens;
+
+import ai.onnxruntime.OrtException;
 
 public class TokenNameFinderInference extends Inference {
 
   private final boolean doLowerCase;
 
-  public TokenNameFinderInference(File model, File vocab, boolean doLowerCase) throws Exception {
+  public TokenNameFinderInference(File model, File vocab, boolean doLowerCase)
+      throws IOException, OrtException {
 
     super(model, vocab);
 
     this.doLowerCase = doLowerCase;
-
-  }
-
-  @Override
-  public double[][] infer(String text) throws Exception {
-
-    if (doLowerCase) {
-      text = text.toLowerCase(Locale.ROOT);
-    }
-
-    final List<Tokens> t = tokenize(text);
-
-    //for(final Tokens tokens : t) {
-
-    // TODO: Need to do all in the list.
-    final Tokens tokens = t.get(0);
-
-      final Map<String, OnnxTensor> inputs = new HashMap<>();
-      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
-          LongBuffer.wrap(tokens.getIds()), new long[] {1, tokens.getIds().length}));
-
-      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-          LongBuffer.wrap(tokens.getMask()), new long[] {1, tokens.getMask().length}));
-
-      inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-          LongBuffer.wrap(tokens.getTypes()), new long[] {1, tokens.getTypes().length}));
-
-      final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
-
-    //}
-
-    return convertFloatsToDoubles(v[0]);
 
   }
 

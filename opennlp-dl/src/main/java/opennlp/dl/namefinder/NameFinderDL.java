@@ -21,8 +21,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.LongBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,7 +30,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import opennlp.dl.Inference;
 import opennlp.dl.SpanEnd;
 import opennlp.dl.Tokens;
 import opennlp.tools.namefind.TokenNameFinder;
@@ -72,7 +69,7 @@ public class NameFinderDL implements TokenNameFinder {
    * @throws Exception Thrown if the models cannot be loaded.
    */
   public NameFinderDL(File model, File vocabulary, boolean doLowerCase, Map<Integer, String> ids2Labels)
-          throws Exception {
+      throws Exception {
 
     this.env = OrtEnvironment.getEnvironment();
     this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
@@ -307,7 +304,7 @@ public class NameFinderDL implements TokenNameFinder {
 
     // In this article as the paper suggests, we are going to segment the input into smaller text and feed
     // each of them into BERT, it means for each row, we will split the text in order to have some
-    // smaller text (200 words long each )
+    // smaller text (200 words long each)
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
 
     // Split the input text into 200 word chunks with 50 overlapping between chunks.
@@ -324,7 +321,6 @@ public class NameFinderDL implements TokenNameFinder {
 
       // The group is that subsection of string.
       final String group = String.join(" ", Arrays.copyOfRange(whitespaceTokenized, start, end));
-      //final String group = text.substring(start, end);
 
       // We want to overlap each chunk by 50 words so scoot back 50 words for the next iteration.
       start = start - 50;

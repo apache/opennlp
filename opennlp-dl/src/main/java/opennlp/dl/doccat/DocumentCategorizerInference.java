@@ -40,25 +40,4 @@ public class DocumentCategorizerInference extends Inference {
 
   }
 
-  @Override
-  public double[][] infer(String text) throws Exception {
-
-    final List<Tokens> tokens = tokenize(text);
-
-    /*final Map<String, OnnxTensor> inputs = new HashMap<>();
-    inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.getIds()), new long[]{1, tokens.getIds().length}));
-
-    inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.getMask()), new long[]{1, tokens.getMask().length}));
-
-    inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.getTypes()), new long[]{1, tokens.getTypes().length}));
-
-    return convertFloatsToDoubles((float[][]) session.run(inputs).get(0).getValue());*/
-
-    return null;
-
-  }
-
 }

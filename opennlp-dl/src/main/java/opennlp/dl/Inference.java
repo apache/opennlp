@@ -52,8 +52,6 @@ public abstract class Inference {
 
   private static final int SPLIT_LENGTH = 125;
 
-  public abstract double[][] infer(String input) throws Exception;
-
   /**
    * Instantiates a new inference class.
    * @param model The ONNX model file.
