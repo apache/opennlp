@@ -20,6 +20,7 @@ package opennlp.dl.namefinder;
 import java.io.File;
 import java.nio.LongBuffer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -47,19 +48,26 @@ public class TokenNameFinderInference extends Inference {
       text = text.toLowerCase(Locale.ROOT);
     }
 
-    final Tokens tokens = tokenize(text);
+    final List<Tokens> t = tokenize(text);
 
-    final Map<String, OnnxTensor> inputs = new HashMap<>();
-    inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.getIds()), new long[]{1, tokens.getIds().length}));
+    //for(final Tokens tokens : t) {
 
-    inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.getMask()), new long[]{1, tokens.getMask().length}));
+    // TODO: Need to do all in the list.
+    final Tokens tokens = t.get(0);
 
-    inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.getTypes()), new long[]{1, tokens.getTypes().length}));
+      final Map<String, OnnxTensor> inputs = new HashMap<>();
+      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
+          LongBuffer.wrap(tokens.getIds()), new long[] {1, tokens.getIds().length}));
 
-    final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
+      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+          LongBuffer.wrap(tokens.getMask()), new long[] {1, tokens.getMask().length}));
+
+      inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+          LongBuffer.wrap(tokens.getTypes()), new long[] {1, tokens.getTypes().length}));
+
+      final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
+
+    //}
 
     return convertFloatsToDoubles(v[0]);
 

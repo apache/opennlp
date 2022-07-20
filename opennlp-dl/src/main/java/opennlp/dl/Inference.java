@@ -23,6 +23,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -48,6 +50,8 @@ public abstract class Inference {
   private final Tokenizer tokenizer;
   private final Map<String, Integer> vocabulary;
 
+  private static final int SPLIT_LENGTH = 125;
+
   public abstract double[][] infer(String input) throws Exception;
 
   /**
@@ -71,25 +75,56 @@ public abstract class Inference {
    * @param text The input text.
    * @return The input text's {@link Tokens}.
    */
-  public Tokens tokenize(String text) {
+  public List<Tokens> tokenize(final String text) {
 
-    final String[] tokens = tokenizer.tokenize(text);
+    final List<Tokens> t = new LinkedList<>();
 
-    final int[] ids = new int[tokens.length];
+    // In this article as the paper suggests, we are going to segment the input into smaller text and feed
+    // each of them into BERT, it means for each row, we will split the text in order to have some
+    // smaller text (200 words long each )
+    // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
 
-    for (int x = 0; x < tokens.length; x++) {
-      ids[x] = vocabulary.get(tokens[x]);
+    // Split the input text into 200 word chunks with 50 overlapping between chunks.
+    final String[] whitespaceTokenized = text.split("\\s+");
+
+    for(int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
+
+      // 200 word length chunk
+      // Check the end do don't go past and get a StringIndexOutOfBoundsException
+      int end = start + SPLIT_LENGTH;
+      if(end > whitespaceTokenized.length) {
+        end = whitespaceTokenized.length;
+      }
+
+      // The group is that subsection of string.
+      final String group = String.join(" ", Arrays.copyOfRange(whitespaceTokenized, start, end));
+      //final String group = text.substring(start, end);
+
+      // We want to overlap each chunk by 50 words so scoot back 50 words for the next iteration.
+      start = start - 50;
+
+      // Now we can tokenize the group and continue.
+      final String[] tokens = tokenizer.tokenize(group);
+
+      final int[] ids = new int[tokens.length];
+
+      for(int x = 0; x < tokens.length; x++) {
+        ids[x] = vocabulary.get(tokens[x]);
+      }
+
+      final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
+
+      final long[] mask = new long[ids.length];
+      Arrays.fill(mask, 1);
+
+      final long[] types = new long[ids.length];
+      Arrays.fill(types, 0);
+
+      t.add(new Tokens(tokens, lids, mask, types));
+
     }
 
-    final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
-
-    final long[] mask = new long[ids.length];
-    Arrays.fill(mask, 1);
-
-    final long[] types = new long[ids.length];
-    Arrays.fill(types, 0);
-
-    return new Tokens(tokens, lids, mask, types);
+    return t;
 
   }
 

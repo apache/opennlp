@@ -20,6 +20,7 @@ package opennlp.dl.doccat;
 import java.io.File;
 import java.nio.LongBuffer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ai.onnxruntime.OnnxTensor;
@@ -42,9 +43,9 @@ public class DocumentCategorizerInference extends Inference {
   @Override
   public double[][] infer(String text) throws Exception {
 
-    final Tokens tokens = tokenize(text);
+    final List<Tokens> tokens = tokenize(text);
 
-    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    /*final Map<String, OnnxTensor> inputs = new HashMap<>();
     inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
             LongBuffer.wrap(tokens.getIds()), new long[]{1, tokens.getIds().length}));
 
@@ -54,7 +55,9 @@ public class DocumentCategorizerInference extends Inference {
     inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
             LongBuffer.wrap(tokens.getTypes()), new long[]{1, tokens.getTypes().length}));
 
-    return convertFloatsToDoubles((float[][]) session.run(inputs).get(0).getValue());
+    return convertFloatsToDoubles((float[][]) session.run(inputs).get(0).getValue());*/
+
+    return null;
 
   }
 

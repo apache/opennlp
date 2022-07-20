@@ -17,24 +17,27 @@
 
 package opennlp.dl;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+public class SpanEnd {
 
-import opennlp.tools.util.StringUtil;
+  private int index;
+  private int characterEnd;
 
-public abstract class AbstactDLTest {
+  public SpanEnd(int index, int characterEnd) {
+    this.index = index;
+    this.characterEnd = characterEnd;
+  }
 
-  public static File getOpennlpDataDir() throws FileNotFoundException {
-    final String dataDirectory = "/mtnfog/code/apache-opennlp/opennlp-data";
-    //final String dataDirectory = System.getProperty("OPENNLP_DATA_DIR");
-    if (StringUtil.isEmpty(dataDirectory)) {
-      throw new IllegalArgumentException("The OPENNLP_DATA_DIR is not set.");
-    }
-    final File file = new File(dataDirectory);
-    if (!file.exists()) {
-      throw new FileNotFoundException("The OPENNLP_DATA_DIR path of " + dataDirectory + " was not found.");
-    }
-    return file;
+  @Override
+  public String toString() {
+    return "index: " + index + "; character end: " + characterEnd;
+  }
+
+  public int getIndex() {
+    return index;
+  }
+
+  public int getCharacterEnd() {
+    return characterEnd;
   }
 
 }
