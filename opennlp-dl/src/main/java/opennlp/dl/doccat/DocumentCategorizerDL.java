@@ -68,7 +68,8 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
   private static final int SPLIT_LENGTH = 125;
 
   /**
-   * Creates a new document categorizer using ONNX models.
+   * Creates a new document categorizer using ONNX models. This will calculate document scores
+   * by averaging scores for individual document parts using the {@link AverageClassifcationScoringStrategy}.
    * @param model The ONNX model file.
    * @param vocab The model's vocabulary file.
    * @param categories The categories.
@@ -85,6 +86,9 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
    * @param model The ONNX model file.
    * @param vocab The model's vocabulary file.
    * @param categories The categories.
+   * @param classificationScoringStrategy Implementation of {@link ClassificationScoringStrategy} used
+   *                                      to calculate the classification scores given the score of each
+   *                                      individual document part.
    */
   public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy)
