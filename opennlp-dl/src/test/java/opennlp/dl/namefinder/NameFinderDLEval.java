@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.dl.AbstactDLTest;
-
 import opennlp.tools.util.Span;
 
 public class NameFinderDLEval extends AbstactDLTest {

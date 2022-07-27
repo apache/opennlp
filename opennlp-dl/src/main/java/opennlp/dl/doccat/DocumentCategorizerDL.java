@@ -33,15 +33,17 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.IntStream;
 
-import opennlp.dl.Tokens;
-import opennlp.tools.doccat.DocumentCategorizer;
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.WordpieceTokenizer;
-
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
+
+import opennlp.dl.Tokens;
+import opennlp.dl.doccat.scoring.AverageClassifcationScoringStrategy;
+import opennlp.dl.doccat.scoring.ClassificationScoringStrategy;
+import opennlp.tools.doccat.DocumentCategorizer;
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.WordpieceTokenizer;
 
 /**
  * An implementation of {@link DocumentCategorizer} that performs document classification
@@ -61,6 +63,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
   private final File vocab;
   private final Map<Integer, String> categories;
   private final Map<String, Integer> vocabulary;
+  private final ClassificationScoringStrategy classificationScoringStrategy;
 
   private static final int SPLIT_LENGTH = 125;
 
@@ -73,6 +76,20 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
   public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories)
       throws IOException, OrtException {
 
+    this(model, vocab, categories, new AverageClassifcationScoringStrategy());
+
+  }
+
+  /**
+   * Creates a new document categorizer using ONNX models.
+   * @param model The ONNX model file.
+   * @param vocab The model's vocabulary file.
+   * @param categories The categories.
+   */
+  public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories,
+                               ClassificationScoringStrategy classificationScoringStrategy)
+      throws IOException, OrtException {
+
     this.env = OrtEnvironment.getEnvironment();
     this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
     this.vocabulary = loadVocab(vocab);
@@ -81,6 +98,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
     this.model = model;
     this.vocab = vocab;
     this.categories = categories;
+    this.classificationScoringStrategy = classificationScoringStrategy;
 
   }
 
@@ -94,7 +112,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
       final List<double[]> scores = new LinkedList<>();
 
-      for(final Tokens t : tokens) {
+      for (final Tokens t : tokens) {
 
         final Map<String, OnnxTensor> inputs = new HashMap<>();
         inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
@@ -115,28 +133,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
       }
 
-      System.out.println("Done with scoring");
-
-      // Sum and average the scores.
-      for(int i = 0; i < scores.size(); i++) {
-
-        double sum = 0;
-
-        for(int j = 0; j < scores.get(0).length; j++) {
-
-          sum += scores.get(i)[j];
-
-        }
-
-        // Now average the scores.
-        double average = sum / scores.size();
-
-        System.out.println("Average for class " + i + " is " + average);
-
-      }
-
-      return null;
-
+      return classificationScoringStrategy.score(scores);
 
     } catch (Exception ex) {
       System.err.println("Unload to perform document classification inference: " + ex.getMessage());
@@ -288,12 +285,12 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
     // Split the input text into 200 word chunks with 50 overlapping between chunks.
     final String[] whitespaceTokenized = text.split("\\s+");
 
-    for(int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
+    for (int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
 
       // 200 word length chunk
       // Check the end do don't go past and get a StringIndexOutOfBoundsException
       int end = start + SPLIT_LENGTH;
-      if(end > whitespaceTokenized.length) {
+      if (end > whitespaceTokenized.length) {
         end = whitespaceTokenized.length;
       }
 
@@ -308,7 +305,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
       final int[] ids = new int[tokens.length];
 
-      for(int x = 0; x < tokens.length; x++) {
+      for (int x = 0; x < tokens.length; x++) {
         ids[x] = vocabulary.get(tokens[x]);
       }
 

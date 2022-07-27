@@ -18,21 +18,20 @@
 package opennlp.dl.doccat;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import ai.onnxruntime.OrtException;
+import com.thedeanda.lorem.Lorem;
+import com.thedeanda.lorem.LoremIpsum;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.dl.AbstactDLTest;
-
-import ai.onnxruntime.OrtException;
-import com.thedeanda.lorem.Lorem;
-import com.thedeanda.lorem.LoremIpsum;
 
 public class DocumentCategorizerDLEval extends AbstactDLTest {
 

@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package opennlp.dl.doccat;
+package opennlp.dl.doccat.scoring;
 
-import java.io.File;
-import java.util.Map;
+import java.util.List;
 
-import opennlp.dl.Inference;
+/**
+ * Used to determine the scores of document classification. During classification,
+ * documents are separated into smaller parts. The classification is run on each part.
+ * Implementations of this interface are used to determine the score from the scores
+ * of each individual part.
+ */
+public interface ClassificationScoringStrategy {
 
-public class DocumentCategorizerInference extends Inference {
-
-  private final Map<String, Integer> vocabulary;
-
-  public DocumentCategorizerInference(File model, File vocab) throws Exception {
-
-    super(model, vocab);
-
-    this.vocabulary = loadVocab(vocab);
-
-  }
+  /**
+   * Calculate the final scores based on the scores of the individual document parts.
+   * @param scores The scores for each individual part of the document.
+   * @return The calculated scores.
+   */
+  double[] score(List<double[]> scores);
 
 }

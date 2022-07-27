@@ -30,17 +30,17 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ai.onnxruntime.OnnxTensor;
+import ai.onnxruntime.OrtEnvironment;
+import ai.onnxruntime.OrtException;
+import ai.onnxruntime.OrtSession;
+
 import opennlp.dl.SpanEnd;
 import opennlp.dl.Tokens;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
-
-import ai.onnxruntime.OnnxTensor;
-import ai.onnxruntime.OrtEnvironment;
-import ai.onnxruntime.OrtException;
-import ai.onnxruntime.OrtSession;
 
 /**
  * An implementation of {@link TokenNameFinder} that uses ONNX models.
@@ -96,7 +96,7 @@ public class NameFinderDL implements TokenNameFinder {
     // The WordPiece tokenized text. This changes the spacing in the text.
     final List<Tokens> wordpieceTokens = tokenize(text);
 
-    for(final Tokens tokens : wordpieceTokens) {
+    for (final Tokens tokens : wordpieceTokens) {
 
       try {
 
@@ -221,7 +221,8 @@ public class NameFinderDL implements TokenNameFinder {
     // No use for this in this implementation.
   }
 
-  private SpanEnd findSpanEnd(float[][][] v, int startIndex, Map<Integer, String> id2Labels, String[] tokens) {
+  private SpanEnd findSpanEnd(float[][][] v, int startIndex, Map<Integer, String> id2Labels,
+                              String[] tokens) {
 
     // -1 means there is no follow-up token, so it is a single-token span.
     int index = -1;
@@ -232,7 +233,7 @@ public class NameFinderDL implements TokenNameFinder {
     // Go until the next token is something other than I-PER.
     // When the next token is not I-PER, return the previous index.
 
-    for(int x = startIndex + 1; x < v[0].length; x++) {
+    for (int x = startIndex + 1; x < v[0].length; x++) {
 
       // Get the next item.
       final float[] arr = v[0][x];
@@ -248,7 +249,7 @@ public class NameFinderDL implements TokenNameFinder {
     }
 
     // Find where the span ends based on the tokens.
-    for(int x = 1; x <= index && x < tokens.length; x++) {
+    for (int x = 1; x <= index && x < tokens.length; x++) {
       characterEnd += tokens[x].length();
     }
 
@@ -265,8 +266,8 @@ public class NameFinderDL implements TokenNameFinder {
     double max = Float.NEGATIVE_INFINITY;
     int index = -1;
 
-    for(int x = 0; x < arr.length; x++) {
-      if(arr[x] > max) {
+    for (int x = 0; x < arr.length; x++) {
+      if (arr[x] > max) {
         index = x;
         max = arr[x];
       }
@@ -286,10 +287,7 @@ public class NameFinderDL implements TokenNameFinder {
     final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     final Matcher matcher = pattern.matcher(text);
 
-    // System.out.println("Text: " + text);
-    // System.out.println("Span: " + span);
-
-    if(matcher.find()) {
+    if (matcher.find()) {
       return matcher.group(0);
     }
 
@@ -310,12 +308,12 @@ public class NameFinderDL implements TokenNameFinder {
     // Split the input text into 200 word chunks with 50 overlapping between chunks.
     final String[] whitespaceTokenized = text.split("\\s+");
 
-    for(int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
+    for (int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
 
       // 200 word length chunk
       // Check the end do don't go past and get a StringIndexOutOfBoundsException
       int end = start + SPLIT_LENGTH;
-      if(end > whitespaceTokenized.length) {
+      if (end > whitespaceTokenized.length) {
         end = whitespaceTokenized.length;
       }
 
@@ -330,7 +328,7 @@ public class NameFinderDL implements TokenNameFinder {
 
       final int[] ids = new int[tokens.length];
 
-      for(int x = 0; x < tokens.length; x++) {
+      for (int x = 0; x < tokens.length; x++) {
         ids[x] = vocab.get(tokens[x]);
       }
 

@@ -85,12 +85,12 @@ public abstract class Inference {
     // Split the input text into 200 word chunks with 50 overlapping between chunks.
     final String[] whitespaceTokenized = text.split("\\s+");
 
-    for(int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
+    for (int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
 
       // 200 word length chunk
       // Check the end do don't go past and get a StringIndexOutOfBoundsException
       int end = start + SPLIT_LENGTH;
-      if(end > whitespaceTokenized.length) {
+      if (end > whitespaceTokenized.length) {
         end = whitespaceTokenized.length;
       }
 
@@ -106,7 +106,7 @@ public abstract class Inference {
 
       final int[] ids = new int[tokens.length];
 
-      for(int x = 0; x < tokens.length; x++) {
+      for (int x = 0; x < tokens.length; x++) {
         ids[x] = vocabulary.get(tokens[x]);
       }
 

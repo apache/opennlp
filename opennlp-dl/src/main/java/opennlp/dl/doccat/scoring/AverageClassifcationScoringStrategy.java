@@ -15,23 +15,19 @@
  * limitations under the License.
  */
 
-package opennlp.dl.doccat;
+package opennlp.dl.doccat.scoring;
 
-import java.io.File;
-import java.util.Map;
+import java.util.List;
 
-import opennlp.dl.Inference;
+/**
+ * Calculates the document classification scores by averaging the scores for
+ * all individual parts of a document.
+ */
+public class AverageClassifcationScoringStrategy implements ClassificationScoringStrategy {
 
-public class DocumentCategorizerInference extends Inference {
-
-  private final Map<String, Integer> vocabulary;
-
-  public DocumentCategorizerInference(File model, File vocab) throws Exception {
-
-    super(model, vocab);
-
-    this.vocabulary = loadVocab(vocab);
-
+  @Override
+  public double[] score(List<double[]> scores) {
+    return new double[0];
   }
 
 }

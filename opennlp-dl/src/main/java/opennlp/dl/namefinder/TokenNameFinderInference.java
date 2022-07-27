@@ -20,9 +20,9 @@ package opennlp.dl.namefinder;
 import java.io.File;
 import java.io.IOException;
 
-import opennlp.dl.Inference;
-
 import ai.onnxruntime.OrtException;
+
+import opennlp.dl.Inference;
 
 public class TokenNameFinderInference extends Inference {
 
