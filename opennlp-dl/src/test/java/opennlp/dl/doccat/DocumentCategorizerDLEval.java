@@ -49,7 +49,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
             new DocumentCategorizerDL(model, vocab, getCategories());
 
     final Lorem lorem = LoremIpsum.getInstance();
-    final String text = lorem.getParagraphs(100, 250);
+    final String text = lorem.getParagraphs(100, 200);
 
     final double[] result = documentCategorizerDL.categorize(new String[]{text});
 

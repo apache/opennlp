@@ -89,7 +89,10 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
     try {
 
+
       final List<Tokens> tokens = tokenize(strings[0]);
+
+      final List<double[]> scores = new LinkedList<>();
 
       for(final Tokens t : tokens) {
 
@@ -106,16 +109,34 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
         // The outputs from the model.
         final float[][] v = (float[][]) session.run(inputs).get(0).getValue();
 
-        final double[] results = softmax(v[0]);
+        // Keep track of all scores.
+        final double[] categoryScoresForTokens = softmax(v[0]);
+        scores.add(categoryScoresForTokens);
 
-        // TODO: There is a result for each of the tokens array from the split.
-        // How to handle the probabilities from each array?
+      }
 
-        System.out.println(Arrays.toString(results));
+      System.out.println("Done with scoring");
+
+      // Sum and average the scores.
+      for(int i = 0; i < scores.size(); i++) {
+
+        double sum = 0;
+
+        for(int j = 0; j < scores.get(0).length; j++) {
+
+          sum += scores.get(i)[j];
+
+        }
+
+        // Now average the scores.
+        double average = sum / scores.size();
+
+        System.out.println("Average for class " + i + " is " + average);
 
       }
 
       return null;
+
 
     } catch (Exception ex) {
       System.err.println("Unload to perform document classification inference: " + ex.getMessage());
@@ -230,6 +251,28 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
     }
 
     return v;
+
+  }
+
+  private Tokens oldTokenize(String text) {
+
+    final String[] tokens = tokenizer.tokenize(text);
+
+    final int[] ids = new int[tokens.length];
+
+    for (int x = 0; x < tokens.length; x++) {
+      ids[x] = vocabulary.get(tokens[x]);
+    }
+
+    final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
+
+    final long[] mask = new long[ids.length];
+    Arrays.fill(mask, 1);
+
+    final long[] types = new long[ids.length];
+    Arrays.fill(types, 0);
+
+    return new Tokens(tokens, lids, mask, types);
 
   }
 
