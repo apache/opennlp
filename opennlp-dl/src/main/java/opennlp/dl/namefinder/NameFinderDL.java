@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.dl.Inference;
+import opennlp.dl.InferenceOptions;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
 
@@ -35,7 +36,7 @@ public class NameFinderDL implements TokenNameFinder {
   public static final String I_PER = "I-PER";
   public static final String B_PER = "B-PER";
 
-  private final TokenNameFinderInference inference;
+  private final Inference inference;
   private final Map<Integer, String> ids2Labels;
 
   /**
@@ -43,15 +44,46 @@ public class NameFinderDL implements TokenNameFinder {
    *
    * @param model     The ONNX model file.
    * @param vocab     The model's vocabulary file.
-   * @param doLowerCase Whether or not to lowercase the text prior to inference.
    * @param ids2Labels  A map of values and their assigned labels used to train the model.
    * @throws Exception Thrown if the models cannot be loaded.
    */
-  public NameFinderDL(File model, File vocab, boolean doLowerCase, Map<Integer, String> ids2Labels)
+  public NameFinderDL(File model, File vocab, Map<Integer, String> ids2Labels)
           throws Exception {
 
     this.ids2Labels = ids2Labels;
-    this.inference = new TokenNameFinderInference(model, vocab, doLowerCase);
+    this.inference = new NameFinderInference(model, vocab, new InferenceOptions());
+
+  }
+
+  /**
+   * Creates a new NameFinderDL for entity recognition using ONNX models.
+   *
+   * @param model     The ONNX model file.
+   * @param vocab     The model's vocabulary file.
+   * @param ids2Labels  A map of values and their assigned labels used to train the model.
+   * @param inferenceOptions The {@link InferenceOptions} used to customize the inference process.
+   * @throws Exception Thrown if the models cannot be loaded.
+   */
+  public NameFinderDL(File model, File vocab, Map<Integer, String> ids2Labels,
+                      InferenceOptions inferenceOptions) throws Exception {
+
+    this.ids2Labels = ids2Labels;
+    this.inference = new NameFinderInference(model, vocab, inferenceOptions);
+
+  }
+
+  /**
+   * Creates a new NameFinderDL for entity recognition using ONNX models.
+   *
+   * @param ids2Labels  A map of values and their assigned labels used to train the model.
+   * @param inference A custom implementation of {@link Inference}.
+   * @throws Exception Thrown if the models cannot be loaded.
+   */
+  public NameFinderDL(Map<Integer, String> ids2Labels,
+                      Inference inference) throws Exception {
+
+    this.ids2Labels = ids2Labels;
+    this.inference = inference;
 
   }
 
@@ -63,7 +95,8 @@ public class NameFinderDL implements TokenNameFinder {
 
     try {
 
-      final double[][] v = inference.infer(text);
+      final float[][][] vectors = (float[][][]) inference.infer(text);
+      final double[][] v = inference.convertFloatsToDoubles(vectors[0]);
 
       // Find consecutive B-PER and I-PER labels and combine the spans where necessary.
       // There are also B-LOC and I-LOC tags for locations that might be useful at some point.

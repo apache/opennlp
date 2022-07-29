@@ -47,8 +47,9 @@ public abstract class Inference {
 
   private final Tokenizer tokenizer;
   private final Map<String, Integer> vocabulary;
+  protected InferenceOptions inferenceOptions;
 
-  public abstract double[][] infer(String input) throws Exception;
+  public abstract Object infer(String text) throws Exception;
 
   /**
    * Instantiates a new inference class.
@@ -57,12 +58,14 @@ public abstract class Inference {
    * @throws OrtException Thrown if the ONNX model cannot be loaded.
    * @throws IOException Thrown if the ONNX model or vocabulary files cannot be opened or read.
    */
-  public Inference(File model, File vocab) throws OrtException, IOException {
+  public Inference(File model, File vocab, InferenceOptions inferenceOptions)
+      throws OrtException, IOException {
 
     this.env = OrtEnvironment.getEnvironment();
     this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
     this.vocabulary = loadVocab(vocab);
     this.tokenizer = new WordpieceTokenizer(vocabulary.keySet());
+    this.inferenceOptions = inferenceOptions;
 
   }
 
