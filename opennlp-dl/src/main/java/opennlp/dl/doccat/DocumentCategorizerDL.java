@@ -26,6 +26,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import opennlp.dl.Inference;
+import opennlp.dl.InferenceOptions;
 import opennlp.tools.doccat.DocumentCategorizer;
 
 /**
@@ -34,9 +35,8 @@ import opennlp.tools.doccat.DocumentCategorizer;
  */
 public class DocumentCategorizerDL implements DocumentCategorizer {
 
-  private final File model;
-  private final File vocab;
   private final Map<Integer, String> categories;
+  private final Inference inference;
 
   /**
    * Creates a new document categorizer using ONNX models.
@@ -44,11 +44,35 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
    * @param vocab The model's vocabulary file.
    * @param categories The categories.
    */
-  public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories) {
+  public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories) throws Exception {
 
-    this.model = model;
-    this.vocab = vocab;
+    this(categories, new DocumentCategorizerInference(model, vocab, new InferenceOptions()));
+
+  }
+
+  /**
+   * Creates a new document categorizer using ONNX models.
+   * @param model The ONNX model file.
+   * @param vocab The model's vocabulary file.
+   * @param categories The categories.
+   * @param inferenceOptions The {@link InferenceOptions} used to customize the inference process.
+   */
+  public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories,
+                               InferenceOptions inferenceOptions) throws Exception {
+
+    this(categories, new DocumentCategorizerInference(model, vocab, inferenceOptions));
+
+  }
+
+  /**
+   * Creates a new document categorizer using ONNX models.
+   * @param categories The categories.
+   * @param inference The {@link Inference} inference implementation.
+   */
+  public DocumentCategorizerDL(Map<Integer, String> categories, Inference inference) {
+
     this.categories = categories;
+    this.inference = inference;
 
   }
 
@@ -57,9 +81,9 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
     try {
 
-      final DocumentCategorizerInference inference = new DocumentCategorizerInference(model, vocab);
+      final Object output = inference.infer(strings[0]);
+      final double[][] vectors = inference.convertFloatsToDoubles((float[][]) output);
 
-      final double[][] vectors = inference.infer(strings[0]);
       final double[] results = inference.softmax(vectors[0]);
 
       return results;

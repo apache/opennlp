@@ -25,36 +25,42 @@ import java.util.Map;
 import ai.onnxruntime.OnnxTensor;
 
 import opennlp.dl.Inference;
+import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
 
 public class DocumentCategorizerInference extends Inference {
 
   private final Map<String, Integer> vocabulary;
 
-  public DocumentCategorizerInference(File model, File vocab) throws Exception {
+  public DocumentCategorizerInference(File model, File vocab, InferenceOptions inferenceOptions)
+      throws Exception {
 
-    super(model, vocab);
+    super(model, vocab, inferenceOptions);
 
     this.vocabulary = loadVocab(vocab);
 
   }
 
   @Override
-  public double[][] infer(String text) throws Exception {
+  public Object infer(String text) throws Exception {
 
     final Tokens tokens = tokenize(text);
 
     final Map<String, OnnxTensor> inputs = new HashMap<>();
     inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.getIds()), new long[]{1, tokens.getIds().length}));
+        LongBuffer.wrap(tokens.getIds()), new long[]{1, tokens.getIds().length}));
 
-    inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.getMask()), new long[]{1, tokens.getMask().length}));
+    if (inferenceOptions.isIncludeAttentionMask()) {
+      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+          LongBuffer.wrap(tokens.getMask()), new long[] {1, tokens.getMask().length}));
+    }
 
-    inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(tokens.getTypes()), new long[]{1, tokens.getTypes().length}));
+    if (inferenceOptions.isIncludeTokenTypeIds()) {
+      inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+          LongBuffer.wrap(tokens.getTypes()), new long[] {1, tokens.getTypes().length}));
+    }
 
-    return convertFloatsToDoubles((float[][]) session.run(inputs).get(0).getValue());
+    return session.run(inputs).get(0).getValue();
 
   }
 

@@ -18,7 +18,6 @@
 package opennlp.dl.doccat;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,17 +27,17 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import opennlp.dl.AbstactDLTest;
+import opennlp.dl.InferenceOptions;
 
 public class DocumentCategorizerDLEval extends AbstactDLTest {
 
   @Test
-  public void categorize() throws FileNotFoundException {
+  public void categorize() throws Exception {
 
-    // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
-    // You will need to update the assertions if you use a different model.
-
-    final File model = new File(getOpennlpDataDir(), "onnx/doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/doccat/vocab.txt");
+    final File model = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
+    final File vocab = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -62,13 +61,43 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
   }
 
   @Test
-  public void scoreMap() throws FileNotFoundException {
+  public void categorizeWithInferenceOptions() throws Exception {
 
-    // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
-    // You will need to update the assertions if you use a different model.
+    final File model = new File(getOpennlpDataDir(),
+        "onnx/doccat/lvwerra_distilbert-imdb.onnx");
+    final File vocab = new File(getOpennlpDataDir(),
+        "onnx/doccat/lvwerra_distilbert-imdb.vocab");
 
-    final File model = new File(getOpennlpDataDir(), "onnx/doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/doccat/vocab.txt");
+    final InferenceOptions inferenceOptions =
+        new InferenceOptions(true, false);
+
+    final Map<Integer, String> categories = new HashMap<>();
+    categories.put(0, "negative");
+    categories.put(1, "positive");
+
+    final DocumentCategorizerDL documentCategorizerDL =
+        new DocumentCategorizerDL(model, vocab, categories, inferenceOptions);
+
+    final double[] result = documentCategorizerDL.categorize(new String[]{"I am angry"});
+    System.out.println(Arrays.toString(result));
+
+    final double[] expected = new double[]{0.8851314783096313, 0.11486853659152985};
+
+    Assert.assertTrue(Arrays.equals(expected, result));
+    Assert.assertEquals(2, result.length);
+
+    final String category = documentCategorizerDL.getBestCategory(result);
+    Assert.assertEquals("negative", category);
+
+  }
+
+  @Test
+  public void scoreMap() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
+    final File vocab = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -84,13 +113,12 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
   }
 
   @Test
-  public void sortedScoreMap() throws FileNotFoundException {
+  public void sortedScoreMap() throws Exception {
 
-    // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
-    // You will need to update the assertions if you use a different model.
-
-    final File model = new File(getOpennlpDataDir(), "onnx/doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/doccat/vocab.txt");
+    final File model = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
+    final File vocab = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
@@ -106,13 +134,12 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
   }
 
   @Test
-  public void doccat() throws FileNotFoundException {
+  public void doccat() throws Exception {
 
-    // This test was written using the nlptown/bert-base-multilingual-uncased-sentiment model.
-    // You will need to update the assertions if you use a different model.
-
-    final File model = new File(getOpennlpDataDir(), "onnx/doccat/model.onnx");
-    final File vocab = new File(getOpennlpDataDir(), "onnx/doccat/vocab.txt");
+    final File model = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
+    final File vocab = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories());
