@@ -19,25 +19,41 @@ package opennlp.dl;
 
 public class InferenceOptions {
 
-  private boolean includeAttentionMask;
-  private boolean includeTokenTypeIds;
-
-  public InferenceOptions() {
-    this.includeAttentionMask = true;
-    this.includeTokenTypeIds = true;
-  }
-
-  public InferenceOptions(boolean includeAttentionMask, boolean includeTokenTypeIds) {
-    this.includeAttentionMask = includeAttentionMask;
-    this.includeTokenTypeIds = includeTokenTypeIds;
-  }
+  private boolean includeAttentionMask = true;
+  private boolean includeTokenTypeIds = true;
+  private boolean gpu;
+  private int gpuDeviceId = 0;
 
   public boolean isIncludeAttentionMask() {
     return includeAttentionMask;
   }
 
+  public void setIncludeAttentionMask(boolean includeAttentionMask) {
+    this.includeAttentionMask = includeAttentionMask;
+  }
+
   public boolean isIncludeTokenTypeIds() {
     return includeTokenTypeIds;
+  }
+
+  public void setIncludeTokenTypeIds(boolean includeTokenTypeIds) {
+    this.includeTokenTypeIds = includeTokenTypeIds;
+  }
+
+  public boolean isGpu() {
+    return gpu;
+  }
+
+  public void setGpu(boolean gpu) {
+    this.gpu = gpu;
+  }
+
+  public int getGpuDeviceId() {
+    return gpuDeviceId;
+  }
+
+  public void setGpuDeviceId(int gpuDeviceId) {
+    this.gpuDeviceId = gpuDeviceId;
   }
 
 }

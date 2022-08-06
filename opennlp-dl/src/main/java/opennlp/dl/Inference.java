@@ -62,7 +62,13 @@ public abstract class Inference {
       throws OrtException, IOException {
 
     this.env = OrtEnvironment.getEnvironment();
-    this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
+
+    final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
+    if (inferenceOptions.isGpu()) {
+      sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
+    }
+
+    this.session = env.createSession(model.getPath(), sessionOptions);
     this.vocabulary = loadVocab(vocab);
     this.tokenizer = new WordpieceTokenizer(vocabulary.keySet());
     this.inferenceOptions = inferenceOptions;

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import opennlp.dl.AbstactDLTest;
@@ -60,6 +61,40 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
   }
 
+  @Ignore("This test will only run if a GPU device is present.")
+  @Test
+  public void categorizeWithGpu() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
+    final File vocab = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
+
+    final InferenceOptions inferenceOptions = new InferenceOptions();
+    inferenceOptions.setGpu(true);
+    inferenceOptions.setGpuDeviceId(0);
+
+    final DocumentCategorizerDL documentCategorizerDL =
+        new DocumentCategorizerDL(model, vocab, getCategories(), inferenceOptions);
+
+    final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
+    System.out.println(Arrays.toString(result));
+
+    final double[] expected = new double[]
+        {0.007819971069693565,
+            0.006593209225684404,
+            0.04995147883892059,
+            0.3003573715686798,
+            0.6352779865264893};
+
+    Assert.assertTrue(Arrays.equals(expected, result));
+    Assert.assertEquals(5, result.length);
+
+    final String category = documentCategorizerDL.getBestCategory(result);
+    Assert.assertEquals("very good", category);
+
+  }
+
   @Test
   public void categorizeWithInferenceOptions() throws Exception {
 
@@ -68,8 +103,8 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     final File vocab = new File(getOpennlpDataDir(),
         "onnx/doccat/lvwerra_distilbert-imdb.vocab");
 
-    final InferenceOptions inferenceOptions =
-        new InferenceOptions(true, false);
+    final InferenceOptions inferenceOptions = new InferenceOptions();
+    inferenceOptions.setIncludeTokenTypeIds(false);
 
     final Map<Integer, String> categories = new HashMap<>();
     categories.put(0, "negative");
