@@ -79,7 +79,13 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
       throws IOException, OrtException {
 
     this.env = OrtEnvironment.getEnvironment();
-    this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
+
+    final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
+    if (inferenceOptions.isGpu()) {
+      sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
+    }
+
+    this.session = env.createSession(model.getPath(), sessionOptions);
     this.vocabulary = loadVocab(vocab);
     this.tokenizer = new WordpieceTokenizer(vocabulary.keySet());
     this.categories = categories;

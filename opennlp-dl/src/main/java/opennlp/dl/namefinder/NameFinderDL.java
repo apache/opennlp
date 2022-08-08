@@ -73,7 +73,13 @@ public class NameFinderDL implements TokenNameFinder {
                       InferenceOptions inferenceOptions) throws Exception {
 
     this.env = OrtEnvironment.getEnvironment();
-    this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
+
+    final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
+    if (inferenceOptions.isGpu()) {
+      sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
+    }
+
+    this.session = env.createSession(model.getPath(), sessionOptions);
     this.ids2Labels = ids2Labels;
     this.vocab = loadVocab(vocabulary);
     this.tokenizer = new WordpieceTokenizer(vocab.keySet());
@@ -227,7 +233,7 @@ public class NameFinderDL implements TokenNameFinder {
 
   @Override
   public void clearAdaptiveData() {
-    // No use for this in this implementation.
+    // No use in this implementation.
   }
 
   private SpanEnd findSpanEnd(float[][][] v, int startIndex, Map<Integer, String> id2Labels,
@@ -286,7 +292,7 @@ public class NameFinderDL implements TokenNameFinder {
 
   }
 
-  public static String findByRegex(String text, String span) {
+  private static String findByRegex(String text, String span) {
 
     final String regex = span
         .replaceAll(" ", "\\\\s+")
