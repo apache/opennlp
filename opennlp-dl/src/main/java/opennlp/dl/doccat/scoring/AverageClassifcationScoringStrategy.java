@@ -27,8 +27,29 @@ public class AverageClassifcationScoringStrategy implements ClassificationScorin
 
   @Override
   public double[] score(List<double[]> scores) {
-    // TODO: Implement this.
-    return new double[0];
+
+    final int values = scores.get(0).length;
+
+    final double[] averages = new double[values];
+
+    int j = 0;
+
+    for (int i = 0; i < values; i++) {
+
+      double sum = 0;
+
+      for(final double[] score : scores) {
+
+        sum += score[i];
+
+      }
+
+      averages[j++] = (sum / scores.size());
+
+    }
+
+    return averages;
+
   }
 
 }

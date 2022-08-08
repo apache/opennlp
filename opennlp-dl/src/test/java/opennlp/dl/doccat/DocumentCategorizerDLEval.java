@@ -67,21 +67,21 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     System.out.println(Arrays.toString(result));
 
     final double[] expected = new double[]
-        {0.007819971069693565,
-        0.006593209225684404,
-        0.04995147883892059,
-        0.3003573715686798,
-        0.6352779865264893};
+        {0.3655166029930115,
+        0.26701385776201886,
+        0.19334411124388376,
+        0.09859892477591832,
+        0.07552650570869446};
 
     Assert.assertTrue(Arrays.equals(expected, result));
     Assert.assertEquals(5, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
-    Assert.assertEquals(text, category);
+    Assert.assertEquals("very bad", category);
 
   }
 
-  @Ignore("This test will only run if a GPU device is present.")
+  @Ignore("This test will should only be run if a GPU device is present.")
   @Test
   public void categorizeWithGpu() throws Exception {
 
@@ -135,7 +135,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     final DocumentCategorizerDL documentCategorizerDL =
         new DocumentCategorizerDL(model, vocab, categories,
             new AverageClassifcationScoringStrategy(),
-            new InferenceOptions());
+            inferenceOptions);
 
     final double[] result = documentCategorizerDL.categorize(new String[]{"I am angry"});
     System.out.println(Arrays.toString(result));

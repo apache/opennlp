@@ -48,6 +48,7 @@ public abstract class Inference {
   protected InferenceOptions inferenceOptions;
 
   private static final int SPLIT_LENGTH = 125;
+  private static final int OVERLAP_LENGTH = 125;
 
   /**
    * Instantiates a new inference class.
@@ -82,17 +83,11 @@ public abstract class Inference {
 
     final List<Tokens> t = new LinkedList<>();
 
-    // In this article as the paper suggests, we are going to segment the input into smaller text and feed
-    // each of them into BERT, it means for each row, we will split the text in order to have some
-    // smaller text (200 words long each )
-    // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-
-    // Split the input text into 200 word chunks with 50 overlapping between chunks.
+    // Split the input text into chunks with some overlap between chunks.
     final String[] whitespaceTokenized = text.split("\\s+");
 
     for (int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
 
-      // 200 word length chunk
       // Check the end do don't go past and get a StringIndexOutOfBoundsException
       int end = start + SPLIT_LENGTH;
       if (end > whitespaceTokenized.length) {
@@ -101,10 +96,9 @@ public abstract class Inference {
 
       // The group is that subsection of string.
       final String group = String.join(" ", Arrays.copyOfRange(whitespaceTokenized, start, end));
-      //final String group = text.substring(start, end);
 
       // We want to overlap each chunk by 50 words so scoot back 50 words for the next iteration.
-      start = start - 50;
+      start = start - OVERLAP_LENGTH;
 
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);

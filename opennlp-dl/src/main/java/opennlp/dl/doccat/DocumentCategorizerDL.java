@@ -102,14 +102,19 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
       for (final Tokens t : tokens) {
 
         final Map<String, OnnxTensor> inputs = new HashMap<>();
+
         inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
             LongBuffer.wrap(t.getIds()), new long[] {1, t.getIds().length}));
 
-        inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(t.getMask()), new long[] {1, t.getMask().length}));
+        if (inferenceOptions.isIncludeAttentionMask()) {
+          inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+              LongBuffer.wrap(t.getMask()), new long[] {1, t.getMask().length}));
+        }
 
-        inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(t.getTypes()), new long[] {1, t.getTypes().length}));
+        if (inferenceOptions.isIncludeTokenTypeIds()) {
+          inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+              LongBuffer.wrap(t.getTypes()), new long[] {1, t.getTypes().length}));
+        }
 
         // The outputs from the model.
         final float[][] v = (float[][]) session.run(inputs).get(0).getValue();

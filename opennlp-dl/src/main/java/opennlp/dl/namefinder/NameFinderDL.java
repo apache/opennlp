@@ -55,37 +55,38 @@ public class NameFinderDL implements TokenNameFinder {
   public static final String I_PER = "I-PER";
   public static final String B_PER = "B-PER";
 
-  private final NameFinderDLInference inference;
   protected final OrtSession session;
 
   private final Map<Integer, String> ids2Labels;
   private final Tokenizer tokenizer;
   private final Map<String, Integer> vocab;
+  private final InferenceOptions inferenceOptions;
   protected final OrtEnvironment env;
 
   private static final int SPLIT_LENGTH = 125;
 
-  /**
-   * Creates a new NameFinderDL for entity recognition using ONNX models.
-   *
-   * @param model     The ONNX model file.
-   * @param ids2Labels  A map of values and their assigned labels used to train the model.
-   * @throws Exception Thrown if the models cannot be loaded.
-   */
-  public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels)
-          throws Exception {
+  public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels) throws Exception {
+
+    this(model, vocabulary, ids2Labels, new InferenceOptions());
+
+  }
+
+  public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
+                      InferenceOptions inferenceOptions) throws Exception {
 
     this.env = OrtEnvironment.getEnvironment();
     this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
     this.ids2Labels = ids2Labels;
-    this.inference = new NameFinderDLInference(model, vocabulary, new InferenceOptions());
     this.vocab = loadVocab(vocabulary);
     this.tokenizer = new WordpieceTokenizer(vocab.keySet());
+    this.inferenceOptions = inferenceOptions;
 
   }
 
   @Override
   public Span[] find(String[] input) {
+
+
 
     /**
      * So, it looks like inference is being done on the wordpiece tokens but then
@@ -108,10 +109,16 @@ public class NameFinderDL implements TokenNameFinder {
         final Map<String, OnnxTensor> inputs = new HashMap<>();
         inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getIds()),
             new long[] {1, tokens.getIds().length}));
-        inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getMask()),
-            new long[] {1, tokens.getMask().length}));
-        inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getTypes()),
-            new long[] {1, tokens.getTypes().length}));
+
+        if (inferenceOptions.isIncludeAttentionMask()) {
+          inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+              LongBuffer.wrap(tokens.getMask()), new long[] {1, tokens.getMask().length}));
+        }
+
+        if (inferenceOptions.isIncludeTokenTypeIds()) {
+          inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+              LongBuffer.wrap(tokens.getTypes()), new long[] {1, tokens.getTypes().length}));
+        }
 
         // The outputs from the model.
         final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
