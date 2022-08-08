@@ -211,7 +211,7 @@ try {
 
   ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
 
-  model = POSTaggerME.train("en", sampleStream, TrainingParameters.defaultParams(), new POSTaggerFactory());
+  model = POSTaggerME.train("eng", sampleStream, TrainingParameters.defaultParams(), new POSTaggerFactory());
 } catch (IOException e) {
   e.printStackTrace();
 }]]>

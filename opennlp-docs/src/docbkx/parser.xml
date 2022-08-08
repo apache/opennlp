@@ -240,7 +240,7 @@ static HeadRules createHeadRules(TrainerToolParams params) throws IOException {
               params.getHeadRulesSerializerImpl());
     }
     else {
-      if ("en".equals(params.getLang())) {
+      if ("eng".equals(params.getLang())) {
         headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
       }
       else if ("es".equals(params.getLang())) {
