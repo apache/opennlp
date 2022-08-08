@@ -368,16 +368,19 @@ public class NameFinderDL implements TokenNameFinder {
 
     final Map<String, Integer> v = new HashMap<>();
 
-    BufferedReader br = new BufferedReader(new FileReader(vocab.getPath()));
-    String line = br.readLine();
-    int x = 0;
+    try (final BufferedReader br = new BufferedReader(new FileReader(vocab.getPath()))) {
 
-    while (line != null) {
+      String line = br.readLine();
+      int x = 0;
 
-      line = br.readLine();
-      x++;
+      while (line != null) {
 
-      v.put(line, x);
+        line = br.readLine();
+        x++;
+
+        v.put(line, x);
+
+      }
 
     }
 
