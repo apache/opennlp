@@ -40,15 +40,12 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
  */
 public abstract class Inference {
 
-  public static final String INPUT_IDS = "input_ids";
-  public static final String ATTENTION_MASK = "attention_mask";
-  public static final String TOKEN_TYPE_IDS = "token_type_ids";
-
   protected final OrtEnvironment env;
   protected final OrtSession session;
 
   private final Tokenizer tokenizer;
   private final Map<String, Integer> vocabulary;
+  protected InferenceOptions inferenceOptions;
 
   private static final int SPLIT_LENGTH = 125;
 
@@ -59,12 +56,20 @@ public abstract class Inference {
    * @throws OrtException Thrown if the ONNX model cannot be loaded.
    * @throws IOException Thrown if the ONNX model or vocabulary files cannot be opened or read.
    */
-  public Inference(File model, File vocab) throws OrtException, IOException {
+  public Inference(File model, File vocab, InferenceOptions inferenceOptions)
+      throws OrtException, IOException {
 
     this.env = OrtEnvironment.getEnvironment();
-    this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
+
+    final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
+    if (inferenceOptions.isGpu()) {
+      sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
+    }
+
+    this.session = env.createSession(model.getPath(), sessionOptions);
     this.vocabulary = loadVocab(vocab);
     this.tokenizer = new WordpieceTokenizer(vocabulary.keySet());
+    this.inferenceOptions = inferenceOptions;
 
   }
 

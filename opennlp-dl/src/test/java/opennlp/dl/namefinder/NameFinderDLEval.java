@@ -43,7 +43,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final String[] tokens = new String[]
         {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
 
-    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels());
     final Span[] spans = nameFinderDL.find(tokens);
 
     for (Span span : spans) {
@@ -69,7 +69,7 @@ public class NameFinderDLEval extends AbstactDLTest {
 
     final String[] tokens = new String[]{"His", "name", "was", "George", "Washington"};
 
-    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels());
     final Span[] spans = nameFinderDL.find(tokens);
 
     for (Span span : spans) {
@@ -93,7 +93,7 @@ public class NameFinderDLEval extends AbstactDLTest {
 
     final String[] tokens = new String[]{"His", "name", "was", "George"};
 
-    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels());
     final Span[] spans = nameFinderDL.find(tokens);
 
     for (Span span : spans) {
@@ -117,7 +117,7 @@ public class NameFinderDLEval extends AbstactDLTest {
 
     final String[] tokens = new String[]{};
 
-    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels());
     final Span[] spans = nameFinderDL.find(tokens);
 
     Assert.assertEquals(0, spans.length);
@@ -135,7 +135,7 @@ public class NameFinderDLEval extends AbstactDLTest {
 
     final String[] tokens = new String[]{"I", "went", "to", "the", "park"};
 
-    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels());
     final Span[] spans = nameFinderDL.find(tokens);
 
     Assert.assertEquals(0, spans.length);
@@ -154,7 +154,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final String[] tokens = new String[]{"George", "Washington", "and", "Abraham", "Lincoln",
         "were", "presidents"};
 
-    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
+    final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels());
     final Span[] spans = nameFinderDL.find(tokens);
 
     for (Span span : spans) {
@@ -178,7 +178,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final File model = new File("invalid.onnx");
     final File vocab = new File("vocab.txt");
 
-    new NameFinderDL(model, vocab, true, getIds2Labels());
+    new NameFinderDL(model, vocab, getIds2Labels());
 
   }
 

@@ -35,6 +35,7 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
+import opennlp.dl.InferenceOptions;
 import opennlp.dl.SpanEnd;
 import opennlp.dl.Tokens;
 import opennlp.tools.namefind.TokenNameFinder;
@@ -47,11 +48,16 @@ import opennlp.tools.util.Span;
  */
 public class NameFinderDL implements TokenNameFinder {
 
+  public static final String INPUT_IDS = "input_ids";
+  public static final String ATTENTION_MASK = "attention_mask";
+  public static final String TOKEN_TYPE_IDS = "token_type_ids";
+
   public static final String I_PER = "I-PER";
   public static final String B_PER = "B-PER";
 
-  private final TokenNameFinderInference inference;
+  private final NameFinderDLInference inference;
   protected final OrtSession session;
+
   private final Map<Integer, String> ids2Labels;
   private final Tokenizer tokenizer;
   private final Map<String, Integer> vocab;
@@ -63,18 +69,16 @@ public class NameFinderDL implements TokenNameFinder {
    * Creates a new NameFinderDL for entity recognition using ONNX models.
    *
    * @param model     The ONNX model file.
-   * @param vocabulary     The model's vocabulary file.
-   * @param doLowerCase Whether to lowercase the text prior to inference.
    * @param ids2Labels  A map of values and their assigned labels used to train the model.
    * @throws Exception Thrown if the models cannot be loaded.
    */
-  public NameFinderDL(File model, File vocabulary, boolean doLowerCase, Map<Integer, String> ids2Labels)
-      throws Exception {
+  public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels)
+          throws Exception {
 
     this.env = OrtEnvironment.getEnvironment();
     this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
     this.ids2Labels = ids2Labels;
-    this.inference = new TokenNameFinderInference(model, vocabulary, doLowerCase);
+    this.inference = new NameFinderDLInference(model, vocabulary, new InferenceOptions());
     this.vocab = loadVocab(vocabulary);
     this.tokenizer = new WordpieceTokenizer(vocab.keySet());
 
@@ -102,11 +106,11 @@ public class NameFinderDL implements TokenNameFinder {
 
         // The inputs to the ONNX model.
         final Map<String, OnnxTensor> inputs = new HashMap<>();
-        inputs.put("input_ids", OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getIds()),
+        inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getIds()),
             new long[] {1, tokens.getIds().length}));
-        inputs.put("attention_mask", OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getMask()),
+        inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getMask()),
             new long[] {1, tokens.getMask().length}));
-        inputs.put("token_type_ids", OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getTypes()),
+        inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getTypes()),
             new long[] {1, tokens.getTypes().length}));
 
         // The outputs from the model.

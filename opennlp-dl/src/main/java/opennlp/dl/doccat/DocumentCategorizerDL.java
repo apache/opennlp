@@ -38,8 +38,8 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
+import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
-import opennlp.dl.doccat.scoring.AverageClassifcationScoringStrategy;
 import opennlp.dl.doccat.scoring.ClassificationScoringStrategy;
 import opennlp.tools.doccat.DocumentCategorizer;
 import opennlp.tools.tokenize.Tokenizer;
@@ -55,31 +55,15 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
   public static final String ATTENTION_MASK = "attention_mask";
   public static final String TOKEN_TYPE_IDS = "token_type_ids";
 
+  private final Tokenizer tokenizer;
+  private final Map<String, Integer> vocabulary;
+  private final Map<Integer, String> categories;
+  private final ClassificationScoringStrategy classificationScoringStrategy;
+  private final InferenceOptions inferenceOptions;
   protected final OrtEnvironment env;
   protected final OrtSession session;
 
-  private final Tokenizer tokenizer;
-  private final File model;
-  private final File vocab;
-  private final Map<Integer, String> categories;
-  private final Map<String, Integer> vocabulary;
-  private final ClassificationScoringStrategy classificationScoringStrategy;
-
   private static final int SPLIT_LENGTH = 125;
-
-  /**
-   * Creates a new document categorizer using ONNX models. This will calculate document scores
-   * by averaging scores for individual document parts using the {@link AverageClassifcationScoringStrategy}.
-   * @param model The ONNX model file.
-   * @param vocab The model's vocabulary file.
-   * @param categories The categories.
-   */
-  public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories)
-      throws IOException, OrtException {
-
-    this(model, vocab, categories, new AverageClassifcationScoringStrategy());
-
-  }
 
   /**
    * Creates a new document categorizer using ONNX models.
@@ -89,20 +73,20 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
    * @param classificationScoringStrategy Implementation of {@link ClassificationScoringStrategy} used
    *                                      to calculate the classification scores given the score of each
    *                                      individual document part.
+   * @param inferenceOptions {@link InferenceOptions} to control the inference.
    */
   public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories,
-                               ClassificationScoringStrategy classificationScoringStrategy)
+                               ClassificationScoringStrategy classificationScoringStrategy,
+                               InferenceOptions inferenceOptions)
       throws IOException, OrtException {
 
     this.env = OrtEnvironment.getEnvironment();
     this.session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
     this.vocabulary = loadVocab(vocab);
     this.tokenizer = new WordpieceTokenizer(vocabulary.keySet());
-
-    this.model = model;
-    this.vocab = vocab;
     this.categories = categories;
     this.classificationScoringStrategy = classificationScoringStrategy;
+    this.inferenceOptions = inferenceOptions;
 
   }
 
@@ -110,7 +94,6 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
   public double[] categorize(String[] strings) {
 
     try {
-
 
       final List<Tokens> tokens = tokenize(strings[0]);
 

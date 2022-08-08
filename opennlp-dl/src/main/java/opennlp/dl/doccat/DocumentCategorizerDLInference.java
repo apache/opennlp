@@ -21,14 +21,16 @@ import java.io.File;
 import java.util.Map;
 
 import opennlp.dl.Inference;
+import opennlp.dl.InferenceOptions;
 
-public class DocumentCategorizerInference extends Inference {
+public class DocumentCategorizerDLInference extends Inference {
 
   private final Map<String, Integer> vocabulary;
 
-  public DocumentCategorizerInference(File model, File vocab) throws Exception {
+  public DocumentCategorizerDLInference(File model, File vocab, InferenceOptions inferenceOptions)
+      throws Exception {
 
-    super(model, vocab);
+    super(model, vocab, inferenceOptions);
 
     this.vocabulary = loadVocab(vocab);
 

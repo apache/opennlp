@@ -18,23 +18,15 @@
 package opennlp.dl.namefinder;
 
 import java.io.File;
-import java.io.IOException;
-
-import ai.onnxruntime.OrtException;
 
 import opennlp.dl.Inference;
+import opennlp.dl.InferenceOptions;
 
-public class TokenNameFinderInference extends Inference {
+public class NameFinderDLInference extends Inference {
 
-  private final boolean doLowerCase;
-
-  public TokenNameFinderInference(File model, File vocab, boolean doLowerCase)
-      throws IOException, OrtException {
-
-    super(model, vocab);
-
-    this.doLowerCase = doLowerCase;
-
+  public NameFinderDLInference(File model, File vocab, InferenceOptions inferenceOptions)
+      throws Exception {
+    super(model, vocab, inferenceOptions);
   }
 
 }
