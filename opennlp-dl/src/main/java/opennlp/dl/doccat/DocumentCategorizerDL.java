@@ -63,8 +63,6 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
   protected final OrtEnvironment env;
   protected final OrtSession session;
 
-  private static final int SPLIT_LENGTH = 125;
-
   /**
    * Creates a new document categorizer using ONNX models.
    * @param model The ONNX model file.
@@ -277,11 +275,12 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
     // Split the input text into 200 word chunks with 50 overlapping between chunks.
     final String[] whitespaceTokenized = text.split("\\s+");
 
-    for (int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
+    for (int start = 0; start < whitespaceTokenized.length;
+         start = start + inferenceOptions.getDocumentSplitSize()) {
 
       // 200 word length chunk
       // Check the end do don't go past and get a StringIndexOutOfBoundsException
-      int end = start + SPLIT_LENGTH;
+      int end = start + inferenceOptions.getDocumentSplitSize();
       if (end > whitespaceTokenized.length) {
         end = whitespaceTokenized.length;
       }
@@ -290,7 +289,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
       final String group = String.join(" ", Arrays.copyOfRange(whitespaceTokenized, start, end));
 
       // We want to overlap each chunk by 50 words so scoot back 50 words for the next iteration.
-      start = start - 50;
+      start = start - inferenceOptions.getSplitOverlapSize();
 
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);

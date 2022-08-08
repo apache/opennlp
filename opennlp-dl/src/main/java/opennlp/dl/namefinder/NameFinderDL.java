@@ -63,8 +63,6 @@ public class NameFinderDL implements TokenNameFinder {
   private final InferenceOptions inferenceOptions;
   protected final OrtEnvironment env;
 
-  private static final int SPLIT_LENGTH = 125;
-
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels) throws Exception {
 
     this(model, vocabulary, ids2Labels, new InferenceOptions());
@@ -141,7 +139,7 @@ public class NameFinderDL implements TokenNameFinder {
 
           // TODO: Need to make sure this value is between 0 and 1?
           // Can we do thresholding without it between 0 and 1?
-          final double confidence = arr[maxIndex] / 10;
+          final double confidence = arr[maxIndex]; // / 10;
 
           // Show each token and its label per the model.
           // System.out.println(tokens.getTokens()[x] + " : " + label);
@@ -319,11 +317,12 @@ public class NameFinderDL implements TokenNameFinder {
     // Split the input text into 200 word chunks with 50 overlapping between chunks.
     final String[] whitespaceTokenized = text.split("\\s+");
 
-    for (int start = 0; start < whitespaceTokenized.length; start = start + SPLIT_LENGTH) {
+    for (int start = 0; start < whitespaceTokenized.length;
+         start = start + inferenceOptions.getDocumentSplitSize()) {
 
       // 200 word length chunk
       // Check the end do don't go past and get a StringIndexOutOfBoundsException
-      int end = start + SPLIT_LENGTH;
+      int end = start + inferenceOptions.getDocumentSplitSize();
       if (end > whitespaceTokenized.length) {
         end = whitespaceTokenized.length;
       }
@@ -332,7 +331,7 @@ public class NameFinderDL implements TokenNameFinder {
       final String group = String.join(" ", Arrays.copyOfRange(whitespaceTokenized, start, end));
 
       // We want to overlap each chunk by 50 words so scoot back 50 words for the next iteration.
-      start = start - 50;
+      start = start - inferenceOptions.getSplitOverlapSize();
 
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);

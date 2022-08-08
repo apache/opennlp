@@ -38,7 +38,7 @@ public class AverageClassifcationScoringStrategy implements ClassificationScorin
 
       double sum = 0;
 
-      for(final double[] score : scores) {
+      for (final double[] score : scores) {
 
         sum += score[i];
 

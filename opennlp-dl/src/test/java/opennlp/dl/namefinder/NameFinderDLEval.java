@@ -53,7 +53,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     Assert.assertEquals(1, spans.length);
     Assert.assertEquals(0, spans[0].getStart());
     Assert.assertEquals(17, spans[0].getEnd());
-    Assert.assertEquals(0.8251646161079407, spans[0].getProb(), 0.0);
+    Assert.assertEquals(8.251646041870117, spans[0].getProb(), 0.0);
     Assert.assertEquals("George Washington", spans[0].getCoveredText(String.join(" ", tokens)));
 
   }

@@ -23,6 +23,8 @@ public class InferenceOptions {
   private boolean includeTokenTypeIds = true;
   private boolean gpu;
   private int gpuDeviceId = 0;
+  private int documentSplitSize = 250;
+  private int splitOverlapSize = 50;
 
   public boolean isIncludeAttentionMask() {
     return includeAttentionMask;
@@ -54,6 +56,22 @@ public class InferenceOptions {
 
   public void setGpuDeviceId(int gpuDeviceId) {
     this.gpuDeviceId = gpuDeviceId;
+  }
+
+  public int getDocumentSplitSize() {
+    return documentSplitSize;
+  }
+
+  public void setDocumentSplitSize(int documentSplitSize) {
+    this.documentSplitSize = documentSplitSize;
+  }
+
+  public int getSplitOverlapSize() {
+    return splitOverlapSize;
+  }
+
+  public void setSplitOverlapSize(int splitOverlapSize) {
+    this.splitOverlapSize = splitOverlapSize;
   }
 
 }
