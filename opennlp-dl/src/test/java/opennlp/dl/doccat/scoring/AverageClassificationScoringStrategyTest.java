@@ -33,7 +33,7 @@ public class AverageClassificationScoringStrategyTest {
     scores.add(new double[]{1, 2, 3, 4, 5});
     scores.add(new double[]{1, 2, 3, 4, 5});
 
-    final ClassificationScoringStrategy strategy = new AverageClassifcationScoringStrategy();
+    final ClassificationScoringStrategy strategy = new AverageClassificationScoringStrategy();
     final double[] results = strategy.score(scores);
 
     Assert.assertEquals(1.0, results[0], 0);
@@ -52,7 +52,7 @@ public class AverageClassificationScoringStrategyTest {
     scores.add(new double[]{4, 3, 10});
     scores.add(new double[]{6, 5, 15});
 
-    final ClassificationScoringStrategy strategy = new AverageClassifcationScoringStrategy();
+    final ClassificationScoringStrategy strategy = new AverageClassificationScoringStrategy();
     final double[] results = strategy.score(scores);
 
     Assert.assertEquals(4.0, results[0], 0);

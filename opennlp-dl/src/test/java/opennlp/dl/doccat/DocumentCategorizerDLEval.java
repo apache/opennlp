@@ -32,7 +32,7 @@ import org.junit.Test;
 
 import opennlp.dl.AbstactDLTest;
 import opennlp.dl.InferenceOptions;
-import opennlp.dl.doccat.scoring.AverageClassifcationScoringStrategy;
+import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
 
 public class DocumentCategorizerDLEval extends AbstactDLTest {
 
@@ -46,7 +46,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories(),
-                new AverageClassifcationScoringStrategy(),
+                new AverageClassificationScoringStrategy(),
                 new InferenceOptions());
 
     final String text = "We try hard to identify the sources and licenses of all media such as text, images" +
@@ -96,7 +96,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final DocumentCategorizerDL documentCategorizerDL =
         new DocumentCategorizerDL(model, vocab, getCategories(),
-            new AverageClassifcationScoringStrategy(),
+            new AverageClassificationScoringStrategy(),
             new InferenceOptions());
 
     final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
@@ -134,7 +134,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final DocumentCategorizerDL documentCategorizerDL =
         new DocumentCategorizerDL(model, vocab, categories,
-            new AverageClassifcationScoringStrategy(),
+            new AverageClassificationScoringStrategy(),
             inferenceOptions);
 
     final double[] result = documentCategorizerDL.categorize(new String[]{"I am angry"});
@@ -160,7 +160,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories(),
-                new AverageClassifcationScoringStrategy(),
+                new AverageClassificationScoringStrategy(),
                 new InferenceOptions());
 
     final Map<String, Double> result = documentCategorizerDL.scoreMap(new String[]{"I am happy"});
@@ -183,7 +183,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories(),
-                new AverageClassifcationScoringStrategy(),
+                new AverageClassificationScoringStrategy(),
                 new InferenceOptions());
 
     final Map<Double, Set<String>> result = documentCategorizerDL.sortedScoreMap(new String[]{"I am happy"});
@@ -206,7 +206,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final DocumentCategorizerDL documentCategorizerDL =
             new DocumentCategorizerDL(model, vocab, getCategories(),
-                new AverageClassifcationScoringStrategy(),
+                new AverageClassificationScoringStrategy(),
                 new InferenceOptions());
 
     final int index = documentCategorizerDL.getIndex("bad");
