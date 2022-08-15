@@ -18,10 +18,13 @@
 package opennlp.dl.doccat;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import ai.onnxruntime.OrtException;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -29,11 +32,12 @@ import org.junit.Test;
 
 import opennlp.dl.AbstactDLTest;
 import opennlp.dl.InferenceOptions;
+import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
 
 public class DocumentCategorizerDLEval extends AbstactDLTest {
 
   @Test
-  public void categorize() throws Exception {
+  public void categorize() throws IOException, OrtException {
 
     final File model = new File(getOpennlpDataDir(),
         "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
@@ -41,27 +45,43 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
         "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
 
     final DocumentCategorizerDL documentCategorizerDL =
-            new DocumentCategorizerDL(model, vocab, getCategories());
+            new DocumentCategorizerDL(model, vocab, getCategories(),
+                new AverageClassificationScoringStrategy(),
+                new InferenceOptions());
 
-    final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
+    final String text = "We try hard to identify the sources and licenses of all media such as text, images" +
+        " or sounds used in our encyclopedia articles. Still, we cannot guarantee that all media are used " +
+        "or marked correctly: for example, if an image description page states that an image was in the " +
+        "public domain, you should still check yourself whether that claim appears correct and decide for " +
+        "yourself whether your use of the image would be fine under the laws applicable to you. Wikipedia " +
+        "is primarily subject to U.S. law; re-users outside the U.S. should be aware that they are subject " +
+        "to the laws of their country, which almost certainly are different. Images published under the " +
+        "GFDL or one of the Creative Commons Licenses are unlikely to pose problems, as these are specific " +
+        "licenses with precise terms worldwide. Public domain images may need to be re-evaluated by a " +
+        "re-user because it depends on each country's copyright laws what is in the public domain there. " +
+        "There is no guarantee that something in the public domain in the U.S. was also in the public " +
+        "domain in your country.";
+
+    final double[] result = documentCategorizerDL.categorize(new String[]{text});
+
     System.out.println(Arrays.toString(result));
 
     final double[] expected = new double[]
-        {0.007819971069693565,
-        0.006593209225684404,
-        0.04995147883892059,
-        0.3003573715686798,
-        0.6352779865264893};
+        {0.3655166029930115,
+        0.26701385776201886,
+        0.19334411124388376,
+        0.09859892477591832,
+        0.07552650570869446};
 
     Assert.assertTrue(Arrays.equals(expected, result));
     Assert.assertEquals(5, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
-    Assert.assertEquals("very good", category);
+    Assert.assertEquals("very bad", category);
 
   }
 
-  @Ignore("This test will only run if a GPU device is present.")
+  @Ignore("This test will should only be run if a GPU device is present.")
   @Test
   public void categorizeWithGpu() throws Exception {
 
@@ -75,7 +95,9 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     inferenceOptions.setGpuDeviceId(0);
 
     final DocumentCategorizerDL documentCategorizerDL =
-        new DocumentCategorizerDL(model, vocab, getCategories(), inferenceOptions);
+        new DocumentCategorizerDL(model, vocab, getCategories(),
+            new AverageClassificationScoringStrategy(),
+            new InferenceOptions());
 
     final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
     System.out.println(Arrays.toString(result));
@@ -111,7 +133,9 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     categories.put(1, "positive");
 
     final DocumentCategorizerDL documentCategorizerDL =
-        new DocumentCategorizerDL(model, vocab, categories, inferenceOptions);
+        new DocumentCategorizerDL(model, vocab, categories,
+            new AverageClassificationScoringStrategy(),
+            inferenceOptions);
 
     final double[] result = documentCategorizerDL.categorize(new String[]{"I am angry"});
     System.out.println(Arrays.toString(result));
@@ -135,7 +159,9 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
         "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
 
     final DocumentCategorizerDL documentCategorizerDL =
-            new DocumentCategorizerDL(model, vocab, getCategories());
+            new DocumentCategorizerDL(model, vocab, getCategories(),
+                new AverageClassificationScoringStrategy(),
+                new InferenceOptions());
 
     final Map<String, Double> result = documentCategorizerDL.scoreMap(new String[]{"I am happy"});
 
@@ -148,7 +174,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
   }
 
   @Test
-  public void sortedScoreMap() throws Exception {
+  public void sortedScoreMap() throws IOException, OrtException {
 
     final File model = new File(getOpennlpDataDir(),
         "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
@@ -156,7 +182,9 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
         "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
 
     final DocumentCategorizerDL documentCategorizerDL =
-            new DocumentCategorizerDL(model, vocab, getCategories());
+            new DocumentCategorizerDL(model, vocab, getCategories(),
+                new AverageClassificationScoringStrategy(),
+                new InferenceOptions());
 
     final Map<Double, Set<String>> result = documentCategorizerDL.sortedScoreMap(new String[]{"I am happy"});
 
@@ -169,7 +197,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
   }
 
   @Test
-  public void doccat() throws Exception {
+  public void doccat() throws IOException, OrtException {
 
     final File model = new File(getOpennlpDataDir(),
         "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
@@ -177,7 +205,9 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
         "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
 
     final DocumentCategorizerDL documentCategorizerDL =
-            new DocumentCategorizerDL(model, vocab, getCategories());
+            new DocumentCategorizerDL(model, vocab, getCategories(),
+                new AverageClassificationScoringStrategy(),
+                new InferenceOptions());
 
     final int index = documentCategorizerDL.getIndex("bad");
     Assert.assertEquals(1, index);
