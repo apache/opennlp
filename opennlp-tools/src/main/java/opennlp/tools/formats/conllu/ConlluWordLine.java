@@ -51,7 +51,7 @@ public class ConlluWordLine {
     String[] fields = line.split("\t");
 
     if (fields.length != 10) {
-      throw new InvalidFormatException("Line must have exactly 10 fields");
+      throw new InvalidFormatException("Line [" + line + "] must have exactly 10 fields");
     }
 
     id = fields[0];
