@@ -69,6 +69,14 @@ public class TrainingParametersTest {
   }
 
   @Test
+  public void testGetAlgorithmCaseInsensitive() {
+    TrainingParameters tp = build("ALGORITHM=Perceptron,n1.Algorithm=SVM");
+
+    Assert.assertEquals("Perceptron", tp.algorithm());
+    Assert.assertEquals("SVM", tp.algorithm("n1"));
+  }
+
+  @Test
   public void testGetSettings() {
     TrainingParameters tp = build("k1=v1,n1.k2=v2,n2.k3=v3,n1.k4=v4");
 

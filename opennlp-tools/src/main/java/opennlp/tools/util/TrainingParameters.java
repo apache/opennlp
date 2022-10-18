@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import opennlp.tools.ml.EventTrainer;
 
@@ -38,7 +39,7 @@ public class TrainingParameters {
   public static final String CUTOFF_PARAM = "Cutoff";
   public static final String THREADS_PARAM = "Threads";
 
-  private Map<String, Object> parameters = new HashMap<>();
+  private Map<String, Object> parameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
   public TrainingParameters() {
   }
