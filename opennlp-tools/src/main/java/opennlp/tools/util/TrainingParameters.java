@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.ml.EventTrainer;
 
 public class TrainingParameters {
@@ -450,6 +451,22 @@ public class TrainingParameters {
     mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
+
+    return mlParams;
+  }
+
+  public static TrainingParameters setParams(String[] args) {
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM,
+         null != CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase(), args) ?
+         CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase(), args) :
+         defaultParams().getIntParameter(TrainingParameters.ITERATIONS_PARAM,100));
+    mlParams.put(TrainingParameters.CUTOFF_PARAM,
+         null != CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase(), args) ?
+         CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase(), args) :
+         5);
 
     return mlParams;
   }

@@ -32,6 +32,7 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerFactory;
 import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
 public final class TokenizerTrainerTool
@@ -59,8 +60,10 @@ public final class TokenizerTrainerTool
 
   public void run(String format, String[] args) {
     super.run(format, args);
-
-    mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    if (null != params.getParams())
+      mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), false);
+    else
+      mlParams = TrainingParameters.setParams(args);
 
     if (mlParams != null) {
       if (!TrainerFactory.isValid(mlParams)) {
