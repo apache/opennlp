@@ -258,37 +258,39 @@ Arguments description:
 				To train the english tokenizer use the following command:
 				<screen>
 			    <![CDATA[
-$ opennlp TokenizerTrainer -model en-token.bin -alphaNumOpt -lang en -data en-token.train -encoding UTF-8
+$ opennlp TokenizerTrainer -model en-token.bin -alphaNumOpt true -lang en -data en-token.train -encoding UTF-8
 
-Indexing events using cutoff of 5
+Indexing events with TwoPass using cutoff of 5
 
-	Computing event counts...  done. 262271 events
+	Computing event counts...  done. 45 events
 	Indexing...  done.
-Sorting and merging events... done. Reduced 262271 events to 59060.
-Done indexing.
-Incorporating indexed data for training...  
+Sorting and merging events... done. Reduced 45 events to 25.
+Done indexing in 0,09 s.
+Incorporating indexed data for training...
 done.
-	Number of Event Tokens: 59060
+	Number of Event Tokens: 25
 	    Number of Outcomes: 2
-	  Number of Predicates: 15695
+	  Number of Predicates: 18
 ...done.
-Computing model parameters...
+Computing model parameters ...
 Performing 100 iterations.
-  1:  .. loglikelihood=-181792.40419263614	0.9614292087192255
-  2:  .. loglikelihood=-34208.094253153664	0.9629238459456059
-  3:  .. loglikelihood=-18784.123872910015	0.9729211388220581
-  4:  .. loglikelihood=-13246.88162585859	0.9856103038460219
-  5:  .. loglikelihood=-10209.262670265718	0.9894422181636552
+  1:  ... loglikelihood=-31.191623125197527	0.8222222222222222
+  2:  ... loglikelihood=-21.036561339080343	0.8666666666666667
+  3:  ... loglikelihood=-16.397882721809086	0.9333333333333333
+  4:  ... loglikelihood=-13.624159882595462	0.9333333333333333
+  5:  ... loglikelihood=-11.762067054883842	0.9777777777777777
 
  ...<skipping a bunch of iterations>...
 
- 95:  .. loglikelihood=-769.2107474529454	0.999511955191386
- 96:  .. loglikelihood=-763.8891914534009	0.999511955191386
- 97:  .. loglikelihood=-758.6685383254891	0.9995157680414533
- 98:  .. loglikelihood=-753.5458314695236	0.9995157680414533
- 99:  .. loglikelihood=-748.5182305519613	0.9995157680414533
-100:  .. loglikelihood=-743.5830058068038	0.9995157680414533
-Wrote tokenizer model.
+ 95:  ... loglikelihood=-2.0234942537226366	1.0
+ 96:  ... loglikelihood=-2.0107265117555935	1.0
+ 97:  ... loglikelihood=-1.998139365828305	1.0
+ 98:  ... loglikelihood=-1.9857283791639697	1.0
+ 99:  ... loglikelihood=-1.9734892753591327	1.0
+100:  ... loglikelihood=-1.9614179307958106	1.0
+Writing tokenizer model ... done (0,044s)
+
+Wrote tokenizer model to
 Path: en-token.bin]]>
 				</screen>
 			</para>
