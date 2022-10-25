@@ -5,6 +5,7 @@ import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InsufficientTrainingDataException;
+import opennlp.tools.util.InvalidFormatException;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -13,6 +14,8 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+
+import static org.junit.Assert.assertThrows;
 
 public class TokenizerTrainerToolTest extends TestCase {
 
@@ -36,17 +39,25 @@ public class TokenizerTrainerToolTest extends TestCase {
     public void tearDown() throws Exception {
     }
 
+    @Test
     public void testGetShortDescription() {
         tokenizerTrainerTool = new TokenizerTrainerTool();
         assertEquals(tokenizerTrainerTool.getShortDescription(),"trainer for the learnable tokenizer");
     }
 
+    @Test
     public void testLoadDictHappyCase() throws IOException {
-        Dictionary dict = TokenizerTrainerTool.loadDict(prepareDataFile("opennlp/tools/sentdetect/abb.xml"));
+        File dictFile = new File("src/test/resources/opennlp/tools/sentdetect/abb.xml");
+        Dictionary dict = TokenizerTrainerTool.loadDict(dictFile);
         assertNotNull(dict);
+        dictFile.delete();
     }
 
-    public void testLoadDictFailCase() {
+    @Test
+    public void testLoadDictFailCase() throws IOException {
+        assertThrows(InvalidFormatException.class, () -> {
+            Dictionary dictionary = TokenizerTrainerTool.loadDict(prepareDataFile(""));
+        });
     }
 
     @Test()
@@ -71,10 +82,11 @@ public class TokenizerTrainerToolTest extends TestCase {
         model.delete();
     }
 
-    @Test(expected = TerminateToolException.class)
+    @Test
     public void testTestRunExceptionCase() throws IOException {
         tempFolder.create();
         File model = tempFolder.newFile("model-en.bin");
+        model.deleteOnExit();
 
         String[] args = new String[]{"-model",model.getAbsolutePath(),"-alphaNumOpt","false", "-lang","en",
                 "-data", String.valueOf(prepareDataFile(sampleFailureData)),"-encoding","UTF-8"};
@@ -85,9 +97,11 @@ public class TokenizerTrainerToolTest extends TestCase {
         PrintStream ps = new PrintStream(baos);
         System.setOut(ps);
 
-        tokenizerTrainerTool = new TokenizerTrainerTool();
-        tokenizerTrainerTool.run(StreamFactoryRegistry.DEFAULT_FORMAT,args);
-        model.delete();
+        assertThrows(TerminateToolException.class, () -> {
+            tokenizerTrainerTool = new TokenizerTrainerTool();
+            tokenizerTrainerTool.run(StreamFactoryRegistry.DEFAULT_FORMAT,args);
+        });
+
     }
 
     private File prepareDataFile(String input) throws IOException {
