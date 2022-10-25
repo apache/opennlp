@@ -62,59 +62,66 @@ public class TrainingParametersTest {
 
   @Test
   public void testSetParamsWithCLIParams() {
-    String[] args = {"-model", "en-token-test.bin", "-alphaNumOpt", "isAlphaNumOpt" ,"-lang", "en" ,"-data",
-            "en-token.train","-encoding" ,"UTF-8", "-cutoff", "10", "-iterations", "50"};
+    String[] args =
+        { "-model" , "en-token-test.bin" , "-alphaNumOpt" , "isAlphaNumOpt" , "-lang" , "en" , "-data" ,
+            "en-token.train" , "-encoding" , "UTF-8" , "-cutoff" , "10" , "-iterations" , "50" };
     TrainingParameters tr = TrainingParameters.setParams(args);
 
-    Assert.assertEquals("MAXENT", tr.algorithm());
-    Assert.assertEquals(50,
-            tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM,
-                    100));
-    Assert.assertEquals(10,
-            tr.getIntParameter(TrainingParameters.CUTOFF_PARAM,
-                    5));
+    Assert.assertEquals("MAXENT" , tr.algorithm());
+    Assert.assertEquals(50 ,
+        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
+            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+    Assert.assertEquals(10 ,
+        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
+            TrainingParameters.CUTOFF_DEFAULT_VALUE));
   }
 
   @Test
   public void testSetParamsWithoutCLIParams() {
-    String[] args = {"-model", "en-token-test.bin", "-alphaNumOpt", "isAlphaNumOpt" ,"-lang", "en" ,"-data",
-            "en-token.train","-encoding" ,"UTF-8"};
+    String[] args =
+        { "-model" , "en-token-test.bin" , "-alphaNumOpt" , "isAlphaNumOpt" , "-lang" , "en" , "-data" ,
+            "en-token.train" , "-encoding" , "UTF-8" };
     TrainingParameters tr = TrainingParameters.setParams(args);
 
-    Assert.assertEquals("MAXENT", tr.algorithm());
-    Assert.assertEquals(100,
-            tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM,100));
-    Assert.assertEquals(5,
-            tr.getIntParameter(TrainingParameters.CUTOFF_PARAM,
-                    5));
+    Assert.assertEquals("MAXENT" , tr.algorithm());
+    Assert.assertEquals(100 ,
+        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
+            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+    Assert.assertEquals(5 ,
+        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
+            TrainingParameters.CUTOFF_DEFAULT_VALUE));
   }
 
   @Test
   public void testSetParamsWithoutCutoffCLIParams() {
-    String[] args = {"-model", "en-token-test.bin", "-alphaNumOpt", "isAlphaNumOpt" ,"-lang", "en" ,"-data",
-            "en-token.train","-encoding" ,"UTF-8", "-iterations", "50"};
+    String[] args =
+        { "-model" , "en-token-test.bin" , "-alphaNumOpt" , "isAlphaNumOpt" , "-lang" , "en" , "-data" ,
+            "en-token.train" , "-encoding" , "UTF-8" , "-iterations" , "50" };
     TrainingParameters tr = TrainingParameters.setParams(args);
 
-    Assert.assertEquals("MAXENT", tr.algorithm());
-    Assert.assertEquals(50,
-            tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM,100));
-    Assert.assertEquals(5,
-            tr.getIntParameter(TrainingParameters.CUTOFF_PARAM,
-                    5));
+    Assert.assertEquals("MAXENT" , tr.algorithm());
+    Assert.assertEquals(50 ,
+        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
+            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+    Assert.assertEquals(5 ,
+        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
+            TrainingParameters.CUTOFF_DEFAULT_VALUE));
   }
 
   @Test
   public void testSetParamsWithoutIterationsCLIParams() {
-    String[] args = {"-model", "en-token-test.bin", "-alphaNumOpt", "isAlphaNumOpt" ,"-lang", "en" ,"-data",
-            "en-token.train","-encoding" ,"UTF-8", "-cutoff", "10"};
+    String[] args =
+        { "-model" , "en-token-test.bin" , "-alphaNumOpt" , "isAlphaNumOpt" , "-lang" , "en" , "-data" ,
+            "en-token.train" , "-encoding" , "UTF-8" , "-cutoff" , "10" };
     TrainingParameters tr = TrainingParameters.setParams(args);
 
-    Assert.assertEquals("MAXENT", tr.algorithm());
-    Assert.assertEquals(100,
-            tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM,100));
-    Assert.assertEquals(10,
-            tr.getIntParameter(TrainingParameters.CUTOFF_PARAM,
-                    5));
+    Assert.assertEquals("MAXENT" , tr.algorithm());
+    Assert.assertEquals(100 ,
+        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
+            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+    Assert.assertEquals(10 ,
+        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
+            TrainingParameters.CUTOFF_DEFAULT_VALUE));
   }
 
   @Test

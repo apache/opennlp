@@ -39,6 +39,8 @@ public class TrainingParameters {
   public static final String ITERATIONS_PARAM = "Iterations";
   public static final String CUTOFF_PARAM = "Cutoff";
   public static final String THREADS_PARAM = "Threads";
+  public static final int ITERATIONS_DEFAULT_VALUE = 100;
+  public static final int CUTOFF_DEFAULT_VALUE = 5;
 
   private Map<String, Object> parameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -449,8 +451,8 @@ public class TrainingParameters {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
     mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, ITERATIONS_DEFAULT_VALUE);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, CUTOFF_DEFAULT_VALUE);
 
     return mlParams;
   }
@@ -462,11 +464,11 @@ public class TrainingParameters {
     mlParams.put(TrainingParameters.ITERATIONS_PARAM,
          null != CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase(), args) ?
          CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase(), args) :
-         defaultParams().getIntParameter(TrainingParameters.ITERATIONS_PARAM,100));
+         defaultParams().getIntParameter(TrainingParameters.ITERATIONS_PARAM,ITERATIONS_DEFAULT_VALUE));
     mlParams.put(TrainingParameters.CUTOFF_PARAM,
          null != CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase(), args) ?
          CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase(), args) :
-         5);
+                 CUTOFF_DEFAULT_VALUE);
 
     return mlParams;
   }
