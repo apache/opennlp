@@ -459,16 +459,16 @@ public class TrainingParameters {
 
   public static TrainingParameters setParams(String[] args) {
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
-    mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM,
-         null != CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase(), args) ?
-         CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase(), args) :
-         defaultParams().getIntParameter(TrainingParameters.ITERATIONS_PARAM,ITERATIONS_DEFAULT_VALUE));
-    mlParams.put(TrainingParameters.CUTOFF_PARAM,
-         null != CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase(), args) ?
-         CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase(), args) :
-                 CUTOFF_DEFAULT_VALUE);
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM , "MAXENT");
+    mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM , EventTrainer.EVENT_VALUE);
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM ,
+        null != CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase() , args) ?
+            CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase() , args) :
+            ITERATIONS_DEFAULT_VALUE);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM ,
+        null != CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase() , args) ?
+            CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase() , args) :
+            CUTOFF_DEFAULT_VALUE);
 
     return mlParams;
   }
