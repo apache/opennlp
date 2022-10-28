@@ -27,6 +27,9 @@ import org.junit.Test;
 public class CLITest {
 
   private static class ExitException extends SecurityException {
+
+    private static final long serialVersionUID = 6144359372794123631L;
+    
     private final int status;
 
     public ExitException(int status) {

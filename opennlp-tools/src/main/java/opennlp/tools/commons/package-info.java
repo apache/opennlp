@@ -15,28 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.util.model;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Map;
-
-import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.BinaryFileDataReader;
-import opennlp.tools.ml.model.GenericModelReader;
-
-public class GenericModelSerializer implements ArtifactSerializer<AbstractModel> {
-
-  public AbstractModel create(InputStream in) throws IOException {
-    return new GenericModelReader(new BinaryFileDataReader(in)).getModel();
-  }
-
-  public void serialize(AbstractModel artifact, OutputStream out) throws IOException {
-    ModelUtil.writeModel(artifact, out);
-  }
-
-  public static void register(Map<String, ArtifactSerializer<?>> factories) {
-    factories.put("model", new GenericModelSerializer());
-  }
-}
+/**
+ * Package related to common interfaces used in different contexts.
+ */
+package opennlp.tools.commons;

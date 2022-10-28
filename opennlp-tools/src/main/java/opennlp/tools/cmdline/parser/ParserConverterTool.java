@@ -18,9 +18,10 @@
 package opennlp.tools.cmdline.parser;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.parser.Parse;
 
-public class ParserConverterTool extends AbstractConverterTool<Parse> {
+public class ParserConverterTool extends AbstractConverterTool<Parse, BasicFormatParams> {
 
   public ParserConverterTool() {
     super(Parse.class);

@@ -28,7 +28,7 @@ import opennlp.tools.util.ObjectStream;
  * @param <T> class of data sample the tool converts, for example {@link opennlp.tools.postag
  * .POSSample}
  */
-public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
+public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
 
   /**
    * Constructor with type parameter.
@@ -40,7 +40,7 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
   }
 
   public String getShortDescription() {
-    Map<String, ObjectStreamFactory<T>> factories = StreamFactoryRegistry.getFactories(type);
+    Map<String, ObjectStreamFactory<T,P>> factories = StreamFactoryRegistry.getFactories(type);
     StringBuilder help = new StringBuilder();
     if (2 == factories.keySet().size()) { //opennlp + foreign
       for (String format : factories.keySet()) {
@@ -68,7 +68,7 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
   }
 
   public String getHelp() {
-    Map<String, ObjectStreamFactory<T>> factories = StreamFactoryRegistry.getFactories(type);
+    Map<String, ObjectStreamFactory<T,P>> factories = StreamFactoryRegistry.getFactories(type);
     StringBuilder help = new StringBuilder("help|");
     for (String formatName : factories.keySet()) {
       if (!StreamFactoryRegistry.DEFAULT_FORMAT.equals(formatName)) {
@@ -87,7 +87,7 @@ public abstract class AbstractConverterTool<T> extends TypedCmdLineTool<T> {
       System.out.println(getHelp());
     } else {
       format = args[0];
-      ObjectStreamFactory<T> streamFactory = getStreamFactory(format);
+      ObjectStreamFactory<T,P> streamFactory = getStreamFactory(format);
 
       String[] formatArgs = new String[args.length - 1];
       System.arraycopy(args, 1, formatArgs, 0, formatArgs.length);

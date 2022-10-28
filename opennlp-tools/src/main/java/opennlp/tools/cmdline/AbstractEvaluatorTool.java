@@ -25,7 +25,7 @@ import opennlp.tools.util.ObjectStream;
 public class AbstractEvaluatorTool<T, P> extends AbstractTypedParamTool<T, P> {
 
   protected P params;
-  protected ObjectStreamFactory<T> factory;
+  protected ObjectStreamFactory<T, P> factory;
   protected ObjectStream<T> sampleStream;
 
   /**

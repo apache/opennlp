@@ -156,9 +156,9 @@ public final class StreamFactoryRegistry {
    * @param factory     instance of the factory
    * @return true if the factory was successfully registered
    */
-  public static boolean registerFactory(Class sampleClass,
+  public static <T, P> boolean registerFactory(Class sampleClass,
                                         String formatName,
-                                        ObjectStreamFactory factory) {
+                                        ObjectStreamFactory<T, P> factory) {
     boolean result;
     Map<String, ObjectStreamFactory> formats = registry.get(sampleClass);
     if (null == formats) {
@@ -197,8 +197,8 @@ public final class StreamFactoryRegistry {
    * @return formats mapped to factories
    */
   @SuppressWarnings("unchecked")
-  public static <T> Map<String, ObjectStreamFactory<T>> getFactories(Class<T> sampleClass) {
-    return (Map<String, ObjectStreamFactory<T>>) (Object) registry.get(sampleClass);
+  public static <T,P> Map<String, ObjectStreamFactory<T,P>> getFactories(Class<T> sampleClass) {
+    return (Map<String, ObjectStreamFactory<T,P>>) (Object) registry.get(sampleClass);
   }
 
   /**
@@ -210,13 +210,13 @@ public final class StreamFactoryRegistry {
    * @return factory instance
    */
   @SuppressWarnings("unchecked")
-  public static <T> ObjectStreamFactory<T> getFactory(Class<T> sampleClass,
+  public static <T,P> ObjectStreamFactory<T,P> getFactory(Class<T> sampleClass,
                                                           String formatName) {
     if (null == formatName) {
       formatName = DEFAULT_FORMAT;
     }
 
-    ObjectStreamFactory<T> factory = registry.containsKey(sampleClass) ?
+    ObjectStreamFactory<T,P> factory = registry.containsKey(sampleClass) ?
         registry.get(sampleClass).get(formatName) : null;
 
     if (factory != null) {
@@ -230,7 +230,7 @@ public final class StreamFactoryRegistry {
         // Otherwise there will be class cast exceptions later in the flow
 
         try {
-          return (ObjectStreamFactory<T>) factoryClazz.newInstance();
+          return (ObjectStreamFactory<T,P>) factoryClazz.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
           return null;
         }

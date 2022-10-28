@@ -30,9 +30,9 @@ import opennlp.tools.tokenize.DictionaryDetokenizer;
 /**
  * Base class for factories which need detokenizer.
  */
-public abstract class DetokenizerSampleStreamFactory<T> extends AbstractSampleStreamFactory<T> {
+public abstract class DetokenizerSampleStreamFactory<T, P> extends AbstractSampleStreamFactory<T, P> {
 
-  protected <P> DetokenizerSampleStreamFactory(Class<P> params) {
+  protected DetokenizerSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

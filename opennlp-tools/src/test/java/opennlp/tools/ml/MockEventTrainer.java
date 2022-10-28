@@ -38,12 +38,10 @@ public class MockEventTrainer implements EventTrainer {
   }
 
   @Override
-  public void init(Map<String, String> trainParams,
-      Map<String, String> reportMap) {
+  public void init(Map<String, Object> trainParams, Map<String, String> reportMap) {
   }
 
   @Override
-  public void init(TrainingParameters trainingParams,
-      Map<String, String> reportMap) {
+  public void init(TrainingParameters trainingParams, Map<String, String> reportMap) {
   }
 }

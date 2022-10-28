@@ -109,10 +109,9 @@ public class QNTrainer extends AbstractEventTrainer {
     this.l1Cost = trainingParameters.getDoubleParameter(L1COST_PARAM, L1COST_DEFAULT);
     this.l2Cost = trainingParameters.getDoubleParameter(L2COST_PARAM, L2COST_DEFAULT);
   }
-  
+
   @Override
-  @Deprecated
-  public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
+  public void init(Map<String, Object> trainParams, Map<String, String> reportMap) {
     init(new TrainingParameters(trainParams),reportMap);
   }
 

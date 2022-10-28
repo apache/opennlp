@@ -32,17 +32,17 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Factory producing OpenNLP {@link ChunkSampleStream}s.
  */
-public class ChunkerSampleStreamFactory extends AbstractSampleStreamFactory<ChunkSample> {
+public class ChunkerSampleStreamFactory<P> extends AbstractSampleStreamFactory<ChunkSample, P> {
 
   interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(ChunkSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new ChunkerSampleStreamFactory(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new ChunkerSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ChunkerSampleStreamFactory(Class<P> params) {
+  protected ChunkerSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

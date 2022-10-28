@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
  */
 public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
 
+  private static final long serialVersionUID = -8155452559337913929L;
+  
   private static final Pattern HASH_USER_REGEX =
       Pattern.compile("[#@]\\S+");
 

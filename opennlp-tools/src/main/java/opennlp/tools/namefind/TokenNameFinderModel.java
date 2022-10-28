@@ -194,7 +194,7 @@ public class TokenNameFinderModel extends BaseModel {
    * is 'wordcluster', which is the key used to add the serializer to the map.
    * @return the map containing the added serializers
    */
-  public static Map<String, ArtifactSerializer> createArtifactSerializers()  {
+  public static Map<String, ArtifactSerializer<?>> createArtifactSerializers()  {
 
     // TODO: Not so nice, because code cannot really be reused by the other create serializer method
     //       Has to be redesigned, we need static access to default serializers
@@ -203,7 +203,7 @@ public class TokenNameFinderModel extends BaseModel {
     //       The XML feature generator factory should provide these mappings.
     //       Usually the feature generators should know what type of resource they expect.
 
-    Map<String, ArtifactSerializer> serializers = BaseModel.createArtifactSerializers();
+    Map<String, ArtifactSerializer<?>> serializers = BaseModel.createArtifactSerializers();
 
     serializers.put("featuregen", new ByteArraySerializer());
     serializers.put("wordcluster", new WordClusterDictionary.WordClusterDictionarySerializer());

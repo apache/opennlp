@@ -348,8 +348,8 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
   }
 
-  protected static Map<String, ArtifactSerializer> createArtifactSerializers() {
-    Map<String, ArtifactSerializer> serializers = new HashMap<>();
+  protected static Map<String, ArtifactSerializer<?>> createArtifactSerializers() {
+    Map<String, ArtifactSerializer<?>> serializers = new HashMap<>();
 
     GenericModelSerializer.register(serializers);
     PropertiesSerializer.register(serializers);

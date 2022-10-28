@@ -18,9 +18,10 @@
 package opennlp.tools.cmdline.postag;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.postag.POSSample;
 
-public class POSTaggerConverterTool extends AbstractConverterTool<POSSample> {
+public class POSTaggerConverterTool extends AbstractConverterTool<POSSample, BasicFormatParams> {
 
   public POSTaggerConverterTool() {
     super(POSSample.class);

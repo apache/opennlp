@@ -28,18 +28,18 @@ import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
-public class MascSentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
+public class MascSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
 
   public static final String MASC_FORMAT = "masc";
 
-  protected <P> MascSentenceSampleStreamFactory(Class<P> params) {
+  protected MascSentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         MASC_FORMAT,
-        new opennlp.tools.formats.masc.MascSentenceSampleStreamFactory(
+        new opennlp.tools.formats.masc.MascSentenceSampleStreamFactory<>(
             opennlp.tools.formats.masc.MascSentenceSampleStreamFactory.Parameters.class));
   }
 

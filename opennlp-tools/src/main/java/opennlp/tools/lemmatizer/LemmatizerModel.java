@@ -41,6 +41,7 @@ import opennlp.tools.util.model.BaseModel;
  */
 public class LemmatizerModel extends BaseModel {
 
+  private static final long serialVersionUID = -3362902631186156673L;
   private static final String COMPONENT_NAME = "StatisticalLemmatizer";
   private static final String LEMMATIZER_MODEL_ENTRY_NAME = "lemmatizer.model";
 
@@ -110,7 +111,7 @@ public class LemmatizerModel extends BaseModel {
       return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME));
     }
     else if (artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
-      return (SequenceClassificationModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME);
+      return (SequenceClassificationModel<String>) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME);
     }
     else {
       return null;

@@ -28,7 +28,8 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ParseToPOSSampleStreamFactory extends LanguageSampleStreamFactory<POSSample> {
+public class ParseToPOSSampleStreamFactory
+        extends LanguageSampleStreamFactory<POSSample, ParseSampleStreamFactory.Parameters> {
 
   private ParseToPOSSampleStreamFactory() {
     super(ParseSampleStreamFactory.Parameters.class);

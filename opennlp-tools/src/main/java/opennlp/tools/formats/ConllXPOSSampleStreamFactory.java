@@ -34,7 +34,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
+public class ConllXPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
 
   public static final String CONLLX_FORMAT = "conllx";
 
@@ -43,10 +43,10 @@ public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
-        CONLLX_FORMAT, new ConllXPOSSampleStreamFactory(Parameters.class));
+        CONLLX_FORMAT, new ConllXPOSSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ConllXPOSSampleStreamFactory(Class<P> params) {
+  protected ConllXPOSSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
@@ -57,7 +57,7 @@ public class ConllXPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
         CmdLineUtil.createInputStreamFactory(params.getData());
 
     try {
-      System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
+      System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
 
       return new ConllXPOSSampleStream(inFactory, StandardCharsets.UTF_8);
     } catch (UnsupportedEncodingException e) {

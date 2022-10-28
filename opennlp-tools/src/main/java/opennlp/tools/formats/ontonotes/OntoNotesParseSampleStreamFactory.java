@@ -28,7 +28,8 @@ import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 
-public class OntoNotesParseSampleStreamFactory extends AbstractSampleStreamFactory<Parse> {
+public class OntoNotesParseSampleStreamFactory
+        extends AbstractSampleStreamFactory<Parse, OntoNotesFormatParameters> {
 
   protected OntoNotesParseSampleStreamFactory() {
     super(OntoNotesFormatParameters.class);

@@ -81,7 +81,7 @@ public class LanguageDetectorFactoryTest {
     String[] context = cg.getContext(
         "a dummy text phrase to test if the context generator works!!!!!!!!!!!!");
 
-    Set<String> set = new HashSet(Arrays.asList(context));
+    Set<String> set = new HashSet<>(Arrays.asList(context));
 
     Assert.assertTrue(set.contains("!!!!!")); // default normalizer would remove the repeated !
     Assert.assertTrue(set.contains("a dum"));

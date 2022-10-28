@@ -20,11 +20,12 @@ package opennlp.tools.ml;
 import java.io.IOException;
 import java.util.Map;
 
+import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.TrainingParameters;
 
-public interface SequenceTrainer {
+public interface SequenceTrainer<T> extends Trainer {
 
   String SEQUENCE_VALUE = "Sequence";
 
@@ -32,5 +33,5 @@ public interface SequenceTrainer {
   void init(Map<String, String> trainParams, Map<String, String> reportMap);
   void init(TrainingParameters trainParams, Map<String, String> reportMap);
 
-  SequenceClassificationModel<String> train(SequenceStream events) throws IOException;
+  SequenceClassificationModel<String> train(SequenceStream<T> events) throws IOException;
 }

@@ -34,7 +34,7 @@ public class DictionarySerializer implements ArtifactSerializer<Dictionary> {
     dictionary.serialize(out);
   }
 
-  static void register(Map<String, ArtifactSerializer> factories) {
+  static void register(Map<String, ArtifactSerializer<?>> factories) {
     factories.put("dictionary", new DictionarySerializer());
   }
 }

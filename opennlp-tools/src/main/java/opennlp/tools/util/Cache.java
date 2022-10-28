@@ -25,7 +25,9 @@ import java.util.Map;
  */
 public class Cache<K,V> extends LinkedHashMap<K,V> {
 
-  private int capacity;
+  private static final long serialVersionUID = 3037039043085908062L;
+  
+  private final int capacity;
 
   public Cache(final int capacity) {
     this.capacity = capacity;

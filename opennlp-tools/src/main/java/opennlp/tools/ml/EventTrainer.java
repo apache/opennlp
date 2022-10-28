@@ -20,18 +20,18 @@ package opennlp.tools.ml;
 import java.io.IOException;
 import java.util.Map;
 
+import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
-public interface EventTrainer {
+public interface EventTrainer extends Trainer {
 
   String EVENT_VALUE = "Event";
 
-  @Deprecated
-  void init(Map<String, String> trainParams, Map<String, String> reportMap);
+  void init(Map<String, Object> trainParams, Map<String, String> reportMap);
   void init(TrainingParameters trainingParams, Map<String, String> reportMap);
 
   MaxentModel train(ObjectStream<Event> events) throws IOException;

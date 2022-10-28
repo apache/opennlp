@@ -18,10 +18,10 @@
 package opennlp.tools.ml;
 
 import java.lang.reflect.Constructor;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.commons.Sample;
+import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
@@ -43,15 +43,12 @@ public class TrainerFactory {
   private static final Map<String, Class> BUILTIN_TRAINERS;
 
   static {
-    Map<String, Class> _trainers = new HashMap<>();
-    _trainers.put(GISTrainer.MAXENT_VALUE, GISTrainer.class);
-    _trainers.put(QNTrainer.MAXENT_QN_VALUE, QNTrainer.class);
-    _trainers.put(PerceptronTrainer.PERCEPTRON_VALUE, PerceptronTrainer.class);
-    _trainers.put(SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE,
-        SimplePerceptronSequenceTrainer.class);
-    _trainers.put(NaiveBayesTrainer.NAIVE_BAYES_VALUE, NaiveBayesTrainer.class);
-
-    BUILTIN_TRAINERS = Collections.unmodifiableMap(_trainers);
+    BUILTIN_TRAINERS = Map.of(
+        GISTrainer.MAXENT_VALUE, GISTrainer.class,
+        QNTrainer.MAXENT_QN_VALUE, QNTrainer.class,
+        PerceptronTrainer.PERCEPTRON_VALUE, PerceptronTrainer.class,
+        SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE, SimplePerceptronSequenceTrainer.class,
+        NaiveBayesTrainer.NAIVE_BAYES_VALUE, NaiveBayesTrainer.class);
   }
 
   /**
@@ -69,7 +66,7 @@ public class TrainerFactory {
       return TrainerType.EVENT_MODEL_TRAINER;
     }
 
-    Class<?> trainerClass = BUILTIN_TRAINERS.get(algorithmValue);
+    Class<? extends Trainer> trainerClass = BUILTIN_TRAINERS.get(algorithmValue);
 
     if (trainerClass != null) {
 
@@ -119,12 +116,12 @@ public class TrainerFactory {
 
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        SequenceTrainer trainer =  TrainerFactory.<SequenceTrainer>createBuiltinTrainer(
-            BUILTIN_TRAINERS.get(trainerType));
+        SequenceTrainer<? extends Sample> trainer = TrainerFactory.
+            <SequenceTrainer>createBuiltinTrainer(BUILTIN_TRAINERS.get(trainerType));
         trainer.init(trainParams, reportMap);
         return trainer;
       } else {
-        SequenceTrainer trainer =
+        SequenceTrainer<? extends Sample> trainer =
             ExtensionLoader.instantiateExtension(SequenceTrainer.class, trainerType);
         trainer.init(trainParams, reportMap);
         return trainer;
@@ -141,8 +138,8 @@ public class TrainerFactory {
 
     if (trainerType != null) {
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        EventModelSequenceTrainer trainer = TrainerFactory.<EventModelSequenceTrainer>createBuiltinTrainer(
-            BUILTIN_TRAINERS.get(trainerType));
+        EventModelSequenceTrainer trainer = TrainerFactory.
+            <EventModelSequenceTrainer>createBuiltinTrainer(BUILTIN_TRAINERS.get(trainerType));
         trainer.init(trainParams, reportMap);
         return trainer;
       } else {
@@ -165,8 +162,8 @@ public class TrainerFactory {
         trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
 
     if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-      EventTrainer trainer = TrainerFactory.<EventTrainer>createBuiltinTrainer(
-          BUILTIN_TRAINERS.get(trainerType));
+      EventTrainer trainer = TrainerFactory.
+              <EventTrainer>createBuiltinTrainer(BUILTIN_TRAINERS.get(trainerType));
       trainer.init(trainParams, reportMap);
       return trainer;
     } else {
@@ -205,7 +202,7 @@ public class TrainerFactory {
     return true;
   }
 
-  private static <T> T createBuiltinTrainer(Class<T> trainerClass) {
+  private static <T extends Trainer> T createBuiltinTrainer(Class<T> trainerClass) {
     T theTrainer = null;
     if (trainerClass != null) {
       try {

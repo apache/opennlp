@@ -47,7 +47,7 @@ public class TrainingParametersTest {
   public void testDefault() {
     TrainingParameters tr = TrainingParameters.defaultParams();
 
-    Assert.assertEquals(4, tr.getSettings().size());
+    Assert.assertEquals(4, tr.getObjectSettings().size());
     Assert.assertEquals("MAXENT", tr.algorithm());
     Assert.assertEquals(EventTrainer.EVENT_VALUE,
         tr.getStringParameter(TrainingParameters.TRAINER_TYPE_PARAM,
@@ -80,10 +80,10 @@ public class TrainingParametersTest {
   public void testGetSettings() {
     TrainingParameters tp = build("k1=v1,n1.k2=v2,n2.k3=v3,n1.k4=v4");
 
-    assertEquals(buildMap("k1=v1"), tp.getSettings());
-    assertEquals(buildMap("k2=v2,k4=v4"), tp.getSettings("n1"));
-    assertEquals(buildMap("k3=v3"), tp.getSettings("n2"));
-    Assert.assertTrue(tp.getSettings("n3").isEmpty());
+    assertEquals(buildMap("k1=v1"), tp.getObjectSettings());
+    assertEquals(buildMap("k2=v2,k4=v4"), tp.getObjectSettings("n1"));
+    assertEquals(buildMap("k3=v3"), tp.getObjectSettings("n2"));
+    Assert.assertTrue(tp.getObjectSettings("n3").isEmpty());
   }
 
   @Test
@@ -93,7 +93,7 @@ public class TrainingParametersTest {
     assertEquals(build("k1=v1"), tp.getParameters(null));
     assertEquals(build("k2=v2,k4=v4"), tp.getParameters("n1"));
     assertEquals(build("k3=v3"), tp.getParameters("n2"));
-    Assert.assertTrue(tp.getParameters("n3").getSettings().isEmpty());
+    Assert.assertTrue(tp.getParameters("n3").getObjectSettings().isEmpty());
   }
 
   @Test
@@ -119,16 +119,16 @@ public class TrainingParametersTest {
     Assert.assertEquals(345.6, tp.getDoubleParameter("k21", -100), 0.001); // should be unchanged
     Assert.assertEquals(123.45, tp.getDoubleParameter("double", "k5", -100), 0.001);
 
-    Assert.assertEquals(true, tp.getBooleanParameter("k31", true));
+    Assert.assertTrue(tp.getBooleanParameter("k31", true));
     tp.put("k31", false);
-    Assert.assertEquals(false, tp.getBooleanParameter("k31", true));
-    Assert.assertEquals(false, tp.getBooleanParameter("boolean", "k4", true));
+    Assert.assertFalse(tp.getBooleanParameter("k31", true));
+    Assert.assertFalse(tp.getBooleanParameter("boolean", "k4", true));
   }
 
   // format: k1=v1,k2=v2,...
-  private static Map<String, String> buildMap(String str) {
+  private static Map<String, Object> buildMap(String str) {
     String[] pairs = str.split(",");
-    Map<String, String> map = new HashMap<>(pairs.length);
+    Map<String, Object> map = new HashMap<>(pairs.length);
     for (String pair : pairs) {
       String[] keyValue = pair.split("=");
       map.put(keyValue[0], keyValue[1]);
@@ -142,7 +142,7 @@ public class TrainingParametersTest {
     return new TrainingParameters(buildMap(str));
   }
 
-  private static void assertEquals(Map<String, String> map1, Map<String, String> map2) {
+  private static void assertEquals(Map<String, Object> map1, Map<String, Object> map2) {
     Assert.assertNotNull(map1);
     Assert.assertNotNull(map2);
     Assert.assertEquals(map1.size(), map2.size());
@@ -151,16 +151,16 @@ public class TrainingParametersTest {
     }
   }
 
-  private static void assertEquals(Map<String, String> map, TrainingParameters actual) {
+  private static void assertEquals(Map<String, Object> map, TrainingParameters actual) {
     Assert.assertNotNull(actual);
-    assertEquals(map, actual.getSettings());
+    assertEquals(map, actual.getObjectSettings());
   }
 
   private static void assertEquals(TrainingParameters expected, TrainingParameters actual) {
     if (expected == null) {
       Assert.assertNull(actual);
     } else {
-      assertEquals(expected.getSettings(), actual);
+      assertEquals(expected.getObjectSettings(), actual);
     }
   }
 }

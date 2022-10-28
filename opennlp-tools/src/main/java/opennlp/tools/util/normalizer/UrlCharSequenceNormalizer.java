@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
  */
 public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
 
+  private static final long serialVersionUID = 2023145028634552389L;
   private static final Pattern URL_REGEX =
       Pattern.compile("https?://[-_.?&~;+=/#0-9A-Za-z]+");
   private static final Pattern MAIL_REGEX =

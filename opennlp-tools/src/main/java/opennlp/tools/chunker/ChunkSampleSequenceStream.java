@@ -25,7 +25,7 @@ import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
 
-public class ChunkSampleSequenceStream implements SequenceStream {
+public class ChunkSampleSequenceStream implements SequenceStream<ChunkSample> {
 
   private final ObjectStream<ChunkSample> samples;
   private final ChunkerContextGenerator contextGenerator;
@@ -37,7 +37,7 @@ public class ChunkSampleSequenceStream implements SequenceStream {
   }
 
   @Override
-  public Sequence read() throws IOException {
+  public Sequence<ChunkSample> read() throws IOException {
     ChunkSample sample = samples.read();
 
     if (sample != null) {
@@ -60,7 +60,7 @@ public class ChunkSampleSequenceStream implements SequenceStream {
   }
 
   @Override
-  public Event[] updateContext(Sequence sequence, AbstractModel model) {
+  public Event[] updateContext(Sequence<ChunkSample> sequence, AbstractModel model) {
     // TODO: Should be implemented for Perceptron sequence learning ...
     return null;
   }

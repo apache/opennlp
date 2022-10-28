@@ -17,21 +17,24 @@
 
 package opennlp.tools.lemmatizer;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import opennlp.tools.commons.Sample;
+
 /**
  * Represents an lemmatized sentence.
  */
-public class LemmaSample implements Serializable {
+public class LemmaSample implements Sample {
 
-  private List<String> tokens;
+  private static final long serialVersionUID = -7956607496164605337L;
 
-  private List<String> tags;
+  private final List<String> tokens;
+
+  private final List<String> tags;
 
   private final List<String> lemmas;
 

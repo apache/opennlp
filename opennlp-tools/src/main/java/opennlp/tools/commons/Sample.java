@@ -15,28 +15,12 @@
  * limitations under the License.
  */
 
-package opennlp.tools.ml;
+package opennlp.tools.commons;
 
-import java.io.IOException;
+import java.io.Serializable;
 
-import opennlp.tools.ml.model.SequenceClassificationModel;
-import opennlp.tools.ml.model.SequenceStream;
-
-public abstract class AbstractSequenceTrainer extends AbstractTrainer implements
-    SequenceTrainer {
-
-  public AbstractSequenceTrainer() {
-  }
-
-  public abstract SequenceClassificationModel<String> doTrain(SequenceStream events)
-      throws IOException;
-
-  public final SequenceClassificationModel<String> train(SequenceStream events) throws IOException {
-    validate();
-
-    SequenceClassificationModel<String> model = doTrain(events);
-    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, SequenceTrainer.SEQUENCE_VALUE);
-    return model;
-  }
-
+/**
+ * Represents a generic type of processable elements.
+ */
+public interface Sample extends Serializable {
 }

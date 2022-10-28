@@ -18,6 +18,7 @@
 package opennlp.tools.languagemodel;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -135,26 +136,27 @@ public class NgramLanguageModelTest {
   public void testTrigramLanguageModelCreationFromText() throws Exception {
     int ngramSize = 3;
     NGramLanguageModel languageModel = new NGramLanguageModel(ngramSize);
-    InputStream stream = getClass().getResourceAsStream("/opennlp/tools/languagemodel/sentences.txt");
-    for (String line : IOUtils.readLines(stream)) {
-      String[] array = line.split(" ");
-      List<String> split = Arrays.asList(array);
-      List<String> generatedStrings = NGramGenerator.generate(split, ngramSize, " ");
-      for (String generatedString : generatedStrings) {
-        String[] tokens = generatedString.split(" ");
-        if (tokens.length > 0) {
-          languageModel.add(tokens);
+    try (InputStream stream = getClass().getResourceAsStream("/opennlp/tools/languagemodel/sentences.txt")) {
+      for (String line : IOUtils.readLines(stream, StandardCharsets.UTF_8)) {
+        String[] array = line.split(" ");
+        List<String> split = Arrays.asList(array);
+        List<String> generatedStrings = NGramGenerator.generate(split, ngramSize, " ");
+        for (String generatedString : generatedStrings) {
+          String[] tokens = generatedString.split(" ");
+          if (tokens.length > 0) {
+            languageModel.add(tokens);
+          }
         }
       }
+      String[] tokens = languageModel.predictNextTokens("neural",
+              "network", "language");
+      Assert.assertNotNull(tokens);
+      Assert.assertArrayEquals(new String[] {"models"}, tokens);
+      double p1 = languageModel.calculateProbability("neural", "network",
+              "language", "models");
+      double p2 = languageModel.calculateProbability("neural", "network",
+              "language", "model");
+      Assert.assertTrue(p1 > p2);
     }
-    String[] tokens = languageModel.predictNextTokens("neural",
-        "network", "language");
-    Assert.assertNotNull(tokens);
-    Assert.assertArrayEquals(new String[] {"models"}, tokens);
-    double p1 = languageModel.calculateProbability("neural", "network",
-        "language", "models");
-    double p2 = languageModel.calculateProbability("neural", "network",
-        "language", "model");
-    Assert.assertTrue(p1 > p2);
   }
 }

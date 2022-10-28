@@ -18,9 +18,10 @@
 package opennlp.tools.cmdline.doccat;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.doccat.DocumentSample;
 
-public class DoccatConverterTool extends AbstractConverterTool<DocumentSample> {
+public class DoccatConverterTool extends AbstractConverterTool<DocumentSample, BasicFormatParams> {
 
   public DoccatConverterTool() {
     super(DocumentSample.class);

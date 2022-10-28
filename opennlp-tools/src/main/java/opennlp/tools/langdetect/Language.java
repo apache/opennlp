@@ -24,6 +24,8 @@ import java.util.Objects;
  * Class for holding the document language and its confidence
  */
 public class Language implements Serializable {
+
+  private static final long serialVersionUID = -2692630786925291644L;
   private final String lang;
   private final double confidence;
 

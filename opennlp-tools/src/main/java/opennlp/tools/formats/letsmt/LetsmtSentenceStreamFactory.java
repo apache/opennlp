@@ -32,7 +32,7 @@ import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.util.ObjectStream;
 
-public class LetsmtSentenceStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
+public class LetsmtSentenceStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends BasicFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "dictionary",
@@ -43,11 +43,11 @@ public class LetsmtSentenceStreamFactory extends AbstractSampleStreamFactory<Sen
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "letsmt", new LetsmtSentenceStreamFactory(
+        "letsmt", new LetsmtSentenceStreamFactory<>(
         LetsmtSentenceStreamFactory.Parameters.class));
   }
 
-  protected <P> LetsmtSentenceStreamFactory(Class<P> params) {
+  protected LetsmtSentenceStreamFactory(Class<P> params) {
     super(params);
   }
 

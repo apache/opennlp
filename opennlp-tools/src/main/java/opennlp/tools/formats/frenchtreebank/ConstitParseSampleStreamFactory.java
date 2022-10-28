@@ -26,7 +26,8 @@ import opennlp.tools.formats.convert.FileToByteArraySampleStream;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 
-public class ConstitParseSampleStreamFactory extends AbstractSampleStreamFactory<Parse> {
+public class ConstitParseSampleStreamFactory
+        extends AbstractSampleStreamFactory<Parse, ConstitParseSampleStreamFactory.Parameters> {
 
   // TODO: The parameters have an encoding, but the data is in xml
   interface Parameters extends BasicFormatParams {

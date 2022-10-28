@@ -20,6 +20,7 @@ package opennlp.tools.convert;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,10 +50,10 @@ public class FileToStringSampleStreamTest {
         new DirectorySampleStream(directory.getRoot(), null, false);
       
     File tempFile1 = directory.newFile();
-    FileUtils.writeStringToFile(tempFile1, sentence1);
+    FileUtils.writeStringToFile(tempFile1, sentence1, StandardCharsets.UTF_8);
     
     File tempFile2 = directory.newFile();
-    FileUtils.writeStringToFile(tempFile2, sentence2);
+    FileUtils.writeStringToFile(tempFile2, sentence2, StandardCharsets.UTF_8);
     
     try (FileToStringSampleStream stream =
         new FileToStringSampleStream(directorySampleStream, Charset.defaultCharset())) {

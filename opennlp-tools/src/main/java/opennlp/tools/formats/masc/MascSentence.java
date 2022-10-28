@@ -31,7 +31,9 @@ import opennlp.tools.util.Span;
 
 public class MascSentence extends Span {
 
-  private class QuarkExtractor {
+  private static final long serialVersionUID = -3963079332759345419L;
+
+  private static class QuarkExtractor {
 
     private final Map<Integer, MascWord> wordsById;
     private final List<MascWord> allDocumentWords;
@@ -77,7 +79,7 @@ public class MascSentence extends Span {
   private final List<MascWord> words;
   private final Map<Integer, MascWord> wordsById;
   private List<MascToken> sentenceTokens = null;
-  private Map<Integer, Integer> tokensById = new HashMap<>();
+  private final Map<Integer, Integer> tokensById = new HashMap<>();
   private List<Span> namedEntities = new ArrayList<>();
 
   /**
@@ -227,7 +229,7 @@ public class MascSentence extends Span {
     Comparator<Span> compareByStart = Comparator.comparingInt(Span::getStart);
     namedEntities.sort(compareByStart);
 
-    Set<Integer> overlaps = new HashSet();
+    Set<Integer> overlaps = new HashSet<>();
     int leftIndex = 0;
     int rightIndex = leftIndex + 1;
     while (rightIndex < namedEntities.size()) {
