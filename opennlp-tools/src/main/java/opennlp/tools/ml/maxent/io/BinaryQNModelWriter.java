@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.ModelParameterChunker;
 
 public class BinaryQNModelWriter extends QNModelWriter {
   protected DataOutputStream output;
@@ -64,7 +65,7 @@ public class BinaryQNModelWriter extends QNModelWriter {
   }
 
   public void writeUTF(String s) throws IOException {
-    output.writeUTF(s);
+    ModelParameterChunker.writeUTF(output, s);
   }
 
   public void writeInt(int i) throws IOException {

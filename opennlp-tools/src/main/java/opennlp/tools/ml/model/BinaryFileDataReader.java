@@ -56,7 +56,7 @@ public class BinaryFileDataReader implements DataReader {
   }
 
   public String readUTF() throws IOException {
-    return input.readUTF();
+    return ModelParameterChunker.readUTF(input);
   }
 
 }
