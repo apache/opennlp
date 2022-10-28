@@ -17,7 +17,6 @@
 
 package opennlp.tools.ml;
 
-import java.io.IOException;
 import java.util.Map;
 
 import opennlp.tools.ml.model.DataIndexer;
@@ -28,12 +27,12 @@ import opennlp.tools.util.TrainingParameters;
 
 public class MockEventTrainer implements EventTrainer {
 
-  public MaxentModel train(ObjectStream<Event> events) throws IOException {
+  public MaxentModel train(ObjectStream<Event> events) {
     return null;
   }
 
   @Override
-  public MaxentModel train(DataIndexer indexer) throws IOException {
+  public MaxentModel train(DataIndexer indexer) {
     return null;
   }
 

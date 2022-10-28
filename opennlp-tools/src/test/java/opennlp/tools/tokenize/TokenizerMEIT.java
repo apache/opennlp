@@ -19,21 +19,21 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class TokenizerMEIT {
 
   @Test
-  public void testTokenizerDownloadedModel() throws IOException {
+  void testTokenizerDownloadedModel() throws IOException {
 
     TokenizerME tokenizer = new TokenizerME("en");
 
     String[] tokens = tokenizer.tokenize("test,");
 
-    Assert.assertEquals(2, tokens.length);
-    Assert.assertEquals("test", tokens[0]);
-    Assert.assertEquals(",", tokens[1]);
+    Assertions.assertEquals(2, tokens.length);
+    Assertions.assertEquals("test", tokens[0]);
+    Assertions.assertEquals(",", tokens[1]);
   }
-  
+
 }

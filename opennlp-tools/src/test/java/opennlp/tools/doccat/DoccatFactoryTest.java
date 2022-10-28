@@ -22,8 +22,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -56,10 +56,10 @@ public class DoccatFactoryTest {
   }
 
   @Test
-  public void testDefault() throws IOException {
+  void testDefault() throws IOException {
     DoccatModel model = train();
 
-    Assert.assertNotNull(model);
+    Assertions.assertNotNull(model);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -69,24 +69,24 @@ public class DoccatFactoryTest {
 
     DoccatFactory factory = fromSerialized.getFactory();
 
-    Assert.assertNotNull(factory);
+    Assertions.assertNotNull(factory);
 
-    Assert.assertEquals(1, factory.getFeatureGenerators().length);
-    Assert.assertEquals(BagOfWordsFeatureGenerator.class,
+    Assertions.assertEquals(1, factory.getFeatureGenerators().length);
+    Assertions.assertEquals(BagOfWordsFeatureGenerator.class,
         factory.getFeatureGenerators()[0].getClass());
 
   }
 
   @Test
-  public void testCustom() throws IOException {
-    FeatureGenerator[] featureGenerators = { new BagOfWordsFeatureGenerator(),
-        new NGramFeatureGenerator(), new NGramFeatureGenerator(2,3) };
+  void testCustom() throws IOException {
+    FeatureGenerator[] featureGenerators = {new BagOfWordsFeatureGenerator(),
+        new NGramFeatureGenerator(), new NGramFeatureGenerator(2, 3)};
 
     DoccatFactory factory = new DoccatFactory(featureGenerators);
 
     DoccatModel model = train(factory);
 
-    Assert.assertNotNull(model);
+    Assertions.assertNotNull(model);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -96,14 +96,14 @@ public class DoccatFactoryTest {
 
     factory = fromSerialized.getFactory();
 
-    Assert.assertNotNull(factory);
+    Assertions.assertNotNull(factory);
 
-    Assert.assertEquals(3, factory.getFeatureGenerators().length);
-    Assert.assertEquals(BagOfWordsFeatureGenerator.class,
+    Assertions.assertEquals(3, factory.getFeatureGenerators().length);
+    Assertions.assertEquals(BagOfWordsFeatureGenerator.class,
         factory.getFeatureGenerators()[0].getClass());
-    Assert.assertEquals(NGramFeatureGenerator.class,
+    Assertions.assertEquals(NGramFeatureGenerator.class,
         factory.getFeatureGenerators()[1].getClass());
-    Assert.assertEquals(NGramFeatureGenerator.class,factory.getFeatureGenerators()[2].getClass());
+    Assertions.assertEquals(NGramFeatureGenerator.class, factory.getFeatureGenerators()[2].getClass());
   }
 
 }

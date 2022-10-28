@@ -20,73 +20,73 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SuffixFeatureGeneratorTest {
 
   private List<String> features;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp()  {
     features = new ArrayList<>();
   }
 
   @Test
-  public void lengthTest1() {
-      
+  void lengthTest1() {
+
     String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
 
     int testTokenIndex = 0;
     int suffixLength = 2;
-      
-    AdaptiveFeatureGenerator generator = new SuffixFeatureGenerator(suffixLength);    
+
+    AdaptiveFeatureGenerator generator = new SuffixFeatureGenerator(suffixLength);
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    Assert.assertEquals(2, features.size());
-    Assert.assertEquals("suf=s", features.get(0));
-    Assert.assertEquals("suf=is", features.get(1));
-    
+    Assertions.assertEquals(2, features.size());
+    Assertions.assertEquals("suf=s", features.get(0));
+    Assertions.assertEquals("suf=is", features.get(1));
+
   }
-  
+
   @Test
-  public void lengthTest2() {
-      
+  void lengthTest2() {
+
     String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
 
     int testTokenIndex = 3;
     int suffixLength = 5;
-      
-    AdaptiveFeatureGenerator generator = new SuffixFeatureGenerator(suffixLength);    
+
+    AdaptiveFeatureGenerator generator = new SuffixFeatureGenerator(suffixLength);
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    Assert.assertEquals(5, features.size());
-    Assert.assertEquals("suf=e", features.get(0));
-    Assert.assertEquals("suf=le", features.get(1));
-    Assert.assertEquals("suf=ple", features.get(2));
-    Assert.assertEquals("suf=mple", features.get(3));
-    Assert.assertEquals("suf=ample", features.get(4));
-    
+    Assertions.assertEquals(5, features.size());
+    Assertions.assertEquals("suf=e", features.get(0));
+    Assertions.assertEquals("suf=le", features.get(1));
+    Assertions.assertEquals("suf=ple", features.get(2));
+    Assertions.assertEquals("suf=mple", features.get(3));
+    Assertions.assertEquals("suf=ample", features.get(4));
+
   }
-  
+
   @Test
-  public void lengthTest3() {
-      
+  void lengthTest3() {
+
     String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
 
     int testTokenIndex = 1;
     int suffixLength = 5;
-      
-    AdaptiveFeatureGenerator generator = new SuffixFeatureGenerator(suffixLength);    
+
+    AdaptiveFeatureGenerator generator = new SuffixFeatureGenerator(suffixLength);
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
-    
-    Assert.assertEquals(2, features.size());
-    Assert.assertEquals("suf=s", features.get(0));
-    Assert.assertEquals("suf=is", features.get(1));
-    
+
+    Assertions.assertEquals(2, features.size());
+    Assertions.assertEquals("suf=s", features.get(0));
+    Assertions.assertEquals("suf=is", features.get(1));
+
   }
 }

@@ -19,8 +19,8 @@ package opennlp.tools.util;
 
 import java.util.Iterator;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the {@link StringList} class.
@@ -31,53 +31,53 @@ public class StringListTest {
    * Tests {@link StringList} which uses {@link String#intern}.
    */
   @Test
-  public void testIntern() {
+  void testIntern() {
     StringList l1 = new StringList("a");
     StringList l2 = new StringList("a", "b");
-    Assert.assertTrue(l1.getToken(0) == l2.getToken(0));
+    Assertions.assertTrue(l1.getToken(0) == l2.getToken(0));
   }
 
   /**
    * Tests {@link StringList#getToken(int)}.
    */
   @Test
-  public void testGetToken() {
+  void testGetToken() {
     StringList l = new StringList("a", "b");
-    Assert.assertEquals(2, l.size());
-    Assert.assertEquals("a", l.getToken(0));
-    Assert.assertEquals("b", l.getToken(1));
+    Assertions.assertEquals(2, l.size());
+    Assertions.assertEquals("a", l.getToken(0));
+    Assertions.assertEquals("b", l.getToken(1));
   }
 
   /**
    * Tests {@link StringList#iterator()}.
    */
   @Test
-  public void testIterator() {
+  void testIterator() {
     StringList l = new StringList("a");
     Iterator<String> it = l.iterator();
-    Assert.assertTrue(it.hasNext());
-    Assert.assertEquals("a", it.next());
-    Assert.assertFalse(it.hasNext());
+    Assertions.assertTrue(it.hasNext());
+    Assertions.assertEquals("a", it.next());
+    Assertions.assertFalse(it.hasNext());
 
     // now test with more than one string
     l = new StringList("a", "b", "c");
     it = l.iterator();
 
-    Assert.assertTrue(it.hasNext());
-    Assert.assertEquals("a", it.next());
-    Assert.assertTrue(it.hasNext());
-    Assert.assertEquals("b", it.next());
-    Assert.assertTrue(it.hasNext());
-    Assert.assertEquals("c", it.next());
-    Assert.assertFalse(it.hasNext());
+    Assertions.assertTrue(it.hasNext());
+    Assertions.assertEquals("a", it.next());
+    Assertions.assertTrue(it.hasNext());
+    Assertions.assertEquals("b", it.next());
+    Assertions.assertTrue(it.hasNext());
+    Assertions.assertEquals("c", it.next());
+    Assertions.assertFalse(it.hasNext());
   }
 
   /**
    * Tests {@link StringList#compareToIgnoreCase(StringList)}.
    */
   @Test
-  public void testCompareToIgnoreCase() {
-    Assert.assertTrue(new StringList("a", "b").compareToIgnoreCase(
+  void testCompareToIgnoreCase() {
+    Assertions.assertTrue(new StringList("a", "b").compareToIgnoreCase(
         new StringList("A", "B")));
   }
 
@@ -85,11 +85,11 @@ public class StringListTest {
    * Tests {@link StringList#equals(Object)}.
    */
   @Test
-  public void testEquals() {
-    Assert.assertEquals(new StringList("a", "b"),
+  void testEquals() {
+    Assertions.assertEquals(new StringList("a", "b"),
         new StringList("a", "b"));
 
-    Assert.assertFalse(new StringList("a", "b").equals(
+    Assertions.assertFalse(new StringList("a", "b").equals(
         new StringList("A", "B")));
   }
 
@@ -97,10 +97,10 @@ public class StringListTest {
    * Tests {@link StringList#hashCode()}.
    */
   @Test
-  public void testHashCode() {
-    Assert.assertEquals(new StringList("a", "b").hashCode(),
+  void testHashCode() {
+    Assertions.assertEquals(new StringList("a", "b").hashCode(),
         new StringList("a", "b").hashCode());
-    Assert.assertNotEquals(new StringList("a", "b").hashCode(),
+    Assertions.assertNotEquals(new StringList("a", "b").hashCode(),
         new StringList("a", "c").hashCode());
   }
 
@@ -108,8 +108,8 @@ public class StringListTest {
    * Tests {@link StringList#toString()}.
    */
   @Test
-  public void testToString() {
-    Assert.assertEquals("[a]", new StringList("a").toString());
-    Assert.assertEquals("[a,b]", new StringList("a", "b").toString());
+  void testToString() {
+    Assertions.assertEquals("[a]", new StringList("a").toString());
+    Assertions.assertEquals("[a,b]", new StringList("a", "b").toString());
   }
 }

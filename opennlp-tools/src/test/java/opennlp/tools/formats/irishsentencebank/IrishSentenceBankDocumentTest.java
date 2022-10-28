@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.Span;
@@ -30,38 +30,38 @@ import opennlp.tools.util.Span;
 public class IrishSentenceBankDocumentTest {
 
   @Test
-  public void testParsingSimpleDoc() throws IOException {
-    try (InputStream irishSBXmlIn = 
-          IrishSentenceBankDocumentTest.class.getResourceAsStream("irishsentencebank-sample.xml")) {
+  void testParsingSimpleDoc() throws IOException {
+    try (InputStream irishSBXmlIn =
+             IrishSentenceBankDocumentTest.class.getResourceAsStream("irishsentencebank-sample.xml")) {
 
       IrishSentenceBankDocument doc = IrishSentenceBankDocument.parse(irishSBXmlIn);
 
       List<IrishSentenceBankDocument.IrishSentenceBankSentence> sents = doc.getSentences();
 
-      Assert.assertEquals(2, sents.size());
+      Assertions.assertEquals(2, sents.size());
 
       IrishSentenceBankDocument.IrishSentenceBankSentence sent1 = sents.get(0);
       IrishSentenceBankDocument.IrishSentenceBankSentence sent2 = sents.get(1);
 
-      Assert.assertEquals("A Dhia, tá mé ag iompar clainne!", sent1.getOriginal());
+      Assertions.assertEquals("A Dhia, tá mé ag iompar clainne!", sent1.getOriginal());
 
       IrishSentenceBankDocument.IrishSentenceBankFlex[] flex = sent1.getFlex();
-      Assert.assertEquals(7, flex.length);
-      Assert.assertEquals("A", flex[0].getSurface());
-      Assert.assertArrayEquals(new String[]{"a"}, flex[0].getFlex());
+      Assertions.assertEquals(7, flex.length);
+      Assertions.assertEquals("A", flex[0].getSurface());
+      Assertions.assertArrayEquals(new String[] {"a"}, flex[0].getFlex());
 
       IrishSentenceBankDocument.IrishSentenceBankFlex[] flex2 = sent2.getFlex();
-      Assert.assertEquals("ón", flex2[4].getSurface());
-      Assert.assertArrayEquals(new String[]{"ó", "an"}, flex2[4].getFlex());
+      Assertions.assertEquals("ón", flex2[4].getSurface());
+      Assertions.assertArrayEquals(new String[] {"ó", "an"}, flex2[4].getFlex());
 
-      Assert.assertEquals("Excuse me, are you from the stone age?", sent2.getTranslation());
+      Assertions.assertEquals("Excuse me, are you from the stone age?", sent2.getTranslation());
 
       TokenSample ts = sent1.getTokenSample();
       Span[] spans = ts.getTokenSpans();
-      Assert.assertEquals(9, spans.length);
-      Assert.assertEquals(24, spans[7].getStart());
-      Assert.assertEquals(31, spans[7].getEnd());
-      Assert.assertEquals("clainne", ts.getText().substring(spans[7].getStart(), spans[7].getEnd()));
+      Assertions.assertEquals(9, spans.length);
+      Assertions.assertEquals(24, spans[7].getStart());
+      Assertions.assertEquals(31, spans[7].getEnd());
+      Assertions.assertEquals("clainne", ts.getText().substring(spans[7].getStart(), spans[7].getEnd()));
     }
   }
 }

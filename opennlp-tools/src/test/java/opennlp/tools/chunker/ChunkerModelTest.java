@@ -17,8 +17,8 @@
 
 package opennlp.tools.chunker;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * This is the test class for {@link ChunkerModel}.
@@ -26,34 +26,35 @@ import org.junit.Test;
 public class ChunkerModelTest {
 
   @Test
-  public void testInvalidFactorySignature() throws Exception {
+  void testInvalidFactorySignature() throws Exception {
 
     ChunkerModel model = null;
     try {
       model = new ChunkerModel(this.getClass().getResourceAsStream("chunker170custom.bin"));
     } catch (IllegalArgumentException e) {
-      Assert.assertTrue("Exception must state ChunkerFactory",
-          e.getMessage().contains("ChunkerFactory"));
-      Assert.assertTrue("Exception must mention DummyChunkerFactory",
-          e.getMessage().contains("opennlp.tools.chunker.DummyChunkerFactory"));
+      Assertions.assertTrue(
+          e.getMessage().contains("ChunkerFactory"), "Exception must state ChunkerFactory");
+      Assertions.assertTrue(
+          e.getMessage().contains("opennlp.tools.chunker.DummyChunkerFactory"),
+          "Exception must mention DummyChunkerFactory");
     }
-    Assert.assertNull(model);
+    Assertions.assertNull(model);
   }
 
   @Test
-  public void test170DefaultFactory() throws Exception {
+  void test170DefaultFactory() throws Exception {
 
     // This is an OpenNLP 1.x model. It should load with OpenNLP 2.x.
-    Assert.assertNotNull(
+    Assertions.assertNotNull(
         new ChunkerModel(this.getClass().getResourceAsStream("chunker170default.bin")));
 
   }
 
   @Test
-  public void test180CustomFactory() throws Exception {
+  void test180CustomFactory() throws Exception {
 
     // This is an OpenNLP 1.x model. It should load with OpenNLP 2.x.
-    Assert.assertNotNull(
+    Assertions.assertNotNull(
         new ChunkerModel(this.getClass().getResourceAsStream("chunker180custom.bin")));
 
   }

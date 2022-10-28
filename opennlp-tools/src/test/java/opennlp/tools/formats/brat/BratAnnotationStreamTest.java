@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.ObjectStream;
 
@@ -42,7 +42,7 @@ public class BratAnnotationStreamTest {
   }
 
   @Test
-  public void testParsingEntities() throws Exception {
+  void testParsingEntities() throws Exception {
     Map<String, String> typeToClassMap = new HashMap<>();
     addEntityTypes(typeToClassMap);
 
@@ -60,7 +60,7 @@ public class BratAnnotationStreamTest {
   }
 
   @Test
-  public void testParsingRelations() throws Exception {
+  void testParsingRelations() throws Exception {
     Map<String, String> typeToClassMap = new HashMap<>();
     addEntityTypes(typeToClassMap);
     typeToClassMap.put("Related", AnnotationConfiguration.RELATION_TYPE);

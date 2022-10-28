@@ -17,85 +17,88 @@
 
 package opennlp.tools.langdetect;
 
-import org.junit.Assert;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class LanguageTest {
 
 
   @Test
-  public void emptyConfidence() throws Exception {
+  void emptyConfidence() {
     String languageCode = "aLanguage";
     Language lang = new Language(languageCode);
 
-    Assert.assertEquals(languageCode, lang.getLang());
-    Assert.assertEquals(0, lang.getConfidence(), 0);
+    Assertions.assertEquals(languageCode, lang.getLang());
+    Assertions.assertEquals(0, lang.getConfidence(), 0);
   }
 
   @Test
-  public void nonEmptyConfidence() throws Exception {
+  void nonEmptyConfidence() {
     String languageCode = "aLanguage";
     double confidence = 0.05;
     Language lang = new Language(languageCode, confidence);
 
-    Assert.assertEquals(languageCode, lang.getLang());
-    Assert.assertEquals(confidence, lang.getConfidence(), 0);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void emptyLanguage() throws Exception {
-    new Language(null);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void emptyLanguageConfidence() throws Exception {
-    new Language(null, 0.05);
+    Assertions.assertEquals(languageCode, lang.getLang());
+    Assertions.assertEquals(confidence, lang.getConfidence(), 0);
   }
 
   @Test
-  public void testToString() {
+  void emptyLanguage() {
+    Assertions.assertThrows(NullPointerException.class, () -> {
+      new Language(null);
+    });
+  }
+
+  @Test
+  void emptyLanguageConfidence() {
+    Assertions.assertThrows(NullPointerException.class, () -> {
+      new Language(null, 0.05);
+    });
+  }
+
+  @Test
+  void testToString() {
     Language lang = new Language("aLang");
 
-    Assert.assertEquals("aLang (0.0)", lang.toString());
+    Assertions.assertEquals("aLang (0.0)", lang.toString());
 
     lang = new Language("aLang", 0.0886678);
 
-    Assert.assertEquals("aLang (0.0886678)", lang.toString());
+    Assertions.assertEquals("aLang (0.0886678)", lang.toString());
   }
 
 
   @Test
-  public void testHash() {
+  void testHash() {
     int hashA = new Language("aLang").hashCode();
     int hashAA = new Language("aLang").hashCode();
     int hashB = new Language("BLang").hashCode();
     int hashA5 = new Language("aLang", 5.0).hashCode();
     int hashA6 = new Language("BLang", 6.0).hashCode();
 
-    Assert.assertEquals(hashA, hashAA);
+    Assertions.assertEquals(hashA, hashAA);
 
-    Assert.assertNotEquals(hashA, hashB);
-    Assert.assertNotEquals(hashA, hashA5);
-    Assert.assertNotEquals(hashB, hashA5);
-    Assert.assertNotEquals(hashA5, hashA6);
+    Assertions.assertNotEquals(hashA, hashB);
+    Assertions.assertNotEquals(hashA, hashA5);
+    Assertions.assertNotEquals(hashB, hashA5);
+    Assertions.assertNotEquals(hashA5, hashA6);
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Language langA = new Language("langA");
     Language langB = new Language("langB");
     Language langA5 = new Language("langA5", 5.0);
     Language langA6 = new Language("langA5", 6.0);
 
-    Assert.assertEquals(langA, langA);
-    Assert.assertEquals(langA5, langA5);
+    Assertions.assertEquals(langA, langA);
+    Assertions.assertEquals(langA5, langA5);
 
-    Assert.assertNotEquals(langA, langA5);
-    Assert.assertNotEquals(langA, langB);
+    Assertions.assertNotEquals(langA, langA5);
+    Assertions.assertNotEquals(langA, langB);
 
-    Assert.assertEquals(langA6, langA5);
+    Assertions.assertEquals(langA6, langA5);
 
-    Assert.assertNotEquals(langA, "something else");
+    Assertions.assertNotEquals(langA, "something else");
   }
 }

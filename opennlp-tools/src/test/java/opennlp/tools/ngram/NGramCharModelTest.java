@@ -17,8 +17,8 @@
 
 package opennlp.tools.ngram;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link NGramCharModel}
@@ -26,81 +26,81 @@ import org.junit.Test;
 public class NGramCharModelTest {
 
   @Test
-  public void testZeroGetCount() throws Exception {
+  void testZeroGetCount() {
     NGramCharModel ngramModel = new NGramCharModel();
     int count = ngramModel.getCount("");
-    Assert.assertEquals(0, count);
-    Assert.assertEquals(0, ngramModel.size());
+    Assertions.assertEquals(0, count);
+    Assertions.assertEquals(0, ngramModel.size());
   }
 
   @Test
-  public void testZeroGetCount2() throws Exception {
+  void testZeroGetCount2() {
     NGramCharModel ngramModel = new NGramCharModel();
     ngramModel.add("the");
     int count = ngramModel.getCount("fox");
-    Assert.assertEquals(0, count);
-    Assert.assertEquals(1, ngramModel.size());
+    Assertions.assertEquals(0, count);
+    Assertions.assertEquals(1, ngramModel.size());
   }
 
   @Test
-  public void testAdd() throws Exception {
+  void testAdd() {
     NGramCharModel ngramModel = new NGramCharModel();
     ngramModel.add("fox");
     int count = ngramModel.getCount("the");
-    Assert.assertEquals(0, count);
-    Assert.assertEquals(1, ngramModel.size());
+    Assertions.assertEquals(0, count);
+    Assertions.assertEquals(1, ngramModel.size());
   }
 
   @Test
-  public void testAdd1() throws Exception {
+  void testAdd1() {
     NGramCharModel ngramModel = new NGramCharModel();
     ngramModel.add("the");
     int count = ngramModel.getCount("the");
-    Assert.assertEquals(1, count);
-    Assert.assertEquals(1, ngramModel.size());
+    Assertions.assertEquals(1, count);
+    Assertions.assertEquals(1, ngramModel.size());
   }
 
   @Test
-  public void testAdd2() throws Exception {
+  void testAdd2() {
     NGramCharModel ngramModel = new NGramCharModel();
     ngramModel.add("the", 1, 3);
     int count = ngramModel.getCount("th");
-    Assert.assertEquals(1, count);
-    Assert.assertEquals(6, ngramModel.size());
+    Assertions.assertEquals(1, count);
+    Assertions.assertEquals(6, ngramModel.size());
   }
 
   @Test
-  public void testRemove() throws Exception {
+  void testRemove() {
     NGramCharModel ngramModel = new NGramCharModel();
     String ngram = "the";
     ngramModel.add(ngram);
     ngramModel.remove(ngram);
-    Assert.assertEquals(0, ngramModel.size());
+    Assertions.assertEquals(0, ngramModel.size());
   }
 
   @Test
-  public void testContains() throws Exception {
+  void testContains() {
     NGramCharModel ngramModel = new NGramCharModel();
     String token = "the";
     ngramModel.add(token);
-    Assert.assertFalse(ngramModel.contains("fox"));
+    Assertions.assertFalse(ngramModel.contains("fox"));
   }
 
   @Test
-  public void testContains2() throws Exception {
+  void testContains2() {
     NGramCharModel ngramModel = new NGramCharModel();
     String token = "the";
     ngramModel.add(token, 1, 3);
-    Assert.assertTrue(ngramModel.contains("the"));
+    Assertions.assertTrue(ngramModel.contains("the"));
   }
 
 
   @Test
-  public void testCutoff1() throws Exception {
+  void testCutoff1() {
     NGramCharModel ngramModel = new NGramCharModel();
     String token = "the";
     ngramModel.add(token, 1, 3);
     ngramModel.cutoff(2, 4);
-    Assert.assertEquals(0, ngramModel.size());
+    Assertions.assertEquals(0, ngramModel.size());
   }
 }

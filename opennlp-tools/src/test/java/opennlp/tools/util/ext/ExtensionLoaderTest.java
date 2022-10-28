@@ -17,8 +17,8 @@
 
 package opennlp.tools.util.ext;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ExtensionLoaderTest {
 
@@ -27,17 +27,17 @@ public class ExtensionLoaderTest {
     String generateTestString();
   }
 
-  static class TestStringGeneratorImpl implements TestStringGenerator {
+  static public class TestStringGeneratorImpl implements TestStringGenerator {
     public String generateTestString() {
       return "test";
     }
   }
 
   @Test
-  public void testLoadingStringGenerator() throws ClassNotFoundException {
+  void testLoadingStringGenerator() {
     TestStringGenerator g = ExtensionLoader.instantiateExtension(TestStringGenerator.class,
         TestStringGeneratorImpl.class.getName());
-    Assert.assertEquals("test", g.generateTestString());
+    Assertions.assertEquals("test", g.generateTestString());
   }
 
 }

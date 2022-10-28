@@ -17,9 +17,9 @@
 
 package opennlp.tools.namefind;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.tokenize.SimpleTokenizer;
@@ -27,8 +27,8 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 
 /**
-  *Tests for the {@link DictionaryNameFinder} class.
-  */
+ * Tests for the {@link DictionaryNameFinder} class.
+ */
 public class DictionaryNameFinderTest {
 
   private Dictionary mDictionary = new Dictionary();
@@ -36,13 +36,13 @@ public class DictionaryNameFinderTest {
 
   public DictionaryNameFinderTest() {
 
-    StringList vanessa = new StringList(new String[]{"Vanessa"});
+    StringList vanessa = new StringList(new String[] {"Vanessa"});
     mDictionary.put(vanessa);
 
     StringList vanessaWilliams = new StringList("Vanessa", "Williams");
     mDictionary.put(vanessaWilliams);
 
-    StringList max = new StringList(new String[]{"Max"});
+    StringList max = new StringList(new String[] {"Max"});
     mDictionary.put(max);
 
     StringList michaelJordan = new
@@ -50,71 +50,71 @@ public class DictionaryNameFinderTest {
     mDictionary.put(michaelJordan);
   }
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp()  {
     mNameFinder = new DictionaryNameFinder(mDictionary);
   }
 
   @Test
-  public void testSingleTokeNameAtSentenceStart() {
+  void testSingleTokeNameAtSentenceStart() {
     String sentence = "Max a b c d";
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String[] tokens = tokenizer.tokenize(sentence);
     Span[] names = mNameFinder.find(tokens);
-    Assert.assertTrue(names.length == 1);
-    Assert.assertTrue(names[0].getStart() == 0 && names[0].getEnd() == 1);
+    Assertions.assertTrue(names.length == 1);
+    Assertions.assertTrue(names[0].getStart() == 0 && names[0].getEnd() == 1);
   }
 
   @Test
-  public void testSingleTokeNameInsideSentence() {
+  void testSingleTokeNameInsideSentence() {
     String sentence = "a b  Max c d";
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String[] tokens = tokenizer.tokenize(sentence);
     Span[] names = mNameFinder.find(tokens);
-    Assert.assertTrue(names.length == 1);
-    Assert.assertTrue(names[0].getStart() == 2 && names[0].getEnd() == 3);
+    Assertions.assertTrue(names.length == 1);
+    Assertions.assertTrue(names[0].getStart() == 2 && names[0].getEnd() == 3);
   }
 
   @Test
-  public void testSingleTokeNameAtSentenceEnd() {
+  void testSingleTokeNameAtSentenceEnd() {
     String sentence = "a b c Max";
 
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String[] tokens = tokenizer.tokenize(sentence);
     Span[] names = mNameFinder.find(tokens);
-    Assert.assertTrue(names.length == 1);
-    Assert.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
+    Assertions.assertTrue(names.length == 1);
+    Assertions.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
   }
 
   @Test
-  public void testLastMatchingTokenNameIsChoosen() {
+  void testLastMatchingTokenNameIsChoosen() {
     String[] sentence = {"a", "b", "c", "Vanessa"};
     Span[] names = mNameFinder.find(sentence);
-    Assert.assertTrue(names.length == 1);
-    Assert.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
+    Assertions.assertTrue(names.length == 1);
+    Assertions.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
   }
 
   @Test
-  public void testLongerTokenNameIsPreferred() {
+  void testLongerTokenNameIsPreferred() {
     String[] sentence = {"a", "b", "c", "Vanessa", "Williams"};
     Span[] names = mNameFinder.find(sentence);
-    Assert.assertTrue(names.length == 1);
-    Assert.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
+    Assertions.assertTrue(names.length == 1);
+    Assertions.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
   }
 
   @Test
-  public void testCaseSensitivity() {
+  void testCaseSensitivity() {
     String[] sentence = {"a", "b", "c", "vanessa", "williams"};
     Span[] names = mNameFinder.find(sentence);
-    Assert.assertTrue(names.length == 1);
-    Assert.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
+    Assertions.assertTrue(names.length == 1);
+    Assertions.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
   }
 
   @Test
-  public void testCaseLongerEntry() {
+  void testCaseLongerEntry() {
     String[] sentence = {"a", "b", "michael", "jordan"};
     Span[] names = mNameFinder.find(sentence);
-    Assert.assertTrue(names.length == 1);
-    Assert.assertTrue(names[0].length() == 2);
+    Assertions.assertTrue(names.length == 1);
+    Assertions.assertTrue(names[0].length() == 2);
   }
 }
