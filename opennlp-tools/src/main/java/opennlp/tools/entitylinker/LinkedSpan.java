@@ -22,8 +22,7 @@ import java.util.Objects;
 import opennlp.tools.util.Span;
 
 /**
- * An "default" extended span that holds additional information about the Span
- *
+ * A "default" extended span that holds additional information about the Span
  *
  * @param <T>
  */
@@ -129,7 +128,7 @@ public class LinkedSpan<T extends BaseLink> extends Span {
     }
 
     if (obj instanceof LinkedSpan) {
-      final LinkedSpan<T> other = (LinkedSpan<T>) obj;
+      final LinkedSpan<?> other = (LinkedSpan<?>) obj;
       return Objects.equals(this.linkedEntries, other.linkedEntries)
           && this.sentenceid == other.sentenceid
           && Objects.equals(this.searchTerm, other.searchTerm);

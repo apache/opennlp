@@ -66,7 +66,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   public static final String TRAINING_ITERATIONS_PROPERTY = "Training-Iterations";
   public static final String TRAINING_EVENTHASH_PROPERTY = "Training-Eventhash";
 
-  private static String SERIALIZER_CLASS_NAME_PREFIX = "serializer-class-";
+  private static final String SERIALIZER_CLASS_NAME_PREFIX = "serializer-class-";
 
   private Map<String, ArtifactSerializer> artifactSerializers = new HashMap<>();
 

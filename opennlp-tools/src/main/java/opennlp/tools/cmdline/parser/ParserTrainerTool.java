@@ -81,9 +81,9 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     return type;
   }
 
-  static HeadRules creaeHeadRules(TrainerToolParams params) throws IOException {
+  static HeadRules createHeadRules(TrainerToolParams params) throws IOException {
 
-    ArtifactSerializer headRulesSerializer;
+    ArtifactSerializer<?> headRulesSerializer;
 
     if (params.getHeadRulesSerializerImpl() != null) {
       headRulesSerializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class,
@@ -150,7 +150,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
 
     ParserModel model;
     try {
-      HeadRules rules = creaeHeadRules(params);
+      HeadRules rules = createHeadRules(params);
 
       ParserType type = parseParserType(params.getParserType());
       if (params.getFun()) {

@@ -71,11 +71,11 @@ import opennlp.tools.formats.ontonotes.OntoNotesPOSSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStreamFactory;
 
 /**
- * Registry for object stream factories.
+ * Registry for {@link ObjectStreamFactory object stream factories}.
  */
 public final class StreamFactoryRegistry {
 
-  private static final Map<Class, Map<String, ObjectStreamFactory>> registry = new HashMap<>();
+  private static final Map<Class<?>, Map<String, ObjectStreamFactory<?,?>>> registry = new HashMap<>();
 
   static {
     ChunkerSampleStreamFactory.registerFactory();
@@ -148,19 +148,19 @@ public final class StreamFactoryRegistry {
   }
 
   /**
-   * Registers <code>factory</code> which reads format named <code>formatName</code> and
-   * instantiates streams producing objects of <code>sampleClass</code> class.
+   * Registers <code>factory</code> which reads format named {@code formatName} and
+   * instantiates streams producing objects of {@code sampleClass} class.
    *
    * @param sampleClass class of the objects, produced by the streams instantiated by the factory
    * @param formatName  name of the format
    * @param factory     instance of the factory
    * @return true if the factory was successfully registered
    */
-  public static <T, P> boolean registerFactory(Class sampleClass,
+  public static <T, P> boolean registerFactory(Class<T> sampleClass,
                                         String formatName,
                                         ObjectStreamFactory<T, P> factory) {
     boolean result;
-    Map<String, ObjectStreamFactory> formats = registry.get(sampleClass);
+    Map<String, ObjectStreamFactory<?,?>> formats = registry.get(sampleClass);
     if (null == formats) {
       formats = new HashMap<>();
     }
@@ -175,23 +175,21 @@ public final class StreamFactoryRegistry {
   }
 
   /**
-   * Unregisters a factory which reads format named <code>formatName</code> and
-   * instantiates streams producing objects of <code>sampleClass</code> class.
+   * Unregisters a factory which reads format named {@code formatName} and
+   * instantiates streams producing objects of {@code sampleClass} class.
    *
    * @param sampleClass class of the objects, produced by the streams instantiated by the factory
    * @param formatName  name of the format
    */
-  public static void unregisterFactory(Class sampleClass, String formatName) {
-    Map<String, ObjectStreamFactory> formats = registry.get(sampleClass);
+  public static <T> void unregisterFactory(Class<T> sampleClass, String formatName) {
+    Map<String, ObjectStreamFactory<?, ?>> formats = registry.get(sampleClass);
     if (null != formats) {
-      if (formats.containsKey(formatName)) {
-        formats.remove(formatName);
-      }
+      formats.remove(formatName);
     }
   }
 
   /**
-   * Returns all factories which produce objects of <code>sampleClass</code> class.
+   * Returns all factories which produce objects of {@code sampleClass} class.
    *
    * @param sampleClass class of the objects, produced by the streams instantiated by the factory
    * @return formats mapped to factories
@@ -202,22 +200,21 @@ public final class StreamFactoryRegistry {
   }
 
   /**
-   * Returns a factory which reads format named <code>formatName</code> and
-   * instantiates streams producing objects of <code>sampleClass</code> class.
+   * Returns a factory which reads format named {@code formatName} and
+   * instantiates streams producing objects of {@code sampleClass} class.
    *
    * @param sampleClass class of the objects, produced by the streams instantiated by the factory
    * @param formatName  name of the format, if null, assumes OpenNLP format
    * @return factory instance
    */
   @SuppressWarnings("unchecked")
-  public static <T,P> ObjectStreamFactory<T,P> getFactory(Class<T> sampleClass,
-                                                          String formatName) {
+  public static <T,P> ObjectStreamFactory<T,P> getFactory(Class<T> sampleClass, String formatName) {
     if (null == formatName) {
       formatName = DEFAULT_FORMAT;
     }
 
     ObjectStreamFactory<T,P> factory = registry.containsKey(sampleClass) ?
-        registry.get(sampleClass).get(formatName) : null;
+            (ObjectStreamFactory<T, P>) registry.get(sampleClass).get(formatName) : null;
 
     if (factory != null) {
       return factory;

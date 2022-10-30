@@ -110,7 +110,7 @@ public class DownloadUtil {
 
   }
 
-  public static BaseModel downloadModel(String language, ModelType modelType, Class type)
+  public static BaseModel downloadModel(String language, ModelType modelType, Class<?> type)
           throws IOException {
 
     if (available_models.containsKey(language)) {
@@ -133,7 +133,7 @@ public class DownloadUtil {
    * @return A {@link TokenNameFinderModel}.
    * @throws IOException Thrown if the model cannot be downloaded.
   */
-  public static BaseModel downloadModel(URL url, Class type) throws IOException {
+  public static BaseModel downloadModel(URL url, Class<?> type) throws IOException {
 
     final Path homeDirectory = Paths.get(System.getProperty("user.home") + "/.opennlp/");
     if (!Files.isDirectory(homeDirectory)) {
