@@ -106,7 +106,7 @@ public class ArrayMathTest {
   @Test
   public void testToDoubleArray() {
     Assertions.assertEquals(0, ArrayMath.toDoubleArray(Collections.emptyList()).length);
-    Assertions.assertArrayEquals(new double[] {0}, ArrayMath.toDoubleArray(List.of((0D)), 0);
+    Assertions.assertArrayEquals(new double[] {0}, ArrayMath.toDoubleArray(List.of((0D))), 0);
     Assertions.assertArrayEquals(new double[] {0, 1, -2.5, -0.3, 4},
         ArrayMath.toDoubleArray(Arrays.asList(0D, 1D, -2.5D, -0.3D, 4D)), 0);
   }
