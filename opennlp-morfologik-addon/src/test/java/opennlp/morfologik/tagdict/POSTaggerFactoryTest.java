@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -79,7 +79,7 @@ public class POSTaggerFactoryTest {
     POSModel posModel = trainPOSModel(ModelType.MAXENT, inFactory);
 
     POSTaggerFactory factory = posModel.getFactory();
-    Assert.assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
+    Assertions.assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
 
     factory = null;
 
@@ -90,9 +90,9 @@ public class POSTaggerFactoryTest {
     POSModel fromSerialized = new POSModel(in);
 
     factory = fromSerialized.getFactory();
-    Assert.assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
+    Assertions.assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
 
-    Assert.assertEquals(2, factory.getTagDictionary().getTags("casa").length);
+    Assertions.assertEquals(2, factory.getTagDictionary().getTags("casa").length);
   }
 
 }

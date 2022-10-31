@@ -19,44 +19,43 @@ package opennlp.tools.doccat;
 
 import java.util.Collections;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class BagOfWordsFeatureGeneratorTest {
 
   @Test
-  public void testNull() {
+  void testNull() {
     BagOfWordsFeatureGenerator generator = new BagOfWordsFeatureGenerator();
     try {
       generator.extractFeatures(null, Collections.emptyMap());
-      Assert.fail("NullPointerException must be thrown");
-    }
-    catch (NullPointerException expected) {
+      Assertions.fail("NullPointerException must be thrown");
+    } catch (NullPointerException expected) {
     }
   }
 
   @Test
-  public void testEmpty() {
+  void testEmpty() {
     BagOfWordsFeatureGenerator generator = new BagOfWordsFeatureGenerator();
 
-    Assert.assertEquals(0, generator.extractFeatures(new String[]{}, Collections.emptyMap()).size());
+    Assertions.assertEquals(0, generator.extractFeatures(new String[] {}, Collections.emptyMap()).size());
   }
 
   @Test
-  public void testUseAllTokens() {
+  void testUseAllTokens() {
     BagOfWordsFeatureGenerator generator = new BagOfWordsFeatureGenerator();
 
-    Assert.assertArrayEquals(new String[]{"bow=it", "bow=is", "bow=12.345", "bow=feet", "bow=long"},
-        generator.extractFeatures(new String[]{"it", "is", "12.345", "feet", "long"},
+    Assertions.assertArrayEquals(new String[] {"bow=it", "bow=is", "bow=12.345", "bow=feet", "bow=long"},
+        generator.extractFeatures(new String[] {"it", "is", "12.345", "feet", "long"},
             Collections.emptyMap()).toArray());
   }
 
   @Test
-  public void testOnlyLetterTokens() {
+  void testOnlyLetterTokens() {
     BagOfWordsFeatureGenerator generator = new BagOfWordsFeatureGenerator(true);
 
-    Assert.assertArrayEquals(new String[]{"bow=it", "bow=is", "bow=feet", "bow=long"},
-            generator.extractFeatures(new String[]{"it", "is", "12.345", "feet", "long"},
-                    Collections.emptyMap()).toArray());
+    Assertions.assertArrayEquals(new String[] {"bow=it", "bow=is", "bow=feet", "bow=long"},
+        generator.extractFeatures(new String[] {"it", "is", "12.345", "feet", "long"},
+            Collections.emptyMap()).toArray());
   }
 }

@@ -17,7 +17,6 @@
 
 package opennlp.tools.formats;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
@@ -34,7 +33,7 @@ public class ResourceAsStreamFactory implements InputStreamFactory {
   }
 
   @Override
-  public InputStream createInputStream() throws IOException {
+  public InputStream createInputStream() {
     return clazz.getResourceAsStream(name);
   }
 }

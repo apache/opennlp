@@ -19,8 +19,8 @@ package opennlp.tools.formats.conllu;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.tokenize.TokenSample;
@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStream;
 public class ConlluTokenSampleStreamTest {
 
   @Test
-  public void testParseTwoSentences() throws IOException {
+  void testParseTwoSentences() throws IOException {
     InputStreamFactory streamFactory =
         new ResourceAsStreamFactory(ConlluStreamTest.class, "de-ud-train-sample.conllu");
 
@@ -40,19 +40,19 @@ public class ConlluTokenSampleStreamTest {
           "Fachlich kompetent" + TokenSample.DEFAULT_SEPARATOR_CHARS
               + ", sehr gute Beratung und ein freundliches Team" + TokenSample.DEFAULT_SEPARATOR_CHARS
               + ".", TokenSample.DEFAULT_SEPARATOR_CHARS);
-      Assert.assertEquals(expected1, stream.read());
+      Assertions.assertEquals(expected1, stream.read());
 
       TokenSample expected2 = TokenSample.parse("Beiden Zahnärzten verdanke ich einen " +
           "neuen Biss und dadurch endlich keine Rückenschmerzen mehr"
           + TokenSample.DEFAULT_SEPARATOR_CHARS + ".", TokenSample.DEFAULT_SEPARATOR_CHARS);
-      Assert.assertEquals(expected2, stream.read());
+      Assertions.assertEquals(expected2, stream.read());
 
-      Assert.assertNull("Stream must be exhausted", stream.read());
+      Assertions.assertNull(stream.read(), "Stream must be exhausted");
     }
   }
 
   @Test
-  public void testParseContraction() throws IOException {
+  void testParseContraction() throws IOException {
     InputStreamFactory streamFactory =
         new ResourceAsStreamFactory(ConlluStreamTest.class, "pt_br-ud-sample.conllu");
 
@@ -69,12 +69,12 @@ public class ConlluTokenSampleStreamTest {
               TokenSample.DEFAULT_SEPARATOR_CHARS + "."
           , TokenSample.DEFAULT_SEPARATOR_CHARS);
       TokenSample predicted = stream.read();
-      Assert.assertEquals(expected1, predicted);
+      Assertions.assertEquals(expected1, predicted);
     }
   }
 
   @Test
-  public void testParseSpanishS300() throws IOException {
+  void testParseSpanishS300() throws IOException {
     InputStreamFactory streamFactory =
         new ResourceAsStreamFactory(ConlluStreamTest.class, "es-ud-sample.conllu");
 
@@ -94,7 +94,7 @@ public class ConlluTokenSampleStreamTest {
 
           , TokenSample.DEFAULT_SEPARATOR_CHARS);
       TokenSample predicted = stream.read();
-      Assert.assertEquals(expected1, predicted);
+      Assertions.assertEquals(expected1, predicted);
     }
   }
 }

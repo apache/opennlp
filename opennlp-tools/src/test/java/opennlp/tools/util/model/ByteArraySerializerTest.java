@@ -23,13 +23,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ByteArraySerializerTest {
 
   @Test
-  public void testSerialization() throws IOException {
+  void testSerialization() throws IOException {
 
     byte[] b = new byte[1024];
     new Random(23).nextBytes(b);
@@ -37,9 +37,9 @@ public class ByteArraySerializerTest {
     ByteArraySerializer serializer = new ByteArraySerializer();
 
     ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-    serializer.serialize(Arrays.copyOf(b, b.length), bOut) ;
+    serializer.serialize(Arrays.copyOf(b, b.length), bOut);
 
-    Assert.assertArrayEquals(b, bOut.toByteArray());
-    Assert.assertArrayEquals(b, serializer.create(new ByteArrayInputStream(b)));
+    Assertions.assertArrayEquals(b, bOut.toByteArray());
+    Assertions.assertArrayEquals(b, serializer.create(new ByteArrayInputStream(b)));
   }
 }

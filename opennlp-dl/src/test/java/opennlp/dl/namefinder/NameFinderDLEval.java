@@ -23,8 +23,8 @@ import java.util.Map;
 
 import ai.onnxruntime.OrtException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.dl.AbstactDLTest;
 import opennlp.tools.util.Span;
@@ -50,11 +50,11 @@ public class NameFinderDLEval extends AbstactDLTest {
       System.out.println(span.toString());
     }
 
-    Assert.assertEquals(1, spans.length);
-    Assert.assertEquals(0, spans[0].getStart());
-    Assert.assertEquals(17, spans[0].getEnd());
-    Assert.assertEquals(8.251646041870117, spans[0].getProb(), 0.0);
-    Assert.assertEquals("George Washington", spans[0].getCoveredText(String.join(" ", tokens)));
+    Assertions.assertEquals(1, spans.length);
+    Assertions.assertEquals(0, spans[0].getStart());
+    Assertions.assertEquals(17, spans[0].getEnd());
+    Assertions.assertEquals(8.251646041870117, spans[0].getProb(), 0.0);
+    Assertions.assertEquals("George Washington", spans[0].getCoveredText(String.join(" ", tokens)));
 
   }
 
@@ -76,9 +76,9 @@ public class NameFinderDLEval extends AbstactDLTest {
       System.out.println(span.toString());
     }
 
-    Assert.assertEquals(1, spans.length);
-    Assert.assertEquals(13, spans[0].getStart());
-    Assert.assertEquals(30, spans[0].getEnd());
+    Assertions.assertEquals(1, spans.length);
+    Assertions.assertEquals(13, spans[0].getStart());
+    Assertions.assertEquals(30, spans[0].getEnd());
 
   }
 
@@ -100,9 +100,9 @@ public class NameFinderDLEval extends AbstactDLTest {
       System.out.println(span.toString());
     }
 
-    Assert.assertEquals(1, spans.length);
-    Assert.assertEquals(13, spans[0].getStart());
-    Assert.assertEquals(19, spans[0].getEnd());
+    Assertions.assertEquals(1, spans.length);
+    Assertions.assertEquals(13, spans[0].getStart());
+    Assertions.assertEquals(19, spans[0].getEnd());
 
   }
 
@@ -120,7 +120,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels());
     final Span[] spans = nameFinderDL.find(tokens);
 
-    Assert.assertEquals(0, spans.length);
+    Assertions.assertEquals(0, spans.length);
 
   }
 
@@ -138,7 +138,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels());
     final Span[] spans = nameFinderDL.find(tokens);
 
-    Assert.assertEquals(0, spans.length);
+    Assertions.assertEquals(0, spans.length);
 
   }
 
@@ -161,24 +161,26 @@ public class NameFinderDLEval extends AbstactDLTest {
       System.out.println(span.toString());
     }
 
-    Assert.assertEquals(2, spans.length);
-    Assert.assertEquals(0, spans[0].getStart());
-    Assert.assertEquals(17, spans[0].getEnd());
-    Assert.assertEquals(22, spans[1].getStart());
-    Assert.assertEquals(37, spans[1].getEnd());
+    Assertions.assertEquals(2, spans.length);
+    Assertions.assertEquals(0, spans[0].getStart());
+    Assertions.assertEquals(17, spans[0].getEnd());
+    Assertions.assertEquals(22, spans[1].getStart());
+    Assertions.assertEquals(37, spans[1].getEnd());
 
   }
 
-  @Test(expected = OrtException.class)
-  public void invalidModel() throws Exception {
+  @Test
+  public void invalidModel() {
 
-    // This test was written using the dslim/bert-base-NER model.
-    // You will need to update the ids2Labels and assertions if you use a different model.
+    Assertions.assertThrows(OrtException.class, () -> {
+      // This test was written using the dslim/bert-base-NER model.
+      // You will need to update the ids2Labels and assertions if you use a different model.
 
-    final File model = new File("invalid.onnx");
-    final File vocab = new File("vocab.txt");
+      final File model = new File("invalid.onnx");
+      final File vocab = new File("vocab.txt");
 
-    new NameFinderDL(model, vocab, getIds2Labels());
+      new NameFinderDL(model, vocab, getIds2Labels());
+    });
 
   }
 

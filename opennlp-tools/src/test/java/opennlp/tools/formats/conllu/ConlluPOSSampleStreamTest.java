@@ -20,8 +20,8 @@ package opennlp.tools.formats.conllu;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.postag.POSSample;
@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStream;
 
 public class ConlluPOSSampleStreamTest {
   @Test
-  public void testParseContraction() throws IOException {
+  void testParseContraction() throws IOException {
     InputStreamFactory streamFactory =
         new ResourceAsStreamFactory(ConlluStreamTest.class, "pt_br-ud-sample.conllu");
 
@@ -48,13 +48,13 @@ public class ConlluPOSSampleStreamTest {
           "antigo_ADJ Ciago_PROPN ._PUNCT");
 
       POSSample predicted = stream.read();
-      Assert.assertEquals(expected, predicted);
+      Assertions.assertEquals(expected, predicted);
     }
   }
 
 
   @Test
-  public void testParseSpanishS300() throws IOException {
+  void testParseSpanishS300() throws IOException {
     InputStreamFactory streamFactory =
         new ResourceAsStreamFactory(ConlluStreamTest.class, "es-ud-sample.conllu");
 
@@ -71,7 +71,7 @@ public class ConlluPOSSampleStreamTest {
               "plantea_VERB ni_CCONJ siquiera_ADV \"_PUNCT esperar_VERB un_DET mejor_ADJ " +
               "gobierno_NOUN \"_PUNCT ._PUNCT");
       POSSample predicted = stream.read();
-      Assert.assertEquals(expected1, predicted);
+      Assertions.assertEquals(expected1, predicted);
     }
   }
 }

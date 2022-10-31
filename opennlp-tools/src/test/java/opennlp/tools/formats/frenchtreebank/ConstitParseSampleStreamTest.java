@@ -21,8 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStreamUtils;
 
 public class ConstitParseSampleStreamTest {
 
-  private String[] sample1Tokens = new String[]{
+  private String[] sample1Tokens = new String[] {
       "L'",
       "autonomie",
       "de",
@@ -91,7 +91,7 @@ public class ConstitParseSampleStreamTest {
     byte[] buffer = new byte[1024];
     int length;
     try (InputStream sampleIn =
-        ConstitParseSampleStreamTest.class.getResourceAsStream("sample1.xml")) {
+             ConstitParseSampleStreamTest.class.getResourceAsStream("sample1.xml")) {
       while ((length = sampleIn.read(buffer)) > 0) {
         out.write(buffer, 0, length);
       }
@@ -101,20 +101,20 @@ public class ConstitParseSampleStreamTest {
   }
 
   @Test
-  public void testThereIsExactlyOneSent() throws IOException {
+  void testThereIsExactlyOneSent() throws IOException {
     try (ObjectStream<Parse> samples =
-        new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
-      Assert.assertNotNull(samples.read());
-      Assert.assertNull(samples.read());
-      Assert.assertNull(samples.read());
+             new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
+      Assertions.assertNotNull(samples.read());
+      Assertions.assertNull(samples.read());
+      Assertions.assertNull(samples.read());
     }
   }
 
   @Test
-  public void testTokensAreCorrect() throws IOException {
+  void testTokensAreCorrect() throws IOException {
 
     try (ObjectStream<Parse> samples =
-        new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
+             new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
       Parse p = samples.read();
 
       Parse[] tagNodes = p.getTagNodes();
@@ -123,7 +123,7 @@ public class ConstitParseSampleStreamTest {
         tokens[ti] = tagNodes[ti].getCoveredText();
       }
 
-      Assert.assertArrayEquals(sample1Tokens, tokens);
+      Assertions.assertArrayEquals(sample1Tokens, tokens);
     }
   }
 }

@@ -24,9 +24,9 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
@@ -65,17 +65,17 @@ public class OntoNotes4ParserEval extends AbstractEvalTest {
       ParserCrossValidator cv = new ParserCrossValidator("eng", params, rules, ParserType.CHUNKING);
       cv.evaluate(samples, 5);
 
-      Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
+      Assertions.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
     }
   }
 
-  @BeforeClass
-  public static void verifyTrainingData() throws Exception {
+  @BeforeAll
+  static void verifyTrainingData() throws Exception {
     verifyTrainingData(createParseSampleStream(), new BigInteger("83833369887442127665956850482411800415"));
   }
 
   @Test
-  public void evalEnglishMaxent() throws IOException {
+  void evalEnglishMaxent() throws IOException {
 
     HeadRules headRules;
     try (InputStream headRulesIn =

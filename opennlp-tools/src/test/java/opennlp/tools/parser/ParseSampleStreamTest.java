@@ -20,8 +20,8 @@ package opennlp.tools.parser;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -39,12 +39,12 @@ public class ParseSampleStreamTest {
   }
 
   @Test
-  public void testReadTestStream() throws IOException {
+  void testReadTestStream() throws IOException {
     ObjectStream<Parse> parseStream = createParseSampleStream();
-    Assert.assertNotNull(parseStream.read());
-    Assert.assertNotNull(parseStream.read());
-    Assert.assertNotNull(parseStream.read());
-    Assert.assertNotNull(parseStream.read());
-    Assert.assertNull(parseStream.read());
+    Assertions.assertNotNull(parseStream.read());
+    Assertions.assertNotNull(parseStream.read());
+    Assertions.assertNotNull(parseStream.read());
+    Assertions.assertNotNull(parseStream.read());
+    Assertions.assertNull(parseStream.read());
   }
 }

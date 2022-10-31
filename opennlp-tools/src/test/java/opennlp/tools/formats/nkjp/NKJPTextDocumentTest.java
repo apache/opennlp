@@ -20,38 +20,37 @@ package opennlp.tools.formats.nkjp;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class NKJPTextDocumentTest {
   @Test
-  public void testParsingSimpleDoc() throws Exception {
+  void testParsingSimpleDoc() throws Exception {
     try (InputStream nkjpTextXmlIn =
-           NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
+             NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
 
       NKJPTextDocument doc = NKJPTextDocument.parse(nkjpTextXmlIn);
 
-      assertEquals(1, doc.getDivtypes().size());
-      assertEquals("article", doc.getDivtypes().get("div-1"));
+      Assertions.assertEquals(1, doc.getDivtypes().size());
+      Assertions.assertEquals("article", doc.getDivtypes().get("div-1"));
 
-      assertEquals(1, doc.getTexts().size());
-      assertEquals(1, doc.getTexts().get("text-1").size());
-      assertEquals(2, doc.getTexts().get("text-1").get("div-1").size());
+      Assertions.assertEquals(1, doc.getTexts().size());
+      Assertions.assertEquals(1, doc.getTexts().get("text-1").size());
+      Assertions.assertEquals(2, doc.getTexts().get("text-1").get("div-1").size());
 
       String exp = "To krótki tekst w formacie NKJP. Zawiera dwa zdania.";
-      assertEquals(exp, doc.getTexts().get("text-1").get("div-1").get("p-1"));
+      Assertions.assertEquals(exp, doc.getTexts().get("text-1").get("div-1").get("p-1"));
     }
   }
 
   @Test
-  public void testGetParagraphs() throws Exception {
+  void testGetParagraphs() throws Exception {
     try (InputStream nkjpTextXmlIn =
-           NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
+             NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
 
       NKJPTextDocument doc = NKJPTextDocument.parse(nkjpTextXmlIn);
       Map<String, String> paras = doc.getParagraphs();
-      assertEquals("To krótkie zdanie w drugim akapicie.", paras.get("ab-1"));
+      Assertions.assertEquals("To krótkie zdanie w drugim akapicie.", paras.get("ab-1"));
     }
   }
 }
