@@ -17,8 +17,8 @@
 
 package opennlp.tools.util;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Tests for the {@link Sequence} class.
@@ -29,16 +29,16 @@ public class SequenceTest {
    * Tests the copy constructor {@link Sequence#Sequence(Sequence)}.
    */
   @Test
-  void testCopyConstructor() {
+  public void testCopyConstructor() {
     Sequence sequence = new Sequence();
     sequence.add("a", 10);
     sequence.add("b", 20);
 
     Sequence copy = new Sequence(sequence);
 
-    Assertions.assertEquals(sequence.getOutcomes(), copy.getOutcomes());
-    Assertions.assertArrayEquals(copy.getProbs(), sequence.getProbs(), 0.0);
-    Assertions.assertTrue(sequence.compareTo(copy) == 0);
+    Assert.assertEquals(sequence.getOutcomes(), copy.getOutcomes());
+    Assert.assertArrayEquals(sequence.getProbs(), copy.getProbs(), 0.0);
+    Assert.assertTrue(sequence.compareTo(copy) == 0);
   }
 
   /**
@@ -46,20 +46,20 @@ public class SequenceTest {
    * tests {@link Sequence#getOutcomes()} and {@link Sequence#getProbs()}.
    */
   @Test
-  void testAddMethod() {
+  public void testAddMethod() {
     Sequence sequence = new Sequence();
     sequence.add("a", 10d);
 
     // check if insert was successful
-    Assertions.assertEquals("a", sequence.getOutcomes().get(0));
-    Assertions.assertEquals(10d, sequence.getProbs()[0]);
+    Assert.assertEquals("a", sequence.getOutcomes().get(0));
+    Assert.assertEquals(10d, sequence.getProbs()[0], 0d);
   }
 
   /**
    * Tests {@link Sequence#compareTo(Sequence)}.
    */
   @Test
-  void testCompareTo() {
+  public void testCompareTo() {
     Sequence lowScore = new Sequence();
     lowScore.add("A", 1d);
     lowScore.add("B", 2d);
@@ -70,15 +70,15 @@ public class SequenceTest {
     lowScore.add("B", 8d);
     lowScore.add("C", 9d);
 
-    Assertions.assertEquals(-1, lowScore.compareTo(highScore));
-    Assertions.assertEquals(1, highScore.compareTo(lowScore));
+    Assert.assertEquals(-1, lowScore.compareTo(highScore));
+    Assert.assertEquals(1, highScore.compareTo(lowScore));
   }
 
   /**
    * Checks that {@link Sequence#toString()} is executable.
    */
   @Test
-  void testToString() {
+  public void testToString() {
     new Sequence().toString();
 
     Sequence sequence = new Sequence();

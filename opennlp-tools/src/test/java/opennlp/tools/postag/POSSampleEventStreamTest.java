@@ -17,8 +17,8 @@
 
 package opennlp.tools.postag;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
@@ -34,18 +34,18 @@ public class POSSampleEventStreamTest {
    * expected outcomes.
    */
   @Test
-  void testOutcomesForSingleSentence() throws Exception {
+  public void testOutcomesForSingleSentence() throws Exception {
     String sentence = "That_DT sounds_VBZ good_JJ ._.";
 
     POSSample sample = POSSample.parse(sentence);
 
     try (ObjectStream<Event> eventStream = new POSSampleEventStream(
         ObjectStreamUtils.createObjectStream(sample))) {
-      Assertions.assertEquals("DT", eventStream.read().getOutcome());
-      Assertions.assertEquals("VBZ", eventStream.read().getOutcome());
-      Assertions.assertEquals("JJ", eventStream.read().getOutcome());
-      Assertions.assertEquals(".", eventStream.read().getOutcome());
-      Assertions.assertNull(eventStream.read());
+      Assert.assertEquals("DT", eventStream.read().getOutcome());
+      Assert.assertEquals("VBZ", eventStream.read().getOutcome());
+      Assert.assertEquals("JJ", eventStream.read().getOutcome());
+      Assert.assertEquals(".", eventStream.read().getOutcome());
+      Assert.assertNull(eventStream.read());
     }
   }
 }

@@ -23,8 +23,8 @@ import java.util.List;
 
 import morfologik.stemming.Dictionary;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import opennlp.tools.postag.TagDictionary;
@@ -36,8 +36,8 @@ public class MorfologikTagDictionaryTest {
     MorfologikTagDictionary dict = createDictionary(false);
 
     List<String> tags = Arrays.asList(dict.getTags("carro"));
-    Assertions.assertEquals(1, tags.size());
-    Assertions.assertTrue(tags.contains("NOUN"));
+    Assert.assertEquals(1, tags.size());
+    Assert.assertTrue(tags.contains("NOUN"));
   }
 
   @Test
@@ -45,17 +45,17 @@ public class MorfologikTagDictionaryTest {
     TagDictionary dict = createDictionary(false);
 
     List<String> tags = Arrays.asList(dict.getTags("casa"));
-    Assertions.assertEquals(2, tags.size());
-    Assertions.assertTrue(tags.contains("NOUN"));
-    Assertions.assertTrue(tags.contains("V"));
+    Assert.assertEquals(2, tags.size());
+    Assert.assertTrue(tags.contains("NOUN"));
+    Assert.assertTrue(tags.contains("V"));
 
     // this is the behavior of case insensitive dictionary
     // if we search it using case insensitive, Casa as a proper noun
     // should be lower case in the dictionary
     tags = Arrays.asList(dict.getTags("Casa"));
-    Assertions.assertEquals(2, tags.size());
-    Assertions.assertTrue(tags.contains("NOUN"));
-    Assertions.assertTrue(tags.contains("V"));
+    Assert.assertEquals(2, tags.size());
+    Assert.assertTrue(tags.contains("NOUN"));
+    Assert.assertTrue(tags.contains("V"));
   }
 
   @Test
@@ -63,16 +63,16 @@ public class MorfologikTagDictionaryTest {
     TagDictionary dict = createDictionary(true);
 
     List<String> tags = Arrays.asList(dict.getTags("casa"));
-    Assertions.assertEquals(2, tags.size());
-    Assertions.assertTrue(tags.contains("NOUN"));
-    Assertions.assertTrue(tags.contains("V"));
+    Assert.assertEquals(2, tags.size());
+    Assert.assertTrue(tags.contains("NOUN"));
+    Assert.assertTrue(tags.contains("V"));
 
     // this is the behavior of case insensitive dictionary
     // if we search it using case insensitive, Casa as a proper noun
     // should be lower case in the dictionary
     tags = Arrays.asList(dict.getTags("Casa"));
-    Assertions.assertEquals(1, tags.size());
-    Assertions.assertTrue(tags.contains("PROP"));
+    Assert.assertEquals(1, tags.size());
+    Assert.assertTrue(tags.contains("PROP"));
 
   }
 

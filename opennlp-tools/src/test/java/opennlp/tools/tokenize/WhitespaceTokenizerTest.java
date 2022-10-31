@@ -17,8 +17,8 @@
 
 package opennlp.tools.tokenize;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Tests for the {@link WhitespaceTokenizer} class.
@@ -26,76 +26,76 @@ import org.junit.jupiter.api.Test;
 public class WhitespaceTokenizerTest {
 
   @Test
-  void testOneToken() {
-    Assertions.assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one")[0]);
-    Assertions.assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize(" one")[0]);
-    Assertions.assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one ")[0]);
+  public void testOneToken() {
+    Assert.assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one")[0]);
+    Assert.assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize(" one")[0]);
+    Assert.assertEquals("one", WhitespaceTokenizer.INSTANCE.tokenize("one ")[0]);
   }
 
   /**
    * Tests if it can tokenize whitespace separated tokens.
    */
   @Test
-  void testWhitespaceTokenization() {
+  public void testWhitespaceTokenization() {
 
     String text = "a b c  d     e                f    ";
 
     String[] tokenizedText = WhitespaceTokenizer.INSTANCE.tokenize(text);
 
-    Assertions.assertTrue("a".equals(tokenizedText[0]));
-    Assertions.assertTrue("b".equals(tokenizedText[1]));
-    Assertions.assertTrue("c".equals(tokenizedText[2]));
-    Assertions.assertTrue("d".equals(tokenizedText[3]));
-    Assertions.assertTrue("e".equals(tokenizedText[4]));
-    Assertions.assertTrue("f".equals(tokenizedText[5]));
+    Assert.assertTrue("a".equals(tokenizedText[0]));
+    Assert.assertTrue("b".equals(tokenizedText[1]));
+    Assert.assertTrue("c".equals(tokenizedText[2]));
+    Assert.assertTrue("d".equals(tokenizedText[3]));
+    Assert.assertTrue("e".equals(tokenizedText[4]));
+    Assert.assertTrue("f".equals(tokenizedText[5]));
 
-    Assertions.assertTrue(tokenizedText.length == 6);
+    Assert.assertTrue(tokenizedText.length == 6);
   }
 
   @Test
-  void testTokenizationOfStringWithoutTokens() {
-    Assertions.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("").length); // empty
-    Assertions.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // space
-    Assertions.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // tab
-    Assertions.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("     ").length);
+  public void testTokenizationOfStringWithoutTokens() {
+    Assert.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("").length); // empty
+    Assert.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // space
+    Assert.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize(" ").length); // tab
+    Assert.assertEquals(0, WhitespaceTokenizer.INSTANCE.tokenize("     ").length);
   }
 
   @Test
-  void testTokenizationOfStringWithUnixNewLineTokens() {
+  public void testTokenizationOfStringWithUnixNewLineTokens() {
     WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
     tokenizer.setKeepNewLines(true);
-
-    Assertions.assertEquals(2, tokenizer.tokenize("a\n").length);
-    Assertions.assertArrayEquals(new String[] {"a", "\n"}, tokenizer.tokenize("a\n"));
-
-    Assertions.assertEquals(3, tokenizer.tokenize("a\nb").length);
-    Assertions.assertArrayEquals(new String[] {"a", "\n", "b"}, tokenizer.tokenize("a\nb"));
-
-    Assertions.assertEquals(4, tokenizer.tokenize("a\n\n b").length);
-    Assertions.assertArrayEquals(new String[] {"a", "\n", "\n", "b"}, tokenizer.tokenize("a\n\n b"));
-
-    Assertions.assertEquals(7, tokenizer.tokenize("a\n\n b\n\n c").length);
-    Assertions.assertArrayEquals(new String[] {"a", "\n", "\n", "b", "\n", "\n", "c"},
-        tokenizer.tokenize("a\n\n b\n\n c"));
+    
+    Assert.assertEquals(2, tokenizer.tokenize("a\n").length);
+    Assert.assertArrayEquals(new String[] {"a", "\n"}, tokenizer.tokenize("a\n"));
+    
+    Assert.assertEquals(3, tokenizer.tokenize("a\nb").length);
+    Assert.assertArrayEquals(new String[] {"a", "\n", "b"}, tokenizer.tokenize("a\nb"));
+    
+    Assert.assertEquals(4, tokenizer.tokenize("a\n\n b").length);
+    Assert.assertArrayEquals(new String[] {"a", "\n", "\n", "b"}, tokenizer.tokenize("a\n\n b"));
+    
+    Assert.assertEquals(7, tokenizer.tokenize("a\n\n b\n\n c").length);
+    Assert.assertArrayEquals(new String[] {"a", "\n", "\n", "b", "\n", "\n", "c"},
+                             tokenizer.tokenize("a\n\n b\n\n c"));
   }
 
   @Test
-  void testTokenizationOfStringWithWindowsNewLineTokens() {
+  public void testTokenizationOfStringWithWindowsNewLineTokens() {
     WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
     tokenizer.setKeepNewLines(true);
-
-    Assertions.assertEquals(3, tokenizer.tokenize("a\r\n").length);
-    Assertions.assertArrayEquals(new String[] {"a", "\r", "\n"}, tokenizer.tokenize("a\r\n"));
-
-    Assertions.assertEquals(4, tokenizer.tokenize("a\r\nb").length);
-    Assertions.assertArrayEquals(new String[] {"a", "\r", "\n", "b"}, tokenizer.tokenize("a\r\nb"));
-
-    Assertions.assertEquals(6, tokenizer.tokenize("a\r\n\r\n b").length);
-    Assertions.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b"}, tokenizer
+    
+    Assert.assertEquals(3, tokenizer.tokenize("a\r\n").length);
+    Assert.assertArrayEquals(new String[] {"a", "\r", "\n"}, tokenizer.tokenize("a\r\n"));
+    
+    Assert.assertEquals(4, tokenizer.tokenize("a\r\nb").length);
+    Assert.assertArrayEquals(new String[] {"a", "\r", "\n", "b"}, tokenizer.tokenize("a\r\nb"));
+    
+    Assert.assertEquals(6, tokenizer.tokenize("a\r\n\r\n b").length);
+    Assert.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b"}, tokenizer
         .tokenize("a\r\n\r\n b"));
-
-    Assertions.assertEquals(11, tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c").length);
-    Assertions.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b", "\r", "\n", "\r", "\n", "c"},
-        tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c"));
+    
+    Assert.assertEquals(11, tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c").length);
+    Assert.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b", "\r", "\n", "\r", "\n", "c"},
+                             tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c"));
   }
 }

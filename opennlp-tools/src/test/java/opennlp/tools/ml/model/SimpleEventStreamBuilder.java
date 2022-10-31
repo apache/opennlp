@@ -17,6 +17,7 @@
 
 package opennlp.tools.ml.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,13 +49,14 @@ public class SimpleEventStreamBuilder {
         String[] pair = cvPairs[i].split(";");
         if (pair.length != 2) {
           throw new RuntimeException(String.format("format error of the event \"%s\". "
-              + "\"%s\" doesn't have value", event, Arrays.toString(pair)));
+                       + "\"%s\" doesn't have value", event, Arrays.toString(pair)));
         }
         context[i] = pair[0];
         values[i] = Float.parseFloat(pair[1]);
       }
       eventList.add(new Event(ss[0], context, values));
-    } else {
+    }
+    else {
       eventList.add(new Event(ss[0], cvPairs));
     }
 
@@ -64,7 +66,7 @@ public class SimpleEventStreamBuilder {
   public ObjectStream<Event> build() {
     return new ObjectStream<Event>() {
       @Override
-      public Event read() {
+      public Event read() throws IOException {
         if (eventList.size() <= pos) {
           return null;
         }

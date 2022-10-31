@@ -27,8 +27,8 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.namefind.NameFinderME;
@@ -44,50 +44,45 @@ import opennlp.tools.util.TrainingParameters;
 public class TokenNameFinderToolTest {
 
   @Test
-  void run() throws IOException {
+  public void run() throws IOException {
 
     File model1 = trainModel();
 
-    String[] args = new String[] {model1.getAbsolutePath()};
-
+    String[] args = new String[]{model1.getAbsolutePath()};
+    
     final String in = "It is Stefanie Schmidt.\n\nNothing in this sentence.";
     InputStream stream = new ByteArrayInputStream(in.getBytes(StandardCharsets.UTF_8));
-
+    
     System.setIn(stream);
-
+    
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
     System.setOut(ps);
 
     TokenNameFinderTool tool = new TokenNameFinderTool();
     tool.run(args);
-
+    
     final String content = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-    Assertions.assertTrue(content.contains("It is <START:person> Stefanie Schmidt. <END>"));
+    Assert.assertTrue(content.contains("It is <START:person> Stefanie Schmidt. <END>"));
 
     model1.delete();
   }
 
-  @Test
-  void invalidModel() {
+  @Test(expected = TerminateToolException.class)
+  public void invalidModel() {
 
-    Assertions.assertThrows(TerminateToolException.class, () -> {
+    String[] args = new String[]{"invalidmodel.bin"};
 
-      String[] args = new String[] {"invalidmodel.bin"};
-
-      TokenNameFinderTool tool = new TokenNameFinderTool();
-      tool.run(args);
-
-    });
-
+    TokenNameFinderTool tool = new TokenNameFinderTool();
+    tool.run(args);
 
   }
+  
+  @Test()
+  public void usage() {
 
-  @Test
-  void usage() {
-
-    String[] args = new String[] {};
-
+    String[] args = new String[]{};
+    
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
     System.setOut(ps);
@@ -96,10 +91,10 @@ public class TokenNameFinderToolTest {
     tool.run(args);
 
     final String content = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-    Assertions.assertEquals(tool.getHelp(), content.trim());
-
+    Assert.assertEquals(tool.getHelp(), content.trim());
+    
   }
-
+  
   private File trainModel() throws IOException {
 
     ObjectStream<String> lineStream =
@@ -110,7 +105,7 @@ public class TokenNameFinderToolTest {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
-
+    
     TokenNameFinderModel model;
 
     TokenNameFinderFactory nameFinderFactory = new TokenNameFinderFactory();
@@ -119,15 +114,15 @@ public class TokenNameFinderToolTest {
       model = NameFinderME.train("eng", null, sampleStream, params,
           nameFinderFactory);
     }
-
+    
     File modelFile = File.createTempFile("model", ".bin");
-
+    
     try (BufferedOutputStream modelOut =
              new BufferedOutputStream(new FileOutputStream(modelFile))) {
       model.serialize(modelOut);
     }
-
+    
     return modelFile;
   }
-
+  
 }

@@ -21,67 +21,67 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 
 public class BrownBigramFeatureGeneratorTest {
 
   private AdaptiveFeatureGenerator generator;
-
-  @BeforeEach
-  void setup() throws IOException {
+  
+  @Before
+  public void setup() throws IOException {
 
     ResourceAsStreamFactory stream = new ResourceAsStreamFactory(
         getClass(), "/opennlp/tools/formats/brown-cluster.txt");
 
-    BrownCluster brownCluster = new BrownCluster(stream.createInputStream());
-
+    BrownCluster brownCluster = new BrownCluster(stream.createInputStream()); 
+    
     generator = new BrownBigramFeatureGenerator(brownCluster);
 
   }
 
   @Test
-  void createFeaturesTest() {
+  public void createFeaturesTest() throws IOException {
 
     String[] tokens = new String[] {"he", "went", "with", "you"};
 
     List<String> features = new ArrayList<>();
     generator.createFeatures(features, tokens, 3, null);
 
-    Assertions.assertEquals(2, features.size());
-    Assertions.assertTrue(features.contains("pbrowncluster,browncluster=0101,0010"));
-    Assertions.assertTrue(features.contains("pbrowncluster,browncluster=01010,00101"));
-
+    Assert.assertEquals(2, features.size());
+    Assert.assertTrue(features.contains("pbrowncluster,browncluster=0101,0010"));
+    Assert.assertTrue(features.contains("pbrowncluster,browncluster=01010,00101"));
+    
   }
-
+  
   @Test
-  void createFeaturesSuccessiveTokensTest() {
+  public void createFeaturesSuccessiveTokensTest() throws IOException {
 
     final String[] testSentence = new String[] {"he", "went", "with", "you", "in", "town"};
 
     List<String> features = new ArrayList<>();
     generator.createFeatures(features, testSentence, 3, null);
 
-    Assertions.assertEquals(3, features.size());
-    Assertions.assertTrue(features.contains("pbrowncluster,browncluster=0101,0010"));
-    Assertions.assertTrue(features.contains("pbrowncluster,browncluster=01010,00101"));
-    Assertions.assertTrue(features.contains("browncluster,nbrowncluster=0010,0000"));
-
+    Assert.assertEquals(3, features.size());
+    Assert.assertTrue(features.contains("pbrowncluster,browncluster=0101,0010"));
+    Assert.assertTrue(features.contains("pbrowncluster,browncluster=01010,00101"));
+    Assert.assertTrue(features.contains("browncluster,nbrowncluster=0010,0000"));
+    
   }
-
+  
   @Test
-  void noFeaturesTest() {
+  public void noFeaturesTest() throws IOException {
 
     final String[] testSentence = new String[] {"he", "went", "with", "you"};
 
     List<String> features = new ArrayList<>();
     generator.createFeatures(features, testSentence, 0, null);
 
-    Assertions.assertEquals(0, features.size());
-
+    Assert.assertEquals(0, features.size());
+    
   }
 
 }

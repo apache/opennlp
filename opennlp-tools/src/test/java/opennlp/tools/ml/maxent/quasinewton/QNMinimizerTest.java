@@ -17,33 +17,33 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class QNMinimizerTest {
 
   @Test
-  void testQuadraticFunction() {
+  public void testQuadraticFunction() {
     QNMinimizer minimizer = new QNMinimizer();
     Function f = new QuadraticFunction();
     double[] x = minimizer.minimize(f);
     double minValue = f.valueAt(x);
 
-    Assertions.assertEquals(1.0, x[0], 1e-5);
-    Assertions.assertEquals(5.0, x[1], 1e-5);
-    Assertions.assertEquals(10.0, minValue, 1e-10);
+    Assert.assertEquals(x[0], 1.0, 1e-5);
+    Assert.assertEquals(x[1], 5.0, 1e-5);
+    Assert.assertEquals(minValue, 10.0, 1e-10);
   }
 
   @Test
-  void testRosenbrockFunction() {
+  public void testRosenbrockFunction() {
     QNMinimizer minimizer = new QNMinimizer();
     Function f = new Rosenbrock();
     double[] x = minimizer.minimize(f);
     double minValue = f.valueAt(x);
 
-    Assertions.assertEquals(1.0, x[0], 1e-5);
-    Assertions.assertEquals(1.0, x[1], 1e-5);
-    Assertions.assertEquals(0, minValue, 1e-10);
+    Assert.assertEquals(x[0], 1.0, 1e-5);
+    Assert.assertEquals(x[1], 1.0, 1e-5);
+    Assert.assertEquals(minValue, 0, 1e-10);
   }
 
   /**
@@ -63,7 +63,7 @@ public class QNMinimizerTest {
 
     @Override
     public double[] gradientAt(double[] x) {
-      return new double[] {2 * (x[0] - 1), 2 * (x[1] - 5)};
+      return new double[] { 2 * (x[0] - 1), 2 * (x[1] - 5) };
     }
   }
 
@@ -71,7 +71,7 @@ public class QNMinimizerTest {
    * Rosenbrock function (http://en.wikipedia.org/wiki/Rosenbrock_function)
    * f(x,y) = (1-x)^2 + 100*(y-x^2)^2
    * f(x,y) is non-convex and has global minimum at (x,y) = (1,1) where f(x,y) = 0
-   * <p>
+   *
    * f_x = -2*(1-x) - 400*(y-x^2)*x
    * f_y = 200*(y-x^2)
    */

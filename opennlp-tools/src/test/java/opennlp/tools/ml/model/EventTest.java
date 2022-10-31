@@ -17,49 +17,51 @@
 
 package opennlp.tools.ml.model;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class EventTest {
 
   @Test
-  void testNullOutcome() {
+  public void testNullOutcome() {
     try {
-      new Event(null, new String[] {"aa", "bb", "cc"});
-      Assertions.fail("NPE must be thrown");
-    } catch (NullPointerException expected) {
+      new Event(null, new String[]{"aa", "bb", "cc"});
+      Assert.fail("NPE must be thrown");
+    }
+    catch (NullPointerException expected) {
     }
   }
 
   @Test
-  void testNullContext() {
+  public void testNullContext() {
     try {
       new Event("o1", null);
-      Assertions.fail("NPE must be thrown");
-    } catch (NullPointerException expected) {
+      Assert.fail("NPE must be thrown");
+    }
+    catch (NullPointerException expected) {
     }
   }
 
   @Test
-  void testWithValues() {
+  public void testWithValues() {
     Event event = new Event("o1",
-        new String[] {"aa", "bb", "cc"});
+            new String[]{"aa", "bb", "cc"});
 
-    Assertions.assertEquals("o1", event.getOutcome());
-    Assertions.assertArrayEquals(new String[] {"aa", "bb", "cc"}, event.getContext());
-    Assertions.assertNull(event.getValues());
-    Assertions.assertEquals("o1 [aa bb cc]", event.toString());
+    Assert.assertEquals("o1", event.getOutcome());
+    Assert.assertArrayEquals(new String[]{"aa", "bb", "cc"}, event.getContext());
+    Assert.assertNull(event.getValues());
+    Assert.assertEquals("o1 [aa bb cc]", event.toString());
   }
 
   @Test
-  void testWithoutValues() {
+  public void testWithoutValues() {
     Event event = new Event("o1",
-        new String[] {"aa", "bb", "cc"},
-        new float[] {0.2F, 0.4F, 0.4F});
+            new String[]{"aa", "bb", "cc"},
+            new float[]{0.2F, 0.4F, 0.4F});
 
-    Assertions.assertEquals("o1", event.getOutcome());
-    Assertions.assertArrayEquals(new String[] {"aa", "bb", "cc"}, event.getContext());
-    Assertions.assertArrayEquals(new float[] {0.2F, 0.4F, 0.4F}, event.getValues(), 0.001F);
-    Assertions.assertEquals("o1 [aa=0.2 bb=0.4 cc=0.4]", event.toString());
+    Assert.assertEquals("o1", event.getOutcome());
+    Assert.assertArrayEquals(new String[]{"aa", "bb", "cc"}, event.getContext());
+    Assert.assertArrayEquals(new float[]{0.2F, 0.4F, 0.4F}, event.getValues(), 0.001F);
+    Assert.assertEquals("o1 [aa=0.2 bb=0.4 cc=0.4]", event.toString());
   }
 }

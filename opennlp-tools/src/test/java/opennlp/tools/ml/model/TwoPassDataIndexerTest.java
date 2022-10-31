@@ -20,8 +20,8 @@ package opennlp.tools.ml.model;
 import java.io.IOException;
 import java.util.Collections;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.namefind.DefaultNameContextGenerator;
 import opennlp.tools.namefind.NameContextGenerator;
@@ -36,57 +36,57 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 public class TwoPassDataIndexerTest {
 
   @Test
-  void testIndex() throws IOException {
+  public void testIndex() throws IOException {
     // He belongs to <START:org> Apache Software Foundation <END> .
     ObjectStream<Event> eventStream = new SimpleEventStreamBuilder()
         .add("other/w=he n1w=belongs n2w=to po=other pow=other,He powf=other,ic ppo=other")
         .add("other/w=belongs p1w=he n1w=to n2w=apache po=other pow=other,belongs powf=other,lc ppo=other")
         .add("other/w=to p1w=belongs p2w=he n1w=apache n2w=software po=other pow=other,to" +
-            " powf=other,lc ppo=other")
+                    " powf=other,lc ppo=other")
         .add("org-start/w=apache p1w=to p2w=belongs n1w=software n2w=foundation po=other pow=other,Apache" +
-            " powf=other,ic ppo=other")
+                    " powf=other,ic ppo=other")
         .add("org-cont/w=software p1w=apache p2w=to n1w=foundation n2w=. po=org-start" +
-            " pow=org-start,Software powf=org-start,ic ppo=other")
+                    " pow=org-start,Software powf=org-start,ic ppo=other")
         .add("org-cont/w=foundation p1w=software p2w=apache n1w=. po=org-cont pow=org-cont,Foundation" +
-            " powf=org-cont,ic ppo=org-start")
+                    " powf=org-cont,ic ppo=org-start")
         .add("other/w=. p1w=foundation p2w=software po=org-cont pow=org-cont,. powf=org-cont,other" +
-            " ppo=org-cont")
+                    " ppo=org-cont")
         .build();
 
     DataIndexer indexer = new TwoPassDataIndexer();
     indexer.init(new TrainingParameters(Collections.emptyMap()), null);
     indexer.index(eventStream);
-    Assertions.assertEquals(3, indexer.getContexts().length);
-    Assertions.assertArrayEquals(new int[] {0}, indexer.getContexts()[0]);
-    Assertions.assertArrayEquals(new int[] {0}, indexer.getContexts()[1]);
-    Assertions.assertArrayEquals(new int[] {0}, indexer.getContexts()[2]);
-    Assertions.assertNull(indexer.getValues());
-    Assertions.assertEquals(5, indexer.getNumEvents());
-    Assertions.assertArrayEquals(new int[] {0, 1, 2}, indexer.getOutcomeList());
-    Assertions.assertArrayEquals(new int[] {3, 1, 1}, indexer.getNumTimesEventsSeen());
-    Assertions.assertArrayEquals(new String[] {"ppo=other"}, indexer.getPredLabels());
-    Assertions.assertArrayEquals(new String[] {"other", "org-start", "org-cont"}, indexer.getOutcomeLabels());
-    Assertions.assertArrayEquals(new int[] {5}, indexer.getPredCounts());
+    Assert.assertEquals(3, indexer.getContexts().length);
+    Assert.assertArrayEquals(new int[]{0}, indexer.getContexts()[0]);
+    Assert.assertArrayEquals(new int[]{0}, indexer.getContexts()[1]);
+    Assert.assertArrayEquals(new int[]{0}, indexer.getContexts()[2]);
+    Assert.assertNull(indexer.getValues());
+    Assert.assertEquals(5, indexer.getNumEvents());
+    Assert.assertArrayEquals(new int[]{0, 1, 2}, indexer.getOutcomeList());
+    Assert.assertArrayEquals(new int[]{3, 1, 1}, indexer.getNumTimesEventsSeen());
+    Assert.assertArrayEquals(new String[]{"ppo=other"}, indexer.getPredLabels());
+    Assert.assertArrayEquals(new String[]{"other", "org-start", "org-cont"}, indexer.getOutcomeLabels());
+    Assert.assertArrayEquals(new int[]{5}, indexer.getPredCounts());
   }
 
   @Test
-  void testIndexWithNewline() throws IOException {
+  public void testIndexWithNewline() throws IOException {
 
     String[] sentence = "He belongs to Apache \n Software Foundation .".split(" ");
 
     NameContextGenerator CG = new DefaultNameContextGenerator(
-        (AdaptiveFeatureGenerator[]) null);
+            (AdaptiveFeatureGenerator[]) null);
 
     NameSample nameSample = new NameSample(sentence,
-        new Span[] {new Span(3, 7)}, false);
+            new Span[] { new Span(3, 7) }, false);
 
     ObjectStream<Event> eventStream = new NameFinderEventStream(
-        ObjectStreamUtils.createObjectStream(nameSample), "org", CG, null);
+            ObjectStreamUtils.createObjectStream(nameSample), "org", CG, null);
 
     DataIndexer indexer = new TwoPassDataIndexer();
     indexer.init(new TrainingParameters(Collections.emptyMap()), null);
     indexer.index(eventStream);
-    Assertions.assertEquals(5, indexer.getContexts().length);
+    Assert.assertEquals(5, indexer.getContexts().length);
 
   }
 }

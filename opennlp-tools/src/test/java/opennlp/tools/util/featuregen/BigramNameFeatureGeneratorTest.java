@@ -20,22 +20,22 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class BigramNameFeatureGeneratorTest {
 
   private List<String> features;
   static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
 
-  @BeforeEach
-  void setUp() {
+  @Before
+  public void setUp() throws Exception {
     features = new ArrayList<>();
   }
 
   @Test
-  void testBegin() {
+  public void testBegin() {
 
     final int testTokenIndex = 0;
 
@@ -43,13 +43,13 @@ public class BigramNameFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    Assertions.assertEquals(2, features.size());
-    Assertions.assertEquals("w,nw=This,is", features.get(0));
-    Assertions.assertEquals("wc,nc=ic,lc", features.get(1));
+    Assert.assertEquals(2, features.size());
+    Assert.assertEquals("w,nw=This,is", features.get(0));
+    Assert.assertEquals("wc,nc=ic,lc", features.get(1));
   }
 
   @Test
-  void testMiddle() {
+  public void testMiddle() {
 
     final int testTokenIndex = 2;
 
@@ -57,15 +57,15 @@ public class BigramNameFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    Assertions.assertEquals(4, features.size());
-    Assertions.assertEquals("pw,w=is,an", features.get(0));
-    Assertions.assertEquals("pwc,wc=lc,lc", features.get(1));
-    Assertions.assertEquals("w,nw=an,example", features.get(2));
-    Assertions.assertEquals("wc,nc=lc,lc", features.get(3));
+    Assert.assertEquals(4, features.size());
+    Assert.assertEquals("pw,w=is,an", features.get(0));
+    Assert.assertEquals("pwc,wc=lc,lc", features.get(1));
+    Assert.assertEquals("w,nw=an,example", features.get(2));
+    Assert.assertEquals("wc,nc=lc,lc", features.get(3));
   }
 
   @Test
-  void testEnd() {
+  public void testEnd() {
 
     final int testTokenIndex = 4;
 
@@ -73,13 +73,13 @@ public class BigramNameFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    Assertions.assertEquals(2, features.size());
-    Assertions.assertEquals("pw,w=example,sentence", features.get(0));
-    Assertions.assertEquals("pwc,wc=lc,lc", features.get(1));
+    Assert.assertEquals(2, features.size());
+    Assert.assertEquals("pw,w=example,sentence", features.get(0));
+    Assert.assertEquals("pwc,wc=lc,lc", features.get(1));
   }
 
   @Test
-  void testShort() {
+  public void testShort() {
 
     String[] shortSentence = new String[] {"word"};
 
@@ -89,6 +89,6 @@ public class BigramNameFeatureGeneratorTest {
 
     generator.createFeatures(features, shortSentence, testTokenIndex, null);
 
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
   }
 }

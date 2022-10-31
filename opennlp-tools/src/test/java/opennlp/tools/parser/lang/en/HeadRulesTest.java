@@ -25,13 +25,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class HeadRulesTest {
 
   @Test
-  void testSerialization() throws IOException {
+  public void testSerialization() throws IOException {
     InputStream headRulesIn =
         HeadRulesTest.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules");
 
@@ -44,6 +44,6 @@ public class HeadRulesTest {
     HeadRules headRulesRecreated = new HeadRules(new InputStreamReader(
         new ByteArrayInputStream(out.toByteArray()), StandardCharsets.UTF_8));
 
-    Assertions.assertEquals(headRulesOrginal, headRulesRecreated);
+    Assert.assertEquals(headRulesOrginal, headRulesRecreated);
   }
 }

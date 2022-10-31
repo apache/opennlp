@@ -21,9 +21,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -34,27 +34,27 @@ public class LanguageDetectorMETest {
 
   private LanguageDetectorModel model;
 
-  @BeforeEach
-  void init() throws Exception {
+  @Before
+  public void init() throws Exception {
 
     this.model = trainModel();
 
   }
 
   @Test
-  void testPredictLanguages() {
+  public void testPredictLanguages() {
     LanguageDetector ld = new LanguageDetectorME(this.model);
     Language[] languages = ld.predictLanguages("estava em uma marcenaria na Rua Bruno");
 
-    Assertions.assertEquals(4, languages.length);
-    Assertions.assertEquals("pob", languages[0].getLang());
-    Assertions.assertEquals("ita", languages[1].getLang());
-    Assertions.assertEquals("spa", languages[2].getLang());
-    Assertions.assertEquals("fra", languages[3].getLang());
+    Assert.assertEquals(4, languages.length);
+    Assert.assertEquals("pob", languages[0].getLang());
+    Assert.assertEquals("ita", languages[1].getLang());
+    Assert.assertEquals("spa", languages[2].getLang());
+    Assert.assertEquals("fra", languages[3].getLang());
   }
 
   @Test
-  void testProbingPredictLanguages() {
+  public void testProbingPredictLanguages() {
     LanguageDetectorME ld = new LanguageDetectorME(this.model);
     for (int i = 0; i < 10000; i += 1000) {
       StringBuilder sb = new StringBuilder();
@@ -62,40 +62,40 @@ public class LanguageDetectorMETest {
         sb.append("estava em uma marcenaria na Rua Bruno ");
       }
       ProbingLanguageDetectionResult result = ld.probingPredictLanguages(sb.toString());
-      Assertions.assertTrue(result.getLength() <= 600);
+      Assert.assertTrue(result.getLength() <= 600);
       Language[] languages = result.getLanguages();
-      Assertions.assertEquals(4, languages.length);
-      Assertions.assertEquals("pob", languages[0].getLang());
-      Assertions.assertEquals("ita", languages[1].getLang());
-      Assertions.assertEquals("spa", languages[2].getLang());
-      Assertions.assertEquals("fra", languages[3].getLang());
+      Assert.assertEquals(4, languages.length);
+      Assert.assertEquals("pob", languages[0].getLang());
+      Assert.assertEquals("ita", languages[1].getLang());
+      Assert.assertEquals("spa", languages[2].getLang());
+      Assert.assertEquals("fra", languages[3].getLang());
     }
   }
 
   @Test
-  void testPredictLanguage() {
+  public void testPredictLanguage() {
     LanguageDetector ld = new LanguageDetectorME(this.model);
     Language language = ld.predictLanguage("Dove è meglio che giochi");
 
-    Assertions.assertEquals("ita", language.getLang());
+    Assert.assertEquals("ita", language.getLang());
   }
 
   @Test
-  void testSupportedLanguages() {
+  public void testSupportedLanguages() {
 
     LanguageDetector ld = new LanguageDetectorME(this.model);
     String[] supportedLanguages = ld.getSupportedLanguages();
 
-    Assertions.assertEquals(4, supportedLanguages.length);
+    Assert.assertEquals(4, supportedLanguages.length);
   }
 
   @Test
-  void testLoadFromSerialized() throws IOException {
+  public void testLoadFromSerialized() throws IOException {
     byte[] serialized = serializeModel(model);
 
     LanguageDetectorModel myModel = new LanguageDetectorModel(new ByteArrayInputStream(serialized));
 
-    Assertions.assertNotNull(myModel);
+    Assert.assertNotNull(myModel);
 
   }
 

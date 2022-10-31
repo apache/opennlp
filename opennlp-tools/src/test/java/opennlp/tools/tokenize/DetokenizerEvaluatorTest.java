@@ -20,14 +20,16 @@ package opennlp.tools.tokenize;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.cmdline.tokenizer.DetokenEvaluationErrorListener;
+import opennlp.tools.util.InvalidFormatException;
+
 
 public class DetokenizerEvaluatorTest {
   @Test
-  void testPositive() {
+  public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     DetokenEvaluationErrorListener listener = new DetokenEvaluationErrorListener(stream);
 
@@ -36,13 +38,13 @@ public class DetokenizerEvaluatorTest {
 
     eval.evaluateSample(TokenSampleTest.createGoldSample());
 
-    Assertions.assertEquals(1.0, eval.getFMeasure().getFMeasure(), 0.0);
+    Assert.assertEquals(1.0, eval.getFMeasure().getFMeasure(), 0.0);
 
-    Assertions.assertEquals(0, stream.toString().length());
+    Assert.assertEquals(0, stream.toString().length());
   }
 
   @Test
-  void testNegative() {
+  public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     DetokenEvaluationErrorListener listener = new DetokenEvaluationErrorListener(
         stream);
@@ -52,9 +54,9 @@ public class DetokenizerEvaluatorTest {
 
     eval.evaluateSample(TokenSampleTest.createPredSilverSample());
 
-    Assertions.assertEquals(-1.0d, eval.getFMeasure().getFMeasure(), .1d);
+    Assert.assertEquals(-1.0d, eval.getFMeasure().getFMeasure(), .1d);
 
-    Assertions.assertNotSame(0, stream.toString().length());
+    Assert.assertNotSame(0, stream.toString().length());
   }
 
   /**

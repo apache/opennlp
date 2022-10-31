@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
@@ -36,26 +36,26 @@ public class ADTokenSampleStreamTest {
   private final List<TokenSample> samples = new ArrayList<>();
 
   @Test
-  void testSimpleCount() {
-    Assertions.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
+  public void testSimpleCount() throws IOException {
+    Assert.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
   }
 
   @Test
-  void testSentences() {
-    Assertions.assertTrue(samples.get(5).getText().contains("ofereceu-me"));
+  public void testSentences() throws IOException {
+    Assert.assertTrue(samples.get(5).getText().contains("ofereceu-me"));
   }
 
-  @BeforeEach
-  void setup() throws IOException, URISyntaxException {
+  @Before
+  public void setup() throws IOException, URISyntaxException {
     ADTokenSampleStreamFactory<ADTokenSampleStreamFactory.Parameters> factory =
-            new ADTokenSampleStreamFactory<>(ADTokenSampleStreamFactory.Parameters.class);
+        new ADTokenSampleStreamFactory<>(ADTokenSampleStreamFactory.Parameters.class);
 
     File dict = new File(Objects.requireNonNull(getClass().getClassLoader()
-        .getResource("opennlp/tools/tokenize/latin-detokenizer.xml")).toURI());
+            .getResource("opennlp/tools/tokenize/latin-detokenizer.xml")).toURI());
     File data = new File(Objects.requireNonNull(getClass().getClassLoader()
-        .getResource("opennlp/tools/formats/ad.sample")).toURI());
-    String[] args = {"-data", data.getCanonicalPath(), "-encoding", "UTF-8",
-        "-lang", "por", "-detokenizer", dict.getCanonicalPath()};
+            .getResource("opennlp/tools/formats/ad.sample")).toURI());
+    String[] args = { "-data", data.getCanonicalPath(), "-encoding", "UTF-8",
+        "-lang", "por", "-detokenizer", dict.getCanonicalPath() };
     ObjectStream<TokenSample> tokenSampleStream = factory.create(args);
 
     TokenSample sample = tokenSampleStream.read();

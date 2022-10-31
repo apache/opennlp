@@ -17,8 +17,8 @@
 
 package opennlp.tools.util.normalizer;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 
 public class UrlCharSequenceNormalizerTest {
@@ -26,26 +26,26 @@ public class UrlCharSequenceNormalizerTest {
   public UrlCharSequenceNormalizer normalizer = UrlCharSequenceNormalizer.getInstance();
 
   @Test
-  void normalizeUrl() {
-    Assertions.assertEquals(
+  public void normalizeUrl() throws Exception {
+    Assert.assertEquals(
         "asdf   2nnfdf", normalizer.normalize("asdf http://asdf.com/dfa/cxs 2nnfdf"));
 
 
-    Assertions.assertEquals(
+    Assert.assertEquals(
         "asdf   2nnfdf  ", normalizer.normalize("asdf http://asdf.com/dfa/cx" +
             "s 2nnfdf http://asdf.com/dfa/cxs"));
   }
 
   @Test
-  void normalizeEmail() {
-    Assertions.assertEquals(
+  public void normalizeEmail() throws Exception {
+    Assert.assertEquals(
         "asdf   2nnfdf", normalizer.normalize("asdf asd.fdfa@hasdk23.com.br 2nnfdf"));
-    Assertions.assertEquals(
+    Assert.assertEquals(
         "asdf   2nnfdf  ", normalizer.normalize("asdf asd.fdfa@hasdk23.com.br" +
             " 2nnfdf asd.fdfa@hasdk23.com.br"));
-    Assertions.assertEquals(
+    Assert.assertEquals(
         "asdf   2nnfdf", normalizer.normalize("asdf asd+fdfa@hasdk23.com.br 2nnfdf"));
-    Assertions.assertEquals(
+    Assert.assertEquals(
         "asdf  _br 2nnfdf", normalizer.normalize("asdf asd.fdfa@hasdk23.com_br 2nnfdf"));
   }
 }

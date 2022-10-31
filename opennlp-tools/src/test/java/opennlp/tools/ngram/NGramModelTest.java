@@ -23,8 +23,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
@@ -33,221 +33,213 @@ import opennlp.tools.util.StringList;
 /**
  * Tests for {@link opennlp.tools.ngram.NGramModel}
  */
-
 public class NGramModelTest {
 
   @Test
-  void testZeroGetCount() {
+  public void testZeroGetCount() throws Exception {
     NGramModel ngramModel = new NGramModel();
     int count = ngramModel.getCount(new StringList(""));
-    Assertions.assertEquals(0, count);
-    Assertions.assertEquals(0, ngramModel.size());
+    Assert.assertEquals(0, count);
+    Assert.assertEquals(0, ngramModel.size());
   }
 
   @Test
-  void testZeroGetCount2() {
+  public void testZeroGetCount2() throws Exception {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "bro", "wn"));
     int count = ngramModel.getCount(new StringList("fox"));
-    Assertions.assertEquals(0, count);
-    Assertions.assertEquals(1, ngramModel.size());
+    Assert.assertEquals(0, count);
+    Assert.assertEquals(1, ngramModel.size());
   }
 
   @Test
-  void testAdd() {
+  public void testAdd() throws Exception {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "bro", "wn"));
     int count = ngramModel.getCount(new StringList("the"));
-    Assertions.assertEquals(0, count);
-    Assertions.assertEquals(1, ngramModel.size());
+    Assert.assertEquals(0, count);
+    Assert.assertEquals(1, ngramModel.size());
   }
 
   @Test
-  void testAdd1() {
+  public void testAdd1() throws Exception {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "bro", "wn"));
     int count = ngramModel.getCount(new StringList("the", "bro", "wn"));
-    Assertions.assertEquals(1, count);
-    Assertions.assertEquals(1, ngramModel.size());
+    Assert.assertEquals(1, count);
+    Assert.assertEquals(1, ngramModel.size());
   }
 
   @Test
-  void testAdd2() {
+  public void testAdd2() throws Exception {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "bro", "wn"), 2, 3);
     int count = ngramModel.getCount(new StringList("the", "bro", "wn"));
-    Assertions.assertEquals(1, count);
-    Assertions.assertEquals(3, ngramModel.size());
+    Assert.assertEquals(1, count);
+    Assert.assertEquals(3, ngramModel.size());
   }
 
   @Test
-  void testAdd3() {
+  public void testAdd3() throws Exception {
     NGramModel ngramModel = new NGramModel();
     ngramModel.add(new StringList("the", "brown", "fox"), 2, 3);
     int count = ngramModel.getCount(new StringList("the", "brown", "fox"));
-    Assertions.assertEquals(1, count);
+    Assert.assertEquals(1, count);
     count = ngramModel.getCount(new StringList("the", "brown"));
-    Assertions.assertEquals(1, count);
+    Assert.assertEquals(1, count);
     count = ngramModel.getCount(new StringList("brown", "fox"));
-    Assertions.assertEquals(1, count);
-    Assertions.assertEquals(3, ngramModel.size());
+    Assert.assertEquals(1, count);
+    Assert.assertEquals(3, ngramModel.size());
   }
 
   @Test
-  void testRemove() {
+  public void testRemove() throws Exception {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "bro", "wn");
     ngramModel.add(tokens);
     ngramModel.remove(tokens);
-    Assertions.assertEquals(0, ngramModel.size());
+    Assert.assertEquals(0, ngramModel.size());
   }
 
   @Test
-  void testContains() {
+  public void testContains() throws Exception {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "bro", "wn");
     ngramModel.add(tokens);
-    Assertions.assertFalse(ngramModel.contains(new StringList("the")));
+    Assert.assertFalse(ngramModel.contains(new StringList("the")));
   }
 
   @Test
-  void testContains2() {
+  public void testContains2() throws Exception {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "bro", "wn");
     ngramModel.add(tokens, 1, 3);
-    Assertions.assertTrue(ngramModel.contains(new StringList("the")));
+    Assert.assertTrue(ngramModel.contains(new StringList("the")));
   }
 
   @Test
-  void testNumberOfGrams() {
+  public void testNumberOfGrams() throws Exception {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "bro", "wn");
     ngramModel.add(tokens, 1, 3);
-    Assertions.assertEquals(6, ngramModel.numberOfGrams());
+    Assert.assertEquals(6, ngramModel.numberOfGrams());
   }
 
   @Test
-  void testCutoff1() {
+  public void testCutoff1() throws Exception {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "brown", "fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     ngramModel.cutoff(2, 4);
-    Assertions.assertEquals(0, ngramModel.size());
+    Assert.assertEquals(0, ngramModel.size());
   }
 
   @Test
-  void testCutoff2() {
+  public void testCutoff2() throws Exception {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "brown", "fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     ngramModel.cutoff(1, 3);
-    Assertions.assertEquals(9, ngramModel.size());
+    Assert.assertEquals(9, ngramModel.size());
   }
 
   @Test
-  void testToDictionary() {
+  public void testToDictionary() throws Exception {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "brown", "fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     tokens = new StringList("the", "brown", "Fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     Dictionary dictionary = ngramModel.toDictionary();
-    Assertions.assertNotNull(dictionary);
-    Assertions.assertEquals(9, dictionary.size());
-    Assertions.assertEquals(1, dictionary.getMinTokenCount());
-    Assertions.assertEquals(3, dictionary.getMaxTokenCount());
+    Assert.assertNotNull(dictionary);
+    Assert.assertEquals(9, dictionary.size());
+    Assert.assertEquals(1, dictionary.getMinTokenCount());
+    Assert.assertEquals(3, dictionary.getMaxTokenCount());
   }
 
   @Test
-  void testToDictionary1() {
+  public void testToDictionary1() throws Exception {
     NGramModel ngramModel = new NGramModel();
     StringList tokens = new StringList("the", "brown", "fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     tokens = new StringList("the", "brown", "Fox", "jumped");
     ngramModel.add(tokens, 1, 3);
     Dictionary dictionary = ngramModel.toDictionary(true);
-    Assertions.assertNotNull(dictionary);
-    Assertions.assertEquals(14, dictionary.size());
-    Assertions.assertEquals(1, dictionary.getMinTokenCount());
-    Assertions.assertEquals(3, dictionary.getMaxTokenCount());
+    Assert.assertNotNull(dictionary);
+    Assert.assertEquals(14, dictionary.size());
+    Assert.assertEquals(1, dictionary.getMinTokenCount());
+    Assert.assertEquals(3, dictionary.getMaxTokenCount());
   }
-
-  @Test
-  void testInvalidFormat() {
-    Assertions.assertThrows(InvalidFormatException.class, () -> {
-      InputStream stream = new ByteArrayInputStream("inputstring".getBytes(StandardCharsets.UTF_8));
-      NGramModel ngramModel = new NGramModel(stream);
-      stream.close();
-      ngramModel.toDictionary(true);
-    });
+  
+  @Test(expected = InvalidFormatException.class)
+  public void testInvalidFormat() throws Exception {
+    InputStream stream = new ByteArrayInputStream("inputstring".getBytes(StandardCharsets.UTF_8));
+    NGramModel ngramModel = new NGramModel(stream);
+    stream.close();
+    ngramModel.toDictionary(true);
   }
-
+  
   @Test
-  void testFromFile() throws Exception {
+  public void testFromFile() throws Exception {
     InputStream stream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model.xml");
     NGramModel ngramModel = new NGramModel(stream);
     stream.close();
     Dictionary dictionary = ngramModel.toDictionary(true);
-    Assertions.assertNotNull(dictionary);
-    Assertions.assertEquals(14, dictionary.size());
-    Assertions.assertEquals(3, dictionary.getMaxTokenCount());
-    Assertions.assertEquals(1, dictionary.getMinTokenCount());
+    Assert.assertNotNull(dictionary);
+    Assert.assertEquals(14, dictionary.size());
+    Assert.assertEquals(3, dictionary.getMaxTokenCount());
+    Assert.assertEquals(1, dictionary.getMinTokenCount());
   }
-
+  
   @Test
-  void testSerialize() throws Exception {
-
+  public void testSerialize() throws Exception {
+   
     InputStream stream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model.xml");
-
+    
     NGramModel ngramModel1 = new NGramModel(stream);
     stream.close();
-
+    
     Dictionary dictionary = ngramModel1.toDictionary(true);
-    Assertions.assertNotNull(dictionary);
-    Assertions.assertEquals(14, dictionary.size());
-    Assertions.assertEquals(3, dictionary.getMaxTokenCount());
-    Assertions.assertEquals(1, dictionary.getMinTokenCount());
-
+    Assert.assertNotNull(dictionary);
+    Assert.assertEquals(14, dictionary.size());
+    Assert.assertEquals(3, dictionary.getMaxTokenCount());
+    Assert.assertEquals(1, dictionary.getMinTokenCount());
+    
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ngramModel1.serialize(baos);
-
+    
     final String serialized = new String(baos.toByteArray(), Charset.defaultCharset());
     InputStream inputStream = new ByteArrayInputStream(serialized.getBytes(StandardCharsets.UTF_8));
-
+        
     NGramModel ngramModel2 = new NGramModel(inputStream);
     stream.close();
-
-    Assertions.assertEquals(ngramModel2.numberOfGrams(), ngramModel2.numberOfGrams());
-    Assertions.assertEquals(ngramModel2.size(), ngramModel2.size());
-
+        
+    Assert.assertEquals(ngramModel2.numberOfGrams(), ngramModel2.numberOfGrams());
+    Assert.assertEquals(ngramModel2.size(), ngramModel2.size());
+    
     dictionary = ngramModel2.toDictionary(true);
-
-    Assertions.assertNotNull(dictionary);
-    Assertions.assertEquals(14, dictionary.size());
-    Assertions.assertEquals(3, dictionary.getMaxTokenCount());
-    Assertions.assertEquals(1, dictionary.getMinTokenCount());
-
+    
+    Assert.assertNotNull(dictionary);
+    Assert.assertEquals(14, dictionary.size());
+    Assert.assertEquals(3, dictionary.getMaxTokenCount());
+    Assert.assertEquals(1, dictionary.getMinTokenCount());
+    
   }
-
-  @Test
-  void testFromInvalidFileMissingCount() {
-    Assertions.assertThrows(InvalidFormatException.class, () -> {
-      InputStream stream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model-no-count.xml");
-      NGramModel ngramModel = new NGramModel(stream);
-      stream.close();
-      ngramModel.toDictionary(true);
-    });
+  
+  @Test(expected = InvalidFormatException.class)
+  public void testFromInvalidFileMissingCount() throws Exception {
+    InputStream stream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model-no-count.xml");
+    NGramModel ngramModel = new NGramModel(stream);
+    stream.close();
+    ngramModel.toDictionary(true);
   }
-
-  @Test
-  void testFromInvalidFileNotANumber() {
-    Assertions.assertThrows(InvalidFormatException.class, () -> {
-      InputStream stream = getClass().getResourceAsStream(
-          "/opennlp/tools/ngram/ngram-model-not-a-number.xml");
-      NGramModel ngramModel = new NGramModel(stream);
-      stream.close();
-      ngramModel.toDictionary(true);
-    });
+  
+  @Test(expected = InvalidFormatException.class)
+  public void testFromInvalidFileNotANumber() throws Exception {
+    InputStream stream = getClass().getResourceAsStream("/opennlp/tools/ngram/ngram-model-not-a-number.xml");
+    NGramModel ngramModel = new NGramModel(stream);
+    stream.close();
+    ngramModel.toDictionary(true);
   }
 
 }

@@ -21,8 +21,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.morfologik.builder.POSDictionayBuilderTest;
 import opennlp.tools.lemmatizer.Lemmatizer;
@@ -39,11 +39,11 @@ public class MorfologikLemmatizerTest {
 
     String[] lemmas = dict.lemmatize(toks, tags);
 
-    Assertions.assertEquals("casar", lemmas[0]);
-    Assertions.assertEquals("casa", lemmas[1]);
+    Assert.assertEquals("casar", lemmas[0]);
+    Assert.assertEquals("casa", lemmas[1]);
 
     // lookup is case insensitive. There is no entry casa - prop
-    Assertions.assertNull(lemmas[2]);
+    Assert.assertNull(lemmas[2]);
   }
 
   @Test
@@ -55,8 +55,8 @@ public class MorfologikLemmatizerTest {
 
     List<List<String>> lemmas = dict.lemmatize(Arrays.asList(toks), Arrays.asList(tags));
 
-    Assertions.assertTrue(lemmas.get(0).contains("ir"));
-    Assertions.assertTrue(lemmas.get(0).contains("ser"));
+    Assert.assertTrue(lemmas.get(0).contains("ir"));
+    Assert.assertTrue(lemmas.get(0).contains("ser"));
   }
 
   private MorfologikLemmatizer createDictionary(boolean caseSensitive)

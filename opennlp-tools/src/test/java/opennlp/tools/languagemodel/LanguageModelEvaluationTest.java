@@ -19,8 +19,8 @@ package opennlp.tools.languagemodel;
 
 import java.util.Collection;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.StringList;
 
@@ -30,7 +30,7 @@ import opennlp.tools.util.StringList;
 public class LanguageModelEvaluationTest {
 
   @Test
-  void testPerplexityComparison() {
+  public void testPerplexityComparison() throws Exception {
 
     Collection<String[]> trainingVocabulary =
         LanguageModelTestUtils.generateRandomVocabulary(1100000);
@@ -50,7 +50,7 @@ public class LanguageModelEvaluationTest {
     }
     double bigramPerplexity =
         LanguageModelTestUtils.getPerplexity(bigramLM, testVocabulary, 2);
-    Assertions.assertTrue(unigramPerplexity >= bigramPerplexity);
+    Assert.assertTrue(unigramPerplexity >= bigramPerplexity);
 
     NGramLanguageModel trigramLM = new NGramLanguageModel(3);
     for (String[] sentence : trainingVocabulary) {
@@ -58,7 +58,7 @@ public class LanguageModelEvaluationTest {
     }
     double trigramPerplexity =
         LanguageModelTestUtils.getPerplexity(trigramLM, testVocabulary, 3);
-    Assertions.assertTrue(bigramPerplexity >= trigramPerplexity);
+    Assert.assertTrue(bigramPerplexity >= trigramPerplexity);
 
   }
 }

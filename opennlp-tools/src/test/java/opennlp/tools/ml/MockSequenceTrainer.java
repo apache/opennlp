@@ -17,6 +17,7 @@
 
 package opennlp.tools.ml;
 
+import java.io.IOException;
 import java.util.Map;
 
 import opennlp.tools.commons.Sample;
@@ -26,7 +27,7 @@ import opennlp.tools.util.TrainingParameters;
 
 public class MockSequenceTrainer implements EventModelSequenceTrainer {
 
-  public AbstractModel train(SequenceStream<? extends Sample> events) {
+  public AbstractModel train(SequenceStream<? extends Sample> events) throws IOException {
     return null;
   }
 

@@ -17,8 +17,8 @@
 
 package opennlp.tools.sentdetect;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Tests for the {@link NewlineSentenceDetector} class.
@@ -31,24 +31,24 @@ public class NewlineSentenceDetectorTest {
 
     String[] results = sd.sentDetect(sentences);
 
-    Assertions.assertEquals(3, results.length);
-    Assertions.assertEquals("one.", results[0]);
-    Assertions.assertEquals("two.", results[1]);
-    Assertions.assertEquals("three.", results[2]);
+    Assert.assertEquals(3, results.length);
+    Assert.assertEquals("one.", results[0]);
+    Assert.assertEquals("two.", results[1]);
+    Assert.assertEquals("three.", results[2]);
   }
 
   @Test
-  void testNewlineCr() {
+  public void testNewlineCr() {
     testSentenceValues("one.\rtwo. \r\r three.\r");
   }
 
   @Test
-  void testNewlineLf() {
+  public void testNewlineLf() {
     testSentenceValues("one.\ntwo. \n\n three.\n");
   }
 
   @Test
-  void testNewlineCrLf() {
+  public void testNewlineCrLf() {
     testSentenceValues("one.\r\ntwo. \r\n\r\n three.\r\n");
   }
 }

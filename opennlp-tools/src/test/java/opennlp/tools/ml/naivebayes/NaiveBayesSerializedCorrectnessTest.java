@@ -27,9 +27,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractDataIndexer;
@@ -45,18 +45,17 @@ public class NaiveBayesSerializedCorrectnessTest {
 
   private DataIndexer testDataIndexer;
 
-  @BeforeEach
-  void initIndexer() {
+  @Before
+  public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
-    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
-    ;
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);;
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
 
   @Test
-  void testNaiveBayes1() throws IOException {
+  public void testNaiveBayes1() throws IOException {
 
     testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
     NaiveBayesModel model1 =
@@ -73,7 +72,7 @@ public class NaiveBayesSerializedCorrectnessTest {
   }
 
   @Test
-  void testNaiveBayes2() throws IOException {
+  public void testNaiveBayes2() throws IOException {
 
     testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
     NaiveBayesModel model1 =
@@ -90,7 +89,7 @@ public class NaiveBayesSerializedCorrectnessTest {
   }
 
   @Test
-  void testNaiveBayes3() throws IOException {
+  public void testNaiveBayes3() throws IOException {
 
     testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
     NaiveBayesModel model1 =
@@ -107,7 +106,7 @@ public class NaiveBayesSerializedCorrectnessTest {
   }
 
   @Test
-  void testNaiveBayes4() throws IOException {
+  public void testNaiveBayes4() throws IOException {
 
     testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
     NaiveBayesModel model1 =
@@ -125,7 +124,7 @@ public class NaiveBayesSerializedCorrectnessTest {
 
 
   @Test
-  void testPlainTextModel() throws IOException {
+  public void testPlainTextModel() throws IOException {
     testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
     NaiveBayesModel model1 =
         (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
@@ -141,14 +140,14 @@ public class NaiveBayesSerializedCorrectnessTest {
         new PlainTextNaiveBayesModelReader(new BufferedReader(new StringReader(sw1.toString())));
     reader.checkModelType();
 
-    NaiveBayesModel model2 = (NaiveBayesModel) reader.constructModel();
+    NaiveBayesModel model2 = (NaiveBayesModel)reader.constructModel();
 
     StringWriter sw2 = new StringWriter();
     modelWriter = new PlainTextNaiveBayesModelWriter(model2, new BufferedWriter(sw2));
     modelWriter.persist();
 
     System.out.println(sw1.toString());
-    Assertions.assertEquals(sw1.toString(), sw2.toString());
+    Assert.assertEquals(sw1.toString(), sw2.toString());
 
   }
 
@@ -160,8 +159,9 @@ public class NaiveBayesSerializedCorrectnessTest {
       modelWriter.persist();
       NaiveBayesModelReader reader = new BinaryNaiveBayesModelReader(file);
       reader.checkModelType();
-      return (NaiveBayesModel) reader.constructModel();
-    } finally {
+      return (NaiveBayesModel)reader.constructModel();
+    }
+    finally {
       file.delete();
     }
   }
@@ -170,12 +170,12 @@ public class NaiveBayesSerializedCorrectnessTest {
     String[] labels1 = extractLabels(model1);
     String[] labels2 = extractLabels(model2);
 
-    Assertions.assertArrayEquals(labels1, labels2);
+    Assert.assertArrayEquals(labels1, labels2);
 
     double[] outcomes1 = model1.eval(event.getContext());
     double[] outcomes2 = model2.eval(event.getContext());
 
-    Assertions.assertArrayEquals(outcomes1, outcomes2, 0.000000000001);
+    Assert.assertArrayEquals(outcomes1, outcomes2, 0.000000000001);
 
   }
 

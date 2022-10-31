@@ -23,8 +23,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.cmdline.chunker.ChunkerDetailedFMeasureListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
@@ -33,7 +33,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 public class ChunkerDetailedFMeasureListenerTest {
 
   @Test
-  void testEvaluator() throws IOException {
+  public void testEvaluator() throws IOException {
 
     ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
         getClass(), "/opennlp/tools/chunker/output.txt");
@@ -66,6 +66,6 @@ public class ChunkerDetailedFMeasureListenerTest {
       line = reader.readLine();
     }
 
-    Assertions.assertEquals(expected.toString().trim(), listener.createReport(Locale.ENGLISH).trim());
+    Assert.assertEquals(expected.toString().trim(), listener.createReport(Locale.ENGLISH).trim());
   }
 }

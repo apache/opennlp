@@ -17,18 +17,8 @@
 
 package opennlp.tools;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.junit.jupiter.api.Tag;
-
 /**
  * Marker class for tests with heap memory usage above 4 GB.
  */
-@Target( {ElementType.TYPE, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Tag("opennlp.tools.HighMemoryUsage")
-public @interface HighMemoryUsage {
+public class HighMemoryUsage {
 }

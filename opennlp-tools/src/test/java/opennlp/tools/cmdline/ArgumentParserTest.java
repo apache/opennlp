@@ -21,8 +21,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
@@ -33,33 +33,27 @@ public class ArgumentParserTest {
   interface ZeroMethods {
   }
 
-  @Test
-  void testZeroMethods() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ArgumentParser.createUsage(ZeroMethods.class);
-    });
+  @Test(expected = IllegalArgumentException.class)
+  public void testZeroMethods() {
+    ArgumentParser.createUsage(ZeroMethods.class);
   }
 
   interface InvalidMethodName {
     String invalidMethodName();
   }
 
-  @Test
-  void testInvalidMethodName() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ArgumentParser.createUsage(InvalidMethodName.class);
-    });
+  @Test(expected = IllegalArgumentException.class)
+  public void testInvalidMethodName() {
+    ArgumentParser.createUsage(InvalidMethodName.class);
   }
 
   interface InvalidReturnType {
     Exception getTest();
   }
 
-  @Test
-  void testInvalidReturnType() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ArgumentParser.createUsage(InvalidReturnType.class);
-    });
+  @Test(expected = IllegalArgumentException.class)
+  public void testInvalidReturnType() {
+    ArgumentParser.createUsage(InvalidReturnType.class);
   }
 
   interface SimpleArguments extends AllOptionalArguments {
@@ -84,55 +78,48 @@ public class ArgumentParserTest {
 
 
   @Test
-  void testSimpleArguments() {
+  public void testSimpleArguments() {
     String argsString = "-encoding UTF-8 -alphaNumOpt false";
     SimpleArguments args = ArgumentParser.parse(argsString.split(" "), SimpleArguments.class);
 
-    Assertions.assertEquals(StandardCharsets.UTF_8.name(), args.getEncoding());
-    Assertions.assertEquals(Integer.valueOf(100), args.getIterations());
-    Assertions.assertNull(args.getCutoff());
-    Assertions.assertEquals(false, args.getAlphaNumOpt());
+    Assert.assertEquals(StandardCharsets.UTF_8.name(), args.getEncoding());
+    Assert.assertEquals(Integer.valueOf(100), args.getIterations());
+    Assert.assertNull(args.getCutoff());
+    Assert.assertEquals(false, args.getAlphaNumOpt());
   }
 
-  @Test
-  void testSimpleArgumentsMissingEncoding() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      String argsString = "-alphaNumOpt false";
-
-      Assertions.assertFalse(ArgumentParser.validateArguments(argsString.split(" "), SimpleArguments.class));
-      ArgumentParser.parse(argsString.split(" "), SimpleArguments.class);
-    });
-
-  }
-
-  @Test
-  void testAllOptionalArgumentsOneArgument() {
+  @Test(expected = IllegalArgumentException.class)
+  public void testSimpleArgumentsMissingEncoding() {
     String argsString = "-alphaNumOpt false";
 
-    Assertions.assertTrue(ArgumentParser.validateArguments(argsString.split(" "),
-        AllOptionalArguments.class));
+    Assert.assertFalse(ArgumentParser.validateArguments(argsString.split(" "), SimpleArguments.class));
+    ArgumentParser.parse(argsString.split(" "), SimpleArguments.class);
+  }
+
+  @Test
+  public void testAllOptionalArgumentsOneArgument() {
+    String argsString = "-alphaNumOpt false";
+
+    Assert.assertTrue(ArgumentParser.validateArguments(argsString.split(" "), AllOptionalArguments.class));
     ArgumentParser.parse(argsString.split(" "), AllOptionalArguments.class);
   }
 
   @Test
-  void testAllOptionalArgumentsZeroArguments() {
+  public void testAllOptionalArgumentsZeroArguments() {
     String[] args = {};
-    Assertions.assertTrue(ArgumentParser.validateArguments(args, AllOptionalArguments.class));
+    Assert.assertTrue(ArgumentParser.validateArguments(args, AllOptionalArguments.class));
     ArgumentParser.parse(args, AllOptionalArguments.class);
   }
 
-  @Test
-  void testAllOptionalArgumentsExtraArgument() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      String argsString = "-encoding UTF-8";
-      Assertions.assertFalse(ArgumentParser.validateArguments(argsString.split(" "),
-          AllOptionalArguments.class));
-      ArgumentParser.parse(argsString.split(" "), AllOptionalArguments.class);
-    });
+  @Test(expected = IllegalArgumentException.class)
+  public void testAllOptionalArgumentsExtraArgument() {
+    String argsString = "-encoding UTF-8";
+    Assert.assertFalse(ArgumentParser.validateArguments(argsString.split(" "), AllOptionalArguments.class));
+    ArgumentParser.parse(argsString.split(" "), AllOptionalArguments.class);
   }
 
   @Test
-  void testSimpleArgumentsUsage() {
+  public void testSimpleArgumentsUsage() {
 
     String[] arguments = new String[] {"-encoding charset",
         "[-iterations num]",
@@ -142,12 +129,12 @@ public class ArgumentParserTest {
 
     int expectedLength = 2;
     for (String arg : arguments) {
-      Assertions.assertTrue(usage.contains(arg));
+      Assert.assertTrue(usage.contains(arg));
       expectedLength += arg.length();
     }
 
-    Assertions.assertTrue(usage.contains("a charset encoding"));
-    Assertions.assertTrue(expectedLength < usage.length());
+    Assert.assertTrue(usage.contains("a charset encoding"));
+    Assert.assertTrue(expectedLength < usage.length());
   }
 
   interface ExtendsEncodingParameter extends EncodingParameter {
@@ -156,17 +143,17 @@ public class ArgumentParserTest {
   }
 
   @Test
-  void testDefaultEncodingParameter() {
+  public void testDefaultEncodingParameter() {
 
     String[] args = "-something aValue".split(" ");
-    Assertions.assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
+    Assert.assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
 
     ExtendsEncodingParameter params = ArgumentParser.parse(args, ExtendsEncodingParameter.class);
-    Assertions.assertEquals(Charset.defaultCharset(), params.getEncoding());
+    Assert.assertEquals(Charset.defaultCharset(), params.getEncoding());
   }
 
   @Test
-  void testSetEncodingParameter() {
+  public void testSetEncodingParameter() {
     Collection<Charset> availableCharset = Charset.availableCharsets().values();
     String notTheDefaultCharset = StandardCharsets.UTF_8.name();
     for (Charset charset : availableCharset) {
@@ -177,9 +164,9 @@ public class ArgumentParserTest {
     }
 
     String[] args = ("-something aValue -encoding " + notTheDefaultCharset).split(" ");
-    Assertions.assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
+    Assert.assertTrue(ArgumentParser.validateArguments(args, ExtendsEncodingParameter.class));
 
     ExtendsEncodingParameter params = ArgumentParser.parse(args, ExtendsEncodingParameter.class);
-    Assertions.assertEquals(Charset.forName(notTheDefaultCharset), params.getEncoding());
+    Assert.assertEquals(Charset.forName(notTheDefaultCharset), params.getEncoding());
   }
 }

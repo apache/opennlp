@@ -26,9 +26,9 @@ import java.util.Set;
 
 import ai.onnxruntime.OrtException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import opennlp.dl.AbstactDLTest;
 import opennlp.dl.InferenceOptions;
@@ -73,15 +73,15 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
         0.09859892477591832,
         0.07552650570869446};
 
-    Assertions.assertTrue(Arrays.equals(expected, result));
-    Assertions.assertEquals(5, result.length);
+    Assert.assertTrue(Arrays.equals(expected, result));
+    Assert.assertEquals(5, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
-    Assertions.assertEquals("very bad", category);
+    Assert.assertEquals("very bad", category);
 
   }
 
-  @Disabled("This test will should only be run if a GPU device is present.")
+  @Ignore("This test will should only be run if a GPU device is present.")
   @Test
   public void categorizeWithGpu() throws Exception {
 
@@ -109,11 +109,11 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
             0.3003573715686798,
             0.6352779865264893};
 
-    Assertions.assertTrue(Arrays.equals(expected, result));
-    Assertions.assertEquals(5, result.length);
+    Assert.assertTrue(Arrays.equals(expected, result));
+    Assert.assertEquals(5, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
-    Assertions.assertEquals("very good", category);
+    Assert.assertEquals("very good", category);
 
   }
 
@@ -142,11 +142,11 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final double[] expected = new double[]{0.8851314783096313, 0.11486853659152985};
 
-    Assertions.assertTrue(Arrays.equals(expected, result));
-    Assertions.assertEquals(2, result.length);
+    Assert.assertTrue(Arrays.equals(expected, result));
+    Assert.assertEquals(2, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
-    Assertions.assertEquals("negative", category);
+    Assert.assertEquals("negative", category);
 
   }
 
@@ -165,11 +165,11 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final Map<String, Double> result = documentCategorizerDL.scoreMap(new String[]{"I am happy"});
 
-    Assertions.assertEquals(0.6352779865264893, result.get("very good").doubleValue(), 0);
-    Assertions.assertEquals(0.3003573715686798, result.get("good").doubleValue(), 0);
-    Assertions.assertEquals(0.04995147883892059, result.get("neutral").doubleValue(), 0);
-    Assertions.assertEquals(0.006593209225684404, result.get("bad").doubleValue(), 0);
-    Assertions.assertEquals(0.007819971069693565, result.get("very bad").doubleValue(), 0);
+    Assert.assertEquals(0.6352779865264893, result.get("very good").doubleValue(), 0);
+    Assert.assertEquals(0.3003573715686798, result.get("good").doubleValue(), 0);
+    Assert.assertEquals(0.04995147883892059, result.get("neutral").doubleValue(), 0);
+    Assert.assertEquals(0.006593209225684404, result.get("bad").doubleValue(), 0);
+    Assert.assertEquals(0.007819971069693565, result.get("very bad").doubleValue(), 0);
 
   }
 
@@ -188,11 +188,11 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final Map<Double, Set<String>> result = documentCategorizerDL.sortedScoreMap(new String[]{"I am happy"});
 
-    Assertions.assertEquals(result.get(0.6352779865264893).size(), 1);
-    Assertions.assertEquals(result.get(0.3003573715686798).size(), 1);
-    Assertions.assertEquals(result.get(0.04995147883892059).size(), 1);
-    Assertions.assertEquals(result.get(0.006593209225684404).size(), 1);
-    Assertions.assertEquals(result.get(0.007819971069693565).size(), 1);
+    Assert.assertEquals(result.get(0.6352779865264893).size(), 1);
+    Assert.assertEquals(result.get(0.3003573715686798).size(), 1);
+    Assert.assertEquals(result.get(0.04995147883892059).size(), 1);
+    Assert.assertEquals(result.get(0.006593209225684404).size(), 1);
+    Assert.assertEquals(result.get(0.007819971069693565).size(), 1);
 
   }
 
@@ -210,13 +210,13 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
                 new InferenceOptions());
 
     final int index = documentCategorizerDL.getIndex("bad");
-    Assertions.assertEquals(1, index);
+    Assert.assertEquals(1, index);
 
     final String category = documentCategorizerDL.getCategory(3);
-    Assertions.assertEquals("good", category);
+    Assert.assertEquals("good", category);
 
     final int number = documentCategorizerDL.getNumberOfCategories();
-    Assertions.assertEquals(5, number);
+    Assert.assertEquals(5, number);
 
   }
 

@@ -20,7 +20,7 @@ package opennlp.tools.parser.chunking;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
@@ -40,7 +40,7 @@ public class ParserTest {
    * runtime problems.
    */
   @Test
-  void testChunkingParserTraining() throws Exception {
+  public void testChunkingParserTraining() throws Exception {
 
     ObjectStream<Parse> parseSamples = ParserTestUtil.openTestTrainingData();
     HeadRules headRules = ParserTestUtil.createTestHeadRules();
@@ -61,7 +61,7 @@ public class ParserTest {
     model.serialize(outArray);
     outArray.close();
 
-    ParserModel outputModel = new ParserModel(new ByteArrayInputStream(outArray.toByteArray()));
+    ParserModel outputModel =  new ParserModel(new ByteArrayInputStream(outArray.toByteArray()));
 
     // TODO: compare both models
   }

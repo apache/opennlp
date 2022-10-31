@@ -19,10 +19,10 @@ package opennlp.tools.cmdline;
 
 import java.security.Permission;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class CLITest {
 
@@ -64,8 +64,8 @@ public class CLITest {
 
   private final SecurityManager originalSecurityManager = System.getSecurityManager();
 
-  @BeforeEach
-  void installNoExitSecurityManager() {
+  @Before
+  public void installNoExitSecurityManager() {
     System.setSecurityManager(new NoExitSecurityManager());
   }
 
@@ -73,12 +73,12 @@ public class CLITest {
    * Ensure the main method does not fail to print help message.
    */
   @Test
-  void testMainHelpMessage() {
+  public void testMainHelpMessage() {
 
     try {
-      CLI.main(new String[] {});
+      CLI.main(new String[]{});
     } catch (ExitException e) {
-      Assertions.assertEquals(0, e.status());
+      Assert.assertEquals(0, e.status());
     }
   }
 
@@ -86,11 +86,11 @@ public class CLITest {
    * Ensure the main method prints error and returns 1.
    */
   @Test
-  void testUnknownToolMessage() {
+  public void testUnknownToolMessage() {
     try {
-      CLI.main(new String[] {"unknown name"});
+      CLI.main(new String[]{"unknown name"});
     } catch (ExitException e) {
-      Assertions.assertEquals(1, e.status());
+      Assert.assertEquals(1, e.status());
     }
   }
 
@@ -98,11 +98,11 @@ public class CLITest {
    * Ensure the tool checks the parameter and returns 1.
    */
   @Test
-  void testToolParameterMessage() {
+  public void testToolParameterMessage() {
     try {
-      CLI.main(new String[] {"DoccatTrainer", "-param", "value"});
+      CLI.main(new String[]{"DoccatTrainer", "-param", "value"});
     } catch (ExitException e) {
-      Assertions.assertEquals(1, e.status());
+      Assert.assertEquals(1, e.status());
     }
   }
 
@@ -110,11 +110,11 @@ public class CLITest {
    * Ensure the main method prints error and returns -1
    */
   @Test
-  void testUnknownFileMessage() {
+  public void testUnknownFileMessage() {
     try {
-      CLI.main(new String[] {"Doccat", "unknown.model"});
+      CLI.main(new String[]{"Doccat", "unknown.model"});
     } catch (ExitException e) {
-      Assertions.assertEquals(-1, e.status());
+      Assert.assertEquals(-1, e.status());
     }
   }
 
@@ -123,20 +123,20 @@ public class CLITest {
    * Ensure all tools do not fail printing help message;
    */
   @Test
-  void testHelpMessageOfTools() {
+  public void testHelpMessageOfTools() {
 
     for (String toolName : CLI.getToolNames()) {
       System.err.println("-> ToolName" + toolName);
       try {
-        CLI.main(new String[] {toolName, "help"});
+        CLI.main(new String[]{toolName, "help"});
       } catch (ExitException e) {
-        Assertions.assertEquals(0, e.status());
+        Assert.assertEquals(0, e.status());
       }
     }
   }
 
-  @AfterEach
-  void restoreSecurityManager() {
+  @After
+  public void restoreSecurityManager() {
     System.setSecurityManager(originalSecurityManager);
   }
 

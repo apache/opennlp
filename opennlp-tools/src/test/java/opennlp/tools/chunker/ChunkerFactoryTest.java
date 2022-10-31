@@ -22,8 +22,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.ObjectStream;
@@ -52,13 +52,13 @@ public class ChunkerFactoryTest {
   }
 
   @Test
-  void testDefaultFactory() throws IOException {
+  public void testDefaultFactory() throws IOException {
 
     ChunkerModel model = trainModel(ModelType.MAXENT, new ChunkerFactory());
 
     ChunkerFactory factory = model.getFactory();
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
+    Assert.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -67,21 +67,19 @@ public class ChunkerFactoryTest {
     ChunkerModel fromSerialized = new ChunkerModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
+    Assert.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
   }
 
 
   @Test
-  void testDummyFactory() throws IOException {
+  public void testDummyFactory() throws IOException {
 
     ChunkerModel model = trainModel(ModelType.MAXENT, new DummyChunkerFactory());
 
     DummyChunkerFactory factory = (DummyChunkerFactory) model.getFactory();
-    Assertions.assertTrue(factory.getContextGenerator()
-        instanceof DummyChunkerFactory.DummyContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator()
-        instanceof DummyChunkerFactory.DummySequenceValidator);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DummyChunkerFactory.DummyContextGenerator);
+    Assert.assertTrue(factory.getSequenceValidator() instanceof DummyChunkerFactory.DummySequenceValidator);
 
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -91,10 +89,8 @@ public class ChunkerFactoryTest {
     ChunkerModel fromSerialized = new ChunkerModel(in);
 
     factory = (DummyChunkerFactory) fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getContextGenerator()
-        instanceof DefaultChunkerContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator()
-        instanceof DefaultChunkerSequenceValidator);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
+    Assert.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
 
 
     ChunkerME chunker = new ChunkerME(model);

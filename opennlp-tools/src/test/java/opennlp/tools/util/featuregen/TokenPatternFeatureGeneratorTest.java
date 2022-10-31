@@ -20,21 +20,21 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class TokenPatternFeatureGeneratorTest {
 
   private List<String> features;
 
-  @BeforeEach
-  void setUp()  {
+  @Before
+  public void setUp() throws Exception {
     features = new ArrayList<>();
   }
 
   @Test
-  void testSingleToken() {
+  public void testSingleToken() {
 
     String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
     final int testTokenIndex = 3;
@@ -42,12 +42,12 @@ public class TokenPatternFeatureGeneratorTest {
     AdaptiveFeatureGenerator generator = new TokenPatternFeatureGenerator();
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("st=example", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("st=example", features.get(0));
   }
 
   @Test
-  void testSentence() {
+  public void testSentence() {
 
     String[] testSentence = new String[] {"This is an example sentence"};
     final int testTokenIndex = 0;
@@ -55,20 +55,20 @@ public class TokenPatternFeatureGeneratorTest {
     AdaptiveFeatureGenerator generator = new TokenPatternFeatureGenerator();
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
-    Assertions.assertEquals(14, features.size());
-    Assertions.assertEquals("stn=5", features.get(0));
-    Assertions.assertEquals("pt2=iclc", features.get(1));
-    Assertions.assertEquals("pt3=iclclc", features.get(2));
-    Assertions.assertEquals("st=this", features.get(3));
-    Assertions.assertEquals("pt2=lclc", features.get(4));
-    Assertions.assertEquals("pt3=lclclc", features.get(5));
-    Assertions.assertEquals("st=is", features.get(6));
-    Assertions.assertEquals("pt2=lclc", features.get(7));
-    Assertions.assertEquals("pt3=lclclc", features.get(8));
-    Assertions.assertEquals("st=an", features.get(9));
-    Assertions.assertEquals("pt2=lclc", features.get(10));
-    Assertions.assertEquals("st=example", features.get(11));
-    Assertions.assertEquals("st=sentence", features.get(12));
-    Assertions.assertEquals("pta=iclclclclc", features.get(13));
+    Assert.assertEquals(14, features.size());
+    Assert.assertEquals("stn=5", features.get(0));
+    Assert.assertEquals("pt2=iclc", features.get(1));
+    Assert.assertEquals("pt3=iclclc", features.get(2));
+    Assert.assertEquals("st=this", features.get(3));
+    Assert.assertEquals("pt2=lclc", features.get(4));
+    Assert.assertEquals("pt3=lclclc", features.get(5));
+    Assert.assertEquals("st=is", features.get(6));
+    Assert.assertEquals("pt2=lclc", features.get(7));
+    Assert.assertEquals("pt3=lclclc", features.get(8));
+    Assert.assertEquals("st=an", features.get(9));
+    Assert.assertEquals("pt2=lclc", features.get(10));
+    Assert.assertEquals("st=example", features.get(11));
+    Assert.assertEquals("st=sentence", features.get(12));
+    Assert.assertEquals("pta=iclclclclc", features.get(13));
   }
 }

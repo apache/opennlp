@@ -22,8 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
@@ -39,10 +39,10 @@ public class TokenNameFinderCrossValidatorTest {
   private final String TYPE = null;
 
   @Test
-    /*
-     * Test that reproduces jira OPENNLP-463
-     */
-  void testWithNullResources() throws Exception {
+  /*
+   * Test that reproduces jira OPENNLP-463
+   */
+  public void testWithNullResources() throws Exception {
 
     InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/namefind/AnnotatedSentences.txt");
@@ -58,18 +58,18 @@ public class TokenNameFinderCrossValidatorTest {
         ModelType.MAXENT.toString());
 
     TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng",
-        TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor) null);
+        TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor)null);
 
     cv.evaluate(sampleStream, 2);
 
-    Assertions.assertNotNull(cv.getFMeasure());
+    Assert.assertNotNull(cv.getFMeasure());
   }
 
   @Test
-    /*
-     * Test that tries to reproduce jira OPENNLP-466
-     */
-  void testWithNameEvaluationErrorListener() throws Exception {
+  /*
+   * Test that tries to reproduce jira OPENNLP-466
+   */
+  public void testWithNameEvaluationErrorListener() throws Exception {
 
     InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/namefind/AnnotatedSentences.txt");
@@ -93,36 +93,31 @@ public class TokenNameFinderCrossValidatorTest {
 
     cv.evaluate(sampleStream, 2);
 
-    Assertions.assertTrue(out.size() > 0);
-    Assertions.assertNotNull(cv.getFMeasure());
+    Assert.assertTrue(out.size() > 0);
+    Assert.assertNotNull(cv.getFMeasure());
   }
+  
+  @Test(expected = InsufficientTrainingDataException.class)
+  public void testWithInsufficientData() throws Exception {
 
-  @Test
-  void testWithInsufficientData() {
+    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
+        "/opennlp/tools/namefind/AnnotatedSentencesInsufficient.txt");
 
-    Assertions.assertThrows(InsufficientTrainingDataException.class, () -> {
+    ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
+        new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
-      InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
-          "/opennlp/tools/namefind/AnnotatedSentencesInsufficient.txt");
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 70);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-      ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-          new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM,
+        ModelType.MAXENT.toString());
 
-      TrainingParameters mlParams = new TrainingParameters();
-      mlParams.put(TrainingParameters.ITERATIONS_PARAM, 70);
-      mlParams.put(TrainingParameters.CUTOFF_PARAM, 1);
+    TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng",
+        TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor)null);
 
-      mlParams.put(TrainingParameters.ALGORITHM_PARAM,
-          ModelType.MAXENT.toString());
-
-      TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng",
-          TYPE, mlParams, null, (TokenNameFinderEvaluationMonitor) null);
-
-      cv.evaluate(sampleStream, 2);
-
-    });
-
+    cv.evaluate(sampleStream, 2);
 
   }
-
+  
 }

@@ -20,27 +20,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class DictionaryLemmatizerMultiTest {
 
   private static DictionaryLemmatizer dictionaryLemmatizer;
 
-  @BeforeAll
-  static void loadDictionary() throws Exception {
+  @BeforeClass
+  public static void loadDictionary() throws Exception {
     dictionaryLemmatizer = new DictionaryLemmatizer(
         DictionaryLemmatizerTest.class.getResourceAsStream(
-            "/opennlp/tools/lemmatizer/smalldictionarymulti.dict")
+          "/opennlp/tools/lemmatizer/smalldictionarymulti.dict")
     );
   }
-
+  
   @Test
-  void testForNullPointerException() {
-    List<String> sentence = Arrays.asList("The", "dogs", "were", "running", "and", "barking",
-        "down", "the", "street");
-    List<String> sentencePOS = Arrays.asList("DT", "NNS", "VBD", "VBG", "CC", "VBG", "RP", "DT", "NN");
+  public void testForNullPointerException() {
+    List<String> sentence = Arrays.asList("The","dogs","were","running","and","barking",
+        "down","the","street");
+    List<String> sentencePOS = Arrays.asList("DT","NNS","VBD","VBG","CC","VBG","RP","DT","NN");
     List<List<String>> expectedLemmas = new ArrayList<>();
     expectedLemmas.add(Arrays.asList("the"));
     expectedLemmas.add(Arrays.asList("dog"));
@@ -51,14 +51,13 @@ public class DictionaryLemmatizerMultiTest {
     expectedLemmas.add(Arrays.asList("down"));
     expectedLemmas.add(Arrays.asList("the"));
     expectedLemmas.add(Arrays.asList("street"));
-
+    
     List<List<String>> actualLemmas = dictionaryLemmatizer.lemmatize(sentence, sentencePOS);
-
+    
     for (int i = 0; i < sentence.size(); i++) {
       // don't compare cases where the word is not in the dictionary...
-      if (!actualLemmas.get(0).get(0).equals("O")) {
-        Assertions.assertEquals(expectedLemmas.get(i), actualLemmas.get(i));
-      }
+      if (!actualLemmas.get(0).get(0).equals("O")) 
+        Assert.assertEquals(expectedLemmas.get(i), actualLemmas.get(i));
     }
   }
 

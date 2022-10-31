@@ -20,9 +20,9 @@ package opennlp.tools.ml.naivebayes;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
@@ -41,8 +41,8 @@ public class NaiveBayesPrepAttachTest {
 
   private DataIndexer testDataIndexer;
 
-  @BeforeEach
-  void initIndexer() {
+  @Before
+  public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
@@ -51,34 +51,34 @@ public class NaiveBayesPrepAttachTest {
   }
 
   @Test
-  void testNaiveBayesOnPrepAttachData() throws IOException {
+  public void testNaiveBayesOnPrepAttachData() throws IOException {
     testDataIndexer.index(PrepAttachDataUtil.createTrainingStream());
     MaxentModel model = new NaiveBayesTrainer().trainModel(testDataIndexer);
-    Assertions.assertTrue(model instanceof NaiveBayesModel);
+    Assert.assertTrue(model instanceof NaiveBayesModel);
     PrepAttachDataUtil.testModel(model, 0.7897994553107205);
   }
 
   @Test
-  void testNaiveBayesOnPrepAttachDataUsingTrainUtil() throws IOException {
+  public void testNaiveBayesOnPrepAttachDataUsingTrainUtil() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
-    Assertions.assertTrue(model instanceof NaiveBayesModel);
+    Assert.assertTrue(model instanceof NaiveBayesModel);
     PrepAttachDataUtil.testModel(model, 0.7897994553107205);
   }
 
   @Test
-  void testNaiveBayesOnPrepAttachDataUsingTrainUtilWithCutoff5() throws IOException {
+  public void testNaiveBayesOnPrepAttachDataUsingTrainUtilWithCutoff5() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, 5);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
-    Assertions.assertTrue(model instanceof NaiveBayesModel);
+    Assert.assertTrue(model instanceof NaiveBayesModel);
     PrepAttachDataUtil.testModel(model, 0.7945035899975241);
   }
 }

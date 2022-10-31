@@ -20,8 +20,8 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Test for the {@link PreviousMapFeatureGenerator} class.
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 public class PreviousMapFeatureGeneratorTest {
 
   @Test
-  void testFeatureGeneration() {
+  public void testFeatureGeneration() {
 
     AdaptiveFeatureGenerator fg = new PreviousMapFeatureGenerator();
 
@@ -39,16 +39,16 @@ public class PreviousMapFeatureGeneratorTest {
 
     // this should generate the pd=null feature
     fg.createFeatures(features, sentence, 0, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("pd=null", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("pd=null", features.get(0));
 
     features.clear();
 
     // this should generate the pd=1 feature
     fg.updateAdaptiveData(sentence, new String[] {"1", "2", "3"});
     fg.createFeatures(features, sentence, 0, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("pd=1", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("pd=1", features.get(0));
 
     features.clear();
 
@@ -56,7 +56,7 @@ public class PreviousMapFeatureGeneratorTest {
     // the adaptive data was cleared
     fg.clearAdaptiveData();
     fg.createFeatures(features, sentence, 0, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("pd=null", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("pd=null", features.get(0));
   }
 }

@@ -24,9 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import opennlp.tools.sentdetect.SentenceDetectorEvaluator;
 import opennlp.tools.sentdetect.SentenceDetectorFactory;
@@ -37,10 +36,15 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 public class MascSentenceSampleStreamTest {
 
   @Test
-  void reset() {
+  public void reset() {
     FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
     File directory = new File(this.getClass().getResource(
         "/opennlp/tools/formats/masc/").getFile());
@@ -53,12 +57,12 @@ public class MascSentenceSampleStreamTest {
 
       //now we should get null
       testSample = stream.read();
-      Assertions.assertNull(testSample);
+      assertNull(testSample);
 
       //by resetting, we should get good results again
       stream.reset();
       testSample = stream.read();
-      Assertions.assertNotNull(testSample);
+      assertNotNull(testSample);
 
       String documentText = "This is a test Sentence. This is 'nother test sentence. ";
       List<Span> sentenceSpans = new ArrayList<>();
@@ -67,15 +71,15 @@ public class MascSentenceSampleStreamTest {
       SentenceSample expectedSample = new SentenceSample(documentText,
           sentenceSpans.toArray(new Span[sentenceSpans.size()]));
 
-      Assertions.assertEquals(testSample.toString(), expectedSample.toString());
+      assertEquals(testSample.toString(), expectedSample.toString());
 
     } catch (IOException e) {
-      Assertions.fail("IO Exception");
+      fail("IO Exception");
     }
   }
 
   @Test
-  void close() {
+  public void close() {
 
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
@@ -87,14 +91,14 @@ public class MascSentenceSampleStreamTest {
       stream.close();
       stream.read();
     } catch (IOException e) {
-      Assertions.assertEquals(e.getMessage(),
+      assertEquals(e.getMessage(),
           "You are reading an empty document stream. " +
               "Did you close it?");
     }
   }
 
   @Test
-  void read() {
+  public void read() {
     FileFilter fileFilter = pathname -> pathname.getName().contains("");
     File directory = new File(this.getClass().getResource("/opennlp/tools/formats/masc").getFile());
     try {
@@ -109,23 +113,23 @@ public class MascSentenceSampleStreamTest {
       SentenceSample expectedSample = new SentenceSample(documentText,
           sentenceSpans.toArray(new Span[sentenceSpans.size()]));
       SentenceSample testSample = stream.read();
-      Assertions.assertEquals(testSample.toString(), expectedSample.toString());
+      assertEquals(testSample.toString(), expectedSample.toString());
 
       //the fake file is exhausted, we should get null now
       testSample = stream.read();
-      Assertions.assertNull(testSample);
+      assertNull(testSample);
 
     } catch (IOException e) {
       System.out.println(e.getMessage());
       System.out.println(Arrays.toString(e.getStackTrace()));
-      Assertions.fail("IO Exception");
+      fail("IO Exception");
     }
 
   }
 
-  @Disabled //todo: We can't train on the FakeMasc data, it is too small.
+  @Ignore //todo: We can't train on the FakeMasc data, it is too small.
   @Test
-  void train() {
+  public void train() {
     try {
       File directory = new File(this.getClass().getResource(
           "/opennlp/tools/formats/masc/").getFile());
@@ -152,7 +156,7 @@ public class MascSentenceSampleStreamTest {
     } catch (Exception e) {
       System.err.println(e.getMessage());
       System.err.println(Arrays.toString(e.getStackTrace()));
-      Assertions.fail("Exception raised");
+      fail("Exception raised");
     }
 
 

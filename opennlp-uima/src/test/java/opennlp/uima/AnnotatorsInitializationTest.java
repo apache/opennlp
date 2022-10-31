@@ -28,7 +28,7 @@ import org.apache.uima.resource.ResourceSpecifier;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.XMLInputSource;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.Assert;
 
 /**
  * Test for initialization of the opennlp.uima Annotators
@@ -51,7 +51,7 @@ public class AnnotatorsInitializationTest {
           ae.process(cas);
           ae.reconfigure();
         } catch (Exception e) {
-          Assertions.fail(e.getLocalizedMessage() + " for desc " + descName);
+          Assert.fail(e.getLocalizedMessage() + " for desc " + descName);
         }
       }
     }

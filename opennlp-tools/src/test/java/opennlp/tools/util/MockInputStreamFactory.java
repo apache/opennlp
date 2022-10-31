@@ -19,6 +19,7 @@ package opennlp.tools.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.nio.charset.Charset;
@@ -47,7 +48,7 @@ public class MockInputStreamFactory implements InputStreamFactory {
   }
 
   @Override
-  public InputStream createInputStream() {
+  public InputStream createInputStream() throws IOException {
     if (inputSourceFile != null) {
       return getClass().getClassLoader().getResourceAsStream(inputSourceFile.getPath());
     }

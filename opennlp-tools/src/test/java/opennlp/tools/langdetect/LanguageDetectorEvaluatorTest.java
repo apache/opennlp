@@ -21,8 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.cmdline.langdetect.LanguageDetectorEvaluationErrorListener;
 
@@ -30,7 +30,7 @@ import opennlp.tools.cmdline.langdetect.LanguageDetectorEvaluationErrorListener;
 public class LanguageDetectorEvaluatorTest {
 
   @Test
-  void processSample() throws Exception {
+  public void processSample() throws Exception {
     LanguageDetectorModel model = LanguageDetectorMETest.trainModel();
     LanguageDetectorME langdetector = new LanguageDetectorME(model);
 
@@ -64,17 +64,17 @@ public class LanguageDetectorEvaluatorTest {
         "escreve e faz palestras pelo mundo inteiro sobre anjos"));
 
 
-    Assertions.assertEquals(1, correctCount.get());
-    Assertions.assertEquals(2, incorrectCount.get());
+    Assert.assertEquals(1, correctCount.get());
+    Assert.assertEquals(2, incorrectCount.get());
 
-    Assertions.assertEquals(3, evaluator.getDocumentCount());
-    Assertions.assertEquals(evaluator.getAccuracy(), 0.01, 0.33);
+    Assert.assertEquals(3, evaluator.getDocumentCount());
+    Assert.assertEquals(0.33, evaluator.getAccuracy(), 0.01);
 
     String report = outputStream.toString(StandardCharsets.UTF_8.name());
 
-    Assertions.assertEquals("Expected\tPredicted\tContext" + System.lineSeparator() +
+    Assert.assertEquals("Expected\tPredicted\tContext" + System.lineSeparator() +
         "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos" + System.lineSeparator() +
-        "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos" + System.lineSeparator(), report);
+        "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos" +  System.lineSeparator(), report);
   }
 
 }

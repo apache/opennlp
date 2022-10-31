@@ -21,39 +21,39 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.sentdetect.lang.Factory;
 
 public class DefaultSDContextGeneratorTest {
 
   @Test
-  void testGetContext() {
+  public void testGetContext() throws Exception {
     SDContextGenerator sdContextGenerator =
         new DefaultSDContextGenerator(Collections.<String>emptySet(), Factory.defaultEosCharacters);
 
     String[] context = sdContextGenerator.getContext(
         "Mr. Smith joined RONDHUIT Inc. as a manager of sales department.", 2);
-    Assertions.assertArrayEquals("sn/eos=./x=Mr/2/xcap/v=/s=/n=Smith/ncap".split("/"), context);
+    Assert.assertArrayEquals("sn/eos=./x=Mr/2/xcap/v=/s=/n=Smith/ncap".split("/"), context);
 
     context = sdContextGenerator.getContext(
         "Mr. Smith joined RONDHUIT Inc. as a manager of sales department.", 29);
-    Assertions.assertArrayEquals("sn/eos=./x=Inc/3/xcap/v=RONDHUIT/vcap/s=/n=as".split("/"), context);
+    Assert.assertArrayEquals("sn/eos=./x=Inc/3/xcap/v=RONDHUIT/vcap/s=/n=as".split("/"), context);
   }
 
   @Test
-  void testGetContextWithAbbreviations() {
+  public void testGetContextWithAbbreviations() throws Exception {
     SDContextGenerator sdContextGenerator =
         new DefaultSDContextGenerator(new HashSet<>(Arrays.asList("Mr./Inc.".split("/"))),
             Factory.defaultEosCharacters);
 
     String[] context = sdContextGenerator.getContext(
         "Mr. Smith joined RONDHUIT Inc. as a manager of sales department.", 2);
-    Assertions.assertArrayEquals("sn/eos=./x=Mr/2/xcap/xabbrev/v=/s=/n=Smith/ncap".split("/"), context);
+    Assert.assertArrayEquals("sn/eos=./x=Mr/2/xcap/xabbrev/v=/s=/n=Smith/ncap".split("/"), context);
 
     context = sdContextGenerator.getContext(
         "Mr. Smith joined RONDHUIT Inc. as a manager of sales department.", 29);
-    Assertions.assertArrayEquals("sn/eos=./x=Inc/3/xcap/xabbrev/v=RONDHUIT/vcap/s=/n=as".split("/"), context);
+    Assert.assertArrayEquals("sn/eos=./x=Inc/3/xcap/xabbrev/v=RONDHUIT/vcap/s=/n=as".split("/"), context);
   }
 }

@@ -17,59 +17,55 @@
 
 package opennlp.tools.util;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Tests for the {@link StringUtil} class.
  */
-
 public class StringUtilTest {
 
   @Test
-  void testNoBreakSpace() {
-    Assertions.assertTrue(StringUtil.isWhitespace(0x00A0));
-    Assertions.assertTrue(StringUtil.isWhitespace(0x2007));
-    Assertions.assertTrue(StringUtil.isWhitespace(0x202F));
+  public void testNoBreakSpace() {
+    Assert.assertTrue(StringUtil.isWhitespace(0x00A0));
+    Assert.assertTrue(StringUtil.isWhitespace(0x2007));
+    Assert.assertTrue(StringUtil.isWhitespace(0x202F));
 
-    Assertions.assertTrue(StringUtil.isWhitespace((char) 0x00A0));
-    Assertions.assertTrue(StringUtil.isWhitespace((char) 0x2007));
-    Assertions.assertTrue(StringUtil.isWhitespace((char) 0x202F));
+    Assert.assertTrue(StringUtil.isWhitespace((char) 0x00A0));
+    Assert.assertTrue(StringUtil.isWhitespace((char) 0x2007));
+    Assert.assertTrue(StringUtil.isWhitespace((char) 0x202F));
   }
 
   @Test
-  void testToLowerCase() {
-    Assertions.assertEquals("test", StringUtil.toLowerCase("TEST"));
-    Assertions.assertEquals("simple", StringUtil.toLowerCase("SIMPLE"));
+  public void testToLowerCase() {
+    Assert.assertEquals("test", StringUtil.toLowerCase("TEST"));
+    Assert.assertEquals("simple", StringUtil.toLowerCase("SIMPLE"));
   }
 
   @Test
-  void testToUpperCase() {
-    Assertions.assertEquals("TEST", StringUtil.toUpperCase("test"));
-    Assertions.assertEquals("SIMPLE", StringUtil.toUpperCase("simple"));
+  public void testToUpperCase() {
+    Assert.assertEquals("TEST", StringUtil.toUpperCase("test"));
+    Assert.assertEquals("SIMPLE", StringUtil.toUpperCase("simple"));
   }
 
   @Test
-  void testIsEmpty() {
-    Assertions.assertTrue(StringUtil.isEmpty(""));
-    Assertions.assertTrue(!StringUtil.isEmpty("a"));
+  public void testIsEmpty() {
+    Assert.assertTrue(StringUtil.isEmpty(""));
+    Assert.assertTrue(!StringUtil.isEmpty("a"));
   }
 
-  @Test
-  void testIsEmptyWithNullString() {
+  @Test(expected = NullPointerException.class)
+  public void testIsEmptyWithNullString() {
     // should raise a NPE
-    Assertions.assertThrows(NullPointerException.class, () -> {
-      // should raise a NPE
-      StringUtil.isEmpty(null);
-    });
+    StringUtil.isEmpty(null);
   }
 
   @Test
-  void testLowercaseBeyondBMP() {
-    int[] codePoints = new int[] {65, 66578, 67};    //A,Deseret capital BEE,C
-    int[] expectedCodePoints = new int[] {97, 66618, 99};//a,Deseret lowercase b,c
+  public void testLowercaseBeyondBMP() throws Exception {
+    int[] codePoints = new int[]{65,66578,67};    //A,Deseret capital BEE,C
+    int[] expectedCodePoints = new int[]{97,66618,99};//a,Deseret lowercase b,c
     String input = new String(codePoints, 0, codePoints.length);
     String lc = StringUtil.toLowerCase(input);
-    Assertions.assertArrayEquals(expectedCodePoints, lc.codePoints().toArray());
+    Assert.assertArrayEquals(expectedCodePoints, lc.codePoints().toArray());
   }
 }

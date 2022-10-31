@@ -20,9 +20,9 @@ package opennlp.tools.ml.maxent.io;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.DataIndexer;
@@ -34,8 +34,8 @@ public class RealValueFileEventStreamTest {
 
   private DataIndexer indexer;
 
-  @BeforeEach
-  void initIndexer() {
+  @Before
+  public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
     indexer = new OnePassRealValueDataIndexer();
@@ -43,17 +43,17 @@ public class RealValueFileEventStreamTest {
   }
 
   @Test
-  void testLastLineBug() throws IOException {
+  public void testLastLineBug() throws IOException {
     try (RealValueFileEventStream rvfes = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-ok.txt")) {
       indexer.index(rvfes);
     }
-    Assertions.assertEquals(1, indexer.getOutcomeLabels().length);
+    Assert.assertEquals(1, indexer.getOutcomeLabels().length);
 
     try (RealValueFileEventStream rvfes = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/io/rvfes-bug-data-broken.txt")) {
       indexer.index(rvfes);
     }
-    Assertions.assertEquals(1, indexer.getOutcomeLabels().length);
+    Assert.assertEquals(1, indexer.getOutcomeLabels().length);
   }
 }

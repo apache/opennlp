@@ -25,21 +25,21 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class DocumentSampleTest {
 
   @Test
-  void testEquals() {
-    Assertions.assertFalse(createGoldSample() == createGoldSample());
-    Assertions.assertTrue(createGoldSample().equals(createGoldSample()));
-    Assertions.assertFalse(createPredSample().equals(createGoldSample()));
-    Assertions.assertFalse(createPredSample().equals(new Object()));
+  public void testEquals() {
+    Assert.assertFalse(createGoldSample() == createGoldSample());
+    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(new Object()));
   }
 
   @Test
-  void testDocumentSampleSerDe() throws IOException {
+  public void testDocumentSampleSerDe() throws IOException {
     DocumentSample documentSample = createGoldSample();
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
@@ -57,17 +57,17 @@ public class DocumentSampleTest {
       // do nothing
     }
 
-    Assertions.assertNotNull(deSerializedDocumentSample);
-    Assertions.assertEquals(documentSample.getCategory(), deSerializedDocumentSample.getCategory());
-    Assertions.assertArrayEquals(documentSample.getText(), deSerializedDocumentSample.getText());
+    Assert.assertNotNull(deSerializedDocumentSample);
+    Assert.assertEquals(documentSample.getCategory(), deSerializedDocumentSample.getCategory());
+    Assert.assertArrayEquals(documentSample.getText(), deSerializedDocumentSample.getText());
   }
 
   public static DocumentSample createGoldSample() {
-    return new DocumentSample("aCategory", new String[] {"a", "small", "text"});
+    return new DocumentSample("aCategory", new String[]{"a", "small", "text"});
   }
 
   public static DocumentSample createPredSample() {
-    return new DocumentSample("anotherCategory", new String[] {"a", "small", "text"});
+    return new DocumentSample("anotherCategory", new String[]{"a", "small", "text"});
   }
 
 }

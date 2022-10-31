@@ -27,36 +27,34 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.StringReader;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class LemmaSampleTest {
 
-  @Test
-  void testParameterValidation() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      new LemmaSample(new String[] {""}, new String[] {""},
-          new String[] {"test", "one element to much"});
-    });
+  @Test(expected = IllegalArgumentException.class)
+  public void testParameterValidation() {
+    new LemmaSample(new String[] { "" }, new String[] { "" },
+        new String[] { "test", "one element to much" });
   }
 
   private static String[] createSentence() {
-    return new String[] {"Forecasts", "for", "the", "trade", "figures",
-        "range", "widely", "."};
+    return new String[] { "Forecasts", "for", "the", "trade", "figures",
+        "range", "widely", "." };
   }
 
   private static String[] createTags() {
 
-    return new String[] {"NNS", "IN", "DT", "NN", "NNS", "VBP", "RB", "."};
+    return new String[] { "NNS", "IN", "DT", "NN", "NNS", "VBP", "RB", "." };
   }
 
   private static String[] createLemmas() {
-    return new String[] {"Forecast", "for", "the", "trade", "figure", "range",
-        "widely", "."};
+    return new String[] { "Forecast", "for", "the", "trade", "figure", "range",
+        "widely", "." };
   }
 
   @Test
-  void testLemmaSampleSerDe() throws IOException {
+  public void testLemmaSampleSerDe() throws IOException {
     LemmaSample lemmaSample = createGoldSample();
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
@@ -74,23 +72,23 @@ public class LemmaSampleTest {
       // do nothing
     }
 
-    Assertions.assertNotNull(deSerializedLemmaSample);
-    Assertions.assertArrayEquals(lemmaSample.getLemmas(), deSerializedLemmaSample.getLemmas());
-    Assertions.assertArrayEquals(lemmaSample.getTokens(), deSerializedLemmaSample.getTokens());
-    Assertions.assertArrayEquals(lemmaSample.getTags(), deSerializedLemmaSample.getTags());
+    Assert.assertNotNull(deSerializedLemmaSample);
+    Assert.assertArrayEquals(lemmaSample.getLemmas(), deSerializedLemmaSample.getLemmas());
+    Assert.assertArrayEquals(lemmaSample.getTokens(), deSerializedLemmaSample.getTokens());
+    Assert.assertArrayEquals(lemmaSample.getTags(), deSerializedLemmaSample.getTags());
   }
 
   @Test
-  void testRetrievingContent() {
+  public void testRetrievingContent() {
     LemmaSample sample = new LemmaSample(createSentence(), createTags(), createLemmas());
 
-    Assertions.assertArrayEquals(createSentence(), sample.getTokens());
-    Assertions.assertArrayEquals(createTags(), sample.getTags());
-    Assertions.assertArrayEquals(createLemmas(), sample.getLemmas());
+    Assert.assertArrayEquals(createSentence(), sample.getTokens());
+    Assert.assertArrayEquals(createTags(), sample.getTags());
+    Assert.assertArrayEquals(createLemmas(), sample.getLemmas());
   }
 
   @Test
-  void testToString() throws IOException {
+  public void testToString() throws IOException {
 
     LemmaSample sample = new LemmaSample(createSentence(), createTags(),
         createLemmas());
@@ -103,19 +101,19 @@ public class LemmaSampleTest {
     for (int i = 0; i < sentence.length; i++) {
       String line = reader.readLine();
       String[] parts = line.split("\t");
-      Assertions.assertEquals(3, parts.length);
-      Assertions.assertEquals(sentence[i], parts[0]);
-      Assertions.assertEquals(tags[i], parts[1]);
-      Assertions.assertEquals(lemmas[i], parts[2]);
+      Assert.assertEquals(3, parts.length);
+      Assert.assertEquals(sentence[i], parts[0]);
+      Assert.assertEquals(tags[i], parts[1]);
+      Assert.assertEquals(lemmas[i], parts[2]);
     }
   }
 
   @Test
-  void testEquals() {
-    Assertions.assertFalse(createGoldSample() == createGoldSample());
-    Assertions.assertTrue(createGoldSample().equals(createGoldSample()));
-    Assertions.assertFalse(createPredSample().equals(createGoldSample()));
-    Assertions.assertFalse(createPredSample().equals(new Object()));
+  public void testEquals() {
+    Assert.assertFalse(createGoldSample() == createGoldSample());
+    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(createGoldSample()));
+    Assert.assertFalse(createPredSample().equals(new Object()));
   }
 
   public static LemmaSample createGoldSample() {

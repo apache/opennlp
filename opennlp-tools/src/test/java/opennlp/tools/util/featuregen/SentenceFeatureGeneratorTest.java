@@ -20,9 +20,9 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class SentenceFeatureGeneratorTest {
 
@@ -30,94 +30,94 @@ public class SentenceFeatureGeneratorTest {
   static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
   static String[] testShort = new String[] {"word"};
 
-  @BeforeEach
-  void setUp()  {
+  @Before
+  public void setUp() throws Exception {
     features = new ArrayList<>();
   }
 
   @Test
-  void testTT() {
+  public void testTT() {
     AdaptiveFeatureGenerator generator = new SentenceFeatureGenerator(true, true);
 
     generator.createFeatures(features, testSentence, 2, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
 
     generator.createFeatures(features, testSentence, 0, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("S=begin", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("S=begin", features.get(0));
 
     features.clear();
 
     generator.createFeatures(features, testSentence, testSentence.length - 1, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("S=end", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("S=end", features.get(0));
 
     features.clear();
 
     generator.createFeatures(features, testShort, 0, null);
-    Assertions.assertEquals(2, features.size());
-    Assertions.assertEquals("S=begin", features.get(0));
-    Assertions.assertEquals("S=end", features.get(1));
+    Assert.assertEquals(2, features.size());
+    Assert.assertEquals("S=begin", features.get(0));
+    Assert.assertEquals("S=end", features.get(1));
   }
 
   @Test
-  void testTF() {
+  public void testTF() {
     AdaptiveFeatureGenerator generator = new SentenceFeatureGenerator(true, false);
 
     generator.createFeatures(features, testSentence, 2, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
 
     generator.createFeatures(features, testSentence, 0, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("S=begin", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("S=begin", features.get(0));
 
     features.clear();
 
     generator.createFeatures(features, testSentence, testSentence.length - 1, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
 
     features.clear();
 
     generator.createFeatures(features, testShort, 0, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("S=begin", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("S=begin", features.get(0));
   }
 
   @Test
-  void testFT() {
+  public void testFT() {
     AdaptiveFeatureGenerator generator = new SentenceFeatureGenerator(false, true);
 
     generator.createFeatures(features, testSentence, 2, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
 
     generator.createFeatures(features, testSentence, 0, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
 
     generator.createFeatures(features, testSentence, testSentence.length - 1, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("S=end", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("S=end", features.get(0));
 
     features.clear();
 
     generator.createFeatures(features, testShort, 0, null);
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("S=end", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("S=end", features.get(0));
   }
 
   @Test
-  void testFF() {
+  public void testFF() {
     AdaptiveFeatureGenerator generator = new SentenceFeatureGenerator(false, false);
 
     generator.createFeatures(features, testSentence, 2, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
 
     generator.createFeatures(features, testSentence, 0, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
 
     generator.createFeatures(features, testSentence, testSentence.length - 1, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
 
     generator.createFeatures(features, testShort, 0, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
   }
 }

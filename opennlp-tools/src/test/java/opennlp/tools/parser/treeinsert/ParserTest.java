@@ -20,7 +20,7 @@ package opennlp.tools.parser.treeinsert;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
@@ -39,7 +39,7 @@ public class ParserTest {
    * runtime problems.
    */
   @Test
-  void testTreeInsertParserTraining() throws Exception {
+  public void testTreeInsertParserTraining() throws Exception {
 
     ObjectStream<Parse> parseSamples = ParserTestUtil.openTestTrainingData();
     HeadRules headRules = ParserTestUtil.createTestHeadRules();

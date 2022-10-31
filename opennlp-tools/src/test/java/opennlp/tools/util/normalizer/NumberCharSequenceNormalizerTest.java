@@ -16,8 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 
 public class NumberCharSequenceNormalizerTest {
@@ -26,7 +26,7 @@ public class NumberCharSequenceNormalizerTest {
 
 
   @Test
-  void normalize() {
-    Assertions.assertEquals("absc  ,  abcd", normalizer.normalize("absc 123,0123 abcd"));
+  public void normalize() throws Exception {
+    Assert.assertEquals("absc  ,  abcd", normalizer.normalize("absc 123,0123 abcd"));
   }
 }

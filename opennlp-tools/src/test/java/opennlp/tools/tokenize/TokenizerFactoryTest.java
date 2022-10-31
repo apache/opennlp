@@ -24,8 +24,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.ResourceAsStreamFactory;
@@ -63,7 +63,7 @@ public class TokenizerFactoryTest {
   }
 
   @Test
-  void testDefault() throws IOException {
+  public void testDefault() throws IOException {
 
     Dictionary dic = loadAbbDictionary();
     final String lang = "spa";
@@ -71,13 +71,13 @@ public class TokenizerFactoryTest {
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
     TokenizerFactory factory = model.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() != null);
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assert.assertTrue(factory.getAbbreviationDictionary() != null);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
-    Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertFalse(factory.isUseAlphaNumericOptmization());
+    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
+    Assert.assertEquals(lang, factory.getLanguageCode());
+    Assert.assertEquals(lang, model.getLanguage());
+    Assert.assertFalse(factory.isUseAlphaNumericOptmization());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -86,17 +86,17 @@ public class TokenizerFactoryTest {
     TokenizerModel fromSerialized = new TokenizerModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() != null);
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assert.assertTrue(factory.getAbbreviationDictionary() != null);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
-    Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertFalse(factory.isUseAlphaNumericOptmization());
+    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
+    Assert.assertEquals(lang, factory.getLanguageCode());
+    Assert.assertEquals(lang, model.getLanguage());
+    Assert.assertFalse(factory.isUseAlphaNumericOptmization());
   }
 
   @Test
-  void testNullDict() throws IOException {
+  public void testNullDict() throws IOException {
 
     Dictionary dic = null;
     final String lang = "spa";
@@ -104,13 +104,13 @@ public class TokenizerFactoryTest {
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
     TokenizerFactory factory = model.getFactory();
-    Assertions.assertNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assert.assertNull(factory.getAbbreviationDictionary());
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
-    Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertFalse(factory.isUseAlphaNumericOptmization());
+    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
+    Assert.assertEquals(lang, factory.getLanguageCode());
+    Assert.assertEquals(lang, model.getLanguage());
+    Assert.assertFalse(factory.isUseAlphaNumericOptmization());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -119,17 +119,17 @@ public class TokenizerFactoryTest {
     TokenizerModel fromSerialized = new TokenizerModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assert.assertNull(factory.getAbbreviationDictionary());
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
-    Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertFalse(factory.isUseAlphaNumericOptmization());
+    Assert.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
+    Assert.assertEquals(lang, factory.getLanguageCode());
+    Assert.assertEquals(lang, model.getLanguage());
+    Assert.assertFalse(factory.isUseAlphaNumericOptmization());
   }
 
   @Test
-  void testCustomPatternAndAlphaOpt() throws IOException {
+  public void testCustomPatternAndAlphaOpt() throws IOException {
 
     Dictionary dic = null;
     final String lang = "spa";
@@ -139,13 +139,13 @@ public class TokenizerFactoryTest {
         Pattern.compile(pattern)));
 
     TokenizerFactory factory = model.getFactory();
-    Assertions.assertNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assert.assertNull(factory.getAbbreviationDictionary());
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
-    Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assert.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
+    Assert.assertEquals(lang, factory.getLanguageCode());
+    Assert.assertEquals(lang, model.getLanguage());
+    Assert.assertTrue(factory.isUseAlphaNumericOptmization());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -154,16 +154,16 @@ public class TokenizerFactoryTest {
     TokenizerModel fromSerialized = new TokenizerModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
-    Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
-    Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assert.assertNull(factory.getAbbreviationDictionary());
+    Assert.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assert.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
+    Assert.assertEquals(lang, factory.getLanguageCode());
+    Assert.assertEquals(lang, model.getLanguage());
+    Assert.assertTrue(factory.isUseAlphaNumericOptmization());
   }
 
   @Test
-  void testDummyFactory() throws IOException {
+  public void testDummyFactory() throws IOException {
 
     Dictionary dic = loadAbbDictionary();
     final String lang = "spa";
@@ -173,12 +173,12 @@ public class TokenizerFactoryTest {
         Pattern.compile(pattern)));
 
     TokenizerFactory factory = model.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
-    Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
-    Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assert.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
+    Assert.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
+    Assert.assertEquals(lang, factory.getLanguageCode());
+    Assert.assertEquals(lang, model.getLanguage());
+    Assert.assertTrue(factory.isUseAlphaNumericOptmization());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -187,16 +187,16 @@ public class TokenizerFactoryTest {
     TokenizerModel fromSerialized = new TokenizerModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
-    Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
-    Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assert.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
+    Assert.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
+    Assert.assertEquals(lang, factory.getLanguageCode());
+    Assert.assertEquals(lang, model.getLanguage());
+    Assert.assertTrue(factory.isUseAlphaNumericOptmization());
   }
 
   @Test
-  void testCreateDummyFactory() throws IOException {
+  public void testCreateDummyFactory() throws IOException {
     Dictionary dic = loadAbbDictionary();
     final String lang = "spa";
     String pattern = "^[0-9A-Za-z]+$";
@@ -205,10 +205,10 @@ public class TokenizerFactoryTest {
         DummyTokenizerFactory.class.getCanonicalName(), lang, dic, true,
         Pattern.compile(pattern));
 
-    Assertions.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
-    Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
-    Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assert.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
+    Assert.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
+    Assert.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
+    Assert.assertEquals(lang, factory.getLanguageCode());
+    Assert.assertTrue(factory.isUseAlphaNumericOptmization());
   }
 }

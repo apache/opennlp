@@ -19,8 +19,8 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -32,51 +32,51 @@ public class WhitespaceTokenStreamTest {
    * Tests for the {@link WhitespaceTokenStream} class.
    */
   @Test
-  void testWhitespace() throws IOException {
+  public void testWhitespace() throws IOException {
     String text = " a b c  d    e        f     ";
     ObjectStream<TokenSample> sampleStream = new TokenSampleStream(
-        ObjectStreamUtils.createObjectStream(text));
+            ObjectStreamUtils.createObjectStream(text));
     WhitespaceTokenStream tokenStream = new WhitespaceTokenStream(sampleStream);
     String read = tokenStream.read();
-    Assertions.assertEquals("a b c d e f", read);
+    Assert.assertEquals("a b c d e f", read);
   }
 
   @Test
-  void testSeparatedString() throws IOException {
+  public void testSeparatedString() throws IOException {
     String text = " a b<SPLIT>c   d<SPLIT>e   ";
     ObjectStream<TokenSample> sampleStream = new TokenSampleStream(
-        ObjectStreamUtils.createObjectStream(text));
+            ObjectStreamUtils.createObjectStream(text));
     WhitespaceTokenStream tokenStream = new WhitespaceTokenStream(sampleStream);
     String read = tokenStream.read();
-    Assertions.assertEquals("a b c d e", read);
+    Assert.assertEquals("a b c d e", read);
   }
 
   /**
    * Tests for the {@link TokenizerStream} correctly tokenizes whitespace separated tokens.
    */
   @Test
-  void testTokenizerStream() throws IOException {
+  public void testTokenizerStream() throws IOException {
     String text = " a b c  d    e      ";
     WhitespaceTokenizer instance = WhitespaceTokenizer.INSTANCE;
     TokenizerStream stream = new TokenizerStream(instance, ObjectStreamUtils.createObjectStream(text));
     TokenSample read = stream.read();
     Span[] tokenSpans = read.getTokenSpans();
 
-    Assertions.assertEquals(5, tokenSpans.length);
+    Assert.assertEquals(5, tokenSpans.length);
 
-    Assertions.assertEquals("a", tokenSpans[0].getCoveredText(read.getText()));
-    Assertions.assertEquals(new Span(1, 2), tokenSpans[0]);
+    Assert.assertEquals("a", tokenSpans[0].getCoveredText(read.getText()));
+    Assert.assertEquals(new Span(1,2), tokenSpans[0]);
 
-    Assertions.assertEquals("b", tokenSpans[1].getCoveredText(read.getText()));
-    Assertions.assertEquals(new Span(3, 4), tokenSpans[1]);
+    Assert.assertEquals("b", tokenSpans[1].getCoveredText(read.getText()));
+    Assert.assertEquals(new Span(3,4), tokenSpans[1]);
 
-    Assertions.assertEquals("c", tokenSpans[2].getCoveredText(read.getText()));
-    Assertions.assertEquals(new Span(5, 6), tokenSpans[2]);
+    Assert.assertEquals("c", tokenSpans[2].getCoveredText(read.getText()));
+    Assert.assertEquals(new Span(5,6), tokenSpans[2]);
 
-    Assertions.assertEquals("d", tokenSpans[3].getCoveredText(read.getText()));
-    Assertions.assertEquals(new Span(8, 9), tokenSpans[3]);
+    Assert.assertEquals("d", tokenSpans[3].getCoveredText(read.getText()));
+    Assert.assertEquals(new Span(8,9), tokenSpans[3]);
 
-    Assertions.assertEquals("e", tokenSpans[4].getCoveredText(read.getText()));
-    Assertions.assertEquals(new Span(13, 14), tokenSpans[4]);
+    Assert.assertEquals("e", tokenSpans[4].getCoveredText(read.getText()));
+    Assert.assertEquals(new Span(13,14), tokenSpans[4]);
   }
 }

@@ -20,8 +20,8 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
@@ -40,11 +40,11 @@ public class InSpanGeneratorTest {
     public Span[] find(String[] tokens) {
       for (int i = 0; i < tokens.length; i++) {
         if (theName.equals(tokens[i])) {
-          return new Span[] {new Span(i, i + 1, "person")};
+          return new Span[]{ new Span(i, i + 1, "person") };
         }
       }
 
-      return new Span[] {};
+      return new Span[]{};
     }
 
     @Override
@@ -53,21 +53,21 @@ public class InSpanGeneratorTest {
   }
 
   @Test
-  void test() {
+  public void test() {
 
     List<String> features = new ArrayList<>();
 
-    String[] testSentence = new String[] {"Every", "John", "has", "its", "day", "."};
+    String[] testSentence = new String[]{ "Every", "John", "has", "its", "day", "." };
 
     AdaptiveFeatureGenerator generator = new InSpanGenerator("john", new SimpleSpecificPersonFinder("John"));
 
     generator.createFeatures(features, testSentence, 0, null);
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
 
     features.clear();
     generator.createFeatures(features, testSentence, 1, null);
-    Assertions.assertEquals(2, features.size());
-    Assertions.assertEquals("john:w=dic", features.get(0));
-    Assertions.assertEquals("john:w=dic=John", features.get(1));
+    Assert.assertEquals(2, features.size());
+    Assert.assertEquals("john:w=dic", features.get(0));
+    Assert.assertEquals("john:w=dic=John", features.get(1));
   }
 }

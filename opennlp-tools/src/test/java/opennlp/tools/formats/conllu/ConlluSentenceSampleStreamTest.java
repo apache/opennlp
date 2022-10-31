@@ -19,8 +19,8 @@ package opennlp.tools.formats.conllu;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
@@ -31,7 +31,7 @@ import opennlp.tools.util.Span;
 public class ConlluSentenceSampleStreamTest {
 
   @Test
-  void testParseTwoSentences() throws IOException {
+  public void testParseTwoSentences() throws IOException {
     InputStreamFactory streamFactory =
         new ResourceAsStreamFactory(ConlluStreamTest.class, "de-ud-train-sample.conllu");
 
@@ -40,30 +40,30 @@ public class ConlluSentenceSampleStreamTest {
 
       SentenceSample sample1 = stream.read();
 
-      Assertions.assertEquals("Fachlich kompetent, sehr gute Beratung und ein freundliches Team.",
+      Assert.assertEquals("Fachlich kompetent, sehr gute Beratung und ein freundliches Team.",
           sample1.getDocument());
 
-      Assertions.assertEquals(new Span(0, 65), sample1.getSentences()[0]);
+      Assert.assertEquals(new Span(0, 65), sample1.getSentences()[0]);
 
       SentenceSample sample2 = stream.read();
 
-      Assertions.assertEquals("Beiden Zahnärzten verdanke ich einen neuen Biss und dadurch " +
+      Assert.assertEquals("Beiden Zahnärzten verdanke ich einen neuen Biss und dadurch " +
           "endlich keine Rückenschmerzen mehr.", sample2.getDocument());
-      Assertions.assertEquals(new Span(0, 95), sample2.getSentences()[0]);
+      Assert.assertEquals(new Span(0, 95), sample2.getSentences()[0]);
 
-      Assertions.assertNull(stream.read(), "Stream must be exhausted");
+      Assert.assertNull("Stream must be exhausted", stream.read());
     }
 
     try (ObjectStream<SentenceSample> stream =
              new ConlluSentenceSampleStream(new ConlluStream(streamFactory), 3)) {
       SentenceSample sample = stream.read();
 
-      Assertions.assertEquals("Fachlich kompetent, sehr gute Beratung und ein freundliches Team."
-              + " Beiden Zahnärzten verdanke ich einen neuen Biss und dadurch endlich keine "
-              + "Rückenschmerzen mehr.",
+      Assert.assertEquals("Fachlich kompetent, sehr gute Beratung und ein freundliches Team."
+           + " Beiden Zahnärzten verdanke ich einen neuen Biss und dadurch endlich keine "
+           + "Rückenschmerzen mehr.",
           sample.getDocument());
 
-      Assertions.assertNull(stream.read(), "Stream must be exhausted");
+      Assert.assertNull("Stream must be exhausted", stream.read());
     }
   }
 }

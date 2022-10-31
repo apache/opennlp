@@ -22,8 +22,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
@@ -33,10 +32,15 @@ import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 public class MascPOSSampleStreamTest {
 
   @Test
-  void read() {
+  public void read() {
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
       File directory = new File(this.getClass().getResource(
@@ -48,24 +52,24 @@ public class MascPOSSampleStreamTest {
       POSSample s = stream.read();
 
       String[] expectedTokens = {"This", "is", "a", "test", "Sentence", "."};
-      Assertions.assertArrayEquals(expectedTokens, s.getSentence());
+      assertArrayEquals(expectedTokens, s.getSentence());
 
       String[] expectedTags = {"DT", "VB", "AT", "NN", "NN", "."};
-      Assertions.assertArrayEquals(expectedTags, s.getTags());
+      assertArrayEquals(expectedTags, s.getTags());
 
       s = stream.read();
       expectedTokens = new String[] {"This", "is", "'nother", "test", "sentence", "."};
-      Assertions.assertArrayEquals(expectedTokens, s.getSentence());
+      assertArrayEquals(expectedTokens, s.getSentence());
 
       expectedTags = new String[] {"DT", "VB", "RB", "NN", "NN", "."};
-      Assertions.assertArrayEquals(expectedTags, s.getTags());
+      assertArrayEquals(expectedTags, s.getTags());
     } catch (IOException e) {
-      Assertions.fail("IO Exception: " + e.getMessage());
+      fail("IO Exception: " + e.getMessage());
     }
   }
 
   @Test
-  void close() {
+  public void close() {
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
       File directory = new File(this.getClass().getResource(
@@ -77,14 +81,14 @@ public class MascPOSSampleStreamTest {
       stream.close();
       POSSample s = stream.read();
     } catch (IOException e) {
-      Assertions.assertEquals(e.getMessage(),
+      assertEquals(e.getMessage(),
           "You are reading an empty document stream. " +
               "Did you close it?");
     }
   }
 
   @Test
-  void reset() {
+  public void reset() {
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
       File directory = new File(this.getClass().getResource(
@@ -96,25 +100,25 @@ public class MascPOSSampleStreamTest {
       POSSample s = stream.read();
       s = stream.read();
       s = stream.read();
-      Assertions.assertNull(s);  //The stream should be exhausted by now
+      assertNull(s);  //The stream should be exhausted by now
 
       stream.reset();
 
       s = stream.read();
 
       String[] expectedTokens = {"This", "is", "a", "test", "Sentence", "."};
-      Assertions.assertArrayEquals(expectedTokens, s.getSentence());
+      assertArrayEquals(expectedTokens, s.getSentence());
 
       String[] expectedTags = {"DT", "VB", "AT", "NN", "NN", "."};
-      Assertions.assertArrayEquals(expectedTags, s.getTags());
+      assertArrayEquals(expectedTags, s.getTags());
 
     } catch (IOException e) {
-      Assertions.fail("IO Exception: " + e.getMessage());
+      fail("IO Exception: " + e.getMessage());
     }
   }
 
   @Test
-  void train() {
+  public void train() {
     try {
       File directory = new File(this.getClass().getResource(
           "/opennlp/tools/formats/masc/").getFile());
@@ -141,7 +145,7 @@ public class MascPOSSampleStreamTest {
     } catch (Exception e) {
       System.err.println(e.getMessage());
       System.err.println(Arrays.toString(e.getStackTrace()));
-      Assertions.fail("Exception raised");
+      fail("Exception raised");
     }
 
 

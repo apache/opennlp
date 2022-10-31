@@ -20,8 +20,8 @@ package opennlp.tools.tokenize;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.tokenize.DetokenizationDictionary.Operation;
 import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
@@ -29,11 +29,11 @@ import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 public class DictionaryDetokenizerTest {
 
   @Test
-  void testDetokenizer() {
+  public void testDetokenizer() {
 
-    String[] tokens = new String[] {".", "!", "(", ")", "\"", "-"};
+    String[] tokens = new String[]{".", "!", "(", ")", "\"", "-"};
 
-    Operation[] operations = new Operation[] {
+    Operation[] operations = new Operation[]{
         Operation.MOVE_LEFT,
         Operation.MOVE_LEFT,
         Operation.MOVE_RIGHT,
@@ -45,14 +45,14 @@ public class DictionaryDetokenizerTest {
     Detokenizer detokenizer = new DictionaryDetokenizer(dict);
 
     DetokenizationOperation[] detokenizeOperations =
-        detokenizer.detokenize(new String[] {"Simple", "test", ".", "co", "-", "worker"});
+      detokenizer.detokenize(new String[]{"Simple",  "test", ".", "co", "-", "worker"});
 
-    Assertions.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[0]);
-    Assertions.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[1]);
-    Assertions.assertEquals(DetokenizationOperation.MERGE_TO_LEFT, detokenizeOperations[2]);
-    Assertions.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[3]);
-    Assertions.assertEquals(DetokenizationOperation.MERGE_BOTH, detokenizeOperations[4]);
-    Assertions.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[5]);
+    Assert.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[0]);
+    Assert.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[1]);
+    Assert.assertEquals(DetokenizationOperation.MERGE_TO_LEFT, detokenizeOperations[2]);
+    Assert.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[3]);
+    Assert.assertEquals(DetokenizationOperation.MERGE_BOTH, detokenizeOperations[4]);
+    Assert.assertEquals(DetokenizationOperation.NO_OPERATION, detokenizeOperations[5]);
   }
 
   static Detokenizer createLatinDetokenizer() throws IOException {
@@ -67,26 +67,26 @@ public class DictionaryDetokenizerTest {
   }
 
   @Test
-  void testDetokenizeToString() throws IOException {
+  public void testDetokenizeToString() throws IOException {
 
     Detokenizer detokenizer = createLatinDetokenizer();
 
-    String[] tokens = new String[] {"A", "test", ",", "(", "string", ")", "."};
+    String[] tokens = new String[]{"A", "test", ",", "(", "string", ")", "."};
 
     String sentence = detokenizer.detokenize(tokens, null);
 
-    Assertions.assertEquals("A test, (string).", sentence);
+    Assert.assertEquals("A test, (string).", sentence);
   }
 
   @Test
-  void testDetokenizeToString2() throws IOException {
+  public void testDetokenizeToString2() throws IOException {
 
     Detokenizer detokenizer = createLatinDetokenizer();
 
-    String[] tokens = new String[] {"A", "co", "-", "worker", "helped", "."};
+    String[] tokens = new String[]{"A", "co", "-", "worker", "helped", "."};
 
     String sentence = detokenizer.detokenize(tokens, null);
 
-    Assertions.assertEquals("A co-worker helped.", sentence);
+    Assert.assertEquals("A co-worker helped.", sentence);
   }
 }

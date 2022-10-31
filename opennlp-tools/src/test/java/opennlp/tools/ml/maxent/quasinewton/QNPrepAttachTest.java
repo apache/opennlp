@@ -20,7 +20,7 @@ package opennlp.tools.ml.maxent.quasinewton;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.AbstractTrainer;
@@ -36,7 +36,7 @@ import opennlp.tools.util.TrainingParameters;
 public class QNPrepAttachTest {
 
   @Test
-  void testQNOnPrepAttachData() throws IOException {
+  public void testQNOnPrepAttachData() throws IOException {
     DataIndexer indexer = new TwoPassDataIndexer();
     TrainingParameters indexingParameters = new TrainingParameters();
     indexingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
@@ -44,25 +44,25 @@ public class QNPrepAttachTest {
     indexer.init(indexingParameters, new HashMap<>());
     indexer.index(PrepAttachDataUtil.createTrainingStream());
 
-    AbstractModel model = new QNTrainer(true).trainModel(100, indexer);
+    AbstractModel model = new QNTrainer(true).trainModel(100, indexer );
 
     PrepAttachDataUtil.testModel(model, 0.8155484030700668);
   }
 
   @Test
-  void testQNOnPrepAttachDataWithParamsDefault() throws IOException {
+  public void testQNOnPrepAttachDataWithParamsDefault() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
-        .train(PrepAttachDataUtil.createTrainingStream());
+                                      .train(PrepAttachDataUtil.createTrainingStream());
 
     PrepAttachDataUtil.testModel(model, 0.8115870264917059);
   }
 
   @Test
-  void testQNOnPrepAttachDataWithElasticNetParams() throws IOException {
+  public void testQNOnPrepAttachDataWithElasticNetParams() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
@@ -73,13 +73,13 @@ public class QNPrepAttachTest {
     trainParams.put(QNTrainer.L2COST_PARAM, 1.0D);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
-        .train(PrepAttachDataUtil.createTrainingStream());
+                                      .train(PrepAttachDataUtil.createTrainingStream());
 
     PrepAttachDataUtil.testModel(model, 0.8229759841544937);
   }
 
   @Test
-  void testQNOnPrepAttachDataWithL1Params() throws IOException {
+  public void testQNOnPrepAttachDataWithL1Params() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
@@ -90,13 +90,13 @@ public class QNPrepAttachTest {
     trainParams.put(QNTrainer.L2COST_PARAM, 0D);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
-        .train(PrepAttachDataUtil.createTrainingStream());
+                                      .train(PrepAttachDataUtil.createTrainingStream());
 
     PrepAttachDataUtil.testModel(model, 0.8180242634315424);
   }
 
   @Test
-  void testQNOnPrepAttachDataWithL2Params() throws IOException {
+  public void testQNOnPrepAttachDataWithL2Params() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
@@ -107,20 +107,20 @@ public class QNPrepAttachTest {
     trainParams.put(QNTrainer.L2COST_PARAM, 1.0D);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
-        .train(PrepAttachDataUtil.createTrainingStream());
+                                      .train(PrepAttachDataUtil.createTrainingStream());
 
     PrepAttachDataUtil.testModel(model, 0.8227283981183461);
   }
 
   @Test
-  void testQNOnPrepAttachDataInParallel() throws IOException {
+  public void testQNOnPrepAttachDataInParallel() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     trainParams.put(QNTrainer.THREADS_PARAM, 2);
 
     MaxentModel model = TrainerFactory.getEventTrainer(trainParams, null)
-        .train(PrepAttachDataUtil.createTrainingStream());
+                                      .train(PrepAttachDataUtil.createTrainingStream());
 
     PrepAttachDataUtil.testModel(model, 0.8115870264917059);
   }

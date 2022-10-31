@@ -17,6 +17,7 @@
 
 package opennlp.tools.ml.maxent;
 
+import java.io.IOException;
 import java.util.Map;
 
 import opennlp.tools.ml.model.DataIndexer;
@@ -69,11 +70,11 @@ public class MockDataIndexer implements DataIndexer {
 
   @Override
   public void init(TrainingParameters trainParams,
-                   Map<String, String> reportMap) {
+      Map<String, String> reportMap) {
   }
 
   @Override
-  public void index(ObjectStream<Event> eventStream) {
+  public void index(ObjectStream<Event> eventStream) throws IOException {
   }
 
 }

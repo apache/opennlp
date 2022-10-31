@@ -20,22 +20,22 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class CharacterNgramFeatureGeneratorTest {
 
   private List<String> features;
   static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
 
-  @BeforeEach
-  void setUp()  {
+  @Before
+  public void setUp() throws Exception {
     features = new ArrayList<>();
   }
 
   @Test
-  void testDefault() {
+  public void testDefault() {
 
     final int testTokenIndex = 3;
 
@@ -44,18 +44,18 @@ public class CharacterNgramFeatureGeneratorTest {
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
     assertContainsNg(features,
-        "ex", "exa", "exam", "examp",
-        "xa", "xam", "xamp", "xampl",
-        "am", "amp", "ampl", "ample",
-        "mp", "mpl", "mple",
-        "pl", "ple",
-        "le");
+            "ex", "exa", "exam", "examp",
+            "xa", "xam", "xamp", "xampl",
+            "am", "amp", "ampl", "ample",
+            "mp", "mpl", "mple",
+            "pl", "ple",
+            "le");
   }
 
   private static void assertContainsNg(List<String> features, String... elements) {
-    Assertions.assertEquals(elements.length, features.size());
-    for (String e : elements) {
-      Assertions.assertTrue(features.contains("ng=" + e));
+    Assert.assertEquals(elements.length, features.size());
+    for (String e: elements) {
+      Assert.assertTrue(features.contains("ng=" + e));
     }
   }
 }

@@ -19,8 +19,8 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
@@ -35,7 +35,7 @@ public class TokSpanEventStreamTest {
    * Tests the event stream for correctly generated outcomes.
    */
   @Test
-  void testEventOutcomes() throws IOException {
+  public void testEventOutcomes() throws IOException {
 
     ObjectStream<String> sentenceStream =
         ObjectStreamUtils.createObjectStream("\"<SPLIT>out<SPLIT>.<SPLIT>\"");
@@ -44,14 +44,14 @@ public class TokSpanEventStreamTest {
 
     try (ObjectStream<Event> eventStream = new TokSpanEventStream(tokenSampleStream, false)) {
 
-      Assertions.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
-      Assertions.assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
-      Assertions.assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
-      Assertions.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
-      Assertions.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.NO_SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
+      Assert.assertEquals(TokenizerME.SPLIT, eventStream.read().getOutcome());
 
-      Assertions.assertNull(eventStream.read());
-      Assertions.assertNull(eventStream.read());
+      Assert.assertNull(eventStream.read());
+      Assert.assertNull(eventStream.read());
     }
   }
 }

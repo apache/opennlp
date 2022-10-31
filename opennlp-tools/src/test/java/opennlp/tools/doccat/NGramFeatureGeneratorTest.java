@@ -19,108 +19,111 @@ package opennlp.tools.doccat;
 
 import java.util.Collections;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.InvalidFormatException;
 
 public class NGramFeatureGeneratorTest {
 
-  static final String[] TOKENS = new String[] {"a", "b", "c", "d", "e", "f", "g"};
+  static final String[] TOKENS = new String[]{"a", "b", "c", "d", "e", "f", "g"};
 
   @Test
-  void testNull() throws Exception {
+  public void testNull() throws Exception {
     NGramFeatureGenerator generator = new NGramFeatureGenerator();
     try {
       generator.extractFeatures(null, Collections.emptyMap());
-      Assertions.fail("NullPointerException must be thrown");
-    } catch (NullPointerException expected) {
+      Assert.fail("NullPointerException must be thrown");
+    }
+    catch (NullPointerException expected) {
     }
   }
 
   @Test
-  void testEmpty() throws Exception {
+  public void testEmpty() throws Exception {
     NGramFeatureGenerator generator = new NGramFeatureGenerator();
 
-    Assertions.assertEquals(0, generator.extractFeatures(new String[] {}, Collections.emptyMap()).size());
+    Assert.assertEquals(0, generator.extractFeatures(new String[]{}, Collections.emptyMap()).size());
   }
 
   @Test
-  void testInvalidGramSize1() {
+  public void testInvalidGramSize1() {
     try {
       new NGramFeatureGenerator(0, 1);
-      Assertions.fail("InvalidFormatException must be thrown");
-    } catch (InvalidFormatException expected) {
+      Assert.fail("InvalidFormatException must be thrown");
+    }
+    catch (InvalidFormatException expected) {
     }
   }
 
   @Test
-  void testInvalidGramSize2() {
+  public void testInvalidGramSize2() {
     try {
       new NGramFeatureGenerator(2, 1);
-      Assertions.fail("InvalidFormatException must be thrown");
-    } catch (InvalidFormatException expected) {
+      Assert.fail("InvalidFormatException must be thrown");
+    }
+    catch (InvalidFormatException expected) {
     }
   }
 
   @Test
-  void testUnigram() throws Exception {
+  public void testUnigram() throws Exception {
     NGramFeatureGenerator generator = new NGramFeatureGenerator(1, 1);
 
-    Assertions.assertArrayEquals(
-        new String[] {"ng=:a", "ng=:b", "ng=:c", "ng=:d", "ng=:e", "ng=:f", "ng=:g"},
+    Assert.assertArrayEquals(
+            new String[]{"ng=:a", "ng=:b", "ng=:c", "ng=:d", "ng=:e", "ng=:f", "ng=:g"},
         generator.extractFeatures(TOKENS, Collections.emptyMap()).toArray());
   }
 
   @Test
-  void testBigram() throws Exception {
+  public void testBigram() throws Exception {
     NGramFeatureGenerator generator = new NGramFeatureGenerator(2, 2);
 
-    Assertions.assertArrayEquals(
-        new String[] {"ng=:a:b", "ng=:b:c", "ng=:c:d", "ng=:d:e", "ng=:e:f", "ng=:f:g"},
+    Assert.assertArrayEquals(
+            new String[]{"ng=:a:b", "ng=:b:c", "ng=:c:d", "ng=:d:e", "ng=:e:f", "ng=:f:g"},
         generator.extractFeatures(TOKENS, Collections.emptyMap()).toArray());
   }
 
   @Test
-  void testTrigram() throws Exception {
+  public void testTrigram() throws Exception {
     NGramFeatureGenerator generator = new NGramFeatureGenerator(3, 3);
 
-    Assertions.assertArrayEquals(
-        new String[] {"ng=:a:b:c", "ng=:b:c:d", "ng=:c:d:e", "ng=:d:e:f", "ng=:e:f:g"},
+    Assert.assertArrayEquals(
+            new String[]{"ng=:a:b:c", "ng=:b:c:d", "ng=:c:d:e", "ng=:d:e:f", "ng=:e:f:g"},
         generator.extractFeatures(TOKENS, Collections.emptyMap()).toArray());
   }
 
   @Test
-  void test12gram() throws Exception {
+  public void test12gram() throws Exception {
     NGramFeatureGenerator generator = new NGramFeatureGenerator(1, 2);
 
-    Assertions.assertArrayEquals(
-        new String[] {
-            "ng=:a", "ng=:a:b",
-            "ng=:b", "ng=:b:c",
-            "ng=:c", "ng=:c:d",
-            "ng=:d", "ng=:d:e",
-            "ng=:e", "ng=:e:f",
-            "ng=:f", "ng=:f:g",
-            "ng=:g"
-        },
+    Assert.assertArrayEquals(
+            new String[]{
+                "ng=:a", "ng=:a:b",
+                "ng=:b", "ng=:b:c",
+                "ng=:c", "ng=:c:d",
+                "ng=:d", "ng=:d:e",
+                "ng=:e", "ng=:e:f",
+                "ng=:f", "ng=:f:g",
+                "ng=:g"
+            },
         generator.extractFeatures(TOKENS, Collections.emptyMap()).toArray());
   }
 
   @Test
-  void test13gram() throws Exception {
+  public void test13gram() throws Exception {
     NGramFeatureGenerator generator = new NGramFeatureGenerator(1, 3);
 
-    Assertions.assertArrayEquals(
-        new String[] {
-            "ng=:a", "ng=:a:b", "ng=:a:b:c",
-            "ng=:b", "ng=:b:c", "ng=:b:c:d",
-            "ng=:c", "ng=:c:d", "ng=:c:d:e",
-            "ng=:d", "ng=:d:e", "ng=:d:e:f",
-            "ng=:e", "ng=:e:f", "ng=:e:f:g",
-            "ng=:f", "ng=:f:g",
-            "ng=:g"
-        },
+    Assert.assertArrayEquals(
+            new String[]{
+                "ng=:a", "ng=:a:b", "ng=:a:b:c",
+                "ng=:b", "ng=:b:c", "ng=:b:c:d",
+                "ng=:c", "ng=:c:d", "ng=:c:d:e",
+                "ng=:d", "ng=:d:e", "ng=:d:e:f",
+                "ng=:e", "ng=:e:f", "ng=:e:f:g",
+                "ng=:f", "ng=:f:g",
+                "ng=:g"
+            },
         generator.extractFeatures(TOKENS, Collections.emptyMap()).toArray());
   }
 }

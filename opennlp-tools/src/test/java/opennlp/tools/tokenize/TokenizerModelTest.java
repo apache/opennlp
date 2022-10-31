@@ -21,7 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 /**
  * Tests for the {@link TokenizerModel} class.
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 public class TokenizerModelTest {
 
   @Test
-  void testSentenceModel() throws IOException {
+  public void testSentenceModel() throws IOException {
 
     TokenizerModel model = TokenizerTestUtil.createSimpleMaxentTokenModel();
 

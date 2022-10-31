@@ -22,9 +22,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractDataIndexer;
@@ -40,18 +40,17 @@ public class NaiveBayesModelReadWriteTest {
 
   private DataIndexer testDataIndexer;
 
-  @BeforeEach
-  void initIndexer() {
+  @Before
+  public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
-    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
-    ;
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);;
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
 
   @Test
-  void testBinaryModelPersistence() throws Exception {
+  public void testBinaryModelPersistence() throws Exception {
     testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
     NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
     Path tempFile = Files.createTempFile("bnb-", ".bin");
@@ -62,14 +61,15 @@ public class NaiveBayesModelReadWriteTest {
       NaiveBayesModelReader reader = new BinaryNaiveBayesModelReader(file);
       reader.checkModelType();
       AbstractModel abstractModel = reader.constructModel();
-      Assertions.assertNotNull(abstractModel);
-    } finally {
+      Assert.assertNotNull(abstractModel);
+    }
+    finally {
       file.delete();
     }
   }
 
   @Test
-  void testTextModelPersistence() throws Exception {
+  public void testTextModelPersistence() throws Exception {
     testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
     NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
     Path tempFile = Files.createTempFile("ptnb-", ".txt");
@@ -80,8 +80,9 @@ public class NaiveBayesModelReadWriteTest {
       NaiveBayesModelReader reader = new PlainTextNaiveBayesModelReader(file);
       reader.checkModelType();
       AbstractModel abstractModel = reader.constructModel();
-      Assertions.assertNotNull(abstractModel);
-    } finally {
+      Assert.assertNotNull(abstractModel);
+    }
+    finally {
       file.delete();
     }
   }

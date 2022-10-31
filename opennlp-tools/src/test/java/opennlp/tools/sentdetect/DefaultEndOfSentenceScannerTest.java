@@ -19,8 +19,8 @@ package opennlp.tools.sentdetect;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Tests for the {@link DefaultEndOfSentenceScanner} class.
@@ -28,19 +28,19 @@ import org.junit.jupiter.api.Test;
 public class DefaultEndOfSentenceScannerTest {
 
   @Test
-  void testScanning() {
+  public void testScanning() {
     EndOfSentenceScanner scanner = new DefaultEndOfSentenceScanner(
-        new char[] {'.', '!', '?'});
+        new char[]{'.', '!', '?'});
 
     List<Integer> eosPositions =
         scanner.getPositions("... um die Wertmarken zu auswählen !?");
 
-    Assertions.assertEquals(0, eosPositions.get(0).intValue());
-    Assertions.assertEquals(1, eosPositions.get(1).intValue());
-    Assertions.assertEquals(2, eosPositions.get(2).intValue());
+    Assert.assertEquals(0, eosPositions.get(0).intValue());
+    Assert.assertEquals(1, eosPositions.get(1).intValue());
+    Assert.assertEquals(2, eosPositions.get(2).intValue());
 
-    Assertions.assertEquals(35, eosPositions.get(3).intValue());
-    Assertions.assertEquals(36, eosPositions.get(4).intValue());
+    Assert.assertEquals(35, eosPositions.get(3).intValue());
+    Assert.assertEquals(36, eosPositions.get(4).intValue());
   }
 
 }

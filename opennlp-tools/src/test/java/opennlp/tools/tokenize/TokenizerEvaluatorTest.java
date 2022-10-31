@@ -20,16 +20,17 @@ package opennlp.tools.tokenize;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.cmdline.tokenizer.TokenEvaluationErrorListener;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
 
 public class TokenizerEvaluatorTest {
 
   @Test
-  void testPositive() {
+  public void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     TokenizerEvaluationMonitor listener = new TokenEvaluationErrorListener(stream);
 
@@ -38,13 +39,13 @@ public class TokenizerEvaluatorTest {
 
     eval.evaluateSample(TokenSampleTest.createGoldSample());
 
-    Assertions.assertEquals(1.0, eval.getFMeasure().getFMeasure(), 0.0);
+    Assert.assertEquals(1.0, eval.getFMeasure().getFMeasure(), 0.0);
 
-    Assertions.assertEquals(0, stream.toString().length());
+    Assert.assertEquals(0, stream.toString().length());
   }
 
   @Test
-  void testNegative() {
+  public void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     TokenizerEvaluationMonitor listener = new TokenEvaluationErrorListener(
         stream);
@@ -54,9 +55,9 @@ public class TokenizerEvaluatorTest {
 
     eval.evaluateSample(TokenSampleTest.createPredSample());
 
-    Assertions.assertEquals(.5d, eval.getFMeasure().getFMeasure(), .1d);
+    Assert.assertEquals(.5d, eval.getFMeasure().getFMeasure(), .1d);
 
-    Assertions.assertNotSame(0, stream.toString().length());
+    Assert.assertNotSame(0, stream.toString().length());
   }
 
   /**

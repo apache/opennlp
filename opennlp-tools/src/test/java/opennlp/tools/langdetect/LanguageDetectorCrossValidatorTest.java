@@ -19,9 +19,8 @@ package opennlp.tools.langdetect;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.TrainingParameters;
 
@@ -58,8 +57,8 @@ public class LanguageDetectorCrossValidatorTest {
 
     cv.evaluate(sampleStream, 2);
 
-    Assertions.assertEquals(99, cv.getDocumentCount());
-    Assertions.assertEquals(0.98989898989899, cv.getDocumentAccuracy(), 0.01);
+    Assert.assertEquals(99, cv.getDocumentCount());
+    Assert.assertEquals(0.98989898989899, cv.getDocumentAccuracy(), 0.01);
   }
 
 }

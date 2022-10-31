@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import opennlp.tools.chunker.ChunkerCrossValidator;
 import opennlp.tools.chunker.ChunkerFactory;
@@ -75,20 +75,20 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
     return new PlainTextByLineStream(new MarkableFileInputStreamFactory(
         new File(getOpennlpDataDir(), corpus)), StandardCharsets.ISO_8859_1);
   }
-
-  @BeforeAll
-  static void verifyTrainingData() throws Exception {
+  
+  @BeforeClass
+  public static void verifyTrainingData() throws Exception {
 
     verifyTrainingData(new ADSentenceSampleStream(getLineSample(BOSQUE), false),
         new BigInteger("140568367548727787313497336739085858596"));
 
     verifyTrainingData(new ADSentenceSampleStream(getLineSample(FLORESTA_VIRGEM), false),
         new BigInteger("2614161133949079191933514776652602918"));
-
+  
   }
 
   private void sentenceCrossEval(TrainingParameters params,
-                                 double expectedScore) throws IOException {
+                                        double expectedScore) throws IOException {
 
     ADSentenceSampleStream samples = new ADSentenceSampleStream(
         getLineSample(FLORESTA_VIRGEM), false);
@@ -100,11 +100,11 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
     cv.evaluate(samples, 10);
 
     System.out.println(cv.getFMeasure());
-    Assertions.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
+    Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
   }
 
   private void tokenizerCrossEval(TrainingParameters params,
-                                  double expectedScore) throws IOException {
+                                         double expectedScore) throws IOException {
 
     ObjectStream<NameSample> nameSamples = new ADNameSampleStream(
         getLineSample(FLORESTA_VIRGEM), true);
@@ -125,11 +125,12 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
     validator.evaluate(samples, 10);
 
     System.out.println(validator.getFMeasure());
-    Assertions.assertEquals(expectedScore, validator.getFMeasure().getFMeasure(), 0.0001d);
+    Assert.assertEquals(expectedScore, validator.getFMeasure().getFMeasure(),
+        0.0001d);
   }
 
   private void chunkerCrossEval(TrainingParameters params,
-                                double expectedScore) throws IOException {
+                                       double expectedScore) throws IOException {
 
     ADChunkSampleStream samples = new ADChunkSampleStream(getLineSample(BOSQUE));
 
@@ -137,83 +138,83 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
         new ChunkerFactory());
 
     cv.evaluate(samples, 10);
-    Assertions.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
+    Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
   }
 
   @Test
-  void evalPortugueseSentenceDetectorPerceptron() throws IOException {
+  public void evalPortugueseSentenceDetectorPerceptron() throws IOException {
     sentenceCrossEval(createPerceptronParams(), 0.9892778840089301d);
   }
 
   @Test
-  void evalPortugueseSentenceDetectorGis() throws IOException {
+  public void evalPortugueseSentenceDetectorGis() throws IOException {
     sentenceCrossEval(ModelUtil.createDefaultTrainingParameters(), 0.987270070655111d);
   }
 
   @Test
-  void evalPortugueseSentenceDetectorMaxentQn() throws IOException {
+  public void evalPortugueseSentenceDetectorMaxentQn() throws IOException {
     sentenceCrossEval(createMaxentQnParams(), 0.9924715809679968d);
   }
 
   @Test
-  void evalPortugueseSentenceDetectorNaiveBayes() throws IOException {
+  public void evalPortugueseSentenceDetectorNaiveBayes() throws IOException {
     sentenceCrossEval(createNaiveBayesParams(), 0.9672196206048099d);
   }
 
   @Test
-  void evalPortugueseTokenizerPerceptron() throws IOException {
+  public void evalPortugueseTokenizerPerceptron() throws IOException {
     tokenizerCrossEval(createPerceptronParams(), 0.9994887308380267d);
   }
 
   @Test
-  void evalPortugueseTokenizerGis() throws IOException {
+  public void evalPortugueseTokenizerGis() throws IOException {
     tokenizerCrossEval(ModelUtil.createDefaultTrainingParameters(), 0.9992539405481062d);
   }
 
   @Test
-  void evalPortugueseTokenizerMaxentQn() throws IOException {
+  public void evalPortugueseTokenizerMaxentQn() throws IOException {
     tokenizerCrossEval(createMaxentQnParams(), 0.9996017148748251d);
   }
 
   @Test
-  void evalPortugueseTokenizerNaiveBayes() throws IOException {
+  public void evalPortugueseTokenizerNaiveBayes() throws IOException {
     tokenizerCrossEval(createNaiveBayesParams(), 0.9962358244502717d);
   }
 
   @Test
-  void evalPortugueseTokenizerMaxentQnMultipleThreads() throws IOException {
+  public void evalPortugueseTokenizerMaxentQnMultipleThreads() throws IOException {
     TrainingParameters params = createMaxentQnParams();
     params.put("Threads", 4);
     tokenizerCrossEval(params, 0.9996017148748251d);
   }
 
   @Test
-  void evalPortugueseChunkerPerceptron() throws IOException {
+  public void evalPortugueseChunkerPerceptron() throws IOException {
     chunkerCrossEval(createPerceptronParams(),
         0.9638122825015589d);
   }
 
   @Test
-  void evalPortugueseChunkerGis() throws IOException {
+  public void evalPortugueseChunkerGis() throws IOException {
     chunkerCrossEval(ModelUtil.createDefaultTrainingParameters(),
         0.9573860781121228d);
   }
 
   @Test
-  void evalPortugueseChunkerGisMultipleThreads() throws IOException {
+  public void evalPortugueseChunkerGisMultipleThreads() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", 4);
     chunkerCrossEval(params, 0.9573860781121228d);
   }
 
   @Test
-  void evalPortugueseChunkerQn() throws IOException {
+  public void evalPortugueseChunkerQn() throws IOException {
     chunkerCrossEval(createMaxentQnParams(),
         0.9648211936491359d);
   }
 
   @Test
-  void evalPortugueseChunkerQnMultipleThreads() throws IOException {
+  public void evalPortugueseChunkerQnMultipleThreads() throws IOException {
     TrainingParameters params = createMaxentQnParams();
     params.put("Threads", 4);
 
@@ -222,7 +223,7 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
   }
 
   @Test
-  void evalPortugueseChunkerNaiveBayes() throws IOException {
+  public void evalPortugueseChunkerNaiveBayes() throws IOException {
     chunkerCrossEval(createNaiveBayesParams(), 0.9041507736043933d);
   }
 }

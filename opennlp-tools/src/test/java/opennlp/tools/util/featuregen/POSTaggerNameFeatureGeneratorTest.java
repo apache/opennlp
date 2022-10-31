@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.postag.POSTaggerMETest;
 import opennlp.tools.util.model.ModelType;
@@ -31,7 +31,7 @@ public class POSTaggerNameFeatureGeneratorTest {
 
 
   @Test
-  void testFeatureGeneration() throws IOException {
+  public void testFeatureGeneration() throws IOException {
     POSTaggerNameFeatureGenerator fg = new POSTaggerNameFeatureGenerator(
         POSTaggerMETest.trainPOSModel(ModelType.MAXENT));
 
@@ -39,7 +39,7 @@ public class POSTaggerNameFeatureGeneratorTest {
     for (int i = 0; i < tokens.length; i++) {
       List<String> feats = new ArrayList<>();
       fg.createFeatures(feats, tokens, i, null);
-      Assertions.assertTrue(feats.get(0).startsWith("pos="));
+      Assert.assertTrue(feats.get(0).startsWith("pos="));
     }
   }
 }

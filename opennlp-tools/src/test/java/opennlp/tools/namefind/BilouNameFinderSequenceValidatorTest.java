@@ -16,8 +16,8 @@
  */
 package opennlp.tools.namefind;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * This is the test class for {@link BilouNameFinderSequenceValidator}..
@@ -40,62 +40,62 @@ public class BilouNameFinderSequenceValidatorTest {
   private static String OTHER = BilouCodec.OTHER;
 
   @Test
-  void testStartAsFirstLabel() {
+  public void testStartAsFirstLabel() {
     String outcome = START_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "something"};
-    String[] outcomesSequence = new String[] {};
-    Assertions.assertTrue(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
+    String[] outcomesSequence = new String[] { };
+    Assert.assertTrue(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
   @Test
-  void testContinueAsFirstLabel() {
+  public void testContinueAsFirstLabel() {
     String outcome = CONTINUE_A;
     String[] inputSequence = new String[] {"TypeA", "something", "something"};
-    String[] outcomesSequence = new String[] {};
-    Assertions.assertFalse(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
+    String[] outcomesSequence = new String[] { };
+    Assert.assertFalse(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
   @Test
-  void testLastAsFirstLabel() {
+  public void testLastAsFirstLabel() {
     String outcome = LAST_A;
     String[] inputSequence = new String[] {"TypeA", "something", "something"};
-    String[] outcomesSequence = new String[] {};
-    Assertions.assertFalse(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
+    String[] outcomesSequence = new String[] { };
+    Assert.assertFalse(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
   @Test
-  void testUnitAsFirstLabel() {
+  public void testUnitAsFirstLabel() {
     String outcome = UNIT_A;
     String[] inputSequence = new String[] {"TypeA", "something", "something"};
-    String[] outcomesSequence = new String[] {};
-    Assertions.assertTrue(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
+    String[] outcomesSequence = new String[] { };
+    Assert.assertTrue(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
   @Test
-  void testOtherAsFirstLabel() {
+  public void testOtherAsFirstLabel() {
     String outcome = OTHER;
     String[] inputSequence = new String[] {"something", "TypeA", "something"};
-    String[] outcomesSequence = new String[] {};
-    Assertions.assertTrue(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
+    String[] outcomesSequence = new String[] { };
+    Assert.assertTrue(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Start, Any Start => Invalid
    */
   @Test
-  void testBeginFollowedByBegin() {
+  public void testBeginFollowedByBegin() {
 
     String[] outcomesSequence = new String[] {START_A};
 
     // Same Types
     String outcome = START_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "something"};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
 
     // Diff. Types
     outcome = START_B;
     inputSequence = new String[] {"TypeA", "TypeB", "something"};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
@@ -103,19 +103,19 @@ public class BilouNameFinderSequenceValidatorTest {
    * Start, Continue, Diff. Type => Invalid
    */
   @Test
-  void testBeginFollowedByContinue() {
+  public void testBeginFollowedByContinue() {
 
     String[] outcomesSequence = new String[] {START_A};
 
     // Same Types
     String outcome = CONTINUE_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "something"};
-    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
 
     // Different Types
     outcome = CONTINUE_B;
     inputSequence = new String[] {"TypeA", "TypeB", "TypeB", "something"};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
@@ -123,60 +123,60 @@ public class BilouNameFinderSequenceValidatorTest {
    * Start, Last, Diff. Type => Invalid
    */
   @Test
-  void testStartFollowedByLast() {
+  public void testStartFollowedByLast() {
 
     String[] outcomesSequence = new String[] {START_A};
 
     // Same Type
     String outcome = LAST_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "something"};
-    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
 
     // Diff. Types
     outcome = LAST_B;
     inputSequence = new String[] {"TypeA", "TypeB", "something"};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Start, Other => Invalid
    */
   @Test
-  void testStartFollowedByOther() {
+  public void testStartFollowedByOther() {
     String outcome = OTHER;
     String[] inputSequence = new String[] {"TypeA", "something", "something"};
     String[] outcomesSequence = new String[] {START_A};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
-   * Start, Unit => Invalid
+   *    Start, Unit => Invalid
    */
   @Test
-  void testStartFollowedByUnit() {
+  public void testStartFollowedByUnit() {
     String outcome = UNIT_A;
     String[] inputSequence = new String[] {"TypeA", "AnyType", "something"};
     String[] outcomesSequence = new String[] {START_A};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Continue, Any Begin => Invalid
    */
   @Test
-  void testContinueFollowedByStart() {
+  public void testContinueFollowedByStart() {
 
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A};
 
     // Same Types
     String outcome = START_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "something"};
-    Assertions.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
 
     // Diff. Types
     outcome = START_B;
     inputSequence = new String[] {"TypeA", "TypeA", "TypeB", "something"};
-    Assertions.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
 
   }
 
@@ -185,19 +185,19 @@ public class BilouNameFinderSequenceValidatorTest {
    * Continue, Continue, Diff. Type => Invalid
    */
   @Test
-  void testContinueFollowedByContinue() {
+  public void testContinueFollowedByContinue() {
 
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A, CONTINUE_A};
 
     // Same Types
     String outcome = CONTINUE_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "TypeA", "something"};
-    Assertions.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
 
     // Different Types
     outcome = CONTINUE_B;
     inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "TypeB", "something"};
-    Assertions.assertFalse(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
   }
 
   /**
@@ -205,85 +205,85 @@ public class BilouNameFinderSequenceValidatorTest {
    * Continue, Last, Diff. Type => Invalid
    */
   @Test
-  void testContinueFollowedByLast() {
+  public void testContinueFollowedByLast() {
 
     String[] outcomesSequence = new String[] {OTHER, START_A, CONTINUE_A};
 
     // Same Types
     String outcome = LAST_A;
     String[] inputSequence = new String[] {"something", "TypeA", "TypeA", "TypeA", "something"};
-    Assertions.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
 
     // Different Types
     outcome = LAST_B;
     inputSequence = new String[] {"something", "TypeA", "TypeA", "TypeB", "something"};
-    Assertions.assertFalse(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Continue, Other => Invalid
    */
   @Test
-  void testContinueFollowedByOther() {
+  public void testContinueFollowedByOther() {
     String outcome = OTHER;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "something", "something"};
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A};
-    Assertions.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Continue, Unit => Invalid
    */
   @Test
-  void testContinueFollowedByUnit() {
+  public void testContinueFollowedByUnit() {
     String outcome = UNIT_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "AnyType", "something"};
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A};
-    Assertions.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Last, Any Start => Valid
    */
   @Test
-  void testLastFollowedByStart() {
+  public void testLastFollowedByStart() {
 
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A, LAST_A};
 
     // Same Types
     String outcome = START_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "TypeA", "TypeA"};
-    Assertions.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
 
     // Same Types
     outcome = START_B;
     inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "TypeB", "TypeB"};
-    Assertions.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
   }
 
   /**
-   * Last, Any Continue => Invalid
+   *    Last, Any Continue => Invalid
    */
   @Test
-  void testLastFollowedByContinue() {
+  public void testLastFollowedByContinue() {
 
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A, LAST_A};
 
     String outcome = CONTINUE_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "TypeA", "something"};
-    Assertions.assertFalse(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
 
     // Diff. Types
     outcome = CONTINUE_B;
     inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "TypeB", "something"};
-    Assertions.assertFalse(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
   }
 
   /**
-   * Last, Any Last => Invalid
+   *    Last, Any Last => Invalid
    */
   @Test
-  void testLastFollowedByLast() {
+  public void testLastFollowedByLast() {
 
     String[] outcomesSequence = new String[] {OTHER, OTHER, START_A, CONTINUE_A, LAST_A};
 
@@ -291,145 +291,145 @@ public class BilouNameFinderSequenceValidatorTest {
     String outcome = LAST_A;
     String[] inputSequence = new String[] {"something", "something", "TypeA",
         "TypeA", "TypeA", "TypeA", "something"};
-    Assertions.assertFalse(validator.validSequence(5, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(5, inputSequence, outcomesSequence, outcome));
 
     // Diff. Types
     outcome = LAST_B;
     inputSequence = new String[] {"something", "something", "TypeA", "TypeA",
         "TypeA", "TypeB", "something"};
-    Assertions.assertFalse(validator.validSequence(5, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(5, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Last, Other => Valid
    */
   @Test
-  void testLastFollowedByOther() {
+  public void testLastFollowedByOther() {
     String outcome = OTHER;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "something", "something"};
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A, LAST_A};
-    Assertions.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Last, Unit => Valid
    */
   @Test
-  void testLastFollowedByUnit() {
+  public void testLastFollowedByUnit() {
     String outcome = UNIT_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "TypeA", "AnyType", "something"};
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A, LAST_A};
-    Assertions.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(3, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Other, Any Start => Valid
    */
   @Test
-  void testOtherFollowedByBegin() {
+  public void testOtherFollowedByBegin() {
     String outcome = START_A;
     String[] inputSequence = new String[] {"something", "TypeA", "TypeA"};
     String[] outcomesSequence = new String[] {OTHER};
-    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Other, Any Continue => Invalid
    */
   @Test
-  void testOtherFollowedByContinue() {
+  public void testOtherFollowedByContinue() {
     String outcome = CONTINUE_A;
     String[] inputSequence = new String[] {"something", "TypeA", "TypeA"};
     String[] outcomesSequence = new String[] {OTHER};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Other, Any Last => Invalid
    */
   @Test
-  void testOtherFollowedByLast() {
+  public void testOtherFollowedByLast() {
     String outcome = LAST_A;
     String[] inputSequence = new String[] {"something", "TypeA", "TypeA"};
     String[] outcomesSequence = new String[] {OTHER};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Outside, Unit => Valid
    */
   @Test
-  void testOtherFollowedByUnit() {
+  public void testOtherFollowedByUnit() {
     String outcome = UNIT_A;
     String[] inputSequence = new String[] {"something", "AnyType", "something"};
     String[] outcomesSequence = new String[] {OTHER};
-    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Other, Other => Valid
    */
   @Test
-  void testOutsideFollowedByOutside() {
+  public void testOutsideFollowedByOutside() {
     String outcome = OTHER;
     String[] inputSequence = new String[] {"something", "something", "something"};
     String[] outcomesSequence = new String[] {OTHER};
-    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Unit, Any Start => Valid
    */
   @Test
-  void testUnitFollowedByBegin() {
+  public void testUnitFollowedByBegin() {
     String outcome = START_A;
     String[] inputSequence = new String[] {"AnyType", "TypeA", "something"};
     String[] outcomesSequence = new String[] {UNIT_A};
-    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Unit, Any Continue => Invalid
    */
   @Test
-  void testUnitFollowedByInside() {
+  public void testUnitFollowedByInside() {
     String outcome = CONTINUE_A;
     String[] inputSequence = new String[] {"TypeA", "TypeA", "something"};
     String[] outcomesSequence = new String[] {UNIT_A};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Unit, Any Last => Invalid
    */
   @Test
-  void testUnitFollowedByLast() {
+  public void testUnitFollowedByLast() {
     String outcome = LAST_A;
     String[] inputSequence = new String[] {"AnyType", "TypeA", "something"};
     String[] outcomesSequence = new String[] {UNIT_A};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Unit, Other => Valid
    */
   @Test
-  void testUnitFollowedByOutside() {
+  public void testUnitFollowedByOutside() {
     String outcome = OTHER;
     String[] inputSequence = new String[] {"TypeA", "something", "something"};
     String[] outcomesSequence = new String[] {UNIT_A};
-    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
   /**
    * Unit, Unit => Valid
    */
   @Test
-  void testUnitFollowedByUnit() {
+  public void testUnitFollowedByUnit() {
     String outcome = UNIT_A;
     String[] inputSequence = new String[] {"AnyType", "AnyType", "something"};
     String[] outcomesSequence = new String[] {UNIT_A};
-    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assert.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
   }
 
 }

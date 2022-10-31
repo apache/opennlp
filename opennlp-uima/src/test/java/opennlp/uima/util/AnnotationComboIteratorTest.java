@@ -27,8 +27,8 @@ import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class AnnotationComboIteratorTest {
 
@@ -72,8 +72,8 @@ public class AnnotationComboIteratorTest {
       tokensBySentence.add(tokens);
     }
 
-    Assertions.assertEquals(Collections.singletonList("A"), tokensBySentence.get(0));
-    Assertions.assertEquals(Arrays.asList("H", "I"), tokensBySentence.get(1));
+    Assert.assertEquals(Collections.singletonList("A"), tokensBySentence.get(0));
+    Assert.assertEquals(Arrays.asList("H", "I"), tokensBySentence.get(1));
   }
 
 }

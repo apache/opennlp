@@ -30,9 +30,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
 import opennlp.tools.formats.DirectorySampleStream;
@@ -80,39 +80,39 @@ public class OntoNotes4NameFinderEval extends AbstractEvalTest {
 
       cv.evaluate(filteredSamples, 5);
 
-      Assertions.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
+      Assert.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.001d);
     }
   }
 
-  @BeforeAll
-  static void verifyTrainingData() throws Exception {
+  @BeforeClass
+  public static void verifyTrainingData() throws Exception {
     verifyDirectoryChecksum(new File(getOpennlpDataDir(), "ontonotes4/data/files/data/english").toPath(),
         ".name", new BigInteger("74675117716526375898817028829433420680"));
   }
 
   @Test
-  void evalEnglishPersonNameFinder() throws IOException {
+  public void evalEnglishPersonNameFinder() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", "4");
     crossEval(params, "person", 0.822014580552418d);
   }
 
   @Test
-  void evalEnglishDateNameFinder() throws IOException {
+  public void evalEnglishDateNameFinder() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", "4");
     crossEval(params, "date", 0.8043873255040994d);
   }
 
   @Test
-  void evalAllTypesNameFinder() throws IOException {
+  public void evalAllTypesNameFinder() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", "4");
     crossEval(params, null, 0.8014054850253551d);
   }
 
   @Test
-  void evalAllTypesWithPOSNameFinder() throws IOException, URISyntaxException {
+  public void evalAllTypesWithPOSNameFinder() throws IOException, URISyntaxException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", "4");
 
@@ -136,7 +136,7 @@ public class OntoNotes4NameFinderEval extends AbstractEvalTest {
         StandardCopyOption.REPLACE_EXISTING);
 
     Map<String, Object> resources = TokenNameFinderTrainerTool.loadResources(resourcesPath.toFile(),
-        Paths.get(this.getClass().getResource("ner-en_pos-features.xml").toURI()).toFile());
+          Paths.get(this.getClass().getResource("ner-en_pos-features.xml").toURI()).toFile());
 
     try (ObjectStream<NameSample> samples = createNameSampleStream()) {
 
@@ -149,7 +149,7 @@ public class OntoNotes4NameFinderEval extends AbstractEvalTest {
 
       cv.evaluate(filteredSamples, 5);
 
-      Assertions.assertEquals(0.8070226153653437d, cv.getFMeasure().getFMeasure(), 0.001d);
+      Assert.assertEquals(0.8070226153653437d, cv.getFMeasure().getFMeasure(), 0.001d);
     }
   }
 }

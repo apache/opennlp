@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
@@ -47,7 +47,7 @@ public class NameSampleTypeFilterTest {
   private static final String organization = "organization";
 
   @Test
-  void testNoFilter() throws IOException {
+  public void testNoFilter() throws IOException {
 
     final String[] types = new String[] {};
 
@@ -55,12 +55,12 @@ public class NameSampleTypeFilterTest {
 
     NameSample ns = filter.read();
 
-    Assertions.assertEquals(0, ns.getNames().length);
+    Assert.assertEquals(0, ns.getNames().length);
 
   }
 
   @Test
-  void testSingleFilter() throws IOException {
+  public void testSingleFilter() throws IOException {
 
     final String[] types = new String[] {organization};
 
@@ -68,13 +68,13 @@ public class NameSampleTypeFilterTest {
 
     NameSample ns = filter.read();
 
-    Assertions.assertEquals(1, ns.getNames().length);
-    Assertions.assertEquals(organization, ns.getNames()[0].getType());
+    Assert.assertEquals(1, ns.getNames().length);
+    Assert.assertEquals(organization, ns.getNames()[0].getType());
 
   }
 
   @Test
-  void testMultiFilter() throws IOException {
+  public void testMultiFilter() throws IOException {
 
     final String[] types = new String[] {person, organization};
 
@@ -84,9 +84,9 @@ public class NameSampleTypeFilterTest {
 
     Map<String, List<Span>> collect = Arrays.stream(ns.getNames())
         .collect(Collectors.groupingBy(Span::getType));
-    Assertions.assertEquals(2, collect.size());
-    Assertions.assertEquals(2, collect.get(person).size());
-    Assertions.assertEquals(1, collect.get(organization).size());
+    Assert.assertEquals(2, collect.size());
+    Assert.assertEquals(2, collect.get(person).size());
+    Assert.assertEquals(1, collect.get(organization).size());
 
   }
 

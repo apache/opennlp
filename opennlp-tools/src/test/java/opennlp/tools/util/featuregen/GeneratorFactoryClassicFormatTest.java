@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.featuregen.WordClusterDictionary.WordClusterDictionarySerializer;
@@ -35,37 +35,38 @@ import opennlp.tools.util.model.DictionarySerializer;
 public class GeneratorFactoryClassicFormatTest {
 
   @Test
-  void testCreationWithTokenClassFeatureGenerator() throws Exception {
+  public void testCreationWithTokenClassFeatureGenerator() throws Exception {
     InputStream generatorDescriptorIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/TestTokenClassFeatureGeneratorConfig_classic.xml");
 
     // If this fails the generator descriptor could not be found
     // at the expected location
-    Assertions.assertNotNull(generatorDescriptorIn);
+    Assert.assertNotNull(generatorDescriptorIn);
 
     AggregatedFeatureGenerator aggregatedGenerator =
         (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
 
-    Assertions.assertEquals(1, aggregatedGenerator.getGenerators().size());
-    Assertions.assertEquals(TokenClassFeatureGenerator.class.getName(),
+    Assert.assertEquals(1, aggregatedGenerator.getGenerators().size());
+    Assert.assertEquals(TokenClassFeatureGenerator.class.getName(),
         aggregatedGenerator.getGenerators().iterator().next().getClass().getName());
 
   }
 
   @Test
-  void testCreationWihtSimpleDescriptor() throws Exception {
+  public void testCreationWihtSimpleDescriptor() throws Exception {
     InputStream generatorDescriptorIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/TestFeatureGeneratorConfig_classic.xml");
 
     // If this fails the generator descriptor could not be found
     // at the expected location
-    Assertions.assertNotNull(generatorDescriptorIn);
+    Assert.assertNotNull(generatorDescriptorIn);
 
     Collection<String> expectedGenerators = new ArrayList<>();
     expectedGenerators.add(OutcomePriorFeatureGenerator.class.getName());
 
     AggregatedFeatureGenerator aggregatedGenerator =
         (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
+
 
 
     for (AdaptiveFeatureGenerator generator : aggregatedGenerator.getGenerators()) {
@@ -77,27 +78,27 @@ public class GeneratorFactoryClassicFormatTest {
 
     // If this fails not all expected generators were found and
     // removed from the expected generators collection
-    Assertions.assertEquals(0, expectedGenerators.size());
+    Assert.assertEquals(0, expectedGenerators.size());
   }
 
   @Test
-  void testCreationWithCustomGenerator() throws Exception {
+  public void testCreationWithCustomGenerator() throws Exception {
     InputStream generatorDescriptorIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/CustomClassLoading_classic.xml");
 
     // If this fails the generator descriptor could not be found
     // at the expected location
-    Assertions.assertNotNull(generatorDescriptorIn);
+    Assert.assertNotNull(generatorDescriptorIn);
 
     AggregatedFeatureGenerator aggregatedGenerator =
         (AggregatedFeatureGenerator) GeneratorFactory.create(generatorDescriptorIn, null);
 
     Collection<AdaptiveFeatureGenerator> embeddedGenerator = aggregatedGenerator.getGenerators();
 
-    Assertions.assertEquals(1, embeddedGenerator.size());
+    Assert.assertEquals(1, embeddedGenerator.size());
 
     for (AdaptiveFeatureGenerator generator : embeddedGenerator) {
-      Assertions.assertEquals(TokenFeatureGenerator.class.getName(), generator.getClass().getName());
+      Assert.assertEquals(TokenFeatureGenerator.class.getName(), generator.getClass().getName());
     }
   }
 
@@ -105,20 +106,17 @@ public class GeneratorFactoryClassicFormatTest {
    * Tests the creation from a descriptor which contains an unkown element.
    * The creation should fail with an {@link InvalidFormatException}
    */
-  @Test
-  void testCreationWithUnkownElement() {
+  @Test(expected = IOException.class)
+  public void testCreationWithUnkownElement() throws IOException {
 
-    Assertions.assertThrows(IOException.class, () -> {
-
-      try (InputStream descIn = getClass().getResourceAsStream(
-          "/opennlp/tools/util/featuregen/FeatureGeneratorConfigWithUnkownElement_classic.xml")) {
-        GeneratorFactory.create(descIn, null);
-      }
-    });
+    try (InputStream descIn = getClass().getResourceAsStream(
+        "/opennlp/tools/util/featuregen/FeatureGeneratorConfigWithUnkownElement_classic.xml")) {
+      GeneratorFactory.create(descIn, null);
+    }
   }
 
   @Test
-  void testArtifactToSerializerMappingExtraction() throws IOException {
+  public void testArtifactToSerializerMappingExtraction() throws IOException {
     // TODO: Define a new one here with custom elements ...
     InputStream descIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/CustomClassLoadingWithSerializers_classic.xml");
@@ -126,11 +124,11 @@ public class GeneratorFactoryClassicFormatTest {
     Map<String, ArtifactSerializer<?>> mapping =
         GeneratorFactory.extractArtifactSerializerMappings(descIn);
 
-    Assertions.assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
+    Assert.assertTrue(mapping.get("test.resource") instanceof WordClusterDictionarySerializer);
   }
 
   @Test
-  void testDictionaryArtifactToSerializerMappingExtraction() throws IOException {
+  public void testDictionaryArtifactToSerializerMappingExtraction() throws IOException {
 
     InputStream descIn = getClass().getResourceAsStream(
         "/opennlp/tools/util/featuregen/TestDictionarySerializerMappingExtraction_classic.xml");
@@ -138,7 +136,7 @@ public class GeneratorFactoryClassicFormatTest {
     Map<String, ArtifactSerializer<?>> mapping =
         GeneratorFactory.extractArtifactSerializerMappings(descIn);
 
-    Assertions.assertTrue(mapping.get("test.dictionary") instanceof DictionarySerializer);
+    Assert.assertTrue(mapping.get("test.dictionary") instanceof DictionarySerializer);
     // TODO: if make the following effective, the test fails.
     // this is strange because DictionaryFeatureGeneratorFactory cast dictResource to Dictionary...
     //Assert.assertTrue(mapping.get("test.dictionary") instanceof

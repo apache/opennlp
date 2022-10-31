@@ -23,8 +23,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.ml.model.Event;
 
@@ -39,7 +39,7 @@ public class AbstractEventStreamTest {
    * return iterators with events and empty iterators.
    */
   @Test
-  void testStandardCase() throws IOException {
+  public void testStandardCase() throws IOException {
 
     List<RESULT> samples = new ArrayList<>();
     samples.add(RESULT.EVENTS);
@@ -53,7 +53,7 @@ public class AbstractEventStreamTest {
         eventCounter++;
       }
 
-      Assertions.assertEquals(2, eventCounter);
+      Assert.assertEquals(2, eventCounter);
     }
   }
 
@@ -63,19 +63,19 @@ public class AbstractEventStreamTest {
    * only returns empty iterators.
    */
   @Test
-  void testEmtpyEventStream() throws IOException {
+  public void testEmtpyEventStream() throws IOException {
     List<RESULT> samples = new ArrayList<>();
     samples.add(RESULT.EMPTY);
 
     try (TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<>(samples))) {
-      Assertions.assertNull(eventStream.read());
+      Assert.assertNull(eventStream.read());
 
       // now check if it can handle multiple empty event iterators
       samples.add(RESULT.EMPTY);
       samples.add(RESULT.EMPTY);
     }
     try (TestEventStream eventStream = new TestEventStream(new CollectionObjectStream<>(samples))) {
-      Assertions.assertNull(eventStream.read());
+      Assert.assertNull(eventStream.read());
     }
   }
 
@@ -118,7 +118,7 @@ public class AbstractEventStreamTest {
         return emptyList.iterator();
       } else {
         // throws runtime exception, execution stops here
-        Assertions.fail();
+        Assert.fail();
 
         return null;
       }

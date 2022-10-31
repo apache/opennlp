@@ -20,8 +20,8 @@ package opennlp.tools.formats.ad;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -32,7 +32,7 @@ public class ADParagraphStreamTest {
   public static final int NUM_SENTENCES = 8;
 
   @Test
-  void testSimpleReading() throws IOException {
+  public void testSimpleReading() throws IOException {
     int count = 0;
 
     ADSentenceStream stream = openData();
@@ -45,11 +45,11 @@ public class ADParagraphStreamTest {
       // paragraph.getRoot();
     }
 
-    Assertions.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
+    Assert.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
   }
 
   @Test
-  void testLeadingWithContraction() throws IOException {
+  public void testLeadingWithContraction() throws IOException {
     int count = 0;
 
     ADSentenceStream stream = openData();
@@ -61,7 +61,7 @@ public class ADParagraphStreamTest {
       paragraph = stream.read();
     }
 
-    Assertions.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
+    Assert.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
   }
 
   private static ADSentenceStream openData() throws IOException {

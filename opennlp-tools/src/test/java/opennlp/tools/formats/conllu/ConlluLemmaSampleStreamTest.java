@@ -20,8 +20,8 @@ package opennlp.tools.formats.conllu;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.lemmatizer.LemmaSample;
@@ -32,7 +32,7 @@ public class ConlluLemmaSampleStreamTest {
 
 
   @Test
-  void testParseSpanishS300() throws IOException {
+  public void testParseSpanishS300() throws IOException {
     InputStreamFactory streamFactory =
         new ResourceAsStreamFactory(ConlluStreamTest.class, "es-ud-sample.conllu");
 
@@ -41,9 +41,9 @@ public class ConlluLemmaSampleStreamTest {
 
       LemmaSample predicted = stream.read();
       System.out.println(predicted);
-      Assertions.assertEquals("digám+tú+él", predicted.getLemmas()[0]);
-      Assertions.assertEquals("la", predicted.getTokens()[3]);
-      Assertions.assertEquals("el", predicted.getLemmas()[3]);
+      Assert.assertEquals("digám+tú+él", predicted.getLemmas()[0]);
+      Assert.assertEquals("la", predicted.getTokens()[3]);
+      Assert.assertEquals("el", predicted.getLemmas()[3]);
     }
   }
 }

@@ -34,10 +34,10 @@ import org.apache.uima.resource.ResourceSpecifier;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.XMLInputSource;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import opennlp.tools.util.StringList;
 import opennlp.uima.util.CasUtil;
@@ -48,12 +48,12 @@ public class DictionaryResourceTest {
 
   private static AnalysisEngine AE;
 
-  @BeforeAll
+  @BeforeClass
   public static void beforeClass() throws Exception {
     AE = produceAE("DictionaryNameFinder.xml");
   }
 
-  @AfterAll
+  @AfterClass
   public static void afterClass() {
     AE.destroy(); // is this necessary?
   }
@@ -74,16 +74,16 @@ public class DictionaryResourceTest {
       DictionaryResource dic = (DictionaryResource) AE.getResourceManager()
           .getResource("/opennlp.uima.Dictionary");
       // simple check if ordering always is the same...
-      Assertions.assertEquals(
+      Assert.assertEquals(
           "[[Berlin], [Stockholm], [New,York], [London], [Copenhagen], [Paris]]",
           dic.getDictionary().toString());
       // else we can do a simple test like this
-      Assertions.assertEquals(6,
-          dic.getDictionary().asStringSet().size(), "There should be six entries in the dictionary");
-      Assertions.assertTrue(dic.getDictionary().contains(new StringList("London")),
-          "London should be in the dictionary");
+      Assert.assertEquals("There should be six entries in the dictionary", 6,
+          dic.getDictionary().asStringSet().size());
+      Assert.assertTrue("London should be in the dictionary",
+          dic.getDictionary().contains(new StringList("London")));
     } catch (Exception e) {
-      Assertions.fail("Dictionary was not loaded.");
+      Assert.fail("Dictionary was not loaded.");
     }
 
   }
@@ -106,14 +106,14 @@ public class DictionaryResourceTest {
 
       while (locationIterator.isValid()) {
         AnnotationFS annotationFS = locationIterator.get();
-        Assertions.assertTrue(expectedLocations.contains(annotationFS.getCoveredText()));
+        Assert.assertTrue(expectedLocations.contains(annotationFS.getCoveredText()));
         expectedLocations.remove(annotationFS.getCoveredText());
         locationIterator.moveToNext();
       }
-      Assertions.assertEquals(0, expectedLocations.size());
+      Assert.assertEquals(0, expectedLocations.size());
     } catch (Exception e) {
       e.printStackTrace();
-      Assertions.fail(e.getLocalizedMessage());
+      Assert.fail(e.getLocalizedMessage());
     }
 
   }

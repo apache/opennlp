@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractDataIndexer;
@@ -43,18 +43,17 @@ public class NaiveBayesCorrectnessTest {
 
   private DataIndexer testDataIndexer;
 
-  @BeforeEach
-  void initIndexer() {
+  @Before
+  public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
-    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
-    ;
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);;
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
 
   @Test
-  void testNaiveBayes1() throws IOException {
+  public void testNaiveBayes1() throws IOException {
 
     testDataIndexer.index(createTrainingStream());
     NaiveBayesModel model =
@@ -70,7 +69,7 @@ public class NaiveBayesCorrectnessTest {
   }
 
   @Test
-  void testNaiveBayes2() throws IOException {
+  public void testNaiveBayes2() throws IOException {
 
     testDataIndexer.index(createTrainingStream());
     NaiveBayesModel model =
@@ -86,7 +85,7 @@ public class NaiveBayesCorrectnessTest {
   }
 
   @Test
-  void testNaiveBayes3() throws IOException {
+  public void testNaiveBayes3() throws IOException {
 
     testDataIndexer.index(createTrainingStream());
     NaiveBayesModel model =
@@ -102,7 +101,7 @@ public class NaiveBayesCorrectnessTest {
   }
 
   @Test
-  void testNaiveBayes4() throws IOException {
+  public void testNaiveBayes4() throws IOException {
 
     testDataIndexer.index(createTrainingStream());
     NaiveBayesModel model =
@@ -119,23 +118,23 @@ public class NaiveBayesCorrectnessTest {
   private void testModel(MaxentModel model, Event event, double higher_probability) {
     double[] outcomes = model.eval(event.getContext());
     String outcome = model.getBestOutcome(outcomes);
-    Assertions.assertEquals(2, outcomes.length);
-    Assertions.assertEquals(event.getOutcome(), outcome);
+    Assert.assertEquals(2, outcomes.length);
+    Assert.assertEquals(event.getOutcome(), outcome);
     if (event.getOutcome().equals(model.getOutcome(0))) {
-      Assertions.assertEquals(higher_probability, outcomes[0], 0.0001);
+      Assert.assertEquals(higher_probability, outcomes[0], 0.0001);
     }
     if (!event.getOutcome().equals(model.getOutcome(0))) {
-      Assertions.assertEquals(1.0 - higher_probability, outcomes[0], 0.0001);
+      Assert.assertEquals(1.0 - higher_probability, outcomes[0], 0.0001);
     }
     if (event.getOutcome().equals(model.getOutcome(1))) {
-      Assertions.assertEquals(higher_probability, outcomes[1], 0.0001);
+      Assert.assertEquals(higher_probability, outcomes[1], 0.0001);
     }
     if (!event.getOutcome().equals(model.getOutcome(1))) {
-      Assertions.assertEquals(1.0 - higher_probability, outcomes[1], 0.0001);
+      Assert.assertEquals(1.0 - higher_probability, outcomes[1], 0.0001);
     }
   }
 
-  public static ObjectStream<Event> createTrainingStream() {
+  public static ObjectStream<Event> createTrainingStream() throws IOException {
     List<Event> trainingEvents = new ArrayList<>();
 
     String label1 = "politics";

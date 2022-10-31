@@ -17,127 +17,127 @@
 
 package opennlp.tools.util.featuregen;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class StringPatternTest {
 
   @Test
-  void testIsAllLetters() {
-    Assertions.assertTrue(StringPattern.recognize("test").isAllLetter());
-    Assertions.assertTrue(StringPattern.recognize("TEST").isAllLetter());
-    Assertions.assertTrue(StringPattern.recognize("TesT").isAllLetter());
-    Assertions.assertTrue(StringPattern.recognize("grün").isAllLetter());
-    Assertions.assertTrue(StringPattern.recognize("üäöæß").isAllLetter());
-    Assertions.assertTrue(StringPattern.recognize("あア亜Ａａ").isAllLetter());
+  public void testIsAllLetters() {
+    Assert.assertTrue(StringPattern.recognize("test").isAllLetter());
+    Assert.assertTrue(StringPattern.recognize("TEST").isAllLetter());
+    Assert.assertTrue(StringPattern.recognize("TesT").isAllLetter());
+    Assert.assertTrue(StringPattern.recognize("grün").isAllLetter());
+    Assert.assertTrue(StringPattern.recognize("üäöæß").isAllLetter());
+    Assert.assertTrue(StringPattern.recognize("あア亜Ａａ").isAllLetter());
   }
 
   @Test
-  void testIsInitialCapitalLetter() {
-    Assertions.assertTrue(StringPattern.recognize("Test").isInitialCapitalLetter());
-    Assertions.assertFalse(StringPattern.recognize("tEST").isInitialCapitalLetter());
-    Assertions.assertTrue(StringPattern.recognize("TesT").isInitialCapitalLetter());
-    Assertions.assertTrue(StringPattern.recognize("Üäöæß").isInitialCapitalLetter());
-    Assertions.assertFalse(StringPattern.recognize("いイ井").isInitialCapitalLetter());
-    Assertions.assertTrue(StringPattern.recognize("Iいイ井").isInitialCapitalLetter());
-    Assertions.assertTrue(StringPattern.recognize("Ｉいイ井").isInitialCapitalLetter());
+  public void testIsInitialCapitalLetter() {
+    Assert.assertTrue(StringPattern.recognize("Test").isInitialCapitalLetter());
+    Assert.assertFalse(StringPattern.recognize("tEST").isInitialCapitalLetter());
+    Assert.assertTrue(StringPattern.recognize("TesT").isInitialCapitalLetter());
+    Assert.assertTrue(StringPattern.recognize("Üäöæß").isInitialCapitalLetter());
+    Assert.assertFalse(StringPattern.recognize("いイ井").isInitialCapitalLetter());
+    Assert.assertTrue(StringPattern.recognize("Iいイ井").isInitialCapitalLetter());
+    Assert.assertTrue(StringPattern.recognize("Ｉいイ井").isInitialCapitalLetter());
   }
 
   @Test
-  void testIsAllCapitalLetter() {
-    Assertions.assertTrue(StringPattern.recognize("TEST").isAllCapitalLetter());
-    Assertions.assertTrue(StringPattern.recognize("ÄÄÄÜÜÜÖÖÖÖ").isAllCapitalLetter());
-    Assertions.assertFalse(StringPattern.recognize("ÄÄÄÜÜÜÖÖä").isAllCapitalLetter());
-    Assertions.assertFalse(StringPattern.recognize("ÄÄÄÜÜdÜÖÖ").isAllCapitalLetter());
-    Assertions.assertTrue(StringPattern.recognize("ＡＢＣ").isAllCapitalLetter());
-    Assertions.assertFalse(StringPattern.recognize("うウ宇").isAllCapitalLetter());
+  public void testIsAllCapitalLetter() {
+    Assert.assertTrue(StringPattern.recognize("TEST").isAllCapitalLetter());
+    Assert.assertTrue(StringPattern.recognize("ÄÄÄÜÜÜÖÖÖÖ").isAllCapitalLetter());
+    Assert.assertFalse(StringPattern.recognize("ÄÄÄÜÜÜÖÖä").isAllCapitalLetter());
+    Assert.assertFalse(StringPattern.recognize("ÄÄÄÜÜdÜÖÖ").isAllCapitalLetter());
+    Assert.assertTrue(StringPattern.recognize("ＡＢＣ").isAllCapitalLetter());
+    Assert.assertFalse(StringPattern.recognize("うウ宇").isAllCapitalLetter());
   }
 
   @Test
-  void testIsAllLowerCaseLetter() {
-    Assertions.assertTrue(StringPattern.recognize("test").isAllLowerCaseLetter());
-    Assertions.assertTrue(StringPattern.recognize("öäü").isAllLowerCaseLetter());
-    Assertions.assertTrue(StringPattern.recognize("öäüßßß").isAllLowerCaseLetter());
-    Assertions.assertFalse(StringPattern.recognize("Test").isAllLowerCaseLetter());
-    Assertions.assertFalse(StringPattern.recognize("TEST").isAllLowerCaseLetter());
-    Assertions.assertFalse(StringPattern.recognize("testT").isAllLowerCaseLetter());
-    Assertions.assertFalse(StringPattern.recognize("tesÖt").isAllLowerCaseLetter());
-    Assertions.assertTrue(StringPattern.recognize("ａｂｃ").isAllLowerCaseLetter());
-    Assertions.assertFalse(StringPattern.recognize("えエ絵").isAllLowerCaseLetter());
+  public void testIsAllLowerCaseLetter() {
+    Assert.assertTrue(StringPattern.recognize("test").isAllLowerCaseLetter());
+    Assert.assertTrue(StringPattern.recognize("öäü").isAllLowerCaseLetter());
+    Assert.assertTrue(StringPattern.recognize("öäüßßß").isAllLowerCaseLetter());
+    Assert.assertFalse(StringPattern.recognize("Test").isAllLowerCaseLetter());
+    Assert.assertFalse(StringPattern.recognize("TEST").isAllLowerCaseLetter());
+    Assert.assertFalse(StringPattern.recognize("testT").isAllLowerCaseLetter());
+    Assert.assertFalse(StringPattern.recognize("tesÖt").isAllLowerCaseLetter());
+    Assert.assertTrue(StringPattern.recognize("ａｂｃ").isAllLowerCaseLetter());
+    Assert.assertFalse(StringPattern.recognize("えエ絵").isAllLowerCaseLetter());
   }
 
   @Test
-  void testIsAllDigit() {
-    Assertions.assertTrue(StringPattern.recognize("123456").isAllDigit());
-    Assertions.assertFalse(StringPattern.recognize("123,56").isAllDigit());
-    Assertions.assertFalse(StringPattern.recognize("12356f").isAllDigit());
-    Assertions.assertTrue(StringPattern.recognize("１２３４５６").isAllDigit());
+  public void testIsAllDigit() {
+    Assert.assertTrue(StringPattern.recognize("123456").isAllDigit());
+    Assert.assertFalse(StringPattern.recognize("123,56").isAllDigit());
+    Assert.assertFalse(StringPattern.recognize("12356f").isAllDigit());
+    Assert.assertTrue(StringPattern.recognize("１２３４５６").isAllDigit());
   }
 
   @Test
-  void testIsAllHiragana() {
-    Assertions.assertTrue(StringPattern.recognize("あぱっち・るしーん").isAllHiragana());
-    Assertions.assertFalse(StringPattern.recognize("あぱっち・そふとうぇあ財団").isAllHiragana());
-    Assertions.assertFalse(StringPattern.recognize("あぱっち・るしーんＶ１．０").isAllHiragana());
+  public void testIsAllHiragana() {
+    Assert.assertTrue(StringPattern.recognize("あぱっち・るしーん").isAllHiragana());
+    Assert.assertFalse(StringPattern.recognize("あぱっち・そふとうぇあ財団").isAllHiragana());
+    Assert.assertFalse(StringPattern.recognize("あぱっち・るしーんＶ１．０").isAllHiragana());
   }
 
   @Test
-  void testIsAllKatakana() {
-    Assertions.assertTrue(StringPattern.recognize("アパッチ・ルシーン").isAllKatakana());
-    Assertions.assertFalse(StringPattern.recognize("アパッチ・ソフトウェア財団").isAllKatakana());
-    Assertions.assertFalse(StringPattern.recognize("アパッチ・ルシーンＶ１．０").isAllKatakana());
+  public void testIsAllKatakana() {
+    Assert.assertTrue(StringPattern.recognize("アパッチ・ルシーン").isAllKatakana());
+    Assert.assertFalse(StringPattern.recognize("アパッチ・ソフトウェア財団").isAllKatakana());
+    Assert.assertFalse(StringPattern.recognize("アパッチ・ルシーンＶ１．０").isAllKatakana());
   }
 
   @Test
-  void testDigits() {
-    Assertions.assertEquals(6, StringPattern.recognize("123456").digits());
-    Assertions.assertEquals(3, StringPattern.recognize("123fff").digits());
-    Assertions.assertEquals(0, StringPattern.recognize("test").digits());
-    Assertions.assertEquals(3, StringPattern.recognize("１２３ｆｆｆ").digits());
+  public void testDigits() {
+    Assert.assertEquals(6, StringPattern.recognize("123456").digits());
+    Assert.assertEquals(3, StringPattern.recognize("123fff").digits());
+    Assert.assertEquals(0, StringPattern.recognize("test").digits());
+    Assert.assertEquals(3, StringPattern.recognize("１２３ｆｆｆ").digits());
   }
 
   @Test
-  void testContainsPeriod() {
-    Assertions.assertTrue(StringPattern.recognize("test.").containsPeriod());
-    Assertions.assertTrue(StringPattern.recognize("23.5").containsPeriod());
-    Assertions.assertFalse(StringPattern.recognize("test,/-1").containsPeriod());
+  public void testContainsPeriod() {
+    Assert.assertTrue(StringPattern.recognize("test.").containsPeriod());
+    Assert.assertTrue(StringPattern.recognize("23.5").containsPeriod());
+    Assert.assertFalse(StringPattern.recognize("test,/-1").containsPeriod());
   }
 
   @Test
-  void testContainsComma() {
-    Assertions.assertTrue(StringPattern.recognize("test,").containsComma());
-    Assertions.assertTrue(StringPattern.recognize("23,5").containsComma());
-    Assertions.assertFalse(StringPattern.recognize("test./-1").containsComma());
+  public void testContainsComma() {
+    Assert.assertTrue(StringPattern.recognize("test,").containsComma());
+    Assert.assertTrue(StringPattern.recognize("23,5").containsComma());
+    Assert.assertFalse(StringPattern.recognize("test./-1").containsComma());
   }
 
   @Test
-  void testContainsSlash() {
-    Assertions.assertTrue(StringPattern.recognize("test/").containsSlash());
-    Assertions.assertTrue(StringPattern.recognize("23/5").containsSlash());
-    Assertions.assertFalse(StringPattern.recognize("test.1-,").containsSlash());
+  public void testContainsSlash() {
+    Assert.assertTrue(StringPattern.recognize("test/").containsSlash());
+    Assert.assertTrue(StringPattern.recognize("23/5").containsSlash());
+    Assert.assertFalse(StringPattern.recognize("test.1-,").containsSlash());
   }
 
   @Test
-  void testContainsDigit() {
-    Assertions.assertTrue(StringPattern.recognize("test1").containsDigit());
-    Assertions.assertTrue(StringPattern.recognize("23,5").containsDigit());
-    Assertions.assertFalse(StringPattern.recognize("test./-,").containsDigit());
-    Assertions.assertTrue(StringPattern.recognize("テスト１").containsDigit());
-    Assertions.assertFalse(StringPattern.recognize("テストＴＥＳＴ").containsDigit());
+  public void testContainsDigit() {
+    Assert.assertTrue(StringPattern.recognize("test1").containsDigit());
+    Assert.assertTrue(StringPattern.recognize("23,5").containsDigit());
+    Assert.assertFalse(StringPattern.recognize("test./-,").containsDigit());
+    Assert.assertTrue(StringPattern.recognize("テスト１").containsDigit());
+    Assert.assertFalse(StringPattern.recognize("テストＴＥＳＴ").containsDigit());
   }
 
   @Test
-  void testContainsHyphen() {
-    Assertions.assertTrue(StringPattern.recognize("test--").containsHyphen());
-    Assertions.assertTrue(StringPattern.recognize("23-5").containsHyphen());
-    Assertions.assertFalse(StringPattern.recognize("test.1/,").containsHyphen());
+  public void testContainsHyphen() {
+    Assert.assertTrue(StringPattern.recognize("test--").containsHyphen());
+    Assert.assertTrue(StringPattern.recognize("23-5").containsHyphen());
+    Assert.assertFalse(StringPattern.recognize("test.1/,").containsHyphen());
   }
 
   @Test
-  void testContainsLetters() {
-    Assertions.assertTrue(StringPattern.recognize("test--").containsLetters());
-    Assertions.assertTrue(StringPattern.recognize("23h5ßm").containsLetters());
-    Assertions.assertFalse(StringPattern.recognize("---.1/,").containsLetters());
+  public void testContainsLetters() {
+    Assert.assertTrue(StringPattern.recognize("test--").containsLetters());
+    Assert.assertTrue(StringPattern.recognize("23h5ßm").containsLetters());
+    Assert.assertFalse(StringPattern.recognize("---.1/,").containsLetters());
   }
 
 }

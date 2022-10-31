@@ -20,12 +20,15 @@ package opennlp.tools.formats;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringList;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class NameFinderCensus90NameStreamTest {
 
@@ -39,65 +42,65 @@ public class NameFinderCensus90NameStreamTest {
   }
 
   @Test
-  void testParsingEnglishSample() throws IOException {
+  public void testParsingEnglishSample() throws IOException {
 
     ObjectStream<StringList> sampleStream = openData("census90.sample");
 
     StringList personName = sampleStream.read();
 
     // verify the first 5 taken from the Surname data
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Smith", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Smith", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Johnson", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Johnson", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Williams", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Williams", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Jones", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Jones", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Brown", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Brown", personName.getToken(0));
 
     // verify the next 5 taken from the female names
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Mary", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Mary", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Patricia", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Patricia", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Linda", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Linda", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Barbara", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Barbara", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Elizabeth", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Elizabeth", personName.getToken(0));
 
     // verify the last 5 taken from the male names
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("James", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("James", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("John", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("John", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Robert", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Robert", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("Michael", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("Michael", personName.getToken(0));
     personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
-    Assertions.assertEquals("William", personName.getToken(0));
+    assertNotNull(personName);
+    assertEquals("William", personName.getToken(0));
 
     // verify the end of the file.
     personName = sampleStream.read();
-    Assertions.assertNull(personName);
+    assertNull(personName);
   }
 
 }

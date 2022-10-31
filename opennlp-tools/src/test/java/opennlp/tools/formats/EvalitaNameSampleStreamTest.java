@@ -19,8 +19,8 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.EvalitaNameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
@@ -42,33 +42,33 @@ public class EvalitaNameSampleStreamTest {
   }
 
   @Test
-  void testParsingItalianSample() throws IOException {
+  public void testParsingItalianSample() throws IOException {
 
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.IT, "evalita-ner-it.sample");
 
     NameSample personName = sampleStream.read();
 
-    Assertions.assertNotNull(personName);
+    Assert.assertNotNull(personName);
 
-    Assertions.assertEquals(11, personName.getSentence().length);
-    Assertions.assertEquals(1, personName.getNames().length);
-    Assertions.assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(11, personName.getSentence().length);
+    Assert.assertEquals(1, personName.getNames().length);
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
 
     Span nameSpan = personName.getNames()[0];
-    Assertions.assertEquals(8, nameSpan.getStart());
-    Assertions.assertEquals(10, nameSpan.getEnd());
-    Assertions.assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(8, nameSpan.getStart());
+    Assert.assertEquals(10, nameSpan.getEnd());
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
 
-    Assertions.assertEquals(0, sampleStream.read().getNames().length);
+    Assert.assertEquals(0, sampleStream.read().getNames().length);
 
-    Assertions.assertNull(sampleStream.read());
+    Assert.assertNull(sampleStream.read());
   }
 
   @Test
-  void testReset() throws IOException {
+  public void testReset() throws IOException {
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.IT, "evalita-ner-it.sample");
     NameSample sample = sampleStream.read();
     sampleStream.reset();
-    Assertions.assertEquals(sample, sampleStream.read());
+    Assert.assertEquals(sample, sampleStream.read());
   }
 }

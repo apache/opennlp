@@ -21,8 +21,8 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.MockInputStreamFactory;
@@ -55,7 +55,7 @@ public class NameFinderMETest {
   private static final String DEFAULT = "default";
 
   @Test
-  void testNameFinder() throws Exception {
+  public void testNameFinder() throws Exception {
 
     // train the name finder
     String encoding = "ISO-8859-1";
@@ -63,7 +63,7 @@ public class NameFinderMETest {
     ObjectStream<NameSample> sampleStream =
         new NameSampleDataStream(
             new PlainTextByLineStream(new MockInputStreamFactory(
-                new File("opennlp/tools/namefind/AnnotatedSentences.txt")), encoding));
+              new File("opennlp/tools/namefind/AnnotatedSentences.txt")), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -89,8 +89,8 @@ public class NameFinderMETest {
 
     Span[] names = nameFinder.find(sentence);
 
-    Assertions.assertEquals(1, names.length);
-    Assertions.assertEquals(new Span(0, 1, DEFAULT), names[0]);
+    Assert.assertEquals(1, names.length);
+    Assert.assertEquals(new Span(0, 1, DEFAULT), names[0]);
 
     sentence = new String[] {
         "Hi",
@@ -104,9 +104,9 @@ public class NameFinderMETest {
 
     names = nameFinder.find(sentence);
 
-    Assertions.assertEquals(2, names.length);
-    Assertions.assertEquals(new Span(1, 2, DEFAULT), names[0]);
-    Assertions.assertEquals(new Span(4, 6, DEFAULT), names[1]);
+    Assert.assertEquals(2, names.length);
+    Assert.assertEquals(new Span(1, 2, DEFAULT), names[0]);
+    Assert.assertEquals(new Span(4, 6, DEFAULT), names[1]);
   }
 
   /**
@@ -114,14 +114,14 @@ public class NameFinderMETest {
    * nameType and try the model in a sample text.
    */
   @Test
-  void testNameFinderWithTypes() throws Exception {
+  public void testNameFinderWithTypes() throws Exception {
 
     // train the name finder
     String encoding = "ISO-8859-1";
 
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")), encoding));
+          new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")), encoding));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -134,25 +134,25 @@ public class NameFinderMETest {
 
     // now test if it can detect the sample sentences
 
-    String[] sentence2 = new String[] {"Hi", "Mike", ",", "it's", "Stefanie",
-        "Schmidt", "."};
+    String[] sentence2 = new String[] { "Hi", "Mike", ",", "it's", "Stefanie",
+        "Schmidt", "." };
 
     Span[] names2 = nameFinder.find(sentence2);
 
-    Assertions.assertEquals(2, names2.length);
-    Assertions.assertEquals(new Span(1, 2, "person"), names2[0]);
-    Assertions.assertEquals(new Span(4, 6, "person"), names2[1]);
-    Assertions.assertEquals("person", names2[0].getType());
-    Assertions.assertEquals("person", names2[1].getType());
+    Assert.assertEquals(2, names2.length);
+    Assert.assertEquals(new Span(1, 2, "person"), names2[0]);
+    Assert.assertEquals(new Span(4, 6, "person"), names2[1]);
+    Assert.assertEquals("person", names2[0].getType());
+    Assert.assertEquals("person", names2[1].getType());
 
-    String[] sentence = {"Alisa", "appreciated", "the", "hint", "and",
-        "enjoyed", "a", "delicious", "traditional", "meal."};
+    String[] sentence = { "Alisa", "appreciated", "the", "hint", "and",
+        "enjoyed", "a", "delicious", "traditional", "meal." };
 
     Span[] names = nameFinder.find(sentence);
 
-    Assertions.assertEquals(1, names.length);
-    Assertions.assertEquals(new Span(0, 1, "person"), names[0]);
-    Assertions.assertTrue(hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(1, names.length);
+    Assert.assertEquals(new Span(0, 1, "person"), names[0]);
+    Assert.assertTrue(hasOtherAsOutcome(nameFinderModel));
   }
 
   /**
@@ -160,42 +160,42 @@ public class NameFinderMETest {
    * This is related to the issue OPENNLP-9
    */
   @Test
-  void testOnlyWithNames() throws Exception {
+  public void testOnlyWithNames() throws Exception {
 
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
+            new PlainTextByLineStream(new MockInputStreamFactory(
+              new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
-        params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
+            params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
     NameFinderME nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
 
     String[] sentence = ("Neil Abercrombie Anibal Acevedo-Vila Gary Ackerman " +
-        "Robert Aderholt Daniel Akaka Todd Akin Lamar Alexander Rodney Alexander").split("\\s+");
+            "Robert Aderholt Daniel Akaka Todd Akin Lamar Alexander Rodney Alexander").split("\\s+");
 
     Span[] names1 = nameFinder.find(sentence);
 
-    Assertions.assertEquals(new Span(0, 2, DEFAULT), names1[0]);
-    Assertions.assertEquals(new Span(2, 4, DEFAULT), names1[1]);
-    Assertions.assertEquals(new Span(4, 6, DEFAULT), names1[2]);
-    Assertions.assertFalse(hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(new Span(0, 2, DEFAULT), names1[0]);
+    Assert.assertEquals(new Span(2, 4, DEFAULT), names1[1]);
+    Assert.assertEquals(new Span(4, 6, DEFAULT), names1[2]);
+    Assert.assertFalse(hasOtherAsOutcome(nameFinderModel));
   }
 
   @Test
-  void testOnlyWithNamesTypeOverride() throws Exception {
+  public void testOnlyWithNamesTypeOverride() throws Exception {
 
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
+          new File("opennlp/tools/namefind/OnlyWithNames.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -213,10 +213,10 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    Assertions.assertEquals(new Span(0, 2, TYPE_OVERRIDE), names1[0]);
-    Assertions.assertEquals(new Span(2, 4, TYPE_OVERRIDE), names1[1]);
-    Assertions.assertEquals(new Span(4, 6, TYPE_OVERRIDE), names1[2]);
-    Assertions.assertFalse(hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(new Span(0, 2, TYPE_OVERRIDE), names1[0]);
+    Assert.assertEquals(new Span(2, 4, TYPE_OVERRIDE), names1[1]);
+    Assert.assertEquals(new Span(4, 6, TYPE_OVERRIDE), names1[2]);
+    Assert.assertFalse(hasOtherAsOutcome(nameFinderModel));
   }
 
   /**
@@ -225,12 +225,12 @@ public class NameFinderMETest {
    * This is related to the issue OPENNLP-9
    */
   @Test
-  void testOnlyWithNamesWithTypes() throws Exception {
+  public void testOnlyWithNamesWithTypes() throws Exception {
 
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), StandardCharsets.UTF_8));
+          new File("opennlp/tools/namefind/OnlyWithNamesWithTypes.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -248,11 +248,11 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    Assertions.assertEquals(new Span(0, 2, "person"), names1[0]);
-    Assertions.assertEquals(new Span(2, 4, "person"), names1[1]);
-    Assertions.assertEquals(new Span(4, 6, "person"), names1[2]);
-    Assertions.assertEquals("person", names1[2].getType());
-    Assertions.assertFalse(hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(new Span(0, 2, "person"), names1[0]);
+    Assert.assertEquals(new Span(2, 4, "person"), names1[1]);
+    Assert.assertEquals(new Span(4, 6, "person"), names1[2]);
+    Assert.assertEquals("person", names1[2].getType());
+    Assert.assertFalse(hasOtherAsOutcome(nameFinderModel));
   }
 
   /**
@@ -260,12 +260,12 @@ public class NameFinderMETest {
    * This is related to the issue OPENNLP-9
    */
   @Test
-  void testOnlyWithEntitiesWithTypes() throws Exception {
+  public void testOnlyWithEntitiesWithTypes() throws Exception {
 
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train")), StandardCharsets.UTF_8));
+          new File("opennlp/tools/namefind/OnlyWithEntitiesWithTypes.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
@@ -283,10 +283,10 @@ public class NameFinderMETest {
 
     Span[] names1 = nameFinder.find(sentence);
 
-    Assertions.assertEquals(new Span(0, 1, "organization"), names1[0]); // NATO
-    Assertions.assertEquals(new Span(1, 3, "location"), names1[1]); // United States
-    Assertions.assertEquals("person", names1[2].getType());
-    Assertions.assertFalse(hasOtherAsOutcome(nameFinderModel));
+    Assert.assertEquals(new Span(0, 1, "organization"), names1[0]); // NATO
+    Assert.assertEquals(new Span(1, 3, "location"), names1[1]); // United States
+    Assert.assertEquals("person", names1[2].getType());
+    Assert.assertFalse(hasOtherAsOutcome(nameFinderModel));
   }
 
   private boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
@@ -301,10 +301,10 @@ public class NameFinderMETest {
   }
 
   @Test
-  void testDropOverlappingSpans() {
-    Span[] spans = new Span[] {new Span(1, 10), new Span(1, 11), new Span(1, 11), new Span(5, 15)};
+  public void testDropOverlappingSpans() {
+    Span[] spans = new Span[] {new Span(1, 10), new Span(1,11), new Span(1,11), new Span(5, 15)};
     Span[] remainingSpan = NameFinderME.dropOverlappingSpans(spans);
-    Assertions.assertEquals(new Span(1, 11), remainingSpan[0]);
+    Assert.assertEquals(new Span(1, 11), remainingSpan[0]);
   }
 
   /**
@@ -312,12 +312,12 @@ public class NameFinderMETest {
    * nameTypes and try the model in a sample text.
    */
   @Test
-  void testNameFinderWithMultipleTypes() throws Exception {
+  public void testNameFinderWithMultipleTypes() throws Exception {
 
     // train the name finder
     ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
         new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
+          new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ITERATIONS_PARAM, 70);
@@ -330,34 +330,34 @@ public class NameFinderMETest {
 
     // now test if it can detect the sample sentences
 
-    String[] sentence = new String[] {"U", ".", "S", ".", "President",
+    String[] sentence = new String[] { "U", ".", "S", ".", "President",
         "Barack", "Obama", "has", "arrived", "in", "South", "Korea", ",",
         "where", "he", "is", "expected", "to", "show", "solidarity", "with",
         "the", "country", "'", "s", "president", "in", "demanding", "North",
         "Korea", "move", "toward", "ending", "its", "nuclear", "weapons",
-        "programs", "."};
+        "programs", "." };
 
     Span[] names1 = nameFinder.find(sentence);
 
-    Assertions.assertEquals(new Span(0, 4, "location"), names1[0]);
-    Assertions.assertEquals(new Span(5, 7, "person"), names1[1]);
-    Assertions.assertEquals(new Span(10, 12, "location"), names1[2]);
-    Assertions.assertEquals(new Span(28, 30, "location"), names1[3]);
-    Assertions.assertEquals("location", names1[0].getType());
-    Assertions.assertEquals("person", names1[1].getType());
-    Assertions.assertEquals("location", names1[2].getType());
-    Assertions.assertEquals("location", names1[3].getType());
+    Assert.assertEquals(new Span(0, 4, "location"), names1[0]);
+    Assert.assertEquals(new Span(5, 7, "person"), names1[1]);
+    Assert.assertEquals(new Span(10, 12, "location"), names1[2]);
+    Assert.assertEquals(new Span(28, 30, "location"), names1[3]);
+    Assert.assertEquals("location", names1[0].getType());
+    Assert.assertEquals("person", names1[1].getType());
+    Assert.assertEquals("location", names1[2].getType());
+    Assert.assertEquals("location", names1[3].getType());
 
-    sentence = new String[] {"Scott", "Snyder", "is", "the", "director", "of",
-        "the", "Center", "for", "U", ".", "S", ".", "Korea", "Policy", "."};
+    sentence = new String[] { "Scott", "Snyder", "is", "the", "director", "of",
+        "the", "Center", "for", "U", ".", "S", ".", "Korea", "Policy", "." };
 
     Span[] names2 = nameFinder.find(sentence);
 
-    Assertions.assertEquals(2, names2.length);
-    Assertions.assertEquals(new Span(0, 2, "person"), names2[0]);
-    Assertions.assertEquals(new Span(7, 15, "organization"), names2[1]);
-    Assertions.assertEquals("person", names2[0].getType());
-    Assertions.assertEquals("organization", names2[1].getType());
+    Assert.assertEquals(2, names2.length);
+    Assert.assertEquals(new Span(0, 2, "person"), names2[0]);
+    Assert.assertEquals(new Span(7, 15, "organization"), names2[1]);
+    Assert.assertEquals("person", names2[0].getType());
+    Assert.assertEquals("organization", names2[1].getType());
   }
 
 }

@@ -17,8 +17,8 @@
 
 package opennlp.tools.util.normalizer;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 
 public class EmojiCharSequenceNormalizerTest {
@@ -26,7 +26,7 @@ public class EmojiCharSequenceNormalizerTest {
   public EmojiCharSequenceNormalizer normalizer = EmojiCharSequenceNormalizer.getInstance();
 
   @Test
-  void normalizeEmoji() {
+  public void normalizeEmoji() throws Exception {
 
     String s = new StringBuilder()
         .append("Any funny text goes here ")
@@ -36,7 +36,7 @@ public class EmojiCharSequenceNormalizerTest {
         .append(" ")
         .appendCodePoint(0x1F61B)
         .toString();
-    Assertions.assertEquals(
+    Assert.assertEquals(
         "Any funny text goes here    ", normalizer.normalize(s));
   }
 

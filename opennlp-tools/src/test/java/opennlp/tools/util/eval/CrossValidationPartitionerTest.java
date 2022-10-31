@@ -24,8 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
@@ -36,27 +36,28 @@ import opennlp.tools.util.eval.CrossValidationPartitioner.TrainingSampleStream;
 public class CrossValidationPartitionerTest {
 
   @Test
-  void testEmptyDataSet() throws IOException {
+  public void testEmptyDataSet() throws IOException {
     Collection<String> emptyCollection = Collections.emptySet();
 
     CrossValidationPartitioner<String> partitioner =
         new CrossValidationPartitioner<>(emptyCollection, 2);
 
-    Assertions.assertTrue(partitioner.hasNext());
-    Assertions.assertNull(partitioner.next().read());
+    Assert.assertTrue(partitioner.hasNext());
+    Assert.assertNull(partitioner.next().read());
 
-    Assertions.assertTrue(partitioner.hasNext());
-    Assertions.assertNull(partitioner.next().read());
+    Assert.assertTrue(partitioner.hasNext());
+    Assert.assertNull(partitioner.next().read());
 
-    Assertions.assertFalse(partitioner.hasNext());
+    Assert.assertFalse(partitioner.hasNext());
 
     try {
       // Should throw NoSuchElementException
       partitioner.next();
 
       // ups, hasn't thrown one
-      Assertions.fail();
-    } catch (NoSuchElementException e) {
+      Assert.fail();
+    }
+    catch (NoSuchElementException e) {
       // expected
     }
   }
@@ -65,7 +66,7 @@ public class CrossValidationPartitionerTest {
    * Test 3-fold cross validation on a small sample data set.
    */
   @Test
-  void test3FoldCV() throws IOException {
+  public void test3FoldCV() throws IOException {
     List<String> data = new LinkedList<>();
     data.add("01");
     data.add("02");
@@ -81,71 +82,71 @@ public class CrossValidationPartitionerTest {
     CrossValidationPartitioner<String> partitioner = new CrossValidationPartitioner<>(data, 3);
 
     // first partition
-    Assertions.assertTrue(partitioner.hasNext());
+    Assert.assertTrue(partitioner.hasNext());
     TrainingSampleStream<String> firstTraining = partitioner.next();
 
-    Assertions.assertEquals("02", firstTraining.read());
-    Assertions.assertEquals("03", firstTraining.read());
-    Assertions.assertEquals("05", firstTraining.read());
-    Assertions.assertEquals("06", firstTraining.read());
-    Assertions.assertEquals("08", firstTraining.read());
-    Assertions.assertEquals("09", firstTraining.read());
-    Assertions.assertNull(firstTraining.read());
+    Assert.assertEquals("02", firstTraining.read());
+    Assert.assertEquals("03", firstTraining.read());
+    Assert.assertEquals("05", firstTraining.read());
+    Assert.assertEquals("06", firstTraining.read());
+    Assert.assertEquals("08", firstTraining.read());
+    Assert.assertEquals("09", firstTraining.read());
+    Assert.assertNull(firstTraining.read());
 
     ObjectStream<String> firstTest = firstTraining.getTestSampleStream();
 
-    Assertions.assertEquals("01", firstTest.read());
-    Assertions.assertEquals("04", firstTest.read());
-    Assertions.assertEquals("07", firstTest.read());
-    Assertions.assertEquals("10", firstTest.read());
-    Assertions.assertNull(firstTest.read());
+    Assert.assertEquals("01", firstTest.read());
+    Assert.assertEquals("04", firstTest.read());
+    Assert.assertEquals("07", firstTest.read());
+    Assert.assertEquals("10", firstTest.read());
+    Assert.assertNull(firstTest.read());
 
     // second partition
-    Assertions.assertTrue(partitioner.hasNext());
+    Assert.assertTrue(partitioner.hasNext());
     TrainingSampleStream<String> secondTraining = partitioner.next();
 
-    Assertions.assertEquals("01", secondTraining.read());
-    Assertions.assertEquals("03", secondTraining.read());
-    Assertions.assertEquals("04", secondTraining.read());
-    Assertions.assertEquals("06", secondTraining.read());
-    Assertions.assertEquals("07", secondTraining.read());
-    Assertions.assertEquals("09", secondTraining.read());
-    Assertions.assertEquals("10", secondTraining.read());
+    Assert.assertEquals("01", secondTraining.read());
+    Assert.assertEquals("03", secondTraining.read());
+    Assert.assertEquals("04", secondTraining.read());
+    Assert.assertEquals("06", secondTraining.read());
+    Assert.assertEquals("07", secondTraining.read());
+    Assert.assertEquals("09", secondTraining.read());
+    Assert.assertEquals("10", secondTraining.read());
 
-    Assertions.assertNull(secondTraining.read());
+    Assert.assertNull(secondTraining.read());
 
     ObjectStream<String> secondTest = secondTraining.getTestSampleStream();
 
-    Assertions.assertEquals("02", secondTest.read());
-    Assertions.assertEquals("05", secondTest.read());
-    Assertions.assertEquals("08", secondTest.read());
-    Assertions.assertNull(secondTest.read());
+    Assert.assertEquals("02", secondTest.read());
+    Assert.assertEquals("05", secondTest.read());
+    Assert.assertEquals("08", secondTest.read());
+    Assert.assertNull(secondTest.read());
 
     // third partition
-    Assertions.assertTrue(partitioner.hasNext());
+    Assert.assertTrue(partitioner.hasNext());
     TrainingSampleStream<String> thirdTraining = partitioner.next();
 
-    Assertions.assertEquals("01", thirdTraining.read());
-    Assertions.assertEquals("02", thirdTraining.read());
-    Assertions.assertEquals("04", thirdTraining.read());
-    Assertions.assertEquals("05", thirdTraining.read());
-    Assertions.assertEquals("07", thirdTraining.read());
-    Assertions.assertEquals("08", thirdTraining.read());
-    Assertions.assertEquals("10", thirdTraining.read());
-    Assertions.assertNull(thirdTraining.read());
+    Assert.assertEquals("01", thirdTraining.read());
+    Assert.assertEquals("02", thirdTraining.read());
+    Assert.assertEquals("04", thirdTraining.read());
+    Assert.assertEquals("05", thirdTraining.read());
+    Assert.assertEquals("07", thirdTraining.read());
+    Assert.assertEquals("08", thirdTraining.read());
+    Assert.assertEquals("10", thirdTraining.read());
+    Assert.assertNull(thirdTraining.read());
 
     ObjectStream<String> thirdTest = thirdTraining.getTestSampleStream();
 
-    Assertions.assertEquals("03", thirdTest.read());
-    Assertions.assertEquals("06", thirdTest.read());
-    Assertions.assertEquals("09", thirdTest.read());
-    Assertions.assertNull(thirdTest.read());
+    Assert.assertEquals("03", thirdTest.read());
+    Assert.assertEquals("06", thirdTest.read());
+    Assert.assertEquals("09", thirdTest.read());
+    Assert.assertNull(thirdTest.read());
 
-    Assertions.assertFalse(partitioner.hasNext());
+    Assert.assertFalse(partitioner.hasNext());
   }
 
   @Test
-  void testFailSafty() throws IOException {
+  public void testFailSafty() throws IOException {
     List<String> data = new LinkedList<>();
     data.add("01");
     data.add("02");
@@ -158,21 +159,23 @@ public class CrossValidationPartitionerTest {
     // Test that iterator from previous partition fails
     // if it is accessed
     TrainingSampleStream<String> firstTraining = partitioner.next();
-    Assertions.assertEquals("02", firstTraining.read());
+    Assert.assertEquals("02", firstTraining.read());
 
     TrainingSampleStream<String> secondTraining = partitioner.next();
 
     try {
       firstTraining.read();
-      Assertions.fail();
-    } catch (IllegalStateException expected) {
+      Assert.fail();
+    }
+    catch (IllegalStateException expected) {
       // the read above is expected to throw an exception
     }
 
     try {
       firstTraining.getTestSampleStream();
-      Assertions.fail();
-    } catch (IllegalStateException expected) {
+      Assert.fail();
+    }
+    catch (IllegalStateException expected) {
       // the read above is expected to throw an exception
     }
 
@@ -181,8 +184,9 @@ public class CrossValidationPartitionerTest {
 
     try {
       secondTraining.read();
-      Assertions.fail();
-    } catch (IllegalStateException expected) {
+      Assert.fail();
+    }
+    catch (IllegalStateException expected) {
       // the read above is expected to throw an exception
     }
 
@@ -191,19 +195,20 @@ public class CrossValidationPartitionerTest {
     TrainingSampleStream<String> thirdTraining = partitioner.next();
     ObjectStream<String> thridTest = thirdTraining.getTestSampleStream();
 
-    Assertions.assertTrue(partitioner.hasNext());
+    Assert.assertTrue(partitioner.hasNext());
     partitioner.next();
 
     try {
       thridTest.read();
-      Assertions.fail();
-    } catch (IllegalStateException expected) {
+      Assert.fail();
+    }
+    catch (IllegalStateException expected) {
       // the read above is expected to throw an exception
     }
   }
 
   @Test
-  void testToString() {
+  public void testToString() {
     Collection<String> emptyCollection = Collections.emptySet();
     new CrossValidationPartitioner<>(emptyCollection, 10).toString();
   }

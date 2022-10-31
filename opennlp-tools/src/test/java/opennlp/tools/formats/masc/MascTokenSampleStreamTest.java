@@ -22,8 +22,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluator;
@@ -34,10 +33,15 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 public class MascTokenSampleStreamTest {
 
   @Test
-  void read() {
+  public void read() {
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
       File directory = new File(this.getClass().getResource(
@@ -49,7 +53,7 @@ public class MascTokenSampleStreamTest {
       TokenSample s = stream.read();
 
       String expectedString = "This is a test Sentence.";
-      Assertions.assertEquals(expectedString, s.getText());
+      assertEquals(expectedString, s.getText());
 
       Span[] expectedTags = {
           new Span(0, 4),
@@ -58,11 +62,11 @@ public class MascTokenSampleStreamTest {
           new Span(10, 14),
           new Span(15, 23),
           new Span(23, 24)};
-      Assertions.assertArrayEquals(expectedTags, s.getTokenSpans());
+      assertArrayEquals(expectedTags, s.getTokenSpans());
 
       s = stream.read();
       String expectedTokens = "This is 'nother test sentence.";
-      Assertions.assertEquals(expectedTokens, s.getText());
+      assertEquals(expectedTokens, s.getText());
 
       expectedTags = new Span[] {
           new Span(0, 4),
@@ -71,14 +75,14 @@ public class MascTokenSampleStreamTest {
           new Span(16, 20),
           new Span(21, 29),
           new Span(29, 30)};
-      Assertions.assertArrayEquals(expectedTags, s.getTokenSpans());
+      assertArrayEquals(expectedTags, s.getTokenSpans());
     } catch (IOException e) {
-      Assertions.fail("IO Exception: " + e.getMessage());
+      fail("IO Exception: " + e.getMessage());
     }
   }
 
   @Test
-  void close() {
+  public void close() {
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
       File directory = new File(this.getClass().getResource(
@@ -90,14 +94,14 @@ public class MascTokenSampleStreamTest {
       stream.close();
       TokenSample s = stream.read();
     } catch (IOException e) {
-      Assertions.assertEquals(e.getMessage(),
+      assertEquals(e.getMessage(),
           "You are reading an empty document stream. " +
               "Did you close it?");
     }
   }
 
   @Test
-  void reset() {
+  public void reset() {
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
       File directory = new File(this.getClass().getResource(
@@ -109,14 +113,14 @@ public class MascTokenSampleStreamTest {
       TokenSample s = stream.read();
       s = stream.read();
       s = stream.read();
-      Assertions.assertNull(s);  //The stream should be exhausted by now
+      assertNull(s);  //The stream should be exhausted by now
 
       stream.reset();
 
       s = stream.read();
 
       String expectedString = "This is a test Sentence.";
-      Assertions.assertEquals(expectedString, s.getText());
+      assertEquals(expectedString, s.getText());
 
       Span[] expectedTags = {
           new Span(0, 4),
@@ -125,16 +129,16 @@ public class MascTokenSampleStreamTest {
           new Span(10, 14),
           new Span(15, 23),
           new Span(23, 24)};
-      Assertions.assertArrayEquals(expectedTags, s.getTokenSpans());
+      assertArrayEquals(expectedTags, s.getTokenSpans());
 
     } catch (IOException e) {
-      Assertions.fail("IO Exception: " + e.getMessage());
+      fail("IO Exception: " + e.getMessage());
     }
   }
 
 
   @Test
-  void train() {
+  public void train() {
     try {
       File directory = new File(this.getClass().getResource(
           "/opennlp/tools/formats/masc/").getFile());
@@ -161,7 +165,7 @@ public class MascTokenSampleStreamTest {
     } catch (Exception e) {
       System.err.println(e.getMessage());
       System.err.println(Arrays.toString(e.getStackTrace()));
-      Assertions.fail("Exception raised");
+      fail("Exception raised");
     }
 
 

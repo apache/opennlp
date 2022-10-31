@@ -23,8 +23,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.dictionary.Dictionary;
@@ -42,7 +42,7 @@ import opennlp.tools.util.eval.FMeasure;
 public class DictionaryNameFinderEvaluatorTest {
 
   @Test
-  void testEvaluator() throws IOException, URISyntaxException {
+  public void testEvaluator() throws IOException, URISyntaxException {
     DictionaryNameFinder nameFinder = new DictionaryNameFinder(
         createDictionary());
     TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
@@ -53,8 +53,8 @@ public class DictionaryNameFinderEvaluatorTest {
     sample.close();
     FMeasure fmeasure = evaluator.getFMeasure();
 
-    Assertions.assertTrue(fmeasure.getFMeasure() == 1);
-    Assertions.assertTrue(fmeasure.getRecallScore() == 1);
+    Assert.assertTrue(fmeasure.getFMeasure() == 1);
+    Assert.assertTrue(fmeasure.getRecallScore() == 1);
   }
 
   /**
@@ -62,8 +62,10 @@ public class DictionaryNameFinderEvaluatorTest {
    *
    * @return
    * @throws IOException
+   * @throws URISyntaxException
    */
-  private static ObjectStream<NameSample> createSample() throws IOException {
+  private static ObjectStream<NameSample> createSample() throws IOException,
+      URISyntaxException {
 
     InputStreamFactory in = new ResourceAsStreamFactory(
         DictionaryNameFinderEvaluatorTest.class,

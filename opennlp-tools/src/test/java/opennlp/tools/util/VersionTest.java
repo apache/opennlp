@@ -17,8 +17,8 @@
 
 package opennlp.tools.util;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Tests for the {@link Version} class.
@@ -26,43 +26,45 @@ import org.junit.jupiter.api.Test;
 public class VersionTest {
 
   @Test
-  void testParse() {
+  public void testParse() {
     Version referenceVersion = Version.currentVersion();
-    Assertions.assertEquals(referenceVersion, Version.parse(referenceVersion.toString()));
+    Assert.assertEquals(referenceVersion, Version.parse(referenceVersion.toString()));
 
-    Assertions.assertEquals(new Version(1, 5, 2, false),
+    Assert.assertEquals(new Version(1,5,2, false),
         Version.parse("1.5.2-incubating"));
-    Assertions.assertEquals(new Version(1, 5, 2, false),
+    Assert.assertEquals(new Version(1,5,2, false),
         Version.parse("1.5.2"));
   }
 
   @Test
-  void testParseSnapshot() {
-    Assertions.assertEquals(new Version(1, 5, 2, true),
+  public void testParseSnapshot() {
+    Assert.assertEquals(new Version(1,5,2, true),
         Version.parse("1.5.2-incubating-SNAPSHOT"));
-    Assertions.assertEquals(new Version(1, 5, 2, true),
+    Assert.assertEquals(new Version(1,5,2, true),
         Version.parse("1.5.2-SNAPSHOT"));
   }
 
   @Test
-  void testParseInvalidVersion() {
+  public void testParseInvalidVersion() {
     try {
       Version.parse("1.5.");
-    } catch (NumberFormatException e) {
+    }
+    catch (NumberFormatException e) {
       return;
     }
 
-    Assertions.assertFalse(false);
+    Assert.assertFalse(false);
   }
 
   @Test
-  void testParseInvalidVersion2() {
+  public void testParseInvalidVersion2() {
     try {
       Version.parse("1.5");
-    } catch (NumberFormatException e) {
+    }
+    catch (NumberFormatException e) {
       return;
     }
 
-    Assertions.assertTrue(false);
+    Assert.assertTrue(false);
   }
 }

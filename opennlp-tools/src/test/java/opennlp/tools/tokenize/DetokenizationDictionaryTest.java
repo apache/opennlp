@@ -21,9 +21,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.tokenize.DetokenizationDictionary.Operation;
 
@@ -31,8 +31,8 @@ public class DetokenizationDictionaryTest {
 
   private DetokenizationDictionary dict;
 
-  @BeforeEach
-  void setUp()  {
+  @Before
+  public void setUp() throws Exception {
 
     String[] tokens = new String[] {"\"", "(", ")", "-"};
 
@@ -43,19 +43,19 @@ public class DetokenizationDictionaryTest {
   }
 
   private static void testEntries(DetokenizationDictionary dict) {
-    Assertions.assertEquals(Operation.RIGHT_LEFT_MATCHING, dict.getOperation("\""));
-    Assertions.assertEquals(Operation.MOVE_RIGHT, dict.getOperation("("));
-    Assertions.assertEquals(Operation.MOVE_LEFT, dict.getOperation(")"));
-    Assertions.assertEquals(Operation.MOVE_BOTH, dict.getOperation("-"));
+    Assert.assertEquals(Operation.RIGHT_LEFT_MATCHING, dict.getOperation("\""));
+    Assert.assertEquals(Operation.MOVE_RIGHT, dict.getOperation("("));
+    Assert.assertEquals(Operation.MOVE_LEFT, dict.getOperation(")"));
+    Assert.assertEquals(Operation.MOVE_BOTH, dict.getOperation("-"));
   }
 
   @Test
-  void testSimpleDict() {
+  public void testSimpleDict() {
     testEntries(dict);
   }
 
   @Test
-  void testSerialization() throws IOException {
+  public void testSerialization() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     dict.serialize(out);
 

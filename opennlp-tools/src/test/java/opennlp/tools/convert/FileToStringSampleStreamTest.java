@@ -21,48 +21,48 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 
 public class FileToStringSampleStreamTest {
 
-  @TempDir
-  public Path directory;
+  @Rule
+  public TemporaryFolder directory = new TemporaryFolder();
 
   @Test
   public void readFileTest() throws IOException {
 
     final String sentence1 = "This is a sentence.";
     final String sentence2 = "This is another sentence.";
-
+  
     List<String> sentences = Arrays.asList(sentence1, sentence2);
-
+    
     DirectorySampleStream directorySampleStream =
-        new DirectorySampleStream(directory.toFile(), null, false);
-
-    File tempFile1 = directory.resolve("tempFile1").toFile();
+        new DirectorySampleStream(directory.getRoot(), null, false);
+      
+    File tempFile1 = directory.newFile();
     FileUtils.writeStringToFile(tempFile1, sentence1, StandardCharsets.UTF_8);
-
-    File tempFile2 = directory.resolve("tempFile2").toFile();
+    
+    File tempFile2 = directory.newFile();
     FileUtils.writeStringToFile(tempFile2, sentence2, StandardCharsets.UTF_8);
-
+    
     try (FileToStringSampleStream stream =
-             new FileToStringSampleStream(directorySampleStream, Charset.defaultCharset())) {
+        new FileToStringSampleStream(directorySampleStream, Charset.defaultCharset())) {
 
       String read = stream.read();
-      Assertions.assertTrue(sentences.contains(read));
+      Assert.assertTrue(sentences.contains(read));
 
       read = stream.read();
-      Assertions.assertTrue(sentences.contains(read));
+      Assert.assertTrue(sentences.contains(read));
     }
   }
 

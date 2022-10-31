@@ -19,8 +19,8 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
@@ -45,69 +45,65 @@ public class Conll03NameSampleStreamTest {
   }
 
   @Test
-  void testParsingEnglishSample() throws IOException {
+  public void testParsingEnglishSample() throws IOException {
 
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, ENGLISH_SAMPLE);
 
     NameSample personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
+    Assert.assertNotNull(personName);
 
-    Assertions.assertEquals(9, personName.getSentence().length);
-    Assertions.assertEquals(0, personName.getNames().length);
-    Assertions.assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(9, personName.getSentence().length);
+    Assert.assertEquals(0, personName.getNames().length);
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
 
     personName = sampleStream.read();
 
-    Assertions.assertNotNull(personName);
+    Assert.assertNotNull(personName);
 
-    Assertions.assertEquals(2, personName.getSentence().length);
-    Assertions.assertEquals(1, personName.getNames().length);
-    Assertions.assertEquals(false, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(2, personName.getSentence().length);
+    Assert.assertEquals(1, personName.getNames().length);
+    Assert.assertEquals(false, personName.isClearAdaptiveDataSet());
 
     Span nameSpan = personName.getNames()[0];
-    Assertions.assertEquals(0, nameSpan.getStart());
-    Assertions.assertEquals(2, nameSpan.getEnd());
+    Assert.assertEquals(0, nameSpan.getStart());
+    Assert.assertEquals(2, nameSpan.getEnd());
 
-    Assertions.assertNull(sampleStream.read());
+    Assert.assertNull(sampleStream.read());
+  }
+
+  @Test(expected = IOException.class)
+  public void testParsingEnglishSampleWithGermanAsLanguage() throws IOException {
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, ENGLISH_SAMPLE);
+    sampleStream.read();
+  }
+
+  @Test(expected = IOException.class)
+  public void testParsingGermanSampleWithEnglishAsLanguage() throws IOException {
+    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, GERMAN_SAMPLE);
+    sampleStream.read();
   }
 
   @Test
-  void testParsingEnglishSampleWithGermanAsLanguage() {
-    Assertions.assertThrows(IOException.class, () -> {
-      ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, ENGLISH_SAMPLE);
-      sampleStream.read();
-    });
-  }
-
-  @Test
-  void testParsingGermanSampleWithEnglishAsLanguage() {
-    Assertions.assertThrows(IOException.class, () -> {
-      ObjectStream<NameSample> sampleStream = openData(LANGUAGE.EN, GERMAN_SAMPLE);
-      sampleStream.read();
-    });
-  }
-
-  @Test
-  void testParsingGermanSample() throws IOException {
+  public void testParsingGermanSample() throws IOException {
 
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, GERMAN_SAMPLE);
 
     NameSample personName = sampleStream.read();
-    Assertions.assertNotNull(personName);
+    Assert.assertNotNull(personName);
 
-    Assertions.assertEquals(5, personName.getSentence().length);
-    Assertions.assertEquals(0, personName.getNames().length);
-    Assertions.assertEquals(true, personName.isClearAdaptiveDataSet());
+    Assert.assertEquals(5, personName.getSentence().length);
+    Assert.assertEquals(0, personName.getNames().length);
+    Assert.assertEquals(true, personName.isClearAdaptiveDataSet());
   }
 
   @Test
-  void testReset() throws IOException {
+  public void testReset() throws IOException {
     ObjectStream<NameSample> sampleStream = openData(LANGUAGE.DE, GERMAN_SAMPLE);
 
     NameSample sample = sampleStream.read();
 
     sampleStream.reset();
 
-    Assertions.assertEquals(sample, sampleStream.read());
+    Assert.assertEquals(sample, sampleStream.read());
   }
 }

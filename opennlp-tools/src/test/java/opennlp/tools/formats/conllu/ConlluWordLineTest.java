@@ -17,27 +17,27 @@
 
 package opennlp.tools.formats.conllu;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.InvalidFormatException;
 
 public class ConlluWordLineTest {
 
   @Test
-  void testParseLine() throws InvalidFormatException {
+  public void testParseLine() throws InvalidFormatException {
     ConlluWordLine line = new ConlluWordLine(
         "12\tHänden\tHand\tNOUN\tNN\tCase=Dat|Number=Plur\t5\tnmod\t_\t_");
 
-    Assertions.assertEquals("12", line.getId());
-    Assertions.assertEquals("Händen", line.getForm());
-    Assertions.assertEquals("Hand", line.getLemma());
-    Assertions.assertEquals("NOUN", line.getPosTag(ConlluTagset.U));
-    Assertions.assertEquals("NN", line.getPosTag(ConlluTagset.X));
-    Assertions.assertEquals("Case=Dat|Number=Plur", line.getFeats());
-    Assertions.assertEquals("5", line.getHead());
-    Assertions.assertEquals("nmod", line.getDeprel());
-    Assertions.assertEquals("_", line.getDeps());
-    Assertions.assertEquals("_", line.getMisc());
+    Assert.assertEquals("12", line.getId());
+    Assert.assertEquals("Händen", line.getForm());
+    Assert.assertEquals("Hand", line.getLemma());
+    Assert.assertEquals("NOUN", line.getPosTag(ConlluTagset.U));
+    Assert.assertEquals("NN", line.getPosTag(ConlluTagset.X));
+    Assert.assertEquals("Case=Dat|Number=Plur", line.getFeats());
+    Assert.assertEquals("5", line.getHead());
+    Assert.assertEquals("nmod", line.getDeprel());
+    Assert.assertEquals("_", line.getDeps());
+    Assert.assertEquals("_", line.getMisc());
   }
 }

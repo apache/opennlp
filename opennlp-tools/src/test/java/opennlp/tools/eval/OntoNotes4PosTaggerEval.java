@@ -23,9 +23,9 @@ import java.math.BigInteger;
 
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
@@ -63,17 +63,17 @@ public class OntoNotes4PosTaggerEval extends AbstractEvalTest {
       POSTaggerCrossValidator cv = new POSTaggerCrossValidator("eng", params, new POSTaggerFactory());
       cv.evaluate(samples, 5);
 
-      Assertions.assertEquals(expectedScore, cv.getWordAccuracy(), 0.0001d);
+      Assert.assertEquals(expectedScore, cv.getWordAccuracy(), 0.0001d);
     }
   }
 
-  @BeforeAll
-  static void verifyTrainingData() throws Exception {
+  @BeforeClass
+  public static void verifyTrainingData() throws Exception {
     verifyTrainingData(createPOSSampleStream(), new BigInteger("300430765214895870888056958221353356972"));
   }
-
+  
   @Test
-  void evalEnglishMaxentTagger() throws IOException {
+  public void evalEnglishMaxentTagger() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", "4");
 

@@ -17,8 +17,8 @@
 
 package opennlp.tools.util.normalizer;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 
 public class TwitterCharSequenceNormalizerTest {
@@ -26,36 +26,37 @@ public class TwitterCharSequenceNormalizerTest {
   public TwitterCharSequenceNormalizer normalizer = TwitterCharSequenceNormalizer.getInstance();
 
   @Test
-  void normalizeHashtag() {
-    Assertions.assertEquals("asdf   2nnfdf", normalizer.normalize("asdf #hasdk23 2nnfdf"));
+  public void normalizeHashtag() throws Exception {
+    Assert.assertEquals("asdf   2nnfdf", normalizer.normalize("asdf #hasdk23 2nnfdf"));
   }
 
   @Test
-  void normalizeUser() {
-    Assertions.assertEquals("asdf   2nnfdf", normalizer.normalize("asdf @hasdk23 2nnfdf"));
+  public void normalizeUser() throws Exception {
+    Assert.assertEquals("asdf   2nnfdf", normalizer.normalize("asdf @hasdk23 2nnfdf"));
   }
 
   @Test
-  void normalizeRT() {
-    Assertions.assertEquals(" 2nnfdf", normalizer.normalize("RT RT RT 2nnfdf"));
+  public void normalizeRT() throws Exception {
+    Assert.assertEquals(" 2nnfdf", normalizer.normalize("RT RT RT 2nnfdf"));
   }
 
   @Test
-  void normalizeLaugh() {
-    Assertions.assertEquals("ahahah", normalizer.normalize("ahahahah"));
-    Assertions.assertEquals("haha", normalizer.normalize("hahha"));
-    Assertions.assertEquals("haha", normalizer.normalize("hahaa"));
-    Assertions.assertEquals("ahaha", normalizer.normalize("ahahahahhahahhahahaaaa"));
-    Assertions.assertEquals("jaja", normalizer.normalize("jajjajajaja"));
+  public void normalizeLaugh() throws Exception {
+    Assert.assertEquals("ahahah", normalizer.normalize("ahahahah"));
+    Assert.assertEquals("haha", normalizer.normalize("hahha"));
+    Assert.assertEquals("haha", normalizer.normalize("hahaa"));
+    Assert.assertEquals("ahaha", normalizer.normalize("ahahahahhahahhahahaaaa"));
+    Assert.assertEquals("jaja", normalizer.normalize("jajjajajaja"));
   }
 
 
+
   @Test
-  void normalizeFace() {
-    Assertions.assertEquals("hello   hello", normalizer.normalize("hello :-) hello"));
-    Assertions.assertEquals("hello   hello", normalizer.normalize("hello ;) hello"));
-    Assertions.assertEquals("  hello", normalizer.normalize(":) hello"));
-    Assertions.assertEquals("hello  ", normalizer.normalize("hello :P"));
+  public void normalizeFace() throws Exception {
+    Assert.assertEquals("hello   hello", normalizer.normalize("hello :-) hello"));
+    Assert.assertEquals("hello   hello", normalizer.normalize("hello ;) hello"));
+    Assert.assertEquals("  hello", normalizer.normalize(":) hello"));
+    Assert.assertEquals("hello  ", normalizer.normalize("hello :P"));
   }
 
 }

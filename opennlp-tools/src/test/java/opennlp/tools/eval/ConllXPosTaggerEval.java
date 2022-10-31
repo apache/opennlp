@@ -22,9 +22,10 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import opennlp.tools.HighMemoryUsage;
 import opennlp.tools.formats.ConllXPOSSampleStream;
@@ -59,7 +60,7 @@ import opennlp.tools.util.model.ModelUtil;
 public class ConllXPosTaggerEval extends AbstractEvalTest {
 
   private POSModel train(File trainFile, String lang,
-                         TrainingParameters params) throws IOException {
+                                TrainingParameters params) throws IOException {
 
     ObjectStream<POSSample> samples =
         new ConllXPOSSampleStream(new MarkableFileInputStreamFactory(trainFile), StandardCharsets.UTF_8);
@@ -68,7 +69,7 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
   }
 
   private void eval(POSModel model, File testData,
-                    double expectedAccuracy) throws IOException {
+                           double expectedAccuracy) throws IOException {
 
     ObjectStream<POSSample> samples = new ConllXPOSSampleStream(
         new MarkableFileInputStreamFactory(testData), StandardCharsets.UTF_8);
@@ -76,55 +77,51 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
     POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
     evaluator.evaluate(samples);
 
-    Assertions.assertEquals(expectedAccuracy, evaluator.getWordAccuracy(), 0.0001);
+    Assert.assertEquals(expectedAccuracy, evaluator.getWordAccuracy(), 0.0001);
   }
 
-  @BeforeAll
-  static void verifyTrainingData() throws Exception {
-
+  @BeforeClass
+  public static void verifyTrainingData() throws Exception {
+    
     verifyTrainingData(new ConllXPOSSampleStream(
-            new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                "conllx/data/danish/ddt/train/danish_ddt_train.conll")), StandardCharsets.UTF_8),
+        new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
+          "conllx/data/danish/ddt/train/danish_ddt_train.conll")), StandardCharsets.UTF_8), 
         new BigInteger("30795670444498617202001550516753630016"));
+    
+    verifyTrainingData(new ConllXPOSSampleStream(
+        new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
+          "conllx/data/danish/ddt/test/danish_ddt_test.conll")), StandardCharsets.UTF_8), 
+            new BigInteger("314104267846430512372780024568104131337"));
+    
+    verifyTrainingData(new ConllXPOSSampleStream(
+        new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
+          "conllx/data/dutch/alpino/train/dutch_alpino_train.conll")), StandardCharsets.UTF_8), 
+            new BigInteger("109328245573060521952850454797286933887"));
 
     verifyTrainingData(new ConllXPOSSampleStream(
-            new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                "conllx/data/danish/ddt/test/danish_ddt_test.conll")), StandardCharsets.UTF_8),
-        new BigInteger("314104267846430512372780024568104131337"));
+        new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
+          "conllx/data/dutch/alpino/test/dutch_alpino_test.conll")), StandardCharsets.UTF_8), 
+            new BigInteger("132343141132816640849897155456916243039"));
 
     verifyTrainingData(new ConllXPOSSampleStream(
-            new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                "conllx/data/dutch/alpino/train/dutch_alpino_train.conll")), StandardCharsets.UTF_8),
-        new BigInteger("109328245573060521952850454797286933887"));
+        new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
+          "conllx/data/portuguese/bosque/treebank/portuguese_bosque_train.conll")), StandardCharsets.UTF_8), 
+            new BigInteger("9504382474772307801979515927230835901"));
 
     verifyTrainingData(new ConllXPOSSampleStream(
-            new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                "conllx/data/dutch/alpino/test/dutch_alpino_test.conll")),
-            StandardCharsets.UTF_8),
-        new BigInteger("132343141132816640849897155456916243039"));
+        new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
+          "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll")), StandardCharsets.UTF_8), 
+            new BigInteger("175256039869578311901318972681191182910"));
 
     verifyTrainingData(new ConllXPOSSampleStream(
-            new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                "conllx/data/portuguese/bosque/treebank/portuguese_bosque_train.conll")),
-            StandardCharsets.UTF_8),
-        new BigInteger("9504382474772307801979515927230835901"));
-
-    verifyTrainingData(new ConllXPOSSampleStream(
-            new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                "conllx/data/swedish/talbanken05/train/swedish_talbanken05_train.conll")),
-            StandardCharsets.UTF_8),
-        new BigInteger("175256039869578311901318972681191182910"));
-
-    verifyTrainingData(new ConllXPOSSampleStream(
-            new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
-                "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll")),
-            StandardCharsets.UTF_8),
-        new BigInteger("128378790384268106811747599235147991544"));
-
+        new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
+          "conllx/data/swedish/talbanken05/test/swedish_talbanken05_test.conll")), StandardCharsets.UTF_8), 
+            new BigInteger("128378790384268106811747599235147991544"));
+    
   }
 
   @Test
-  void evalDanishMaxentGis() throws IOException {
+  public void evalDanishMaxentGis() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(getOpennlpDataDir(),
@@ -135,7 +132,7 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
   }
 
   @Test
-  void evalDanishMaxentQn() throws IOException {
+  public void evalDanishMaxentQn() throws IOException {
     TrainingParameters params = createMaxentQnParams();
 
     POSModel maxentModel = train(new File(getOpennlpDataDir(),
@@ -146,7 +143,7 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
   }
 
   @Test
-  void evalDutchMaxentGis() throws IOException {
+  public void evalDutchMaxentGis() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(getOpennlpDataDir(),
@@ -157,8 +154,8 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
   }
 
   @Test
-  @HighMemoryUsage
-  void evalDutchMaxentQn() throws IOException {
+  @Category(HighMemoryUsage.class)
+  public void evalDutchMaxentQn() throws IOException {
     TrainingParameters params = createMaxentQnParams();
 
     POSModel maxentModel = train(new File(getOpennlpDataDir(),
@@ -169,7 +166,7 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
   }
 
   @Test
-  void evalPortugueseMaxentGis() throws IOException {
+  public void evalPortugueseMaxentGis() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(getOpennlpDataDir(),
@@ -180,7 +177,7 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
   }
 
   @Test
-  void evalPortugueseMaxentQn() throws IOException {
+  public void evalPortugueseMaxentQn() throws IOException {
     TrainingParameters params = createMaxentQnParams();
 
     POSModel maxentModel = train(new File(getOpennlpDataDir(),
@@ -191,7 +188,7 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
   }
 
   @Test
-  void evalSwedishMaxentGis() throws IOException {
+  public void evalSwedishMaxentGis() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
     POSModel maxentModel = train(new File(getOpennlpDataDir(),
@@ -202,7 +199,7 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
   }
 
   @Test
-  void evalSwedishMaxentQn() throws IOException {
+  public void evalSwedishMaxentQn() throws IOException {
     TrainingParameters params = createMaxentQnParams();
 
     POSModel maxentModel = train(new File(getOpennlpDataDir(),

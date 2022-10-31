@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.Assert;
 
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
@@ -55,10 +55,10 @@ public abstract class AbstractEvalTest {
 
     samples.close();
 
-    Assertions.assertEquals(checksum, new BigInteger(1, digest.digest()));
+    Assert.assertEquals(checksum, new BigInteger(1, digest.digest()));
 
   }
-
+  
   public static void verifyFileChecksum(Path file, BigInteger checksum) throws Exception {
 
     MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
@@ -71,14 +71,14 @@ public abstract class AbstractEvalTest {
       }
     }
 
-    Assertions.assertEquals(checksum, new BigInteger(1, digest.digest()));
+    Assert.assertEquals(checksum, new BigInteger(1, digest.digest()));
   }
-
+  
   public static void verifyDirectoryChecksum(Path path, String extension, BigInteger checksum)
       throws Exception {
 
     MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
-
+    
     final List<Path> paths = Files.walk(path)
         .filter(Files::isRegularFile)
         .filter(p -> p.toString().endsWith(extension))
@@ -87,7 +87,7 @@ public abstract class AbstractEvalTest {
     // Ensure the paths are in a consistent order when
     // verifying the file checksums.
     Collections.sort(paths);
-
+    
     for (Path p : paths) {
       try (InputStream in = Files.newInputStream(p)) {
         byte[] buf = new byte[65536];
@@ -98,8 +98,8 @@ public abstract class AbstractEvalTest {
       }
     }
 
-    Assertions.assertEquals(checksum, new BigInteger(1, digest.digest()));
-  }
+    Assert.assertEquals(checksum, new BigInteger(1, digest.digest()));
+  }    
 
   public static File getOpennlpDataDir() throws FileNotFoundException {
     final String dataDirectory = System.getProperty("OPENNLP_DATA_DIR");

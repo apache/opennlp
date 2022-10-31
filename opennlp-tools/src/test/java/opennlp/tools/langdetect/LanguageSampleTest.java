@@ -25,24 +25,24 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class LanguageSampleTest {
 
   @Test
-  void testConstructor() {
+  public void testConstructor() {
     Language lang = new Language("aLang");
     CharSequence context = "aContext";
 
     LanguageSample sample = new LanguageSample(lang, context);
 
-    Assertions.assertEquals(lang, sample.getLanguage());
-    Assertions.assertEquals(context, sample.getContext());
+    Assert.assertEquals(lang, sample.getLanguage());
+    Assert.assertEquals(context, sample.getContext());
   }
 
   @Test
-  void testLanguageSampleSerDe() throws IOException {
+  public void testLanguageSampleSerDe() throws IOException {
     Language lang = new Language("aLang");
     CharSequence context = "aContext";
 
@@ -64,67 +64,61 @@ public class LanguageSampleTest {
       // do nothing
     }
 
-    Assertions.assertNotNull(deSerializedLanguageSample);
-    Assertions.assertEquals(languageSample.getContext(), deSerializedLanguageSample.getContext());
-    Assertions.assertEquals(languageSample.getLanguage(), deSerializedLanguageSample.getLanguage());
-    Assertions.assertEquals(languageSample, deSerializedLanguageSample);
+    Assert.assertNotNull(deSerializedLanguageSample);
+    Assert.assertEquals(languageSample.getContext(), deSerializedLanguageSample.getContext());
+    Assert.assertEquals(languageSample.getLanguage(), deSerializedLanguageSample.getLanguage());
+    Assert.assertEquals(languageSample, deSerializedLanguageSample);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testNullLang() throws Exception {
+    CharSequence context = "aContext";
+
+    new LanguageSample(null, context);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testNullContext() {
+    Language lang = new Language("aLang");
+
+    new LanguageSample(lang, null);
   }
 
   @Test
-  void testNullLang() {
-    Assertions.assertThrows(NullPointerException.class, () -> {
-      CharSequence context = "aContext";
-
-      new LanguageSample(null, context);
-    });
-
-  }
-
-  @Test
-  void testNullContext() {
-    Assertions.assertThrows(NullPointerException.class, () -> {
-      Language lang = new Language("aLang");
-
-      new LanguageSample(lang, null);
-    });
-
-  }
-
-  @Test
-  void testToString() {
+  public void testToString() {
     Language lang = new Language("aLang");
     CharSequence context = "aContext";
 
     LanguageSample sample = new LanguageSample(lang, context);
 
-    Assertions.assertEquals(lang.getLang() + "\t" + context, sample.toString());
+    Assert.assertEquals(lang.getLang() + "\t" + context, sample.toString());
   }
 
   @Test
-  void testHash() {
+  public void testHash() {
 
     int hashA = new LanguageSample(new Language("aLang"), "aContext").hashCode();
     int hashB = new LanguageSample(new Language("bLang"), "aContext").hashCode();
     int hashC = new LanguageSample(new Language("aLang"), "bContext").hashCode();
 
-    Assertions.assertNotEquals(hashA, hashB);
-    Assertions.assertNotEquals(hashA, hashC);
-    Assertions.assertNotEquals(hashB, hashC);
+    Assert.assertNotEquals(hashA, hashB);
+    Assert.assertNotEquals(hashA, hashC);
+    Assert.assertNotEquals(hashB, hashC);
   }
 
   @Test
-  void testEquals() {
+  public void testEquals() throws Exception {
 
     LanguageSample sampleA = new LanguageSample(new Language("aLang"), "aContext");
     LanguageSample sampleA1 = new LanguageSample(new Language("aLang"), "aContext");
     LanguageSample sampleB = new LanguageSample(new Language("bLang"), "aContext");
     LanguageSample sampleC = new LanguageSample(new Language("aLang"), "bContext");
 
-    Assertions.assertEquals(sampleA, sampleA);
-    Assertions.assertEquals(sampleA, sampleA1);
-    Assertions.assertNotEquals(sampleA, sampleB);
-    Assertions.assertNotEquals(sampleA, sampleC);
-    Assertions.assertNotEquals(sampleB, sampleC);
-    Assertions.assertNotEquals(sampleA, "something else");
+    Assert.assertEquals(sampleA, sampleA);
+    Assert.assertEquals(sampleA, sampleA1);
+    Assert.assertNotEquals(sampleA, sampleB);
+    Assert.assertNotEquals(sampleA, sampleC);
+    Assert.assertNotEquals(sampleB, sampleC);
+    Assert.assertNotEquals(sampleA, "something else");
   }
 }

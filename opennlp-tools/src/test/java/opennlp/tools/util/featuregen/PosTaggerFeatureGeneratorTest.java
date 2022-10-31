@@ -20,9 +20,9 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class PosTaggerFeatureGeneratorTest {
 
@@ -30,13 +30,13 @@ public class PosTaggerFeatureGeneratorTest {
   static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
   static String[] testTags = new String[] {"DT", "VBZ", "DT", "NN", "NN"};
 
-  @BeforeEach
-  void setUp()  {
+  @Before
+  public void setUp() throws Exception {
     features = new ArrayList<>();
   }
 
   @Test
-  void testBegin() {
+  public void testBegin() {
 
     final int testTokenIndex = 0;
 
@@ -44,11 +44,11 @@ public class PosTaggerFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, testTags);
 
-    Assertions.assertEquals(0, features.size());
+    Assert.assertEquals(0, features.size());
   }
 
   @Test
-  void testNext() {
+  public void testNext() {
 
     final int testTokenIndex = 1;
 
@@ -56,12 +56,12 @@ public class PosTaggerFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, testTags);
 
-    Assertions.assertEquals(1, features.size());
-    Assertions.assertEquals("t=DT", features.get(0));
+    Assert.assertEquals(1, features.size());
+    Assert.assertEquals("t=DT", features.get(0));
   }
 
   @Test
-  void testMiddle() {
+  public void testMiddle() {
 
     final int testTokenIndex = 3;
 
@@ -69,8 +69,8 @@ public class PosTaggerFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, testTags);
 
-    Assertions.assertEquals(2, features.size());
-    Assertions.assertEquals("t=DT", features.get(0));
-    Assertions.assertEquals("t2=VBZ,DT", features.get(1));
+    Assert.assertEquals(2, features.size());
+    Assert.assertEquals("t=DT", features.get(0));
+    Assert.assertEquals("t2=VBZ,DT", features.get(1));
   }
 }

@@ -22,12 +22,12 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 public class SgmlParserTest {
 
   @Test
-  void testParse1() throws IOException {
+  public void testParse1() throws IOException {
 
     try (Reader in = new InputStreamReader(
         SgmlParserTest.class.getResourceAsStream("parsertest1.sgml"), StandardCharsets.UTF_8)) {

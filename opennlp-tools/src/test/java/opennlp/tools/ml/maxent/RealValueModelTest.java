@@ -20,9 +20,9 @@ package opennlp.tools.ml.maxent;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.DataIndexer;
@@ -35,17 +35,16 @@ import opennlp.tools.util.TrainingParameters;
 public class RealValueModelTest {
 
   private DataIndexer testDataIndexer;
-
-  @BeforeEach
-  void initIndexer() {
+  @Before
+  public void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
     testDataIndexer = new OnePassRealValueDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
-
+  
   @Test
-  void testRealValuedWeightsVsRepeatWeighting() throws IOException {
+  public void testRealValuedWeightsVsRepeatWeighting() throws IOException {
     GISModel realModel;
     GISTrainer gisTrainer = new GISTrainer();
     try (RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
@@ -58,34 +57,34 @@ public class RealValueModelTest {
     try (FileEventStream rvfes2 = new FileEventStream(
         "src/test/resources/data/opennlp/maxent/repeat-weighting-training-data.txt")) {
       testDataIndexer.index(rvfes2);
-      repeatModel = gisTrainer.trainModel(100, testDataIndexer);
+      repeatModel = gisTrainer.trainModel(100,testDataIndexer);
     }
 
-    String[] features2Classify = new String[] {"feature2", "feature5"};
+    String[] features2Classify = new String[] {"feature2","feature5"};
     double[] realResults = realModel.eval(features2Classify);
     double[] repeatResults = repeatModel.eval(features2Classify);
 
-    Assertions.assertEquals(realResults.length, repeatResults.length);
+    Assert.assertEquals(realResults.length, repeatResults.length);
     for (int i = 0; i < realResults.length; i++) {
       System.out.println(String.format("classifiy with realModel: %1$s = %2$f",
           realModel.getOutcome(i), realResults[i]));
       System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f",
           repeatModel.getOutcome(i), repeatResults[i]));
-      Assertions.assertEquals(repeatResults[i], realResults[i], 0.01f);
+      Assert.assertEquals(realResults[i], repeatResults[i], 0.01f);
     }
 
-    features2Classify = new String[] {"feature1", "feature2", "feature3", "feature4", "feature5"};
+    features2Classify = new String[] {"feature1","feature2","feature3","feature4","feature5"};
     realResults = realModel.eval(features2Classify, new float[] {5.5f, 6.1f, 9.1f, 4.0f, 1.8f});
     repeatResults = repeatModel.eval(features2Classify, new float[] {5.5f, 6.1f, 9.1f, 4.0f, 1.8f});
 
     System.out.println();
-    Assertions.assertEquals(realResults.length, repeatResults.length);
+    Assert.assertEquals(realResults.length, repeatResults.length);
     for (int i = 0; i < realResults.length; i++) {
       System.out.println(String.format("classifiy with realModel: %1$s = %2$f",
           realModel.getOutcome(i), realResults[i]));
       System.out.println(String.format("classifiy with repeatModel: %1$s = %2$f",
           repeatModel.getOutcome(i), repeatResults[i]));
-      Assertions.assertEquals(repeatResults[i],  realResults[i],0.01f);
+      Assert.assertEquals(realResults[i], repeatResults[i], 0.01f);
     }
 
   }

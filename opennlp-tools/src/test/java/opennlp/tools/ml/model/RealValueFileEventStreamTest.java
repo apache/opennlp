@@ -20,47 +20,48 @@ package opennlp.tools.ml.model;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class RealValueFileEventStreamTest {
 
   private static final String EVENTS =
       "other wc=ic=1 w&c=he,ic=2 n1wc=lc=3 n1w&c=belongs,lc=4 n2wc=lc=5\n" +
-          "other wc=lc=1 w&c=belongs,lc=2 p1wc=ic=3 p1w&c=he,ic=4 n1wc=lc=5\n" +
-          "other wc=lc=1 w&c=to,lc=2 p1wc=lc=3 p1w&c=belongs,lc=4 p2wc=ic=5\n" +
-          "org-start wc=ic=1 w&c=apache,ic=2 p1wc=lc=3 p1w&c=to,lc=4\n" +
-          "org-cont wc=ic=1 w&c=software,ic=2 p1wc=ic=3 p1w&c=apache,ic=4\n" +
-          "org-cont wc=ic=1 w&c=foundation,ic=2 p1wc=ic=3 p1w&c=software,ic=4\n" +
-          "other wc=other=1 w&c=.,other=2 p1wc=ic=3\n";
+      "other wc=lc=1 w&c=belongs,lc=2 p1wc=ic=3 p1w&c=he,ic=4 n1wc=lc=5\n" +
+      "other wc=lc=1 w&c=to,lc=2 p1wc=lc=3 p1w&c=belongs,lc=4 p2wc=ic=5\n" +
+      "org-start wc=ic=1 w&c=apache,ic=2 p1wc=lc=3 p1w&c=to,lc=4\n" +
+      "org-cont wc=ic=1 w&c=software,ic=2 p1wc=ic=3 p1w&c=apache,ic=4\n" +
+      "org-cont wc=ic=1 w&c=foundation,ic=2 p1wc=ic=3 p1w&c=software,ic=4\n" +
+      "other wc=other=1 w&c=.,other=2 p1wc=ic=3\n";
 
   @Test
-  void testSimpleReading() throws IOException {
+  public void testSimpleReading() throws IOException {
     try (FileEventStream feStream = new FileEventStream(new StringReader(EVENTS))) {
-      Assertions.assertEquals("other [wc=ic=1 w&c=he,ic=2 n1wc=lc=3 n1w&c=belongs,lc=4 n2wc=lc=5]",
-          feStream.read().toString());
-      Assertions.assertEquals("other [wc=lc=1 w&c=belongs,lc=2 p1wc=ic=3 p1w&c=he,ic=4 n1wc=lc=5]",
-          feStream.read().toString());
-      Assertions.assertEquals("other [wc=lc=1 w&c=to,lc=2 p1wc=lc=3 p1w&c=belongs,lc=4 p2wc=ic=5]",
-          feStream.read().toString());
-      Assertions.assertEquals("org-start [wc=ic=1 w&c=apache,ic=2 p1wc=lc=3 p1w&c=to,lc=4]",
-          feStream.read().toString());
-      Assertions.assertEquals("org-cont [wc=ic=1 w&c=software,ic=2 p1wc=ic=3 p1w&c=apache,ic=4]",
-          feStream.read().toString());
-      Assertions.assertEquals("org-cont [wc=ic=1 w&c=foundation,ic=2 p1wc=ic=3 p1w&c=software,ic=4]",
-          feStream.read().toString());
-      Assertions.assertEquals("other [wc=other=1 w&c=.,other=2 p1wc=ic=3]",
-          feStream.read().toString());
-      Assertions.assertNull(feStream.read());
+      Assert.assertEquals("other [wc=ic=1 w&c=he,ic=2 n1wc=lc=3 n1w&c=belongs,lc=4 n2wc=lc=5]",
+              feStream.read().toString());
+      Assert.assertEquals("other [wc=lc=1 w&c=belongs,lc=2 p1wc=ic=3 p1w&c=he,ic=4 n1wc=lc=5]",
+              feStream.read().toString());
+      Assert.assertEquals("other [wc=lc=1 w&c=to,lc=2 p1wc=lc=3 p1w&c=belongs,lc=4 p2wc=ic=5]",
+              feStream.read().toString());
+      Assert.assertEquals("org-start [wc=ic=1 w&c=apache,ic=2 p1wc=lc=3 p1w&c=to,lc=4]",
+              feStream.read().toString());
+      Assert.assertEquals("org-cont [wc=ic=1 w&c=software,ic=2 p1wc=ic=3 p1w&c=apache,ic=4]",
+              feStream.read().toString());
+      Assert.assertEquals("org-cont [wc=ic=1 w&c=foundation,ic=2 p1wc=ic=3 p1w&c=software,ic=4]",
+              feStream.read().toString());
+      Assert.assertEquals("other [wc=other=1 w&c=.,other=2 p1wc=ic=3]",
+              feStream.read().toString());
+      Assert.assertNull(feStream.read());
     }
   }
 
   @Test
-  void testReset() throws IOException {
+  public void testReset() throws IOException {
     try (FileEventStream feStream = new FileEventStream(new StringReader(EVENTS))) {
       feStream.reset();
-      Assertions.fail("UnsupportedOperationException should be thrown");
-    } catch (UnsupportedOperationException expected) {
+      Assert.fail("UnsupportedOperationException should be thrown");
+    }
+    catch (UnsupportedOperationException expected) {
     }
   }
 }

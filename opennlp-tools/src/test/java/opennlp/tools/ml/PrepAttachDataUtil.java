@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.Assert;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
@@ -87,6 +87,6 @@ public class PrepAttachDataUtil {
     double accuracy = correct / (double) total;
     System.out.println("Accuracy on PPA devset: (" + correct + "/" + total + ") " + accuracy);
 
-    Assertions.assertEquals(expecedAccuracy, accuracy, .00001);
+    Assert.assertEquals(expecedAccuracy, accuracy, .00001);
   }
 }

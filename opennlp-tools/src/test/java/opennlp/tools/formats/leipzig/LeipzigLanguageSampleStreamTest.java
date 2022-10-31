@@ -20,53 +20,47 @@ package opennlp.tools.formats.leipzig;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Tests for the {@link LeipzigLanguageSampleStream} class.
  */
-
 public class LeipzigLanguageSampleStreamTest {
 
   private static String testDataPath = LeipzigLanguageSampleStreamTest.class
-      .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
+          .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
 
   @Test
-  void testReadSentenceFiles() {
+  public void testReadSentenceFiles() {
 
     int samplesPerLanguage = 2;
     int sentencesPerSample = 1;
     try {
       LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(new File(testDataPath),
-          sentencesPerSample, samplesPerLanguage);
+              sentencesPerSample, samplesPerLanguage);
       int count = 0;
-      while (stream.read() != null) {
+      while (stream.read() != null)
         count++;
-      }
 
-      Assertions.assertEquals(4, count);
+      Assert.assertEquals(4, count);
 
     } catch (IOException e) {
-      Assertions.fail();
+      Assert.fail();
     }
   }
 
-  @Test
-  void testNotEnoughSentences() {
-    Assertions.assertThrows(InvalidFormatException.class, () -> {
-      int samplesPerLanguage = 2;
-      int sentencesPerSample = 2;
+  @Test(expected = InvalidFormatException.class)
+  public void testNotEnoughSentences() throws IOException {
+    int samplesPerLanguage = 2;
+    int sentencesPerSample = 2;
 
-      LeipzigLanguageSampleStream stream =
-          new LeipzigLanguageSampleStream(new File(testDataPath),
+    LeipzigLanguageSampleStream stream =
+            new LeipzigLanguageSampleStream(new File(testDataPath),
               sentencesPerSample, samplesPerLanguage);
-      while (stream.read() != null) ;
-
-    });
-
+    while (stream.read() != null);
 
   }
 

@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.NewlineSentenceDetector;
@@ -52,7 +52,7 @@ public class BratNameSampleStreamTest {
   }
 
   @Test
-  void readNoOverlap() throws IOException {
+  public void readNoOverlap() throws IOException {
     BratNameSampleStream stream = createNameSampleWith("-entities.",
         null);
     int count = 0;
@@ -62,33 +62,28 @@ public class BratNameSampleStreamTest {
       sample = stream.read();
     }
 
-    Assertions.assertEquals(8, count);
+    Assert.assertEquals(8, count);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void readOverlapFail() throws IOException {
+    BratNameSampleStream stream = createNameSampleWith("overlapping",
+        null);
+
+    NameSample sample = stream.read();
+    while (sample != null) {
+      sample = stream.read();
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void emptySample() throws IOException {
+    createNameSampleWith("overlapping",
+        Collections.emptySet());
   }
 
   @Test
-  void readOverlapFail() {
-    Assertions.assertThrows(RuntimeException.class, () -> {
-      BratNameSampleStream stream = createNameSampleWith("overlapping",
-          null);
-
-      NameSample sample = stream.read();
-      while (sample != null) {
-        sample = stream.read();
-      }
-    });
-
-  }
-
-  @Test
-  void emptySample() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      createNameSampleWith("overlapping",
-          Collections.emptySet());
-    });
-  }
-
-  @Test
-  void readOverlapFilter() throws IOException {
+  public void readOverlapFilter() throws IOException {
     BratNameSampleStream stream = createNameSampleWith("overlapping",
         Collections.singleton("Person"));
     int count = 0;
@@ -98,6 +93,6 @@ public class BratNameSampleStreamTest {
       sample = stream.read();
     }
 
-    Assertions.assertEquals(8, count);
+    Assert.assertEquals(8, count);
   }
 }

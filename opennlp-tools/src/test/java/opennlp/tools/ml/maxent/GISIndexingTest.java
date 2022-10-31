@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.AbstractTrainer;
@@ -42,12 +42,12 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class GISIndexingTest {
 
-  private static String[][] cntx = new String[][] {
-      {"dog", "cat", "mouse"},
-      {"text", "print", "mouse"},
-      {"dog", "pig", "cat", "mouse"}
+  private static String[][] cntx = new String[][]{
+    {"dog","cat","mouse"},
+    {"text", "print", "mouse"},
+    {"dog", "pig", "cat", "mouse"}
   };
-  private static String[] outputs = new String[] {"A", "B", "A"};
+  private static String[] outputs = new String[]{"A","B","A"};
 
   private ObjectStream<Event> createEventStream() {
     List<Event> events = new ArrayList<>();
@@ -56,19 +56,19 @@ public class GISIndexingTest {
     }
     return ObjectStreamUtils.createObjectStream(events);
   }
-
+  
   /*
    * Test the GIS.trainModel(ObjectStream<Event> eventStream) method
    */
   @Test
-  void testGISTrainSignature1() throws IOException {
+  public void testGISTrainSignature1() throws IOException {
     try (ObjectStream<Event> eventStream = createEventStream()) {
       TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
       params.put(AbstractTrainer.CUTOFF_PARAM, 1);
 
-      EventTrainer trainer = TrainerFactory.getEventTrainer(params, null);
+      EventTrainer trainer = TrainerFactory.getEventTrainer(params,  null);
 
-      Assertions.assertNotNull(trainer.train(eventStream));
+      Assert.assertNotNull(trainer.train(eventStream));
     }
   }
 
@@ -76,22 +76,22 @@ public class GISIndexingTest {
    * Test the GIS.trainModel(ObjectStream<Event> eventStream,boolean smoothing) method
    */
   @Test
-  void testGISTrainSignature2() throws IOException {
+  public void testGISTrainSignature2() throws IOException {
     try (ObjectStream<Event> eventStream = createEventStream()) {
       TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
       params.put(AbstractTrainer.CUTOFF_PARAM, 1);
       params.put("smoothing", true);
       EventTrainer trainer = TrainerFactory.getEventTrainer(params, null);
 
-      Assertions.assertNotNull(trainer.train(eventStream));
+      Assert.assertNotNull(trainer.train(eventStream));
     }
   }
-
+  
   /*
    * Test the GIS.trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff) method
    */
   @Test
-  void testGISTrainSignature3() throws IOException {
+  public void testGISTrainSignature3() throws IOException {
     try (ObjectStream<Event> eventStream = createEventStream()) {
       TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
@@ -100,15 +100,15 @@ public class GISIndexingTest {
 
       EventTrainer trainer = TrainerFactory.getEventTrainer(params, null);
 
-      Assertions.assertNotNull(trainer.train(eventStream));
+      Assert.assertNotNull(trainer.train(eventStream));
     }
   }
-
+ 
   /*
    * Test the GIS.trainModel(ObjectStream<Event> eventStream, int iterations, int cutoff, double sigma) method
    */
   @Test
-  void testGISTrainSignature4() throws IOException {
+  public void testGISTrainSignature4() throws IOException {
     try (ObjectStream<Event> eventStream = createEventStream()) {
       TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
       params.put(AbstractTrainer.ITERATIONS_PARAM, 10);
@@ -116,16 +116,16 @@ public class GISIndexingTest {
       GISTrainer trainer = (GISTrainer) TrainerFactory.getEventTrainer(params, null);
       trainer.setGaussianSigma(0.01);
 
-      Assertions.assertNotNull(trainer.trainModel(eventStream));
+      Assert.assertNotNull(trainer.trainModel(eventStream));
     }
   }
-
+  
   /*
-   * Test the GIS.trainModel((ObjectStream<Event> eventStream, int iterations, int cutoff,
+   * Test the GIS.trainModel((ObjectStream<Event> eventStream, int iterations, int cutoff, 
    * boolean smoothing, boolean printMessagesWhileTraining)) method
    */
   @Test
-  void testGISTrainSignature5() throws IOException {
+  public void testGISTrainSignature5() throws IOException {
     try (ObjectStream<Event> eventStream = createEventStream()) {
       TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
 
@@ -135,14 +135,14 @@ public class GISIndexingTest {
       params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
       EventTrainer trainer = TrainerFactory.getEventTrainer(params, null);
-      Assertions.assertNotNull(trainer.train(eventStream));
+      Assert.assertNotNull(trainer.train(eventStream));
     }
   }
-
+  
   @Test
-  void testIndexingWithTrainingParameters() throws IOException {
+  public void testIndexingWithTrainingParameters() throws IOException {
     ObjectStream<Event> eventStream = createEventStream();
-
+    
     TrainingParameters parameters = TrainingParameters.defaultParams();
     // by default we are using GIS/EventTrainer/Cutoff of 5/100 iterations
     parameters.put(TrainingParameters.ITERATIONS_PARAM, 10);
@@ -154,74 +154,74 @@ public class GISIndexingTest {
     // guarantee that you have a GIS trainer...
     EventTrainer trainer =
         TrainerFactory.getEventTrainer(parameters, new HashMap<>());
-    Assertions.assertEquals("opennlp.tools.ml.maxent.GISTrainer", trainer.getClass().getName());
-    AbstractEventTrainer aeTrainer = (AbstractEventTrainer) trainer;
+    Assert.assertEquals("opennlp.tools.ml.maxent.GISTrainer", trainer.getClass().getName());
+    AbstractEventTrainer aeTrainer = (AbstractEventTrainer)trainer;
     // guarantee that you have a OnePassDataIndexer ...
     DataIndexer di = aeTrainer.getDataIndexer(eventStream);
-    Assertions.assertEquals("opennlp.tools.ml.model.OnePassDataIndexer", di.getClass().getName());
-    Assertions.assertEquals(3, di.getNumEvents());
-    Assertions.assertEquals(2, di.getOutcomeLabels().length);
-    Assertions.assertEquals(6, di.getPredLabels().length);
+    Assert.assertEquals("opennlp.tools.ml.model.OnePassDataIndexer", di.getClass().getName());
+    Assert.assertEquals(3, di.getNumEvents());
+    Assert.assertEquals(2, di.getOutcomeLabels().length);
+    Assert.assertEquals(6, di.getPredLabels().length);
 
     // change the parameters and try again...
 
     eventStream.reset();
-
+ 
     parameters.put(TrainingParameters.ALGORITHM_PARAM, QNTrainer.MAXENT_QN_VALUE);
     parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM, AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
     parameters.put(AbstractEventTrainer.CUTOFF_PARAM, 2);
-
+    
     trainer = TrainerFactory.getEventTrainer(parameters, new HashMap<>());
-    Assertions.assertEquals("opennlp.tools.ml.maxent.quasinewton.QNTrainer", trainer.getClass().getName());
-    aeTrainer = (AbstractEventTrainer) trainer;
+    Assert.assertEquals("opennlp.tools.ml.maxent.quasinewton.QNTrainer", trainer.getClass().getName());
+    aeTrainer = (AbstractEventTrainer)trainer;
     di = aeTrainer.getDataIndexer(eventStream);
-    Assertions.assertEquals("opennlp.tools.ml.model.TwoPassDataIndexer", di.getClass().getName());
-
+    Assert.assertEquals("opennlp.tools.ml.model.TwoPassDataIndexer", di.getClass().getName());
+    
     eventStream.close();
   }
-
+  
   @Test
-  void testIndexingFactory() throws IOException {
-    Map<String, String> myReportMap = new HashMap<>();
+  public void testIndexingFactory() throws IOException {
+    Map<String,String> myReportMap = new HashMap<>();
     ObjectStream<Event> eventStream = createEventStream();
 
     // set the cutoff to 1 for this test.
     TrainingParameters parameters = new TrainingParameters();
     parameters.put(AbstractDataIndexer.CUTOFF_PARAM, 1);
-
+    
     // test with a 1 pass data indexer...
     parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM, AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE);
     DataIndexer di = DataIndexerFactory.getDataIndexer(parameters, myReportMap);
-    Assertions.assertEquals("opennlp.tools.ml.model.OnePassDataIndexer", di.getClass().getName());
+    Assert.assertEquals("opennlp.tools.ml.model.OnePassDataIndexer", di.getClass().getName());
     di.index(eventStream);
-    Assertions.assertEquals(3, di.getNumEvents());
-    Assertions.assertEquals(2, di.getOutcomeLabels().length);
-    Assertions.assertEquals(6, di.getPredLabels().length);
+    Assert.assertEquals(3, di.getNumEvents());
+    Assert.assertEquals(2, di.getOutcomeLabels().length);
+    Assert.assertEquals(6, di.getPredLabels().length);
 
     eventStream.reset();
-
+    
     // test with a 2-pass data indexer...
     parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM, AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
     di = DataIndexerFactory.getDataIndexer(parameters, myReportMap);
-    Assertions.assertEquals("opennlp.tools.ml.model.TwoPassDataIndexer", di.getClass().getName());
+    Assert.assertEquals("opennlp.tools.ml.model.TwoPassDataIndexer", di.getClass().getName());
     di.index(eventStream);
-    Assertions.assertEquals(3, di.getNumEvents());
-    Assertions.assertEquals(2, di.getOutcomeLabels().length);
-    Assertions.assertEquals(6, di.getPredLabels().length);
+    Assert.assertEquals(3, di.getNumEvents());
+    Assert.assertEquals(2, di.getOutcomeLabels().length);
+    Assert.assertEquals(6, di.getPredLabels().length);
 
     // the rest of the test doesn't actually index, so we can close the eventstream.
     eventStream.close();
-
+    
     // test with a 1-pass Real value dataIndexer
-    parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
+    parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM, 
         AbstractEventTrainer.DATA_INDEXER_ONE_PASS_REAL_VALUE);
     di = DataIndexerFactory.getDataIndexer(parameters, myReportMap);
-    Assertions.assertEquals("opennlp.tools.ml.model.OnePassRealValueDataIndexer", di.getClass().getName());
-
-
+    Assert.assertEquals("opennlp.tools.ml.model.OnePassRealValueDataIndexer", di.getClass().getName());
+    
+    
     // test with an UNRegistered MockIndexer
-    parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM, "opennlp.tools.ml.maxent.MockDataIndexer");
+    parameters.put(AbstractEventTrainer.DATA_INDEXER_PARAM, "opennlp.tools.ml.maxent.MockDataIndexer");    
     di = DataIndexerFactory.getDataIndexer(parameters, myReportMap);
-    Assertions.assertEquals("opennlp.tools.ml.maxent.MockDataIndexer", di.getClass().getName());
+    Assert.assertEquals("opennlp.tools.ml.maxent.MockDataIndexer", di.getClass().getName());
   }
 }

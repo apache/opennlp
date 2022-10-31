@@ -22,9 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
@@ -37,26 +37,26 @@ public class ADSentenceSampleStreamTest {
   private List<SentenceSample> samples = new ArrayList<>();
 
   @Test
-  void testSimpleCount() {
-    Assertions.assertEquals(5, samples.size());
+  public void testSimpleCount() throws IOException {
+    Assert.assertEquals(5, samples.size());
   }
 
   @Test
-  void testSentences() {
+  public void testSentences() throws IOException {
 
-    Assertions.assertNotNull(samples.get(0).getDocument());
-    Assertions.assertEquals(3, samples.get(0).getSentences().length);
-    Assertions.assertEquals(new Span(0, 119), samples.get(0).getSentences()[0]);
-    Assertions.assertEquals(new Span(120, 180), samples.get(0).getSentences()[1]);
+    Assert.assertNotNull(samples.get(0).getDocument());
+    Assert.assertEquals(3, samples.get(0).getSentences().length);
+    Assert.assertEquals(new Span(0, 119), samples.get(0).getSentences()[0]);
+    Assert.assertEquals(new Span(120, 180), samples.get(0).getSentences()[1]);
   }
 
-  @BeforeEach
-  void setup() throws IOException {
+  @Before
+  public void setup() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(ADSentenceSampleStreamTest.class,
         "/opennlp/tools/formats/ad.sample");
 
     try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
-        new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
+          new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
 
       SentenceSample sample;
 

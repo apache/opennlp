@@ -20,34 +20,35 @@ package opennlp.tools.ml.model;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test cases for {@link ModelParameterChunker}.
- *
+ * 
  * @author <a href="mailto:martin.wiesner@hs-heilbronn.de">Martin Wiesner</a>
  */
 public class ModelParameterChunkerTest {
 
   private File tmp;
 
-  @BeforeEach
-  void setup() throws IOException {
+  @Before
+  public void setup() throws IOException {
     tmp = File.createTempFile("chunker-test", ".dat");
     tmp.deleteOnExit();
   }
 
-  @AfterEach
-  void tearDown() {
+  @After
+  public void tearDown() {
     tmp = null;
   }
 
@@ -58,7 +59,7 @@ public class ModelParameterChunkerTest {
    * No chunking is therefore required.
    */
   @Test
-  void testWriteReadUTFWithoutChunking() {
+  public void testWriteReadUTFWithoutChunking() throws FileNotFoundException {
     // 8k ints -> 48042 bytes for a flat String
     testAndCheck(8192, 48042);
   }
@@ -73,33 +74,33 @@ public class ModelParameterChunkerTest {
    * Thus, we can assume the restored string must be equal to the artificially created original input.
    */
   @Test
-  void testWriteReadUTFWithChunking() {
+  public void testWriteReadUTFWithChunking() throws FileNotFoundException {
     // 16k ints -> 103578 bytes for a flat String
     testAndCheck(16384, 103578);
   }
 
   private void testAndCheck(int elementCount, int expectedByteLength) {
     String p = getParameter(elementCount);
-    Assertions.assertNotNull(p);
-    Assertions.assertFalse(p.trim().isEmpty());
-    Assertions.assertEquals(expectedByteLength, p.getBytes(StandardCharsets.UTF_8).length);
+    Assert.assertNotNull(p);
+    Assert.assertFalse(p.trim().isEmpty());
+    Assert.assertEquals(expectedByteLength, p.getBytes(StandardCharsets.UTF_8).length);
 
     // TEST
     try (DataOutputStream dos = new DataOutputStream(Files.newOutputStream(tmp.toPath()))) {
       ModelParameterChunker.writeUTF(dos, p);
     } catch (IOException e) {
-      Assertions.fail(e.getLocalizedMessage());
+      Assert.fail(e.getLocalizedMessage());
     }
     // VERIFY
     try (DataInputStream dis = new DataInputStream(Files.newInputStream(tmp.toPath()))) {
       String restoredBelow64K = ModelParameterChunker.readUTF(dis);
       // assumptions
-      Assertions.assertNotNull(restoredBelow64K);
-      Assertions.assertFalse(restoredBelow64K.trim().isEmpty());
-      Assertions.assertEquals(p, restoredBelow64K);
-      Assertions.assertEquals(expectedByteLength, p.getBytes(StandardCharsets.UTF_8).length);
+      Assert.assertNotNull(restoredBelow64K);
+      Assert.assertFalse(restoredBelow64K.trim().isEmpty());
+      Assert.assertEquals(p, restoredBelow64K);
+      Assert.assertEquals(expectedByteLength, p.getBytes(StandardCharsets.UTF_8).length);
     } catch (IOException e) {
-      Assertions.fail(e.getLocalizedMessage());
+      Assert.fail(e.getLocalizedMessage());
     }
   }
 
