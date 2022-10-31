@@ -20,13 +20,13 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PreviousTwoMapFeatureGeneratorTest {
 
   @Test
-  public void testFeatureGeneration() {
+  void testFeatureGeneration() {
 
     AdaptiveFeatureGenerator fg = new PreviousTwoMapFeatureGenerator();
 
@@ -36,20 +36,20 @@ public class PreviousTwoMapFeatureGeneratorTest {
 
     // this should generate the no features
     fg.createFeatures(features, sentence, 0, null);
-    Assert.assertEquals(0, features.size());
+    Assertions.assertEquals(0, features.size());
 
     // this should generate the pd=null feature
     fg.createFeatures(features, sentence, 1, null);
-    Assert.assertEquals(1, features.size());
-    Assert.assertEquals("ppd=null,null", features.get(0));
+    Assertions.assertEquals(1, features.size());
+    Assertions.assertEquals("ppd=null,null", features.get(0));
 
     features.clear();
 
     // this should generate the pd=1 feature
     fg.updateAdaptiveData(sentence, new String[] {"1", "2", "3"});
     fg.createFeatures(features, sentence, 1, null);
-    Assert.assertEquals(1, features.size());
-    Assert.assertEquals("ppd=2,1", features.get(0));
+    Assertions.assertEquals(1, features.size());
+    Assertions.assertEquals("ppd=2,1", features.get(0));
 
     features.clear();
 
@@ -57,7 +57,7 @@ public class PreviousTwoMapFeatureGeneratorTest {
     // the adaptive data was cleared
     fg.clearAdaptiveData();
     fg.createFeatures(features, sentence, 1, null);
-    Assert.assertEquals(1, features.size());
-    Assert.assertEquals("ppd=null,null", features.get(0));
+    Assertions.assertEquals(1, features.size());
+    Assertions.assertEquals("ppd=null,null", features.get(0));
   }
 }

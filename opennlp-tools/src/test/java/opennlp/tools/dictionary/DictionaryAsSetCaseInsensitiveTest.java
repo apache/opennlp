@@ -22,8 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.StringList;
 
@@ -41,7 +41,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
    * Tests a basic lookup.
    */
   @Test
-  public void testLookup() {
+  void testLookup() {
 
     String a = "a";
     String b = "b";
@@ -52,17 +52,17 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> set = dict.asStringSet();
 
-    Assert.assertTrue(set.contains(a));
-    Assert.assertFalse(set.contains(b));
+    Assertions.assertTrue(set.contains(a));
+    Assertions.assertFalse(set.contains(b));
 
-    Assert.assertTrue(set.contains(a.toUpperCase()));
+    Assertions.assertTrue(set.contains(a.toUpperCase()));
   }
 
   /**
    * Tests set.
    */
   @Test
-  public void testSet() {
+  void testSet() {
 
     String a = "a";
     String a1 = "a";
@@ -74,15 +74,15 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> set = dict.asStringSet();
 
-    Assert.assertTrue(set.contains(a));
-    Assert.assertEquals(1, set.size());
+    Assertions.assertTrue(set.contains(a));
+    Assertions.assertEquals(1, set.size());
   }
 
   /**
    * Tests set.
    */
   @Test
-  public void testSetDiffCase() {
+  void testSetDiffCase() {
 
     String a = "a";
     String a1 = "A";
@@ -94,15 +94,15 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> set = dict.asStringSet();
 
-    Assert.assertTrue(set.contains(a));
-    Assert.assertEquals(1, set.size());
+    Assertions.assertTrue(set.contains(a));
+    Assertions.assertEquals(1, set.size());
   }
 
   /**
    * Tests for the {@link Dictionary#equals(Object)} method.
    */
   @Test
-  public void testEquals() {
+  void testEquals() {
     String entry1 = "1a";
     String entry2 = "1b";
 
@@ -118,14 +118,14 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    Assert.assertTrue(setA.equals(setB));
+    Assertions.assertTrue(setA.equals(setB));
   }
 
   /**
    * Tests for the {@link Dictionary#equals(Object)} method.
    */
   @Test
-  public void testEqualsDifferentCase() {
+  void testEqualsDifferentCase() {
 
     Dictionary dictA = getDict();
     dictA.put(asSL("1a"));
@@ -139,14 +139,14 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    Assert.assertTrue(setA.equals(setB));
+    Assertions.assertTrue(setA.equals(setB));
   }
 
   /**
    * Tests the {@link Dictionary#hashCode()} method.
    */
   @Test
-  public void testHashCode() {
+  void testHashCode() {
     String entry1 = "a1";
 
     Dictionary dictA = getDict();
@@ -159,14 +159,14 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    Assert.assertEquals(setA.hashCode(), setB.hashCode());
+    Assertions.assertEquals(setA.hashCode(), setB.hashCode());
   }
 
   /**
    * Tests the {@link Dictionary#hashCode()} method.
    */
   @Test
-  public void testHashCodeDifferentCase() {
+  void testHashCodeDifferentCase() {
     String entry1 = "a1";
 
     Dictionary dictA = getDict();
@@ -180,14 +180,14 @@ public class DictionaryAsSetCaseInsensitiveTest {
     Set<String> setB = dictB.asStringSet();
 
     // TODO: should it be equal??
-    Assert.assertNotSame(setA.hashCode(), setB.hashCode());
+    Assertions.assertNotSame(setA.hashCode(), setB.hashCode());
   }
 
   /**
    * Tests the lookup of tokens of different case.
    */
   @Test
-  public void testDifferentCaseLookup() {
+  void testDifferentCaseLookup() {
 
     String entry1 = "1a";
     String entry2 = "1A";
@@ -199,14 +199,14 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> set = dict.asStringSet();
 
-    Assert.assertTrue(set.contains(entry2));
+    Assertions.assertTrue(set.contains(entry2));
   }
 
   /**
    * Tests the iterator implementation
    */
   @Test
-  public void testIterator() {
+  void testIterator() {
 
     String entry1 = "1a";
     String entry2 = "1b";
@@ -223,9 +223,9 @@ public class DictionaryAsSetCaseInsensitiveTest {
       elements.add(it.next());
     }
 
-    Assert.assertEquals(2, elements.size());
-    Assert.assertTrue(elements.contains(entry1));
-    Assert.assertTrue(elements.contains(entry2));
+    Assertions.assertEquals(2, elements.size());
+    Assertions.assertTrue(elements.contains(entry1));
+    Assertions.assertTrue(elements.contains(entry2));
 
   }
 }

@@ -17,8 +17,8 @@
 
 package opennlp.tools.util.normalizer;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 
 public class ShrinkCharSequenceNormalizerTest {
@@ -26,16 +26,16 @@ public class ShrinkCharSequenceNormalizerTest {
   public ShrinkCharSequenceNormalizer normalizer = ShrinkCharSequenceNormalizer.getInstance();
 
   @Test
-  public void normalizeSpace() throws Exception {
-    Assert.assertEquals(
+  void normalizeSpace() {
+    Assertions.assertEquals(
         "a text extra space", normalizer.normalize("a text    extra space"));
   }
 
   @Test
-  public void normalizeChar() throws Exception {
-    Assert.assertEquals("Helloo", normalizer.normalize("Helllllloooooo"));
-    Assert.assertEquals("Hello", normalizer.normalize("Hello"));
-    Assert.assertEquals("HHello", normalizer.normalize("HHello"));
+  void normalizeChar() {
+    Assertions.assertEquals("Helloo", normalizer.normalize("Helllllloooooo"));
+    Assertions.assertEquals("Hello", normalizer.normalize("Hello"));
+    Assertions.assertEquals("HHello", normalizer.normalize("HHello"));
   }
 
 }

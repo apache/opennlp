@@ -29,8 +29,8 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
@@ -46,18 +46,18 @@ import opennlp.tools.util.model.ModelType;
 public class TokenNameFinderModelTest {
 
   @Test
-  public void testNERWithPOSModel() throws IOException {
+  void testNERWithPOSModel() throws IOException {
 
     // create a resources folder
     Path resourcesFolder = Files.createTempDirectory("resources").toAbsolutePath();
 
     // save a POS model there
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
-    File posModelFile = new File(resourcesFolder.toFile(),"pos-model.bin");
+    File posModelFile = new File(resourcesFolder.toFile(), "pos-model.bin");
 
     posModel.serialize(posModelFile);
 
-    Assert.assertTrue(posModelFile.exists());
+    Assertions.assertTrue(posModelFile.exists());
 
     // load feature generator xml bytes
     InputStream fgInputStream = this.getClass().getResourceAsStream("ner-pos-features.xml");
@@ -74,11 +74,9 @@ public class TokenNameFinderModelTest {
     try {
       resources = TokenNameFinderTrainerTool.loadResources(resourcesFolder.toFile(),
           featureGenerator.toAbsolutePath().toFile());
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new TerminateToolException(-1, e.getMessage(), e);
-    }
-    finally {
+    } finally {
       Files.delete(featureGenerator);
     }
 
@@ -104,9 +102,8 @@ public class TokenNameFinderModelTest {
 
       modelOut.close();
 
-      Assert.assertTrue(model.exists());
-    }
-    finally {
+      Assertions.assertTrue(model.exists());
+    } finally {
       model.delete();
       FileUtil.deleteDirectory(resourcesFolder.toFile());
     }

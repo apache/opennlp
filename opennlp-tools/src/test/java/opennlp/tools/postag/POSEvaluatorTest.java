@@ -22,8 +22,8 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.cmdline.postag.POSEvaluationErrorListener;
 import opennlp.tools.util.InvalidFormatException;
@@ -32,7 +32,7 @@ import opennlp.tools.util.Sequence;
 public class POSEvaluatorTest {
 
   @Test
-  public void testPositive() throws InvalidFormatException {
+  void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
 
@@ -40,12 +40,12 @@ public class POSEvaluatorTest {
         POSSampleTest.createGoldSample()), listener);
 
     eval.evaluateSample(POSSampleTest.createGoldSample());
-    Assert.assertEquals(1.0, eval.getWordAccuracy(), 0.0);
-    Assert.assertEquals(0, stream.toString().length());
+    Assertions.assertEquals(1.0, eval.getWordAccuracy(), 0.0);
+    Assertions.assertEquals(0, stream.toString().length());
   }
 
   @Test
-  public void testNegative() throws InvalidFormatException {
+  void testNegative() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
 
@@ -53,8 +53,8 @@ public class POSEvaluatorTest {
         new DummyPOSTagger(POSSampleTest.createGoldSample()), listener);
 
     eval.evaluateSample(POSSampleTest.createPredSample());
-    Assert.assertEquals(.7, eval.getWordAccuracy(), .1d);
-    Assert.assertNotSame(0, stream.toString().length());
+    Assertions.assertEquals(.7, eval.getWordAccuracy(), .1d);
+    Assertions.assertNotSame(0, stream.toString().length());
   }
 
   class DummyPOSTagger implements POSTagger {

@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.CollectionObjectStream;
 
@@ -32,34 +32,34 @@ import opennlp.tools.util.CollectionObjectStream;
 public class WordTagSampleStreamTest {
 
   @Test
-  public void testParseSimpleSample() throws IOException {
+  void testParseSimpleSample() throws IOException {
 
     Collection<String> sampleString = new ArrayList<>(1);
     sampleString.add("This_x1 is_x2 a_x3 test_x4 sentence_x5 ._x6");
 
     try (WordTagSampleStream stream =
-        new WordTagSampleStream(new CollectionObjectStream<>(sampleString))) {
+             new WordTagSampleStream(new CollectionObjectStream<>(sampleString))) {
       POSSample sample = stream.read();
       String[] words = sample.getSentence();
 
-      Assert.assertEquals("This", words[0]);
-      Assert.assertEquals("is", words[1]);
-      Assert.assertEquals("a", words[2]);
-      Assert.assertEquals("test", words[3]);
-      Assert.assertEquals("sentence", words[4]);
-      Assert.assertEquals(".", words[5]);
+      Assertions.assertEquals("This", words[0]);
+      Assertions.assertEquals("is", words[1]);
+      Assertions.assertEquals("a", words[2]);
+      Assertions.assertEquals("test", words[3]);
+      Assertions.assertEquals("sentence", words[4]);
+      Assertions.assertEquals(".", words[5]);
 
       String[] tags = sample.getTags();
-      Assert.assertEquals("x1", tags[0]);
-      Assert.assertEquals("x2", tags[1]);
-      Assert.assertEquals("x3", tags[2]);
-      Assert.assertEquals("x4", tags[3]);
-      Assert.assertEquals("x5", tags[4]);
-      Assert.assertEquals("x6", tags[5]);
+      Assertions.assertEquals("x1", tags[0]);
+      Assertions.assertEquals("x2", tags[1]);
+      Assertions.assertEquals("x3", tags[2]);
+      Assertions.assertEquals("x4", tags[3]);
+      Assertions.assertEquals("x5", tags[4]);
+      Assertions.assertEquals("x6", tags[5]);
 
-      Assert.assertNull(stream.read());
+      Assertions.assertNull(stream.read());
       stream.reset();
-      Assert.assertNotNull(stream.read());
+      Assertions.assertNotNull(stream.read());
     }
   }
 }

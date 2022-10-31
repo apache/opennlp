@@ -24,8 +24,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.sentdetect.SentenceDetectorEvaluator;
 import opennlp.tools.sentdetect.SentenceDetectorFactory;
@@ -36,15 +37,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 public class MascSentenceSampleStreamTest {
 
   @Test
-  public void reset() {
+  void reset() {
     FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
     File directory = new File(this.getClass().getResource(
         "/opennlp/tools/formats/masc/").getFile());
@@ -57,12 +53,12 @@ public class MascSentenceSampleStreamTest {
 
       //now we should get null
       testSample = stream.read();
-      assertNull(testSample);
+      Assertions.assertNull(testSample);
 
       //by resetting, we should get good results again
       stream.reset();
       testSample = stream.read();
-      assertNotNull(testSample);
+      Assertions.assertNotNull(testSample);
 
       String documentText = "This is a test Sentence. This is 'nother test sentence. ";
       List<Span> sentenceSpans = new ArrayList<>();
@@ -71,15 +67,15 @@ public class MascSentenceSampleStreamTest {
       SentenceSample expectedSample = new SentenceSample(documentText,
           sentenceSpans.toArray(new Span[sentenceSpans.size()]));
 
-      assertEquals(testSample.toString(), expectedSample.toString());
+      Assertions.assertEquals(testSample.toString(), expectedSample.toString());
 
     } catch (IOException e) {
-      fail("IO Exception");
+      Assertions.fail("IO Exception");
     }
   }
 
   @Test
-  public void close() {
+  void close() {
 
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
@@ -91,14 +87,14 @@ public class MascSentenceSampleStreamTest {
       stream.close();
       stream.read();
     } catch (IOException e) {
-      assertEquals(e.getMessage(),
+      Assertions.assertEquals(e.getMessage(),
           "You are reading an empty document stream. " +
               "Did you close it?");
     }
   }
 
   @Test
-  public void read() {
+  void read() {
     FileFilter fileFilter = pathname -> pathname.getName().contains("");
     File directory = new File(this.getClass().getResource("/opennlp/tools/formats/masc").getFile());
     try {
@@ -113,23 +109,23 @@ public class MascSentenceSampleStreamTest {
       SentenceSample expectedSample = new SentenceSample(documentText,
           sentenceSpans.toArray(new Span[sentenceSpans.size()]));
       SentenceSample testSample = stream.read();
-      assertEquals(testSample.toString(), expectedSample.toString());
+      Assertions.assertEquals(testSample.toString(), expectedSample.toString());
 
       //the fake file is exhausted, we should get null now
       testSample = stream.read();
-      assertNull(testSample);
+      Assertions.assertNull(testSample);
 
     } catch (IOException e) {
       System.out.println(e.getMessage());
       System.out.println(Arrays.toString(e.getStackTrace()));
-      fail("IO Exception");
+      Assertions.fail("IO Exception");
     }
 
   }
 
-  @Ignore //todo: We can't train on the FakeMasc data, it is too small.
+  @Disabled //todo: We can't train on the FakeMasc data, it is too small.
   @Test
-  public void train() {
+  void train() {
     try {
       File directory = new File(this.getClass().getResource(
           "/opennlp/tools/formats/masc/").getFile());
@@ -156,7 +152,7 @@ public class MascSentenceSampleStreamTest {
     } catch (Exception e) {
       System.err.println(e.getMessage());
       System.err.println(Arrays.toString(e.getStackTrace()));
-      fail("Exception raised");
+      Assertions.fail("Exception raised");
     }
 
 

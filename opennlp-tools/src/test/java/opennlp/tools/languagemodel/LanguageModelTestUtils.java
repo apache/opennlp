@@ -23,20 +23,20 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Random;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 import opennlp.tools.ngram.NGramUtils;
 
 /**
  * Utility class for language models tests
  */
-@Ignore
+@Disabled
 public class LanguageModelTestUtils {
 
   private static final java.math.MathContext CONTEXT = MathContext.DECIMAL128;
   private static Random r = new Random();
 
-  private static final char[] chars = new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+  private static final char[] chars = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
 
   public static Collection<String[]> generateRandomVocabulary(int size) {
     Collection<String[]> vocabulary = new LinkedList<>();
