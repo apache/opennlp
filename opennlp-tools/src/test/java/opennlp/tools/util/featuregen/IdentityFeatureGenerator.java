@@ -19,7 +19,7 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-class IdentityFeatureGenerator implements AdaptiveFeatureGenerator {
+public class IdentityFeatureGenerator implements AdaptiveFeatureGenerator {
 
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {

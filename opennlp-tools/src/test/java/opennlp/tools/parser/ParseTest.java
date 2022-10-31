@@ -17,8 +17,8 @@
 
 package opennlp.tools.parser;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the {@link Parse} class.
@@ -32,54 +32,54 @@ public class ParseTest {
       "(NN name)  )))))(. .)  ))";
 
   @Test
-  public void testToHashCode() {
+  void testToHashCode() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
     p1.hashCode();
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
     p1.toString();
   }
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
-    Assert.assertTrue(p1.equals(p1));
+    Assertions.assertTrue(p1.equals(p1));
   }
 
   @Test
-  public void testParseClone() {
+  void testParseClone() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
     Parse p2 = (Parse) p1.clone();
-    Assert.assertTrue(p1.equals(p2));
-    Assert.assertTrue(p2.equals(p1));
+    Assertions.assertTrue(p1.equals(p2));
+    Assertions.assertTrue(p2.equals(p1));
   }
 
   @Test
-  public void testGetText() {
+  void testGetText() {
     Parse p = Parse.parseParse(PARSE_STRING);
 
     // TODO: Why does parse attaches a space to the end of the text ???
     String expectedText = "She was just another freighter from the States , " +
         "and she seemed as commonplace as her name . ";
 
-    Assert.assertEquals(expectedText, p.getText());
+    Assertions.assertEquals(expectedText, p.getText());
   }
 
   @Test
-  public void testShow() {
+  void testShow() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
 
     StringBuffer parseString = new StringBuffer();
     p1.show(parseString);
     Parse p2 = Parse.parseParse(parseString.toString());
-    Assert.assertEquals(p1, p2);
+    Assertions.assertEquals(p1, p2);
   }
 
   @Test
-  public void testTokenReplacement() {
+  void testTokenReplacement() {
     Parse p1 = Parse.parseParse("(TOP  (S-CLF (NP-SBJ (PRP It)  )(VP (VBD was) " +
         " (NP-PRD (NP (DT the)  (NN trial)  )(PP (IN of) " +
         " (NP (NP (NN oleomargarine)  (NN heir)  )(NP (NNP Minot) " +
@@ -95,36 +95,36 @@ public class ParseTest {
     p1.show(parseString);
 
     Parse p2 = Parse.parseParse(parseString.toString());
-    Assert.assertEquals(p1, p2);
+    Assertions.assertEquals(p1, p2);
   }
 
   @Test
-  public void testGetTagNodes() {
+  void testGetTagNodes() {
     Parse p = Parse.parseParse(PARSE_STRING);
 
     Parse[] tags = p.getTagNodes();
 
     for (Parse node : tags) {
-      Assert.assertTrue(node.isPosTag());
+      Assertions.assertTrue(node.isPosTag());
     }
 
-    Assert.assertEquals("PRP", tags[0].getType());
-    Assert.assertEquals("VBD", tags[1].getType());
-    Assert.assertEquals("RB", tags[2].getType());
-    Assert.assertEquals("DT", tags[3].getType());
-    Assert.assertEquals("NN", tags[4].getType());
-    Assert.assertEquals("IN", tags[5].getType());
-    Assert.assertEquals("DT", tags[6].getType());
-    Assert.assertEquals("NNPS", tags[7].getType());
-    Assert.assertEquals(",", tags[8].getType());
-    Assert.assertEquals("CC", tags[9].getType());
-    Assert.assertEquals("PRP", tags[10].getType());
-    Assert.assertEquals("VBD", tags[11].getType());
-    Assert.assertEquals("RB", tags[12].getType());
-    Assert.assertEquals("JJ", tags[13].getType());
-    Assert.assertEquals("IN", tags[14].getType());
-    Assert.assertEquals("PRP$", tags[15].getType());
-    Assert.assertEquals("NN", tags[16].getType());
-    Assert.assertEquals(".", tags[17].getType());
+    Assertions.assertEquals("PRP", tags[0].getType());
+    Assertions.assertEquals("VBD", tags[1].getType());
+    Assertions.assertEquals("RB", tags[2].getType());
+    Assertions.assertEquals("DT", tags[3].getType());
+    Assertions.assertEquals("NN", tags[4].getType());
+    Assertions.assertEquals("IN", tags[5].getType());
+    Assertions.assertEquals("DT", tags[6].getType());
+    Assertions.assertEquals("NNPS", tags[7].getType());
+    Assertions.assertEquals(",", tags[8].getType());
+    Assertions.assertEquals("CC", tags[9].getType());
+    Assertions.assertEquals("PRP", tags[10].getType());
+    Assertions.assertEquals("VBD", tags[11].getType());
+    Assertions.assertEquals("RB", tags[12].getType());
+    Assertions.assertEquals("JJ", tags[13].getType());
+    Assertions.assertEquals("IN", tags[14].getType());
+    Assertions.assertEquals("PRP$", tags[15].getType());
+    Assertions.assertEquals("NN", tags[16].getType());
+    Assertions.assertEquals(".", tags[17].getType());
   }
 }

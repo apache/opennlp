@@ -19,8 +19,8 @@ package opennlp.tools.parser;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
@@ -29,51 +29,51 @@ import opennlp.tools.util.ObjectStreamUtils;
 public class PosSampleStreamTest {
 
   @Test
-  public void testConvertParseToPosSample() throws IOException {
+  void testConvertParseToPosSample() throws IOException {
 
     try (ObjectStream<POSSample> posSampleStream = new PosSampleStream(new ParseSampleStream(
         ObjectStreamUtils.createObjectStream(ParseTest.PARSE_STRING)))) {
 
       POSSample sample = posSampleStream.read();
 
-      Assert.assertEquals("PRP", sample.getTags()[0]);
-      Assert.assertEquals("She", sample.getSentence()[0]);
-      Assert.assertEquals("VBD", sample.getTags()[1]);
-      Assert.assertEquals("was", sample.getSentence()[1]);
-      Assert.assertEquals("RB", sample.getTags()[2]);
-      Assert.assertEquals("just", sample.getSentence()[2]);
-      Assert.assertEquals("DT", sample.getTags()[3]);
-      Assert.assertEquals("another", sample.getSentence()[3]);
-      Assert.assertEquals("NN", sample.getTags()[4]);
-      Assert.assertEquals("freighter", sample.getSentence()[4]);
-      Assert.assertEquals("IN", sample.getTags()[5]);
-      Assert.assertEquals("from", sample.getSentence()[5]);
-      Assert.assertEquals("DT", sample.getTags()[6]);
-      Assert.assertEquals("the", sample.getSentence()[6]);
-      Assert.assertEquals("NNPS", sample.getTags()[7]);
-      Assert.assertEquals("States", sample.getSentence()[7]);
-      Assert.assertEquals(",", sample.getTags()[8]);
-      Assert.assertEquals(",", sample.getSentence()[8]);
-      Assert.assertEquals("CC", sample.getTags()[9]);
-      Assert.assertEquals("and", sample.getSentence()[9]);
-      Assert.assertEquals("PRP", sample.getTags()[10]);
-      Assert.assertEquals("she", sample.getSentence()[10]);
-      Assert.assertEquals("VBD", sample.getTags()[11]);
-      Assert.assertEquals("seemed", sample.getSentence()[11]);
-      Assert.assertEquals("RB", sample.getTags()[12]);
-      Assert.assertEquals("as", sample.getSentence()[12]);
-      Assert.assertEquals("JJ", sample.getTags()[13]);
-      Assert.assertEquals("commonplace", sample.getSentence()[13]);
-      Assert.assertEquals("IN", sample.getTags()[14]);
-      Assert.assertEquals("as", sample.getSentence()[14]);
-      Assert.assertEquals("PRP$", sample.getTags()[15]);
-      Assert.assertEquals("her", sample.getSentence()[15]);
-      Assert.assertEquals("NN", sample.getTags()[16]);
-      Assert.assertEquals("name", sample.getSentence()[16]);
-      Assert.assertEquals(".", sample.getTags()[17]);
-      Assert.assertEquals(".", sample.getSentence()[17]);
+      Assertions.assertEquals("PRP", sample.getTags()[0]);
+      Assertions.assertEquals("She", sample.getSentence()[0]);
+      Assertions.assertEquals("VBD", sample.getTags()[1]);
+      Assertions.assertEquals("was", sample.getSentence()[1]);
+      Assertions.assertEquals("RB", sample.getTags()[2]);
+      Assertions.assertEquals("just", sample.getSentence()[2]);
+      Assertions.assertEquals("DT", sample.getTags()[3]);
+      Assertions.assertEquals("another", sample.getSentence()[3]);
+      Assertions.assertEquals("NN", sample.getTags()[4]);
+      Assertions.assertEquals("freighter", sample.getSentence()[4]);
+      Assertions.assertEquals("IN", sample.getTags()[5]);
+      Assertions.assertEquals("from", sample.getSentence()[5]);
+      Assertions.assertEquals("DT", sample.getTags()[6]);
+      Assertions.assertEquals("the", sample.getSentence()[6]);
+      Assertions.assertEquals("NNPS", sample.getTags()[7]);
+      Assertions.assertEquals("States", sample.getSentence()[7]);
+      Assertions.assertEquals(",", sample.getTags()[8]);
+      Assertions.assertEquals(",", sample.getSentence()[8]);
+      Assertions.assertEquals("CC", sample.getTags()[9]);
+      Assertions.assertEquals("and", sample.getSentence()[9]);
+      Assertions.assertEquals("PRP", sample.getTags()[10]);
+      Assertions.assertEquals("she", sample.getSentence()[10]);
+      Assertions.assertEquals("VBD", sample.getTags()[11]);
+      Assertions.assertEquals("seemed", sample.getSentence()[11]);
+      Assertions.assertEquals("RB", sample.getTags()[12]);
+      Assertions.assertEquals("as", sample.getSentence()[12]);
+      Assertions.assertEquals("JJ", sample.getTags()[13]);
+      Assertions.assertEquals("commonplace", sample.getSentence()[13]);
+      Assertions.assertEquals("IN", sample.getTags()[14]);
+      Assertions.assertEquals("as", sample.getSentence()[14]);
+      Assertions.assertEquals("PRP$", sample.getTags()[15]);
+      Assertions.assertEquals("her", sample.getSentence()[15]);
+      Assertions.assertEquals("NN", sample.getTags()[16]);
+      Assertions.assertEquals("name", sample.getSentence()[16]);
+      Assertions.assertEquals(".", sample.getTags()[17]);
+      Assertions.assertEquals(".", sample.getSentence()[17]);
 
-      Assert.assertNull(posSampleStream.read());
+      Assertions.assertNull(posSampleStream.read());
     }
   }
 }

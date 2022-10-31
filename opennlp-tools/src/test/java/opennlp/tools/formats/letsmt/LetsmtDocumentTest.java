@@ -21,25 +21,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class LetsmtDocumentTest {
 
   @Test
-  public void testParsingSimpleDoc() throws IOException {
+  void testParsingSimpleDoc() throws IOException {
     try (InputStream letsmtXmlIn = LetsmtDocumentTest.class.getResourceAsStream("letsmt-with-words.xml");) {
 
       LetsmtDocument doc = LetsmtDocument.parse(letsmtXmlIn);
 
       List<LetsmtDocument.LetsmtSentence> sents = doc.getSentences();
 
-      Assert.assertEquals(2, sents.size());
+      Assertions.assertEquals(2, sents.size());
 
       LetsmtDocument.LetsmtSentence sent1 = sents.get(0);
-      Assert.assertNull(sent1.getNonTokenizedText());
+      Assertions.assertNull(sent1.getNonTokenizedText());
 
-      Assert.assertArrayEquals(new String[]{
+      Assertions.assertArrayEquals(new String[] {
           "The",
           "Apache",
           "Software",
@@ -72,12 +72,12 @@ public class LetsmtDocumentTest {
           "software",
           "products",
           "."
-          }, sent1.getTokens());
+      }, sent1.getTokens());
 
       LetsmtDocument.LetsmtSentence sent2 = sents.get(1);
-      Assert.assertNull(sent2.getNonTokenizedText());
+      Assertions.assertNull(sent2.getNonTokenizedText());
 
-      Assert.assertArrayEquals(new String[]{
+      Assertions.assertArrayEquals(new String[] {
           "All",
           "software",
           "produced",
@@ -105,7 +105,7 @@ public class LetsmtDocumentTest {
           "listed",
           "below",
           "."
-          }, sent2.getTokens());
+      }, sent2.getTokens());
     }
   }
 }

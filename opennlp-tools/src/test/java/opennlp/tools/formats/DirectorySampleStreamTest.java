@@ -20,18 +20,20 @@ package opennlp.tools.formats;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class DirectorySampleStreamTest {
-  
-  @Rule
-  public TemporaryFolder tempDirectory = new TemporaryFolder();
+
+  @TempDir
+  Path tempDirectory;
   
   @Test
   public void directoryTest() throws IOException {
@@ -40,22 +42,22 @@ public class DirectorySampleStreamTest {
     
     List<File> files = new ArrayList<>();
     
-    File temp1 = tempDirectory.newFile();
+    File temp1 = createTempFile();
     files.add(temp1);
     
-    File temp2 = tempDirectory.newFile();
+    File temp2 = createTempFile();
     files.add(temp2);
     
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.getRoot(), filter, false);
+    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), filter, false);
     
     File file = stream.read();
-    Assert.assertTrue(files.contains(file));
+    Assertions.assertTrue(files.contains(file));
     
     file = stream.read();
-    Assert.assertTrue(files.contains(file));
+    Assertions.assertTrue(files.contains(file));
     
     file = stream.read();
-    Assert.assertNull(file);
+    Assertions.assertNull(file);
     
     stream.close();
     
@@ -66,22 +68,22 @@ public class DirectorySampleStreamTest {
 
     List<File> files = new ArrayList<>();
     
-    File temp1 = tempDirectory.newFile();
+    File temp1 = createTempFile();
     files.add(temp1);
     
-    File temp2 = tempDirectory.newFile();
+    File temp2 = createTempFile();
     files.add(temp2);
     
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.getRoot(), null, false);
+    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), null, false);
     
     File file = stream.read();
-    Assert.assertTrue(files.contains(file));
+    Assertions.assertTrue(files.contains(file));
     
     file = stream.read();
-    Assert.assertTrue(files.contains(file));
+    Assertions.assertTrue(files.contains(file));
     
     file = stream.read();
-    Assert.assertNull(file);
+    Assertions.assertNull(file);
     
     stream.close();
     
@@ -94,23 +96,23 @@ public class DirectorySampleStreamTest {
     
     List<File> files = new ArrayList<>();
     
-    File temp1 = tempDirectory.newFile();
+    File temp1 = createTempFile();
     files.add(temp1);
     
-    File tempSubDirectory = tempDirectory.newFolder("sub1");
+    File tempSubDirectory = createTempFolder("sub1");
     File temp2 = File.createTempFile("sub1", ".tmp", tempSubDirectory);
     files.add(temp2);
 
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.getRoot(), filter, true);
+    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), filter, true);
     
     File file = stream.read();
-    Assert.assertTrue(files.contains(file));
+    Assertions.assertTrue(files.contains(file));
     
     file = stream.read();
-    Assert.assertTrue(files.contains(file));
+    Assertions.assertTrue(files.contains(file));
     
     file = stream.read();
-    Assert.assertNull(file);
+    Assertions.assertNull(file);
     
     stream.close();
     
@@ -123,27 +125,27 @@ public class DirectorySampleStreamTest {
     
     List<File> files = new ArrayList<>();
     
-    File temp1 = tempDirectory.newFile();
+    File temp1 = createTempFile();
     files.add(temp1);
     
-    File temp2 = tempDirectory.newFile();
+    File temp2 = createTempFile();
     files.add(temp2);
 
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.getRoot(), filter, false);
+    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), filter, false);
     
     File file = stream.read();
-    Assert.assertTrue(files.contains(file));
+    Assertions.assertTrue(files.contains(file));
     
     stream.reset();
     
     file = stream.read();
-    Assert.assertTrue(files.contains(file));
+    Assertions.assertTrue(files.contains(file));
     
     file = stream.read();
-    Assert.assertTrue(files.contains(file));
+    Assertions.assertTrue(files.contains(file));
     
     file = stream.read();
-    Assert.assertNull(file);
+    Assertions.assertNull(file);
     
     stream.close();
     
@@ -154,25 +156,53 @@ public class DirectorySampleStreamTest {
 
     FileFilter filter = new TempFileNameFilter();
     
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.getRoot(), filter, false);
+    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), filter, false);
     
-    Assert.assertNull(stream.read());
+    Assertions.assertNull(stream.read());
     
     stream.close();
     
   }
-  
-  @Test(expected = IllegalArgumentException.class)
-  public void invalidDirectoryTest() throws IOException {
 
-    FileFilter filter = new TempFileNameFilter();
-    
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.newFile(), filter, false);
-    
-    Assert.assertNull(stream.read());
-    
-    stream.close();
-    
+  @Test
+  public void invalidDirectoryTest() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      FileFilter filter = new TempFileNameFilter();
+
+      DirectorySampleStream stream = new DirectorySampleStream(createTempFile(), filter, false);
+
+      Assertions.assertNull(stream.read());
+
+      stream.close();
+    });
+  }
+
+  private File createTempFolder(String name) {
+
+    Path subDir = tempDirectory.resolve(name);
+
+    try {
+      Files.createDirectory(subDir);
+    } catch (IOException e) {
+      throw new IllegalStateException(
+          "Could not create sub directory " + subDir.toFile().getAbsolutePath(), e);
+    }
+    return subDir.toFile();
+
+  }
+
+  private File createTempFile() {
+
+    Path tempFile = tempDirectory.resolve(UUID.randomUUID() + ".tmp");
+
+    try {
+      Files.createFile(tempFile);
+    } catch (IOException e) {
+      throw new IllegalStateException(
+          "Could not create file " + tempFile.toFile().getAbsolutePath(), e);
+    }
+    return tempFile.toFile();
+
   }
   
   class TempFileNameFilter implements FileFilter {

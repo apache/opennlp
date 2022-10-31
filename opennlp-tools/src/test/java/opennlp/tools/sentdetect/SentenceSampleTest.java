@@ -25,28 +25,29 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.Span;
 
 /**
  * Tests for the {@link SentenceSample} class.
  */
+
 public class SentenceSampleTest {
 
   @Test
-  public void testRetrievingContent() {
+  void testRetrievingContent() {
     SentenceSample sample = new SentenceSample("1. 2.",
         new Span(0, 2), new Span(3, 5));
 
-    Assert.assertEquals("1. 2.", sample.getDocument());
-    Assert.assertEquals(new Span(0, 2), sample.getSentences()[0]);
-    Assert.assertEquals(new Span(3, 5), sample.getSentences()[1]);
+    Assertions.assertEquals("1. 2.", sample.getDocument());
+    Assertions.assertEquals(new Span(0, 2), sample.getSentences()[0]);
+    Assertions.assertEquals(new Span(3, 5), sample.getSentences()[1]);
   }
 
   @Test
-  public void testSentenceSampleSerDe() throws IOException {
+  void testSentenceSampleSerDe() throws IOException {
     SentenceSample sentenceSample = createGoldSample();
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
@@ -64,23 +65,25 @@ public class SentenceSampleTest {
       // do nothing
     }
 
-    Assert.assertNotNull(deSerializedSentenceSample);
-    Assert.assertEquals(sentenceSample.getDocument(), deSerializedSentenceSample.getDocument());
-    Assert.assertArrayEquals(sentenceSample.getSentences(), deSerializedSentenceSample.getSentences());
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testInvalidSpansFailFast() {
-    SentenceSample sample = new SentenceSample("1. 2.",
-        new Span(0, 2), new Span(5, 7));
+    Assertions.assertNotNull(deSerializedSentenceSample);
+    Assertions.assertEquals(sentenceSample.getDocument(), deSerializedSentenceSample.getDocument());
+    Assertions.assertArrayEquals(sentenceSample.getSentences(), deSerializedSentenceSample.getSentences());
   }
 
   @Test
-  public void testEquals() {
-    Assert.assertFalse(createGoldSample() == createGoldSample());
-    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
-    Assert.assertFalse(createPredSample().equals(createGoldSample()));
-    Assert.assertFalse(createPredSample().equals(new Object()));
+  void testInvalidSpansFailFast() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      SentenceSample sample = new SentenceSample("1. 2.",
+          new Span(0, 2), new Span(5, 7));
+    });
+  }
+
+  @Test
+  void testEquals() {
+    Assertions.assertFalse(createGoldSample() == createGoldSample());
+    Assertions.assertTrue(createGoldSample().equals(createGoldSample()));
+    Assertions.assertFalse(createPredSample().equals(createGoldSample()));
+    Assertions.assertFalse(createPredSample().equals(new Object()));
   }
 
   public static SentenceSample createGoldSample() {

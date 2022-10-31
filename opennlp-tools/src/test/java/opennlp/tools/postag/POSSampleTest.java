@@ -26,8 +26,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.InvalidFormatException;
 
@@ -37,11 +37,11 @@ import opennlp.tools.util.InvalidFormatException;
 public class POSSampleTest {
 
   @Test
-  public void testEquals() throws InvalidFormatException {
-    Assert.assertFalse(createGoldSample() == createGoldSample());
-    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
-    Assert.assertFalse(createPredSample().equals(createGoldSample()));
-    Assert.assertFalse(createPredSample().equals(new Object()));
+  void testEquals() throws InvalidFormatException {
+    Assertions.assertFalse(createGoldSample() == createGoldSample());
+    Assertions.assertTrue(createGoldSample().equals(createGoldSample()));
+    Assertions.assertFalse(createPredSample().equals(createGoldSample()));
+    Assertions.assertFalse(createPredSample().equals(new Object()));
   }
 
   public static POSSample createGoldSample() throws InvalidFormatException {
@@ -57,7 +57,7 @@ public class POSSampleTest {
   }
 
   @Test
-  public void testPOSSampleSerDe() throws IOException {
+  void testPOSSampleSerDe() throws IOException {
     POSSample posSample = createGoldSample();
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
@@ -75,58 +75,55 @@ public class POSSampleTest {
       // do nothing
     }
 
-    Assert.assertNotNull(deSerializedPOSSample);
-    Assert.assertArrayEquals(posSample.getAddictionalContext(),
+    Assertions.assertNotNull(deSerializedPOSSample);
+    Assertions.assertArrayEquals(posSample.getAddictionalContext(),
         deSerializedPOSSample.getAddictionalContext());
-    Assert.assertArrayEquals(posSample.getSentence(), deSerializedPOSSample.getSentence());
-    Assert.assertArrayEquals(posSample.getTags(), deSerializedPOSSample.getTags());
+    Assertions.assertArrayEquals(posSample.getSentence(), deSerializedPOSSample.getSentence());
+    Assertions.assertArrayEquals(posSample.getTags(), deSerializedPOSSample.getTags());
   }
 
   /**
    * Tests if it can parse a valid token_tag sentence.
-   *
    */
   @Test
-  public void testParse() throws InvalidFormatException {
+  void testParse() throws InvalidFormatException {
     String sentence = "the_DT stories_NNS about_IN well-heeled_JJ " +
         "communities_NNS and_CC developers_NNS";
     POSSample sample = POSSample.parse(sentence);
-    Assert.assertEquals(sentence, sample.toString());
+    Assertions.assertEquals(sentence, sample.toString());
   }
 
   /**
    * Tests if it can parse an empty {@link String}.
    */
   @Test
-  public void testParseEmptyString() throws InvalidFormatException {
+  void testParseEmptyString() throws InvalidFormatException {
     String sentence = "";
 
     POSSample sample = POSSample.parse(sentence);
 
-    Assert.assertEquals(sample.getSentence().length, 0);
-    Assert.assertEquals(sample.getTags().length, 0);
+    Assertions.assertEquals(sample.getSentence().length, 0);
+    Assertions.assertEquals(sample.getTags().length, 0);
   }
 
   /**
    * Tests if it can parse an empty token.
-   *
    */
   @Test
-  public void testParseEmtpyToken() throws InvalidFormatException {
+  void testParseEmtpyToken() throws InvalidFormatException {
     String sentence = "the_DT _NNS";
     POSSample sample = POSSample.parse(sentence);
-    Assert.assertEquals(sample.getSentence()[1], "");
+    Assertions.assertEquals(sample.getSentence()[1], "");
   }
 
   /**
    * Tests if it can parse an empty tag.
-   *
    */
   @Test
-  public void testParseEmtpyTag() throws InvalidFormatException {
+  void testParseEmtpyTag() throws InvalidFormatException {
     String sentence = "the_DT stories_";
     POSSample sample = POSSample.parse(sentence);
-    Assert.assertEquals(sample.getTags()[1], "");
+    Assertions.assertEquals(sample.getTags()[1], "");
   }
 
   /**
@@ -134,7 +131,7 @@ public class POSSampleTest {
    * in the sentence.
    */
   @Test
-  public void testParseWithError() {
+  void testParseWithError() {
     String sentence = "the_DT stories";
 
     try {
@@ -143,6 +140,6 @@ public class POSSampleTest {
       return;
     }
 
-    Assert.fail();
+    Assertions.fail();
   }
 }

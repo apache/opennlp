@@ -21,8 +21,8 @@ package opennlp.tools.sentdetect;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -34,10 +34,11 @@ import opennlp.tools.util.TrainingParameters;
 /**
  * Tests for the {@link SentenceDetectorME} class.
  */
+
 public class SentenceDetectorMETest {
 
   @Test
-  public void testSentenceDetector() throws IOException {
+  void testSentenceDetector() throws IOException {
 
     InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/sentdetect/Sentences.txt");
@@ -52,106 +53,111 @@ public class SentenceDetectorMETest {
         "eng", new SentenceSampleStream(new PlainTextByLineStream(in,
             StandardCharsets.UTF_8)), factory, mlParams);
 
-    Assert.assertEquals("eng", sentdetectModel.getLanguage());
+    Assertions.assertEquals("eng", sentdetectModel.getLanguage());
 
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
 
     // Tests sentence detector with sentDetect method
     String sampleSentences1 = "This is a test. There are many tests, this is the second.";
     String[] sents = sentDetect.sentDetect(sampleSentences1);
-    Assert.assertEquals(sents.length,2);
-    Assert.assertEquals(sents[0],"This is a test.");
-    Assert.assertEquals(sents[1],"There are many tests, this is the second.");
+    Assertions.assertEquals(sents.length, 2);
+    Assertions.assertEquals(sents[0], "This is a test.");
+    Assertions.assertEquals(sents[1], "There are many tests, this is the second.");
     double[] probs = sentDetect.getSentenceProbabilities();
-    Assert.assertEquals(probs.length,2);
+    Assertions.assertEquals(probs.length, 2);
 
     String sampleSentences2 = "This is a test. There are many tests, this is the second";
     sents = sentDetect.sentDetect(sampleSentences2);
-    Assert.assertEquals(sents.length,2);
+    Assertions.assertEquals(sents.length, 2);
     probs = sentDetect.getSentenceProbabilities();
-    Assert.assertEquals(probs.length,2);
-    Assert.assertEquals(sents[0],"This is a test.");
-    Assert.assertEquals(sents[1],"There are many tests, this is the second");
+    Assertions.assertEquals(probs.length, 2);
+    Assertions.assertEquals(sents[0], "This is a test.");
+    Assertions.assertEquals(sents[1], "There are many tests, this is the second");
 
     String sampleSentences3 = "This is a \"test\". He said \"There are many tests, this is the second.\"";
     sents = sentDetect.sentDetect(sampleSentences3);
-    Assert.assertEquals(sents.length,2);
+    Assertions.assertEquals(sents.length, 2);
     probs = sentDetect.getSentenceProbabilities();
-    Assert.assertEquals(probs.length,2);
-    Assert.assertEquals(sents[0],"This is a \"test\".");
-    Assert.assertEquals(sents[1],"He said \"There are many tests, this is the second.\"");
+    Assertions.assertEquals(probs.length, 2);
+    Assertions.assertEquals(sents[0], "This is a \"test\".");
+    Assertions.assertEquals(sents[1], "He said \"There are many tests, this is the second.\"");
 
     String sampleSentences4 = "This is a \"test\". I said \"This is a test.\"  Any questions?";
     sents = sentDetect.sentDetect(sampleSentences4);
-    Assert.assertEquals(sents.length,3);
+    Assertions.assertEquals(sents.length, 3);
     probs = sentDetect.getSentenceProbabilities();
-    Assert.assertEquals(probs.length,3);
-    Assert.assertEquals(sents[0],"This is a \"test\".");
-    Assert.assertEquals(sents[1],"I said \"This is a test.\"");
-    Assert.assertEquals(sents[2],"Any questions?");
+    Assertions.assertEquals(probs.length, 3);
+    Assertions.assertEquals(sents[0], "This is a \"test\".");
+    Assertions.assertEquals(sents[1], "I said \"This is a test.\"");
+    Assertions.assertEquals(sents[2], "Any questions?");
 
     String sampleSentences5 = "This is a one sentence test space at the end.    ";
     sents = sentDetect.sentDetect(sampleSentences5);
-    Assert.assertEquals(1, sentDetect.getSentenceProbabilities().length);
-    Assert.assertEquals(sents[0],"This is a one sentence test space at the end.");
+    Assertions.assertEquals(1, sentDetect.getSentenceProbabilities().length);
+    Assertions.assertEquals(sents[0], "This is a one sentence test space at the end.");
 
     String sampleSentences6 = "This is a one sentences test with tab at the end.            ";
     sents = sentDetect.sentDetect(sampleSentences6);
-    Assert.assertEquals(sents[0],"This is a one sentences test with tab at the end.");
+    Assertions.assertEquals(sents[0], "This is a one sentences test with tab at the end.");
 
     String sampleSentences7 = "This is a test.    With spaces between the two sentences.";
     sents = sentDetect.sentDetect(sampleSentences7);
-    Assert.assertEquals(sents[0],"This is a test.");
-    Assert.assertEquals(sents[1],"With spaces between the two sentences.");
+    Assertions.assertEquals(sents[0], "This is a test.");
+    Assertions.assertEquals(sents[1], "With spaces between the two sentences.");
 
     String sampleSentences9 = "";
     sents = sentDetect.sentDetect(sampleSentences9);
-    Assert.assertEquals(0, sents.length);
+    Assertions.assertEquals(0, sents.length);
 
     String sampleSentences10 = "               "; // whitespaces and tabs
     sents = sentDetect.sentDetect(sampleSentences10);
-    Assert.assertEquals(0, sents.length);
+    Assertions.assertEquals(0, sents.length);
 
     String sampleSentences11 = "This is test sentence without a dot at the end and spaces          ";
     sents = sentDetect.sentDetect(sampleSentences11);
-    Assert.assertEquals(sents[0],"This is test sentence without a dot at the end and spaces");
+    Assertions.assertEquals(sents[0], "This is test sentence without a dot at the end and spaces");
     probs = sentDetect.getSentenceProbabilities();
-    Assert.assertEquals(1, probs.length);
+    Assertions.assertEquals(1, probs.length);
 
     String sampleSentence12 = "    This is a test.";
     sents = sentDetect.sentDetect(sampleSentence12);
-    Assert.assertEquals(sents[0],"This is a test.");
+    Assertions.assertEquals(sents[0], "This is a test.");
 
     String sampleSentence13 = " This is a test";
     sents = sentDetect.sentDetect(sampleSentence13);
-    Assert.assertEquals(sents[0],"This is a test");
+    Assertions.assertEquals(sents[0], "This is a test");
 
     // Test that sentPosDetect also works
     Span[] pos = sentDetect.sentPosDetect(sampleSentences2);
-    Assert.assertEquals(pos.length,2);
+    Assertions.assertEquals(pos.length, 2);
     probs = sentDetect.getSentenceProbabilities();
-    Assert.assertEquals(probs.length,2);
-    Assert.assertEquals(new Span(0, 15), pos[0]);
-    Assert.assertEquals(new Span(16, 56), pos[1]);
+    Assertions.assertEquals(probs.length, 2);
+    Assertions.assertEquals(new Span(0, 15), pos[0]);
+    Assertions.assertEquals(new Span(16, 56), pos[1]);
 
   }
 
-  @Test(expected = InsufficientTrainingDataException.class)
-  public void testInsufficientData() throws IOException {
+  @Test
+  void testInsufficientData() {
 
-    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
-        "/opennlp/tools/sentdetect/SentencesInsufficient.txt");
+    Assertions.assertThrows(InsufficientTrainingDataException.class, () -> {
 
-    TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
+      InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
+          "/opennlp/tools/sentdetect/SentencesInsufficient.txt");
 
-    SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
-    
-    SentenceDetectorME.train("eng",
-        new SentenceSampleStream(
-            new PlainTextByLineStream(in, StandardCharsets.UTF_8)), factory, mlParams);
-    
+      TrainingParameters mlParams = new TrainingParameters();
+      mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
+      mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
+
+      SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
+
+      SentenceDetectorME.train("eng",
+          new SentenceSampleStream(
+              new PlainTextByLineStream(in, StandardCharsets.UTF_8)), factory, mlParams);
+
+    });
+
+
   }
-  
+
 }

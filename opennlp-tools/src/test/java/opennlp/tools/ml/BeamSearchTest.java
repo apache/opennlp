@@ -20,8 +20,8 @@ package opennlp.tools.ml;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.BeamSearchContextGenerator;
@@ -38,7 +38,7 @@ public class BeamSearchTest {
     }
 
     public String[] getContext(int index, String[] sequence,
-        String[] priorDecisions, Object[] additionalContext) {
+                               String[] priorDecisions, Object[] additionalContext) {
       return new String[] {outcomeSequence[index]};
     }
   }
@@ -70,8 +70,7 @@ public class BeamSearchTest {
       for (int i = 0; i < probs.length; i++) {
         if (outcomes[i].equals(context[0])) {
           probs[i] = bestOutcomeProb;
-        }
-        else {
+        } else {
           probs[i] = otherOutcomeProb;
         }
       }
@@ -116,7 +115,7 @@ public class BeamSearchTest {
    * Tests that beam search does not fail to detect an empty sequence.
    */
   @Test
-  public void testBestSequenceZeroLengthInput() {
+  void testBestSequenceZeroLengthInput() {
 
     String[] sequence = new String[0];
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
@@ -128,16 +127,16 @@ public class BeamSearchTest {
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence, String outcome) -> true);
-    
-    Assert.assertNotNull(seq);
-    Assert.assertEquals(sequence.length, seq.getOutcomes().size());
+
+    Assertions.assertNotNull(seq);
+    Assertions.assertEquals(sequence.length, seq.getOutcomes().size());
   }
 
   /**
    * Tests finding a sequence of length one.
    */
   @Test
-  public void testBestSequenceOneElementInput() {
+  void testBestSequenceOneElementInput() {
     String[] sequence = {"1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
 
@@ -148,18 +147,18 @@ public class BeamSearchTest {
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,
-        String outcome) -> true);
+         String outcome) -> true);
 
-    Assert.assertNotNull(seq);
-    Assert.assertEquals(sequence.length, seq.getOutcomes().size());
-    Assert.assertEquals("1", seq.getOutcomes().get(0));
+    Assertions.assertNotNull(seq);
+    Assertions.assertEquals(sequence.length, seq.getOutcomes().size());
+    Assertions.assertEquals("1", seq.getOutcomes().get(0));
   }
 
   /**
    * Tests finding the best sequence on a short input sequence.
    */
   @Test
-  public void testBestSequence() {
+  void testBestSequence() {
     String[] sequence = {"1", "2", "3", "2", "1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
 
@@ -170,22 +169,22 @@ public class BeamSearchTest {
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,
-        String outcome) -> true);
+         String outcome) -> true);
 
-    Assert.assertNotNull(seq);
-    Assert.assertEquals(sequence.length, seq.getOutcomes().size());
-    Assert.assertEquals("1", seq.getOutcomes().get(0));
-    Assert.assertEquals("2", seq.getOutcomes().get(1));
-    Assert.assertEquals("3", seq.getOutcomes().get(2));
-    Assert.assertEquals("2", seq.getOutcomes().get(3));
-    Assert.assertEquals("1", seq.getOutcomes().get(4));
+    Assertions.assertNotNull(seq);
+    Assertions.assertEquals(sequence.length, seq.getOutcomes().size());
+    Assertions.assertEquals("1", seq.getOutcomes().get(0));
+    Assertions.assertEquals("2", seq.getOutcomes().get(1));
+    Assertions.assertEquals("3", seq.getOutcomes().get(2));
+    Assertions.assertEquals("2", seq.getOutcomes().get(3));
+    Assertions.assertEquals("1", seq.getOutcomes().get(4));
   }
 
   /**
    * Tests finding the best sequence on a short input sequence.
    */
   @Test
-  public void testBestSequenceWithValidator() {
+  void testBestSequenceWithValidator() {
     String[] sequence = {"1", "2", "3", "2", "1"};
     BeamSearchContextGenerator<String> cg = new IdentityFeatureGenerator(sequence);
 
@@ -197,12 +196,12 @@ public class BeamSearchTest {
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,
          String outcome) -> !"2".equals(outcome));
-    Assert.assertNotNull(seq);
-    Assert.assertEquals(sequence.length, seq.getOutcomes().size());
-    Assert.assertEquals("1", seq.getOutcomes().get(0));
-    Assert.assertNotSame("2", seq.getOutcomes().get(1));
-    Assert.assertEquals("3", seq.getOutcomes().get(2));
-    Assert.assertNotSame("2", seq.getOutcomes().get(3));
-    Assert.assertEquals("1", seq.getOutcomes().get(4));
+    Assertions.assertNotNull(seq);
+    Assertions.assertEquals(sequence.length, seq.getOutcomes().size());
+    Assertions.assertEquals("1", seq.getOutcomes().get(0));
+    Assertions.assertNotSame("2", seq.getOutcomes().get(1));
+    Assertions.assertEquals("3", seq.getOutcomes().get(2));
+    Assertions.assertNotSame("2", seq.getOutcomes().get(3));
+    Assertions.assertEquals("1", seq.getOutcomes().get(4));
   }
 }

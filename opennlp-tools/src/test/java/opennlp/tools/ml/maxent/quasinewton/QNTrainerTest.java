@@ -23,9 +23,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractModel;
@@ -43,8 +43,8 @@ public class QNTrainerTest {
 
   private DataIndexer testDataIndexer;
 
-  @Before
-  public void initIndexer() {
+  @BeforeEach
+  void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
     testDataIndexer = new OnePassRealValueDataIndexer();
@@ -52,7 +52,7 @@ public class QNTrainerTest {
   }
 
   @Test
-  public void testTrainModelReturnsAQNModel() throws Exception {
+  void testTrainModelReturnsAQNModel() throws Exception {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
@@ -60,29 +60,30 @@ public class QNTrainerTest {
     // when
     QNModel trainedModel = new QNTrainer(false).trainModel(ITERATIONS, testDataIndexer);
     // then
-    Assert.assertNotNull(trainedModel);
+    Assertions.assertNotNull(trainedModel);
   }
 
   @Test
-  public void testInTinyDevSet() throws Exception {
+  void testInTinyDevSet() throws Exception {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
-    testDataIndexer.index(rvfes1);;
+    testDataIndexer.index(rvfes1);
+    ;
     // when
     QNModel trainedModel = new QNTrainer(15, true).trainModel(ITERATIONS, testDataIndexer);
     String[] features2Classify = new String[] {
-        "feature2","feature3", "feature3",
-        "feature3","feature3", "feature3",
-        "feature3","feature3", "feature3",
-        "feature3","feature3", "feature3"};
+        "feature2", "feature3", "feature3",
+        "feature3", "feature3", "feature3",
+        "feature3", "feature3", "feature3",
+        "feature3", "feature3", "feature3"};
     double[] eval = trainedModel.eval(features2Classify);
     // then
-    Assert.assertNotNull(eval);
+    Assertions.assertNotNull(eval);
   }
 
   @Test
-  public void testModel() throws IOException {
+  void testModel() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
@@ -91,11 +92,11 @@ public class QNTrainerTest {
     QNModel trainedModel = new QNTrainer(15, true).trainModel(
         ITERATIONS, testDataIndexer);
 
-    Assert.assertFalse(trainedModel.equals(null));
+    Assertions.assertFalse(trainedModel.equals(null));
   }
 
   @Test
-  public void testSerdeModel() throws IOException {
+  void testSerdeModel() throws IOException {
     // given
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
@@ -114,19 +115,19 @@ public class QNTrainerTest {
     AbstractModel readModel = modelReader.getModel();
     QNModel deserModel = (QNModel) readModel;
 
-    Assert.assertTrue(trainedModel.equals(deserModel));
+    Assertions.assertTrue(trainedModel.equals(deserModel));
 
     String[] features2Classify = new String[] {
-        "feature2","feature3", "feature3",
-        "feature3","feature3", "feature3",
-        "feature3","feature3", "feature3",
-        "feature3","feature3", "feature3"};
+        "feature2", "feature3", "feature3",
+        "feature3", "feature3", "feature3",
+        "feature3", "feature3", "feature3",
+        "feature3", "feature3", "feature3"};
     double[] eval01 = trainedModel.eval(features2Classify);
     double[] eval02 = deserModel.eval(features2Classify);
 
-    Assert.assertEquals(eval01.length, eval02.length);
+    Assertions.assertEquals(eval01.length, eval02.length);
     for (int i = 0; i < eval01.length; i++) {
-      Assert.assertEquals(eval01[i], eval02[i], 0.00000001);
+      Assertions.assertEquals(eval01[i], eval02[i], 0.00000001);
     }
   }
 }

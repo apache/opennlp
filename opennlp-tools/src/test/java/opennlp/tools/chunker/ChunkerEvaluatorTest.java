@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.cmdline.chunker.ChunkEvaluationErrorListener;
 import opennlp.tools.formats.ResourceAsStreamFactory;
@@ -48,7 +48,7 @@ public class ChunkerEvaluatorTest {
    * @throws IOException
    */
   @Test
-  public void testEvaluator() throws IOException {
+  void testEvaluator() throws IOException {
     ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
         getClass(), "/opennlp/tools/chunker/output.txt");
     ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
@@ -70,14 +70,14 @@ public class ChunkerEvaluatorTest {
 
     FMeasure fm = evaluator.getFMeasure();
 
-    Assert.assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
-    Assert.assertEquals(0.875d, fm.getRecallScore(), DELTA);
+    Assertions.assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
+    Assertions.assertEquals(0.875d, fm.getRecallScore(), DELTA);
 
-    Assert.assertNotSame(stream.toString().length(), 0);
+    Assertions.assertNotSame(stream.toString().length(), 0);
   }
 
   @Test
-  public void testEvaluatorNoError() throws IOException {
+  void testEvaluatorNoError() throws IOException {
     ResourceAsStreamFactory inPredicted = new ResourceAsStreamFactory(
         getClass(), "/opennlp/tools/chunker/output.txt");
     ResourceAsStreamFactory inExpected = new ResourceAsStreamFactory(getClass(),
@@ -100,10 +100,10 @@ public class ChunkerEvaluatorTest {
 
     FMeasure fm = evaluator.getFMeasure();
 
-    Assert.assertEquals(1d, fm.getPrecisionScore(), DELTA);
-    Assert.assertEquals(1d, fm.getRecallScore(), DELTA);
+    Assertions.assertEquals(1d, fm.getPrecisionScore(), DELTA);
+    Assertions.assertEquals(1d, fm.getRecallScore(), DELTA);
 
-    Assert.assertEquals(stream.toString().length(), 0);
+    Assertions.assertEquals(stream.toString().length(), 0);
   }
 
 }

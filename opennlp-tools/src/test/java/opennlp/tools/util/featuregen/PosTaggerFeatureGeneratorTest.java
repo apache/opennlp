@@ -20,9 +20,9 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PosTaggerFeatureGeneratorTest {
 
@@ -30,13 +30,13 @@ public class PosTaggerFeatureGeneratorTest {
   static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
   static String[] testTags = new String[] {"DT", "VBZ", "DT", "NN", "NN"};
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp()  {
     features = new ArrayList<>();
   }
 
   @Test
-  public void testBegin() {
+  void testBegin() {
 
     final int testTokenIndex = 0;
 
@@ -44,11 +44,11 @@ public class PosTaggerFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, testTags);
 
-    Assert.assertEquals(0, features.size());
+    Assertions.assertEquals(0, features.size());
   }
 
   @Test
-  public void testNext() {
+  void testNext() {
 
     final int testTokenIndex = 1;
 
@@ -56,12 +56,12 @@ public class PosTaggerFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, testTags);
 
-    Assert.assertEquals(1, features.size());
-    Assert.assertEquals("t=DT", features.get(0));
+    Assertions.assertEquals(1, features.size());
+    Assertions.assertEquals("t=DT", features.get(0));
   }
 
   @Test
-  public void testMiddle() {
+  void testMiddle() {
 
     final int testTokenIndex = 3;
 
@@ -69,8 +69,8 @@ public class PosTaggerFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, testTags);
 
-    Assert.assertEquals(2, features.size());
-    Assert.assertEquals("t=DT", features.get(0));
-    Assert.assertEquals("t2=VBZ,DT", features.get(1));
+    Assertions.assertEquals(2, features.size());
+    Assertions.assertEquals("t=DT", features.get(0));
+    Assertions.assertEquals("t2=VBZ,DT", features.get(1));
   }
 }

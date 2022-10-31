@@ -25,9 +25,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -38,8 +38,8 @@ public class LanguageDetectorFactoryTest {
 
   private static LanguageDetectorModel model;
 
-  @BeforeClass
-  public static void train() throws Exception {
+  @BeforeAll
+  static void train() throws Exception {
 
     ResourceAsStreamFactory streamFactory = new ResourceAsStreamFactory(
         LanguageDetectorMETest.class, "/opennlp/tools/doccat/DoccatSample.txt");
@@ -57,35 +57,35 @@ public class LanguageDetectorFactoryTest {
   }
 
   @Test
-  public void testCorrectFactory() throws IOException {
+  void testCorrectFactory() throws IOException {
     byte[] serialized = LanguageDetectorMETest.serializeModel(model);
 
     LanguageDetectorModel myModel = new LanguageDetectorModel(new ByteArrayInputStream(serialized));
 
-    Assert.assertTrue(myModel.getFactory() instanceof DummyFactory);
+    Assertions.assertTrue(myModel.getFactory() instanceof DummyFactory);
 
   }
 
   @Test
-  public void testDummyFactory() throws Exception {
+  void testDummyFactory() throws Exception {
     byte[] serialized = LanguageDetectorMETest.serializeModel(model);
 
     LanguageDetectorModel myModel = new LanguageDetectorModel(new ByteArrayInputStream(serialized));
 
-    Assert.assertTrue(myModel.getFactory() instanceof DummyFactory);
+    Assertions.assertTrue(myModel.getFactory() instanceof DummyFactory);
   }
 
   @Test
-  public void testDummyFactoryContextGenerator() throws Exception {
+  void testDummyFactoryContextGenerator() {
     LanguageDetectorContextGenerator cg = model.getFactory().getContextGenerator();
     String[] context = cg.getContext(
         "a dummy text phrase to test if the context generator works!!!!!!!!!!!!");
 
     Set<String> set = new HashSet(Arrays.asList(context));
 
-    Assert.assertTrue(set.contains("!!!!!")); // default normalizer would remove the repeated !
-    Assert.assertTrue(set.contains("a dum"));
-    Assert.assertTrue(set.contains("tg=[THE,CONTEXT,GENERATOR]"));
+    Assertions.assertTrue(set.contains("!!!!!")); // default normalizer would remove the repeated !
+    Assertions.assertTrue(set.contains("a dum"));
+    Assertions.assertTrue(set.contains("tg=[THE,CONTEXT,GENERATOR]"));
   }
 
 }

@@ -17,32 +17,35 @@
 
 package opennlp.tools.lemmatizer;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class DictionaryLemmatizerTest {
 
   private static DictionaryLemmatizer dictionaryLemmatizer;
 
-  @BeforeClass
-  public static void loadDictionary() throws Exception {
+  @BeforeAll
+  static void loadDictionary() throws Exception {
     dictionaryLemmatizer = new DictionaryLemmatizer(
-        DictionaryLemmatizerTest.class.getResourceAsStream("/opennlp/tools/lemmatizer/smalldictionary.dict") 
+        DictionaryLemmatizerTest.class.getResourceAsStream("/opennlp/tools/lemmatizer/smalldictionary.dict")
     );
   }
-  
+
   @Test
-  public void testForNullPointerException() {
-    String[] sentence = new String[]{"The","dogs","were","running","and","barking","down","the","street"};
-    String[] sentencePOS = new String[]{"DT","NNS","VBD","VBG","CC","VBG","RP","DT","NN"};
-    String[] expectedLemma = new String[]{"the","dog","is","run","and","bark","down","the","street"};
-    
+  void testForNullPointerException() {
+    String[] sentence = new String[] {"The", "dogs", "were", "running", "and", "barking",
+        "down", "the", "street"};
+    String[] sentencePOS = new String[] {"DT", "NNS", "VBD", "VBG", "CC", "VBG", "RP", "DT", "NN"};
+    String[] expectedLemma = new String[] {"the", "dog", "is", "run", "and", "bark", "down", "the", "street"};
+
     String[] actualLemma = dictionaryLemmatizer.lemmatize(sentence, sentencePOS);
-    
-    for (int i = 0;i < sentence.length;i++) {
+
+    for (int i = 0; i < sentence.length; i++) {
       // don't compare cases where the word is not in the dictionary...
-      if (!actualLemma[i].equals("O")) Assert.assertEquals(expectedLemma[i], actualLemma[i]);
+      if (!actualLemma[i].equals("O")) {
+        Assertions.assertEquals(expectedLemma[i], actualLemma[i]);
+      }
     }
   }
 

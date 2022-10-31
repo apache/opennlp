@@ -21,22 +21,21 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.model.ModelType;
 
 public class POSModelTest {
 
   @Test
-  public void testPOSModelSerializationMaxent() throws IOException {
+  void testPOSModelSerializationMaxent() throws IOException {
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
     try {
       posModel.serialize(out);
-    }
-    finally {
+    } finally {
       out.close();
     }
 
@@ -46,15 +45,14 @@ public class POSModelTest {
   }
 
   @Test
-  public void testPOSModelSerializationPerceptron() throws IOException {
+  void testPOSModelSerializationPerceptron() throws IOException {
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.PERCEPTRON);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
     try {
       posModel.serialize(out);
-    }
-    finally {
+    } finally {
       out.close();
     }
 

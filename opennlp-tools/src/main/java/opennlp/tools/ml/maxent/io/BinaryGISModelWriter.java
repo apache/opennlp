@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.ModelParameterChunker;
 
 /**
  * Model writer that saves models in binary format.
@@ -68,7 +69,7 @@ public class BinaryGISModelWriter extends GISModelWriter {
   }
 
   public void writeUTF(String s) throws java.io.IOException {
-    output.writeUTF(s);
+    ModelParameterChunker.writeUTF(output, s);
   }
 
   public void writeInt(int i) throws java.io.IOException {
