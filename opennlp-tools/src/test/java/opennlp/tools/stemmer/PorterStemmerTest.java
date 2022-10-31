@@ -17,24 +17,24 @@
 
 package opennlp.tools.stemmer;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PorterStemmerTest {
 
   private PorterStemmer stemmer = new PorterStemmer();
 
   @Test
-  public void testNotNull() {
-    Assert.assertNotNull(stemmer);
+  void testNotNull() {
+    Assertions.assertNotNull(stemmer);
   }
 
   @Test
-  public void testStemming() {
-    Assert.assertEquals(stemmer.stem("deny"), "deni" );
-    Assert.assertEquals(stemmer.stem("declining"), "declin" );
-    Assert.assertEquals(stemmer.stem("diversity"), "divers" );
-    Assert.assertEquals(stemmer.stem("divers"), "diver" );
-    Assert.assertEquals(stemmer.stem("dental"), "dental" );
+  void testStemming() {
+    Assertions.assertEquals(stemmer.stem("deny"), "deni");
+    Assertions.assertEquals(stemmer.stem("declining"), "declin");
+    Assertions.assertEquals(stemmer.stem("diversity"), "divers");
+    Assertions.assertEquals(stemmer.stem("divers"), "diver");
+    Assertions.assertEquals(stemmer.stem("dental"), "dental");
   }
 }

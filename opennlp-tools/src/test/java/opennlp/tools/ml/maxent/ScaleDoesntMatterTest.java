@@ -20,9 +20,9 @@ package opennlp.tools.ml.maxent;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
@@ -42,8 +42,8 @@ public class ScaleDoesntMatterTest {
 
   private DataIndexer testDataIndexer;
 
-  @Before
-  public void initIndexer() {
+  @BeforeEach
+  void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 0);
     testDataIndexer = new OnePassRealValueDataIndexer();
@@ -57,7 +57,7 @@ public class ScaleDoesntMatterTest {
    * we use (0.1,0.2) and (10,20) there is a difference.
    */
   @Test
-  public void testScaleResults() throws Exception {
+  void testScaleResults() throws Exception {
     String smallValues = "predA=0.1 predB=0.2 A\n" + "predB=0.3 predA=0.1 B\n";
 
     String smallTest = "predA=0.2 predB=0.2";
@@ -98,7 +98,7 @@ public class ScaleDoesntMatterTest {
     String largeResultString = largeModel.getAllOutcomes(largeResults);
     System.out.println("largeResults: " + largeResultString);
 
-    Assert.assertEquals(smallResults.length, largeResults.length);
+    Assertions.assertEquals(smallResults.length, largeResults.length);
     for (int i = 0; i < smallResults.length; i++) {
       System.out.println(String.format(
           "classifiy with smallModel: %1$s = %2$f", smallModel.getOutcome(i),
@@ -106,7 +106,7 @@ public class ScaleDoesntMatterTest {
       System.out.println(String.format(
           "classifiy with largeModel: %1$s = %2$f", largeModel.getOutcome(i),
           largeResults[i]));
-      Assert.assertEquals(smallResults[i], largeResults[i], 0.01f);
+      Assertions.assertEquals(largeResults[i], smallResults[i], 0.01f);
     }
   }
 }

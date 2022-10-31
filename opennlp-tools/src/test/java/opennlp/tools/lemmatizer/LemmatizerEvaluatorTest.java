@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.cmdline.lemmatizer.LemmaEvaluationErrorListener;
 import opennlp.tools.util.MockInputStreamFactory;
@@ -47,7 +47,7 @@ public class LemmatizerEvaluatorTest {
    * @throws IOException
    */
   @Test
-  public void testEvaluator() throws IOException {
+  void testEvaluator() throws IOException {
     String inPredicted = "opennlp/tools/lemmatizer/output.txt";
     String inExpected = "opennlp/tools/lemmatizer/output.txt";
 
@@ -55,11 +55,11 @@ public class LemmatizerEvaluatorTest {
 
     DummyLemmaSampleStream predictedSample = new DummyLemmaSampleStream(
         new PlainTextByLineStream(
-          new MockInputStreamFactory(new File(inPredicted)), encoding), true);
+            new MockInputStreamFactory(new File(inPredicted)), encoding), true);
 
     DummyLemmaSampleStream expectedSample = new DummyLemmaSampleStream(
         new PlainTextByLineStream(
-          new MockInputStreamFactory(new File(inExpected)), encoding), false);
+            new MockInputStreamFactory(new File(inExpected)), encoding), false);
 
     Lemmatizer dummyLemmatizer = new DummyLemmatizer(predictedSample);
 
@@ -69,8 +69,8 @@ public class LemmatizerEvaluatorTest {
 
     evaluator.evaluate(expectedSample);
 
-    Assert.assertEquals(0.9877049180327869, evaluator.getWordAccuracy(), DELTA);
-    Assert.assertNotSame(stream.toString().length(), 0);
+    Assertions.assertEquals(0.9877049180327869, evaluator.getWordAccuracy(), DELTA);
+    Assertions.assertNotSame(0, stream.toString().length());
 
   }
 

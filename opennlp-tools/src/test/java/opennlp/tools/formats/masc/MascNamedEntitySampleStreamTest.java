@@ -21,7 +21,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
@@ -32,16 +33,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 public class MascNamedEntitySampleStreamTest {
 
   @Test
-  public void read() {
+  void read() {
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
       File directory = new File(this.getClass().getResource(
@@ -53,31 +48,31 @@ public class MascNamedEntitySampleStreamTest {
       NameSample s = stream.read();
 
       String[] expectedTokens = {"This", "is", "a", "test", "Sentence", "."};
-      assertArrayEquals(expectedTokens, s.getSentence());
+      Assertions.assertArrayEquals(expectedTokens, s.getSentence());
 
       Span[] expectedTags = new Span[] {new Span(4, 5, "org")};
       Span[] returnedTags = s.getNames();
       // check the start/end positions
-      assertEquals(expectedTags.length, returnedTags.length);
+      Assertions.assertEquals(expectedTags.length, returnedTags.length);
       for (int i = 0; i < returnedTags.length; i++) {
-        assertTrue(expectedTags[i].equals(returnedTags[i]));
+        Assertions.assertTrue(expectedTags[i].equals(returnedTags[i]));
       }
 
       s = stream.read();
       expectedTokens = new String[] {"This", "is", "'nother", "test", "sentence", "."};
-      assertArrayEquals(expectedTokens, s.getSentence());
+      Assertions.assertArrayEquals(expectedTokens, s.getSentence());
 
       expectedTags = new Span[] {};
       returnedTags = s.getNames();
-      assertArrayEquals(expectedTags, returnedTags);
+      Assertions.assertArrayEquals(expectedTags, returnedTags);
 
     } catch (IOException e) {
-      fail("IO Exception: " + e.getMessage());
+      Assertions.fail("IO Exception: " + e.getMessage());
     }
   }
 
   @Test
-  public void close() {
+  void close() {
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
       File directory = new File(this.getClass().getResource(
@@ -89,14 +84,14 @@ public class MascNamedEntitySampleStreamTest {
       stream.close();
       NameSample s = stream.read();
     } catch (IOException e) {
-      assertEquals(e.getMessage(),
+      Assertions.assertEquals(e.getMessage(),
           "You are reading an empty document stream. " +
               "Did you close it?");
     }
   }
 
   @Test
-  public void reset() {
+  void reset() {
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
       File directory = new File(this.getClass().getResource(
@@ -108,29 +103,29 @@ public class MascNamedEntitySampleStreamTest {
       NameSample s = stream.read();
       s = stream.read();
       s = stream.read();
-      assertNull(s);  //The stream should be exhausted by now
+      Assertions.assertNull(s);  //The stream should be exhausted by now
 
       stream.reset();
 
       s = stream.read();
       String[] expectedTokens = {"This", "is", "a", "test", "Sentence", "."};
-      assertArrayEquals(expectedTokens, s.getSentence());
+      Assertions.assertArrayEquals(expectedTokens, s.getSentence());
 
       Span[] expectedTags = new Span[] {new Span(4, 5, "org")};
       Span[] returnedTags = s.getNames();
       // check the start/end positions
-      assertEquals(expectedTags.length, returnedTags.length);
+      Assertions.assertEquals(expectedTags.length, returnedTags.length);
       for (int i = 0; i < returnedTags.length; i++) {
-        assertTrue(expectedTags[i].equals(returnedTags[i]));
+        Assertions.assertTrue(expectedTags[i].equals(returnedTags[i]));
       }
 
     } catch (IOException e) {
-      fail("IO Exception: " + e.getMessage());
+      Assertions.fail("IO Exception: " + e.getMessage());
     }
   }
 
   @Test
-  public void train() {
+  void train() {
     try {
       File directory = new File(this.getClass().getResource(
           "/opennlp/tools/formats/masc/").getFile());
@@ -160,7 +155,7 @@ public class MascNamedEntitySampleStreamTest {
       for (StackTraceElement trace : traces) {
         System.err.println(trace.toString());
       }
-      fail("Exception raised");
+      Assertions.fail("Exception raised");
     }
   }
 

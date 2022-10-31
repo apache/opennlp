@@ -19,37 +19,37 @@ package opennlp.tools.util;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ParagraphStreamTest {
 
   @Test
-  public void testSimpleReading() throws IOException {
+  void testSimpleReading() throws IOException {
     try (ParagraphStream paraStream = new ParagraphStream(
-            ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5"))) {
-      Assert.assertEquals("1\n2\n", paraStream.read());
-      Assert.assertEquals("4\n5\n", paraStream.read());
-      Assert.assertNull(paraStream.read());
+        ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5"))) {
+      Assertions.assertEquals("1\n2\n", paraStream.read());
+      Assertions.assertEquals("4\n5\n", paraStream.read());
+      Assertions.assertNull(paraStream.read());
     }
     try (ParagraphStream paraStream = new ParagraphStream(
-              ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""))) {
-      Assert.assertEquals("1\n2\n", paraStream.read());
-      Assert.assertEquals("4\n5\n", paraStream.read());
-      Assert.assertNull(paraStream.read());
+        ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""))) {
+      Assertions.assertEquals("1\n2\n", paraStream.read());
+      Assertions.assertEquals("4\n5\n", paraStream.read());
+      Assertions.assertNull(paraStream.read());
     }
   }
 
   @Test
-  public void testReset() throws IOException {
+  void testReset() throws IOException {
     try (ParagraphStream paraStream = new ParagraphStream(
-            ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""))) {
-      Assert.assertEquals("1\n2\n", paraStream.read());
+        ObjectStreamUtils.createObjectStream("1", "2", "", "", "4", "5", ""))) {
+      Assertions.assertEquals("1\n2\n", paraStream.read());
       paraStream.reset();
 
-      Assert.assertEquals("1\n2\n", paraStream.read());
-      Assert.assertEquals("4\n5\n", paraStream.read());
-      Assert.assertNull(paraStream.read());
+      Assertions.assertEquals("1\n2\n", paraStream.read());
+      Assertions.assertEquals("4\n5\n", paraStream.read());
+      Assertions.assertNull(paraStream.read());
     }
   }
 }

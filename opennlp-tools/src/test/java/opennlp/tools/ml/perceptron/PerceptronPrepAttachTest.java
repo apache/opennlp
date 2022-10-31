@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
@@ -44,7 +44,7 @@ import opennlp.tools.util.TrainingParameters;
 public class PerceptronPrepAttachTest {
 
   @Test
-  public void testPerceptronOnPrepAttachData() throws IOException {
+  void testPerceptronOnPrepAttachData() throws IOException {
     TwoPassDataIndexer indexer = new TwoPassDataIndexer();
     TrainingParameters indexingParameters = new TrainingParameters();
     indexingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
@@ -56,7 +56,7 @@ public class PerceptronPrepAttachTest {
   }
 
   @Test
-  public void testPerceptronOnPrepAttachDataWithSkippedAveraging() throws IOException {
+  void testPerceptronOnPrepAttachDataWithSkippedAveraging() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
@@ -69,7 +69,7 @@ public class PerceptronPrepAttachTest {
   }
 
   @Test
-  public void testPerceptronOnPrepAttachDataWithTolerance() throws IOException {
+  void testPerceptronOnPrepAttachDataWithTolerance() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
@@ -83,7 +83,7 @@ public class PerceptronPrepAttachTest {
   }
 
   @Test
-  public void testPerceptronOnPrepAttachDataWithStepSizeDecrease() throws IOException {
+  void testPerceptronOnPrepAttachDataWithStepSizeDecrease() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
@@ -97,7 +97,7 @@ public class PerceptronPrepAttachTest {
   }
 
   @Test
-  public void testModelSerialization() throws IOException {
+  void testModelSerialization() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
@@ -122,7 +122,7 @@ public class PerceptronPrepAttachTest {
   }
 
   @Test
-  public void testModelEquals() throws IOException {
+  void testModelEquals() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
@@ -132,23 +132,23 @@ public class PerceptronPrepAttachTest {
     AbstractModel modelA = (AbstractModel) trainer.train(PrepAttachDataUtil.createTrainingStream());
     AbstractModel modelB = (AbstractModel) trainer.train(PrepAttachDataUtil.createTrainingStream());
 
-    Assert.assertEquals(modelA, modelB);
-    Assert.assertEquals(modelA.hashCode(), modelB.hashCode());
+    Assertions.assertEquals(modelA, modelB);
+    Assertions.assertEquals(modelA.hashCode(), modelB.hashCode());
   }
-  
+
   @Test
-  public void verifyReportMap() throws IOException {
+  void verifyReportMap() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
     trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
     // Since we are verifying the report map, we don't need to have more than 1 iteration
     trainParams.put(AbstractTrainer.ITERATIONS_PARAM, 1);
     trainParams.put("UseSkippedAveraging", true);
-    
-    Map<String,String> reportMap = new HashMap<>();
+
+    Map<String, String> reportMap = new HashMap<>();
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, reportMap);
     trainer.train(PrepAttachDataUtil.createTrainingStream());
-    Assert.assertTrue("Report Map does not contain the training event hash",
-        reportMap.containsKey("Training-Eventhash")); 
+    Assertions.assertTrue(
+        reportMap.containsKey("Training-Eventhash"), "Report Map does not contain the training event hash");
   }
 }

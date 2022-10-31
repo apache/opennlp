@@ -19,13 +19,13 @@ package opennlp.tools.postag;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class POSTaggerMEIT {
 
   @Test
-  public void testPOSTagger() throws IOException {
+  void testPOSTagger() throws IOException {
 
     POSTagger tagger = new POSTaggerME("en");
 
@@ -37,13 +37,13 @@ public class POSTaggerMEIT {
         "injured",
         "."});
 
-    Assert.assertEquals(6, tags.length);
-    Assert.assertEquals("DT", tags[0]);
-    Assert.assertEquals("NN", tags[1]);
-    Assert.assertEquals("VBD", tags[2]);
-    Assert.assertEquals("RB", tags[3]);
-    Assert.assertEquals("VBN", tags[4]);
-    Assert.assertEquals(".", tags[5]);
+    Assertions.assertEquals(6, tags.length);
+    Assertions.assertEquals("DT", tags[0]);
+    Assertions.assertEquals("NN", tags[1]);
+    Assertions.assertEquals("VBD", tags[2]);
+    Assertions.assertEquals("RB", tags[3]);
+    Assertions.assertEquals("VBN", tags[4]);
+    Assertions.assertEquals(".", tags[5]);
   }
-  
+
 }

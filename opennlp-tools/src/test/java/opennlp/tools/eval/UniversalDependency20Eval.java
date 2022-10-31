@@ -21,9 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.conllu.ConlluLemmaSampleStream;
 import opennlp.tools.formats.conllu.ConlluStream;
@@ -40,14 +40,14 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class UniversalDependency20Eval extends AbstractEvalTest {
 
-  private static File SPA_ANCORA_TRAIN;      
+  private static File SPA_ANCORA_TRAIN;
   private static File SPA_ANCORA_DEV;
 
-  @BeforeClass
-  public static void verifyTrainingData() throws Exception {
+  @BeforeAll
+  static void verifyTrainingData() throws Exception {
 
-    SPA_ANCORA_TRAIN = new File(getOpennlpDataDir(),"ud20/UD_Spanish-AnCora/es_ancora-ud-train.conllu");
-    SPA_ANCORA_DEV = new File(getOpennlpDataDir(),"ud20/UD_Spanish-AnCora/es_ancora-ud-dev.conllu");
+    SPA_ANCORA_TRAIN = new File(getOpennlpDataDir(), "ud20/UD_Spanish-AnCora/es_ancora-ud-train.conllu");
+    SPA_ANCORA_DEV = new File(getOpennlpDataDir(), "ud20/UD_Spanish-AnCora/es_ancora-ud-dev.conllu");
 
     verifyFileChecksum(SPA_ANCORA_TRAIN.toPath(),
         new BigInteger("224942804200733453179524127037951530195"));
@@ -56,7 +56,7 @@ public class UniversalDependency20Eval extends AbstractEvalTest {
   }
 
   private double trainAndEval(String lang, File trainFile, TrainingParameters params,
-                                     File evalFile) throws IOException {
+                              File evalFile) throws IOException {
     ConlluTagset tagset = ConlluTagset.X;
 
     ObjectStream<LemmaSample> trainSamples = new ConlluLemmaSampleStream(new ConlluStream(
@@ -72,13 +72,13 @@ public class UniversalDependency20Eval extends AbstractEvalTest {
   }
 
   @Test
-  public void trainAndEvalSpanishAncora() throws IOException {
+  void trainAndEvalSpanishAncora() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", "4");
 
     double wordAccuracy = trainAndEval("spa", SPA_ANCORA_TRAIN,
         params, SPA_ANCORA_DEV);
 
-    Assert.assertEquals(0.9057341692068787d, wordAccuracy, ACCURACY_DELTA);
+    Assertions.assertEquals(0.9057341692068787d, wordAccuracy, ACCURACY_DELTA);
   }
 }

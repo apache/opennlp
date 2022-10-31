@@ -20,22 +20,22 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TokenClassFeatureGeneratorTest {
 
   private List<String> features;
   static String[] testSentence = new String[] {"This", "is", "an", "Example", "sentence"};
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp()  {
     features = new ArrayList<>();
   }
 
   @Test
-  public void testGenWAC() {
+  void testGenWAC() {
 
     final int testTokenIndex = 3;
 
@@ -43,13 +43,13 @@ public class TokenClassFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    Assert.assertEquals(2, features.size());
-    Assert.assertEquals("wc=ic", features.get(0));
-    Assert.assertEquals("w&c=example,ic", features.get(1));
+    Assertions.assertEquals(2, features.size());
+    Assertions.assertEquals("wc=ic", features.get(0));
+    Assertions.assertEquals("w&c=example,ic", features.get(1));
   }
 
   @Test
-  public void testNoWAC() {
+  void testNoWAC() {
 
     final int testTokenIndex = 3;
 
@@ -57,7 +57,7 @@ public class TokenClassFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    Assert.assertEquals(1, features.size());
-    Assert.assertEquals("wc=ic", features.get(0));
+    Assertions.assertEquals(1, features.size());
+    Assertions.assertEquals("wc=ic", features.get(0));
   }
 }

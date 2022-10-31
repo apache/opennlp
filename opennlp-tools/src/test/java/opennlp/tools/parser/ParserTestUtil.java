@@ -24,7 +24,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.parser.lang.en.HeadRules;
@@ -71,7 +71,7 @@ public class ParserTestUtil {
           samples = new ParseSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
         } catch (UnsupportedEncodingException e) {
           // Should never happen
-          Assert.fail(e.getMessage());
+          Assertions.fail(e.getMessage());
         }
       }
     };

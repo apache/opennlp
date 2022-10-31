@@ -19,8 +19,8 @@ package opennlp.tools.sentdetect;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.sentdetect.lang.Factory;
@@ -34,7 +34,7 @@ import opennlp.tools.util.Span;
 public class SDEventStreamTest {
 
   @Test
-  public void testEventOutcomes() throws IOException {
+  void testEventOutcomes() throws IOException {
     // Sample with two sentences
     SentenceSample sample = new SentenceSample("Test sent. one. Test sent. 2?",
         new Span(0, 15), new Span(16, 29));
@@ -48,11 +48,11 @@ public class SDEventStreamTest {
         factory.createSentenceContextGenerator("eng"),
         factory.createEndOfSentenceScanner("eng"));
 
-    Assert.assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
-    Assert.assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
-    Assert.assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
-    Assert.assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
+    Assertions.assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
+    Assertions.assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
+    Assertions.assertEquals(SentenceDetectorME.NO_SPLIT, eventStream.read().getOutcome());
+    Assertions.assertEquals(SentenceDetectorME.SPLIT, eventStream.read().getOutcome());
 
-    Assert.assertNull(eventStream.read());
+    Assertions.assertNull(eventStream.read());
   }
 }

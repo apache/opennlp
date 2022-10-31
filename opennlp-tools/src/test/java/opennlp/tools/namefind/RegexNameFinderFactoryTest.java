@@ -20,9 +20,9 @@ package opennlp.tools.namefind;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
@@ -37,8 +37,8 @@ public class RegexNameFinderFactoryTest {
       " DMS 45N 123W AKA" +
       "  +45.1234, -123.12 AKA  45.1234N 123.12W AKA 45 30 N 50 30 W";
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     regexNameFinder = RegexNameFinderFactory.getDefaultRegexNameFinders(
         RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER.DEGREES_MIN_SEC_LAT_LON,
         RegexNameFinderFactory.DEFAULT_REGEX_NAME_FINDER.EMAIL,
@@ -48,59 +48,59 @@ public class RegexNameFinderFactoryTest {
   }
 
   @Test
-  public void testEmail() throws Exception {
+  void testEmail() {
     String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(text);
     Span[] find = regexNameFinder.find(tokens);
     List<Span> spanList = Arrays.asList(find);
-    Assert.assertTrue(spanList.contains(new Span(3, 4, "EMAIL")));
+    Assertions.assertTrue(spanList.contains(new Span(3, 4, "EMAIL")));
     Span emailSpan = new Span(3, 4, "EMAIL");
-    Assert.assertEquals("opennlp@gmail.com", tokens[emailSpan.getStart()]);
+    Assertions.assertEquals("opennlp@gmail.com", tokens[emailSpan.getStart()]);
   }
 
   @Test
-  public void testPhoneNumber() throws Exception {
+  void testPhoneNumber() {
     String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(text);
     Span[] find = regexNameFinder.find(tokens);
     List<Span> spanList = Arrays.asList(find);
     Span phoneSpan = new Span(9, 10, "PHONE_NUM");
-    Assert.assertTrue(spanList.contains(phoneSpan));
-    Assert.assertEquals("123-234-5678", tokens[phoneSpan.getStart()]);
+    Assertions.assertTrue(spanList.contains(phoneSpan));
+    Assertions.assertEquals("123-234-5678", tokens[phoneSpan.getStart()]);
   }
 
   @Test
-  public void testURL() throws Exception {
+  void testURL() {
     String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(text);
     Span[] find = regexNameFinder.find(tokens);
     List<Span> spanList = Arrays.asList(find);
     Span urlSpan = new Span(13, 14, "URL");
-    Assert.assertTrue(spanList.contains(urlSpan));
-    Assert.assertEquals("https://www.google.com", tokens[urlSpan.getStart()]);
+    Assertions.assertTrue(spanList.contains(urlSpan));
+    Assertions.assertEquals("https://www.google.com", tokens[urlSpan.getStart()]);
   }
 
   @Test
-  public void testLatLong() throws Exception {
+  void testLatLong() {
     String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(text);
     Span[] find = regexNameFinder.find(tokens);
     List<Span> spanList = Arrays.asList(find);
     Span latLongSpan1 = new Span(22, 24, "DEGREES_MIN_SEC_LAT_LON");
     Span latLongSpan2 = new Span(35, 41, "DEGREES_MIN_SEC_LAT_LON");
-    Assert.assertTrue(spanList.contains(latLongSpan1));
-    Assert.assertTrue(spanList.contains(latLongSpan2));
-    Assert.assertEquals("528", tokens[latLongSpan1.getStart()]);
-    Assert.assertEquals("45", tokens[latLongSpan2.getStart()]);
+    Assertions.assertTrue(spanList.contains(latLongSpan1));
+    Assertions.assertTrue(spanList.contains(latLongSpan2));
+    Assertions.assertEquals("528", tokens[latLongSpan1.getStart()]);
+    Assertions.assertEquals("45", tokens[latLongSpan2.getStart()]);
   }
 
   @Test
-  public void testMgrs() throws Exception {
+  void testMgrs() {
     String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(text);
     Span[] find = regexNameFinder.find(tokens);
     List<Span> spanList = Arrays.asList(find);
     Span mgrsSpan1 = new Span(18, 19, "MGRS");
     Span mgrsSpan2 = new Span(20, 24, "MGRS");
-    Assert.assertTrue(spanList.contains(mgrsSpan1));
-    Assert.assertTrue(spanList.contains(mgrsSpan2));
-    Assert.assertEquals("11SKU528111".toLowerCase(), tokens[mgrsSpan1.getStart()]);
-    Assert.assertEquals("11S", tokens[mgrsSpan2.getStart()]);
+    Assertions.assertTrue(spanList.contains(mgrsSpan1));
+    Assertions.assertTrue(spanList.contains(mgrsSpan2));
+    Assertions.assertEquals("11SKU528111".toLowerCase(), tokens[mgrsSpan1.getStart()]);
+    Assertions.assertEquals("11S", tokens[mgrsSpan2.getStart()]);
   }
 }
 

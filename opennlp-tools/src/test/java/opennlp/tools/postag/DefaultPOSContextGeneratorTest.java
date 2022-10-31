@@ -28,25 +28,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.StringList;
 
 /**
- *
  * We encountered a concurrency issue in the pos tagger module in the class
  * DefaultPOSContextGenerator.
-
- The issue is demonstrated in DefaultPOSContextGeneratorTest.java. The test "multithreading()"
- consistently fails on our system with the current code if the number of threads
- (NUMBER_OF_THREADS) is set to 10. If the number of threads is set to 1 (effectively disabling
- multithreading), the test consistently passes.
-
- We resolved the issue by removing a field in DefaultPOSContextGenerator.java.
- *
+ * <p>
+ * The issue is demonstrated in DefaultPOSContextGeneratorTest.java. The test "multithreading()"
+ * consistently fails on our system with the current code if the number of threads
+ * (NUMBER_OF_THREADS) is set to 10. If the number of threads is set to 1 (effectively disabling
+ * multithreading), the test consistently passes.
+ * <p>
+ * We resolved the issue by removing a field in DefaultPOSContextGenerator.java.
  */
 
 
@@ -58,8 +56,8 @@ public class DefaultPOSContextGeneratorTest {
   private static DefaultPOSContextGenerator defaultPOSContextGenerator;
   private static String[] tags;
 
-  @BeforeClass
-  public static void setUp() {
+  @BeforeAll
+  static void setUp() {
     final String matchingToken = "tokenC";
 
     tokens = new Object[] {"tokenA", "tokenB", matchingToken, "tokenD"};
@@ -75,7 +73,7 @@ public class DefaultPOSContextGeneratorTest {
   }
 
   @Test
-  public void noDictionaryMatch() {
+  void noDictionaryMatch() {
     int index = 1;
 
     final String[] actual = defaultPOSContextGenerator.getContext(index, tokens, tags);
@@ -99,13 +97,13 @@ public class DefaultPOSContextGeneratorTest {
         "nn=tokenD"
     };
 
-    Assert.assertArrayEquals("Calling with not matching index at: " + index +
+    Assertions.assertArrayEquals(expected, actual, "Calling with not matching index at: " + index +
         "\nexpected \n" + Arrays.toString(expected) + " but actually was \n"
-        + Arrays.toString(actual), expected, actual);
+        + Arrays.toString(actual));
   }
 
   @Test
-  public void dictionaryMatch() {
+  void dictionaryMatch() {
     int indexWithDictionaryMatch = 2;
 
     final String[] actual =
@@ -122,13 +120,13 @@ public class DefaultPOSContextGeneratorTest {
         "nn=*SE*"
     };
 
-    Assert.assertArrayEquals("Calling with index matching dictionary entry at: "
+    Assertions.assertArrayEquals(expected, actual, "Calling with index matching dictionary entry at: "
         + indexWithDictionaryMatch + "\nexpected \n" + Arrays.toString(expected)
-        + " but actually was \n" + Arrays.toString(actual), expected, actual);
+        + " but actually was \n" + Arrays.toString(actual));
   }
 
   @Test
-  public void multithreading() {
+  void multithreading() {
     Callable<Void> matching = () -> {
 
       dictionaryMatch();
@@ -160,14 +158,14 @@ public class DefaultPOSContextGeneratorTest {
         try {
           future.get();
         } catch (InterruptedException e) {
-          Assert.fail("Interrupted because of: " + e.getCause().getMessage());
+          Assertions.fail("Interrupted because of: " + e.getCause().getMessage());
         } catch (ExecutionException ee) {
-          Assert.fail(ee.getCause().getMessage());
+          Assertions.fail(ee.getCause().getMessage());
         }
 
       });
     } catch (final InterruptedException e) {
-      Assert.fail("Test interrupted");
+      Assertions.fail("Test interrupted");
     }
   }
 }
