@@ -27,7 +27,7 @@ import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
 /**
- * Class for ParserEvaluator.
+ * Class for {@link Evaluator<Parse>}.
  * This ParserEvaluator behaves like EVALB with no exceptions, e.g,
  * without removing punctuation tags, or equality between ADVP and PRT
  * (as in COLLINS convention). To follow parsing evaluation conventions
@@ -38,17 +38,18 @@ import opennlp.tools.util.eval.FMeasure;
 public class ParserEvaluator extends Evaluator<Parse> {
 
   /**
-   * fmeasure.
+   * Holds the evaluation results for the last run of {@link #processSample}.
    */
-  private FMeasure fmeasure = new FMeasure();
+  private final FMeasure fmeasure = new FMeasure();
   /**
    * The parser to evaluate.
    */
   private final Parser parser;
 
   /**
-   * Construct a parser with some evaluation monitors.
-   * @param aParser
+   * Construct a {@link Parser} with some evaluation monitors.
+   * 
+   * @param aParser A valid {@link Parser} instance.
    * @param monitors the evaluation monitors
    */
   public ParserEvaluator(final Parser aParser, final ParserEvaluationMonitor... monitors) {
