@@ -28,6 +28,9 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ */
 public class ConlluTokenSampleStreamFactory<P> extends AbstractSampleStreamFactory<TokenSample, P> {
 
   interface Parameters extends BasicFormatParams {
