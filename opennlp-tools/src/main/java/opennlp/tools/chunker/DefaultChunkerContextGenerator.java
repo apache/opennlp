@@ -55,7 +55,7 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
     else {
       w_2 = "w_2=" + toks[i - 2];
       t_2 = "t_2=" + tags[i - 2];
-      p_2 = "p_2" + preds[i - 2];
+      p_2 = "p_2=" + preds[i - 2];
     }
 
     if (i < 1) {
