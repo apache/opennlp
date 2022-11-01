@@ -47,7 +47,7 @@ public class POSEvaluationErrorListener extends
   }
 
   @Override
-  public void missclassified(POSSample reference, POSSample prediction) {
+  public void misclassified(POSSample reference, POSSample prediction) {
     printError(reference.getTags(), prediction.getTags(), reference,
         prediction, reference.getSentence());
   }

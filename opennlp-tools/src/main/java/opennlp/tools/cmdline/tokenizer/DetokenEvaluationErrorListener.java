@@ -46,7 +46,7 @@ public class DetokenEvaluationErrorListener extends
   }
 
   @Override
-  public void missclassified(TokenSample reference, TokenSample prediction) {
+  public void misclassified(TokenSample reference, TokenSample prediction) {
     printError(reference, prediction);
   }
 

@@ -54,7 +54,7 @@ public class TokenNameFinderFineGrainedReportListener
 
   // methods inherited from EvaluationMonitor
 
-  public void missclassified(NameSample reference, NameSample prediction) {
+  public void misclassified(NameSample reference, NameSample prediction) {
     statsAdd(reference, prediction);
   }
 

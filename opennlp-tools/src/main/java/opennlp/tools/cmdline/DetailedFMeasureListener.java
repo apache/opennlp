@@ -54,7 +54,7 @@ public abstract class DetailedFMeasureListener<T> implements
     }
   }
 
-  public void missclassified(T reference, T prediction) {
+  public void misclassified(T reference, T prediction) {
     samples++;
     Span[] references = asSpanArray(reference);
     Span[] predictions = asSpanArray(prediction);

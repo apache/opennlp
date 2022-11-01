@@ -48,8 +48,8 @@ public class LanguageDetectorEvaluatorTest {
           }
 
           @Override
-          public void missclassified(LanguageSample reference,
-                                     LanguageSample prediction) {
+          public void misclassified(LanguageSample reference,
+                                    LanguageSample prediction) {
             incorrectCount.incrementAndGet();
           }
         }, new LanguageDetectorEvaluationErrorListener(outputStream));

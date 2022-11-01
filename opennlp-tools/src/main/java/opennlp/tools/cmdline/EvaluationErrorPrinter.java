@@ -235,6 +235,6 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
     // do nothing
   }
 
-  public abstract void missclassified(T reference, T prediction) ;
+  public abstract void misclassified(T reference, T prediction) ;
 
 }

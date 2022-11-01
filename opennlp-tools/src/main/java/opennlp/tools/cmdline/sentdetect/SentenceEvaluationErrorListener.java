@@ -48,7 +48,7 @@ public class SentenceEvaluationErrorListener extends
   }
 
   @Override
-  public void missclassified(SentenceSample reference, SentenceSample prediction) {
+  public void misclassified(SentenceSample reference, SentenceSample prediction) {
     printError(reference.getSentences(), prediction.getSentences(), reference,
         prediction, reference.getDocument());
   }

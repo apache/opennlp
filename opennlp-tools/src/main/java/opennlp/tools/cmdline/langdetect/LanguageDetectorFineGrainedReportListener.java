@@ -48,7 +48,7 @@ public class LanguageDetectorFineGrainedReportListener
 
   // methods inherited from EvaluationMonitor
 
-  public void missclassified(LanguageSample reference, LanguageSample prediction) {
+  public void misclassified(LanguageSample reference, LanguageSample prediction) {
     statsAdd(reference, prediction);
   }
 

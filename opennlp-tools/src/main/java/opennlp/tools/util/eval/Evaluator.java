@@ -84,7 +84,7 @@ public abstract class Evaluator<T> {
         }
       } else {
         for (EvaluationMonitor<T> listener : listeners) {
-          listener.missclassified(sample, predicted);
+          listener.misclassified(sample, predicted);
         }
       }
     }
