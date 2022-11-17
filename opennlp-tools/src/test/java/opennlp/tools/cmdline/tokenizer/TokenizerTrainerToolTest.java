@@ -24,27 +24,30 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
-import junit.framework.TestCase;
+
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 
-import static org.junit.Assert.assertThrows;
-
-public class TokenizerTrainerToolTest extends TestCase {
+/**
+ * Tests for the {@link TokenizerTrainerTool} class.
+ */
+public class TokenizerTrainerToolTest {
 
   private TokenizerTrainerTool tokenizerTrainerTool;
 
-  @Rule
-  public TemporaryFolder tempFolder = new TemporaryFolder();
+  @TempDir
+  public Path tempFolder;
 
   private String sampleSuccessData =
       "Pierre Vinken<SPLIT>, 61 years old<SPLIT>, will join the board as a nonexecutive " +
@@ -55,37 +58,38 @@ public class TokenizerTrainerToolTest extends TestCase {
 
   private String sampleFailureData = "It is Fail Test Case.\n\nNothing in this sentence.";
 
-  public void setUp() throws Exception {
-    super.setUp();
+  @BeforeEach
+  void setUp() {
   }
 
-  public void tearDown() throws Exception {
+  @AfterEach
+  void tearDown() {
   }
 
   @Test
   public void testGetShortDescription() {
     tokenizerTrainerTool = new TokenizerTrainerTool();
-    assertEquals(tokenizerTrainerTool.getShortDescription() , "trainer for the learnable tokenizer");
+    Assertions.assertEquals(tokenizerTrainerTool.getShortDescription() ,
+        "trainer for the learnable tokenizer");
   }
 
   @Test
   public void testLoadDictHappyCase() throws IOException {
     File dictFile = new File("lang/ga/sentdetect/abb.xml");
     Dictionary dict = TokenizerTrainerTool.loadDict(dictFile);
-    assertNotNull(dict);
+    Assertions.assertNotNull(dict);
   }
 
   @Test
   public void testLoadDictFailCase() throws IOException {
-    assertThrows(InvalidFormatException.class , () -> {
+    Assertions.assertThrows(InvalidFormatException.class , () -> {
       Dictionary dictionary = TokenizerTrainerTool.loadDict(prepareDataFile(""));
     });
   }
 
   @Test()
   public void testTestRunHappyCase() throws IOException {
-    tempFolder.create();
-    File model = tempFolder.newFile("model-en.bin");
+    File model = tempFolder.resolve("model-en.bin").toFile();
 
     String[] args =
         new String[] { "-model" , model.getAbsolutePath() , "-alphaNumOpt" , "false" , "-lang" , "en" ,
@@ -101,14 +105,13 @@ public class TokenizerTrainerToolTest extends TestCase {
     tokenizerTrainerTool.run(StreamFactoryRegistry.DEFAULT_FORMAT , args);
 
     final String content = new String(baos.toByteArray() , StandardCharsets.UTF_8);
-    Assert.assertTrue(content.contains("Number of Event Tokens: 171"));
+    Assertions.assertTrue(content.contains("Number of Event Tokens: 171"));
     model.delete();
   }
 
   @Test
   public void testTestRunExceptionCase() throws IOException {
-    tempFolder.create();
-    File model = tempFolder.newFile("model-en.bin");
+    File model = tempFolder.resolve("model-en.bin").toFile();
     model.deleteOnExit();
 
     String[] args =
@@ -121,7 +124,7 @@ public class TokenizerTrainerToolTest extends TestCase {
     PrintStream ps = new PrintStream(baos);
     System.setOut(ps);
 
-    assertThrows(TerminateToolException.class , () -> {
+    Assertions.assertThrows(TerminateToolException.class , () -> {
       tokenizerTrainerTool = new TokenizerTrainerTool();
       tokenizerTrainerTool.run(StreamFactoryRegistry.DEFAULT_FORMAT , args);
     });
@@ -129,9 +132,8 @@ public class TokenizerTrainerToolTest extends TestCase {
   }
 
   private File prepareDataFile(String input) throws IOException {
-    tempFolder.create();
     // This is guaranteed to be deleted after the test finishes.
-    File dataFile = tempFolder.newFile("data-en.train");
+    File dataFile = tempFolder.resolve("data-en.train").toFile();
     FileUtils.writeStringToFile(dataFile , input , "ISO-8859-1");
     return dataFile;
   }

@@ -67,11 +67,11 @@ public class TrainingParametersTest {
             "en-token.train" , "-encoding" , "UTF-8" , "-cutoff" , "10" , "-iterations" , "50" };
     TrainingParameters tr = TrainingParameters.setParams(args);
 
-    Assert.assertEquals("MAXENT" , tr.algorithm());
-    Assert.assertEquals(50 ,
+    Assertions.assertEquals("MAXENT" , tr.algorithm());
+    Assertions.assertEquals(50 ,
         tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
             TrainingParameters.ITERATIONS_DEFAULT_VALUE));
-    Assert.assertEquals(10 ,
+    Assertions.assertEquals(10 ,
         tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
             TrainingParameters.CUTOFF_DEFAULT_VALUE));
   }
@@ -83,11 +83,11 @@ public class TrainingParametersTest {
             "en-token.train" , "-encoding" , "UTF-8" };
     TrainingParameters tr = TrainingParameters.setParams(args);
 
-    Assert.assertEquals("MAXENT" , tr.algorithm());
-    Assert.assertEquals(100 ,
+    Assertions.assertEquals("MAXENT" , tr.algorithm());
+    Assertions.assertEquals(100 ,
         tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
             TrainingParameters.ITERATIONS_DEFAULT_VALUE));
-    Assert.assertEquals(5 ,
+    Assertions.assertEquals(5 ,
         tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
             TrainingParameters.CUTOFF_DEFAULT_VALUE));
   }
@@ -99,11 +99,11 @@ public class TrainingParametersTest {
             "en-token.train" , "-encoding" , "UTF-8" , "-iterations" , "50" };
     TrainingParameters tr = TrainingParameters.setParams(args);
 
-    Assert.assertEquals("MAXENT" , tr.algorithm());
-    Assert.assertEquals(50 ,
+    Assertions.assertEquals("MAXENT" , tr.algorithm());
+    Assertions.assertEquals(50 ,
         tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
             TrainingParameters.ITERATIONS_DEFAULT_VALUE));
-    Assert.assertEquals(5 ,
+    Assertions.assertEquals(5 ,
         tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
             TrainingParameters.CUTOFF_DEFAULT_VALUE));
   }
@@ -115,11 +115,11 @@ public class TrainingParametersTest {
             "en-token.train" , "-encoding" , "UTF-8" , "-cutoff" , "10" };
     TrainingParameters tr = TrainingParameters.setParams(args);
 
-    Assert.assertEquals("MAXENT" , tr.algorithm());
-    Assert.assertEquals(100 ,
+    Assertions.assertEquals("MAXENT" , tr.algorithm());
+    Assertions.assertEquals(100 ,
         tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
             TrainingParameters.ITERATIONS_DEFAULT_VALUE));
-    Assert.assertEquals(10 ,
+    Assertions.assertEquals(10 ,
         tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
             TrainingParameters.CUTOFF_DEFAULT_VALUE));
   }
