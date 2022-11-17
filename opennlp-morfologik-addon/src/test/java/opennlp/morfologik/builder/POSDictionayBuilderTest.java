@@ -26,8 +26,8 @@ import java.util.Arrays;
 
 import morfologik.stemming.DictionaryMetadata;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
 
@@ -75,7 +75,7 @@ public class POSDictionayBuilderTest {
   public void testBuildDictionary() throws Exception {
     Path output = createMorfologikDictionary();
     MorfologikLemmatizer ml = new MorfologikLemmatizer(output);
-    Assert.assertNotNull(ml);
+    Assertions.assertNotNull(ml);
     output.toFile().deleteOnExit();
   }
 

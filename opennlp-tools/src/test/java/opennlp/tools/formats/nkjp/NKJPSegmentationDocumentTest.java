@@ -20,29 +20,28 @@ package opennlp.tools.formats.nkjp;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class NKJPSegmentationDocumentTest {
   @Test
-  public void testParsingSimpleDoc() throws IOException {
+  void testParsingSimpleDoc() throws IOException {
     try (InputStream nkjpSegXmlIn =
-           NKJPSegmentationDocumentTest.class.getResourceAsStream("ann_segmentation.xml")) {
+             NKJPSegmentationDocumentTest.class.getResourceAsStream("ann_segmentation.xml")) {
 
       NKJPSegmentationDocument doc = NKJPSegmentationDocument.parse(nkjpSegXmlIn);
 
-      assertEquals(1, doc.getSegments().size());
+      Assertions.assertEquals(1, doc.getSegments().size());
 
-      assertEquals(7, doc.getSegments().get("segm_1.1-s").size());
+      Assertions.assertEquals(7, doc.getSegments().get("segm_1.1-s").size());
 
       String src = "To krótkie zdanie w drugim akapicie.";
 
       int offset = doc.getSegments().get("segm_1.1-s").get("segm_1.1-seg").offset;
-      assertEquals(0, offset);
+      Assertions.assertEquals(0, offset);
       int length = doc.getSegments().get("segm_1.1-s").get("segm_1.1-seg").length;
-      assertEquals(2, length);
-      assertEquals("To", src.substring(offset, length));
+      Assertions.assertEquals(2, length);
+      Assertions.assertEquals("To", src.substring(offset, length));
     }
   }
 }

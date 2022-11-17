@@ -17,8 +17,8 @@
 
 package opennlp.tools.util.eval;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.Span;
 
@@ -79,10 +79,10 @@ public class FMeasureTest {
    */
   @Test
   public void testCountTruePositives() {
-    Assert.assertEquals(0, FMeasure.countTruePositives(new Object[] {}, new Object[] {}));
-    Assert.assertEquals(gold.length, FMeasure.countTruePositives(gold, gold));
-    Assert.assertEquals(0, FMeasure.countTruePositives(gold, predictedCompletelyDistinct));
-    Assert.assertEquals(2, FMeasure.countTruePositives(gold, predicted));
+    Assertions.assertEquals(0, FMeasure.countTruePositives(new Object[] {}, new Object[] {}));
+    Assertions.assertEquals(gold.length, FMeasure.countTruePositives(gold, gold));
+    Assertions.assertEquals(0, FMeasure.countTruePositives(gold, predictedCompletelyDistinct));
+    Assertions.assertEquals(2, FMeasure.countTruePositives(gold, predicted));
   }
 
   /**
@@ -90,11 +90,11 @@ public class FMeasureTest {
    */
   @Test
   public void testPrecision() {
-    Assert.assertEquals(1.0d, FMeasure.precision(gold, gold), DELTA);
-    Assert.assertEquals(0, FMeasure.precision(gold, predictedCompletelyDistinct), DELTA);
-    Assert.assertEquals(Double.NaN, FMeasure.precision(gold, new Object[] {}), DELTA);
-    Assert.assertEquals(0, FMeasure.precision(new Object[] {}, gold), DELTA);
-    Assert.assertEquals(2d / predicted.length, FMeasure.precision(gold, predicted), DELTA);
+    Assertions.assertEquals(1.0d, FMeasure.precision(gold, gold), DELTA);
+    Assertions.assertEquals(0, FMeasure.precision(gold, predictedCompletelyDistinct), DELTA);
+    Assertions.assertEquals(Double.NaN, FMeasure.precision(gold, new Object[] {}), DELTA);
+    Assertions.assertEquals(0, FMeasure.precision(new Object[] {}, gold), DELTA);
+    Assertions.assertEquals(2d / predicted.length, FMeasure.precision(gold, predicted), DELTA);
   }
 
   /**
@@ -102,28 +102,28 @@ public class FMeasureTest {
    */
   @Test
   public void testRecall() {
-    Assert.assertEquals(1.0d, FMeasure.recall(gold, gold), DELTA);
-    Assert.assertEquals(0, FMeasure.recall(gold, predictedCompletelyDistinct), DELTA);
-    Assert.assertEquals(0, FMeasure.recall(gold, new Object[] {}), DELTA);
-    Assert.assertEquals(Double.NaN, FMeasure.recall(new Object[] {}, gold), DELTA);
-    Assert.assertEquals(2d / gold.length, FMeasure.recall(gold, predicted), DELTA);
+    Assertions.assertEquals(1.0d, FMeasure.recall(gold, gold), DELTA);
+    Assertions.assertEquals(0, FMeasure.recall(gold, predictedCompletelyDistinct), DELTA);
+    Assertions.assertEquals(0, FMeasure.recall(gold, new Object[] {}), DELTA);
+    Assertions.assertEquals(Double.NaN, FMeasure.recall(new Object[] {}, gold), DELTA);
+    Assertions.assertEquals(2d / gold.length, FMeasure.recall(gold, predicted), DELTA);
   }
 
   @Test
   public void testEmpty() {
     FMeasure fm = new FMeasure();
-    Assert.assertEquals(-1, fm.getFMeasure(), DELTA);
-    Assert.assertEquals(0, fm.getRecallScore(), DELTA);
-    Assert.assertEquals(0, fm.getPrecisionScore(), DELTA);
+    Assertions.assertEquals(-1, fm.getFMeasure(), DELTA);
+    Assertions.assertEquals(0, fm.getRecallScore(), DELTA);
+    Assertions.assertEquals(0, fm.getPrecisionScore(), DELTA);
   }
 
   @Test
   public void testPerfect() {
     FMeasure fm = new FMeasure();
     fm.updateScores(gold, gold);
-    Assert.assertEquals(1, fm.getFMeasure(), DELTA);
-    Assert.assertEquals(1, fm.getRecallScore(), DELTA);
-    Assert.assertEquals(1, fm.getPrecisionScore(), DELTA);
+    Assertions.assertEquals(1, fm.getFMeasure(), DELTA);
+    Assertions.assertEquals(1, fm.getRecallScore(), DELTA);
+    Assertions.assertEquals(1, fm.getPrecisionScore(), DELTA);
   }
 
   @Test
@@ -147,10 +147,10 @@ public class FMeasureTest {
     double tp2 = FMeasure.countTruePositives(goldToMerge, predictedToMerge);
 
 
-    Assert.assertEquals((tp1 + tp2) / (target1 + target2), fm.getRecallScore(), DELTA);
-    Assert.assertEquals((tp1 + tp2) / (selected1 + selected2), fm.getPrecisionScore(), DELTA);
+    Assertions.assertEquals((tp1 + tp2) / (target1 + target2), fm.getRecallScore(), DELTA);
+    Assertions.assertEquals((tp1 + tp2) / (selected1 + selected2), fm.getPrecisionScore(), DELTA);
 
-    Assert.assertEquals(fm.getRecallScore(), fmMerge.getRecallScore(), DELTA);
-    Assert.assertEquals(fm.getPrecisionScore(), fmMerge.getPrecisionScore(), DELTA);
+    Assertions.assertEquals(fm.getRecallScore(), fmMerge.getRecallScore(), DELTA);
+    Assertions.assertEquals(fm.getPrecisionScore(), fmMerge.getPrecisionScore(), DELTA);
   }
 }

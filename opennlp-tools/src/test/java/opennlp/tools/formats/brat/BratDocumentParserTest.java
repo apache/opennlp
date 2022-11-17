@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.NewlineSentenceDetector;
@@ -33,7 +33,7 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 public class BratDocumentParserTest {
 
   @Test
-  public void testParse() throws IOException {
+  void testParse() throws IOException {
 
     Map<String, String> typeToClassMap = new HashMap<>();
     BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
@@ -52,27 +52,27 @@ public class BratDocumentParserTest {
 
     List<NameSample> names = parser.parse(doc);
 
-    Assert.assertEquals(3, names.size());
+    Assertions.assertEquals(3, names.size());
 
     NameSample sample1 = names.get(0);
 
-    Assert.assertEquals(1, sample1.getNames().length);
-    Assert.assertEquals(0, sample1.getNames()[0].getStart());
-    Assert.assertEquals(2, sample1.getNames()[0].getEnd());
+    Assertions.assertEquals(1, sample1.getNames().length);
+    Assertions.assertEquals(0, sample1.getNames()[0].getStart());
+    Assertions.assertEquals(2, sample1.getNames()[0].getEnd());
 
 
     NameSample sample2 = names.get(1);
-    Assert.assertEquals(1, sample2.getNames().length);
-    Assert.assertEquals(0, sample2.getNames()[0].getStart());
-    Assert.assertEquals(1, sample2.getNames()[0].getEnd());
+    Assertions.assertEquals(1, sample2.getNames().length);
+    Assertions.assertEquals(0, sample2.getNames()[0].getStart());
+    Assertions.assertEquals(1, sample2.getNames()[0].getEnd());
 
     NameSample sample3 = names.get(2);
-    Assert.assertEquals(3, sample3.getNames().length);
-    Assert.assertEquals(0, sample3.getNames()[0].getStart());
-    Assert.assertEquals(1, sample3.getNames()[0].getEnd());
-    Assert.assertEquals(1, sample3.getNames()[1].getStart());
-    Assert.assertEquals(2, sample3.getNames()[1].getEnd());
-    Assert.assertEquals(2, sample3.getNames()[2].getStart());
-    Assert.assertEquals(3, sample3.getNames()[2].getEnd());
+    Assertions.assertEquals(3, sample3.getNames().length);
+    Assertions.assertEquals(0, sample3.getNames()[0].getStart());
+    Assertions.assertEquals(1, sample3.getNames()[0].getEnd());
+    Assertions.assertEquals(1, sample3.getNames()[1].getStart());
+    Assertions.assertEquals(2, sample3.getNames()[1].getEnd());
+    Assertions.assertEquals(2, sample3.getNames()[2].getStart());
+    Assertions.assertEquals(3, sample3.getNames()[2].getEnd());
   }
 }

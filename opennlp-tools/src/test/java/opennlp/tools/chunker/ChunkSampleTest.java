@@ -29,8 +29,8 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -114,7 +114,7 @@ public class ChunkSampleTest {
   }
 
   @Test
-  public void testChunkSampleSerDe() throws IOException {
+  void testChunkSampleSerDe() throws IOException {
     ChunkSample chunkSample = createGoldSample();
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     ObjectOutput out = new ObjectOutputStream(byteArrayOutputStream);
@@ -132,32 +132,34 @@ public class ChunkSampleTest {
       // do nothing
     }
 
-    Assert.assertNotNull(deSerializedChunkSample);
-    Assert.assertArrayEquals(chunkSample.getPhrasesAsSpanList(),
+    Assertions.assertNotNull(deSerializedChunkSample);
+    Assertions.assertArrayEquals(chunkSample.getPhrasesAsSpanList(),
         deSerializedChunkSample.getPhrasesAsSpanList());
-    Assert.assertArrayEquals(chunkSample.getPreds(), deSerializedChunkSample.getPreds());
-    Assert.assertArrayEquals(chunkSample.getTags(), deSerializedChunkSample.getTags());
-    Assert.assertArrayEquals(chunkSample.getSentence(), deSerializedChunkSample.getSentence());
-    Assert.assertEquals(chunkSample, deSerializedChunkSample);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testParameterValidation() {
-    new ChunkSample(new String[] {""}, new String[] {""},
-        new String[] {"test", "one element to much"});
+    Assertions.assertArrayEquals(chunkSample.getPreds(), deSerializedChunkSample.getPreds());
+    Assertions.assertArrayEquals(chunkSample.getTags(), deSerializedChunkSample.getTags());
+    Assertions.assertArrayEquals(chunkSample.getSentence(), deSerializedChunkSample.getSentence());
+    Assertions.assertEquals(chunkSample, deSerializedChunkSample);
   }
 
   @Test
-  public void testRetrievingContent() {
+  void testParameterValidation() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      new ChunkSample(new String[] {""}, new String[] {""},
+          new String[] {"test", "one element to much"});
+    });
+  }
+
+  @Test
+  void testRetrievingContent() {
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
 
-    Assert.assertArrayEquals(createSentence(), sample.getSentence());
-    Assert.assertArrayEquals(createTags(), sample.getTags());
-    Assert.assertArrayEquals(createChunks(), sample.getPreds());
+    Assertions.assertArrayEquals(createSentence(), sample.getSentence());
+    Assertions.assertArrayEquals(createTags(), sample.getTags());
+    Assertions.assertArrayEquals(createChunks(), sample.getPreds());
   }
 
   @Test
-  public void testToString() throws IOException {
+  void testToString() throws IOException {
 
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
     String[] sentence = createSentence();
@@ -169,41 +171,41 @@ public class ChunkSampleTest {
     for (int i = 0; i < sentence.length; i++) {
       String line = reader.readLine();
       String[] parts = line.split("\\s+");
-      Assert.assertEquals(3, parts.length);
-      Assert.assertEquals(sentence[i], parts[0]);
-      Assert.assertEquals(tags[i], parts[1]);
-      Assert.assertEquals(chunks[i], parts[2]);
+      Assertions.assertEquals(3, parts.length);
+      Assertions.assertEquals(sentence[i], parts[0]);
+      Assertions.assertEquals(tags[i], parts[1]);
+      Assertions.assertEquals(chunks[i], parts[2]);
     }
   }
 
   @Test
-  public void testNicePrint() {
+  void testNicePrint() {
 
     ChunkSample sample = new ChunkSample(createSentence(), createTags(), createChunks());
 
-    Assert.assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] "
+    Assertions.assertEquals(" [NP Forecasts_NNS ] [PP for_IN ] [NP the_DT trade_NN figures_NNS ] "
         + "[VP range_VBP ] [ADVP widely_RB ] ,_, [NP Forecasts_NNS ] [PP for_IN ] "
         + "[NP the_DT trade_NN figures_NNS ] "
         + "[VP range_VBP ] [ADVP widely_RB ] ._.", sample.nicePrint());
   }
 
   @Test
-  public void testAsSpan() {
+  void testAsSpan() {
     ChunkSample sample = new ChunkSample(createSentence(), createTags(),
         createChunks());
     Span[] spans = sample.getPhrasesAsSpanList();
 
-    Assert.assertEquals(10, spans.length);
-    Assert.assertEquals(new Span(0, 1, "NP"), spans[0]);
-    Assert.assertEquals(new Span(1, 2, "PP"), spans[1]);
-    Assert.assertEquals(new Span(2, 5, "NP"), spans[2]);
-    Assert.assertEquals(new Span(5, 6, "VP"), spans[3]);
-    Assert.assertEquals(new Span(6, 7, "ADVP"), spans[4]);
-    Assert.assertEquals(new Span(8, 9, "NP"), spans[5]);
-    Assert.assertEquals(new Span(9, 10, "PP"), spans[6]);
-    Assert.assertEquals(new Span(10, 13, "NP"), spans[7]);
-    Assert.assertEquals(new Span(13, 14, "VP"), spans[8]);
-    Assert.assertEquals(new Span(14, 15, "ADVP"), spans[9]);
+    Assertions.assertEquals(10, spans.length);
+    Assertions.assertEquals(new Span(0, 1, "NP"), spans[0]);
+    Assertions.assertEquals(new Span(1, 2, "PP"), spans[1]);
+    Assertions.assertEquals(new Span(2, 5, "NP"), spans[2]);
+    Assertions.assertEquals(new Span(5, 6, "VP"), spans[3]);
+    Assertions.assertEquals(new Span(6, 7, "ADVP"), spans[4]);
+    Assertions.assertEquals(new Span(8, 9, "NP"), spans[5]);
+    Assertions.assertEquals(new Span(9, 10, "PP"), spans[6]);
+    Assertions.assertEquals(new Span(10, 13, "NP"), spans[7]);
+    Assertions.assertEquals(new Span(13, 14, "VP"), spans[8]);
+    Assertions.assertEquals(new Span(14, 15, "ADVP"), spans[9]);
   }
 
 
@@ -211,25 +213,25 @@ public class ChunkSampleTest {
   // the same validateArguments method, we do a deeper test only once
 
   @Test
-  public void testPhraseAsSpan() {
+  void testPhraseAsSpan() {
     Span[] spans = ChunkSample.phrasesAsSpanList(createSentence(),
         createTags(), createChunks());
 
-    Assert.assertEquals(10, spans.length);
-    Assert.assertEquals(new Span(0, 1, "NP"), spans[0]);
-    Assert.assertEquals(new Span(1, 2, "PP"), spans[1]);
-    Assert.assertEquals(new Span(2, 5, "NP"), spans[2]);
-    Assert.assertEquals(new Span(5, 6, "VP"), spans[3]);
-    Assert.assertEquals(new Span(6, 7, "ADVP"), spans[4]);
-    Assert.assertEquals(new Span(8, 9, "NP"), spans[5]);
-    Assert.assertEquals(new Span(9, 10, "PP"), spans[6]);
-    Assert.assertEquals(new Span(10, 13, "NP"), spans[7]);
-    Assert.assertEquals(new Span(13, 14, "VP"), spans[8]);
-    Assert.assertEquals(new Span(14, 15, "ADVP"), spans[9]);
+    Assertions.assertEquals(10, spans.length);
+    Assertions.assertEquals(new Span(0, 1, "NP"), spans[0]);
+    Assertions.assertEquals(new Span(1, 2, "PP"), spans[1]);
+    Assertions.assertEquals(new Span(2, 5, "NP"), spans[2]);
+    Assertions.assertEquals(new Span(5, 6, "VP"), spans[3]);
+    Assertions.assertEquals(new Span(6, 7, "ADVP"), spans[4]);
+    Assertions.assertEquals(new Span(8, 9, "NP"), spans[5]);
+    Assertions.assertEquals(new Span(9, 10, "PP"), spans[6]);
+    Assertions.assertEquals(new Span(10, 13, "NP"), spans[7]);
+    Assertions.assertEquals(new Span(13, 14, "VP"), spans[8]);
+    Assertions.assertEquals(new Span(14, 15, "ADVP"), spans[9]);
   }
 
   @Test
-  public void testRegions() throws IOException {
+  void testRegions() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/chunker/output.txt");
 
@@ -238,59 +240,69 @@ public class ChunkSampleTest {
 
     ChunkSample cs1 = predictedSample.read();
     String[] g1 = Span.spansToStrings(cs1.getPhrasesAsSpanList(), cs1.getSentence());
-    Assert.assertEquals(15, g1.length);
+    Assertions.assertEquals(15, g1.length);
 
     ChunkSample cs2 = predictedSample.read();
     String[] g2 = Span.spansToStrings(cs2.getPhrasesAsSpanList(), cs2.getSentence());
-    Assert.assertEquals(10, g2.length);
+    Assertions.assertEquals(10, g2.length);
 
     ChunkSample cs3 = predictedSample.read();
     String[] g3 = Span.spansToStrings(cs3.getPhrasesAsSpanList(), cs3.getSentence());
-    Assert.assertEquals(7, g3.length);
-    Assert.assertEquals("United", g3[0]);
-    Assert.assertEquals("'s directors", g3[1]);
-    Assert.assertEquals("voted", g3[2]);
-    Assert.assertEquals("themselves", g3[3]);
-    Assert.assertEquals("their spouses", g3[4]);
-    Assert.assertEquals("lifetime access", g3[5]);
-    Assert.assertEquals("to", g3[6]);
+    Assertions.assertEquals(7, g3.length);
+    Assertions.assertEquals("United", g3[0]);
+    Assertions.assertEquals("'s directors", g3[1]);
+    Assertions.assertEquals("voted", g3[2]);
+    Assertions.assertEquals("themselves", g3[3]);
+    Assertions.assertEquals("their spouses", g3[4]);
+    Assertions.assertEquals("lifetime access", g3[5]);
+    Assertions.assertEquals("to", g3[6]);
 
     predictedSample.close();
 
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testInvalidPhraseAsSpan1() {
-    ChunkSample.phrasesAsSpanList(new String[2], new String[1], new String[1]);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testInvalidPhraseAsSpan2() {
-    ChunkSample.phrasesAsSpanList(new String[1], new String[2], new String[1]);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testInvalidPhraseAsSpan3() {
-    ChunkSample.phrasesAsSpanList(new String[1], new String[1], new String[2]);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testInvalidChunkSampleArray() {
-    new ChunkSample(new String[1], new String[1], new String[2]);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testInvalidChunkSampleList() {
-    new ChunkSample(Arrays.asList(new String[1]), Arrays.asList(new String[1]),
-        Arrays.asList(new String[2]));
+  @Test
+  void testInvalidPhraseAsSpan1() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      ChunkSample.phrasesAsSpanList(new String[2], new String[1], new String[1]);
+    });
   }
 
   @Test
-  public void testEquals() {
-    Assert.assertFalse(createGoldSample() == createGoldSample());
-    Assert.assertTrue(createGoldSample().equals(createGoldSample()));
-    Assert.assertFalse(createPredSample().equals(createGoldSample()));
-    Assert.assertFalse(createPredSample().equals(new Object()));
+  void testInvalidPhraseAsSpan2() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      ChunkSample.phrasesAsSpanList(new String[1], new String[2], new String[1]);
+    });
+  }
+
+  @Test
+  void testInvalidPhraseAsSpan3() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      ChunkSample.phrasesAsSpanList(new String[1], new String[1], new String[2]);
+    });
+  }
+
+  @Test
+  void testInvalidChunkSampleArray() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      new ChunkSample(new String[1], new String[1], new String[2]);
+    });
+  }
+
+  @Test
+  void testInvalidChunkSampleList() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      new ChunkSample(Arrays.asList(new String[1]), Arrays.asList(new String[1]),
+          Arrays.asList(new String[2]));
+    });
+  }
+
+  @Test
+  void testEquals() {
+    Assertions.assertFalse(createGoldSample() == createGoldSample());
+    Assertions.assertTrue(createGoldSample().equals(createGoldSample()));
+    Assertions.assertFalse(createPredSample().equals(createGoldSample()));
+    Assertions.assertFalse(createPredSample().equals(new Object()));
   }
 
 }

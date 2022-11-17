@@ -20,8 +20,8 @@ package opennlp.dl.doccat.scoring;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AverageClassificationScoringStrategyTest {
 
@@ -36,11 +36,11 @@ public class AverageClassificationScoringStrategyTest {
     final ClassificationScoringStrategy strategy = new AverageClassificationScoringStrategy();
     final double[] results = strategy.score(scores);
 
-    Assert.assertEquals(1.0, results[0], 0);
-    Assert.assertEquals(2.0, results[1], 0);
-    Assert.assertEquals(3.0, results[2], 0);
-    Assert.assertEquals(4.0, results[3], 0);
-    Assert.assertEquals(5.0, results[4], 0);
+    Assertions.assertEquals(1.0, results[0], 0);
+    Assertions.assertEquals(2.0, results[1], 0);
+    Assertions.assertEquals(3.0, results[2], 0);
+    Assertions.assertEquals(4.0, results[3], 0);
+    Assertions.assertEquals(5.0, results[4], 0);
 
   }
 
@@ -55,9 +55,9 @@ public class AverageClassificationScoringStrategyTest {
     final ClassificationScoringStrategy strategy = new AverageClassificationScoringStrategy();
     final double[] results = strategy.score(scores);
 
-    Assert.assertEquals(4.0, results[0], 0);
-    Assert.assertEquals(3.0, results[1], 0);
-    Assert.assertEquals(10.0, results[2], 0);
+    Assertions.assertEquals(4.0, results[0], 0);
+    Assertions.assertEquals(3.0, results[1], 0);
+    Assertions.assertEquals(10.0, results[2], 0);
 
   }
 

@@ -21,15 +21,15 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.EventTrainer;
 
 public class TrainingParametersTest {
 
   @Test
-  public void testConstructors() throws Exception {
+  void testConstructors() throws Exception {
     TrainingParameters tp1 =
         new TrainingParameters(build("key1=val1,key2=val2,key3=val3"));
 
@@ -44,18 +44,18 @@ public class TrainingParametersTest {
   }
 
   @Test
-  public void testDefault() {
+  void testDefault() {
     TrainingParameters tr = TrainingParameters.defaultParams();
 
-    Assert.assertEquals(4, tr.getSettings().size());
-    Assert.assertEquals("MAXENT", tr.algorithm());
-    Assert.assertEquals(EventTrainer.EVENT_VALUE,
+    Assertions.assertEquals(4, tr.getSettings().size());
+    Assertions.assertEquals("MAXENT", tr.algorithm());
+    Assertions.assertEquals(EventTrainer.EVENT_VALUE,
         tr.getStringParameter(TrainingParameters.TRAINER_TYPE_PARAM,
             "v11"));  // use different defaults
-    Assert.assertEquals(100,
+    Assertions.assertEquals(100,
         tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM,
             200));  // use different defaults
-    Assert.assertEquals(5,
+    Assertions.assertEquals(5,
         tr.getIntParameter(TrainingParameters.CUTOFF_PARAM,
             200));  // use different defaults
   }
@@ -125,68 +125,68 @@ public class TrainingParametersTest {
   }
 
   @Test
-  public void testGetAlgorithm() {
+  void testGetAlgorithm() {
     TrainingParameters tp = build("Algorithm=Perceptron,n1.Algorithm=SVM");
 
-    Assert.assertEquals("Perceptron", tp.algorithm());
-    Assert.assertEquals("SVM", tp.algorithm("n1"));
+    Assertions.assertEquals("Perceptron", tp.algorithm());
+    Assertions.assertEquals("SVM", tp.algorithm("n1"));
   }
 
   @Test
-  public void testGetAlgorithmCaseInsensitive() {
+  void testGetAlgorithmCaseInsensitive() {
     TrainingParameters tp = build("ALGORITHM=Perceptron,n1.Algorithm=SVM");
 
-    Assert.assertEquals("Perceptron", tp.algorithm());
-    Assert.assertEquals("SVM", tp.algorithm("n1"));
+    Assertions.assertEquals("Perceptron", tp.algorithm());
+    Assertions.assertEquals("SVM", tp.algorithm("n1"));
   }
 
   @Test
-  public void testGetSettings() {
+  void testGetSettings() {
     TrainingParameters tp = build("k1=v1,n1.k2=v2,n2.k3=v3,n1.k4=v4");
 
     assertEquals(buildMap("k1=v1"), tp.getSettings());
     assertEquals(buildMap("k2=v2,k4=v4"), tp.getSettings("n1"));
     assertEquals(buildMap("k3=v3"), tp.getSettings("n2"));
-    Assert.assertTrue(tp.getSettings("n3").isEmpty());
+    Assertions.assertTrue(tp.getSettings("n3").isEmpty());
   }
 
   @Test
-  public void testGetParameters() {
+  void testGetParameters() {
     TrainingParameters tp = build("k1=v1,n1.k2=v2,n2.k3=v3,n1.k4=v4");
 
     assertEquals(build("k1=v1"), tp.getParameters(null));
     assertEquals(build("k2=v2,k4=v4"), tp.getParameters("n1"));
     assertEquals(build("k3=v3"), tp.getParameters("n2"));
-    Assert.assertTrue(tp.getParameters("n3").getSettings().isEmpty());
+    Assertions.assertTrue(tp.getParameters("n3").getSettings().isEmpty());
   }
 
   @Test
-  public void testPutGet() {
+  void testPutGet() {
     TrainingParameters tp =
         build("k1=v1,int.k2=123,str.k2=v3,str.k3=v4,boolean.k4=false,double.k5=123.45,k21=234.5");
 
-    Assert.assertEquals("v1", tp.getStringParameter("k1", "def"));
-    Assert.assertEquals("def", tp.getStringParameter("k2", "def"));
-    Assert.assertEquals("v3", tp.getStringParameter("str", "k2", "def"));
-    Assert.assertEquals("def", tp.getStringParameter("str", "k4", "def"));
+    Assertions.assertEquals("v1", tp.getStringParameter("k1", "def"));
+    Assertions.assertEquals("def", tp.getStringParameter("k2", "def"));
+    Assertions.assertEquals("v3", tp.getStringParameter("str", "k2", "def"));
+    Assertions.assertEquals("def", tp.getStringParameter("str", "k4", "def"));
 
-    Assert.assertEquals(-100, tp.getIntParameter("k11", -100));
+    Assertions.assertEquals(-100, tp.getIntParameter("k11", -100));
     tp.put("k11", 234);
-    Assert.assertEquals(234, tp.getIntParameter("k11", -100));
-    Assert.assertEquals(123, tp.getIntParameter("int", "k2", -100));
-    Assert.assertEquals(-100, tp.getIntParameter("int", "k4", -100));
+    Assertions.assertEquals(234, tp.getIntParameter("k11", -100));
+    Assertions.assertEquals(123, tp.getIntParameter("int", "k2", -100));
+    Assertions.assertEquals(-100, tp.getIntParameter("int", "k4", -100));
 
-    Assert.assertEquals(234.5, tp.getDoubleParameter("k21", -100), 0.001);
+    Assertions.assertEquals(tp.getDoubleParameter("k21", -100), 0.001, 234.5);
     tp.put("k21", 345.6);
-    Assert.assertEquals(345.6, tp.getDoubleParameter("k21", -100), 0.001); // should be changed
+    Assertions.assertEquals(tp.getDoubleParameter("k21", -100), 0.001, 345.6); // should be changed
     tp.putIfAbsent("k21", 456.7);
-    Assert.assertEquals(345.6, tp.getDoubleParameter("k21", -100), 0.001); // should be unchanged
-    Assert.assertEquals(123.45, tp.getDoubleParameter("double", "k5", -100), 0.001);
+    Assertions.assertEquals(tp.getDoubleParameter("k21", -100), 0.001, 345.6); // should be unchanged
+    Assertions.assertEquals(tp.getDoubleParameter("double", "k5", -100), 0.001, 123.45);
 
-    Assert.assertEquals(true, tp.getBooleanParameter("k31", true));
+    Assertions.assertEquals(true, tp.getBooleanParameter("k31", true));
     tp.put("k31", false);
-    Assert.assertEquals(false, tp.getBooleanParameter("k31", true));
-    Assert.assertEquals(false, tp.getBooleanParameter("boolean", "k4", true));
+    Assertions.assertEquals(false, tp.getBooleanParameter("k31", true));
+    Assertions.assertEquals(false, tp.getBooleanParameter("boolean", "k4", true));
   }
 
   // format: k1=v1,k2=v2,...
@@ -207,22 +207,22 @@ public class TrainingParametersTest {
   }
 
   private static void assertEquals(Map<String, String> map1, Map<String, String> map2) {
-    Assert.assertNotNull(map1);
-    Assert.assertNotNull(map2);
-    Assert.assertEquals(map1.size(), map2.size());
+    Assertions.assertNotNull(map1);
+    Assertions.assertNotNull(map2);
+    Assertions.assertEquals(map1.size(), map2.size());
     for (String key : map1.keySet()) {
-      Assert.assertEquals(map1.get(key), map2.get(key));
+      Assertions.assertEquals(map1.get(key), map2.get(key));
     }
   }
 
   private static void assertEquals(Map<String, String> map, TrainingParameters actual) {
-    Assert.assertNotNull(actual);
+    Assertions.assertNotNull(actual);
     assertEquals(map, actual.getSettings());
   }
 
   private static void assertEquals(TrainingParameters expected, TrainingParameters actual) {
     if (expected == null) {
-      Assert.assertNull(actual);
+      Assertions.assertNull(actual);
     } else {
       assertEquals(expected.getSettings(), actual);
     }

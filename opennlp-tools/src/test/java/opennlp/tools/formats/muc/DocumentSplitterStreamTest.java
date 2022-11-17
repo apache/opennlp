@@ -19,8 +19,8 @@ package opennlp.tools.formats.muc;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -28,7 +28,7 @@ import opennlp.tools.util.ObjectStreamUtils;
 public class DocumentSplitterStreamTest {
 
   @Test
-  public void testSplitTwoDocuments() throws IOException {
+  void testSplitTwoDocuments() throws IOException {
 
     StringBuilder docsString = new StringBuilder();
 
@@ -41,15 +41,15 @@ public class DocumentSplitterStreamTest {
     try (ObjectStream<String> docs = new DocumentSplitterStream(
         ObjectStreamUtils.createObjectStream(docsString.toString()))) {
       String doc1 = docs.read();
-      Assert.assertEquals(docsString.length() / 2, doc1.length() + 1);
-      Assert.assertTrue(doc1.contains("#0"));
+      Assertions.assertEquals(docsString.length() / 2, doc1.length() + 1);
+      Assertions.assertTrue(doc1.contains("#0"));
 
       String doc2 = docs.read();
-      Assert.assertEquals(docsString.length() / 2, doc2.length() + 1);
-      Assert.assertTrue(doc2.contains("#1"));
+      Assertions.assertEquals(docsString.length() / 2, doc2.length() + 1);
+      Assertions.assertTrue(doc2.contains("#1"));
 
-      Assert.assertNull(docs.read());
-      Assert.assertNull(docs.read());
+      Assertions.assertNull(docs.read());
+      Assertions.assertNull(docs.read());
     }
   }
 }

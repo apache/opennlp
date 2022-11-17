@@ -17,8 +17,8 @@
 
 package opennlp.tools.cmdline;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the {@link TerminateToolException} class.
@@ -26,8 +26,8 @@ import org.junit.Test;
 public class TerminateToolExceptionTest {
 
   @Test
-  public void testCreation() {
+  void testCreation() {
     TerminateToolException e = new TerminateToolException(-500);
-    Assert.assertEquals(-500, e.getCode());
+    Assertions.assertEquals(-500, e.getCode());
   }
 }

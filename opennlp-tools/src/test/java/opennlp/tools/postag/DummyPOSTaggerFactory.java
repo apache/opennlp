@@ -68,8 +68,9 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
   @Override
   public Map<String, Object> createArtifactMap() {
     Map<String, Object> artifactMap = super.createArtifactMap();
-    if (this.dict != null)
+    if (this.dict != null) {
       artifactMap.put(DUMMY_POSDICT, this.dict);
+    }
     return artifactMap;
   }
 
@@ -96,7 +97,7 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
   static class DummyPOSSequenceValidator implements SequenceValidator<String> {
 
     public boolean validSequence(int i, String[] inputSequence,
-        String[] outcomesSequence, String outcome) {
+                                 String[] outcomesSequence, String outcome) {
       return true;
     }
 

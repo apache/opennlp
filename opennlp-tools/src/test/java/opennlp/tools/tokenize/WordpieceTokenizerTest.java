@@ -20,34 +20,34 @@ package opennlp.tools.tokenize;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class WordpieceTokenizerTest {
 
   @Test
-  public void testSentence() {
+  void testSentence() {
 
     final Tokenizer tokenizer = new WordpieceTokenizer(getVocabulary());
     final String[] tokens = tokenizer.tokenize("the quick brown fox jumps over the very lazy dog");
 
     final String[] expected = {"[CLS]", "the", "quick", "brown", "fox", "jumps", "over", "the",
-      "[UNK]", "lazy", "dog", "[SEP]"};
+        "[UNK]", "lazy", "dog", "[SEP]"};
 
-    Assert.assertArrayEquals(expected, tokens);
+    Assertions.assertArrayEquals(expected, tokens);
 
   }
 
   @Test
-  public void testSentenceWithPunctuation() {
+  void testSentenceWithPunctuation() {
 
     final Tokenizer tokenizer = new WordpieceTokenizer(getVocabulary());
     final String[] tokens = tokenizer.tokenize("The quick brown fox jumps over the very lazy dog.");
 
     final String[] expected = {"[CLS]", "[UNK]", "quick", "brown", "fox", "jumps", "over", "the",
-      "[UNK]", "lazy", "dog", "[UNK]", "[SEP]"};
+        "[UNK]", "lazy", "dog", "[UNK]", "[SEP]"};
 
-    Assert.assertArrayEquals(expected, tokens);
+    Assertions.assertArrayEquals(expected, tokens);
 
   }
 

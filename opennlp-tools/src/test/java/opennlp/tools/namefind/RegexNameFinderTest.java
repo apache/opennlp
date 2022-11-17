@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.Span;
 
@@ -32,59 +32,59 @@ import opennlp.tools.util.Span;
 public class RegexNameFinderTest {
 
   @Test
-  public void testFindSingleTokenPattern() {
+  void testFindSingleTokenPattern() {
 
     Pattern testPattern = Pattern.compile("test");
-    String[] sentence = new String[]{"a", "test", "b", "c"};
+    String[] sentence = new String[] {"a", "test", "b", "c"};
 
 
-    Pattern[] patterns = new Pattern[]{testPattern};
+    Pattern[] patterns = new Pattern[] {testPattern};
     Map<String, Pattern[]> regexMap = new HashMap<>();
     String type = "testtype";
 
     regexMap.put(type, patterns);
 
     RegexNameFinder finder =
-            new RegexNameFinder(regexMap);
+        new RegexNameFinder(regexMap);
 
     Span[] result = finder.find(sentence);
 
-    Assert.assertTrue(result.length == 1);
+    Assertions.assertTrue(result.length == 1);
 
-    Assert.assertTrue(result[0].getStart() == 1);
-    Assert.assertTrue(result[0].getEnd() == 2);
+    Assertions.assertTrue(result[0].getStart() == 1);
+    Assertions.assertTrue(result[0].getEnd() == 2);
   }
 
   @Test
-  public void testFindTokenizdPattern() {
+  void testFindTokenizdPattern() {
     Pattern testPattern = Pattern.compile("[0-9]+ year");
 
-    String[] sentence = new String[]{"a", "80", "year", "b", "c"};
+    String[] sentence = new String[] {"a", "80", "year", "b", "c"};
 
-    Pattern[] patterns = new Pattern[]{testPattern};
+    Pattern[] patterns = new Pattern[] {testPattern};
     Map<String, Pattern[]> regexMap = new HashMap<>();
     String type = "match";
 
     regexMap.put(type, patterns);
 
     RegexNameFinder finder =
-            new RegexNameFinder(regexMap);
+        new RegexNameFinder(regexMap);
 
     Span[] result = finder.find(sentence);
 
-    Assert.assertTrue(result.length == 1);
+    Assertions.assertTrue(result.length == 1);
 
-    Assert.assertTrue(result[0].getStart() == 1);
-    Assert.assertTrue(result[0].getEnd() == 3);
-    Assert.assertTrue(result[0].getType().equals("match"));
+    Assertions.assertTrue(result[0].getStart() == 1);
+    Assertions.assertTrue(result[0].getEnd() == 3);
+    Assertions.assertTrue(result[0].getType().equals("match"));
   }
 
   @Test
-  public void testFindMatchingPatternWithoutMatchingTokenBounds() {
+  void testFindMatchingPatternWithoutMatchingTokenBounds() {
     Pattern testPattern = Pattern.compile("[0-8] year"); // does match "0 year"
 
-    String[] sentence = new String[]{"a", "80", "year", "c"};
-    Pattern[] patterns = new Pattern[]{testPattern};
+    String[] sentence = new String[] {"a", "80", "year", "c"};
+    Pattern[] patterns = new Pattern[] {testPattern};
     Map<String, Pattern[]> regexMap = new HashMap<>();
     String type = "testtype";
 
@@ -94,6 +94,6 @@ public class RegexNameFinderTest {
 
     Span[] result = finder.find(sentence);
 
-    Assert.assertTrue(result.length == 0);
+    Assertions.assertTrue(result.length == 0);
   }
 }

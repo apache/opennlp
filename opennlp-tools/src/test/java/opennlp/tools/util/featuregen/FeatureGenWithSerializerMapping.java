@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 @Deprecated   // TODO: (OPENNLP-1174) remove back-compat support when it is unnecessary
@@ -51,7 +50,6 @@ public class FeatureGenWithSerializerMapping extends CustomFeatureGenerator
 
   @Override
   public void init(Map<String, String> properties,
-      FeatureGeneratorResourceProvider resourceProvider)
-      throws InvalidFormatException {
+      FeatureGeneratorResourceProvider resourceProvider) {
   }
 }

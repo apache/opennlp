@@ -17,8 +17,8 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
 
@@ -26,145 +26,145 @@ public class LineSearchTest {
   private static final double TOLERANCE = 0.01;
 
   @Test
-  public void testLineSearchDeterminesSaneStepLength1() {
+  void testLineSearchDeterminesSaneStepLength1() {
     Function objectiveFunction = new QuadraticFunction1();
     // given
-    double[] testX = new double[] { 0 };
+    double[] testX = new double[] {0};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    Assert.assertTrue(succCond);
+    Assertions.assertTrue(succCond);
   }
 
   @Test
-  public void testLineSearchDeterminesSaneStepLength2() {
+  void testLineSearchDeterminesSaneStepLength2() {
     Function objectiveFunction = new QuadraticFunction2();
     // given
-    double[] testX = new double[] { -2 };
+    double[] testX = new double[] {-2};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    Assert.assertTrue(succCond);
+    Assertions.assertTrue(succCond);
   }
 
   @Test
-  public void testLineSearchFailsWithWrongDirection1() {
-    Function  objectiveFunction = new QuadraticFunction1();
-    // given
-    double[] testX = new double[] { 0 };
-    double testValueX = objectiveFunction.valueAt(testX);
-    double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { -1 };
-    // when
-    LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
-    double stepSize = lsr.getStepSize();
-    // then
-    boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    Assert.assertFalse(succCond);
-    Assert.assertEquals(0.0, stepSize, TOLERANCE);
-  }
-
-  @Test
-  public void testLineSearchFailsWithWrongDirection2() {
-    Function objectiveFunction = new QuadraticFunction2();
-    // given
-    double[] testX = new double[] { -2 };
-    double testValueX = objectiveFunction.valueAt(testX);
-    double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { -1 };
-    // when
-    LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
-    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
-    double stepSize = lsr.getStepSize();
-    // then
-    boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    Assert.assertFalse(succCond);
-    Assert.assertEquals(0.0, stepSize, TOLERANCE);
-  }
-
-  @Test
-  public void testLineSearchFailsWithWrongDirection3() {
+  void testLineSearchFailsWithWrongDirection1() {
     Function objectiveFunction = new QuadraticFunction1();
     // given
-    double[] testX = new double[] { 4 };
+    double[] testX = new double[] {0};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {-1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    Assert.assertFalse(succCond);
-    Assert.assertEquals(0.0, stepSize, TOLERANCE);
+    Assertions.assertFalse(succCond);
+    Assertions.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   @Test
-  public void testLineSearchFailsWithWrongDirection4() {
+  void testLineSearchFailsWithWrongDirection2() {
     Function objectiveFunction = new QuadraticFunction2();
     // given
-    double[] testX = new double[] { 2 };
+    double[] testX = new double[] {-2};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {-1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    Assert.assertFalse(succCond);
-    Assert.assertEquals(0.0, stepSize, TOLERANCE);
+    Assertions.assertFalse(succCond);
+    Assertions.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   @Test
-  public void testLineSearchFailsAtMinimum1() {
-    Function objectiveFunction = new QuadraticFunction2();
+  void testLineSearchFailsWithWrongDirection3() {
+    Function objectiveFunction = new QuadraticFunction1();
     // given
-    double[] testX = new double[] { 0 };
+    double[] testX = new double[] {4};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { -1 };
+    double[] testDirection = new double[] {1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    Assert.assertFalse(succCond);
-    Assert.assertEquals(0.0, stepSize, TOLERANCE);
+    Assertions.assertFalse(succCond);
+    Assertions.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   @Test
-  public void testLineSearchFailsAtMinimum2() {
+  void testLineSearchFailsWithWrongDirection4() {
     Function objectiveFunction = new QuadraticFunction2();
     // given
-    double[] testX = new double[] { 0 };
+    double[] testX = new double[] {2};
     double testValueX = objectiveFunction.valueAt(testX);
     double[] testGradX = objectiveFunction.gradientAt(testX);
-    double[] testDirection = new double[] { 1 };
+    double[] testDirection = new double[] {1};
     // when
     LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
     LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
     double stepSize = lsr.getStepSize();
     // then
     boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
-    Assert.assertFalse(succCond);
-    Assert.assertEquals(0.0, stepSize, TOLERANCE);
+    Assertions.assertFalse(succCond);
+    Assertions.assertEquals(0.0, stepSize, TOLERANCE);
+  }
+
+  @Test
+  void testLineSearchFailsAtMinimum1() {
+    Function objectiveFunction = new QuadraticFunction2();
+    // given
+    double[] testX = new double[] {0};
+    double testValueX = objectiveFunction.valueAt(testX);
+    double[] testGradX = objectiveFunction.gradientAt(testX);
+    double[] testDirection = new double[] {-1};
+    // when
+    LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
+    double stepSize = lsr.getStepSize();
+    // then
+    boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
+    Assertions.assertFalse(succCond);
+    Assertions.assertEquals(0.0, stepSize, TOLERANCE);
+  }
+
+  @Test
+  void testLineSearchFailsAtMinimum2() {
+    Function objectiveFunction = new QuadraticFunction2();
+    // given
+    double[] testX = new double[] {0};
+    double testValueX = objectiveFunction.valueAt(testX);
+    double[] testGradX = objectiveFunction.gradientAt(testX);
+    double[] testDirection = new double[] {1};
+    // when
+    LineSearchResult lsr = LineSearchResult.getInitialObject(testValueX, testGradX, testX);
+    LineSearch.doLineSearch(objectiveFunction, testDirection, lsr, 1.0);
+    double stepSize = lsr.getStepSize();
+    // then
+    boolean succCond = TOLERANCE < stepSize && stepSize <= 1;
+    Assertions.assertFalse(succCond);
+    Assertions.assertEquals(0.0, stepSize, TOLERANCE);
   }
 
   /**

@@ -20,22 +20,22 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TokenFeatureGeneratorTest {
 
   private List<String> features;
   static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp()  {
     features = new ArrayList<>();
   }
 
   @Test
-  public void test() {
+  void test() {
 
     final int testTokenIndex = 0;
 
@@ -43,12 +43,12 @@ public class TokenFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    Assert.assertEquals(1, features.size());
-    Assert.assertEquals("w=This", features.get(0));
+    Assertions.assertEquals(1, features.size());
+    Assertions.assertEquals("w=This", features.get(0));
   }
 
   @Test
-  public void testLowerCase() {
+  void testLowerCase() {
 
     final int testTokenIndex = 0;
 
@@ -56,7 +56,7 @@ public class TokenFeatureGeneratorTest {
 
     generator.createFeatures(features, testSentence, testTokenIndex, null);
 
-    Assert.assertEquals(1, features.size());
-    Assert.assertEquals("w=this", features.get(0));
+    Assertions.assertEquals(1, features.size());
+    Assertions.assertEquals("w=this", features.get(0));
   }
 }

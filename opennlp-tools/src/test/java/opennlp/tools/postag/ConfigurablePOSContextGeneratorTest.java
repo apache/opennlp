@@ -17,8 +17,8 @@
 
 package opennlp.tools.postag;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.TokenFeatureGenerator;
@@ -34,21 +34,21 @@ public class ConfigurablePOSContextGeneratorTest {
 
     cg.getContext(0, tokens, tags, null);
 
-    Assert.assertEquals(1, cg.getContext(0, tokens, tags, null).length);
-    Assert.assertEquals("w=a", cg.getContext(0, tokens, tags, null)[0]);
-    Assert.assertEquals("w=b", cg.getContext(1, tokens, tags, null)[0]);
-    Assert.assertEquals("w=c", cg.getContext(2, tokens, tags, null)[0]);
-    Assert.assertEquals("w=d", cg.getContext(3, tokens, tags, null)[0]);
-    Assert.assertEquals("w=e", cg.getContext(4, tokens, tags, null)[0]);
+    Assertions.assertEquals(1, cg.getContext(0, tokens, tags, null).length);
+    Assertions.assertEquals("w=a", cg.getContext(0, tokens, tags, null)[0]);
+    Assertions.assertEquals("w=b", cg.getContext(1, tokens, tags, null)[0]);
+    Assertions.assertEquals("w=c", cg.getContext(2, tokens, tags, null)[0]);
+    Assertions.assertEquals("w=d", cg.getContext(3, tokens, tags, null)[0]);
+    Assertions.assertEquals("w=e", cg.getContext(4, tokens, tags, null)[0]);
   }
 
   @Test
-  public void testWithoutCache() {
+  void testWithoutCache() {
     testContextGeneration(0);
   }
 
   @Test
-  public void testWithCache() {
+  void testWithCache() {
     testContextGeneration(3);
   }
 

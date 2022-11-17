@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.Span;
 
@@ -47,216 +47,218 @@ public class BioCodecTest {
   private static final String OTHER = BioCodec.OTHER;
 
   @Test
-  public void testEncodeNoNames() {
+  void testEncodeNoNames() {
     NameSample nameSample = new NameSample("Once upon a time.".split(" "), new Span[] {}, true);
-    String[] expected = new String[] { OTHER, OTHER, OTHER, OTHER};
+    String[] expected = new String[] {OTHER, OTHER, OTHER, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
-    Assert.assertArrayEquals("Only 'Other' is expected.", expected, actual);
+    Assertions.assertArrayEquals(expected, actual, "Only 'Other' is expected.");
   }
 
   @Test
-  public void testEncodeSingleTokenSpan() {
+  void testEncodeSingleTokenSpan() {
     String[] sentence = "I called Julie again.".split(" ");
-    Span[] spans = new Span[] { new Span(2,3, A_TYPE)};
+    Span[] spans = new Span[] {new Span(2, 3, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, spans, true);
     String[] expected = new String[] {OTHER, OTHER, A_START, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
-    Assert.assertArrayEquals("'Julie' should be 'start' only, the rest should be 'other'.", expected, actual);
+    Assertions.assertArrayEquals(expected, actual,
+        "'Julie' should be 'start' only, the rest should be 'other'.");
   }
 
   @Test
-  public void testEncodeDoubleTokenSpan() {
+  void testEncodeDoubleTokenSpan() {
     String[] sentence = "I saw Stefanie Schmidt today.".split(" ");
-    Span[] span = new Span[] { new Span(2,4, A_TYPE)};
+    Span[] span = new Span[] {new Span(2, 4, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, span, true);
     String[] expected = new String[] {OTHER, OTHER, A_START, A_CONTINUE, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
-    Assert.assertArrayEquals("'Stefanie' should be 'start' only, 'Schmidt' is " +
-        "'continue' and the rest should be 'other'.", expected, actual);
+    Assertions.assertArrayEquals(expected, actual, "'Stefanie' should be 'start' only, 'Schmidt' is " +
+        "'continue' and the rest should be 'other'.");
   }
 
   @Test
-  public void testEncodeDoubleTokenSpanNoType() {
+  void testEncodeDoubleTokenSpanNoType() {
     final String DEFAULT_START = "default" + "-" + BioCodec.START;
     final String DEFAULT_CONTINUE = "default" + "-" + BioCodec.CONTINUE;
     String[] sentence = "I saw Stefanie Schmidt today.".split(" ");
-    Span[] span = new Span[] { new Span(2,4, null)};
+    Span[] span = new Span[] {new Span(2, 4, null)};
     NameSample nameSample = new NameSample(sentence, span, true);
     String[] expected = new String[] {OTHER, OTHER, DEFAULT_START, DEFAULT_CONTINUE, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
-    Assert.assertArrayEquals("'Stefanie' should be 'start' only, 'Schmidt' is " +
-        "'continue' and the rest should be 'other'.", expected, actual);
+    Assertions.assertArrayEquals(expected, actual, "'Stefanie' should be 'start' only, 'Schmidt' is " +
+        "'continue' and the rest should be 'other'.");
   }
 
   @Test
-  public void testEncodeAdjacentSingleSpans() {
+  void testEncodeAdjacentSingleSpans() {
     String[] sentence = "something PersonA PersonB Something".split(" ");
-    Span[] span = new Span[] { new Span(1,2, A_TYPE), new Span(2, 3, A_TYPE) };
+    Span[] span = new Span[] {new Span(1, 2, A_TYPE), new Span(2, 3, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, span, true);
     String[] expected = new String[] {OTHER, A_START, A_START, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   @Test
-  public void testEncodeAdjacentSpans() {
+  void testEncodeAdjacentSpans() {
     String[] sentence = "something PersonA PersonA PersonB Something".split(" ");
-    Span[] span = new Span[] { new Span(1,3, A_TYPE), new Span(3, 4, A_TYPE) };
+    Span[] span = new Span[] {new Span(1, 3, A_TYPE), new Span(3, 4, A_TYPE)};
     NameSample nameSample = new NameSample(sentence, span, true);
     String[] expected = new String[] {OTHER, A_START, A_CONTINUE, A_START, OTHER};
     String[] actual = codec.encode(nameSample.getNames(), nameSample.getSentence().length);
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   @Test
-  public void testCreateSequenceValidator() {
-    Assert.assertTrue(codec.createSequenceValidator() instanceof NameFinderSequenceValidator);
+  void testCreateSequenceValidator() {
+    Assertions.assertTrue(codec.createSequenceValidator() instanceof NameFinderSequenceValidator);
   }
 
 
   @Test
-  public void testDecodeEmpty() {
+  void testDecodeEmpty() {
     Span[] expected = new Span[] {};
     Span[] actual = codec.decode(new ArrayList<String>());
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
+
   /**
    * Start, Other
    */
   @Test
-  public void testDecodeSingletonFirst() {
+  void testDecodeSingletonFirst() {
 
     List<String> encoded = Arrays.asList(B_START, OTHER);
     Span[] expected = new Span[] {new Span(0, 1, B_TYPE)};
     Span[] actual = codec.decode(encoded);
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   /**
    * Start Start Other
    */
   @Test
-  public void testDecodeAdjacentSingletonFirst() {
+  void testDecodeAdjacentSingletonFirst() {
     List<String> encoded = Arrays.asList(B_START, B_START, OTHER);
     Span[] expected = new Span[] {new Span(0, 1, B_TYPE), new Span(1, 2, B_TYPE)};
     Span[] actual = codec.decode(encoded);
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   /**
    * Start Continue Other
    */
   @Test
-  public void testDecodePairFirst() {
+  void testDecodePairFirst() {
     List<String> encoded = Arrays.asList(B_START, B_CONTINUE, OTHER);
     Span[] expected = new Span[] {new Span(0, 2, B_TYPE)};
     Span[] actual = codec.decode(encoded);
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   /**
    * Start Continue Continue Other
    */
   @Test
-  public void testDecodeTripletFirst() {
+  void testDecodeTripletFirst() {
     List<String> encoded = Arrays.asList(B_START, B_CONTINUE, B_CONTINUE, OTHER);
     Span[] expected = new Span[] {new Span(0, 3, B_TYPE)};
     Span[] actual = codec.decode(encoded);
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   /**
    * Start Continue Start Other
    */
   @Test
-  public void testDecodeAdjacentPairSingleton() {
+  void testDecodeAdjacentPairSingleton() {
     List<String> encoded = Arrays.asList(B_START, B_CONTINUE, B_START, OTHER);
     Span[] expected = new Span[] {new Span(0, 2, B_TYPE), new Span(2, 3, B_TYPE)};
     Span[] actual = codec.decode(encoded);
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   /**
    * Other Start Other
    */
   @Test
-  public void testDecodeOtherFirst() {
+  void testDecodeOtherFirst() {
     List<String> encoded = Arrays.asList(OTHER, B_START, OTHER);
     Span[] expected = new Span[] {new Span(1, 2, B_TYPE)};
     Span[] actual = codec.decode(encoded);
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   /**
    * A-Start A-Continue, A-Continue, Other, B-Start, B-Continue, Other, C-Start, Other
    */
   @Test
-  public void testDecodeMultiClass() {
+  void testDecodeMultiClass() {
     List<String> encoded = Arrays.asList(OTHER, A_START, A_CONTINUE, A_CONTINUE,
         OTHER, B_START, B_CONTINUE, OTHER, C_START, OTHER);
     Span[] expected = new Span[] {new Span(1, 4, A_TYPE),
         new Span(5, 7, B_TYPE), new Span(8, 9, C_TYPE)};
     Span[] actual = codec.decode(encoded);
-    Assert.assertArrayEquals(expected, actual);
+    Assertions.assertArrayEquals(expected, actual);
   }
 
   @Test
-  public void testCompatibilityEmpty() {
-    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {}));
+  void testCompatibilityEmpty() {
+    Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {}));
   }
 
   @Test
-  public void testCompatibilitySingleStart() {
-    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_START}));
+  void testCompatibilitySingleStart() {
+    Assertions.assertTrue(codec.areOutcomesCompatible(new String[] {A_START}));
   }
 
   @Test
-  public void testCompatibilitySingleContinue() {
-    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_CONTINUE}));
-    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_START, A_CONTINUE}));
+  void testCompatibilitySingleContinue() {
+    Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {A_CONTINUE}));
+    Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {B_START, A_CONTINUE}));
   }
 
   @Test
-  public void testCompatibilitySingleOther() {
-    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {OTHER}));
+  void testCompatibilitySingleOther() {
+    Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {OTHER}));
   }
 
   @Test
-  public void testCompatibilityStartContinue() {
-    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, A_CONTINUE}));
+  void testCompatibilityStartContinue() {
+    Assertions.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, A_CONTINUE}));
   }
 
   @Test
-  public void testCompatibilityStartOther() {
-    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, OTHER}));
+  void testCompatibilityStartOther() {
+    Assertions.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, OTHER}));
   }
 
   @Test
-  public void testCompatibilityContinueOther() {
-    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_CONTINUE, OTHER}));
-    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {B_START, A_CONTINUE, OTHER}));
+  void testCompatibilityContinueOther() {
+    Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {A_CONTINUE, OTHER}));
+    Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {B_START, A_CONTINUE, OTHER}));
   }
 
   @Test
-  public void testCompatibilityStartContinueOther() {
-    Assert.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, A_CONTINUE, OTHER}));
+  void testCompatibilityStartContinueOther() {
+    Assertions.assertTrue(codec.areOutcomesCompatible(new String[] {A_START, A_CONTINUE, OTHER}));
   }
 
 
   @Test
-  public void testCompatibilityMultiClass() {
-    Assert.assertTrue(codec.areOutcomesCompatible(
+  void testCompatibilityMultiClass() {
+    Assertions.assertTrue(codec.areOutcomesCompatible(
         new String[] {A_START, A_CONTINUE, B_START, OTHER}));
   }
 
   @Test
-  public void testCompatibilityBadTag() {
-    Assert.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_CONTINUE, "BAD"}));
+  void testCompatibilityBadTag() {
+    Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {A_START, A_CONTINUE, "BAD"}));
   }
 
   @Test
-  public void testCompatibilityRepeated() {
-    Assert.assertTrue(codec.areOutcomesCompatible(
+  void testCompatibilityRepeated() {
+    Assertions.assertTrue(codec.areOutcomesCompatible(
         new String[] {A_START, A_START, A_CONTINUE, A_CONTINUE, B_START, B_START, OTHER, OTHER}));
   }
 

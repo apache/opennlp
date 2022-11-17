@@ -19,30 +19,30 @@ package opennlp.tools.chunker;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ChunkerMEIT {
 
-  private static String[] toks1 = { "Rockwell", "said", "the", "agreement", "calls", "for",
+  private static String[] toks1 = {"Rockwell", "said", "the", "agreement", "calls", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipsets",
-      "for", "the", "planes", "." };
+      "for", "the", "planes", "."};
 
-  private static String[] tags1 = { "NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
-      "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "." };
+  private static String[] tags1 = {"NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
+      "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "."};
 
-  private static String[] expect1 = { "B-NP", "B-VP", "B-NP", "I-NP", "B-VP", "B-SBAR",
+  private static String[] expect1 = {"B-NP", "B-VP", "B-NP", "I-NP", "B-VP", "B-SBAR",
       "B-NP", "B-VP", "I-VP", "B-NP", "I-NP", "I-NP", "I-NP", "B-PP", "B-NP",
-      "I-NP", "O" };
+      "I-NP", "O"};
 
   @Test
-  public void downloadModel() throws IOException {
+  void downloadModel() throws IOException {
 
     ChunkerME chunker = new ChunkerME("en");
 
     String[] preds = chunker.chunk(toks1, tags1);
 
-    Assert.assertArrayEquals(expect1, preds);
+    Assertions.assertArrayEquals(expect1, preds);
   }
 
 }
