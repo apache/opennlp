@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -120,7 +121,7 @@ public class TokenNameFinderToolTest {
           nameFinderFactory);
     }
 
-    File modelFile = File.createTempFile("model", ".bin");
+    File modelFile = Files.createTempFile("model", ".bin").toFile();
 
     try (BufferedOutputStream modelOut =
              new BufferedOutputStream(new FileOutputStream(modelFile))) {

@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
 
     Map<String,Integer> predicateIndex = new HashMap<>();
 
-    File tmp = File.createTempFile("events", null);
+    File tmp = Files.createTempFile("events", null).toFile();
     tmp.deleteOnExit();
     int numEvents;
     BigInteger writeHash;
