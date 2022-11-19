@@ -28,27 +28,25 @@ import java.util.Set;
 
 import morfologik.stemming.Dictionary;
 import morfologik.stemming.DictionaryLookup;
-import morfologik.stemming.IStemmer;
 import morfologik.stemming.WordData;
 
 import opennlp.tools.lemmatizer.Lemmatizer;
 
 public class MorfologikLemmatizer implements Lemmatizer {
 
-  private IStemmer dictLookup;
+  private final Dictionary dictionary;
 
   public MorfologikLemmatizer(Path dictionaryPath) throws IllegalArgumentException,
       IOException {
     this(Dictionary.read(dictionaryPath));
   }
 
-  public MorfologikLemmatizer(Dictionary dictionary) throws IllegalArgumentException,
-      IOException {
-    dictLookup = new DictionaryLookup(dictionary);
+  public MorfologikLemmatizer(Dictionary dictionary) throws IllegalArgumentException {
+    this.dictionary = dictionary;
   }
 
-  private synchronized List<String> lemmatize(String word, String postag) {
-    List<WordData> dictMap = dictLookup.lookup(word.toLowerCase());
+  private List<String> lemmatize(String word, String postag) {
+    List<WordData> dictMap = new DictionaryLookup(dictionary).lookup(word.toLowerCase());
     Set<String> lemmas = new HashSet<>();
     for (WordData wordData : dictMap) {
       if (Objects.equals(postag, asString(wordData.getTag()))) {

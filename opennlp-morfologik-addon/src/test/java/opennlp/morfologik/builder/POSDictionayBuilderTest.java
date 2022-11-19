@@ -70,8 +70,8 @@ public class POSDictionayBuilderTest {
 
     Runnable runnable = () -> {
       String[] lemmas = lemmatizer.lemmatize(toks, tags);
-      Assert.assertEquals("casa", lemmas[0]);
-      Assert.assertEquals("casar", lemmas[1]);
+      Assertions.assertEquals("casa", lemmas[0]);
+      Assertions.assertEquals("casar", lemmas[1]);
     };
     ExecutorService executorService = Executors.newFixedThreadPool(2);
     for (int i = 0; i < 1000; i++) {
