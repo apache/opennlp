@@ -29,7 +29,7 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
 public class OntoNotesNameSampleStreamFactory extends
-    AbstractSampleStreamFactory<NameSample> {
+    AbstractSampleStreamFactory<NameSample, OntoNotesFormatParameters> {
 
   public OntoNotesNameSampleStreamFactory() {
     super(OntoNotesFormatParameters.class);

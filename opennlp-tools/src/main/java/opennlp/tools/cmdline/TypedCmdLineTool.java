@@ -23,7 +23,7 @@ import java.util.Map;
  * Base class for tools which support processing of samples of some type T
  * coming from a stream of a certain format.
  */
-public abstract class TypedCmdLineTool<T>
+public abstract class TypedCmdLineTool<T, P>
     extends CmdLineTool {
 
   /**
@@ -46,8 +46,8 @@ public abstract class TypedCmdLineTool<T>
    * @param format data format name
    * @return stream factory for the type of this tool for the format
    */
-  protected ObjectStreamFactory<T> getStreamFactory(String format) {
-    ObjectStreamFactory<T> factory = StreamFactoryRegistry.getFactory(type, format);
+  protected ObjectStreamFactory<T, P> getStreamFactory(String format) {
+    ObjectStreamFactory<T, P> factory = StreamFactoryRegistry.getFactory(type, format);
     if (null != factory) {
       return factory;
     } else {
@@ -64,9 +64,8 @@ public abstract class TypedCmdLineTool<T>
    * @param format data format name
    * @param <A> A
    */
-  @SuppressWarnings({"unchecked"})
   protected <A> void validateAllArgs(String[] args, Class<A> argProxyInterface, String format) {
-    ObjectStreamFactory<T> factory = getStreamFactory(format);
+    ObjectStreamFactory<T, P> factory = getStreamFactory(format);
     String errMessage = ArgumentParser.validateArgumentsLoudly(args, argProxyInterface,
         factory.<A>getParameters());
     if (null != errMessage) {
@@ -79,7 +78,7 @@ public abstract class TypedCmdLineTool<T>
    * @param factory a stream factory
    * @param args arguments
    */
-  protected void validateFactoryArgs(ObjectStreamFactory<T> factory, String[] args) {
+  protected void validateFactoryArgs(ObjectStreamFactory<T, P> factory, String[] args) {
     String errMessage = ArgumentParser.validateArgumentsLoudly(args, factory.getParameters());
     if (null != errMessage) {
       throw new TerminateToolException(1, "Format parameters are invalid: " + errMessage + "\n" +
@@ -89,7 +88,7 @@ public abstract class TypedCmdLineTool<T>
 
   @Override
   protected String getBasicHelp(Class<?>... argProxyInterfaces) {
-    Map<String, ObjectStreamFactory<T>> factories = StreamFactoryRegistry.getFactories(type);
+    Map<String, ObjectStreamFactory<T, P>> factories = StreamFactoryRegistry.getFactories(type);
 
     String formatsHelp = " ";
     if (1 < factories.size()) {

@@ -19,6 +19,7 @@ package opennlp.tools.ml;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -104,16 +105,16 @@ public class ArrayMathTest {
 
   @Test
   public void testToDoubleArray() {
-    Assertions.assertEquals(0, ArrayMath.toDoubleArray(Collections.EMPTY_LIST).length);
-    Assertions.assertArrayEquals(new double[] {0}, ArrayMath.toDoubleArray(Arrays.asList(0D)), 0);
+    Assertions.assertEquals(0, ArrayMath.toDoubleArray(Collections.emptyList()).length);
+    Assertions.assertArrayEquals(new double[] {0}, ArrayMath.toDoubleArray(List.of((0D))), 0);
     Assertions.assertArrayEquals(new double[] {0, 1, -2.5, -0.3, 4},
         ArrayMath.toDoubleArray(Arrays.asList(0D, 1D, -2.5D, -0.3D, 4D)), 0);
   }
 
   @Test
   public void testToIntArray() {
-    Assertions.assertEquals(0, ArrayMath.toIntArray(Collections.EMPTY_LIST).length);
-    Assertions.assertArrayEquals(new int[] {0}, ArrayMath.toIntArray(Arrays.asList(0)));
+    Assertions.assertEquals(0, ArrayMath.toIntArray(Collections.emptyList()).length);
+    Assertions.assertArrayEquals(new int[] {0}, ArrayMath.toIntArray(List.of(0)));
     Assertions.assertArrayEquals(new int[] {0, 1, -2, -3, 4},
         ArrayMath.toIntArray(Arrays.asList(0, 1, -2, -3, 4)));
   }

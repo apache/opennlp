@@ -18,9 +18,10 @@
 package opennlp.tools.cmdline.langdetect;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.langdetect.LanguageSample;
 
-public class LanguageDetectorConverterTool extends AbstractConverterTool<LanguageSample> {
+public class LanguageDetectorConverterTool extends AbstractConverterTool<LanguageSample, BasicFormatParams> {
 
   public LanguageDetectorConverterTool() {
     super(LanguageSample.class);

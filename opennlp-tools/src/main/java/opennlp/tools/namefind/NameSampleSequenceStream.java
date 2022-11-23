@@ -28,12 +28,12 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
-public class NameSampleSequenceStream implements SequenceStream {
+public class NameSampleSequenceStream implements SequenceStream<NameSample> {
 
-  private NameContextGenerator pcg;
+  private final NameContextGenerator pcg;
   private final boolean useOutcomes;
-  private ObjectStream<NameSample> psi;
-  private SequenceCodec<String> seqCodec;
+  private final ObjectStream<NameSample> psi;
+  private final SequenceCodec<String> seqCodec;
 
   public NameSampleSequenceStream(ObjectStream<NameSample> psi) throws IOException {
     this(psi, new DefaultNameContextGenerator((AdaptiveFeatureGenerator) null), true);
@@ -69,11 +69,10 @@ public class NameSampleSequenceStream implements SequenceStream {
     this.seqCodec = seqCodec;
   }
 
-  @SuppressWarnings("unchecked")
-  public Event[] updateContext(Sequence sequence, AbstractModel model) {
+  public Event[] updateContext(Sequence<NameSample> sequence, AbstractModel model) {
     TokenNameFinder tagger = new NameFinderME(new TokenNameFinderModel(
         "x-unspecified", model, Collections.emptyMap(), null));
-    String[] sentence = ((Sequence<NameSample>) sequence).getSource().getSentence();
+    String[] sentence = sequence.getSource().getSentence();
     String[] tags = seqCodec.encode(tagger.find(sentence), sentence.length);
     Event[] events = new Event[sentence.length];
 
@@ -83,7 +82,7 @@ public class NameSampleSequenceStream implements SequenceStream {
   }
 
   @Override
-  public Sequence read() throws IOException {
+  public Sequence<NameSample> read() throws IOException {
     NameSample sample = psi.read();
     if (sample != null) {
       String[] sentence = sample.getSentence();

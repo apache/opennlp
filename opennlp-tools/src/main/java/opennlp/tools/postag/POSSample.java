@@ -15,26 +15,25 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.postag;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import opennlp.tools.commons.Sample;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Represents an pos-tagged sentence.
  */
-public class POSSample implements Serializable {
+public class POSSample implements Sample {
 
-  private List<String> sentence;
-
-  private List<String> tags;
+  private static final long serialVersionUID = -5782784526335651421L;
+  private final List<String> sentence;
+  private final List<String> tags;
 
   private final String[][] additionalContext;
 

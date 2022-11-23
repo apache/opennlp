@@ -18,13 +18,14 @@
 package opennlp.tools.cmdline.namefind;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.namefind.NameSample;
 
 /**
  * Tool to convert multiple data formats into native OpenNLP name finder training
  * format.
  */
-public class TokenNameFinderConverterTool extends AbstractConverterTool<NameSample> {
+public class TokenNameFinderConverterTool extends AbstractConverterTool<NameSample, BasicFormatParams> {
 
   public TokenNameFinderConverterTool() {
     super(NameSample.class);

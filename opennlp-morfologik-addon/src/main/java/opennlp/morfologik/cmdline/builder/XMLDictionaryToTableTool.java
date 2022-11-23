@@ -62,7 +62,7 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
       tagDictionary = POSDictionary.create(new FileInputStream(dictInFile));
     } catch (IOException e) {
       throw new TerminateToolException(-1,
-          "Error while loading XML POS Dictionay: " + e.getMessage(), e);
+          "Error while loading XML POS Dictionary: " + e.getMessage(), e);
     }
     Iterator<String> iterator = tagDictionary.iterator();
 
@@ -78,7 +78,6 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
           }
         }
       }
-      writer.close();
       System.out.println("Created dictionary: " + dictOutFile.toPath());
     } catch (IOException e) {
       throw new TerminateToolException(-1, "Error while writing output: "

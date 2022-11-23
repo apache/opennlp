@@ -20,6 +20,7 @@ package opennlp.tools.util.normalizer;
 
 public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
 
+  private static final long serialVersionUID = 5514902020184083235L;
   private final CharSequenceNormalizer[] normalizers;
 
   public AggregateCharSequenceNormalizer(CharSequenceNormalizer ... normalizers) {

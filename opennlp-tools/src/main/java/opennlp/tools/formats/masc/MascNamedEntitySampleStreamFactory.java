@@ -28,17 +28,17 @@ import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
-public class MascNamedEntitySampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
+public class MascNamedEntitySampleStreamFactory<P> extends AbstractSampleStreamFactory<NameSample, P> {
   public static final String MASC_FORMAT = "masc";
 
-  protected <P> MascNamedEntitySampleStreamFactory(Class<P> params) {
+  protected MascNamedEntitySampleStreamFactory(Class<P> params) {
     super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
         MASC_FORMAT,
-        new opennlp.tools.formats.masc.MascNamedEntitySampleStreamFactory(
+        new opennlp.tools.formats.masc.MascNamedEntitySampleStreamFactory<>(
             opennlp.tools.formats.masc.MascNamedEntitySampleStreamFactory.Parameters.class));
   }
 

@@ -33,8 +33,8 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class LeipzigLanguageSampleStreamFactory
-    extends AbstractSampleStreamFactory<LanguageSample> {
+public class LeipzigLanguageSampleStreamFactory<P>
+    extends AbstractSampleStreamFactory<LanguageSample, P> {
 
   interface Parameters extends EncodingParameter {
     @ParameterDescription(valueName = "sentencesDir",
@@ -55,13 +55,13 @@ public class LeipzigLanguageSampleStreamFactory
     String getSamplesToSkip();
   }
 
-  protected <P> LeipzigLanguageSampleStreamFactory(Class<P> params) {
+  protected LeipzigLanguageSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LanguageSample.class,
-        "leipzig", new LeipzigLanguageSampleStreamFactory(Parameters.class));
+        "leipzig", new LeipzigLanguageSampleStreamFactory<>(Parameters.class));
   }
 
   public ObjectStream<LanguageSample> create(String[] args) {
@@ -70,7 +70,7 @@ public class LeipzigLanguageSampleStreamFactory
     File sentencesFileDir = params.getSentencesDir();
 
     try {
-      return new SampleSkipStream(new SampleShuffleStream(
+      return new SampleSkipStream<>(new SampleShuffleStream<>(
           new LeipzigLanguageSampleStream(sentencesFileDir,
           Integer.parseInt(params.getSentencesPerSample()),
           Integer.parseInt(params.getSamplesPerLanguage()) + Integer.parseInt(params.getSamplesToSkip()))),

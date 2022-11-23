@@ -30,11 +30,11 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class MascPennTagParser extends DefaultHandler {
 
-  private Map<Integer, int[]> tokenToQuarks = new HashMap<Integer, int[]>();
-  private Map<Integer, String> tokenToTag = new HashMap<Integer, String>();
-  private Map<Integer, String> tokenToBase = new HashMap<Integer, String>();
-  private Stack<Integer> tokenStack = new Stack();
-  private Stack<Integer> tokenStackTag = new Stack();
+  private final Map<Integer, int[]> tokenToQuarks = new HashMap<>();
+  private final Map<Integer, String> tokenToTag = new HashMap<>();
+  private final Map<Integer, String> tokenToBase = new HashMap<>();
+  private final Stack<Integer> tokenStack = new Stack<>();
+  private final Stack<Integer> tokenStackTag = new Stack<>();
 
   public Map<Integer, String> getTags() {
     return tokenToTag;

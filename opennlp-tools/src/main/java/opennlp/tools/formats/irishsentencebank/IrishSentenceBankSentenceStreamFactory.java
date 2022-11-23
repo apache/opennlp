@@ -27,18 +27,19 @@ import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
-public class IrishSentenceBankSentenceStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
+public class IrishSentenceBankSentenceStreamFactory<P>
+        extends AbstractSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "irishsentencebank", new IrishSentenceBankSentenceStreamFactory(
+        "irishsentencebank", new IrishSentenceBankSentenceStreamFactory<>(
         IrishSentenceBankSentenceStreamFactory.Parameters.class));
   }
 
-  protected <P> IrishSentenceBankSentenceStreamFactory(Class<P> params) {
+  protected IrishSentenceBankSentenceStreamFactory(Class<P> params) {
     super(params);
   }
 

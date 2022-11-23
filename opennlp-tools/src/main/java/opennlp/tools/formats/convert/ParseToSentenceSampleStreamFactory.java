@@ -29,7 +29,8 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ParseToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory<SentenceSample> {
+public class ParseToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory
+        <SentenceSample, ParseToSentenceSampleStreamFactory.Parameters> {
 
   interface Parameters extends ParseSampleStreamFactory.Parameters, DetokenizerParameter {
   }

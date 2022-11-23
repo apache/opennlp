@@ -20,7 +20,7 @@ package opennlp.tools.cmdline;
 /**
  * Base class for tools which take additional parameters. For example, trainers or evaluators.
  */
-public abstract class AbstractTypedParamTool<T, P> extends TypedCmdLineTool<T> {
+public abstract class AbstractTypedParamTool<T, P> extends TypedCmdLineTool<T, P> {
 
   /**
    * variable to access the parameters
@@ -43,7 +43,7 @@ public abstract class AbstractTypedParamTool<T, P> extends TypedCmdLineTool<T> {
       return getBasicHelp(paramsClass,
           StreamFactoryRegistry.getFactory(type, StreamFactoryRegistry.DEFAULT_FORMAT).getParameters());
     } else {
-      ObjectStreamFactory<T> factory = StreamFactoryRegistry.getFactory(type, format);
+      ObjectStreamFactory<T,P> factory = StreamFactoryRegistry.getFactory(type, format);
       if (null == factory) {
         throw new TerminateToolException(1, "Format " + format + " is not found.\n" + getHelp());
       }

@@ -33,8 +33,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Factory producing OpenNLP {@link DocumentSampleStream}s.
  */
-public class LanguageDetectorSampleStreamFactory
-    extends AbstractSampleStreamFactory<LanguageSample> {
+public class LanguageDetectorSampleStreamFactory<P>
+    extends AbstractSampleStreamFactory<LanguageSample, P> {
 
   interface Parameters extends BasicFormatParams {
   }
@@ -42,10 +42,10 @@ public class LanguageDetectorSampleStreamFactory
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LanguageSample.class,
             StreamFactoryRegistry.DEFAULT_FORMAT,
-            new LanguageDetectorSampleStreamFactory(Parameters.class));
+            new LanguageDetectorSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> LanguageDetectorSampleStreamFactory(Class<P> params) {
+  protected LanguageDetectorSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

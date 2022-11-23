@@ -43,6 +43,7 @@ import opennlp.tools.util.model.BaseModel;
  */
 public class ChunkerModel extends BaseModel {
 
+  private static final long serialVersionUID = 1608653769616498232L;
   private static final String COMPONENT_NAME = "ChunkerME";
   private static final String CHUNKER_MODEL_ENTRY_NAME = "chunker.model";
 

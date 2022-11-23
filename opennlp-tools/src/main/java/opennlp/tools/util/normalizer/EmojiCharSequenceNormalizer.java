@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
  */
 public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
 
+  private static final long serialVersionUID = 4553401197981667914L;
+  
   private static final EmojiCharSequenceNormalizer INSTANCE = new EmojiCharSequenceNormalizer();
 
   public static EmojiCharSequenceNormalizer getInstance() {

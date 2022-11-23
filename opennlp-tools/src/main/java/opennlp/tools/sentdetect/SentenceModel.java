@@ -40,8 +40,8 @@ import opennlp.tools.util.model.ModelUtil;
  */
 public class SentenceModel extends BaseModel {
 
+  private static final long serialVersionUID = -3921848998444722554L;
   private static final String COMPONENT_NAME = "SentenceDetectorME";
-
   private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
 
   public SentenceModel(String languageCode, MaxentModel sentModel,

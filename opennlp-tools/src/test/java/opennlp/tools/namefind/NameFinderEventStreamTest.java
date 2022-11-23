@@ -46,11 +46,14 @@ public class NameFinderEventStreamTest {
   @Test
   void testOutcomesForSingleTypeSentence() throws IOException {
 
+    NameContextGenerator CG = new DefaultNameContextGenerator(
+            (AdaptiveFeatureGenerator[]) null);
+
     NameSample nameSample = new NameSample(SENTENCE,
         new Span[] {new Span(0, 2, "person")}, false);
 
     try (ObjectStream<Event> eventStream = new NameFinderEventStream(
-        ObjectStreamUtils.createObjectStream(nameSample))) {
+        ObjectStreamUtils.createObjectStream(nameSample), "person", CG, null)) {
 
       Assertions.assertEquals("person-" + NameFinderME.START, eventStream.read().getOutcome());
       Assertions.assertEquals("person-" + NameFinderME.CONTINUE, eventStream.read().getOutcome());

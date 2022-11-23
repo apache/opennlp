@@ -18,7 +18,6 @@
 package opennlp.tools.namefind;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,14 +26,16 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.Sample;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
 
 /**
  * Class for holding names for a single unit of text.
  */
-public class NameSample implements Serializable {
+public class NameSample implements Sample {
 
+  private static final long serialVersionUID = 1655333056555270688L;
   private final String id;
   private final List<String> sentence;
   private final List<Span> names;

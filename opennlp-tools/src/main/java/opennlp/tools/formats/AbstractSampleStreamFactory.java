@@ -22,14 +22,14 @@ import opennlp.tools.cmdline.ObjectStreamFactory;
 /**
  * Base class for sample stream factories.
  */
-public abstract class AbstractSampleStreamFactory<T> implements ObjectStreamFactory<T> {
+public abstract class AbstractSampleStreamFactory<T,P> implements ObjectStreamFactory<T,P> {
 
-  protected Class params;
+  protected Class<P> params;
 
   private AbstractSampleStreamFactory() {
   }
 
-  protected <P> AbstractSampleStreamFactory(Class<P> params) {
+  protected AbstractSampleStreamFactory(Class<P> params) {
     this.params = params;
   }
 
@@ -37,8 +37,8 @@ public abstract class AbstractSampleStreamFactory<T> implements ObjectStreamFact
     return "eng";
   }
 
-  @SuppressWarnings({"unchecked"})
-  public <P> Class<P> getParameters() {
+  // FIXME
+  public Class<P> getParameters() {
     return params;
   }
 }

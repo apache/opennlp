@@ -40,7 +40,7 @@ import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * A probabilistic lemmatizer.  Tries to predict the induced permutation class
+ * A probabilistic {@link Lemmatizer}. Tries to predict the induced permutation class
  * for each word depending on its surrounding context. Based on
  * Grzegorz Chrupała. 2008. Towards a Machine-Learning Architecture
  * for Lexical Functional Grammar Parsing. PhD dissertation, Dublin City University.
@@ -53,10 +53,10 @@ public class LemmatizerME implements Lemmatizer {
   protected int beamSize;
   private Sequence bestSequence;
 
-  private SequenceClassificationModel<String> model;
+  private final SequenceClassificationModel<String> model;
 
-  private LemmatizerContextGenerator contextGenerator;
-  private SequenceValidator<String> sequenceValidator;
+  private final LemmatizerContextGenerator contextGenerator;
+  private final SequenceValidator<String> sequenceValidator;
 
   /**
    * Initializes the current instance with the provided model
@@ -226,7 +226,7 @@ public class LemmatizerME implements Lemmatizer {
       lemmatizerModel = trainer.train(ss);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
-      SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
+      SequenceTrainer<LemmaSample> trainer = TrainerFactory.getSequenceModelTrainer(
           trainParams, manifestInfoEntries);
 
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array

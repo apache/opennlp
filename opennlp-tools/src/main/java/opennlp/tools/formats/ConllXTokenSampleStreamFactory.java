@@ -28,17 +28,17 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ConllXTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
+public class ConllXTokenSampleStreamFactory<P> extends DetokenizerSampleStreamFactory<TokenSample, P> {
 
   interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
-        ConllXPOSSampleStreamFactory.CONLLX_FORMAT, new ConllXTokenSampleStreamFactory(Parameters.class));
+        ConllXPOSSampleStreamFactory.CONLLX_FORMAT, new ConllXTokenSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ConllXTokenSampleStreamFactory(Class<P> params) {
+  protected ConllXTokenSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

@@ -28,8 +28,8 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ConllXSentenceSampleStreamFactory extends
-    DetokenizerSampleStreamFactory<SentenceSample> {
+public class ConllXSentenceSampleStreamFactory<P> extends
+    DetokenizerSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
     // TODO: make chunk size configurable
@@ -37,10 +37,11 @@ public class ConllXSentenceSampleStreamFactory extends
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        ConllXPOSSampleStreamFactory.CONLLX_FORMAT, new ConllXSentenceSampleStreamFactory(Parameters.class));
+        ConllXPOSSampleStreamFactory.CONLLX_FORMAT,
+        new ConllXSentenceSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ConllXSentenceSampleStreamFactory(Class<P> params) {
+  protected ConllXSentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

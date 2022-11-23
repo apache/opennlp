@@ -28,19 +28,19 @@ import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
-public class MascTokenSampleStreamFactory extends AbstractSampleStreamFactory<TokenSample> {
+public class MascTokenSampleStreamFactory<P> extends AbstractSampleStreamFactory<TokenSample, P> {
 
   public static final String MASC_FORMAT = "masc";
 
 
-  protected <P> MascTokenSampleStreamFactory(Class<P> params) {
+  protected MascTokenSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
         MASC_FORMAT,
-        new opennlp.tools.formats.masc.MascTokenSampleStreamFactory(
+        new opennlp.tools.formats.masc.MascTokenSampleStreamFactory<>(
             opennlp.tools.formats.masc.MascTokenSampleStreamFactory.Parameters.class));
   }
 

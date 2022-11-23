@@ -18,9 +18,10 @@
 package opennlp.tools.cmdline.tokenizer;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.tokenize.TokenSample;
 
-public class TokenizerConverterTool extends AbstractConverterTool<TokenSample> {
+public class TokenizerConverterTool extends AbstractConverterTool<TokenSample, BasicFormatParams> {
 
   public TokenizerConverterTool() {
     super(TokenSample.class);

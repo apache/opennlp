@@ -27,18 +27,19 @@ import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
-public class IrishSentenceBankTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
+public class IrishSentenceBankTokenSampleStreamFactory<P>
+        extends DetokenizerSampleStreamFactory<TokenSample, P> {
 
   interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
-        "irishsentencebank", new IrishSentenceBankTokenSampleStreamFactory(
+        "irishsentencebank", new IrishSentenceBankTokenSampleStreamFactory<>(
         IrishSentenceBankTokenSampleStreamFactory.Parameters.class));
   }
 
-  protected <P> IrishSentenceBankTokenSampleStreamFactory(Class<P> params) {
+  protected IrishSentenceBankTokenSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

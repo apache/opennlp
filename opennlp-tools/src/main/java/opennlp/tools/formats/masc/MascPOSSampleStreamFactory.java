@@ -28,17 +28,17 @@ import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
 
-public class MascPOSSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
+public class MascPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
   public static final String MASC_FORMAT = "masc";
 
-  protected <P> MascPOSSampleStreamFactory(Class<P> params) {
+  protected MascPOSSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
         MASC_FORMAT,
-        new opennlp.tools.formats.masc.MascPOSSampleStreamFactory(
+        new opennlp.tools.formats.masc.MascPOSSampleStreamFactory<>(
             opennlp.tools.formats.masc.MascPOSSampleStreamFactory.Parameters.class));
   }
 

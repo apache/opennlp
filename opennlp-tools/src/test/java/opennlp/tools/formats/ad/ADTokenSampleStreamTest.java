@@ -33,7 +33,7 @@ import opennlp.tools.util.ObjectStream;
 
 public class ADTokenSampleStreamTest {
 
-  private List<TokenSample> samples = new ArrayList<>();
+  private final List<TokenSample> samples = new ArrayList<>();
 
   @Test
   void testSimpleCount() {
@@ -47,8 +47,8 @@ public class ADTokenSampleStreamTest {
 
   @BeforeEach
   void setup() throws IOException, URISyntaxException {
-    ADTokenSampleStreamFactory factory = new ADTokenSampleStreamFactory(
-        ADTokenSampleStreamFactory.Parameters.class);
+    ADTokenSampleStreamFactory<ADTokenSampleStreamFactory.Parameters> factory =
+            new ADTokenSampleStreamFactory<>(ADTokenSampleStreamFactory.Parameters.class);
 
     File dict = new File(Objects.requireNonNull(getClass().getClassLoader()
         .getResource("opennlp/tools/tokenize/latin-detokenizer.xml")).toURI());

@@ -32,15 +32,15 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 
-public class TwentyNewsgroupSampleStreamFactory extends AbstractSampleStreamFactory<DocumentSample> {
+public class TwentyNewsgroupSampleStreamFactory<P> extends AbstractSampleStreamFactory<DocumentSample,P> {
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(DocumentSample.class,
         "20newsgroup",
-        new TwentyNewsgroupSampleStreamFactory(TwentyNewsgroupSampleStreamFactory.Parameters.class));
+        new TwentyNewsgroupSampleStreamFactory<>(TwentyNewsgroupSampleStreamFactory.Parameters.class));
   }
 
-  protected <P> TwentyNewsgroupSampleStreamFactory(Class<P> params) {
+  protected TwentyNewsgroupSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

@@ -26,6 +26,7 @@ import java.util.Objects;
  */
 public class Span implements Comparable<Span>, Serializable {
 
+  private static final long serialVersionUID = -7648780019844573507L;
   private final int start;
   private final int end;
   private final double prob;//default is 0

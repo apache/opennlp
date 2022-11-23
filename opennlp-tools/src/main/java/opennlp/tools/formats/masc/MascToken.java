@@ -21,6 +21,7 @@ import opennlp.tools.util.Span;
 
 public class MascToken extends Span {
 
+  private static final long serialVersionUID = -780646706788037041L;
   private final String pos;
   private final String base;
   private final int tokenId;

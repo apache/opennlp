@@ -120,13 +120,13 @@ public class GenerateManualTool {
 
     appendCode(tool.getHelp(), sb);
     if (TypedCmdLineTool.class.isAssignableFrom(tool.getClass())) {
-      appendHelpForTool((TypedCmdLineTool<?>) tool, sb);
+      appendHelpForTool((TypedCmdLineTool<?,?>) tool, sb);
     }
 
     sb.append("</section>\n\n");
   }
 
-  private static void appendHelpForTool(TypedCmdLineTool<?> tool,
+  private static void appendHelpForTool(TypedCmdLineTool<?,?> tool,
       StringBuilder sb) {
     Class<?> type = tool.type;
 
@@ -135,7 +135,7 @@ public class GenerateManualTool {
     Map<String, List<Argument>> formatArguments = new LinkedHashMap<>();
     for (String formatName : formats) {
       if (!StreamFactoryRegistry.DEFAULT_FORMAT.equals(formatName)) {
-        ObjectStreamFactory<?> format = tool.getStreamFactory(formatName);
+        ObjectStreamFactory<?,?> format = tool.getStreamFactory(formatName);
         formatArguments.put(formatName,
             ArgumentParser.createArguments(format.getParameters()));
 
