@@ -98,7 +98,7 @@ For more details please check our [documentation](http://opennlp.apache.org/docs
 
 ## Building OpenNLP
 
-At least JDK 8 and Maven 3.3.9 are required to build the library.
+At least JDK 11 and Maven 3.3.9 are required to build the library.
 
 After cloning the repository go into the destination directory and run:
 
