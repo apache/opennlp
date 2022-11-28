@@ -38,7 +38,7 @@ import opennlp.tools.util.PlainTextByLineStream;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ADNameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
+public class ADNameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
 
   interface Parameters {
     //all have to be repeated, because encoding is not optional,
@@ -61,10 +61,10 @@ public class ADNameSampleStreamFactory extends LanguageSampleStreamFactory<NameS
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        "ad", new ADNameSampleStreamFactory(Parameters.class));
+        "ad", new ADNameSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ADNameSampleStreamFactory(Class<P> params) {
+  protected ADNameSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

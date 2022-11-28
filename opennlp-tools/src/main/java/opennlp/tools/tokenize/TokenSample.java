@@ -32,6 +32,7 @@ import opennlp.tools.util.Span;
  */
 public class TokenSample implements Serializable {
 
+  private static final long serialVersionUID = 1057011880085907705L;
   public static final String DEFAULT_SEPARATOR_CHARS = "<SPLIT>";
 
   private static final String separatorChars = DEFAULT_SEPARATOR_CHARS;

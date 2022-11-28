@@ -25,7 +25,7 @@ import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
 
-public class POSSampleSequenceStream implements SequenceStream {
+public class POSSampleSequenceStream implements SequenceStream<POSSample> {
 
   private POSContextGenerator pcg;
   private ObjectStream<POSSample> psi;
@@ -40,21 +40,18 @@ public class POSSampleSequenceStream implements SequenceStream {
     this.pcg = pcg;
   }
 
-  @SuppressWarnings("unchecked")
-  public Event[] updateContext(Sequence sequence, AbstractModel model) {
-    Sequence<POSSample> pss = sequence;
+  public Event[] updateContext(Sequence<POSSample> pss, AbstractModel model) {
     POSTagger tagger = new POSTaggerME(new POSModel("x-unspecified", model, null, new POSTaggerFactory()));
     String[] sentence = pss.getSource().getSentence();
     Object[] ac = pss.getSource().getAddictionalContext();
     String[] tags = tagger.tag(pss.getSource().getSentence());
     Event[] events = new Event[sentence.length];
-    POSSampleEventStream.generateEvents(sentence, tags, ac, pcg)
-        .toArray(events);
+    POSSampleEventStream.generateEvents(sentence, tags, ac, pcg).toArray(events);
     return events;
   }
 
   @Override
-  public Sequence read() throws IOException {
+  public Sequence<POSSample> read() throws IOException {
 
     POSSample sample = psi.read();
 
@@ -71,8 +68,7 @@ public class POSSampleSequenceStream implements SequenceStream {
 
         events[i] = new Event(tags[i], context);
       }
-      Sequence<POSSample> sequence = new Sequence<POSSample>(events,sample);
-      return sequence;
+      return new Sequence<>(events,sample);
     }
 
     return null;

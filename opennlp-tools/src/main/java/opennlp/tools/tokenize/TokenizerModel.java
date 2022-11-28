@@ -41,8 +41,8 @@ import opennlp.tools.util.model.ModelUtil;
  */
 public final class TokenizerModel extends BaseModel {
 
+  private static final long serialVersionUID = 42334333400920419L;
   private static final String COMPONENT_NAME = "TokenizerME";
-
   private static final String TOKENIZER_MODEL_ENTRY = "token.model";
 
   /**

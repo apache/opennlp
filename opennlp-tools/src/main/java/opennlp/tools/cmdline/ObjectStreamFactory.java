@@ -19,7 +19,7 @@ package opennlp.tools.cmdline;
 
 import opennlp.tools.util.ObjectStream;
 
-public interface ObjectStreamFactory<T> {
+public interface ObjectStreamFactory<T,P> {
 
   /**
    * Returns interface with parameters description.
@@ -28,7 +28,7 @@ public interface ObjectStreamFactory<T> {
    *
    * @return interface with parameters description
    */
-  <P> Class<P> getParameters();
+  Class<P> getParameters();
 
   /**
    * Creates the <code>ObjectStream</code>.

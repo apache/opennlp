@@ -39,7 +39,7 @@ import opennlp.tools.util.TokenTag;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * The class represents a maximum-entropy-based chunker.  Such a chunker can be used to
+ * The class represents a maximum-entropy-based chunker. Such a chunker can be used to
  * find flat structures based on sequence inputs such as noun phrases or named entities.
  */
 public class ChunkerME implements Chunker {
@@ -53,8 +53,8 @@ public class ChunkerME implements Chunker {
    */
   protected SequenceClassificationModel<TokenTag> model;
 
-  private ChunkerContextGenerator contextGenerator;
-  private SequenceValidator<TokenTag> sequenceValidator;
+  private final ChunkerContextGenerator contextGenerator;
+  private final SequenceValidator<TokenTag> sequenceValidator;
 
   /**
    * Initializes the current instance with the specified model and
@@ -195,7 +195,7 @@ public class ChunkerME implements Chunker {
       chunkerModel = trainer.train(es);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
-      SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
+      SequenceTrainer<ChunkSample> trainer = TrainerFactory.getSequenceModelTrainer(
           mlParams, manifestInfoEntries);
 
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array

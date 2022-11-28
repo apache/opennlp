@@ -69,10 +69,6 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     this.defaultType = type;
   }
 
-  public NameFinderEventStream(ObjectStream<NameSample> dataStream) {
-    this(dataStream, null, new DefaultNameContextGenerator(), null);
-  }
-
   /**
    * Generates the name tag outcomes (start, continue, other) for each token in a sentence
    * with the specified length using the specified name spans.

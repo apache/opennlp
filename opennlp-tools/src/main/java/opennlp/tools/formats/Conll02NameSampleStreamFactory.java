@@ -32,7 +32,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
+public class Conll02NameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
 
   interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "spa|nld")
@@ -44,10 +44,10 @@ public class Conll02NameSampleStreamFactory extends LanguageSampleStreamFactory<
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        "conll02", new Conll02NameSampleStreamFactory(Parameters.class));
+        "conll02", new Conll02NameSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> Conll02NameSampleStreamFactory(Class<P> params) {
+  protected Conll02NameSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

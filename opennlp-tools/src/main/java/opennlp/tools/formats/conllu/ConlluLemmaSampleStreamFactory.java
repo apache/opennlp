@@ -32,7 +32,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ConlluLemmaSampleStreamFactory extends AbstractSampleStreamFactory<LemmaSample> {
+public class ConlluLemmaSampleStreamFactory<P> extends AbstractSampleStreamFactory<LemmaSample, P> {
 
   interface Parameters extends BasicFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "tagset",
@@ -44,10 +44,10 @@ public class ConlluLemmaSampleStreamFactory extends AbstractSampleStreamFactory<
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LemmaSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
-        new ConlluLemmaSampleStreamFactory(Parameters.class));
+        new ConlluLemmaSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ConlluLemmaSampleStreamFactory(Class<P> params) {
+  protected ConlluLemmaSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

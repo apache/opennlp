@@ -38,7 +38,7 @@ import opennlp.tools.util.PlainTextByLineStream;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ADChunkSampleStreamFactory extends LanguageSampleStreamFactory<ChunkSample> {
+public class ADChunkSampleStreamFactory<P> extends LanguageSampleStreamFactory<ChunkSample, P> {
 
   interface Parameters {
     //all have to be repeated, because encoding is not optional,
@@ -64,10 +64,10 @@ public class ADChunkSampleStreamFactory extends LanguageSampleStreamFactory<Chun
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(ChunkSample.class,
-        "ad", new ADChunkSampleStreamFactory(Parameters.class));
+        "ad", new ADChunkSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ADChunkSampleStreamFactory(Class<P> params) {
+  protected ADChunkSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

@@ -32,17 +32,17 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Factory producing OpenNLP {@link MosesSentenceSampleStream}s.
  */
-public class MosesSentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
+public class MosesSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "moses", new MosesSentenceSampleStreamFactory(Parameters.class));
+        "moses", new MosesSentenceSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> MosesSentenceSampleStreamFactory(Class<P> params) {
+  protected MosesSentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

@@ -90,7 +90,7 @@ public final class TokenNameFinderTrainerTool
     Map<String, Object> resources = new HashMap<>();
 
     if (resourcePath != null) {
-      Map<String, ArtifactSerializer> artifactSerializers = new HashMap<>();
+      Map<String, ArtifactSerializer<?>> artifactSerializers = new HashMap<>();
 
       if (featureGenDescriptor != null) {
 
@@ -100,7 +100,7 @@ public final class TokenNameFinderTrainerTool
         }
       }
 
-      for (Map.Entry<String, ArtifactSerializer> serializerMapping : artifactSerializers.entrySet()) {
+      for (Map.Entry<String, ArtifactSerializer<?>> serializerMapping : artifactSerializers.entrySet()) {
         String resourceName = serializerMapping.getKey();
         try (InputStream resourceIn = CmdLineUtil.openInFile(new File(resourcePath, resourceName))) {
           resources.put(resourceName, serializerMapping.getValue().create(resourceIn));

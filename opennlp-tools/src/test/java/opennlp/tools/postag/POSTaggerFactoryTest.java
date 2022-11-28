@@ -89,7 +89,7 @@ public class POSTaggerFactoryTest {
 
     POSTaggerFactory factory = posModel.getFactory();
     Assertions.assertTrue(factory.getTagDictionary() instanceof POSDictionary);
-    Assertions.assertTrue(factory.getPOSContextGenerator() != null);
+    Assertions.assertNotNull(factory.getPOSContextGenerator());
     Assertions.assertTrue(factory.getSequenceValidator() instanceof DefaultPOSSequenceValidator);
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -100,7 +100,7 @@ public class POSTaggerFactoryTest {
 
     factory = fromSerialized.getFactory();
     Assertions.assertTrue(factory.getTagDictionary() instanceof POSDictionary);
-    Assertions.assertTrue(factory.getPOSContextGenerator() != null);
+    Assertions.assertNotNull(factory.getPOSContextGenerator());
     Assertions.assertTrue(factory.getSequenceValidator() instanceof DefaultPOSSequenceValidator);
   }
 

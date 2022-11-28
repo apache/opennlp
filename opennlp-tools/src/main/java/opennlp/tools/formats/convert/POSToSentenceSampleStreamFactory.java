@@ -29,17 +29,17 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class POSToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory<SentenceSample> {
+public class POSToSentenceSampleStreamFactory<P> extends DetokenizerSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "pos", new POSToSentenceSampleStreamFactory(Parameters.class));
+        "pos", new POSToSentenceSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> POSToSentenceSampleStreamFactory(Class<P> params) {
+  protected POSToSentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

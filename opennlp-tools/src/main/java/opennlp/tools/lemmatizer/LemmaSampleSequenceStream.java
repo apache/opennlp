@@ -25,7 +25,7 @@ import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
 
-public class LemmaSampleSequenceStream implements SequenceStream {
+public class LemmaSampleSequenceStream implements SequenceStream<LemmaSample> {
 
   private final ObjectStream<LemmaSample> samples;
   private final LemmatizerContextGenerator contextGenerator;
@@ -37,7 +37,7 @@ public class LemmaSampleSequenceStream implements SequenceStream {
   }
 
   @Override
-  public Sequence read() throws IOException {
+  public Sequence<LemmaSample> read() throws IOException {
     LemmaSample sample = samples.read();
 
     if (sample != null) {
@@ -60,7 +60,7 @@ public class LemmaSampleSequenceStream implements SequenceStream {
   }
 
   @Override
-  public Event[] updateContext(Sequence sequence, AbstractModel model) {
+  public Event[] updateContext(Sequence<LemmaSample> sequence, AbstractModel model) {
     // TODO: Should be implemented for Perceptron sequence learning ...
     return null;
   }

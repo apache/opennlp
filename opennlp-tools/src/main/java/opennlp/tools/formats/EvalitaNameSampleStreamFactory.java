@@ -32,7 +32,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class EvalitaNameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
+public class EvalitaNameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
 
   interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "it")
@@ -44,10 +44,10 @@ public class EvalitaNameSampleStreamFactory extends LanguageSampleStreamFactory<
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        "evalita", new EvalitaNameSampleStreamFactory(Parameters.class));
+        "evalita", new EvalitaNameSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> EvalitaNameSampleStreamFactory(Class<P> params) {
+  protected EvalitaNameSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

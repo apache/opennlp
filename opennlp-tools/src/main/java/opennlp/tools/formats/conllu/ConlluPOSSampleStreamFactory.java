@@ -32,7 +32,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ConlluPOSSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
+public class ConlluPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
 
   public static final String CONLLU_FORMAT = "conllu";
 
@@ -45,10 +45,10 @@ public class ConlluPOSSampleStreamFactory extends AbstractSampleStreamFactory<PO
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
-        CONLLU_FORMAT, new ConlluPOSSampleStreamFactory(Parameters.class));
+        CONLLU_FORMAT, new ConlluPOSSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ConlluPOSSampleStreamFactory(Class<P> params) {
+  protected ConlluPOSSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

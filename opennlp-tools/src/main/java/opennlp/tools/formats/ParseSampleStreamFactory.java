@@ -32,17 +32,17 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Factory producing OpenNLP {@link ParseSampleStream}s.
  */
-public class ParseSampleStreamFactory extends AbstractSampleStreamFactory<Parse> {
+public class ParseSampleStreamFactory<P> extends AbstractSampleStreamFactory<Parse, P> {
 
   public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(Parse.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new ParseSampleStreamFactory(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new ParseSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ParseSampleStreamFactory(Class<P> params) {
+  protected ParseSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

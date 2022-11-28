@@ -42,4 +42,14 @@ interface TrainingParams extends BasicTrainingParams {
       description = "A sub-class of TokenizerFactory where to get implementation and resources.")
   @OptionalParameter
   String getFactory();
+
+  @ParameterDescription(valueName = "cutOffNum",
+          description = "Minimal number of times a feature must be seen")
+  @OptionalParameter
+  String getCutoff();
+
+  @ParameterDescription(valueName = "iterationsNum",
+          description = "Number of training iterations")
+  @OptionalParameter
+  String getIterations();
 }

@@ -42,20 +42,25 @@ public class DummyFactory extends LanguageDetectorFactory {
 
   @Override
   public LanguageDetectorContextGenerator getContextGenerator() {
-    return new DummyFactory.MyContectGenerator(2, 5,
-        new DummyFactory.UpperCaseNormalizer());
+    return new MyContextGenerator(2, 5,
+            new UpperCaseNormalizer());
   }
 
-  public class UpperCaseNormalizer implements CharSequenceNormalizer {
+  public static class UpperCaseNormalizer implements CharSequenceNormalizer {
+
+    private static final long serialVersionUID = 589425364183582853L;
+
     @Override
     public CharSequence normalize(CharSequence text) {
       return text.toString().toUpperCase();
     }
   }
 
-  public class MyContectGenerator extends DefaultLanguageDetectorContextGenerator {
+  public static class MyContextGenerator extends DefaultLanguageDetectorContextGenerator {
 
-    public MyContectGenerator(int min, int max, CharSequenceNormalizer... normalizers) {
+    private static final long serialVersionUID = 5737572653101696876L;
+
+    public MyContextGenerator(int min, int max, CharSequenceNormalizer... normalizers) {
       super(min, max, normalizers);
     }
 
@@ -63,7 +68,7 @@ public class DummyFactory extends LanguageDetectorFactory {
     public String[] getContext(CharSequence document) {
       String[] superContext = super.getContext(document);
 
-      List<String> context = new ArrayList(Arrays.asList(superContext));
+      List<String> context = new ArrayList<>(Arrays.asList(superContext));
 
       document = this.normalizer.normalize(document);
 
@@ -72,10 +77,10 @@ public class DummyFactory extends LanguageDetectorFactory {
       NGramModel tokenNgramModel = new NGramModel();
       if (words.length > 0) {
         tokenNgramModel.add(new StringList(words), 1, 3);
-        Iterator tokenNgramIterator = tokenNgramModel.iterator();
+        Iterator<StringList> tokenNgramIterator = tokenNgramModel.iterator();
 
         while (tokenNgramIterator.hasNext()) {
-          StringList tokenList = (StringList) tokenNgramIterator.next();
+          StringList tokenList = tokenNgramIterator.next();
           if (tokenList.size() > 0) {
             context.add("tg=" + tokenList.toString());
           }

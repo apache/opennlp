@@ -56,9 +56,8 @@ public abstract class AbstractTrainer {
     this.reportMap = reportMap;
     printMessages = trainingParameters.getBooleanParameter(VERBOSE_PARAM, VERBOSE_DEFAULT);
   }
-  
-  @Deprecated
-  public void init(Map<String, String> trainParams, Map<String, String> reportMap) {
+
+  public void init(Map<String, Object> trainParams, Map<String, String> reportMap) {
     init(new TrainingParameters(trainParams),reportMap);
   }
 

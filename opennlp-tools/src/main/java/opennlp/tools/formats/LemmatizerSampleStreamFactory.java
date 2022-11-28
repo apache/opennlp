@@ -32,17 +32,17 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Factory producing OpenNLP {@link LemmaSampleStream}s.
  */
-public class LemmatizerSampleStreamFactory extends AbstractSampleStreamFactory<LemmaSample> {
+public class LemmatizerSampleStreamFactory<P> extends AbstractSampleStreamFactory<LemmaSample, P> {
 
   interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LemmaSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new LemmatizerSampleStreamFactory(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new LemmatizerSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> LemmatizerSampleStreamFactory(Class<P> params) {
+  protected LemmatizerSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

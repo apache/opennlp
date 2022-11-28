@@ -46,6 +46,7 @@ import opennlp.tools.util.model.SerializableArtifact;
  */
 public final class POSModel extends BaseModel implements SerializableArtifact {
 
+  private static final long serialVersionUID = -6014331858195322339L;
   private static final String COMPONENT_NAME = "POSTaggerME";
   static final String POS_MODEL_ENTRY_NAME = "pos.model";
   static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";

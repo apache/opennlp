@@ -17,7 +17,6 @@
 
 package opennlp.tools.doccat;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,11 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import opennlp.tools.commons.Sample;
+
 /**
  * Class which holds a classified document and its category.
  */
-public class DocumentSample implements Serializable {
+public class DocumentSample implements Sample {
 
+  private static final long serialVersionUID = -1775688015002177141L;
   private final String category;
   private final List<String> text;
   private final Map<String, Object> extraInformation;

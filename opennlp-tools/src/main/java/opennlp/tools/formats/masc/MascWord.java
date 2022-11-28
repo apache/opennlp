@@ -21,6 +21,7 @@ import opennlp.tools.util.Span;
 
 public class MascWord extends Span {
 
+  private static final long serialVersionUID = 2133473549058189775L;
   private final int id;
 
   /**

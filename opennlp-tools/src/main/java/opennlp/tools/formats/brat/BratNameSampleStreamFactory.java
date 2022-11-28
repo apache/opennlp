@@ -41,7 +41,8 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 
-public class BratNameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
+public class BratNameSampleStreamFactory
+        extends AbstractSampleStreamFactory<NameSample, BratNameSampleStreamFactory.Parameters> {
 
   interface Parameters {
     @ParameterDescription(valueName = "bratDataDir", description = "location of brat data dir")

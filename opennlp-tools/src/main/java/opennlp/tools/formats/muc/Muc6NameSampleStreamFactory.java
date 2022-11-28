@@ -35,7 +35,8 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringUtil;
 
-public class Muc6NameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
+public class Muc6NameSampleStreamFactory
+        extends AbstractSampleStreamFactory<NameSample, Muc6NameSampleStreamFactory.Parameters> {
 
   protected Muc6NameSampleStreamFactory() {
     super(Parameters.class);

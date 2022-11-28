@@ -25,6 +25,7 @@ import java.util.Objects;
  */
 public class LanguageSample implements Serializable {
 
+  private static final long serialVersionUID = -5206320996868984440L;
   private final Language language;
   private final CharSequence context;
 

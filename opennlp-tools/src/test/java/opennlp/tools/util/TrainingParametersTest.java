@@ -47,7 +47,7 @@ public class TrainingParametersTest {
   void testDefault() {
     TrainingParameters tr = TrainingParameters.defaultParams();
 
-    Assertions.assertEquals(4, tr.getSettings().size());
+    Assertions.assertEquals(4, tr.getObjectSettings().size());
     Assertions.assertEquals("MAXENT", tr.algorithm());
     Assertions.assertEquals(EventTrainer.EVENT_VALUE,
         tr.getStringParameter(TrainingParameters.TRAINER_TYPE_PARAM,
@@ -58,6 +58,70 @@ public class TrainingParametersTest {
     Assertions.assertEquals(5,
         tr.getIntParameter(TrainingParameters.CUTOFF_PARAM,
             200));  // use different defaults
+  }
+
+  @Test
+  public void testSetParamsWithCLIParams() {
+    String[] args =
+        { "-model" , "en-token-test.bin" , "-alphaNumOpt" , "isAlphaNumOpt" , "-lang" , "en" , "-data" ,
+            "en-token.train" , "-encoding" , "UTF-8" , "-cutoff" , "10" , "-iterations" , "50" };
+    TrainingParameters tr = TrainingParameters.setParams(args);
+
+    Assertions.assertEquals("MAXENT" , tr.algorithm());
+    Assertions.assertEquals(50 ,
+        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
+            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+    Assertions.assertEquals(10 ,
+        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
+            TrainingParameters.CUTOFF_DEFAULT_VALUE));
+  }
+
+  @Test
+  public void testSetParamsWithoutCLIParams() {
+    String[] args =
+        { "-model" , "en-token-test.bin" , "-alphaNumOpt" , "isAlphaNumOpt" , "-lang" , "en" , "-data" ,
+            "en-token.train" , "-encoding" , "UTF-8" };
+    TrainingParameters tr = TrainingParameters.setParams(args);
+
+    Assertions.assertEquals("MAXENT" , tr.algorithm());
+    Assertions.assertEquals(100 ,
+        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
+            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+    Assertions.assertEquals(5 ,
+        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
+            TrainingParameters.CUTOFF_DEFAULT_VALUE));
+  }
+
+  @Test
+  public void testSetParamsWithoutCutoffCLIParams() {
+    String[] args =
+        { "-model" , "en-token-test.bin" , "-alphaNumOpt" , "isAlphaNumOpt" , "-lang" , "en" , "-data" ,
+            "en-token.train" , "-encoding" , "UTF-8" , "-iterations" , "50" };
+    TrainingParameters tr = TrainingParameters.setParams(args);
+
+    Assertions.assertEquals("MAXENT" , tr.algorithm());
+    Assertions.assertEquals(50 ,
+        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
+            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+    Assertions.assertEquals(5 ,
+        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
+            TrainingParameters.CUTOFF_DEFAULT_VALUE));
+  }
+
+  @Test
+  public void testSetParamsWithoutIterationsCLIParams() {
+    String[] args =
+        { "-model" , "en-token-test.bin" , "-alphaNumOpt" , "isAlphaNumOpt" , "-lang" , "en" , "-data" ,
+            "en-token.train" , "-encoding" , "UTF-8" , "-cutoff" , "10" };
+    TrainingParameters tr = TrainingParameters.setParams(args);
+
+    Assertions.assertEquals("MAXENT" , tr.algorithm());
+    Assertions.assertEquals(100 ,
+        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
+            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+    Assertions.assertEquals(10 ,
+        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
+            TrainingParameters.CUTOFF_DEFAULT_VALUE));
   }
 
   @Test
@@ -80,10 +144,10 @@ public class TrainingParametersTest {
   void testGetSettings() {
     TrainingParameters tp = build("k1=v1,n1.k2=v2,n2.k3=v3,n1.k4=v4");
 
-    assertEquals(buildMap("k1=v1"), tp.getSettings());
-    assertEquals(buildMap("k2=v2,k4=v4"), tp.getSettings("n1"));
-    assertEquals(buildMap("k3=v3"), tp.getSettings("n2"));
-    Assertions.assertTrue(tp.getSettings("n3").isEmpty());
+    assertEquals(buildMap("k1=v1"), tp.getObjectSettings());
+    assertEquals(buildMap("k2=v2,k4=v4"), tp.getObjectSettings("n1"));
+    assertEquals(buildMap("k3=v3"), tp.getObjectSettings("n2"));
+    Assertions.assertTrue(tp.getObjectSettings("n3").isEmpty());
   }
 
   @Test
@@ -93,7 +157,7 @@ public class TrainingParametersTest {
     assertEquals(build("k1=v1"), tp.getParameters(null));
     assertEquals(build("k2=v2,k4=v4"), tp.getParameters("n1"));
     assertEquals(build("k3=v3"), tp.getParameters("n2"));
-    Assertions.assertTrue(tp.getParameters("n3").getSettings().isEmpty());
+    Assertions.assertTrue(tp.getParameters("n3").getObjectSettings().isEmpty());
   }
 
   @Test
@@ -119,16 +183,16 @@ public class TrainingParametersTest {
     Assertions.assertEquals(tp.getDoubleParameter("k21", -100), 0.001, 345.6); // should be unchanged
     Assertions.assertEquals(tp.getDoubleParameter("double", "k5", -100), 0.001, 123.45);
 
-    Assertions.assertEquals(true, tp.getBooleanParameter("k31", true));
+    Assertions.assertTrue(tp.getBooleanParameter("k31", true));
     tp.put("k31", false);
-    Assertions.assertEquals(false, tp.getBooleanParameter("k31", true));
-    Assertions.assertEquals(false, tp.getBooleanParameter("boolean", "k4", true));
+    Assertions.assertFalse(tp.getBooleanParameter("k31", true));
+    Assertions.assertFalse(tp.getBooleanParameter("boolean", "k4", true));
   }
 
   // format: k1=v1,k2=v2,...
-  private static Map<String, String> buildMap(String str) {
+  private static Map<String, Object> buildMap(String str) {
     String[] pairs = str.split(",");
-    Map<String, String> map = new HashMap<>(pairs.length);
+    Map<String, Object> map = new HashMap<>(pairs.length);
     for (String pair : pairs) {
       String[] keyValue = pair.split("=");
       map.put(keyValue[0], keyValue[1]);
@@ -142,7 +206,7 @@ public class TrainingParametersTest {
     return new TrainingParameters(buildMap(str));
   }
 
-  private static void assertEquals(Map<String, String> map1, Map<String, String> map2) {
+  private static void assertEquals(Map<String, Object> map1, Map<String, Object> map2) {
     Assertions.assertNotNull(map1);
     Assertions.assertNotNull(map2);
     Assertions.assertEquals(map1.size(), map2.size());
@@ -151,16 +215,16 @@ public class TrainingParametersTest {
     }
   }
 
-  private static void assertEquals(Map<String, String> map, TrainingParameters actual) {
+  private static void assertEquals(Map<String, Object> map, TrainingParameters actual) {
     Assertions.assertNotNull(actual);
-    assertEquals(map, actual.getSettings());
+    assertEquals(map, actual.getObjectSettings());
   }
 
   private static void assertEquals(TrainingParameters expected, TrainingParameters actual) {
     if (expected == null) {
       Assertions.assertNull(actual);
     } else {
-      assertEquals(expected.getSettings(), actual);
+      assertEquals(expected.getObjectSettings(), actual);
     }
   }
 }

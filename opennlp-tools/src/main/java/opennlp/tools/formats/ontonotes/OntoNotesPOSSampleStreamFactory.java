@@ -24,7 +24,8 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
 
-public class OntoNotesPOSSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
+public class OntoNotesPOSSampleStreamFactory
+        extends AbstractSampleStreamFactory<POSSample, OntoNotesFormatParameters> {
 
   private OntoNotesParseSampleStreamFactory parseSampleStreamFactory =
       new OntoNotesParseSampleStreamFactory();

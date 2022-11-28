@@ -32,17 +32,17 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Factory producing OpenNLP {@link TokenSampleStream}s.
  */
-public class TokenSampleStreamFactory extends LanguageSampleStreamFactory<TokenSample> {
+public class TokenSampleStreamFactory<P> extends LanguageSampleStreamFactory<TokenSample, P> {
 
   interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new TokenSampleStreamFactory(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new TokenSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> TokenSampleStreamFactory(Class<P> params) {
+  protected TokenSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

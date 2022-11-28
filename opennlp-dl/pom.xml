@@ -24,12 +24,12 @@
   <parent>
     <groupId>org.apache.opennlp</groupId>
     <artifactId>opennlp</artifactId>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>2.1.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>org.apache.opennlp</groupId>
   <artifactId>opennlp-dl</artifactId>
-  <name>opennlp-dl</name>
+  <name>Apache OpenNLP DL</name>
   <dependencies>
     <dependency>
       <groupId>org.apache.opennlp</groupId>

@@ -32,17 +32,17 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class WordTagSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
+public class WordTagSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
 
-  public static interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
-        StreamFactoryRegistry.DEFAULT_FORMAT, new WordTagSampleStreamFactory(Parameters.class));
+        StreamFactoryRegistry.DEFAULT_FORMAT, new WordTagSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> WordTagSampleStreamFactory(Class<P> params) {
+  protected WordTagSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

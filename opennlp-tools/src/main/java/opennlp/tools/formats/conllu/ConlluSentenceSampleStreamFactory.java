@@ -28,7 +28,7 @@ import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
-public class ConlluSentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
+public class ConlluSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends BasicFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "sentencesPerSample",
@@ -39,10 +39,10 @@ public class ConlluSentenceSampleStreamFactory extends AbstractSampleStreamFacto
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
-        new ConlluSentenceSampleStreamFactory(ConlluSentenceSampleStreamFactory.Parameters.class));
+        new ConlluSentenceSampleStreamFactory<>(ConlluSentenceSampleStreamFactory.Parameters.class));
   }
 
-  protected <P> ConlluSentenceSampleStreamFactory(Class<P> params) {
+  protected ConlluSentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

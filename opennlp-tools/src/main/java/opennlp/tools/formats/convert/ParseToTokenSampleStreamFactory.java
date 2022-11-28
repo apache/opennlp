@@ -30,7 +30,8 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ParseToTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample> {
+public class ParseToTokenSampleStreamFactory extends DetokenizerSampleStreamFactory<TokenSample,
+        ParseToTokenSampleStreamFactory.Parameters> {
 
   interface Parameters extends ParseSampleStreamFactory.Parameters, DetokenizerParameter {
   }

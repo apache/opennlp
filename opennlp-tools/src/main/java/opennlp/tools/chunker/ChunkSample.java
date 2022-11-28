@@ -17,20 +17,21 @@
 
 package opennlp.tools.chunker;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import opennlp.tools.commons.Sample;
 import opennlp.tools.util.Span;
 
 /**
  * Class for holding chunks for a single unit of text.
  */
-public class ChunkSample implements Serializable {
+public class ChunkSample implements Sample {
 
+  private static final long serialVersionUID = -3092850871020409815L;
   private final List<String> sentence;
   private final List<String> tags;
   private final List<String> preds;

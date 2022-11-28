@@ -216,7 +216,7 @@ public class Parser extends CasAnnotator_ImplBase {
       parseAnnotation.setDoubleValue(probabilityFeature, parse.getProb());
     }
 
-    ArrayFS childrenArray = cas.createArrayFS(parseChildAnnotations.length);
+    ArrayFS<?> childrenArray = cas.createArrayFS(parseChildAnnotations.length);
     childrenArray.copyFromArray(parseChildAnnotations, 0, 0, parseChildAnnotations.length);
     parseAnnotation.setFeatureValue(childrenFeature, childrenArray);
 
@@ -235,8 +235,8 @@ public class Parser extends CasAnnotator_ImplBase {
 
   private static class ParseConverter {
     private final String mSentence;
-    private Map<Integer, Integer> mIndexMap = new HashMap<>();
-    private Parse mParseForTagger;
+    private final Map<Integer, Integer> mIndexMap = new HashMap<>();
+    private final Parse mParseForTagger;
 
     /**
      * Initializes a new instance.

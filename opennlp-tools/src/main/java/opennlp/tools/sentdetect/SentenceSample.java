@@ -33,6 +33,7 @@ import opennlp.tools.util.Span;
  */
 public class SentenceSample implements Serializable {
 
+  private static final long serialVersionUID = -5386940708608341113L;
   private final String document;
   private final List<Span> sentences;
 

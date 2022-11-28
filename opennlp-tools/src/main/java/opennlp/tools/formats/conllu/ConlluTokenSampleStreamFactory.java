@@ -28,7 +28,7 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
-public class ConlluTokenSampleStreamFactory extends AbstractSampleStreamFactory<TokenSample> {
+public class ConlluTokenSampleStreamFactory<P> extends AbstractSampleStreamFactory<TokenSample, P> {
 
   interface Parameters extends BasicFormatParams {
   }
@@ -36,10 +36,10 @@ public class ConlluTokenSampleStreamFactory extends AbstractSampleStreamFactory<
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
-        new ConlluTokenSampleStreamFactory(ConlluTokenSampleStreamFactory.Parameters.class));
+        new ConlluTokenSampleStreamFactory<>(ConlluTokenSampleStreamFactory.Parameters.class));
   }
 
-  protected <P> ConlluTokenSampleStreamFactory(Class<P> params) {
+  protected ConlluTokenSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

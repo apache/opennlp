@@ -48,7 +48,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   public static final String PERCEPTRON_SEQUENCE_VALUE = "PERCEPTRON_SEQUENCE";
 
   private int iterations;
-  private SequenceStream sequenceStream;
+  private SequenceStream<Event> sequenceStream;
   /** Number of events in the event set. */
   private int numEvents;
 
@@ -118,7 +118,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
 
   // << members related to AbstractSequenceTrainer
 
-  public AbstractModel trainModel(int iterations, SequenceStream sequenceStream,
+  public AbstractModel trainModel(int iterations, SequenceStream<Event> sequenceStream,
                                   int cutoff, boolean useAverage) throws IOException {
     this.iterations = iterations;
     this.sequenceStream = sequenceStream;
@@ -185,7 +185,6 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
         if (useAverage) averageParams[pi].setParameter(aoi, 0.0);
       }
     }
-    double[] modelDistribution = new double[numOutcomes];
 
     display("Computing model parameters...\n");
     findParameters(iterations);
@@ -234,7 +233,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
 
     sequenceStream.reset();
 
-    Sequence sequence;
+    Sequence<Event> sequence;
     while ((sequence = sequenceStream.read()) != null) {
       Event[] taggerEvents = sequenceStream.updateContext(sequence, model);
       Event[] events = sequence.getEvents();
@@ -356,7 +355,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
 
     sequenceStream.reset();
 
-    Sequence sequence;
+    Sequence<Event> sequence;
     while ((sequence = sequenceStream.read()) != null) {
       Event[] taggerEvents = sequenceStream.updateContext(sequence,
           new PerceptronModel(params,predLabels,outcomeLabels));

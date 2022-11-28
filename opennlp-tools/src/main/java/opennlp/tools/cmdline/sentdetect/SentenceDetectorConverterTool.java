@@ -18,9 +18,10 @@
 package opennlp.tools.cmdline.sentdetect;
 
 import opennlp.tools.cmdline.AbstractConverterTool;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.sentdetect.SentenceSample;
 
-public class SentenceDetectorConverterTool extends AbstractConverterTool<SentenceSample> {
+public class SentenceDetectorConverterTool extends AbstractConverterTool<SentenceSample, BasicFormatParams> {
 
   public SentenceDetectorConverterTool() {
     super(SentenceSample.class);

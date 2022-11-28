@@ -78,22 +78,6 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
   }
 
   /**
-   * Associates the specified tags with the specified word. If the dictionary
-   * previously contained the word, the old tags are replaced by the specified
-   * ones.
-   *
-   * @param word
-   *          The word to be added to the dictionary.
-   * @param tags
-   *          The set of tags associated with the specified word.
-   *
-   * @deprecated Use {@link #put(String, String[])} instead
-   */
-  void addTags(String word, String... tags) {
-    put(word, tags);
-  }
-
-  /**
    * Retrieves an iterator over all words in the dictionary.
    */
   public Iterator<String> iterator() {

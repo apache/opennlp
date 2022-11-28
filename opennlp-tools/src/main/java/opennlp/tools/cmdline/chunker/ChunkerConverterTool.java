@@ -19,12 +19,13 @@ package opennlp.tools.cmdline.chunker;
 
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.cmdline.AbstractConverterTool;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 
 /**
  * Tool to convert multiple data formats into native OpenNLP chunker training
  * format.
  */
-public class ChunkerConverterTool extends AbstractConverterTool<ChunkSample> {
+public class ChunkerConverterTool extends AbstractConverterTool<ChunkSample, BasicFormatParams> {
 
   public ChunkerConverterTool() {
     super(ChunkSample.class);

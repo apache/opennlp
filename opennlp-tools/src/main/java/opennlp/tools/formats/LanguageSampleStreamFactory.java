@@ -20,11 +20,11 @@ package opennlp.tools.formats;
 /**
  * Stream factory for those streams which carry language.
  */
-public abstract class LanguageSampleStreamFactory<T> extends AbstractSampleStreamFactory<T> {
+public abstract class LanguageSampleStreamFactory<T, P> extends AbstractSampleStreamFactory<T, P> {
 
   protected String language;
 
-  protected <P> LanguageSampleStreamFactory(Class<P> params) {
+  protected LanguageSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

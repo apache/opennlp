@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
  */
 public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
 
+  private static final long serialVersionUID = -4511969661556543048L;
+
   private static final Pattern REPEATED_CHAR_REGEX = Pattern.compile("(.)\\1{2,}",
       Pattern.CASE_INSENSITIVE);
   private static final Pattern SPACE_REGEX = Pattern.compile("\\s{2,}",

@@ -35,8 +35,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ADSentenceSampleStreamFactory extends
-    LanguageSampleStreamFactory<SentenceSample> {
+public class ADSentenceSampleStreamFactory<P> extends
+    LanguageSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters {
     @ParameterDescription(valueName = "charsetName", description = "encoding for reading and writing text.")
@@ -56,10 +56,10 @@ public class ADSentenceSampleStreamFactory extends
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class, "ad",
-        new ADSentenceSampleStreamFactory(Parameters.class));
+        new ADSentenceSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ADSentenceSampleStreamFactory(Class<P> params) {
+  protected ADSentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

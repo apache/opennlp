@@ -27,7 +27,7 @@ import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
-public class BioNLP2004NameSampleStreamFactory extends AbstractSampleStreamFactory<NameSample> {
+public class BioNLP2004NameSampleStreamFactory<P> extends AbstractSampleStreamFactory<NameSample, P> {
 
   interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "DNA,protein,cell_type,cell_line,RNA")
@@ -36,10 +36,10 @@ public class BioNLP2004NameSampleStreamFactory extends AbstractSampleStreamFacto
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        "bionlp2004", new BioNLP2004NameSampleStreamFactory(Parameters.class));
+        "bionlp2004", new BioNLP2004NameSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> BioNLP2004NameSampleStreamFactory(Class<P> params) {
+  protected BioNLP2004NameSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

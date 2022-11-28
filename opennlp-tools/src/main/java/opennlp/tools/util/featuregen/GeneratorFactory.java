@@ -406,7 +406,7 @@ public class GeneratorFactory {
   }
 
   // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  private static Map<String, XmlFeatureGeneratorFactory> factories = new HashMap<>();
+  private final static Map<String, XmlFeatureGeneratorFactory> factories = new HashMap<>();
 
   // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
   static {
@@ -621,9 +621,9 @@ public class GeneratorFactory {
     String className = element.getAttribute("class");
     if (className != null) {
       try {
-        Class factoryClass = Class.forName(className);
+        Class<?> factoryClass = Class.forName(className);
         try {
-          Constructor constructor = factoryClass.getConstructor();
+          Constructor<?> constructor = factoryClass.getConstructor();
           AbstractXmlFeatureGeneratorFactory factory =
               (AbstractXmlFeatureGeneratorFactory)constructor.newInstance();
           factory.init(element, null);

@@ -25,15 +25,15 @@ import java.util.Iterator;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Class which turns a sequence stream into an event stream.
+ * Class which turns a {@link SequenceStream} into an event stream.
  */
 public class SequenceStreamEventStream implements ObjectStream<Event> {
 
-  private final SequenceStream sequenceStream;
+  private final SequenceStream<Event> sequenceStream;
 
   private Iterator<Event> eventIt = Collections.emptyListIterator();
 
-  public SequenceStreamEventStream(SequenceStream sequenceStream) {
+  public SequenceStreamEventStream(SequenceStream<Event> sequenceStream) {
     this.sequenceStream = sequenceStream;
   }
 

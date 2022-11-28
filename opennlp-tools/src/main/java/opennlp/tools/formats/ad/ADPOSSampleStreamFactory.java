@@ -35,8 +35,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
-public class ADPOSSampleStreamFactory extends
-    LanguageSampleStreamFactory<POSSample> {
+public class ADPOSSampleStreamFactory<P> extends
+    LanguageSampleStreamFactory<POSSample, P> {
 
   interface Parameters {
     @ParameterDescription(valueName = "charsetName",
@@ -61,10 +61,10 @@ public class ADPOSSampleStreamFactory extends
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class, "ad",
-        new ADPOSSampleStreamFactory(Parameters.class));
+        new ADPOSSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> ADPOSSampleStreamFactory(Class<P> params) {
+  protected ADPOSSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

@@ -31,7 +31,7 @@ import opennlp.tools.util.model.ArtifactSerializer;
  * <ul>
  *  <li>implement an empty constructor (TODO is it necessary?)
  *  <li>implement a constructor that takes the {@link ArtifactProvider} and
- *      calls {@code BaseToolFactory(Map)}
+ *      calls {@link BaseToolFactory(Map)}
  *  <li>override {@link #createArtifactMap()} and
  *      {@link #createArtifactSerializersMap()} methods if necessary.
  * </ul>
@@ -88,14 +88,13 @@ public abstract class BaseToolFactory {
   }
 
   /**
-   * Validates the parsed artifacts. If something is not
-   * valid subclasses should throw an {@link InvalidFormatException}.
-   *
+   * Validates the parsed artifacts.
+   * <p>
    * Note:
-   * Subclasses should generally invoke super.validateArtifactMap at the beginning
+   * Subclasses should generally invoke {@code super.validateArtifactMap} at the beginning
    * of this method.
    *
-   * @throws InvalidFormatException
+   * @throws InvalidFormatException Thrown If something is not valid.
    */
   public abstract void validateArtifactMap() throws InvalidFormatException;
 
@@ -123,7 +122,7 @@ public abstract class BaseToolFactory {
     BaseToolFactory theFactory = null;
     if (factoryClass != null) {
       try {
-        theFactory = factoryClass.newInstance();
+        theFactory = factoryClass.getDeclaredConstructor().newInstance();
         theFactory.init(artifactProvider);
       } catch (Exception e) {
         String msg = "Could not instantiate the "

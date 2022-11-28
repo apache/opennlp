@@ -29,7 +29,7 @@ import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
-public class Conll03NameSampleStreamFactory extends LanguageSampleStreamFactory<NameSample> {
+public class Conll03NameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
 
   interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "eng|deu")
@@ -41,10 +41,10 @@ public class Conll03NameSampleStreamFactory extends LanguageSampleStreamFactory<
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        "conll03", new Conll03NameSampleStreamFactory(Parameters.class));
+        "conll03", new Conll03NameSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> Conll03NameSampleStreamFactory(Class<P> params) {
+  protected Conll03NameSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

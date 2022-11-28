@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.ml.EventTrainer;
 
 public class TrainingParameters {
@@ -38,8 +39,10 @@ public class TrainingParameters {
   public static final String ITERATIONS_PARAM = "Iterations";
   public static final String CUTOFF_PARAM = "Cutoff";
   public static final String THREADS_PARAM = "Threads";
+  public static final int ITERATIONS_DEFAULT_VALUE = 100;
+  public static final int CUTOFF_DEFAULT_VALUE = 5;
 
-  private Map<String, Object> parameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+  private final Map<String, Object> parameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
   public TrainingParameters() {
   }
@@ -48,43 +51,9 @@ public class TrainingParameters {
     this.parameters.putAll(trainingParameters.parameters);
   }
 
-  /**
-   *
-   * @deprecated
-   */
-  public TrainingParameters(Map<String,String> map) {
-    //parameters.putAll(map);
-    // try to respect their original type...
-    for (String key: map.keySet()) {
-      String value = map.get(key);
-      try {
-        int intValue = Integer.parseInt(value);
-        parameters.put(key, intValue);
-      }
-      catch (NumberFormatException ei) {
-        try {
-          double doubleValue = Double.parseDouble(value);
-          parameters.put(key, doubleValue);
-        }
-        catch (NumberFormatException ed) {
-          // Because Boolean.parseBoolean() doesn't throw NFE, it just checks the value is either
-          // true or yes. So let's see their letters here.
-          if (value.toLowerCase().equals("true") || value.toLowerCase().equals("false")) {
-            parameters.put(key, Boolean.parseBoolean(value));
-          }
-          else {
-            parameters.put(key, value);
-          }
-        }
-      }
-    }
-  }
-
-  /* TODO: Once we throw Map<String,String> away, have this constructor to be uncommented
   public TrainingParameters(Map<String,Object> map) {
     parameters.putAll(map);
   }
-  */
 
   public TrainingParameters(InputStream in) throws IOException {
 
@@ -114,38 +83,6 @@ public class TrainingParameters {
     return (String)parameters.get(ALGORITHM_PARAM);
   }
 
-  /**
-   * Retrieves a map with the training parameters which have the passed name space.
-   *
-   * @param namespace
-   *
-   * @return a parameter map which can be passed to the train and validate methods.
-   *
-   * @deprecated use {@link #getObjectSettings(String)} instead
-   */
-  public Map<String, String> getSettings(String namespace) {
-
-    Map<String, String> trainingParams = new HashMap<>();
-    String prefix = namespace + ".";
-
-    for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-      String key = entry.getKey();
-
-      if (namespace != null) {
-        if (key.startsWith(prefix))  {
-          trainingParams.put(key.substring(prefix.length()), getStringValue(entry.getValue()));
-        }
-      }
-      else {
-        if (!key.contains(".")) {
-          trainingParams.put(key, getStringValue(entry.getValue()));
-        }
-      }
-    }
-
-    return Collections.unmodifiableMap(trainingParams);
-  }
-
   private static String getStringValue(Object value) {
     if (value instanceof Integer) {
       return Integer.toString((Integer)value);
@@ -159,17 +96,6 @@ public class TrainingParameters {
     else {
       return (String)value;
     }
-  }
-
-  /**
-   * Retrieves all parameters without a name space.
-   *
-   * @return the settings map
-   *
-   * @deprecated use {@link #getObjectSettings()} instead
-   */
-  public Map<String, String> getSettings() {
-    return getSettings(null);
   }
 
   /**
@@ -448,8 +374,24 @@ public class TrainingParameters {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
     mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM, ITERATIONS_DEFAULT_VALUE);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM, CUTOFF_DEFAULT_VALUE);
+
+    return mlParams;
+  }
+
+  public static TrainingParameters setParams(String[] args) {
+    TrainingParameters mlParams = new TrainingParameters();
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM , "MAXENT");
+    mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM , EventTrainer.EVENT_VALUE);
+    mlParams.put(TrainingParameters.ITERATIONS_PARAM ,
+        null != CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase() , args) ?
+            CmdLineUtil.getIntParameter("-" + TrainingParameters.ITERATIONS_PARAM.toLowerCase() , args) :
+            ITERATIONS_DEFAULT_VALUE);
+    mlParams.put(TrainingParameters.CUTOFF_PARAM ,
+        null != CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase() , args) ?
+            CmdLineUtil.getIntParameter("-" + TrainingParameters.CUTOFF_PARAM.toLowerCase() , args) :
+            CUTOFF_DEFAULT_VALUE);
 
     return mlParams;
   }

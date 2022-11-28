@@ -28,7 +28,7 @@ import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
-public class NKJPSentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
+public class NKJPSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends BasicFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "text",
@@ -37,12 +37,11 @@ public class NKJPSentenceSampleStreamFactory extends AbstractSampleStreamFactory
   }
 
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "nkjp", new NKJPSentenceSampleStreamFactory(
-        NKJPSentenceSampleStreamFactory.Parameters.class));
+    StreamFactoryRegistry.registerFactory(SentenceSample.class, "nkjp",
+            new NKJPSentenceSampleStreamFactory<>(NKJPSentenceSampleStreamFactory.Parameters.class));
   }
 
-  protected <P> NKJPSentenceSampleStreamFactory(Class<P> params) {
+  protected NKJPSentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 

@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
  */
 public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
 
+  private static final long serialVersionUID = -782056416383201122L;
+  
   private static final Pattern NUMBER_REGEX = Pattern.compile("\\d+");
 
   private static final NumberCharSequenceNormalizer INSTANCE = new NumberCharSequenceNormalizer();

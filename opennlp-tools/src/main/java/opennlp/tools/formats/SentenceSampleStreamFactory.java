@@ -33,17 +33,17 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Factory producing OpenNLP {@link SentenceSampleStream}s.
  */
-public class SentenceSampleStreamFactory extends AbstractSampleStreamFactory<SentenceSample> {
+public class SentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        StreamFactoryRegistry.DEFAULT_FORMAT, new SentenceSampleStreamFactory(Parameters.class));
+        StreamFactoryRegistry.DEFAULT_FORMAT, new SentenceSampleStreamFactory<>(Parameters.class));
   }
 
-  protected <P> SentenceSampleStreamFactory(Class<P> params) {
+  protected SentenceSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
