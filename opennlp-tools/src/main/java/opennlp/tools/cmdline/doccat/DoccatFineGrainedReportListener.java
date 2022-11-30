@@ -48,7 +48,7 @@ public class DoccatFineGrainedReportListener
 
   // methods inherited from EvaluationMonitor
 
-  public void missclassified(DocumentSample reference, DocumentSample prediction) {
+  public void misclassified(DocumentSample reference, DocumentSample prediction) {
     statsAdd(reference, prediction);
   }
 

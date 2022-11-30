@@ -47,7 +47,7 @@ public class ChunkEvaluationErrorListener extends
   }
 
   @Override
-  public void missclassified(ChunkSample reference, ChunkSample prediction) {
+  public void misclassified(ChunkSample reference, ChunkSample prediction) {
     printError(reference.getPhrasesAsSpanList(),
         prediction.getPhrasesAsSpanList(), reference, prediction,
         reference.getSentence());

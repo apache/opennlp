@@ -49,7 +49,7 @@ public class LemmatizerFineGrainedReportListener
 
   // methods inherited from EvaluationMonitor
 
-  public void missclassified(LemmaSample reference, LemmaSample prediction) {
+  public void misclassified(LemmaSample reference, LemmaSample prediction) {
     statsAdd(reference, prediction);
   }
 

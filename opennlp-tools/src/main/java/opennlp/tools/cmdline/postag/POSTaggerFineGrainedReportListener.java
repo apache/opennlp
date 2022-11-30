@@ -50,7 +50,7 @@ public class POSTaggerFineGrainedReportListener
 
   // methods inherited from EvaluationMonitor
 
-  public void missclassified(POSSample reference, POSSample prediction) {
+  public void misclassified(POSSample reference, POSSample prediction) {
     statsAdd(reference, prediction);
   }
 

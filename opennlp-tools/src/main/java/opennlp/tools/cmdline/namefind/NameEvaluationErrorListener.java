@@ -47,7 +47,7 @@ public class NameEvaluationErrorListener extends
   }
 
   @Override
-  public void missclassified(NameSample reference, NameSample prediction) {
+  public void misclassified(NameSample reference, NameSample prediction) {
     printError(reference.getId(), reference.getNames(), prediction.getNames(), reference,
         prediction, reference.getSentence());
   }

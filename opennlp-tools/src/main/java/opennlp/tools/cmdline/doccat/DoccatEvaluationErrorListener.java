@@ -47,7 +47,7 @@ public class DoccatEvaluationErrorListener extends
   }
 
   @Override
-  public void missclassified(DocumentSample reference, DocumentSample prediction) {
+  public void misclassified(DocumentSample reference, DocumentSample prediction) {
     printError(reference, prediction);
   }
 
