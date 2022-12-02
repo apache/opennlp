@@ -28,7 +28,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
- * The factory that provides SentenceDetecor default implementations and
+ * The factory that provides {@link SentenceDetector} default implementations and
  * resources
  */
 public class SentenceDetectorFactory extends BaseToolFactory {
@@ -53,9 +53,10 @@ public class SentenceDetectorFactory extends BaseToolFactory {
    * Creates a {@link SentenceDetectorFactory}. Use this constructor to
    * programmatically create a factory.
    *
-   * @param languageCode
-   * @param abbreviationDictionary
-   * @param eosCharacters
+   * @param languageCode The ISO language code to be used for this factory.
+   * @param useTokenEnd {@code true} if {@link #TOKEN_END_PROPERTY} shall be used, {@code false} otherwise.
+   * @param abbreviationDictionary The {@link Dictionary} which holds abbreviations.
+   * @param eosCharacters The characters to be used to detect sentence endings.
    */
   public SentenceDetectorFactory(String languageCode, boolean useTokenEnd,
       Dictionary abbreviationDictionary, char[] eosCharacters) {

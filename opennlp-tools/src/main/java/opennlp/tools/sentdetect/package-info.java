@@ -16,6 +16,6 @@
  */
 
 /**
- * Package related to identifying sentece boundries.
+ * Package related to identifying sentence boundaries.
  */
 package opennlp.tools.sentdetect;

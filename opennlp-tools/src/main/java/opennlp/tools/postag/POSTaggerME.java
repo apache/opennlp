@@ -144,8 +144,8 @@ public class POSTaggerME implements POSTagger {
     return this.tag(sentence, null);
   }
 
-  public String[] tag(String[] sentence, Object[] additionaContext) {
-    bestSequence = model.bestSequence(sentence, additionaContext, contextGen, sequenceValidator);
+  public String[] tag(String[] sentence, Object[] additionalContext) {
+    bestSequence = model.bestSequence(sentence, additionalContext, contextGen, sequenceValidator);
     List<String> t = bestSequence.getOutcomes();
     return t.toArray(new String[t.size()]);
   }
@@ -173,8 +173,8 @@ public class POSTaggerME implements POSTagger {
     return this.topKSequences(sentence, null);
   }
 
-  public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
-    return model.bestSequences(size, sentence, additionaContext, contextGen, sequenceValidator);
+  public Sequence[] topKSequences(String[] sentence, Object[] additionalContext) {
+    return model.bestSequences(size, sentence, additionalContext, contextGen, sequenceValidator);
   }
 
   /**

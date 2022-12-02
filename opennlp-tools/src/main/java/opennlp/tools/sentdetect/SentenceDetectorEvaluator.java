@@ -32,18 +32,18 @@ import opennlp.tools.util.eval.FMeasure;
  */
 public class SentenceDetectorEvaluator extends Evaluator<SentenceSample> {
 
-  private FMeasure fmeasure = new FMeasure();
+  private final FMeasure fmeasure = new FMeasure();
 
   /**
    * The {@link SentenceDetector} used to predict sentences.
    */
-  private SentenceDetector sentenceDetector;
+  private final SentenceDetector sentenceDetector;
 
   /**
    * Initializes the current instance.
    *
-   * @param sentenceDetector
-   * @param listeners evaluation sample listeners
+   * @param sentenceDetector The {@link SentenceDetector} to be used for predicting sentences.
+   * @param listeners The {@link SentenceDetectorEvaluationMonitor evaluation sample listeners}.
    */
   public SentenceDetectorEvaluator(SentenceDetector sentenceDetector,
                                    SentenceDetectorEvaluationMonitor... listeners) {

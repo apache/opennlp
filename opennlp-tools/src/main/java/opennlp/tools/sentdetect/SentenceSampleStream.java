@@ -28,8 +28,8 @@ import opennlp.tools.util.Span;
 
 /**
  * This class is a stream filter which reads a sentence by line samples from
- * a <code>Reader</code> and converts them into {@link SentenceSample} objects.
- * An empty line indicates the begin of a new document.
+ * an {@link ObjectStream} and converts them into {@link SentenceSample} objects.
+ * An empty line indicates the beginning of a new document.
  */
 public class SentenceSampleStream extends FilterObjectStream<String, SentenceSample> {
 
@@ -41,6 +41,7 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
     return s.replace("<LF>", "\n").replace("<CR>", "\r");
   }
 
+  @Override
   public SentenceSample read() throws IOException {
 
     StringBuilder sentencesString = new StringBuilder();

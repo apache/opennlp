@@ -60,7 +60,7 @@ public class SentenceDetectorME implements SentenceDetector {
   /**
    * The maximum entropy model to use to evaluate contexts.
    */
-  private MaxentModel model;
+  private final MaxentModel model;
 
   /**
    * The feature context generator.
@@ -75,7 +75,7 @@ public class SentenceDetectorME implements SentenceDetector {
   /**
    * The list of probabilities associated with each decision.
    */
-  private List<Double> sentProbs = new ArrayList<>();
+  private final List<Double> sentProbs = new ArrayList<>();
 
   protected boolean useTokenEnd;
 
@@ -131,7 +131,7 @@ public class SentenceDetectorME implements SentenceDetector {
   }
 
   /**
-   * Detect sentences in a String.
+   * Detect sentences in given input String.
    *
    * @param s  The string to be processed.
    *
@@ -168,10 +168,11 @@ public class SentenceDetectorME implements SentenceDetector {
    * Detect the position of the first words of sentences in a String.
    *
    * @param s  The string to be processed.
-   * @return   A integer array containing the positions of the end index of
+   * @return   An integer array containing the positions of the end index of
    *          every sentence
    *
    */
+  @Override
   public Span[] sentPosDetect(String s) {
     sentProbs.clear();
     StringBuffer sb = new StringBuffer(s);
@@ -278,10 +279,11 @@ public class SentenceDetectorME implements SentenceDetector {
 
   /**
    * Returns the probabilities associated with the most recent
-   * calls to sentDetect().
+   * calls to {@link SentenceDetectorME#sentDetect(String)}.
    *
-   * @return probability for each sentence returned for the most recent
-   *     call to sentDetect.  If not applicable an empty array is returned.
+   * @return The probability for each sentence returned for the most recent
+   *     call to {@link SentenceDetectorME#sentDetect(String)}.
+   *     If not applicable, an empty array is returned.
    */
   public double[] getSentenceProbabilities() {
     double[] sentProbArray = new double[sentProbs.size()];
@@ -296,13 +298,13 @@ public class SentenceDetectorME implements SentenceDetector {
    * trained) model from flagging obvious non-breaks as breaks based
    * on some boolean determination of a break's acceptability.
    *
-   * <p>The implementation here always returns true, which means
+   * <p>The implementation here always returns {@link true}, which means
    * that the MaxentModel's outcome is taken as is.</p>
    *
    * @param s the string in which the break occurred.
-   * @param fromIndex the start of the segment currently being evaluated
-   * @param candidateIndex the index of the candidate sentence ending
-   * @return true if the break is acceptable
+   * @param fromIndex the start of the segment currently being evaluated.
+   * @param candidateIndex the index of the candidate sentence ending.
+   * @return {@link true} if the break is acceptable.
    */
   protected boolean isAcceptableBreak(String s, int fromIndex, int candidateIndex) {
     return true;

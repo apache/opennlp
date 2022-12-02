@@ -41,15 +41,14 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    */
   protected List<String> collectFeats;
 
-  private Set<String> inducedAbbreviations;
+  private final Set<String> inducedAbbreviations;
 
-  private Set<Character> eosCharacters;
+  private final Set<Character> eosCharacters;
 
   /**
-   * Creates a new <code>SDContextGenerator</code> instance with
-   * no induced abbreviations.
+   * Creates a new instance with no induced abbreviations.
    *
-   * @param eosCharacters
+   * @param eosCharacters The characters to be used to detect sentence endings.
    */
   public DefaultSDContextGenerator(char[] eosCharacters) {
     this(Collections.emptySet(), eosCharacters);
@@ -63,7 +62,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
    *     representing induced abbreviations in the training data.
    *     Example: &quot;Mr.&quot;
    *
-   * @param eosCharacters
+   * @param eosCharacters The characters to be used to detect sentence endings.
    */
   public DefaultSDContextGenerator(Set<String> inducedAbbreviations, char[] eosCharacters) {
     this.inducedAbbreviations = inducedAbbreviations;
@@ -87,9 +86,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     return new String(new char[]{c});
   }
 
-  /* (non-Javadoc)
-   * @see opennlp.tools.sentdetect.SDContextGenerator#getContext(java.lang.StringBuffer, int)
-   */
+  @Override
   public String[] getContext(CharSequence sb, int position) {
 
     /*
@@ -164,7 +161,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   }
 
   /**
-   * Determines some of the features for the sentence detector and adds them to list features.
+   * Determines some features for the sentence detector and adds them to list features.
    *
    * @param prefix String preceding the eos character in the eos token.
    * @param suffix String following the eos character in the eos token.
@@ -178,13 +175,13 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   }
 
   /**
-   * Determines some of the features for the sentence detector and adds them to list features.
+   * Determines some features for the sentence detector and adds them to list features.
    *
-   * @param prefix String preceding the eos character in the eos token.
-   * @param suffix String following the eos character in the eos token.
-   * @param previous Space delimited token preceding token containing eos character.
-   * @param next Space delimited token following token containing eos character.
-   * @param eosChar the EOS character been analyzed
+   * @param prefix String preceding the {@code eosChar} in the eos token.
+   * @param suffix String following the {@code eosChar} in the eos token.
+   * @param previous Space delimited token preceding token containing {@code eosChar}.
+   * @param next Space delimited token following token containing {@code eosChar}.
+   * @param eosChar the EOS character been analyzed.
    */
   protected void collectFeatures(String prefix, String suffix, String previous,
       String next, Character eosChar) {

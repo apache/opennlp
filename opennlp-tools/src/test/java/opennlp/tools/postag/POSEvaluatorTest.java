@@ -85,11 +85,11 @@ public class POSEvaluatorTest {
       return null;
     }
 
-    public String[] tag(String[] sentence, Object[] additionaContext) {
+    public String[] tag(String[] sentence, Object[] additionalContext) {
       return tag(sentence);
     }
 
-    public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
+    public Sequence[] topKSequences(String[] sentence, Object[] additionalContext) {
       return topKSequences(sentence);
     }
 

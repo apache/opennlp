@@ -17,13 +17,13 @@
 
 package opennlp.tools.sentdetect;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import opennlp.tools.commons.Sample;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.util.Span;
 
@@ -31,17 +31,17 @@ import opennlp.tools.util.Span;
  * A {@link SentenceSample} contains a document with
  * begin indexes of the individual sentences.
  */
-public class SentenceSample implements Serializable {
+public class SentenceSample implements Sample {
 
-  private static final long serialVersionUID = -5386940708608341113L;
+  private static final long serialVersionUID = 1771522768104567531L;
   private final String document;
   private final List<Span> sentences;
 
   /**
    * Initializes the current instance.
    *
-   * @param document
-   * @param sentences
+   * @param document The document represented as plain {@link CharSequence}.
+   * @param sentences One or more {@link Span spans} that represent a sentence each.
    */
   public SentenceSample(CharSequence document, Span... sentences) {
     this.document = document.toString();
@@ -78,19 +78,14 @@ public class SentenceSample implements Serializable {
   }
 
   /**
-   * Retrieves the document.
-   *
-   * @return the document
+   * @return the document as a plain string.
    */
   public String getDocument() {
     return document;
   }
 
   /**
-   * Retrieves the sentences.
-   *
-   * @return the begin indexes of the sentences in the document.
-
+   * @return the {@link Span spans} of the sentences in a document.
    */
   public Span[] getSentences() {
     return sentences.toArray(new Span[sentences.size()]);

@@ -23,7 +23,7 @@ import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Stream to to clean up empty lines for empty line separated document streams.<br>
+ * {@link ObjectStream} to clean up empty lines for empty line separated document streams.<br>
  *
  * - Skips empty line at training data start<br>
  * - Transforms multiple empty lines in a row into one <br>
@@ -48,6 +48,7 @@ public class EmptyLinePreprocessorStream extends FilterObjectStream<String, Stri
     return line.trim().length() == 0;
   }
 
+  @Override
   public String read() throws IOException {
 
     String line = samples.read();
