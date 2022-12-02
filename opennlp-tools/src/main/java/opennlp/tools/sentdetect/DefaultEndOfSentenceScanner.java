@@ -25,19 +25,19 @@ import java.util.Set;
 
 /**
  * Default implementation of the {@link EndOfSentenceScanner}.
- * It uses an character array with possible end of sentence chars
+ * It uses a character array with possible end of sentence chars
  * to identify potential sentence endings.
  */
 public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
 
-  private Set<Character> eosCharacters;
+  private final Set<Character> eosCharacters;
   @Deprecated
-  private char[] eosChars;
+  private final char[] eosChars;
 
   /**
    * Initializes the current instance.
    *
-   * @param eosCharacters
+   * @param eosCharacters The characters to be used to detect sentence endings.
    */
   public DefaultEndOfSentenceScanner(char[] eosCharacters) {
     this.eosCharacters = new HashSet<>();
@@ -47,14 +47,17 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
     this.eosChars = eosCharacters;
   }
 
+  @Override
   public List<Integer> getPositions(String s) {
     return getPositions(s.toCharArray());
   }
 
+  @Override
   public List<Integer> getPositions(StringBuffer buf) {
     return getPositions(buf.toString().toCharArray());
   }
 
+  @Override
   public List<Integer> getPositions(char[] cbuf) {
     List<Integer> l = new ArrayList<>();
     for (int i = 0; i < cbuf.length; i++) {

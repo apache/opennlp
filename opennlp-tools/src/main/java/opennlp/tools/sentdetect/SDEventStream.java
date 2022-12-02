@@ -28,13 +28,15 @@ import opennlp.tools.util.Span;
 
 public class SDEventStream extends AbstractEventStream<SentenceSample> {
 
-  private SDContextGenerator cg;
-  private EndOfSentenceScanner scanner;
+  private final SDContextGenerator cg;
+  private final EndOfSentenceScanner scanner;
 
   /**
    * Initializes the current instance.
    *
-   * @param samples
+   * @param samples An {@link ObjectStream stream} of {@link SentenceSample samples}.
+   * @param cg The {@link SDContextGenerator} to be used.
+   * @param scanner The {@link EndOfSentenceScanner scanner} to be used.
    */
   public SDEventStream(ObjectStream<SentenceSample> samples, SDContextGenerator cg,
       EndOfSentenceScanner scanner) {

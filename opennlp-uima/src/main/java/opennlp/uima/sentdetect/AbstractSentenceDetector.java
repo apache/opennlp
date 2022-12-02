@@ -37,13 +37,13 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
 
   protected UimaContext context;
 
-  /**
-   * The type of the sentences to be created.
-   */
   protected Logger logger;
 
   protected Type containerType;
 
+  /**
+   * The type of the sentences to be created.
+   */
   protected Type sentenceType;
 
   private Boolean isRemoveExistingAnnotations;

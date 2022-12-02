@@ -23,10 +23,9 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
- * A cross validator for the sentence detector.
+ * A cross validator for {@link SentenceDetector sentence detectors}.
  */
 public class SDCrossValidator {
 
@@ -34,11 +33,11 @@ public class SDCrossValidator {
 
   private final TrainingParameters params;
 
-  private FMeasure fmeasure = new FMeasure();
+  private final FMeasure fmeasure = new FMeasure();
 
-  private SentenceDetectorEvaluationMonitor[] listeners;
+  private final SentenceDetectorEvaluationMonitor[] listeners;
 
-  private SentenceDetectorFactory sdFactory;
+  private final SentenceDetectorFactory sdFactory;
 
   public SDCrossValidator(String languageCode, TrainingParameters params,
       SentenceDetectorFactory sdFactory, SentenceDetectorEvaluationMonitor... listeners) {
@@ -47,39 +46,7 @@ public class SDCrossValidator {
     this.listeners = listeners;
     this.sdFactory = sdFactory;
   }
-
-  /**
-   * @deprecated Use
-   *             {@link #SDCrossValidator(String, TrainingParameters,
-   *             SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
-   *             and pass in a {@link SentenceDetectorFactory}.
-   */
-  public SDCrossValidator(String languageCode, TrainingParameters params) {
-    this(languageCode, params, new SentenceDetectorFactory(languageCode, true,
-        null, null));
-  }
-
-  /**
-   * @deprecated use
-   *             {@link #SDCrossValidator(String, TrainingParameters, SentenceDetectorFactory,
-   *             SentenceDetectorEvaluationMonitor...)}
-   *             instead and pass in a TrainingParameters object.
-   */
-  public SDCrossValidator(String languageCode, TrainingParameters params,
-      SentenceDetectorEvaluationMonitor... listeners) {
-    this(languageCode, params, new SentenceDetectorFactory(languageCode, true,
-        null, null), listeners);
-  }
-
-  /**
-   * @deprecated use {@link #SDCrossValidator(String, TrainingParameters,
-   *     SentenceDetectorFactory, SentenceDetectorEvaluationMonitor...)}
-   *     instead and pass in a TrainingParameters object.
-   */
-  public SDCrossValidator(String languageCode) {
-    this(languageCode, ModelUtil.createDefaultTrainingParameters());
-  }
-
+  
   /**
    * Starts the evaluation.
    *
@@ -88,7 +55,7 @@ public class SDCrossValidator {
    * @param nFolds
    *          number of folds
    *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred during processing.
    */
   public void evaluate(ObjectStream<SentenceSample> samples, int nFolds) throws IOException {
 

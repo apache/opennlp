@@ -23,15 +23,17 @@ import java.util.List;
 import opennlp.tools.util.Span;
 
 /**
- * The Newline Sentence Detector assumes that sentences are line delimited and
+ * The Newline {@link SentenceDetector} assumes that sentences are line delimited and
  * recognizes one sentence per non-empty line.
  */
 public class NewlineSentenceDetector implements SentenceDetector {
 
+  @Override
   public String[] sentDetect(String s) {
     return Span.spansToStrings(sentPosDetect(s), s);
   }
 
+  @Override
   public Span[] sentPosDetect(String s) {
 
     List<Span> sentences = new ArrayList<>();
