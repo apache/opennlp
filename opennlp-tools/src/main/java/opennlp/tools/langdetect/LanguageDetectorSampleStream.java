@@ -23,8 +23,8 @@ import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * This class reads in string encoded training samples, parses them and
- * outputs {@link LanguageSample} objects.
+ * This class reads in string encoded {@link ObjectStream training samples}, parses them
+ * and outputs {@link LanguageSample} objects.
  * <p>
  * Format:<br>
  * Each line contains one sample document.<br>
@@ -34,10 +34,16 @@ import opennlp.tools.util.ObjectStream;
 public class LanguageDetectorSampleStream
     extends FilterObjectStream<String, LanguageSample> {
 
+  /**
+   * Initializes a {@link LanguageDetectorSampleStream instance}.
+   *
+   * @param samples A plain text {@link ObjectStream line stream}.
+   */
   public LanguageDetectorSampleStream(ObjectStream<String> samples) {
     super(samples);
   }
 
+  @Override
   public LanguageSample read() throws IOException {
     String sampleString;
     while ((sampleString = samples.read()) != null) {

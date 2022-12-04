@@ -20,9 +20,8 @@ package opennlp.tools.langdetect;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
- * {@link EvaluationMonitor} for Language Detector.
+ * A marker interface for evaluating {@link LanguageDetector language detectors}.
  */
-public interface LanguageDetectorEvaluationMonitor extends
-    EvaluationMonitor<LanguageSample> {
+public interface LanguageDetectorEvaluationMonitor extends EvaluationMonitor<LanguageSample> {
 
 }

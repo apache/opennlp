@@ -31,14 +31,15 @@ import opennlp.tools.util.eval.Mean;
  */
 public class LanguageDetectorEvaluator extends Evaluator<LanguageSample> {
 
-  private LanguageDetector languageDetector;
+  private final LanguageDetector languageDetector;
 
-  private Mean accuracy = new Mean();
+  private final Mean accuracy = new Mean();
 
   /**
-   * Initializes the current instance.
+   * Initializes an instance to evaluate a {@link LanguageDetector}.
    *
-   * @param langDetect the language detector instance
+   * @param langDetect the {@link LanguageDetector} to evaluate.
+   * @param listeners the {@link LanguageDetectorEvaluationMonitor evaluation listeners}.
    */
   public LanguageDetectorEvaluator(LanguageDetector langDetect,
                                    LanguageDetectorEvaluationMonitor ... listeners) {
@@ -48,20 +49,17 @@ public class LanguageDetectorEvaluator extends Evaluator<LanguageSample> {
 
   /**
    * Evaluates the given reference {@link LanguageSample} object.
-   *
-   * This is done by categorizing the document from the provided
+   * This is achieved by categorizing the document of the provided
    * {@link LanguageSample}. The detected language is then used
    * to calculate and update the score.
    *
    * @param sample the reference {@link LanguageSample}.
+   * @return The processed {@link LanguageSample}.
    */
   public LanguageSample processSample(LanguageSample sample) {
 
     CharSequence document = sample.getContext();
-
     Language predicted = languageDetector.predictLanguage(document);
-
-
 
     if (sample.getLanguage().getLang().equals(predicted.getLang())) {
       accuracy.add(1);
@@ -74,11 +72,8 @@ public class LanguageDetectorEvaluator extends Evaluator<LanguageSample> {
   }
 
   /**
-   * Retrieves the accuracy of provided {@link DocumentCategorizer}.
-   *
-   * accuracy = correctly categorized documents / total documents
-   *
-   * @return the accuracy
+   * @return Retrieves the accuracy of provided {@link DocumentCategorizer}.
+   *         Here: {@code accuracy = correctly categorized documents / total documents}.
    */
   public double getAccuracy() {
     return accuracy.mean();
@@ -89,7 +84,7 @@ public class LanguageDetectorEvaluator extends Evaluator<LanguageSample> {
   }
 
   /**
-   * Represents this objects as human readable {@link String}.
+   * Represents this object as human-readable {@link String}.
    */
   @Override
   public String toString() {

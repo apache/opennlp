@@ -34,9 +34,9 @@ import opennlp.tools.util.ObjectStream;
 public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link ChunkSampleStream instance}.
    *
-   * @param samples a plain text line stream
+   * @param samples A plain text {@link ObjectStream line stream}.
    */
   public ChunkSampleStream(ObjectStream<String> samples) {
     super(samples);

@@ -19,29 +19,32 @@ package opennlp.tools.langdetect;
 
 import java.io.IOException;
 
-import opennlp.tools.doccat.FeatureGenerator;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.Mean;
 
 /**
- * Cross validator for language detector
+ * Cross validator for {@link LanguageDetector}.
  */
 public class LanguageDetectorCrossValidator {
 
   private final TrainingParameters params;
 
-  private Mean documentAccuracy = new Mean();
+  private final Mean documentAccuracy = new Mean();
 
-  private LanguageDetectorEvaluationMonitor[] listeners;
+  private final LanguageDetectorEvaluationMonitor[] listeners;
 
-  private LanguageDetectorFactory factory;
+  private final LanguageDetectorFactory factory;
 
 
   /**
-   * Creates a {@link LanguageDetectorCrossValidator} with the given
-   * {@link FeatureGenerator}s.
+   * Initializes a {@link LanguageDetectorCrossValidator} with the
+   * given {@link TrainingParameters parameters}.
+   *
+   * @param mlParams The {@link TrainingParameters} for the context of cross validation.
+   * @param factory The {@link LanguageDetectorFactory} for creating related objects.
+   * @param listeners the {@link LanguageDetectorEvaluationMonitor evaluation listeners}.
    */
   public LanguageDetectorCrossValidator(TrainingParameters mlParams,
                                         LanguageDetectorFactory factory,
@@ -54,12 +57,10 @@ public class LanguageDetectorCrossValidator {
   /**
    * Starts the evaluation.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
+   * @param samples The {@link ObjectStream} of {@link LanguageSample samples} to train and test with.
+   * @param nFolds Number of folds. It must be greater than zero.
    *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred.
    */
   public void evaluate(ObjectStream<LanguageSample> samples, int nFolds)
       throws IOException {
@@ -87,19 +88,15 @@ public class LanguageDetectorCrossValidator {
   }
 
   /**
-   * Retrieves the accuracy for all iterations.
-   *
-   * @return the word accuracy
+   * @return Retrieves the word accuracy for all iterations.
    */
   public double getDocumentAccuracy() {
     return documentAccuracy.mean();
   }
 
   /**
-   * Retrieves the number of words which where validated over all iterations.
-   * The result is the amount of folds multiplied by the total number of words.
-   *
-   * @return the word count
+   * @return Retrieves the number of words which where validated over all iterations.
+   *         The result is the amount of folds multiplied by the total number of words.
    */
   public long getDocumentCount() {
     return documentAccuracy.count();

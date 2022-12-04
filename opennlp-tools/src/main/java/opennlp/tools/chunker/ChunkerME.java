@@ -154,7 +154,7 @@ public class ChunkerME implements Chunker {
   }
 
   /**
-   * Start a training of a {@link ChunkerModel} with the given parameters.
+   * Starts a training of a {@link ChunkerModel} with the given parameters.
    *
    * @param lang The ISO conform language code.
    * @param in The {@link ObjectStream} of {@link ChunkSample} used as input for training.

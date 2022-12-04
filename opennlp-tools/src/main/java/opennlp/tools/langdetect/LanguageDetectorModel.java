@@ -30,13 +30,22 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
 
 /**
- * A model for language detection
+ * The {@link LanguageDetectorModel} is the model used by a learnable {@link LanguageDetector}.
+ *
+ * @see LanguageDetectorME
  */
 public class LanguageDetectorModel extends BaseModel {
 
   private static final String COMPONENT_NAME = "LanguageDetectorME";
   private static final String LANGDETECT_MODEL_ENTRY_NAME = "langdetect.model";
 
+  /**
+   * Initializes a {@link LanguageDetectorModel} instance via given parameters.
+   *
+   * @param langdetectModel A valid {@link MaxentModel}.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param factory The {@link LanguageDetectorFactory} for creating related objects.
+   */
   public LanguageDetectorModel(MaxentModel langdetectModel,
                                Map<String, String> manifestInfoEntries,
                                LanguageDetectorFactory factory) {
@@ -46,14 +55,35 @@ public class LanguageDetectorModel extends BaseModel {
     checkArtifactMap();
   }
 
+  /**
+   * Initializes a {@link LanguageDetectorModel} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public LanguageDetectorModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
+  /**
+   * Initializes a {@link LanguageDetectorModel} instance via a valid {@link File}.
+   *
+   * @param modelFile The {@link File} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public LanguageDetectorModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
+  /**
+   * Initializes a {@link LanguageDetectorModel} instance via a valid {@link URL}.
+   *
+   * @param modelURL The {@link URL} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public LanguageDetectorModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
@@ -67,6 +97,9 @@ public class LanguageDetectorModel extends BaseModel {
     }
   }
 
+  /**
+   * @return Retrieves the active {@link LanguageDetectorFactory}.
+   */
   public LanguageDetectorFactory getFactory() {
     return (LanguageDetectorFactory) this.toolFactory;
   }
@@ -76,6 +109,9 @@ public class LanguageDetectorModel extends BaseModel {
     return LanguageDetectorFactory.class;
   }
 
+  /**
+   * @return Retrieves a {@link MaxentModel}.
+   */
   public MaxentModel getMaxentModel() {
     return (MaxentModel) artifactMap.get(LANGDETECT_MODEL_ENTRY_NAME);
   }

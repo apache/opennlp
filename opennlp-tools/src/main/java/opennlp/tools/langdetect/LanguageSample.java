@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Class which holds a classified document and its @{@link Language}.
+ * Holds a classified document and its {@link Language}.
  */
 public class LanguageSample implements Serializable {
 

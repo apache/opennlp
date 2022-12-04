@@ -17,6 +17,9 @@
 
 package opennlp.tools.langdetect;
 
+/**
+ * A data container encapsulating language detection results.
+ */
 public class ProbingLanguageDetectionResult {
   private final Language[] languages;
   private final int length;
@@ -26,13 +29,15 @@ public class ProbingLanguageDetectionResult {
     this.length = length;
   }
 
+  /**
+   * @return The {@link Language languages} detected.
+   */
   public Language[] getLanguages() {
     return languages;
   }
 
   /**
-   *
-   * @return length in codepoints of text processed
+   * @return The length in codepoints of text processed.
    */
   public int getLength() {
     return length;
