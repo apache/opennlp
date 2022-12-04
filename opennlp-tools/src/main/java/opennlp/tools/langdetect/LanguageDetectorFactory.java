@@ -28,8 +28,10 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
 
 
 /**
- * Default factory used by Language Detector. Extend this class to change the Language Detector
- * behaviour, such as the {@link LanguageDetectorContextGenerator}.
+ * Default factory used by {@link LanguageDetector}.
+ *
+ * Extend this class to change the Language Detector behaviour,
+ * such as the {@link LanguageDetectorContextGenerator}.
  * The default {@link DefaultLanguageDetectorContextGenerator} will use char n-grams of
  * size 1 to 3 and the following normalizers:
  * <ul>
@@ -39,10 +41,12 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
  * <li> {@link NumberCharSequenceNormalizer}
  * <li> {@link ShrinkCharSequenceNormalizer}
  * </ul>
- *
  */
 public class LanguageDetectorFactory extends BaseToolFactory {
 
+  /**
+   * @return Retrieves a {@link LanguageDetectorContextGenerator}.
+   */
   public LanguageDetectorContextGenerator getContextGenerator() {
     return new DefaultLanguageDetectorContextGenerator(1, 3,
         EmojiCharSequenceNormalizer.getInstance(),
@@ -52,6 +56,16 @@ public class LanguageDetectorFactory extends BaseToolFactory {
         ShrinkCharSequenceNormalizer.getInstance());
   }
 
+  /**
+   * Instantiates a {@link LanguageDetectorFactory} via a given {@code subclassName}.
+   *
+   * @param subclassName The class name used for instantiation. If {@code null}, an
+   *                     instance of {@link LanguageDetectorFactory} will be returned
+   *                     per default. Otherwise, the {@link ExtensionLoader} mechanism
+   *                     is applied to load the requested {@code subclassName}.
+   *                     
+   * @return A valid {@link LanguageDetectorFactory} instance.
+   */
   public static LanguageDetectorFactory create(String subclassName)
       throws InvalidFormatException {
     if (subclassName == null) {

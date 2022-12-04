@@ -29,10 +29,17 @@ public class Language implements Serializable {
   private final String lang;
   private final double confidence;
 
+  /**
+   * @param lang The language identifier.
+   */
   public Language(String lang) {
     this(lang, 0);
   }
 
+  /**
+   * @param lang The language identifier.
+   * @param confidence The confidence computed during language detection.
+   */
   public Language(String lang, double confidence) {
     Objects.requireNonNull(lang, "lang must not be null");
     this.lang = lang;

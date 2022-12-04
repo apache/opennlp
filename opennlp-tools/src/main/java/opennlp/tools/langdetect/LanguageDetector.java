@@ -20,14 +20,29 @@ package opennlp.tools.langdetect;
 import java.io.Serializable;
 
 /**
- * The interface for LanguageDetector which provide the @{@link Language} according to the context.
+ * The interface for {@link LanguageDetector} which predicts the {@link Language} for a context.
  */
 public interface LanguageDetector extends Serializable {
 
+  /**
+   * Predicts the {@link Language languages} for the full {@code content} length.
+   *
+   * @param content The textual content to detect potential {@link Language languages} from.
+   * @return the predicted languages
+   */
   Language[] predictLanguages(CharSequence content);
 
+  /**
+   * Predicts the {@link Language} for the full {@code content} length.
+   *
+   * @param content The textual content to detect potential {@link Language languages} from.
+   * @return the language with the highest confidence
+   */
   Language predictLanguage(CharSequence content);
 
+  /**
+   * @return Retrieves an array of language (codes) that are supported by a {@link LanguageDetector}.
+   */
   String[] getSupportedLanguages();
 
 }

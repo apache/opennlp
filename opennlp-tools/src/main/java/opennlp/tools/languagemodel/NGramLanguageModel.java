@@ -25,8 +25,8 @@ import opennlp.tools.ngram.NGramUtils;
 import opennlp.tools.util.StringList;
 
 /**
- * A {@link opennlp.tools.languagemodel.LanguageModel} based on a {@link opennlp.tools.ngram.NGramModel}
- * using Stupid Backoff to get the probabilities of the ngrams.
+ * A {@link LanguageModel} based on a {@link NGramModel} using Stupid Backoff to get
+ * the probabilities of the ngrams.
  */
 public class NGramLanguageModel extends NGramModel implements LanguageModel {
 
@@ -34,43 +34,63 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
 
   private final int n;
 
+  /**
+   * Initializes an {@link NGramLanguageModel} with {@link #DEFAULT_N}.
+   */
   public NGramLanguageModel() {
     this(DEFAULT_N);
   }
 
+  /**
+   * Initializes an {@link NGramLanguageModel} with the given {@code n} for the ngram size.
+   *
+   * @param n The size of the ngrams to be used. Must be greater than {@code 0}.
+   *          
+   * @throws IllegalArgumentException Thrown if one of the arguments was invalid.
+   */
   public NGramLanguageModel(int n) {
+    if (n <= 0) {
+      throw new IllegalArgumentException("Parameter 'n' must be greater than 0.");
+    }
     this.n = n;
   }
 
+  /**
+   * Initializes a {@link NGramLanguageModel} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   * @throws IllegalArgumentException Thrown if one of the arguments was invalid.
+   */
   public NGramLanguageModel(InputStream in) throws IOException {
     this(in, DEFAULT_N);
   }
 
-  public NGramLanguageModel(InputStream in, int n)
-      throws IOException {
+  /**
+   * Initializes a {@link NGramLanguageModel} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the model.
+   * @param n The size of the ngrams to be used. Must be greater than {@code 0}.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   * @throws IllegalArgumentException Thrown if one of the arguments was invalid.
+   */
+  public NGramLanguageModel(InputStream in, int n) throws IOException {
     super(in);
+    if (n <= 0) {
+      throw new IllegalArgumentException("Parameter 'n' must be greater than 0.");
+    }
     this.n = n;
   }
 
+  /**
+   * Adds further tokens.
+   *
+   * @param tokens Text elements to add to the {@link NGramLanguageModel}.
+   */
   public void add(String... tokens) {
     add(new StringList(tokens), 1, n);
-  }
-
-  @Override
-  public double calculateProbability(StringList tokens) {
-    double probability = 0d;
-    if (size() > 0) {
-      for (StringList ngram : NGramUtils.getNGrams(tokens, n)) {
-        double score = stupidBackoff(ngram);
-        probability += StrictMath.log(score);
-        if (Double.isNaN(probability)) {
-          probability = 0d;
-          break;
-        }
-      }
-      probability = StrictMath.exp(probability);
-    }
-    return probability;
   }
 
   @Override
@@ -91,6 +111,7 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
   }
 
   @Override
+  @Deprecated
   public StringList predictNextTokens(StringList tokens) {
     double maxProb = Double.NEGATIVE_INFINITY;
     StringList token = null;
@@ -114,6 +135,22 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
     return token;
   }
 
+  private double calculateProbability(StringList tokens) {
+    double probability = 0d;
+    if (size() > 0) {
+      for (StringList ngram : NGramUtils.getNGrams(tokens, n)) {
+        double score = stupidBackoff(ngram);
+        probability += StrictMath.log(score);
+        if (Double.isNaN(probability)) {
+          probability = 0d;
+          break;
+        }
+      }
+      probability = StrictMath.exp(probability);
+    }
+    return probability;
+  }
+
   @Override
   public String[] predictNextTokens(String... tokens) {
     double maxProb = Double.NEGATIVE_INFINITY;
@@ -121,9 +158,7 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
 
     for (StringList ngram : this) {
       String[] sequence = new String[ngram.size() + tokens.length];
-      for (int i = 0; i < tokens.length; i++) {
-        sequence[i] = tokens[i];
-      }
+      System.arraycopy(tokens, 0, sequence, 0, tokens.length);
       for (int i = 0; i < ngram.size(); i++) {
         sequence[i + tokens.length] = ngram.getToken(i);
       }

@@ -24,28 +24,29 @@ import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Iterator-like class for modeling language detector events.
+ * Iterator-like class for modeling an event stream of {@link LanguageSample samples}.
  */
 public class LanguageDetectorEventStream extends AbstractEventStream<LanguageSample> {
 
-  private LanguageDetectorContextGenerator mContextGenerator;
+  private final LanguageDetectorContextGenerator mContextGenerator;
 
   /**
-   * Initializes the current instance via samples and feature generators.
+   * Initializes an instance via samples and feature generators.
    *
-   * @param data {@link ObjectStream} of {@link LanguageSample}s
+   * @param data An {@link ObjectStream} of {@link LanguageSample samples} as input data.
+   * @param cg A {@link LanguageDetectorContextGenerator} used for the event stream {@code data}.
    */
   public LanguageDetectorEventStream(ObjectStream<LanguageSample> data,
-                                     LanguageDetectorContextGenerator contextGenerator) {
+                                     LanguageDetectorContextGenerator cg) {
     super(data);
 
-    mContextGenerator = contextGenerator;
+    mContextGenerator = cg;
   }
 
   @Override
   protected Iterator<Event> createEvents(final LanguageSample sample) {
 
-    return new Iterator<Event>() {
+    return new Iterator<>() {
 
       private boolean isVirgin = true;
 

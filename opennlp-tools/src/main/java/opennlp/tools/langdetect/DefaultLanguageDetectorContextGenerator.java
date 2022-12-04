@@ -34,11 +34,12 @@ public class DefaultLanguageDetectorContextGenerator implements LanguageDetector
   protected final CharSequenceNormalizer normalizer;
 
   /**
-   * Creates a customizable @{@link DefaultLanguageDetectorContextGenerator} that computes ngrams from text
-   * @param minLength min ngrams chars
-   * @param maxLength max ngrams chars
-   * @param normalizers zero or more normalizers to
-   *                    be applied in to the text before extracting ngrams
+   * Creates a customizable {@link DefaultLanguageDetectorContextGenerator} that computes ngrams from text.
+   *
+   * @param minLength The min number of ngrams characters. Must be greater than {@code 0}.
+   * @param maxLength The max number of ngrams characters. Must be greater than {@code 0}
+   *                  and must be greater than {@code minLength}.
+   * @param normalizers zero or more normalizers to be applied in to the text before extracting ngrams.
    */
   public DefaultLanguageDetectorContextGenerator(int minLength, int maxLength,
                                                  CharSequenceNormalizer... normalizers) {
@@ -48,11 +49,6 @@ public class DefaultLanguageDetectorContextGenerator implements LanguageDetector
     this.normalizer = new AggregateCharSequenceNormalizer(normalizers);
   }
 
-  /**
-   * Generates the context for a document using character ngrams.
-   * @param document document to extract context from
-   * @return the generated context
-   */
   @Override
   public String[] getContext(CharSequence document) {
     Collection<String> context = new ArrayList<>();

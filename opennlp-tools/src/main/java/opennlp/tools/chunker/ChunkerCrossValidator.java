@@ -24,6 +24,9 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
+/**
+ * Cross validator for {@link Chunker}.
+ */
 public class ChunkerCrossValidator {
 
   private final String languageCode;

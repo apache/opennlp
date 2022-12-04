@@ -15,21 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.langdetect;
-
-import java.io.Serializable;
-
 /**
- * A context generator interface for {@link LanguageDetector}.
+ * Package related to predicting languages from samples of text.
  */
-public interface LanguageDetectorContextGenerator extends Serializable {
-
-  /**
-   * Retrieves the contexts for a {@code document} using character ngrams.
-   *
-   * @param document The textual input used to extract context from.
-   *
-   * @return An array of contexts on which a model basis its decisions.
-   */
-  String[] getContext(CharSequence document);
-}
+package opennlp.tools.langdetect;

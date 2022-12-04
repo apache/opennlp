@@ -33,7 +33,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Implements learnable Language Detector
+ * Implements a learnable {@link LanguageDetector}.
  *
  * <p>
  * This will process the entire string when called with
@@ -63,37 +63,25 @@ import opennlp.tools.util.TrainingParameters;
 public class LanguageDetectorME implements LanguageDetector {
 
   protected LanguageDetectorModel model;
-  private LanguageDetectorContextGenerator mContextGenerator;
+  private final LanguageDetectorContextGenerator mContextGenerator;
 
   /**
-   * Initializes the current instance with a language detector model. Default feature
-   * generation is used.
+   * Initializes an instance with a specific {@link LanguageDetectorModel}.
+   * Default feature generation is used.
    *
-   * @param model the language detector model
+   * @param model the {@link LanguageDetectorModel} to be used.
    */
   public LanguageDetectorME(LanguageDetectorModel model) {
     this.model = model;
     this.mContextGenerator = model.getFactory().getContextGenerator();
   }
 
-  /**
-   * This will process the full content length.
-   *
-   * @param content
-   * @return the predicted languages
-   */
   @Override
   public Language[] predictLanguages(CharSequence content) {
     return predict(arrayToCounts(
             mContextGenerator.getContext(content)));
   }
-
-  /**
-   * This will process the full content length.
-   *
-   * @param content
-   * @return the language with the highest confidence
-   */
+  
   @Override
   public Language predictLanguage(CharSequence content) {
     return predictLanguages(content)[0];
@@ -115,7 +103,7 @@ public class LanguageDetectorME implements LanguageDetector {
    * are met.
    *
    * @param content content to be processed
-   * @return result
+   * @return A computed {@link ProbingLanguageDetectionResult}.
    */
   public ProbingLanguageDetectionResult probingPredictLanguages(CharSequence content) {
     return probingPredictLanguages(content,
@@ -127,15 +115,16 @@ public class LanguageDetectorME implements LanguageDetector {
    * specified in {@link LanguageDetectorConfig#DEFAULT_LANGUAGE_DETECTOR_CONFIG}
    * are met.
    *
-   * @param content content to process
-   * @param config config to customize detection
-   * @return
+   * @param content The textual content to process.
+   * @param config The {@link LanguageDetectorConfig} to customize detection.
+   *
+   * @return A computed {@link ProbingLanguageDetectionResult}.
    */
   public ProbingLanguageDetectionResult probingPredictLanguages(CharSequence content,
                                                                 LanguageDetectorConfig config) {
     //list of the languages that received the highest
     //confidence over the last n chunk detections
-    List<Language[]> predictions = new LinkedList();
+    List<Language[]> predictions = new LinkedList<>();
     int start = 0;//where to start the next chunk in codepoints
     Language[] currPredictions = null;
     //cache ngram counts across chunks
@@ -202,13 +191,14 @@ public class LanguageDetectorME implements LanguageDetector {
   }
 
   /**
-   * Override this for different behavior to determine if there is enough
+   * Overriding this for different behavior to determine if there is enough
    * confidence in the predictions to stop.
    *
    * @param predictionsQueue queue of earlier predictions
    * @param newPredictions most recent predictions
    * @param ngramCounts -- not currently used, but might be useful
-   * @return whether or not enough text has been processed to make a determination
+   * @return {@code true} if enough text has been processed to make a determination,
+   *         else {@code false}.
    */
   boolean seenEnough(List<Language[]> predictionsQueue, Language[] newPredictions,
                      Map<String, MutableInt> ngramCounts, LanguageDetectorConfig config) {
@@ -265,6 +255,17 @@ public class LanguageDetectorME implements LanguageDetector {
                     codepoints.length);
   }
 
+  /**
+   * Starts a training of a {@link LanguageDetectorModel} with the given parameters.
+   *
+   * @param samples The {@link ObjectStream} of {@link LanguageSample} used as input for training.
+   * @param mlParams The {@link TrainingParameters} for the context of the training.
+   * @param factory The {@link LanguageDetectorFactory} for creating related objects defined
+   *                via {@code mlParams}.
+   *
+   * @return A valid, trained {@link LanguageDetectorModel} instance.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public static LanguageDetectorModel train(ObjectStream<LanguageSample> samples,
                                             TrainingParameters mlParams,
                                             LanguageDetectorFactory factory)
