@@ -26,29 +26,32 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * A stream filter which reads a sentence per line which contains
- * words and tags in word_tag format and outputs a {@link POSSample} objects.
+ * words and tags in {@code word_tag} format and outputs a {@link POSSample} objects.
  */
 public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link POSSample} instance.
    *
-   * @param sentences the sentences
+   * @param sentences The {@link ObjectStream sentences} to wrap.
    */
   public WordTagSampleStream(ObjectStream<String> sentences) {
     super(sentences);
   }
 
   /**
-   * Parses the next sentence and return the next
-   * {@link POSSample} object.
-   *
+   * Parses the next sentence and return the next {@link POSSample} object.
+   * <p>
    * If an error occurs an empty {@link POSSample} object is returned
-   * and an warning message is logged. Usually it does not matter if one
-   * of many sentences is ignored.
+   * and a warning message is logged. Usually it does not matter if one
+   * or many sentences are ignored.
    *
-   * TODO: An exception in error case should be thrown.
+   * @return A valid {@link POSSample} or {@code null} if the
+   *         {@link ObjectStream sentence stream} is exhausted.
+   *
+   * @throws IOException Thrown if IO errors occurred during read.
    */
+  @Override
   public POSSample read() throws IOException {
 
     String sentence = samples.read();
@@ -58,6 +61,7 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
       try {
         sample = POSSample.parse(sentence);
       } catch (InvalidFormatException e) {
+        // TODO: An exception in error case should be thrown.
         System.out.println("Error during parsing, ignoring sentence: " + sentence);
 
         sample = new POSSample(new String[]{}, new String[]{});

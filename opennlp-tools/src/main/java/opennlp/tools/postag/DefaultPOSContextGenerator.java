@@ -27,7 +27,10 @@ import opennlp.tools.util.Cache;
 import opennlp.tools.util.StringList;
 
 /**
- * A context generator for the POS Tagger.
+ * A default {@link POSContextGenerator context generator} for a {@link POSTagger}.
+ *
+ * @see POSTagger
+ * @see POSTaggerME
  */
 public class DefaultPOSContextGenerator implements POSContextGenerator {
 
@@ -36,28 +39,30 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
   private static final int PREFIX_LENGTH = 4;
   private static final int SUFFIX_LENGTH = 4;
 
-  private static Pattern hasCap = Pattern.compile("[A-Z]");
-  private static Pattern hasNum = Pattern.compile("[0-9]");
+  private static final Pattern hasCap = Pattern.compile("[A-Z]");
+  private static final Pattern hasNum = Pattern.compile("[0-9]");
 
   private Cache<String, String[]> contextsCache;
   private Object wordsKey;
 
-  private Dictionary dict;
+  private final Dictionary dict;
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link DefaultPOSContextGenerator} instance.
+   * A cache size of {@code 0} will be used as default.
    *
-   * @param dict
+   * @param dict The {@link Dictionary} to be used.
    */
   public DefaultPOSContextGenerator(Dictionary dict) {
     this(0,dict);
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link DefaultPOSContextGenerator} instance.
    *
-   * @param cacheSize
-   * @param dict
+   * @param cacheSize The size of the {@link Cache} to set.
+   *                  Must be greater than {@code 0} to have an effect.
+   * @param dict The {@link Dictionary} to be used.
    */
   public DefaultPOSContextGenerator(int cacheSize, Dictionary dict) {
     this.dict = dict;
@@ -83,19 +88,34 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     return suffs;
   }
 
+  /**
+   * Returns the context for making a postag decision at the specified token {@code index}
+   * given the specified {@code tokens} and previous {@code tags}.
+   *
+   * @param index The index of the token for which the context is provided.
+   * @param sequence The token sequence representing a sentence.
+   * @param priorDecisions The tags assigned to the previous words in the sentence.
+   * @param additionalContext The context for additional information.
+   *                          
+   * @return The context for making a postag decision at the specified token {@code index}
+   *     given the specified {@code tokens} and previous {@code tags}.
+   */
+  @Override
   public String[] getContext(int index, String[] sequence, String[] priorDecisions,
       Object[] additionalContext) {
     return getContext(index,sequence,priorDecisions);
   }
 
   /**
-   * Returns the context for making a pos tag decision at the specified token index
-   * given the specified tokens and previous tags.
+   * Returns the context for making a postag decision at the specified token {@code index}
+   * given the specified {@code tokens} and previous {@code tags}.
+   *
    * @param index The index of the token for which the context is provided.
-   * @param tokens The tokens in the sentence.
+   * @param tokens The tokens representing a sentence.
    * @param tags The tags assigned to the previous words in the sentence.
-   * @return The context for making a pos tag decision at the specified token index
-   *     given the specified tokens and previous tags.
+   *             
+   * @return The context for making a postag decision at the specified token {@code index}
+   *     given the specified {@code tokens} and previous {@code tags}.
    */
   public String[] getContext(int index, Object[] tokens, String[] tags) {
     String next, nextnext = null, lex, prev, prevprev = null;

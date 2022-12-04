@@ -19,6 +19,9 @@ package opennlp.tools.postag;
 
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * A marker interface for evaluating {@link POSTagger pos taggers}.
+ */
 public interface POSTaggerEvaluationMonitor extends EvaluationMonitor<POSSample> {
 
 }

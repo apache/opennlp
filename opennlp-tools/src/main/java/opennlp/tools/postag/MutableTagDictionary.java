@@ -38,13 +38,4 @@ public interface MutableTagDictionary extends TagDictionary {
    */
   String[] put(String word, String... tags);
 
-  /**
-   * Whether if the dictionary is case sensitive or not
-   *
-   * @return true if the dictionary is case sensitive
-   */
-  // TODO: move to TagDictionary, can't do it now because of backward
-  // compatibility.
-  boolean isCaseSensitive();
-
 }

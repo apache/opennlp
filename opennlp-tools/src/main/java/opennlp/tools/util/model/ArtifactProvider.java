@@ -25,7 +25,7 @@ public interface ArtifactProvider {
   /**
    * Gets an artifact by name
    */
-  public <T> T getArtifact(String key);
+  <T> T getArtifact(String key);
 
   /**
    * Retrieves the value to the given key from the manifest.properties
@@ -35,7 +35,7 @@ public interface ArtifactProvider {
    *
    * @return the value
    */
-  public String getManifestProperty(String key);
+  String getManifestProperty(String key);
 
   /**
    * Retrieves the language code of the material which was used to train the
@@ -43,7 +43,7 @@ public interface ArtifactProvider {
    *
    * @return the language code of this model
    */
-  public String getLanguage();
+  String getLanguage();
 
   /**
    * Indicates if this provider was loaded from serialized. It is useful, for
@@ -52,5 +52,5 @@ public interface ArtifactProvider {
    *
    * @return true if this model was loaded from serialized
    */
-  public boolean isLoadedFromSerialized();
+  boolean isLoadedFromSerialized();
 }

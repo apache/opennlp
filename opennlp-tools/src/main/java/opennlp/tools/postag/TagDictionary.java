@@ -25,11 +25,18 @@ package opennlp.tools.postag;
 public interface TagDictionary {
 
   /**
-   * Returns a list of valid tags for the specified word.
+   * Retrieves a list of valid tags for the specified {@code word}.
    *
    * @param word The word.
-   * @return A list of valid tags for the specified word or null if no information
-   * is available for that word.
+   * @return An array of valid tags for the specified {@code word} or {@code null} if
+   *         no information is available for that word.
    */
   String[] getTags(String word);
+
+  /**
+   * Whether the dictionary is case-sensitive or not.
+   *
+   * @return {@code true} if the dictionary is case-sensitive, else {@code false}.
+   */
+  boolean isCaseSensitive();
 }

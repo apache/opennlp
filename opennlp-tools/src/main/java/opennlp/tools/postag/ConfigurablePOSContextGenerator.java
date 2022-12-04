@@ -25,7 +25,12 @@ import opennlp.tools.util.Cache;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 /**
- * A context generator for the POS Tagger.
+ * A configurable {@link POSContextGenerator context generator} for a {@link POSTagger}.
+ * This implementation makes use of {@link AdaptiveFeatureGenerator}.
+ *
+ * @see POSTagger
+ * @see POSTaggerME
+ * @see DefaultPOSContextGenerator
  */
 public class ConfigurablePOSContextGenerator implements POSContextGenerator {
 
@@ -35,9 +40,21 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
   private final AdaptiveFeatureGenerator featureGenerator;
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link ConfigurablePOSContextGenerator} instance.
+   * A cache size of {@code 0} will be used as default.
    *
-   * @param cacheSize
+   * @param featureGenerator The {@link AdaptiveFeatureGenerator} to be used.
+   */
+  public ConfigurablePOSContextGenerator(AdaptiveFeatureGenerator featureGenerator) {
+    this(0, featureGenerator);
+  }
+
+  /**
+   * Initializes a {@link ConfigurablePOSContextGenerator} instance.
+   *
+   * @param cacheSize The size of the {@link Cache} to set.
+   *                  Must be greater than {@code 0} to have an effect.
+   * @param featureGenerator The {@link AdaptiveFeatureGenerator} to be used.
    */
   public ConfigurablePOSContextGenerator(int cacheSize, AdaptiveFeatureGenerator featureGenerator) {
     this.featureGenerator = Objects.requireNonNull(featureGenerator, "featureGenerator must not be null");
@@ -48,22 +65,18 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
   }
 
   /**
-   * Initializes the current instance.
+   * Returns the context for making a postag decision at the specified token {@code index}
+   * given the specified {@code tokens} and previous {@code tags}.
    *
-   */
-  public ConfigurablePOSContextGenerator(AdaptiveFeatureGenerator featureGenerator) {
-    this(0, featureGenerator);
-  }
-
-  /**
-   * Returns the context for making a pos tag decision at the specified token index
-   * given the specified tokens and previous tags.
    * @param index The index of the token for which the context is provided.
-   * @param tokens The tokens in the sentence.
+   * @param tokens The tokens representing a sentence.
    * @param tags The tags assigned to the previous words in the sentence.
-   * @return The context for making a pos tag decision at the specified token index
-   *     given the specified tokens and previous tags.
+   * @param additionalContext The context for additional information.
+   *
+   * @return The context for making a postag decision at the specified token {@code index}
+   *     given the specified {@code tokens} and previous {@code tags}.
    */
+  @Override
   public String[] getContext(int index, String[] tokens, String[] tags,
       Object[] additionalContext) {
 
