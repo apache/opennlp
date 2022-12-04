@@ -29,10 +29,18 @@ public class ChunkerCrossValidator {
   private final String languageCode;
   private final TrainingParameters params;
 
-  private FMeasure fmeasure = new FMeasure();
-  private ChunkerEvaluationMonitor[] listeners;
-  private ChunkerFactory chunkerFactory;
+  private final FMeasure fmeasure = new FMeasure();
+  private final ChunkerEvaluationMonitor[] listeners;
+  private final ChunkerFactory chunkerFactory;
 
+  /**
+   * Initializes a {@link ChunkerModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param factory The {@link ChunkerFactory} for creating related objects.
+   * @param params The {@link TrainingParameters} for the context of cross validation.
+   * @param listeners the {@link ChunkerEvaluationMonitor evaluation listeners}.
+   */
   public ChunkerCrossValidator(String languageCode, TrainingParameters params,
       ChunkerFactory factory, ChunkerEvaluationMonitor... listeners) {
     this.chunkerFactory = factory;
@@ -44,29 +52,22 @@ public class ChunkerCrossValidator {
   /**
    * Starts the evaluation.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
+   * @param samples The {@link ObjectStream} of {@link ChunkSample samples} to train and test with.
+   * @param nFolds Number of folds. It must be greater than zero.
    *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred.
    */
-  public void evaluate(ObjectStream<ChunkSample> samples, int nFolds)
-      throws IOException {
-    CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<>(
-        samples, nFolds);
+  public void evaluate(ObjectStream<ChunkSample> samples, int nFolds) throws IOException {
+    CrossValidationPartitioner<ChunkSample> partitioner = new CrossValidationPartitioner<>(samples, nFolds);
 
     while (partitioner.hasNext()) {
 
-      CrossValidationPartitioner.TrainingSampleStream<ChunkSample> trainingSampleStream = partitioner
-          .next();
-
+      CrossValidationPartitioner.TrainingSampleStream<ChunkSample> trainingSampleStream = partitioner.next();
       ChunkerModel model = ChunkerME.train(languageCode, trainingSampleStream,
           params, chunkerFactory);
 
       // do testing
       ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model), listeners);
-
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
       fmeasure.mergeInto(evaluator.getFMeasure());

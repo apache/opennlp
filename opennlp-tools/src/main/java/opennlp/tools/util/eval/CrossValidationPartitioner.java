@@ -33,7 +33,7 @@ import opennlp.tools.util.ObjectStream;
  * and the training / evaluation is performed n times on these parts.
  * The training partition always consists of n -1 parts and one part is used for testing.
  * <p>
- * To use the <code>CrossValidationPartioner</code> a client iterates over the n
+ * To use the <code>CrossValidationPartitioner</code> a client iterates over the n
  * <code>TrainingSampleStream</code>s. Each <code>TrainingSampleStream</code> represents
  * one partition and is used first for training and afterwards for testing.
  * The <code>TestSampleStream</code> can be obtained from the <code>TrainingSampleStream</code>
@@ -48,7 +48,7 @@ public class CrossValidationPartitioner<E> {
    */
   private static class TestSampleStream<E> implements ObjectStream<E> {
 
-    private ObjectStream<E> sampleStream;
+    private final ObjectStream<E> sampleStream;
 
     private final int numberOfPartitions;
 
@@ -116,7 +116,7 @@ public class CrossValidationPartitioner<E> {
    */
   public static class TrainingSampleStream<E> implements ObjectStream<E> {
 
-    private ObjectStream<E> sampleStream;
+    private final ObjectStream<E> sampleStream;
 
     private final int numberOfPartitions;
 
@@ -206,7 +206,7 @@ public class CrossValidationPartitioner<E> {
    * An <code>ObjectStream</code> over the whole set of data samples which
    * are used for the cross validation.
    */
-  private ObjectStream<E> sampleStream;
+  private final ObjectStream<E> sampleStream;
 
   /**
    * The number of parts the data is divided into.
@@ -279,7 +279,7 @@ public class CrossValidationPartitioner<E> {
 
   @Override
   public String toString() {
-    return "At partition" + Integer.toString(testIndex + 1) +
-        " of " + Integer.toString(numberOfPartitions);
+    return "At partition" + (testIndex + 1) +
+        " of " + numberOfPartitions;
   }
 }

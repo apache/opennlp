@@ -25,15 +25,24 @@ import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * A {@link SequenceStream} implementation encapsulating {@link ChunkSample samples}.
+ */
 public class ChunkSampleSequenceStream implements SequenceStream<ChunkSample> {
 
   private final ObjectStream<ChunkSample> samples;
   private final ChunkerContextGenerator contextGenerator;
 
-  public ChunkSampleSequenceStream(ObjectStream<ChunkSample> samples,
-      ChunkerContextGenerator contextGenerator) {
+  /**
+   * Creates a {@link ChunkSampleSequenceStream} with given {@code samples} using
+   * a {@link ChunkerContextGenerator}.
+   *
+   * @param samples The data stream of {@link ChunkSample samples}.
+   * @param generator A {@link ChunkerContextGenerator} which shall be used.
+   */
+  public ChunkSampleSequenceStream(ObjectStream<ChunkSample> samples, ChunkerContextGenerator generator) {
     this.samples = samples;
-    this.contextGenerator = contextGenerator;
+    this.contextGenerator = generator;
   }
 
   @Override
