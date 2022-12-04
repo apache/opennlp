@@ -27,16 +27,17 @@ import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Class for creating an event stream out of data files for training a chunker.
+ * Class for creating an event stream out of data files for training a {@link Chunker}.
  */
 public class ChunkerEventStream extends AbstractEventStream<ChunkSample> {
 
-  private ChunkerContextGenerator cg;
+  private final ChunkerContextGenerator cg;
 
   /**
-   * Creates a new event stream based on the specified data stream using the specified context generator.
+   * Creates a new event stream based on the specified data stream using the given context generator.
+   *
    * @param d The data stream for this event stream.
-   * @param cg The context generator which should be used in the creation of events for this event stream.
+   * @param cg A {@link ChunkerContextGenerator} which should be used for the event stream {@code d}.
    */
   public ChunkerEventStream(ObjectStream<ChunkSample> d, ChunkerContextGenerator cg) {
     super(d);

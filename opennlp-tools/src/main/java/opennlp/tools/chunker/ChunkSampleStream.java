@@ -42,6 +42,7 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
     super(samples);
   }
 
+  @Override
   public ChunkSample read() throws IOException {
 
     List<String> toks = new ArrayList<>();

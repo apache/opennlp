@@ -19,6 +19,9 @@ package opennlp.tools.chunker;
 
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * A marker interface for evaluating {@link Chunker chunkers}.
+ */
 public interface ChunkerEvaluationMonitor extends EvaluationMonitor<ChunkSample> {
 
 }

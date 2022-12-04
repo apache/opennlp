@@ -37,33 +37,29 @@ public class ChunkSample implements Sample {
   private final List<String> preds;
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link ChunkSample} instance.
    *
    * @param sentence
-   *          training sentence
+   *          The training sentence.
    * @param tags
-   *          POS Tags for the sentence
+   *          The POS tags for the {@code sentence}.
    * @param preds
-   *          Chunk tags in B-* I-* notation
+   *          The chunk tags in B-* I-* notation.
    */
   public ChunkSample(String[] sentence, String[] tags, String[] preds) {
 
-    validateArguments(sentence.length, tags.length, preds.length);
-
-    this.sentence = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(sentence)));
-    this.tags = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tags)));
-    this.preds = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(preds)));
+    this(Arrays.asList(sentence), Arrays.asList(tags), Arrays.asList(preds));
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link ChunkSample} instance.
    *
    * @param sentence
-   *          training sentence
+   *          The training sentence.
    * @param tags
-   *          POS Tags for the sentence
+   *          The POS tags for the {@code sentence}.
    * @param preds
-   *          Chunk tags in B-* I-* notation
+   *          The chunk tags in B-* I-* notation.
    */
   public ChunkSample(List<String> sentence, List<String> tags, List<String> preds) {
 
@@ -74,40 +70,47 @@ public class ChunkSample implements Sample {
     this.preds = Collections.unmodifiableList(new ArrayList<>(preds));
   }
 
-  /** Gets the training sentence */
+  /**
+   * @return Retrieves the training sentence.
+   */
   public String[] getSentence() {
     return sentence.toArray(new String[sentence.size()]);
   }
 
-  /** Gets the POS Tags for the sentence */
+  /**
+   * @return Retrieves the POS Tags for the sentence.
+   */
   public String[] getTags() {
     return tags.toArray(new String[tags.size()]);
   }
 
-  /** Gets the Chunk tags in B-* I-* notation */
+  /**
+   * @return Retrieves the chunk tags in B-* I-* notation.
+   */
   public String[] getPreds() {
     return preds.toArray(new String[preds.size()]);
   }
 
-  /** Gets the phrases as an array of spans */
+  /**
+   * @return the phrases as an array of spans.
+   */
   public Span[] getPhrasesAsSpanList() {
     return phrasesAsSpanList(getSentence(), getTags(), getPreds());
   }
 
   /**
-   * Static method to create arrays of spans of phrases
+   * Create arrays of {@link Span spans} of phrases.
    *
    * @param aSentence
-   *          training sentence
+   *          The training sentence.
    * @param aTags
-   *          POS Tags for the sentence
+   *          The POS tags for the {@code sentence}.
    * @param aPreds
-   *          Chunk tags in B-* I-* notation
+   *          The chunk tags in B-* I-* notation.
    *
    * @return the phrases as an array of spans
    */
-  public static Span[] phrasesAsSpanList(String[] aSentence, String[] aTags,
-      String[] aPreds) {
+  public static Span[] phrasesAsSpanList(String[] aSentence, String[] aTags, String[] aPreds) {
 
     validateArguments(aSentence.length, aTags.length, aPreds.length);
 
@@ -160,7 +163,7 @@ public class ChunkSample implements Sample {
    * [PP for_IN ] [NP the_DT planes_NNS ] ._.
    * </code>
    *
-   * @return a nice to read string representation of the chunk phases
+   * @return A nice to read string representation of the chunk phases
    */
   public String nicePrint() {
 

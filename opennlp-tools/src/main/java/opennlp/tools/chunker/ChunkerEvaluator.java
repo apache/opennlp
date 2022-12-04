@@ -22,9 +22,8 @@ import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
 /**
- * The {@link ChunkerEvaluator} measures the performance
- * of the given {@link Chunker} with the provided
- * reference {@link ChunkSample}s.
+ * The {@link ChunkerEvaluator} measures the performance of the given {@link Chunker} with the provided
+ * reference {@link ChunkSample samples}.
  *
  * @see Evaluator
  * @see Chunker
@@ -32,20 +31,18 @@ import opennlp.tools.util.eval.FMeasure;
  */
 public class ChunkerEvaluator extends Evaluator<ChunkSample> {
 
-  private FMeasure fmeasure = new FMeasure();
+  private final FMeasure fmeasure = new FMeasure();
 
   /**
-   * The {@link Chunker} used to create the predicted
-   * {@link ChunkSample} objects.
+   * The {@link Chunker} used to create the predicted {@link ChunkSample} objects.
    */
-  private Chunker chunker;
+  private final Chunker chunker;
 
   /**
-   * Initializes the current instance with the given
-   * {@link Chunker}.
+   * Initializes the current instance with the given {@link Chunker}.
    *
    * @param chunker the {@link Chunker} to evaluate.
-   * @param listeners evaluation listeners
+   * @param listeners the {@link ChunkerEvaluationMonitor evaluation listeners}.
    */
   public ChunkerEvaluator(Chunker chunker, ChunkerEvaluationMonitor... listeners) {
     super(listeners);
@@ -55,14 +52,12 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
   /**
    * Evaluates the given reference {@link ChunkSample} object.
    *
-   * This is done by finding the phrases with the
-   * {@link Chunker} in the sentence from the reference
-   * {@link ChunkSample}. The found phrases are then used to
-   * calculate and update the scores.
+   * This is done by finding the phrases with the {@link Chunker} in the sentence from the reference
+   * {@link ChunkSample}. The found phrases are then used to calculate and update the scores.
    *
    * @param reference the reference {@link ChunkSample}.
    *
-   * @return the predicted sample
+   * @return The predicted {@link ChunkSample}.
    */
   @Override
   protected ChunkSample processSample(ChunkSample reference) {

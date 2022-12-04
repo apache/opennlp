@@ -36,8 +36,7 @@ import opennlp.tools.util.TokenTag;
 import opennlp.tools.util.model.BaseModel;
 
 /**
- * The {@link ChunkerModel} is the model used
- * by a learnable {@link Chunker}.
+ * The {@link ChunkerModel} is the model used by a learnable {@link Chunker}.
  *
  * @see ChunkerME
  */
@@ -47,6 +46,14 @@ public class ChunkerModel extends BaseModel {
   private static final String COMPONENT_NAME = "ChunkerME";
   private static final String CHUNKER_MODEL_ENTRY_NAME = "chunker.model";
 
+  /**
+   * Initializes a {@link ChunkerModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param chunkerModel A valid {@link SequenceClassificationModel}.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param factory The {@link ChunkerFactory} for creating related objects.
+   */
   public ChunkerModel(String languageCode, SequenceClassificationModel<String> chunkerModel,
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
@@ -54,11 +61,28 @@ public class ChunkerModel extends BaseModel {
     checkArtifactMap();
   }
 
+  /**
+   * Initializes a {@link ChunkerModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param chunkerModel A valid {@link MaxentModel}.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param factory The {@link ChunkerFactory} for creating related objects.
+   */
   public ChunkerModel(String languageCode, MaxentModel chunkerModel,
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     this(languageCode, chunkerModel, ChunkerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, factory);
   }
 
+  /**
+   * Initializes a {@link ChunkerModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param chunkerModel A valid {@link MaxentModel}.
+   * @param beamSize The size of the beam that should be used when decoding sequences.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param factory The {@link ChunkerFactory} for creating related objects.
+   */
   public ChunkerModel(String languageCode, MaxentModel chunkerModel, int beamSize,
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
@@ -70,23 +94,58 @@ public class ChunkerModel extends BaseModel {
     checkArtifactMap();
   }
 
+  /**
+   * Initializes a {@link ChunkerModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param chunkerModel A valid {@link MaxentModel}.
+   * @param factory The {@link ChunkerFactory} for creating related objects.
+   */
   public ChunkerModel(String languageCode, MaxentModel chunkerModel, ChunkerFactory factory) {
     this(languageCode, chunkerModel, null, factory);
   }
 
-  public ChunkerModel(InputStream in) throws IOException, InvalidFormatException {
+  /**
+   * Initializes a {@link ChunkerModel} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
+  public ChunkerModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
-  public ChunkerModel(File modelFile) throws IOException, InvalidFormatException {
+  /**
+   * Initializes a {@link ChunkerModel} instance via a valid {@link File}.
+   *
+   * @param modelFile The {@link File} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
+  public ChunkerModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
-  public ChunkerModel(Path modelPath) throws IOException, InvalidFormatException {
+  /**
+   * Initializes a {@link ChunkerModel} instance via a valid {@link Path}.
+   *
+   * @param modelPath The {@link Path} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
+  public ChunkerModel(Path modelPath) throws IOException {
     this(modelPath.toFile());
   }
 
-  public ChunkerModel(URL modelURL) throws IOException, InvalidFormatException {
+  /**
+   * Initializes a {@link ChunkerModel} instance via a valid {@link URL}.
+   *
+   * @param modelURL The {@link URL} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
+  public ChunkerModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 
@@ -111,7 +170,7 @@ public class ChunkerModel extends BaseModel {
   }
 
   /**
-   * @deprecated use getChunkerSequenceModel instead. This method will be removed soon.
+   * @deprecated use {@link ChunkerModel#getChunkerSequenceModel()} instead. This method will be removed soon.
    */
   @Deprecated
   public MaxentModel getChunkerModel() {
@@ -123,6 +182,9 @@ public class ChunkerModel extends BaseModel {
     }
   }
 
+  /**
+   * @return Retrieves a {@link SequenceClassificationModel}.
+   */
   public SequenceClassificationModel<TokenTag> getChunkerSequenceModel() {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
@@ -150,7 +212,9 @@ public class ChunkerModel extends BaseModel {
     return ChunkerFactory.class;
   }
 
-
+  /**
+   * @return Retrieves the active {@link ChunkerFactory}.
+   */
   public ChunkerFactory getFactory() {
     return (ChunkerFactory) this.toolFactory;
   }

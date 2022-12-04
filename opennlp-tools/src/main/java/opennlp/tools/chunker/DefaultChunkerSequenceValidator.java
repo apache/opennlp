@@ -20,6 +20,9 @@ package opennlp.tools.chunker;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.TokenTag;
 
+/**
+ * The default chunker {@link SequenceValidator} implementation.
+ */
 public class DefaultChunkerSequenceValidator implements SequenceValidator<TokenTag> {
 
   private boolean validOutcome(String outcome, String prevOutcome) {
@@ -37,7 +40,7 @@ public class DefaultChunkerSequenceValidator implements SequenceValidator<TokenT
     return true;
   }
 
-  protected boolean validOutcome(String outcome, String[] sequence) {
+  private boolean validOutcome(String outcome, String[] sequence) {
     String prevOutcome = null;
     if (sequence.length > 0) {
       prevOutcome = sequence[sequence.length - 1];
@@ -45,6 +48,7 @@ public class DefaultChunkerSequenceValidator implements SequenceValidator<TokenT
     return validOutcome(outcome,prevOutcome);
   }
 
+  @Override
   public boolean validSequence(int i, TokenTag[] sequence, String[] s, String outcome) {
     return validOutcome(outcome, s);
   }
