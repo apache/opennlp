@@ -42,7 +42,7 @@ public class ModelParameterChunkerTest {
 
   @BeforeEach
   void setup() throws IOException {
-    tmp = File.createTempFile("chunker-test", ".dat");
+    tmp = Files.createTempFile("chunker-test", ".dat").toFile();
     tmp.deleteOnExit();
   }
 

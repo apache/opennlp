@@ -95,7 +95,7 @@ public class TokenNameFinderModelTest {
             featureGeneratorString.getBytes(), resources, new BioCodec()));
 
 
-    File model = File.createTempFile("nermodel", ".bin");
+    File model = Files.createTempFile("nermodel", ".bin").toFile();
     try {
       FileOutputStream modelOut = new FileOutputStream(model);
       nameFinderModel.serialize(modelOut);

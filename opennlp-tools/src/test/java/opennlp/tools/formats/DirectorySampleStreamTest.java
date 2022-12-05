@@ -100,7 +100,7 @@ public class DirectorySampleStreamTest {
     files.add(temp1);
     
     File tempSubDirectory = createTempFolder("sub1");
-    File temp2 = File.createTempFile("sub1", ".tmp", tempSubDirectory);
+    File temp2 = Files.createTempFile(tempSubDirectory.toPath(), "sub1", ".tmp").toFile();
     files.add(temp2);
 
     DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), filter, true);
