@@ -38,6 +38,7 @@ import opennlp.tools.util.model.ModelUtil;
  * by a learnable {@link Tokenizer}.
  *
  * @see TokenizerME
+ * @see TokenizerFactory
  */
 public final class TokenizerModel extends BaseModel {
 
@@ -46,11 +47,11 @@ public final class TokenizerModel extends BaseModel {
   private static final String TOKENIZER_MODEL_ENTRY = "token.model";
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link TokenizerModel} instance via a {@link MaxentModel} and related resources.
    *
-   * @param tokenizerModel the model
-   * @param manifestInfoEntries the manifest
-   * @param tokenizerFactory the factory
+   * @param tokenizerModel The {@link MaxentModel model} to be used.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param tokenizerFactory The {@link TokenizerFactory} to be used internally.
    */
   public TokenizerModel(MaxentModel tokenizerModel,
       Map<String, String> manifestInfoEntries, TokenizerFactory tokenizerFactory) {
@@ -60,48 +61,54 @@ public final class TokenizerModel extends BaseModel {
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link TokenizerModel} instance via a valid {@link InputStream}.
    *
-   * @param in the Input Stream to load the model from
+   * @param in The {@link InputStream} used for loading the model.
    *
-   * @throws IOException if reading from the stream fails in anyway
-   * @throws InvalidFormatException if the stream doesn't have the expected format
+   * @throws IOException Thrown if IO errors occurred during initialization.
    */
   public TokenizerModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link TokenizerModel} instance via a valid {@link File}.
    *
-   * @param modelFile the file containing the tokenizer model
+   * @param modelFile The {@link File} used for loading the model.
    *
-   * @throws IOException if reading from the stream fails in anyway
+   * @throws IOException Thrown if IO errors occurred during initialization.
    */
   public TokenizerModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
+  /**
+   * Initializes a {@link TokenizerModel} instance via a valid {@link Path}.
+   *
+   * @param modelPath The {@link Path} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public TokenizerModel(Path modelPath) throws IOException {
     this(modelPath.toFile());
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link TokenizerModel} instance via a valid {@link URL}.
    *
-   * @param modelURL the URL pointing to the tokenizer model
+   * @param modelURL The {@link URL} used for loading the model.
    *
-   * @throws IOException if reading from the stream fails in anyway
+   * @throws IOException Thrown if IO errors occurred during initialization.
    */
   public TokenizerModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 
   /**
-   * Checks if the tokenizer model has the right outcomes.
+   * Checks if the {@link TokenizerModel} has the right outcomes.
    *
-   * @param model
-   * @return
+   * @param model The {@link MaxentModel} to be checked.
+   * @return {@code true} if the model could be validated, {@code false} otherwise.
    */
   private static boolean isModelCompatible(MaxentModel model) {
     return ModelUtil.validateOutcomes(model, TokenizerME.SPLIT, TokenizerME.NO_SPLIT);
@@ -120,6 +127,9 @@ public final class TokenizerModel extends BaseModel {
     }
   }
 
+  /**
+   * @return Retrieves the active {@link TokenizerFactory}.
+   */
   public TokenizerFactory getFactory() {
     return (TokenizerFactory) this.toolFactory;
   }
@@ -129,10 +139,16 @@ public final class TokenizerModel extends BaseModel {
     return TokenizerFactory.class;
   }
 
+  /**
+   * @return Retrieves the model as {@link MaxentModel} instance.
+   */
   public MaxentModel getMaxentModel() {
     return (MaxentModel) artifactMap.get(TOKENIZER_MODEL_ENTRY);
   }
 
+  /**
+   * @return Retrieves the active abbreviation {@link Dictionary}.
+   */
   public Dictionary getAbbreviations() {
     if (getFactory() != null) {
       return getFactory().getAbbreviationDictionary();
@@ -140,6 +156,9 @@ public final class TokenizerModel extends BaseModel {
     return null;
   }
 
+  /**
+   * @return {@code true} if alphanumeric optimization is active, {@code false} otherwise.
+   */
   public boolean useAlphaNumericOptimization() {
     return getFactory() != null && getFactory().isUseAlphaNumericOptmization();
   }

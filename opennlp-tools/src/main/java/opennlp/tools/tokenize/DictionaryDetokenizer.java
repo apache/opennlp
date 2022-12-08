@@ -22,7 +22,7 @@ import java.util.Set;
 
 /**
  * A rule based detokenizer. Simple rules which indicate in which direction a token should be
- * moved are looked up in a {@link DetokenizationDictionary} object.
+ * moved are looked up in a {@link DetokenizationDictionary dictionary}.
  *
  * @see Detokenizer
  * @see DetokenizationDictionary
@@ -31,10 +31,16 @@ public class DictionaryDetokenizer implements Detokenizer {
 
   private final DetokenizationDictionary dict;
 
+  /**
+   * Initializes a {@link DictionaryDetokenizer} instance.
+   * 
+   * @param dict The {@link DetokenizationDictionary} to be used.
+   */
   public DictionaryDetokenizer(DetokenizationDictionary dict) {
     this.dict = dict;
   }
 
+  @Override
   public DetokenizationOperation[] detokenize(String[] tokens) {
 
     DetokenizationOperation[] operations = new DetokenizationOperation[tokens.length];
@@ -79,6 +85,7 @@ public class DictionaryDetokenizer implements Detokenizer {
     return operations;
   }
 
+  @Override
   public String detokenize(String[] tokens, String splitMarker) {
 
     DetokenizationOperation[] operations = detokenize(tokens);

@@ -17,8 +17,8 @@
 
 /**
  * Contains classes related to finding token or words in a string. All
- * tokenizer implement the Tokenizer interface. Currently there is the
- * learnable <code>TokenizerME</code>, the <code>WhitespaceTokenizer</code> and
- * the <code>SimpleTokenizer</code> which is a character class tokenizer.
+ * tokenizer implement the Tokenizer interface. Currently, there is the
+ * learnable {@code TokenizerME}, the {@code WhitespaceTokenizer} and
+ * the {@code SimpleTokenizer} which is a character class tokenizer.
  */
 package opennlp.tools.tokenize;

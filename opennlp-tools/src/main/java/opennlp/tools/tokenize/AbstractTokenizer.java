@@ -23,10 +23,16 @@ abstract class AbstractTokenizer implements Tokenizer {
 
   protected boolean keepNewLines = false;
 
+  @Override
   public String[] tokenize(String s) {
     return Span.spansToStrings(tokenizePos(s), s);
   }
 
+  /**
+   * Switches whether to keep new lines or not.
+   *
+   * @param keepNewLines {@code True} if new lines are kept, {@code false} otherwise.
+   */
   public void setKeepNewLines(boolean keepNewLines) {
     this.keepNewLines = keepNewLines;
   }

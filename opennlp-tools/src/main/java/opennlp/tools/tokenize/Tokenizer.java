@@ -23,17 +23,17 @@ import opennlp.tools.util.Span;
 /**
  * The interface for tokenizers, which segment a string into its tokens.
  * <p>
- * Tokenization is a necessary step before more complex NLP tasks can be applied,
- * these usually process text on a token level. The quality of tokenization is
+ * Tokenization is a necessary step before more complex NLP tasks can be applied.
+ * These usually process text on a token level. The quality of tokenization is
  * important because it influences the performance of high-level task applied to it.
  * <p>
- * In segmented languages like English most words are segmented by white spaces
+ * In segmented languages like English most words are segmented by whitespaces
  * expect for punctuations, etc. which is directly attached to the word without a white space
  * in between, it is not possible to just split at all punctuations because in abbreviations dots
- * are a part of the token itself. A tokenizer is now responsible to split these tokens
+ * are a part of the token itself. A {@link Tokenizer} is now responsible to split those tokens
  * correctly.
  * <p>
- * In non-segmented languages like Chinese tokenization is more difficult since words
+ * In non-segmented languages like Chinese, tokenization is more difficult since words
  * are not segmented by a whitespace.
  * <p>
  * Tokenizers can also be used to segment already identified tokens further into more
@@ -41,16 +41,15 @@ import opennlp.tools.util.Span;
  * to gain insight into tokens which do not represent words like numbers, units or tokens
  * which are part of a special notation.
  * <p>
- * For most further task it is desirable to over tokenize rather than under tokenize.
+ * For most subsequent NLP tasks, it is desirable to over-tokenize rather than to under-tokenize.
  */
 public interface Tokenizer {
 
   /**
-   * Splits a string into its atomic parts
+   * Splits a string into its atomic parts.
    *
    * @param s The string to be tokenized.
-   * @return  The String[] with the individual tokens as the array
-   *          elements.
+   * @return  The String[] with the individual tokens as the array elements.
    */
   String[] tokenize(String s);
 
@@ -58,8 +57,7 @@ public interface Tokenizer {
    * Finds the boundaries of atomic parts in a string.
    *
    * @param s The string to be tokenized.
-   * @return The Span[] with the spans (offsets into s) for each
-   * token as the individuals array elements.
+   * @return The {@link Span spans (offsets into {@code s})} for each token as the individuals array elements.
    */
   Span[] tokenizePos(String s);
 

@@ -18,18 +18,15 @@
 package opennlp.tools.tokenize;
 
 /**
- * Interface for {@link TokenizerME} context generators.
+ * Interface for context generators required for {@link TokenizerME}.
  */
 public interface TokenContextGenerator {
 
   /**
-   * Returns an array of features for the specified sentence string at the specified index.
+   * @param sentence The string that represents a sentence.
+   * @param index The index to consider splitting tokens.
    *
-   * @param sentence The string for a sentence.
-   * @param index The index to consider splitting as a token.
-   *
-   * @return an array of features for the specified sentence string at the
-   *   specified index.
+   * @return An array of features for a {@code sentence} at the specified {@code index}.
    */
   String[] getContext(String sentence, int index);
 }

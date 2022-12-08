@@ -27,28 +27,26 @@ import opennlp.tools.util.eval.FMeasure;
 /**
  * The {@link DetokenizerEvaluator} measures the performance of
  * the given {@link Detokenizer} with the provided reference
- * {@link TokenSample}s.
+ * {@link TokenSample samples}.
  *
- * @see DetokenizerEvaluator
  * @see Detokenizer
  * @see TokenSample
  */
 
 public class DetokenizerEvaluator extends Evaluator<TokenSample> {
-  private FMeasure fmeasure = new FMeasure();
+  private final FMeasure fmeasure = new FMeasure();
 
   /**
-   * The {@link Detokenizer} used to create the
-   * predicted tokens.
+   * The {@link Detokenizer} used to create the predicted tokens.
    */
-  private Detokenizer detokenizer;
+  private final Detokenizer detokenizer;
 
   /**
    * Initializes the current instance with the
    * given {@link Detokenizer}.
    *
-   * @param detokenizer the {@link Detokenizer} to evaluate.
-   * @param listeners   evaluation sample listeners
+   * @param detokenizer The {@link Detokenizer} to evaluate.
+   * @param listeners   The {@link DetokenEvaluationErrorListener evaluation sample listeners}.
    */
   public DetokenizerEvaluator(Detokenizer detokenizer, DetokenEvaluationErrorListener... listeners) {
     super(listeners);

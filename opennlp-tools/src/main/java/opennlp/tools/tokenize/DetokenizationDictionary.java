@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,27 +54,36 @@ public class DetokenizationDictionary {
     MOVE_BOTH,
 
     /**
-     * Attaches the token token to the right token on first occurrence, and
+     * Attaches the token to the right token on first occurrence, and
      * to the token on the left side on the second occurrence.
      */
     RIGHT_LEFT_MATCHING;
 
+    /**
+     * @param operation The string representation for which an {@link Operation}
+     *                  instance is to be found.
+     * @return The {@link Operation enum} instance that matches the given {@code operation},
+     *         or {@code null} if the input has no equivalent.
+     */
     public static Operation parse(String operation) {
-
-      if (MOVE_RIGHT.toString().equals(operation)) {
-        return MOVE_RIGHT;
-      }
-      else if (MOVE_LEFT.toString().equals(operation)) {
-        return MOVE_LEFT;
-      }
-      else if (MOVE_BOTH.toString().equals(operation)) {
-        return MOVE_BOTH;
-      }
-      else if (RIGHT_LEFT_MATCHING.toString().equals(operation)) {
-        return RIGHT_LEFT_MATCHING;
-      }
-      else {
+      if (operation == null) {
         return null;
+      } else {
+        if (MOVE_RIGHT.toString().equals(operation)) {
+          return MOVE_RIGHT;
+        }
+        else if (MOVE_LEFT.toString().equals(operation)) {
+          return MOVE_LEFT;
+        }
+        else if (MOVE_BOTH.toString().equals(operation)) {
+          return MOVE_BOTH;
+        }
+        else if (RIGHT_LEFT_MATCHING.toString().equals(operation)) {
+          return RIGHT_LEFT_MATCHING;
+        }
+        else {
+          return null;
+        }
       }
     }
   }
@@ -81,11 +91,11 @@ public class DetokenizationDictionary {
   private final Map<String, DetokenizationDictionary.Operation> operationTable = new HashMap<>();
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link DetokenizationDictionary} instance.
    *
-   * @param tokens an array of tokens that should be detokenized according to an operation
-   * @param operations an array of operations which specifies which operation
-   *        should be used for the provided tokens
+   * @param tokens An array of tokens that should be de-tokenized according to {@code operations}.
+   * @param operations An array of operations which specifies which operation
+   *        should be used for the provided {@code tokens}.
    */
   public DetokenizationDictionary(String[] tokens,
       DetokenizationDictionary.Operation[] operations) {
@@ -107,16 +117,44 @@ public class DetokenizationDictionary {
     }
   }
 
+  /**
+   * Initializes a {@link DetokenizationDictionary} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the dictionary.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public DetokenizationDictionary(InputStream in) throws IOException {
     init(in);
   }
 
+  /**
+   * Initializes a {@link DetokenizationDictionary} instance via a valid {@link File}.
+   *
+   * @param file The {@link File} used for loading the dictionary.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public DetokenizationDictionary(File file) throws IOException {
     try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
       init(in);
     }
   }
 
+  /**
+   * Initializes a {@link DetokenizationDictionary} instance via a valid {@link Path}.
+   *
+   * @param path The {@link Path} used for loading the dictionary.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
+  public DetokenizationDictionary(Path path) throws IOException {
+    this(path.toFile());
+  }
+
+  /*
+   * Builds up the dictionary from an InputStream.
+   */
   private void init(InputStream in) throws IOException {
     DictionaryEntryPersistor.create(in, entry -> {
 
@@ -137,15 +175,25 @@ public class DetokenizationDictionary {
     });
   }
 
+  /**
+   * @param token The input string for which a valid {@link Operation} is to be found.
+   * @return The {@link Operation} that fits the given {@code token}.
+   */
   DetokenizationDictionary.Operation getOperation(String token) {
     return operationTable.get(token);
   }
 
-  // serialize method
+  /**
+   * Serializes the current state of a {@link DetokenizationDictionary} via an
+   * {@link OutputStream output stream}.
+   *
+   * @param out A valid, open {@link OutputStream} ready to be used for serialization.
+   * @throws IOException  Thrown if IO errors occurred during serialization.
+   */
   public void serialize(OutputStream out) throws IOException {
-    Iterator<Entry> entries = new Iterator<Entry>() {
+    Iterator<Entry> entries = new Iterator<>() {
 
-      Iterator<String> iterator = operationTable.keySet().iterator();
+      final Iterator<String> iterator = operationTable.keySet().iterator();
 
       public boolean hasNext() {
         return iterator.hasNext();

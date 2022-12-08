@@ -20,9 +20,7 @@ package opennlp.tools.lemmatizer;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
- * Interface for the lemmatizer evaluator.
- * @version 2016-02-18
- *
+ * A marker interface for evaluating {@link Lemmatizer lemmatizers}.
  */
 public interface LemmatizerEvaluationMonitor extends EvaluationMonitor<LemmaSample> {
 

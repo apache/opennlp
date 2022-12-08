@@ -25,31 +25,31 @@ import java.util.Set;
 import opennlp.tools.util.StringUtil;
 
 /**
- * Generate events for maxent decisions for tokenization.
+ * A default {@link TokenContextGenerator} which produces events for maxent decisions
+ * for tokenization.
  */
 public class DefaultTokenContextGenerator implements TokenContextGenerator {
 
   protected final Set<String> inducedAbbreviations;
 
   /**
-   * Creates a default context generator for tokenizer.
+   * Initializes a plain {@link DefaultTokenContextGenerator} instance.
    */
   public DefaultTokenContextGenerator() {
     this(Collections.emptySet());
   }
 
   /**
-   * Creates a default context generator for tokenizer.
+   * Initializes a customized {@link DefaultTokenContextGenerator} instance via
+   * a set of {@code inducedAbbreviations}.
    *
-   * @param inducedAbbreviations the induced abbreviations
+   * @param inducedAbbreviations The induced abbreviations to be used for this instance.
    */
   public DefaultTokenContextGenerator(Set<String> inducedAbbreviations) {
     this.inducedAbbreviations = inducedAbbreviations;
   }
 
-  /* (non-Javadoc)
-   * @see opennlp.tools.tokenize.TokenContextGenerator#getContext(java.lang.String, int)
-   */
+  @Override
   public String[] getContext(String sentence, int index) {
     List<String> preds = createContext(sentence, index);
     String[] context = new String[preds.size()];
@@ -58,15 +58,15 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
   }
 
   /**
-   * Returns an {@link ArrayList} of features for the specified sentence string
-   * at the specified index. Extensions of this class can override this method
-   * to create a customized {@link TokenContextGenerator}
+   * Computes a {@link List} of features for the specified {@code sentence}
+   * at the specified {@code index}. Extensions of {@link DefaultTokenContextGenerator}
+   * can override this method to create a customized behaviour.
    *
    * @param sentence
-   *          the token been analyzed
+   *          The sentence to create features for.
    * @param index
-   *          the index of the character been analyzed
-   * @return an {@link ArrayList} of features for the specified sentence string
+   *          The positional index. Must be a non-negative number or {@code 0}.
+   * @return A {@link List} of features for the specified {@code sentence} string
    *         at the specified index.
    */
   protected List<String> createContext(String sentence, int index) {
@@ -110,7 +110,13 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
 
 
   /**
-   * Helper function for getContext.
+   * Helper function for {@link #createContext} that appends to a given {@code key}
+   * a fixed text sequence depending on {@code c}. The resulting combination is added
+   * to the given list {@code preds}.
+   *
+   * @param key The input string to process.
+   * @param c   A character used to discriminate which fixed text shall be appended.
+   * @param preds The list into which the resulting combinations will be added.
    */
   protected void addCharPreds(String key, char c, List<String> preds) {
     preds.add(key + "=" + c);

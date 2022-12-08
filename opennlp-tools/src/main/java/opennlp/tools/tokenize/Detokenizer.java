@@ -18,8 +18,7 @@
 package opennlp.tools.tokenize;
 
 /**
- * A Detokenizer merges tokens back to their untokenized representation.
- *
+ * A {@link Detokenizer} merges tokens back to their detokenized representation.
  */
 public interface Detokenizer {
 
@@ -29,7 +28,7 @@ public interface Detokenizer {
    */
   enum DetokenizationOperation {
     /**
-     * The current token should be attached to the begin token on the right side.
+     * The current token should be attached to the start token on the right side.
      */
     MERGE_TO_RIGHT,
 
@@ -40,7 +39,7 @@ public interface Detokenizer {
 
     /**
      * The current token should be attached to the string on the left side, as
-     * well as to the begin token on the right side.
+     * well as to the start token on the right side.
      */
     MERGE_BOTH,
 
@@ -52,22 +51,23 @@ public interface Detokenizer {
   }
 
   /**
-   * Detokenize the input tokens.
+   * Detokenizes the collection of tokens.
    *
-   * @param tokens the tokens to detokenize.
-   * @return the merge operations to detokenize the input tokens.
+   * @param tokens The elements which should be detokenized.
+   * @return The {@link DetokenizationOperation merge operations} to handle
+   *         given {@code tokens}.
    */
   DetokenizationOperation[] detokenize(String[] tokens);
 
   /**
-   * Detokenize the input tokens into a String. Tokens which
-   * are connected without a space inbetween can be separated by
-   * a split marker.
+   * Detokenizes the input {@code tokens} into a String. Tokens which
+   * are connected without a {@code whitespace} character in
+   * between can be separated by a given {@code splitMarker}.
    *
-   * @param tokens the token which should be concatenated
-   * @param splitMarker the split marker or null
+   * @param tokens The elements which should be concatenated.
+   * @param splitMarker The split marker or {@code null}.
    *
-   * @return the concatenated tokens
+   * @return The concatenated tokens as a single string.
    */
   String detokenize(String[] tokens, String splitMarker);
 }

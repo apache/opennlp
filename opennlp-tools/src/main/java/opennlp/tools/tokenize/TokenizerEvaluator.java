@@ -25,7 +25,7 @@ import opennlp.tools.util.eval.FMeasure;
 /**
  * The {@link TokenizerEvaluator} measures the performance of
  * the given {@link Tokenizer} with the provided reference
- * {@link TokenSample}s.
+ * {@link TokenSample samples}.
  *
  * @see Evaluator
  * @see Tokenizer
@@ -33,20 +33,18 @@ import opennlp.tools.util.eval.FMeasure;
  */
 public class TokenizerEvaluator extends Evaluator<TokenSample> {
 
-  private FMeasure fmeasure = new FMeasure();
+  private final FMeasure fmeasure = new FMeasure();
 
   /**
-   * The {@link Tokenizer} used to create the
-   * predicted tokens.
+   * The {@link Tokenizer} used to create the predicted tokens.
    */
-  private Tokenizer tokenizer;
+  private final Tokenizer tokenizer;
 
   /**
-   * Initializes the current instance with the
-   * given {@link Tokenizer}.
+   * Initializes an instance to evaluate a {@link Tokenizer}.
    *
-   * @param tokenizer the {@link Tokenizer} to evaluate.
-   * @param listeners evaluation sample listeners
+   * @param tokenizer The {@link Tokenizer} to evaluate.
+   * @param listeners The {@link TokenizerEvaluationMonitor evaluation listeners}.
    */
   public TokenizerEvaluator(Tokenizer tokenizer, TokenizerEvaluationMonitor ... listeners) {
     super(listeners);

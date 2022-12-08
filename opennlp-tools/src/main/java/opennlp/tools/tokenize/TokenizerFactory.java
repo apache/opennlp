@@ -29,7 +29,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
- * The factory that provides {@link Tokenizer} default implementations and
+ * The factory that provides {@link Tokenizer} default implementation and
  * resources. Users can extend this class if their application requires
  * overriding the {@link TokenContextGenerator}, {@link Dictionary} etc.
  */
@@ -45,33 +45,37 @@ public class TokenizerFactory extends BaseToolFactory {
   private static final String ALPHA_NUMERIC_PATTERN = "alphaNumericPattern";
 
   /**
-   * Creates a {@link TokenizerFactory} that provides the default implementation
+   * Instantiates a {@link TokenizerFactory} that provides the default implementation
    * of the resources.
    */
   public TokenizerFactory() {
   }
-
+  
   /**
-   * Creates a {@link TokenizerFactory}. Use this constructor to
+   * Instantiates a {@link TokenizerFactory}. Use this constructor to
    * programmatically create a factory.
    *
-   * @param languageCode
-   *          the language of the natural text
-   * @param abbreviationDictionary
-   *          an abbreviations dictionary
-   * @param useAlphaNumericOptimization
-   *          if true alpha numerics are skipped
-   * @param alphaNumericPattern
-   *          null or a custom alphanumeric pattern (default is:
-   *          "^[A-Za-z0-9]+$", provided by {@link Factory#DEFAULT_ALPHANUMERIC}
+   * @param languageCode The ISO language code to be used for this factory.
+   * @param abbreviationDictionary The {@link Dictionary} which holds abbreviations.
+   * @param useAlphaNumericOptimization Whether alphanumerics are skipped, or not.
+   * @param alphaNumericPattern {@code null} or a custom alphanumeric {@link Pattern}
+   *                            (default is: {@code "^[A-Za-z0-9]+$"}, provided by
+   *                            {@link Factory#DEFAULT_ALPHANUMERIC}.
    */
-  public TokenizerFactory(String languageCode,
-      Dictionary abbreviationDictionary, boolean useAlphaNumericOptimization,
-      Pattern alphaNumericPattern) {
+  public TokenizerFactory(String languageCode, Dictionary abbreviationDictionary,
+                          boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
     this.init(languageCode, abbreviationDictionary,
         useAlphaNumericOptimization, alphaNumericPattern);
   }
 
+  /**
+   * @param languageCode The ISO language code to be used for this factory.
+   * @param abbreviationDictionary The {@link Dictionary} which holds abbreviations.
+   * @param useAlphaNumericOptimization Whether alphanumerics are skipped, or not.
+   * @param alphaNumericPattern {@code null} or a custom alphanumeric {@link Pattern}
+   *                            (default is: {@code "^[A-Za-z0-9]+$"}, provided by
+   *                            {@link Factory#DEFAULT_ALPHANUMERIC}.
+   */
   protected void init(String languageCode, Dictionary abbreviationDictionary,
       boolean useAlphaNumericOptimization, Pattern alphaNumericPattern) {
     this.languageCode = languageCode;
@@ -122,22 +126,24 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Factory method the framework uses create a new {@link TokenizerFactory}.
+   * Factory method the framework uses instantiate a new {@link TokenizerFactory}.
    *
-   * @param subclassName the name of the class implementing the {@link TokenizerFactory}
-   * @param languageCode the language code the tokenizer should use
-   * @param abbreviationDictionary an optional dictionary containing abbreviations, or null if not present
-   * @param useAlphaNumericOptimization indicate if the alpha numeric optimization
-   *     should be enabled or disabled
-   * @param alphaNumericPattern the pattern the alpha numeric optimization should use
+   * @param subclassName The name of the class implementing the {@link TokenizerFactory}.
+   * @param languageCode The ISO language code the {@link Tokenizer} should use.
+   * @param abbreviationDictionary An optional {@link Dictionary} containing abbreviations,
+   *                               or {@code null} if not present.
+   * @param useAlphaNumericOptimization Whether the alphanumeric optimization is be enabled or not.
+   * @param alphaNumericPattern The {@link Pattern} the alphanumeric optimization should use,
+   *                            if enabled.
    *
-   * @return the instance of the Tokenizer Factory
+   * @return A valid {@link TokenizerFactory} instance.
    *
-   * @throws InvalidFormatException if once of the input parameters doesn't comply if the expected format
+   * @throws InvalidFormatException Thrown if one of the input parameters doesn't comply the expected format.
    */
-  public static TokenizerFactory create(String subclassName,
-      String languageCode, Dictionary abbreviationDictionary,
-      boolean useAlphaNumericOptimization, Pattern alphaNumericPattern)
+  public static TokenizerFactory create(String subclassName, String languageCode,
+                                        Dictionary abbreviationDictionary,
+                                        boolean useAlphaNumericOptimization,
+                                        Pattern alphaNumericPattern)
       throws InvalidFormatException {
     if (subclassName == null) {
       // will create the default factory
@@ -160,9 +166,7 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Gets the alpha numeric pattern.
-   *
-   * @return the user specified alpha numeric pattern or a default.
+   * @return Retrieves the (user-)specified alphanumeric {@link Pattern} or a default.
    */
   public Pattern getAlphaNumericPattern() {
     if (this.alphaNumericPattern == null) {
@@ -182,9 +186,7 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Gets whether to use alphanumeric optimization.
-   *
-   * @return true if the alpha numeric optimization is enabled, otherwise false
+   * @return {@code true} if the alphanumeric optimization is enabled, otherwise {@code false}.
    */
   public boolean isUseAlphaNumericOptmization() {
     if (artifactProvider != null) {
@@ -195,9 +197,7 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Gets the abbreviation dictionary
-   *
-   * @return null or the abbreviation dictionary
+   * @return The abbreviation {@link Dictionary} or {@code null} if none is active.
    */
   public Dictionary getAbbreviationDictionary() {
     if (this.abbreviationDictionary == null && artifactProvider != null) {
@@ -207,9 +207,7 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Retrieves the language code.
-   *
-   * @return the language code
+   * @return Retrieves the ISO language code in use.
    */
   public String getLanguageCode() {
     if (this.languageCode == null && this.artifactProvider != null) {
@@ -219,9 +217,7 @@ public class TokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Gets the context generator
-   *
-   * @return a new instance of the context generator
+   * @return Retrieves a {@link TokenContextGenerator} instance.
    */
   public TokenContextGenerator getContextGenerator() {
     Factory f = new Factory();

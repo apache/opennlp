@@ -24,19 +24,26 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
- * The {@link TokenizerStream} uses a tokenizer to tokenize the
- * input string and output {@link TokenSample}s.
+ * The {@link TokenizerStream} uses a {@link Tokenizer} to tokenize the
+ * input string and output {@link TokenSample samples}.
  */
 public class TokenizerStream implements ObjectStream<TokenSample> {
 
-  private Tokenizer tokenizer;
-  private ObjectStream<String> input;
+  private final Tokenizer tokenizer;
+  private final ObjectStream<String> input;
 
+  /**
+   * Initializes a {@link TokenizerStream instance}.
+   *
+   * @param tokenizer A working {@link Tokenizer} instance.
+   * @param input A plain text {@link ObjectStream line stream}.
+   */
   public TokenizerStream(Tokenizer tokenizer, ObjectStream<String> input) {
     this.tokenizer = tokenizer;
     this.input = input;
   }
 
+  @Override
   public TokenSample read() throws IOException {
     String inputString = input.read();
 
@@ -49,10 +56,12 @@ public class TokenizerStream implements ObjectStream<TokenSample> {
     return null;
   }
 
+  @Override
   public void close() throws IOException {
     input.close();
   }
 
+  @Override
   public void reset() throws IOException,
       UnsupportedOperationException {
     input.reset();

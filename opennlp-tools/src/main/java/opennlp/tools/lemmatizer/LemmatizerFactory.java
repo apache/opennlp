@@ -22,15 +22,29 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.ext.ExtensionLoader;
 
+/**
+ * The factory that provides {@link Lemmatizer} default implementation and
+ * resources.
+ */
 public class LemmatizerFactory extends BaseToolFactory {
 
   /**
-   * Creates a {@link LemmatizerFactory} that provides the default implementation
+   * Instantiates a {@link LemmatizerFactory} that provides the default implementation
    * of the resources.
    */
   public LemmatizerFactory() {
   }
 
+  /**
+   * Instantiates a {@link LemmatizerFactory} via a given {@code subclassName}.
+   *
+   * @param subclassName The class name used for instantiation. If {@code null}, an
+   *                     instance of {@link LemmatizerFactory} will be returned
+   *                     per default. Otherwise, the {@link ExtensionLoader} mechanism
+   *                     is applied to load the requested {@code subclassName}.
+   *
+   * @return A valid {@link LemmatizerFactory} instance.
+   */
   public static LemmatizerFactory create(String subclassName)
       throws InvalidFormatException {
     if (subclassName == null) {

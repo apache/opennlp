@@ -24,7 +24,11 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
 /**
- * Performs tokenization using character classes.
+ * A basic {@link Tokenizer} implementation which performs tokenization
+ * using character classes.
+ * <p>
+ * To obtain an instance of this tokenizer use the static final
+ * {@link #INSTANCE} field.
  */
 public class SimpleTokenizer extends AbstractTokenizer {
 
@@ -34,7 +38,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
     static final CharacterEnum NUMERIC = new CharacterEnum("numeric");
     static final CharacterEnum OTHER = new CharacterEnum("other");
 
-    private String name;
+    private final String name;
 
     private CharacterEnum(String name) {
       this.name = name;
@@ -45,21 +49,22 @@ public class SimpleTokenizer extends AbstractTokenizer {
       return name;
     }
   }
-  
-  public static final SimpleTokenizer INSTANCE;
-
-  static {
-    INSTANCE = new SimpleTokenizer();
-  }
 
   /**
-   * @deprecated Use INSTANCE field instead to obtain an instance, constructor
-   *     will be made private in the future.
+   * Use this static reference to retrieve an instance of the
+   * {@link SimpleTokenizer}.
    */
-  @Deprecated
+  public static final SimpleTokenizer INSTANCE = new SimpleTokenizer();
+
+  /**
+   * @deprecated Use {@link SimpleTokenizer#INSTANCE} field instead to obtain an instance.
+   *     This constructor will be made private in the future.
+   */
+  @Deprecated // TODO Decide when this will be private (see deprecation note!)
   public SimpleTokenizer() {
   }
 
+  @Override
   public Span[] tokenizePos(String s) {
     CharacterEnum charType = CharacterEnum.WHITESPACE;
     CharacterEnum state = charType;
