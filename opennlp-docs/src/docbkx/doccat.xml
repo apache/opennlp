@@ -82,8 +82,9 @@ DoccatModel m = new DoccatModel(is);]]>
 						<programlisting language="java">
 				<![CDATA[
 String inputText = ...
+String[] textTokens = inputText.split(" "); // split by whitespace
 DocumentCategorizerME myCategorizer = new DocumentCategorizerME(m);
-double[] outcomes = myCategorizer.categorize(inputText);
+double[] outcomes = myCategorizer.categorize(textTokens);
 String category = myCategorizer.getBestCategory(outcomes);]]>
 				</programlisting>
 		</para>
