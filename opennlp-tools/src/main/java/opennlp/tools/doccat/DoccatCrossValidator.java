@@ -25,7 +25,7 @@ import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.Mean;
 
 /**
- * Cross validator for document categorization
+ * Cross validator for {@link DocumentCategorizer}.
  */
 public class DoccatCrossValidator {
 
@@ -33,16 +33,21 @@ public class DoccatCrossValidator {
 
   private final TrainingParameters params;
 
-  private Mean documentAccuracy = new Mean();
+  private final Mean documentAccuracy = new Mean();
 
-  private DoccatEvaluationMonitor[] listeners;
+  private final DoccatEvaluationMonitor[] listeners;
 
-  private DoccatFactory factory;
+  private final DoccatFactory factory;
 
 
   /**
-   * Creates a {@link DoccatCrossValidator} with the given
-   * {@link FeatureGenerator}s.
+   * Instantiates a {@link DoccatCrossValidator} with the
+   * given {@link FeatureGenerator generators}.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param mlParams The {@link TrainingParameters} for the context of cross validation.
+   * @param factory The {@link DoccatFactory} for creating related objects.
+   * @param listeners the {@link DoccatEvaluationMonitor evaluation listeners}.
    */
   public DoccatCrossValidator(String languageCode, TrainingParameters mlParams,
       DoccatFactory factory, DoccatEvaluationMonitor ... listeners) {
@@ -55,12 +60,10 @@ public class DoccatCrossValidator {
   /**
    * Starts the evaluation.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
+   * @param samples The {@link ObjectStream} of {@link DocumentSample samples} to train and test with.
+   * @param nFolds Number of folds. It must be greater than zero.
    *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred.
    */
   public void evaluate(ObjectStream<DocumentSample> samples, int nFolds)
       throws IOException {
@@ -88,19 +91,15 @@ public class DoccatCrossValidator {
   }
 
   /**
-   * Retrieves the accuracy for all iterations.
-   *
-   * @return the word accuracy
+   * @return Retrieves the accuracy for all iterations.
    */
   public double getDocumentAccuracy() {
     return documentAccuracy.mean();
   }
 
   /**
-   * Retrieves the number of words which where validated over all iterations.
-   * The result is the amount of folds multiplied by the total number of words.
-   *
-   * @return the word count
+   * @return Retrieves the number of words which where validated over all iterations.
+   *         The result is the amount of folds multiplied by the total number of words.
    */
   public long getDocumentCount() {
     return documentAccuracy.count();

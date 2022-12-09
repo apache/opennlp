@@ -32,10 +32,18 @@ public class BagOfWordsFeatureGenerator implements FeatureGenerator {
 
   private final boolean useOnlyAllLetterTokens;
 
+  /**
+   * Instantiates a default {@link BagOfWordsFeatureGenerator} instance.
+   */
   public BagOfWordsFeatureGenerator() {
     this(false);
   }
 
+  /**
+   * Instantiates a {@link BagOfWordsFeatureGenerator} instance.
+   *
+   * @param useOnlyAllLetterTokens Whether to use only all-letter tokens, or not.
+   */
   BagOfWordsFeatureGenerator(boolean useOnlyAllLetterTokens) {
     this.useOnlyAllLetterTokens = useOnlyAllLetterTokens;
   }

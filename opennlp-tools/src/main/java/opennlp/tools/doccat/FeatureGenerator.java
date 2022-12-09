@@ -27,11 +27,11 @@ import java.util.Map;
 public interface FeatureGenerator {
 
   /**
-   * Extract features from given text fragments
+   * Extracts features from given {@code text} fragments.
    *
-   * @param text             the text fragments to extract features from
-   * @param extraInformation optional extra information to be used by the feature generator
-   * @return a collection of features
+   * @param text             The text fragments to extract features from
+   * @param extraInformation Optional extra information to be used by the {@link FeatureGenerator}.
+   * @return A collection of features.
    */
   Collection<String> extractFeatures(String[] text, Map<String, Object> extraInformation);
 }
