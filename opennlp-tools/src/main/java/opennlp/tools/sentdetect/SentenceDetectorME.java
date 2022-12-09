@@ -131,13 +131,14 @@ public class SentenceDetectorME implements SentenceDetector {
   }
 
   /**
-   * Detect sentences in given input String.
+   * Detects sentences in given input {@link CharSequence}..
    *
-   * @param s  The string to be processed.
+   * @param s  The {@link CharSequence}. to be processed.
    *
    * @return   A string array containing individual sentences as elements.
    */
-  public String[] sentDetect(String s) {
+  @Override
+  public String[] sentDetect(CharSequence s) {
     Span[] spans = sentPosDetect(s);
     String[] sentences;
     if (spans.length != 0) {
@@ -152,30 +153,29 @@ public class SentenceDetectorME implements SentenceDetector {
     return sentences;
   }
 
-  private int getFirstWS(String s, int pos) {
+  private int getFirstWS(CharSequence s, int pos) {
     while (pos < s.length() && !StringUtil.isWhitespace(s.charAt(pos)))
       pos++;
     return pos;
   }
 
-  private int getFirstNonWS(String s, int pos) {
+  private int getFirstNonWS(CharSequence s, int pos) {
     while (pos < s.length() && StringUtil.isWhitespace(s.charAt(pos)))
       pos++;
     return pos;
   }
 
   /**
-   * Detect the position of the first words of sentences in a String.
+   * Detects the position of the first words of sentences in a {@link CharSequence}.
    *
-   * @param s  The string to be processed.
-   * @return   An integer array containing the positions of the end index of
-   *          every sentence
+   * @param s  The {@link CharSequence} to be processed.
+   * @return   An {@link Span span array} containing the positions of the end index of
+   *           every sentence.
    *
    */
   @Override
-  public Span[] sentPosDetect(String s) {
+  public Span[] sentPosDetect(CharSequence s) {
     sentProbs.clear();
-    StringBuffer sb = new StringBuffer(s);
     List<Integer> enders = scanner.getPositions(s);
     List<Integer> positions = new ArrayList<>(enders.size());
 
@@ -188,7 +188,7 @@ public class SentenceDetectorME implements SentenceDetector {
       }
       if (positions.size() > 0 && cint < positions.get(positions.size() - 1)) continue;
 
-      double[] probs = model.eval(cgen.getContext(sb, cint));
+      double[] probs = model.eval(cgen.getContext(s, cint));
       String bestOutcome = model.getBestOutcome(probs);
 
       if (bestOutcome.equals(SPLIT) && isAcceptableBreak(s, index, cint)) {
@@ -279,10 +279,10 @@ public class SentenceDetectorME implements SentenceDetector {
 
   /**
    * Returns the probabilities associated with the most recent
-   * calls to {@link SentenceDetectorME#sentDetect(String)}.
+   * calls to {@link SentenceDetectorME#sentDetect(CharSequence)}.
    *
    * @return The probability for each sentence returned for the most recent
-   *     call to {@link SentenceDetectorME#sentDetect(String)}.
+   *     call to {@link SentenceDetectorME#sentDetect(CharSequence)}.
    *     If not applicable, an empty array is returned.
    */
   public double[] getSentenceProbabilities() {
@@ -301,12 +301,12 @@ public class SentenceDetectorME implements SentenceDetector {
    * <p>The implementation here always returns {@link true}, which means
    * that the MaxentModel's outcome is taken as is.</p>
    *
-   * @param s the string in which the break occurred.
+   * @param s the {@link CharSequence} in which the break occurred.
    * @param fromIndex the start of the segment currently being evaluated.
    * @param candidateIndex the index of the candidate sentence ending.
    * @return {@link true} if the break is acceptable.
    */
-  protected boolean isAcceptableBreak(String s, int fromIndex, int candidateIndex) {
+  protected boolean isAcceptableBreak(CharSequence s, int fromIndex, int candidateIndex) {
     return true;
   }
 
