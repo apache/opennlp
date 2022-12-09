@@ -25,12 +25,14 @@ import opennlp.tools.parser.AbstractContextGenerator;
 import opennlp.tools.parser.Parse;
 
 /**
- * Class for generating predictive context for deciding when a constituent is complete.
+ * Generates predictive context for deciding when a constituent is complete.
+ *
+ * @see AbstractContextGenerator
  */
 public class CheckContextGenerator extends AbstractContextGenerator {
 
   /**
-   * Creates a new context generator for generating predictive context for deciding
+   * Instantiates a {@link CheckContextGenerator} for generating predictive context for deciding
    * when a constituent is complete.
    */
   public CheckContextGenerator() {
@@ -43,10 +45,11 @@ public class CheckContextGenerator extends AbstractContextGenerator {
   }
 
   /**
-   * Returns predictive context for deciding whether the specified constituents between the
-   * specified start and end index can be combined to form a new constituent of the specified type.
+   * Finds predictive context for deciding whether the specified constituents between the
+   * specified {@code start} and {@code end} index can be combined to form a
+   * new constituent of the specified {@code type}.
    *
-   * @param constituents The constituents which have yet to be combined into new constituents.
+   * @param constituents The {@link Parse constituents} which have yet to be combined into new constituents.
    * @param type The type of the new constituent proposed.
    * @param start The first constituent of the proposed constituent.
    * @param end The last constituent of the proposed constituent.

@@ -29,8 +29,8 @@ import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Wrapper class for one of four parser event streams.  The particular event stream is specified
- * at construction.
+ * Wrapper class for one of four {@link Parser shift-reduce parser} event streams.
+ * The particular {@link ParserEventTypeEnum event type} is specified at construction.
  */
 public class ParserEventStream extends AbstractParserEventStream {
 
@@ -38,16 +38,33 @@ public class ParserEventStream extends AbstractParserEventStream {
   protected CheckContextGenerator kcg;
 
   /**
-   * Create an event stream based on the specified data stream of the specified type using
-   * the specified head rules.
+   * Instantiates a {@link ParserEventStream} based on the specified data stream
+   * of the {@link ParserEventTypeEnum type} using {@link HeadRules head rules}.
+   * 
    * @param d A 1-parse-per-line Penn Treebank Style parse.
-   * @param rules The head rules.
-   * @param etype The type of events desired (tag, chunk, build, or check).
-   * @param dict A tri-gram dictionary to reduce feature generation.
+   * @param rules The {@link HeadRules head rules} to use.
+   * @param etype The {@link ParserEventTypeEnum type} of events desired.
+   * @param dict A tri-gram {@link Dictionary} to reduce feature generation.
+   *
+   * @see ParserEventTypeEnum
    */
   public ParserEventStream(ObjectStream<Parse> d, HeadRules rules,
                            ParserEventTypeEnum etype, Dictionary dict) {
     super(d,rules,etype,dict);
+  }
+
+  /**
+   * Instantiates a {@link ParserEventStream} based on the specified data stream
+   * of the {@link ParserEventTypeEnum type} using {@link HeadRules head rules}.
+   *
+   * @param d A 1-parse-per-line Penn Treebank Style parse.
+   * @param rules The {@link HeadRules head rules} to use.
+   * @param etype The {@link ParserEventTypeEnum type} of events desired.
+   *
+   * @see ParserEventTypeEnum
+   */
+  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
+    this (d,rules,etype,null);
   }
 
   @Override
@@ -60,17 +77,12 @@ public class ParserEventStream extends AbstractParserEventStream {
     }
   }
 
-
-
-  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
-    this (d,rules,etype,null);
-  }
-
   /**
-   * Returns true if the specified child is the first child of the specified parent.
-   * @param child The child parse.
-   * @param parent The parent parse.
-   * @return true if the specified child is the first child of the specified parent; false otherwise.
+   * @param child The child {@link Parse}.
+   * @param parent The parent {@link Parse}.
+   *
+   * @return {@code true} if the specified {@code child} is the first child of the
+   *         specified {@code parent}, {@code false} otherwise.
    */
   protected boolean firstChild(Parse child, Parse parent) {
     return AbstractBottomUpParser.collapsePunctuation(parent.getChildren(), punctSet)[0] == child;
@@ -111,10 +123,11 @@ public class ParserEventStream extends AbstractParserEventStream {
   }
 
   /**
-   * Adds events for parsing (post tagging and chunking to the specified list of events for
-   * the specified parse chunks.
-   * @param parseEvents The events for the specified chunks.
-   * @param chunks The incomplete parses to be parsed.
+   * Adds {@link Event events} for parsing (post tagging and chunking)
+   * to the specified list of events for the specified parse chunks.
+   *
+   * @param parseEvents The {@link Event events} for the specified chunks.
+   * @param chunks The incomplete {@link Parse parses} to be parsed.
    */
   @Override
   protected void addParseEvents(List<Event> parseEvents, Parse[] chunks) {

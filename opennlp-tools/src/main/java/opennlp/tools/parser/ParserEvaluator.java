@@ -27,30 +27,35 @@ import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
 /**
- * Class for {@link Evaluator<Parse>}.
- * This ParserEvaluator behaves like EVALB with no exceptions, e.g,
- * without removing punctuation tags, or equality between ADVP and PRT
- * (as in COLLINS convention). To follow parsing evaluation conventions
- * (Bikel, Collins, Charniak, etc.) as in EVALB, options are to be added
- * to the {@code ParserEvaluatorTool}.
+ * This implementation of {@link Evaluator<Parse>} behaves like {@code EVALB} with no exceptions,
+ * e.g, without removing punctuation tags, or equality between {@code ADVP} and {@code PRT}, as
+ * in <a href="https://direct.mit.edu/coli/article/30/4/479/1858/Intricacies-of-Collins-Parsing-Model">
+ * COLLINS convention</a>.
+ * <p>
+ * To follow parsing evaluation conventions (Bikel, Collins, Charniak, etc.) as in {@code EVALB},
+ * options are to be added to the {@code ParserEvaluatorTool}.
  *
+ * @see Parser
+ * @see Evaluator
+ * @see Parse
  */
 public class ParserEvaluator extends Evaluator<Parse> {
 
-  /**
+  /*
    * Holds the evaluation results for the last run of {@link #processSample}.
    */
   private final FMeasure fmeasure = new FMeasure();
-  /**
+
+  /*
    * The parser to evaluate.
    */
   private final Parser parser;
-
+  
   /**
-   * Construct a {@link Parser} with some evaluation monitors.
-   * 
-   * @param aParser A valid {@link Parser} instance.
-   * @param monitors the evaluation monitors
+   * Initializes a {@link ParserEvaluator} instance with the given {@link Parser}.
+   *
+   * @param aParser The {@link Parser} to evaluate.
+   * @param monitors The {@link ParserEvaluationMonitor evaluation listeners}.
    */
   public ParserEvaluator(final Parser aParser, final ParserEvaluationMonitor... monitors) {
     super(monitors);
@@ -58,9 +63,11 @@ public class ParserEvaluator extends Evaluator<Parse> {
   }
 
   /**
-   * Obtain {@code Span}s for every parse in the sentence.
-   * @param parse the parse from which to obtain the spans
-   * @return an array containing every span for the parse
+   * Obtains {@link Span spans} for every parse in a sentence.
+   *
+   * @param parse The parse from which to obtain {@link Span spans}.
+   *
+   * @return An array of {@link Span spans} for the parse
    */
   private static Span[] getConstituencySpans(final Parse parse) {
 
@@ -108,10 +115,6 @@ public class ParserEvaluator extends Evaluator<Parse> {
     return prediction;
   }
 
-  /**
-   * It returns the fmeasure result.
-   * @return the fmeasure value
-   */
   public final FMeasure getFMeasure() {
     return fmeasure;
   }

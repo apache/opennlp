@@ -32,11 +32,16 @@ import opennlp.tools.parser.Parse;
  * Creates the features or contexts for the building phase of parsing.
  * This phase builds constituents from the left-most node of these
  * constituents.
+ *
+ * @see AbstractContextGenerator
  */
 public class BuildContextGenerator extends AbstractContextGenerator {
 
-  private Parse[] leftNodes;
+  private final Parse[] leftNodes;
 
+  /**
+   * Instantiates a {@link BuildContextGenerator} for making decisions.
+   */
   public BuildContextGenerator() {
     super();
     leftNodes = new Parse[2];
@@ -48,11 +53,12 @@ public class BuildContextGenerator extends AbstractContextGenerator {
   }
 
   /**
-   * Returns the contexts/features for the decision to build a new constituent for the specified parse
-   * at the specified index.
-   * @param constituents The constituents of the parse so far.
+   * Finds the contexts/features for the decision to build a new constituent for the specified parse
+   * at the specified {@code index}.
+   *
+   * @param constituents The {@link Parse constituents} of the parse so far.
    * @param index The index of the constituent where a build decision is being made.
-   * @return the contexts/features for the decision to build a new constituent.
+   * @return The contexts/features for the decision to build a new constituent.
    */
   public String[] getContext(Parse[] constituents, int index) {
     int ps = constituents.length;

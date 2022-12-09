@@ -19,5 +19,8 @@ package opennlp.tools.parser;
 
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * A marker interface for evaluating {@link Parser parsers}.
+ */
 public interface ParserEvaluationMonitor extends EvaluationMonitor<Parse> {
 }

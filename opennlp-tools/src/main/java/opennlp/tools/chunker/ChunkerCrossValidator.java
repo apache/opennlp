@@ -37,7 +37,7 @@ public class ChunkerCrossValidator {
   private final ChunkerFactory chunkerFactory;
 
   /**
-   * Initializes a {@link ChunkerModel} instance via given parameters.
+   * Initializes a {@link ChunkerCrossValidator} instance via given parameters.
    *
    * @param languageCode An ISO conform language code.
    * @param factory The {@link ChunkerFactory} for creating related objects.

@@ -24,9 +24,12 @@ import opennlp.tools.parser.chunking.Parser;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.TokenTag;
 
+/**
+ * The parser chunker {@link SequenceValidator} implementation.
+ */
 public class ParserChunkerSequenceValidator implements SequenceValidator<TokenTag> {
 
-  private Map<String, String> continueStartMap;
+  private final Map<String, String> continueStartMap;
 
   public ParserChunkerSequenceValidator(String[] outcomes) {
 

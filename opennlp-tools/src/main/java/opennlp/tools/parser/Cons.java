@@ -18,7 +18,9 @@
 package opennlp.tools.parser;
 
 /**
- * Class to hold feature information about a specific parse node.
+ * Holds feature information about a specific {@link Parse} node.
+ *
+ * @see Parse
  */
 public class Cons {
 

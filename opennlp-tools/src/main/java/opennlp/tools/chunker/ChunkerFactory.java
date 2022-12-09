@@ -32,6 +32,18 @@ public class ChunkerFactory extends BaseToolFactory {
   public ChunkerFactory() {
   }
 
+  /**
+   * Instantiates a {@link ChunkerFactory} via a given {@code subclassName}.
+   *
+   * @param subclassName The class name used for instantiation. If {@code null}, an
+   *                     instance of {@link ChunkerFactory} will be returned
+   *                     per default. Otherwise, the {@link ExtensionLoader} mechanism
+   *                     is applied to load the requested {@code subclassName}.
+   *
+   * @return A valid {@link ChunkerFactory} instance.
+   * @throws InvalidFormatException Thrown if the {@link ExtensionLoader} mechanism failed to
+   *                                create the factory associated with {@code subclassName}.
+   */
   public static ChunkerFactory create(String subclassName)
       throws InvalidFormatException {
     if (subclassName == null) {
@@ -42,9 +54,7 @@ public class ChunkerFactory extends BaseToolFactory {
       return ExtensionLoader.instantiateExtension(ChunkerFactory.class, subclassName);
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
+          + ". The initialization threw an exception.";
       throw new InvalidFormatException(msg, e);
     }
   }

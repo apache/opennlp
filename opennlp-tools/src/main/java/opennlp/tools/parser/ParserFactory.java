@@ -22,6 +22,22 @@ public class ParserFactory {
   private ParserFactory() {
   }
 
+  /**
+   * Instantiates a {@link Parser} via a given {@code model} and
+   * other configuration parameters.
+   *
+   * @param model The {@link ParserModel} to use.
+   * @param beamSize The number of different parses kept during parsing.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent. Only outcomes which contribute to the top
+   *                          {@code advancePercentage} will be explored.
+   *
+   * @return A valid {@link Parser} instance.
+   * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
+   *
+   * @see Parser
+   * @see ParserModel
+   */
   public static Parser create(ParserModel model, int beamSize, double advancePercentage) {
 
     if (ParserType.CHUNKING.equals(model.getParserType())) {
@@ -36,6 +52,18 @@ public class ParserFactory {
     }
   }
 
+  /**
+   * Instantiates a {@link Parser} via a given {@code model} and
+   * default configuration parameters (see: {@link AbstractBottomUpParser}).
+   *
+   * @param model The {@link ParserModel} to use.
+   *
+   * @return A valid {@link Parser} instance.
+   * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
+   *
+   * @see Parser
+   * @see AbstractBottomUpParser
+   */
   public static Parser create(ParserModel model) {
     return create(model, AbstractBottomUpParser.defaultBeamSize,
         AbstractBottomUpParser.defaultAdvancePercentage);

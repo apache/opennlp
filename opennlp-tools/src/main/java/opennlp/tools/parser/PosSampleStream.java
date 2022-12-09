@@ -25,18 +25,22 @@ import opennlp.tools.util.ObjectStream;
 
 public class PosSampleStream extends FilterObjectStream<Parse, POSSample> {
 
+  /**
+   * Initializes a {@link PosSampleStream instance}.
+   *
+   * @param in A {@link ObjectStream<Parse> stream} used as input.
+   */
   public PosSampleStream(ObjectStream<Parse> in) {
     super(in);
   }
 
+  @Override
   public POSSample read() throws IOException {
 
     Parse parse = samples.read();
 
     if (parse != null) {
-
       Parse[] nodes = parse.getTagNodes();
-
       String[] toks = new String[nodes.length];
       String[] preds = new String[nodes.length];
 

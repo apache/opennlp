@@ -36,24 +36,26 @@ public abstract class AbstractContextGenerator {
 
   /**
    * Creates punctuation feature for the specified punctuation at the specified index
-   * based on the punctuation mark.
+   * {@code i} based on the {@code punctuation} mark.
+   *
    * @param punct The punctuation which is in context.
-   * @param i The index of the punctuation with relative to the parse.
-   * @return Punctuation feature for the specified parse and the specified punctuation at the specfied index.
+   * @param i The index of the {@code punctuation} with relative to the parse.
+   * @return Punctuation feature for the parse and the punctuation at the specified index.
    */
   protected String punct(Parse punct, int i) {
-    return String.valueOf(i) + "=" + punct.getCoveredText();
+    return i + "=" + punct.getCoveredText();
   }
 
   /**
-   * Creates punctuation feature for the specified punctuation at the specfied index
-   * based on the punctuation's tag.
+   * Creates punctuation feature for the specified punctuation at the specified index
+   * {@code i} based on the {@code punctuation}'s tag.
+   * 
    * @param punct The punctuation which is in context.
-   * @param i The index of the punctuation relative to the parse.
-   * @return Punctuation feature for the specified parse and the specified punctuation at the specfied index.
+   * @param i The index of the {@code punctuation} relative to the parse.
+   * @return Punctuation feature for the parse and the punctuation at the specified index.
    */
   protected String punctbo(Parse punct, int i) {
-    return String.valueOf(i) + "=" + punct.getType();
+    return i + "=" + punct.getType();
   }
 
   protected String cons(Parse p, int i) {
@@ -88,10 +90,13 @@ public abstract class AbstractContextGenerator {
 
   /**
    * Generates a string representing the grammar rule production that the specified parse
-   * is starting.  The rule is of the form p.type -&gt; c.children[0..n].type.
-   * @param p The parse which stats teh production.
+   * is starting.
+   * <p>
+   * The rule is of the form {@code p.type -&gt; c.children[0..n].type}.
+   *
+   * @param p The {@link Parse} which stats the production.
    * @param includePunctuation Whether punctuation should be included in the production.
-   * @return a string representing the grammar rule production that the specified parse
+   * @return A string representing the grammar rule production that the specified parse
    *     is starting.
    */
   protected String production(Parse p, boolean includePunctuation) {
@@ -150,17 +155,19 @@ public abstract class AbstractContextGenerator {
 
   /**
    * Creates cons features involving the 3 specified nodes and adds them to the specified feature list.
+   *
    * @param features The list of features.
-   * @param c0 The first node.
-   * @param c1 The second node.
-   * @param c2 The third node.
-   * @param punct1s The punctuation between the first and second node.
-   * @param punct2s The punctuation between the second and third node.
-   * @param trigram Specifies whether lexical tri-gram features between these nodes should be generated.
-   * @param bigram1 Specifies whether lexical bi-gram features between the first and second
-   *                node should be generated.
-   * @param bigram2 Specifies whether lexical bi-gram features between the second and third
-   *                node should be generated.
+   * @param c0 The first {@link Cons node}.
+   * @param c1 The second {@link Cons node}.
+   * @param c2 The third {@link Cons node}.
+   * @param punct1s The punctuation between {@code c0} and {@code c1}.
+   * @param punct2s The punctuation between {@code c1} and {@code c2}.
+   * @param trigram Specifies whether lexical tri-gram features between these nodes
+   *                should be generated.
+   * @param bigram1 Specifies whether lexical bi-gram features between {@code c0} and {@code c1}
+   *                should be generated.
+   * @param bigram2 Specifies whether lexical bi-gram features between {@code c1} and {@code c2}
+   *                should be generated.
    */
   protected void cons3(List<String> features, Cons c0, Cons c1, Cons c2, Collection<Parse> punct1s,
       Collection<Parse> punct2s, boolean trigram, boolean bigram1, boolean bigram2) {
@@ -298,9 +305,10 @@ public abstract class AbstractContextGenerator {
   }
 
   /**
-   * Generates features for nodes surrounding a completed node of the specified type.
-   * @param node A surrounding node.
-   * @param i The index of the surrounding node with respect to the completed node.
+   * Generates features for nodes surrounding a completed node of the specified {@code type}.
+   *
+   * @param node A surrounding {@link Parse node}.
+   * @param i The index of the surrounding {@code node} with respect to the completed node.
    * @param type The type of the completed node.
    * @param punctuation The punctuation adjacent and between the specified surrounding node.
    * @param features A list to which features are added.
@@ -358,8 +366,9 @@ public abstract class AbstractContextGenerator {
   /**
    * Produces features to determine whether the specified child node is part of
    * a complete constituent of the specified type and adds those features to the
-   * specfied list.
-   * @param child The parse node to consider.
+   * specified list.
+   *
+   * @param child The {@link Parse node} to consider.
    * @param i A string indicating the position of the child node.
    * @param type The type of constituent being built.
    * @param features List to add features to.
@@ -397,7 +406,8 @@ public abstract class AbstractContextGenerator {
   /**
    * Populates specified nodes array with left-most right frontier
    * node with a unique head. If the right frontier doesn't contain
-   * enough nodes, then nulls are placed in the array elements.
+   * enough nodes, then {@code nulls} are placed in the array elements.
+   *
    * @param rf The current right frontier.
    * @param nodes The array to be populated.
    */

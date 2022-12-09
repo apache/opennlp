@@ -45,7 +45,7 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
- * Class for storing the English head rules associated with parsing.
+ * Class for storing the English {@link opennlp.tools.parser.HeadRules} associated with parsing.
  */
 public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, SerializableArtifact {
 
@@ -98,26 +98,28 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
   }
 
   private Map<String, HeadRule> headRules;
-  private Set<String> punctSet;
+  private final Set<String> punctSet;
 
   /**
-   * Creates a new set of head rules based on the specified head rules file.
+   * Creates a new set of head rules based on the specified {@code ruleFile}.
    *
-   * @param ruleFile the head rules file.
+   * @param ruleFile A string representation for a head rules file.
    *
-   * @throws IOException if the head rules file can not be read.
+   * @throws IOException Thrown if the head rules file can not be read.
+   *
+   * @deprecated Use {@link #HeadRules(Reader)} instead.
    */
   @Deprecated
   public HeadRules(String ruleFile) throws IOException {
-    this(new BufferedReader(new FileReader(ruleFile)));
+    this(new FileReader(ruleFile));
   }
 
   /**
    * Creates a new set of head rules based on the specified reader.
    *
-   * @param rulesReader the head rules reader.
+   * @param rulesReader A {@link Reader} for a head rules file.
    *
-   * @throws IOException if the head rules reader can not be read.
+   * @throws IOException Thrown  f the head rules reader can not be read.
    */
   public HeadRules(Reader rulesReader) throws IOException {
     BufferedReader in = new BufferedReader(rulesReader);
@@ -131,10 +133,12 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
     //punctSet.add(":");
   }
 
+  @Override
   public Set<String> getPunctuationTags() {
     return punctSet;
   }
 
+  @Override
   public Parse getHead(Parse[] constituents, String type) {
     if (Parser.TOK_NODE.equals(constituents[0].getType())) {
       return null;
@@ -218,6 +222,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
     }
   }
 
+  @Override
   public void labelGaps(Stack<Constituent> stack) {
     if (stack.size() > 4) {
       //Constituent con0 = (Constituent) stack.get(stack.size()-1);
@@ -245,15 +250,17 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
   }
 
   /**
-   * Writes the head rules to the writer in a format suitable for loading
-   * the head rules again with the constructor. The encoding must be
-   * taken into account while working with the writer and reader.
+   * Serializes the head rules via a {@link Writer} in a format suitable for loading
+   * the head rules again. The encoding must be taken into account while
+   * working with the writer and reader.
    * <p>
-   * After the entries have been written, the writer is flushed.
-   * The writer remains open after this method returns.
+   * Once the entries have been written, the {@code writer} is flushed.
+   * <p>
+   * Note:
+   * The {@code writer} remains open after this method returns.
    *
-   * @param writer
-   * @throws IOException
+   * @param writer The {@link Writer} to write the head rules to.
+   * @throws IOException Thrown if IO errors occurred during write operation.
    */
   public void serialize(Writer writer) throws IOException {
 

@@ -24,10 +24,16 @@ import opennlp.tools.util.ObjectStream;
 
 public class ParseSampleStream extends FilterObjectStream<String, Parse> {
 
+  /**
+   * Initializes a {@link ParseSampleStream instance}.
+   *
+   * @param in A plain text {@link ObjectStream stream} used as input.
+   */
   public ParseSampleStream(ObjectStream<String> in) {
     super(in);
   }
 
+  @Override
   public Parse read() throws IOException {
 
     String parse = samples.read();

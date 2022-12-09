@@ -32,6 +32,10 @@ import opennlp.tools.parser.ParserEventTypeEnum;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
+/**
+ * Wrapper class for one of four {@link Parser built-attach parser} event streams.
+ * The particular {@link ParserEventTypeEnum event type} is specified at construction.
+ */
 public class ParserEventStream extends AbstractParserEventStream {
 
   protected AttachContextGenerator attachContextGenerator;
@@ -40,9 +44,34 @@ public class ParserEventStream extends AbstractParserEventStream {
 
   private static final boolean debug = false;
 
+  /**
+   * Instantiates a {@link ParserEventStream} based on the specified data stream
+   * of the {@link ParserEventTypeEnum type} using {@link HeadRules head rules}.
+   *
+   * @param d A 1-parse-per-line Penn Treebank Style parse.
+   * @param rules The {@link HeadRules head rules} to use.
+   * @param etype The {@link ParserEventTypeEnum type} of events desired.
+   * @param dict A tri-gram {@link Dictionary} to reduce feature generation.
+   *
+   * @see ParserEventTypeEnum
+   */
   public ParserEventStream(ObjectStream<Parse> d, HeadRules rules,
       ParserEventTypeEnum etype, Dictionary dict) {
     super(d, rules, etype, dict);
+  }
+
+  /**
+   * Instantiates a {@link ParserEventStream} based on the specified data stream
+   * of the {@link ParserEventTypeEnum type} using {@link HeadRules head rules}.
+   *
+   * @param d A 1-parse-per-line Penn Treebank Style parse.
+   * @param rules The {@link HeadRules head rules} to use.
+   * @param etype The {@link ParserEventTypeEnum type} of events desired.
+   *
+   * @see ParserEventTypeEnum
+   */
+  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
+    super(d, rules, etype);
   }
 
   @Override
@@ -52,16 +81,13 @@ public class ParserEventStream extends AbstractParserEventStream {
     checkContextGenerator = new CheckContextGenerator(punctSet);
   }
 
-  public ParserEventStream(ObjectStream<Parse> d, HeadRules rules, ParserEventTypeEnum etype) {
-    super(d, rules, etype);
-  }
-
   /**
-   * Returns a set of parent nodes which consist of the immediate
-   * parent of the specified node and any of its parent which
+   * Returns a map of parent nodes which consist of the immediate
+   * parent of the specified {@link Parse node} and any of its parent which
    * share the same syntactic type.
-   * @param node The node whose parents are to be returned.
-   * @return a set of parent nodes.
+   * 
+   * @param node The {@link Parse node} whose parents are to be returned.
+   * @return A {@link Map} of parent {@link Parse nodes}.
    */
   private Map<Parse, Integer> getNonAdjoinedParent(Parse node) {
     Map<Parse, Integer> parents = new HashMap<>();
@@ -90,18 +116,6 @@ public class ParserEventStream extends AbstractParserEventStream {
   private int nonPunctChildCount(Parse node) {
     return Parser.collapsePunctuation(node.getChildren(),punctSet).length;
   }
-  /*
-  private Set getNonAdjoinedParent(Parse node) {
-    Set parents = new HashSet();
-    Parse parent = node.getParent();
-    do {
-      parents.add(parent);
-      parent = parent.getParent();
-    }
-    while(parent.getType().equals(node.getType()));
-    return parents;
-  }
-  */
 
   @Override
   protected boolean lastChild(Parse child, Parse parent) {

@@ -17,10 +17,17 @@
 
 package opennlp.tools.parser;
 
+/**
+ * Enumeration of supported {@link Parser} types.
+ */
 public enum ParserType {
   CHUNKING,
   TREEINSERT;
 
+  /**
+   * @param type The string representation of the requested {@link ParserType}.
+   * @return The {@link ParserType} matching {@code type}, {@code null} otherwise.
+   */
   public static ParserType parse(String type) {
     if (ParserType.CHUNKING.name().equals(type)) {
       return ParserType.CHUNKING;

@@ -51,27 +51,48 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Class for a shift reduce style parser based on Adwait Ratnaparkhi's 1998 thesis.
+ * A shift reduce style {@link opennlp.tools.parser.Parser} implementation
+ * based on Adwait Ratnaparkhi's 1998 thesis.
+ *
+ * @see AbstractBottomUpParser
+ * @see opennlp.tools.parser.Parser
  */
 public class Parser extends AbstractBottomUpParser {
 
-  private MaxentModel buildModel;
-  private MaxentModel checkModel;
+  private final MaxentModel buildModel;
+  private final MaxentModel checkModel;
 
-  private BuildContextGenerator buildContextGenerator;
-  private CheckContextGenerator checkContextGenerator;
+  private final BuildContextGenerator buildContextGenerator;
+  private final CheckContextGenerator checkContextGenerator;
 
-  private double[] bprobs;
-  private double[] cprobs;
+  private final double[] bprobs;
+  private final double[] cprobs;
 
   private static final String TOP_START = START + TOP_NODE;
-  private int topStartIndex;
-  private Map<String, String> startTypeMap;
-  private Map<String, String> contTypeMap;
+  private final int topStartIndex;
+  private final Map<String, String> startTypeMap;
+  private final Map<String, String> contTypeMap;
 
-  private int completeIndex;
-  private int incompleteIndex;
+  private final int completeIndex;
+  private final int incompleteIndex;
 
+  /**
+   * Instantiates a {@link Parser} via a given {@code model} and
+   * other configuration parameters. Uses the default implementations of
+   * {@link POSTaggerME} and {@link ChunkerME}.
+   *
+   * @param model The {@link ParserModel} to use.
+   * @param beamSize The number of different parses kept during parsing.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent. Only outcomes which contribute to the top
+   *                          {@code advancePercentage} will be explored.
+   *
+   * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
+   *
+   * @see ParserModel
+   * @see POSTaggerME
+   * @see ChunkerME
+   */
   public Parser(ParserModel model, int beamSize, double advancePercentage) {
     this(model.getBuildModel(), model.getCheckModel(),
         new POSTaggerME(model.getParserTaggerModel()),
@@ -79,21 +100,37 @@ public class Parser extends AbstractBottomUpParser {
             model.getHeadRules(), beamSize, advancePercentage);
   }
 
+  /**
+   * Instantiates a {@link Parser} via a given {@code model}.
+   * Uses the default implementations of {@link POSTaggerME} and {@link ChunkerME}
+   * and default values for {@code beamSize} and {@code advancePercentage}.
+   *
+   * @param model The {@link ParserModel} to use.
+   *
+   * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
+   *
+   * @see ParserModel
+   * @see POSTaggerME
+   * @see ChunkerME
+   */
   public Parser(ParserModel model) {
     this(model, defaultBeamSize, defaultAdvancePercentage);
   }
 
   /**
-   * Creates a new parser using the specified models and head rules using the specified beam
-   * size and advance percentage.
-   * @param buildModel The model to assign constituent labels.
-   * @param checkModel The model to determine a constituent is complete.
-   * @param tagger The model to assign pos-tags.
-   * @param chunker The model to assign flat constituent labels.
-   * @param headRules The head rules for head word perculation.
+   * Instantiates a {@link Parser} via a given {@code model} and other configuration parameters.
+   *
+   * @param buildModel A valid {@link MaxentModel} used to build.
+   * @param checkModel A valid {@link MaxentModel} used to check.
+   * @param tagger A valid {@link POSModel} used to tag.
+   * @param chunker A valid {@link ChunkerModel} used to chunk.
+   * @param headRules The {@link HeadRules} for head word percolation.
    * @param beamSize The number of different parses kept during parsing.
-   * @param advancePercentage The minimal amount of probability mass which advanced outcomes must represent.
-   *     Only outcomes which contribute to the top "advancePercentage" will be explored.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent. Only outcomes which contribute to the top
+   *                          {@code advancePercentage} will be explored.
+   * @see POSTagger
+   * @see Chunker
    */
   private Parser(MaxentModel buildModel, MaxentModel checkModel, POSTagger tagger, Chunker chunker,
                  HeadRules headRules, int beamSize, double advancePercentage) {
@@ -267,6 +304,16 @@ public class Parser extends AbstractBottomUpParser {
     }
   }
 
+  /**
+   * Starts a training of a {@link ParserModel}.
+   * 
+   * @param languageCode An ISO conform language code.
+   * @param parseSamples The {@link ObjectStream<Parse> samples} as input.
+   * @param rules The {@link HeadRules} to use.
+   * @param mlParams The {@link TrainingParameters parameters} for training.
+   * @return A valid {@link ParserModel}.
+   * @throws IOException Thrown if IO errors occurred during training.
+   */
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples,
                                   HeadRules rules, TrainingParameters mlParams)
           throws IOException {
@@ -299,13 +346,11 @@ public class Parser extends AbstractBottomUpParser {
 
     POSModel posModel = POSTaggerME.train(languageCode, new PosSampleStream(parseSamples),
         mlParams.getParameters("tagger"), new POSTaggerFactory());
-
     parseSamples.reset();
 
     // chunk
     ChunkerModel chunkModel = ChunkerME.train(languageCode,
         new ChunkSampleStream(parseSamples), mlParams.getParameters("chunker"), new ParserChunkerFactory());
-
     parseSamples.reset();
 
     // check
@@ -317,7 +362,6 @@ public class Parser extends AbstractBottomUpParser {
     MaxentModel checkModel = checkTrainer.train(kes);
     mergeReportIntoManifest(manifestInfoEntries, checkReportMap, "check");
 
-    // TODO: Remove cast for HeadRules
     return new ParserModel(languageCode, buildModel, checkModel,
         posModel, chunkModel, rules,
         ParserType.CHUNKING, manifestInfoEntries);

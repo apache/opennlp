@@ -28,6 +28,11 @@ import opennlp.tools.util.ObjectStream;
 
 public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
 
+  /**
+   * Initializes a {@link ChunkSampleStream instance}.
+   *
+   * @param in A {@link ObjectStream stream} used as input.
+   */
   public ChunkSampleStream(ObjectStream<Parse> in) {
     super(in);
   }
@@ -62,8 +67,8 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
     return chunks.toArray(new Parse[chunks.size()]);
   }
 
+  @Override
   public ChunkSample read() throws IOException {
-
     Parse parse = samples.read();
 
     if (parse != null) {
