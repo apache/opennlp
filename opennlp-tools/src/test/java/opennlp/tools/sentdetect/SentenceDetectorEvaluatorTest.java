@@ -39,7 +39,6 @@ public class SentenceDetectorEvaluatorTest {
     eval.evaluateSample(SentenceSampleTest.createGoldSample());
 
     Assertions.assertEquals(1.0, eval.getFMeasure().getFMeasure());
-
     Assertions.assertEquals(0, stream.toString().length());
   }
 
@@ -62,19 +61,21 @@ public class SentenceDetectorEvaluatorTest {
   /**
    * a dummy sentence detector that always return something expected
    */
-  public class DummySD implements SentenceDetector {
+  public static class DummySD implements SentenceDetector {
 
-    private SentenceSample sample;
+    private final SentenceSample sample;
 
     public DummySD(SentenceSample sample) {
       this.sample = sample;
     }
 
-    public String[] sentDetect(String s) {
+    @Override
+    public String[] sentDetect(CharSequence s) {
       return null;
     }
 
-    public Span[] sentPosDetect(String s) {
+    @Override
+    public Span[] sentPosDetect(CharSequence s) {
       return sample.getSentences();
     }
 

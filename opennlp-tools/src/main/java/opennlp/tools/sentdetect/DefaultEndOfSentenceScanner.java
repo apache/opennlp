@@ -48,8 +48,15 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
   }
 
   @Override
-  public List<Integer> getPositions(String s) {
-    return getPositions(s.toCharArray());
+  public List<Integer> getPositions(CharSequence s) {
+    List<Integer> l = new ArrayList<>();
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (eosCharacters.contains(c)) {
+        l.add(i);
+      }
+    }
+    return l;
   }
 
   @Override
