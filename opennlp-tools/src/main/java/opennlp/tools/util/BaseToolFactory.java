@@ -30,8 +30,7 @@ import opennlp.tools.util.model.ArtifactSerializer;
  * Extensions of this class should:
  * <ul>
  *  <li>implement an empty constructor (TODO is it necessary?)
- *  <li>implement a constructor that takes the {@link ArtifactProvider} and
- *      calls {@link BaseToolFactory(Map)}
+ *  <li>implement a constructor that takes the {@link ArtifactProvider}}
  *  <li>override {@link #createArtifactMap()} and
  *      {@link #createArtifactSerializersMap()} methods if necessary.
  * </ul>

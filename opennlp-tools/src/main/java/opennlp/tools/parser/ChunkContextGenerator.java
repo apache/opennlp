@@ -25,7 +25,7 @@ import opennlp.tools.util.Cache;
 import opennlp.tools.util.TokenTag;
 
 /**
- * Creates predivtive context for the pre-chunking phases of parsing.
+ * Creates predictive context for the pre-chunking phases of parsing.
  */
 public class ChunkContextGenerator implements ChunkerContextGenerator {
 
@@ -33,11 +33,18 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
   private Cache<String, String[]> contextsCache;
   private Object wordsKey;
 
-
+  /**
+   * Initializes a {@link ChunkContextGenerator} instance.
+   */
   public ChunkContextGenerator() {
     this(0);
   }
 
+  /**
+   * Initializes a {@link ChunkContextGenerator} instance with a custom {@code cacheSize}.
+   *
+   * @param cacheSize The cache size. Must be greater than {@code 0} to have an effect.
+   */
   public ChunkContextGenerator(int cacheSize) {
     super();
     if (cacheSize > 0) {
@@ -45,17 +52,24 @@ public class ChunkContextGenerator implements ChunkerContextGenerator {
     }
   }
 
+  /**
+   * @deprecated Use {@link #getContext(int, String[], String[], String[])} instead.
+   */
   @Deprecated
   public String[] getContext(Object o) {
     Object[] data = (Object[]) o;
     return getContext((Integer) data[0], (String[]) data[1], (String[]) data[2], (String[]) data[3]);
   }
 
+  /**
+   * @deprecated Use {@link #getContext(int, String[], String[], String[])} instead.
+   */
   @Deprecated
   public String[] getContext(int i, String[] words, String[] prevDecisions, Object[] ac) {
     return getContext(i,words,(String[]) ac[0],prevDecisions);
   }
 
+  @Override
   public String[] getContext(int i, String[] words, String[] tags, String[] preds) {
     List<String> features = new ArrayList<>(19);
     int x_2 = i - 2;

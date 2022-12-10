@@ -50,16 +50,22 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Built/attach parser.  Nodes are built when their left-most
- * child is encountered.  Subsequent children are attached as
- * daughters.  Attachment is based on node in the right-frontier
- * of the tree.  After each attachment or building, nodes are
- * assesed as either complete or incomplete.  Complete nodes
- * are no longer elligable for daughter attachment.
+ * A built-attach {@link opennlp.tools.parser.Parser} implementation.
+ * <p>
+ * Nodes are built when their left-most child is encountered.
+ * Subsequent children are attached as daughters.
+ * Attachment is based on node in the right-frontier
+ * of the tree. After each attachment or building, nodes are
+ * assessed as either complete or incomplete. Complete nodes
+ * are no longer eligible for daughter attachment.
+ * <p>
  * Complex modifiers which produce additional node
  * levels of the same type are attached with sister-adjunction.
  * Attachment can not take place higher in the right-frontier
  * than an incomplete node.
+ *
+ * @see AbstractBottomUpParser
+ * @see opennlp.tools.parser.Parser
  */
 public class Parser extends AbstractBottomUpParser {
 
@@ -75,40 +81,83 @@ public class Parser extends AbstractBottomUpParser {
 
   /** Label used to distinguish build nodes from non-built nodes. */
   public static final String BUILT = "built";
-  private MaxentModel buildModel;
-  private MaxentModel attachModel;
-  private MaxentModel checkModel;
+  private final MaxentModel buildModel;
+  private final MaxentModel attachModel;
+  private final MaxentModel checkModel;
 
   static boolean checkComplete = false;
 
-  private BuildContextGenerator buildContextGenerator;
-  private AttachContextGenerator attachContextGenerator;
-  private CheckContextGenerator checkContextGenerator;
+  private final BuildContextGenerator buildContextGenerator;
+  private final AttachContextGenerator attachContextGenerator;
+  private final CheckContextGenerator checkContextGenerator;
 
-  private double[] bprobs;
-  private double[] aprobs;
+  private final double[] bprobs;
+  private final double[] aprobs;
   private double[] cprobs;
 
-  private int doneIndex;
-  private int sisterAttachIndex;
-  private int daughterAttachIndex;
-  private int nonAttachIndex;
-  private int completeIndex;
+  private final int doneIndex;
+  private final int sisterAttachIndex;
+  private final int daughterAttachIndex;
+  private final int nonAttachIndex;
+  private final int completeIndex;
 
-  private int[] attachments;
+  private final int[] attachments;
 
+  /**
+   * Instantiates a {@link Parser} via a given {@code model} and
+   * other configuration parameters. Uses the default implementations of
+   * {@link POSTaggerME} and {@link ChunkerME}.
+   *
+   * @param model The {@link ParserModel} to use.
+   * @param beamSize The number of different parses kept during parsing.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent. Only outcomes which contribute to the top
+   *                          {@code advancePercentage} will be explored.
+   *
+   * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
+   *
+   * @see ParserModel
+   * @see POSTaggerME
+   * @see ChunkerME
+   */
   public Parser(ParserModel model, int beamSize, double advancePercentage) {
     this(model.getBuildModel(), model.getAttachModel(), model.getCheckModel(),
-        new POSTaggerME(model.getParserTaggerModel()),
-        new ChunkerME(model.getParserChunkerModel()),
-        model.getHeadRules(),
-        beamSize, advancePercentage);
+        new POSTaggerME(model.getParserTaggerModel()), new ChunkerME(model.getParserChunkerModel()),
+        model.getHeadRules(), beamSize, advancePercentage);
   }
 
+  /**
+   * Instantiates a {@link Parser} via a given {@code model}.
+   * Uses the default implementations of {@link POSTaggerME} and {@link ChunkerME}
+   * and default values for {@code beamSize} and {@code advancePercentage}.
+   *
+   * @param model The {@link ParserModel} to use.
+   *
+   * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
+   *
+   * @see ParserModel
+   * @see POSTaggerME
+   * @see ChunkerME
+   */
   public Parser(ParserModel model) {
     this(model, defaultBeamSize, defaultAdvancePercentage);
   }
 
+  /**
+   * Instantiates a {@link Parser} via a given {@code model} and other configuration parameters.
+   *
+   * @param buildModel A valid {@link MaxentModel} used to build.
+   * @param checkModel A valid {@link MaxentModel} used to check.
+   * @param tagger A valid {@link POSModel} used to tag.
+   * @param chunker A valid {@link ChunkerModel} used to chunk.
+   * @param headRules The {@link HeadRules} for head word percolation.
+   * @param beamSize The number of different parses kept during parsing.
+   * @param advancePercentage The minimal amount of probability mass which advanced outcomes
+   *                          must represent. Only outcomes which contribute to the top
+   *                          {@code advancePercentage} will be explored.
+   * @see POSTagger
+   * @see Chunker
+   */
   private Parser(MaxentModel buildModel, MaxentModel attachModel, MaxentModel checkModel,
                  POSTagger tagger, Chunker chunker, HeadRules headRules, int beamSize,
                  double advancePercentage) {
@@ -134,12 +183,14 @@ public class Parser extends AbstractBottomUpParser {
   }
 
   /**
-   * Returns the right frontier of the specified parse tree with nodes ordered from deepest
+   * Returns the right frontier of the specified {@link Parse tree} with nodes ordered from deepest
    * to shallowest.
-   * @param root The root of the parse tree.
+   *
+   * @param root The {@link Parse root} of the parse tree.
+   * @param punctSet A set of punctuation symbols to be used.
    * @return The right frontier of the specified parse tree.
    */
-  public static List<Parse> getRightFrontier(Parse root,Set<String> punctSet) {
+  public static List<Parse> getRightFrontier(Parse root, Set<String> punctSet) {
     List<Parse> rf = new LinkedList<>();
     Parse top;
     if (AbstractBottomUpParser.TOP_NODE.equals(root.getType()) ||
@@ -436,9 +487,18 @@ public class Parser extends AbstractBottomUpParser {
     p.setType(TOP_NODE);
   }
 
-  public static ParserModel train(String languageCode,
-      ObjectStream<Parse> parseSamples, HeadRules rules, TrainingParameters mlParams)
-      throws IOException {
+  /**
+   * Starts a training of a {@link ParserModel}.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param parseSamples The {@link ObjectStream<Parse> samples} as input.
+   * @param rules The {@link HeadRules} to use.
+   * @param mlParams The {@link TrainingParameters parameters} for training.
+   * @return A valid {@link ParserModel}.
+   * @throws IOException Thrown if IO errors occurred during training.
+   */
+  public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples,
+                                  HeadRules rules, TrainingParameters mlParams) throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
@@ -498,26 +558,33 @@ public class Parser extends AbstractBottomUpParser {
     opennlp.tools.parser.chunking.Parser.mergeReportIntoManifest(
         manifestInfoEntries, attachReportMap, "attach");
 
-    // TODO: Remove cast for HeadRules
-    return new ParserModel(languageCode, buildModel, checkModel,
-        attachModel, posModel, chunkModel,
-        rules, ParserType.TREEINSERT, manifestInfoEntries);
+    return new ParserModel(languageCode, buildModel, checkModel, attachModel,
+            posModel, chunkModel, rules, ParserType.TREEINSERT, manifestInfoEntries);
   }
 
-  public static ParserModel train(String languageCode,
-      ObjectStream<Parse> parseSamples, HeadRules rules, int iterations, int cut)
-      throws IOException {
+  /**
+   * Starts a training of a {@link ParserModel}.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param parseSamples The {@link ObjectStream<Parse> samples} as input.
+   * @param rules The {@link HeadRules} to use.
+   * @param iterations The number of iterations to be conducted.
+   * @param cutoff The cut-off parameter to be used.
+   * @return A valid {@link ParserModel}.
+   * @throws IOException Thrown if IO errors occurred during training.
+   */
+  public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples,
+                                  HeadRules rules, int iterations, int cutoff) throws IOException {
 
     TrainingParameters params = new TrainingParameters();
-    params.put("dict", TrainingParameters.CUTOFF_PARAM, cut);
-
-    params.put("tagger", TrainingParameters.CUTOFF_PARAM, cut);
+    params.put("dict", TrainingParameters.CUTOFF_PARAM, cutoff);
+    params.put("tagger", TrainingParameters.CUTOFF_PARAM, cutoff);
     params.put("tagger", TrainingParameters.ITERATIONS_PARAM, iterations);
-    params.put("chunker", TrainingParameters.CUTOFF_PARAM, cut);
+    params.put("chunker", TrainingParameters.CUTOFF_PARAM, cutoff);
     params.put("chunker", TrainingParameters.ITERATIONS_PARAM, iterations);
-    params.put("check", TrainingParameters.CUTOFF_PARAM, cut);
+    params.put("check", TrainingParameters.CUTOFF_PARAM, cutoff);
     params.put("check", TrainingParameters.ITERATIONS_PARAM, iterations);
-    params.put("build", TrainingParameters.CUTOFF_PARAM, cut);
+    params.put("build", TrainingParameters.CUTOFF_PARAM, cutoff);
     params.put("build", TrainingParameters.ITERATIONS_PARAM, iterations);
 
     return train(languageCode, parseSamples, rules, params);

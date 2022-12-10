@@ -27,8 +27,16 @@ import opennlp.tools.parser.AbstractContextGenerator;
 import opennlp.tools.parser.Cons;
 import opennlp.tools.parser.Parse;
 
+/**
+ * Generates predictive contexts for deciding how constituents should be attached.
+ *
+ * @see AbstractContextGenerator
+ */
 public class AttachContextGenerator extends AbstractContextGenerator {
 
+  /**
+   * Instantiates an {@link AttachContextGenerator} for making decisions about attachments.
+   */
   public AttachContextGenerator(Set<String> punctSet) {
     this.punctSet = punctSet;
   }
@@ -50,8 +58,9 @@ public class AttachContextGenerator extends AbstractContextGenerator {
   }
 
   /**
+   * Finds the predictive contextual features about an attachment.
    *
-   * @param constituents The constituents as they have been constructed so far.
+   * @param constituents The {@link Parse constituents} as they have been constructed so far.
    * @param index The constituent index of the node being attached.
    * @param rightFrontier The nodes which have been not attach to so far.
    * @return A set of contextual features about this attachment.

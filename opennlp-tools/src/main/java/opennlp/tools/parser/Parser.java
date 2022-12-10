@@ -18,29 +18,35 @@
 package opennlp.tools.parser;
 
 /**
- *  Interface for full-syntactic parsers.
+ * Defines common methods for full-syntactic parsers.
  */
 public interface Parser {
 
   /**
-   * Returns the specified number of parses or fewer for the specified tokens. <br>
+   * Returns the specified number of parses or fewer for the specified tokens.
+   * <p>
+   *
    * <b>Note:</b> The nodes within
    * the returned parses are shared with other parses and therefore their parent node references
-   * will not be consistent with their child node reference.  {@link Parse#setParent(Parse)}
-   * can be used to make the parents consistent with a particular parse, but subsequent calls
-   * to <code>setParents</code> can invalidate the results of earlier calls.<br>
-   * @param tokens A parse containing the tokens with a single parent node.
+   * will not be consistent with their child node reference.
+   * <p>
+   *
+   * {@link Parse#setParent(Parse)} can be used to make the parents consistent with a
+   * particular parse, but subsequent calls to <code>setParents</code> can invalidate the
+   * results of earlier calls.<br>
+   *
+   * @param tokens A {@link Parse} containing the tokens with a single parent node.
    * @param numParses The number of parses desired.
-   * @return the specified number of parses for the specified tokens.
+   * @return the specified number of {@link Parse parses} for the specified {@code tokens}.
    */
   Parse[] parse(Parse tokens, int numParses);
 
   /**
-   * Returns a parse for the specified parse of tokens.
+   * Returns a {@link Parse} for the specified {@link Parse} of {@code tokens}.
    *
    * @param tokens The root node of a flat parse containing only tokens.
    * @return A full parse of the specified tokens or the flat chunks of the tokens if a
-   *     fullparse could not be found.
+   *         full parse could not be found.
    */
   Parse parse(Parse tokens);
 }

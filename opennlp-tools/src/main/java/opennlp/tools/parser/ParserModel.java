@@ -41,16 +41,15 @@ import opennlp.tools.util.model.ChunkerModelSerializer;
 import opennlp.tools.util.model.POSModelSerializer;
 
 /**
- * This is an abstract base class for {@link ParserModel} implementations.
+ * This is the default {@link ParserModel} implementation.
  */
-// TODO: Model should validate the artifact map
 public class ParserModel extends BaseModel {
 
   private static class HeadRulesSerializer implements
       ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
 
     public opennlp.tools.parser.lang.en.HeadRules create(InputStream in)
-        throws IOException, InvalidFormatException {
+        throws IOException {
       return new opennlp.tools.parser.lang.en.HeadRules(new BufferedReader(
           new InputStreamReader(in, StandardCharsets.UTF_8)));
     }
@@ -77,10 +76,22 @@ public class ParserModel extends BaseModel {
 
   private static final String PARSER_TYPE = "parser-type";
 
+  /**
+   * Initializes a {@link ParserModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param buildModel A valid {@link MaxentModel} used to build.
+   * @param checkModel A valid {@link MaxentModel} used to check.
+   * @param attachModel A valid {@link MaxentModel} used to attach.
+   * @param parserTagger A valid {@link POSModel} to parse.
+   * @param chunkerTagger A valid {@link ChunkerModel} to chunk.
+   * @param headRules The {@link HeadRules} to to use for parsing.
+   * @param modelType The {@link ParserType} to use.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   */
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
-      MaxentModel attachModel, POSModel parserTagger,
-      ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
-      ParserType modelType, Map<String, String> manifestInfoEntries) {
+      MaxentModel attachModel, POSModel parserTagger, ChunkerModel chunkerTagger,
+      HeadRules headRules, ParserType modelType, Map<String, String> manifestInfoEntries) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries);
 
@@ -110,34 +121,83 @@ public class ParserModel extends BaseModel {
     checkArtifactMap();
   }
 
+  /**
+   * Initializes a {@link ParserModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param buildModel A valid {@link MaxentModel} used to build.
+   * @param checkModel A valid {@link MaxentModel} used to check.
+   * @param parserTagger A valid {@link POSModel} to parse.
+   * @param chunkerTagger A valid {@link ChunkerModel} to chunk.
+   * @param headRules The {@link HeadRules} to to use for parsing.
+   * @param modelType The {@link ParserType} to use.
+   */
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
-      MaxentModel attachModel, POSModel parserTagger,
-      ChunkerModel chunkerTagger, opennlp.tools.parser.HeadRules headRules,
-      ParserType modelType) {
+      MaxentModel attachModel, POSModel parserTagger, ChunkerModel chunkerTagger,
+      HeadRules headRules, ParserType modelType) {
     this (languageCode, buildModel, checkModel, attachModel, parserTagger,
         chunkerTagger, headRules, modelType, null);
   }
 
+  /**
+   * Initializes a {@link ParserModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param buildModel A valid {@link MaxentModel} used to build.
+   * @param checkModel A valid {@link MaxentModel} used to check.
+   * @param parserTagger A valid {@link POSModel} to parse.
+   * @param chunkerTagger A valid {@link ChunkerModel} to chunk.
+   * @param headRules The {@link HeadRules} to to use for parsing.
+   * @param type The {@link ParserType} to use.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   */
   public ParserModel(String languageCode, MaxentModel buildModel, MaxentModel checkModel,
-      POSModel parserTagger, ChunkerModel chunkerTagger,
-      opennlp.tools.parser.HeadRules headRules, ParserType type,
-      Map<String, String> manifestInfoEntries) {
+      POSModel parserTagger, ChunkerModel chunkerTagger, HeadRules headRules,
+      ParserType type, Map<String, String> manifestInfoEntries) {
     this (languageCode, buildModel, checkModel, null, parserTagger,
         chunkerTagger, headRules, type, manifestInfoEntries);
   }
 
+  /**
+   * Initializes a {@link ParserModel} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public ParserModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
+  /**
+   * Initializes a {@link ParserModel} instance via a valid {@link File}.
+   *
+   * @param modelFile The {@link File} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public ParserModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
+  /**
+   * Initializes a {@link ParserModel} instance via a valid {@link Path}.
+   *
+   * @param modelPath The {@link Path} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public ParserModel(Path modelPath) throws IOException {
     this(modelPath.toFile());
   }
 
+  /**
+   * Initializes a {@link ParserModel} instance via a valid {@link URL}.
+   *
+   * @param modelURL The {@link URL} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public ParserModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
@@ -148,10 +208,10 @@ public class ParserModel extends BaseModel {
 
     super.createArtifactSerializers(serializers);
 
-    // In 1.6.x the headrules artifact is serialized with the new API
-    // which uses the Serializeable interface
+    // In 1.6.x the head rules artifact is serialized with the new API
+    // which uses the Serializable interface
     // This change is not backward compatible with the 1.5.x models.
-    // In order to laod 1.5.x model the English headrules serializer must be
+    // In order to load 1.5.x model the English head rules serializer must be
     // put on the serializer map.
 
     if (getVersion().getMajor() == 1 && getVersion().getMinor() == 5) {
@@ -162,53 +222,103 @@ public class ParserModel extends BaseModel {
     serializers.put("chunker", new ChunkerModelSerializer());
   }
 
+  /**
+   * @return Retrieves the {@link ParserType} as configured in the manifest.
+   */
   public ParserType getParserType() {
     return ParserType.parse(getManifestProperty(PARSER_TYPE));
   }
 
+  /**
+   * @return Retrieves the {@link MaxentModel build model} as configured in the manifest.
+   */
   public MaxentModel getBuildModel() {
     return (MaxentModel) artifactMap.get(BUILD_MODEL_ENTRY_NAME);
   }
 
+  /**
+   * @return Retrieves the {@link MaxentModel check model} as configured in the manifest.
+   */
   public MaxentModel getCheckModel() {
     return (MaxentModel) artifactMap.get(CHECK_MODEL_ENTRY_NAME);
   }
 
+  /**
+   * @return Retrieves the {@link MaxentModel attach model} as configured in the manifest.
+   */
   public MaxentModel getAttachModel() {
     return (MaxentModel) artifactMap.get(ATTACH_MODEL_ENTRY_NAME);
   }
 
+  /**
+   * @return Retrieves the {@link POSModel} as configured in the manifest.
+   */
   public POSModel getParserTaggerModel() {
     return (POSModel) artifactMap.get(PARSER_TAGGER_MODEL_ENTRY_NAME);
   }
 
+  /**
+   * @return Retrieves the {@link ChunkerModel} as configured in the manifest.
+   */
   public ChunkerModel getParserChunkerModel() {
     return (ChunkerModel) artifactMap.get(CHUNKER_TAGGER_MODEL_ENTRY_NAME);
   }
 
-  public opennlp.tools.parser.HeadRules getHeadRules() {
+  /**
+   * @return Retrieves the {@link HeadRules} as configured in the manifest.
+   */
+  public HeadRules getHeadRules() {
     return (opennlp.tools.parser.HeadRules)
         artifactMap.get(HEAD_RULES_MODEL_ENTRY_NAME);
   }
 
-  // TODO: Update model methods should make sure properties are copied correctly ...
+  // TODO: (All!) Update model methods should make sure properties are copied correctly ...
+
+  /**
+   * Instantiates a new {@link ParserModel} instance from the existing configuration
+   * with the specified {@code buildModel} for exchange.
+   *
+   * @param buildModel A valid {@link MaxentModel} used to build.
+   * @return A valid {@link ParserModel}.
+   */
   public ParserModel updateBuildModel(MaxentModel buildModel) {
     return new ParserModel(getLanguage(), buildModel, getCheckModel(), getAttachModel(),
         getParserTaggerModel(), getParserChunkerModel(),
         getHeadRules(), getParserType());
   }
 
+  /**
+   * Instantiates a new {@link ParserModel} instance from the existing configuration
+   * with the specified {@code checkModel} for exchange.
+   *
+   * @param checkModel A valid {@link MaxentModel} used to check.
+   * @return A valid {@link ParserModel}.
+   */
   public ParserModel updateCheckModel(MaxentModel checkModel) {
     return new ParserModel(getLanguage(), getBuildModel(), checkModel,
         getAttachModel(), getParserTaggerModel(),
         getParserChunkerModel(), getHeadRules(), getParserType());
   }
 
+  /**
+   * Instantiates a new {@link ParserModel} instance from the existing configuration
+   * with the specified {@code taggerModel} for exchange.
+   *
+   * @param taggerModel A valid {@link POSModel} used to tag.
+   * @return A valid {@link ParserModel}.
+   */
   public ParserModel updateTaggerModel(POSModel taggerModel) {
     return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), getAttachModel(),
         taggerModel, getParserChunkerModel(), getHeadRules(), getParserType());
   }
 
+  /**
+   * Instantiates a new {@link ParserModel} instance from the existing configuration
+   * with the specified {@code chunkModel} for exchange.
+   *
+   * @param chunkModel A valid {@link ChunkerModel} used to tag.
+   * @return A valid {@link ParserModel}.
+   */
   public ParserModel updateChunkerModel(ChunkerModel chunkModel) {
     return new ParserModel(getLanguage(), getBuildModel(), getCheckModel(), getAttachModel(),
         getParserTaggerModel(), chunkModel, getHeadRules(), getParserType());

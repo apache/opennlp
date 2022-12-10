@@ -65,6 +65,8 @@ public class LanguageDetectorFactory extends BaseToolFactory {
    *                     is applied to load the requested {@code subclassName}.
    *                     
    * @return A valid {@link LanguageDetectorFactory} instance.
+   * @throws InvalidFormatException Thrown if the {@link ExtensionLoader} mechanism failed to
+   *                                create the factory associated with {@code subclassName}.
    */
   public static LanguageDetectorFactory create(String subclassName)
       throws InvalidFormatException {
@@ -79,7 +81,7 @@ public class LanguageDetectorFactory extends BaseToolFactory {
       return theFactory;
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
+          + ". The initialization threw an exception.";
       throw new InvalidFormatException(msg, e);
     }
   }

@@ -127,10 +127,11 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
   }
 
   /**
-   * Produces all events for the specified sentence chunks
-   * and adds them to the specified list.
-   * @param newEvents A list of events to be added to.
-   * @param chunks Pre-chunked constituents of a sentence.
+   * Produces all events for the specified sentence {@code chunks}
+   * and adds them to the specified {@code newEvents} list.
+   *
+   * @param newEvents A list of {@link Event events} to be added to.
+   * @param chunks Pre-chunked {@link Parse constituents} of a sentence.
    */
   protected abstract void addParseEvents(List<Event> newEvents, Parse[] chunks);
 
@@ -188,10 +189,13 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
   }
 
   /**
-   * Returns true if the specified child is the last child of the specified parent.
-   * @param child The child parse.
-   * @param parent The parent parse.
-   * @return true if the specified child is the last child of the specified parent; false otherwise.
+   * Returns {@code true} if the {@link Parse child} is the last child of the specified
+   * {@link Parse parent}.
+   *
+   * @param child The child {@link Parse}.
+   * @param parent The parent {@link Parse}.
+   * @return {@code true} if the specified child is the last child of the specified parent,
+   *         {@code false} otherwise.
    */
   protected boolean lastChild(Parse child, Parse parent) {
     Parse[] kids = AbstractBottomUpParser.collapsePunctuation(parent.getChildren(),punctSet);

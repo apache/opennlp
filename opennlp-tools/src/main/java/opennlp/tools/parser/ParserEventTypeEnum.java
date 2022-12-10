@@ -19,13 +19,14 @@
 package opennlp.tools.parser;
 
 /**
- * Enumerated type of event types for the parser.
+ * Enumeration of event types for a {@link Parser}.
  */
 public enum ParserEventTypeEnum {
 
   BUILD,
   CHECK,
 
+  // TODO Add reason why those enum values are deprecated
   @Deprecated
   CHUNK,
   @Deprecated

@@ -21,23 +21,23 @@ package opennlp.tools.parser;
 import java.util.Set;
 
 /**
- * Interface for encoding the head rules associated with parsing.
+ * Encoder for head rules associated with parsing.
  */
 public interface HeadRules {
 
   /**
-   * Returns the head constituent for the specified constituents of the specified type.
+   * Retrieves the head {@link Parse constituent} for the specified constituents of given {@code type}.
    *
-   * @param constituents The constituents which make up a constituent of the specified type.
-   * @param type The type of a constituent which is made up of the specified constituents.
-   * @return The constituent which is the head.
+   * @param constituents The {@link Parse constituents} which make up a constituent of the
+   *                     specified {@code type}.
+   * @param type The type of a constituent which is made up of the {@code constituents}.
+   * @return The {@link Parse constituent} which represents the head.
    */
   Parse getHead(Parse[] constituents, String type);
 
   /**
-   * Returns the set of punctuation tags.  Attachment decisions for these tags will not be modeled.
-   *
-   * @return the set of punctuation tags.
+   * @return Retrieves the set of punctuation tags.
+   *         Attachment decisions for these tags will not be modeled.
    */
   Set<String> getPunctuationTags();
 }

@@ -24,6 +24,9 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
+/**
+ * Cross validator for a {@link Parser}.
+ */
 public class ParserCrossValidator {
 
   private final String languageCode;
@@ -34,18 +37,37 @@ public class ParserCrossValidator {
 
   private final FMeasure fmeasure = new FMeasure();
 
-  private ParserType parserType;
+  private final ParserType parserType;
 
-  private ParserEvaluationMonitor[] monitors;
+  private final ParserEvaluationMonitor[] monitors;
 
+  /**
+   * Initializes a {@link ParserCrossValidator} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param params The {@link TrainingParameters} for the context of cross validation.
+   * @param rules The {@link HeadRules} for the context of cross validation.
+   * @param parserType The {@link ParserType} for the context of cross validation.
+   * @param monitors the {@link ParserEvaluationMonitor evaluation listeners}.
+   */
   public ParserCrossValidator(String languageCode, TrainingParameters params,
       HeadRules rules, ParserType parserType, ParserEvaluationMonitor... monitors) {
     this.languageCode = languageCode;
     this.params = params;
     this.rules = rules;
     this.parserType = parserType;
+    this.monitors = monitors;
   }
 
+  /**
+   * Starts the evaluation.
+   *
+   * @param samples The {@link ObjectStream} of {@link Parse samples} to train and test with.
+   * @param nFolds Number of folds. It must be greater than zero.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalStateException Thrown if the currently active {@link ParserType} is not supported.
+   */
   public void evaluate(ObjectStream<Parse> samples, int nFolds) throws IOException {
 
     CrossValidationPartitioner<Parse> partitioner = new CrossValidationPartitioner<>(samples, nFolds);
@@ -54,7 +76,6 @@ public class ParserCrossValidator {
       CrossValidationPartitioner.TrainingSampleStream<Parse> trainingSampleStream = partitioner.next();
 
       ParserModel model;
-
       if (ParserType.CHUNKING.equals(parserType)) {
         model = opennlp.tools.parser.chunking.Parser.train(languageCode, samples, rules, params);
       }
@@ -66,7 +87,6 @@ public class ParserCrossValidator {
       }
 
       ParserEvaluator evaluator = new ParserEvaluator(ParserFactory.create(model), monitors);
-
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
       fmeasure.mergeInto(evaluator.getFMeasure());

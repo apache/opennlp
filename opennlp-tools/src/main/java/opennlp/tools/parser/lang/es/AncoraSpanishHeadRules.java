@@ -112,16 +112,14 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   }
 
   private Map<String, HeadRule> headRules;
-  private Set<String> punctSet;
-
-
+  private final Set<String> punctSet;
 
   /**
    * Creates a new set of head rules based on the specified reader.
    *
-   * @param rulesReader the head rules reader.
+   * @param rulesReader A {@link Reader} for a head rules file.
    *
-   * @throws IOException if the head rules reader can not be read.
+   * @throws IOException Thrown  f the head rules reader can not be read.
    */
   public AncoraSpanishHeadRules(Reader rulesReader) throws IOException {
     BufferedReader in = new BufferedReader(rulesReader);
@@ -135,10 +133,12 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
     //punctSet.add(":");
   }
 
+  @Override
   public Set<String> getPunctuationTags() {
     return punctSet;
   }
 
+  @Override
   public Parse getHead(Parse[] constituents, String type) {
     if (Parser.TOK_NODE.equals(constituents[0].getType())) {
       return null;
@@ -154,9 +154,9 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
           }
         }
       }
-      for (int ci = 0; ci < constituents.length; ci++) {
-        if (constituents[ci].getType().equals("SN") || constituents[ci].getType().equals("GRUP.NOM")) {
-          return constituents[ci];
+      for (Parse constituent : constituents) {
+        if (constituent.getType().equals("SN") || constituent.getType().equals("GRUP.NOM")) {
+          return constituent;
         }
       }
       String[] tags2 = {"\\$","GRUP\\.A","SA"};
@@ -223,6 +223,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
     }
   }
 
+  @Override
   public void labelGaps(Stack<Constituent> stack) {
     if (stack.size() > 4) {
       //Constituent con0 = (Constituent) stack.get(stack.size()-1);
@@ -250,15 +251,17 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   }
 
   /**
-   * Writes the head rules to the writer in a format suitable for loading
-   * the head rules again with the constructor. The encoding must be
-   * taken into account while working with the writer and reader.
+   * Serializes the head rules via a {@link Writer} in a format suitable for loading
+   * the head rules again. The encoding must be taken into account while
+   * working with the writer and reader.
    * <p>
-   * After the entries have been written, the writer is flushed.
-   * The writer remains open after this method returns.
+   * Once the entries have been written, the {@code writer} is flushed.
+   * <p>
+   * Note:
+   * The {@code writer} remains open after this method returns.
    *
-   * @param writer
-   * @throws IOException
+   * @param writer The {@link Writer} to write the head rules to.
+   * @throws IOException Thrown if IO errors occurred during write operation.
    */
   public void serialize(Writer writer) throws IOException {
 

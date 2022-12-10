@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.parser;
 
 import opennlp.tools.util.Span;
 
 /**
- * Class used to hold constituents when reading parses.
+ * Holds constituents when reading {@link Parse parses}.
+ *
+ * @see Parse
  */
 public class Constituent {
 

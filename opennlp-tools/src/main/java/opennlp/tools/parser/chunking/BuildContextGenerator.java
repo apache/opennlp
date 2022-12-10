@@ -28,7 +28,9 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.util.StringList;
 
 /**
- * Class to generator predictive contexts for deciding how constituents should be combined together.
+ * Generates predictive contexts for deciding how constituents should be combined.
+ *
+ * @see AbstractContextGenerator
  */
 public class BuildContextGenerator extends AbstractContextGenerator {
 
@@ -38,8 +40,7 @@ public class BuildContextGenerator extends AbstractContextGenerator {
   private String[] trigram;
 
   /**
-   * Creates a new context generator for making decisions about combining constitients togehter.
-   *
+   * Instantiates a {@link BuildContextGenerator} for making decisions about combining constituents.
    */
   public BuildContextGenerator() {
     super();
@@ -47,6 +48,12 @@ public class BuildContextGenerator extends AbstractContextGenerator {
     useLabel = true;
   }
 
+  /**
+   * Instantiates a {@link BuildContextGenerator} for making decisions about combining constituents
+   * using a {@link Dictionary}.
+   *
+   * @param dict A {@link Dictionary} to be used during context generation.
+   */
   public BuildContextGenerator(Dictionary dict) {
     this();
     this.dict = dict;
@@ -61,11 +68,12 @@ public class BuildContextGenerator extends AbstractContextGenerator {
   }
 
   /**
-   * Returns the predictive context used to determine how constituent at the specified index
-   * should be combined with other contisuents.
-   * @param constituents The constituents which have yet to be combined into new constituents.
-   * @param index The index of the constituent whcihi is being considered.
-   * @return the context for building constituents at the specified index.
+   * Finds the predictive context used to determine how constituent at the specified {@code index}
+   * should be combined with other constituents.
+   * 
+   * @param constituents The {@link Parse constituents} which have yet to be combined into new constituents.
+   * @param index The index of the constituent which is being considered.
+   * @return The context for building constituents at the specified {@code index}.
    */
   public String[] getContext(Parse[] constituents, int index) {
     List<String> features = new ArrayList<>(100);

@@ -21,13 +21,18 @@ package opennlp.tools.parser;
 import java.util.Stack;
 
 /**
- * Interface for labeling nodes which contain traces so that these traces can be predicted
- * by the parser.
+ * Represents a labeler for nodes which contain traces so that these traces can be predicted
+ * by a {@link Parser}.
+ *
+ * @see Parser
  */
 public interface GapLabeler {
+  
   /**
-   * Labels the constituents found in the stack with gap labels if appropriate.
-   * @param stack The stack of un-completed constituents.
+   * Labels {@link Constituent constituents} found in the {@code stack} with gap labels
+   * if appropriate.
+   *
+   * @param stack The {@link Stack} of un-completed {@link Constituent constituents}.
    */
   void labelGaps(Stack<Constituent> stack);
 }

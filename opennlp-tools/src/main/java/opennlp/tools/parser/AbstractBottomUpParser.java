@@ -74,17 +74,17 @@ public abstract class AbstractBottomUpParser implements Parser {
    */
   public static final double defaultAdvancePercentage = 0.95;
 
-  /**
+  /*
    * Completed parses.
    */
-  private SortedSet<Parse> completeParses;
+  private final SortedSet<Parse> completeParses;
 
-  /**
+  /*
    * Incomplete parses which will be advanced.
    */
   private SortedSet<Parse> odh;
 
-  /**
+  /*
    * Incomplete parses which have been advanced.
    */
   private SortedSet<Parse> ndh;
@@ -115,11 +115,6 @@ public abstract class AbstractBottomUpParser implements Parser {
    * The label for a token node.
    */
   public static final String TOK_NODE = "TK";
-
-  /**
-   * The integer 0.
-   */
-  public static final Integer ZERO = 0;
 
   /**
    * Prefix for outcomes starting a constituent.
@@ -190,7 +185,9 @@ public abstract class AbstractBottomUpParser implements Parser {
   /**
    * Specifies whether the parser should report when it was unable to find a parse for
    * a particular sentence.
-   * @param errorReporting If true then un-parsed sentences are reported, false otherwise.
+   *
+   * @param errorReporting {@code true} if un-parsed sentences should be reported,
+   *                       {@code false} otherwise.
    */
   public void setErrorReporting(boolean errorReporting) {
     this.reportFailedParse = errorReporting;
@@ -199,7 +196,8 @@ public abstract class AbstractBottomUpParser implements Parser {
   /**
    * Assigns parent references for the specified parse so that they
    * are consistent with the children references.
-   * @param p The parse whose parent references need to be assigned.
+   *
+   * @param p The {@link Parse} whose parent references need to be assigned.
    */
   public static void setParents(Parse p) {
     Parse[] children = p.getChildren();
@@ -210,13 +208,13 @@ public abstract class AbstractBottomUpParser implements Parser {
   }
 
   /**
-   * Removes the punctuation from the specified set of chunks, adds it to the parses
-   * adjacent to the punctuation is specified, and returns a new array of parses with
-   * the punctuation removed.
+   * Removes the punctuation from the specified set of {@code chunks}, adds it to the
+   * parses adjacent to the punctuation is specified, and returns a new array of parses
+   * with the punctuation removed.
    *
-   * @param chunks A set of parses.
-   * @param punctSet The set of punctuation which is to be removed.
-   * @return An array of parses which is a subset of chunks with punctuation removed.
+   * @param chunks A set of {@link Parse parses}.
+   * @param punctSet The set of punctuation to be removed.
+   * @return Array of {@link Parse parses} which is a subset of chunks with punctuation removed.
    */
   public static Parse[] collapsePunctuation(Parse[] chunks, Set<String> punctSet) {
     List<Parse> collapsedParses = new ArrayList<>(chunks.length);
@@ -251,21 +249,23 @@ public abstract class AbstractBottomUpParser implements Parser {
 
 
   /**
-   * Advances the specified parse and returns the an array advanced parses whose
+   * Advances the specified {@link Parse} and returns the an array advanced parses whose
    * probability accounts for more than the specified amount of probability mass.
    *
-   * @param p The parse to advance.
+   * @param p The {@link Parse} to advance.
    * @param probMass The amount of probability mass that should be accounted for
    *                 by the advanced parses.
    */
   protected abstract Parse[] advanceParses(final Parse p, double probMass);
 
   /**
-   * Adds the "TOP" node to the specified parse.
-   * @param p The complete parse.
+   * Adds the {@link #TOP_NODE} to the specified parse.
+   * 
+   * @param p The complete {@link Parse}.
    */
   protected abstract void advanceTop(Parse p);
 
+  @Override
   public Parse[] parse(Parse tokens, int numParses) {
     if (createDerivationString) tokens.setDerivation(new StringBuffer(100));
     odh.clear();
@@ -367,6 +367,7 @@ public abstract class AbstractBottomUpParser implements Parser {
     }
   }
 
+  @Override
   public Parse parse(Parse tokens) {
 
     if (tokens.getChildCount() > 0) {
@@ -380,10 +381,11 @@ public abstract class AbstractBottomUpParser implements Parser {
   }
 
   /**
-   * Returns the top chunk sequences for the specified parse.
-   * @param p A pos-tag assigned parse.
+   * Returns the top chunk sequences for the specified {@link Parse}.
+   *
+   * @param p A pos-tag assigned {@link Parse}.
    * @param minChunkScore A minimum score below which chunks should not be advanced.
-   * @return The top chunk assignments to the specified parse.
+   * @return The top chunk assignments to the specified {@link Parse}.
    */
   protected Parse[] advanceChunks(final Parse p, double minChunkScore) {
     // chunk
@@ -408,7 +410,6 @@ public abstract class AbstractBottomUpParser implements Parser {
       int start = -1;
       int end = 0;
       String type = null;
-      //System.err.print("sequence "+si+" ");
       for (int j = 0; j <= tags.length; j++) {
         // if (j != tags.length) {System.err.println(words[j]+" "
         // +ptags[j]+" "+tags[j]+" "+probs.get(j));}
@@ -421,7 +422,6 @@ public abstract class AbstractBottomUpParser implements Parser {
         }
         else { //make previous constituent if it exists
           if (type != null) {
-            //System.err.println("inserting tag "+tags[j]);
             Parse p1 = p.getChildren()[start];
             Parse p2 = p.getChildren()[end];
             // System.err.println("Putting "+type+" at "+start+","+end+" for "
@@ -460,8 +460,9 @@ public abstract class AbstractBottomUpParser implements Parser {
   }
 
   /**
-   * Advances the parse by assigning it POS tags and returns multiple tag sequences.
-   * @param p The parse to be tagged.
+   * Advances the {@link Parse} by assigning it POS tags and returns multiple tag sequences.
+   * 
+   * @param p The {@link Parse} to be tagged.
    * @return Parses with different POS-tag sequence assignments.
    */
   protected Parse[] advanceTags(final Parse p) {
@@ -480,7 +481,6 @@ public abstract class AbstractBottomUpParser implements Parser {
       if (createDerivationString) newParses[i].getDerivation().append(i).append(".");
       for (int j = 0; j < words.length; j++) {
         Parse word = children[j];
-        //System.err.println("inserting tag "+tags[j]);
         double prob = probs[j];
         newParses[i].insert(new Parse(word.getText(), word.getSpan(), tags[j], prob,j));
         newParses[i].addProb(StrictMath.log(prob));
@@ -490,11 +490,12 @@ public abstract class AbstractBottomUpParser implements Parser {
   }
 
   /**
-   * Determines the mapping between the specified index into the specified parses without punctuation to
-   * the corresponding index into the specified parses.
-   * @param index An index into the parses without punctuation.
-   * @param nonPunctParses The parses without punctuation.
-   * @param parses The parses wit punctuation.
+   * Determines the mapping between the specified {@code index} into the specified {@link Parse parses}
+   * without punctuation to the corresponding index into the specified {@link Parse parses}.
+   * 
+   * @param index An index into the {@link Parse parses} without punctuation.
+   * @param nonPunctParses The {@link Parse parses} without punctuation.
+   * @param parses The {@link Parse parses} with punctuation.
    * @return An index into the specified parses which corresponds to the same node the specified index
    *     into the parses with punctuation.
    */
@@ -516,14 +517,15 @@ public abstract class AbstractBottomUpParser implements Parser {
   }
 
   /**
-   * Creates a n-gram dictionary from the specified data stream using the specified
+   * Creates a n-gram {@link Dictionary} from the specified data stream using the specified
    * head rule and specified cut-off.
    *
-   * @param data The data stream of parses.
-   * @param rules The head rules for the parses.
-   * @param params can contain a cutoff, the minimum number of entries required for the
-   *        n-gram to be saved as part of the dictionary.
-   * @return A dictionary object.
+   * @param data The data stream of {@link Parse parses}.
+   * @param rules The {@link HeadRules} for the parses.
+   * @param params The {@link TrainingParameters} which can contain a {@code cutoff},
+   *               the minimum number of entries required for the n-gram to be saved as
+   *               part of the {@link Dictionary}.
+   * @return A {@link Dictionary} instance.
    */
   public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules,
       TrainingParameters params) throws IOException {
@@ -542,7 +544,7 @@ public abstract class AbstractBottomUpParser implements Parser {
       }
 
       mdict.add(new StringList(words), 1, 1);
-      //add tri-grams and bi-grams for inital sequence
+      //add tri-grams and bi-grams for initial sequence
       Parse[] chunks = collapsePunctuation(ParserEventStream.getInitialChunks(p),
           rules.getPunctuationTags());
       String[] cwords = new String[chunks.length];
@@ -594,20 +596,19 @@ public abstract class AbstractBottomUpParser implements Parser {
         ci++;
       }
     }
-    //System.err.println("gas,and="+mdict.getCount((new TokenList(new String[] {"gas","and"}))));
     mdict.cutoff(cutoff, Integer.MAX_VALUE);
     return mdict.toDictionary(true);
   }
 
   /**
-   * Creates a n-gram dictionary from the specified data stream using the specified
-   * head rule and specified cut-off.
+   * Creates a n-gram {@link Dictionary} from the specified data stream using {@link HeadRules}
+   * and specified cut-off.
    *
-   * @param data The data stream of parses.
-   * @param rules The head rules for the parses.
+   * @param data The data stream of {@link Parse parses}.
+   * @param rules The {@link HeadRules} for the {@link Parse parses}.
    * @param cutoff The minimum number of entries required for the n-gram to be
    *               saved as part of the dictionary.
-   * @return A dictionary object.
+   * @return A {@link Dictionary} instance.
    */
   public static Dictionary buildDictionary(ObjectStream<Parse> data, HeadRules rules, int cutoff)
       throws IOException {

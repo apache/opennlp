@@ -27,20 +27,42 @@ import java.util.Set;
 import opennlp.tools.parser.AbstractContextGenerator;
 import opennlp.tools.parser.Parse;
 
+/**
+ * Generates predictive context for deciding when a constituent is complete.
+ *
+ * @see AbstractContextGenerator
+ */
 public class CheckContextGenerator extends AbstractContextGenerator {
 
-  private Parse[] leftNodes;
+  private final Parse[] leftNodes;
 
+  /**
+   * Instantiates a {@link CheckContextGenerator} for making decisions using a {@code punctSet}.
+   *
+   * @param punctSet A set of punctuation symbols to be used during context generation.
+   */
   public CheckContextGenerator(Set<String> punctSet) {
     this.punctSet = punctSet;
     leftNodes = new Parse[2];
   }
 
-  public String[] getContext(Object arg0) {
-    // TODO Auto-generated method stub
-    return null;
+  public String[] getContext(Object o) {
+    Object[] params = (Object[]) o;
+    return getContext((Parse) params[0], (Parse[]) params[1], (Integer) params[2], (Boolean) params[3]);
   }
 
+
+  /**
+   * Finds the predictive context used to determine how constituent at the specified {@code index}
+   * should be combined with a {@code parent} constituent.
+   *
+   * @param parent The {@link Parse parent} element.
+   * @param constituents The {@link Parse constituents} which have yet to be combined into new constituents.
+   * @param index The index of the constituent which is being considered.
+   * @param trimFrontier Whether the frontier should be trimmed, or not.
+   *
+   * @return The context for deciding whether a new constituent should be created.
+   */
   public String[] getContext(Parse parent, Parse[] constituents, int index, boolean trimFrontier) {
     List<String> features = new ArrayList<>(100);
     //default

@@ -39,10 +39,10 @@ public class ChunkerEvaluator extends Evaluator<ChunkSample> {
   private final Chunker chunker;
 
   /**
-   * Initializes the current instance with the given {@link Chunker}.
+   * Initializes a {@link ChunkerEvaluator} instance with the given {@link Chunker}.
    *
-   * @param chunker the {@link Chunker} to evaluate.
-   * @param listeners the {@link ChunkerEvaluationMonitor evaluation listeners}.
+   * @param chunker The {@link Chunker} to evaluate.
+   * @param listeners The {@link ChunkerEvaluationMonitor evaluation listeners}.
    */
   public ChunkerEvaluator(Chunker chunker, ChunkerEvaluationMonitor... listeners) {
     super(listeners);
