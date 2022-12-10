@@ -42,10 +42,12 @@ public class TokenSample implements Serializable {
   private final List<Span> tokenSpans;
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link TokenSample instance}.
    *
-   * @param text the text which contains the tokens.
-   * @param tokenSpans the spans which mark the begin and end of the tokens.
+   * @param text The text which contains the tokens.
+   *             Must not be {@code null}.
+   * @param tokenSpans The spans which mark the start and end of the tokens.
+   *                   Must not be {@code null}.
    */
   public TokenSample(String text, Span[] tokenSpans) {
     Objects.requireNonNull(tokenSpans, "tokenSpans must not be null");
@@ -62,13 +64,21 @@ public class TokenSample implements Serializable {
     }
   }
 
+  /**
+   * Initializes a {@link TokenSample instance} via a {@link Detokenizer}.
+   *
+   * @param detokenizer The text which contains the tokens. Must not be {@code null}.
+   * @param tokens The tokens to be processed. Must not be {@code null}.
+   */
   public TokenSample(Detokenizer detokenizer, String[] tokens) {
 
-    StringBuilder sentence = new StringBuilder();
-
+    Objects.requireNonNull(detokenizer, "detokenizer must not be null");
+    Objects.requireNonNull(tokens, "tokens must not be null");
+    
     DetokenizationOperation[] operations = detokenizer.detokenize(tokens);
 
     List<Span> mergedTokenSpans = new ArrayList<>();
+    StringBuilder sentence = new StringBuilder();
 
     for (int i = 0; i < operations.length; i++) {
 
@@ -100,14 +110,14 @@ public class TokenSample implements Serializable {
   }
 
   /**
-   * Retrieves the text.
+   * @return Retrieves the text.
    */
   public String getText() {
     return text;
   }
 
   /**
-   * Retrieves the token spans.
+   * @return Retrieves the token {@link Span spans}.
    */
   public Span[] getTokenSpans() {
     return tokenSpans.toArray(new Span[tokenSpans.size()]);
@@ -157,6 +167,14 @@ public class TokenSample implements Serializable {
         sample.append(" ");
   }
 
+  /**
+   * Parses a string sample.
+   *
+   * @param sampleString The sample to be parsed. Must not be {@code null}.
+   * @param separatorChars The characters to be considered separators.
+   *                       See {@link #DEFAULT_SEPARATOR_CHARS}. Must not be {@code null}.
+   * @return A valid {@link TokenSample} instance.
+   */
   public static TokenSample parse(String sampleString, String separatorChars) {
     Objects.requireNonNull(sampleString, "sampleString must not be null");
     Objects.requireNonNull(separatorChars, "separatorChars must not be null");

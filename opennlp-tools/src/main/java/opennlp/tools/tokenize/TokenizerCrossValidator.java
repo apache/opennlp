@@ -24,14 +24,24 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
+/**
+ * A cross validator for {@link Tokenizer tokenizers}.
+ */
 public class TokenizerCrossValidator {
 
   private final TrainingParameters params;
 
-  private FMeasure fmeasure = new FMeasure();
-  private TokenizerEvaluationMonitor[] listeners;
+  private final FMeasure fmeasure = new FMeasure();
+  private final TokenizerEvaluationMonitor[] listeners;
   private final TokenizerFactory factory;
 
+  /**
+   * Creates a {@link TokenizerCrossValidator} using the given {@link TokenizerFactory}.
+   *
+   * @param params The {@link TrainingParameters} for the context of cross validation.
+   * @param factory The {@link TokenizerFactory} to be used.
+   * @param listeners The {@link TokenizerEvaluationMonitor evaluation listeners}.
+   */
   public TokenizerCrossValidator(TrainingParameters params,
       TokenizerFactory factory, TokenizerEvaluationMonitor... listeners) {
     this.params = params;
@@ -42,12 +52,10 @@ public class TokenizerCrossValidator {
   /**
    * Starts the evaluation.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
+   * @param samples The {@link ObjectStream} of {@link TokenSample samples} to train and test with.
+   * @param nFolds Number of folds. It must be greater than zero.
    *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred during evaluation.
    */
   public void evaluate(ObjectStream<TokenSample> samples, int nFolds) throws IOException {
 

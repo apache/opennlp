@@ -24,13 +24,23 @@ import java.util.Set;
 import opennlp.tools.util.Span;
 
 /**
- * A WordPiece tokenizer.
- *
- * Adapted from https://github.com/robrua/easy-bert under the MIT license.
- *
+ * A {@link Tokenizer} implementation which performs tokenization
+ * using word pieces.
+ * <p>
+ * Adapted under MIT license from
+ * <a href="https://github.com/robrua/easy-bert">https://github.com/robrua/easy-bert</a>.
+ * <p>
  * For reference see:
- *  - https://www.tensorflow.org/text/guide/subwords_tokenizer#applying_wordpiece
- *  - https://cran.r-project.org/web/packages/wordpiece/vignettes/basic_usage.html
+ * <ul>
+ *  <li>
+ *  <a href="https://www.tensorflow.org/text/guide/subwords_tokenizer#applying_wordpiece">
+ *    https://www.tensorflow.org/text/guide/subwords_tokenizer#applying_wordpiece</a>
+ *  </li>
+ *  <li>
+ *  <a href="https://cran.r-project.org/web/packages/wordpiece/vignettes/basic_usage.html">
+ *    https://cran.r-project.org/web/packages/wordpiece/vignettes/basic_usage.html</a>
+ *  </li>
+ * </ul>
  */
 public class WordpieceTokenizer implements Tokenizer {
 
@@ -38,15 +48,28 @@ public class WordpieceTokenizer implements Tokenizer {
   private static final String SEPARATOR_TOKEN = "[SEP]";
   private static final String UNKNOWN_TOKEN = "[UNK]";
 
-  private Set<String> vocabulary;
+  private final Set<String> vocabulary;
   private int maxTokenLength = 50;
 
+  /**
+   * Initializes a {@link WordpieceTokenizer} with a {@code vocabulary} and a default
+   * {@code maxTokenLength} of {@code 50}.
+   *
+   * @param vocabulary  A set of tokens considered the vocabulary.
+   */
   public WordpieceTokenizer(Set<String> vocabulary) {
     this.vocabulary = vocabulary;
   }
 
+  /**
+   * Initializes a {@link WordpieceTokenizer} with a {@code vocabulary} and a custom
+   * {@code maxTokenLength}.
+   *
+   * @param vocabulary  A set of tokens considered the vocabulary.
+   * @param maxTokenLength A non-negative number that is used as maximum token length.
+   */
   public WordpieceTokenizer(Set<String> vocabulary, int maxTokenLength) {
-    this.vocabulary = vocabulary;
+    this(vocabulary);
     this.maxTokenLength = maxTokenLength;
   }
 
@@ -145,6 +168,9 @@ public class WordpieceTokenizer implements Tokenizer {
 
   }
 
+  /**
+   * @return The maximum token length.
+   */
   public int getMaxTokenLength() {
     return maxTokenLength;
   }

@@ -51,13 +51,13 @@ public abstract class Evaluator<T> {
   }
 
   /**
-   * Evaluates the given reference sample object.
+   * Evaluates the given reference {@link T} sample object.
    *
    * The implementation has to update the score after every invocation.
    *
    * @param reference the reference sample.
    *
-   * @return the predicted sample
+   * @return the predicted {@link T} sample
    */
   protected abstract T processSample(T reference);
 

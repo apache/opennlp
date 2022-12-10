@@ -30,27 +30,30 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
- * This class reads the {@link TokenSample}s from the given {@link Iterator}
- * and converts the {@link TokenSample}s into {@link Event}s which
+ * This class reads the {@link TokenSample samples} via an {@link Iterator}
+ * and converts the samples into {@link Event events} which
  * can be used by the maxent library for training.
  */
 public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
 
-  private TokenContextGenerator cg;
+  private final TokenContextGenerator cg;
 
-  private boolean skipAlphaNumerics;
+  private final boolean skipAlphaNumerics;
 
   private final Pattern alphaNumeric;
 
   /**
-   * Initializes the current instance.
+   * Initializes a new event stream based on the data stream using a {@link TokenContextGenerator}.
    *
-   * @param tokenSamples
-   * @param skipAlphaNumerics
-   * @param cg
+   * @param tokenSamples The {@link ObjectStream data stream} for this event stream.
+   * @param skipAlphaNumerics Whether alphanumerics are skipped, or not.
+   * @param alphaNumeric A custom alphanumeric {@link Pattern} or {@code null}.
+   *                     Default is: {@code "^[A-Za-z0-9]+$"}, provided by
+   *                     {@link Factory#DEFAULT_ALPHANUMERIC}.
+   * @param cg A {@link TokenContextGenerator} which should be used for the event stream {@code d}.
    */
-  public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
-        boolean skipAlphaNumerics, Pattern alphaNumeric, TokenContextGenerator cg) {
+  public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
+                            Pattern alphaNumeric, TokenContextGenerator cg) {
     super(tokenSamples);
     this.alphaNumeric = alphaNumeric;
     this.skipAlphaNumerics = skipAlphaNumerics;
@@ -58,26 +61,23 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes a new event stream based on the data stream using a {@link TokenContextGenerator}.
    *
-   * @param tokenSamples
-   * @param skipAlphaNumerics
-   * @param cg
+   * @param tokenSamples The {@link ObjectStream data stream} for this event stream.
+   * @param skipAlphaNumerics Whether alphanumerics are skipped, or not.
+   * @param cg A {@link TokenContextGenerator} which should be used for the event stream {@code d}.
    */
-  public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
-        boolean skipAlphaNumerics, TokenContextGenerator cg) {
-    super(tokenSamples);
-    Factory factory = new Factory();
-    this.alphaNumeric = factory.getAlphanumeric(null);
-    this.skipAlphaNumerics = skipAlphaNumerics;
-    this.cg = cg;
+  public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples, boolean skipAlphaNumerics,
+                            TokenContextGenerator cg) {
+    this(tokenSamples, skipAlphaNumerics, new Factory().getAlphanumeric(null), cg );
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes a new event stream based on the data stream using a {@link TokenContextGenerator}
+   * that relies on a {@link DefaultTokenContextGenerator}.
    *
-   * @param tokenSamples
-   * @param skipAlphaNumerics
+   * @param tokenSamples The {@link ObjectStream data stream} for this event stream.
+   * @param skipAlphaNumerics Whether alphanumerics are skipped, or not.
    */
   public TokSpanEventStream(ObjectStream<TokenSample> tokenSamples,
       boolean skipAlphaNumerics) {
@@ -85,10 +85,10 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
   }
 
   /**
-   * Adds training events to the event stream for each of the specified tokens.
+   * Adds training events to the event stream for each of the specified {@link TokenSample sample}.
    *
    * @param tokenSample character offsets into the specified text.
-   * @return The text of the tokens.
+   * @return An {@link Iterator} for text {@link Event events} representing the {@code tokenSample}.
    */
   @Override
   protected Iterator<Event> createEvents(TokenSample tokenSample) {

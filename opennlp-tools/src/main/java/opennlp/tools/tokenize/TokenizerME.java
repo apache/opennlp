@@ -38,22 +38,22 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * A Tokenizer for converting raw text into separated tokens.  It uses
- * Maximum Entropy to make its decisions.  The features are loosely
+ * A {@link Tokenizer} for converting raw text into separated tokens. It uses
+ * Maximum Entropy to make its decisions. The features are loosely
  * based off of Jeff Reynar's UPenn thesis "Topic Segmentation:
  * Algorithms and Applications.", which is available from his
  * homepage: <a href="http://www.cis.upenn.edu/~jcreynar">http://www.cis.upenn.edu/~jcreynar</a>.
  * <p>
- * This tokenizer needs a statistical model to tokenize a text which reproduces
+ * This implementation needs a statistical model to tokenize a text which reproduces
  * the tokenization observed in the training data used to create the model.
- * The {@link TokenizerModel} class encapsulates the model and provides
+ * The {@link TokenizerModel} class encapsulates that model and provides
  * methods to create it from the binary representation.
  * <p>
- * A tokenizer instance is not thread safe. For each thread one tokenizer
- * must be instantiated which can share one <code>TokenizerModel</code> instance
+ * A tokenizer instance is not thread-safe. For each thread, one tokenizer
+ * must be instantiated which can share one {@link TokenizerModel} instance
  * to safe memory.
  * <p>
- * To train a new model {{@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} method
+ * To train a new model, the {@link #train(ObjectStream, TokenizerFactory, TrainingParameters) method
  * can be used.
  * <p>
  * Sample usage:
@@ -69,7 +69,8 @@ import opennlp.tools.util.TrainingParameters;
  * <br>
  * String tokens[] = tokenizer.tokenize("A sentence to be tokenized.");
  * </code>
- *
+ * <p>
+ *   
  * @see Tokenizer
  * @see TokenizerModel
  * @see TokenSample
@@ -95,32 +96,31 @@ public class TokenizerME extends AbstractTokenizer {
 
   private final Pattern alphanumeric;
 
-  /**
+  /*
    * The maximum entropy model to use to evaluate contexts.
    */
-  private MaxentModel model;
+  private final MaxentModel model;
 
-  /**
+  /*
    * The context generator.
    */
   private final TokenContextGenerator cg;
 
-  /**
-   * Optimization flag to skip alpha numeric tokens for further
-   * tokenization
+  /*
+   * Optimization flag to skip alphanumeric tokens for further tokenization
    */
-  private boolean useAlphaNumericOptimization;
+  private final boolean useAlphaNumericOptimization;
 
-  /**
+  /*
    * List of probabilities for each token returned from a call to
    * <code>tokenize</code> or <code>tokenizePos</code>.
    */
-  private List<Double> tokProbs;
+  private final List<Double> tokProbs;
 
-  private List<Span> newTokens;
+  private final List<Span> newTokens;
 
   /**
-   * Initializes the tokenizer by downloading a default model.
+   * Initializes a {@link TokenizerME} by downloading a default model.
    * @param language The language of the tokenizer.
    * @throws IOException Thrown if the model cannot be downloaded or saved.
    */
@@ -129,6 +129,11 @@ public class TokenizerME extends AbstractTokenizer {
             TokenizerModel.class));
   }
 
+  /**
+   * Instantiates a {@link TokenizerME} with an existing {@link TokenizerModel}.
+   *
+   * @param model The {@link TokenizerModel} to be used.
+   */
   public TokenizerME(TokenizerModel model) {
     TokenizerFactory factory = model.getFactory();
     this.alphanumeric = factory.getAlphaNumericPattern();
@@ -144,6 +149,7 @@ public class TokenizerME extends AbstractTokenizer {
    * @deprecated use {@link TokenizerFactory} to extend the Tokenizer
    *             functionality
    */
+  @Deprecated
   public TokenizerME(TokenizerModel model, Factory factory) {
     String languageCode = model.getLanguage();
 
@@ -166,11 +172,9 @@ public class TokenizerME extends AbstractTokenizer {
   }
 
   /**
-   * Returns the probabilities associated with the most recent
-   * calls to {@link TokenizerME#tokenize(String)} or {@link TokenizerME#tokenizePos(String)}.
-   *
-   * @return probability for each token returned for the most recent
-   *     call to tokenize.  If not applicable an empty array is returned.
+   * @return the probabilities associated with the most recent calls to
+   *         {@link TokenizerME#tokenize(String)} or {@link TokenizerME#tokenizePos(String)}.
+   *         If not applicable an empty array is returned.
    */
   public double[] getTokenProbabilities() {
     double[] tokProbArray = new double[tokProbs.size()];
@@ -185,7 +189,7 @@ public class TokenizerME extends AbstractTokenizer {
    *
    * @param d  The string to be tokenized.
    *
-   * @return   A span array containing individual tokens as elements.
+   * @return   A {@link Span} array containing individual tokens as elements.
    */
   public Span[] tokenizePos(String d) {
     WhitespaceTokenizer whitespaceTokenizer = WhitespaceTokenizer.INSTANCE;
@@ -232,18 +236,12 @@ public class TokenizerME extends AbstractTokenizer {
   /**
    * Trains a model for the {@link TokenizerME}.
    *
-   * @param samples
-   *          the samples used for the training.
-   * @param factory
-   *          a {@link TokenizerFactory} to get resources from
-   * @param mlParams
-   *          the machine learning train parameters
-   * @return the trained {@link TokenizerModel}
-   * @throws IOException
-   *           it throws an {@link IOException} if an {@link IOException} is
-   *           thrown during IO operations on a temp file which is created
-   *           during training. Or if reading from the {@link ObjectStream}
-   *           fails.
+   * @param samples The samples used for the training.
+   * @param factory A {@link TokenizerFactory} to get resources from.
+   * @param mlParams The machine learning {@link TrainingParameters train parameters}.
+   * @return A trained {@link TokenizerModel}.
+   * @throws IOException Thrown during IO operations on a temp file which is created
+   *           during training. Or if reading from the {@link ObjectStream} fails.
    */
   public static TokenizerModel train(ObjectStream<TokenSample> samples, TokenizerFactory factory,
       TrainingParameters mlParams) throws IOException {
@@ -263,9 +261,7 @@ public class TokenizerME extends AbstractTokenizer {
   }
 
   /**
-   * Returns the value of the alpha-numeric optimization flag.
-   *
-   * @return true if the tokenizer should use alpha-numeric optimization, false otherwise.
+   * @return {@code true} if the tokenizer uses alphanumeric optimization, {@code false} otherwise.
    */
   public boolean useAlphaNumericOptimization() {
     return useAlphaNumericOptimization;

@@ -19,7 +19,9 @@ package opennlp.tools.tokenize;
 
 import opennlp.tools.util.eval.EvaluationMonitor;
 
-public interface TokenizerEvaluationMonitor extends
-    EvaluationMonitor<TokenSample> {
+/**
+ * A marker interface for evaluating {@link Tokenizer tokenizers}.
+ */
+public interface TokenizerEvaluationMonitor extends EvaluationMonitor<TokenSample> {
 
 }

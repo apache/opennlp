@@ -24,15 +24,21 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
- * This stream formats a {@link TokenSample}s into whitespace
+ * This stream formats {@link ObjectStream} of {@link TokenSample samples} into whitespace
  * separated token strings.
  */
 public class WhitespaceTokenStream extends FilterObjectStream<TokenSample, String> {
 
+  /**
+   * Initializes a {@link WhitespaceTokenStream}.
+   *
+   * @param tokens The {@link ObjectStream stream} of tokens to be separated.
+   */
   public WhitespaceTokenStream(ObjectStream<TokenSample> tokens) {
     super(tokens);
   }
 
+  @Override
   public String read() throws IOException {
     TokenSample tokenSample = samples.read();
 

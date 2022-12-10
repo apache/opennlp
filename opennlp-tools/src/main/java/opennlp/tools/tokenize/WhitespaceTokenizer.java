@@ -24,10 +24,11 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
 /**
- * This tokenizer uses white spaces to tokenize the input text.
- *
+ * A basic {@link Tokenizer} implementation which performs tokenization
+ * using white spaces.
+ * <p>
  * To obtain an instance of this tokenizer use the static final
- * <code>INSTANCE</code> field.
+ * {@link #INSTANCE} field.
  */
 public class WhitespaceTokenizer extends AbstractTokenizer {
 
@@ -37,18 +38,19 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
    */
   public static final WhitespaceTokenizer INSTANCE = new WhitespaceTokenizer();
 
-  /**
+  /*
    * Use the {@link WhitespaceTokenizer#INSTANCE} field to retrieve an instance.
    */
   private WhitespaceTokenizer() {
   }
 
+  @Override
   public Span[] tokenizePos(String d) {
     int tokStart = -1;
     List<Span> tokens = new ArrayList<>();
     boolean inTok = false;
 
-    //gather up potential tokens
+    // gather potential tokens
     int end = d.length();
     for (int i = 0; i < end; i++) {
       if (StringUtil.isWhitespace(d.charAt(i))) {
