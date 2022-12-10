@@ -23,19 +23,19 @@ import opennlp.tools.util.eval.Mean;
 /**
  * The {@link LemmatizerEvaluator} measures the performance of
  * the given {@link Lemmatizer} with the provided reference
- * {@link LemmaSample}s.
+ * {@link LemmaSample samples}.
  */
 public class LemmatizerEvaluator extends Evaluator<LemmaSample> {
 
-  private Lemmatizer lemmatizer;
+  private final Lemmatizer lemmatizer;
 
-  private Mean wordAccuracy = new Mean();
+  private final Mean wordAccuracy = new Mean();
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link LemmatizerEvaluator} instance with the given {@link Lemmatizer}.
    *
-   * @param aLemmatizer a lemmatizer
-   * @param listeners an array of evaluation listeners
+   * @param aLemmatizer The {@link Lemmatizer} to evaluate.
+   * @param listeners The {@link LemmatizerEvaluationMonitor evaluation listeners}.
    */
   public LemmatizerEvaluator(Lemmatizer aLemmatizer, LemmatizerEvaluationMonitor ... listeners) {
     super(listeners);
@@ -44,14 +44,14 @@ public class LemmatizerEvaluator extends Evaluator<LemmaSample> {
 
   /**
    * Evaluates the given reference {@link LemmaSample} object.
-   *
+   * <p>
    * This is done by tagging the sentence from the reference
    * {@link LemmaSample} with the {@link Lemmatizer}. The
    * tags are then used to update the word accuracy score.
    *
    * @param reference the reference {@link LemmaSample}.
    *
-   * @return the predicted {@link LemmaSample}.
+   * @return The predicted {@link LemmaSample}.
    */
   @Override
   protected LemmaSample processSample(LemmaSample reference) {
@@ -71,29 +71,24 @@ public class LemmatizerEvaluator extends Evaluator<LemmaSample> {
   }
 
   /**
-   * Retrieves the word accuracy.
+   * Accuracy is defined as:
+   * {@code word accuracy = correctly detected tags / total words}
    *
-   * This is defined as:
-   * word accuracy = correctly detected tags / total words
-   *
-   * @return the word accuracy
+   * @return Retrieves the word accuracy.
    */
   public double getWordAccuracy() {
     return wordAccuracy.mean();
   }
 
   /**
-   * Retrieves the total number of words considered
-   * in the evaluation.
-   *
-   * @return the word count
+   * @return Retrieves the total number of words considered in the evaluation.
    */
   public long getWordCount() {
     return wordAccuracy.count();
   }
 
   /**
-   * Represents this objects as human readable {@link String}.
+   * Returns this object's human-readable {@link String} representation.
    */
   @Override
   public String toString() {

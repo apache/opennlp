@@ -25,6 +25,9 @@ import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * A {@link SequenceStream} implementation encapsulating {@link LemmaSample samples}.
+ */
 public class LemmaSampleSequenceStream implements SequenceStream<LemmaSample> {
 
   private final ObjectStream<LemmaSample> samples;

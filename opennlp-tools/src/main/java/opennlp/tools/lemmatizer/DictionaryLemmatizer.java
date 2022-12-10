@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,47 +34,106 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Lemmatize by simple dictionary lookup into a hashmap built from a file
- * containing, for each line, word\tabpostag\tablemma.
- * @version 2014-07-08
+ * A {@link Lemmatizer} implementation that works by simple dictionary lookup into
+ * a {@link Map} built from a file containing, for each line:
+ * <p>
+ * {@code word\tabpostag\tablemma}.
  */
 public class DictionaryLemmatizer implements Lemmatizer {
 
-  /**
+  /*
    * The hashmap containing the dictionary.
    */
   private final Map<List<String>, List<String>> dictMap = new HashMap<>();
 
   /**
-   * Construct a hashmap from the input tab separated dictionary.
+   * Initializes a {@link DictionaryLemmatizer} and related {@link HashMap}
+   * from the input tab separated dictionary.
+   * <p>
+   * The input file should have, for each line, {@code word\tabpostag\tablemma}.
+   * Alternatively, if multiple lemmas are possible for each word-postag pair,
+   * then the format should be {@code word\tab\postag\tablemma01#lemma02#lemma03}.
    *
-   * The input file should have, for each line, word\tabpostag\tablemma.
-   * Alternatively, if multiple lemmas are possible for each word,postag pair,
-   * then the format should be word\tab\postag\tablemma01#lemma02#lemma03
+   * @param dictionaryStream The dictionary referenced by an open {@link InputStream}.
+   * @param charset The {@link Charset character encoding} of the dictionary.
    *
-   * @param dictionary the input dictionary via inputstream
-   * @param charset the encoding of the inputstream
+   * @throws IOException Thrown if IO errors occurred while reading in from
+   *                     {@code dictionaryStream}.
    */
-  public DictionaryLemmatizer(final InputStream dictionary, Charset charset) throws IOException {
-    init(dictionary, charset);
+  public DictionaryLemmatizer(final InputStream dictionaryStream, Charset charset)
+          throws IOException {
+    init(dictionaryStream, charset);
   }
 
-  public DictionaryLemmatizer(final InputStream dictionary) throws IOException {
-    this(dictionary, StandardCharsets.UTF_8);
+  /**
+   * Initializes a {@link DictionaryLemmatizer} and related {@link HashMap}
+   * from the input tab separated dictionary.
+   * <p>
+   * The input file should have, for each line, {@code word\tabpostag\tablemma}.
+   * Alternatively, if multiple lemmas are possible for each word-postag pair,
+   * then the format should be {@code word\tab\postag\tablemma01#lemma02#lemma03}.
+   *
+   * @param dictionaryStream The dictionary referenced by an open {@link InputStream}.
+   *
+   * @throws IOException Thrown if IO errors occurred while reading in from
+   *                     {@code dictionaryStream}.
+   */
+  public DictionaryLemmatizer(final InputStream dictionaryStream) throws IOException {
+    this(dictionaryStream, StandardCharsets.UTF_8);
   }
 
+  /**
+   * Initializes a {@link DictionaryLemmatizer} and related {@link HashMap}
+   * from the input tab separated dictionary.
+   * <p>
+   * The input file should have, for each line, {@code word\tabpostag\tablemma}.
+   * Alternatively, if multiple lemmas are possible for each word-postag pair,
+   * then the format should be {@code word\tab\postag\tablemma01#lemma02#lemma03}.
+   *
+   * @param dictionaryFile The dictionary referenced by a valid, readable {@link File}.
+   *
+   * @throws IOException Thrown if IO errors occurred while reading in from
+   *                     {@code dictionaryFile}.
+   */
   public DictionaryLemmatizer(File dictionaryFile) throws IOException {
     this(dictionaryFile, StandardCharsets.UTF_8);
   }
 
+  /**
+   * Initializes a {@link DictionaryLemmatizer} and related {@link HashMap}
+   * from the input tab separated dictionary.
+   * <p>
+   * The input file should have, for each line, {@code word\tabpostag\tablemma}.
+   * Alternatively, if multiple lemmas are possible for each word-postag pair,
+   * then the format should be {@code word\tab\postag\tablemma01#lemma02#lemma03}.
+   *
+   * @param dictionaryFile The dictionary referenced by a valid, readable {@link File}.
+   * @param charset The {@link Charset character encoding} of the dictionary.
+   *
+   * @throws IOException Thrown if IO errors occurred while reading in from
+   *                     {@code dictionaryFile}.
+   */
   public DictionaryLemmatizer(File dictionaryFile, Charset charset) throws IOException {
     try (InputStream in = new FileInputStream(dictionaryFile)) {
       init(in, charset);
     }
   }
 
-  public DictionaryLemmatizer(Path dictionaryFile) throws IOException {
-    this(dictionaryFile.toFile());
+  /**
+   * Initializes a {@link DictionaryLemmatizer} and related {@link HashMap}
+   * from the input tab separated dictionary.
+   * <p>
+   * The input file should have, for each line, {@code word\tabpostag\tablemma}.
+   * Alternatively, if multiple lemmas are possible for each word-postag pair,
+   * then the format should be {@code word\tab\postag\tablemma01#lemma02#lemma03}.
+   *
+   * @param dictionaryPath The dictionary referenced via a valid, readable {@link Path}.
+   *
+   * @throws IOException Thrown if IO errors occurred while reading in from
+   *                     {@code dictionaryPath}.
+   */
+  public DictionaryLemmatizer(Path dictionaryPath) throws IOException {
+    init(Files.newInputStream(dictionaryPath), StandardCharsets.UTF_8);
   }
 
   private void init(InputStream dictionary, Charset charset) throws IOException {
@@ -87,29 +147,24 @@ public class DictionaryLemmatizer implements Lemmatizer {
     }
   }
   /**
-   * Get the Map containing the dictionary.
-   *
-   * @return dictMap the Map
+   * @return Retrieves the {@link Map} containing the dictionary.
    */
   public Map<List<String>, List<String>> getDictMap() {
     return this.dictMap;
   }
 
   /**
-   * Get the dictionary keys (word and postag).
-   *
-   * @param word
-   *          the surface form word
-   * @param postag
-   *          the assigned postag
-   * @return returns the dictionary keys
+   * @param word The surface form word.
+   * @param postag The assigned postag.
+   *               
+   * @return Retrieves the dictionary keys (word and postag).
    */
   private List<String> getDictKeys(final String word, final String postag) {
-    final List<String> keys = new ArrayList<>(Arrays.asList(word.toLowerCase(), postag));
-    return keys;
+    return new ArrayList<>(Arrays.asList(word.toLowerCase(), postag));
   }
 
 
+  @Override
   public String[] lemmatize(final String[] tokens, final String[] postags) {
     List<String> lemmas = new ArrayList<>();
     for (int i = 0; i < tokens.length; i++) {
@@ -118,6 +173,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
     return lemmas.toArray(new String[lemmas.size()]);
   }
 
+  @Override
   public List<List<String>> lemmatize(final List<String> tokens, final List<String> posTags) {
     List<List<String>> allLemmas = new ArrayList<>();
     for (int i = 0; i < tokens.size(); i++) {
@@ -127,13 +183,14 @@ public class DictionaryLemmatizer implements Lemmatizer {
   }
 
   /**
-   * Lookup lemma in a dictionary. Outputs "O" if not found.
+   * Lookup lemma in a dictionary. Outputs {@code "0"} if no lemma could be found
+   * for the specified {@code word}.
    *
-   * @param word
-   *          the token
-   * @param postag
-   *          the postag
-   * @return the lemma
+   * @param word The token to look up the lemma for.
+   * @param postag The postag.
+   *
+   * @return The corresponding lemma, or {@code "0"} if no lemma for {@code word}
+   *         could be found.
    */
   private String lemmatize(final String word, final String postag) {
     String lemma;
@@ -149,14 +206,13 @@ public class DictionaryLemmatizer implements Lemmatizer {
   }
 
   /**
-   * Lookup every lemma for a word,pos tag in a dictionary. Outputs "O" if not
-   * found.
+   * Lookup every lemma for a word,pos tag in a dictionary. Outputs {@code "0"} if no
+   * lemmas could be found for the specified {@code word}.
    *
-   * @param word
-   *          the token
-   * @param postag
-   *          the postag
-   * @return every lemma
+   * @param word The token to look up the lemma for.
+   * @param postag The postag.
+   *
+   * @return A list of relevant lemmas.
    */
   private List<String> getAllLemmas(final String word, final String postag) {
     List<String> lemmasList = new ArrayList<>();
