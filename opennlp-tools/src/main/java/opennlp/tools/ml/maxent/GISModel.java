@@ -17,6 +17,9 @@
 
 package opennlp.tools.ml.maxent;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
@@ -77,14 +80,17 @@ public final class GISModel extends AbstractModel {
    *         string representation of the outcomes can be obtained from the
    *         method getOutcome(int i).
    */
+  @Override
   public final double[] eval(String[] context) {
     return (eval(context, new double[evalParams.getNumOutcomes()]));
   }
 
+  @Override
   public final double[] eval(String[] context, float[] values) {
     return (eval(context, values, new double[evalParams.getNumOutcomes()]));
   }
 
+  @Override
   public final double[] eval(String[] context, double[] outsums) {
     return eval(context, null, outsums);
   }
@@ -196,5 +202,26 @@ public final class GISModel extends AbstractModel {
       prior[oid] /= normal;
     }
     return prior;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(pmap, Arrays.hashCode(outcomeNames), evalParams, prior);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof GISModel) {
+      GISModel model = (GISModel) obj;
+
+      return pmap.equals(model.pmap) && Objects.deepEquals(outcomeNames, model.outcomeNames)
+              && Objects.equals(prior, model.prior);
+    }
+
+    return false;
   }
 }

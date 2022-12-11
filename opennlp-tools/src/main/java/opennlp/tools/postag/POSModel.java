@@ -22,11 +22,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
 import opennlp.tools.ml.BeamSearch;
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
@@ -228,5 +230,31 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
   @Override
   public Class<POSModelSerializer> getArtifactSerializerClass() {
     return POSModelSerializer.class;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(artifactMap.get("manifest.properties"), artifactMap.get("pos.model"),
+            Arrays.hashCode((byte[]) artifactMap.get("generator.featuregen"))
+    );
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof POSModel) {
+      POSModel model = (POSModel) obj;
+      Map<String, Object> artifactMapToCheck = model.artifactMap;
+      AbstractModel abstractModel = (AbstractModel) artifactMapToCheck.get("pos.model");
+
+      return artifactMap.get("manifest.properties").equals(artifactMapToCheck.get("manifest.properties")) &&
+              artifactMap.get("pos.model").equals(abstractModel) &&
+              Arrays.equals((byte[]) artifactMap.get("generator.featuregen"),
+                            (byte[]) artifactMapToCheck.get("generator.featuregen"));
+    }
+    return false;
   }
 }
