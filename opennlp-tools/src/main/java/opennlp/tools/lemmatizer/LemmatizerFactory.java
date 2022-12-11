@@ -55,9 +55,7 @@ public class LemmatizerFactory extends BaseToolFactory {
       return ExtensionLoader.instantiateExtension(LemmatizerFactory.class, subclassName);
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
+          + ". The initialization threw an exception.";
       throw new InvalidFormatException(msg, e);
     }
   }
@@ -67,10 +65,16 @@ public class LemmatizerFactory extends BaseToolFactory {
     // no additional artifacts
   }
 
+  /**
+   * @return Retrieves a new {@link SequenceValidator} instance.
+   */
   public SequenceValidator<String> getSequenceValidator() {
     return new DefaultLemmatizerSequenceValidator();
   }
 
+  /**
+   * @return Retrieves a new {@link LemmatizerContextGenerator} instance.
+   */
   public LemmatizerContextGenerator getContextGenerator() {
     return new DefaultLemmatizerContextGenerator();
   }

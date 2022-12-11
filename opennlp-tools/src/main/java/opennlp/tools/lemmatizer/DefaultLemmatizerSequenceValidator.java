@@ -19,9 +19,13 @@ package opennlp.tools.lemmatizer;
 
 import opennlp.tools.util.SequenceValidator;
 
+/**
+ * The default lemmatizer {@link SequenceValidator} implementation.
+ */
 public class DefaultLemmatizerSequenceValidator implements SequenceValidator<String> {
 
   //TODO implement this
+  @Override
   public boolean validSequence(int i, String[] sequence, String[] s, String outcome) {
     return true;
   }

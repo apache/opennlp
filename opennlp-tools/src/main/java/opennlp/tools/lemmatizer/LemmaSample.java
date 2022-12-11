@@ -26,7 +26,7 @@ import java.util.Objects;
 import opennlp.tools.commons.Sample;
 
 /**
- * Represents an lemmatized sentence.
+ * Represents a lemmatized sentence.
  */
 public class LemmaSample implements Sample {
 
@@ -39,25 +39,22 @@ public class LemmaSample implements Sample {
   private final List<String> lemmas;
 
   /**
-   * Represents one lemma sample.
-   * @param tokens the token
-   * @param tags the postags
-   * @param lemmas the lemmas
+   * Initializes a {@link LemmaSample} instance with the given parameters.
+   *
+   * @param tokens The tokens.
+   * @param tags The postags.
+   * @param lemmas The lemmas for {@code tokens}.
    */
   public LemmaSample(String[] tokens, String[] tags, String[] lemmas) {
-
-    validateArguments(tokens.length, tags.length, lemmas.length);
-
-    this.tokens = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tokens)));
-    this.tags = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tags)));
-    this.lemmas = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(lemmas)));
+    this(Arrays.asList(tokens), Arrays.asList(tags), Arrays.asList(lemmas));
   }
 
   /**
-   * Lemma Sample constructor.
-   * @param tokens the tokens
-   * @param tags the postags
-   * @param lemmas the lemmas
+   * Initializes a {@link LemmaSample} instance with the given parameters.
+   *
+   * @param tokens The tokens.
+   * @param tags The postags.
+   * @param lemmas The lemmas for {@code tokens}.
    */
   public LemmaSample(List<String> tokens, List<String> tags, List<String> lemmas) {
 
@@ -68,14 +65,23 @@ public class LemmaSample implements Sample {
     this.lemmas = Collections.unmodifiableList(new ArrayList<>(lemmas));
   }
 
+  /**
+   * @return Retrieves the tokens of a {@link LemmaSample}.
+   */
   public String[] getTokens() {
     return tokens.toArray(new String[tokens.size()]);
   }
 
+  /**
+   * @return Retrieves the postags of a {@link LemmaSample}.
+   */
   public String[] getTags() {
     return tags.toArray(new String[tags.size()]);
   }
 
+  /**
+   * @return Retrieves the lemmas of a {@link LemmaSample}.
+   */
   public String[] getLemmas() {
     return lemmas.toArray(new String[lemmas.size()]);
   }
@@ -85,9 +91,8 @@ public class LemmaSample implements Sample {
     if (tokensSize != tagsSize || tagsSize != lemmasSize) {
       throw new IllegalArgumentException(
           "All arrays must have the same length: " +
-              "sentenceSize: " + tokensSize +
-              ", tagsSize: " + tagsSize +
-              ", predsSize: " + lemmasSize + "!");
+              "sentenceSize: " + tokensSize + ", tagsSize: " + tagsSize +
+                  ", predsSize: " + lemmasSize + "!");
     }
   }
 

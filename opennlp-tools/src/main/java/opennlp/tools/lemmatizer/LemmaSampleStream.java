@@ -26,16 +26,23 @@ import opennlp.tools.util.ObjectStream;
 
 
 /**
- * Reads data for training and testing the lemmatizer. The format consists of:
- * word\tpostag\tlemma.
- * @version 2016-02-16
+ * Reads data for training and testing the {@link Lemmatizer}.
+ * <p>
+ * The format consists of:
+ * {@code word\tpostag\tlemma}.
  */
 public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
 
+  /**
+   * Initializes a {@link LemmaSampleStream instance}.
+   *
+   * @param samples A plain text {@link ObjectStream line stream}.
+   */
   public LemmaSampleStream(ObjectStream<String> samples) {
     super(samples);
   }
 
+  @Override
   public LemmaSample read() throws IOException {
 
     List<String> toks = new ArrayList<>();

@@ -36,12 +36,26 @@ public class MorfologikLemmatizer implements Lemmatizer {
 
   private final Dictionary dictionary;
 
-  public MorfologikLemmatizer(Path dictionaryPath) throws IllegalArgumentException,
-      IOException {
+  /**
+   * Initializes a {@link MorfologikLemmatizer} and related {@link Dictionary}
+   * from the input tab separated dictionary.
+   *
+   * @param dictionaryPath The dictionary referenced via a valid, readable {@link Path}.
+   *
+   * @throws IOException Thrown if IO errors occurred while reading in from
+   *                     {@code dictionaryPath}.
+   */
+  public MorfologikLemmatizer(Path dictionaryPath) throws IOException {
     this(Dictionary.read(dictionaryPath));
   }
 
-  public MorfologikLemmatizer(Dictionary dictionary) throws IllegalArgumentException {
+  /**
+   * Initializes a {@link MorfologikLemmatizer} and related {@link Dictionary}
+   * from the input tab separated dictionary.
+   *
+   * @param dictionary The {@link Dictionary} to be used.
+   */
+  public MorfologikLemmatizer(Dictionary dictionary) {
     this.dictionary = dictionary;
   }
 
@@ -77,14 +91,7 @@ public class MorfologikLemmatizer implements Lemmatizer {
     return lemmas;
   }
 
-
-  /**
-   * Generates a lemma tags for the word and postag returning the result in list of possible lemmas.
-   *
-   * @param toks an array of the tokens
-   * @param tags an array of the pos tags
-   * @return an list of possible lemmas for each token in the sequence.
-   */
+  @Override
   public List<List<String>> lemmatize(List<String> toks, List<String> tags) {
     List<List<String>> lemmas = new ArrayList<>();
     for (int i = 0; i < toks.size(); i++) {
