@@ -17,6 +17,9 @@
 
 package opennlp.tools.ml.perceptron;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
@@ -29,14 +32,17 @@ public class PerceptronModel extends AbstractModel {
     modelType = ModelType.Perceptron;
   }
 
+  @Override
   public double[] eval(String[] context) {
     return eval(context,new double[evalParams.getNumOutcomes()]);
   }
 
+  @Override
   public double[] eval(String[] context, float[] values) {
     return eval(context,values,new double[evalParams.getNumOutcomes()]);
   }
 
+  @Override
   public double[] eval(String[] context, double[] probs) {
     return eval(context,null,probs);
   }
@@ -90,5 +96,44 @@ public class PerceptronModel extends AbstractModel {
       }
     }
     return prior;
+  }
+
+  @Override
+  public int hashCode() {
+    /*
+     * Note:
+     * The hashcode for 'pmap' can not be used here, as PerceptronModelWriter
+     * uses compressions during sortValues() operation, quote:
+     * "remove parameters with 0 weight and predicates with no parameters"
+     *
+     * This leads to fewer entries in 'pmap' for serialized PerceptronModel instances
+     * that were trained from scratch.
+     */
+    return Objects.hash(Arrays.hashCode(outcomeNames), evalParams, prior);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof PerceptronModel) {
+      PerceptronModel model = (PerceptronModel) obj;
+
+      /*
+       * Note:
+       * The comparison 'pmap.equals(model.pmap)' can not be made here, as PerceptronModelWriter
+       * uses compressions during sortValues() operation, quote:
+       * "remove parameters with 0 weight and predicates with no parameters"
+       *
+       * This leads to fewer entries in 'pmap' for serialized PerceptronModel instances
+       * that were trained from scratch.
+       */
+      return Objects.deepEquals(outcomeNames, model.outcomeNames)
+              && Objects.equals(prior, model.prior);
+    }
+
+    return false;
   }
 }

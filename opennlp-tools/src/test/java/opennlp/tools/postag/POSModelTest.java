@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.model.ModelType;
@@ -30,34 +31,30 @@ public class POSModelTest {
   @Test
   void testPOSModelSerializationMaxent() throws IOException {
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
+    Assertions.assertFalse(posModel.isLoadedFromSerialized());
 
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-    try {
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
       posModel.serialize(out);
-    } finally {
-      out.close();
+
+      POSModel recreatedPosModel = new POSModel(new ByteArrayInputStream(out.toByteArray()));
+      Assertions.assertNotNull(recreatedPosModel);
+      Assertions.assertTrue(recreatedPosModel.isLoadedFromSerialized());
+      Assertions.assertEquals(posModel, recreatedPosModel);
     }
-
-    POSModel recreatedPosModel = new POSModel(new ByteArrayInputStream(out.toByteArray()));
-
-    // TODO: add equals to pos model
   }
 
   @Test
   void testPOSModelSerializationPerceptron() throws IOException {
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.PERCEPTRON);
-
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-    try {
+    Assertions.assertFalse(posModel.isLoadedFromSerialized());
+    
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
       posModel.serialize(out);
-    } finally {
-      out.close();
+
+      POSModel recreatedPosModel = new POSModel(new ByteArrayInputStream(out.toByteArray()));
+      Assertions.assertTrue(recreatedPosModel.isLoadedFromSerialized());
+      Assertions.assertEquals(posModel, recreatedPosModel);
     }
 
-    POSModel recreatedPosModel = new POSModel(new ByteArrayInputStream(out.toByteArray()));
-
-    // TODO: add equals to pos model
   }
 }
