@@ -34,13 +34,13 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.featuregen.BrownCluster;
 import opennlp.tools.util.featuregen.WordClusterDictionary;
+import opennlp.tools.util.featuregen.WordClusterFeatureGenerator;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ByteArraySerializer;
 
 /**
- * The {@link TokenNameFinderModel} is the model used
- * by a learnable {@link TokenNameFinder}.
+ * The {@link TokenNameFinderModel} is the model used by a learnable {@link TokenNameFinder}.
  *
  * @see NameFinderME
  */
@@ -60,6 +60,20 @@ public class TokenNameFinderModel extends BaseModel {
 
   static final String SEQUENCE_CODEC_CLASS_NAME_PARAMETER = "sequenceCodecImplName";
 
+  /**
+   * Initializes a {@link TokenNameFinderModel} instance via given parameters.
+   *
+   * @param languageCode The ISO conform language code.
+   * @param nameFinderModel A valid {@link MaxentModel}.
+   * @param generatorDescriptor The {@code byte[]} representing the feature generator descriptor.
+   * @param resources Additional resources in a mapping.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param seqCodec The {@link SequenceCodec} to use.
+   * @param factory The {@link TokenNameFinderFactory} for creating related objects.
+   *
+   * @throws IllegalArgumentException Thrown if the {@code namFinderModel} incompatible
+   *                                  with {@code seqCodec}.
+   */
   public TokenNameFinderModel(String languageCode, SequenceClassificationModel<String> nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
       SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
@@ -72,6 +86,21 @@ public class TokenNameFinderModel extends BaseModel {
     }
   }
 
+  /**
+   * Initializes a {@link TokenNameFinderModel} instance via given parameters.
+   *
+   * @param languageCode The ISO conform language code.
+   * @param nameFinderModel A valid {@link MaxentModel}.
+   * @param beamSize The beam size. Must be greater than {@code 0}.
+   * @param generatorDescriptor The {@code byte[]} representing the feature generator descriptor.
+   * @param resources Additional resources in a mapping.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param seqCodec The {@link SequenceCodec} to use.
+   * @param factory The {@link TokenNameFinderFactory} for creating related objects.
+   *
+   * @throws IllegalArgumentException Thrown if the {@code namFinderModel} incompatible
+   *                                  with {@code seqCodec}.
+   */
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel, int beamSize,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
       SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
@@ -88,37 +117,109 @@ public class TokenNameFinderModel extends BaseModel {
     }
   }
 
-  // TODO: Extend this one with beam size!
-  public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
+  /**
+   * Initializes a {@link TokenNameFinderModel} instance via given parameters.
+   *
+   * @param languageCode The ISO conform language code.
+   * @param nameFinderModel A valid {@link MaxentModel}.
+   * @param generatorDescriptor The {@code byte[]} representing the feature generator descriptor.
+   * @param resources Additional resources in a mapping.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   *
+   * @throws IllegalArgumentException Thrown if the {@code namFinderModel} incompatible
+   *                                  with {@code seqCodec}.
+   */
+  public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel, byte[] generatorDescriptor,
+                              Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     this(languageCode, nameFinderModel, NameFinderME.DEFAULT_BEAM_SIZE,
-        generatorDescriptor, resources, manifestInfoEntries, new BioCodec(), new TokenNameFinderFactory());
+            generatorDescriptor, resources, manifestInfoEntries,
+            new BioCodec(), new TokenNameFinderFactory());
   }
 
+  /**
+   * Initializes a {@link TokenNameFinderModel} instance via given parameters.
+   *
+   * @param languageCode The ISO conform language code.
+   * @param nameFinderModel A valid {@link MaxentModel}.
+   * @param beamSize The beam size. Must be greater than {@code 0}.
+   * @param generatorDescriptor The {@code byte[]} representing the feature generator descriptor.
+   * @param resources Additional resources in a mapping.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   *
+   * @throws IllegalArgumentException Thrown if the {@code namFinderModel} incompatible
+   *                                  with {@code seqCodec}.
+   */
+  public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel, int beamSize,
+                              byte[] generatorDescriptor, Map<String, Object> resources,
+                              Map<String, String> manifestInfoEntries) {
+    this(languageCode, nameFinderModel, beamSize,
+            generatorDescriptor, resources, manifestInfoEntries,
+            new BioCodec(), new TokenNameFinderFactory());
+  }
+
+  /**
+   * Initializes a {@link TokenNameFinderModel} instance via given parameters.
+   *
+   * @param languageCode The ISO conform language code.
+   * @param nameFinderModel A valid {@link MaxentModel}.
+   * @param resources Additional resources in a mapping.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   *
+   * @throws IllegalArgumentException Thrown if the {@code nameFinderModel} is incompatible
+   *                                  with {@code seqCodec}.
+   */
   public TokenNameFinderModel(String languageCode, MaxentModel nameFinderModel,
       Map<String, Object> resources, Map<String, String> manifestInfoEntries) {
     this(languageCode, nameFinderModel, null, resources, manifestInfoEntries);
   }
 
+  /**
+   * Initializes a {@link TokenNameFinderModel} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public TokenNameFinderModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
+  /**
+   * Initializes a {@link TokenNameFinderModel} instance via a valid {@link File}.
+   *
+   * @param modelFile The {@link File} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public TokenNameFinderModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
+  /**
+   * Initializes a {@link TokenNameFinderModel} instance via a valid {@link Path}.
+   *
+   * @param modelPath The {@link Path} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public TokenNameFinderModel(Path modelPath) throws IOException {
-    this(modelPath.toFile());
+    super(COMPONENT_NAME, modelPath);
   }
 
+  /**
+   * Initializes a {@link TokenNameFinderModel} instance via a valid {@link URL}.
+   *
+   * @param modelURL The {@link URL} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public TokenNameFinderModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 
-  private void init(Object nameFinderModel,
-      byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
-      SequenceCodec<String> seqCodec) {
+  private void init(Object nameFinderModel, byte[] generatorDescriptor,
+                    Map<String, Object> resources, Map<String, String> manifestInfoEntries,
+                    SequenceCodec<String> seqCodec) {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     manifest.put(SEQUENCE_CODEC_CLASS_NAME_PARAMETER, seqCodec.getClass().getName());
@@ -143,6 +244,10 @@ public class TokenNameFinderModel extends BaseModel {
     checkArtifactMap();
   }
 
+  /**
+   * @return Retrieves a valid {@link SequenceClassificationModel} or {@code null}
+   *         if no matching one could be found.
+   */
   public SequenceClassificationModel<String> getNameFinderSequenceModel() {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
@@ -170,10 +275,16 @@ public class TokenNameFinderModel extends BaseModel {
     return TokenNameFinderFactory.class;
   }
 
+  /**
+   * @return Retrieves the {@link SequenceCodec} in use.
+   */
   public SequenceCodec<String> getSequenceCodec() {
     return this.getFactory().getSequenceCodec();
   }
 
+  /**
+   * @return Retrieves the {@link TokenNameFinderFactory} in use.
+   */
   public TokenNameFinderFactory getFactory() {
     return (TokenNameFinderFactory) this.toolFactory;
   }
@@ -186,13 +297,15 @@ public class TokenNameFinderModel extends BaseModel {
   }
 
   /**
-   * Create the artifact serializers. Currently for serializers related to
+   * Create the {@link ArtifactSerializer serializers}. Currently, for serializers related to
    * features that require external resources, such as {@code W2VClassesDictionary}
    * objects, the convention is to add its element tag name as key of the serializer map.
-   * For example, the element tag name for the {@code WordClusterFeatureGenerator} which
+   * <p>
+   * For example, the element tag name for the {@link WordClusterFeatureGenerator} which
    * uses {@code W2VClassesDictionary} objects serialized by the {@code W2VClassesDictionarySerializer}
    * is 'wordcluster', which is the key used to add the serializer to the map.
-   * @return the map containing the added serializers
+   *
+   * @return A {@link Map} containing the added {@link ArtifactSerializer serializers}.
    */
   public static Map<String, ArtifactSerializer<?>> createArtifactSerializers()  {
 

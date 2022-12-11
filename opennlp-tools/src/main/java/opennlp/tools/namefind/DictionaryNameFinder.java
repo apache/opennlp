@@ -26,22 +26,22 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 
 /**
- * This is a dictionary based name finder, it scans text
- * for names inside a dictionary.
+ * This is a {@link Dictionary} based {@link TokenNameFinder name finder}.
+ * It scans text for names inside a provided dictionary.
  */
 public class DictionaryNameFinder implements TokenNameFinder {
 
   private static final String DEFAULT_TYPE = "default";
 
-  private Dictionary mDictionary;
+  private final Dictionary mDictionary;
   private final String type;
 
   /**
-   * Initialized the current instance with he provided dictionary
-   * and a type.
+   * Initializes a {@link DictionaryNameFinder} with the provided {@link Dictionary}
+   * and a {@code type}.
    *
-   * @param dictionary
-   * @param type the name type used for the produced spans
+   * @param dictionary The {@link Dictionary} to use. Must not be {@code null}.
+   * @param type the name type used for the produced spans. Must not be {@code null}.
    */
   public DictionaryNameFinder(Dictionary dictionary, String type) {
     mDictionary = Objects.requireNonNull(dictionary, "dictionary must not be null");
@@ -49,14 +49,16 @@ public class DictionaryNameFinder implements TokenNameFinder {
   }
 
   /**
-   * Initializes the current instance with the provided dictionary.
+   * Initializes a {@link DictionaryNameFinder} with the provided {@link Dictionary}
+   * and {@link #DEFAULT_TYPE}.
    *
-   * @param dictionary
+   * @param dictionary The {@link Dictionary} to use. Must not be {@code null}.
    */
   public DictionaryNameFinder(Dictionary dictionary) {
     this(dictionary, DEFAULT_TYPE);
   }
 
+  @Override
   public Span[] find(String[] textTokenized) {
     List<Span> namesFound = new LinkedList<>();
 
@@ -91,6 +93,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
     return namesFound.toArray(new Span[namesFound.size()]);
   }
 
+  @Override
   public void clearAdaptiveData() {
     // nothing to clear
   }

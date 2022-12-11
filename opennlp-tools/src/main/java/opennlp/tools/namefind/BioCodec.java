@@ -26,16 +26,31 @@ import java.util.regex.Pattern;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.Span;
 
+/**
+ * The default {@link SequenceCodec} implementation according to the {@code BIO} scheme:
+ * <ul>
+ *   <li>B: 'beginning' of a NE</li>
+ *   <li>I: 'inside', the word is inside a NE</li>
+ *   <li>O: 'outside', the word is a regular word outside a NE</li>
+ * </ul>
+ *
+ * See also the paper by Roth D. and Ratinov L.:
+ * <a href="https://cogcomp.seas.upenn.edu/page/publication_view/199">
+ *  Design Challenges and Misconceptions in Named Entity Recognition</a>.
+ *
+ * @see SequenceCodec
+ * @see BilouCodec
+ */
 public class BioCodec implements SequenceCodec<String> {
 
   public static final String START = "start";
   public static final String CONTINUE = "cont";
   public static final String OTHER = "other";
 
-  private static final Pattern typedOutcomePattern = Pattern.compile("(.+)-\\w+");
+  private static final Pattern TYPED_OUTCOME_PATTERN = Pattern.compile("(.+)-\\w+");
 
   static String extractNameType(String outcome) {
-    Matcher matcher = typedOutcomePattern.matcher(outcome);
+    Matcher matcher = TYPED_OUTCOME_PATTERN.matcher(outcome);
     if (matcher.matches()) {
       return matcher.group(1);
     }
@@ -43,6 +58,7 @@ public class BioCodec implements SequenceCodec<String> {
     return null;
   }
 
+  @Override
   public Span[] decode(List<String> c) {
     int start = -1;
     int end = -1;
@@ -77,6 +93,7 @@ public class BioCodec implements SequenceCodec<String> {
     return spans.toArray(new Span[spans.size()]);
   }
 
+  @Override
   public String[] encode(Span[] names, int length) {
     String[] outcomes = new String[length];
     Arrays.fill(outcomes, BioCodec.OTHER);
@@ -101,6 +118,7 @@ public class BioCodec implements SequenceCodec<String> {
     return outcomes;
   }
 
+  @Override
   public NameFinderSequenceValidator createSequenceValidator() {
     return new NameFinderSequenceValidator();
   }

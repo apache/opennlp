@@ -50,11 +50,11 @@ import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
- * Class for creating a maximum-entropy-based name finder.
+ * A maximum-entropy-based {@link TokenNameFinder name finder} implementation.
  */
 public class NameFinderME implements TokenNameFinder {
 
-  private static String[][] EMPTY = new String[0][0];
+  private static final String[][] EMPTY = new String[0][0];
   public static final int DEFAULT_BEAM_SIZE = 3;
   private static final Pattern typedOutcomePattern = Pattern.compile("(.+)-\\w+");
 
@@ -69,10 +69,15 @@ public class NameFinderME implements TokenNameFinder {
   protected NameContextGenerator contextGenerator;
   private Sequence bestSequence;
 
-  private AdditionalContextFeatureGenerator additionalContextFeatureGenerator
-          = new AdditionalContextFeatureGenerator();
-  private SequenceValidator<String> sequenceValidator;
+  private final AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
+          new AdditionalContextFeatureGenerator();
+  private final SequenceValidator<String> sequenceValidator;
 
+  /**
+   * Initializes a {@link NameFinderME} with a {@link TokenNameFinderModel}.
+   * 
+   * @param model The {@link TokenNameFinderModel} to initialize with.
+   */
   public NameFinderME(TokenNameFinderModel model) {
 
     TokenNameFinderFactory factory = model.getFactory();
@@ -107,24 +112,24 @@ public class NameFinderME implements TokenNameFinder {
     return featureGenerator;
   }
 
+  @Override
   public Span[] find(String[] tokens) {
     return find(tokens, EMPTY);
   }
 
   /**
    * Generates name tags for the given sequence, typically a sentence, returning
-   * token spans for any identified names.
+   * {@link Span token spans} for any identified names.
    *
-   * @param tokens an array of the tokens or words of the sequence, typically a sentence.
-   * @param additionalContext features which are based on context outside of the
-   *     sentence but which should also be used.
+   * @param tokens An array of the tokens or words of a sequence, typically a sentence.
+   * @param additionalContext Features which are based on context outside of the
+   *                          sentence but which should also be used.
    *
-   * @return an array of spans for each of the names identified.
+   * @return An array of {@link Span token spans} for each of the names identified.
    */
   public Span[] find(String[] tokens, String[][] additionalContext) {
 
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
-
     bestSequence = model.bestSequence(tokens, additionalContext, contextGenerator, sequenceValidator);
 
     List<String> c = bestSequence.getOutcomes();
@@ -134,13 +139,8 @@ public class NameFinderME implements TokenNameFinder {
     spans = setProbs(spans);
     return spans;
   }
-
-  /**
-   * Forgets all adaptive data which was collected during previous calls to one
-   * of the find methods.
-   *
-   * This method is typical called at the end of a document.
-   */
+  
+  @Override
   public void clearAdaptiveData() {
     contextGenerator.clearAdaptiveData();
   }
@@ -148,32 +148,32 @@ public class NameFinderME implements TokenNameFinder {
   /**
    * Populates the specified array with the probabilities of the last decoded
    * sequence. The sequence was determined based on the previous call to
-   * <code>chunk</code>. The specified array should be at least as large as the
-   * number of tokens in the previous call to <code>chunk</code>.
+   * {@link #find(String[])}. The specified array should be at least as large as the
+   * number of tokens in the previous call to {@link #find(String[])}.
    *
-   * @param probs An array used to hold the probabilities of the last decoded
-   *     sequence.
+   * @param probs An array with the probabilities of the last decoded sequence.
    */
   public void probs(double[] probs) {
     bestSequence.getProbs(probs);
   }
 
   /**
-   * Returns an array with the probabilities of the last decoded sequence. The
-   * sequence was determined based on the previous call to <code>chunk</code>.
+   * Retrieves the probabilities of the last decoded sequence. The
+   * sequence was determined based on the previous call to {@link #find(String[])}.
    *
    * @return An array with the same number of probabilities as tokens were sent
-   *     to <code>chunk</code> when it was last called.
+   *         to {@link #find(String[])} when it was last called.
    */
   public double[] probs() {
     return bestSequence.getProbs();
   }
 
   /**
-   * sets the probs for the spans
+   * Sets probabilities for the spans.
    *
-   * @param spans
-   * @return
+   * @param spans The {@link Span spans} to set probabilities.
+   *              
+   * @return The {@link Span spans} with populated values.
    */
   private Span[] setProbs(Span[] spans) {
     double[] probs = probs(spans);
@@ -188,13 +188,14 @@ public class NameFinderME implements TokenNameFinder {
   }
 
   /**
-   * Returns an array of probabilities for each of the specified spans which is
+   * Retrieves an array of probabilities for each of the specified spans which is
    * the arithmetic mean of the probabilities for each of the outcomes which
    * make up the span.
    *
-   * @param spans The spans of the names for which probabilities are desired.
+   * @param spans The {@link Span spans} of the names for which probabilities
+   *              are requested.
    *
-   * @return an array of probabilities for each of the specified spans.
+   * @return An array of probabilities for each of the specified spans.
    */
   public double[] probs(Span[] spans) {
 
@@ -217,30 +218,41 @@ public class NameFinderME implements TokenNameFinder {
     return sprobs;
   }
 
+  /**
+   * Starts a training of a {@link TokenNameFinderModel} with the given parameters.
+   *
+   * @param languageCode The ISO conform language code.
+   * @param type The type to use.
+   * @param samples The {@link ObjectStream} of {@link NameSample} used as input for training.
+   * @param params The {@link TrainingParameters} for the context of the training.
+   * @param factory The {@link TokenNameFinderFactory} for creating related objects defined
+   *                via {@code params}.
+   *
+   * @return A valid, trained {@link TokenNameFinderModel} instance.
+   * @throws IOException Thrown if IO errors occurred during training.
+   */
   public static TokenNameFinderModel train(String languageCode, String type,
-                                           ObjectStream<NameSample> samples, TrainingParameters trainParams,
+                                           ObjectStream<NameSample> samples, TrainingParameters params,
                                            TokenNameFinderFactory factory) throws IOException {
 
-    trainParams.putIfAbsent(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
-    trainParams.putIfAbsent(TrainingParameters.CUTOFF_PARAM, 0);
-    trainParams.putIfAbsent(TrainingParameters.ITERATIONS_PARAM, 300);
+    params.putIfAbsent(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    params.putIfAbsent(TrainingParameters.CUTOFF_PARAM, 0);
+    params.putIfAbsent(TrainingParameters.ITERATIONS_PARAM, 300);
 
-    int beamSize = trainParams.getIntParameter(BeamSearch.BEAM_SIZE_PARAMETER,
-            NameFinderME.DEFAULT_BEAM_SIZE);
+    int beamSize = params.getIntParameter(BeamSearch.BEAM_SIZE_PARAMETER, NameFinderME.DEFAULT_BEAM_SIZE);
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
     MaxentModel nameFinderModel = null;
-
     SequenceClassificationModel<String> seqModel = null;
 
-    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams);
+    TrainerType trainerType = TrainerFactory.getTrainerType(params);
 
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> eventStream = new NameFinderEventStream(samples, type,
               factory.createContextGenerator(), factory.createSequenceCodec());
 
-      EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, manifestInfoEntries);
+      EventTrainer trainer = TrainerFactory.getEventTrainer(params, manifestInfoEntries);
       nameFinderModel = trainer.train(eventStream);
     } // TODO: Maybe it is not a good idea, that these two don't use the context generator ?!
     // These also don't use the sequence codec ?!
@@ -248,11 +260,11 @@ public class NameFinderME implements TokenNameFinder {
       NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, factory.createContextGenerator());
 
       EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(
-              trainParams, manifestInfoEntries);
+              params, manifestInfoEntries);
       nameFinderModel = trainer.train(ss);
     } else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
       SequenceTrainer<NameSample> trainer = TrainerFactory.getSequenceModelTrainer(
-              trainParams, manifestInfoEntries);
+              params, manifestInfoEntries);
 
       NameSampleSequenceStream ss =
           new NameSampleSequenceStream(samples, factory.createContextGenerator(), false);
@@ -271,10 +283,10 @@ public class NameFinderME implements TokenNameFinder {
   }
 
   /**
-   * Gets the name type from the outcome
+   * Extracts the name type from the {@code outcome}.
    *
-   * @param outcome the outcome
-   * @return the name type, or null if not set
+   * @param outcome The outcome
+   * @return The name type, or {@code null} if not set.
    */
   static String extractNameType(String outcome) {
     Matcher matcher = typedOutcomePattern.matcher(outcome);
@@ -286,17 +298,17 @@ public class NameFinderME implements TokenNameFinder {
   }
 
   /**
-   * Removes spans with are intersecting or crossing in anyway.
+   * Removes {@link Span spans} with are intersecting or crossing in any way.
    *
    * <p>
    * The following rules are used to remove the spans:<br>
-   * Identical spans: The first span in the array after sorting it remains<br>
-   * Intersecting spans: The first span after sorting remains<br>
-   * Contained spans: All spans which are contained by another are removed<br>
+   * Identical spans: The first span in the array after sorting it remains.<br>
+   * Intersecting spans: The first span after sorting remains.<br>
+   * Contained spans: All spans which are contained by another are removed.<br>
    *
-   * @param spans
+   * @param spans The input {@link Span spans}.
    *
-   * @return non-overlapping spans
+   * @return The resulting non-overlapping {@link Span spans}.
    */
   public static Span[] dropOverlappingSpans(Span[] spans) {
 

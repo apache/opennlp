@@ -30,30 +30,42 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
- * A stream which removes Name Samples which do not have a certain type.
+ * A {@link FilterObjectStream stream} which removes {@link NameSample name samples}
+ * which do not have a certain type.
  */
 public class NameSampleTypeFilter extends FilterObjectStream<NameSample, NameSample> {
 
   private final Set<String> types;
 
+  /**
+   * Initializes a {@link NameSampleTypeFilter}.
+   *
+   * @param types An array with types to use.
+   * @param samples An {@link ObjectStream<NameSample>} with the samples to filter.
+   */
   public NameSampleTypeFilter(String[] types, ObjectStream<NameSample> samples) {
     super(samples);
     this.types = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(types)));
   }
 
+  /**
+   * Initializes a {@link NameSampleTypeFilter}.
+   *
+   * @param types A {@link Set} with types to use.
+   * @param samples An {@link ObjectStream<NameSample>} with the samples to filter.
+   */
   public NameSampleTypeFilter(Set<String> types, ObjectStream<NameSample> samples) {
     super(samples);
     this.types = Collections.unmodifiableSet(new HashSet<>(types));
   }
 
+  @Override
   public NameSample read() throws IOException {
 
     NameSample sample = samples.read();
-
     if (sample != null) {
 
       List<Span> filteredNames = new ArrayList<>();
-
       for (Span name : sample.getNames()) {
         if (types.contains(name.getType())) {
           filteredNames.add(name);

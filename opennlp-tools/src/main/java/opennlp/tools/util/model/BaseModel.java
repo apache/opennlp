@@ -29,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -180,6 +181,14 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     this(componentName, true);
 
     try (InputStream in = new BufferedInputStream(new FileInputStream(modelFile))) {
+      loadModel(in);
+    }
+  }
+
+  protected BaseModel(String componentName, Path modelPath) throws IOException  {
+    this(componentName, true);
+
+    try (InputStream in = Files.newInputStream(modelPath)) {
       loadModel(in);
     }
   }

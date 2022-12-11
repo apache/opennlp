@@ -24,10 +24,12 @@ import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * The {@link NameSampleDataStream} class converts tagged {@link String}s
+ * The {@link NameSampleDataStream} class converts tagged {@link String strings}
  * provided by a {@link DataStream} to {@link NameSample} objects.
- * It uses text that is is one-sentence per line and tokenized
- * with names identified by <code>&lt;START&gt;</code> and <code>&lt;END&gt;</code> tags.
+ * It uses text that is one-sentence per line and tokenized
+ * with names identified by:
+ * <p>
+ * {@code &lt;START&gt;} and {@code &lt;END&gt;} tags.
  */
 public class NameSampleDataStream extends FilterObjectStream<String, NameSample> {
 
@@ -35,16 +37,22 @@ public class NameSampleDataStream extends FilterObjectStream<String, NameSample>
   public static final String START_TAG = "<START>";
   public static final String END_TAG = "<END>";
 
+  /**
+   * Initializes a {@link NameSampleDataStream} with given {@code psi} samples.
+   *
+   * @param in The {@link ObjectStream stream} of data samples.
+   */
   public NameSampleDataStream(ObjectStream<String> in) {
     super(in);
   }
 
+  @Override
   public NameSample read() throws IOException {
     String token = samples.read();
 
     boolean isClearAdaptiveData = false;
 
-    // An empty line indicates the begin of a new article
+    // An empty line indicates the start of a new article
     // for which the adaptive data in the feature generators
     // must be cleared
     while (token != null && token.trim().length() == 0) {
