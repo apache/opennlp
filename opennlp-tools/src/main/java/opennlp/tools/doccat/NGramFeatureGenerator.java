@@ -27,7 +27,8 @@ import opennlp.tools.util.InvalidFormatException;
 
 /**
  * Generates ngram features for a document.
- * n-gram {@link FeatureGenerator}
+ *
+ * @see FeatureGenerator
  */
 public class NGramFeatureGenerator implements FeatureGenerator {
 
@@ -35,11 +36,11 @@ public class NGramFeatureGenerator implements FeatureGenerator {
   private final int maxGram;
 
   /**
-   * Constructor for ngrams.
+   * Instantiates an {@link NGramFeatureGenerator} instance with configurable ngram parameters.
    *
-   * @param minGram minGram value - which means minimum words in ngram features
-   * @param maxGram maxGram value - which means maximum words in ngram features
-   * @throws InvalidFormatException
+   * @param minGram The minimum words in ngram features.
+   * @param maxGram The maximum words in ngram features.
+   * @throws InvalidFormatException Thrown if parameter values are invalid or inconsistent.
    */
   public NGramFeatureGenerator(int minGram, int maxGram) throws InvalidFormatException {
     if (minGram > 0 && maxGram > 0) {
@@ -57,19 +58,15 @@ public class NGramFeatureGenerator implements FeatureGenerator {
   }
 
   /**
-   * Default constructor for Bi grams
+   * Instantiates an {@link NGramFeatureGenerator} instance with a Bi grams config.
+   *
+   * @throws InvalidFormatException Thrown if parameter values are invalid or inconsistent.
    */
   public NGramFeatureGenerator() throws InvalidFormatException {
     this(2, 2);
   }
 
-  /**
-   * Extract ngram features from given text fragments
-   *
-   * @param text      the text fragments to extract features from
-   * @param extraInfo optional extra information
-   * @return a collection of n gram features
-   */
+  @Override
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInfo) {
     Objects.requireNonNull(text, "text must not be null");
     List<String> features = new ArrayList<>();

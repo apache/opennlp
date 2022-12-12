@@ -24,21 +24,23 @@ import opennlp.tools.util.eval.Mean;
 /**
  * The {@link DocumentCategorizerEvaluator} measures the performance of
  * the given {@link DocumentCategorizer} with the provided reference
- * {@link DocumentSample}s.
+ * {@link DocumentSample samples}.
  *
  * @see DocumentCategorizer
  * @see DocumentSample
+ * @see Evaluator
  */
 public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample> {
 
-  private DocumentCategorizer categorizer;
+  private final DocumentCategorizer categorizer;
 
-  private Mean accuracy = new Mean();
+  private final Mean accuracy = new Mean();
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link DocumentCategorizerEvaluator} instance.
    *
-   * @param categorizer the document categorizer instance
+   * @param categorizer the {@link DocumentCategorizer} instance.
+   * @param listeners the {@link DoccatEvaluationMonitor evaluation listeners}.
    */
   public DocumentCategorizerEvaluator(DocumentCategorizer categorizer,
       DoccatEvaluationMonitor ... listeners) {
@@ -47,13 +49,14 @@ public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample> {
   }
 
   /**
-   * Evaluates the given reference {@link DocumentSample} object.
-   *
+   * Evaluates the given reference {@link DocumentSample sample}.
+   * <p>
    * This is done by categorizing the document from the provided
    * {@link DocumentSample}. The detected category is then used
    * to calculate and update the score.
    *
-   * @param sample the reference {@link TokenSample}.
+   * @param sample The reference {@link TokenSample}.
+   * @return The processed {@link TokenSample}.
    */
   public DocumentSample processSample(DocumentSample sample) {
 
@@ -74,11 +77,9 @@ public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample> {
   }
 
   /**
-   * Retrieves the accuracy of provided {@link DocumentCategorizer}.
+   * {@code accuracy = correctly categorized documents / total documents}
    *
-   * accuracy = correctly categorized documents / total documents
-   *
-   * @return the accuracy
+   * @return Retrieves the accuracy of provided {@link DocumentCategorizer}.
    */
   public double getAccuracy() {
     return accuracy.mean();
@@ -89,7 +90,7 @@ public class DocumentCategorizerEvaluator extends Evaluator<DocumentSample> {
   }
 
   /**
-   * Represents this objects as human readable {@link String}.
+   * Represents this object as human-readable {@link String}.
    */
   @Override
   public String toString() {

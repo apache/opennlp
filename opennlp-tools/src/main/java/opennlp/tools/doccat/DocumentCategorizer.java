@@ -27,75 +27,78 @@ import java.util.SortedMap;
 public interface DocumentCategorizer {
 
   /**
-   * Categorize the given text provided as tokens along with
-   * the provided extra information
+   * Categorizes the given {@code text} provided as tokens along with
+   * the provided {@code extraInformation}.
    *
-   * @param text the tokens of text to categorize
-   * @param extraInformation extra information
-   * @return per category probabilities
+   * @param text The tokens of text to categorize.
+   * @param extraInformation The extra information used for this context.
+   * @return The per category probabilities.
    */
   double[] categorize(String[] text, Map<String, Object> extraInformation);
 
   /**
-   * Categorizes the given text, provided in separate tokens.
-   * @param text the tokens of text to categorize
-   * @return per category probabilities
+   * Categorizes the given {@code text}, provided in separate tokens.
+   * 
+   * @param text The tokens of text to categorize.
+   * @return The per category probabilities.
    */
   double[] categorize(String[] text);
 
   /**
-   * get the best category from previously generated outcome probabilities
+   * Retrieves the best category from previously generated {@code outcome} probabilities
    *
-   * @param outcome a vector of outcome probabilities
-   * @return the best category String
+   * @param outcome An array of computed outcome probabilities.
+   * @return The best category represented as String.
    */
   String getBestCategory(double[] outcome);
 
   /**
-   * get the index of a certain category
+   * Retrieves the index of a certain category.
    *
-   * @param category the category
-   * @return an index
+   * @param category The category for which the {@code index} is to be found.
+   * @return The index.
    */
   int getIndex(String category);
 
   /**
-   * get the category at a given index
+   * Retrieves the category at a given {@code index}.
    *
-   * @param index the index
-   * @return a category
+   * @param index The index for which the {@code category} shall be found.
+   * @return The category represented as String.
    */
   String getCategory(int index);
 
   /**
-   * get the number of categories
+   * Retrieves the number of categories.
    *
-   * @return the no. of categories
+   * @return The no. of categories.
    */
   int getNumberOfCategories();
 
   /**
-   * get the name of the category associated with the given probabilties
+   * Retrieves the name of the category associated with the given probabilities.
    *
-   * @param results the probabilities of each category
-   * @return the name of the outcome
+   * @param results The probabilities of each category.
+   * @return The name of the outcome.
    */
   String getAllResults(double[] results);
 
   /**
-   * Returns a map in which the key is the category name and the value is the score
+   * Retrieves a {@link Map} in which the key is the category name and the value is the score.
    *
-   * @param text the input text to classify
-   * @return a map with the score as a key. The value is a Set of categories with the score.
+   * @param text The tokenized input text to classify.
+   * @return A {@link Map} with the score as a key.
    */
   Map<String, Double> scoreMap(String[] text);
 
   /**
-   * Get a map of the scores sorted in ascending aorder together with their associated categories.
-   * Many categories can have the same score, hence the Set as value
+   * Retrieves a {@link SortedMap} of the scores sorted in ascending order,
+   * together with their associated categories.
+   * <p> 
+   * Many categories can have the same score, hence the {@link Set} as value.
    *
    * @param text the input text to classify
-   * @return a map with the score as a key. The value is a Set of categories with the score.
+   * @return A {@link SortedMap} with the score as a key.
    */
   SortedMap<Double, Set<String>> sortedScoreMap(String[] text);
 

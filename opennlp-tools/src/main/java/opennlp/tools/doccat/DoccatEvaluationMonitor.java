@@ -20,7 +20,7 @@ package opennlp.tools.doccat;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
- * {@link EvaluationMonitor} for doccat.
+ * A marker interface for evaluating {@link DocumentCategorizer doccat}.
  */
 public interface DoccatEvaluationMonitor extends
     EvaluationMonitor<DocumentSample> {

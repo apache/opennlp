@@ -36,10 +36,23 @@ public class DocumentSample implements Sample {
   private final List<String> text;
   private final Map<String, Object> extraInformation;
 
+  /**
+   * Initializes a {@link DocumentSample instance}.
+   *
+   * @param category The category to be used. Must not be {@code null}.
+   * @param text The plain text in a tokenized form. Must not be {@code null}.
+   */
   public DocumentSample(String category, String[] text) {
     this(category, text, null);
   }
 
+  /**
+   * Initializes a {@link DocumentSample instance}.
+   *
+   * @param category The category to be used.Must not be {@code null}.
+   * @param text The plain text in a tokenized form. Must not be {@code null}.
+   * @param extraInformation Additional information for context.
+   */
   public DocumentSample(String category, String[] text, Map<String, Object> extraInformation) {
     Objects.requireNonNull(text, "text must not be null");
 
@@ -53,14 +66,23 @@ public class DocumentSample implements Sample {
     }
   }
 
+  /**
+   * @return Retrieves the category.
+   */
   public String getCategory() {
     return category;
   }
 
+  /**
+   * @return Retrieves the text in a tokenized form.
+   */
   public String[] getText() {
     return text.toArray(new String[text.size()]);
   }
 
+  /**
+   * @return Retrieves contextual extra information.
+   */
   public Map<String, Object> getExtraInformation() {
     return extraInformation;
   }
@@ -69,7 +91,6 @@ public class DocumentSample implements Sample {
   public String toString() {
 
     StringBuilder sampleString = new StringBuilder();
-
     sampleString.append(category).append('\t');
 
     for (String s : text) {

@@ -38,6 +38,14 @@ public class DoccatModel extends BaseModel {
   private static final String COMPONENT_NAME = "DocumentCategorizerME";
   private static final String DOCCAT_MODEL_ENTRY_NAME = "doccat.model";
 
+  /**
+   * Initializes a {@link DoccatModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param doccatModel A valid {@link MaxentModel} to be used.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param factory The {@link DoccatFactory} to be used.
+   */
   public DoccatModel(String languageCode, MaxentModel doccatModel,
       Map<String, String> manifestInfoEntries, DoccatFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
@@ -46,18 +54,46 @@ public class DoccatModel extends BaseModel {
     checkArtifactMap();
   }
 
+  /**
+   * Initializes a {@link DoccatModel} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public DoccatModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
+  /**
+   * Initializes a {@link DoccatModel} instance via a valid {@link File}.
+   *
+   * @param modelFile The {@link File} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public DoccatModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
+  /**
+   * Initializes a {@link DoccatModel} instance via a valid {@link Path}.
+   *
+   * @param modelPath The {@link Path} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public DoccatModel(Path modelPath) throws IOException {
     this(modelPath.toFile());
   }
 
+  /**
+   * Initializes a {@link DoccatModel} instance via a valid {@link URL}.
+   *
+   * @param modelURL The {@link URL} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public DoccatModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
@@ -71,6 +107,9 @@ public class DoccatModel extends BaseModel {
     }
   }
 
+  /**
+   * @return Retrieves the active {@link DoccatFactory}.
+   */
   public DoccatFactory getFactory() {
     return (DoccatFactory) this.toolFactory;
   }
@@ -80,6 +119,9 @@ public class DoccatModel extends BaseModel {
     return DoccatFactory.class;
   }
 
+  /**
+   * @return Retrieves the active {@link MaxentModel}.
+   */
   public MaxentModel getMaxentModel() {
     return (MaxentModel) artifactMap.get(DOCCAT_MODEL_ENTRY_NAME);
   }

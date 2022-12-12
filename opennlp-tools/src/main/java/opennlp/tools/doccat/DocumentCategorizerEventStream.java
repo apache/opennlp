@@ -28,46 +28,45 @@ import opennlp.tools.util.ObjectStream;
  */
 public class DocumentCategorizerEventStream extends AbstractEventStream<DocumentSample> {
 
-  private DocumentCategorizerContextGenerator mContextGenerator;
+  private final DocumentCategorizerContextGenerator mContextGenerator;
 
   /**
-   * Initializes the current instance via samples and feature generators.
+   * Initializes a {@link DocumentCategorizerEventStream} via samples and
+   * {@link FeatureGenerator feature generators}.
    *
-   * @param data {@link ObjectStream} of {@link DocumentSample}s
-   *
-   * @param featureGenerators the feature generators
+   * @param samples {@link ObjectStream} of {@link DocumentSample samples}.
+   * @param featureGenerators One or more {@link FeatureGenerator} to use.
    */
-  public DocumentCategorizerEventStream(ObjectStream<DocumentSample> data,
+  public DocumentCategorizerEventStream(ObjectStream<DocumentSample> samples,
       FeatureGenerator... featureGenerators) {
-    super(data);
-
-    mContextGenerator =
-        new DocumentCategorizerContextGenerator(featureGenerators);
+    super(samples);
+    mContextGenerator = new DocumentCategorizerContextGenerator(featureGenerators);
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link DocumentCategorizerEventStream} via samples.
+   * {@link BagOfWordsFeatureGenerator} is used as feature generator.
    *
-   * @param samples {@link ObjectStream} of {@link DocumentSample}s
+   * @param samples {@link ObjectStream} of {@link DocumentSample samples}.
    */
   public DocumentCategorizerEventStream(ObjectStream<DocumentSample> samples) {
     super(samples);
-
-    mContextGenerator =
-        new DocumentCategorizerContextGenerator(new BagOfWordsFeatureGenerator());
+    mContextGenerator = new DocumentCategorizerContextGenerator(new BagOfWordsFeatureGenerator());
   }
 
   @Override
   protected Iterator<Event> createEvents(final DocumentSample sample) {
 
-    return new Iterator<Event>() {
+    return new Iterator<>() {
 
       private boolean isVirgin = true;
 
+      @Override
       public boolean hasNext() {
         return isVirgin;
       }
 
+      @Override
       public Event next() {
 
         isVirgin = false;
