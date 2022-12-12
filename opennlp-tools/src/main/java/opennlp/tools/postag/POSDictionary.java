@@ -36,7 +36,7 @@ import opennlp.tools.util.model.SerializableArtifact;
 
 /**
  * Provides a means of determining which tags are valid for a particular word
- * based on a tag dictionary read from a file.
+ * based on a {@link TagDictionary} read from a file.
  */
 public class POSDictionary implements Iterable<String>, MutableTagDictionary, SerializableArtifact {
 
@@ -53,7 +53,9 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
 
   /**
    * Initializes an empty {@link POSDictionary}.
-   * @param caseSensitive the {@link POSDictionary} case sensitivity
+   * 
+   * @param caseSensitive {@code true} if the {@link POSDictionary} is case sensitive,
+   *                      {@code false} otherwise.
    */
   public POSDictionary(boolean caseSensitive) {
     dictionary = new HashMap<>();
@@ -61,12 +63,12 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
   }
 
   /**
-   * Returns a list of valid tags for the specified word.
+   * Returns a list of valid tags for the specified {@code word}.
    *
    * @param word The word.
    *
-   * @return A list of valid tags for the specified word or
-   *     null if no information is available for that word.
+   * @return An array of valid tags for the specified word or
+   *         {@code null} if no information is available for that word.
    */
   public String[] getTags(String word) {
     if (caseSensitive) {
@@ -78,7 +80,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
   }
 
   /**
-   * Retrieves an iterator over all words in the dictionary.
+   * Retrieves an {@link Iterator} over all words in the dictionary.
    */
   public Iterator<String> iterator() {
     return dictionary.keySet().iterator();
@@ -103,7 +105,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
 
   /**
    * Writes the {@link POSDictionary} to the given {@link OutputStream};
-   *
+   * <p>
    * After the serialization is finished the provided
    * {@link OutputStream} remains open.
    *
@@ -111,12 +113,12 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
    *            the {@link OutputStream} to write the dictionary into.
    *
    * @throws IOException
-   *             if writing to the {@link OutputStream} fails
+   *             Throw if writing to the {@link OutputStream} fails
    */
   public void serialize(OutputStream out) throws IOException {
-    Iterator<Entry> entries = new Iterator<Entry>() {
+    Iterator<Entry> entries = new Iterator<>() {
 
-      Iterator<String> iterator = dictionary.keySet().iterator();
+      final Iterator<String> iterator = dictionary.keySet().iterator();
 
       public boolean hasNext() {
         return iterator.hasNext();
@@ -185,7 +187,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
 
   @Override
   public String toString() {
-    // it is time consuming to output the dictionary entries.
+    // it is time-consuming to output the dictionary entries.
     // will output something meaningful for debugging, like
     // POSDictionary{size=100, caseSensitive=true}
 
@@ -194,16 +196,17 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
   }
 
   /**
-   * Creates a new {@link POSDictionary} from a provided {@link InputStream}.
-   *
+   * Creates a new {@link POSDictionary} from an {@link InputStream}.
+   * <p>
    * After creation is finished the provided {@link InputStream} is closed.
    *
-   * @param in
+   * @param in The {@link InputStream} used for creating the {@link POSDictionary}.
+   *           The stream must be open and have bytes available to read from.
    *
-   * @return the pos dictionary
+   * @return A valid {@link POSDictionary} instance.
    *
-   * @throws IOException
-   * @throws InvalidFormatException
+   * @throws IOException Thrown if IO errors occurred during creation.
+   * @throws InvalidFormatException Thrown if the entries don't have exactly one token.
    */
   public static POSDictionary create(InputStream in) throws IOException {
 
@@ -212,9 +215,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
     boolean isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> {
 
       String tagString = entry.getAttributes().getValue("tags");
-
       String[] tags = tagString.split(" ");
-
       StringList word = entry.getTokens();
 
       if (word.size() != 1)
@@ -239,6 +240,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
     return newPosDict;
   }
 
+  @Override
   public String[] put(String word, String... tags) {
     if (this.caseSensitive) {
       return dictionary.put(word, tags);
@@ -247,6 +249,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
     }
   }
 
+  @Override
   public boolean isCaseSensitive() {
     return this.caseSensitive;
   }

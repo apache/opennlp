@@ -76,8 +76,8 @@ public class POSSampleTest {
     }
 
     Assertions.assertNotNull(deSerializedPOSSample);
-    Assertions.assertArrayEquals(posSample.getAddictionalContext(),
-        deSerializedPOSSample.getAddictionalContext());
+    Assertions.assertArrayEquals(posSample.getAdditionalContext(),
+        deSerializedPOSSample.getAdditionalContext());
     Assertions.assertArrayEquals(posSample.getSentence(), deSerializedPOSSample.getSentence());
     Assertions.assertArrayEquals(posSample.getTags(), deSerializedPOSSample.getTags());
   }

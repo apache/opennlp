@@ -28,7 +28,6 @@ import java.util.Map;
 
 import morfologik.stemming.DictionaryMetadata;
 
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.TagDictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -68,13 +67,6 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
     this.dictInfo = Files.readAllBytes(dictionaryMeta);
 
     return createMorfologikDictionary(dictData, dictInfo);
-  }
-
-
-  @Override
-  protected void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
-    super.init(ngramDictionary, null);
-    this.dict = posDictionary;
   }
 
   @Override

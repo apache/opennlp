@@ -39,7 +39,7 @@ public class DefaultLanguageDetectorContextGenerator implements LanguageDetector
    * @param minLength The min number of ngrams characters. Must be greater than {@code 0}.
    * @param maxLength The max number of ngrams characters. Must be greater than {@code 0}
    *                  and must be greater than {@code minLength}.
-   * @param normalizers zero or more normalizers to be applied in to the text before extracting ngrams.
+   * @param normalizers Zero or more normalizers to be applied in to the text before extracting ngrams.
    */
   public DefaultLanguageDetectorContextGenerator(int minLength, int maxLength,
                                                  CharSequenceNormalizer... normalizers) {
