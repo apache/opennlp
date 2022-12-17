@@ -18,8 +18,6 @@
 package opennlp.tools.formats.ad;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -34,27 +32,24 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class ADPOSSampleStream implements ObjectStream<POSSample> {
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
-  private boolean expandME;
-  private boolean isIncludeFeatures;
+  private final boolean expandME;
+  private final boolean isIncludeFeatures;
 
   /**
-   * Creates a new {@link POSSample} stream from a line stream, i.e.
-   * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
-   * {@link PlainTextByLineStream} object.
+   * Creates a new {@link ADPOSSampleStream} stream from a {@link ObjectStream<String>},
+   * that could be a {@link PlainTextByLineStream} object.
    *
-   * @param lineStream
-   *          a stream of lines as {@link String}
-   * @param expandME
-   *          if true will expand the multiword expressions, each word of the
+   * @param lineStream A {@link ObjectStream<String>} stream as input.
+   * @param expandME If {@code true} will expand the multiword expressions, each word of the
    *          expression will have the POS Tag that was attributed to the
-   *          expression plus the prefix B- or I- (CONLL convention)
-   * @param includeFeatures
-   *          if true will combine the POS Tag with the feature tags
+   *          expression plus the prefix {@code B-} or {@code I-} (CONLL convention).
+   * @param includeFeatures If {@code true} will combine the POS Tag with the feature tags.
    */
   public ADPOSSampleStream(ObjectStream<String> lineStream, boolean expandME,
       boolean includeFeatures) {
@@ -64,35 +59,26 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
   }
 
   /**
-   * Creates a new {@link POSSample} stream from a {@link InputStream}
+   * Creates a new {@link POSSample} stream from an {@link InputStreamFactory}
    *
-   * @param in
-   *          the Corpus {@link InputStream}
-   * @param charsetName
-   *          the charset of the Arvores Deitadas Corpus
-   * @param expandME
-   *          if true will expand the multiword expressions, each word of the
+   * @param in The {@link InputStreamFactory} for the corpus.
+   * @param charsetName  The {@link java.nio.charset.Charset charset} to use
+   *                     for reading of the corpus.
+   * @param expandME If {@code true} will expand the multiword expressions, each word of the
    *          expression will have the POS Tag that was attributed to the
-   *          expression plus the prefix B- or I- (CONLL convention)
-   * @param includeFeatures
-   *          if true will combine the POS Tag with the feature tags
+   *          expression plus the prefix {@code B-} or {@code I-} (CONLL convention).
+   * @param includeFeatures If {@code true} will combine the POS Tag with the feature tags.
    */
   public ADPOSSampleStream(InputStreamFactory in, String charsetName,
       boolean expandME, boolean includeFeatures) throws IOException {
 
-    try {
-      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(in, charsetName));
-      this.expandME = expandME;
-      this.isIncludeFeatures = includeFeatures;
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
+    this(new PlainTextByLineStream(in, charsetName), expandME, includeFeatures);
   }
 
+  @Override
   public POSSample read() throws IOException {
     Sentence paragraph;
-    while ((paragraph = this.adSentenceStream.read()) != null) {
+    if ((paragraph = this.adSentenceStream.read()) != null) {
       Node root = paragraph.getRoot();
       List<String> sentence = new ArrayList<>();
       List<String> tags = new ArrayList<>();
@@ -161,10 +147,12 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
 
   }
 
+  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     adSentenceStream.reset();
   }
 
+  @Override
   public void close() throws IOException {
     adSentenceStream.close();
   }

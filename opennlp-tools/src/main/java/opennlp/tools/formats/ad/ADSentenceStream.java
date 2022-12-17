@@ -36,12 +36,13 @@ import opennlp.tools.util.ObjectStream;
  * <p>
  * Information about the format:<br>
  * Susana Afonso.
- * "Árvores deitadas: Descrição do formato e das opções de análise na Floresta Sintáctica"
- * .<br>
+ * <a href="http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf">
+ *   "Árvores deitadas: Descrição do formato e das opções de análise na Floresta Sintáctica"</a>.
+ * <br>
  * 12 de Fevereiro de 2006.
- * http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStream.Sentence> {
 
@@ -86,24 +87,30 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
    */
   public static class SentenceParser {
 
-    private Pattern nodePattern = Pattern
+    private static final Pattern NODE_PATTERN = Pattern
         .compile("([=-]*)([^:=]+:[^\\(\\s]+)(\\(([^\\)]+)\\))?\\s*(?:(\\((<.+>)\\))*)\\s*$");
-    private Pattern leafPattern = Pattern
+    private static final Pattern LEAF_PATTERN = Pattern
         .compile("^([=-]*)([^:=]+):([^\\(\\s]+)\\([\"'](.+)[\"']\\s*((?:<.+>)*)\\s*([^\\)]+)?\\)\\s+(.+)");
-    private Pattern bizarreLeafPattern = Pattern
+    private static final Pattern BIZARRE_LEAF_PATTERN = Pattern
         .compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
-    private Pattern punctuationPattern = Pattern.compile("^(=*)(\\W+)$");
+    private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("^(=*)(\\W+)$");
 
     private String text,meta;
 
     /**
-     * Parse the sentence
+     * Parses a sentence string into a {@link Sentence}.
+     *
+     * @param sentenceString The input string to parse.
+     * @param isTitle {@code true} if it represents a title element, {@code false} otherwise.
+     * @param para The parameter number.
+     * @param isBox {@code true} if it represents a box element, {@code false} otherwise.
+     *
+     * @return A {@link Sentence} instance parsed from {@code sentenceString}.
      */
     public Sentence parse(String sentenceString, int para, boolean isTitle, boolean isBox) {
-      BufferedReader reader = new BufferedReader(new StringReader(sentenceString));
       Sentence sentence = new Sentence();
       Node root = new Node();
-      try {
+      try (BufferedReader reader = new BufferedReader(new StringReader(sentenceString))) {
         // first line is <s ...>
         String line = reader.readLine();
 
@@ -245,7 +252,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       // Note: all levels are higher than 1, because 0 is reserved for the root.
 
       // try node
-      Matcher nodeMatcher = nodePattern.matcher(line);
+      Matcher nodeMatcher = NODE_PATTERN.matcher(line);
       if (nodeMatcher.matches()) {
         int level = nodeMatcher.group(1).length() + 1;
         String syntacticTag = nodeMatcher.group(2);
@@ -255,7 +262,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return node;
       }
 
-      Matcher leafMatcher = leafPattern.matcher(line);
+      Matcher leafMatcher = LEAF_PATTERN.matcher(line);
       if (leafMatcher.matches()) {
         int level = leafMatcher.group(1).length() + 1;
         String syntacticTag = leafMatcher.group(2);
@@ -276,7 +283,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         return leaf;
       }
 
-      Matcher punctuationMatcher = punctuationPattern.matcher(line);
+      Matcher punctuationMatcher = PUNCTUATION_PATTERN.matcher(line);
       if (punctuationMatcher.matches()) {
         int level = punctuationMatcher.group(1).length() + 1;
         String lexeme = punctuationMatcher.group(2);
@@ -292,7 +299,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       }
 
       if (line.startsWith("=")) {
-        Matcher bizarreLeafMatcher = bizarreLeafPattern.matcher(line);
+        Matcher bizarreLeafMatcher = BIZARRE_LEAF_PATTERN.matcher(line);
         if (bizarreLeafMatcher.matches()) {
           int level = bizarreLeafMatcher.group(1).length() + 1;
           String syntacticTag = bizarreLeafMatcher.group(2);
@@ -341,7 +348,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /** Represents a tree element, Node or Leaf */
-    public abstract class TreeElement {
+    public abstract static class TreeElement {
 
       private String syntacticTag;
       private String morphologicalTag;
@@ -377,7 +384,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /** Represents the AD node */
-    public class Node extends TreeElement {
+    public static class Node extends TreeElement {
       private List<TreeElement> elems = new ArrayList<>();
 
       public void addElement(TreeElement element) {
@@ -408,7 +415,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     /** Represents the AD leaf */
-    public class Leaf extends TreeElement {
+    public static class Leaf extends TreeElement {
 
       private String word;
       private String lemma;
@@ -478,49 +485,17 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
 
   }
 
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern sentStart = Pattern.compile("<s[^>]*>");
+  private static final Pattern SENT_START = Pattern.compile("<s[^>]*>");
+  private static final Pattern SENT_END = Pattern.compile("</s>");
+  private static final Pattern EXT_END = Pattern.compile("</ext>");
+  private static final Pattern TITLE_START = Pattern.compile("<t[^>]*>");
+  private static final Pattern TITLE_END = Pattern.compile("</t>");
+  private static final Pattern BOX_START = Pattern.compile("<caixa[^>]*>");
+  private static final Pattern BOX_END = Pattern.compile("</caixa>");
+  private static final Pattern PARA_START = Pattern.compile("<p[^>]*>");
+  private static final Pattern TEXT_START = Pattern.compile("<ext[^>]*>");
 
-  /**
-   * The end sentence pattern
-   */
-  private static final Pattern sentEnd = Pattern.compile("</s>");
-  private static final Pattern extEnd = Pattern.compile("</ext>");
-
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern titleStart = Pattern.compile("<t[^>]*>");
-
-  /**
-   * The end sentence pattern
-   */
-  private static final Pattern titleEnd = Pattern.compile("</t>");
-
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern boxStart = Pattern.compile("<caixa[^>]*>");
-
-  /**
-   * The end sentence pattern
-   */
-  private static final Pattern boxEnd = Pattern.compile("</caixa>");
-
-
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern paraStart = Pattern.compile("<p[^>]*>");
-
-  /**
-   * The start sentence pattern
-   */
-  private static final Pattern textStart = Pattern.compile("<ext[^>]*>");
-
-  private SentenceParser parser;
+  private final SentenceParser parser;
 
   private int paraID = 0;
   private boolean isTitle = false;
@@ -532,9 +507,10 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
   }
 
 
+  @Override
   public Sentence read() throws IOException {
 
-    StringBuilder sentence = new StringBuilder();
+    final StringBuilder sentence = new StringBuilder();
     boolean sentenceStarted = false;
 
     while (true) {
@@ -543,25 +519,25 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       if (line != null) {
 
         if (sentenceStarted) {
-          if (sentEnd.matcher(line).matches() || extEnd.matcher(line).matches()) {
+          if (SENT_END.matcher(line).matches() || EXT_END.matcher(line).matches()) {
             sentenceStarted = false;
           } else if (!line.startsWith("A1")) {
             sentence.append(line).append('\n');
           }
         } else {
-          if (sentStart.matcher(line).matches()) {
+          if (SENT_START.matcher(line).matches()) {
             sentenceStarted = true;
-          } else if (paraStart.matcher(line).matches()) {
+          } else if (PARA_START.matcher(line).matches()) {
             paraID++;
-          } else if (titleStart.matcher(line).matches()) {
+          } else if (TITLE_START.matcher(line).matches()) {
             isTitle = true;
-          } else if (titleEnd.matcher(line).matches()) {
+          } else if (TITLE_END.matcher(line).matches()) {
             isTitle = false;
-          } else if (textStart.matcher(line).matches()) {
+          } else if (TEXT_START.matcher(line).matches()) {
             paraID = 0;
-          } else if (boxStart.matcher(line).matches()) {
+          } else if (BOX_START.matcher(line).matches()) {
             isBox = true;
-          } else if (boxEnd.matcher(line).matches()) {
+          } else if (BOX_END.matcher(line).matches()) {
             isBox = false;
           }
         }

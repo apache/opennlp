@@ -26,13 +26,14 @@ import opennlp.tools.util.StringUtil;
 /**
  * Utility class to handle Portuguese contractions.
  * <p>
- * Some Corpora splits contractions in its parts, for example, "da" &gt; "de" +
- * "a", but according to the fase of language processing, NER for instance, we
+ * Some Corpora split contractions in its parts, for example, "da" &gt; "de" +
+ * "a", but according to the phase of language processing, NER for instance, we
  * can't decide if to split a contraction or not, specially because contractions
  * inside names are not separated, but outside are.
  *
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class PortugueseContractionUtility {
 
@@ -152,13 +153,11 @@ public class PortugueseContractionUtility {
   }
 
   /**
-   * Merges a contraction
+   * Merges a contraction.
    *
-   * @param left
-   *          the left component
-   * @param right
-   *          the right component
-   * @return the merged contraction
+   * @param left The left component.
+   * @param right The right component.
+   * @return The merged contraction.
    */
   public static String toContraction(String left, String right) {
     String key = left + "+" + right;

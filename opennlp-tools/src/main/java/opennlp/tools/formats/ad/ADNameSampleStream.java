@@ -18,8 +18,6 @@
 package opennlp.tools.formats.ad;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,35 +45,36 @@ import opennlp.tools.util.Span;
  * The data contains four named entity types: Person, Organization, Group,
  * Place, Event, ArtProd, Abstract, Thing, Time and Numeric.<br>
  * <p>
- * Data can be found on this web site:<br>
- * http://www.linguateca.pt/floresta/corpus.html
+ * Data can be found on
+ * <a href="http://www.linguateca.pt/floresta/corpus.html">this web site</a>.
+ *
  * <p>
  * Information about the format:<br>
  * Susana Afonso.
- * "Árvores deitadas: Descrição do formato e das opções de análise na Floresta Sintáctica"
- * .<br>
+ * <a href="http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf">
+ *   "Árvores deitadas: Descrição do formato e das opções de análise na Floresta Sintáctica"</a>.
+ * <br>
  * 12 de Fevereiro de 2006.
- * http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf
  * <p>
- * Detailed info about the NER tagset:
- * http://beta.visl.sdu.dk/visl/pt/info/portsymbol.html#semtags_names
+ * Detailed info about the
+ * <a href="http://beta.visl.sdu.dk/visl/pt/info/portsymbol.html#semtags_names">NER tagset</a>.
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class ADNameSampleStream implements ObjectStream<NameSample> {
 
-  /**
+  /*
    * Pattern of a NER tag in Arvores Deitadas
    */
-  private static final Pattern tagPattern = Pattern.compile("<(NER:)?(.*?)>");
-
-  private static final Pattern whitespacePattern = Pattern.compile("\\s+");
-  private static final Pattern underlinePattern = Pattern.compile("[_]+");
-  private static final Pattern hyphenPattern =
+  private static final Pattern TAG_PATTERN = Pattern.compile("<(NER:)?(.*?)>");
+  private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
+  private static final Pattern UNDERLINE_PATTERN = Pattern.compile("[_]+");
+  private static final Pattern HYPHEN_PATTERN =
       Pattern.compile("((\\p{L}+)-$)|(^-(\\p{L}+)(.*))|((\\p{L}+)-(\\p{L}+)(.*))");
-  private static final Pattern alphanumericPattern = Pattern.compile("^[\\p{L}\\p{Nd}]+$");
+  private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[\\p{L}\\p{Nd}]+$");
 
-  /**
+  /*
    * Map to the Arvores Deitadas types to our types. It is read-only.
    */
   private static final Map<String, String> HAREM;
@@ -154,7 +153,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
 
-  /**
+  /*
    * To keep the last left contraction part
    */
   private String leftContractionPart = null;
@@ -162,15 +161,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   private final boolean splitHyphenatedTokens;
 
   /**
-   * Creates a new {@link NameSample} stream from a line stream, i.e.
-   * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
-   * {@link PlainTextByLineStream} object.
+   * Initializes a new {@link ADNameSampleStream} stream from a {@link ObjectStream<String>},
+   * that could be a {@link PlainTextByLineStream} object.
    *
-   * @param lineStream
-   *          a stream of lines as {@link String}
-   * @param splitHyphenatedTokens
-   *          if true hyphenated tokens will be separated: "carros-monstro" &gt;
-   *          "carros" "-" "monstro"
+   * @param lineStream An {@link ObjectStream<String>} as input.
+   * @param splitHyphenatedTokens If {@code true} hyphenated tokens will be separated:
+   *                              "carros-monstro" &gt; "carros" "-" "monstro".
    */
   public ADNameSampleStream(ObjectStream<String> lineStream, boolean splitHyphenatedTokens) {
     this.adSentenceStream = new ADSentenceStream(lineStream);
@@ -178,37 +174,28 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   /**
-   * Creates a new {@link NameSample} stream from a {@link InputStream}
+   * Initializes a new {@link ADNameSampleStream} from an {@link InputStreamFactory}
    *
-   * @param in
-   *          the Corpus {@link InputStream}
-   * @param charsetName
-   *          the charset of the Arvores Deitadas Corpus
-   * @param splitHyphenatedTokens
-   *          if true hyphenated tokens will be separated: "carros-monstro" &gt;
-   *          "carros" "-" "monstro"
+   * @param in The Corpus {@link InputStreamFactory}.
+   * @param charsetName  The {@link java.nio.charset.Charset charset} to use
+   *                     for reading of the corpus.
+   * @param splitHyphenatedTokens If {@code true} hyphenated tokens will be separated:
+   *                              "carros-monstro" &gt; "carros" "-" "monstro".
    */
   @Deprecated
   public ADNameSampleStream(InputStreamFactory in, String charsetName,
       boolean splitHyphenatedTokens) throws IOException {
-
-    try {
-      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-          in, charsetName));
-      this.splitHyphenatedTokens = splitHyphenatedTokens;
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
+    this(new PlainTextByLineStream(in, charsetName), splitHyphenatedTokens);
   }
 
   private int textID = -1;
 
+  @Override
   public NameSample read() throws IOException {
 
     Sentence paragraph;
     // we should look for text here.
-    while ((paragraph = this.adSentenceStream.read()) != null) {
+    if ((paragraph = this.adSentenceStream.read()) != null) {
 
       int currentTextID = getTextID(paragraph);
       boolean clearData = false;
@@ -229,14 +216,11 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   /**
-   * Recursive method to process a node in Arvores Deitadas format.
+   * Recursive method to process a {@link Node} in Arvores Deitadas format.
    *
-   * @param node
-   *          the node to be processed
-   * @param sentence
-   *          the sentence tokens we got so far
-   * @param names
-   *          the names we got so far
+   * @param node The {@link Node} to be processed.
+   * @param sentence The {@link List<String> sentence tokens} processed so far.
+   * @param names The {@link List<Span> names} processed so far.
    */
   private void process(Node node, List<String> sentence, List<Span> names) {
     if (node != null) {
@@ -251,17 +235,13 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   /**
-   * Process a Leaf of Arvores Detaitadas format
+   * Processes a {@link Leaf} of Arvores Detaitadas format
    *
-   * @param leaf
-   *          the leaf to be processed
-   * @param sentence
-   *          the sentence tokens we got so far
-   * @param names
-   *          the names we got so far
+   * @param leaf The {@link Leaf} to be processed
+   * @param sentence The {@link List<String> sentence tokens} processed so far.
+   * @param names The {@link List<Span> names} processed so far.
    */
-  private void processLeaf(Leaf leaf, List<String> sentence,
-      List<Span> names) {
+  private void processLeaf(Leaf leaf, List<String> sentence, List<Span> names) {
 
     boolean alreadyAdded = false;
 
@@ -272,7 +252,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       String c = PortugueseContractionUtility.toContraction(
           leftContractionPart, right);
       if (c != null) {
-        String[] parts = whitespacePattern.split(c);
+        String[] parts = WHITESPACE_PATTERN.split(c);
         sentence.addAll(Arrays.asList(parts));
         alreadyAdded = true;
       } else {
@@ -291,7 +271,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
     if (leafTag != null) {
       if (leafTag.contains("<sam->") && !alreadyAdded) {
-        String[] lexemes = underlinePattern.split(leaf.getLexeme());
+        String[] lexemes = UNDERLINE_PATTERN.split(leaf.getLexeme());
         if (lexemes.length > 1) {
           sentence.addAll(Arrays.asList(lexemes).subList(0, lexemes.length - 1));
         }
@@ -336,9 +316,9 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   private List<String> processLexeme(String lexemeStr) {
     List<String> out = new ArrayList<>();
-    String[] parts = underlinePattern.split(lexemeStr);
+    String[] parts = UNDERLINE_PATTERN.split(lexemeStr);
     for (String tok : parts) {
-      if (tok.length() > 1 && !alphanumericPattern.matcher(tok).matches()) {
+      if (tok.length() > 1 && !ALPHANUMERIC_PATTERN.matcher(tok).matches()) {
         out.addAll(processTok(tok));
       } else {
         out.add(tok);
@@ -365,7 +345,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
     // lets split all hyphens
     if (this.splitHyphenatedTokens && tok.contains("-") && tok.length() > 1) {
-      Matcher matcher = hyphenPattern.matcher(tok);
+      Matcher matcher = HYPHEN_PATTERN.matcher(tok);
 
       String firstTok = null;
       String hyphen = "-";
@@ -393,7 +373,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
     if (!tokAdded) {
       if (!original.equals(tok) && tok.length() > 1
-          && !alphanumericPattern.matcher(tok).matches()) {
+          && !ALPHANUMERIC_PATTERN.matcher(tok).matches()) {
         out.addAll(processTok(tok));
       } else {
         out.add(tok);
@@ -410,11 +390,10 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   }
 
   /**
-   * Parse a NER tag in Arvores Deitadas format.
+   * Parses a NER tag in Arvores Deitadas format.
    *
-   * @param tags
-   *          the NER tag in Arvores Deitadas format
-   * @return the NER tag, or null if not a NER tag in Arvores Deitadas format
+   * @param tags The NER tag in Arvores Deitadas format.
+   * @return The NER tag, or {@code null} if not a NER tag in Arvores Deitadas format.
    */
   private static String getNER(String tags) {
     if (tags.contains("<NER2>")) {
@@ -422,7 +401,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     }
     String[] tag = tags.split("\\s+");
     for (String t : tag) {
-      Matcher matcher = tagPattern.matcher(t);
+      Matcher matcher = TAG_PATTERN.matcher(t);
       if (matcher.matches()) {
         String ner = matcher.group(2);
         if (HAREM.containsKey(ner)) {
@@ -433,10 +412,12 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     return null;
   }
 
+  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     adSentenceStream.reset();
   }
 
+  @Override
   public void close() throws IOException {
     adSentenceStream.close();
   }
@@ -444,10 +425,6 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   enum Type {
     ama, cie, lit
   }
-
-  private Type corpusType = null;
-
-  private Pattern metaPattern;
 
   // works for Amazonia
   //  private static final Pattern meta1 = Pattern
@@ -457,24 +434,23 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
   //  private static final Pattern meta2 = Pattern
   //    .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
 
-  private int textIdMeta2 = -1;
-  private String textMeta2 = "";
-
   private int getTextID(Sentence paragraph) {
+    
+    final String meta = paragraph.getMetadata();
+    Type corpusType;
+    Pattern metaPattern;
+    int textIdMeta2 = -1;
+    String textMeta2 = "";
 
-    String meta = paragraph.getMetadata();
-
-    if (corpusType == null) {
-      if (meta.startsWith("LIT")) {
-        corpusType = Type.lit;
-        metaPattern = Pattern.compile("^([a-zA-Z\\-]+)(\\d+).*?p=(\\d+).*");
-      } else if (meta.startsWith("CIE")) {
-        corpusType = Type.cie;
-        metaPattern = Pattern.compile("^.*?source=\"(.*?)\".*");
-      } else { // ama
-        corpusType = Type.ama;
-        metaPattern = Pattern.compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
-      }
+    if (meta.startsWith("LIT")) {
+      corpusType = Type.lit;
+      metaPattern = Pattern.compile("^([a-zA-Z\\-]+)(\\d+).*?p=(\\d+).*");
+    } else if (meta.startsWith("CIE")) {
+      corpusType = Type.cie;
+      metaPattern = Pattern.compile("^.*?source=\"(.*?)\".*");
+    } else { // ama
+      corpusType = Type.ama;
+      metaPattern = Pattern.compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
     }
 
     if (corpusType.equals(Type.lit)) {
