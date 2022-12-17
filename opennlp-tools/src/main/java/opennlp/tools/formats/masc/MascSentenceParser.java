@@ -27,11 +27,11 @@ import org.xml.sax.helpers.DefaultHandler;
 import opennlp.tools.util.Span;
 
 /**
- * A class to parse the sentence segmentation stand-off annotation
+ * A class to parse the sentence segmentation stand-off annotation.
  */
 class MascSentenceParser extends DefaultHandler {
 
-  private List<Span> sentenceAnchors = null;
+  private final List<Span> sentenceAnchors = new ArrayList<>();
 
   public List<Span> getAnchors() {
     return sentenceAnchors;
@@ -48,11 +48,6 @@ class MascSentenceParser extends DefaultHandler {
 
         int left = Integer.parseInt(anchors[0]);
         int right = Integer.parseInt(anchors[1]);
-
-        // initialize list
-        if (sentenceAnchors == null) {
-          sentenceAnchors = new ArrayList<Span>();
-        }
 
         sentenceAnchors.add(new Span(left, right));
       }

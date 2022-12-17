@@ -37,17 +37,14 @@ public class MascSentenceSampleStreamFactory<P> extends AbstractSampleStreamFact
   }
 
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        MASC_FORMAT,
-        new opennlp.tools.formats.masc.MascSentenceSampleStreamFactory<>(
-            opennlp.tools.formats.masc.MascSentenceSampleStreamFactory.Parameters.class));
+    StreamFactoryRegistry.registerFactory(SentenceSample.class, MASC_FORMAT,
+        new MascSentenceSampleStreamFactory<>(MascSentenceSampleStreamFactory.Parameters.class));
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-    opennlp.tools.formats.masc.MascSentenceSampleStreamFactory.Parameters params =
-        ArgumentParser.parse(args,
-            opennlp.tools.formats.masc.MascSentenceSampleStreamFactory.Parameters.class);
+    MascSentenceSampleStreamFactory.Parameters params =
+        ArgumentParser.parse(args, MascSentenceSampleStreamFactory.Parameters.class);
 
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains(params.getFileFilter());

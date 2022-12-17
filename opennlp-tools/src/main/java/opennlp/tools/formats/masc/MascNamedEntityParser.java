@@ -31,9 +31,9 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class MascNamedEntityParser extends DefaultHandler {
 
-  private Map<Integer, String> entityIDtoEntityType = new HashMap<>();
-  private Map<Integer, List<Integer>> entityIDsToTokens = new HashMap<>();
-  private Map<Integer, String> tokenToEntity = new HashMap<>();
+  private final Map<Integer, String> entityIDtoEntityType = new HashMap<>();
+  private final Map<Integer, List<Integer>> entityIDsToTokens = new HashMap<>();
+  private final Map<Integer, String> tokenToEntity = new HashMap<>();
 
   public Map<Integer, String> getEntityIDtoEntityType() {
     return entityIDtoEntityType;
@@ -86,7 +86,6 @@ public class MascNamedEntityParser extends DefaultHandler {
           System.out.println("[WARNING] One token assigned to different named entity types.\n" +
               "\tPenn-TokenID: " + tokenID + "\n\tToken types: \"" + type + "\", \"" +
               tokenToEntity.get(tokenID) + "\"\n\tKeeping only " + "\"type\"");
-          int i = 0;
         }
         tokenToEntity.put(tokenID, type);
       }

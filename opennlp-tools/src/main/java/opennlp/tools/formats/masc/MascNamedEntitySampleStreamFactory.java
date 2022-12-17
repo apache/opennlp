@@ -38,15 +38,14 @@ public class MascNamedEntitySampleStreamFactory<P> extends AbstractSampleStreamF
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
         MASC_FORMAT,
-        new opennlp.tools.formats.masc.MascNamedEntitySampleStreamFactory<>(
-            opennlp.tools.formats.masc.MascNamedEntitySampleStreamFactory.Parameters.class));
+        new MascNamedEntitySampleStreamFactory<>(
+            MascNamedEntitySampleStreamFactory.Parameters.class));
   }
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
-    opennlp.tools.formats.masc.MascNamedEntitySampleStreamFactory.Parameters params =
-        ArgumentParser.parse(args,
-            opennlp.tools.formats.masc.MascNamedEntitySampleStreamFactory.Parameters.class);
+    MascNamedEntitySampleStreamFactory.Parameters params =
+        ArgumentParser.parse(args, MascNamedEntitySampleStreamFactory.Parameters.class);
 
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains(params.getFileFilter());

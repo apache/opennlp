@@ -136,7 +136,7 @@ public class POSTaggerFactory extends BaseToolFactory {
    * Note:
    * The generators are created on every call to this method.
    *
-   * @return the feature generator or {@link null} if there is no descriptor in the model
+   * @return the feature generator or {@code null} if there is no descriptor in the model
    */
   public AdaptiveFeatureGenerator createFeatureGenerators() {
 

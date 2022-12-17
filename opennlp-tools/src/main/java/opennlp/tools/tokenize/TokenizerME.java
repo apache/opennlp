@@ -53,7 +53,7 @@ import opennlp.tools.util.TrainingParameters;
  * must be instantiated which can share one {@link TokenizerModel} instance
  * to safe memory.
  * <p>
- * To train a new model, the {@link #train(ObjectStream, TokenizerFactory, TrainingParameters) method
+ * To train a new model, the {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} method
  * can be used.
  * <p>
  * Sample usage:
@@ -69,8 +69,6 @@ import opennlp.tools.util.TrainingParameters;
  * <br>
  * String tokens[] = tokenizer.tokenize("A sentence to be tokenized.");
  * </code>
- * <p>
- *   
  * @see Tokenizer
  * @see TokenizerModel
  * @see TokenSample

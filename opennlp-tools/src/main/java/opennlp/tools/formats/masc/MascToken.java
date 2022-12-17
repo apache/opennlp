@@ -19,6 +19,9 @@ package opennlp.tools.formats.masc;
 
 import opennlp.tools.util.Span;
 
+/**
+ * A specialized {@link Span} to express tokens in {@link MascDocument documents}.
+ */
 public class MascToken extends Span {
 
   private static final long serialVersionUID = -780646706788037041L;
@@ -28,14 +31,18 @@ public class MascToken extends Span {
   private final MascWord[] quarks;
 
   /**
-   * Create a MascToken, which may combine multiple quarks
+   * Initializes a {@link MascToken} which may combine multiple quarks.
    *
-   * @param s      The start of the token in the corpus file
-   * @param e      The end of the token in the corpus file
-   * @param pennId The ID of the token as assigned by the Penn stand-off annotation
-   * @param pos    The POS-tag
-   * @param base   The base form
-   * @param quarks Quarks contained in the token
+   * @param s      The start of the token in the corpus file.
+   *               Must be equal to or greater than {@code 0}.
+   * @param e      The end of the token in the corpus file.
+   *               Must be equal to or greater than {@code 0} and be greater than {@code s}.
+   * @param pennId The ID of the token as assigned by the Penn stand-off annotation.
+   * @param pos    The POS-tag.
+   * @param base   The base form.
+   * @param quarks The {@link MascWord array of Quarks} contained in the token.
+   *
+   * @throws IllegalArgumentException Thrown if one of the parameters are invalid.
    */
   public MascToken(int s, int e, int pennId, String pos, String base, MascWord[] quarks) {
     super(s, e);
@@ -46,36 +53,28 @@ public class MascToken extends Span {
   }
 
   /**
-   * Get ID of the token
-   *
-   * @return the ID
+   * @return Retrieves the ID of the token.
    */
   public int getTokenId() {
     return tokenId;
   }
 
   /**
-   * Get the base form
-   *
-   * @return the base form
+   * @return Retrieves the base form.
    */
   public String getBase() {
     return base;
   }
 
   /**
-   * Get the POS tag
-   *
-   * @return POS tag
+   * @return Retrieves the POS tag.
    */
   public String getPos() {
     return pos;
   }
 
   /**
-   * Get quarks of the token
-   *
-   * @return Array of quark references
+   * @return Retrieves quarks of the token.
    */
   public MascWord[] getQuarks() {
     return quarks;

@@ -32,24 +32,20 @@ public class MascTokenSampleStreamFactory<P> extends AbstractSampleStreamFactory
 
   public static final String MASC_FORMAT = "masc";
 
-
   protected MascTokenSampleStreamFactory(Class<P> params) {
     super(params);
   }
 
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(TokenSample.class,
-        MASC_FORMAT,
-        new opennlp.tools.formats.masc.MascTokenSampleStreamFactory<>(
-            opennlp.tools.formats.masc.MascTokenSampleStreamFactory.Parameters.class));
+    StreamFactoryRegistry.registerFactory(TokenSample.class, MASC_FORMAT,
+        new MascTokenSampleStreamFactory<>(MascTokenSampleStreamFactory.Parameters.class));
   }
 
 
   @Override
   public ObjectStream<TokenSample> create(String[] args) {
-    opennlp.tools.formats.masc.MascTokenSampleStreamFactory.Parameters params =
-        ArgumentParser.parse(args,
-            opennlp.tools.formats.masc.MascTokenSampleStreamFactory.Parameters.class);
+    MascTokenSampleStreamFactory.Parameters params =
+        ArgumentParser.parse(args, MascTokenSampleStreamFactory.Parameters.class);
 
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains(params.getFileFilter());

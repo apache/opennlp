@@ -38,15 +38,14 @@ public class MascPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory<P
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
         MASC_FORMAT,
-        new opennlp.tools.formats.masc.MascPOSSampleStreamFactory<>(
-            opennlp.tools.formats.masc.MascPOSSampleStreamFactory.Parameters.class));
+        new MascPOSSampleStreamFactory<>(
+            MascPOSSampleStreamFactory.Parameters.class));
   }
 
   @Override
   public ObjectStream<POSSample> create(String[] args) {
-    opennlp.tools.formats.masc.MascPOSSampleStreamFactory.Parameters params =
-        ArgumentParser.parse(args,
-            opennlp.tools.formats.masc.MascPOSSampleStreamFactory.Parameters.class);
+    MascPOSSampleStreamFactory.Parameters params =
+        ArgumentParser.parse(args, MascPOSSampleStreamFactory.Parameters.class);
 
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains(params.getFileFilter());
