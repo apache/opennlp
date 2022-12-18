@@ -20,7 +20,6 @@ package opennlp.tools.ml;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 
-import opennlp.tools.commons.Sample;
 import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
@@ -31,6 +30,10 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.ext.ExtensionNotLoadedException;
 
+/**
+ * A factory to initialize {@link Trainer} instances depending on a trainer type
+ * configured via {@link TrainingParameters}.
+ */
 public class TrainerFactory {
 
   public enum TrainerType {
@@ -40,8 +43,11 @@ public class TrainerFactory {
   }
 
   // built-in trainers
-  private static final Map<String, Class> BUILTIN_TRAINERS;
+  private static final Map<String, Class<? extends Trainer>> BUILTIN_TRAINERS;
 
+  /*
+   * Initialize the built-in trainers
+   */
   static {
     BUILTIN_TRAINERS = Map.of(
         GISTrainer.MAXENT_VALUE, GISTrainer.class,
@@ -52,10 +58,12 @@ public class TrainerFactory {
   }
 
   /**
-   * Determines the trainer type based on the ALGORITHM_PARAM value.
+   * Determines the {@link TrainerType} based on the
+   * {@link AbstractTrainer#ALGORITHM_PARAM} value.
    *
-   * @param trainParams - Map of training parameters
-   * @return the trainer type or null if type couldn't be determined.
+   * @param trainParams - A mapping of {@link TrainingParameters training parameters}.
+   *
+   * @return The {@link TrainerType} or {@code null} if the type couldn't be determined.
    */
   public static TrainerType getTrainerType(TrainingParameters trainParams) {
 
@@ -110,70 +118,101 @@ public class TrainerFactory {
     return null;
   }
 
-  public static SequenceTrainer getSequenceModelTrainer(TrainingParameters trainParams,
-      Map<String, String> reportMap) {
+  /**
+   * Retrieves a {@link SequenceTrainer} that fits the given parameters.
+   *
+   * @param trainParams The {@link TrainingParameters} to check for the trainer type.
+   *                    Note: The entry {@link AbstractTrainer#ALGORITHM_PARAM} is used
+   *                    to determine the type.
+   * @param reportMap A {@link Map} that shall be used during initialization of
+   *                  the {@link SequenceTrainer}.
+   *                  
+   * @return A valid {@link SequenceTrainer} for the configured {@code trainParams}.
+   * @throws IllegalArgumentException Thrown if the trainer type could not be determined.
+   */
+  public static SequenceTrainer getSequenceModelTrainer(
+          TrainingParameters trainParams, Map<String, String> reportMap) {
     String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
 
     if (trainerType != null) {
+      final SequenceTrainer trainer;
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        SequenceTrainer<? extends Sample> trainer = TrainerFactory.
-            <SequenceTrainer>createBuiltinTrainer(BUILTIN_TRAINERS.get(trainerType));
-        trainer.init(trainParams, reportMap);
-        return trainer;
+        trainer = TrainerFactory.createBuiltinTrainer(BUILTIN_TRAINERS.get(trainerType));
       } else {
-        SequenceTrainer<? extends Sample> trainer =
-            ExtensionLoader.instantiateExtension(SequenceTrainer.class, trainerType);
-        trainer.init(trainParams, reportMap);
-        return trainer;
+        trainer = ExtensionLoader.instantiateExtension(SequenceTrainer.class, trainerType);
       }
+      trainer.init(trainParams, reportMap);
+      return trainer;
     }
     else {
       throw new IllegalArgumentException("Trainer type couldn't be determined!");
     }
   }
 
-  public static EventModelSequenceTrainer getEventModelSequenceTrainer(TrainingParameters trainParams,
-      Map<String, String> reportMap) {
+  /**
+   * Retrieves an {@link EventModelSequenceTrainer} that fits the given parameters.
+   *
+   * @param trainParams The {@link TrainingParameters} to check for the trainer type.
+   *                    Note: The entry {@link AbstractTrainer#ALGORITHM_PARAM} is used
+   *                    to determine the type.
+   * @param reportMap A {@link Map} that shall be used during initialization of
+   *                  the {@link EventModelSequenceTrainer}.
+   *
+   * @return A valid {@link EventModelSequenceTrainer} for the configured {@code trainParams}.
+   * @throws IllegalArgumentException Thrown if the trainer type could not be determined.
+   */
+  public static <T> EventModelSequenceTrainer<T> getEventModelSequenceTrainer(
+          TrainingParameters trainParams, Map<String, String> reportMap) {
     String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
 
     if (trainerType != null) {
+      final EventModelSequenceTrainer<T> trainer;
       if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-        EventModelSequenceTrainer trainer = TrainerFactory.
-            <EventModelSequenceTrainer>createBuiltinTrainer(BUILTIN_TRAINERS.get(trainerType));
-        trainer.init(trainParams, reportMap);
-        return trainer;
+        trainer = TrainerFactory.createBuiltinTrainer(BUILTIN_TRAINERS.get(trainerType));
       } else {
-        EventModelSequenceTrainer trainer =
-            ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, trainerType);
-        trainer.init(trainParams, reportMap);
-        return trainer;
+        trainer = ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, trainerType);
       }
+      trainer.init(trainParams, reportMap);
+      return trainer;
     }
     else {
       throw new IllegalArgumentException("Trainer type couldn't be determined!");
     }
   }
 
-  public static EventTrainer getEventTrainer(TrainingParameters trainParams,
-      Map<String, String> reportMap) {
+  /**
+   * Retrieves an {@link EventTrainer} that fits the given parameters.
+   *
+   * @param trainParams The {@link TrainingParameters} to check for the trainer type.
+   *                    Note: The entry {@link AbstractTrainer#ALGORITHM_PARAM} is used
+   *                    to determine the type. If the type is not defined, the
+   *                    {@link GISTrainer#MAXENT_VALUE} will be used.
+   * @param reportMap A {@link Map} that shall be used during initialization of
+   *                  the {@link EventTrainer}.
+   *
+   * @return A valid {@link EventTrainer} for the configured {@code trainParams}.
+   */
+  public static EventTrainer getEventTrainer(
+          TrainingParameters trainParams, Map<String, String> reportMap) {
 
     // if the trainerType is not defined -- use the GISTrainer.
-    String trainerType = 
-        trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    String trainerType = trainParams.getStringParameter(
+            AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
 
+    final EventTrainer trainer;
     if (BUILTIN_TRAINERS.containsKey(trainerType)) {
-      EventTrainer trainer = TrainerFactory.
-              <EventTrainer>createBuiltinTrainer(BUILTIN_TRAINERS.get(trainerType));
-      trainer.init(trainParams, reportMap);
-      return trainer;
+      trainer = TrainerFactory.createBuiltinTrainer(BUILTIN_TRAINERS.get(trainerType));
     } else {
-      EventTrainer trainer = ExtensionLoader.instantiateExtension(EventTrainer.class, trainerType);
-      trainer.init(trainParams, reportMap);
-      return trainer;
+      trainer = ExtensionLoader.instantiateExtension(EventTrainer.class, trainerType);
     }
-
+    trainer.init(trainParams, reportMap);
+    return trainer;
   }
 
+  /**
+   * @param trainParams The {@link TrainingParameters} to validate. Must not be {@code null}.
+   * @return {@code true} if the {@code trainParams} could be validated, {@code false} otherwise.
+   */
   public static boolean isValid(TrainingParameters trainParams) {
 
     // TODO: Need to validate all parameters correctly ... error prone?!
@@ -202,22 +241,19 @@ public class TrainerFactory {
     return true;
   }
 
-  private static <T extends Trainer> T createBuiltinTrainer(Class<T> trainerClass) {
-    T theTrainer = null;
+  @SuppressWarnings("unchecked")
+  private static <T extends Trainer> T createBuiltinTrainer(Class<? extends Trainer> trainerClass) {
+    Trainer theTrainer = null;
     if (trainerClass != null) {
       try {
-        Constructor<T> contructor = trainerClass.getConstructor();
-        theTrainer = contructor.newInstance();
+        Constructor<? extends Trainer> c = trainerClass.getConstructor();
+        theTrainer = c.newInstance();
       } catch (Exception e) {
-        String msg = "Could not instantiate the "
-            + trainerClass.getCanonicalName()
-            + ". The initialization throw an exception.";
-        System.err.println(msg);
-        e.printStackTrace();
+        String msg = "Could not instantiate the " + trainerClass.getCanonicalName()
+            + ". The initialization threw an exception.";
         throw new IllegalArgumentException(msg, e);
       }
     }
-
-    return theTrainer;
+    return (T) theTrainer;
   }
 }

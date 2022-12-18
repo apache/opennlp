@@ -20,19 +20,18 @@ package opennlp.tools.ml;
 import java.io.IOException;
 import java.util.Map;
 
-import opennlp.tools.commons.Sample;
 import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.TrainingParameters;
 
-public interface EventModelSequenceTrainer extends Trainer {
+public interface EventModelSequenceTrainer<T> extends Trainer {
 
   String SEQUENCE_VALUE = "EventModelSequence";
 
   void init(Map<String, Object> trainParams, Map<String, String> reportMap);
   void init(TrainingParameters trainParams, Map<String, String> reportMap);
 
-  MaxentModel train(SequenceStream<? extends Sample> events) throws IOException;
+  MaxentModel train(SequenceStream<T> events) throws IOException;
 
 }

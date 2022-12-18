@@ -247,11 +247,11 @@ public class NameFinderME implements TokenNameFinder {
     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, factory.createContextGenerator());
 
-      EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(
+      EventModelSequenceTrainer<NameSample> trainer = TrainerFactory.getEventModelSequenceTrainer(
               trainParams, manifestInfoEntries);
       nameFinderModel = trainer.train(ss);
     } else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
-      SequenceTrainer<NameSample> trainer = TrainerFactory.getSequenceModelTrainer(
+      SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
               trainParams, manifestInfoEntries);
 
       NameSampleSequenceStream ss =
