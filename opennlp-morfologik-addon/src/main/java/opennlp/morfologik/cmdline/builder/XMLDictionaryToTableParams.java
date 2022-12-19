@@ -35,7 +35,7 @@ interface XMLDictionaryToTableParams extends EncodingParameter {
       + "(.info will be also created).")
   File getOutputFile();
 
-  @ParameterDescription(valueName = "char", description = "Columm separator "
+  @ParameterDescription(valueName = "char", description = "Column separator "
       + "(must be a single character)")
   @OptionalParameter(defaultValue = ",")
   String getSeparator();

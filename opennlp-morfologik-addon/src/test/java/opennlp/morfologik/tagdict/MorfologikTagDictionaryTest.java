@@ -26,10 +26,13 @@ import morfologik.stemming.Dictionary;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.morfologik.builder.POSDictionayBuilderTest;
+import opennlp.morfologik.AbstractMorfologikTest;
 import opennlp.tools.postag.TagDictionary;
 
-public class MorfologikTagDictionaryTest {
+/**
+ * Tests for the {@link MorfologikTagDictionary} class.
+ */
+public class MorfologikTagDictionaryTest extends AbstractMorfologikTest {
 
   @Test
   public void testNoLemma() throws Exception {
@@ -83,7 +86,7 @@ public class MorfologikTagDictionaryTest {
 
   private MorfologikTagDictionary createDictionary(boolean caseSensitive,
       List<String> constant) throws Exception {
-    Path output = POSDictionayBuilderTest.createMorfologikDictionary();
+    Path output = createMorfologikDictionary();
     output.toFile().deleteOnExit();
     Dictionary dic = Dictionary.read(output);
     return new MorfologikTagDictionary(dic, caseSensitive);

@@ -17,50 +17,32 @@
 
 package opennlp.morfologik.builder;
 
-import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import morfologik.stemming.DictionaryMetadata;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.morfologik.AbstractMorfologikTest;
 import opennlp.morfologik.lemmatizer.MorfologikLemmatizer;
 
-public class POSDictionayBuilderTest {
-
-  public static Path createMorfologikDictionary() throws Exception {
-    Path tabFilePath = File.createTempFile(
-        POSDictionayBuilderTest.class.getName(), ".txt").toPath();
-    tabFilePath.toFile().deleteOnExit();
-    Path infoFilePath = DictionaryMetadata.getExpectedMetadataLocation(tabFilePath);
-    infoFilePath.toFile().deleteOnExit();
-
-    Files.copy(POSDictionayBuilderTest.class.getResourceAsStream(
-        "/dictionaryWithLemma.txt"), tabFilePath, StandardCopyOption.REPLACE_EXISTING);
-    Files.copy(POSDictionayBuilderTest.class.getResourceAsStream(
-        "/dictionaryWithLemma.info"), infoFilePath, StandardCopyOption.REPLACE_EXISTING);
-
-    MorfologikDictionayBuilder builder = new MorfologikDictionayBuilder();
-
-    return builder.build(tabFilePath);
-  }
+/**
+ * Tests for the {@link MorfologikDictionaryBuilder} class.
+ */
+public class MorfologikDictionaryBuilderTest extends AbstractMorfologikTest {
 
   @Test
-  public void testMultithread() throws Exception {
+  public void testMultithreading() throws Exception {
     // Part 1: compile a FSA lemma dictionary
     // we need the tabular dictionary. It is mandatory to have info
     //  file with same name, but .info extension
 
     // this will build a binary dictionary located in compiledLemmaDictionary
-    Path compiledLemmaDictionary = new MorfologikDictionayBuilder().build(
-        Paths.get(POSDictionayBuilderTest.class.getResource("/dictionaryWithLemma.txt").getPath()));
+    Path compiledLemmaDictionary = new MorfologikDictionaryBuilder().build(
+        Paths.get(getResource("/dictionaryWithLemma.txt").getPath()));
 
     // Part 2: load a MorfologikLemmatizer and use it
     MorfologikLemmatizer lemmatizer = new MorfologikLemmatizer(compiledLemmaDictionary);

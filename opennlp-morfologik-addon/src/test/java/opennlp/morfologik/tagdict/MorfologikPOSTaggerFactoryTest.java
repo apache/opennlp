@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.morfologik.builder.POSDictionayBuilderTest;
+import opennlp.morfologik.AbstractMorfologikTest;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
@@ -42,14 +42,13 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 
 /**
- * Tests for the {@link POSTaggerFactory} class.
+ * Tests for the {@link MorfologikPOSTaggerFactory} class.
  */
-public class POSTaggerFactoryTest {
+public class MorfologikPOSTaggerFactoryTest extends AbstractMorfologikTest {
 
-  private static ObjectStream<POSSample> createSampleStream()
-      throws IOException {
+  private static ObjectStream<POSSample> createSampleStream() throws IOException {
     MarkableFileInputStreamFactory sampleDataIn = new MarkableFileInputStreamFactory(
-        new File(POSTaggerFactory.class.getResource("/AnnotatedSentences.txt").getFile()));
+        new File(getResource("/AnnotatedSentences.txt").getFile()));
 
     ObjectStream<String> lineStream = null;
     try {
@@ -70,26 +69,30 @@ public class POSTaggerFactoryTest {
   @Test
   public void testPOSTaggerWithCustomFactory() throws Exception {
 
-    Path dictionary = POSDictionayBuilderTest.createMorfologikDictionary();
+    Path dictionary = createMorfologikDictionary();
     dictionary.toFile().deleteOnExit();
     POSTaggerFactory inFactory = new MorfologikPOSTaggerFactory();
     TagDictionary inDict = inFactory.createTagDictionary(dictionary.toFile());
     inFactory.setTagDictionary(inDict);
 
     POSModel posModel = trainPOSModel(ModelType.MAXENT, inFactory);
+    Assertions.assertNotNull(posModel);
 
     POSTaggerFactory factory = posModel.getFactory();
+    Assertions.assertNotNull(factory);
     Assertions.assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
-
-    factory = null;
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     posModel.serialize(out);
     ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 
     POSModel fromSerialized = new POSModel(in);
+    Assertions.assertNotNull(fromSerialized);
+    // check for equality
+    Assertions.assertEquals(posModel, fromSerialized);
 
     factory = fromSerialized.getFactory();
+    Assertions.assertNotNull(factory);
     Assertions.assertTrue(factory.getTagDictionary() instanceof MorfologikTagDictionary);
 
     Assertions.assertEquals(2, factory.getTagDictionary().getTags("casa").length);

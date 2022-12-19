@@ -33,6 +33,10 @@ import opennlp.tools.postag.TagDictionary;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ByteArraySerializer;
 
+/**
+ * The factory provides a Morfologik specific {@link POSTaggerFactory} implementation
+ * and initializes related resources.
+ */
 public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
 
   private static final String MORFOLOGIK_POSDICT_SUF = "morfologik_dict";
@@ -51,6 +55,16 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
   public MorfologikPOSTaggerFactory() {
   }
 
+  /**
+   * Initializes a {@link TagDictionary} from a {@link File dictionary file}.
+   *
+   * @param dictionary The {@link File} used as input for creating the dictionary.
+   *
+   * @return A valid {@link TagDictionary} ready for use.
+   * @throws FileNotFoundException Thrown if {@code dictionary} or related metadata
+   *                               could not be read in.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public TagDictionary createTagDictionary(File dictionary) throws IOException {
 
     if (!dictionary.canRead()) {
@@ -69,6 +83,11 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
     return createMorfologikDictionary(dictData, dictInfo);
   }
 
+  /**
+   * @return The {@link TagDictionary} used.
+   * @throws RuntimeException Thrown if errors occurred loading or reading
+   *                          Morfologik dictionary files.
+   */
   @Override
   public TagDictionary getTagDictionary() {
     if (this.dict == null) {
@@ -76,10 +95,8 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
       if (artifactProvider != null) {
         Object obj = artifactProvider.getArtifact(MORFOLOGIK_POSDICT);
         if (obj != null) {
-          byte[] data = artifactProvider
-              .getArtifact(MORFOLOGIK_POSDICT);
-          byte[] info = artifactProvider
-              .getArtifact(MORFOLOGIK_DICT_INFO);
+          byte[] data = artifactProvider.getArtifact(MORFOLOGIK_POSDICT);
+          byte[] info = artifactProvider.getArtifact(MORFOLOGIK_DICT_INFO);
 
           try {
             this.dict = createMorfologikDictionary(data, info);
@@ -137,8 +154,7 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
   private TagDictionary createMorfologikDictionary(byte[] data, byte[] info)
       throws IOException {
     morfologik.stemming.Dictionary dict = morfologik.stemming.Dictionary
-        .read(new ByteArrayInputStream(data), new ByteArrayInputStream(
-            info));
+        .read(new ByteArrayInputStream(data), new ByteArrayInputStream(info));
     return new MorfologikTagDictionary(dict);
   }
 }

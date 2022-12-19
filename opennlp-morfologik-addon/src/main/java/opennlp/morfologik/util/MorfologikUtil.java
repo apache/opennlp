@@ -21,16 +21,17 @@ import java.io.File;
 
 import morfologik.stemming.DictionaryMetadata;
 
+/**
+ * A utility class that helps in finding (related) Morfologik files.
+ */
 public class MorfologikUtil {
 
   public static File getExpectedPropertiesFile(File dictFile) {
-    return DictionaryMetadata.getExpectedMetadataLocation(dictFile.toPath())
-        .toFile();
+    return DictionaryMetadata.getExpectedMetadataLocation(dictFile.toPath()).toFile();
   }
 
   public static File getExpectedPropertiesFile(String dictFile) {
-    File f = new File(dictFile);
-    return getExpectedPropertiesFile(f);
+    return getExpectedPropertiesFile(new File(dictFile));
   }
 
 }

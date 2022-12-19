@@ -32,6 +32,10 @@ import morfologik.stemming.WordData;
 
 import opennlp.tools.lemmatizer.Lemmatizer;
 
+/**
+ * A {@link Lemmatizer} implementation based on Morfologik binary
+ * dictionaries
+ */
 public class MorfologikLemmatizer implements Lemmatizer {
 
   private final Dictionary dictionary;
