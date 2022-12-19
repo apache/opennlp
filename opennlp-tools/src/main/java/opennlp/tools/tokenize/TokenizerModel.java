@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.AbstractModel;
@@ -161,5 +162,27 @@ public final class TokenizerModel extends BaseModel {
    */
   public boolean useAlphaNumericOptimization() {
     return getFactory() != null && getFactory().isUseAlphaNumericOptmization();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(artifactMap.get(MANIFEST_ENTRY), artifactMap.get(TOKENIZER_MODEL_ENTRY));
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof TokenizerModel) {
+      TokenizerModel model = (TokenizerModel) obj;
+      Map<String, Object> artifactMapToCheck = model.artifactMap;
+      AbstractModel abstractModel = (AbstractModel) artifactMapToCheck.get(TOKENIZER_MODEL_ENTRY);
+
+      return artifactMap.get(MANIFEST_ENTRY).equals(artifactMapToCheck.get(MANIFEST_ENTRY)) &&
+              artifactMap.get(TOKENIZER_MODEL_ENTRY).equals(abstractModel);
+    }
+    return false;
   }
 }

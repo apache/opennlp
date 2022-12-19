@@ -109,6 +109,13 @@
 			</dependency>
 
 			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-params</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
 				<artifactId>opennlp-tools</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>

@@ -367,4 +367,27 @@ public class ParserModel extends BaseModel {
       throw new InvalidFormatException("Missing the head rules!");
     }
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(artifactMap.get(MANIFEST_ENTRY),
+            artifactMap.get(PARSER_TAGGER_MODEL_ENTRY_NAME));
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof ParserModel) {
+      ParserModel model = (ParserModel) obj;
+      Map<String, Object> artifactMapToCheck = model.artifactMap;
+      AbstractModel abstractModel = (AbstractModel) artifactMapToCheck.get(BUILD_MODEL_ENTRY_NAME);
+
+      return artifactMap.get(MANIFEST_ENTRY).equals(artifactMapToCheck.get(MANIFEST_ENTRY)) &&
+              artifactMap.get(BUILD_MODEL_ENTRY_NAME).equals(abstractModel);
+    }
+    return false;
+  }
 }
