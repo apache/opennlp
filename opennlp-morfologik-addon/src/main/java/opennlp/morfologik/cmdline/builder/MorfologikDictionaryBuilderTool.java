@@ -22,7 +22,7 @@ import java.nio.file.Path;
 
 import morfologik.stemming.DictionaryMetadata;
 
-import opennlp.morfologik.builder.MorfologikDictionayBuilder;
+import opennlp.morfologik.builder.MorfologikDictionaryBuilder;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -32,14 +32,17 @@ public class MorfologikDictionaryBuilderTool extends BasicCmdLineTool {
   interface Params extends MorfologikDictionaryBuilderParams {
   }
 
+  @Override
   public String getShortDescription() {
     return "builds a binary POS Dictionary using Morfologik";
   }
 
+  @Override
   public String getHelp() {
     return getBasicHelp(Params.class);
   }
 
+  @Override
   public void run(String[] args) {
     Params params = validateAndParseParams(args, Params.class);
 
@@ -49,14 +52,14 @@ public class MorfologikDictionaryBuilderTool extends BasicCmdLineTool {
     Path metadataPath = DictionaryMetadata.getExpectedMetadataLocation(dictInFile.toPath());
     CmdLineUtil.checkInputFile("dictionary metadata (.info) input file", metadataPath.toFile());
 
-    MorfologikDictionayBuilder builder = new MorfologikDictionayBuilder();
+    MorfologikDictionaryBuilder builder = new MorfologikDictionaryBuilder();
     try {
       builder.build(dictInFile.toPath(), params.getOverwrite(),
           params.getValidate(), params.getAcceptBOM(), params.getAcceptCR(),
           params.getIgnoreEmpty());
     } catch (Exception e) {
       throw new TerminateToolException(-1,
-          "Error while creating Morfologik POS Dictionay: " + e.getMessage(), e);
+          "Error while creating Morfologik POS Dictionary: " + e.getMessage(), e);
     }
 
   }

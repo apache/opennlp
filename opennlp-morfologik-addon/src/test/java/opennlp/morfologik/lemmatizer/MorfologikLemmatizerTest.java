@@ -24,10 +24,13 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.morfologik.builder.POSDictionayBuilderTest;
+import opennlp.morfologik.AbstractMorfologikTest;
 import opennlp.tools.lemmatizer.Lemmatizer;
 
-public class MorfologikLemmatizerTest {
+/**
+ * Tests for the {@link MorfologikLemmatizer} class.
+ */
+public class MorfologikLemmatizerTest extends AbstractMorfologikTest {
 
   @Test
   public void testLemmatizeInsensitive() throws Exception {
@@ -42,7 +45,7 @@ public class MorfologikLemmatizerTest {
     Assertions.assertEquals("casar", lemmas[0]);
     Assertions.assertEquals("casa", lemmas[1]);
 
-    // lookup is case insensitive. There is no entry casa - prop
+    // lookup is case-insensitive. There is no entry casa - prop
     Assertions.assertNull(lemmas[2]);
   }
 
@@ -61,7 +64,7 @@ public class MorfologikLemmatizerTest {
 
   private MorfologikLemmatizer createDictionary(boolean caseSensitive)
       throws Exception {
-    Path output = POSDictionayBuilderTest.createMorfologikDictionary();
+    Path output = createMorfologikDictionary();
     output.toFile().deleteOnExit();
     return new MorfologikLemmatizer(output);
   }

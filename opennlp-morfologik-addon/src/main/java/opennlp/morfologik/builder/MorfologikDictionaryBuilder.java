@@ -27,24 +27,28 @@ import morfologik.stemming.EncoderType;
 import morfologik.tools.DictCompile;
 
 /**
- * Utility class to build Morfologik dictionaries from a tab separated values
- * file. The first column is the word, the second its lemma and the third a POS
- * tag. If there is no lemma information leave the second column empty.
+ * Utility class to build Morfologik dictionaries from a tab separated
+ * values file.
+ * <p>
+ * The first column is the word, the second its lemma and the third a POS
+ * tag (base,inflected,tag). If there is no lemma information leave the
+ * second column empty.
  */
-public class MorfologikDictionayBuilder {
+public class MorfologikDictionaryBuilder {
 
   /**
    * Helper to compile a morphological dictionary automaton.
    *
-   * @param input       The input file (base,inflected,tag). An associated metadata
-   *                    (*.info) file must exist.
-   * @param overwrite   Overwrite the output file if it exists.
-   * @param validate    Validate input to make sure it makes sense.
-   * @param acceptBom   Accept leading BOM bytes (UTF-8).
-   * @param acceptCr    Accept CR bytes in input sequences (\r).
-   * @param ignoreEmpty Ignore empty lines in the input.
-   * @return the dictionary path
-   * @throws Exception
+   * @param input       The {@link Path input file} (base,inflected,tag).
+   *                    An associated metadata ({@code *.info}) file must exist.
+   * @param overwrite   Whether to overwrite the output file if it exists, or not.
+   * @param validate    Whether to validate input to make sure it makes sense.
+   * @param acceptBom   Whether to accept leading BOM bytes (UTF-8), or not.
+   * @param acceptCr    Whether to accept CR bytes in input sequences ({@code \r}), or not.
+   * @param ignoreEmpty Whether to ignore empty lines in the input, or not.
+   *
+   * @return The resulting dictionary {@link Path}.
+   * @throws Exception Thrown if errors occurred during dictionary compilation.
    */
   public Path build(Path input, boolean overwrite, boolean validate,
                     boolean acceptBom, boolean acceptCr, boolean ignoreEmpty)
@@ -65,10 +69,11 @@ public class MorfologikDictionayBuilder {
    * Helper to compile a morphological dictionary automaton using default
    * parameters.
    *
-   * @param input The input file (base,inflected,tag). An associated metadata
-   *              (*.info) file must exist.
-   * @return the dictionary path
-   * @throws Exception
+   * @param input The {@link Path input file} (base,inflected,tag).
+   *              An associated metadata ({@code *.info}) file must exist.
+   *
+   * @return The resulting dictionary {@link Path}.
+   * @throws Exception Thrown if errors occurred during dictionary compilation.
    */
   public Path build(Path input) throws Exception {
     return build(input, true, true, false, false, false);

@@ -37,27 +37,23 @@ public class MorfologikTagDictionary implements TagDictionary {
   private final boolean isCaseSensitive;
 
   /**
-   * Creates a case sensitive {@link MorfologikTagDictionary}
+   * Initializes a case sensitive {@link MorfologikTagDictionary}
    *
-   * @param dict
-   *          a Morfologik FSA dictionary
-   * @throws IllegalArgumentException
-   *           if FSA's root node cannot be acquired (dictionary is empty).
+   * @param dict A Morfologik FSA {@link Dictionary}.
+   * @throws IllegalArgumentException Thrown if FSA's root node cannot be acquired
+   *                                  (dictionary is empty).
    */
-  public MorfologikTagDictionary(Dictionary dict)
-      throws IllegalArgumentException {
+  public MorfologikTagDictionary(Dictionary dict) throws IllegalArgumentException {
     this(dict, true);
   }
 
   /**
-   * Creates MorfologikLemmatizer
+   * Initializes a {@link MorfologikTagDictionary}
    *
-   * @param dict
-   *          a Morfologik FSA dictionary
-   * @param caseSensitive
-   *          if true it performs case-sensitive lookup
-   * @throws IllegalArgumentException
-   *           if FSA's root node cannot be acquired (dictionary is empty).
+   * @param dict A Morfologik FSA {@link Dictionary}.
+   * @param caseSensitive If {@code true} it performs case-sensitive lookup
+   * @throws IllegalArgumentException Thrown if FSA's root node cannot be acquired
+   *                                  (dictionary is empty).
    */
   public MorfologikTagDictionary(Dictionary dict, boolean caseSensitive)
       throws IllegalArgumentException {
