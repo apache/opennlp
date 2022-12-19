@@ -205,7 +205,7 @@ String[] lemmas = lemmatizer.lemmatize(tokens, postags);
 		<section id="tools.lemmatizer.training">
 			<title>Lemmatizer Training</title>
 			<para>
-				The training data consist of three columns separated by spaces. Each
+				The training data consist of three columns separated by tabs. Each
 				word has been put on a
 				separate line and there is an empty line after each sentence. The first
 				column contains
