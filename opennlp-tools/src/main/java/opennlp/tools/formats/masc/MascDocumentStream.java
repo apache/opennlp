@@ -44,7 +44,7 @@ public class MascDocumentStream implements ObjectStream<MascDocument> {
   /**
    * A helper class to parse the header (.hdr) files.
    */
-  private class HeaderHandler extends DefaultHandler {
+  private static class HeaderHandler extends DefaultHandler {
     private HashMap<String, String> annotationFiles = null;
     private String file = null;
     private String fType = null;

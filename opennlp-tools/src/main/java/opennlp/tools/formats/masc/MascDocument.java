@@ -17,6 +17,7 @@
 
 package opennlp.tools.formats.masc;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,16 +55,16 @@ public class MascDocument {
   }
 
   /**
-   * Creates a MASC document with all of the stand-off annotations translated into the internal
-   * structure.
+   * Initializes a {@link MascDocument} with all the stand-off annotations translated into the
+   * internal structure.
    *
    * @param path      The path where the document header is.
-   * @param f_primary The file with the raw corpus text.
-   * @param f_seg     The file with segmentation into quarks.
-   * @param f_ne      The file with named entities.
-   * @param f_penn    The file with tokenization and Penn POS tags produced
+   * @param f_primary The {@link InputStream file} with the raw corpus text.
+   * @param f_seg     The {@link InputStream file} with segmentation into quarks.
+   * @param f_ne      The {@link InputStream file} with named entities.
+   * @param f_penn    The {@link InputStream file} with tokenization and Penn POS tags produced
    *                  by GATE-5.0 ANNIE application.
-   * @param f_s       The file with sentence boundaries.
+   * @param f_s       The {@link InputStream file} with sentence boundaries.
    * @return A document containing the text and its annotations. Immutability is not guaranteed yet.
    * @throws IOException if the raw data cannot be read or the alignment of the raw data
    *                     with annotations fails
@@ -77,7 +78,7 @@ public class MascDocument {
     List<Span> sentenceSpans = parseSentences(f_s);
 
     List<MascSentence> sentences = combineAnnotations(text, sentenceSpans, words);
-    MascDocument doc = new MascDocument(path, sentences);
+    final MascDocument doc = new MascDocument(path, sentences);
 
     // if the file has Penn POS tags, add them
     if (f_penn != null) {
@@ -88,21 +89,21 @@ public class MascDocument {
       doc.addNamedEntityTags(parseNamedEntity(f_ne));
     }
 
-    //todo: make the annotations immutable
-    //todo: should we cleanup the document (e.g. remove sentences without tokens?)
+    //TODO: make the annotations immutable
+    //TODO: should we cleanup the document (e.g. remove sentences without tokens?)
     return doc;
   }
 
   /**
-   * Read in the corpus file text
+   * Reads in the corpus file text.
    *
-   * @param stream The corpus file
-   * @return The text of the file
-   * @throws IOException if anything goes wrong
+   * @param stream A valid, open {@link InputStream stream} for a corpus file.
+   *
+   * @return The text of the file.
+   * @throws IOException Thrown if IO errors occurred.
    */
   private static String readText(InputStream stream) throws IOException {
-    try {
-      Reader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+    try (Reader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
       StringBuilder contents = new StringBuilder();
       char[] buffer = new char[8192];
       int read;
@@ -110,9 +111,6 @@ public class MascDocument {
         contents.append(buffer, 0, read);
       }
       return contents.toString();
-    } finally {
-      // this may throw an exception
-      stream.close();
     }
   }
 
@@ -120,52 +118,51 @@ public class MascDocument {
   /**
    * Parses the word segmentation stand-off annotation
    *
-   * @param f_seg The file with segmentation
+   * @param f_seg A valid, open {@link InputStream stream} for a file with segmentation.
    * @return A list of individual quarks, expressed as MascWord-s
-   * @throws IOException if anything goes wrong
+   * @throws IOException Thrown if IO errors occurred.
    */
   private static List<MascWord> parseWords(InputStream f_seg) throws IOException {
 
-    try {
+    try (BufferedInputStream bStream = new BufferedInputStream(f_seg)) {
       SAXParser saxParser = XmlUtil.createSaxParser();
       MascWordParser handler = new MascWordParser();
       try {
-        saxParser.parse(f_seg, handler);
+        saxParser.parse(bStream, handler);
       } catch (SAXException e) {
         throw new IOException("Could not parse the region annotation file");
       }
 
       return Collections.unmodifiableList(handler.getAnchors());
-
-    } finally {
-      f_seg.close();
     }
   }
 
   /**
-   * Parse the sentence annotation file, align it with the raw text
+   * Parses the sentence annotation file, align it with the raw text
    *
-   * @param f_s the sentence annotation file
-   * @return the list of Spans delimiting each sentence
+   * @param f_s A valid, open {@link InputStream stream} for a sentence annotation file.
+   * @return The {@link List<Span>} delimiting each sentence.
    * @throws IOException if the sentence file cannot be parsed or closed
    */
   private static List<Span> parseSentences(InputStream f_s) throws IOException {
 
-    try {
+    try (BufferedInputStream bStream = new BufferedInputStream(f_s)) {
       SAXParser saxParser = XmlUtil.createSaxParser();
       MascSentenceParser handler = new MascSentenceParser();
       try {
-        saxParser.parse(f_s, handler);
+        saxParser.parse(bStream, handler);
       } catch (SAXException e) {
         throw new IOException("Could not parse the sentence annotation file");
       }
 
       List<Span> anchors = handler.getAnchors();
 
-      /*Filter out sentence overlaps.
-      Keep only those sentences  where sentence.end < nextsentence.beginning
-      avoid deleting in the middle and repeatedly shifting the list by copying into a new list*/
-      //todo: can we know a priori, if we need this filtering?
+      /*
+       * Filter out sentence overlaps.
+       * Keep only those sentences  where sentence.end < nextSentence.beginning
+       * avoid deleting in the middle and repeatedly shifting the list by copying into a new list
+       */
+      //TODO: can we know a priori, if we need this filtering?
       List<Span> filteredAnchors = new ArrayList<>();
       for (int i = 0; i < anchors.size() - 1; i++) {
         if (anchors.get(i).getEnd() < anchors.get(i + 1).getStart()) {
@@ -175,30 +172,28 @@ public class MascDocument {
       filteredAnchors.add(anchors.get(anchors.size() - 1));
 
       return Collections.unmodifiableList(filteredAnchors);
-
-    } finally {
-      f_s.close();
     }
 
   }
 
   /**
-   * Parses the Penn-POS (GATE5-ANNIE) stand-off annotation
+   * Parses the Penn-POS (GATE5-ANNIE) stand-off annotation.
    *
-   * @param f_penn The file with Penn POS tags
+   * @param f_penn A valid, open {@link InputStream stream} for a file with Penn POS tags.
+   *               
    * @return A map of three sub-maps: tokenToTag, from Penn token ID (int) to Penn POS-tag,
    * tokenToBase, from Penn token ID (int) to the base and tokenToQuarks, from Penn token ID
    * (int) to a List of quark IDs contained in that token.
-   * @throws IOException if anything goes wrong
+   * @throws IOException Thrown if IO errors occurred.
    */
-  private static Map<String, Map> parsePennTags(InputStream f_penn) throws IOException {
-    Map<String, Map> tagsAndBases = new HashMap<>();
+  private static Map<String, Map<Integer, ?>> parsePennTags(InputStream f_penn) throws IOException {
+    Map<String, Map<Integer, ?>> tagsAndBases = new HashMap<>();
 
-    try {
+    try (BufferedInputStream bStream = new BufferedInputStream(f_penn)) {
       SAXParser saxParser = XmlUtil.createSaxParser();
       MascPennTagParser handler = new MascPennTagParser();
       try {
-        saxParser.parse(f_penn, handler);
+        saxParser.parse(bStream, handler);
       } catch (SAXException e) {
         throw new IOException("Could not parse the Penn tag annotation file");
       }
@@ -208,28 +203,25 @@ public class MascDocument {
       tagsAndBases.put("tokenToQuarks", handler.getTokenToQuarks());
 
       return tagsAndBases;
-
-    } finally {
-      f_penn.close();
     }
   }
 
   /**
-   * Parses the named entity stand-off annotation
+   * Parses the named entity stand-off annotation.
    *
-   * @param f_ne The file with named entity annotations
+   * @param f_ne A valid, open {@link InputStream stream} for a file with named entity annotations.
    * @return A map with two sub-maps, entityIDtoEntityType, mapping entity ID integers
    * to entity type Strings, and entityIDsToTokens, mapping entity ID integers to Penn
-   * token ID integers
-   * @throws IOException if anything goes wrong
+   * token ID integers.
+   * @throws IOException Thrown if IO errors occurred.
    */
-  private static Map<String, Map> parseNamedEntity(InputStream f_ne) throws IOException {
+  private static Map<String, Map<Integer, ?>> parseNamedEntity(InputStream f_ne) throws IOException {
 
-    try {
+    try (BufferedInputStream bStream = new BufferedInputStream(f_ne)) {
       SAXParser saxParser = XmlUtil.createSaxParser();
       MascNamedEntityParser handler = new MascNamedEntityParser();
       try {
-        saxParser.parse(f_ne, handler);
+        saxParser.parse(bStream, handler);
       } catch (SAXException e) {
         System.out.println(e.getMessage());
         throw new IOException("Could not parse the named entity annotation file");
@@ -237,13 +229,10 @@ public class MascDocument {
 
       Map<Integer, String> entityIDtoEntityType = handler.getEntityIDtoEntityType();
       Map<Integer, List<Integer>> entityIDsToTokens = handler.getEntityIDsToTokens();
-      Map<String, Map> results = new HashMap<>();
+      Map<String, Map<Integer, ?>> results = new HashMap<>();
       results.put("entityIDtoEntityType", entityIDtoEntityType);
       results.put("entityIDsToTokens", entityIDsToTokens);
       return results;
-
-    } finally {
-      f_ne.close();
     }
   }
 
@@ -251,14 +240,13 @@ public class MascDocument {
    * Combines the raw text with annotations that every file should have.
    *
    * @param text          The raw text.
-   * @param sentenceSpans The spans definining individual sentences. Overlaps are not permitted.
+   * @param sentenceSpans The spans defining individual sentences. Overlaps are not permitted.
    * @param words         The quarks of the raw text.
    * @return A list of sentences, each of which is a list of quarks. Some quarks may belong to
    * more than one sentence. Quarks which do not belong to a single sentence are silently dropped.
    * @throws IOException If sentences and quarks cannot be aligned.
    */
-  private static List<MascSentence> combineAnnotations(String text,
-                                                       List<Span> sentenceSpans,
+  private static List<MascSentence> combineAnnotations(String text, List<Span> sentenceSpans,
                                                        List<MascWord> words) throws IOException {
 
     int wordIndex = 0;
@@ -270,21 +258,21 @@ public class MascDocument {
         int sentenceStart = s.getStart();
         int sentenceEnd = s.getEnd();
 
-        //todo: is it okay that quarks can cross sentence boundary? What are the implications?
+        // TODO: is it okay that quarks can cross sentence boundary? What are the implications?
         /*
-        Allow quarks to cross sentence boundary.
-        The decisive factor determining if a quark belongs to a sentence is if they overlap.
-        I.e. sent.getEnd() > quark.getStart() && sent.getStart() < quark.getEnd()
+         * Allow quarks to cross sentence boundary.
+         * The decisive factor determining if a quark belongs to a sentence is if they overlap.
+         * I.e. sent.getEnd() > quark.getStart() && sent.getStart() < quark.getEnd()
          */
         MascWord nextWord = words.get(wordIndex);
-        //Find sentence beginning, should not be needed unless overlaps occur
+        // Find sentence beginning, should not be needed unless overlaps occur
         while (sentenceStart < nextWord.getEnd() && wordIndex > 0) {
           wordIndex--;
           nextWord = words.get(wordIndex);
         }
 
-        //todo: can this be translated into Span's methods .crosses()/.contains()?
-        //find all quarks contained or crossing the span of that sentence
+        // TODO: can this be translated into Span's methods .crosses()/.contains()?
+        // Find all quarks contained or crossing the span of that sentence
         boolean sentenceOver = false;
         while ((!sentenceOver) && wordIndex < wordCount) {
           nextWord = words.get(wordIndex);
@@ -315,23 +303,23 @@ public class MascDocument {
         sentences.add(sentence);
       }
     }
-
     return Collections.unmodifiableList(sentences);
-
   }
 
 
   /**
-   * Attach the named entity labels to individual tokens
+   * Attaches the named entity labels to individual tokens.
    *
    * @param namedEntities A map with two sub-maps, entityIDtoEntityType, mapping entity ID integers
-   *                      * to entity type Strings, and entityIDsToTokens, mapping entity ID integers to Penn
-   *                      * token ID integers
+   *                      to entity type Strings, and entityIDsToTokens, mapping entity ID integers to Penn
+   *                      token ID integers
    */
-  private void addNamedEntityTags(Map<String, Map> namedEntities) {
+  private void addNamedEntityTags(Map<String, Map<Integer, ?>> namedEntities) {
     try {
-      Map<Integer, String> entityIDtoEntityType = namedEntities.get("entityIDtoEntityType");
-      Map<Integer, List<Integer>> entityIDsToTokens = namedEntities.get("entityIDsToTokens");
+      Map<Integer, String> entityIDtoEntityType =
+              (Map<Integer, String>) namedEntities.get("entityIDtoEntityType");
+      Map<Integer, List<Integer>> entityIDsToTokens =
+              (Map<Integer, List<Integer>>) namedEntities.get("entityIDsToTokens");
 
       for (MascSentence s : sentences) {
         boolean success = s.addNamedEntities(entityIDtoEntityType, entityIDsToTokens);
@@ -356,12 +344,12 @@ public class MascDocument {
    *                * tokenToBase, from Penn token ID (int) to the base and tokenToQuarks, from Penn token ID
    *                * (int) to a List of quark IDs contained in that token.
    */
-  private void addPennTags(Map<String, Map> tagMaps) throws IOException {
+  private void addPennTags(Map<String, Map<Integer, ?>> tagMaps) throws IOException {
     try {
       // Extract individual mappings
-      Map<Integer, String> tokenToTag = tagMaps.get("tokenToTag");
-      Map<Integer, String> tokenToBase = tagMaps.get("tokenToBase");
-      Map<Integer, int[]> tokenToQuarks = tagMaps.get("tokenToQuarks");
+      Map<Integer, String> tokenToTag = (Map<Integer, String>) tagMaps.get("tokenToTag");
+      Map<Integer, String> tokenToBase = (Map<Integer, String>) tagMaps.get("tokenToBase");
+      Map<Integer, int[]> tokenToQuarks = (Map<Integer, int[]>) tagMaps.get("tokenToQuarks");
 
       //Check that all tokens have at least one quark.
       for (Map.Entry<Integer, int[]> token : tokenToQuarks.entrySet()) {
@@ -409,22 +397,25 @@ public class MascDocument {
 
 
   /**
-   * Check whether there is Penn tagging produced by GATE-5.0 ANNIE
+   * Checks whether there is Penn tagging produced by GATE-5.0 ANNIE.
    *
-   * @return true if this file has aligned tags/tokens
+   * @return {@code true} if this file has aligned tags/tokens, {@code false} otherwise.
    */
   public boolean hasPennTags() {
     return hasPennTags;
   }
 
+  /**
+   * Checks whether there is NER by GATE-5.0 ANNIE.
+   *
+   * @return {@code true} if this file has named entities, {@code false} otherwise.
+   */
   public boolean hasNamedEntities() {
     return hasNamedEntities;
   }
 
   /**
-   * Get next sentence.
-   *
-   * @return Next sentence or null if end of document reached.
+   * @return Retrieves the next sentence or {@code null} if end of document reached.
    */
   public MascSentence read() {
     MascSentence next = null;
@@ -435,7 +426,7 @@ public class MascDocument {
   }
 
   /**
-   * Return the reading of sentences to the beginning of the document.
+   * Resets the reading of sentences to the beginning of the document.
    */
   public void reset() {
     this.sentenceIterator = this.sentences.iterator();

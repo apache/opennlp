@@ -39,10 +39,12 @@ public class MascSentenceSampleStream extends FilterObjectStream<MascDocument, S
   }
 
   /**
-   * Reads a new sample of sentences
+   * Reads a new {@link SentenceSample sample of sentences}.
    *
-   * @return The specified number of sentences. If fewer left, then return whatever is left.
-   * @throws IOException
+   * @return The {@link SentenceSample specified number of sentences}.
+   *         If fewer left, then return whatever is left.
+   *
+   * @throws IOException Thrown if IO errors occurred during read operation.
    */
   @Override
   public SentenceSample read() throws IOException {

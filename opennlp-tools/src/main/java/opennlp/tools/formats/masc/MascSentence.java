@@ -54,12 +54,13 @@ public class MascSentence extends Span {
      * Extract a quark by its key
      *
      * @param key The quark's ID
-     * @return The quark reference
-     * @throws IOException if not found in the document
+     * @return The {@link MascWord quark reference}.
+     *
+     * @throws IOException Thrown if the {@code key} was not found in the document.
      */
     protected MascWord get(int key) throws IOException {
-      //We first check if this word is in the sentence
-      //todo: evaluate the necessity: HashMaps are O(1), right?
+      // First, check if this word is in the sentence
+      // TODO: evaluate the necessity: HashMaps are O(1), right?
       if (wordsById.containsKey(key)) {
         return wordsById.get(key);
       } else {
@@ -83,7 +84,7 @@ public class MascSentence extends Span {
   private List<Span> namedEntities = new ArrayList<>();
 
   /**
-   * Create a MascSentence, containing its associated text and quarks
+   * Initializes a {@link MascSentence} containing its associated text and quarks
    *
    * @param s              Start of the sentence within the corpus file
    * @param e              End of the sentence within the corpus file
@@ -107,14 +108,15 @@ public class MascSentence extends Span {
   }
 
   /**
-   * Add the Penn tokenization and POS tagging to the sentence
+   * Add the Penn tokenization and POS tagging to the sentence.
    *
-   * @param tokenToQuarks A map from token ID to quarks in that token
-   * @param quarkToTokens A map of quark IDs and the token IDs containing that quark
-   * @param tokenToBase   Token ID to the token base
-   * @param tokenToTag    Token ID to the POS tag
-   * @return true if no issue encountered, false if tokens cross sentence boundaries
-   * @throws IOException If anything goes wrong
+   * @param tokenToQuarks A map from token ID to quarks in that token.
+   * @param quarkToTokens A map of quark IDs and the token IDs containing that quark.
+   * @param tokenToBase   Token ID to the token base.
+   * @param tokenToTag    Token ID to the POS tag.
+   *
+   * @return {@code true} if no issue encountered, {@code false} if tokens cross sentence boundaries.
+   * @throws IOException Thrown if IO errors occurred.
    */
   boolean tokenizePenn(Map<Integer, int[]> tokenToQuarks,
                        Map<Integer, int[]> quarkToTokens,
@@ -151,7 +153,7 @@ public class MascSentence extends Span {
               }
             }
 
-            /*Because there are some quarks which are parts of tokens outside of a sentence
+            /*Because there are some quarks which are parts of tokens outside a sentence
             We need to check every time if that quark was actually assigned to the sentence
             If not, we need to extract it manually from the whole document*/
             MascWord[] quarks = new MascWord[quarksOfToken.length]; //Get the actual quark references
@@ -186,14 +188,15 @@ public class MascSentence extends Span {
    *
    * @param entityIDtoEntityType Maps the named entity ID to its type
    * @param entityIDsToTokens    A list of tokens covered by each named entity
-   * @return true if all went well, false if named entities overlap
-   * @throws IOException if anything goes wrong
+   *
+   * @return {@code true} if all went well, {@code false} if named entities overlap.
+   * @throws IOException Thrown if IO errors occurred.
    */
   boolean addNamedEntities(Map<Integer, String> entityIDtoEntityType,
                            Map<Integer, List<Integer>> entityIDsToTokens) throws IOException {
     boolean fileWithoutIssues = true;
     if (sentenceTokens == null) {
-      throw new IOException("Named entity labels provided for un untokenized sentence.");
+      throw new IOException("Named entity labels provided for an un-tokenized sentence.");
     }
 
     //for each named entity identify its span
@@ -264,27 +267,21 @@ public class MascSentence extends Span {
   }
 
   /**
-   * Get the named entities
-   *
-   * @return List of named entities defined as token span, e.g. Span(1,3, "org") for tokens [1,3)
+   * @return Retrieves the {@link List<Span> named entities}, e.g. {@code Span(1,3, "org")} for tokens [1,3).
    */
   public List<Span> getNamedEntities() {
     return namedEntities;
   }
 
   /**
-   * Get the sentence text
-   *
-   * @return Text of the sentence as defined by the sentence segmentation annotation.
+   * @return Retrieves text of the sentence as defined by the sentence segmentation annotation.
    */
   public String getSentDetectText() {
     return text.substring(getStart(), getEnd());
   }
 
   /**
-   * Get the text of the sentence tokens
-   *
-   * @return Text of the sentence as defined by the tokens in it.
+   * @return Retrieves text of the sentence as defined by the tokens in it.
    */
   public String getTokenText() {
     if (sentenceTokens.isEmpty()) {
@@ -295,8 +292,6 @@ public class MascSentence extends Span {
   }
 
   /**
-   * Get the text of the sentence tokens
-   *
    * @return The texts of the individual tokens in the sentence
    */
   public List<String> getTokenStrings() {
@@ -310,9 +305,10 @@ public class MascSentence extends Span {
   }
 
   /**
-   * Get the boundaries of individual tokens
+   * Retrieves the boundaries of individual tokens.
    *
-   * @return Spans representing the tokens of the sentence (according to Penn tokenization)
+   * @return The {@link List<Span> spans} representing the tokens of the sentence,
+   *         according to Penn tokenization.
    */
   public List<Span> getTokensSpans() {
 
@@ -327,10 +323,9 @@ public class MascSentence extends Span {
   }
 
   /**
-   * Get the tags of tokens in the sentence
-   *
-   * @return A list of individual tags
-   * @throws IOException if used on an untokenized sentence
+   * @return Get the (individual) tags of tokens in the sentence.
+   * 
+   * @throws IOException Thrown if used on an un-tokenized sentence.
    */
   public List<String> getTags() throws IOException {
     List<String> tags = new ArrayList<>();

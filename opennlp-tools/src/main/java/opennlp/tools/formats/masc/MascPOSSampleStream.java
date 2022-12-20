@@ -26,13 +26,13 @@ import opennlp.tools.util.ObjectStream;
 
 public class MascPOSSampleStream extends FilterObjectStream<MascDocument, POSSample> {
 
-  MascDocument buffer;
-
+  private MascDocument buffer;
+  
   /**
-   * Create a stream of POS-samples from a stream of MascDocuments.
+   * Initializes {@link MascPOSSampleStream} from a stream of {@link MascDocument documents}.
    *
-   * @param samples A MascDocumentStream.
-   * @throws IOException
+   * @param samples A {@link ObjectStream<MascDocument>} of samples.
+   * @throws IOException Thrown if none of the documents has POS tags.
    */
   public MascPOSSampleStream(ObjectStream<MascDocument> samples) throws IOException {
     super(samples);
@@ -45,18 +45,20 @@ public class MascPOSSampleStream extends FilterObjectStream<MascDocument, POSSam
           e.getMessage());
     }
   }
-
+  
   /**
-   * Get the next sample
+   * Reads the next sample.
    *
-   * @return One sentence together with its POS tags.
-   * @throws IOException if anything goes wrong.
+   * @return One {@link POSSample sentence together with its POS tags}.
+   * @throws IOException Thrown if the sample cannot be extracted.
    */
+  @Override
   public POSSample read() throws IOException {
 
-    /* Read the documents one sentence at a time
-    If the document is over, move to the next one
-    If both document stream and sentence stream are over, return null
+    /*
+     * Read the documents one sentence at a time
+     * If the document is over, move to the next one
+     * If both document stream and sentence stream are over, return null
      */
     try {
       MascSentence sentence = buffer.read();

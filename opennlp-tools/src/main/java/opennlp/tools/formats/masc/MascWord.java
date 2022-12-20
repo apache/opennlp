@@ -25,11 +25,15 @@ public class MascWord extends Span {
   private final int id;
 
   /**
-   * Saves one of MASC's quarks - basic-level units (may be sub-word)
+   * Holds one of MASC's quarks, that is: basic-level units (may be sub-word).
    *
-   * @param s  The beginning of the word in the corpus file
-   * @param e  The end of the word in the corpus file
-   * @param id The id as assigned by the stand-off annotation
+   * @param s  The beginning of the word in the corpus file.
+   *           Must be equal to or greater than {@code 0}.
+   * @param e  The end of the word in the corpus file.
+   *           Must be equal to or greater than {@code 0} and be greater than {@code s}.
+   * @param id The id as assigned by the stand-off annotation.
+   *           
+   * @throws IllegalArgumentException Thrown if one of the parameters are invalid.
    */
   public MascWord(int s, int e, int id) {
     super(s, e);
