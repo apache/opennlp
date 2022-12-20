@@ -267,12 +267,12 @@ public class LemmatizerME implements Lemmatizer {
     }
     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       LemmaSampleSequenceStream ss = new LemmaSampleSequenceStream(samples, contextGenerator);
-      EventModelSequenceTrainer trainer =
+      EventModelSequenceTrainer<LemmaSample> trainer =
           TrainerFactory.getEventModelSequenceTrainer(params, manifestInfoEntries);
       lemmatizerModel = trainer.train(ss);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
-      SequenceTrainer<LemmaSample> trainer = TrainerFactory.getSequenceModelTrainer(
+      SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
               params, manifestInfoEntries);
 
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array

@@ -182,7 +182,7 @@ public class ChunkerME implements Chunker {
       chunkerModel = trainer.train(es);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
-      SequenceTrainer<ChunkSample> trainer = TrainerFactory.getSequenceModelTrainer(
+      SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
           mlParams, manifestInfoEntries);
 
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array
