@@ -33,7 +33,8 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class ADSentenceSampleStreamFactory<P> extends
     LanguageSampleStreamFactory<SentenceSample, P> {
@@ -63,14 +64,13 @@ public class ADSentenceSampleStreamFactory<P> extends
     super(params);
   }
 
+  @Override
   public ObjectStream<SentenceSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
     language = params.getLang();
 
     boolean includeTitle = params.getIncludeTitles();
-
     InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
 
     ObjectStream<String> lineStream = null;

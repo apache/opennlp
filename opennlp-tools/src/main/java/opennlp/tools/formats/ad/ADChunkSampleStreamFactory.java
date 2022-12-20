@@ -36,7 +36,8 @@ import opennlp.tools.util.PlainTextByLineStream;
  * A Factory to create a Arvores Deitadas ChunkStream from the command line
  * utility.
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class ADChunkSampleStreamFactory<P> extends LanguageSampleStreamFactory<ChunkSample, P> {
 
@@ -71,14 +72,13 @@ public class ADChunkSampleStreamFactory<P> extends LanguageSampleStreamFactory<C
     super(params);
   }
 
+  @Override
   public ObjectStream<ChunkSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
     language = params.getLang();
 
     InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-
     ObjectStream<String> lineStream = null;
     try {
       lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
@@ -87,7 +87,6 @@ public class ADChunkSampleStreamFactory<P> extends LanguageSampleStreamFactory<C
     }
 
     ADChunkSampleStream sampleStream = new ADChunkSampleStream(lineStream);
-
     if (params.getStart() != null && params.getStart() > -1) {
       sampleStream.setStart(params.getStart());
     }

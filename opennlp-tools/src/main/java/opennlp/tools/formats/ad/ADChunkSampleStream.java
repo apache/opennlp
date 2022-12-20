@@ -18,7 +18,6 @@
 package opennlp.tools.formats.ad;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,6 @@ import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.TreeElement;
-import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -41,18 +39,19 @@ import opennlp.tools.util.StringUtil;
  * Approach to Portuguese Clause Identification', (Eraldo Fernandes, Cicero
  * Santos and Ruy Milidiú).<br>
  * <p>
- * Data can be found on this web site:<br>
- * http://www.linguateca.pt/floresta/corpus.html
+ * Data can be found on
+ * <a href="http://www.linguateca.pt/floresta/corpus.html">this web site</a>.
+ *
  * <p>
  * Information about the format:<br>
  * Susana Afonso.
- * "Árvores deitadas: Descrição do formato e das opções de análise na Floresta Sintáctica"
- * .<br>
+ * <a href="http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf">
+ *   "Árvores deitadas: Descrição do formato e das opções de análise na Floresta Sintáctica"</a>.
+ * <br>
  * 12 de Fevereiro de 2006.
- * http://www.linguateca.pt/documentos/Afonso2006ArvoresDeitadas.pdf
  * <p>
- * Detailed info about the NER tagset:
- * http://beta.visl.sdu.dk/visl/pt/info/portsymbol.html#semtags_names
+ * Detailed info about the
+ * <a href="http://beta.visl.sdu.dk/visl/pt/info/portsymbol.html#semtags_names">NER tagset</a>.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
@@ -68,28 +67,27 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
   public static final String OTHER = "O";
 
   /**
-   * Creates a new {@link NameSample} stream from a line stream, i.e.
-   * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
-   * {@link PlainTextByLineStream} object.
+   * Instantiates a {@link ADChunkSampleStream} stream from {@link ObjectStream<String>},
+   * that could be a {@link PlainTextByLineStream} object.
    *
-   * @param lineStream
-   *          a stream of lines as {@link String}
+   * @param lineStream An {@link ObjectStream<String>} as input.
    */
   public ADChunkSampleStream(ObjectStream<String> lineStream) {
     this.adSentenceStream = new ADSentenceStream(lineStream);
   }
 
+  /**
+   * Instantiates a {@link ADChunkSampleStream} stream from an {@link InputStreamFactory}.
+   *
+   * @param in The {@link InputStreamFactory} for the corpus.
+   * @param charsetName  The {@link java.nio.charset.Charset charset} to use
+   *                     for reading of the corpus.
+   */
   public ADChunkSampleStream(InputStreamFactory in, String charsetName) throws IOException {
-
-    try {
-      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-          in, charsetName));
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
+    this(new PlainTextByLineStream(in, charsetName));
   }
 
+  @Override
   public ChunkSample read() throws IOException {
 
     Sentence paragraph;
@@ -270,10 +268,12 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
     this.end = aEnd;
   }
 
+  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     adSentenceStream.reset();
   }
 
+  @Override
   public void close() throws IOException {
     adSentenceStream.close();
   }
