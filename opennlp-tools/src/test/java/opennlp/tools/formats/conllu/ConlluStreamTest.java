@@ -27,19 +27,14 @@ import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
-public class ConlluStreamTest {
+public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSample> {
 
   @Test
   void testParseTwoSentences() throws IOException {
-
-    InputStreamFactory streamFactory =
-        new ResourceAsStreamFactory(ConlluStreamTest.class, "de-ud-train-sample.conllu");
-
-    try (ObjectStream<ConlluSentence> stream = new ConlluStream(streamFactory)) {
+    try (ObjectStream<ConlluSentence> stream = getStream("de-ud-train-sample.conllu")) {
       ConlluSentence sent1 = stream.read();
 
       Assertions.assertEquals("train-s21", sent1.getSentenceIdComment());
@@ -61,10 +56,7 @@ public class ConlluStreamTest {
 
   @Test
   void testOptionalComments() throws IOException {
-    InputStreamFactory streamFactory =
-        new ResourceAsStreamFactory(ConlluStreamTest.class, "full-sample.conllu");
-
-    try (ObjectStream<ConlluSentence> stream = new ConlluStream(streamFactory)) {
+    try (ObjectStream<ConlluSentence> stream = getStream("full-sample.conllu")) {
       ConlluSentence sent1 = stream.read();
 
       Assertions.assertEquals("1", sent1.getSentenceIdComment());

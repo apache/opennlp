@@ -17,7 +17,6 @@
 
 package opennlp.tools.formats.brat;
 
-import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collections;
@@ -33,7 +32,7 @@ import opennlp.tools.sentdetect.NewlineSentenceDetector;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 
-public class BratNameSampleStreamTest {
+public class BratNameSampleStreamTest extends AbstractBratTest {
 
   private BratNameSampleStream createNameSampleWith(String nameContainsFilter,
                                                     Set<String> nameTypes) throws IOException {
@@ -41,11 +40,10 @@ public class BratNameSampleStreamTest {
     BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
-    File dir = new File(this.getClass().getResource("/opennlp/tools/formats/brat/").getFile());
     FileFilter fileFilter = pathname -> pathname.getName().contains(nameContainsFilter);
 
-    ObjectStream<BratDocument> bratDocumentStream = new BratDocumentStream(config, dir,
-        false, fileFilter);
+    ObjectStream<BratDocument> bratDocumentStream =
+            new BratDocumentStream(config, directory, false, fileFilter);
 
     return new BratNameSampleStream(new NewlineSentenceDetector(),
         WhitespaceTokenizer.INSTANCE, bratDocumentStream, nameTypes);

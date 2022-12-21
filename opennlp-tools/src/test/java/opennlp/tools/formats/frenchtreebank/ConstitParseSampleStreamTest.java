@@ -22,15 +22,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.formats.AbstractFormatTest;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
-public class ConstitParseSampleStreamTest {
+public class ConstitParseSampleStreamTest extends AbstractFormatTest {
 
-  private String[] sample1Tokens = new String[] {
+  private final String[] sample1Tokens = new String[] {
       "L'",
       "autonomie",
       "de",
@@ -80,30 +82,27 @@ public class ConstitParseSampleStreamTest {
       "."
   };
 
-  /**
-   * Reads sample1.xml into a byte array.
-   *
-   * @return byte array containing sample1.xml.
-   */
-  private static byte[] getSample1() throws IOException {
+  private ObjectStream<byte[]> sample;
+
+  @BeforeEach
+  public void setup() throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 
     byte[] buffer = new byte[1024];
     int length;
-    try (InputStream sampleIn =
-             ConstitParseSampleStreamTest.class.getResourceAsStream("sample1.xml")) {
+    try (InputStream sampleIn = getResourceStream("frenchtreebank/sample1.xml")) {
       while ((length = sampleIn.read(buffer)) > 0) {
         out.write(buffer, 0, length);
       }
     }
 
-    return out.toByteArray();
+    sample = ObjectStreamUtils.createObjectStream(out.toByteArray());
+    Assertions.assertNotNull(sample);
   }
 
   @Test
   void testThereIsExactlyOneSent() throws IOException {
-    try (ObjectStream<Parse> samples =
-             new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
+    try (ObjectStream<Parse> samples = new ConstitParseSampleStream(sample)) {
       Assertions.assertNotNull(samples.read());
       Assertions.assertNull(samples.read());
       Assertions.assertNull(samples.read());
@@ -113,8 +112,7 @@ public class ConstitParseSampleStreamTest {
   @Test
   void testTokensAreCorrect() throws IOException {
 
-    try (ObjectStream<Parse> samples =
-             new ConstitParseSampleStream(ObjectStreamUtils.createObjectStream(getSample1()))) {
+    try (ObjectStream<Parse> samples = new ConstitParseSampleStream(sample)) {
       Parse p = samples.read();
 
       Parse[] tagNodes = p.getTagNodes();

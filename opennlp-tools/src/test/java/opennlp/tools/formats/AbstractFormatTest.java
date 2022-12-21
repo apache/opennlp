@@ -15,28 +15,24 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats.muc;
+package opennlp.tools.formats;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
+import java.io.InputStream;
+import java.net.URL;
 
-import org.junit.jupiter.api.Test;
+public abstract class AbstractFormatTest {
 
-import opennlp.tools.formats.AbstractFormatTest;
+  protected static final String FORMATS_BASE_DIR = "/opennlp/tools/formats/";
 
-public class SgmlParserTest extends AbstractFormatTest {
-
-  @Test
-  void testParse1() throws IOException {
-
-    try (Reader in = new InputStreamReader(getResourceStream("muc/parsertest1.sgml"),
-            StandardCharsets.UTF_8)) {
-      SgmlParser parser = new SgmlParser();
-      parser.parse(in, new SgmlParser.ContentHandler() {
-      });
-    }
+  protected URL getResource(String resource) {
+    return AbstractFormatTest.class.getResource(FORMATS_BASE_DIR + resource);
   }
 
+  protected URL getResourceWithoutPrefix(String resource) {
+    return getClass().getClassLoader().getResource(resource);
+  }
+
+  protected InputStream getResourceStream(String resource) {
+    return AbstractFormatTest.class.getResourceAsStream(FORMATS_BASE_DIR + resource);
+  }
 }

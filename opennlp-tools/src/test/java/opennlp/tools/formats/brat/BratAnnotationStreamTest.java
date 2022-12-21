@@ -17,21 +17,19 @@
 
 package opennlp.tools.formats.brat;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.formats.AbstractFormatTest;
 import opennlp.tools.util.ObjectStream;
 
-public class BratAnnotationStreamTest {
+public class BratAnnotationStreamTest extends AbstractFormatTest {
 
   private ObjectStream<BratAnnotation> creatBratAnnotationStream(
       AnnotationConfiguration conf, String file) {
-
-    InputStream in = BratAnnotationStreamTest.class.getResourceAsStream(file);
-    return new BratAnnotationStream(conf, "testing", in);
+    return new BratAnnotationStream(conf, "testing", getResourceStream(file));
   }
 
   static void addEntityTypes(Map<String, String> typeToClassMap) {
@@ -49,7 +47,7 @@ public class BratAnnotationStreamTest {
     AnnotationConfiguration annConfig = new AnnotationConfiguration(typeToClassMap);
 
     ObjectStream<BratAnnotation> annStream = creatBratAnnotationStream(annConfig,
-        "/opennlp/tools/formats/brat/voa-with-entities.ann");
+        "brat/voa-with-entities.ann");
 
     // TODO: Test if we get the entities ... we expect!
 
@@ -68,7 +66,7 @@ public class BratAnnotationStreamTest {
     AnnotationConfiguration annConfig = new AnnotationConfiguration(typeToClassMap);
 
     ObjectStream<BratAnnotation> annStream = creatBratAnnotationStream(annConfig,
-        "/opennlp/tools/formats/brat/voa-with-relations.ann");
+        "brat/voa-with-relations.ann");
 
     // TODO: Test if we get the entities ... we expect!
 

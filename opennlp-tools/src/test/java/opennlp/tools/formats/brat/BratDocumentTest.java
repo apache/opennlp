@@ -25,7 +25,9 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class BratDocumentTest {
+import opennlp.tools.formats.AbstractFormatTest;
+
+public class BratDocumentTest extends AbstractFormatTest {
 
   @Test
   void testDocumentWithEntitiesParsing() throws IOException {
@@ -34,11 +36,8 @@ public class BratDocumentTest {
     BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
-    InputStream txtIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/voa-with-entities.txt");
-
-    InputStream annIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/voa-with-entities.ann");
+    InputStream txtIn = getResourceStream("brat/voa-with-entities.txt");
+    InputStream annIn = getResourceStream("brat/voa-with-entities.ann");
 
     BratDocument doc = BratDocument.parseDocument(config, "voa-with-entities", txtIn, annIn);
 
@@ -72,11 +71,8 @@ public class BratDocumentTest {
     BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
-    InputStream txtIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/opennlp-1193.txt");
-
-    InputStream annIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/opennlp-1193.ann");
+    InputStream txtIn = getResourceStream("brat/opennlp-1193.txt");
+    InputStream annIn = getResourceStream("brat/opennlp-1193.ann");
 
     BratDocument doc = BratDocument.parseDocument(config, "opennlp-1193", txtIn, annIn);
 

@@ -24,18 +24,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
-public class ConllXPOSSampleStreamTest {
+public class ConllXPOSSampleStreamTest extends AbstractSampleStreamTest {
 
   @Test
   void testParsingSample() throws IOException {
 
-    InputStreamFactory in = new ResourceAsStreamFactory(ConllXPOSSampleStreamTest.class,
-        "/opennlp/tools/formats/conllx.sample");
-
-    try (ObjectStream<POSSample> sampleStream = new ConllXPOSSampleStream(in, StandardCharsets.UTF_8)) {
+    try (ObjectStream<POSSample> sampleStream = new ConllXPOSSampleStream(
+            getFactory("conllx.sample"), StandardCharsets.UTF_8)) {
       POSSample a = sampleStream.read();
 
       String[] aSentence = a.getSentence();

@@ -23,19 +23,17 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.postag.POSSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
-public class ConlluPOSSampleStreamTest {
+public class ConlluPOSSampleStreamTest extends AbstractConlluSampleStreamTest<POSSample> {
+
   @Test
   void testParseContraction() throws IOException {
-    InputStreamFactory streamFactory =
-        new ResourceAsStreamFactory(ConlluStreamTest.class, "pt_br-ud-sample.conllu");
+    ConlluStream cStream = getStream("pt_br-ud-sample.conllu");
+    Assertions.assertNotNull(cStream);
 
-    try (ObjectStream<POSSample> stream = new ConlluPOSSampleStream(
-        new ConlluStream(streamFactory), ConlluTagset.U)) {
+    try (ObjectStream<POSSample> stream = new ConlluPOSSampleStream(cStream, ConlluTagset.U)) {
 
       POSSample expected = POSSample.parse("Numa_ADP+DET reunião_NOUN entre_ADP " +
           "representantes_NOUN da_ADP+DET Secretaria_PROPN da_ADP+DET Criança_PROPN do_ADP+DET " +
@@ -55,11 +53,10 @@ public class ConlluPOSSampleStreamTest {
 
   @Test
   void testParseSpanishS300() throws IOException {
-    InputStreamFactory streamFactory =
-        new ResourceAsStreamFactory(ConlluStreamTest.class, "es-ud-sample.conllu");
-
-    try (ObjectStream<POSSample> stream = new ConlluPOSSampleStream(new ConlluStream(streamFactory),
-        ConlluTagset.U)) {
+    ConlluStream cStream = getStream("es-ud-sample.conllu");
+    Assertions.assertNotNull(cStream);
+    
+    try (ObjectStream<POSSample> stream = new ConlluPOSSampleStream(cStream, ConlluTagset.U)) {
 
       POSSample expected1 = POSSample.parse(
           "Digámoslo_VERB+PRON+PRON claramente_ADV ,_PUNCT la_DET insurgencia_NOUN se_PRON " +

@@ -17,11 +17,11 @@
 
 package opennlp.tools.formats.masc;
 
-import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.namefind.NameFinderME;
@@ -33,18 +33,22 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
-public class MascNamedEntitySampleStreamTest {
+public class MascNamedEntitySampleStreamTest extends AbstractMascSampleStreamTest {
+
+  private MascNamedEntitySampleStream stream;
+
+  @BeforeEach
+  public void setup() throws IOException {
+    super.setup();
+    FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
+    stream = new MascNamedEntitySampleStream(
+            new MascDocumentStream(directory, true, fileFilter));
+    Assertions.assertNotNull(stream);
+  }
 
   @Test
   void read() {
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascNamedEntitySampleStream stream;
-      stream = new MascNamedEntitySampleStream(
-          new MascDocumentStream(directory, true, fileFilter));
-
       NameSample s = stream.read();
 
       String[] expectedTokens = {"This", "is", "a", "test", "Sentence", "."};
@@ -54,9 +58,7 @@ public class MascNamedEntitySampleStreamTest {
       Span[] returnedTags = s.getNames();
       // check the start/end positions
       Assertions.assertEquals(expectedTags.length, returnedTags.length);
-      for (int i = 0; i < returnedTags.length; i++) {
-        Assertions.assertTrue(expectedTags[i].equals(returnedTags[i]));
-      }
+      Assertions.assertArrayEquals(expectedTags, returnedTags);
 
       s = stream.read();
       expectedTokens = new String[] {"This", "is", "'nother", "test", "sentence", "."};
@@ -74,13 +76,6 @@ public class MascNamedEntitySampleStreamTest {
   @Test
   void close() {
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascNamedEntitySampleStream stream;
-      stream = new MascNamedEntitySampleStream(
-          new MascDocumentStream(directory, true, fileFilter));
-
       stream.close();
       NameSample s = stream.read();
     } catch (IOException e) {
@@ -93,13 +88,6 @@ public class MascNamedEntitySampleStreamTest {
   @Test
   void reset() {
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascNamedEntitySampleStream stream;
-      stream = new MascNamedEntitySampleStream(
-          new MascDocumentStream(directory, true, fileFilter));
-
       NameSample s = stream.read();
       s = stream.read();
       s = stream.read();
@@ -115,9 +103,7 @@ public class MascNamedEntitySampleStreamTest {
       Span[] returnedTags = s.getNames();
       // check the start/end positions
       Assertions.assertEquals(expectedTags.length, returnedTags.length);
-      for (int i = 0; i < returnedTags.length; i++) {
-        Assertions.assertTrue(expectedTags[i].equals(returnedTags[i]));
-      }
+      Assertions.assertArrayEquals(expectedTags, returnedTags);
 
     } catch (IOException e) {
       Assertions.fail("IO Exception: " + e.getMessage());
@@ -127,19 +113,15 @@ public class MascNamedEntitySampleStreamTest {
   @Test
   void train() {
     try {
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
       FileFilter fileFilter = pathname -> pathname.getName().contains("");
       ObjectStream<NameSample> trainSample = new MascNamedEntitySampleStream(
-          new MascDocumentStream(directory,
-              true, fileFilter));
+          new MascDocumentStream(directory, true, fileFilter));
 
       System.out.println("Training");
-      TokenNameFinderModel model = null;
       TrainingParameters trainingParameters = new TrainingParameters();
       trainingParameters.put(TrainingParameters.ITERATIONS_PARAM, 100);
 
-      model = NameFinderME.train("en", null, trainSample,
+      TokenNameFinderModel model = NameFinderME.train("en", null, trainSample,
           trainingParameters, new TokenNameFinderFactory());
 
       ObjectStream<NameSample> testNames = new MascNamedEntitySampleStream(

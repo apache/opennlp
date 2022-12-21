@@ -23,16 +23,16 @@ import java.io.InputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class NKJPSegmentationDocumentTest {
+import opennlp.tools.formats.AbstractFormatTest;
+
+public class NKJPSegmentationDocumentTest extends AbstractFormatTest {
   @Test
   void testParsingSimpleDoc() throws IOException {
-    try (InputStream nkjpSegXmlIn =
-             NKJPSegmentationDocumentTest.class.getResourceAsStream("ann_segmentation.xml")) {
+    try (InputStream nkjpSegXmlIn = getResourceStream("nkjp/ann_segmentation.xml")) {
 
       NKJPSegmentationDocument doc = NKJPSegmentationDocument.parse(nkjpSegXmlIn);
 
       Assertions.assertEquals(1, doc.getSegments().size());
-
       Assertions.assertEquals(7, doc.getSegments().get("segm_1.1-s").size());
 
       String src = "To krótkie zdanie w drugim akapicie.";

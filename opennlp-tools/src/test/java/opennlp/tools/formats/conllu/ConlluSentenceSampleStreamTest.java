@@ -22,21 +22,18 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
-public class ConlluSentenceSampleStreamTest {
+public class ConlluSentenceSampleStreamTest extends AbstractConlluSampleStreamTest<SentenceSample> {
 
   @Test
   void testParseTwoSentences() throws IOException {
-    InputStreamFactory streamFactory =
-        new ResourceAsStreamFactory(ConlluStreamTest.class, "de-ud-train-sample.conllu");
+    ConlluStream cStream = getStream("de-ud-train-sample.conllu");
+    Assertions.assertNotNull(cStream);
 
-    try (ObjectStream<SentenceSample> stream =
-             new ConlluSentenceSampleStream(new ConlluStream(streamFactory), 1)) {
+    try (ObjectStream<SentenceSample> stream = new ConlluSentenceSampleStream(cStream, 1)) {
 
       SentenceSample sample1 = stream.read();
 
@@ -54,8 +51,10 @@ public class ConlluSentenceSampleStreamTest {
       Assertions.assertNull(stream.read(), "Stream must be exhausted");
     }
 
+    cStream = getStream("de-ud-train-sample.conllu");
+    Assertions.assertNotNull(cStream);
     try (ObjectStream<SentenceSample> stream =
-             new ConlluSentenceSampleStream(new ConlluStream(streamFactory), 3)) {
+             new ConlluSentenceSampleStream(cStream, 3)) {
       SentenceSample sample = stream.read();
 
       Assertions.assertEquals("Fachlich kompetent, sehr gute Beratung und ein freundliches Team."
