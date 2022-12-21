@@ -17,9 +17,7 @@
 
 package opennlp.tools.formats.ad;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,20 +44,18 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   private boolean isSameText;
   private boolean isSamePara;
   private Sentence sent;
-  private boolean isIncludeTitles = true;
+  private final boolean isIncludeTitles;
   private boolean isTitle;
 
   private final char[] ptEosCharacters;
 
   /**
-   * Creates a new {@link SentenceSample} stream from a line stream, i.e.
-   * {@link ObjectStream}&lt;{@link String}&gt;, that could be a
-   * {@link PlainTextByLineStream} object.
+   * Initializes a new {@link ADSentenceSampleStream} from a {@link ObjectStream<String>},
+   * that could be a {@link PlainTextByLineStream} object.
    *
-   * @param lineStream
-   *          a stream of lines as {@link String}
-   * @param includeHeadlines
-   *          if true will output the sentences marked as news headlines
+   * @param lineStream A stream of lines as {@link String}.
+   * @param includeHeadlines If {@code true} will output the sentences marked
+   *                         as news headlines.
    */
   public ADSentenceSampleStream(ObjectStream<String> lineStream, boolean includeHeadlines) {
     this.adSentenceStream = new ADSentenceStream(lineStream);
@@ -69,30 +65,22 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   }
 
   /**
-   * Creates a new {@link SentenceSample} stream from a {@link FileInputStream}
+   * Initializes a new {@link ADSentenceSampleStream}.
    *
-   * @param in
-   *          input stream from the corpus
-   * @param charsetName
-   *          the charset to use while reading the corpus
-   * @param includeHeadlines
-   *          if true will output the sentences marked as news headlines
+   * @param in The {@link InputStreamFactory} for the corpus.
+   * @param charsetName The {@link java.nio.charset.Charset charset} to use
+   *                    for reading of the corpus.
+   * @param includeHeadlines If {@code true} will output the sentences marked
+   *                         as news headlines.
+   * @throws IOException Thrown if IO errors occurred.
    */
-  public ADSentenceSampleStream(InputStreamFactory in, String charsetName,
-      boolean includeHeadlines) throws IOException {
-    try {
-      this.adSentenceStream = new ADSentenceStream(new PlainTextByLineStream(
-          in, charsetName));
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
-    ptEosCharacters = Factory.ptEosCharacters;
-    Arrays.sort(ptEosCharacters);
-    this.isIncludeTitles = includeHeadlines;
+  public ADSentenceSampleStream(InputStreamFactory in, String charsetName, boolean includeHeadlines)
+          throws IOException {
+    this(new PlainTextByLineStream(in, charsetName), includeHeadlines);
   }
 
   // The Arvores Deitadas Corpus has information about texts and paragraphs.
+  @Override
   public SentenceSample read() throws IOException {
 
     if (sent == null) {
@@ -131,8 +119,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
       doc = document.toString();
     }
 
-    return new SentenceSample(doc,
-        sentences.toArray(new Span[sentences.size()]));
+    return new SentenceSample(doc, sentences.toArray(new Span[sentences.size()]));
   }
 
   private boolean hasPunctuation(String text) {
@@ -145,14 +132,14 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   }
 
   // there are some different types of metadata depending on the corpus.
-  // todo: merge this patterns
-  private Pattern meta1 = Pattern
+  // TODO Merge this patterns
+  private static final Pattern META_1 = Pattern
       .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
 
   private void updateMeta() {
     if (this.sent != null) {
       String meta = this.sent.getMetadata();
-      Matcher m = meta1.matcher(meta);
+      Matcher m = META_1.matcher(meta);
       int currentText;
       int currentPara;
       if (m.matches()) {
@@ -178,10 +165,12 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     }
   }
 
+  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     adSentenceStream.reset();
   }
 
+  @Override
   public void close() throws IOException {
     adSentenceStream.close();
   }

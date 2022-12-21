@@ -22,8 +22,21 @@ import opennlp.tools.util.BeamSearchContextGenerator;
 
 
 /**
- * The interface for a context generator for the POS Tagger.
+ * Interface for a {@link BeamSearchContextGenerator} used in POS tagging.
  */
-public interface  POSContextGenerator extends BeamSearchContextGenerator<String> {
-  String[] getContext(int pos, String[] tokens, String[] prevTags, Object[] ac);
+public interface POSContextGenerator extends BeamSearchContextGenerator<String> {
+
+  /**
+   * Returns the context for making a postag decision at the specified token {@code index}
+   * given the specified {@code tokens} and previous {@code tags}.
+   *
+   * @param index The index of the token for which the context is provided.
+   * @param tokens The token sequence representing a sentence.
+   * @param prevTags The tags assigned to the previous words in the sentence.
+   * @param additionalContext The context for additional information.
+   *
+   * @return The context for making a postag decision at the specified token {@code index}
+   *     given the specified {@code tokens} and previous {@code tags}.
+   */
+  String[] getContext(int index, String[] tokens, String[] prevTags, Object[] additionalContext);
 }

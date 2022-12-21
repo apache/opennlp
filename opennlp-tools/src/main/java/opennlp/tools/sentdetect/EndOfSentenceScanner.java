@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Scans Strings, StringBuffers, and char[] arrays for the offsets of
+ * Scans {@link CharSequence}, {@link StringBuffer}, and {@code char[]} for the offsets of
  * sentence ending characters.
  *
  * <p>Implementations of this interface can use regular expressions,
@@ -46,17 +46,17 @@ public interface EndOfSentenceScanner {
    * The receiver scans the specified string for sentence ending characters and
    * returns their offsets.
    *
-   * @param s a {@link String} value
-   * @return a {@link List} of Integer objects.
+   * @param s A {@link CharSequence} to be scanned.
+   * @return A {@link List} of Integer objects.
    */
-  List<Integer> getPositions(String s);
+  List<Integer> getPositions(CharSequence s);
 
   /**
    * The receiver scans {@code buf} for sentence ending characters and
    * returns their offsets.
    *
-   * @param buf a {@link StringBuffer} value
-   * @return a {@link List} of Integer objects.
+   * @param buf A {@link StringBuffer} to be scanned.
+   * @return A {@link List} of Integer objects.
    */
   List<Integer> getPositions(StringBuffer buf);
 
@@ -64,8 +64,8 @@ public interface EndOfSentenceScanner {
    * The receiver scans {@code cbuf} for sentence ending characters and
    * returns their offsets.
    *
-   * @param cbuf a {@code char[]} value
-   * @return a {@link List} of Integer objects.
+   * @param cbuf A {@code char[]} to be scanned.
+   * @return A {@link List} of Integer objects.
    */
   List<Integer> getPositions(char[] cbuf);
 }

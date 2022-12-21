@@ -29,12 +29,12 @@ import opennlp.tools.util.Span;
 public class NewlineSentenceDetector implements SentenceDetector {
 
   @Override
-  public String[] sentDetect(String s) {
+  public String[] sentDetect(CharSequence s) {
     return Span.spansToStrings(sentPosDetect(s), s);
   }
 
   @Override
-  public Span[] sentPosDetect(String s) {
+  public Span[] sentPosDetect(CharSequence s) {
 
     List<Span> sentences = new ArrayList<>();
 

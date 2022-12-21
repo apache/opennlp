@@ -45,13 +45,12 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
- * The factory that provides POS Tagger default implementations and resources
+ * The factory that provides {@link POSTagger} default implementations and resources.
  */
 public class POSTaggerFactory extends BaseToolFactory {
 
   private static final String TAG_DICTIONARY_ENTRY_NAME = "tags.tagdict";
   private static final String NGRAM_DICTIONARY_ENTRY_NAME = "ngram.dictionary";
-
 
   protected Dictionary ngramDictionary;
   private byte[] featureGeneratorBytes;
@@ -59,30 +58,19 @@ public class POSTaggerFactory extends BaseToolFactory {
   protected TagDictionary posDictionary;
 
   /**
-   * Creates a {@link POSTaggerFactory} that provides the default implementation
+   * Initializes a {@link POSTaggerFactory} that provides the default implementation
    * of the resources.
    */
   public POSTaggerFactory() {
   }
 
   /**
-   * Creates a {@link POSTaggerFactory}. Use this constructor to
-   * programmatically create a factory.
+   * Initializes a {@link POSTaggerFactory} from a given set of the resources.
    *
-   * @param ngramDictionary
-   * @param posDictionary
-   *
-   * @deprecated this constructor is here for backward compatibility and
-   *             is not functional anymore in the training of 1.8.x series models
+   * @param featureGeneratorBytes The bytes for feature generation.
+   * @param resources Additional resources as key-value map.
+   * @param posDictionary A {@link TagDictionary} used for the new instance.
    */
-  @Deprecated
-  public POSTaggerFactory(Dictionary ngramDictionary, TagDictionary posDictionary) {
-    this.init(ngramDictionary, posDictionary);
-
-    // TODO: This could be made functional by creating some default feature generation
-    // which uses the dictionary ...
-  }
-
   public POSTaggerFactory(byte[] featureGeneratorBytes, final Map<String, Object> resources,
                           TagDictionary posDictionary) {
     this.featureGeneratorBytes = featureGeneratorBytes;
@@ -95,8 +83,19 @@ public class POSTaggerFactory extends BaseToolFactory {
     this.posDictionary = posDictionary;
   }
 
+
+  // reduced visibility to ensure deprecation is respected in future versions
+  @Deprecated
+  POSTaggerFactory(Dictionary ngramDictionary, TagDictionary posDictionary) {
+    this.init(ngramDictionary, posDictionary);
+
+    // TODO: This could be made functional by creating some default feature generation
+    // which uses the dictionary ...
+  }
+
+  // reduced visibility to ensure deprecation is respected in future versions
   @Deprecated // will be removed when only 8 series models are supported
-  protected void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
+  void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
     this.ngramDictionary = ngramDictionary;
     this.posDictionary = posDictionary;
   }
@@ -133,11 +132,11 @@ public class POSTaggerFactory extends BaseToolFactory {
   /**
    * Creates the {@link AdaptiveFeatureGenerator}. Usually this
    * is a set of generators contained in the {@link AggregatedFeatureGenerator}.
-   *
+   * <p>
    * Note:
    * The generators are created on every call to this method.
    *
-   * @return the feature generator or null if there is no descriptor in the model
+   * @return the feature generator or {@code null} if there is no descriptor in the model
    */
   public AdaptiveFeatureGenerator createFeatureGenerators() {
 
@@ -207,11 +206,27 @@ public class POSTaggerFactory extends BaseToolFactory {
     return artifactMap;
   }
 
+  /**
+   * Initializes a {@link TagDictionary} from a {@link File dictionary file}.
+   *
+   * @param dictionary The {@link File} used for creating the dictionary.
+   * @return A valid {@link TagDictionary} ready for use.
+   *
+   * @throws IOException Thrown if IO errors occurred during creation.
+   */
   public TagDictionary createTagDictionary(File dictionary)
       throws IOException {
     return createTagDictionary(new FileInputStream(dictionary));
   }
 
+  /**
+   * Initializes a {@link TagDictionary} from a {@link InputStream dictionary stream}.
+   *
+   * @param in The {@link InputStream} used for creating the dictionary.
+   * @return A valid {@link TagDictionary} ready for use.
+   *
+   * @throws IOException Thrown if IO errors occurred during creation.
+   */
   public TagDictionary createTagDictionary(InputStream in)
       throws IOException {
     return POSDictionary.create(in);
@@ -225,9 +240,10 @@ public class POSTaggerFactory extends BaseToolFactory {
     this.posDictionary = dictionary;
   }
 
+  /**
+   * @return The key-value based resources map, or an empty map.
+   */
   protected Map<String, Object> getResources() {
-
-
     if (resources != null) {
       return resources;
     }
@@ -235,39 +251,40 @@ public class POSTaggerFactory extends BaseToolFactory {
     return Collections.emptyMap();
   }
 
+  /**
+   * @return The feature generator bytes used.
+   */
   protected byte[] getFeatureGenerator() {
     return featureGeneratorBytes;
   }
 
+  /**
+   * @return The {@link TagDictionary} used.
+   */
   public TagDictionary getTagDictionary() {
     if (this.posDictionary == null && artifactProvider != null)
       this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
     return this.posDictionary;
   }
 
-  /**
-   * @deprecated this will be reduced in visibility and later removed
-   */
-  @Deprecated
-  public Dictionary getDictionary() {
+  @Deprecated // will be removed when only 8 series models are supported
+  private Dictionary getDictionary() {
     if (this.ngramDictionary == null && artifactProvider != null)
       this.ngramDictionary = artifactProvider.getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);
     return this.ngramDictionary;
   }
 
-  @Deprecated
-  public void setDictionary(Dictionary ngramDict) {
-    if (artifactProvider != null) {
-      throw new IllegalStateException(
-          "Can not set ngram dictionary while using artifact provider.");
-    }
-    this.ngramDictionary = ngramDict;
-  }
-
+  /**
+   * @return The {@link POSContextGenerator} with a default cache size of {@code 0}.
+   */
   public POSContextGenerator getPOSContextGenerator() {
     return getPOSContextGenerator(0);
   }
 
+  /**
+   * @param cacheSize Must be greater than or equal to {@code 0}.
+   * @return The {@link POSContextGenerator} configured with the given {@code cacheSize}.
+   */
   public POSContextGenerator getPOSContextGenerator(int cacheSize) {
 
     if (artifactProvider != null) {
@@ -282,9 +299,11 @@ public class POSTaggerFactory extends BaseToolFactory {
     }
     
     return new ConfigurablePOSContextGenerator(cacheSize, createFeatureGenerators());
-
   }
 
+  /**
+   * @return The {@link SequenceValidator} used.
+   */
   public SequenceValidator<String> getSequenceValidator() {
     return new DefaultPOSSequenceValidator(getTagDictionary());
   }
@@ -308,8 +327,8 @@ public class POSTaggerFactory extends BaseToolFactory {
     }
   }
 
-  protected void validatePOSDictionary(POSDictionary posDict,
-      AbstractModel posModel) throws InvalidFormatException {
+  protected void validatePOSDictionary(POSDictionary posDict, AbstractModel posModel)
+          throws InvalidFormatException {
     Set<String> dictTags = new HashSet<>();
 
     for (String word : posDict) {
@@ -363,11 +382,11 @@ public class POSTaggerFactory extends BaseToolFactory {
     if (ngramDictEntry != null && !(ngramDictEntry instanceof Dictionary)) {
       throw new InvalidFormatException("NGram dictionary has wrong type!");
     }
-
   }
 
+  // reduced visibility to ensure deprecation is respected in future versions
   @Deprecated
-  public static POSTaggerFactory create(String subclassName,
+  static POSTaggerFactory create(String subclassName,
       Dictionary ngramDictionary, TagDictionary posDictionary)
       throws InvalidFormatException {
     if (subclassName == null) {
@@ -386,6 +405,21 @@ public class POSTaggerFactory extends BaseToolFactory {
     }
   }
 
+  /**
+   * Instantiates a {@link POSTaggerFactory} via a given {@code subclassName}.
+   *
+   * @param subclassName The class name used for instantiation. If {@code null}, an
+   *                     instance of {@link POSTaggerFactory} will be returned
+   *                     per default. Otherwise, the {@link ExtensionLoader} mechanism
+   *                     is applied to load the requested {@code subclassName}.
+   * @param featureGeneratorBytes The bytes for feature generation.
+   * @param resources Additional resources as key-value map.
+   * @param posDictionary A {@link TagDictionary} used for the new instance.
+   * @return @return A valid {@link POSTaggerFactory} instance.
+   * 
+   * @throws InvalidFormatException Thrown if the {@link ExtensionLoader} mechanism failed to
+   *                                load the factory via the {@code subclassName}.
+   */
   public static POSTaggerFactory create(String subclassName, byte[] featureGeneratorBytes,
                                         Map<String, Object> resources, TagDictionary posDictionary)
       throws InvalidFormatException {
@@ -394,12 +428,12 @@ public class POSTaggerFactory extends BaseToolFactory {
 
     if (subclassName == null) {
       // will create the default factory
-      theFactory = new POSTaggerFactory(null, posDictionary);
+      theFactory = new POSTaggerFactory();
+      theFactory.init(featureGeneratorBytes, resources, posDictionary);
     }
     else {
       try {
-        theFactory = ExtensionLoader.instantiateExtension(
-            POSTaggerFactory.class, subclassName);
+        theFactory = ExtensionLoader.instantiateExtension(POSTaggerFactory.class, subclassName);
       } catch (Exception e) {
         String msg = "Could not instantiate the " + subclassName
             + ". The initialization throw an exception.";
@@ -412,6 +446,9 @@ public class POSTaggerFactory extends BaseToolFactory {
     return theFactory;
   }
 
+  /**
+   * @return An empty, case-sensitive {@link TagDictionary}.
+   */
   public TagDictionary createEmptyTagDictionary() {
     this.posDictionary = new POSDictionary(true);
     return this.posDictionary;

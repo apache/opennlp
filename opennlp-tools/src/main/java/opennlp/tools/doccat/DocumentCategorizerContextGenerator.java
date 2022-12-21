@@ -22,12 +22,19 @@ import java.util.LinkedList;
 import java.util.Map;
 
 /**
- * Context generator for document categorizer
+ * Context generator for {@link DocumentCategorizer}.
+ *
+ * @see DocumentCategorizer
  */
 class DocumentCategorizerContextGenerator {
 
-  private FeatureGenerator[] mFeatureGenerators;
+  private final FeatureGenerator[] mFeatureGenerators;
 
+  /**
+   * Instantiates a {@link DocumentCategorizerContextGenerator} instance.
+   *
+   * @param featureGenerators The {@link FeatureGenerator featureGenerators} to use.
+   */
   DocumentCategorizerContextGenerator(FeatureGenerator... featureGenerators) {
     mFeatureGenerators = featureGenerators;
   }

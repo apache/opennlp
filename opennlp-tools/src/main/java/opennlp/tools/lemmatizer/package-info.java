@@ -16,6 +16,6 @@
  */
 
 /**
- * Package related with the lemmatizer tool
+ * Package related to the lemmatizer functionality.
  */
 package opennlp.tools.lemmatizer;

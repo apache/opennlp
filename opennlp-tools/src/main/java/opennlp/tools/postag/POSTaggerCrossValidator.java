@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
@@ -36,21 +35,29 @@ public class POSTaggerCrossValidator {
   private byte[] featureGeneratorBytes;
   private Map<String, Object> resources;
 
-  private Mean wordAccuracy = new Mean();
-  private POSTaggerEvaluationMonitor[] listeners;
+  private final Mean wordAccuracy = new Mean();
+  private final POSTaggerEvaluationMonitor[] listeners;
 
   /* this will be used to load the factory after the ngram dictionary was created */
   private String factoryClassName;
   /* user can also send a ready to use factory */
   private POSTaggerFactory factory;
 
-  private Integer tagdicCutoff = null;
+  private final Integer tagdicCutoff;
   private File tagDictionaryFile;
 
   /**
-   * Creates a {@link POSTaggerCrossValidator} that builds a ngram dictionary
-   * dynamically. It instantiates a sub-class of {@link POSTaggerFactory} using
+   * Initializes a {@link POSTaggerCrossValidator} that builds a ngram dictionary
+   * dynamically. It instantiates a subclass of {@link POSTaggerFactory} using
    * the tag and the ngram dictionaries.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param trainParam The {@link TrainingParameters} for the context of cross validation.
+   * @param tagDictionary The {@link File} that references the a {@link TagDictionary}.
+   * @param featureGeneratorBytes The bytes for feature generation.
+   * @param resources  Additional resources as key-value map.
+   * @param factoryClass The class name used for factory instantiation.
+   * @param listeners The {@link POSTaggerEvaluationMonitor evaluation listeners}.
    */
   public POSTaggerCrossValidator(String languageCode,
                                  TrainingParameters trainParam, File tagDictionary,
@@ -69,8 +76,12 @@ public class POSTaggerCrossValidator {
 
 
   /**
-   * Creates a {@link POSTaggerCrossValidator} using the given
-   * {@link POSTaggerFactory}.
+   * Creates a {@link POSTaggerCrossValidator} using the given {@link POSTaggerFactory}.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param trainParam The {@link TrainingParameters} for the context of cross validation.
+   * @param factory The {@link POSTaggerFactory} to be used.
+   * @param listeners The {@link POSTaggerEvaluationMonitor evaluation listeners}.
    */
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSTaggerFactory factory,
@@ -85,12 +96,10 @@ public class POSTaggerCrossValidator {
   /**
    * Starts the evaluation.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
+   * @param samples The {@link ObjectStream} of {@link POSSample samples} to train and test with.
+   * @param nFolds Number of folds. It must be greater than zero.
    *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred.
    */
   public void evaluate(ObjectStream<POSSample> samples, int nFolds) throws IOException {
 
@@ -101,7 +110,6 @@ public class POSTaggerCrossValidator {
 
       CrossValidationPartitioner.TrainingSampleStream<POSSample> trainingSampleStream = partitioner
           .next();
-
 
       if (this.tagDictionaryFile != null
           && this.factory.getTagDictionary() == null) {
@@ -147,26 +155,19 @@ public class POSTaggerCrossValidator {
   }
 
   /**
-   * Retrieves the accuracy for all iterations.
-   *
-   * @return the word accuracy
+   * @return Retrieves the accuracy for all iterations.
    */
   public double getWordAccuracy() {
     return wordAccuracy.mean();
   }
 
   /**
-   * Retrieves the number of words which where validated
-   * over all iterations. The result is the amount of folds
-   * multiplied by the total number of words.
-   *
-   * @return the word count
+   * @return Retrieves the number of words which where validated
+   *         over all iterations. The result is the amount of folds
+   *         multiplied by the total number of words.
    */
   public long getWordCount() {
     return wordAccuracy.count();
   }
-
-  private static POSTaggerFactory create(Dictionary ngram, TagDictionary pos) {
-    return new POSTaggerFactory(ngram, pos);
-  }
+  
 }

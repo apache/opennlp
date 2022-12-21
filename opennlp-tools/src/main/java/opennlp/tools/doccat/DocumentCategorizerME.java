@@ -33,23 +33,18 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Maxent implementation of {@link DocumentCategorizer}.
+ * A Max-Ent based implementation of {@link DocumentCategorizer}.
  */
 public class DocumentCategorizerME implements DocumentCategorizer {
+  
+  private final DoccatModel model;
+  private final DocumentCategorizerContextGenerator mContextGenerator;
 
   /**
-   * Shared default thread safe feature generator.
-   */
-  private static FeatureGenerator defaultFeatureGenerator = new BagOfWordsFeatureGenerator();
-
-  private DoccatModel model;
-  private DocumentCategorizerContextGenerator mContextGenerator;
-
-  /**
-   * Initializes the current instance with a doccat model. Default feature
-   * generation is used.
+   * Initializes a {@link DocumentCategorizerME} instance with a doccat model.
+   * Default feature generation is used.
    *
-   * @param model the doccat model
+   * @param model the {@link DoccatModel} to be used for categorization.
    */
   public DocumentCategorizerME(DoccatModel model) {
     this.model = model;
@@ -58,34 +53,24 @@ public class DocumentCategorizerME implements DocumentCategorizer {
   }
 
   /**
-   * Categorize the given text provided as tokens along with
-   * the provided extra information
+   * Categorize the given {@code text} provided as tokens along with
+   * the provided extra information.
    *
-   * @param text text tokens to categorize
-   * @param extraInformation additional information
+   * @param text The text tokens to categorize.
+   * @param extraInformation Additional information for context to be used by the feature generator.
+   * @return The per category probabilities.
    */
   @Override
   public double[] categorize(String[] text, Map<String, Object> extraInformation) {
     return model.getMaxentModel().eval(
         mContextGenerator.getContext(text, extraInformation));
   }
-
-  /**
-   * Categorizes the given text.
-   *
-   * @param text the text to categorize
-   */
+  
   @Override
   public double[] categorize(String[] text) {
     return this.categorize(text, Collections.emptyMap());
   }
 
-  /**
-   * Returns a map in which the key is the category name and the value is the score
-   *
-   * @param text the input text to classify
-   * @return the score map
-   */
   @Override
   public Map<String, Double> scoreMap(String[] text) {
     Map<String, Double> probDist = new HashMap<>();
@@ -98,15 +83,7 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     }
     return probDist;
   }
-
-  /**
-   * Returns a map with the score as a key in ascending order.
-   * The value is a Set of categories with the score.
-   * Many categories can have the same score, hence the Set as value
-   *
-   * @param text the input text to classify
-   * @return the sorted score map
-   */
+  
   @Override
   public SortedMap<Double, Set<String>> sortedScoreMap(String[] text) {
     SortedMap<Double, Set<String>> descendingMap = new TreeMap<>();
@@ -126,29 +103,44 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     return descendingMap;
   }
 
+  @Override
   public String getBestCategory(double[] outcome) {
     return model.getMaxentModel().getBestOutcome(outcome);
   }
 
+  @Override
   public int getIndex(String category) {
     return model.getMaxentModel().getIndex(category);
   }
 
+  @Override
   public String getCategory(int index) {
     return model.getMaxentModel().getOutcome(index);
   }
 
+  @Override
   public int getNumberOfCategories() {
     return model.getMaxentModel().getNumOutcomes();
   }
 
+  @Override
   public String getAllResults(double[] results) {
     return model.getMaxentModel().getAllOutcomes(results);
   }
 
-  public static DoccatModel train(String languageCode, ObjectStream<DocumentSample> samples,
-      TrainingParameters mlParams, DoccatFactory factory)
-          throws IOException {
+  /**
+   * Starts a training of a {@link DoccatModel} with the given parameters.
+   *
+   * @param lang The ISO conform language code.
+   * @param samples The {@link ObjectStream} of {@link DocumentSample} used as input for training.
+   * @param mlParams The {@link TrainingParameters} for the context of the training.
+   * @param factory The {@link DoccatFactory} for creating related objects defined via {@code mlParams}.
+   *
+   * @return A valid, trained {@link DoccatModel} instance.
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public static DoccatModel train(String lang, ObjectStream<DocumentSample> samples,
+      TrainingParameters mlParams, DoccatFactory factory) throws IOException {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
@@ -158,6 +150,6 @@ public class DocumentCategorizerME implements DocumentCategorizer {
     MaxentModel model = trainer.train(
         new DocumentCategorizerEventStream(samples, factory.getFeatureGenerators()));
 
-    return new DoccatModel(languageCode, model, manifestInfoEntries, factory);
+    return new DoccatModel(lang, model, manifestInfoEntries, factory);
   }
 }

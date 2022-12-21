@@ -27,22 +27,26 @@ import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Class for creating an event stream out of data files for training a probabilistic lemmatizer.
+ * Class for creating an event stream out of data files for training a probabilistic {@link Lemmatizer}.
  */
 public class LemmaSampleEventStream extends AbstractEventStream<LemmaSample> {
 
-  private LemmatizerContextGenerator contextGenerator;
+  private final LemmatizerContextGenerator contextGenerator;
 
   /**
-   * Creates a new event stream based on the specified data stream using the specified context generator.
+   * Creates a new event stream based on the specified data stream using a
+   * {@link LemmatizerContextGenerator}.
+   *
    * @param d The data stream for this event stream.
-   * @param cg The context generator which should be used in the creation of events for this event stream.
+   * @param cg The {@link LemmatizerContextGenerator} which should be used in the
+   *           creation of events for this event stream {@code d}.
    */
   public LemmaSampleEventStream(ObjectStream<LemmaSample> d, LemmatizerContextGenerator cg) {
     super(d);
     this.contextGenerator = cg;
   }
 
+  @Override
   protected Iterator<Event> createEvents(LemmaSample sample) {
 
     if (sample != null) {

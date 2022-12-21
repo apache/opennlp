@@ -17,7 +17,6 @@
 
 package opennlp.morfologik.tagdict;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,13 +28,13 @@ import morfologik.stemming.WordData;
 import opennlp.tools.postag.TagDictionary;
 
 /**
- * A POS Tagger dictionary implementation based on Morfologik binary
+ * A {@link TagDictionary} implementation based on Morfologik binary
  * dictionaries
  */
 public class MorfologikTagDictionary implements TagDictionary {
 
-  private IStemmer dictLookup;
-  private boolean isCaseSensitive;
+  private final IStemmer dictLookup;
+  private final boolean isCaseSensitive;
 
   /**
    * Creates a case sensitive {@link MorfologikTagDictionary}
@@ -44,11 +43,9 @@ public class MorfologikTagDictionary implements TagDictionary {
    *          a Morfologik FSA dictionary
    * @throws IllegalArgumentException
    *           if FSA's root node cannot be acquired (dictionary is empty).
-   * @throws IOException
-   *           could not read dictionary from dictURL
    */
   public MorfologikTagDictionary(Dictionary dict)
-      throws IllegalArgumentException, IOException {
+      throws IllegalArgumentException {
     this(dict, true);
   }
 
@@ -58,14 +55,12 @@ public class MorfologikTagDictionary implements TagDictionary {
    * @param dict
    *          a Morfologik FSA dictionary
    * @param caseSensitive
-   *          if true it performs case sensitive lookup
+   *          if true it performs case-sensitive lookup
    * @throws IllegalArgumentException
    *           if FSA's root node cannot be acquired (dictionary is empty).
-   * @throws IOException
-   *           could not read dictionary from dictURL
    */
   public MorfologikTagDictionary(Dictionary dict, boolean caseSensitive)
-      throws IllegalArgumentException, IOException {
+      throws IllegalArgumentException {
     this.dictLookup = new DictionaryLookup(dict);
     this.isCaseSensitive = caseSensitive;
   }
@@ -87,5 +82,10 @@ public class MorfologikTagDictionary implements TagDictionary {
       return null;
     }
     return null;
+  }
+
+  @Override
+  public boolean isCaseSensitive() {
+    return isCaseSensitive;
   }
 }

@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -29,24 +30,19 @@ import org.junit.jupiter.api.Test;
 public class TokenizerModelTest {
 
   @Test
-  void testSentenceModel() throws IOException {
+  void testTokenizerModelSerialization() throws IOException {
 
     TokenizerModel model = TokenizerTestUtil.createSimpleMaxentTokenModel();
+    Assertions.assertFalse(model.isLoadedFromSerialized());
 
     ByteArrayOutputStream arrayOut = new ByteArrayOutputStream();
     model.serialize(arrayOut);
     arrayOut.close();
 
-    model = new TokenizerModel(new ByteArrayInputStream(arrayOut.toByteArray()));
-    // TODO: check that both maxent models are equal
-
-    // Also test serialization after building model from an inputstream
-    arrayOut = new ByteArrayOutputStream();
-    model.serialize(arrayOut);
-    arrayOut.close();
-
-    new TokenizerModel(new ByteArrayInputStream(arrayOut.toByteArray()));
-
-    // TODO: check that both maxent models are equal
+    TokenizerModel modelRestored = new TokenizerModel(new ByteArrayInputStream(arrayOut.toByteArray()));
+    Assertions.assertNotNull(modelRestored);
+    Assertions.assertTrue(modelRestored.isLoadedFromSerialized());
+    Assertions.assertEquals(model, modelRestored);
+    
   }
 }

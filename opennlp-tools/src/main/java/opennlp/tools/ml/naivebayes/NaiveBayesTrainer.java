@@ -22,6 +22,7 @@ import java.io.IOException;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.MutableContext;
@@ -152,7 +153,16 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
         params[pi].setParameter(aoi, 0.0);
     }
 
-    EvalParameters evalParams = new EvalParameters(params, numOutcomes);
+    double[] outcomeTotals = new double[outcomeLabels.length];
+    for (Context context : params) {
+      for (int j = 0; j < context.getOutcomes().length; ++j) {
+        int outcome = context.getOutcomes()[j];
+        double count = context.getParameters()[j];
+        outcomeTotals[outcome] += count;
+      }
+    }
+    EvalParameters evalParams = new NaiveBayesEvalParameters(
+            params, outcomeLabels.length, outcomeTotals, predLabels.length);
 
     double stepSize = 1;
 

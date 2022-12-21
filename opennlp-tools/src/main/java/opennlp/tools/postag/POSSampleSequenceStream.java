@@ -25,25 +25,41 @@ import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * A {@link SequenceStream} implementation encapsulating {@link POSSample samples}.
+ */
 public class POSSampleSequenceStream implements SequenceStream<POSSample> {
 
-  private POSContextGenerator pcg;
-  private ObjectStream<POSSample> psi;
+  private final POSContextGenerator pcg;
+  private final ObjectStream<POSSample> psi;
 
-  public POSSampleSequenceStream(ObjectStream<POSSample> psi) throws IOException {
+  /**
+   * Creates a {@link POSSampleSequenceStream} with given {@code samples} using
+   * a {@link DefaultPOSContextGenerator}.
+   *
+   * @param psi The data stream of {@link POSSample samples}.
+   */
+  public POSSampleSequenceStream(ObjectStream<POSSample> psi) {
     this(psi, new DefaultPOSContextGenerator(null));
   }
 
-  public POSSampleSequenceStream(ObjectStream<POSSample> psi, POSContextGenerator pcg)
-      throws IOException {
+  /**
+   * Creates a {@link POSSampleSequenceStream} with given {@code samples} using
+   * a {@link POSContextGenerator}.
+   *
+   * @param psi The data stream of {@link POSSample samples}.
+   * @param pcg A {@link POSContextGenerator} which shall be used.
+   */
+  public POSSampleSequenceStream(ObjectStream<POSSample> psi, POSContextGenerator pcg) {
     this.psi = psi;
     this.pcg = pcg;
   }
 
+  @Override
   public Event[] updateContext(Sequence<POSSample> pss, AbstractModel model) {
     POSTagger tagger = new POSTaggerME(new POSModel("x-unspecified", model, null, new POSTaggerFactory()));
     String[] sentence = pss.getSource().getSentence();
-    Object[] ac = pss.getSource().getAddictionalContext();
+    Object[] ac = pss.getSource().getAdditionalContext();
     String[] tags = tagger.tag(pss.getSource().getSentence());
     Event[] events = new Event[sentence.length];
     POSSampleEventStream.generateEvents(sentence, tags, ac, pcg).toArray(events);

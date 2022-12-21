@@ -33,7 +33,8 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class ADPOSSampleStreamFactory<P> extends
     LanguageSampleStreamFactory<POSSample, P> {
@@ -68,14 +69,13 @@ public class ADPOSSampleStreamFactory<P> extends
     super(params);
   }
 
+  @Override
   public ObjectStream<POSSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
     language = params.getLang();
 
     InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-
     ObjectStream<String> lineStream = null;
     try {
       lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
@@ -83,8 +83,7 @@ public class ADPOSSampleStreamFactory<P> extends
       CmdLineUtil.handleCreateObjectStreamError(ex);
     }
 
-    return new ADPOSSampleStream(lineStream,
-        params.getExpandME(), params.getIncludeFeatures());
+    return new ADPOSSampleStream(lineStream, params.getExpandME(), params.getIncludeFeatures());
   }
 
 }

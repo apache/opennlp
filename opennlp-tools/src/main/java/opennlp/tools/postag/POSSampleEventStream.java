@@ -27,35 +27,33 @@ import opennlp.tools.util.AbstractEventStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * This class reads the {@link POSSample}s from the given {@link Iterator}
- * and converts the {@link POSSample}s into {@link Event}s which
+ * Reads the {@link POSSample samples} from an {@link Iterator}
+ * and converts those samples into {@link Event events} which
  * can be used by the maxent library for training.
  */
 public class POSSampleEventStream extends AbstractEventStream<POSSample> {
 
   /**
-   * The {@link POSContextGenerator} used
-   * to create the training {@link Event}s.
+   * The {@link POSContextGenerator} used to create the training {@link Event events}.
    */
-  private POSContextGenerator cg;
+  private final POSContextGenerator cg;
 
   /**
-   * Initializes the current instance with the given samples and the
-   * given {@link POSContextGenerator}.
+   * Initializes the current instance with the given samples and a {@link POSContextGenerator}.
    *
-   * @param samples
-   * @param cg
+   * @param samples The data stream for this event stream.
+   * @param cg A {@link POSContextGenerator} to process the event stream {@code samples}.
    */
   public POSSampleEventStream(ObjectStream<POSSample> samples, POSContextGenerator cg) {
     super(samples);
-
     this.cg = cg;
   }
 
   /**
    * Initializes the current instance with given samples
    * and a {@link DefaultPOSContextGenerator}.
-   * @param samples
+   *
+   * @param samples The data stream for this event stream.
    */
   public POSSampleEventStream(ObjectStream<POSSample> samples) {
     this(samples, new DefaultPOSContextGenerator(null));
@@ -65,14 +63,14 @@ public class POSSampleEventStream extends AbstractEventStream<POSSample> {
   protected Iterator<Event> createEvents(POSSample sample) {
     String[] sentence = sample.getSentence();
     String[] tags = sample.getTags();
-    Object[] ac = sample.getAddictionalContext();
+    Object[] ac = sample.getAdditionalContext();
     List<Event> events = generateEvents(sentence, tags, ac, cg);
     return events.iterator();
   }
 
   public static List<Event> generateEvents(String[] sentence, String[] tags,
       Object[] additionalContext, POSContextGenerator cg) {
-    List<Event> events = new ArrayList<Event>(sentence.length);
+    List<Event> events = new ArrayList<>(sentence.length);
 
     for (int i = 0; i < sentence.length; i++) {
 

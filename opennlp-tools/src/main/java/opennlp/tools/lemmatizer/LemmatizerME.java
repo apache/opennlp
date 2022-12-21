@@ -40,11 +40,16 @@ import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * A probabilistic {@link Lemmatizer}. Tries to predict the induced permutation class
- * for each word depending on its surrounding context. Based on
- * Grzegorz Chrupała. 2008. Towards a Machine-Learning Architecture
- * for Lexical Functional Grammar Parsing. PhD dissertation, Dublin City University.
- * http://grzegorz.chrupala.me/papers/phd-single.pdf
+ * A probabilistic {@link Lemmatizer} implementation.
+ * <p>
+ * Tries to predict the induced permutation class for each word depending on
+ * its surrounding context.
+ * <p>
+ * Based on Grzegorz Chrupała. 2008.
+ * <a href="http://grzegorz.chrupala.me/papers/phd-single.pdf">
+ * Towards a Machine-Learning Architecture for Lexical Functional Grammar Parsing.
+ * </a> PhD dissertation, Dublin City University
+ *
  */
 public class LemmatizerME implements Lemmatizer {
 
@@ -59,10 +64,11 @@ public class LemmatizerME implements Lemmatizer {
   private final SequenceValidator<String> sequenceValidator;
 
   /**
-   * Initializes the current instance with the provided model
-   * and the default beam size of 3.
+   * Initializes a {@link LemmatizerME} with the provided
+   * {@link LemmatizerModel model} and a default
+   * {@code beam size} of {@code 3}.
    *
-   * @param model the model
+   * @param model The {@link LemmatizerModel} to be used.
    */
   public LemmatizerME(LemmatizerModel model) {
 
@@ -87,12 +93,14 @@ public class LemmatizerME implements Lemmatizer {
     }
   }
 
+  @Override
   public String[] lemmatize(String[] toks, String[] tags) {
     String[] ses = predictSES(toks, tags);
     return decodeLemmas(toks, ses);
   }
 
-  @Override public List<List<String>> lemmatize(List<String> toks,
+  @Override
+  public List<List<String>> lemmatize(List<String> toks,
       List<String> tags) {
     String[] tokens = toks.toArray(new String[toks.size()]);
     String[] posTags = tags.toArray(new String[tags.size()]);
@@ -106,9 +114,11 @@ public class LemmatizerME implements Lemmatizer {
 
   /**
    * Predict Short Edit Script (automatically induced lemma class).
-   * @param toks the array of tokens
-   * @param tags the array of pos tags
-   * @return an array containing the lemma classes
+   *
+   * @param toks An array of tokens.
+   * @param tags An array of postags.
+   *             
+   * @return An array of possible lemma classes for each token in {@code toks}.
    */
   public String[] predictSES(String[] toks, String[] tags) {
     bestSequence = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
@@ -118,10 +128,12 @@ public class LemmatizerME implements Lemmatizer {
 
   /**
    * Predict all possible lemmas (using a default upper bound).
-   * @param numLemmas the default number of lemmas
-   * @param toks the tokens
-   * @param tags the postags
-   * @return a double array containing all posible lemmas for each token and postag pair
+   * 
+   * @param numLemmas The default number of lemmas
+   * @param toks An array of tokens.
+   * @param tags An array of postags.
+   *             
+   * @return A 2-dimensional array containing all possible lemmas for each token and postag pair.
    */
   public String[][] predictLemmas(int numLemmas, String[] toks, String[] tags) {
     Sequence[] bestSequences = model.bestSequences(numLemmas, toks, new Object[] {tags},
@@ -137,9 +149,11 @@ public class LemmatizerME implements Lemmatizer {
 
   /**
    * Decodes the lemma from the word and the induced lemma class.
-   * @param toks the array of tokens
-   * @param preds the predicted lemma classes
-   * @return the array of decoded lemmas
+   *
+   * @param toks An array of tokens.
+   * @param preds An array of predicted lemma classes.
+   *              
+   * @return The array of decoded lemmas.
    */
   public static String[] decodeLemmas(String[] toks, String[] preds) {
     List<String> lemmas = new ArrayList<>();
@@ -153,6 +167,14 @@ public class LemmatizerME implements Lemmatizer {
     return lemmas.toArray(new String[lemmas.size()]);
   }
 
+  /**
+   * Encodes the word given its lemmas.
+   *
+   * @param toks An array of tokens.
+   * @param lemmas An array of lemmas.
+   *               
+   * @return The array of lemma classes.
+   */
   public static String[] encodeLemmas(String[] toks, String[] lemmas) {
     List<String> sesList = new ArrayList<>();
     for (int i = 0; i < toks.length; i++) {
@@ -165,21 +187,36 @@ public class LemmatizerME implements Lemmatizer {
     return sesList.toArray(new String[sesList.size()]);
   }
 
+  /**
+   * @param sentence An array of tokens.
+   * @param tags An array of postags.
+   *             
+   * @return Retrieves the top-k {@link Sequence sequences}.
+   */
   public Sequence[] topKSequences(String[] sentence, String[] tags) {
     return model.bestSequences(DEFAULT_BEAM_SIZE, sentence,
         new Object[] { tags }, contextGenerator, sequenceValidator);
   }
 
+  /**
+   * @param sentence An array of tokens.
+   * @param tags An array of postags.
+   * @param minSequenceScore The minimum score to be achieved.
+   *
+   * @return Retrieves the top-k {@link Sequence sequences}.
+   */
   public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore) {
     return model.bestSequences(DEFAULT_BEAM_SIZE, sentence, new Object[] { tags }, minSequenceScore,
         contextGenerator, sequenceValidator);
   }
 
   /**
-   * Populates the specified array with the probabilities of the last decoded sequence.  The
-   * sequence was determined based on the previous call to <code>lemmatize</code>.  The
-   * specified array should be at least as large as the number of tokens in the
-   * previous call to <code>lemmatize</code>.
+   * Populates the specified array with the probabilities of the last decoded sequence.
+   * The sequence was determined based on the previous call to
+   * {@link #lemmatize(String[], String[])}.
+   * <p>
+   * The specified array should be at least as large as the number of tokens in the
+   * previous call to {@link #lemmatize(String[], String[])}.
    *
    * @param probs An array used to hold the probabilities of the last decoded sequence.
    */
@@ -188,49 +225,57 @@ public class LemmatizerME implements Lemmatizer {
   }
 
   /**
-   * Returns an array with the probabilities of the last decoded sequence.  The
-   * sequence was determined based on the previous call to <code>chunk</code>.
-   * @return An array with the same number of probabilities as tokens were sent to <code>chunk</code>
-   *     when it was last called.
+   * Returns an array with the probabilities of the last decoded sequence.
+   * The sequence was determined based on the previous call to
+   * {@link #lemmatize(String[], String[])}.
+   *
+   * @return An array with the same number of probabilities as tokens were sent to
+   *         {@link #lemmatize(String[], String[])} when it was last called.
    */
   public double[] probs() {
     return bestSequence.getProbs();
   }
 
-  public static LemmatizerModel train(String languageCode,
-      ObjectStream<LemmaSample> samples, TrainingParameters trainParams,
-      LemmatizerFactory posFactory) throws IOException {
+  /**
+   * Starts a training of a {@link LemmatizerModel} with the given parameters.
+   *
+   * @param languageCode The ISO conform language code.
+   * @param samples The {@link ObjectStream} of {@link LemmaSample} used as input for training.
+   * @param params The {@link TrainingParameters} for the context of the training.
+   * @param factory The {@link LemmatizerFactory} for creating related objects defined
+   *                via {@code params}.
+   *
+   * @return A valid, trained {@link LemmatizerModel} instance.
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public static LemmatizerModel train(String languageCode, ObjectStream<LemmaSample> samples,
+                                      TrainingParameters params, LemmatizerFactory factory)
+          throws IOException {
 
-    int beamSize = trainParams.getIntParameter(BeamSearch.BEAM_SIZE_PARAMETER,
-            LemmatizerME.DEFAULT_BEAM_SIZE);
-
-    LemmatizerContextGenerator contextGenerator = posFactory.getContextGenerator();
-
+    LemmatizerContextGenerator contextGenerator = factory.getContextGenerator();
     Map<String, String> manifestInfoEntries = new HashMap<>();
-
-    TrainerType trainerType = TrainerFactory.getTrainerType(trainParams);
+    TrainerType trainerType = TrainerFactory.getTrainerType(params);
 
     MaxentModel lemmatizerModel = null;
     SequenceClassificationModel<String> seqLemmatizerModel = null;
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new LemmaSampleEventStream(samples, contextGenerator);
 
-      EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams,
+      EventTrainer trainer = TrainerFactory.getEventTrainer(params,
           manifestInfoEntries);
       lemmatizerModel = trainer.train(es);
     }
     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       LemmaSampleSequenceStream ss = new LemmaSampleSequenceStream(samples, contextGenerator);
-      EventModelSequenceTrainer trainer =
-          TrainerFactory.getEventModelSequenceTrainer(trainParams, manifestInfoEntries);
+      EventModelSequenceTrainer<LemmaSample> trainer =
+          TrainerFactory.getEventModelSequenceTrainer(params, manifestInfoEntries);
       lemmatizerModel = trainer.train(ss);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
-      SequenceTrainer<LemmaSample> trainer = TrainerFactory.getSequenceModelTrainer(
-          trainParams, manifestInfoEntries);
+      SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
+              params, manifestInfoEntries);
 
       // TODO: This will probably cause issue, since the feature generator uses the outcomes array
-
       LemmaSampleSequenceStream ss = new LemmaSampleSequenceStream(samples, contextGenerator);
       seqLemmatizerModel = trainer.train(ss);
     }
@@ -238,19 +283,34 @@ public class LemmatizerME implements Lemmatizer {
       throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);
     }
 
+    int beamSize = params.getIntParameter(BeamSearch.BEAM_SIZE_PARAMETER,
+            LemmatizerME.DEFAULT_BEAM_SIZE);
     if (lemmatizerModel != null) {
-      return new LemmatizerModel(languageCode, lemmatizerModel, beamSize, manifestInfoEntries, posFactory);
+      return new LemmatizerModel(languageCode, lemmatizerModel, beamSize, manifestInfoEntries, factory);
     }
     else {
-      return new LemmatizerModel(languageCode, seqLemmatizerModel, manifestInfoEntries, posFactory);
+      return new LemmatizerModel(languageCode, seqLemmatizerModel, manifestInfoEntries, factory);
     }
   }
 
+  /**
+   * @param sentence An array of tokens.
+   * @param tags An array of postags.
+   *
+   * @return Retrieves the top-k {@link Sequence lemma classes}.
+   */
   public Sequence[] topKLemmaClasses(String[] sentence, String[] tags) {
     return model.bestSequences(DEFAULT_BEAM_SIZE, sentence,
         new Object[] { tags }, contextGenerator, sequenceValidator);
   }
 
+  /**
+   * @param sentence An array of tokens.
+   * @param tags An array of postags.
+   * @param minSequenceScore The minimum score to be achieved.
+   *
+   * @return Retrieves the top-k {@link Sequence lemma classes}.
+   */
   public Sequence[] topKLemmaClasses(String[] sentence, String[] tags, double minSequenceScore) {
     return model.bestSequences(DEFAULT_BEAM_SIZE, sentence, new Object[] { tags }, minSequenceScore,
         contextGenerator, sequenceValidator);

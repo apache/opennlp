@@ -27,7 +27,7 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
- * Represents an pos-tagged sentence.
+ * Represents an pos-tagged {@link Sample sentence}.
  */
 public class POSSample implements Sample {
 
@@ -37,14 +37,33 @@ public class POSSample implements Sample {
 
   private final String[][] additionalContext;
 
+  /**
+   * Initializes a {@link POSSample} instance.
+   *
+   * @param sentence The sentence of tokens to be tagged.
+   * @param tags An array of pos tags for each token provided in {@code sentence}.
+   */
   public POSSample(String[] sentence, String[] tags) {
     this(sentence, tags, null);
   }
 
+  /**
+   * Initializes a {@link POSSample} instance.
+   * 
+   * @param sentence The sentence to be tagged.
+   * @param tags A {@link List} of pos tags for each token provided in {@code sentence}.
+   */
   public POSSample(List<String> sentence, List<String> tags) {
     this(sentence, tags, null);
   }
 
+  /**
+   * Initializes a {@link POSSample} instance.
+   * 
+   * @param sentence The sentence to be tagged.
+   * @param tags A {@link List} of pos tags for each token provided in {@code sentence}.
+   * @param additionalContext A 2D array which holds additional information for the context.
+   */
   public POSSample(List<String> sentence, List<String> tags,
       String[][] additionalContext) {
     this.sentence = Collections.unmodifiableList(sentence);
@@ -66,8 +85,14 @@ public class POSSample implements Sample {
     this.additionalContext = ac;
   }
 
-  public POSSample(String[] sentence, String[] tags,
-      String[][] additionalContext) {
+  /**
+   * Initializes a {@link POSSample} instance.
+   *
+   * @param sentence The sentence to be tagged.
+   * @param tags An array of pos tags for each token provided in {@code sentence}.
+   * @param additionalContext A 2D array which holds additional information for the context.
+   */
+  public POSSample(String[] sentence, String[] tags, String[][] additionalContext) {
     this(Arrays.asList(sentence), Arrays.asList(tags), additionalContext);
   }
 
@@ -86,15 +111,24 @@ public class POSSample implements Sample {
     }
   }
 
+  /**
+   * @return Retrieves the sentence as array.
+   */
   public String[] getSentence() {
     return sentence.toArray(new String[sentence.size()]);
   }
 
+  /**
+   * @return Retrieves the tags as array.
+   */
   public String[] getTags() {
     return tags.toArray(new String[tags.size()]);
   }
 
-  public String[][] getAddictionalContext() {
+  /**
+   * @return Retrieves additional information for the context.
+   */
+  public String[][] getAdditionalContext() {
     return this.additionalContext;
   }
 
@@ -118,6 +152,14 @@ public class POSSample implements Sample {
     return result.toString();
   }
 
+  /**
+   * Parses a {@code sentenceString}.
+   * 
+   * @param sentenceString The sentence to be parsed.
+   * @return A valid {@link POSSample} result.
+   *
+   * @throws InvalidFormatException Thrown if errors occurred during parsing.
+   */
   public static POSSample parse(String sentenceString) throws InvalidFormatException {
 
     String[] tokenTags = WhitespaceTokenizer.INSTANCE.tokenize(sentenceString);

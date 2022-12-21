@@ -23,18 +23,19 @@ import java.util.regex.Pattern;
 
 /**
  * Simple feature generator for learning statistical lemmatizers.
- * Features based on Grzegorz Chrupała. 2008. Towards a Machine-Learning
- * Architecture for Lexical Functional Grammar Parsing. PhD dissertation,
- * Dublin City University
- * @version 2016-02-15
+ * <p>
+ * Features based on Grzegorz Chrupała. 2008.
+ * <a href="http://grzegorz.chrupala.me/papers/phd-single.pdf">
+ * Towards a Machine-Learning Architecture for Lexical Functional Grammar Parsing.
+ * </a> PhD dissertation, Dublin City University
  */
 public class DefaultLemmatizerContextGenerator implements LemmatizerContextGenerator {
 
   private static final int PREFIX_LENGTH = 5;
   private static final int SUFFIX_LENGTH = 7;
 
-  private static Pattern hasCap = Pattern.compile("[A-Z]");
-  private static Pattern hasNum = Pattern.compile("[0-9]");
+  private static final Pattern PATTERN_HAS_CAP = Pattern.compile("[A-Z]");
+  private static final Pattern PATTERN_HAS_NUM = Pattern.compile("[0-9]");
 
   public DefaultLemmatizerContextGenerator() {
   }
@@ -55,11 +56,13 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
     return suffs;
   }
 
+  @Override
   public String[] getContext(int index, String[] sequence, String[] priorDecisions,
       Object[] additionalContext) {
     return getContext(index, sequence, (String[]) additionalContext[0], priorDecisions);
   }
 
+  @Override
   public String[] getContext(int index, String[] toks, String[] tags, String[] preds) {
     // Word
     String w0;
@@ -102,11 +105,11 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
       features.add("h");
     }
 
-    if (hasCap.matcher(lex).find()) {
+    if (PATTERN_HAS_CAP.matcher(lex).find()) {
       features.add("c");
     }
 
-    if (hasNum.matcher(lex).find()) {
+    if (PATTERN_HAS_NUM.matcher(lex).find()) {
       features.add("d");
     }
 

@@ -22,12 +22,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
-import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
@@ -39,8 +40,7 @@ import opennlp.tools.util.model.POSModelSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
- * The {@link POSModel} is the model used
- * by a learnable {@link POSTagger}.
+ * The {@link POSModel} is the model used by a learnable {@link POSTagger}.
  *
  * @see POSTaggerME
  */
@@ -51,6 +51,14 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
   static final String POS_MODEL_ENTRY_NAME = "pos.model";
   static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
 
+  /**
+   * Initializes a {@link POSModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param posModel A valid {@link SequenceClassificationModel}.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param posFactory The {@link POSTaggerFactory} for creating related objects.
+   */
   public POSModel(String languageCode, SequenceClassificationModel<String> posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
@@ -69,11 +77,28 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
     // checkArtifactMap();
   }
 
+  /**
+   * Initializes a {@link POSModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param posModel A valid {@link MaxentModel}.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param posFactory The {@link POSTaggerFactory} for creating related objects.
+   */
   public POSModel(String languageCode, MaxentModel posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
     this(languageCode, posModel, POSTaggerME.DEFAULT_BEAM_SIZE, manifestInfoEntries, posFactory);
   }
 
+  /**
+   * Initializes a {@link POSModel} instance via given parameters.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param posModel A valid {@link MaxentModel}.
+   * @param beamSize The size of the beam that should be used when decoding sequences.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param posFactory The {@link POSTaggerFactory} for creating related objects.
+   */
   public POSModel(String languageCode, MaxentModel posModel, int beamSize,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
@@ -86,26 +111,51 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
 
     artifactMap.put(POS_MODEL_ENTRY_NAME, posModel);
     artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, posFactory.getFeatureGenerator());
-
-    for (Map.Entry<String, Object> resource : posFactory.getResources().entrySet()) {
-      artifactMap.put(resource.getKey(), resource.getValue());
-    }
+    artifactMap.putAll(posFactory.getResources());
 
     checkArtifactMap();
   }
 
+  /**
+   * Initializes a {@link POSModel} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public POSModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
+  /**
+   * Initializes a {@link POSModel} instance via a valid {@link File}.
+   *
+   * @param modelFile The {@link File} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public POSModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
+  /**
+   * Initializes a {@link POSModel} instance via a valid {@link Path}.
+   *
+   * @param modelPath The {@link Path} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public POSModel(Path modelPath) throws IOException {
     this(modelPath.toFile());
   }
 
+  /**
+   * Initializes a {@link POSModel} instance via a valid {@link URL}.
+   *
+   * @param modelURL The {@link URL} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public POSModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
@@ -125,7 +175,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
   }
 
   /**
-   * @deprecated use getPosSequenceModel instead. This method will be removed soon.
+   * @deprecated use {@link POSModel#getPosSequenceModel} instead. This method will be removed soon.
    * Only required for Parser 1.5.x backward compatibility. Newer models don't need this anymore.
    */
   @Deprecated
@@ -138,6 +188,9 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
     }
   }
 
+  /**
+   * @return Retrieves a {@link SequenceClassificationModel}.
+   */
   public SequenceClassificationModel<String> getPosSequenceModel() {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
@@ -160,6 +213,9 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
     }
   }
 
+  /**
+   * @return Retrieves the active {@link POSTaggerFactory}.
+   */
   public POSTaggerFactory getFactory() {
     return (POSTaggerFactory) this.toolFactory;
   }
@@ -171,19 +227,34 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
     serializers.put("featuregen", new ByteArraySerializer());
   }
 
-  /**
-   * Retrieves the ngram dictionary.
-   *
-   * @return ngram dictionary or null if not used
-   */
-  public Dictionary getNgramDictionary() {
-    if (getFactory() != null)
-      return getFactory().getDictionary();
-    return null;
-  }
-
   @Override
   public Class<POSModelSerializer> getArtifactSerializerClass() {
     return POSModelSerializer.class;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(artifactMap.get("manifest.properties"), artifactMap.get("pos.model"),
+            Arrays.hashCode((byte[]) artifactMap.get("generator.featuregen"))
+    );
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+
+    if (obj instanceof POSModel) {
+      POSModel model = (POSModel) obj;
+      Map<String, Object> artifactMapToCheck = model.artifactMap;
+      AbstractModel abstractModel = (AbstractModel) artifactMapToCheck.get("pos.model");
+
+      return artifactMap.get("manifest.properties").equals(artifactMapToCheck.get("manifest.properties")) &&
+              artifactMap.get("pos.model").equals(abstractModel) &&
+              Arrays.equals((byte[]) artifactMap.get("generator.featuregen"),
+                            (byte[]) artifactMapToCheck.get("generator.featuregen"));
+    }
+    return false;
   }
 }

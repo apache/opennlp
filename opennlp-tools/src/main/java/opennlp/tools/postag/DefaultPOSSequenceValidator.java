@@ -21,14 +21,21 @@ import java.util.Arrays;
 
 import opennlp.tools.util.SequenceValidator;
 
+/**
+ * The default POS tagger {@link SequenceValidator} implementation.
+ */
 public class DefaultPOSSequenceValidator implements SequenceValidator<String> {
 
-  private TagDictionary tagDictionary;
+  private final TagDictionary tagDictionary;
 
+  /**
+   * @param tagDictionary A {@link TagDictionary} used for the new {@link SequenceValidator}.
+   */
   public DefaultPOSSequenceValidator(TagDictionary tagDictionary) {
     this.tagDictionary = tagDictionary;
   }
 
+  @Override
   public boolean validSequence(int i, String[] inputSequence,
       String[] outcomesSequence, String outcome) {
     if (tagDictionary == null) {

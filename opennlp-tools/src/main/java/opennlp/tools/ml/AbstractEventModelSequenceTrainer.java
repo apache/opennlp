@@ -19,19 +19,20 @@ package opennlp.tools.ml;
 
 import java.io.IOException;
 
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceStream;
 
 public abstract class AbstractEventModelSequenceTrainer extends AbstractTrainer implements
-    EventModelSequenceTrainer {
+    EventModelSequenceTrainer<Event> {
 
   public AbstractEventModelSequenceTrainer() {
   }
 
-  public abstract MaxentModel doTrain(SequenceStream events)
-      throws IOException;
+  public abstract MaxentModel doTrain(SequenceStream<Event> events) throws IOException;
 
-  public final MaxentModel train(SequenceStream events) throws IOException {
+  @Override
+  public final MaxentModel train(SequenceStream<Event> events) throws IOException {
     validate();
 
     MaxentModel model = doTrain(events);

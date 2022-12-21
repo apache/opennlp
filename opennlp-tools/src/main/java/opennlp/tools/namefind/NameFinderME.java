@@ -263,7 +263,7 @@ public class NameFinderME implements TokenNameFinder {
               params, manifestInfoEntries);
       nameFinderModel = trainer.train(ss);
     } else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
-      SequenceTrainer<NameSample> trainer = TrainerFactory.getSequenceModelTrainer(
+      SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
               params, manifestInfoEntries);
 
       NameSampleSequenceStream ss =

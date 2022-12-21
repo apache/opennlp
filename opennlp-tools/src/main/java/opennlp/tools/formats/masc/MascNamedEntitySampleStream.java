@@ -27,13 +27,13 @@ import opennlp.tools.util.Span;
 
 public class MascNamedEntitySampleStream extends FilterObjectStream<MascDocument, NameSample> {
 
-  MascDocument buffer;
+  private MascDocument buffer;
 
   /**
-   * Create a stream of named entity samples from a stream of MascDocuments
+   * Initializes {@link MascNamedEntitySampleStream} from a stream of {@link MascDocument documents}.
    *
-   * @param samples a MascDocumentStream
-   * @throws IOException
+   * @param samples A {@link ObjectStream<MascDocument>} of samples.
+   * @throws IOException Thrown if none of the documents has NE labels.
    */
   public MascNamedEntitySampleStream(ObjectStream<MascDocument> samples) throws IOException {
     super(samples);
@@ -48,16 +48,18 @@ public class MascNamedEntitySampleStream extends FilterObjectStream<MascDocument
   }
 
   /**
-   * Get the next sample of named entities.
+   * Reads the next sample of named entities.
    *
-   * @return One sentence together with its named entity annotation
-   * @throws IOException if the sample cannot be extracted
+   * @return One {@link NameSample sentence together with its named entity annotation}.
+   * @throws IOException Thrown if the sample cannot be extracted
    */
+  @Override
   public NameSample read() throws IOException {
 
-    /* Read the documents one sentence at a time
-    If the document is over, move to the next one
-    If both document stream and sentence stream are over, return null
+    /*
+     * Read the documents one sentence at a time
+     * If the document is over, move to the next one
+     * If both document stream and sentence stream are over, return null
      */
     try {
       MascSentence sentence = buffer.read();
@@ -79,7 +81,7 @@ public class MascNamedEntitySampleStream extends FilterObjectStream<MascDocument
       Span[] namedEntitiesArray = new Span[namedEntities.size()];
       namedEntities.toArray(namedEntitiesArray);
 
-      //todo: should the user decide about clearAdaptiveData?
+      // TODO: should the user decide about clearAdaptiveData?
       return new NameSample(tokensArray, namedEntitiesArray, true);
 
     } catch (IOException e) {

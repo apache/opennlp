@@ -107,7 +107,8 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     }
   }
 
-  public AbstractModel doTrain(SequenceStream events) throws IOException {
+  @Override
+  public AbstractModel doTrain(SequenceStream<Event> events) throws IOException {
     int iterations = getIterations();
     int cutoff = getCutoff();
 

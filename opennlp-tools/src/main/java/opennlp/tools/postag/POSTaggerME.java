@@ -46,16 +46,16 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.featuregen.StringPattern;
 
 /**
- * A part-of-speech tagger that uses maximum entropy.  Tries to predict whether
- * words are nouns, verbs, or any of 70 other POS tags depending on their
- * surrounding context.
- *
+ * A {@link POSTagger part-of-speech tagger} that uses maximum entropy.
+ * <p>
+ * Tries to predict whether words are nouns, verbs, or any of 70 other POS tags
+ * depending on their surrounding context.
  */
 public class POSTaggerME implements POSTagger {
 
   public static final int DEFAULT_BEAM_SIZE = 3;
 
-  private POSModel modelPackage;
+  private final POSModel modelPackage;
 
   /**
    * The feature context generator.
@@ -63,18 +63,17 @@ public class POSTaggerME implements POSTagger {
   protected POSContextGenerator contextGen;
 
   /**
-   * Tag dictionary used for restricting words to a fixed set of tags.
+   * {@link TagDictionary} used for restricting words to a fixed set of tags.
    */
   protected TagDictionary tagDictionary;
 
-  protected Dictionary ngramDictionary;
+  protected Dictionary ngramDictionary; // TODO unused - Could this be removed?
 
   /**
    * Says whether a filter should be used to check whether a tag assignment
-   * is to a word outside of a closed class.
+   * is to a word outside a closed class.
    */
-  protected boolean useClosedClassTagsFilter = false;
-
+  protected boolean useClosedClassTagsFilter = false; // TODO unused - Could this be removed?
 
   /**
    * The size of the beam to be used in determining the best sequence of pos tags.
@@ -83,23 +82,26 @@ public class POSTaggerME implements POSTagger {
 
   private Sequence bestSequence;
 
-  private SequenceClassificationModel<String> model;
+  private final SequenceClassificationModel<String> model;
 
-  private SequenceValidator<String> sequenceValidator;
+  private final SequenceValidator<String> sequenceValidator;
 
   /**
-   * Initializes the sentence detector by downloading a default model.
-   * @param language The language of the POS tagger
-   * @throws IOException Thrown if the model cannot be downloaded or saved.
+   * Initializes a {@link POSTaggerME} by downloading a default model for a given
+   * {@code language}.
+   *
+   * @param language An ISO conform language code.
+   *                 
+   * @throws IOException Thrown if the model could not be downloaded or saved.
    */
   public POSTaggerME(String language) throws IOException {
     this((POSModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.POS, POSModel.class));
   }
 
   /**
-   * Initializes the current instance with the provided model.
+   * Initializes a {@link POSTaggerME} with the provided {@link POSModel model}.
    *
-   * @param model
+   * @param model A valid {@link POSModel}.
    */
   public POSTaggerME(POSModel model) {
     POSTaggerFactory factory = model.getFactory();
@@ -131,19 +133,18 @@ public class POSTaggerME implements POSTagger {
   }
 
   /**
-   * Retrieves an array of all possible part-of-speech tags from the
-   * tagger.
-   *
-   * @return String[]
+   * @return Retrieves an array of all possible part-of-speech tags from the tagger.
    */
   public String[] getAllPosTags() {
     return model.getOutcomes();
   }
 
+  @Override
   public String[] tag(String[] sentence) {
     return this.tag(sentence, null);
   }
 
+  @Override
   public String[] tag(String[] sentence, Object[] additionalContext) {
     bestSequence = model.bestSequence(sentence, additionalContext, contextGen, sequenceValidator);
     List<String> t = bestSequence.getOutcomes();
@@ -151,12 +152,12 @@ public class POSTaggerME implements POSTagger {
   }
 
   /**
-   * Returns at most the specified number of taggings for the specified sentence.
+   * Returns at most the specified {@code numTaggings} for the specified {@code sentence}.
    *
    * @param numTaggings The number of tagging to be returned.
    * @param sentence An array of tokens which make up a sentence.
    *
-   * @return At most the specified number of taggings for the specified sentence.
+   * @return At most the specified number of taggings for the specified {@code sentence}.
    */
   public String[][] tag(int numTaggings, String[] sentence) {
     Sequence[] bestSequences = model.bestSequences(numTaggings, sentence, null,
@@ -169,10 +170,12 @@ public class POSTaggerME implements POSTagger {
     return tags;
   }
 
+  @Override
   public Sequence[] topKSequences(String[] sentence) {
     return this.topKSequences(sentence, null);
   }
 
+  @Override
   public Sequence[] topKSequences(String[] sentence, Object[] additionalContext) {
     return model.bestSequences(size, sentence, additionalContext, contextGen, sequenceValidator);
   }
@@ -187,9 +190,7 @@ public class POSTaggerME implements POSTagger {
   }
 
   /**
-   * Returns an array with the probabilities for each tag of the last tagged sentence.
-   *
-   * @return an array with the probabilities for each tag of the last tagged sentence.
+   * @return An array with the probabilities for each tag of the last tagged sentence.
    */
   public double[] probs() {
     return bestSequence.getProbs();
@@ -227,7 +228,7 @@ public class POSTaggerME implements POSTagger {
     }
     else {
       throw new UnsupportedOperationException("This method can only be called if the "
-          + "classifcation model is an event model!");
+          + "classification model is an event model!");
     }
   }
 
@@ -254,7 +255,7 @@ public class POSTaggerME implements POSTagger {
     }
     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
-      EventModelSequenceTrainer trainer =
+      EventModelSequenceTrainer<POSSample> trainer =
           TrainerFactory.getEventModelSequenceTrainer(trainParams, manifestInfoEntries);
       posModel = trainer.train(ss);
     }
@@ -279,11 +280,20 @@ public class POSTaggerME implements POSTagger {
     }
   }
 
+  /**
+   * Constructs a {@link Dictionary nGram dictionary} from an {@link ObjectStream} of samples.
+   *
+   * @param samples The {@link ObjectStream} to process.
+   * @param cutoff  A non-negative cut-off value.
+   *
+   * @return A valid {@link Dictionary} instance holding nGrams.
+   *
+   * @throws IOException Thrown if IO errors occurred during dictionary construction.
+   */
   public static Dictionary buildNGramDictionary(ObjectStream<POSSample> samples, int cutoff)
       throws IOException {
 
     NGramModel ngramModel = new NGramModel();
-
     POSSample sample;
     while ((sample = samples.read()) != null) {
       String[] words = sample.getSentence();
@@ -297,8 +307,18 @@ public class POSTaggerME implements POSTagger {
     return ngramModel.toDictionary(true);
   }
 
+  /**
+   * Populates a {@link POSDictionary} from an {@link ObjectStream} of samples.
+   *
+   * @param samples The {@link ObjectStream} to process.
+   * @param dict The {@link MutableTagDictionary} to use during population.
+   * @param cutoff  A non-negative cut-off value.
+   *
+   * @throws IOException Thrown if IO errors occurred during dictionary construction.
+   */
   public static void populatePOSDictionary(ObjectStream<POSSample> samples,
       MutableTagDictionary dict, int cutoff) throws IOException {
+
     System.out.println("Expanding POS Dictionary ...");
     long start = System.nanoTime();
 

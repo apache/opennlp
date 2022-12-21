@@ -26,14 +26,38 @@ public interface POSTagger {
 
   /**
    * Assigns the sentence of tokens pos tags.
+   *
    * @param sentence The sentence of tokens to be tagged.
-   * @return an array of pos tags for each token provided in sentence.
+   * @return An array of pos tags for each token provided in {@code sentence}.
    */
   String[] tag(String[] sentence);
 
+  /**
+   * Assigns the sentence of tokens pos tags.
+   *
+   * @param sentence The sentence of tokens to be tagged.
+   * @param additionalContext The context to provide additional information with.
+   *
+   * @return An array of pos tags for each token provided in {@code sentence}.
+   */
   String[] tag(String[] sentence, Object[] additionalContext);
 
+  /**
+   * Assigns the sentence the top-k {@link Sequence sequences}.
+   *
+   * @param sentence The sentence of tokens to be tagged.
+   *
+   * @return An array of {@link Sequence sequeneces} for each token provided in {@code sentence}.
+   */
   Sequence[] topKSequences(String[] sentence);
 
+  /**
+   * Assigns the sentence the top-k {@link Sequence sequences}.
+   *
+   * @param sentence The sentence of tokens to be tagged.
+   * @param additionalContext The context to provide additional information with.
+   *
+   * @return An array of {@link Sequence sequences} for each token provided in {@code sentence}.
+   */
   Sequence[] topKSequences(String[] sentence, Object[] additionalContext);
 }

@@ -36,7 +36,8 @@ import opennlp.tools.util.PlainTextByLineStream;
  * A Factory to create a Arvores Deitadas NameSampleDataStream from the command line
  * utility.
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class ADNameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
 
@@ -68,14 +69,13 @@ public class ADNameSampleStreamFactory<P> extends LanguageSampleStreamFactory<Na
     super(params);
   }
 
+  @Override
   public ObjectStream<NameSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
     language = params.getLang();
 
     InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-
     ObjectStream<String> lineStream = null;
     try {
       lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());

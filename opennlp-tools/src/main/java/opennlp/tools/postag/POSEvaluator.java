@@ -22,21 +22,20 @@ import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.Mean;
 
 /**
- * The {@link POSEvaluator} measures the performance of
- * the given {@link POSTagger} with the provided reference
- * {@link POSSample}s.
+ * The {@link POSEvaluator} measures the performance of the given {@link POSTagger}
+ * with the provided reference {@link POSSample samples}.
  */
 public class POSEvaluator extends Evaluator<POSSample> {
 
-  private POSTagger tagger;
+  private final POSTagger tagger;
 
-  private Mean wordAccuracy = new Mean();
+  private final Mean wordAccuracy = new Mean();
 
   /**
    * Initializes the current instance.
    *
-   * @param tagger
-   * @param listeners an array of evaluation listeners
+   * @param tagger The {@link POSTagger} to evaluate.
+   * @param listeners the {@link POSTaggerEvaluationMonitor evaluation listeners}.
    */
   public POSEvaluator(POSTagger tagger, POSTaggerEvaluationMonitor ... listeners) {
     super(listeners);
@@ -45,19 +44,18 @@ public class POSEvaluator extends Evaluator<POSSample> {
 
   /**
    * Evaluates the given reference {@link POSSample} object.
-   *
    * This is done by tagging the sentence from the reference
    * {@link POSSample} with the {@link POSTagger}. The
    * tags are then used to update the word accuracy score.
    *
-   * @param reference the reference {@link POSSample}.
+   * @param reference The {@link POSSample} to process.
    *
-   * @return the predicted {@link POSSample}.
+   * @return The predicted {@link POSSample}.
    */
   @Override
   protected POSSample processSample(POSSample reference) {
 
-    String[] predictedTags = tagger.tag(reference.getSentence(), reference.getAddictionalContext());
+    String[] predictedTags = tagger.tag(reference.getSentence(), reference.getAdditionalContext());
     String[] referenceTags = reference.getTags();
 
     for (int i = 0; i < referenceTags.length; i++) {
@@ -73,29 +71,24 @@ public class POSEvaluator extends Evaluator<POSSample> {
   }
 
   /**
-   * Retrieves the word accuracy.
+   * Accuracy defined as:
+   * {@code word accuracy = correctly detected tags / total words}
    *
-   * This is defined as:
-   * word accuracy = correctly detected tags / total words
-   *
-   * @return the word accuracy
+   * @return Retrieves the mean word accuracy.
    */
   public double getWordAccuracy() {
     return wordAccuracy.mean();
   }
 
   /**
-   * Retrieves the total number of words considered
-   * in the evaluation.
-   *
-   * @return the word count
+   * @return Retrieves the total number of words considered in the evaluation.
    */
   public long getWordCount() {
     return wordAccuracy.count();
   }
 
   /**
-   * Represents this objects as human readable {@link String}.
+   * Represents this object as human-readable {@link String}.
    */
   @Override
   public String toString() {

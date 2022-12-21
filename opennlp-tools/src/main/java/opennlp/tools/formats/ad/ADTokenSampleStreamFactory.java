@@ -27,7 +27,8 @@ import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class ADTokenSampleStreamFactory<P> extends
     DetokenizerSampleStreamFactory<TokenSample, P> {
@@ -44,6 +45,7 @@ public class ADTokenSampleStreamFactory<P> extends
     super(params);
   }
 
+  @Override
   public ObjectStream<TokenSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 

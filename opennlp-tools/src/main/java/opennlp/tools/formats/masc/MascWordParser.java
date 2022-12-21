@@ -25,11 +25,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Class to parse the word ("quark") segmentation stand-off annotation
+ * Class to parse the word ("quark") segmentation stand-off annotation.
  */
 class MascWordParser extends DefaultHandler {
 
-  private List<MascWord> wordAnchors = null;
+  private final List<MascWord> wordAnchors = new ArrayList<>();
 
   public List<MascWord> getAnchors() {
     return wordAnchors;
@@ -47,11 +47,6 @@ class MascWordParser extends DefaultHandler {
 
         int left = Integer.parseInt(anchors[0]);
         int right = Integer.parseInt(anchors[1]);
-
-        // initialize list
-        if (wordAnchors == null) {
-          wordAnchors = new ArrayList<MascWord>();
-        }
 
         wordAnchors.add(new MascWord(left, right, id));
       }
