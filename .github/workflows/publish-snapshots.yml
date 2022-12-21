@@ -21,7 +21,7 @@ name: Publish snapshot artifacts
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   publish:
