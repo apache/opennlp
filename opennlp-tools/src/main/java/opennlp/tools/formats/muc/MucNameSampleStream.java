@@ -31,13 +31,23 @@ public class MucNameSampleStream extends FilterObjectStream<String, NameSample> 
 
   private final Tokenizer tokenizer;
 
-  private List<NameSample> storedSamples = new ArrayList<>();
+  private final List<NameSample> storedSamples = new ArrayList<>();
 
+  /**
+   * Initializes a {@link MucNameSampleStream}.
+   *
+   * @param tokenizer The {@link Tokenizer} to use. Must not be {@code null}.
+   * @param samples The {@link ObjectStream<String> samples} as input.
+   *                Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   protected MucNameSampleStream(Tokenizer tokenizer, ObjectStream<String> samples) {
     super(samples);
     this.tokenizer = tokenizer;
   }
 
+  @Override
   public NameSample read() throws IOException {
     if (storedSamples.isEmpty()) {
 

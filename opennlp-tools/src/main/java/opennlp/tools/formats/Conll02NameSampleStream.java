@@ -19,11 +19,11 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
@@ -33,20 +33,22 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
 /**
- * Parser for the dutch and spanish ner training files of the CONLL 2002 shared task.
+ * Parser for the Dutch and Spanish ner training files of the CONLL 2002 shared task.
  * <p>
- * The dutch data has a -DOCSTART- tag to mark article boundaries,
+ * The Dutch data has a {@link #DOCSTART} tag to mark article boundaries,
  * adaptive data in the feature generators will be cleared before every article.<br>
- * The spanish data does not contain article boundaries,
+ * The Spanish data does not contain article boundaries,
  * adaptive data will be cleared for every sentence.
  * <p>
  * The data contains four named entity types: Person, Organization, Location and Misc.<br>
  * <p>
- * Data can be found on this web site:<br>
- * http://www.cnts.ua.ac.be/conll2002/ner/
+ * Data can be found on this
+ * <a href="http://www.cnts.ua.ac.be/conll2002/ner/">web site</a>.
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
   public enum LANGUAGE {
@@ -66,22 +68,32 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
 
   private final int types;
 
+  /**
+   * Initializes a {@link Conll02NameSampleStream}.
+   *
+   * @param lang The language of the CONLL 02 data.
+   * @param lineStream An {@link ObjectStream<String>} over the lines
+   *                   in the CONLL 02 data file.
+   * @param types The entity types to include in the Name Sample object stream.
+   */
   public Conll02NameSampleStream(LANGUAGE lang, ObjectStream<String> lineStream, int types) {
     this.lang = lang;
     this.lineStream = lineStream;
     this.types = types;
   }
 
+  /**
+   * Initializes a {@link Conll02NameSampleStream}.
+   *
+   * @param lang The language of the CONLL 02 data.
+   * @param in  The {@link InputStreamFactory} for the input file.
+   * @param types The entity types to include in the Name Sample object stream.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public Conll02NameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
-    this.lang = lang;
-    try {
-      this.lineStream = new PlainTextByLineStream(in, StandardCharsets.UTF_8);
-      System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
-    this.types = types;
+    this (lang, new PlainTextByLineStream(in, StandardCharsets.UTF_8), types);
+    System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
   }
 
   static Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
@@ -108,7 +120,7 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
     return new Span(begin, end, type);
   }
 
-
+  @Override
   public NameSample read() throws IOException {
 
     List<String> sentence = new ArrayList<>();
@@ -208,10 +220,12 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
     }
   }
 
+  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     lineStream.reset();
   }
 
+  @Override
   public void close() throws IOException {
     lineStream.close();
   }

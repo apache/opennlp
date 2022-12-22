@@ -28,7 +28,7 @@ import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
 
 /**
- * Base class for factories which need detokenizer.
+ * Base class for factories which need a {@link Detokenizer}.
  */
 public abstract class DetokenizerSampleStreamFactory<T, P> extends AbstractSampleStreamFactory<T, P> {
 

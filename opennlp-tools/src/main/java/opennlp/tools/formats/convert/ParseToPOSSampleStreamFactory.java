@@ -19,6 +19,7 @@ package opennlp.tools.formats.convert;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
 import opennlp.tools.parser.Parse;
@@ -26,8 +27,12 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
+ *
+ * @see ParseToPOSSampleStream
  */
+@Internal
 public class ParseToPOSSampleStreamFactory
         extends LanguageSampleStreamFactory<POSSample, ParseSampleStreamFactory.Parameters> {
 
@@ -35,6 +40,7 @@ public class ParseToPOSSampleStreamFactory
     super(ParseSampleStreamFactory.Parameters.class);
   }
 
+  @Override
   public ObjectStream<POSSample> create(String[] args) {
 
     ParseSampleStreamFactory.Parameters params =

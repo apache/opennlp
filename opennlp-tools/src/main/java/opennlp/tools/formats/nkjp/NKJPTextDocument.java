@@ -39,11 +39,24 @@ import org.xml.sax.SAXException;
 
 import opennlp.tools.util.XmlUtil;
 
+/**
+ * The National corpus of Polish (NKJP) format.
+ * <p>
+ * Information about the format are found on this
+ * <a href="http://nkjp.pl/index.php?page=0%26lang=1">web site</a>.
+ * <p>
+ * A 1-million word corpus can be found on this
+ * <a href="http://nkjp.pl/index.php?page=14%26lang=1">
+ *   web site</a>.
+ * <p>
+ * The NKJP schema can be found
+ * <a href="http://nlp.ipipan.waw.pl/TEI4NKJP/">here</a>.
+ */
 public class NKJPTextDocument {
 
-  Map<String, String> divtypes;
+  private Map<String, String> divtypes;
 
-  Map<String, Map<String, Map<String, String>>> texts;
+  private Map<String, Map<String, Map<String, String>>> texts;
 
   NKJPTextDocument() {
     divtypes = new HashMap<>();
@@ -61,7 +74,7 @@ public class NKJPTextDocument {
     Map<String, Map<String, Map<String, String>>> texts = new HashMap<>();
 
     try {
-      DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();;
+      DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();
       Document doc = docBuilder.parse(is);
 
       XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -143,7 +156,8 @@ public class NKJPTextDocument {
    * Segmentation etc. is done only in relation to the paragraph,
    * which are unique within a document. This is to simplify
    * working with the paragraphs within the document
-   * @return a map of paragaph IDs and their text
+   * 
+   * @return A map of paragraph IDs and their text.
    */
   Map<String, String> getParagraphs() {
     Map<String, String> paragraphs = new HashMap<>();
@@ -158,12 +172,14 @@ public class NKJPTextDocument {
   }
 
   /**
-   * Helper method to get the value of an attribute
-   * @param n The node being processed
-   * @param attrib The name of the attribute
-   * @param required Whether or not the attribute is required
+   * Helper method to get the value of an attribute.
+   * 
+   * @param n The {@link Node} to be processed.
+   * @param attrib The name of the attribute.
+   * @param required Whether the attribute is required or not.
+   *
    * @return The value of the attribute, or null if not required and not present
-   * @throws Exception
+   * @throws IOException Thrown if IO errors occurred.
    */
   private static String attrib(Node n, String attrib, boolean required) throws IOException {
     if (required && (n.getAttributes() == null || n.getAttributes().getLength() == 0)) {

@@ -37,7 +37,6 @@ public abstract class AbstractSampleStreamFactory<T,P> implements ObjectStreamFa
     return "eng";
   }
 
-  // FIXME
   public Class<P> getParameters() {
     return params;
   }

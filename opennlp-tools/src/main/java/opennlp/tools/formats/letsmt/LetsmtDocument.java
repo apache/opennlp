@@ -36,13 +36,17 @@ import org.xml.sax.helpers.DefaultHandler;
 import opennlp.tools.util.XmlUtil;
 
 /**
- * A structure to hold the letsmt document. The documents contains sentences and depending on the
+ * A structure to hold the letsmt document. The documents contain sentences and depending on the
  * source it either contains tokenized text (words) or an un-tokenized sentence string.
  * <p>
  * The format specification can be found
- * <a href="http://project.letsmt.eu/uploads/Deliverables/D2.1%20%20Specification%20of%20data%20formats%20v1%20final.pdf">here</a>.
+ * <a href="http://project.letsmt.eu/uploads/Deliverables/D2.1%20%20Specification%20of%20data%20formats%20v1%20final.pdf">
+ *   here</a>.
  */
 public class LetsmtDocument {
+
+  private static final String ORG_XML_FEATURES_DISALLOW_DOCTYPE_DECL =
+          "http://apache.org/xml/features/disallow-doctype-decl";
 
   public static class LetsmtSentence {
     private String nonTokenizedText;
@@ -61,12 +65,14 @@ public class LetsmtDocument {
     }
   }
 
-  // define a content handler to receive the sax events ...
+  /**
+   * A {@link DefaultHandler content handler} to receive and process SAX events.
+   */
   public static class LetsmtDocumentHandler extends DefaultHandler {
 
-    private List<LetsmtSentence> sentences = new ArrayList<>();
+    private final List<LetsmtSentence> sentences = new ArrayList<>();
 
-    private StringBuilder chars = new StringBuilder();
+    private final StringBuilder chars = new StringBuilder();
     private List<String> tokens = new ArrayList<>();
 
     @Override
@@ -88,7 +94,7 @@ public class LetsmtDocument {
           break;
 
         // TODO: The sentence should contain the id, so it can be tracked back to the
-        // place it came from
+        //       place it came from
         case "s":
           LetsmtSentence sentence = new LetsmtSentence();
 
@@ -107,16 +113,25 @@ public class LetsmtDocument {
     }
   }
 
-  private List<LetsmtSentence> sentences = new ArrayList<>();
+  private final List<LetsmtSentence> sentences;
 
   private LetsmtDocument(List<LetsmtSentence> sentences) {
     this.sentences = sentences;
   }
 
+  /**
+   * @return Retrieves the sentences of a {@link LetsmtDocument}.
+   */
   public List<LetsmtSentence> getSentences() {
     return Collections.unmodifiableList(sentences);
   }
 
+  /**
+   * @param letsmtXmlIn The {@link InputStream} referencing the document to parse.
+   *
+   * @return A valid {@link LetsmtDocument} instance.
+   * @throws IOException Thrown if IO errors occurred during loading or parsing.
+   */
   static LetsmtDocument parse(InputStream letsmtXmlIn) throws IOException {
     SAXParser saxParser = XmlUtil.createSaxParser();
 
@@ -124,7 +139,7 @@ public class LetsmtDocument {
       XMLReader xmlReader = saxParser.getXMLReader();
       LetsmtDocumentHandler docHandler = new LetsmtDocumentHandler();
       xmlReader.setContentHandler(docHandler);
-      xmlReader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      xmlReader.setFeature(ORG_XML_FEATURES_DISALLOW_DOCTYPE_DECL, true);
       xmlReader.parse(new InputSource(letsmtXmlIn));
       return new LetsmtDocument(docHandler.sentences);
     } catch (SAXException e) {
@@ -132,6 +147,12 @@ public class LetsmtDocument {
     }
   }
 
+  /**
+   * @param file The {@link File} referencing the document to parse.
+   *
+   * @return A valid {@link LetsmtDocument} instance.
+   * @throws IOException Thrown if IO errors occurred during loading or parsing.
+   */
   static LetsmtDocument parse(File file) throws IOException {
     try (InputStream in = new FileInputStream(file)) {
       return parse(in);

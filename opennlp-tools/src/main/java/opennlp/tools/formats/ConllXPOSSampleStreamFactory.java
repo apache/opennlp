@@ -27,13 +27,18 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
+ *
+ * @see ConllXPOSSampleStream
  */
+@Internal
 public class ConllXPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
 
   public static final String CONLLX_FORMAT = "conllx";
@@ -50,6 +55,7 @@ public class ConllXPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory
     super(params);
   }
 
+  @Override
   public ObjectStream<POSSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 

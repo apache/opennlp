@@ -34,6 +34,13 @@ public abstract class AbstractToSentenceSampleStream<T> extends
 
   private final int chunkSize;
 
+  /**
+   * @param detokenizer The {@link Detokenizer} to use. Must not be {@code null}.
+   * @param samples The {@link ObjectStream<T> samples} as input. Must not be {@code null}.
+   * @param chunkSize The size of chunks. Must be equal to or greater than {@code 0}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   AbstractToSentenceSampleStream(Detokenizer detokenizer,
       ObjectStream<T> samples, int chunkSize) {
     super(samples);
@@ -54,6 +61,7 @@ public abstract class AbstractToSentenceSampleStream<T> extends
 
   protected abstract String[] toSentence(T sample);
 
+  @Override
   public SentenceSample read() throws IOException {
     List<String[]> sentences = new ArrayList<>();
 

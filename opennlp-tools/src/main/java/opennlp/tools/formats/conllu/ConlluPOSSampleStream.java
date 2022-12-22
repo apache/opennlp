@@ -30,6 +30,12 @@ public class ConlluPOSSampleStream extends FilterObjectStream<ConlluSentence, PO
 
   private final ConlluTagset tagset;
 
+  /**
+   * Initializes a {@link ConlluPOSSampleStream}.
+   *
+   * @param samples The {@link ObjectStream<ConlluSentence> samples} used as input.
+   * @param tagset The {@link ConlluTagset} to use. Must not be {@code null}.
+   */
   public ConlluPOSSampleStream(ObjectStream<ConlluSentence> samples, ConlluTagset tagset) {
     super(samples);
     this.tagset = Objects.requireNonNull(tagset);

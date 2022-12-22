@@ -35,6 +35,7 @@ public class OntoNotesNameSampleStreamFactory extends
     super(OntoNotesFormatParameters.class);
   }
 
+  @Override
   public ObjectStream<NameSample> create(String[] args) {
 
     OntoNotesFormatParameters params = ArgumentParser.parse(args, OntoNotesFormatParameters.class);

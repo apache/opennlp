@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
@@ -55,6 +56,7 @@ import opennlp.tools.util.StringUtil;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
 
   protected final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;

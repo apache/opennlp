@@ -30,7 +30,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
- * Factory producing OpenNLP {@link MosesSentenceSampleStream}s.
+ * Factory producing OpenNLP {@link MosesSentenceSampleStream} objects.
  */
 public class MosesSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
 
@@ -46,6 +46,7 @@ public class MosesSentenceSampleStreamFactory<P> extends AbstractSampleStreamFac
     super(params);
   }
 
+  @Override
   public ObjectStream<SentenceSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 

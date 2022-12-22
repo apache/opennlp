@@ -27,6 +27,9 @@ import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * @see BioNLP2004NameSampleStream
+ */
 public class BioNLP2004NameSampleStreamFactory<P> extends AbstractSampleStreamFactory<NameSample, P> {
 
   interface Parameters extends BasicFormatParams {
@@ -43,6 +46,7 @@ public class BioNLP2004NameSampleStreamFactory<P> extends AbstractSampleStreamFa
     super(params);
   }
 
+  @Override
   public ObjectStream<NameSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);

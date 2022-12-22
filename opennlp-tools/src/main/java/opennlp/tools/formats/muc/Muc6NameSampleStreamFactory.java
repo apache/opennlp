@@ -47,6 +47,7 @@ public class Muc6NameSampleStreamFactory
         new Muc6NameSampleStreamFactory());
   }
 
+  @Override
   public ObjectStream<NameSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);

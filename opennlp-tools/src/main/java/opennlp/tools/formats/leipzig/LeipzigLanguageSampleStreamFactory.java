@@ -26,13 +26,18 @@ import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EncodingParameter;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.langdetect.LanguageSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
+ *
+ * @see LeipzigLanguageSampleStream
  */
+@Internal
 public class LeipzigLanguageSampleStreamFactory<P>
     extends AbstractSampleStreamFactory<LanguageSample, P> {
 
@@ -64,6 +69,7 @@ public class LeipzigLanguageSampleStreamFactory<P>
         "leipzig", new LeipzigLanguageSampleStreamFactory<>(Parameters.class));
   }
 
+  @Override
   public ObjectStream<LanguageSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);

@@ -23,6 +23,7 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.InputStreamFactory;
@@ -30,8 +31,10 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class WordTagSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
 
   public interface Parameters extends BasicFormatParams {
@@ -46,6 +49,7 @@ public class WordTagSampleStreamFactory<P> extends AbstractSampleStreamFactory<P
     super(params);
   }
 
+  @Override
   public ObjectStream<POSSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 

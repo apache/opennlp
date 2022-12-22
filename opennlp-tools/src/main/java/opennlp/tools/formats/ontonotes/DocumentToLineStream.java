@@ -27,10 +27,18 @@ import opennlp.tools.formats.brat.SegmenterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Reads a plain text file and return each line as a <code>String</code> object.
+ * Reads a plain text file and return each line as a {@link String} object.
  */
 public class DocumentToLineStream extends SegmenterObjectStream<String, String> {
 
+  /**
+   * Initializes a {@link DocumentToLineStream}.
+   *
+   * @param samples The {@link ObjectStream<String> samples} as input.
+   *                Must not be {@code null}.
+   *                
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   public DocumentToLineStream(ObjectStream<String> samples) {
     super(samples);
   }

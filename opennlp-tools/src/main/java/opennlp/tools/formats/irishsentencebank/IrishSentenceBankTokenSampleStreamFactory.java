@@ -27,6 +27,9 @@ import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * @see IrishSentenceBankTokenSampleStream
+ */
 public class IrishSentenceBankTokenSampleStreamFactory<P>
         extends DetokenizerSampleStreamFactory<TokenSample, P> {
 
@@ -43,6 +46,7 @@ public class IrishSentenceBankTokenSampleStreamFactory<P>
     super(params);
   }
 
+  @Override
   public ObjectStream<TokenSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);

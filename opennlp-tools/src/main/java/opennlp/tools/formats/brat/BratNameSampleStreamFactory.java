@@ -151,7 +151,7 @@ public class BratNameSampleStreamFactory
         tokenizer = WhitespaceTokenizer.INSTANCE;
       }
       else {
-        throw new TerminateToolException(-1, "Unkown tokenizer: " + tokenizerName);
+        throw new TerminateToolException(-1, "Unknown tokenizer: " + tokenizerName);
       }
     }
 

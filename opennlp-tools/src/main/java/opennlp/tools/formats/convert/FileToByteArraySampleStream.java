@@ -24,11 +24,22 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
+ */
+@Internal
 public class FileToByteArraySampleStream extends FilterObjectStream<File, byte[]> {
 
+  /**
+   * Initializes a {@link FileToByteArraySampleStream}.
+   *
+   * @param samples The {@link ObjectStream} containing the files.
+   */
   public FileToByteArraySampleStream(ObjectStream<File> samples) {
     super(samples);
   }
@@ -48,6 +59,7 @@ public class FileToByteArraySampleStream extends FilterObjectStream<File, byte[]
     return bytes.toByteArray();
   }
 
+  @Override
   public byte[] read() throws IOException {
 
     File sampleFile = samples.read();

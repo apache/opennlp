@@ -21,20 +21,31 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class ParseToPOSSampleStream extends FilterObjectStream<Parse, POSSample>  {
 
+  /**
+   * Initializes a {@link ParseToPOSSampleStream}.
+   *
+   * @param samples The {@link ObjectStream<Parse> samples} as input. Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   public ParseToPOSSampleStream(ObjectStream<Parse> samples) {
     super(samples);
   }
 
+  @Override
   public POSSample read() throws IOException {
 
     Parse parse = samples.read();

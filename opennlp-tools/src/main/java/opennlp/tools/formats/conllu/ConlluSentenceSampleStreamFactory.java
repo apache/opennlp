@@ -23,14 +23,19 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
+ *
+ * @see ConlluSentenceSampleStream
  */
+@Internal
 public class ConlluSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends BasicFormatParams {

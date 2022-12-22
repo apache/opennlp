@@ -20,9 +20,15 @@ package opennlp.tools.formats.irishsentencebank;
 import java.io.IOException;
 import java.util.Iterator;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
+ */
+@Internal
 class IrishSentenceBankTokenSampleStream implements ObjectStream<TokenSample>  {
 
   private final IrishSentenceBankDocument source;

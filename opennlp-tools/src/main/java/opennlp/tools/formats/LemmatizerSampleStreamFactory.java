@@ -46,6 +46,7 @@ public class LemmatizerSampleStreamFactory<P> extends AbstractSampleStreamFactor
     super(params);
   }
 
+  @Override
   public ObjectStream<LemmaSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
