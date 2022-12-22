@@ -21,16 +21,16 @@ import java.util.List;
 
 public class DynamicEvalParameters {
 
-  /** Mapping between outcomes and paramater values for each context.
+  /** Mapping between outcomes and parameter values for each context.
    * The integer representation of the context can be found using <code>pmap</code>.*/
-  private List<? extends Context> params;
+  private final List<? extends Context> params;
 
   /** The number of outcomes being predicted. */
   private final int numOutcomes;
 
-
   /**
-   * Creates a set of paramters which can be evaulated with the eval method.
+   * Creates a set of parameters which can be evaluated with the eval method.
+   * 
    * @param params The parameters of the model.
    * @param numOutcomes The number of outcomes.
    */

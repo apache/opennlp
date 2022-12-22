@@ -17,8 +17,22 @@
 
 package opennlp.tools.commons;
 
+import java.util.Map;
+
+import opennlp.tools.util.TrainingParameters;
+
 /**
  * Represents a common base for training implementations.
  */
 public interface Trainer {
+
+  /**
+   * Conducts the initialization of an {@link Trainer} via
+   * {@link TrainingParameters} and a {@link Map report map}.
+   *
+   * @param trainParams The {@link TrainingParameters} to use.
+   * @param reportMap The {@link Map} instance used as report map.
+   */
+  void init(TrainingParameters trainParams, Map<String, String> reportMap);
+
 }

@@ -17,13 +17,29 @@
 
 package opennlp.tools.ml.model;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 
+/**
+ * Describes generic ways to read data from a {@link DataInputStream}.
+ */
 public interface DataReader {
 
-  public double readDouble() throws IOException;
+  /**
+   * @return Reads and returns a {@code double} value.
+   * @throws IOException Thrown if IO errors occurred during read operation.
+   */
+  double readDouble() throws IOException;
 
-  public int readInt() throws IOException;
+  /**
+   * @return Reads and returns an {@code int} value.
+   * @throws IOException Thrown if IO errors occurred during read operation.
+   */
+  int readInt() throws IOException;
 
-  public String readUTF() throws IOException;
+  /**
+   * @return Reads and returns {@link String UTF-encoded characters}.
+   * @throws IOException Thrown if IO errors occurred during read operation.
+   */
+  String readUTF() throws IOException;
 }

@@ -20,22 +20,42 @@ package opennlp.tools.ml.model;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
+/**
+ * A {@link DataReader} implementation based on {@link ObjectInputStream}.
+ */
 public class ObjectDataReader implements DataReader {
 
   protected ObjectInputStream ois;
 
+  /**
+   * Instantiates an {@link ObjectDataReader}.
+   *
+   * @param ois The open {@link ObjectInputStream} to use.
+   */
   public ObjectDataReader(ObjectInputStream ois) {
     this.ois = ois;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public double readDouble() throws IOException {
     return ois.readDouble();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public int readInt() throws IOException {
     return ois.readInt();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public String readUTF() throws IOException {
     return ois.readUTF();
   }

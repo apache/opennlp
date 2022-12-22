@@ -41,6 +41,7 @@ public class ComparableEvent implements Comparable<ComparableEvent> {
     this(oc, pids, null);
   }
 
+  @Override
   public int compareTo(ComparableEvent ce) {
 
     int compareOutcome = Integer.compare(outcome, ce.outcome);
@@ -57,17 +58,17 @@ public class ComparableEvent implements Comparable<ComparableEvent> {
       }
       if (values != null && ce.values != null) {
         float compareValues = Float.compare(values[i], ce.values[i]);
-        if (!Float.valueOf(compareValues).equals(Float.valueOf(0.0f))) {
+        if (!Float.valueOf(compareValues).equals(0.0f)) {
           return (int) compareValues;
         }
       } else if (values != null) {
         float compareValues = Float.compare(values[i], 1.0f);
-        if (!Float.valueOf(compareValues).equals(Float.valueOf(0.0f))) {
+        if (!Float.valueOf(compareValues).equals(0.0f)) {
           return (int) compareValues;
         }
       } else if (ce.values != null) {
         float compareValues = Float.compare(1.0f, ce.values[i]);
-        if (!Float.valueOf(compareValues).equals(Float.valueOf(0.0f))) {
+        if (!Float.valueOf(compareValues).equals(0.0f)) {
           return (int) compareValues;
         }
       }
@@ -98,6 +99,7 @@ public class ComparableEvent implements Comparable<ComparableEvent> {
     return Objects.hash(outcome, Arrays.hashCode(predIndexes), seen, Arrays.hashCode(values));
   }
 
+  @Override
   public String toString() {
     StringBuilder s = new StringBuilder().append(outcome).append(":");
     for (int i = 0; i < predIndexes.length; i++) {

@@ -18,20 +18,23 @@
 package opennlp.tools.ml;
 
 import java.io.IOException;
-import java.util.Map;
 
 import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.ml.model.SequenceStream;
-import opennlp.tools.util.TrainingParameters;
 
 public interface SequenceTrainer extends Trainer {
 
   String SEQUENCE_VALUE = "Sequence";
 
-  @Deprecated
-  void init(Map<String, String> trainParams, Map<String, String> reportMap);
-  void init(TrainingParameters trainParams, Map<String, String> reportMap);
-
+  /**
+   * Trains a {@link SequenceClassificationModel} for given {@link SequenceStream<T> events}.
+   *
+   * @param events The input {@link SequenceStream<T> events}.
+   * @param <T> The generic type of elements to process via the {@link SequenceStream}.
+   *
+   * @return The trained {@link SequenceClassificationModel}.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   <T> SequenceClassificationModel<String> train(SequenceStream<T> events) throws IOException;
 }

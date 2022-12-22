@@ -24,15 +24,24 @@ import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 
-
+/**
+ * An abstract, basic implementation of a model reader.
+ */
 public abstract class AbstractModelReader {
 
   /**
-   * The number of predicates contained in the model.
+   * The number of predicates contained in a model.
    */
   protected int NUM_PREDS;
   protected DataReader dataReader;
 
+  /**
+   * Initializes a {@link AbstractModelReader} via a {@link File}.
+   *
+   * @param f The {@link File} that references the model to be read.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public AbstractModelReader(File f) throws IOException {
     String filename = f.getName();
     InputStream input;
@@ -54,6 +63,11 @@ public abstract class AbstractModelReader {
     }
   }
 
+  /**
+   * Initializes a {@link AbstractModelReader} via a {@link DataReader}.
+   *
+   * @param dataReader The {@link DataReader} that references the model to be read.
+   */
   public AbstractModelReader(DataReader dataReader) {
     super();
     this.dataReader = dataReader;
@@ -61,42 +75,72 @@ public abstract class AbstractModelReader {
 
   /**
    * Implement as needed for the format the model is stored in.
+   *
+   * @return Reads in an {@code int} value from the underlying {@link DataReader}.
    */
-  public int readInt() throws java.io.IOException {
+  public int readInt() throws IOException {
     return dataReader.readInt();
   }
 
   /**
    * Implement as needed for the format the model is stored in.
+   *
+   * @return Reads in a {@code double} value from the underlying {@link DataReader}.
    */
-  public double readDouble() throws java.io.IOException {
+  public double readDouble() throws IOException {
     return dataReader.readDouble();
   }
 
   /**
    * Implement as needed for the format the model is stored in.
+   *
+   * @return Reads in an {@code UTF-encoded String}
+   *         value from the underlying {@link DataReader}.
    */
-  public String readUTF() throws java.io.IOException {
+  public String readUTF() throws IOException {
     return dataReader.readUTF();
   }
 
+  /**
+   * @return Retrieves the read {@link AbstractModel} instance.
+   * @throws IOException Thrown if IO errors occurred constructing the model.
+   */
   public AbstractModel getModel() throws IOException {
     checkModelType();
     return constructModel();
   }
 
-  public abstract void checkModelType() throws java.io.IOException;
+  /**
+   * Checks the model type via the the underlying {@link DataReader}.
+   * 
+   * @throws IOException Thrown if IO errors occurred checking the model type.
+   */
+  public abstract void checkModelType() throws IOException;
 
-  public abstract AbstractModel constructModel() throws java.io.IOException;
+  /**
+   * Constructs a {@link AbstractModel model}.
+   *
+   * @return A {@link AbstractModel} reconstructed from a model's (read) attributes.
+   * @throws IOException Thrown if IO errors occurred during (re-)construction.
+   */
+  public abstract AbstractModel constructModel() throws IOException;
 
-  protected String[] getOutcomes() throws java.io.IOException {
+  /**
+   * @return Reads and retrieves the {@code outcome labels} from the model.
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  protected String[] getOutcomes() throws IOException {
     int numOutcomes = readInt();
     String[] outcomeLabels = new String[numOutcomes];
     for (int i = 0; i < numOutcomes; i++) outcomeLabels[i] = readUTF();
     return outcomeLabels;
   }
 
-  protected int[][] getOutcomePatterns() throws java.io.IOException {
+  /**
+   * @return Reads and retrieves the {@code outcome patterns} from the model.
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  protected int[][] getOutcomePatterns() throws IOException {
     int numOCTypes = readInt();
     int[][] outcomePatterns = new int[numOCTypes][];
     for (int i = 0; i < numOCTypes; i++) {
@@ -110,7 +154,11 @@ public abstract class AbstractModelReader {
     return outcomePatterns;
   }
 
-  protected String[] getPredicates() throws java.io.IOException {
+  /**
+   * @return Reads and retrieves the {@code predicates} from the model.
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  protected String[] getPredicates() throws IOException {
     NUM_PREDS = readInt();
     String[] predLabels = new String[NUM_PREDS];
     for (int i = 0; i < NUM_PREDS; i++)
@@ -119,15 +167,16 @@ public abstract class AbstractModelReader {
   }
 
   /**
-   * Reads the parameters from a file and populates an array of context objects.
-   * @param outcomePatterns The outcomes patterns for the model.  The first index refers to which
-   *     outcome pattern (a set of outcomes that occurs with a context) is being specified.  The
-   *     second index specifies the number of contexts which use this pattern at index 0, and the
-   *     index of each outcomes which make up this pattern in indicies 1-n.
-   * @return An array of context objects.
-   * @throws java.io.IOException when the model file does not match the outcome patterns or can not be read.
+   * Reads the parameters from a file and populates an array of {@link Context} objects.
+   * 
+   * @param outcomePatterns The outcome patterns for the model. The first index refers to which
+   *     outcome pattern (a set of outcomes that occurs with a context) is being specified. The
+   *     second index specifies the number of contexts which use this pattern at index {@code 0},
+   *     and the index of each outcome which make up this pattern in indices {@code 1-n}.
+   * @return An array of {@link Context} objects.
+   * @throws IOException Thrown when the model file does not match the outcome patterns or can not be read.
    */
-  protected Context[] getParameters(int[][] outcomePatterns) throws java.io.IOException {
+  protected Context[] getParameters(int[][] outcomePatterns) throws IOException {
     Context[] params = new Context[NUM_PREDS];
     int pid = 0;
     for (int[] pattern : outcomePatterns) {

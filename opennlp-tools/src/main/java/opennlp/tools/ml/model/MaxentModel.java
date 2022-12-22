@@ -23,90 +23,84 @@ package opennlp.tools.ml.model;
 public interface MaxentModel {
 
   /**
-   * Evaluates a context.
+   * Evaluates a {@code context}.
    *
-   * @param context A list of String names of the contextual predicates
+   * @param context An array of String names of the contextual predicates
    *                which are to be evaluated together.
-   * @return an array of the probabilities for each of the different
-   *         outcomes, all of which sum to 1.
+   * @return An array of the probabilities for each of the different
+   *         outcomes, all of which sum to {@code 1}.
    *
    **/
   double[] eval(String[] context);
 
   /**
-     * Evaluates a context.
+     * Evaluates a {@code context}.
      *
-     * @param context A list of String names of the contextual predicates
+     * @param context An array of String names of the contextual predicates
      *                which are to be evaluated together.
      * @param probs An array which is populated with the probabilities for each of the different
      *         outcomes, all of which sum to 1.
-     * @return an array of the probabilities for each of the different outcomes, all of which sum to 1.
+     * @return An array of the probabilities for each of the different
+     *         outcomes, all of which sum to {@code 1}.
      **/
   double[] eval(String[] context, double[] probs);
 
   /**
-   * Evaluates a contexts with the specified context values.
-   * @param context A list of String names of the contextual predicates
-     *                which are to be evaluated together.
+   * Evaluates a {@code context} with the specified context {@code values}.
+   *
+   * @param context An array of String names of the contextual predicates
+     *              which are to be evaluated together.
    * @param values The values associated with each context.
-   * @return an array of the probabilities for each of the different outcomes, all of which sum to 1.
+   * @return An array of the probabilities for each of the different
+   *         outcomes, all of which sum to {@code 1}.
    */
   double[] eval(String[] context, float[] values);
 
   /**
-   * Simple function to return the outcome associated with the index
+   * Retrieves the outcome associated with the index
    * containing the highest probability in the double[].
    *
-   * @param outcomes A <code>double[]</code> as returned by the
-   *            <code>eval(String[] context)</code>
-   *            method.
-   * @return the String name of the best outcome
+   * @param outcomes A {@code double[]} as returned by the
+   *                 {@link #eval(String[])} method.
+   * @return The String name of the best outcome.
    **/
   String getBestOutcome(double[] outcomes);
 
   /**
-   * Return a string matching all the outcome names with all the
-   * probabilities produced by the <code>eval(String[]
-   * context)</code> method.
+   * Retrieves a string matching all the outcome names with all the
+   * probabilities produced by the {@link #eval(String[])} method.
    *
-   * @param outcomes A <code>double[]</code> as returned by the
-   *            <code>eval(String[] context)</code>
-   *            method.
-   * @return    String containing outcome names paired with the normalized
-   *            probability (contained in the <code>double[] ocs</code>)
-   *            for each one.
+   * @param outcomes A {@code double[]} as returned by the
+   *                 {@link #eval(String[])} method.
+   * @return String containing outcome names paired with the normalized
+   *         probability (contained in the {@code double[] ocs})
+   *         for each one.
    **/
   // TODO: This should be removed, can't be used anyway without format spec
   String getAllOutcomes(double[] outcomes);
 
   /**
-   * Gets the String name of the outcome associated with the index
-   * i.
+   * Retrieves the String name of the outcome associated with the index {@code i}.
    *
-   * @param i the index for which the name of the associated outcome is
+   * @param i The index for which the name of the associated outcome is
    *          desired.
-   * @return the String name of the outcome
+   * @return The String name of the outcome
    **/
   String getOutcome(int i);
 
   /**
-   * Gets the index associated with the String name of the given
+   * Retrieves the index associated with the String name of the given
    * outcome.
    *
-   * @param outcome the String name of the outcome for which the
-   *          index is desired
-   * @return the index if the given outcome label exists for this
-   *     model, -1 if it does not.
+   * @param outcome The String name of the outcome for which the
+   *                index is desired,
+   * @return The index if the given outcome label exists for this
+   *         model, {@code -1} if it does not.
    **/
   int getIndex(String outcome);
 
-  /*
-   * Returns the data structures relevant to storing the model.
-   **/
-  // public Object[] getDataStructures();
-
-  /** Returns the number of outcomes for this model.
-   *  @return The number of outcomes.
+  /**
+   *  @return Retrieves the number of outcomes for this model.
    **/
   int getNumOutcomes();
 

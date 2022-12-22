@@ -24,30 +24,55 @@ import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.EvalParameters;
+import opennlp.tools.ml.model.MaxentModel;
 
+/**
+ * A {@link MaxentModel model} implementation based one the perceptron algorithm.
+ * <p>
+ * Each outcome is represented as a binary perceptron classifier.
+ * This supports standard (integer) weighting as well average weighting as described in:
+ * Discriminative Training Methods for Hidden Markov Models: Theory and Experiments
+ * with the Perceptron Algorithm. Michael Collins, EMNLP 2002.
+ */
 public class PerceptronModel extends AbstractModel {
 
+  /**
+   * Initializes a {@link PerceptronModel}.
+   *
+   * @param params The {@link Context parameters} to set.
+   * @param predLabels The predicted labels.
+   * @param outcomeNames The names of the outcomes.
+   */
   public PerceptronModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     super(params,predLabels,outcomeNames);
     modelType = ModelType.Perceptron;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public double[] eval(String[] context) {
     return eval(context,new double[evalParams.getNumOutcomes()]);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public double[] eval(String[] context, float[] values) {
     return eval(context,values,new double[evalParams.getNumOutcomes()]);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public double[] eval(String[] context, double[] probs) {
     return eval(context,null,probs);
   }
 
-  public double[] eval(String[] context, float[] values,double[] outsums) {
+  public double[] eval(String[] context, float[] values, double[] outsums) {
     Context[] scontexts = new Context[context.length];
     java.util.Arrays.fill(outsums, 0);
     for (int i = 0; i < context.length; i++) {
@@ -56,12 +81,32 @@ public class PerceptronModel extends AbstractModel {
     return eval(scontexts,values,outsums,evalParams,true);
   }
 
+  /**
+   * Evaluates a {@link PerceptronModel}.
+   * 
+   * @param context The context parameters as {@code int[]}.
+   * @param prior The data prior to the evaluation as {@code double[]}.
+   * @param model The {@link EvalParameters} used for evaluation.
+   *
+   * @return The resulting evaluation data as {@code double[]}.
+   */
   public static double[] eval(int[] context, double[] prior, EvalParameters model) {
     return eval(context,null,prior,model,true);
   }
 
-  static double[] eval(int[] context, float[] values, double[] prior, EvalParameters model,
-                              boolean normalize) {
+  /**
+   * Evaluates a {@link PerceptronModel}.
+   *
+   * @param context The context parameters as {@code int[]}.
+   * @param values The {@code float[]} values to be used.
+   * @param prior The data prior to the evaluation as {@code double[]}.
+   * @param model The {@link EvalParameters} used for evaluation.
+   * @param normalize Whether to normalize, or not.
+   *
+   * @return The resulting evaluation data as {@code double[]}.
+   */
+  static double[] eval(int[] context, float[] values, double[] prior,
+                       EvalParameters model, boolean normalize) {
     Context[] scontexts = new Context[context.length];
     for (int i = 0; i < context.length; i++) {
       scontexts[i] = model.getParams()[context[i]];
@@ -70,8 +115,19 @@ public class PerceptronModel extends AbstractModel {
     return eval(scontexts, values, prior, model, normalize);
   }
 
-  static double[] eval(Context[] context, float[] values, double[] prior, EvalParameters model,
-                       boolean normalize) {
+  /**
+   * Evaluates a {@link PerceptronModel}.
+   *
+   * @param context The {@link Context[] parameters} to set..
+   * @param values The {@code float[]} values to be used.
+   * @param prior The data prior to the evaluation as {@code double[]}.
+   * @param model The {@link EvalParameters} used for evaluation.
+   * @param normalize Whether to normalize, or not.
+   *
+   * @return The resulting evaluation data as {@code double[]}.
+   */
+  static double[] eval(Context[] context, float[] values, double[] prior,
+                       EvalParameters model, boolean normalize) {
 
     ArrayMath.sumFeatures(context, values, prior);
 

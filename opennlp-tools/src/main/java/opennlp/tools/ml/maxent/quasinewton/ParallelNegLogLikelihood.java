@@ -35,14 +35,20 @@ import opennlp.tools.ml.model.DataIndexer;
 public class ParallelNegLogLikelihood extends NegLogLikelihood {
 
   // Number of threads
-  private int threads;
+  private final int threads;
 
   // Partial value of negative log-likelihood to be computed by each thread
-  private double[] negLogLikelihoodThread;
+  private final double[] negLogLikelihoodThread;
 
   // Partial gradient
-  private double[][] gradientThread;
+  private final double[][] gradientThread;
 
+  /**
+   * @param indexer The {@link DataIndexer} to use as input provider.
+   * @param threads The number of thread to compute with in parallel.
+   *                Must be greater than {@code 0}.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
+   */
   public ParallelNegLogLikelihood(DataIndexer indexer, int threads) {
     super(indexer);
 
@@ -56,7 +62,11 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
   }
 
   /**
-   * Negative log-likelihood
+   * Computes the negative log-likelihood.
+   *
+   * @param x The input.
+   * @return Returns the computed negative log-likelihood.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   @Override
   public double valueAt(double[] x) {
@@ -77,7 +87,11 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
   }
 
   /**
-   * Compute gradient
+   * Computes the gradient.
+   *
+   * @param x The input.
+   * @return Returns the computed gradient.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   @Override
   public double[] gradientAt(double[] x) {
@@ -101,7 +115,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
   }
 
   /**
-   * Compute tasks in parallel
+   * Computes the specified tasks in parallel.
    */
   private void computeInParallel(double[] x, Class<? extends ComputeTask> taskClass) {
 
@@ -142,9 +156,9 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
   }
 
   /**
-   * Task that is computed in parallel
+   * A {@link ComputeTask} that is computed in parallel.
    */
-  abstract class ComputeTask implements Callable<ComputeTask> {
+  static abstract class ComputeTask implements Callable<ComputeTask> {
 
     final int threadIndex;
 
@@ -165,7 +179,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
   }
 
   /**
-   * Task for computing partial value of negative log-likelihood
+   * A {@link ComputeTask} for computing partial value of negative log-likelihood.
    */
   class NegLLComputeTask extends ComputeTask {
 
@@ -204,7 +218,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
   }
 
   /**
-   * Task for computing partial gradient
+   * A {@link ComputeTask} for computing partial gradient.
    */
   class GradientComputeTask extends ComputeTask {
 

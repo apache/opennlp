@@ -25,18 +25,36 @@ import opennlp.tools.ml.maxent.io.QNModelReader;
 import opennlp.tools.ml.naivebayes.NaiveBayesModelReader;
 import opennlp.tools.ml.perceptron.PerceptronModelReader;
 
+/**
+ * An generic {@link AbstractModelReader} implementation.
+ *
+ * @see AbstractModelReader
+ */
 public class GenericModelReader extends AbstractModelReader {
 
   private AbstractModelReader delegateModelReader;
 
+  /**
+   * Initializes a {@link GenericModelReader} via a {@link File}.
+   *
+   * @param f The {@link File} that references the model to be read.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public GenericModelReader(File f) throws IOException {
     super(f);
   }
 
+  /**
+   * Initializes a {@link GenericModelReader} via a {@link DataReader}.
+   *
+   * @param dataReader The {@link DataReader} that references the model to be read.
+   */
   public GenericModelReader(DataReader dataReader) {
     super(dataReader);
   }
 
+  @Override
   public void checkModelType() throws IOException {
     String modelType = readUTF();
     switch (modelType) {
@@ -57,7 +75,7 @@ public class GenericModelReader extends AbstractModelReader {
     }
   }
 
-
+  @Override
   public AbstractModel constructModel() throws IOException {
     return delegateModelReader.constructModel();
   }

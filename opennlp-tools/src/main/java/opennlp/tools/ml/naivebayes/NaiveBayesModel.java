@@ -22,17 +22,29 @@ import java.util.Map;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.EvalParameters;
+import opennlp.tools.ml.model.MaxentModel;
 
 /**
- * Class implementing the multinomial Naive Bayes classifier model.
+ * A {@link MaxentModel} implementation of the multinomial Naive Bayes classifier model.
+ *
+ * @see AbstractModel
+ * @see MaxentModel
  */
 public class NaiveBayesModel extends AbstractModel {
 
   protected double[] outcomeTotals;
   protected long vocabulary;
 
+  /**
+   * Initializes a {@link NaiveBayesModel}.
+   *
+   * @param params The {@link Context parameters} to set.
+   * @param predLabels The predicted labels.
+   * @param pmap A {@link Map} that provides a mapping between predicates and contexts.
+   * @param outcomeNames The names of the outcomes.
+   */
   NaiveBayesModel(Context[] params, String[] predLabels, Map<String, Context> pmap,
-                         String[] outcomeNames) {
+                  String[] outcomeNames) {
     super(params, predLabels, pmap, outcomeNames);
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
     this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length,
@@ -40,6 +52,13 @@ public class NaiveBayesModel extends AbstractModel {
     modelType = ModelType.NaiveBayes;
   }
 
+  /**
+   * Initializes a {@link NaiveBayesModel}.
+   *
+   * @param params The {@link Context parameters} to set.
+   * @param predLabels The predicted labels.
+   * @param outcomeNames The names of the outcomes.
+   */
   public NaiveBayesModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     super(params, predLabels, outcomeNames);
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
@@ -60,14 +79,26 @@ public class NaiveBayesModel extends AbstractModel {
     return outcomeTotals;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public double[] eval(String[] context) {
     return eval(context, new double[evalParams.getNumOutcomes()]);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public double[] eval(String[] context, float[] values) {
     return eval(context, values, new double[evalParams.getNumOutcomes()]);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public double[] eval(String[] context, double[] probs) {
     return eval(context, null, probs);
   }
@@ -81,10 +112,30 @@ public class NaiveBayesModel extends AbstractModel {
     return eval(scontexts, values, outsums, evalParams, true);
   }
 
+  /**
+   * Evaluates a {@link NaiveBayesModel}.
+   *
+   * @param context The context parameters as {@code int[]}.
+   * @param prior The data prior to the evaluation as {@code double[]}.
+   * @param model The {@link EvalParameters} used for evaluation.
+   *
+   * @return The resulting evaluation data as {@code double[]}.
+   */
   public static double[] eval(int[] context, double[] prior, EvalParameters model) {
     return eval(context, null, prior, model, true);
   }
 
+  /**
+   * Evaluates a {@link NaiveBayesModel}.
+   *
+   * @param context The {@link Context[] parameters} to set..
+   * @param values The {@code float[]} values to be used.
+   * @param prior The data prior to the evaluation as {@code double[]}.
+   * @param model The {@link EvalParameters} used for evaluation.
+   * @param normalize Whether to normalize, or not.
+   *
+   * @return The resulting evaluation data as {@code double[]}.
+   */
   static double[] eval(Context[] context, float[] values, double[] prior,
                        EvalParameters model, boolean normalize) {
     Probabilities<Integer> probabilities = new LogProbabilities<>();
@@ -126,6 +177,18 @@ public class NaiveBayesModel extends AbstractModel {
     return prior;
   }
 
+
+  /**
+   * Evaluates a {@link NaiveBayesModel}.
+   *
+   * @param context The context parameters as {@code int[]}.
+   * @param values The {@code float[]} values to be used.
+   * @param prior The data prior to the evaluation as {@code double[]}.
+   * @param model The {@link EvalParameters} used for evaluation.
+   * @param normalize Whether to normalize, or not.
+   *
+   * @return The resulting evaluation data as {@code double[]}.
+   */
   static double[] eval(int[] context, float[] values, double[] prior,
                               EvalParameters model, boolean normalize) {
     Context[] scontexts = new Context[context.length];
@@ -140,15 +203,15 @@ public class NaiveBayesModel extends AbstractModel {
                                        double vocabulary, boolean isSmoothed) {
     if (isSmoothed)
       return getSmoothedProbability(numerator, denominator, vocabulary);
-    else if (denominator == 0 || denominator < Double.MIN_VALUE)
+    else if (denominator == 0 || denominator <= Double.MIN_VALUE)
       return 0;
     else
-      return 1.0 * numerator / denominator;
+      return numerator / denominator;
   }
 
   private static double getSmoothedProbability(double numerator, double denominator, double vocabulary) {
     final double delta = 0.05; // Lidstone smoothing
 
-    return 1.0 * (numerator + delta) / (denominator + delta * vocabulary);
+    return (numerator + delta) / (denominator + delta * vocabulary);
   }
 }

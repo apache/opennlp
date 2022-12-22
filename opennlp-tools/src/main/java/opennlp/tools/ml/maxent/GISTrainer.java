@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.ArrayMath;
-import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.Event;
@@ -43,21 +42,24 @@ import opennlp.tools.util.TrainingParameters;
 
 
 /**
- * An implementation of Generalized Iterative Scaling.  The reference paper
- * for this implementation was Adwait Ratnaparkhi's tech report at the
+ * An implementation of Generalized Iterative Scaling (GIS).
+ * <p>
+ * The reference paper for this implementation was Adwait Ratnaparkhi's tech report at the
  * University of Pennsylvania's Institute for Research in Cognitive Science,
- * and is available at <a href ="ftp://ftp.cis.upenn.edu/pub/ircs/tr/97-08.ps.Z"><code>ftp://ftp.cis.upenn.edu/pub/ircs/tr/97-08.ps.Z</code></a>.
+ * and is available at <a href ="ftp://ftp.cis.upenn.edu/pub/ircs/tr/97-08.ps.Z">
+ *   ftp://ftp.cis.upenn.edu/pub/ircs/tr/97-08.ps.Z</a>.
  * <p>
  * The slack parameter used in the above implementation has been removed by default
  * from the computation and a method for updating with Gaussian smoothing has been
  * added per Investigating GIS and Smoothing for Maximum Entropy Taggers, Clark and Curran (2002).
- * <a href="http://acl.ldc.upenn.edu/E/E03/E03-1071.pdf"><code>http://acl.ldc.upenn.edu/E/E03/E03-1071.pdf</code></a>
- * The slack parameter can be used by setting <code>useSlackParameter</code> to true.
- * Gaussian smoothing can be used by setting <code>useGaussianSmoothing</code> to true.
+ * <a href="http://acl.ldc.upenn.edu/E/E03/E03-1071.pdf">http://acl.ldc.upenn.edu/E/E03/E03-1071.pdf</a>.
  * <p>
- * A prior can be used to train models which converge to the distribution which minimizes the
+ * The slack parameter can be used by setting {@code useSlackParameter} to {@code true}.
+ * Gaussian smoothing can be used by setting {@code useGaussianSmoothing} to {@code true}.
+ * <p>
+ * A {@link Prior} can be used to train models which converge to the distribution which minimizes the
  * relative entropy between the distribution specified by the empirical constraints of the training
- * data and the specified prior.  By default, the uniform distribution is used as the prior.
+ * data and the specified prior. By default, the uniform distribution is used as the prior.
  */
 public class GISTrainer extends AbstractEventTrainer {
 
@@ -82,7 +84,7 @@ public class GISTrainer extends AbstractEventTrainer {
   // actually didn't see.  Defaulted to 0.1.
   private double _smoothingObservation = 0.1;
   /**
-   * Number of unique events which occured in the event set.
+   * Number of unique events which occurred in the event set.
    */
   private int numUniqueEvents;
   /**
@@ -160,18 +162,26 @@ public class GISTrainer extends AbstractEventTrainer {
   private static final double GAUSSIAN_SMOOTHING_SIGMA_DEFAULT = 2.0;
   
   /**
-   * Creates a new <code>GISTrainer</code> instance which does not print
-   * progress messages about training to STDOUT.
+   * Initializes a {@link GISTrainer}.
+   * <p>
+   * <b>Note:</b><br>
+   * The resulting instance does not print progress messages about training to STDOUT.
    */
   public GISTrainer() {
     printMessages = false;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public boolean isSortAndMerge() {
     return true;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void init(TrainingParameters trainingParameters, Map<String, String> reportMap) {
     super.init(trainingParameters, reportMap);
@@ -208,22 +218,23 @@ public class GISTrainer extends AbstractEventTrainer {
     if (useSimpleSmoothing && useGaussianSmoothing) 
       throw new RuntimeException("Cannot set both Gaussian smoothing and Simple smoothing");
   }
-  
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public MaxentModel doTrain(DataIndexer indexer) throws IOException {
     int iterations = getIterations();
 
     int threads = trainingParameters.getIntParameter(TrainingParameters.THREADS_PARAM, 1);
-    AbstractModel model = trainModel(iterations, indexer, threads);
-
-    return model;
+    return trainModel(iterations, indexer, threads);
   }
 
   /**
-   * Creates a new <code>GISTrainer</code> instance.
+   * Initializes a {@link GISTrainer}.
    *
-   * @param printMessages sends progress messages about training to
-   *                      STDOUT when true; trains silently otherwise.
+   * @param printMessages Whether to send progress messages about training to
+   *                      STDOUT when {@code true}; trains silently otherwise.
    */
   GISTrainer(boolean printMessages) {
     this.printMessages = printMessages;
@@ -231,10 +242,12 @@ public class GISTrainer extends AbstractEventTrainer {
 
   /**
    * Sets whether this trainer will use smoothing while training the model.
+   * <p>
+   * <b>Note:</b><br>
    * This can improve model accuracy, though training will potentially take
-   * longer and use more memory.  Model size will also be larger.
+   * longer and use more memory. Model size will also be larger.
    *
-   * @param smooth true if smoothing is desired, false if not
+   * @param smooth {@code true} if smoothing is desired, {@code false} if not.
    */
   public void setSmoothing(boolean smooth) {
     useSimpleSmoothing = smooth;
@@ -242,10 +255,12 @@ public class GISTrainer extends AbstractEventTrainer {
 
   /**
    * Sets whether this trainer will use smoothing while training the model.
+   * <p>
+   * <b>Note:</b><br>
    * This can improve model accuracy, though training will potentially take
-   * longer and use more memory.  Model size will also be larger.
+   * longer and use more memory. Model size will also be larger.
    *
-   * @param timesSeen the "number" of times we want the trainer to imagine
+   * @param timesSeen The "number" of times we want the trainer to imagine
    *                  it saw a feature that it actually didn't see
    */
   public void setSmoothingObservation(double timesSeen) {
@@ -254,8 +269,12 @@ public class GISTrainer extends AbstractEventTrainer {
 
   /**
    * Sets whether this trainer will use smoothing while training the model.
+   * <p>
+   * <b>Note:</b><br>
    * This can improve model accuracy, though training will potentially take
-   * longer and use more memory.  Model size will also be larger.
+   * longer and use more memory. Model size will also be larger.
+   *
+   * @param sigmaValue The Gaussian sigma value used for smoothing.
    */
   public void setGaussianSigma(double sigmaValue) {
     useGaussianSmoothing = true;
@@ -263,14 +282,14 @@ public class GISTrainer extends AbstractEventTrainer {
   }
 
   /**
-   * Train a model using the GIS algorithm, assuming 100 iterations and no
+   * Trains a model using the GIS algorithm, assuming 100 iterations and no
    * cutoff.
    *
-   * @param eventStream
-   *          The EventStream holding the data on which this model will be
-   *          trained.
-   * @return The newly trained model, which can be used immediately or saved to
-   *         disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
+   * @param eventStream The {@link ObjectStream eventStream} holding the data
+   *                    on which this model will be trained.
+   *                    
+   * @return A trained {@link GISModel} which can be used immediately or saved to
+   *         disk using an {@link opennlp.tools.ml.maxent.io.GISModelWriter}.
    */
   public GISModel trainModel(ObjectStream<Event> eventStream) throws IOException {
     return trainModel(eventStream, 100, 0);
@@ -280,10 +299,12 @@ public class GISTrainer extends AbstractEventTrainer {
    * Trains a GIS model on the event in the specified event stream, using the specified number
    * of iterations and the specified count cutoff.
    *
-   * @param eventStream A stream of all events.
+   * @param eventStream A {@link ObjectStream stream} of all events.
    * @param iterations  The number of iterations to use for GIS.
    * @param cutoff      The number of times a feature must occur to be included.
-   * @return A GIS model trained with specified
+   *
+   * @return A trained {@link GISModel} which can be used immediately or saved to
+   *         disk using an {@link opennlp.tools.ml.maxent.io.GISModelWriter}.
    */
   public GISModel trainModel(ObjectStream<Event> eventStream, int iterations,
                              int cutoff) throws IOException {
@@ -298,38 +319,44 @@ public class GISTrainer extends AbstractEventTrainer {
   }
 
   /**
-   * Train a model using the GIS algorithm.
+   * Trains a model using the GIS algorithm.
    *
    * @param iterations The number of GIS iterations to perform.
-   * @param di         The data indexer used to compress events in memory.
-   * @return The newly trained model, which can be used immediately or saved
-   * to disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
+   * @param di         The {@link DataIndexer} used to compress events in memory.
+   *                   
+   * @return A trained {@link GISModel} which can be used immediately or saved to
+   *         disk using an {@link opennlp.tools.ml.maxent.io.GISModelWriter}.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public GISModel trainModel(int iterations, DataIndexer di) {
     return trainModel(iterations, di, new UniformPrior(), 1);
   }
 
   /**
-   * Train a model using the GIS algorithm.
+   * Trains a model using the GIS algorithm.
    *
    * @param iterations The number of GIS iterations to perform.
-   * @param di         The data indexer used to compress events in memory.
-   * @param threads
-   * @return The newly trained model, which can be used immediately or saved
-   * to disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
+   * @param di         The {@link DataIndexer} used to compress events in memory.
+   * @param threads    The number of thread to train with. Must be greater than {@code 0}.
+   *
+   * @return A trained {@link GISModel} which can be used immediately or saved to
+   *         disk using an {@link opennlp.tools.ml.maxent.io.GISModelWriter}.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public GISModel trainModel(int iterations, DataIndexer di, int threads) {
     return trainModel(iterations, di, new UniformPrior(), threads);
   }
 
   /**
-   * Train a model using the GIS algorithm.
+   * Trains a model using the GIS algorithm.
    *
    * @param iterations The number of GIS iterations to perform.
-   * @param di         The data indexer used to compress events in memory.
-   * @param modelPrior The prior distribution used to train this model.
-   * @return The newly trained model, which can be used immediately or saved
-   * to disk using an opennlp.tools.ml.maxent.io.GISModelWriter object.
+   * @param di         The {@link DataIndexer} used to compress events in memory.
+   * @param modelPrior The {@link Prior} distribution used to train this model.
+   *                   
+   * @return A trained {@link GISModel} which can be used immediately or saved to
+   *         disk using an {@link opennlp.tools.ml.maxent.io.GISModelWriter}.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public GISModel trainModel(int iterations, DataIndexer di, Prior modelPrior, int threads) {
 
@@ -344,7 +371,7 @@ public class GISTrainer extends AbstractEventTrainer {
     contexts = di.getContexts();
     values = di.getValues();
     /*
-    The number of times a predicate occured in the training data.
+    The number of times a predicate occurred in the training data.
    */
     int[] predicateCounts = di.getPredCounts();
     numTimesEventsSeen = di.getNumTimesEventsSeen();
@@ -484,7 +511,7 @@ public class GISTrainer extends AbstractEventTrainer {
 
     ExecutorService executor = Executors.newFixedThreadPool(threads, runnable -> {
       Thread thread = new Thread(runnable);
-      thread.setName("opennlp.tools.ml.maxent.ModelExpactationComputeTask.nextIteration()");
+      thread.setName("opennlp.tools.ml.maxent.ModelExpectationComputeTask.nextIteration()");
       thread.setDaemon(true);
       return thread;
     });
@@ -546,7 +573,7 @@ public class GISTrainer extends AbstractEventTrainer {
     return x0;
   }
 
-  /* Compute one iteration of GIS and retutn log-likelihood.*/
+  /* Compute one iteration of GIS and return log-likelihood.*/
   private double nextIteration(double correctionConstant,
                                CompletionService<ModelExpectationComputeTask> completionService) {
     // compute contribution of p(a|b_i) for each feature and the new

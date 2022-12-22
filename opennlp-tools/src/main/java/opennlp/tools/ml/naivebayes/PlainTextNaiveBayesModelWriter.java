@@ -28,21 +28,25 @@ import java.util.zip.GZIPOutputStream;
 import opennlp.tools.ml.model.AbstractModel;
 
 /**
- * Model writer that saves models in plain text format.
+ * A {@link NaiveBayesModelWriter} that writes models in a plain text format.
  */
 public class PlainTextNaiveBayesModelWriter extends NaiveBayesModelWriter {
-  private BufferedWriter output;
+  private final BufferedWriter output;
 
   /**
-   * Constructor which takes a NaiveBayesModel and a File and prepares itself to
-   * write the model to that file. Detects whether the file is gzipped or not
-   * based on whether the suffix contains ".gz".
+   * Instantiates {@link PlainTextNaiveBayesModelWriter} via an
+   * {@link AbstractModel naive bayes model} and a {@link File}.
+   * Prepares writing of a {@code model} to the file.
+   * Based on whether the file's suffix contains {@code .gz}, it detects whether
+   * the file is gzipped or not.
    *
-   * @param model The NaiveBayesModel which is to be persisted.
-   * @param f     The File in which the model is to be persisted.
+   * @param model The {@link AbstractModel naive bayes model} which is to be persisted.
+   * @param f The {@link File} in which the model is to be persisted.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   * @see NaiveBayesModel
    */
-  public PlainTextNaiveBayesModelWriter(AbstractModel model, File f)
-      throws IOException {
+  public PlainTextNaiveBayesModelWriter(AbstractModel model, File f) throws IOException {
 
     super(model);
     if (f.getName().endsWith(".gz")) {
@@ -54,33 +58,41 @@ public class PlainTextNaiveBayesModelWriter extends NaiveBayesModelWriter {
   }
 
   /**
-   * Constructor which takes a NaiveBayesModel and a BufferedWriter and prepares
-   * itself to write the model to that writer.
+   * Instantiates {@link PlainTextNaiveBayesModelWriter} via
+   * an {@link AbstractModel naive bayes model} and a {@link BufferedWriter}.
+   * Prepares writing a {@code model} to the file.
+   * Based on whether the file's suffix contains {@code .gz}, it detects whether
+   * the file is gzipped or not.
    *
-   * @param model The NaiveBayesModel which is to be persisted.
-   * @param bw    The BufferedWriter which will be used to persist the model.
+   * @param model The {@link AbstractModel naive bayes model} which is to be persisted.
+   * @param bw The {@link BufferedWriter} which is used to persist the {@code model}.
+   *            The {@code bw} must be opened.
    */
   public PlainTextNaiveBayesModelWriter(AbstractModel model, BufferedWriter bw) {
     super(model);
     output = bw;
   }
 
-  public void writeUTF(String s) throws java.io.IOException {
+  @Override
+  public void writeUTF(String s) throws IOException {
     output.write(s);
     output.newLine();
   }
 
-  public void writeInt(int i) throws java.io.IOException {
+  @Override
+  public void writeInt(int i) throws IOException {
     output.write(Integer.toString(i));
     output.newLine();
   }
 
-  public void writeDouble(double d) throws java.io.IOException {
+  @Override
+  public void writeDouble(double d) throws IOException {
     output.write(Double.toString(d));
     output.newLine();
   }
 
-  public void close() throws java.io.IOException {
+  @Override
+  public void close() throws IOException {
     output.flush();
     output.close();
   }

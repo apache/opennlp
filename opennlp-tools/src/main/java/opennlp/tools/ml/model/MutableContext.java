@@ -20,8 +20,10 @@ package opennlp.tools.ml.model;
 import java.util.Arrays;
 
 /**
- * Class used to store parameters or expected values associated with this context which
- * can be updated or assigned.
+ * An extension of {@link Context} used to store parameters or expected values
+ * associated with this context which can be updated or assigned.
+ *
+ * @see Context
  */
 public class MutableContext extends Context {
 

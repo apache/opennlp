@@ -23,21 +23,30 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.ml.maxent.GISModel;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
 import opennlp.tools.ml.model.ComparablePredicate;
 import opennlp.tools.ml.model.Context;
 
 /**
- * Abstract parent class for GISModel writers.  It provides the persist method
- * which takes care of the structure of a stored document, and requires an
- * extending class to define precisely how the data should be stored.
+ * The base class for writers of {@link GISModel GIS models}.
+ * <p>
+ * It provides the {@link #persist()} method which takes care of the structure of a
+ * stored document, and requires an extending class to define precisely how
+ * the data should be stored.
  */
 public abstract class GISModelWriter extends AbstractModelWriter {
   protected Context[] PARAMS;
   protected String[] OUTCOME_LABELS;
   protected String[] PRED_LABELS;
 
+  /**
+   * Initializes a {@link GISModelWriter} for a
+   * {@link AbstractModel GIS model}.
+   *
+   * @param model The {@link AbstractModel GIS model} to be written.
+   */
   public GISModelWriter(AbstractModel model) {
 
     Object[] data = model.getDataStructures();
@@ -56,17 +65,19 @@ public abstract class GISModelWriter extends AbstractModelWriter {
       i++;
     }
   }
-
-
+  
   /**
-   * Writes the model to disk, using the <code>writeX()</code> methods provided
-   * by extending classes.
+   * Writes the {@link AbstractModel GIS model}, using the
+   * {@link #writeUTF(String)}, {@link #writeDouble(double)}, or {@link #writeInt(int)}}
+   * methods implemented by extending classes.
    *
-   * <p>
-   * If you wish to create a GISModelWriter which uses a different structure, it
-   * will be necessary to override the persist method in addition to
-   * implementing the <code>writeX()</code> methods.
+   * <p>If you wish to create a {@link GISModelWriter} which uses a different
+   * structure, it will be necessary to override the {@code #persist()} method in
+   * addition to implementing the {@code writeX(..)} methods.
+   *
+   * @throws IOException Thrown if IO errors occurred.
    */
+  @Override
   public void persist() throws IOException {
 
     // the type of model (GIS)
@@ -114,6 +125,11 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     close();
   }
 
+  /**
+   * Sorts and optimizes the model parameters.
+   *
+   * @return A {@link ComparablePredicate[]}.
+   */
   protected ComparablePredicate[] sortValues() {
 
     ComparablePredicate[] sortPreds = new ComparablePredicate[PARAMS.length];
@@ -141,6 +157,12 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     return sortPreds;
   }
 
+  /**
+   * Compresses outcome patterns.
+   *
+   * @return A {@link List} of {@link List<ComparablePredicate>} that represent
+   *         the remaining outcomes patterns.
+   */
   protected List<List<ComparablePredicate>> compressOutcomes(ComparablePredicate[] sorted) {
     List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
     if (sorted.length > 0) {

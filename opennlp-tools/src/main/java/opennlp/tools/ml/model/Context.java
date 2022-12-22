@@ -22,7 +22,7 @@ import java.util.Objects;
 
 /**
  * Class which associates a real valued parameter or expected value with a particular contextual
- * predicate or feature.  This is used to store maxent model parameters as well as model and empirical
+ * predicate or feature. This is used to store maxent model parameters as well as model and empirical
  * expected values.
  */
 public class Context {
@@ -44,16 +44,14 @@ public class Context {
   }
 
   /**
-   * Returns the outcomes for which parameters exists for this context.
-   * @return Array of outcomes for which parameters exists for this context.
+   * @return Retrieves the array of outcomes for which parameters exists for this context.
    */
   public int[] getOutcomes() {
     return outcomes;
   }
 
   /**
-   * Returns the parameters or expected values for the outcomes which occur with this context.
-   * @return Array of parameters for the outcomes of this context.
+   * @return Retrieves the array of parameters for the outcomes of this context.
    */
   public double[] getParameters() {
     return parameters;

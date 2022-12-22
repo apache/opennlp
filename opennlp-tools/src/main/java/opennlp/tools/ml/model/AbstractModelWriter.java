@@ -17,20 +17,57 @@
 
 package opennlp.tools.ml.model;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+/**
+ * An abstract, basic implementation of a model writer.
+ */
 public abstract class AbstractModelWriter {
 
   public AbstractModelWriter() {
     super();
   }
 
-  public abstract void writeUTF(String s) throws java.io.IOException;
+  /**
+   * Writes a {@link String} to the underlying {@link DataOutputStream}.
+   *
+   * @param s The {@link String UTF encoded} characters.
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public abstract void writeUTF(String s) throws IOException;
 
-  public abstract void writeInt(int i) throws java.io.IOException;
+  /**
+   * Writes a single {@code int} to the underlying {@link DataOutputStream}.
+   *
+   * @param i The {@code int} value.
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public abstract void writeInt(int i) throws IOException;
 
-  public abstract void writeDouble(double d) throws java.io.IOException;
+  /**
+   * Writes a single {@code double} to the underlying {@link DataOutputStream}.
+   *
+   * @param d The {@code double} value.
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public abstract void writeDouble(double d) throws IOException;
 
-  public abstract void close() throws java.io.IOException;
+  /**
+   * Closes the underlying {@link DataOutputStream}.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public abstract void close() throws IOException;
 
-  public abstract void persist() throws java.io.IOException;
+  /**
+   * Serializes the {@link AbstractModel model} using the
+   * {@link #writeUTF(String)}, {@link #writeDouble(double)},
+   * or {@link #writeInt(int)}} methods implemented by
+   * extending classes.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public abstract void persist() throws IOException;
 
 }

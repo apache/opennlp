@@ -15,18 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.ml.maxent;
-
 /**
- * Represents a generator of contexts for maxent decisions.
+ * Package related to ML by means of the Quasi Newton (QN) algorithm.
  */
-public interface ContextGenerator<T> {
-
-  /**
-   * Builds up the list of contextual predicates given an {@link T object}.
-   *
-   * @param o The {@link T object} used as input.
-   */
-  String[] getContext(T o);
-
-}
+package opennlp.tools.ml.maxent.quasinewton;

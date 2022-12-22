@@ -24,7 +24,7 @@ import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 
 /**
- * Evaluate negative log-likelihood and its gradient from DataIndexer.
+ * Evaluate negative log-likelihood and its gradient from {@link DataIndexer}.
  */
 public class NegLogLikelihood implements Function {
 
@@ -45,6 +45,9 @@ public class NegLogLikelihood implements Function {
 
   protected double[] gradient;
 
+  /**
+   * @param indexer The {@link DataIndexer} to use as input provider.
+   */
   public NegLogLikelihood(DataIndexer indexer) {
 
     // Get data from indexer.
@@ -68,17 +71,29 @@ public class NegLogLikelihood implements Function {
     this.gradient    = new double[dimension];
   }
 
+  /**
+   * @return Retrieves the dimension value.
+   */
+  @Override
   public int getDimension() {
     return this.dimension;
   }
 
+  /**
+   * @return Retrieves the initial point as {@code double} array.
+   */
   public double[] getInitialPoint() {
     return new double[dimension];
   }
 
   /**
-   * Negative log-likelihood
+   * Computes the negative log-likelihood.
+   *
+   * @param x The input.
+   * @return Returns the computed negative log-likelihood.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
+  @Override
   public double valueAt(double[] x) {
 
     if (x.length != dimension)
@@ -109,8 +124,13 @@ public class NegLogLikelihood implements Function {
   }
 
   /**
-   * Compute gradient
+   * Computes the gradient.
+   *
+   * @param x The input.
+   * @return Returns the computed gradient.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
+  @Override
   public double[] gradientAt(double[] x) {
 
     if (x.length != dimension)
