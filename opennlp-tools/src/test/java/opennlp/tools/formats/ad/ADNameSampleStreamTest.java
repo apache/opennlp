@@ -19,26 +19,33 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
-public class ADNameSampleStreamTest {
+public class ADNameSampleStreamTest extends AbstractADSampleStreamTest<NameSample> {
 
-  private List<NameSample> samples = new ArrayList<>();
+  @BeforeEach
+  void setup() throws IOException {
+    super.setup();
+
+    try (ADNameSampleStream stream = new ADNameSampleStream(
+            new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
+      NameSample sample;
+      while ((sample = stream.read()) != null) {
+        samples.add(sample);
+      }
+    }
+  }
 
   @Test
   void testSimpleCount() {
-    Assertions.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
+    Assertions.assertEquals(NUM_SENTENCES, samples.size());
   }
 
   @Test
@@ -108,20 +115,6 @@ public class ADNameSampleStreamTest {
     Assertions.assertEquals(new Span(0, 1, "person"), samples.get(7).getNames()[0]);
     Assertions.assertEquals(new Span(3, 4, "person"), samples.get(7).getNames()[1]);
     Assertions.assertEquals(new Span(5, 6, "person"), samples.get(7).getNames()[2]);
-  }
-
-  @BeforeEach
-  void setup() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class,
-        "/opennlp/tools/formats/ad.sample");
-
-    try (ADNameSampleStream stream =
-             new ADNameSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
-      NameSample sample;
-      while ((sample = stream.read()) != null) {
-        samples.add(sample);
-      }
-    }
   }
 
 }

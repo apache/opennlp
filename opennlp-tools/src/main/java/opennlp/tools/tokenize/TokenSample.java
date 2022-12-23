@@ -17,22 +17,22 @@
 
 package opennlp.tools.tokenize;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import opennlp.tools.commons.Sample;
 import opennlp.tools.tokenize.Detokenizer.DetokenizationOperation;
 import opennlp.tools.util.Span;
 
 /**
  * A {@link TokenSample} is text with token spans.
  */
-public class TokenSample implements Serializable {
+public class TokenSample implements Sample {
+  private static final long serialVersionUID = 8520715903833887047L;
 
-  private static final long serialVersionUID = 1057011880085907705L;
   public static final String DEFAULT_SEPARATOR_CHARS = "<SPLIT>";
 
   private static final String separatorChars = DEFAULT_SEPARATOR_CHARS;

@@ -21,20 +21,23 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class ADPOSSampleStreamTest {
+public class ADPOSSampleStreamTest extends AbstractADSampleStreamTest<POSSample> {
+
+  @BeforeEach
+  void setup() throws IOException {
+    super.setup();
+  }
 
   @Test
   void testSimple() throws IOException {
     // add one sentence with expandME = includeFeats = false
-    try (ADPOSSampleStream stream = new ADPOSSampleStream(
-        new PlainTextByLineStream(new ResourceAsStreamFactory(
-            ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample"),
+    try (ADPOSSampleStream stream = new ADPOSSampleStream(new PlainTextByLineStream(in,
             StandardCharsets.UTF_8), false, false)) {
       POSSample sample = stream.read();
 
@@ -57,9 +60,7 @@ public class ADPOSSampleStreamTest {
   @Test
   void testExpandME() throws IOException {
     // add one sentence with expandME = true
-    try (ADPOSSampleStream stream = new ADPOSSampleStream(
-        new PlainTextByLineStream(new ResourceAsStreamFactory(
-            ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample"),
+    try (ADPOSSampleStream stream = new ADPOSSampleStream(new PlainTextByLineStream(in,
             StandardCharsets.UTF_8), true, false)) {
 
       POSSample sample = stream.read();
@@ -86,9 +87,7 @@ public class ADPOSSampleStreamTest {
   @Test
   void testIncludeFeats() throws IOException {
     // add one sentence with includeFeats = true
-    try (ADPOSSampleStream stream = new ADPOSSampleStream(
-        new PlainTextByLineStream(new ResourceAsStreamFactory(
-            ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample"),
+    try (ADPOSSampleStream stream = new ADPOSSampleStream(new PlainTextByLineStream(in,
             StandardCharsets.UTF_8), false, true)) {
 
       POSSample sample = stream.read();

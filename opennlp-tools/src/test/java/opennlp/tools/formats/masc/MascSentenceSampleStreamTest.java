@@ -17,7 +17,6 @@
 
 package opennlp.tools.formats.masc;
 
-import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -37,17 +37,21 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
-public class MascSentenceSampleStreamTest {
+public class MascSentenceSampleStreamTest extends AbstractMascSampleStreamTest {
+  private MascSentenceSampleStream stream;
+
+  @BeforeEach
+  public void setup() throws IOException {
+    super.setup();
+    FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
+    stream = new MascSentenceSampleStream(
+             new MascDocumentStream(directory, true, fileFilter), 2);
+    Assertions.assertNotNull(stream);
+  }
 
   @Test
   void reset() {
-    FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-    File directory = new File(this.getClass().getResource(
-        "/opennlp/tools/formats/masc/").getFile());
     try {
-      MascSentenceSampleStream stream = new MascSentenceSampleStream(
-          new MascDocumentStream(directory, true, fileFilter), 2);
-
       //exhaust the fake file
       SentenceSample testSample = stream.read();
 
@@ -65,7 +69,7 @@ public class MascSentenceSampleStreamTest {
       sentenceSpans.add(new Span(0, 24));
       sentenceSpans.add(new Span(25, 55));
       SentenceSample expectedSample = new SentenceSample(documentText,
-          sentenceSpans.toArray(new Span[sentenceSpans.size()]));
+          sentenceSpans.toArray(new Span[0]));
 
       Assertions.assertEquals(testSample.toString(), expectedSample.toString());
 
@@ -78,12 +82,6 @@ public class MascSentenceSampleStreamTest {
   void close() {
 
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascSentenceSampleStream stream;
-      stream = new MascSentenceSampleStream(
-          new MascDocumentStream(directory, true, fileFilter), 2);
       stream.close();
       stream.read();
     } catch (IOException e) {
@@ -96,7 +94,6 @@ public class MascSentenceSampleStreamTest {
   @Test
   void read() {
     FileFilter fileFilter = pathname -> pathname.getName().contains("");
-    File directory = new File(this.getClass().getResource("/opennlp/tools/formats/masc").getFile());
     try {
       MascSentenceSampleStream stream = new MascSentenceSampleStream(
           new MascDocumentStream(directory, true, fileFilter), 2);
@@ -107,7 +104,7 @@ public class MascSentenceSampleStreamTest {
       sentenceSpans.add(new Span(25, 55));
 
       SentenceSample expectedSample = new SentenceSample(documentText,
-          sentenceSpans.toArray(new Span[sentenceSpans.size()]));
+          sentenceSpans.toArray(new Span[0]));
       SentenceSample testSample = stream.read();
       Assertions.assertEquals(testSample.toString(), expectedSample.toString());
 
@@ -123,12 +120,10 @@ public class MascSentenceSampleStreamTest {
 
   }
 
-  @Disabled //todo: We can't train on the FakeMasc data, it is too small.
   @Test
+  @Disabled //todo: We can't train on the FakeMasc data, it is too small.
   void train() {
     try {
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
       FileFilter fileFilter = pathname -> pathname.getName().contains("");
       ObjectStream<SentenceSample> trainSentences = new MascSentenceSampleStream(
           new MascDocumentStream(directory,

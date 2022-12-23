@@ -19,25 +19,32 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.chunker.ChunkSample;
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class ADChunkSampleStreamTest {
+public class ADChunkSampleStreamTest extends AbstractADSampleStreamTest<ChunkSample> {
 
-  private List<ChunkSample> samples = new ArrayList<>();
-
+  @BeforeEach
+  void setup() throws IOException {
+    super.setup();
+    try (ADChunkSampleStream stream = new ADChunkSampleStream(
+            new PlainTextByLineStream(in, StandardCharsets.UTF_8))) {
+      ChunkSample sample;
+      while ((sample = stream.read()) != null) {
+        samples.add(sample);
+      }
+      Assertions.assertFalse(samples.isEmpty());
+    }
+  }
+  
   @Test
   void testSimpleCount() {
-    Assertions.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
+    Assertions.assertEquals(NUM_SENTENCES, samples.size());
   }
 
   @Test
@@ -62,20 +69,6 @@ public class ADChunkSampleStreamTest {
     Assertions.assertEquals("Casas", samples.get(3).getSentence()[0]);
     Assertions.assertEquals("n", samples.get(3).getTags()[0]);
     Assertions.assertEquals("B-NP", samples.get(3).getPreds()[0]);
-  }
-
-  @BeforeEach
-  void setup() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(
-        ADParagraphStreamTest.class, "/opennlp/tools/formats/ad.sample");
-
-    try (ADChunkSampleStream stream = new ADChunkSampleStream(new PlainTextByLineStream(in,
-        StandardCharsets.UTF_8))) {
-      ChunkSample sample;
-      while ((sample = stream.read()) != null) {
-        samples.add(sample);
-      }
-    }
   }
 
 }

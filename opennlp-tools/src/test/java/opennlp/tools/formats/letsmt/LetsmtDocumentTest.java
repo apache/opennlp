@@ -24,11 +24,13 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class LetsmtDocumentTest {
+import opennlp.tools.formats.AbstractFormatTest;
+
+public class LetsmtDocumentTest extends AbstractFormatTest {
 
   @Test
   void testParsingSimpleDoc() throws IOException {
-    try (InputStream letsmtXmlIn = LetsmtDocumentTest.class.getResourceAsStream("letsmt-with-words.xml");) {
+    try (InputStream letsmtXmlIn = getResourceStream("letsmt/letsmt-with-words.xml");) {
 
       LetsmtDocument doc = LetsmtDocument.parse(letsmtXmlIn);
 

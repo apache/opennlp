@@ -17,29 +17,21 @@
 
 package opennlp.tools.formats.conllu;
 
-
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import opennlp.tools.commons.Sample;
+import opennlp.tools.formats.AbstractFormatTest;
+import opennlp.tools.formats.ResourceAsStreamFactory;
 
-import opennlp.tools.lemmatizer.LemmaSample;
-import opennlp.tools.util.ObjectStream;
+public abstract class AbstractConlluSampleStreamTest<T extends Sample> extends AbstractFormatTest {
 
-public class ConlluLemmaSampleStreamTest extends AbstractConlluSampleStreamTest<LemmaSample> {
+  protected final List<T> samples = new ArrayList<>();
 
-
-  @Test
-  void testParseSpanishS300() throws IOException {
-    ConlluStream cStream = getStream("es-ud-sample.conllu");
-    Assertions.assertNotNull(cStream);
-    
-    try (ObjectStream<LemmaSample> stream = new ConlluLemmaSampleStream(cStream, ConlluTagset.U)) {
-
-      LemmaSample predicted = stream.read();
-      Assertions.assertEquals("digám+tú+él", predicted.getLemmas()[0]);
-      Assertions.assertEquals("la", predicted.getTokens()[3]);
-      Assertions.assertEquals("el", predicted.getLemmas()[3]);
-    }
+  protected ConlluStream getStream(String resource) throws IOException {
+    return new ConlluStream(new ResourceAsStreamFactory(
+            AbstractConlluSampleStreamTest.class, FORMATS_BASE_DIR + "conllu/" + resource));
   }
+
 }

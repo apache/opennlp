@@ -21,21 +21,26 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.PlainTextByLineStream;
 
-public class ADParagraphStreamTest {
+public class ADParagraphStreamTest extends AbstractADSampleStreamTest<SentenceSample> {
 
-  public static final int NUM_SENTENCES = 8;
+  private ADSentenceStream stream;
+
+  @BeforeEach
+  void setup() throws IOException {
+    super.setup();
+    stream = new ADSentenceStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
+    Assertions.assertNotNull(stream);
+  }
 
   @Test
   void testSimpleReading() throws IOException {
     int count = 0;
-
-    ADSentenceStream stream = openData();
 
     ADSentenceStream.Sentence paragraph = stream.read();
     paragraph.getRoot();
@@ -52,8 +57,6 @@ public class ADParagraphStreamTest {
   void testLeadingWithContraction() throws IOException {
     int count = 0;
 
-    ADSentenceStream stream = openData();
-
     ADSentenceStream.Sentence paragraph = stream.read();
     while (paragraph != null) {
 
@@ -62,12 +65,5 @@ public class ADParagraphStreamTest {
     }
 
     Assertions.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, count);
-  }
-
-  private static ADSentenceStream openData() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(ADParagraphStreamTest.class,
-        "/opennlp/tools/formats/ad.sample");
-
-    return new ADSentenceStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
   }
 }

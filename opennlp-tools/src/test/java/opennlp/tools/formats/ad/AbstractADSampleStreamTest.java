@@ -15,31 +15,28 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats.conllu;
-
+package opennlp.tools.formats.ad;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 
-import opennlp.tools.lemmatizer.LemmaSample;
-import opennlp.tools.util.ObjectStream;
+import opennlp.tools.commons.Sample;
+import opennlp.tools.formats.AbstractFormatTest;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
 
-public class ConlluLemmaSampleStreamTest extends AbstractConlluSampleStreamTest<LemmaSample> {
+public abstract class AbstractADSampleStreamTest<T extends Sample> extends AbstractFormatTest {
+  protected static final int NUM_SENTENCES = 8;
 
+  protected final List<T> samples = new ArrayList<>();
 
-  @Test
-  void testParseSpanishS300() throws IOException {
-    ConlluStream cStream = getStream("es-ud-sample.conllu");
-    Assertions.assertNotNull(cStream);
-    
-    try (ObjectStream<LemmaSample> stream = new ConlluLemmaSampleStream(cStream, ConlluTagset.U)) {
+  protected InputStreamFactory in;
 
-      LemmaSample predicted = stream.read();
-      Assertions.assertEquals("digám+tú+él", predicted.getLemmas()[0]);
-      Assertions.assertEquals("la", predicted.getTokens()[3]);
-      Assertions.assertEquals("el", predicted.getLemmas()[3]);
-    }
+  @BeforeEach
+  void setup() throws IOException {
+    in = new ResourceAsStreamFactory(AbstractADSampleStreamTest.class, FORMATS_BASE_DIR + "ad.sample");
   }
 }

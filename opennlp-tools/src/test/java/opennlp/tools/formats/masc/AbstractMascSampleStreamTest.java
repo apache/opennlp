@@ -15,31 +15,31 @@
  * limitations under the License.
  */
 
-package opennlp.tools.formats.conllu;
+package opennlp.tools.formats.masc;
 
-
+import java.io.File;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 
-import opennlp.tools.lemmatizer.LemmaSample;
-import opennlp.tools.util.ObjectStream;
+import opennlp.tools.formats.AbstractFormatTest;
 
-public class ConlluLemmaSampleStreamTest extends AbstractConlluSampleStreamTest<LemmaSample> {
+public abstract class AbstractMascSampleStreamTest extends AbstractFormatTest {
 
+  protected File directory;
 
-  @Test
-  void testParseSpanishS300() throws IOException {
-    ConlluStream cStream = getStream("es-ud-sample.conllu");
-    Assertions.assertNotNull(cStream);
-    
-    try (ObjectStream<LemmaSample> stream = new ConlluLemmaSampleStream(cStream, ConlluTagset.U)) {
+  @BeforeEach
+  public void setup() throws IOException {
+    directory = getMascDir();
+    Assertions.assertNotNull(directory);
+  }
 
-      LemmaSample predicted = stream.read();
-      Assertions.assertEquals("digám+tú+él", predicted.getLemmas()[0]);
-      Assertions.assertEquals("la", predicted.getTokens()[3]);
-      Assertions.assertEquals("el", predicted.getLemmas()[3]);
-    }
+  private String getDirectoryAsString() {
+    return getResource("masc/").getFile();
+  }
+
+  protected File getMascDir() {
+    return new File(getDirectoryAsString());
   }
 }

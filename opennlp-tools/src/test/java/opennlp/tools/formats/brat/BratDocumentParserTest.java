@@ -26,11 +26,12 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.formats.AbstractFormatTest;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.NewlineSentenceDetector;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 
-public class BratDocumentParserTest {
+public class BratDocumentParserTest extends AbstractFormatTest {
 
   @Test
   void testParse() throws IOException {
@@ -39,11 +40,8 @@ public class BratDocumentParserTest {
     BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
-    InputStream txtIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/opennlp-1193.txt");
-
-    InputStream annIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/opennlp-1193.ann");
+    InputStream txtIn = getResourceStream("brat/opennlp-1193.txt");
+    InputStream annIn = getResourceStream("brat/opennlp-1193.ann");
 
     BratDocument doc = BratDocument.parseDocument(config, "opennlp-1193", txtIn, annIn);
 

@@ -22,19 +22,16 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.tokenize.TokenSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
-public class ConlluTokenSampleStreamTest {
+public class ConlluTokenSampleStreamTest extends AbstractConlluSampleStreamTest<TokenSample> {
 
   @Test
   void testParseTwoSentences() throws IOException {
-    InputStreamFactory streamFactory =
-        new ResourceAsStreamFactory(ConlluStreamTest.class, "de-ud-train-sample.conllu");
+    ConlluStream cStream = getStream("de-ud-train-sample.conllu");
 
-    try (ObjectStream<TokenSample> stream = new ConlluTokenSampleStream(new ConlluStream(streamFactory))) {
+    try (ObjectStream<TokenSample> stream = new ConlluTokenSampleStream(cStream)) {
 
       TokenSample expected1 = TokenSample.parse(
           "Fachlich kompetent" + TokenSample.DEFAULT_SEPARATOR_CHARS
@@ -53,10 +50,9 @@ public class ConlluTokenSampleStreamTest {
 
   @Test
   void testParseContraction() throws IOException {
-    InputStreamFactory streamFactory =
-        new ResourceAsStreamFactory(ConlluStreamTest.class, "pt_br-ud-sample.conllu");
+    ConlluStream cStream = getStream("pt_br-ud-sample.conllu");
 
-    try (ObjectStream<TokenSample> stream = new ConlluTokenSampleStream(new ConlluStream(streamFactory))) {
+    try (ObjectStream<TokenSample> stream = new ConlluTokenSampleStream(cStream)) {
 
       TokenSample expected1 = TokenSample.parse(
           "Numa reunião entre representantes da Secretaria da Criança do DF " +
@@ -75,10 +71,9 @@ public class ConlluTokenSampleStreamTest {
 
   @Test
   void testParseSpanishS300() throws IOException {
-    InputStreamFactory streamFactory =
-        new ResourceAsStreamFactory(ConlluStreamTest.class, "es-ud-sample.conllu");
+    ConlluStream cStream = getStream("es-ud-sample.conllu");
 
-    try (ObjectStream<TokenSample> stream = new ConlluTokenSampleStream(new ConlluStream(streamFactory))) {
+    try (ObjectStream<TokenSample> stream = new ConlluTokenSampleStream(cStream)) {
 
       TokenSample expected1 = TokenSample.parse(
           "Digámoslo claramente" + TokenSample.DEFAULT_SEPARATOR_CHARS +

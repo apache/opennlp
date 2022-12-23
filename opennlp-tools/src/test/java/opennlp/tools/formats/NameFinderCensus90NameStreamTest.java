@@ -23,25 +23,15 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringList;
 
-public class NameFinderCensus90NameStreamTest {
-
-  private static ObjectStream<StringList> openData(String name)
-      throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(
-        NameFinderCensus90NameStreamTest.class,
-        "/opennlp/tools/formats/" + name);
-
-    return new NameFinderCensus90NameStream(in, StandardCharsets.UTF_8);
-  }
+public class NameFinderCensus90NameStreamTest extends AbstractSampleStreamTest {
 
   @Test
   void testParsingEnglishSample() throws IOException {
 
-    ObjectStream<StringList> sampleStream = openData("census90.sample");
+    ObjectStream<StringList> sampleStream = openData();
 
     StringList personName = sampleStream.read();
 
@@ -98,6 +88,10 @@ public class NameFinderCensus90NameStreamTest {
     // verify the end of the file.
     personName = sampleStream.read();
     Assertions.assertNull(personName);
+  }
+
+  private ObjectStream<StringList> openData() throws IOException {
+    return new NameFinderCensus90NameStream(getFactory("census90.sample"), StandardCharsets.UTF_8);
   }
 
 }

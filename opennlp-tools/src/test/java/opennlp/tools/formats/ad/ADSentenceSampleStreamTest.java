@@ -19,22 +19,31 @@ package opennlp.tools.formats.ad;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
-public class ADSentenceSampleStreamTest {
+public class ADSentenceSampleStreamTest extends AbstractADSampleStreamTest<SentenceSample> {
 
-  private List<SentenceSample> samples = new ArrayList<>();
+  @BeforeEach
+  void setup() throws IOException {
+    super.setup();
+
+    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
+            new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
+
+      SentenceSample sample;
+      while ((sample = stream.read()) != null) {
+        samples.add(sample);
+      }
+      Assertions.assertFalse(samples.isEmpty());
+    }
+  }
 
   @Test
   void testSimpleCount() {
@@ -48,24 +57,6 @@ public class ADSentenceSampleStreamTest {
     Assertions.assertEquals(3, samples.get(0).getSentences().length);
     Assertions.assertEquals(new Span(0, 119), samples.get(0).getSentences()[0]);
     Assertions.assertEquals(new Span(120, 180), samples.get(0).getSentences()[1]);
-  }
-
-  @BeforeEach
-  void setup() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(ADSentenceSampleStreamTest.class,
-        "/opennlp/tools/formats/ad.sample");
-
-    try (ADSentenceSampleStream stream = new ADSentenceSampleStream(
-        new PlainTextByLineStream(in, StandardCharsets.UTF_8), true)) {
-
-      SentenceSample sample;
-
-      while ((sample = stream.read()) != null) {
-        System.out.println(sample.getDocument());
-        System.out.println("<fim>");
-        samples.add(sample);
-      }
-    }
   }
 
 }
