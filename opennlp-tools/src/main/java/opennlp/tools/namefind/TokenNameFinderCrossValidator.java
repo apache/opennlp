@@ -18,7 +18,6 @@
 package opennlp.tools.namefind;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.Sample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.SequenceCodec;
@@ -33,11 +33,16 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.eval.CrossValidationPartitioner;
 import opennlp.tools.util.eval.FMeasure;
 
+/**
+ * Cross validator for {@link TokenNameFinder}.
+ */
 public class TokenNameFinderCrossValidator {
 
-  private static class DocumentSample implements Serializable {
+  private static class DocumentSample implements Sample {
 
-    private NameSample[] samples;
+    private static final long serialVersionUID = -7032022251020271479L;
+    
+    private final NameSample[] samples;
 
     DocumentSample(NameSample[] samples) {
       this.samples = samples;
@@ -49,7 +54,7 @@ public class TokenNameFinderCrossValidator {
   }
 
   /**
-   * Reads Name Samples to group them as a document based on the clear adaptive data flag.
+   * Reads {@link NameSample samples} to group them as a document based on the clear adaptive data flag.
    */
   private static class NameToDocumentSampleStream extends FilterObjectStream<NameSample, DocumentSample> {
 
@@ -59,6 +64,7 @@ public class TokenNameFinderCrossValidator {
       super(samples);
     }
 
+    @Override
     public DocumentSample read() throws IOException {
 
       List<NameSample> document = new ArrayList<>();
@@ -104,7 +110,7 @@ public class TokenNameFinderCrossValidator {
   }
 
   /**
-   * Splits DocumentSample into NameSamples.
+   * Splits {@link DocumentSample document samples} into {@link NameSample name samples}.
    */
   private static class DocumentToNameSampleStream extends FilterObjectStream<DocumentSample, NameSample> {
 
@@ -112,8 +118,9 @@ public class TokenNameFinderCrossValidator {
       super(samples);
     }
 
-    private Iterator<NameSample> documentSamples = Collections.<NameSample>emptyList().iterator();
+    private Iterator<NameSample> documentSamples = Collections.emptyIterator();
 
+    @Override
     public NameSample read() throws IOException {
 
       // Note: Empty document samples should be skipped
@@ -139,72 +146,80 @@ public class TokenNameFinderCrossValidator {
   private final String languageCode;
   private final TrainingParameters params;
   private final String type;
-  private byte[] featureGeneratorBytes;
-  private Map<String, Object> resources;
-  private TokenNameFinderEvaluationMonitor[] listeners;
+  private final byte[] featureGeneratorBytes;
+  private final Map<String, Object> resources;
+  private final TokenNameFinderEvaluationMonitor[] listeners;
 
-  private FMeasure fmeasure = new FMeasure();
+  private final FMeasure fmeasure = new FMeasure();
   private TokenNameFinderFactory factory;
-
+  
   /**
-   * Name finder cross validator
+   * Initializes a {@link TokenNameFinderCrossValidator} with the given parameters.
    *
-   * @param languageCode
-   *          the language of the training data
-   * @param type
-   *          null or an override type for all types in the training data
-   * @param trainParams
-   *          machine learning train parameters
-   * @param featureGeneratorBytes
-   *          descriptor to configure the feature generation or null
-   * @param listeners
-   *          a list of listeners
-   * @param resources
-   *          the resources for the name finder or null if none
+   * @param languageCode The ISO conform language code.
+   * @param type {@code null} or an override type for all types in the training data.
+   * @param featureGeneratorBytes The {@code byte[]} representing the feature generator descriptor.
+   * @param resources Additional resources in a mapping.
+   * @param codec The {@link SequenceCodec} to use.
+   * @param params The {@link TrainingParameters} for the context of cross validation.
+   * @param listeners the {@link TokenNameFinderEvaluationMonitor evaluation listeners}.
    */
-  public TokenNameFinderCrossValidator(String languageCode, String type,
-      TrainingParameters trainParams, byte[] featureGeneratorBytes,
-      Map<String, Object> resources, SequenceCodec<String> codec,
-      TokenNameFinderEvaluationMonitor... listeners) {
+  public TokenNameFinderCrossValidator(String languageCode, String type, TrainingParameters params,
+                                       byte[] featureGeneratorBytes, Map<String, Object> resources,
+                                       SequenceCodec<String> codec,
+                                       TokenNameFinderEvaluationMonitor... listeners) {
 
     this.languageCode = languageCode;
     this.type = type;
     this.featureGeneratorBytes = featureGeneratorBytes;
     this.resources = resources;
-    this.params = trainParams;
-    this.listeners = listeners;
-  }
-
-  public TokenNameFinderCrossValidator(String languageCode, String type,
-      TrainingParameters trainParams, byte[] featureGeneratorBytes,
-      Map<String, Object> resources,
-      TokenNameFinderEvaluationMonitor... listeners) {
-    this(languageCode, type, trainParams, featureGeneratorBytes, resources, new BioCodec(), listeners);
-  }
-
-  public TokenNameFinderCrossValidator(String languageCode, String type,
-      TrainingParameters trainParams, TokenNameFinderFactory factory,
-      TokenNameFinderEvaluationMonitor... listeners) {
-    this.languageCode = languageCode;
-    this.type = type;
-    this.params = trainParams;
-    this.factory = factory;
+    this.params = params;
     this.listeners = listeners;
   }
 
   /**
-   * Starts the evaluation.
+   * Initializes a {@link TokenNameFinderCrossValidator} with the given parameters.
    *
-   * @param samples
-   *          the data to train and test
-   * @param nFolds
-   *          number of folds
-   * @throws IOException
+   * @param languageCode The ISO conform language code.
+   * @param type {@code null} or an override type for all types in the training data.
+   * @param featureGeneratorBytes The {@code byte[]} representing the feature generator descriptor.
+   * @param resources Additional resources in a mapping.
+   * @param listeners the {@link TokenNameFinderEvaluationMonitor evaluation listeners}.
    */
-  public void evaluate(ObjectStream<NameSample> samples, int nFolds)
-      throws IOException {
+  public TokenNameFinderCrossValidator(String languageCode, String type, TrainingParameters trainParams,
+                                       byte[] featureGeneratorBytes, Map<String, Object> resources,
+                                       TokenNameFinderEvaluationMonitor... listeners) {
+    this(languageCode, type, trainParams, featureGeneratorBytes, resources, new BioCodec(), listeners);
+  }
 
-    // Note: The name samples need to be grouped on a document basis.
+  /**
+   * Initializes a {@link TokenNameFinderCrossValidator} with the given parameters.
+   *
+   * @param languageCode The ISO conform language code.
+   * @param type {@code null} or an override type for all types in the training data.
+   * @param params The {@link TrainingParameters} for the context of cross validation.
+   * @param factory The {@link TokenNameFinderFactory} for creating related objects.
+   * @param listeners the {@link TokenNameFinderEvaluationMonitor evaluation listeners}.
+   */
+  public TokenNameFinderCrossValidator(String languageCode, String type,
+      TrainingParameters params, TokenNameFinderFactory factory,
+      TokenNameFinderEvaluationMonitor... listeners) {
+    this(languageCode, type, params, null, null, new BioCodec(), listeners);
+    this.factory = factory;
+  }
+
+  /**
+   * Starts the evaluation.
+   * <p>
+   * Note:
+   * The name samples need to be grouped on a document basis.
+   *
+   * @param samples The {@link ObjectStream} of {@link NameSample samples} to train and test with.
+   * @param nFolds Number of folds. It must be greater than zero.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public void evaluate(ObjectStream<NameSample> samples, int nFolds) throws IOException {
 
     CrossValidationPartitioner<DocumentSample> partitioner = new CrossValidationPartitioner<>(
         new NameToDocumentSampleStream(samples), nFolds);

@@ -25,7 +25,7 @@ import opennlp.tools.util.eval.FMeasure;
 /**
  * The {@link TokenNameFinderEvaluator} measures the performance
  * of the given {@link TokenNameFinder} with the provided
- * reference {@link NameSample}s.
+ * reference {@link NameSample samples}.
  *
  * @see Evaluator
  * @see TokenNameFinder
@@ -33,20 +33,18 @@ import opennlp.tools.util.eval.FMeasure;
  */
 public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
 
-  private FMeasure fmeasure = new FMeasure();
+  private final FMeasure fmeasure = new FMeasure();
 
   /**
-   * The {@link TokenNameFinder} used to create the predicted
-   * {@link NameSample} objects.
+   * The {@link TokenNameFinder} used to create the predicted {@link NameSample} objects.
    */
-  private TokenNameFinder nameFinder;
+  private final TokenNameFinder nameFinder;
 
   /**
-   * Initializes the current instance with the given
-   * {@link TokenNameFinder}.
+   * Initializes a {@link TokenNameFinderEvaluator} for a given {@link TokenNameFinder}.
    *
-   * @param nameFinder the {@link TokenNameFinder} to evaluate.
-   * @param listeners evaluation sample listeners
+   * @param nameFinder The {@link TokenNameFinder} to evaluate.
+   * @param listeners The {@link TokenNameFinderEvaluationMonitor evaluation listeners}.
    */
   public TokenNameFinderEvaluator(TokenNameFinder nameFinder,
       TokenNameFinderEvaluationMonitor ... listeners) {
@@ -56,15 +54,15 @@ public class TokenNameFinderEvaluator extends Evaluator<NameSample> {
 
   /**
    * Evaluates the given reference {@link NameSample} object.
-   *
+   * <p>
    * This is done by finding the names with the
    * {@link TokenNameFinder} in the sentence from the reference
    * {@link NameSample}. The found names are then used to
    * calculate and update the scores.
    *
-   * @param reference the reference {@link NameSample}.
+   * @param reference The reference {@link NameSample}.
    *
-   * @return the predicted {@link NameSample}.
+   * @return The predicted {@link NameSample}.
    */
   @Override
   protected NameSample processSample(NameSample reference) {

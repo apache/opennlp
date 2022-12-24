@@ -32,36 +32,37 @@ import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
- * Class for creating an event stream out of data files for training an name
- * finder.
+ * Class for creating an event stream out of data files for training an {@link TokenNameFinder}.
  */
 public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStream<NameSample> {
 
-  private NameContextGenerator contextGenerator;
+  private final NameContextGenerator contextGenerator;
 
-  private AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
+  private final AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
       new AdditionalContextFeatureGenerator();
 
-  private SequenceCodec<String> codec;
+  private final SequenceCodec<String> codec;
 
   private final String defaultType;
 
   /**
-   * Creates a new name finder event stream using the specified data stream and context generator.
-   * @param dataStream The data stream of events.
-   * @param type null or overrides the type parameter in the provided samples
-   * @param contextGenerator The context generator used to generate features for the event stream.
+   * Initializes a {@link NameFinderEventStream} using the specified {@code dataStream} and
+   * {@link NameContextGenerator}.
+   *
+   * @param dataStream The {@link ObjectStream data stream} of events.
+   * @param type {@code null} or overrides the type parameter in the provided samples.
+   * @param contextGenerator The {@link NameContextGenerator} used to generate features for the event stream.
+   * @param codec The {@link SequenceCodec} to use.
    */
   public NameFinderEventStream(ObjectStream<NameSample> dataStream, String type,
                                NameContextGenerator contextGenerator, SequenceCodec<String> codec) {
     super(dataStream);
 
-    this.codec = codec;
-
     if (codec == null) {
       this.codec = new BioCodec();
+    } else {
+      this.codec = codec;
     }
-
     this.contextGenerator = contextGenerator;
     this.contextGenerator.addFeatureGenerator(
         new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
@@ -70,14 +71,17 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   }
 
   /**
-   * Generates the name tag outcomes (start, continue, other) for each token in a sentence
-   * with the specified length using the specified name spans.
-   * @param names Token spans for each of the names.
-   * @param type null or overrides the type parameter in the provided samples
+   * Generates the name tag outcomes ({@code start}, {@code continue}, {@code other}) for each
+   * token in a sentence with the specified {@code length} using the specified {@link Span names}.
+   * 
+   * @param names Token {@link Span spans} for each of the names.
+   * @param type {@code null} or overrides the type parameter in the provided samples
    * @param length The length of the sentence.
-   * @return An array of start, continue, other outcomes based on the specified names and sentence length.
+   *               
+   * @return An array of {@code start}, {@code continue}, {@code other} outcomes based on the
+   *         specified names and sentence {@code length}.
    *
-   * @deprecated use the BioCodec implementation of the SequenceValidator instead!
+   * @deprecated use the {@link BioCodec} implementation of the SequenceValidator instead!
    */
   @Deprecated
   public static String[] generateOutcomes(Span[] names, String type, int length) {
@@ -103,6 +107,16 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
     return outcomes;
   }
 
+  /**
+   * Generates {@link Event events} for each token in a {@code sentence}
+   * with the specified {@code outcomes} using the specified {@link NameContextGenerator}.
+   *
+   * @param sentence Token representing a sentence.
+   * @param outcomes An array of outcomes.
+   * @param cg The {@link NameContextGenerator} to use.
+   *           
+   * @return A list of {@link Event events} generated.
+   */
   public static List<Event> generateEvents(String[] sentence, String[] outcomes,
                                            NameContextGenerator cg) {
     List<Event> events = new ArrayList<>(outcomes.length);
@@ -148,10 +162,12 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
   }
 
   /**
-   * Generated previous decision features for each token based on contents of the specified map.
+   * Generated previous decision features for each token based on contents of the
+   * specified {@code prevMap}.
+   *
    * @param tokens The token for which the context is generated.
    * @param prevMap A mapping of tokens to their previous decisions.
-   * @return An additional context array with features for each token.
+   * @return A 2-dimensional array with additional context with features for each token.
    */
   public static String[][] additionalContext(String[] tokens, Map<String, String> prevMap) {
     String[][] ac = new String[tokens.length][1];

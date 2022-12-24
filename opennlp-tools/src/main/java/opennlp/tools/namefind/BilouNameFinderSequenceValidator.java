@@ -19,9 +19,14 @@ package opennlp.tools.namefind;
 
 import opennlp.tools.util.SequenceValidator;
 
-public class BilouNameFinderSequenceValidator implements
-    SequenceValidator<String> {
+/**
+ * A {@link SequenceValidator} implementation for the {@link BilouCodec}.
+ *
+ * @see BilouCodec
+ */
+public class BilouNameFinderSequenceValidator implements SequenceValidator<String> {
 
+  @Override
   public boolean validSequence(int i, String[] inputSequence,
                                String[] outcomesSequence, String outcome) {
 

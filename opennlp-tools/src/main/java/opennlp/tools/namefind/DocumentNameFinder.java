@@ -20,22 +20,23 @@ package opennlp.tools.namefind;
 import opennlp.tools.util.Span;
 
 /**
- * Name finding interface which processes an entire document allowing the name finder to use context
+ * Interface for processing an entire document allowing a {@link TokenNameFinder} to use context
  * from the entire document.
  *
- * <strong>EXPERIMENTAL</strong>.
+ * <strong>EXPERIMENTAL</strong>:
  * This interface has been added as part of a work in progress and might change without notice.
  */
 public interface DocumentNameFinder {
 
   /**
-   * Returns tokens span for the specified document of sentences and their tokens.
+   * Finds tokens {@link Span spans} for the specified document of sentences and their tokens.
+   * <p>
    * Span start and end indices are relative to the sentence they are in.
    * For example, a span identifying a name consisting of the first and second word
-   * of the second sentence would be 0..2 and be referenced as spans[1][0].
+   * of the second sentence would be {@code 0..2} and be referenced as {@code spans[1][0]}.
    *
-   * @param document An array of tokens for each sentence of a document.
-   * @return The token spans for each sentence of the specified document.
+   * @param document A 2-dimensional array of tokens for each sentence of a document.
+   * @return The {@link Span token spans} for each sentence of the specified document.
    */
   Span[][] find(String[][] document);
 

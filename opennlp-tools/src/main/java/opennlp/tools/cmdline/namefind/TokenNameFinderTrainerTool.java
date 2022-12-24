@@ -150,8 +150,12 @@ public final class TokenNameFinderTrainerTool
       sequenceCodecImplName = BilouCodec.class.getName();
     }
 
-    SequenceCodec<String> sequenceCodec =
-        TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
+    SequenceCodec<String> sequenceCodec;
+    try {
+      sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
+    } catch (InvalidFormatException e) {
+      throw new TerminateToolException(-1, e.getMessage(), e);
+    }
 
     TokenNameFinderFactory nameFinderFactory;
     try {

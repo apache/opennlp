@@ -31,15 +31,15 @@ import opennlp.tools.util.featuregen.TokenFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
- * Class for determining contextual features for a tag/chunk style
- * named-entity recognizer.
+ * A {@link NameContextGenerator} implementation for determining contextual features
+ * for a {@code tag-chunk} style named-entity recognizer.
  */
 public class DefaultNameContextGenerator implements NameContextGenerator {
 
   protected AdaptiveFeatureGenerator[] featureGenerators;
 
   @Deprecated
-  private static AdaptiveFeatureGenerator windowFeatures = new CachedFeatureGenerator(
+  private static final AdaptiveFeatureGenerator WINDOW_FEATURES = new CachedFeatureGenerator(
       new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
       new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
       new OutcomePriorFeatureGenerator(),
@@ -48,7 +48,9 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
   /**
    * Creates a name context generator.
-   * @deprecated use the other constructor and always provide the feature generators
+   * 
+   * @deprecated use {@link #DefaultNameContextGenerator(AdaptiveFeatureGenerator...)} and
+   *             always provide one or more {@link AdaptiveFeatureGenerator feature generators}.
    */
   @Deprecated
   public DefaultNameContextGenerator() {
@@ -56,22 +58,25 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
   }
 
   /**
-   * Creates a name context generator with the specified cache size.
+   * Creates a name context generator with the specified
+   * {@link AdaptiveFeatureGenerator feature generators}.
+   *
+   * @param featureGenerators One or more {@link AdaptiveFeatureGenerator feature generators}.
+   *                          If none are provided, a default config ({@link #WINDOW_FEATURES})
+   *                          will be used.
    */
   public DefaultNameContextGenerator(AdaptiveFeatureGenerator... featureGenerators) {
 
     if (featureGenerators != null) {
       this.featureGenerators = featureGenerators;
     }
-    else {
-      // use defaults
-
-      this.featureGenerators = new AdaptiveFeatureGenerator[]{
-          windowFeatures,
-          new PreviousMapFeatureGenerator()};
+    else { // use defaults
+      this.featureGenerators =
+        new AdaptiveFeatureGenerator[]{WINDOW_FEATURES, new PreviousMapFeatureGenerator()};
     }
   }
 
+  @Override
   public void addFeatureGenerator(AdaptiveFeatureGenerator generator) {
     AdaptiveFeatureGenerator[] generators = featureGenerators;
 
@@ -82,6 +87,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
     featureGenerators[featureGenerators.length - 1] = generator;
   }
 
+  @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
 
     if (tokens != null && outcomes != null && tokens.length != outcomes.length) {
@@ -94,6 +100,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
     }
   }
 
+  @Override
   public void clearAdaptiveData() {
     for (AdaptiveFeatureGenerator featureGenerator : featureGenerators) {
       featureGenerator.clearAdaptiveData();
@@ -101,17 +108,19 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
   }
 
   /**
-   * Return the context for finding names at the specified index.
-   * @param index The index of the token in the specified toks array for which the
+   * Finds the context for finding names at the specified index.
+   *
+   * @param index The index of the token in the specified {@code tokens} for which the
    *              context should be constructed.
-   * @param tokens The tokens of the sentence.  The <code>toString</code> methods
+   * @param tokens The tokens of the sentence. The {@code toString()} methods
    *               of these objects should return the token text.
    * @param preds The previous decisions made in the tagging of this sequence.
-   *              Only indices less than i will be examined.
-   * @param additionalContext Addition features which may be based on a context outside of the sentence.
+   *              Only indices less than {@code index} will be examined.
+   * @param additionalContext Addition features which may be based on a context outside the sentence.
    *
-   * @return the context for finding names at the specified index.
+   * @return The context for finding names at the specified {@code index}.
    */
+  @Override
   public String[] getContext(int index, String[] tokens, String[] preds, Object[] additionalContext) {
     List<String> features = new ArrayList<>();
 

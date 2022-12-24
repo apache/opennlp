@@ -28,6 +28,9 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
+/**
+ * A {@link SequenceStream} implementation encapsulating {@link NameSample samples}.
+ */
 public class NameSampleSequenceStream implements SequenceStream<NameSample> {
 
   private final NameContextGenerator pcg;
@@ -35,40 +38,81 @@ public class NameSampleSequenceStream implements SequenceStream<NameSample> {
   private final ObjectStream<NameSample> psi;
   private final SequenceCodec<String> seqCodec;
 
-  public NameSampleSequenceStream(ObjectStream<NameSample> psi) throws IOException {
+  /**
+   * Initializes a {@link NameSampleSequenceStream} with given {@code psi} samples.
+   *
+   * @param psi The data stream of {@link NameSample samples}.
+   */
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi) {
     this(psi, new DefaultNameContextGenerator((AdaptiveFeatureGenerator) null), true);
   }
 
-  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen)
-      throws IOException {
+  /**
+   * Initializes a {@link NameSampleSequenceStream} with given {@code psi} samples
+   * and an {@link AdaptiveFeatureGenerator feature generator}.
+   *
+   * @param psi The data stream of {@link NameSample samples}.
+   * @param featureGen The {@link AdaptiveFeatureGenerator feature generator} to use.
+   */
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, AdaptiveFeatureGenerator featureGen) {
     this(psi, new DefaultNameContextGenerator(featureGen), true);
   }
 
+  /**
+   * Initializes a {@link NameSampleSequenceStream} with given {@code psi} samples
+   * and an {@link AdaptiveFeatureGenerator feature generator}.
+   *
+   * @param psi The data stream of {@link NameSample samples}.
+   * @param featureGen The {@link AdaptiveFeatureGenerator feature generator} to use.
+   * @param useOutcomes Whether to use outcomes or not.
+   */
   public NameSampleSequenceStream(ObjectStream<NameSample> psi,
-      AdaptiveFeatureGenerator featureGen, boolean useOutcomes)
-      throws IOException {
+      AdaptiveFeatureGenerator featureGen, boolean useOutcomes) {
     this(psi, new DefaultNameContextGenerator(featureGen), useOutcomes);
   }
 
-  public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg)
-      throws IOException {
+  /**
+   * Initializes a {@link NameSampleSequenceStream} with given {@code psi} samples
+   * and an {@link AdaptiveFeatureGenerator feature generator}.
+   *
+   * @param psi The data stream of {@link NameSample samples}.
+   * @param pcg The {@link NameContextGenerator context generator} to use.
+   */
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg) {
     this(psi, pcg, true);
   }
 
-  public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg, boolean useOutcomes)
-      throws IOException {
+  /**
+   * Initializes a {@link NameSampleSequenceStream} with given {@code psi} samples
+   * and an {@link AdaptiveFeatureGenerator feature generator}.
+   *
+   * @param psi The data stream of {@link NameSample samples}.
+   * @param pcg The {@link NameContextGenerator context generator} to use.
+   * @param useOutcomes Whether to use outcomes or not.
+   */
+  public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg,
+                                  boolean useOutcomes) {
     this(psi, pcg, useOutcomes, new BioCodec());
   }
 
+  /**
+   * Initializes a {@link NameSampleSequenceStream} with given {@code psi} samples
+   * and an {@link AdaptiveFeatureGenerator feature generator}.
+   *
+   * @param psi The data stream of {@link NameSample samples}.
+   * @param pcg The {@link NameContextGenerator context generator} to use.
+   * @param useOutcomes Whether to use outcomes or not.
+   * @param seqCodec The {@link SequenceCodec} to use.
+   */
   public NameSampleSequenceStream(ObjectStream<NameSample> psi, NameContextGenerator pcg, boolean useOutcomes,
-      SequenceCodec<String> seqCodec)
-          throws IOException {
+      SequenceCodec<String> seqCodec) {
     this.psi = psi;
     this.useOutcomes = useOutcomes;
     this.pcg = pcg;
     this.seqCodec = seqCodec;
   }
 
+  @Override
   public Event[] updateContext(Sequence<NameSample> sequence, AbstractModel model) {
     TokenNameFinder tagger = new NameFinderME(new TokenNameFinderModel(
         "x-unspecified", model, Collections.emptyMap(), null));

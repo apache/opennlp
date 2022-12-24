@@ -104,9 +104,12 @@ public final class TokenNameFinderCrossValidatorTool
       sequenceCodecImplName = BilouCodec.class.getName();
     }
 
-    SequenceCodec<String> sequenceCodec =
-        TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
-
+    SequenceCodec<String> sequenceCodec;
+    try {
+      sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
+    } catch (InvalidFormatException e) {
+      throw new TerminateToolException(-1, e.getMessage(), e);
+    }
 
     TokenNameFinderFineGrainedReportListener reportListener = null;
     File reportFile = params.getReportOutputFile();
