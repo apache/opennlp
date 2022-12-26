@@ -31,6 +31,16 @@ import java.util.Map;
 
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * Brat (brat rapid annotation tool) is based on the stav visualiser
+ * which was originally made in order to visualise BioNLP'11 Shared Task data.
+ * <p>
+ * Data can be found on this
+ * <a href="https://brat.nlplab.org/examples.html#corpus-examples-brat">web site</a>.
+ * <p>
+ * Information about the format are found on this
+ * <a href="https://brat.nlplab.org/introduction.html">web site</a>.
+ */
 public class BratDocument {
 
   private final AnnotationConfiguration config;

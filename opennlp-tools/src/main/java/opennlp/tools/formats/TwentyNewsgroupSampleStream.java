@@ -31,15 +31,15 @@ import opennlp.tools.util.ObjectStream;
 
 public class TwentyNewsgroupSampleStream implements ObjectStream<DocumentSample> {
 
-  private Tokenizer tokenizer;
+  private final Tokenizer tokenizer;
 
-  private Map<Path, String> catFileMap = new HashMap<>();
+  private final Map<Path, String> catFileMap = new HashMap<>();
   private Iterator<Map.Entry<Path, String>> catFileTupleIterator;
 
   TwentyNewsgroupSampleStream(Tokenizer tokenizer, Path dataDir) throws IOException {
     this.tokenizer = tokenizer;
 
-    for (Path dir : Files.newDirectoryStream(dataDir, entry -> Files.isDirectory(entry))) {
+    for (Path dir : Files.newDirectoryStream(dataDir, Files::isDirectory)) {
       for (Path file : Files.newDirectoryStream(dir)) {
         catFileMap.put(file, dir.getFileName().toString());
       }

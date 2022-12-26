@@ -17,15 +17,27 @@
 
 package opennlp.tools.formats.convert;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class NameToSentenceSampleStream extends AbstractToSentenceSampleStream<NameSample> {
 
+  /**
+   * Initializes a {@link NameToSentenceSampleStream}.
+   *
+   * @param detokenizer The {@link Detokenizer} to use. Must not be {@code null}.
+   * @param samples The {@link ObjectStream<NameSample> samples} as input. Must not be {@code null}.
+   * @param chunkSize The size of chunks. Must be equal to or greater than {@code 0}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   public NameToSentenceSampleStream(Detokenizer detokenizer,
       ObjectStream<NameSample> samples, int chunkSize) {
     super(detokenizer, samples, chunkSize);

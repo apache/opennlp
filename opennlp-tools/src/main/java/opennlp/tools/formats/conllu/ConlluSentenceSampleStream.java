@@ -30,6 +30,12 @@ public class ConlluSentenceSampleStream extends FilterObjectStream<ConlluSentenc
 
   private final int sentencesPerSample;
 
+  /**
+   * Initializes a {@link ConlluSentenceSampleStream}.
+   *
+   * @param samples The {@link ObjectStream<ConlluSentence> samples} used as input.
+   * @param sentencesPerSample The number of sentences per sample. Must not be negative.
+   */
   public ConlluSentenceSampleStream(ObjectStream<ConlluSentence> samples, int sentencesPerSample) {
     super(samples);
     this.sentencesPerSample = sentencesPerSample;

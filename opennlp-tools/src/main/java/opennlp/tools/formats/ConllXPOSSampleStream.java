@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.InputStreamFactory;
@@ -35,21 +36,37 @@ import opennlp.tools.util.PlainTextByLineStream;
 /**
  * Parses the data from the CONLL 06 shared task into POS Samples.
  * <p>
- * More information about the data format can be found here:<br>
- * http://www.cnts.ua.ac.be/conll2006/
+ * More information about the data format can be found
+ * <a href="http://www.cnts.ua.ac.be/conll2006/">here</a>.
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample> {
 
+  /**
+   * Initializes a {@link ConllXPOSSampleStream}.
+   * 
+   * @param lineStream A {@link ObjectStream<String> line stream} representing the input.
+   */
   public ConllXPOSSampleStream(ObjectStream<String> lineStream) {
     super(new ParagraphStream(lineStream));
   }
 
+  /**
+   * Initializes a {@link ConllXPOSSampleStream}.
+   *
+   * @param in The {@link InputStreamFactory} to use.
+   * @param charset The {@link Charset} to interpret characters with.
+   *                
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public ConllXPOSSampleStream(InputStreamFactory in, Charset charset) throws IOException {
     super(new ParagraphStream(new PlainTextByLineStream(in, charset)));
   }
 
+  @Override
   public POSSample read() throws IOException {
 
     // The CONLL-X data has a word per line and each line is tab separated

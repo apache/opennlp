@@ -33,8 +33,8 @@ import opennlp.tools.util.Span;
 
 public class BratDocumentParser {
 
-  private SentenceDetector sentDetector;
-  private Tokenizer tokenizer;
+  private final SentenceDetector sentDetector;
+  private final Tokenizer tokenizer;
   private final Set<String> nameTypes;
 
   public BratDocumentParser(SentenceDetector sentenceDetector, Tokenizer tokenizer) {

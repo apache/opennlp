@@ -46,6 +46,7 @@ public class TokenSampleStreamFactory<P> extends LanguageSampleStreamFactory<Tok
     super(params);
   }
 
+  @Override
   public ObjectStream<TokenSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 

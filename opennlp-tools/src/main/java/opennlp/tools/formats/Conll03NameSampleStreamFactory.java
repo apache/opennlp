@@ -29,6 +29,9 @@ import opennlp.tools.formats.Conll03NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * @see Conll03NameSampleStream
+ */
 public class Conll03NameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
 
   interface Parameters extends BasicFormatParams {
@@ -48,6 +51,7 @@ public class Conll03NameSampleStreamFactory<P> extends LanguageSampleStreamFacto
     super(params);
   }
 
+  @Override
   public ObjectStream<NameSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);

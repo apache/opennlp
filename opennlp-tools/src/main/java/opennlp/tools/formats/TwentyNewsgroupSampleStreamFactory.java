@@ -69,7 +69,7 @@ public class TwentyNewsgroupSampleStreamFactory<P> extends AbstractSampleStreamF
         tokenizer = WhitespaceTokenizer.INSTANCE;
       }
       else {
-        throw new TerminateToolException(-1, "Unkown tokenizer: " + tokenizerName);
+        throw new TerminateToolException(-1, "Unknown tokenizer: " + tokenizerName);
       }
     }
 

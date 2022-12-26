@@ -20,12 +20,20 @@ package opennlp.tools.formats.frenchtreebank;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToByteArraySampleStream;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
+ *
+ * @see ConstitParseSampleStream
+ */
+@Internal
 public class ConstitParseSampleStreamFactory
         extends AbstractSampleStreamFactory<Parse, ConstitParseSampleStreamFactory.Parameters> {
 
@@ -37,6 +45,7 @@ public class ConstitParseSampleStreamFactory
     super(Parameters.class);
   }
 
+  @Override
   public ObjectStream<Parse> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);

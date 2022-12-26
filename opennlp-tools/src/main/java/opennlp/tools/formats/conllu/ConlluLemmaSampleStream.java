@@ -20,6 +20,7 @@ package opennlp.tools.formats.conllu;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.lemmatizer.LemmaSample;
 import opennlp.tools.util.FilterObjectStream;
@@ -29,9 +30,15 @@ public class ConlluLemmaSampleStream extends FilterObjectStream<ConlluSentence, 
 
   private final ConlluTagset tagset;
 
+  /**
+   * Initializes a {@link ConlluLemmaSampleStream}.
+   *
+   * @param samples The {@link ObjectStream<ConlluSentence> samples} used as input.
+   * @param tagset The {@link ConlluTagset} to use. Must not be {@code null}.
+   */
   public ConlluLemmaSampleStream(ObjectStream<ConlluSentence> samples, ConlluTagset tagset) {
     super(samples);
-    this.tagset = tagset;
+    this.tagset = Objects.requireNonNull(tagset);
   }
 
   @Override

@@ -46,6 +46,7 @@ public class DocumentSampleStreamFactory<P> extends AbstractSampleStreamFactory<
     super(params);
   }
 
+  @Override
   public ObjectStream<DocumentSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 

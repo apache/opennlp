@@ -29,7 +29,7 @@ import java.util.Stack;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * The directory sample stream allows for creating a stream
+ * The directory sample stream allows for creating an {@link ObjectStream<File>}
  * from a directory listing of files.
  */
 public class DirectorySampleStream implements ObjectStream<File> {
@@ -40,15 +40,18 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
   private final FileFilter fileFilter;
 
-  private Stack<File> directories = new Stack<>();
+  private final Stack<File> directories = new Stack<>();
 
-  private Stack<File> textFiles = new Stack<>();
+  private final Stack<File> textFiles = new Stack<>();
   
   /**
-   * Creates a new directory sample stream.
-   * @param dirs The directories to read.
+   * Initializes a {@link DirectorySampleStream}.
+   *
+   * @param dirs The {@link File directories} to read.
    * @param fileFilter The {@link FileFilter filter} to apply while enumerating files.
    * @param recursive Enables or disables recursive file listing.
+   *
+   * @throws IllegalArgumentException Thrown if one element in {@code dirs} is not a directory.
    */
   public DirectorySampleStream(File[] dirs, FileFilter fileFilter, boolean recursive) {
     this.fileFilter = fileFilter;
@@ -67,15 +70,17 @@ public class DirectorySampleStream implements ObjectStream<File> {
     }
 
     inputDirectories = Collections.unmodifiableList(inputDirectoryList);
-
     directories.addAll(inputDirectories);
   }
 
   /**
-   * Creates a new directory sample stream.
-   * @param dir The {@link File directory}.
+   * Initializes a {@link DirectorySampleStream}.
+   * 
+   * @param dir The {@link File directory} to read.
    * @param fileFilter The {@link FileFilter filter} to apply while enumerating files.
    * @param recursive Enables or disables recursive file listing.
+   *
+   * @throws IllegalArgumentException Thrown if {@code dir} is not a directory.
    */
   public DirectorySampleStream(File dir, FileFilter fileFilter, boolean recursive) {
     this(new File[]{dir}, fileFilter, recursive);
@@ -126,8 +131,7 @@ public class DirectorySampleStream implements ObjectStream<File> {
 
   /**
    * {@inheritDoc}
-   * Calling this function has no effect on
-   * the stream.
+   * Calling this function has no effect on the stream.
    */
   @Override
   public void close() throws IOException {

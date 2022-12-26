@@ -25,13 +25,18 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.EvalitaNameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
+ *
+ * @see EvalitaNameSampleStream
  */
+@Internal
 public class EvalitaNameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
 
   interface Parameters extends BasicFormatParams {
@@ -51,6 +56,7 @@ public class EvalitaNameSampleStreamFactory<P> extends LanguageSampleStreamFacto
     super(params);
   }
 
+  @Override
   public ObjectStream<NameSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);
@@ -66,19 +72,20 @@ public class EvalitaNameSampleStreamFactory<P> extends LanguageSampleStreamFacto
 
     int typesToGenerate = 0;
 
-    if (params.getTypes().contains("per")) {
+    final String types = params.getTypes();
+    if (types.contains("per")) {
       typesToGenerate = typesToGenerate |
           EvalitaNameSampleStream.GENERATE_PERSON_ENTITIES;
     }
-    if (params.getTypes().contains("org")) {
+    if (types.contains("org")) {
       typesToGenerate = typesToGenerate |
           EvalitaNameSampleStream.GENERATE_ORGANIZATION_ENTITIES;
     }
-    if (params.getTypes().contains("loc")) {
+    if (types.contains("loc")) {
       typesToGenerate = typesToGenerate |
           EvalitaNameSampleStream.GENERATE_LOCATION_ENTITIES;
     }
-    if (params.getTypes().contains("gpe")) {
+    if (types.contains("gpe")) {
       typesToGenerate = typesToGenerate |
           EvalitaNameSampleStream.GENERATE_GPE_ENTITIES;
     }

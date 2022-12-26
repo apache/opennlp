@@ -25,13 +25,18 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
+ *
+ * @see Conll02NameSampleStream
  */
+@Internal
 public class Conll02NameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
 
   interface Parameters extends BasicFormatParams {
@@ -51,6 +56,7 @@ public class Conll02NameSampleStreamFactory<P> extends LanguageSampleStreamFacto
     super(params);
   }
 
+  @Override
   public ObjectStream<NameSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);

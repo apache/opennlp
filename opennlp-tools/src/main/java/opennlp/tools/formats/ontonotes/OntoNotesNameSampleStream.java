@@ -42,8 +42,16 @@ public class OntoNotesNameSampleStream extends
 
   private final Map<String, String> tokenConversionMap;
 
-  private List<NameSample> nameSamples = new LinkedList<>();
+  private final List<NameSample> nameSamples = new LinkedList<>();
 
+  /**
+   * Initializes a {@link OntoNotesNameSampleStream}.
+   *
+   * @param samples The {@link ObjectStream<String> samples} as input.
+   *                Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   public OntoNotesNameSampleStream(ObjectStream<String> samples) {
     super(samples);
 
@@ -84,6 +92,7 @@ public class OntoNotesNameSampleStream extends
     return cleanedToken;
   }
 
+  @Override
   public NameSample read() throws IOException {
 
     if (nameSamples.isEmpty()) {

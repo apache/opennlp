@@ -19,11 +19,11 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InvalidFormatException;
@@ -48,14 +48,16 @@ import opennlp.tools.util.StringUtil;
  *    GPE (for Geo-Political Entity), or LOC (for Location).
  * <p>
  * Each file  consists of four  columns separated by a  blank, containing
- * respectively the  token, the Elsnet  PoS-tag, the Adige news  story to
+ * respectively the token, the Elsnet PoS-tag, the Adige news story to
  * which the token belongs, and the Named Entity tag.
  * <p>
- * Data can be found on this web site:<br>
- * http://www.evalita.it
+ * Data can be found on this
+ * <a href="http://www.evalita.it">web site</a>.
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
   public enum LANGUAGE {
@@ -81,15 +83,8 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
   }
 
   public EvalitaNameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
-    this.lang = lang;
-    try {
-      this.lineStream = new PlainTextByLineStream(in, StandardCharsets.UTF_8);
-      System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
-    this.types = types;
+    this(lang, new PlainTextByLineStream(in, StandardCharsets.UTF_8),types);
+    System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
   }
 
   private static Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
@@ -117,6 +112,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
   }
 
 
+  @Override
   public NameSample read() throws IOException {
 
     List<String> sentence = new ArrayList<>();
@@ -221,10 +217,12 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
     }
   }
 
+  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     lineStream.reset();
   }
 
+  @Override
   public void close() throws IOException {
     lineStream.close();
   }

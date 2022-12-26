@@ -39,12 +39,21 @@ import opennlp.tools.util.ParagraphStream;
 import opennlp.tools.util.PlainTextByLineStream;
 
 /**
- * The CoNNL-U Format is specified here:
- * http://universaldependencies.org/format.html
+ * The CoNNL-U Format is specified
+ * <a href="http://universaldependencies.org/format.html">here</a>.
  */
 public class ConlluStream implements ObjectStream<ConlluSentence> {
   private final ObjectStream<String> sentenceStream;
 
+  private static final Pattern regex = Pattern.compile("text_([a-z]{2,3})");
+
+  /**
+   * Initializes a {@link ConlluStream}.
+   *
+   * @param in The {@link InputStreamFactory} to use. Characters will be interpreted in UTF-8.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public ConlluStream(InputStreamFactory in) throws IOException {
     this.sentenceStream = new ParagraphStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
   }
@@ -180,10 +189,12 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
   }
 
   /**
-   * Merges token level annotations
-   * @param contraction the line that receives the annotation
-   * @param expandedParts the lines to get annotation
-   * @return the merged line
+   * Merges token level annotations.
+   *
+   * @param contraction The line that receives the annotation.
+   * @param expandedParts The lines to get annotation.
+   *
+   * @return The {@link ConlluWordLine merged line}.
    */
   private ConlluWordLine mergeAnnotation(ConlluWordLine contraction,
                                          List<ConlluWordLine> expandedParts) {
@@ -221,7 +232,6 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
                                           Map<Locale, String> textLang) throws InvalidFormatException {
     String lang = "";
     try {
-      Pattern regex = Pattern.compile("text_([a-z]{2,3})");
       Matcher regexMatcher = regex.matcher(firstPart);
       if (regexMatcher.find()) {
         lang = regexMatcher.group(1);

@@ -67,7 +67,7 @@ public class ConlluWordLine {
   }
 
   /**
-   * Retrieves the word index. An Integer starting at 1 for each new sentence;
+   * @return Retrieves the word index. An Integer starting at {@code 1} for each new sentence;
    * may be a range for multiword tokens; may be a decimal number for empty nodes.
    */
   public String getId() {
@@ -75,24 +75,26 @@ public class ConlluWordLine {
   }
 
   /**
-   * Retrieve the word form or punctuation symbol.
+   * @return Retrieves the word form or punctuation symbol.
    */
   public String getForm() {
     return form;
   }
 
   /**
-   * Retrieve the lemma or stem of the word form.
+   * @return Retrieves the lemma or stem of the word form.
    */
   public String getLemma() {
     return lemma;
   }
 
   /**
-   * Retrieve the Universal part-of-speech tag or the language-specific part-of-speech tag;
-   * underscore if not available.
+   * @param tagset The {@link ConlluTagset type of tag} to retrieve, either universal
+   *               ({@link ConlluTagset#U}) or language specific ({@link ConlluTagset#X}).
    *
-   * @param tagset the type of tag to retrieve, either universial (u) or language specific (x)
+   * @return Retrieves the Universal part-of-speech tag or the language-specific part-of-speech tag;
+   * underscore if not available.
+   * @throws IllegalStateException Thrown if a non-supported {@link ConlluTagset} was specified.
    */
   public String getPosTag(ConlluTagset tagset) {
     switch (tagset) {
@@ -106,37 +108,38 @@ public class ConlluWordLine {
   }
 
   /**
-   * Retrieve list of morphological features from the universal feature inventory or from a
-   * defined language-specific extension; underscore if not available.
+   * @return Retrieves morphological features from the universal feature inventory
+   * or from a defined language-specific extension; underscore if not available.
    */
   public String getFeats() {
     return feats;
   }
 
   /**
-   * Head of the current word, which is either a value of ID or zero (0).
+   * @return Retrieves the head of the current word, which is either a value of ID or zero (0).
    */
   public String getHead() {
     return head;
   }
 
   /**
-   * Universal dependency relation to the HEAD (root iff HEAD = 0) or a
-   * defined language-specific subtype of one.
+   * @return Retrieves the Universal dependency relation to the HEAD (root if HEAD = 0)
+   * or a defined language-specific subtype of one.
    */
   public String getDeprel() {
     return deprel;
   }
 
   /**
-   * Enhanced dependency graph in the form of a list of head-deprel pairs.
+   * @return Retrieves the enhanced dependency graph in the form of a list of
+   * head-deprel pairs.
    */
   public String getDeps() {
     return deps;
   }
 
   /**
-   * Retrieve any other annotation.
+   * @return Retrieves any other annotation.
    */
   public String getMisc() {
     return misc;

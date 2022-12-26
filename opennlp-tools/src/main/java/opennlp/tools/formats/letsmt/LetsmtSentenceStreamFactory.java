@@ -32,6 +32,9 @@ import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * @see LetsmtSentenceStream
+ */
 public class LetsmtSentenceStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
 
   interface Parameters extends BasicFormatParams {
@@ -65,8 +68,7 @@ public class LetsmtSentenceStreamFactory<P> extends AbstractSampleStreamFactory<
       CmdLineUtil.handleCreateObjectStreamError(ex);
     }
 
-    // TODO:
-    // Implement a filter stream to remove splits which are not at an eos char
+    // TODO Implement a filter stream to remove splits which are not at an eos char
 
     ObjectStream<SentenceSample> samples = new LetsmtSentenceStream(letsmtDoc);
 
