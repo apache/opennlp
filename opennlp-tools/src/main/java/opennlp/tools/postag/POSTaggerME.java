@@ -95,7 +95,7 @@ public class POSTaggerME implements POSTagger {
    * @throws IOException Thrown if the model could not be downloaded or saved.
    */
   public POSTaggerME(String language) throws IOException {
-    this((POSModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.POS, POSModel.class));
+    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.POS, POSModel.class));
   }
 
   /**

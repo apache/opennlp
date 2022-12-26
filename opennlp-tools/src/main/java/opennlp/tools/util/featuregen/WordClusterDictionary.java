@@ -36,21 +36,25 @@ public class WordClusterDictionary implements SerializableArtifact {
 
   public static class WordClusterDictionarySerializer implements ArtifactSerializer<WordClusterDictionary> {
 
+    @Override
     public WordClusterDictionary create(InputStream in) throws IOException {
       return new WordClusterDictionary(in);
     }
 
+    @Override
     public void serialize(WordClusterDictionary artifact, OutputStream out) throws IOException {
       artifact.serialize(out);
     }
   }
 
-  private Map<String, String> tokenToClusterMap = new HashMap<>();
+  private final Map<String, String> tokenToClusterMap = new HashMap<>();
 
   /**
    * Read word2vec and clark clustering style lexicons.
-   * @param in the inputstream
-   * @throws IOException the io exception
+   * 
+   * @param in the {@link InputStream} to read from.
+   *
+   * @throws IOException Thrown if IO errors occurred during read.
    */
   public WordClusterDictionary(InputStream in) throws IOException {
     BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
@@ -79,6 +83,7 @@ public class WordClusterDictionary implements SerializableArtifact {
     writer.flush();
   }
 
+  @Override
   public Class<?> getArtifactSerializerClass() {
     return WordClusterDictionarySerializer.class;
   }

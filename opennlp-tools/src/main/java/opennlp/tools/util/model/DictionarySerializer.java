@@ -24,16 +24,26 @@ import java.util.Map;
 
 import opennlp.tools.dictionary.Dictionary;
 
+/**
+ * An {@link ArtifactSerializer} implementation for {@link Dictionary dictionaries}.
+ */
 public class DictionarySerializer implements ArtifactSerializer<Dictionary> {
 
+  @Override
   public Dictionary create(InputStream in) throws IOException {
     return new Dictionary(in);
   }
 
+  @Override
   public void serialize(Dictionary dictionary, OutputStream out) throws IOException {
     dictionary.serialize(out);
   }
 
+  /**
+   * Registers a new {@link DictionarySerializer} in the given {@code factories} mapping.
+   * 
+   * @param factories A {@link Map} holding {@link ArtifactSerializer} for re-use.
+   */
   static void register(Map<String, ArtifactSerializer<?>> factories) {
     factories.put("dictionary", new DictionarySerializer());
   }

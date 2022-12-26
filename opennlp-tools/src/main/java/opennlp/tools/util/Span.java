@@ -29,27 +29,39 @@ public class Span implements Comparable<Span>, Serializable {
   private static final long serialVersionUID = -7648780019844573507L;
   private final int start;
   private final int end;
-  private final double prob;//default is 0
+  private final double prob; //default is 0
   private final String type;
 
   /**
-   * Initializes a new Span Object. Sets the prob to 0 as default.
+   * Initializes a new {@link Span}. Sets the prob to {@code 0} as default.
    *
-   * @param s start of span.
-   * @param e end of span, which is +1 more than the last element in the span.
+   * @param s The start position of a {@link Span}.
+   *          Must be equal to or greater than {@code 0}.
+   *          Must not be greater than {@code e}.
+   * @param e The end position of a {@link Span}, which is {@code +1}
+   *          more than the last element in the span.
+   *          Must be equal to or greater than {@code 0}.
    * @param type the type of the span
+   *             
+   * @throws IllegalArgumentException Thrown if given parameters are invalid.
    */
   public Span(int s, int e, String type) {
     this(s, e, type, 0d);
   }
 
   /**
-   * Initializes a new Span Object.
+   * Initializes a new {@link Span}.
    *
-   * @param s start of span.
-   * @param e end of span, which is +1 more than the last element in the span.
-   * @param type the type of the span
-   * @param prob probability of span.
+   * @param s The start position of a {@link Span}.
+   *          Must be equal to or greater than {@code 0}.
+   *          Must not be greater than {@code e}.
+   * @param e The end position of a {@link Span}, which is {@code +1}
+   *          more than the last element in the span.
+   *          Must be equal to or greater than {@code 0}.
+   * @param type The type of the {@link Span}
+   * @param prob The probability of the {@link Span}.
+   *
+   * @throws IllegalArgumentException Thrown if given parameters are invalid.
    */
   public Span(int s, int e, String type, double prob) {
 
@@ -71,129 +83,136 @@ public class Span implements Comparable<Span>, Serializable {
   }
 
   /**
-   * Initializes a new Span Object. Sets the prob to 0 as default
+   * Initializes a new {@link Span}. Sets the prob to {@code 0} as default.
    *
-   * @param s start of span.
-   * @param e end of span.
+   * @param s The start position of a {@link Span}.
+   *          Must be equal to or greater than {@code 0}.
+   *          Must not be greater than {@code e}.
+   * @param e The end position of a {@link Span}, which is {@code +1}
+   *          more than the last element in the span.
+   *          Must be equal to or greater than {@code 0}.
+   *
+   * @throws IllegalArgumentException Thrown if given parameters are invalid.
    */
   public Span(int s, int e) {
     this(s, e, null, 0d);
   }
 
   /**
+   * Initializes a new {@link Span}. Sets the prob to {@code 0} as default.
    *
-   * @param s the start of the span (the token index, not the char index)
-   * @param e the end of the span (the token index, not the char index)
-   * @param prob
+   * @param s The start position of a {@link Span}.
+   *          Must be equal to or greater than {@code 0}.
+   *          Must not be greater than {@code e}.
+   * @param e The end position of a {@link Span}, which is {@code +1}
+   *          more than the last element in the span.
+   *          Must be equal to or greater than {@code 0}.
+   * @param prob The probability of the {@link Span}
+   *
+   * @throws IllegalArgumentException Thrown if given parameters are invalid.
    */
   public Span(int s, int e, double prob) {
     this(s, e, null, prob);
   }
 
   /**
-   * Initializes a new Span object with an existing Span which is shifted by an
+   * Initializes a new {@link Span} with an existing {@link Span} which is shifted by an
    * offset.
    *
-   * @param span
-   * @param offset
+   * @param span The existing {@link Span}.
+   * @param offset The positive or negative shift offset.
+   *               
+   * @throws IllegalArgumentException Thrown if given parameters are invalid.
    */
   public Span(Span span, int offset) {
     this(span.start + offset, span.end + offset, span.getType(), span.getProb());
   }
 
   /**
-   * Creates a new immutable span based on an existing span, where the existing span did not include the prob
-   * @param span the span that has no prob or the prob is incorrect and a new Span must be generated
-   * @param prob the probability of the span
+   * Creates a new immutable {@link Span} based on an existing {@link Span},
+   * where the existing {@link Span} did not include the probability.
+   *
+   * @param span The {@link Span} that has no prob or the prob is incorrect and
+   *             a new {@link Span} must be generated.
+   * @param prob The probability of the {@link Span}.
+   *             
+   * @throws IllegalArgumentException Thrown if given parameters are invalid.
    */
   public Span(Span span, double prob) {
     this(span.start, span.end, span.getType(), prob);
   }
 
   /**
-   * Return the start of a span.
-   *
-   * @return the start of a span.
-   *
+   * @return Retrieves the start of a {@link Span}. Guaranteed to be greater than {@code 0}.
    */
   public int getStart() {
     return start;
   }
 
   /**
-   * Return the end of a span.
-   *
-   * Note: that the returned index is one past the actual end of the span in the
+   * <b>Note:</b>
+   * that the returned index is one past the actual end of the span in the
    * text, or the first element past the end of the span.
    *
-   * @return the end of a span.
-   *
+   * @return Retrieves the end of a {@link Span}. Guaranteed to be greater than {@code 0}.
    */
   public int getEnd() {
     return end;
   }
 
   /**
-   * Retrieves the type of the span.
-   *
-   * @return the type or null if not set
+   * @return Retrieves the type of a {@link Span} or {@code null} if not set.
    */
   public String getType() {
     return type;
   }
 
   /**
-   * Returns the length of this span.
-   *
-   * @return the length of the span.
+   * @return Returns the length of a {@link Span}. Guaranteed to be greater than {@code 0}.
    */
   public int length() {
     return end - start;
   }
 
   /**
-   * Returns true if the specified span is contained by this span. Identical
-   * spans are considered to contain each other.
+   * Identical {@link Span spans} are considered to contain each other.
    *
-   * @param s The span to compare with this span.
+   * @param s The {@link Span} to compare with this {@link Span}.
    *
-   * @return true is the specified span is contained by this span; false otherwise.
+   * @return {@code true} is the specified {{@link Span} s} is contained by this span,
+   *         {@code false} otherwise.
    */
   public boolean contains(Span s) {
     return start <= s.getStart() && s.getEnd() <= end;
   }
 
   /**
-   * Returns true if the specified index is contained inside this span. An index
-   * with the value of end is considered outside the span.
+   * An index with the value of end is considered outside the {@link Span}.
    *
-   * @param index the index to test with this span.
+   * @param index the index to test with this {@link Span}.
    *
-   * @return true if the span contains this specified index; false otherwise.
+   * @return {@code true} if the span contains this specified index, {@code false} otherwise.
    */
   public boolean contains(int index) {
     return start <= index && index < end;
   }
 
   /**
-   * Returns true if the specified span is the begin of this span and the
-   * specified span is contained in this span.
+   * @param s The {@link Span} to compare with this span.
    *
-   * @param s The span to compare with this span.
-   *
-   * @return true if the specified span starts with this span and is contained
-   *     in this span; false otherwise
+   * @return {@code true} if the specified span starts with this span and is contained
+   *         in this span, {@code false} otherwise
    */
   public boolean startsWith(Span s) {
     return getStart() == s.getStart() && contains(s);
   }
 
   /**
-   * Returns true if the specified span intersects with this span.
+   * Checks if the specified {@link Span} intersects with this span.
    *
-   * @param s The span to compare with this span.
+   * @param s The {@link Span} to compare with this span.
    *
-   * @return true is the spans overlap; false otherwise.
+   * @return {@code true} is the spans overlap, {@code false} otherwise.
    */
   public boolean intersects(Span s) {
     int sstart = s.getStart();
@@ -204,12 +223,12 @@ public class Span implements Comparable<Span>, Serializable {
   }
 
   /**
-   * Returns true is the specified span crosses this span.
+   * Checks if the specified {@link Span} crosses this span.
    *
-   * @param s The span to compare with this span.
+   * @param s The {@link Span} to compare with this span.
    *
-   * @return true is the specified span overlaps this span and contains a
-   *     non-overlapping section; false otherwise.
+   * @return {@code true} is the given {@link Span} overlaps this span and contains a
+   *         non-overlapping section, {@code false} otherwise.
    */
   public boolean crosses(Span s) {
     int sstart = s.getStart();
@@ -220,11 +239,11 @@ public class Span implements Comparable<Span>, Serializable {
   }
 
   /**
-   * Retrieves the string covered by the current span of the specified text.
+   * @param text The {@link CharSequence text} to analyze.
    *
-   * @param text
-   *
-   * @return the substring covered by the current span
+   * @return Retrieves the (sub)string covered by the current {@link Span} of the specified text.
+   * 
+   * @throws IllegalArgumentException Thrown if parameters violated a constraint.
    */
   public CharSequence getCoveredText(CharSequence text) {
     if (getEnd() > text.length()) {
@@ -236,11 +255,10 @@ public class Span implements Comparable<Span>, Serializable {
   }
 
   /**
-   * Return a copy of this span with leading and trailing white spaces removed.
+   * @param text The {@link CharSequence text} to analyze.
    *
-   * @param text
-   *
-   * @return the trimmed span or the same object if already trimmed
+   * @return A copy of this {@link Span} with leading and trailing white spaces removed,
+   *         or the same object if already trimmed.
    */
   public Span trim(CharSequence text) {
 
@@ -265,8 +283,13 @@ public class Span implements Comparable<Span>, Serializable {
   }
 
   /**
-   * Compares the specified span to the current span.
+   * Compares the specified {@link Span} to the current span.
+   *
+   * @param s The {@link Span} instance to compare against.
+   *          
+   * @see Comparable#compareTo(Object) 
    */
+  @Override
   public int compareTo(Span s) {
     if (getStart() < s.getStart()) {
       return -1;
@@ -292,17 +315,11 @@ public class Span implements Comparable<Span>, Serializable {
     }
   }
 
-  /**
-   * Generates a hash code of the current span.
-   */
   @Override
   public int hashCode() {
     return Objects.hash(getStart(), getEnd(), getType());
   }
 
-  /**
-   * Checks if the specified span is equal to the current span.
-   */
   @Override
   public boolean equals(Object o) {
     if (o == this) {
@@ -320,7 +337,7 @@ public class Span implements Comparable<Span>, Serializable {
   }
 
   /**
-   * Generates a human readable string.
+   * @return A human-readable representation of this {@link Span}.
    */
   @Override
   public String toString() {
@@ -339,11 +356,11 @@ public class Span implements Comparable<Span>, Serializable {
   }
 
   /**
-   * Converts an array of {@link Span}s to an array of {@link String}s.
+   * Converts an array of {@link Span spans} to an array of {@link String}.
    *
-   * @param spans
-   * @param s
-   * @return the strings
+   * @param spans The array used as input.
+   * @param s The {@link CharSequence} used to compute covered text.
+   * @return The converted array of strings.
    */
   public static String[] spansToStrings(Span[] spans, CharSequence s) {
     String[] tokens = new String[spans.length];
@@ -354,7 +371,7 @@ public class Span implements Comparable<Span>, Serializable {
 
     return tokens;
   }
-
+  
   public static String[] spansToStrings(Span[] spans, String[] tokens) {
     String[] chunks = new String[spans.length];
     StringBuilder cb = new StringBuilder();
@@ -368,6 +385,9 @@ public class Span implements Comparable<Span>, Serializable {
     return chunks;
   }
 
+  /**
+   * @return Retrieves the probability represented by a {@link Span}.
+   */
   public double getProb() {
     return prob;
   }

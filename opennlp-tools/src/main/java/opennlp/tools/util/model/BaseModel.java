@@ -46,12 +46,10 @@ import opennlp.tools.util.Version;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
- * This model is a common based which can be used by the components
+ * This is a common base model which can be used by the components' specific
  * model classes.
- *
- * TODO:
- * Provide sub classes access to serializers already in constructor
  */
+// TODO: Provide subclasses access to serializers already in constructor
 public abstract class BaseModel implements ArtifactProvider, Serializable {
 
   protected static final String MANIFEST_ENTRY = "manifest.properties";
@@ -89,20 +87,16 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   }
 
   /**
-   * Initializes the current instance. The sub-class constructor should call the
-   * method {@link #checkArtifactMap()} to check the artifact map is OK.
+   * Initializes a {@link BaseModel} instance. The subclass constructor should call the
+   * method {@link #checkArtifactMap()} to check the artifact map is in a valid state.
    * <p>
-   * Sub-classes will have access to custom artifacts and serializers provided
-   * by the factory.
+   * Subclasses will have access to custom artifacts and serializers provided
+   * by the specified {@code factory}.
    *
-   * @param componentName
-   *          the component name
-   * @param languageCode
-   *          the language code
-   * @param manifestInfoEntries
-   *          additional information in the manifest
-   * @param factory
-   *          the factory
+   * @param componentName The component name to create the model for.
+   * @param languageCode The ISO language code to configure. Must not be {@code null}.
+   * @param manifestInfoEntries Mapping for additional information in the manifest.
+   * @param factory The {@link BaseToolFactory factory} to use.
    */
   protected BaseModel(String componentName, String languageCode,
       Map<String, String> manifestInfoEntries, BaseToolFactory factory) {
@@ -149,27 +143,25 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   }
 
   /**
-   * Initializes the current instance. The sub-class constructor should call the
-   * method {@link #checkArtifactMap()} to check the artifact map is OK.
+   * Initializes a {@link BaseModel} instance. The subclass constructor should call the
+   * method {@link #checkArtifactMap()} to check the artifact map is in a valid state.
    *
-   * @param componentName
-   *          the component name
-   * @param languageCode
-   *          the language code
-   * @param manifestInfoEntries
-   *          additional information in the manifest
+   * @param componentName The component name to create the model for.
+   * @param languageCode The ISO language code to configure. Must not be {@code null}.
+   * @param manifestInfoEntries Mapping for additional information in the manifest.
    */
   protected BaseModel(String componentName, String languageCode, Map<String, String> manifestInfoEntries) {
     this(componentName, languageCode, manifestInfoEntries, null);
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes a {@link BaseModel} instance. The subclass constructor should call the
+   * method {@link #checkArtifactMap()} to check the artifact map is in a valid state.
    *
-   * @param componentName the component name
-   * @param in the input stream containing the model
+   * @param componentName The component name to create the model for.
+   * @param in A valid, open {@link InputStream} to read the model from.
    *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred.
    */
   protected BaseModel(String componentName, InputStream in) throws IOException {
     this(componentName, true);
@@ -177,6 +169,15 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     loadModel(in);
   }
 
+  /**
+   * Initializes a {@link BaseModel} instance. The subclass constructor should call the
+   * method {@link #checkArtifactMap()} to check the artifact map is in a valid state.
+   *
+   * @param componentName The component name to create the model for.
+   * @param modelFile A valid, accessible {@link File} to read the model from.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   protected BaseModel(String componentName, File modelFile) throws IOException  {
     this(componentName, true);
 
@@ -185,6 +186,15 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
   }
 
+  /**
+   * Initializes a {@link BaseModel} instance. The subclass constructor should call the
+   * method {@link #checkArtifactMap()} to check the artifact map is in a valid state.
+   *
+   * @param componentName The component name to create the model for.
+   * @param modelPath A valid, accessible {@link Path} to read the model from.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   protected BaseModel(String componentName, Path modelPath) throws IOException  {
     this(componentName, true);
 
@@ -193,6 +203,15 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
   }
 
+  /**
+   * Initializes a {@link BaseModel} instance. The subclass constructor should call the
+   * method {@link #checkArtifactMap()} to check the artifact map is in a valid state.
+   *
+   * @param componentName The component name to create the model for.
+   * @param modelURL A valid, accessible {@link URL} to read the model from.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   protected BaseModel(String componentName, URL modelURL) throws IOException  {
     this(componentName, true);
 
@@ -271,17 +290,17 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   }
 
   /**
-   * Sub-classes should override this method if their module has a default
-   * BaseToolFactory sub-class.
+   * Subclasses should override this method if their module has a default
+   * {@link BaseToolFactory} subclass.
    *
-   * @return the default {@link BaseToolFactory} for the module, or null if none.
+   * @return The default {@link BaseToolFactory} for the component, or {@code null} if none.
    */
   protected Class<? extends BaseToolFactory> getDefaultFactory() {
     return null;
   }
 
   /**
-   * Loads the artifact serializers.
+   * Loads the {@link ArtifactSerializer artifact serializers}.
    */
   private void loadArtifactSerializers() {
     if (!subclassSerializersInitiated)
@@ -290,7 +309,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   }
 
   /**
-   * Finish loading the artifacts now that it knows all serializers.
+   * Finishes loading the artifacts now that it knows all serializers.
    */
   private void finishLoadingArtifacts(InputStream in)
       throws IOException {
@@ -334,11 +353,11 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   /**
    * Extracts the "." extension from an entry name.
    *
-   * @param entry the entry name which contains the extension
+   * @param entry The entry name which contains the extension
    *
-   * @return the extension
+   * @return The extension.
    *
-   * @throws InvalidFormatException if no extension can be extracted
+   * @throws InvalidFormatException Thrown if no extension can be extracted
    */
   private String getEntryExtension(String entry) throws InvalidFormatException {
     int extensionIndex = entry.lastIndexOf('.') + 1;
@@ -349,6 +368,11 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     return entry.substring(extensionIndex);
   }
 
+  /**
+   * @param resourceName The identifying name of a resource to retrieve an
+   *                     {link ArtifactSerializer} for.
+   * @return Retrieves an {@link ArtifactSerializer artifact serialize}.
+   */
   protected ArtifactSerializer getArtifactSerializer(String resourceName) {
     try {
       return artifactSerializers.get(getEntryExtension(resourceName));
@@ -357,6 +381,11 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
   }
 
+  /**
+   * Creates and registers default {@link ArtifactSerializer artifact serializes}.
+   * 
+   * @return A {@link Map} with all registered {@link ArtifactSerializer artifact serializes}.
+   */
   protected static Map<String, ArtifactSerializer<?>> createArtifactSerializers() {
     Map<String, ArtifactSerializer<?>> serializers = new HashMap<>();
 
@@ -371,19 +400,19 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
   /**
    * Registers all {@link ArtifactSerializer} for their artifact file name extensions.
-   * The registered {@link ArtifactSerializer} are used to create and serialize
-   * resources in the model package.
-   *
-   * Override this method to register custom {@link ArtifactSerializer}s.
-   *
-   * Note:
-   * Subclasses should generally invoke super.createArtifactSerializers at the beginning
-   * of this method.
-   *
+   * The registered {@link ArtifactSerializer serializers} are used to
+   * create and serialize resources in the model package.
+   * <p>
+   * Override this method to register custom {@link ArtifactSerializer serializers}.
+   * <p>
+   * <b>Note:</b>
+   * Subclasses should generally invoke {@code super.createArtifactSerializers}
+   * at the beginning of this method.
+   * <p>
    * This method is called during construction.
    *
-   * @param serializers the key of the map is the file extension used to lookup
-   *     the {@link ArtifactSerializer}.
+   * @param serializers The key of the map is the file extension used to look up
+   *                    an {@link ArtifactSerializer}.
    */
   protected void createArtifactSerializers(
       Map<String, ArtifactSerializer> serializers) {
@@ -398,13 +427,14 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
   /**
    * Validates the parsed artifacts. If something is not
-   * valid subclasses should throw an {@link InvalidFormatException}.
+   * valid, subclasses should throw an {@link InvalidFormatException}.
    *
-   * Note:
-   * Subclasses should generally invoke super.validateArtifactMap at the beginning
-   * of this method.
+   * <p>
+   * <b>Note:</b>
+   * Subclasses should generally invoke {@code super.validateArtifactMap}
+   * at the beginning of this method.
    *
-   * @throws InvalidFormatException
+   * @throws InvalidFormatException Thrown if artifacts were found to be inconsistent.
    */
   protected void validateArtifactMap() throws InvalidFormatException {
     if (!(artifactMap.get(MANIFEST_ENTRY) instanceof Properties))
@@ -486,12 +516,15 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * A subclass should call this method from a constructor which accepts the individual
    * artifact map items, to validate that these items form a valid model.
    * <p>
-   * If the artifacts are not valid an IllegalArgumentException will be thrown.
+   *
+   * @throws IllegalArgumentException Thrown if the artifacts are not valid.
+   * @throws IllegalStateException Thrown if {@link  BaseModel#finishLoadingArtifacts(InputStream)} was
+   *                               not called by a subclass.
    */
   protected void checkArtifactMap() {
     if (!finishedLoadingArtifacts)
       throw new IllegalStateException(
-          "The method BaseModel.finishLoadingArtifacts(..) was not called by BaseModel sub-class.");
+          "The method BaseModel.finishLoadingArtifacts(..) was not called by BaseModel subclass.");
     try {
       validateArtifactMap();
     } catch (InvalidFormatException e) {
@@ -499,59 +532,44 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     }
   }
 
-  /**
-   * Retrieves the value to the given key from the manifest.properties
-   * entry.
-   *
-   * @param key
-   *
-   * @return the value
-   */
+  @Override
   public final String getManifestProperty(String key) {
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
     return manifest.getProperty(key);
   }
 
   /**
-   * Sets a given value for a given key to the manifest.properties entry.
+   * Sets a given value for a given key to the {@code manifest.properties} mapping.
    *
-   * @param key
-   * @param value
+   * @param key The identifying key.
+   * @param value The value to set at {@code key}.
    */
   protected final void setManifestProperty(String key, String value) {
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
-
     manifest.setProperty(key, value);
   }
 
-  /**
-   * Retrieves the language code of the material which
-   * was used to train the model or x-unspecified if
-   * non was set.
-   *
-   * @return the language code of this model
-   */
+  @Override
   public final String getLanguage() {
     return getManifestProperty(LANGUAGE_PROPERTY);
   }
 
   /**
-   * Retrieves the OpenNLP version which was used
-   * to create the model.
-   *
-   * @return the version
+   * @return Retrieves the OpenNLP {@link Version} which was used to create the model.
    */
   public final Version getVersion() {
     String version = getManifestProperty(VERSION_PROPERTY);
-
     return Version.parse(version);
   }
 
   /**
    * Serializes the model to the given {@link OutputStream}.
    *
-   * @param out stream to write the model to
-   * @throws IOException
+   * @param out The {@link OutputStream} to write the model to.
+   *            
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalStateException Thrown if {@link  BaseModel#loadArtifactSerializers()} was
+   *                               not called in a subclass constructor.
    */
   @SuppressWarnings("unchecked")
   public final void serialize(OutputStream out) throws IOException {
@@ -609,16 +627,35 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     zip.flush();
   }
 
-  public final void serialize(File model) throws IOException {
-    try (OutputStream out = new BufferedOutputStream(new FileOutputStream(model))) {
+  /**
+   * Serializes the model to the specified {@link File}.
+   *
+   * @param f The write-accessible {@link File} to write the model to.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalStateException Thrown if {@link  BaseModel#loadArtifactSerializers()} was
+   *                               not called in a subclass constructor.
+   */
+  public final void serialize(File f) throws IOException {
+    try (OutputStream out = new BufferedOutputStream(new FileOutputStream(f))) {
       serialize(out);
     }
   }
 
-  public final void serialize(Path model) throws IOException {
-    serialize(model.toFile());
+  /**
+   * Serializes the model to the specified {@link Path}.
+   *
+   * @param p The write-accessible {@link Path} to write the model to.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalStateException Thrown if {@link  BaseModel#loadArtifactSerializers()} was
+   *                               not called in a subclass constructor.
+   */
+  public final void serialize(Path p) throws IOException {
+    serialize(p.toFile());
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public <T> T getArtifact(String key) {
     Object artifact = artifactMap.get(key);
@@ -627,6 +664,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     return (T) artifact;
   }
 
+  @Override
   public boolean isLoadedFromSerialized() {
     return isLoadedFromSerialized;
   }

@@ -26,6 +26,7 @@ public class OutcomePriorFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final String OUTCOME_PRIOR_FEATURE = "def";
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
                              String[] previousOutcomes) {
     features.add(OUTCOME_PRIOR_FEATURE);

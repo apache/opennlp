@@ -20,7 +20,8 @@ package opennlp.tools.util.java;
 import java.lang.annotation.Documented;
 
 /**
- * Indicates that the API is not stable.
+ * Indicates that a certain API feature is not stable
+ * and might change with a new release.
  */
 @Documented
 public @interface Experimental {

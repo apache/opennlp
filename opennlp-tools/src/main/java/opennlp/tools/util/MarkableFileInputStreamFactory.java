@@ -27,8 +27,15 @@ import java.io.InputStream;
  */
 public class MarkableFileInputStreamFactory implements InputStreamFactory {
 
-  private File file;
+  private final File file;
 
+  /**
+   * Initializes a {@link MarkableFileInputStreamFactory}.
+   *
+   * @param file The {@link File} used as input source.
+   *
+   * @throws FileNotFoundException Thrown if {@code file} could not be found.
+   */
   public MarkableFileInputStreamFactory(File file) throws FileNotFoundException {
     if (!file.exists()) {
       throw new FileNotFoundException("File '" + file + "' cannot be found");

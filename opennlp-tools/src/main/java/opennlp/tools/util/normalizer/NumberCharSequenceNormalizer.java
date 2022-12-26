@@ -19,7 +19,8 @@ package opennlp.tools.util.normalizer;
 import java.util.regex.Pattern;
 
 /**
- * Normalizer for numbers
+ * A {@link NumberCharSequenceNormalizer} implementation that normalizes text
+ * in terms of numbers. Every encounter will be replaced by a whitespace.
  */
 public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
 
@@ -33,6 +34,7 @@ public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
+  @Override
   public CharSequence normalize (CharSequence text) {
     return NUMBER_REGEX.matcher(text).replaceAll(" ");
   }

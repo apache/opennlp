@@ -18,6 +18,10 @@
 
 package opennlp.tools.util.normalizer;
 
+/**
+ * A {@link CharSequenceNormalizer} implementation that aggregates the
+ * functionality of other normalizers.
+ */
 public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final long serialVersionUID = 5514902020184083235L;
@@ -27,10 +31,10 @@ public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
     this.normalizers = normalizers;
   }
 
+  @Override
   public CharSequence normalize (CharSequence text) {
 
-    for (CharSequenceNormalizer normalizers :
-        normalizers) {
+    for (CharSequenceNormalizer normalizers : normalizers) {
       text = normalizers.normalize(text);
     }
 

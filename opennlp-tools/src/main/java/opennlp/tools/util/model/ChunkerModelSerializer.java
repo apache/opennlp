@@ -25,23 +25,25 @@ import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.parser.ParserChunkerFactory;
 import opennlp.tools.util.Version;
 
-
+/**
+ * An {@link ArtifactSerializer} implementation for {@link ChunkerModel models}.
+ */
 public class ChunkerModelSerializer implements ArtifactSerializer<ChunkerModel> {
 
+  @Override
   public ChunkerModel create(InputStream in) throws IOException {
 
     ChunkerModel model = new ChunkerModel(new UncloseableInputStream(in));
 
     Version version = model.getVersion();
     if (version.getMajor() == 1 && version.getMinor() == 5) {
-
       model = new ChunkerModel(model.getLanguage(), model.getChunkerModel(), new ParserChunkerFactory());
-
     }
 
     return model;
   }
 
+  @Override
   public void serialize(ChunkerModel artifact, OutputStream out)
       throws IOException {
     artifact.serialize(out);

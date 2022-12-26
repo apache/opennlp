@@ -28,7 +28,7 @@ import opennlp.tools.util.ObjectStream;
 
 public class HashSumEventStream extends AbstractObjectStream<Event> {
 
-  private MessageDigest digest;
+  private final MessageDigest digest;
 
   public HashSumEventStream(ObjectStream<Event> eventStream) {
     super(eventStream);

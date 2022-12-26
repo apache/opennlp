@@ -28,24 +28,26 @@ import java.io.OutputStream;
 public interface ArtifactSerializer<T> {
 
   /**
-   * Creates the artifact from the provided {@link InputStream}.
+   * Creates an artifact from the provided {@link InputStream}.
+   * <p>
+   * <b>Note: The {@link InputStream} remains open.</b>
    *
-   * The {@link InputStream} remains open.
+   * @param in A valid, open {@link InputStream} ready to read from.
+   * @return A valid {@link T artifact}.
    *
-   * @return the artifact
-   *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred during creation.
    */
   T create(InputStream in) throws IOException;
 
   /**
-   * Serializes the artifact to the provided {@link OutputStream}.
+   * Serializes an artifact to the provided {@link OutputStream}.
+   * <p>
+   * <b>Note: The {@link OutputStream} remains open.</b>
    *
-   * The {@link OutputStream} remains open.
-   *
-   * @param artifact
-   * @param out
-   * @throws IOException
+   * @param artifact A valid {@link T artifact}.
+   * @param out A valid, open {@link OutputStream} ready to write to.
+   *            
+   * @throws IOException Thrown if IO errors occurred during serialization.
    */
   void serialize(T artifact, OutputStream out) throws IOException;
 }

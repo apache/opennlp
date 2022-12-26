@@ -123,7 +123,7 @@ public class TokenizerME extends AbstractTokenizer {
    * @throws IOException Thrown if the model cannot be downloaded or saved.
    */
   public TokenizerME(String language) throws IOException {
-    this((TokenizerModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.TOKENIZER,
+    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.TOKENIZER,
             TokenizerModel.class));
   }
 

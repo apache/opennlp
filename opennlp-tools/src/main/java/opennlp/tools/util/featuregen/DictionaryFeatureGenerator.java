@@ -51,6 +51,7 @@ public class DictionaryFeatureGenerator implements AdaptiveFeatureGenerator {
     isg = new InSpanGenerator(name, new DictionaryNameFinder(dict));
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes) {
     isg.createFeatures(features, tokens, index, previousOutcomes);
   }

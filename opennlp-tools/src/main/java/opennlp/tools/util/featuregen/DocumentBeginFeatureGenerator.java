@@ -23,6 +23,7 @@ public class DocumentBeginFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private String[] firstSentence;
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 

@@ -24,14 +24,14 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * The {@link Version} class represents the OpenNlp Tools library version.
+ * The {@link Version} class represents the OpenNLP Tools library version.
  * <p>
  * The version has three parts:
  * <ul>
- * <li>Major: OpenNlp Tools libraries with a different major version are not interchangeable.</li>
- * <li>Minor: OpenNlp Tools libraries with an identical major version, but different
+ * <li>Major: OpenNLP Tools libraries with a different major version are not interchangeable.</li>
+ * <li>Minor: OpenNLP Tools libraries with an identical major version, but different
  *     minor version may be interchangeable. See release notes for further details.</li>
- * <li>Revision: OpenNlp Tools libraries with same major and minor version, but a different
+ * <li>Revision: OpenNLP Tools libraries with same major and minor version, but a different
  *     revision, are fully interchangeable.</li>
  * </ul>
  */
@@ -52,13 +52,12 @@ public class Version {
   private final boolean snapshot;
 
   /**
-   * Initializes the current instance with the provided
-   * versions.
+   * Initializes a {@link Version} instance with the provided version elements.
    *
-   * @param major
-   * @param minor
-   * @param revision
-   * @param snapshot
+   * @param major Must not be negative.
+   * @param minor Must not be negative.
+   * @param revision Must not be negative.
+   * @param snapshot {@code true} if the version represents a snapshot, {@code false} otherwise.
    */
   public Version(int major, int minor, int revision, boolean snapshot) {
     this.major = major;
@@ -68,39 +67,33 @@ public class Version {
   }
 
   /**
-   * Initializes the current instance with the provided
-   * versions. The version will not be a snapshot version.
+   * Initializes a {@link Version} instance with the provided version elements.
+   * The {@link Version} will not be a snapshot, yet a release version.
    *
-   * @param major
-   * @param minor
-   * @param revision
+   * @param major Must not be negative.
+   * @param minor Must not be negative.
+   * @param revision Must not be negative.
    */
   public Version(int major, int minor, int revision) {
    this(major, minor, revision, false);
   }
 
   /**
-   * Retrieves the major version.
-   *
-   * @return major version
+   * @return Retrieves the major version, guaranteed to be non-negative.
    */
   public int getMajor() {
     return major;
   }
 
   /**
-   * Retrieves the minor version.
-   *
-   * @return minor version
+   * @return Retrieves the minor version, guaranteed to be non-negative.
    */
   public int getMinor() {
     return minor;
   }
 
   /**
-   * Retrieves the revision version.
-   *
-   * @return revision version
+   * @return Retrieves the revision version, guaranteed to be non-negative.
    */
   public int getRevision() {
     return revision;
@@ -111,17 +104,14 @@ public class Version {
   }
 
   /**
-   * Retrieves the version string.
-   *
    * The {@link #parse(String)} method can create an instance
    * of {@link Version} with the returned version value string.
    *
-   * @return the version value string
+   * @return Retrieves a human-readable version representation.
    */
   @Override
   public String toString() {
-    return Integer.toString(getMajor()) + "." + Integer.toString(getMinor()) +
-      "." + Integer.toString(getRevision()) + (isSnapshot() ? SNAPSHOT_MARKER : "");
+    return getMajor() + "." + getMinor() + "." + getRevision() + (isSnapshot() ? SNAPSHOT_MARKER : "");
   }
 
   @Override
@@ -151,12 +141,11 @@ public class Version {
    * Return a new {@link Version} initialized to the value
    * represented by the specified {@link String}
    *
-   * @param version the string to be parsed
+   * @param version The string to be parsed
    *
-   * @return the version represented by the string value
+   * @return The version represented by the string value
    *
-   * @throws NumberFormatException if the string does
-   *     not contain a valid version
+   * @throws NumberFormatException Thrown if {@code version} does not adhere to a valid form.
    */
   public static Version parse(String version) {
 
@@ -186,9 +175,7 @@ public class Version {
   }
 
   /**
-   * Retrieves the current version of the OpenNlp Tools library.
-   *
-   * @return the current version
+   * @return Retrieves the current version of the OpenNLP Tools library.
    */
   public static Version currentVersion() {
 

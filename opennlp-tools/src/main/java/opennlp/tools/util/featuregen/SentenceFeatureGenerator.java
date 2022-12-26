@@ -33,6 +33,7 @@ public class SentenceFeatureGenerator implements AdaptiveFeatureGenerator {
     this.isGenerateLastWordFeature = isGenerateLastWordFeature;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 

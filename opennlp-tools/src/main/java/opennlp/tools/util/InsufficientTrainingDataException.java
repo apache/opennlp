@@ -22,13 +22,10 @@ import java.io.IOException;
 
 /**
  * This exception indicates that the provided training data is
- * insufficient to train the desired model.
+ * insufficient to train a desired model.
  */
 @SuppressWarnings("serial")
 public class InsufficientTrainingDataException extends IOException {
-
-  public InsufficientTrainingDataException() {
-  }
 
   public InsufficientTrainingDataException(String message) {
     super(message);

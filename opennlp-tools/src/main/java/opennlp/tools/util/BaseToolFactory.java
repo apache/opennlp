@@ -25,14 +25,14 @@ import opennlp.tools.util.model.ArtifactProvider;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
- * Base class for all tool factories.
- *
+ * Base class for all tool {@code factories}.
+ * <p>
  * Extensions of this class should:
  * <ul>
- *  <li>implement an empty constructor (TODO is it necessary?)
- *  <li>implement a constructor that takes the {@link ArtifactProvider}}
+ *  <li>implement an empty constructor,</li>
+ *  <li>implement a constructor that takes the {@link ArtifactProvider}},</li>
  *  <li>override {@link #createArtifactMap()} and
- *      {@link #createArtifactSerializersMap()} methods if necessary.
+ *      {@link #createArtifactSerializersMap()} methods if necessary.</li>
  * </ul>
  */
 public abstract class BaseToolFactory {
@@ -40,7 +40,7 @@ public abstract class BaseToolFactory {
   protected ArtifactProvider artifactProvider;
 
   /**
-   * All sub-classes should have an empty constructor
+   * All subclasses should have an empty constructor
    */
   public BaseToolFactory() {
   }
@@ -55,10 +55,10 @@ public abstract class BaseToolFactory {
   /**
    * Creates a {@link Map} with pairs of keys and {@link ArtifactSerializer}.
    * The models implementation should call this method from
-   * {@code BaseModel#createArtifactSerializersMap}
+   * {@code BaseModel#createArtifactSerializersMap}.
    * <p>
    * The base implementation will return a {@link HashMap} that should be
-   * populated by sub-classes.
+   * populated by subclasses.
    */
   @SuppressWarnings("rawtypes")
   public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
@@ -66,21 +66,20 @@ public abstract class BaseToolFactory {
   }
 
   /**
-   * Creates a {@link Map} with pairs of keys and objects. The models
-   * implementation should call this constructor that creates a model
+   * A model's implementation should call this constructor that creates a model
    * programmatically.
    * <p>
    * The base implementation will return a {@link HashMap} that should be
-   * populated by sub-classes.
+   * populated by subclasses.
+   *
+   * @return Retrieves a {@link Map} with pairs of keys and objects.
    */
   public Map<String, Object> createArtifactMap() {
     return new HashMap<>();
   }
 
   /**
-   * Creates the manifest entries that will be added to the model manifest
-   *
-   * @return the manifest entries to added to the model manifest
+   * @return Retrieves the manifest entries to be added to the model manifest.
    */
   public Map<String, String> createManifestEntries() {
     return new HashMap<>();
@@ -93,16 +92,27 @@ public abstract class BaseToolFactory {
    * Subclasses should generally invoke {@code super.validateArtifactMap} at the beginning
    * of this method.
    *
-   * @throws InvalidFormatException Thrown If something is not valid.
+   * @throws InvalidFormatException Thrown if validation found invalid states.
    */
   public abstract void validateArtifactMap() throws InvalidFormatException;
 
-  public static BaseToolFactory create(String subclassName,
-      ArtifactProvider artifactProvider) throws InvalidFormatException {
-    BaseToolFactory theFactory;
+  /**
+   * Instantiates a {@link BaseToolFactory} via a given {@code subclassName}.
+   *
+   * @param subclassName The class name used for instantiation. The {@link ExtensionLoader}
+   *                     mechanism is applied to load the requested {@code subclassName}.
+   * @param artifactProvider The {@link ArtifactProvider} to be used.
+   *
+   * @return A valid {@link BaseToolFactory} instance.
+   * @throws InvalidFormatException Thrown if the {@link ExtensionLoader} mechanism failed to
+   *                                create the factory associated with {@code subclassName}.
+   */
+  public static BaseToolFactory create(String subclassName, ArtifactProvider artifactProvider)
+          throws InvalidFormatException {
 
+    BaseToolFactory theFactory;
     try {
-      // load the ToolFactory using the default constructor
+      // Init the ToolFactory using the ExtensionLoader
       theFactory = ExtensionLoader.instantiateExtension(BaseToolFactory.class, subclassName);
 
       if (theFactory != null) {
@@ -110,12 +120,23 @@ public abstract class BaseToolFactory {
       }
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
-          + ". The initialization throw an exception.";
+          + ". The initialization threw an exception.";
       throw new InvalidFormatException(msg, e);
     }
     return theFactory;
   }
 
+  /**
+   * Instantiates a {@link BaseToolFactory} via a given {@code subclassName}.
+   *
+   * @param factoryClass The class used for instantiation. The no-arg constructor
+   *                     of that class will be used to create and init the resulting object.
+   * @param artifactProvider The {@link ArtifactProvider} to be used.
+   *
+   * @return A valid {@link BaseToolFactory} instance.
+   * @throws InvalidFormatException Thrown if the {@link ExtensionLoader} mechanism failed to
+   *                                create the factory associated with {@code subclassName}.
+   */
   public static BaseToolFactory create(Class<? extends BaseToolFactory> factoryClass,
       ArtifactProvider artifactProvider) throws InvalidFormatException {
     BaseToolFactory theFactory = null;
@@ -124,9 +145,8 @@ public abstract class BaseToolFactory {
         theFactory = factoryClass.getDeclaredConstructor().newInstance();
         theFactory.init(artifactProvider);
       } catch (Exception e) {
-        String msg = "Could not instantiate the "
-            + factoryClass.getCanonicalName()
-            + ". The initialization throw an exception.";
+        String msg = "Could not instantiate the " + factoryClass.getCanonicalName()
+            + ". The initialization threw an exception.";
         throw new InvalidFormatException(msg, e);
       }
     }

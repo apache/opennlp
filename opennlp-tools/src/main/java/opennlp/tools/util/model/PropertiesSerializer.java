@@ -24,18 +24,28 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * An {@link ArtifactSerializer} implementation for {@link Properties properties}.
+ */
 class PropertiesSerializer implements ArtifactSerializer<Properties> {
 
+  @Override
   public Properties create(InputStream in) throws IOException {
     Properties properties = new Properties();
     properties.load(in);
     return properties;
   }
 
+  @Override
   public void serialize(Properties properties, OutputStream out) throws IOException {
     properties.store(out, "");
   }
 
+  /**
+   * Registers a new {@link PropertiesSerializer} in the given {@code factories} mapping.
+   *
+   * @param factories A {@link Map} holding {@link ArtifactSerializer} for re-use.
+   */
   static void register(Map<String, ArtifactSerializer<?>> factories) {
     factories.put("properties", new PropertiesSerializer());
   }

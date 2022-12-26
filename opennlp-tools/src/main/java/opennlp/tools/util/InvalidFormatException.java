@@ -26,9 +26,6 @@ import java.io.IOException;
 @SuppressWarnings("serial")
 public class InvalidFormatException extends IOException {
 
-  public InvalidFormatException() {
-  }
-
   public InvalidFormatException(String message) {
     super(message);
   }

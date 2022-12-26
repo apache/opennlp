@@ -41,9 +41,9 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
   private final int nextWindowSize;
 
   /**
-   * Initializes the current instance with the given parameters.
+   * Initializes a {@link WindowFeatureGenerator} with the given parameters.
    *
-   * @param generator Feature generator to apply to the window.
+   * @param generator The {@link AdaptiveFeatureGenerator} to apply to the window.
    * @param prevWindowSize Size of the window to the left of the current token.
    * @param nextWindowSize Size of the window to the right of the current token.
    */
@@ -54,11 +54,11 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
   }
 
   /**
-   * Initializes the current instance with the given parameters.
+   * Initializes a {@link WindowFeatureGenerator} with the given parameters.
    *
-   * @param prevWindowSize
-   * @param nextWindowSize
-   * @param generators
+   * @param generators One or more {@link AdaptiveFeatureGenerator} to apply to the window.
+   * @param prevWindowSize Size of the window to the left of the current token.
+   * @param nextWindowSize Size of the window to the right of the current token.
    */
   public WindowFeatureGenerator(int prevWindowSize, int nextWindowSize,
       AdaptiveFeatureGenerator... generators) {
@@ -66,23 +66,26 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
   }
 
   /**
-   * Initializes the current instance. The previous and next window size is 5.
+   * Initializes a {@link WindowFeatureGenerator}.
+   * The previous and next window size is 5.
    *
-   * @param generator feature generator
+   * @param generator The {@link AdaptiveFeatureGenerator} to apply to the window.
    */
   public WindowFeatureGenerator(AdaptiveFeatureGenerator generator) {
     this(generator, 5, 5);
   }
 
   /**
-   * Initializes the current instance with the given parameters.
+   * Initializes a {@link WindowFeatureGenerator}.
+   * The previous and next window size is 5.
    *
-   * @param generators array of feature generators
+   * @param generators One or more {@link AdaptiveFeatureGenerator} to apply to the window.
    */
   public WindowFeatureGenerator(AdaptiveFeatureGenerator... generators) {
     this(new AggregatedFeatureGenerator(generators), 5, 5);
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     // current features
     generator.createFeatures(features, tokens, index, preds);
@@ -110,10 +113,12 @@ public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
     }
   }
 
+  @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
     generator.updateAdaptiveData(tokens, outcomes);
   }
 
+  @Override
   public void clearAdaptiveData() {
     generator.clearAdaptiveData();
   }

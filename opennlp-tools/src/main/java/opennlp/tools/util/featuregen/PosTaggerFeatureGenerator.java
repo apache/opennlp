@@ -21,7 +21,7 @@ import java.util.List;
 
 public class PosTaggerFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private final String SB = "S=begin";
+  private static final String SB = "S=begin";
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,

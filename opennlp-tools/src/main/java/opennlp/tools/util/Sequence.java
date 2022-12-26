@@ -22,20 +22,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-/** Represents a weighted sequence of outcomes. */
+/**
+ * Represents a weighted sequence of outcomes.
+ */
 public class Sequence implements Comparable<Sequence> {
   private double score;
-  private List<String> outcomes;
-  private List<Double> probs;
+  private final List<String> outcomes;
+  private final List<Double> probs;
   private static final Double ONE = 1.0d;
 
-  /** Creates a new sequence of outcomes. */
+  /**
+   * Initializes a new {@link Sequence} of outcomes.
+   */
   public Sequence() {
     outcomes = new ArrayList<>(1);
     probs = new ArrayList<>(1);
     score = 0d;
   }
 
+  /**
+   * Initializes a new {@link Sequence} of outcomes from an existing {@link Sequence}.
+   *
+   * @param s An existing {@link Sequence} used as input.
+   */
   public Sequence(Sequence s) {
     outcomes = new ArrayList<>(s.outcomes.size() + 1);
     outcomes.addAll(s.outcomes);
@@ -44,7 +53,14 @@ public class Sequence implements Comparable<Sequence> {
     score = s.score;
   }
 
-  public Sequence(Sequence s,String outcome, double p) {
+  /**
+   * Initializes a new {@link Sequence} of outcomes from an existing {@link Sequence}.
+   *
+   * @param s An existing {@link Sequence} used as input.
+   * @param outcome An extra outcome to add to {@code s}.
+   * @param p A extra probability of the {@code outcome}.
+   */
+  public Sequence(Sequence s, String outcome, double p) {
     outcomes = new ArrayList<>(s.outcomes.size() + 1);
     outcomes.addAll(s.outcomes);
     outcomes.add(outcome);
@@ -54,11 +70,19 @@ public class Sequence implements Comparable<Sequence> {
     score = s.score + StrictMath.log(p);
   }
 
+  /**
+   * Initializes a new {@link Sequence} of outcomes from a list of
+   * {@code outcomes}. The probabilities for each outcome will be
+   * equally initialized to {@link #ONE}.
+   *
+   * @param outcomes Several existing outcomes used as input.
+   */
   public Sequence(List<String> outcomes) {
     this.outcomes = outcomes;
     this.probs = Collections.nCopies(outcomes.size(),ONE);
   }
 
+  @Override
   public int compareTo(Sequence s) {
     return Double.compare(s.score, score);
   }
@@ -84,7 +108,7 @@ public class Sequence implements Comparable<Sequence> {
     return false;
   }
 
-/** Adds an outcome and probability to this sequence.
+  /** Adds an outcome and probability to this sequence.
    * @param outcome the outcome to be added.
    * @param p the probability associated with this outcome.
    */
@@ -94,15 +118,15 @@ public class Sequence implements Comparable<Sequence> {
     score += StrictMath.log(p);
   }
 
-  /** Returns a list of outcomes for this sequence.
-   * @return a list of outcomes.
+  /**
+   * @return Retrieves a list of outcomes for this {@link Sequence}.
    */
   public List<String> getOutcomes() {
     return outcomes;
   }
 
-  /** Returns an array of probabilities associated with the outcomes of this sequence.
-   * @return an array of probabilities.
+  /**
+   * @return Retrieves an array of probabilities associated with the {@link Sequence} outcomes.
    */
   public double[] getProbs() {
     double[] ps = new double[probs.size()];
@@ -111,16 +135,17 @@ public class Sequence implements Comparable<Sequence> {
   }
 
   /**
-   * Returns the score of this sequence.
-   * @return The score of this sequence.
+   * @return Retrieves the score of this {@link Sequence}.
    */
   public double getScore() {
     return score;
   }
 
-  /** Populates  an array with the probabilities associated with the outcomes of this sequence.
-   * @param ps a pre-allocated array to use to hold the values of the
-   *           probabilities of the outcomes for this sequence.
+  /**
+   * Populates an array with the probabilities associated with the {@link Sequence} outcomes.
+   * 
+   * @param ps A pre-allocated array to hold the values of the
+   *           probabilities of the outcomes for this {@link Sequence}.
    */
   public void getProbs(double[] ps) {
     for (int pi = 0, pl = probs.size(); pi < pl; pi++) {
