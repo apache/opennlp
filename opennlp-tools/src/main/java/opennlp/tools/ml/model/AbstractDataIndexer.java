@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InsufficientTrainingDataException;
@@ -83,6 +82,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   /**
    * {@inheritDoc}
    */
+  @Override
   public int[][] getContexts() {
     return contexts;
   }
@@ -90,6 +90,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   /**
    * {@inheritDoc}
    */
+  @Override
   public int[] getNumTimesEventsSeen() {
     return numTimesEventsSeen;
   }
@@ -97,6 +98,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   /**
    * {@inheritDoc}
    */
+  @Override
   public int[] getOutcomeList() {
     return outcomeList;
   }
@@ -104,6 +106,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   /**
    * {@inheritDoc}
    */
+  @Override
   public String[] getPredLabels() {
     return predLabels;
   }
@@ -111,6 +114,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   /**
    * {@inheritDoc}
    */
+  @Override
   public String[] getOutcomeLabels() {
     return outcomeLabels;
   }
@@ -118,6 +122,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   /**
    * {@inheritDoc}
    */
+  @Override
   public int[] getPredCounts() {
     return predCounts;
   }
@@ -125,6 +130,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   /**
    * {@inheritDoc}
    */
+  @Override
   public int getNumEvents() {
     return numEvents;
   }
@@ -231,28 +237,6 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     outcomeLabels = toIndexedStringArray(omap);
     predLabels = toIndexedStringArray(predicateIndex);
     return eventsToCompare;
-  }
-
-  /**
-   * Updates the set of predicates and counter with the specified event contexts and cutoff.
-   *
-   * @param ec The contexts/features which occur in a event.
-   * @param predicateSet The set of predicates which will be used for model building.
-   * @param counter The predicate counters.
-   * @param cutoff The cutoff which determines whether a predicate is included.
-   *
-   * @deprecated Use {{@link #update(String[], Map)}}. This method will be removed after 1.8.1 release
-   */
-  @Deprecated
-  protected static void update(String[] ec, Set<String> predicateSet,
-      Map<String,Integer> counter, int cutoff) {
-    for (String s : ec) {
-      counter.merge(s, 1, (value, one) -> value + one);
-
-      if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
-        predicateSet.add(s);
-      }
-    }
   }
 
   /**
