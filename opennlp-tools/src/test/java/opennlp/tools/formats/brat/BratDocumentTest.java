@@ -19,21 +19,21 @@ package opennlp.tools.formats.brat;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.AbstractFormatTest;
+public class BratDocumentTest extends AbstractBratTest {
 
-public class BratDocumentTest extends AbstractFormatTest {
+  @BeforeEach
+  public void setup() throws IOException {
+    super.setup();
+  }
 
   @Test
   void testDocumentWithEntitiesParsing() throws IOException {
 
-    Map<String, String> typeToClassMap = new HashMap<>();
-    BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
     InputStream txtIn = getResourceStream("brat/voa-with-entities.txt");
@@ -67,8 +67,6 @@ public class BratDocumentTest extends AbstractFormatTest {
    */
   @Test
   void testSpanWithMultiFragments() throws IOException {
-    Map<String, String> typeToClassMap = new HashMap<>();
-    BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
     InputStream txtIn = getResourceStream("brat/opennlp-1193.txt");

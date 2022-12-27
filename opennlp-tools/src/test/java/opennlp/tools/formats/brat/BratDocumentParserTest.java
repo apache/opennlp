@@ -19,40 +19,41 @@ package opennlp.tools.formats.brat;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.AbstractFormatTest;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.NewlineSentenceDetector;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 
-public class BratDocumentParserTest extends AbstractFormatTest {
+public class BratDocumentParserTest extends AbstractBratTest {
 
+  @BeforeEach
+  public void setup() throws IOException {
+    super.setup();
+  }
+  
   @Test
   void testParse() throws IOException {
-
-    Map<String, String> typeToClassMap = new HashMap<>();
-    BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
     InputStream txtIn = getResourceStream("brat/opennlp-1193.txt");
     InputStream annIn = getResourceStream("brat/opennlp-1193.ann");
 
     BratDocument doc = BratDocument.parseDocument(config, "opennlp-1193", txtIn, annIn);
-
+    Assertions.assertNotNull(doc);
+    
     BratDocumentParser parser = new BratDocumentParser(new NewlineSentenceDetector(),
         WhitespaceTokenizer.INSTANCE);
 
     List<NameSample> names = parser.parse(doc);
-
     Assertions.assertEquals(3, names.size());
 
     NameSample sample1 = names.get(0);
+    Assertions.assertNotNull(sample1);
 
     Assertions.assertEquals(1, sample1.getNames().length);
     Assertions.assertEquals(0, sample1.getNames()[0].getStart());
@@ -60,11 +61,13 @@ public class BratDocumentParserTest extends AbstractFormatTest {
 
 
     NameSample sample2 = names.get(1);
+    Assertions.assertNotNull(sample2);
     Assertions.assertEquals(1, sample2.getNames().length);
     Assertions.assertEquals(0, sample2.getNames()[0].getStart());
     Assertions.assertEquals(1, sample2.getNames()[0].getEnd());
 
     NameSample sample3 = names.get(2);
+    Assertions.assertNotNull(sample3);
     Assertions.assertEquals(3, sample3.getNames().length);
     Assertions.assertEquals(0, sample3.getNames()[0].getStart());
     Assertions.assertEquals(1, sample3.getNames()[0].getEnd());

@@ -20,11 +20,10 @@ package opennlp.tools.formats.brat;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.namefind.NameSample;
@@ -34,19 +33,9 @@ import opennlp.tools.util.ObjectStream;
 
 public class BratNameSampleStreamTest extends AbstractBratTest {
 
-  private BratNameSampleStream createNameSampleWith(String nameContainsFilter,
-                                                    Set<String> nameTypes) throws IOException {
-    Map<String, String> typeToClassMap = new HashMap<>();
-    BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
-    AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
-
-    FileFilter fileFilter = pathname -> pathname.getName().contains(nameContainsFilter);
-
-    ObjectStream<BratDocument> bratDocumentStream =
-            new BratDocumentStream(config, directory, false, fileFilter);
-
-    return new BratNameSampleStream(new NewlineSentenceDetector(),
-        WhitespaceTokenizer.INSTANCE, bratDocumentStream, nameTypes);
+  @BeforeEach
+  public void setup() throws IOException {
+    super.setup();
   }
 
   @Test
@@ -72,6 +61,7 @@ public class BratNameSampleStreamTest extends AbstractBratTest {
       NameSample sample = stream.read();
       while (sample != null) {
         sample = stream.read();
+        Assertions.assertNotNull(sample);
       }
     });
 
@@ -97,5 +87,17 @@ public class BratNameSampleStreamTest extends AbstractBratTest {
     }
 
     Assertions.assertEquals(8, count);
+  }
+
+  private BratNameSampleStream createNameSampleWith(String nameContainsFilter,
+                                                    Set<String> nameTypes) throws IOException {
+    AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
+    FileFilter fileFilter = pathname -> pathname.getName().contains(nameContainsFilter);
+
+    ObjectStream<BratDocument> bratDocumentStream =
+            new BratDocumentStream(config, directory, false, fileFilter);
+
+    return new BratNameSampleStream(new NewlineSentenceDetector(),
+            WhitespaceTokenizer.INSTANCE, bratDocumentStream, nameTypes);
   }
 }
