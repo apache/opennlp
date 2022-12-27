@@ -18,24 +18,24 @@
 package opennlp.tools.ml.maxent;
 
 /**
- * A interface for objects which can deliver a stream of training data to be
- * supplied to an EventStream. It is not necessary to use a DataStream in a
+ * An interface for objects which can deliver a stream of training data to be
+ * supplied to an EventStream. It is not necessary to use a {@link DataStream} in a
  * Maxent application, but it can be used to support a wider variety of formats
  * in which your training data can be held.
  */
 public interface DataStream {
 
   /**
-   * Returns the next slice of data held in this DataStream.
+   * Returns the next slice of data held in this {@link DataStream}.
    *
-   * @return the Object representing the data which is next in this DataStream
+   * @return The Object representing the data which is next in this {@link DataStream}.
    */
   Object nextToken();
 
   /**
-   * Test whether there are any Events remaining in this EventStream.
+   * Test whether there are any events remaining in this {@link DataStream}.
    *
-   * @return true if this DataStream has more data tokens
+   * @return {@code true} if this {@link DataStream} has more data tokens, {@code false} otherwise.
    */
   boolean hasNext();
 }

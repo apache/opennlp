@@ -21,36 +21,59 @@ package opennlp.tools.ml.model;
 import java.util.Objects;
 
 /**
- * The context of a decision point during training.  This includes
- * contextual predicates and an outcome.
+ * The context of a decision point during training.
+ * This includes contextual predicates and an outcome.
  */
 public class Event {
   private final String outcome;
   private final String[] context;
   private final float[] values;
 
+  /**
+   * Instantiates an {@link Event}.
+   *
+   * @param outcome The outcome to use. Must not be {@code null}.
+   * @param context The {@link String array} of context elements. Must not be {@code null}.
+   */
   public Event(String outcome, String[] context) {
     this(outcome,context,null);
   }
 
+  /**
+   * Instantiates an {@link Event}.
+   *
+   * @param outcome The outcome to use. Must not be {@code null}.
+   * @param context The {@link String array} of context elements. Must not be {@code null}.
+   * @param values The {@code float} array to use.
+   */
   public Event(String outcome, String[] context, float[] values) {
     this.outcome = Objects.requireNonNull(outcome, "outcome must not be null");
     this.context = Objects.requireNonNull(context, "context must not be null");
     this.values = values;
   }
 
+  /**
+   * @return Retrieves the outcome.
+   */
   public String getOutcome() {
     return outcome;
   }
 
+  /**
+   * @return Retrieves the {@link String array} of context elements.
+   */
   public String[] getContext() {
     return context;
   }
 
+  /**
+   * @return Retrieves the {@code float} array.
+   */
   public float[] getValues() {
     return values;
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(outcome).append(" [");

@@ -18,20 +18,27 @@
 package opennlp.tools.ml;
 
 import java.io.IOException;
-import java.util.Map;
 
 import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceStream;
-import opennlp.tools.util.TrainingParameters;
 
+/**
+ * A specialized {@link Trainer} that is based on a 'EventModelSequence' approach.
+ * @param <T> The generic type of elements to process via a {@link SequenceStream}.
+ */
 public interface EventModelSequenceTrainer<T> extends Trainer {
 
   String SEQUENCE_VALUE = "EventModelSequence";
 
-  void init(Map<String, Object> trainParams, Map<String, String> reportMap);
-  void init(TrainingParameters trainParams, Map<String, String> reportMap);
-
+  /**
+   * Trains a {@link MaxentModel} for given {@link SequenceStream<T> events}.
+   * 
+   * @param events The input {@link SequenceStream<T> events}.
+   *               
+   * @return The trained {@link MaxentModel}.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   MaxentModel train(SequenceStream<T> events) throws IOException;
 
 }

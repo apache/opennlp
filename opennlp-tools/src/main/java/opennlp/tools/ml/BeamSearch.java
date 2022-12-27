@@ -30,8 +30,10 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 
 /**
- * Performs k-best search over sequence.  This is based on the description in
- * Ratnaparkhi (1998), PhD diss, Univ. of Pennsylvania.
+ * Performs k-best search over a sequence.
+ * <p>
+ * This is based on the description in Ratnaparkhi (1998),
+ * PhD diss, Univ. of Pennsylvania.
  *
  * @see Sequence
  * @see SequenceValidator
@@ -46,20 +48,27 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
   protected int size;
   protected MaxentModel model;
 
-  private double[] probs;
+  private final double[] probs;
   private Cache<String[], double[]> contextsCache;
   private static final int zeroLog = -100000;
 
   /**
-   * Creates new search object.
+   * Initializes a {@link BeamSearch} instance.
    *
    * @param size The size of the beam (k).
-   * @param model the model for assigning probabilities to the sequence outcomes.
+   * @param model The {@link MaxentModel} for assigning probabilities to the sequence outcomes.
    */
   public BeamSearch(int size, MaxentModel model) {
     this(size, model, 0);
   }
 
+  /**
+   * Initializes a {@link BeamSearch} instance.
+   *
+   * @param size The size of the beam (k).
+   * @param model The {@link MaxentModel} for assigning probabilities to the sequence outcomes.
+   * @param cacheSize The capacity of the {@link Cache} to use.
+   */
   public BeamSearch(int size, MaxentModel model, int cacheSize) {
 
     this.size = size;
@@ -73,15 +82,21 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
   }
 
   /**
-   * Returns the best sequence of outcomes based on model for this object.
+   * Computes the best sequence of outcomes based on the {@link MaxentModel}.
    *
-   * @param sequence The input sequence.
-   * @param additionalContext An Object[] of additional context.
+   * @param numSequences The number of sequences.
+   * @param sequence The input {@link T} sequence.
+   * @param additionalContext An {@link Object[]} of additional context.
    *     This is passed to the context generator blindly with the
-   *     assumption that the context are appropiate.
+   *     assumption that the context are appropriate.
+   * @param minSequenceScore The minimum sequence score to use.
+   * @param cg The {@link BeamSearchContextGenerator context generator} to use.
+   * @param validator The {@link SequenceValidator} to validate sequences.
    *
-   * @return The top ranked sequence of outcomes or null if no sequence could be found
+   * @return The top ranked {@link Sequence} of outcomes or {@code null}
+   *         if no sequence could be found.
    */
+  @Override
   public Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, double minSequenceScore,
       BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
@@ -159,11 +174,40 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
     return topSequences;
   }
 
+  /**
+   * Computes the best sequence of outcomes based on the {@link MaxentModel}.
+   *
+   * @param numSequences The number of sequences.
+   * @param sequence The input {@link T} sequence.
+   * @param additionalContext An {@link Object[]} of additional context.
+   *     This is passed to the context generator blindly with the
+   *     assumption that the context are appropriate.
+   * @param cg The {@link BeamSearchContextGenerator context generator} to use.
+   * @param validator The {@link SequenceValidator} to validate sequences.
+   *
+   * @return The top ranked {@link Sequence} of outcomes or {@code null}
+   *         if no sequence could be found.
+   */
+  @Override
   public Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
     return bestSequences(numSequences, sequence, additionalContext, zeroLog, cg, validator);
   }
 
+  /**
+   * Computes the best sequence of outcomes based on the {@link MaxentModel}.
+   *
+   * @param sequence The input {@link T} sequence.
+   * @param additionalContext An {@link Object[]} of additional context.
+   *     This is passed to the context generator blindly with the
+   *     assumption that the context are appropriate.
+   * @param cg The {@link BeamSearchContextGenerator context generator} to use.
+   * @param validator The {@link SequenceValidator} to validate sequences.
+   *
+   * @return The top ranked {@link Sequence} of outcomes or {@code null}
+   *         if no sequence could be found.
+   */
+  @Override
   public Sequence bestSequence(T[] sequence, Object[] additionalContext,
       BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
     Sequence[] sequences =  bestSequences(1, sequence, additionalContext, cg, validator);

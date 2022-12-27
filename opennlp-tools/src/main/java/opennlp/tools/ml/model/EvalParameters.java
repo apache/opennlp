@@ -21,8 +21,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * This class encapsulates the varibales used in producing probabilities from a model
- * and facilitaes passing these variables to the eval method.
+ * This class encapsulates the variables used in producing probabilities from a model
+ * and facilitates passing these variables to the eval method.
  */
 public class EvalParameters {
 
@@ -30,7 +30,7 @@ public class EvalParameters {
    * Mapping between outcomes and parameter values for each context.
    * The integer representation of the context can be found using <code>pmap</code>.
    */
-  private Context[] params;
+  private final Context[] params;
   /**
    * The number of outcomes being predicted.
    */

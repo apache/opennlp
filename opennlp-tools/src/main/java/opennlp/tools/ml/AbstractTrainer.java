@@ -20,10 +20,11 @@ package opennlp.tools.ml;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.util.TrainingParameters;
 
-public abstract class AbstractTrainer {
+public abstract class AbstractTrainer implements Trainer {
 
   public static final String ALGORITHM_PARAM = "Algorithm";
 
@@ -46,37 +47,70 @@ public abstract class AbstractTrainer {
   public AbstractTrainer() {
   }
 
-  public AbstractTrainer(TrainingParameters parameters) {
-    init(parameters,new HashMap<>());
-  }
-  
-  public void init(TrainingParameters trainingParameters, Map<String,String> reportMap) {
-    this.trainingParameters = trainingParameters;
-    if (reportMap == null) reportMap = new HashMap<>();
-    this.reportMap = reportMap;
-    printMessages = trainingParameters.getBooleanParameter(VERBOSE_PARAM, VERBOSE_DEFAULT);
+  /**
+   * Initializes a {@link AbstractTrainer} via {@link TrainingParameters}.
+   *
+   * @param trainParams The {@link TrainingParameters} to use.
+   */
+  public AbstractTrainer(TrainingParameters trainParams) {
+    init(trainParams,new HashMap<>());
   }
 
+  /**
+   * Initializes a {@link AbstractTrainer} via {@link TrainingParameters} and
+   * a {@link Map report map}.
+   *
+   * @param trainParams The {@link TrainingParameters} to use.
+   * @param reportMap The {@link Map} instance used as report map.
+   */
+  @Override
+  public void init(TrainingParameters trainParams, Map<String,String> reportMap) {
+    this.trainingParameters = trainParams;
+    if (reportMap == null) reportMap = new HashMap<>();
+    this.reportMap = reportMap;
+    printMessages = trainParams.getBooleanParameter(VERBOSE_PARAM, VERBOSE_DEFAULT);
+  }
+
+  /**
+   * Initializes a {@link AbstractTrainer} via {@link TrainingParameters} and
+   * a {@link Map report map}.
+   *
+   * @param trainParams The {@link Map} that maps training parameters on a key-value basis.
+   * @param reportMap The {@link Map} instance used as report map.
+   *
+   * @deprecated Use {@link #init(TrainingParameters, Map)} instead.
+   */
+  @Deprecated
   public void init(Map<String, Object> trainParams, Map<String, String> reportMap) {
     init(new TrainingParameters(trainParams),reportMap);
   }
 
+  /**
+   * @return Retrieves the configured {@link #ALGORITHM_PARAM} value.
+   */
   public String getAlgorithm() {
     return trainingParameters.getStringParameter(ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
   }
 
+  /**
+   * @return Retrieves the configured {@link #CUTOFF_PARAM} value.
+   */
   public int getCutoff() {
     return trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
   }
 
+  /**
+   * @return Retrieves the configured {@link #ITERATIONS_PARAM} value.
+   */
   public int getIterations() {
     return trainingParameters.getIntParameter(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
   }
 
   /**
-   * Check parameters. If subclass overrides this, it should call super.validate();
+   * Checks the configured {@link TrainingParameters parameters}.
+   * If a subclass overrides this, it should call {@code super.validate();}.
    *
-   * @throws java.lang.IllegalArgumentException
+   * @throws IllegalArgumentException Thrown if default training parameters are invalid.
    */
   public void validate() {
     // TODO: Need to validate all parameters correctly ... error prone?!
@@ -91,8 +125,9 @@ public abstract class AbstractTrainer {
   }
 
   /**
+   * @return {@code true} if the validation of the internal configuration succeeds,
+   *         {@code false} otherwise.
    * @deprecated Use {@link #validate()} instead.
-   * @return
    */
   @Deprecated
   public boolean isValid() {
@@ -105,10 +140,13 @@ public abstract class AbstractTrainer {
     }
   }
 
-/**
-   * Use the TrainingParameters directly...
-   * @param key
-   * @param defaultValue
+  /**
+   * @param key The identifying string associated with a certain training parameter.
+   * @param defaultValue The default value to return in case no entry for {@code key} is present
+   * @return Retrieves the {@code String} {@link TrainingParameters value} for {@code key} or the
+   *         specified {@code defaultValue} if no entry for {@code key} is present.
+   *
+   * @deprecated Use the {@link TrainingParameters} directly.
    */
   @Deprecated
   protected String getStringParam(String key, String defaultValue) {
@@ -116,19 +154,25 @@ public abstract class AbstractTrainer {
   }
 
   /**
-   * Use the PluggableParameters directly...
-   * @param key
-   * @param defaultValue
+   * @param key The identifying string associated with a certain training parameter.
+   * @param defaultValue The default value to return in case no entry for {@code key} is present
+   * @return Retrieves the {@code int} {@link TrainingParameters value} for {@code key} or the
+   *         specified {@code defaultValue} if no entry for {@code key} is present.
+   *
+   * @deprecated Use the {@link TrainingParameters} directly.
    */
   @Deprecated
   protected int TrainingParameters(String key, int defaultValue) {
     return trainingParameters.getIntParameter(key, defaultValue);
   }
-  
+
   /**
-   * Use the PluggableParameters directly...
-   * @param key
-   * @param defaultValue
+   * @param key The identifying string associated with a certain training parameter.
+   * @param defaultValue The default value to return in case no entry for {@code key} is present
+   * @return Retrieves the {@code double} {@link TrainingParameters value} for {@code key} or the
+   *         specified {@code defaultValue} if no entry for {@code key} is present.
+   *
+   * @deprecated Use the {@link TrainingParameters} directly.
    */
   @Deprecated
   protected double getDoubleParam(String key, double defaultValue) {
@@ -136,9 +180,12 @@ public abstract class AbstractTrainer {
   }
 
   /**
-   * Use the PluggableParameters directly...
-   * @param key
-   * @param defaultValue
+   * @param key The identifying string associated with a certain training parameter.
+   * @param defaultValue The default value to return in case no entry for {@code key} is present
+   * @return Retrieves the {@code boolean} {@link TrainingParameters value} for {@code key} or the
+   *         specified {@code defaultValue} if no entry for {@code key} is present.
+   *
+   * @deprecated Use the {@link TrainingParameters} directly.
    */
   @Deprecated
   protected boolean getBooleanParam(String key, boolean defaultValue) {
@@ -146,9 +193,9 @@ public abstract class AbstractTrainer {
   }
 
   /**
-   * Adds the key/Value to the report map.
-   * @param key
-   * @param value
+   * Adds the key-value pair to the report map.
+   * @param key The identifying string associated with a certain training parameter.
+   * @param value The parameter value associated with {@code key}.
    */
   protected void addToReport(String key, String value) {
     reportMap.put(key, value);

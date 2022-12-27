@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
@@ -30,24 +29,34 @@ import opennlp.tools.ml.model.ComparablePredicate;
 import opennlp.tools.ml.model.Context;
 
 /**
- * Abstract parent class for Perceptron writers.  It provides the persist method
- * which takes care of the structure of a stored document, and requires an
- * extending class to define precisely how the data should be stored.
+ * The base class for {@link PerceptronModel} writers.
+ * <p>
+ * It provides the {@link #persist()} method which takes care of the structure
+ * of a stored document, and requires an extending class to define precisely
+ * how the data should be stored.
  *
+ * @see PerceptronModel
+ * @see AbstractModelWriter
  */
 public abstract class PerceptronModelWriter extends AbstractModelWriter {
   protected Context[] PARAMS;
   protected String[] OUTCOME_LABELS;
   protected String[] PRED_LABELS;
-  private int numOutcomes;
+  private final int numOutcomes;
 
+  /**
+   * Initializes a {@link PerceptronModelWriter} for a
+   * {@link AbstractModel perceptron model}.
+   *
+   * @param model The {@link AbstractModel perceptron model} to be written.
+   */
   public PerceptronModelWriter(AbstractModel model) {
 
     Object[] data = model.getDataStructures();
     this.numOutcomes = model.getNumOutcomes();
     PARAMS = (Context[]) data[0];
 
-
+    @SuppressWarnings("unchecked")
     Map<String, Context> pmap = (Map<String, Context>) data[1];
 
     OUTCOME_LABELS = (String[]) data[2];
@@ -62,13 +71,19 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
     }
   }
 
+  /**
+   * Sorts and optimizes the model parameters. Thereby, parameters with
+   * {@code 0} weight and predicates with no parameters are removed.
+   *
+   * @return A {@link ComparablePredicate[]}.
+   */
   protected ComparablePredicate[] sortValues() {
     ComparablePredicate[] sortPreds;
     ComparablePredicate[] tmpPreds = new ComparablePredicate[PARAMS.length];
     int[] tmpOutcomes = new int[numOutcomes];
     double[] tmpParams = new double[numOutcomes];
     int numPreds = 0;
-    //remove parameters with 0 weight and predicates with no parameters
+    // remove parameters with 0 weight and predicates with no parameters
     for (int pid = 0; pid < PARAMS.length; pid++) {
       int numParams = 0;
       double[] predParams = PARAMS[pid].getParameters();
@@ -93,14 +108,19 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
         numPreds++;
       }
     }
-    System.err.println("Compressed " + PARAMS.length + " parameters to " + numPreds);
+    System.out.println("Compressed " + PARAMS.length + " parameters to " + numPreds);
     sortPreds = new ComparablePredicate[numPreds];
     System.arraycopy(tmpPreds, 0, sortPreds, 0, numPreds);
     Arrays.sort(sortPreds);
     return sortPreds;
   }
 
-
+  /**
+   * Computes outcome patterns via {@link ComparablePredicate[] predicates}.
+   *
+   * @return A {@link List} of {@link List<ComparablePredicate>} that represent
+   *         the outcomes patterns.
+   */
   protected List<List<ComparablePredicate>> computeOutcomePatterns(ComparablePredicate[] sorted) {
     ComparablePredicate cp = sorted[0];
     List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
@@ -116,18 +136,22 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
       }
     }
     outcomePatterns.add(newGroup);
-    System.err.println(outcomePatterns.size() + " outcome patterns");
+    System.out.println(outcomePatterns.size() + " outcome patterns");
     return outcomePatterns;
   }
 
   /**
-   * Writes the model to disk, using the <code>writeX()</code> methods
-   * provided by extending classes.
+   * Writes the {@link AbstractModel perceptron model}, using the
+   * {@link #writeUTF(String)}, {@link #writeDouble(double)}, or {@link #writeInt(int)}}
+   * methods implemented by extending classes.
    *
-   * <p>If you wish to create a PerceptronModelWriter which uses a different
-   * structure, it will be necessary to override the persist method in
-   * addition to implementing the <code>writeX()</code> methods.
+   * <p>If you wish to create a {@link PerceptronModelWriter} which uses a different
+   * structure, it will be necessary to override the {@code #persist()} method in
+   * addition to implementing the {@code writeX(..)} methods.
+   *
+   * @throws IOException Thrown if IO errors occurred.
    */
+  @Override
   public void persist() throws IOException {
 
     // the type of model (Perceptron)

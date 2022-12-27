@@ -24,43 +24,51 @@ import java.util.Map.Entry;
 /**
  * Class implementing the probability distribution over labels returned by
  * a classifier as a log of probabilities.
+ * <p>
  * This is necessary because floating point precision in Java does not allow for high-accuracy
  * representation of very low probabilities such as would occur in a text categorizer.
  *
  * @param <T> the label (category) class
  *
+ * @see Probabilities
  */
 public class LogProbabilities<T> extends Probabilities<T> {
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability.
+   * Assigns a {@code probability} to a label {@code t},
+   * discarding any previously assigned probability.
    *
-   * @param t           the label to which the probability is being assigned
-   * @param probability the probability to assign
+   * @param t           The label to which the probability is being assigned.
+   * @param probability The probability to assign.
    */
+  @Override
   public void set(T t, double probability) {
     isNormalised = false;
     map.put(t, log(probability));
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability.
+   * Assigns a {@code probability} to a label {@code t},
+   * discarding any previously assigned probability.
    *
-   * @param t           the label to which the probability is being assigned
-   * @param probability the probability to assign
+   * @param t           The label to which the probability is being assigned.
+   * @param probability The {@link Probability<T>} to assign.
    */
+  @Override
   public void set(T t, Probability<T> probability) {
     isNormalised = false;
     map.put(t, probability.getLog());
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability,
+   * Assigns a {@code probability} to a label {@code t},
+   * discarding any previously assigned probability,
    * if the new probability is greater than the old one.
    *
-   * @param t           the label to which the probability is being assigned
-   * @param probability the probability to assign
+   * @param t           The label to which the probability is being assigned.
+   * @param probability The probability to assign.
    */
+  @Override
   public void setIfLarger(T t, double probability) {
     double logProbability = log(probability);
     Double p = map.get(t);
@@ -71,23 +79,27 @@ public class LogProbabilities<T> extends Probabilities<T> {
   }
 
   /**
-   * Assigns a log probability to a label, discarding any previously assigned probability.
+   * Assigns a log {@code probability} to a label {@code t},
+   * discarding any previously assigned probability.
    *
-   * @param t           the label to which the log probability is being assigned
-   * @param probability the log probability to assign
+   * @param t           The label to which the log probability is being assigned.
+   * @param probability The log {@code probability} to assign.
    */
+  @Override
   public void setLog(T t, double probability) {
     isNormalised = false;
     map.put(t, probability);
   }
 
   /**
-   * Compounds the existing probability mass on the label with the new probability passed in to the method.
+   * Compounds the existing {@code probability} mass on the label {@code t}
+   * with the new probability passed in to the method.
    *
-   * @param t           the label whose probability mass is being updated
-   * @param probability the probability weight to add
-   * @param count       the amplifying factor for the probability compounding
+   * @param t           The label whose {@code probability} mass is being updated.
+   * @param probability The probability weight to add.
+   * @param count       The amplifying factor for the {@code probability} compounding.
    */
+  @Override
   public void addIn(T t, double probability, int count) {
     isNormalised = false;
     Double p = map.get(t);
@@ -137,11 +149,10 @@ public class LogProbabilities<T> extends Probabilities<T> {
   }
 
   /**
-   * Returns the probability associated with a label
-   *
-   * @param t the label whose probability needs to be returned
-   * @return the probability associated with the label
+   * @param t The label whose probability shall be returned.
+   * @return Retrieves the probability associated with the label {@code t}.
    */
+  @Override
   public Double get(T t) {
     Double d = normalize().get(t);
     if (d == null)
@@ -150,11 +161,10 @@ public class LogProbabilities<T> extends Probabilities<T> {
   }
 
   /**
-   * Returns the log probability associated with a label
-   *
-   * @param t the label whose log probability needs to be returned
-   * @return the log probability associated with the label
+   * @param t The label whose log probability shall be returned.
+   * @return Retrieves the log probability associated with the label {@code t}.
    */
+  @Override
   public Double getLog(T t) {
     Double d = map.get(t);
     if (d == null)
@@ -162,6 +172,7 @@ public class LogProbabilities<T> extends Probabilities<T> {
     return d;
   }
 
+  @Override
   public void discardCountsBelow(double i) {
     i = StrictMath.log(i);
     ArrayList<T> labelsToRemove = new ArrayList<>();
@@ -178,19 +189,17 @@ public class LogProbabilities<T> extends Probabilities<T> {
   }
 
   /**
-   * Returns the probabilities associated with all labels
-   *
-   * @return the HashMap of labels and their probabilities
+   * @return Retrieves a {@link Map} of all labels and their probabilities.
    */
+  @Override
   public Map<T, Double> getAll() {
     return normalize();
   }
 
   /**
-   * Returns the most likely label
-   *
-   * @return the label that has the highest associated probability
+   * @return Retrieves the label that has the highest associated probability
    */
+  @Override
   public T getMax() {
     double max = Double.NEGATIVE_INFINITY;
     T maxT = null;

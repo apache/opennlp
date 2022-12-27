@@ -18,22 +18,37 @@
 package opennlp.tools.ml;
 
 import java.io.IOException;
-import java.util.Map;
 
 import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingParameters;
 
+/**
+ * A specialized {@link Trainer} that is based on an {@link Event} approach.
+ */
 public interface EventTrainer extends Trainer {
 
   String EVENT_VALUE = "Event";
 
-  void init(Map<String, Object> trainParams, Map<String, String> reportMap);
-  void init(TrainingParameters trainingParams, Map<String, String> reportMap);
-
+  /**
+   * Trains a {@link MaxentModel} for given {@link ObjectStream<Event> events}.
+   *
+   * @param events The input {@link ObjectStream<Event> events}.
+   *
+   * @return The trained {@link MaxentModel}.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   MaxentModel train(ObjectStream<Event> events) throws IOException;
+
+  /**
+   * Trains a {@link MaxentModel} for given {@link ObjectStream<Event> events}.
+   *
+   * @param indexer The input {@link DataIndexer indexer} to use.
+   *
+   * @return The trained {@link MaxentModel}.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   MaxentModel train(DataIndexer indexer) throws IOException;
 }

@@ -20,18 +20,17 @@ package opennlp.tools.ml.maxent.quasinewton;
 import opennlp.tools.ml.ArrayMath;
 
 /**
- * Class that performs line search to find minimum
+ * Class that performs line search to find minimum.
  */
 public class LineSearch {
   private static final double C = 0.0001;
   private static final double RHO = 0.5; // decrease of step size (must be from 0 to 1)
 
   /**
-   * Backtracking line search (see Nocedal &amp; Wright 2006, Numerical Optimization, p. 37)
+   * Conducts a backtracking line search (see Nocedal &amp; Wright 2006, Numerical Optimization, p. 37).
    */
   public static void doLineSearch(Function function,
-      double[] direction, LineSearchResult lsr, double initialStepSize)
-  {
+      double[] direction, LineSearchResult lsr, double initialStepSize) {
     double stepSize      = initialStepSize;
     int currFctEvalCount = lsr.getFctEvalCount();
     double[] x           = lsr.getNextPoint();
@@ -78,12 +77,11 @@ public class LineSearch {
   }
 
   /**
-   * Constrained line search (see section 3.2 in the paper "Scalable Training
+   * Conducts a constrained line search (see section 3.2 in the paper "Scalable Training
    * of L1-Regularized Log-Linear Models", Andrew et al. 2007)
    */
   public static void doConstrainedLineSearch(Function function,
-      double[] direction, LineSearchResult lsr, double l1Cost, double initialStepSize)
-  {
+      double[] direction, LineSearchResult lsr, double l1Cost, double initialStepSize) {
     double stepSize        = initialStepSize;
     int currFctEvalCount   = lsr.getFctEvalCount();
     double[] x             = lsr.getNextPoint();
@@ -148,7 +146,7 @@ public class LineSearch {
   // ------------------------------------------------------------------------------------- //
 
   /**
-   * Class to store lineSearch result
+   * Represents a LineSearch result.
    */
   public static class LineSearchResult {
 

@@ -29,10 +29,14 @@ import opennlp.tools.ml.model.MutableContext;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Trains models using the combination of EM algorithm and Naive Bayes classifier
- * which is described in:
+ * Trains {@link NaiveBayesModel models} using the combination of EM algorithm
+ * and Naive Bayes classifier which is described in:
+ * <p>
  * Text Classification from Labeled and Unlabeled Documents using EM
- * Nigam, McCallum, et al paper of 2000
+ * Nigam, McCallum, et al. paper of 2000
+ *
+ * @see NaiveBayesModel
+ * @see AbstractEventTrainer
  */
 public class NaiveBayesTrainer extends AbstractEventTrainer {
 
@@ -76,7 +80,7 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
   private int[] numTimesEventsSeen;
 
   /**
-   * Stores the String names of the outcomes.  The NaiveBayes only tracks outcomes
+   * Stores the String names of the outcomes. The NaiveBayes only tracks outcomes
    * as ints, and so this array is needed to save the model to disk and
    * thereby allow users to know what the outcome was in human
    * understandable terms.
@@ -84,30 +88,48 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
   private String[] outcomeLabels;
 
   /**
-   * Stores the String names of the predicates. The NaiveBayes only tracks
+   * Stores the String names of the predicates.The NaiveBayes only tracks
    * predicates as ints, and so this array is needed to save the model to
    * disk and thereby allow users to know what the outcome was in human
    * understandable terms.
    */
   private String[] predLabels;
 
+  /**
+   * Instantiates a {@link NaiveBayesTrainer} with default training parameters.
+   */
   public NaiveBayesTrainer() {
   }
 
+  /**
+   * Instantiates a {@link NaiveBayesTrainer} with specific
+   * {@link TrainingParameters}.
+   *
+   * @param parameters The {@link TrainingParameters parameter} to use.
+   */
   public NaiveBayesTrainer(TrainingParameters parameters) {
     super(parameters);
   }
-  
+
+  @Override
   public boolean isSortAndMerge() {
     return false;
   }
 
+  @Override
   public AbstractModel doTrain(DataIndexer indexer) throws IOException {
     return this.trainModel(indexer);
   }
 
-  // << members related to AbstractSequenceTrainer
+  // << members related to AbstractEventTrainer
 
+  /**
+   * Trains a {@link NaiveBayesModel} with given parameters.
+   *
+   * @param di The {@link DataIndexer} used as data input.
+   *
+   * @return A valid, trained {@link AbstractModel Naive Bayes model}.
+   */
   public AbstractModel trainModel(DataIndexer di) {
     display("Incorporating indexed data for training...  \n");
     contexts = di.getContexts();

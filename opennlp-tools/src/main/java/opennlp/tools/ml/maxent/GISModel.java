@@ -29,37 +29,32 @@ import opennlp.tools.ml.model.UniformPrior;
 
 /**
  * A maximum entropy model which has been trained using the Generalized
- * Iterative Scaling procedure (implemented in GIS.java).
+ * Iterative Scaling (GIS) procedure.
+ *
+ * @see AbstractModel
  */
 public final class GISModel extends AbstractModel {
 
   /**
-   * Creates a new model with the specified parameters, outcome names, and
+   * Initializes a {@link GISModel} with the specified parameters, outcome names, and
    * predicate/feature labels.
    *
-   * @param params
-   *          The parameters of the model.
-   * @param predLabels
-   *          The names of the predicates used in this model.
-   * @param outcomeNames
-   *          The names of the outcomes this model predicts.
+   * @param params The {@link Context parameters} of the model.
+   * @param predLabels The names of the predicates used in this model.
+   * @param outcomeNames The names of the outcomes this model predicts.
    */
   public GISModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     this(params, predLabels, outcomeNames, new UniformPrior());
   }
 
   /**
-   * Creates a new model with the specified parameters, outcome names, and
+   * Initializes a {@link GISModel} with the specified parameters, outcome names, and
    * predicate/feature labels.
    *
-   * @param params
-   *          The parameters of the model.
-   * @param predLabels
-   *          The names of the predicates used in this model.
-   * @param outcomeNames
-   *          The names of the outcomes this model predicts.
-   * @param prior
-   *          The prior to be used with this model.
+   * @param params The {@link Context parameters} of the model.
+   * @param predLabels The names of the predicates used in this model.
+   * @param outcomeNames The names of the outcomes this model predicts.
+   * @param prior The {@link Prior} to be used with this model.
    */
   public GISModel(Context[] params, String[] predLabels, String[] outcomeNames, Prior prior) {
     super(params, predLabels, outcomeNames);
@@ -69,7 +64,7 @@ public final class GISModel extends AbstractModel {
   }
 
   /**
-   * Use this model to evaluate a context and return an array of the likelihood
+   * Evaluates a context and return an array of the likelihood
    * of each outcome given that context.
    *
    * @param context
@@ -78,25 +73,31 @@ public final class GISModel extends AbstractModel {
    * @return The normalized probabilities for the outcomes given the context.
    *         The indexes of the double[] are the outcome ids, and the actual
    *         string representation of the outcomes can be obtained from the
-   *         method getOutcome(int i).
+   *         method {@link #getOutcome(int)}.
    */
   @Override
-  public final double[] eval(String[] context) {
+  public double[] eval(String[] context) {
     return (eval(context, new double[evalParams.getNumOutcomes()]));
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public final double[] eval(String[] context, float[] values) {
+  public double[] eval(String[] context, float[] values) {
     return (eval(context, values, new double[evalParams.getNumOutcomes()]));
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public final double[] eval(String[] context, double[] outsums) {
+  public double[] eval(String[] context, double[] outsums) {
     return eval(context, null, outsums);
   }
 
   /**
-   * Use this model to evaluate a context and return an array of the likelihood
+   * Evaluates a context and return an array of the likelihood
    * of each outcome given that context.
    *
    * @param context
@@ -107,9 +108,9 @@ public final class GISModel extends AbstractModel {
    * @return The normalized probabilities for the outcomes given the context.
    *         The indexes of the double[] are the outcome ids, and the actual
    *         string representation of the outcomes can be obtained from the
-   *         method getOutcome(int i).
+   *         method {@link #getOutcome(int)}.
    */
-  public final double[] eval(String[] context, float[] values, double[] outsums) {
+  public double[] eval(String[] context, float[] values, double[] outsums) {
     Context[] scontexts = new Context[context.length];
     for (int i = 0; i < context.length; i++) {
       scontexts[i] = pmap.get(context[i]);
@@ -120,7 +121,7 @@ public final class GISModel extends AbstractModel {
 
 
   /**
-   * Use this model to evaluate a context and return an array of the likelihood
+   * Evaluates a context and return an array of the likelihood
    * of each outcome given the specified context and the specified parameters.
    *
    * @param context
@@ -129,11 +130,11 @@ public final class GISModel extends AbstractModel {
    * @param prior
    *          The prior distribution for the specified context.
    * @param model
-   *          The set of parametes used in this computation.
+   *          The set of parameters used in this computation.
    * @return The normalized probabilities for the outcomes given the context.
    *         The indexes of the double[] are the outcome ids, and the actual
    *         string representation of the outcomes can be obtained from the
-   *         method getOutcome(int i).
+   *         method {@link #getOutcome(int)}.
    */
   public static double[] eval(int[] context, double[] prior,
       EvalParameters model) {
@@ -141,7 +142,7 @@ public final class GISModel extends AbstractModel {
   }
 
   /**
-   * Use this model to evaluate a context and return an array of the likelihood
+   * Evaluates a context and return an array of the likelihood
    * of each outcome given the specified context and the specified parameters.
    *
    * @param context
@@ -152,11 +153,11 @@ public final class GISModel extends AbstractModel {
    * @param prior
    *          The prior distribution for the specified context.
    * @param model
-   *          The set of parametes used in this computation.
+   *          The set of parameters used in this computation.
    * @return The normalized probabilities for the outcomes given the context.
    *         The indexes of the double[] are the outcome ids, and the actual
    *         string representation of the outcomes can be obtained from the
-   *         method getOutcome(int i).
+   *         method {@link #getOutcome(int)}.
    */
   static double[] eval(int[] context, float[] values, double[] prior,
       EvalParameters model) {
@@ -170,7 +171,7 @@ public final class GISModel extends AbstractModel {
   }
 
   /**
-   * Use this model to evaluate a context and return an array of the likelihood
+   * Evaluates a context and return an array of the likelihood
    * of each outcome given the specified context and the specified parameters.
    *
    * @param context
@@ -181,11 +182,11 @@ public final class GISModel extends AbstractModel {
    * @param prior
    *          The prior distribution for the specified context.
    * @param model
-   *          The set of parametes used in this computation.
+   *          The set of parameters used in this computation.
    * @return The normalized probabilities for the outcomes given the context.
    *         The indexes of the double[] are the outcome ids, and the actual
    *         string representation of the outcomes can be obtained from the
-   *         method getOutcome(int i).
+   *         method {@link #getOutcome(int)}.
    */
   static double[] eval(Context[] context, float[] values, double[] prior,
                        EvalParameters model) {

@@ -20,13 +20,14 @@ package opennlp.tools.ml.model;
 import java.util.Objects;
 
 /**
- * Provide a maximum entropy model with a uniform prior.
+ * Provide a maximum entropy model with a uniform {@link Prior}.
  */
 public class UniformPrior implements Prior {
 
   private int numOutcomes;
   private double r;
 
+  @Override
   public void logPrior(double[] dist, int[] context, float[] values) {
     for (int oi = 0; oi < numOutcomes; oi++) {
       dist[oi] = r;
@@ -38,10 +39,12 @@ public class UniformPrior implements Prior {
     logPrior(dist, (int[]) null, values);
   }
 
+  @Override
   public void logPrior(double[] dist, int[] context) {
     logPrior(dist,context,null);
   }
 
+  @Override
   public void setLabels(String[] outcomeLabels, String[] contextLabels) {
     this.numOutcomes = outcomeLabels.length;
     r = StrictMath.log(1.0 / numOutcomes);

@@ -19,12 +19,11 @@ package opennlp.tools.ml.maxent;
 
 
 /**
- * Generate contexts for maxent decisions, assuming that the input
- * given to the getContext() method is a String containing contextual
- * predicates separated by spaces.
- * e.g:
+ * A {@link ContextGenerator} implementation for maxent decisions, assuming that the input
+ * given to the {@link #getContext(String)} method is a String containing contextual
+ * predicates separated by spaces, for instance:
  * <p>
- * cp_1 cp_2 ... cp_n
+ * {@code cp_1 cp_2 ... cp_n}
  * </p>
  */
 public class BasicContextGenerator implements ContextGenerator<String> {
@@ -33,13 +32,17 @@ public class BasicContextGenerator implements ContextGenerator<String> {
 
   public BasicContextGenerator() {}
 
+  /**
+   * Initializes a {@link BasicContextGenerator} with a different separator char.
+   * This overwrites the default whitespace separator.
+   *
+   * @param sep The {@link String separator character} to use.
+   */
   public BasicContextGenerator(String sep) {
     separator = sep;
   }
 
-  /**
-   * Builds up the list of contextual predicates given a String.
-   */
+  @Override
   public String[] getContext(String o) {
     return o.split(separator);
   }

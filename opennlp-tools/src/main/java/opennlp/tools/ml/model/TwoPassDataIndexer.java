@@ -36,17 +36,24 @@ import opennlp.tools.util.ObjectStream;
 
 
 /**
- * Collecting event and context counts by making two passes over the events.  The
- * first pass determines which contexts will be used by the model, and the
+ * Collecting event and context counts by making two passes over the events.
+ * <p>
+ * The first pass determines which contexts will be used by the model, and the
  * second pass creates the events in memory containing only the contexts which
- * will be used.  This greatly reduces the amount of memory required for storing
- * the events.  During the first pass a temporary event file is created which
+ * will be used. This greatly reduces the amount of memory required for storing
+ * the events. During the first pass a temporary event file is created which
  * is read during the second pass.
+ *
+ * @see DataIndexer
+ * @see AbstractDataIndexer
  */
 public class TwoPassDataIndexer extends AbstractDataIndexer {
 
   public TwoPassDataIndexer() {}
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void index(ObjectStream<Event> eventStream) throws IOException {
     int cutoff = trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);

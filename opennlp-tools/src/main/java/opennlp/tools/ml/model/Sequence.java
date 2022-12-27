@@ -23,17 +23,15 @@ package opennlp.tools.ml.model;
  */
 public class Sequence<T> {
 
-  private Event[] events;
-  private T source;
+  private final Event[] events;
+  private final T source;
 
   /**
-   * Creates a new sequence made up of the specified events and derived from the
+   * Initializes {@link Sequence} made up of the specified events and derived from the
    * specified source.
    *
-   * @param events
-   *          The events of the sequence.
-   * @param source
-   *          The source object for this sequence.
+   * @param events The {@link Event events} of the sequence.
+   * @param source The {@link T source object} for this sequence.
    */
   public Sequence(Event[] events, T source) {
     this.events = events;
@@ -41,20 +39,17 @@ public class Sequence<T> {
   }
 
   /**
-   * Returns the events which make up this sequence.
-   *
-   * @return the events which make up this sequence.
+   * @return Retrieves the events which make up this sequence.
    */
   public Event[] getEvents() {
     return events;
   }
 
   /**
-   * Returns an object from which this sequence can be derived. This object is
-   * used when the events for this sequence need to be re-derived such as in a
-   * call to SequenceStream.updateContext.
+   * This object is used when the events for this sequence need to be re-derived such
+   * as in a call to {@link SequenceStream#updateContext(Sequence, AbstractModel)}.
    *
-   * @return an object from which this sequence can be derived.
+   * @return Retrieves an object from which this sequence can be derived.
    */
   public T getSource() {
     return source;

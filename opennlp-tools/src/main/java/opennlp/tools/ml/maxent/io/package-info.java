@@ -15,18 +15,8 @@
  * limitations under the License.
  */
 
-package opennlp.tools.ml.maxent;
-
 /**
- * Represents a generator of contexts for maxent decisions.
+ * Package related to the I/O functionality of the maxent package including reading
+ * and writing models in several formats.
  */
-public interface ContextGenerator<T> {
-
-  /**
-   * Builds up the list of contextual predicates given an {@link T object}.
-   *
-   * @param o The {@link T object} used as input.
-   */
-  String[] getContext(T o);
-
-}
+package opennlp.tools.ml.maxent.io;

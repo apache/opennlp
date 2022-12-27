@@ -26,10 +26,22 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * A generic {@link DataReader} implementation for plain text files.
+ *
+ * @see DataReader
+ */
 public class PlainTextFileDataReader implements DataReader {
 
-  private BufferedReader input;
+  private final BufferedReader input;
 
+  /**
+   * Initializes a {@link PlainTextFileDataReader} via a {@link File}.
+   *
+   * @param f The {@link File} that references the model to be read.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public PlainTextFileDataReader(File f) throws IOException {
     if (f.getName().endsWith(".gz")) {
       input = new BufferedReader(new InputStreamReader(new BufferedInputStream(
@@ -40,22 +52,44 @@ public class PlainTextFileDataReader implements DataReader {
     }
   }
 
+  /**
+   * Initializes a {@link PlainTextFileDataReader} via a {@link InputStream}.
+   *
+   * @param in The {@link InputStream} that references the file to be read.
+   */
   public PlainTextFileDataReader(InputStream in) {
     input = new BufferedReader(new InputStreamReader(in));
   }
 
+  /**
+   * Initializes a {@link PlainTextFileDataReader} via a {@link BufferedReader}.
+   *
+   * @param in The {@link BufferedReader} that references the file to be read.
+   */
   public PlainTextFileDataReader(BufferedReader in) {
     input = in;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public double readDouble() throws IOException {
     return Double.parseDouble(input.readLine());
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public int readInt() throws IOException {
     return Integer.parseInt(input.readLine());
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public String readUTF() throws IOException {
     return input.readLine();
   }

@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * Class implementing the probability distribution over labels returned by a classifier.
  *
- * @param <T> the label (category) class
+ * @param <T> The label (category) class.
  *
  */
 public abstract class Probabilities<T> {
@@ -39,10 +39,11 @@ public abstract class Probabilities<T> {
   protected double confidence = 0.0;
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability.
+   * Assigns a probability to a label {@code t},
+   * discarding any previously assigned probability.
    *
-   * @param t           the label to which the probability is being assigned
-   * @param probability the probability to assign
+   * @param t           The label to which the probability is being assigned.
+   * @param probability The probability to assign.
    */
   public void set(T t, double probability) {
     isNormalised = false;
@@ -50,10 +51,11 @@ public abstract class Probabilities<T> {
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability.
+   * Assigns a probability to a label {@code t},
+   * discarding any previously assigned probability.
    *
-   * @param t           the label to which the probability is being assigned
-   * @param probability the probability to assign
+   * @param t           The label to which the probability is being assigned.
+   * @param probability The probability to assign.
    */
   public void set(T t, Probability<T> probability) {
     isNormalised = false;
@@ -61,11 +63,12 @@ public abstract class Probabilities<T> {
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability,
+   * Assigns a probability to a label {@code t},
+   * discarding any previously assigned probability,
    * if the new probability is greater than the old one.
    *
-   * @param t           the label to which the probability is being assigned
-   * @param probability the probability to assign
+   * @param t           The label to which the probability is being assigned.
+   * @param probability The probability to assign.
    */
   public void setIfLarger(T t, double probability) {
     Double p = map.get(t);
@@ -76,21 +79,23 @@ public abstract class Probabilities<T> {
   }
 
   /**
-   * Assigns a log probability to a label, discarding any previously assigned probability.
+   * Assigns a log probability to a label {@code t},
+   * discarding any previously assigned probability.
    *
-   * @param t           the label to which the log probability is being assigned
-   * @param probability the log probability to assign
+   * @param t           The label to which the log probability is being assigned.
+   * @param probability The log probability to assign.
    */
   public void setLog(T t, double probability) {
     set(t, StrictMath.exp(probability));
   }
 
   /**
-   * Compounds the existing probability mass on the label with the new probability passed in to the method.
+   * Compounds the existing probability mass on the label {@code t}
+   * with the new probability passed in to the method.
    *
-   * @param t           the label whose probability mass is being updated
-   * @param probability the probability weight to add
-   * @param count       the amplifying factor for the probability compounding
+   * @param t           The label whose probability mass is being updated.
+   * @param probability The probability weight to add.
+   * @param count       The amplifying factor for the probability compounding.
    */
   public void addIn(T t, double probability, int count) {
     isNormalised = false;
@@ -102,10 +107,8 @@ public abstract class Probabilities<T> {
   }
 
   /**
-   * Returns the probability associated with a label
-   *
-   * @param t the label whose probability needs to be returned
-   * @return the probability associated with the label
+   * @param t The label whose probability needs to be returned.
+   * @return Retrieves the probability associated with the label.
    */
   public Double get(T t) {
     Double d = normalize().get(t);
@@ -115,28 +118,22 @@ public abstract class Probabilities<T> {
   }
 
   /**
-   * Returns the log probability associated with a label
-   *
-   * @param t the label whose log probability needs to be returned
-   * @return the log probability associated with the label
+   * @param t The label whose log probability should be returned.
+   * @return Retrieves the log probability associated with the label
    */
   public Double getLog(T t) {
     return StrictMath.log(get(t));
   }
 
   /**
-   * Returns the probabilities associated with all labels
-   *
-   * @return the HashMap of labels and their probabilities
+   * @return Retrieves the probabilities associated with all labels
    */
   public Set<T> getKeys() {
     return map.keySet();
   }
 
   /**
-   * Returns the probabilities associated with all labels
-   *
-   * @return the HashMap of labels and their probabilities
+   * @return Retrieves a {@link Map} of labels and their probabilities
    */
   public Map<T, Double> getAll() {
     return normalize();
@@ -170,9 +167,7 @@ public abstract class Probabilities<T> {
   }
 
   /**
-   * Returns the most likely label
-   *
-   * @return the label that has the highest associated probability
+   * @return Retrieves the label that has the highest associated probability.
    */
   public T getMax() {
     double max = 0;
@@ -189,9 +184,7 @@ public abstract class Probabilities<T> {
   }
 
   /**
-   * Returns the probability of the most likely label
-   *
-   * @return the highest probability
+   * @return Retrieves the probability of the most likely label
    */
   public double getMaxValue() {
     return get(getMax());
@@ -212,11 +205,9 @@ public abstract class Probabilities<T> {
   }
 
   /**
-   * Returns the best confidence with which this set of probabilities has been calculated.
-   * This is a function of the amount of data that supports the assertion.
-   * It is also a measure of the accuracy of the estimator of the probability.
-   *
-   * @return the best confidence of the probabilities
+   * @return Retrieves the best confidence with which this set of probabilities has been calculated.
+   *         This is a function of the amount of data that supports the assertion.
+   *         It is also a measure of the accuracy of the estimator of the probability.
    */
   public double getConfidence() {
     return confidence;
@@ -227,12 +218,13 @@ public abstract class Probabilities<T> {
    * This is a function of the amount of data that supports the assertion.
    * It is also a measure of the accuracy of the estimator of the probability.
    *
-   * @param confidence the confidence in the probabilities
+   * @param confidence The confidence in the probabilities.
    */
   public void setConfidence(double confidence) {
     this.confidence = confidence;
   }
 
+  @Override
   public String toString() {
     return getAll().toString();
   }

@@ -18,9 +18,9 @@
 package opennlp.tools.ml.naivebayes;
 
 /**
- * Class implementing the probability for a label.
+ * A class implementing the logarithmic {@link Probability} for a label.
  *
- * @param <T> the label (category) class
+ * @param <T> The label (category) class.
  *
  */
 public class LogProbability<T> extends Probability<T> {
@@ -31,29 +31,32 @@ public class LogProbability<T> extends Probability<T> {
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability.
+   * Assigns a {@code probability} to a label, discarding any previously assigned probability.
    *
-   * @param probability the probability to assign
+   * @param probability The probability to assign.
    */
+  @Override
   public void set(double probability) {
     this.probability = StrictMath.log(probability);
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability.
+   * Assigns a {@code probability} to a label, discarding any previously assigned probability.
    *
-   * @param probability the probability to assign
+   * @param probability The {@link Probability} to assign.
    */
-  public void set(Probability probability) {
+  @Override
+  public void set(Probability<T> probability) {
     this.probability = probability.getLog();
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability,
+   * Assigns a {@code probability} to a label, discarding any previously assigned probability,
    * if the new probability is greater than the old one.
    *
-   * @param probability the probability to assign
+   * @param probability The probability to assign.
    */
+  @Override
   public void setIfLarger(double probability) {
     double logP = StrictMath.log(probability);
     if (this.probability < logP) {
@@ -62,72 +65,73 @@ public class LogProbability<T> extends Probability<T> {
   }
 
   /**
-   * Assigns a probability to a label, discarding any previously assigned probability,
+   * Assigns a {@code probability} to a label, discarding any previously assigned probability,
    * if the new probability is greater than the old one.
    *
-   * @param probability the probability to assign
+   * @param probability The {@link Probability} to assign.
    */
-  public void setIfLarger(Probability probability) {
+  @Override
+  public void setIfLarger(Probability<T> probability) {
     if (this.probability < probability.getLog()) {
       this.probability = probability.getLog();
     }
   }
 
   /**
-   * Checks if a probability is greater than the old one.
-   *
-   * @param probability the probability to assign
+   * @param probability the probability to check
+   * @return {@code true} if a probability is greater than the old one, {@code false} otherwise.
    */
-  public boolean isLarger(Probability probability) {
+  @Override
+  public boolean isLarger(Probability<T> probability) {
     return this.probability < probability.getLog();
   }
 
   /**
-   * Assigns a log probability to a label, discarding any previously assigned probability.
+   * Assigns a log {@code probability} to a label, discarding any previously assigned probability.
    *
-   * @param probability the log probability to assign
+   * @param probability The log probability to assign.
    */
+  @Override
   public void setLog(double probability) {
     this.probability = probability;
   }
 
   /**
-   * Compounds the existing probability mass on the label with the new
+   * Compounds the existing {@code probability} mass on the label with the new
    * probability passed in to the method.
    *
-   * @param probability the probability weight to add
+   * @param probability The probability weight to add.
    */
+  @Override
   public void addIn(double probability) {
     setLog(this.probability + StrictMath.log(probability));
   }
 
   /**
-   * Returns the probability associated with a label
-   *
-   * @return the probability associated with the label
+   * @return Retrieves the probability associated with a label.
    */
+  @Override
   public Double get() {
     return StrictMath.exp(probability);
   }
 
   /**
-   * Returns the log probability associated with a label
-   *
-   * @return the log probability associated with the label
+   * @return Retrieves the log probability associated with a label.
    */
+  @Override
   public Double getLog() {
     return probability;
   }
 
   /**
-   * Returns the probabilities associated with all labels
-   *
-   * @return the HashMap of labels and their probabilities
+   * @return Retrieves the probabilities associated with all labels,
    */
+  @Override
   public T getLabel() {
     return label;
   }
 
+  @Override
   public String toString() {
     return label + ":" + probability;
   }

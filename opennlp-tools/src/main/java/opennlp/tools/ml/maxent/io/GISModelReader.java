@@ -27,43 +27,59 @@ import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.DataReader;
 
 /**
- * Abstract parent class for readers of GISModels.
+ * The base class for readers of {@link GISModel GIS models}.
+ * <p>
+ * Format for the GIS maxent info (.mei) files:
+ * <p>
+ * <br>GIS (model type identifier)
+ * <br>1. # of parameters ({@code int})
+ * <br>2. the correction constant ({@code int})
+ * <br>3. the correction constant parameter ({@code double})
+ * <br>4. # of outcomes ({@code int})
+ * <br>   * list of outcome names ({@code String})
+ * <br>5. # of different types of outcome patterns ({@code int})
+ * <br>   * list of ({@code int} {@code int[]})
+ * <br>    [# of predicates for which outcome pattern is true] [outcome pattern]
+ * <br>6. # of predicates ({@code int})
+ * <br>   * list of predicate names ({@code String})
+ *
+ * @see GISModel
+ * @see AbstractModelReader
  */
 public class GISModelReader extends AbstractModelReader {
 
+  /**
+   * Initializes a {@link GISModelReader} via a {@link File}.
+   *
+   * @param file The {@link File} that references the model to be read.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public GISModelReader(File file) throws IOException {
     super(file);
   }
 
+  /**
+   * Initializes a {@link GISModelReader} via a {@link DataReader}.
+   *
+   * @param dataReader The {@link DataReader} that references the model to be read.
+   */
   public GISModelReader(DataReader dataReader) {
     super(dataReader);
   }
 
   /**
-   * Retrieve a model from disk. It assumes that models are saved in the
-   * following sequence:
-   *
-   * <br>
-   * GIS (model type identifier) <br>
-   * 1. # of parameters (int) <br>
-   * 2. the correction constant (int) <br>
-   * 3. the correction constant parameter (double) <br>
-   * 4. # of outcomes (int) <br>
-   * * list of outcome names (String) <br>
-   * 5. # of different types of outcome patterns (int) <br>
-   * * list of (int int[]) <br>
-   * [# of predicates for which outcome pattern is true] [outcome pattern] <br>
-   * 6. # of predicates (int) <br>
-   * * list of predicate names (String)
+   * Retrieves a model from disk.
    *
    * <p>
    * If you are creating a reader for a format which won't work with this
    * (perhaps a database or xml file), override this method and ignore the other
    * methods provided in this abstract class.
    *
-   * @return The GISModel stored in the format and location specified to this
-   *         GISModelReader (usually via its the constructor).
+   * @return The {@link GISModel} stored in the format and location specified to this
+   *         {@link GISModelReader} (usually via its constructor).
    */
+  @Override
   public AbstractModel constructModel() throws IOException {
 
     // read correction constant (not used anymore)
@@ -79,6 +95,7 @@ public class GISModelReader extends AbstractModelReader {
     return new GISModel(params, predLabels, outcomeLabels);
   }
 
+  @Override
   public void checkModelType() throws java.io.IOException {
     String modelType = readUTF();
     if (!modelType.equals("GIS"))

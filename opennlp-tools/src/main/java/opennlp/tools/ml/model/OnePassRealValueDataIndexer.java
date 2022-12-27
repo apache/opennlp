@@ -22,21 +22,26 @@ import java.util.List;
 import opennlp.tools.util.InsufficientTrainingDataException;
 
 /**
- * An indexer for maxent model data which handles cutoffs for uncommon
+ * A {@link DataIndexer} for maxent model data which handles cutoffs for uncommon
  * contextual predicates and provides a unique integer index for each of the
  * predicates and maintains event values.
+ *
+ * @see DataIndexer
+ * @see AbstractDataIndexer
  */
 public class OnePassRealValueDataIndexer extends OnePassDataIndexer {
 
-  float[][] values;
+  private float[][] values;
 
   public OnePassRealValueDataIndexer() {
   }
 
+  @Override
   public float[][] getValues() {
     return values;
   }
 
+  @Override
   protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort)
       throws InsufficientTrainingDataException {
     int numUniqueEvents = super.sortAndMerge(eventsToCompare,sort);
