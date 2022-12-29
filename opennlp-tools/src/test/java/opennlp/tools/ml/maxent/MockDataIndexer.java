@@ -53,7 +53,6 @@ public class MockDataIndexer implements DataIndexer {
 
   @Override
   public String[] getOutcomeLabels() {
-    // TODO Auto-generated method stub
     return new String[0];
   }
 
