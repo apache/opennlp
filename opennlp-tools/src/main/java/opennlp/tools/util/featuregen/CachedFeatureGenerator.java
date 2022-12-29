@@ -78,10 +78,12 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
     features.addAll(cacheFeatures);
   }
 
+  @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
     generator.updateAdaptiveData(tokens, outcomes);
   }
 
+  @Override
   public void clearAdaptiveData() {
     generator.clearAdaptiveData();
   }

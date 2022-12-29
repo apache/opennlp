@@ -24,40 +24,59 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 
 /**
- * Reads a plain text file and return each line as a <code>String</code> object.
+ * Reads a plain text file and returns each line as a {@link String} object.
  */
 public class PlainTextByLineStream implements ObjectStream<String> {
 
   private final Charset encoding;
 
-  private InputStreamFactory inputStreamFactory;
+  private final InputStreamFactory inputStreamFactory;
 
   private BufferedReader in;
 
-  public PlainTextByLineStream(InputStreamFactory inputStreamFactory,
-                               String charsetName) throws IOException {
+  /**
+   * Initializes a {@link PlainTextByLineStream}.
+   *
+   * @param inputStreamFactory The {@link InputStreamFactory} to use. Must not be {@code null}.
+   * @param charsetName The name of the {@link Charset} that is used for interpreting characters.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public PlainTextByLineStream(InputStreamFactory inputStreamFactory, String charsetName)
+          throws IOException {
     this(inputStreamFactory, Charset.forName(charsetName));
   }
 
-  public PlainTextByLineStream(InputStreamFactory inputStreamFactory,
-                               Charset charset) throws IOException {
-    this.inputStreamFactory =
-        Objects.requireNonNull(inputStreamFactory, "inputStreamFactory must not be null!");
+  /**
+   * Initializes a {@link PlainTextByLineStream}.
+   *
+   * @param inputStreamFactory The {@link InputStreamFactory} to use. Must not be {@code null}.
+   * @param charset The {@link Charset} that is used for interpreting characters.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
+  public PlainTextByLineStream(InputStreamFactory inputStreamFactory, Charset charset)
+          throws IOException {
+    this.inputStreamFactory = Objects.requireNonNull(
+            inputStreamFactory, "inputStreamFactory must not be null!");
     this.encoding = charset;
 
     reset();
   }
 
+  @Override
   public String read() throws IOException {
     return in.readLine();
   }
 
+  @Override
   public void reset() throws IOException {
 
-    in = new BufferedReader(new InputStreamReader(inputStreamFactory.createInputStream(),
-          encoding));
+    in = new BufferedReader(
+            new InputStreamReader(inputStreamFactory.createInputStream(), encoding));
   }
 
+  @Override
   public void close() throws IOException {
     if (in != null) {
       in.close();

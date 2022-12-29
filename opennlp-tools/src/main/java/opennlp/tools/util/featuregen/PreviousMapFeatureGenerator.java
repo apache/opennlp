@@ -23,12 +23,13 @@ import java.util.Map;
 
 /**
  * This {@link AdaptiveFeatureGenerator} generates features indicating the
- * outcome associated with a previously occuring word.
+ * outcome associated with a previously occurring word.
  */
 public class PreviousMapFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private Map<String, String> previousMap = new HashMap<>();
+  private final Map<String, String> previousMap = new HashMap<>();
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     features.add("pd=" + previousMap.get(tokens[index]));
   }
@@ -36,16 +37,15 @@ public class PreviousMapFeatureGenerator implements AdaptiveFeatureGenerator {
   /**
    * Generates previous decision features for the token based on contents of the previous map.
    */
+  @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
 
     for (int i = 0; i < tokens.length; i++) {
       previousMap.put(tokens[i], outcomes[i]);
     }
   }
-
-  /**
-   * Clears the previous map.
-   */
+  
+  @Override
   public void clearAdaptiveData() {
     previousMap.clear();
   }

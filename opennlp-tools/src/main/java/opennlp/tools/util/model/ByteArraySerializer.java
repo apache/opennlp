@@ -21,12 +21,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * An {@link ArtifactSerializer} implementation for binary data, kept in {@code byte[]}.
+ */
 public class ByteArraySerializer implements ArtifactSerializer<byte[]> {
 
+  @Override
   public byte[] create(InputStream in) throws IOException {
     return ModelUtil.read(in);
   }
 
+  @Override
   public void serialize(byte[] artifact, OutputStream out) throws IOException {
     out.write(artifact);
   }

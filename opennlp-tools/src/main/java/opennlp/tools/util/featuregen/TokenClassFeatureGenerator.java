@@ -30,7 +30,7 @@ public class TokenClassFeatureGenerator implements AdaptiveFeatureGenerator {
   private static final String TOKEN_CLASS_PREFIX = "wc";
   private static final String TOKEN_AND_CLASS_PREFIX = "w&c";
 
-  private boolean generateWordAndClassFeature;
+  private final boolean generateWordAndClassFeature;
 
   public TokenClassFeatureGenerator() {
     this(false);
@@ -40,6 +40,7 @@ public class TokenClassFeatureGenerator implements AdaptiveFeatureGenerator {
     this.generateWordAndClassFeature = generateWordAndClassFeature;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     String wordClass = FeatureGeneratorUtil.tokenFeature(tokens[index]);
     features.add(TOKEN_CLASS_PREFIX + "=" + wordClass);

@@ -21,18 +21,24 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * Abstract base class for filtering {@link ObjectStream}s.
+ * Abstract base class for filtering {@link ObjectStream streams}.
  * <p>
  * Filtering streams take an existing stream and convert
  * its output to something else.
  *
- * @param <S> the type of the source/input stream
- * @param <T> the type of this stream
+ * @param <S> The sample type of the source or input stream.
+ * @param <T> The sample type of this stream
  */
 public abstract class FilterObjectStream<S, T> implements ObjectStream<T> {
 
   protected final ObjectStream<S> samples;
 
+  /**
+   * Initializes an {@link FilterObjectStream}.
+   *
+   * @param samples The {@link ObjectStream<S> stream} of samples to filter.
+   *                Must not be {@code null}.
+   */
   protected FilterObjectStream(ObjectStream<S> samples) {
     this.samples = Objects.requireNonNull(samples, "samples must not be null!");
   }

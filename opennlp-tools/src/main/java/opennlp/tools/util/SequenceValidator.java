@@ -17,19 +17,23 @@
 
 package opennlp.tools.util;
 
+/**
+ * @param <T> The generic type that is to be validated.
+ */
 public interface SequenceValidator<T> {
 
   /**
-   * Determines whether a particular continuation of a sequence is valid.
+   * Determines whether a particular continuation of a {@link T sequence} is valid.
    * This is used to restrict invalid sequences such as those used in start/continue tag-based chunking
    * or could be used to implement tag dictionary restrictions.
    *
-   * @param i The index in the input sequence for which the new outcome is being proposed.
-   * @param inputSequence The input sequence.
+   * @param i The index in the {@code inputSequence} for which the new outcome is being proposed.
+   * @param inputSequence The input sequence of {@link T}.
    * @param outcomesSequence The outcomes so far in this sequence.
    * @param outcome The next proposed outcome for the outcomes sequence.
    *
-   * @return true is the sequence would still be valid with the new outcome, false otherwise.
+   * @return {@link true} if the sequence would still be valid with the new outcome,
+   *         {@code false} otherwise.
    */
   boolean validSequence(int i, T[] inputSequence, String[] outcomesSequence,
       String outcome);

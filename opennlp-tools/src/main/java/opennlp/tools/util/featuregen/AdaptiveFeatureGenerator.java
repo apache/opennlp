@@ -28,14 +28,14 @@ import java.util.List;
  * <b>Note:</b><br>
  * Feature generation is not thread safe and a instance of a feature generator
  * must only be called from one thread. The resources used by a feature
- * generator are typically shared between man instances of features generators
+ * generator are typically shared between many instances of features generators
  * which are called from many threads and have to be thread safe.
  */
 public interface AdaptiveFeatureGenerator {
 
   /**
-   * Adds the appropriate features for the token at the specified index with the
-   * specified array of previous outcomes to the specified list of features.
+   * Adds the appropriate features for the token at the specified {@code index} with the
+   * specified array of {@code previousOutcomes} to the specified list of features.
    *
    * @param features The list of features to be added to.
    * @param tokens The tokens of the sentence or other text unit being processed.
@@ -45,8 +45,8 @@ public interface AdaptiveFeatureGenerator {
   void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes);
 
   /**
-   * Informs the feature generator that the specified tokens have been classified with the
-   * corresponding set of specified outcomes.
+   * Informs a feature generator that the specified tokens have been classified with the
+   * corresponding set of specified {@code outcomes}.
    *
    * @param tokens The tokens of the sentence or other text unit which has been processed.
    * @param outcomes The outcomes associated with the specified tokens.
@@ -54,7 +54,7 @@ public interface AdaptiveFeatureGenerator {
   default void updateAdaptiveData(String[] tokens, String[] outcomes) {};
 
   /**
-   * Informs the feature generator that the context of the adaptive data (typically a document)
+   * Informs a feature generator that the context of the adaptive data (typically a document)
    * is no longer valid.
    */
   default void clearAdaptiveData() {};

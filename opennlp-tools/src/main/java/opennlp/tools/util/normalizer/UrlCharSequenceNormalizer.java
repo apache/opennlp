@@ -19,7 +19,8 @@ package opennlp.tools.util.normalizer;
 import java.util.regex.Pattern;
 
 /**
- * Normalizer that removes URls and email addresses.
+ * A {@link UrlCharSequenceNormalizer} implementation that normalizes text
+ * in terms of URls and email addresses. Every encounter will be replaced by a whitespace.
  */
 public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
 
@@ -35,6 +36,7 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
+  @Override
   public CharSequence normalize (CharSequence text) {
     String modified = URL_REGEX.matcher(text).replaceAll(" ");
     return MAIL_REGEX.matcher(modified).replaceAll(" ");

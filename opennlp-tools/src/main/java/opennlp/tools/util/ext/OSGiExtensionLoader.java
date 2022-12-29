@@ -28,7 +28,8 @@ import org.osgi.util.tracker.ServiceTracker;
  * OSGi bundle activator which can use an OSGi service as
  * an OpenNLP extension.
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
 public class OSGiExtensionLoader implements BundleActivator {
 
@@ -36,23 +37,25 @@ public class OSGiExtensionLoader implements BundleActivator {
 
   private BundleContext context;
 
+  @Override
   public void start(BundleContext context) throws Exception {
     instance = this;
     this.context = context;
     ExtensionLoader.setOSGiAvailable();
   }
 
+  @Override
   public void stop(BundleContext context) throws Exception {
     instance = null;
     this.context = null;
   }
 
   /**
-   * Retrieves the
-   *
-   * @param clazz
-   * @param id
-   * @return
+   * @param clazz A reference to {@link Class<T>}.
+   * @param id The unique identifier for the extension to retrieve.
+   *           
+   * @return Retrieves the {@link T extension}.
+   * @throws ExtensionNotLoadedException Thrown if the extension is not found or loaded.
    */
   <T> T getExtension(Class<T> clazz, String id) {
 

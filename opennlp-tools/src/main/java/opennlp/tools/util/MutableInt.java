@@ -24,14 +24,23 @@ public class MutableInt {
 
   private int i;
 
+  /**
+   * @param i The initial {@code int} value to encapsulate.
+   */
   public MutableInt(int i) {
     this.i = i;
   }
 
+  /**
+   * Adds {@code 1} to the curren value.
+   */
   public void increment() {
     i++;
   }
 
+  /**
+   * @return Retrieves the current value of the {@link MutableInt}.
+   */
   public int getValue() {
     return i;
   }

@@ -29,9 +29,11 @@ import org.xml.sax.SAXException;
 public class XmlUtil {
 
   /**
-   * Create a new DocumentBuilder which processes XML securely.
+   * Create a new {@link DocumentBuilder} which processes XML securely.
    *
-   * @return a DocumentBuilder
+   * @return A valid {@link DocumentBuilder} instance.
+   *
+   * @throws IllegalStateException Thrown if errors occurred creating the builder.
    */
   public static DocumentBuilder createDocumentBuilder() {
     try {
@@ -44,9 +46,11 @@ public class XmlUtil {
   }
 
   /**
-   * Create a new SAXParser which processes XML securely.
+   * Create a new {@link SAXParser} which processes XML securely.
    *
-   * @return a SAXParser
+   * @return A valid {@link SAXParser} instance.
+   *
+   * @throws IllegalStateException Thrown if errors occurred creating the parser.
    */
   public static SAXParser createSaxParser() {
     SAXParserFactory spf = SAXParserFactory.newInstance();

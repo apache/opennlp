@@ -25,10 +25,10 @@ import opennlp.tools.util.InvalidFormatException;
 public abstract class CustomFeatureGenerator implements AdaptiveFeatureGenerator {
 
   /**
-   * Initialized the Custom Feature Generator with defined properties and loaded resources.
+   * Initializes {@link CustomFeatureGenerator} with defined properties and loaded resources.
    *
-   * @param properties
-   * @param resourceProvider
+   * @param properties The {@link Map<String, String>} properties to use.
+   * @param resourceProvider The {@link FeatureGeneratorResourceProvider} to use.
    */
   public abstract void init(Map<String, String> properties, FeatureGeneratorResourceProvider resourceProvider)
         throws InvalidFormatException;

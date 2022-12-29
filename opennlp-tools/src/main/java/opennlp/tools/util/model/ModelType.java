@@ -17,6 +17,9 @@
 
 package opennlp.tools.util.model;
 
+/**
+ * Enumeration of supported model types.
+ */
 public enum ModelType {
   MAXENT,
   PERCEPTRON,

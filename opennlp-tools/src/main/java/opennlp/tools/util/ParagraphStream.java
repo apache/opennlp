@@ -20,16 +20,24 @@ package opennlp.tools.util;
 import java.io.IOException;
 
 /**
- * Stream filter which merges text lines into paragraphs. The boundary of paragraph is defined
- * by an empty text line. If the last paragraph in the stream is not terminated by an empty line
+ * A {@link FilterObjectStream} which merges text lines into paragraphs.
+ * <p>
+ * The boundary of paragraph is defined by an empty text line.
+ * If the last paragraph in the stream is not terminated by an empty line
  * the left over is assumed to be a paragraph.
  */
 public class ParagraphStream extends FilterObjectStream<String, String> {
 
+  /**
+   * Initializes an {@link FilterObjectStream}.
+   *
+   * @param lineStream The {@link ObjectStream<String> stream} of samples.
+   */
   public ParagraphStream(ObjectStream<String> lineStream) {
     super(lineStream);
   }
 
+  @Override
   public String read() throws IOException {
 
     StringBuilder paragraph = new StringBuilder();

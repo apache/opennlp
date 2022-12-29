@@ -23,9 +23,9 @@ import opennlp.tools.util.StringUtil;
 
 public class WordClusterFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private WordClusterDictionary tokenDictionary;
-  private String resourceName;
-  private boolean lowerCaseDictionary;
+  private final WordClusterDictionary tokenDictionary;
+  private final String resourceName;
+  private final boolean lowerCaseDictionary;
 
   public WordClusterFeatureGenerator(WordClusterDictionary dict,
       String dictResourceKey, boolean lowerCaseDictionary) {
@@ -34,6 +34,7 @@ public class WordClusterFeatureGenerator implements AdaptiveFeatureGenerator {
     this.lowerCaseDictionary = lowerCaseDictionary;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 

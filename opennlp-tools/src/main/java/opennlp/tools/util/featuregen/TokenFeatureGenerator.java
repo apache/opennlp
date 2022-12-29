@@ -28,16 +28,25 @@ import opennlp.tools.util.StringUtil;
 public class TokenFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final String WORD_PREFIX = "w";
-  private boolean lowercase;
+  private final boolean lowercase;
 
+  /**
+   * Initializes a {@link TokenFeatureGenerator}.
+   *
+   * @param lowercase Whether to use lower-casing or not.
+   */
   public TokenFeatureGenerator(boolean lowercase) {
     this.lowercase = lowercase;
   }
 
+  /**
+   * Initializes a {@link TokenFeatureGenerator}. Lower-casing will be enabled.
+   */
   public TokenFeatureGenerator() {
     this(true);
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     if (lowercase) {
       features.add(WORD_PREFIX + "=" + StringUtil.toLowerCase(tokens[index]));

@@ -21,13 +21,13 @@ package opennlp.tools.util;
 import java.util.Iterator;
 
 /**
- * This interface makes an {@link Iterator} resetable.
+ * This interface makes an {@link Iterator} resettable.
  */
 public interface ResetableIterator<E> extends Iterator<E> {
 
   /**
-   * Sets the {@link Iterator} back to the first retrieved element,
-   * the seen sequence of elements must be repeated.
+   * Sets the {@link Iterator} back to the first retrieved element.
+   * The already processed sequence of elements must be repeated.
    */
   void reset();
 }

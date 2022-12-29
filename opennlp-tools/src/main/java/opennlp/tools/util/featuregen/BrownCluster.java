@@ -36,11 +36,14 @@ import opennlp.tools.util.model.SerializableArtifact;
 /**
  *
  * Class to load a Brown cluster document: word\tword_class\tprob
- * http://metaoptimize.com/projects/wordreprs/
- *
+ * <p>
+ * Originally available at: <a href="http://metaoptimize.com/projects/wordreprs/">
+ * http://metaoptimize.com/projects/wordreprs/</a>.
+ * Further details can be found in the
+ * <a href="https://dl.acm.org/doi/10.5555/1858681.1858721">related research paper</a>.
+ * <p>
  * The file containing the clustering lexicon has to be passed as the
- * value of the dict attribute of each BrownCluster feature generator.
- *
+ * value of the dict attribute of each {@link BrownCluster} feature generator.
  */
 public class BrownCluster implements SerializableArtifact {
 
@@ -48,22 +51,27 @@ public class BrownCluster implements SerializableArtifact {
 
   public static class BrownClusterSerializer implements ArtifactSerializer<BrownCluster> {
 
+    @Override
     public BrownCluster create(InputStream in) throws IOException {
       return new BrownCluster(in);
     }
 
+    @Override
     public void serialize(BrownCluster artifact, OutputStream out)
         throws IOException {
       artifact.serialize(out);
     }
   }
 
-  private Map<String, String> tokenToClusterMap = new HashMap<>();
+  private final Map<String, String> tokenToClusterMap = new HashMap<>();
 
   /**
-   * Generates the token to cluster map from Brown cluster input file.
-   * NOTE: we only add those tokens with frequency bigger than 5.
-   * @param in the inputstream
+   * Generates the token to cluster map from Brown cluster an {@link InputStream}.
+   * <p>
+   * <b>Note:</b>
+   * we only add those tokens with frequency bigger than {@code 5}.
+   * 
+   * @param in A valid, open {@link InputStream} to read from.
    * @throws IOException the io exception
    */
   public BrownCluster(InputStream in) throws IOException {
@@ -87,6 +95,7 @@ public class BrownCluster implements SerializableArtifact {
 
   /**
    * Check if a token is in the Brown:paths, token map.
+   * 
    * @param string the token to look-up
    * @return the brown class if such token is in the brown cluster map
    */
@@ -103,6 +112,7 @@ public class BrownCluster implements SerializableArtifact {
     writer.flush();
   }
 
+  @Override
   public Class<?> getArtifactSerializerClass() {
     return BrownClusterSerializer.class;
   }

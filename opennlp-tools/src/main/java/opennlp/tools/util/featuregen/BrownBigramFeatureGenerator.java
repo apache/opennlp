@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private BrownCluster brownCluster;
+  private final BrownCluster brownCluster;
 
   /**
    * Creates a new Brown Cluster bigram feature generator.
@@ -41,9 +41,10 @@ public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
     List<String> wordClasses = BrownTokenClasses.getWordClasses(tokens[index], brownCluster);
     if (index > 0) {
       List<String> prevWordClasses = BrownTokenClasses.getWordClasses(tokens[index - 1], brownCluster);
-      for (int i = 0; i < wordClasses.size() && i < prevWordClasses.size(); i++)
-      features.add("p" + "browncluster" + "," + "browncluster" + "="
-          + prevWordClasses.get(i) + "," + wordClasses.get(i));
+      for (int i = 0; i < wordClasses.size() && i < prevWordClasses.size(); i++) {
+        features.add("p" + "browncluster" + "," + "browncluster" + "="
+            + prevWordClasses.get(i) + "," + wordClasses.get(i));
+      }
     }
 
     if (index + 1 < tokens.length) {

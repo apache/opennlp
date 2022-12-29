@@ -20,8 +20,14 @@ package opennlp.tools.util;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * An {@link ObjectStream} implementation that works on a
+ * {@link Collection} of {@link E} as source for elements.
+ *
+ * @param <E> The generic type of the elements.
+ */
 public class CollectionObjectStream<E> implements ObjectStream<E> {
-  private Collection<E> collection;
+  private final Collection<E> collection;
 
   private Iterator<E> iterator;
 
@@ -30,14 +36,17 @@ public class CollectionObjectStream<E> implements ObjectStream<E> {
     reset();
   }
 
+  @Override
   public E read() {
     return iterator.hasNext() ? iterator.next() : null;
   }
 
+  @Override
   public void reset() {
     this.iterator = collection.iterator();
   }
 
+  @Override
   public void close() {
   }
 }

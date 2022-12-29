@@ -23,34 +23,31 @@ package opennlp.tools.util.model;
 public interface ArtifactProvider {
 
   /**
-   * Gets an artifact by name
+   * @return Gets an artifact by an identifying key or name.
    */
   <T> T getArtifact(String key);
 
   /**
-   * Retrieves the value to the given key from the manifest.properties
-   * entry.
+   * @param key A string identifying an element.
    *
-   * @param key
-   *
-   * @return the value
+   * @return Retrieves the value for the given {@code key} from the {@code manifest.properties}.
    */
   String getManifestProperty(String key);
 
   /**
-   * Retrieves the language code of the material which was used to train the
-   * model or x-unspecified if non was set.
-   *
-   * @return the language code of this model
+   * @return Retrieves the language code of the material which was used to train a model
+   *         or {@code 'x-unspecified'} if non was set.
    */
   String getLanguage();
 
   /**
-   * Indicates if this provider was loaded from serialized. It is useful, for
-   * example, while validating artifacts: you can skip the time consuming ones
-   * if they where already validated during the serialization.
+   * Indicates if this provider was loaded from a serialized form.
    *
-   * @return true if this model was loaded from serialized
+   * It is useful, for example, during the validation of artifacts:
+   * Skip the time-consuming ones if those were already validated during the
+   * serialization process.
+   *
+   * @return {@code true} if this model was loaded from a serialized form, {@code false} otherwise.
    */
   boolean isLoadedFromSerialized();
 }

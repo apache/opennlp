@@ -25,15 +25,15 @@ public class TokenTag {
 
   private final String token;
   private final String tag;
-  private final String[] addtionalData;
+  private final String[] additionalData;
 
   public TokenTag(String token, String tag, String[] addtionalData) {
     this.token = token;
     this.tag = tag;
     if (addtionalData != null) {
-      this.addtionalData = Arrays.copyOf(addtionalData, addtionalData.length);
+      this.additionalData = Arrays.copyOf(addtionalData, addtionalData.length);
     } else {
-      this.addtionalData = null;
+      this.additionalData = null;
     }
   }
 
@@ -45,8 +45,8 @@ public class TokenTag {
     return tag;
   }
 
-  public String[] getAddtionalData() {
-    return addtionalData;
+  public String[] getAdditionalData() {
+    return additionalData;
   }
 
   public static String[] extractTokens(TokenTag[] tuples) {
@@ -82,14 +82,14 @@ public class TokenTag {
     } else if (o instanceof TokenTag) {
       return Objects.equals(this.token, ((TokenTag) o).token)
           && Objects.equals(this.tag, ((TokenTag) o).tag)
-          && Arrays.equals(this.addtionalData, ((TokenTag) o).addtionalData);
+          && Arrays.equals(this.additionalData, ((TokenTag) o).additionalData);
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(token, tag, addtionalData);
+    return Objects.hash(token, tag, additionalData);
   }
 
   @Override

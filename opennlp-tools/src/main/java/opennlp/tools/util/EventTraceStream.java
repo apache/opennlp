@@ -24,15 +24,21 @@ import opennlp.tools.ml.model.Event;
 
 public class EventTraceStream extends FilterObjectStream<Event, Event> {
 
-  private Writer writer;
+  private final Writer writer;
 
+  /**
+   * Initializes an {@link EventTraceStream}.
+   *
+   * @param stream The {@link ObjectStream<Event> stream} of events.
+   * @param writer A {@link Writer} used write {@code events} to.
+   */
   public EventTraceStream(ObjectStream<Event> stream, Writer writer) {
     super(stream);
 
     this.writer = writer;
   }
 
-
+  @Override
   public Event read() throws IOException {
     Event event = samples.read();
 
@@ -44,7 +50,4 @@ public class EventTraceStream extends FilterObjectStream<Event, Event> {
     return event;
   }
 
-  public void remove() {
-    // TODO: not supported, should be removed ...
-  }
 }

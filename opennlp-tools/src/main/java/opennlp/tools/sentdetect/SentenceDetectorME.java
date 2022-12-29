@@ -85,7 +85,7 @@ public class SentenceDetectorME implements SentenceDetector {
    * @throws IOException Thrown if the model cannot be downloaded or saved.
    */
   public SentenceDetectorME(String language) throws IOException {
-    this((SentenceModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.SENTENCE_DETECTOR,
+    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.SENTENCE_DETECTOR,
             SentenceModel.class));
   }
 

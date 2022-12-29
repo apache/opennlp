@@ -23,32 +23,34 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /**
- * The {@link StringList} is an immutable list of {@link String}s.
+ * A {@link StringList} is an immutable list of {@link String}s.
  */
 public class StringList implements Iterable<String> {
 
-  private String[] tokens;
+  private final String[] tokens;
 
   /**
-   * Initializes the current instance.
-   *
+   * Initializes a {@link StringList} instance.
+   * <p>
    * Note: <br>
    * Token String will be replaced by identical internal String object.
    *
-   * @param singleToken one single token
+   * @param singleToken One single token
    */
   public StringList(String singleToken) {
     tokens = new String[]{singleToken.intern()};
   }
 
   /**
-   * Initializes the current instance.
-   *
+   * Initializes a {@link StringList} instance.
+   * <p>
    * Note: <br>
    * Token Strings will be replaced by identical internal String object.
    *
-   * @param tokens the string parts of the new {@link StringList}, an empty
-   *     tokens array or null is not permitted.
+   * @param tokens The string parts of the new {@link StringList}.
+   *               Must not be an empty tokens array or {@code null}.
+   *               
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public StringList(String... tokens) {
 
@@ -66,39 +68,36 @@ public class StringList implements Iterable<String> {
   }
 
   /**
-   * Retrieves a token from the given index.
+   * @param index The index to get a token from.
    *
-   * @param index
-   *
-   * @return token at the given index
+   * @return Retrieves a token from the given {@code index}.
    */
   public String getToken(int index) {
     return tokens[index];
   }
 
   /**
-   * Retrieves the number of tokens inside this list.
-   *
-   * @return number of tokens
+   * @return Retrieves the number of tokens inside this list.
    */
   public int size() {
     return tokens.length;
   }
 
   /**
-   * Retrieves an {@link Iterator} over all tokens.
-   *
-   * @return iterator over tokens
+   * @return Retrieves an {@link Iterator} over all tokens.
    */
+  @Override
   public Iterator<String> iterator() {
-    return new Iterator<String>() {
+    return new Iterator<>() {
 
       private int index;
 
+      @Override
       public boolean hasNext() {
         return index < size();
       }
 
+      @Override
       public String next() {
 
         if (hasNext()) {
@@ -109,6 +108,7 @@ public class StringList implements Iterable<String> {
         }
       }
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException();
       }
@@ -117,13 +117,12 @@ public class StringList implements Iterable<String> {
   }
 
   /**
-   * Compares to tokens list and ignores the case of the tokens.
+   * Compares to {@link StringList token list} and ignores the case of the tokens.
+   * Note: This can cause problems with some locales.
    *
-   * Note: This can cause problems with some locals.
+   * @param tokens The {@link StringList tokens} used for comparison.
    *
-   * @param tokens
-   *
-   * @return true if identically with ignore the case otherwise false
+   * @return {@code true} if identically with ignore the case, {@code false} otherwise.
    */
   public boolean compareToIgnoreCase(StringList tokens) {
 
@@ -163,6 +162,9 @@ public class StringList implements Iterable<String> {
     return false;
   }
 
+  /**
+   * @return A human-readable representation of this {@link Span}.
+   */
   @Override
   public String toString() {
     StringBuilder string = new StringBuilder();

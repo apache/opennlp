@@ -21,6 +21,7 @@ import java.util.List;
 
 public class BigramNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
                              String[] previousOutcomes) {
     String wc = FeatureGeneratorUtil.tokenFeature(tokens[index]);

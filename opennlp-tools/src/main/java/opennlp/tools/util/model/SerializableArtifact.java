@@ -17,16 +17,20 @@
 
 package opennlp.tools.util.model;
 
+/**
+ * A marker interface so that implementing classes can refer to
+ * the corresponding {@link ArtifactSerializer} implementation.
+ */
 public interface SerializableArtifact {
 
   /**
    * Retrieves the class which can serialize and recreate this artifact.
-   * <br>
-   * Note:
-   * The serializer class must have a public zero argument constructor or
-   * an exception is thrown during model serialization/loading.
+   * <p>
+   * <b>Note:</b>
+   * The serializer class must have a {@code public zero argument constructor}
+   * or an exception is thrown during model serialization/loading.
    *
-   * @return the corresponding ArtifactSerializer class.
+   * @return The corresponding {@link ArtifactSerializer} class.
    */
   Class<?> getArtifactSerializerClass();
 }

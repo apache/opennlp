@@ -30,21 +30,21 @@ import opennlp.tools.util.ObjectStream;
  * <p>
  * Cross validation is used to evaluate the performance of a classifier when only
  * training data is available. The training set is split into n parts
- * and the training / evaluation is performed n times on these parts.
- * The training partition always consists of n -1 parts and one part is used for testing.
+ * and the training / evaluation is performed {@code n} times on these parts.
+ * The training partition always consists of {@code n - 1} parts and one part is used for testing.
  * <p>
- * To use the <code>CrossValidationPartitioner</code> a client iterates over the n
- * <code>TrainingSampleStream</code>s. Each <code>TrainingSampleStream</code> represents
+ * To use the {@link CrossValidationPartitioner} a client iterates over the n
+ * {@link TrainingSampleStream stream}. Each {@link TrainingSampleStream} represents
  * one partition and is used first for training and afterwards for testing.
- * The <code>TestSampleStream</code> can be obtained from the <code>TrainingSampleStream</code>
- * with the <code>getTestSampleStream</code> method.
+ * The {@link TestSampleStream} can be obtained via the
+ * {@link TrainingSampleStream#getTestSampleStream()} method.
  */
 public class CrossValidationPartitioner<E> {
 
   /**
-   * The <code>TestSampleStream</code> iterates over all test elements.
+   * The {@link TestSampleStream} iterates over all test elements.
    *
-   * @param <E>
+   * @param <E> The generic type of samples.
    */
   private static class TestSampleStream<E> implements ObjectStream<E> {
 
@@ -56,7 +56,7 @@ public class CrossValidationPartitioner<E> {
 
     private int index;
 
-    private boolean isPoisened;
+    private boolean isPoisoned;
 
     private TestSampleStream(ObjectStream<E> sampleStream, int numberOfPartitions, int testIndex) {
       this.numberOfPartitions = numberOfPartitions;
@@ -64,8 +64,9 @@ public class CrossValidationPartitioner<E> {
       this.testIndex = testIndex;
     }
 
+    @Override
     public E read() throws IOException {
-      if (isPoisened) {
+      if (isPoisoned) {
         throw new IllegalStateException();
       }
 
@@ -81,38 +82,39 @@ public class CrossValidationPartitioner<E> {
     }
 
     /**
-     * Throws <code>UnsupportedOperationException</code>
+     * @throws UnsupportedOperationException Thrown to signal no implementation is available.
      */
+    @Override
     public void reset() {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void close() throws IOException {
       sampleStream.close();
-      isPoisened = true;
+      isPoisoned = true;
     }
 
     void poison() {
-      isPoisened = true;
+      isPoisoned = true;
     }
   }
 
   /**
-   * The <code>TrainingSampleStream</code> which iterates over
+   * The {@link TrainingSampleStream} which iterates over
    * all training elements.
-   *
+   * <p>
    * Note:
-   * After the <code>TestSampleStream</code> was obtained
-   * the <code>TrainingSampleStream</code> must not be used
+   * After the {@link TestSampleStream} was obtained
+   * the {@link TrainingSampleStream} must not be used
    * anymore, otherwise a {@link IllegalStateException}
    * is thrown.
+   * <p>
+   * The {@link ObjectStream streams} must not be used anymore after the
+   * {@link CrossValidationPartitioner} was moved to one of next partitions.
+   * If they are called anyway an {@link IllegalStateException} is thrown.
    *
-   * The <code>ObjectStream</code>s must not be used anymore after the
-   * <code>CrossValidationPartitioner</code> was moved
-   * to one of next partitions. If they are called anyway
-   * a {@link IllegalStateException} is thrown.
-   *
-   * @param <E>
+   * @param <E> The generic type of samples.
    */
   public static class TrainingSampleStream<E> implements ObjectStream<E> {
 
@@ -124,7 +126,7 @@ public class CrossValidationPartitioner<E> {
 
     private int index;
 
-    private boolean isPoisened;
+    private boolean isPoisoned;
 
     private TestSampleStream<E> testSampleStream;
 
@@ -134,9 +136,10 @@ public class CrossValidationPartitioner<E> {
       this.testIndex = testIndex;
     }
 
+    @Override
     public E read() throws IOException {
 
-      if (testSampleStream != null || isPoisened) {
+      if (testSampleStream != null || isPoisoned) {
         throw new IllegalStateException();
       }
 
@@ -157,38 +160,41 @@ public class CrossValidationPartitioner<E> {
      * training, for example, to collect induced abbreviations or create a POS
      * Dictionary.
      *
-     * @throws IOException
+     * @throws IOException Thrown if IO errors occurred.
+     * @throws IllegalStateException Thrown if a non-consistent state occurred.
      */
+    @Override
     public void reset() throws IOException {
-      if (testSampleStream != null || isPoisened) {
+      if (testSampleStream != null || isPoisoned) {
         throw new IllegalStateException();
       }
       this.index = 0;
       this.sampleStream.reset();
     }
 
+    @Override
     public void close() throws IOException {
       sampleStream.close();
       poison();
     }
 
     void poison() {
-      isPoisened = true;
+      isPoisoned = true;
       if (testSampleStream != null)
         testSampleStream.poison();
     }
 
     /**
-     * Retrieves the <code>ObjectStream</code> over the test/evaluations
-     * elements and poisons this <code>TrainingSampleStream</code>.
+     * Retrieves the {@link ObjectStream} over the test/evaluations
+     * elements and poisons this {@link TrainingSampleStream}.
      * From now on calls to the hasNext and next methods are forbidden
-     * and will raise an<code>IllegalArgumentException</code>.
+     * and will raise an {@link IllegalArgumentException}.
      *
-     * @return the test sample stream
+     * @return The test sample {@link ObjectStream<E> stream}.
      */
     public ObjectStream<E> getTestSampleStream() throws IOException {
 
-      if (isPoisened) {
+      if (isPoisoned) {
         throw new IllegalStateException();
       }
 
@@ -203,7 +209,7 @@ public class CrossValidationPartitioner<E> {
   }
 
   /**
-   * An <code>ObjectStream</code> over the whole set of data samples which
+   * An {@link ObjectStream<E> stream} over the whole set of data samples which
    * are used for the cross validation.
    */
   private final ObjectStream<E> sampleStream;
@@ -219,17 +225,17 @@ public class CrossValidationPartitioner<E> {
   private int testIndex;
 
   /**
-   * The last handed out <code>TrainingIterator</code>. The reference
+   * The last handed out {@link TrainingSampleStream}. The reference
    * is needed to poison the instance to fail fast if it is used
    * despite the fact that it is forbidden!.
    */
   private TrainingSampleStream<E> lastTrainingSampleStream;
 
   /**
-   * Initializes the current instance.
+   * Initializes {@link CrossValidationPartitioner} instance.
    *
-   * @param inElements
-   * @param numberOfPartitions
+   * @param inElements The {@link ObjectStream<E>} that provides the elements.
+   * @param numberOfPartitions The number of partitions. Must be greater than {@code 0}.
    */
   public CrossValidationPartitioner(ObjectStream<E> inElements, int numberOfPartitions) {
     this.sampleStream = inElements;
@@ -237,10 +243,10 @@ public class CrossValidationPartitioner<E> {
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes {@link CrossValidationPartitioner} instance.
    *
-   * @param elements
-   * @param numberOfPartitions
+   * @param elements A {@link Collection<E>} that provides the elements.
+   * @param numberOfPartitions The number of partitions. Must be greater than {@code 0}.
    */
   public CrossValidationPartitioner(Collection<E> elements, int numberOfPartitions) {
     this(new CollectionObjectStream<>(elements), numberOfPartitions);

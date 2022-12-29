@@ -26,25 +26,32 @@ import opennlp.tools.util.StringUtil;
 /**
  * The {@link CharacterNgramFeatureGenerator} uses character ngrams to
  * generate features about each token.
- * The minimum and maximum length can be specified.
  */
 public class CharacterNgramFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private final int minLength;
   private final int maxLength;
 
+  /**
+   * Initializes a {@link CharacterNgramFeatureGenerator}.
+   *
+   * @param minLength The minimum length to use. Must not be negative.
+   * @param maxLength The maximum length to use. Must not be negative.
+   */
   public CharacterNgramFeatureGenerator(int minLength, int maxLength) {
     this.minLength = minLength;
     this.maxLength = maxLength;
   }
 
   /**
-   * Initializes the current instance with min 2 length and max 5 length of ngrams.
+   * Initializes a {@link CharacterNgramFeatureGenerator} with
+   * min 2 length and max 5 length of ngrams.
    */
   public CharacterNgramFeatureGenerator() {
     this(2, 5);
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     NGramModel model = new NGramModel();
     model.add(tokens[index], minLength, maxLength);
