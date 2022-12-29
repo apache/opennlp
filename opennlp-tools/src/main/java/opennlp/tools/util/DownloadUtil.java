@@ -65,7 +65,7 @@ public class DownloadUtil {
     frenchModels.put(ModelType.POS,
         BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-fr-ud-ftb-pos-1.0-1.9.3.bin");
     frenchModels.put(ModelType.TOKENIZER,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin");
+        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-fr-ud-ftb-tokens-1.0-1.9.3.bin");
     available_models.put("fr", frenchModels);
 
     final Map<ModelType, String> germanModels = new HashMap<>();
@@ -92,12 +92,12 @@ public class DownloadUtil {
     italianModels.put(ModelType.POS,
         BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-it-ud-vit-pos-1.0-1.9.3.bin");
     italianModels.put(ModelType.TOKENIZER,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-it-ud-vit-sentence-1.0-1.9.3.bin");
+        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-it-ud-vit-tokens-1.0-1.9.3.bin");
     available_models.put("it", italianModels);
 
     final Map<ModelType, String> dutchModels = new HashMap<>();
     dutchModels.put(ModelType.SENTENCE_DETECTOR,
-        BASE_URL + "models/opennlp-nl-ud-alpino-sentence-1.0-1.9.3.bin");
+        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-nl-ud-alpino-sentence-1.0-1.9.3.bin");
     dutchModels.put(ModelType.POS,
         BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-nl-ud-alpino-pos-1.0-1.9.3.bin");
     dutchModels.put(ModelType.TOKENIZER,
