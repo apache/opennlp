@@ -17,16 +17,26 @@
 
 package opennlp.tools.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.model.BaseModel;
 
 /**
@@ -55,55 +65,14 @@ public class DownloadUtil {
   private static final String BASE_URL = "https://dlcdn.apache.org/opennlp/";
   private static final String MODELS_UD_MODELS_1_0 = "models/ud-models-1.0/";
 
-  public static final Map<String, Map<ModelType, String>> available_models = new HashMap<>();
+  public static final Map<String, Map<ModelType, String>> available_models;
 
   static {
-
-    final Map<ModelType, String> frenchModels = new HashMap<>();
-    frenchModels.put(ModelType.SENTENCE_DETECTOR,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-1.0-1.9.3fr-ud-ftb-sentence-1.0-1.9.3.bin");
-    frenchModels.put(ModelType.POS,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-fr-ud-ftb-pos-1.0-1.9.3.bin");
-    frenchModels.put(ModelType.TOKENIZER,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-fr-ud-ftb-tokens-1.0-1.9.3.bin");
-    available_models.put("fr", frenchModels);
-
-    final Map<ModelType, String> germanModels = new HashMap<>();
-    germanModels.put(ModelType.SENTENCE_DETECTOR,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-de-ud-gsd-sentence-1.0-1.9.3.bin");
-    germanModels.put(ModelType.POS,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-de-ud-gsd-pos-1.0-1.9.3.bin");
-    germanModels.put(ModelType.TOKENIZER,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-de-ud-gsd-tokens-1.0-1.9.3.bin");
-    available_models.put("de", germanModels);
-
-    final Map<ModelType, String> englishModels = new HashMap<>();
-    englishModels.put(ModelType.SENTENCE_DETECTOR,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-en-ud-ewt-sentence-1.0-1.9.3.bin");
-    englishModels.put(ModelType.POS,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-en-ud-ewt-pos-1.0-1.9.3.bin");
-    englishModels.put(ModelType.TOKENIZER,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin");
-    available_models.put("en", englishModels);
-
-    final Map<ModelType, String> italianModels = new HashMap<>();
-    italianModels.put(ModelType.SENTENCE_DETECTOR,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-it-ud-vit-sentence-1.0-1.9.3.bin");
-    italianModels.put(ModelType.POS,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-it-ud-vit-pos-1.0-1.9.3.bin");
-    italianModels.put(ModelType.TOKENIZER,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-it-ud-vit-tokens-1.0-1.9.3.bin");
-    available_models.put("it", italianModels);
-
-    final Map<ModelType, String> dutchModels = new HashMap<>();
-    dutchModels.put(ModelType.SENTENCE_DETECTOR,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-nl-ud-alpino-sentence-1.0-1.9.3.bin");
-    dutchModels.put(ModelType.POS,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-nl-ud-alpino-pos-1.0-1.9.3.bin");
-    dutchModels.put(ModelType.TOKENIZER,
-        BASE_URL + MODELS_UD_MODELS_1_0 + "opennlp-nl-ud-alpino-tokens-1.0-1.9.3.bin");
-    available_models.put("nl", dutchModels);
-
+    try {
+      available_models = new DownloadParser(new URL(BASE_URL + MODELS_UD_MODELS_1_0)).getAvailableModels();
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -174,4 +143,82 @@ public class DownloadUtil {
     }
   }
 
+  @Internal
+  static class DownloadParser {
+
+    private static final Pattern LINK_PATTERN = Pattern.compile("<a href=\\\"(.*?)\\\">(.*?)</a>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private final URL indexUrl;
+
+    DownloadParser(URL indexUrl) {
+      Objects.requireNonNull(indexUrl);
+      this.indexUrl = indexUrl;
+    }
+
+    Map<String, Map<ModelType, String>> getAvailableModels() {
+
+      final Matcher matcher = LINK_PATTERN.matcher(fetchPageIndex());
+
+      final List<String> links = new ArrayList<>();
+      while (matcher.find()) {
+        links.add(matcher.group(1));
+      }
+
+      return toMap(links);
+    }
+
+    private Map<String, Map<ModelType, String>> toMap(List<String> links) {
+
+      final Map<String, Map<ModelType, String>> result = new HashMap<>();
+
+      for (String link : links) {
+
+        if (link.endsWith(".bin")) {
+          if (link.contains("de-ud")) {
+            addModel("de", link, result);
+          } else if (link.contains("en-ud")) {
+            addModel("en", link, result);
+          } else if (link.contains("it-ud")) {
+            addModel("it", link, result);
+          } else if (link.contains("nl-ud")) {
+            addModel("nl", link, result);
+          } else if (link.contains("fr-ud")) {
+            addModel("fr", link, result);
+          }
+        }
+
+      }
+
+      return result;
+    }
+
+    private void addModel(String locale, String link, Map<String, Map<ModelType, String>> result) {
+      final Map<ModelType, String> models = result.getOrDefault(locale, new HashMap<>());
+      final String url = (indexUrl.toString().endsWith("/") ? indexUrl : indexUrl + "/") + link;
+
+      if (link.contains("sentence")) {
+        models.put(ModelType.SENTENCE_DETECTOR, url);
+      } else if (link.contains("tokens")) {
+        models.put(ModelType.TOKENIZER, url);
+      } else if (link.contains("pos")) {
+        models.put(ModelType.POS, url);
+      }
+
+      result.putIfAbsent(locale, models);
+    }
+
+    private String fetchPageIndex() {
+      final StringBuilder html = new StringBuilder();
+      try (BufferedReader br = new BufferedReader(
+          new InputStreamReader(indexUrl.openStream(), StandardCharsets.UTF_8))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+          html.append(line);
+        }
+      } catch (IOException e) {
+        System.err.println("Could not read page index from " + indexUrl);
+      }
+
+      return html.toString();
+    }
+  }
 }
