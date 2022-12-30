@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        java: [ 11 ]
+        java: [ 11, 17, 18, 19 ]
         experimental: [false]
 #        include:
 #          - java: 18-ea
