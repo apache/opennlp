@@ -50,7 +50,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
       System.out.println(getHelp());
     }
     else {
-      // TODO: Ask Mark if we can remove the type, the user knows upfront if he tries
+      // TODO: Ask Mark if we can remove the type, the user knows upfront if s/he tries
       // to link place names or company mentions ...
       String entityType = "location";
 

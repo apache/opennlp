@@ -24,6 +24,8 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.util.tracker.ServiceTracker;
 
+import opennlp.tools.commons.Internal;
+
 /**
  * OSGi bundle activator which can use an OSGi service as
  * an OpenNLP extension.
@@ -31,6 +33,7 @@ import org.osgi.util.tracker.ServiceTracker;
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
+@Internal
 public class OSGiExtensionLoader implements BundleActivator {
 
   private static OSGiExtensionLoader instance;

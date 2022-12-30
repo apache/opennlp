@@ -47,11 +47,12 @@ public class DoccatFineGrainedReportListener
   }
 
   // methods inherited from EvaluationMonitor
-
+  @Override
   public void misclassified(DocumentSample reference, DocumentSample prediction) {
     statsAdd(reference, prediction);
   }
 
+  @Override
   public void correctlyClassified(DocumentSample reference, DocumentSample prediction) {
     statsAdd(reference, prediction);
   }
@@ -60,6 +61,7 @@ public class DoccatFineGrainedReportListener
     getStats().add(reference.getText(), reference.getCategory(), prediction.getCategory());
   }
 
+  @Override
   public void writeReport() {
     printGeneralStatistics();
     printTagsErrorRank();

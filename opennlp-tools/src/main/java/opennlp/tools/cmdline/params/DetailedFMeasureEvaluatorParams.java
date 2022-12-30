@@ -19,13 +19,15 @@ package opennlp.tools.cmdline.params;
 
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.commons.Internal;
 
 
 /**
  * EvaluatorParams for Chunker.
- *
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public interface DetailedFMeasureEvaluatorParams {
 
   @ParameterDescription(valueName = "true|false",

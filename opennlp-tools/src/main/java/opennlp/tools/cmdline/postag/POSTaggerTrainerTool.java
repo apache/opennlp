@@ -47,10 +47,12 @@ public final class POSTaggerTrainerTool
     super(POSSample.class, TrainerToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "trains a model for the part-of-speech tagger";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

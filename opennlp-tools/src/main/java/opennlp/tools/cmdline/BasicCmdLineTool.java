@@ -17,11 +17,14 @@
 
 package opennlp.tools.cmdline;
 
+import opennlp.tools.commons.Internal;
+
 /**
  * A simple tool which can be executed from the command line.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public abstract class BasicCmdLineTool extends CmdLineTool {
 
   /**

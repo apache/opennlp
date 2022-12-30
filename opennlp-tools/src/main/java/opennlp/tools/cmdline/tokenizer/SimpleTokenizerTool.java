@@ -22,10 +22,12 @@ import opennlp.tools.cmdline.CLI;
 
 public final class SimpleTokenizerTool extends BasicCmdLineTool {
 
+  @Override
   public String getShortDescription() {
     return "character class tokenizer";
   }
 
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " < sentences";
   }
@@ -35,6 +37,7 @@ public final class SimpleTokenizerTool extends BasicCmdLineTool {
     return false;
   }
 
+  @Override
   public void run(String[] args) {
     if (args.length != 0) {
       System.out.println(getHelp());

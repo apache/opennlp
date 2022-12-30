@@ -42,10 +42,12 @@ public final class SentenceDetectorCrossValidatorTool
     super(SentenceSample.class, CVToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "K-fold cross validator for the learnable sentence detector";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

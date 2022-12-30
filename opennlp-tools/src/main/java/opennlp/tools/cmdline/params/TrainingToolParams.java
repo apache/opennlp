@@ -20,12 +20,14 @@ package opennlp.tools.cmdline.params;
 import java.io.File;
 
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.commons.Internal;
 
 /**
  * Common training parameters.
- *
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public interface TrainingToolParams extends BasicTrainingParams {
 
   @ParameterDescription(valueName = "modelFile", description = "output model file.")

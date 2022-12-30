@@ -105,6 +105,7 @@ public abstract class TypedCmdLineTool<T, P>
         ArgumentParser.createUsage(argProxyInterfaces);
   }
 
+  @Override
   public String getHelp() {
     return getHelp("");
   }

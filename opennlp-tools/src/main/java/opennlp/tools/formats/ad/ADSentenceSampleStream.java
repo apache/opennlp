@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.lang.Factory;
@@ -33,8 +34,10 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;

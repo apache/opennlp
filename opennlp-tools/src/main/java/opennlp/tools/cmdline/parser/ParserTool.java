@@ -45,10 +45,12 @@ import opennlp.tools.util.Span;
 
 public final class ParserTool extends BasicCmdLineTool {
 
+  @Override
   public String getShortDescription() {
     return "performs full syntactic parsing";
   }
 
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " [-bs n -ap n -k n -tk tok_model] model < sentences \n"
             + "-bs n: Use a beam size of n.\n"
@@ -58,8 +60,8 @@ public final class ParserTool extends BasicCmdLineTool {
             + "Defaults to a WhitespaceTokenizer.";
   }
 
-  private static Pattern untokenizedParenPattern1 = Pattern.compile("([^ ])([({)}])");
-  private static Pattern untokenizedParenPattern2 = Pattern.compile("([({)}])([^ ])");
+  private static final Pattern UNTOKENIZED_PAREN_PATTERN_1 = Pattern.compile("([^ ])([({)}])");
+  private static final Pattern UNTOKENIZED_PAREN_PATTERN_2 = Pattern.compile("([({)}])([^ ])");
 
   public static Parse[] parseLine(String line, Parser parser, int numParses) {
     return parseLine( line, parser, WhitespaceTokenizer.INSTANCE, numParses );
@@ -67,8 +69,8 @@ public final class ParserTool extends BasicCmdLineTool {
 
   public static Parse[] parseLine(String line, Parser parser, Tokenizer tokenizer, int numParses) {
     // fix some parens patterns
-    line = untokenizedParenPattern1.matcher(line).replaceAll("$1 $2");
-    line = untokenizedParenPattern2.matcher(line).replaceAll("$1 $2");
+    line = UNTOKENIZED_PAREN_PATTERN_1.matcher(line).replaceAll("$1 $2");
+    line = UNTOKENIZED_PAREN_PATTERN_2.matcher(line).replaceAll("$1 $2");
 
     // tokenize
     List<String> tokens = Arrays.asList( tokenizer.tokenize(line));
@@ -91,6 +93,7 @@ public final class ParserTool extends BasicCmdLineTool {
     return parses;
   }
 
+  @Override
   public void run(String[] args) {
 
     if (args.length < 1) {
@@ -128,7 +131,7 @@ public final class ParserTool extends BasicCmdLineTool {
 
       Parser parser = ParserFactory.create(model, beamSize, advancePercentage);
 
-      ObjectStream<String> lineStream = null;
+      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
       try {
         lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),

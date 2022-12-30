@@ -19,12 +19,14 @@ package opennlp.tools.cmdline.params;
 
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.commons.Internal;
 
 /**
  * Common cross validator parameters.
- *
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public interface CVParams {
 
   @ParameterDescription(valueName = "true|false",

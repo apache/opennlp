@@ -24,19 +24,22 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import opennlp.tools.commons.Internal;
+
 /**
  * The {@link PerformanceMonitor} measures increments to a counter.
  * During the computation it prints out current and average throughput
  * per second. After the computation is done it prints a final performance
  * report.
  * <p>
- * <b>Note:</b>
- * This class is not thread safe. <br>
- * Do not use this class, internal use only!
+ * <b>Note:</b> This class is not thread safe.
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public class PerformanceMonitor {
 
-  private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, runnable -> {
+  private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, runnable -> {
     Thread thread = new Thread(runnable);
     thread.setName("opennlp.tools.cmdline.PerformanceMonitor");
     thread.setDaemon(true);
@@ -99,6 +102,7 @@ public class PerformanceMonitor {
       private long lastTimeStamp = startTime;
       private int lastCount = counter;
 
+      @Override
       public void run() {
 
         int deltaCount = counter - lastCount;

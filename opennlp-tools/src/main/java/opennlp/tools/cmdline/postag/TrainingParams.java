@@ -22,12 +22,14 @@ import java.io.File;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.BasicTrainingParams;
+import opennlp.tools.commons.Internal;
 
 /**
  * TrainingParameters for Name Finder.
- *
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 interface TrainingParams extends BasicTrainingParams {
   @ParameterDescription(valueName = "featuregenFile", description = "The feature generator descriptor file")
   @OptionalParameter

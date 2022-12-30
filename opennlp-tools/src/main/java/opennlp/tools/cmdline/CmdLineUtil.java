@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
@@ -41,6 +42,7 @@ import opennlp.tools.util.model.BaseModel;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public final class CmdLineUtil {
 
   static final int IO_BUFFER_SIZE = 1024 * 1024;
@@ -90,10 +92,10 @@ public final class CmdLineUtil {
    * The method does nothing if it is possible to write otherwise
    * it prints an appropriate error message and a {@link TerminateToolException} is thrown.
    * <p>
-   * Computing the contents of an output file (e.g. ME model) can be very time consuming.
+   * Computing the contents of an output file (e.g. ME model) can be very time-consuming.
    * Prior to this computation it should be checked once that writing this output file is
-   * possible to be able to fail fast if not. If this validation is only done after a time
-   * consuming computation it could frustrate the user.
+   * possible to be able to fail fast if not. If this validation is only done after a
+   * time-consuming computation it could frustrate the user.
    *
    * @param name human-friendly file name. for example perceptron model
    * @param outFile file

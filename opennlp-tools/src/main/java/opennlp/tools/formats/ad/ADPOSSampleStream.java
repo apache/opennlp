@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
@@ -35,6 +36,7 @@ import opennlp.tools.util.PlainTextByLineStream;
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
+@Internal
 public class ADPOSSampleStream implements ObjectStream<POSSample> {
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;

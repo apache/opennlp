@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -35,6 +36,7 @@ import opennlp.tools.util.StringUtil;
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
+@Internal
 public class PortugueseContractionUtility {
 
   protected static final Map<String, String> CONTRACTIONS;

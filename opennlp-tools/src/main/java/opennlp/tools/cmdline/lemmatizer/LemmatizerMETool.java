@@ -39,10 +39,12 @@ public class LemmatizerMETool extends BasicCmdLineTool {
     return "learnable lemmatizer";
   }
 
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
+  @Override
   public void run(String[] args) {
     if (args.length != 1) {
       System.out.println(getHelp());

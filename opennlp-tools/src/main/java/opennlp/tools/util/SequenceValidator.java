@@ -32,7 +32,7 @@ public interface SequenceValidator<T> {
    * @param outcomesSequence The outcomes so far in this sequence.
    * @param outcome The next proposed outcome for the outcomes sequence.
    *
-   * @return {@link true} if the sequence would still be valid with the new outcome,
+   * @return {@code true} if the sequence would still be valid with the new outcome,
    *         {@code false} otherwise.
    */
   boolean validSequence(int i, T[] inputSequence, String[] outcomesSequence,

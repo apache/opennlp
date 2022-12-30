@@ -48,10 +48,12 @@ public final class LanguageDetectorCrossValidatorTool extends
     super(LanguageSample.class, CVToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "K-fold cross validator for the learnable Language Detector";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

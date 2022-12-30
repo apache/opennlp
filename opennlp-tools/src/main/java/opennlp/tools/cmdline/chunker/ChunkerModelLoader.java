@@ -22,12 +22,14 @@ import java.io.InputStream;
 
 import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.cmdline.ModelLoader;
+import opennlp.tools.commons.Internal;
 
 /**
- * Loads a Chunker Model for the command line tools.
+ * Loads a {@link ChunkerModel} for the command line tools.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public class ChunkerModelLoader extends ModelLoader<ChunkerModel> {
 
   public ChunkerModelLoader() {

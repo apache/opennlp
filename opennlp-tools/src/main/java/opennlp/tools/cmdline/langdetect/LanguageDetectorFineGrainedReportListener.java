@@ -27,7 +27,7 @@ import opennlp.tools.langdetect.LanguageSample;
  * Generates a detailed report for the POS Tagger.
  * <p>
  * It is possible to use it from an API and access the statistics using the
- * provided getters
+ * provided getters.
  */
 public class LanguageDetectorFineGrainedReportListener
     extends FineGrainedReportListener implements LanguageDetectorEvaluationMonitor {
@@ -48,10 +48,12 @@ public class LanguageDetectorFineGrainedReportListener
 
   // methods inherited from EvaluationMonitor
 
+  @Override
   public void misclassified(LanguageSample reference, LanguageSample prediction) {
     statsAdd(reference, prediction);
   }
 
+  @Override
   public void correctlyClassified(LanguageSample reference, LanguageSample prediction) {
     statsAdd(reference, prediction);
   }
@@ -61,6 +63,7 @@ public class LanguageDetectorFineGrainedReportListener
         reference.getLanguage().getLang(), prediction.getLanguage().getLang());
   }
 
+  @Override
   public void writeReport() {
     printGeneralStatistics();
     printTagsErrorRank();

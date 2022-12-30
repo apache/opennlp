@@ -44,10 +44,12 @@ public final class ChunkerCrossValidatorTool
     super(ChunkSample.class, CVToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "K-fold cross validator for the chunker";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

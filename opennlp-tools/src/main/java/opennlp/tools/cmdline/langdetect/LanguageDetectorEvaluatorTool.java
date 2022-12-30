@@ -49,10 +49,12 @@ public final class LanguageDetectorEvaluatorTool extends
     super(LanguageSample.class, EvalToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "Measures the performance of the Language Detector model with the reference data";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -87,15 +89,18 @@ public final class LanguageDetectorEvaluatorTool extends
 
     try (ObjectStream<LanguageSample> measuredSampleStream = new ObjectStream<LanguageSample>() {
 
+      @Override
       public LanguageSample read() throws IOException {
         monitor.incrementCounter();
         return sampleStream.read();
       }
 
+      @Override
       public void reset() throws IOException {
         sampleStream.reset();
       }
 
+      @Override
       public void close() throws IOException {
         sampleStream.close();
       }

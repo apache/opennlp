@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.GenericModelWriter;
@@ -145,8 +146,9 @@ public final class ModelUtil {
    * <b>Note:</b>
    * Do not use this method, internal use only!
    *
-   * @return training parameters instance
+   * @return The {@link TrainingParameters} instance with default configuration.
    */
+  @Internal
   public static TrainingParameters createDefaultTrainingParameters() {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
