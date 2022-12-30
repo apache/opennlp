@@ -147,4 +147,34 @@
 
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>jdk18+</id>
+      <activation>
+        <jdk>[18,]</jdk>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>${maven.surefire.plugin}</version>
+              <configuration>
+                <argLine>-Xmx2048m -Djava.security.manager=allow</argLine>
+                <forkCount>${opennlp.forkCount}</forkCount>
+                <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                <excludes>
+                  <exclude>**/stemmer/*</exclude>
+                  <exclude>**/stemmer/snowball/*</exclude>
+                  <exclude>**/*IT.java</exclude>
+                </excludes>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
 </project>
