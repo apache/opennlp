@@ -18,12 +18,15 @@
 package opennlp.tools.entitylinker;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
- * Stores a minimal tuple of information. Intended to be used with LinkedSpan
+ * Represents a minimal tuple of information.
+ * Intended to be used with {@link LinkedSpan}.
  *
- *
+ * @see EntityLinker
+ * @see LinkedSpan
  */
 public abstract class BaseLink {
 
@@ -31,10 +34,7 @@ public abstract class BaseLink {
   private String itemID;
   private String itemName;
   private String itemType;
-  private HashMap<String, Double> scoreMap = new HashMap<>();
-
-  public BaseLink() {
-  }
+  private Map<String, Double> scoreMap = new HashMap<>();
 
   public BaseLink(String itemParentID, String itemID, String itemName, String itemType) {
     this.itemParentID = itemParentID;
@@ -43,84 +43,59 @@ public abstract class BaseLink {
     this.itemType = itemType;
   }
 
-  /**
-   * Any parent ID for the linked item
-   * @return
-   */
   public String getItemParentID() {
     return itemParentID;
   }
 
   /**
-   * returns the parent ID of the linked item
-   * @param itemParentID
+   * @param itemParentID The parent ID of the linked item
    */
   public void setItemParentID(String itemParentID) {
     this.itemParentID = itemParentID;
   }
 
-  /**
-   * returns the itemid
-   *
-   * @return
-   */
   public String getItemID() {
     return itemID;
   }
 
   /**
-   * sets the item id. This field can store, for example, the primary key of a
-   * row in an external/linked database
-   *
-   * @param itemID
+   * @param itemID This field can store, for example, the primary key of
+   *               a now in an external/linked data source.
    */
   public void setItemID(String itemID) {
     this.itemID = itemID;
   }
 
-  /**
-   * returns the name
-   *
-   * @return
-   */
   public String getItemName() {
     return itemName;
   }
 
   /**
-   * Sets the item name. An item name can be the native name (often a normalized
-   * version of something) from an external linked database
-   *
-   * @param itemName
+   * @param itemName An item name can be the native name (often a normalized
+   *                 version of something) from an external linked data source.
    */
   public void setItemName(String itemName) {
     this.itemName = itemName;
   }
 
-  /**
-   * returns the type
-   *
-   * @return
-   */
   public String getItemType() {
     return itemType;
   }
 
   /**
-   * sets the item type. An item type can be the native type from an external
-   * linked database. For instance, a product type or code
    *
-   * @param itemType
+   * @param itemType An item type can be the native type from an external
+   *                 linked database. For instance, a product type or code.
    */
   public void setItemType(String itemType) {
     this.itemType = itemType;
   }
 
-  public HashMap<String, Double> getScoreMap() {
+  public Map<String, Double> getScoreMap() {
     return scoreMap;
   }
 
-  public void setScoreMap(HashMap<String, Double> scoreMap) {
+  public void setScoreMap(Map<String, Double> scoreMap) {
     this.scoreMap = scoreMap;
   }
 

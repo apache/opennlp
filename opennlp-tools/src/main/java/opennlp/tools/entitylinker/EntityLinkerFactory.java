@@ -23,23 +23,30 @@ import java.util.Objects;
 import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
- * Generates an EntityLinker implementation via properties file configuration
- *
+ * Generates a {@link EntityLinker} instances via a {@code properties} file configuration.
+ * <p>
+ * In the properties file, the linker implementation must be
+ * provided using {@code "linker"} as the properties key, and the
+ * full class name as value.
  */
 public class EntityLinkerFactory {
 
   /**
-   *
+   * Retrieves a {@link EntityLinker} instance matching the {@code properties} configuration.
    *
    * @param entityType The type of entity being linked to. This value is used to
-   *                   retrieve the implementation of the entitylinker from the
-   *                   entitylinker properties file.
-   * @param properties An object that extends EntityLinkerProperties. This
-   *                   object will be passed into the implemented EntityLinker
-   *                   init(..) method, so it is an appropriate place to put
-   *                   additional resources.
-   * @return an EntityLinker impl
-   * @throws java.io.IOException
+   *                   retrieve the implementation of the {@link EntityLinker} from the
+   *                   {@link EntityLinker} properties file.
+   *                   Must not be {@code null}.
+   * @param properties An object that extends {@link EntityLinkerProperties}.
+   *                   This object will be passed into the
+   *                   {@link EntityLinker#init(EntityLinkerProperties)} method,
+   *                   so it is an appropriate place to put additional resources.
+   *                   Must not be {@code null}.
+   *
+   * @return The {@link EntityLinker} instance for the {@code properties} configuration.
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public static synchronized EntityLinker<?> getLinker(String entityType, EntityLinkerProperties properties)
       throws IOException {
@@ -59,17 +66,17 @@ public class EntityLinkerFactory {
   }
 
   /**
+   * Retrieves a {@link EntityLinker} instance matching the {@code properties} configuration.
    *
+   * @param properties An object that extends {@link EntityLinkerProperties}.
+   *                   This object will be passed into the
+   *                   {@link EntityLinker#init(EntityLinkerProperties)} method,
+   *                   so it is an appropriate place to put additional resources.
+   *                   Must not be {@code null}.
    *
-   *
-   * @param properties An object that extends EntityLinkerProperties. This
-   *                   object will be passed into the implemented EntityLinker
-   *                   init(..) method, so it is an appropriate place to put
-   *                   additional resources. In the properties file, the linker implementation must be
-   *                   provided using "linker" as the properties key, and the
-   *                   full class name as value
-   * @return an EntityLinker impl
-   * @throws java.io.IOException
+   * @return The {@link EntityLinker} instance for the {@code properties} configuration.
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public static synchronized EntityLinker<?> getLinker(EntityLinkerProperties properties) throws IOException {
     Objects.requireNonNull(properties, "properties argument must not be null");

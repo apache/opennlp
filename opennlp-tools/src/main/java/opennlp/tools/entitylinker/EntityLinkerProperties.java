@@ -24,18 +24,21 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Properties wrapper for the EntityLinker framework
+ * Properties wrapper for {@link EntityLinker} implementations.
  *
+ * @see EntityLinkerFactory
  */
 public class EntityLinkerProperties {
 
   private Properties props;
 
   /**
-   * Constructor takes location of properties file as arg
+   * Initializes {@link EntityLinkerProperties} via a {@link File} reference.
    *
-   * @param propertiesfile the properties file
-   * @throws IOException
+   * @param propertiesfile The {@link File} that references the {@code *.properties}
+   *                       configuration.
+   *
+   * @throws IOException Thrown if IO errors occurred.
    */
   public EntityLinkerProperties(File propertiesfile) throws IOException {
     try (InputStream stream = new FileInputStream(propertiesfile)) {
@@ -44,11 +47,12 @@ public class EntityLinkerProperties {
   }
 
   /**
+   * Initializes {@link EntityLinkerProperties} via a {@link InputStream} reference.
    *
-   * @param propertiesIn inputstream of properties file. Stream will not be
-   *                       closed
-   * @throws IOException
+   * @param propertiesIn The {@link InputStream} that references the {@code *.properties}
+   *                     configuration.
    *
+   * @throws IOException Thrown if IO errors occurred.
    */
   public EntityLinkerProperties(InputStream propertiesIn) throws IOException {
     init(propertiesIn);
@@ -60,15 +64,15 @@ public class EntityLinkerProperties {
   }
 
   /**
-   * Gets a property from the props file.
+   * Retrieves a property value for a given {@code key}.
    *
-   * @param key          the key to the desired item in the properties file
-   *                     (key=value)
-   * @param defaultValue a default value in case the key, or the value are
+   * @param key          The key to the desired item in the properties configuration
+   *                     {@code key=value}
+   * @param defaultValue A default value in case the {@code key}, or the value are
    *                     missing
-   * @return a property value in the form of a string
+   * @return A property value as a {@link String}.
 
-   * @throws IOException when the  properties object was somehow not initialized properly
+   * @throws IOException Thrown if the properties object was not initialized properly.
    */
   public String getProperty(String key, String defaultValue) throws IOException {
 
