@@ -17,8 +17,8 @@
 
 package opennlp.morfologik.builder;
 
+import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -41,9 +41,10 @@ public class MorfologikDictionaryBuilderTest extends AbstractMorfologikTest {
     //  file with same name, but .info extension
 
     // this will build a binary dictionary located in compiledLemmaDictionary
-    Path compiledLemmaDictionary = new MorfologikDictionaryBuilder().build(
-        Paths.get(getResource("/dictionaryWithLemma.txt").getPath()));
 
+    final Path rawLemmaDictionary =
+        new File(getResource("/dictionaryWithLemma.txt").getFile()).toPath();
+    Path compiledLemmaDictionary = new MorfologikDictionaryBuilder().build(rawLemmaDictionary);
     // Part 2: load a MorfologikLemmatizer and use it
     MorfologikLemmatizer lemmatizer = new MorfologikLemmatizer(compiledLemmaDictionary);
 
