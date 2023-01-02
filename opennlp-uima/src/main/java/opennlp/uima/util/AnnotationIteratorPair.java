@@ -20,7 +20,8 @@ package opennlp.uima.util;
 import org.apache.uima.cas.text.AnnotationFS;
 
 /**
- * A pair of a UIMA annotation and an annotation iterator.
+ * A pair of a {@link AnnotationFS UIMA annotation} and an
+ * {@link Iterable<AnnotationFS> annotation iterator}.
  */
 public final class AnnotationIteratorPair {
   private final AnnotationFS annot;
@@ -32,10 +33,16 @@ public final class AnnotationIteratorPair {
     this.it = it;
   }
 
+  /**
+   * @return Retrieves the {@link AnnotationFS}.
+   */
   public AnnotationFS getAnnotation() {
     return this.annot;
   }
 
+  /**
+   * @return Retrieves the {@link Iterable<AnnotationFS> sub-iterator}.
+   */
   public Iterable<AnnotationFS> getSubIterator() {
     return this.it;
   }

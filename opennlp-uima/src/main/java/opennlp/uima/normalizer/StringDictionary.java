@@ -29,19 +29,18 @@ import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.StringList;
 
-// lookup a string for given token list
 public class StringDictionary {
 
-  private Map<StringList, String> entries = new HashMap<>();
+  private final Map<StringList, String> entries = new HashMap<>();
 
   public StringDictionary() {
   }
 
   /**
-   * Initializes the current instance.
+   * Initializes {@link StringDictionary} via a specified {@link InputStream}.
    *
-   * @param in
-   * @throws IOException
+   * @param in A valid, open {@link InputStream} to initialize with.
+   * @throws IOException Thrown if IO errors occurred.
    */
   public StringDictionary(InputStream in) throws IOException {
     DictionaryEntryPersistor.create(in, entry -> {
@@ -51,17 +50,21 @@ public class StringDictionary {
   }
 
   /**
-   * Returns a corresponding String value from hash map.
-   * @param key key to get value with
+   * Retrieves a value from a dictionary via its {@code key}.
+   * 
+   * @param key The {@link StringList key} to get value with.
+   *            
+   * @return Retrieves a corresponding String value or {@code null} if not found.
    */
   public String get(StringList key) {
     return entries.get(key);
   }
 
   /**
-   * Adds a new entry to hash map.
-   * @param key key to put
-   * @param value value to put
+   * Adds a new entry to the dictionary.
+   *
+   * @param key The {@link StringList key} under which to put the {@code value}.
+   * @param value The value to put.
    */
   public void put(StringList key, String value) {
     entries.put(key, value);
@@ -72,20 +75,22 @@ public class StringDictionary {
   }
 
   /**
-   * Writes the ngram instance to the given {@link OutputStream}.
+   * Writes the dictionary to the given {@link OutputStream}.
    *
-   * @param out
-   * @throws IOException
-   *           if an I/O Error during writing occures
+   * @param out A valid, open {@link OutputStream} to serialize to.
+   *            
+   * @throws IOException Thrown if IO errors occurred during serialization.
    */
   public void serialize(OutputStream out) throws IOException {
-    Iterator<Entry> entryIterator = new Iterator<Entry>() {
-      private Iterator<StringList> mDictionaryIterator = StringDictionary.this.iterator();
+    Iterator<Entry> entryIterator = new Iterator<>() {
+      private final Iterator<StringList> mDictionaryIterator = StringDictionary.this.iterator();
 
+      @Override
       public boolean hasNext() {
         return mDictionaryIterator.hasNext();
       }
 
+      @Override
       public Entry next() {
 
         StringList tokens = mDictionaryIterator.next();
@@ -97,6 +102,7 @@ public class StringDictionary {
         return new Entry(tokens, attributes);
       }
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException();
       }

@@ -86,9 +86,9 @@ public final class UimaUtil {
    * Removes all annotations of type removeAnnotationType which are contained
    * by annotations of type containerAnnotationType.
    *
-   * @param cas
-   * @param containerAnnotation
-   * @param removeAnnotationType
+   * @param cas The {@link CAS} to use.
+   * @param containerAnnotation The {@link AnnotationFS} of the container.
+   * @param removeAnnotationType The {@link Type type} to remove annotations for.
    */
   public static void removeAnnotations(CAS cas,
       AnnotationFS containerAnnotation, Type removeAnnotationType) {
@@ -108,8 +108,8 @@ public final class UimaUtil {
       removeAnnotations.add(containingTokens.next());
     }
 
-    for (Iterator<AnnotationFS> it = removeAnnotations.iterator(); it.hasNext();) {
-      cas.removeFsFromIndexes(it.next());
+    for (AnnotationFS removeAnnotation : removeAnnotations) {
+      cas.removeFsFromIndexes(removeAnnotation);
     }
   }
 }

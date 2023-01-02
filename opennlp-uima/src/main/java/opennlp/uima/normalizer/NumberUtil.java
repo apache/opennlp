@@ -22,15 +22,14 @@ import java.text.ParseException;
 import java.util.Locale;
 
 /**
- * This class contains methods to parse numbers which occur
- * in natural language texts.
+ * Provides methods to parse numbers which occur in natural language texts.
  */
 public final class NumberUtil {
 
   /**
    * Checks if the language is supported.
    *
-   * @param languageCode language code, e.g. "en", "pt"
+   * @param languageCode A ISO conform language code, e.g. "en", "pt"
    * @return true if the language is supported
    */
   public static boolean isLanguageSupported(String languageCode) {
@@ -41,7 +40,7 @@ public final class NumberUtil {
     boolean isLocaleSupported = false;
 
     for (Locale possibleLocale : possibleLocales) {
-      // search if local is contained
+      // search if locale is contained
       if (possibleLocale.equals(locale)) {
         isLocaleSupported = true;
         break;
@@ -52,31 +51,36 @@ public final class NumberUtil {
   }
 
   /**
-   * Removes trailing and containing space.
+   * Removes a character from given string {@code s}.
+   *
+   * @param s The string to process.
+   * @param remove The {@link Character} to remove from {@code s}.
    */
-  private static String removeChar(String string, char remove) {
+  private static String removeChar(String s, char remove) {
 
     StringBuilder result = new StringBuilder();
 
     int lastPosition = 0;
-    int position = 0;
-    while ((position = string.indexOf(remove, lastPosition)) != -1) {
-      result.append(string.substring(lastPosition, position));
+    int position;
+    while ((position = s.indexOf(remove, lastPosition)) != -1) {
+      result.append(s.substring(lastPosition, position));
       lastPosition = position + 1;
     }
 
-    result.append(string.substring(lastPosition, string.length()));
+    result.append(s.substring(lastPosition, s.length()));
 
     return result.toString();
   }
 
   /**
-   * Gives its best to parse the provided number.
+   * Parses a specified {@link String number} for a certain {@code languageCode}.
    *
-   * @param number number to parse
-   * @param languageCode language code, e.g. "en", "pt"
-   * @return parsed number
-   * @throws ParseException ParseException
+   * @param number The suspected number to parse.
+   * @param languageCode A ISO conform language code, e.g. "en", "pt"
+   *                     
+   * @return The parsed {@link Number}.
+   * @throws ParseException Thrown if errors occurred during parsing.
+   * @throws IllegalArgumentException Thrown if the {@code languageCode} is not supported.
    */
   public static Number parse(String number, String languageCode)
       throws ParseException {

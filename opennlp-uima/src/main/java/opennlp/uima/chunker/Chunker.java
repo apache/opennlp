@@ -81,15 +81,13 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
   private UimaContext context;
 
-  private Logger mLogger;
-
   private Feature mChunkFeature;
 
   /**
    * Initializes a new instance.
    * <p>
    * Note: Use {@link #initialize(UimaContext) } to initialize
-   * this instance. Not use the constructor.
+   * this instance. Don't use the constructor.
    */
   public Chunker() {
     // must not be implemented !
@@ -107,7 +105,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
     this.context = context;
 
-    mLogger = context.getLogger();
+    Logger mLogger = context.getLogger();
 
     if (mLogger.isLoggable(Level.INFO)) {
       mLogger.log(Level.INFO, "Initializing the OpenNLP Chunker annotator.");
@@ -161,8 +159,11 @@ public final class Chunker extends CasAnnotator_ImplBase {
   }
 
   /**
-   * Performs chunking on the given tcas object.
+   * Performs chunking on the given {@code tcas} object.
+   *
+   * @param tcas The {@link CAS} object to process.
    */
+  @Override
   public void process(CAS tcas) {
 
     FSIndex<AnnotationFS> tokenAnnotationIndex = tcas.getAnnotationIndex(mTokenType);
@@ -223,6 +224,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
   /**
    * Releases allocated resources.
    */
+  @Override
   public void destroy() {
     // dereference model to allow garbage collection
     mChunker = null;

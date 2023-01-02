@@ -26,6 +26,7 @@ import opennlp.uima.util.AbstractModelResource;
 public class DoccatModelResourceImpl extends AbstractModelResource<DoccatModel>
     implements DoccatModelResource {
 
+  @Override
   public DoccatModel getModel() {
     return model;
   }

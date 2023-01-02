@@ -42,6 +42,12 @@
 		</repository>
 	</repositories>
 
+	<properties>
+		<!--This property should be aligned with the version UIMA uses-->
+		<slf4j.version>1.7.36</slf4j.version>
+	</properties>
+
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.opennlp</groupId>
@@ -71,6 +77,13 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

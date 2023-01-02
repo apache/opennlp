@@ -24,12 +24,20 @@ import org.apache.uima.resource.DataResource;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.SharedResourceObject;
 
+/**
+ * Base class provides access to a shared {@link T resource}, eg. a model or dictionary.
+ *
+ * @param <T> The generic type to handle as a shared resource.
+ *
+ * @see SharedResourceObject
+ */
 public abstract class AbstractModelResource<T> implements SharedResourceObject {
 
   protected T model;
 
   protected abstract T loadModel(InputStream in) throws IOException;
 
+  @Override
   public void load(DataResource resource) throws ResourceInitializationException {
     try {
       model = loadModel(resource.getInputStream());

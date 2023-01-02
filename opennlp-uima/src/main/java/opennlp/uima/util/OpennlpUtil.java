@@ -29,24 +29,25 @@ import java.io.OutputStream;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import opennlp.tools.ml.TrainerFactory;
-import opennlp.tools.ml.maxent.GISModel;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 
 /**
- * This class contains utils methods for the maxent library.
+ * This class contains util methods for the maxent library.
  */
 final public class OpennlpUtil {
+  
   private OpennlpUtil() {
     // this is util class must not be instantiated
   }
 
   /**
-   * Serializes a {@link GISModel} and writes it to the given
-   * {@link OutputStream}.
+   * Serializes a {@link BaseModel GIS model} and writes it to the given
+   * {@link File}.
    *
-   * @param model model to serialize
-   * @throws IOException IOException
+   * @param model The {@link BaseModel} to serialize.
+   * @param modelFile The {@link File} to serialize into.
+   * @throws IOException Thrown if IO errors occurred.
    */
   public static void serialize(BaseModel model, File modelFile)
       throws IOException {
@@ -56,6 +57,13 @@ final public class OpennlpUtil {
     }
   }
 
+  /**
+   * Loads data from a given {@link File}.
+   *
+   * @param inFile The {@link File} to read bytes from.
+   * @return The bytes that have been read.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public static byte[] loadBytes(File inFile) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
@@ -71,6 +79,17 @@ final public class OpennlpUtil {
     return bytes.toByteArray();
   }
 
+  /**
+   * Loads data from a given {@link File}.
+   *
+   * @param inFileValue The name of the {@link File} to read bytes from.
+   * @param isSequenceTrainingAllowed Whether the {@link TrainerFactory.TrainerType#SEQUENCE_TRAINER}
+   *                                  method is allowed or not.
+   * @return The {@link TrainingParameters} that have been read.
+   *
+   * @throws ResourceInitializationException Thrown if IO errors occurred or the {@code inFileValue}
+   *                                         does not reference a valid trainging parameters file.
+   */
   public static TrainingParameters loadTrainingParams(String inFileValue,
       boolean isSequenceTrainingAllowed) throws ResourceInitializationException {
 
