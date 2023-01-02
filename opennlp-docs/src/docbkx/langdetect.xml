@@ -27,7 +27,7 @@ under the License.
 		<title>Classifying</title>
 		<para>
 		The OpenNLP Language Detector classifies a document in ISO-639-3 languages according to the model capabilities.
-		A model can be trained with Maxent, Perceptron or Naive Bayes algorithms. By default normalizes a text and
+		A model can be trained with Maxent, Perceptron or Naive Bayes algorithms. By default, normalizes a text and
 			the context generator extracts n-grams of size 1, 2 and 3. The n-gram sizes, the normalization and the
 			context generator can be customized by extending the LanguageDetectorFactory.
 
@@ -57,7 +57,7 @@ under the License.
 						</row>
 						<row>
 							<entry>TwitterCharSequenceNormalizer</entry>
-							<entry>Replaces hashtags and Twitter user names by blank spaces.</entry>
+							<entry>Replaces hashtags and Twitter usernames by blank spaces.</entry>
 						</row>
 						<row>
 							<entry>NumberCharSequenceNormalizer</entry>
@@ -160,8 +160,8 @@ $ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params params
 		<section id="tools.langdetect.training.leipzig">
 			<title>Training with Leipzig</title>
 			<para>
-				The Leipzig Corpora collection presents corpora in different languages. The corpora is a collection
-				of individual sentences collected from the web and newspapers. The Corpora is available as plain text
+				The Leipzig Corpora collection presents corpora in different languages. The corpora are a collection
+				of individual sentences collected from the web and newspapers. The Corpora are available as plain text
 				and as MySQL database tables. The OpenNLP integration can only use the plain text version.
 				The	individual plain text packages can be downloaded here:
 				<ulink url="https://wortschatz.uni-leipzig.de/en/download">https://wortschatz.uni-leipzig.de/en/download</ulink>
@@ -184,7 +184,7 @@ $ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFi
 			<para>
 				The following sequence of commands shows how to convert the Leipzig Corpora collection at folder
 				leipzig-train/ to the default Language Detector format, by creating groups of 5 sentences as documents
-				and limiting to 10000 documents per language. Them, it shuffles the result and select the first
+				and limiting to 10000 documents per language. Then, it shuffles the result and select the first
 				100000 lines as train corpus and the last 20000 as evaluation corpus:
 				<screen>
 					<![CDATA[

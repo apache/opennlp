@@ -32,7 +32,7 @@ under the License.
 		marks the end of a sentence or not. In this sense a sentence is defined 
 		as the longest white space trimmed character sequence between two punctuation
 		marks. The first and last sentence make an exception to this rule. The first 
-		non whitespace character is assumed to be the begin of a sentence, and the 
+		non whitespace character is assumed to be the start of a sentence, and the
 		last non whitespace character is assumed to be a sentence end.
 		The sample text below should be segmented into its sentences.
 		<screen>
@@ -50,7 +50,7 @@ Mr. Vinken is chairman of Elsevier N.V., the Dutch publishing group.
 Rudolph Agnew, 55 years old and former chairman of Consolidated Gold Fields PLC,
     was named a director of this British industrial conglomerate.]]>
 		</screen>
-		Usually Sentence Detection is done before the text is tokenized and that's the way the pre-trained models on the web site are trained,
+		Usually Sentence Detection is done before the text is tokenized and that's the way the pre-trained models on the website are trained,
 		but it is also possible to perform tokenization first and let the Sentence Detector process the already tokenized text.
 		The OpenNLP Sentence Detector cannot identify sentence boundaries based on the contents of the sentence. A prominent example is the first sentence in an article where the title is mistakenly identified to be the first part of the first sentence.
 		Most components in OpenNLP expect input which is segmented into sentences.
@@ -117,7 +117,7 @@ Span sentences[] = sentenceDetector.sentPosDetect("  First sentence. Second sent
 		OpenNLP has a command line tool which is used to train the models available from the model
 		download page on various corpora. The data must be converted to the OpenNLP Sentence Detector
 		training format. Which is one sentence per line. An empty line indicates a document boundary.
-		In case the document boundary is unknown, its recommended to have an empty line every few ten
+		In case the document boundary is unknown, it's recommended to have an empty line every few ten
 		sentences. Exactly like the output in the sample above.
 		Usage of the tool:
 		<screen>

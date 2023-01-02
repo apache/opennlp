@@ -150,7 +150,7 @@ Sequence topSequences[] = chunk.topKSequences(sent, pos);]]>
 		</para>
 		<para>
 		The training data can be converted to the OpenNLP chunker training format,
-		which is based on <ulink url="http://www.cnts.ua.ac.be/conll2000/chunking">CoNLL2000</ulink>.
+		which is based on <ulink url="https://www.cnts.ua.ac.be/conll2000/chunking">CoNLL2000</ulink>.
         Other formats may also be available.
 		The training data consist of three columns separated one single space. Each word has been put on a
 		separate line and there is an empty line after each sentence. The first column contains

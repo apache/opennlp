@@ -30,27 +30,27 @@
 			<itemizedlist mark='opencircle'>
 				<listitem>
 					<para>
-					The <code>MorfologikPOSTaggerFactory</code> extends <code>POSTaggerFactory</code>, which helps creating a POSTagger model with an embedded FSA TagDictionary.
+					The <code>MorfologikPOSTaggerFactory</code> extends <code>POSTaggerFactory</code>, which helps create a POSTagger model with an embedded FSA TagDictionary.
 					</para>
 				</listitem>
 				<listitem>
 					<para>
-					The <code>MorfologikTagDictionary</code> implements a FSA based <code>TagDictionary</code>, allowing for much smaller files than the default XML based with improved memory consumption.
+					The <code>MorfologikTagDictionary</code> implements an FSA based <code>TagDictionary</code>, allowing for much smaller files than the default XML based with improved memory consumption.
 					</para>
 				</listitem>
 				<listitem>
 					<para>
-					The <code>MorfologikLemmatizer</code> implements a FSA based <code>Lemmatizer</code> dictionaries.
+					The <code>MorfologikLemmatizer</code> implements an FSA based <code>Lemmatizer</code> dictionaries.
 					</para>
 				</listitem>
 			</itemizedlist>
 		</para>
 		<para>
-		The first two implementations can be used directly from command line, as in the example bellow. Having a FSA Morfologik dictionary (see next section how to build one), you can train a POS Tagger
+		The first two implementations can be used directly from command line, as in the example bellow. Having an FSA Morfologik dictionary (see next section how to build one), you can train a POS Tagger
 		model with an embedded FSA dictionary. 
 		</para>
 		<para>
-		The example trains a POSTagger with a CONLL corpus named <code>portuguese_bosque_train.conll</code> and a FSA dictionary named 
+		The example trains a POSTagger with a CONLL corpus named <code>portuguese_bosque_train.conll</code> and an FSA dictionary named
 		<code>pt-morfologik.dict</code>. It will output a model named <code>pos-pt_fsadic.model</code>.
 		
 		<screen>
@@ -109,7 +109,7 @@ fsa.dict.encoder=prefix
 		
 				<programlisting language="java">
 		<![CDATA[
-// Part 1: compile a FSA lemma dictionary 
+// Part 1: compile an FSA lemma dictionary
    
 // we need the tabular dictionary. It is mandatory to have info 
 //  file with same name, but .info extension

@@ -144,13 +144,13 @@ F-Measure: 0.9230575441395671]]>
 		<title>Getting the data</title>
 		<para>The data consists of three files per language: one training file and two test files testa and testb.
 		The first test file will be used in the development phase for finding good parameters for the learning system.
-		The second test file will be used for the final evaluation. Currently there are data files available for two languages:
+		The second test file will be used for the final evaluation. Currently, there are data files available for two languages:
 		Spanish and Dutch.
 		</para>
 		<para>
 		The Spanish data is a collection of news wire articles made available by the Spanish EFE News Agency. The articles are
-		from May 2000. The annotation was carried out by the <ulink url="http://www.talp.cat/">TALP Research Center</ulink> of the Technical University of Catalonia (UPC)
-		and the <ulink url="http://clic.ub.edu/">Center of Language and Computation (CLiC)</ulink>of the University of Barcelona (UB), and funded by the European Commission
+		from May 2000. The annotation was carried out by the <ulink url="https://www.talp.cat/">TALP Research Center</ulink> of the Technical University of Catalonia (UPC)
+		and the <ulink url="https://web.archive.org/web/20220516042208/http://clic.ub.edu/">Center of Language and Computation (CLiC)</ulink>of the University of Barcelona (UB), and funded by the European Commission
 		through the NAMIC project (IST-1999-12392). 
 		</para>
 		<para>
@@ -159,12 +159,12 @@ F-Measure: 0.9230575441395671]]>
 		</para>
 		<para>
 		You can find the Spanish files here: 
-		<ulink url="http://www.lsi.upc.edu/~nlp/tools/nerc/nerc.html">http://www.lsi.upc.edu/~nlp/tools/nerc/nerc.html</ulink>
+		<ulink url="https://www.lsi.upc.edu/~nlp/tools/nerc/nerc.html">https://www.lsi.upc.edu/~nlp/tools/nerc/nerc.html</ulink>
 		You must download esp.train.gz, unzip it and you will see the file esp.train.
 		</para>
 		<para>
 		You can find the Dutch files here: 
-		<ulink url="http://www.cnts.ua.ac.be/conll2002/ner.tgz">http://www.cnts.ua.ac.be/conll2002/ner.tgz</ulink>
+		<ulink url="https://www.cnts.ua.ac.be/conll2002/ner.tgz">https://www.cnts.ua.ac.be/conll2002/ner.tgz</ulink>
 		You must unzip it and go to /ner/data/ned.train.gz, so you unzip it too, and you will see the file ned.train.
 		</para>
 		</section>
@@ -260,7 +260,7 @@ path: .\es_ner_person.bin]]>
 		<para>
 		The English data is the Reuters Corpus, which is a collection of news wire articles.
 		The Reuters Corpus can be obtained free of charges from the NIST for research
-		purposes: <ulink url="http://trec.nist.gov/data/reuters/reuters.html">http://trec.nist.gov/data/reuters/reuters.html</ulink>
+		purposes: <ulink url="https://trec.nist.gov/data/reuters/reuters.html">https://trec.nist.gov/data/reuters/reuters.html</ulink>
 		</para>
 		<para>
 		The German data is a collection of articles from the German newspaper Frankfurter
@@ -387,16 +387,16 @@ F-Measure: 0.8267557582133971]]>
 	<section id="tools.corpora.arvores-deitadas">
 		<title>Arvores Deitadas</title>
 		<para>
-		The Portuguese corpora available at <ulink url="http://www.linguateca.pt">Floresta Sintá(c)tica</ulink> project follow the Arvores Deitadas (AD) format. Apache OpenNLP includes tools to convert from AD format to native format.  
+		The Portuguese corpora available at <ulink url="https://www.linguateca.pt">Floresta Sintá(c)tica</ulink> project follow the Arvores Deitadas (AD) format. Apache OpenNLP includes tools to convert from AD format to native format.
 		</para>		
 		<section id="tools.corpora.arvores-deitadas.getting">
 			<title>Getting the data</title>
 			<para>
-			The Corpus can be downloaded from here: <ulink url="http://www.linguateca.pt/floresta/corpus.html">http://www.linguateca.pt/floresta/corpus.html</ulink>
+			The Corpus can be downloaded from here: <ulink url="https://www.linguateca.pt/floresta/corpus.html">https://www.linguateca.pt/floresta/corpus.html</ulink>
 			</para>
 			<para>
-			The Name Finder models were trained using the Amazonia corpus: <ulink url="http://www.linguateca.pt/floresta/ficheiros/gz/amazonia.ad.gz">amazonia.ad</ulink>.
-			The Chunker models were trained using the <ulink url="http://www.linguateca.pt/floresta/ficheiros/gz/Bosque_CF_8.0.ad.txt.gz">Bosque_CF_8.0.ad</ulink>.
+			The Name Finder models were trained using the Amazonia corpus: <ulink url="https://www.linguateca.pt/floresta/ficheiros/gz/amazonia.ad.gz">amazonia.ad</ulink>.
+			The Chunker models were trained using the <ulink url="https://www.linguateca.pt/floresta/ficheiros/gz/Bosque_CF_8.0.ad.txt.gz">Bosque_CF_8.0.ad</ulink>.
 			</para>
 		</section>
 		
@@ -474,15 +474,15 @@ F-Measure: 0.7717879983140168]]>
 		Penn Treebank for syntax and the Penn PropBank for predicate-argument
 		structure. Its semantic representation will include word sense
 		disambiguation for nouns and verbs, with each word sense connected to
-		an ontology, and coreference. The current goals call for annotation of
+		an ontology, and co-reference. The current goals call for annotation of
 		over a million words each of English and Chinese, and half a million
-		words of Arabic over five years." (http://catalog.ldc.upenn.edu/LDC2011T03)
+		words of Arabic over five years." (https://catalog.ldc.upenn.edu/LDC2011T03)
 	</para>
 		<section id="tools.corpora.ontonotes.namefinder">
 		<title>Name Finder Training</title>
 	<para>
 		The OntoNotes corpus can be used to train the Name Finder. The corpus
-		contains many different name types
+		contains different name types
 		to train a model for a specific type only the built-in type filter
 		option should be used.
 	</para>
@@ -535,11 +535,11 @@ path: /dev/opennlp/trunk/opennlp-tools/en-ontonotes.bin]]>
 			OpenNLP can directly be trained and evaluated on labeled data in the brat format.
 			Instructions on how to use, download and install brat can be found on the project website:
 
-			<ulink url="http://brat.nlplab.org">http://brat.nlplab.org</ulink>
+			<ulink url="https://brat.nlplab.org">https://brat.nlplab.org</ulink>
 
 			Configuration of brat, including setting up the different entities and relations can be found at:
 
-			<ulink url="http://brat.nlplab.org/configuration.html">http://brat.nlplab.org/configuration.html</ulink>
+			<ulink url="https://brat.nlplab.org/configuration.html">https://brat.nlplab.org/configuration.html</ulink>
 
 		</para>
 
@@ -548,7 +548,7 @@ path: /dev/opennlp/trunk/opennlp-tools/en-ontonotes.bin]]>
 			<title>Sentences and Tokens</title>
 			<para>
 				The brat annotation tool only adds named entity spans to the data and doesn't provide information
-				about tokens and sentences. To train the name finder this information is required. By default it
+				about tokens and sentences. To train the name finder this information is required. By default, it
 				is assumed that each line is a sentence and that tokens are whitespace separated. This can be
 				adjusted by providing a custom sentence detector and optional also a tokenizer.
 

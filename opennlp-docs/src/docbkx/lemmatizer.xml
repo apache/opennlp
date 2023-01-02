@@ -25,7 +25,7 @@
 			postag of the word is required to find the lemma. For example, the form
 			`show' may refer
 			to either the verb "to show" or to the noun "show".
-			Currently OpenNLP implement statistical and dictionary-based lemmatizers.
+			Currently, OpenNLP implement statistical and dictionary-based lemmatizers.
 		</para>
 		<section id="tools.lemmatizer.tagging.cmdline">
 			<title>Lemmatizer Tool</title>
@@ -75,7 +75,7 @@ signed VBD sign
 			<title>Lemmatizer API</title>
 			<para>
 				The Lemmatizer can be embedded into an application via its API.
-				Currently a statistical
+				Currently, a statistical
 				and DictionaryLemmatizer are available. Note that these two methods are
 				complementary and
 				the DictionaryLemmatizer can also be used as a way of post-processing
@@ -153,7 +153,7 @@ shrapnel	NN	shrapnel
 		]]>
 		</screen>
 				Alternatively, if a (word,postag) pair can output multiple lemmas, the
-				the lemmatizer dictionary would consists of a text file containing, for 
+				the lemmatizer dictionary would consist of a text file containing, for
 				each row, a word, its postag and the corresponding lemmas separated by "#":
 				<screen>
 		<![CDATA[
@@ -267,7 +267,7 @@ Arguments description:
 		</screen>
 					Its now assumed that the english lemmatizer model should be trained
 					from a file called
-					en-lemmatizer.train which is encoded as UTF-8. The following command will train the
+					'en-lemmatizer.train' which is encoded as UTF-8. The following command will train the
 					lemmatizer and write the model to en-lemmatizer.bin:
 					<screen>
 		<![CDATA[
