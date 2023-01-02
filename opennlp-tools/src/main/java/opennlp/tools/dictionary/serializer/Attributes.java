@@ -24,20 +24,20 @@ import java.util.Objects;
 
 /**
  * The {@link Attributes} class stores name value pairs.
- *
- * Problem: The HashMap for storing the name value pairs has a very high
- * memory footprint, replace it.
+ * <p>
+ * Problem: If a {@link HashMap} is used storing name-value pairs this results
+ * in a very high memory footprint, replace it.
  */
 public class Attributes {
 
-  private Map<String, String> mNameValueMap = new HashMap<>();
+  private final Map<String, String> mNameValueMap = new HashMap<>();
 
   /**
-   * Retrieves the value for the given key or null if attribute it not set.
+   * Retrieves the value for the given key or {@code null} if attribute it not set.
    *
-   * @param key
+   * @param key The key to get the desired value for.
    *
-   * @return the value
+   * @return The value for the given key or {@code null}
    */
   public  String getValue(String key) {
     return mNameValueMap.get(key);
@@ -46,8 +46,10 @@ public class Attributes {
   /**
    * Sets a key/value pair.
    *
-   * @param key
-   * @param value
+   * @param key The key that uniquely identifies the specified {@code value}.
+   *            Must not be {@code null}.
+   * @param value The value that shall be retrievable via its {@code key}.
+   *              Must not be {@code null}.
    */
   public void setValue(String key, String value) {
     Objects.requireNonNull(key, "key must not be null");
@@ -59,7 +61,7 @@ public class Attributes {
   /**
    * Iterates over the keys.
    *
-   * @return key-{@link Iterator}
+   * @return Retrieves a key-based {@link Iterator}.
    */
   public Iterator<String> iterator() {
     return mNameValueMap.keySet().iterator();
