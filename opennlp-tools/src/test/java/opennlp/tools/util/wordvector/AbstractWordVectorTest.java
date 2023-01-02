@@ -17,46 +17,15 @@
 
 package opennlp.tools.util.wordvector;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.io.InputStream;
 
-/**
- * A {@link WordVectorTable} implementation that maps tokens to
- * {@link WordVector word vectors} via a {@link Map}.
- *
- * @see WordVector
- * @see WordVectorTable
- */
-class MapWordVectorTable implements WordVectorTable {
+import opennlp.tools.formats.AbstractFormatTest;
 
-  private final Map<String, WordVector> vectors;
+public class AbstractWordVectorTest {
 
-  MapWordVectorTable(Map<String, WordVector> vectors) {
-    this.vectors = vectors;
-  }
+  protected static final String FORMATS_BASE_DIR = "/opennlp/tools/util/wordvector/";
 
-  @Override
-  public WordVector get(String token) {
-    return vectors.get(token);
-  }
-
-  @Override
-  public Iterator<String> tokens() {
-    return vectors.keySet().iterator();
-  }
-
-  @Override
-  public int size() {
-    return vectors.size();
-  }
-
-  @Override
-  public int dimension() {
-    if (vectors.size() > 0) {
-      return vectors.values().iterator().next().dimension();
-    }
-    else {
-      return -1;
-    }
+  protected InputStream getResourceStream(String resource) {
+    return AbstractFormatTest.class.getResourceAsStream(FORMATS_BASE_DIR + resource);
   }
 }

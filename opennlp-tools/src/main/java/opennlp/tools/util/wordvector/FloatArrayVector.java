@@ -20,6 +20,10 @@ package opennlp.tools.util.wordvector;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 
+/**
+ * A {@link WordVector} implementation that represents the vector as array
+ * of {@code float} values.
+ */
 class FloatArrayVector implements WordVector {
 
   private final float[] vector;
