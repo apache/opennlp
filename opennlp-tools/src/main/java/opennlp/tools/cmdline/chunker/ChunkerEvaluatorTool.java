@@ -45,10 +45,12 @@ public final class ChunkerEvaluatorTool
     super(ChunkSample.class, EvalToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "Measures the performance of the Chunker model with the reference data";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

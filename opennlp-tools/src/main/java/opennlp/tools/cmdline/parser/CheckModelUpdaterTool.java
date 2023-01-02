@@ -31,9 +31,12 @@ import opennlp.tools.parser.chunking.ParserEventStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.model.ModelUtil;
 
-// trains a new check model ...
+/**
+ * Trains a new check model.
+ */
 public final class CheckModelUpdaterTool extends ModelUpdaterTool {
 
+  @Override
   public String getShortDescription() {
     return "trains and updates the check model in a parser model";
   }

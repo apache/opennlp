@@ -52,6 +52,7 @@ public final class TokenNameFinderTrainerTool
     super(NameSample.class, TrainerToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "trainer for the learnable name finder";
   }
@@ -81,9 +82,10 @@ public final class TokenNameFinderTrainerTool
   /**
    * Load the resources, such as dictionaries, by reading the feature xml descriptor
    * and looking into the directory passed as argument.
-   * @param resourcePath the directory in which the resources are to be found
-   * @param featureGenDescriptor the feature xml descriptor
-   * @return a map consisting of the file name of the resource and its corresponding Object
+   * 
+   * @param resourcePath The directory in which the resources are to be found.
+   * @param featureGenDescriptor The feature xml descriptor.
+   * @return A map consisting of the file name of the resource and its corresponding Object.
    */
   public static Map<String, Object> loadResources(File resourcePath, File featureGenDescriptor)
       throws IOException {
@@ -110,6 +112,7 @@ public final class TokenNameFinderTrainerTool
     return resources;
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

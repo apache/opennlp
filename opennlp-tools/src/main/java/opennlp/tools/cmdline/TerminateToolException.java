@@ -17,6 +17,8 @@
 
 package opennlp.tools.cmdline;
 
+import opennlp.tools.commons.Internal;
+
 /**
  * Exception to terminate the execution of a command line tool.
  * <p>
@@ -30,9 +32,10 @@ package opennlp.tools.cmdline;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
-@SuppressWarnings("serial")
+@Internal
 public class TerminateToolException extends RuntimeException {
 
+  private static final long serialVersionUID = -8501408388025885818L;
   private final int code;
   private final String message;
 

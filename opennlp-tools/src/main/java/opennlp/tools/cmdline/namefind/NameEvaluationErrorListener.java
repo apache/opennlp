@@ -27,20 +27,19 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 /**
  * A default implementation of {@link EvaluationMonitor} that prints
  * to an output stream.
- *
  */
 public class NameEvaluationErrorListener extends
     EvaluationErrorPrinter<NameSample> implements TokenNameFinderEvaluationMonitor {
 
   /**
-   * Creates a listener that will print to System.err
+   * Creates a listener that will print to {@code System.err}.
    */
   public NameEvaluationErrorListener() {
     super(System.err);
   }
 
   /**
-   * Creates a listener that will print to a given {@link OutputStream}
+   * Creates a listener that will print to a given {@link OutputStream}.
    */
   public NameEvaluationErrorListener(OutputStream outputStream) {
     super(outputStream);

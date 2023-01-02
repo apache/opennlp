@@ -34,14 +34,14 @@ public class POSTaggerFineGrainedReportListener
     extends FineGrainedReportListener implements POSTaggerEvaluationMonitor {
 
   /**
-   * Creates a listener that will print to {@link System#err}
+   * Creates a listener that will print to {@code System#err}.
    */
   public POSTaggerFineGrainedReportListener() {
     this(System.err);
   }
 
   /**
-   * Creates a listener that prints to a given {@link OutputStream}
+   * Creates a listener that prints to a given {@link OutputStream}.
    */
   public POSTaggerFineGrainedReportListener(OutputStream outputStream) {
     super(outputStream);
@@ -49,11 +49,12 @@ public class POSTaggerFineGrainedReportListener
   }
 
   // methods inherited from EvaluationMonitor
-
+  @Override
   public void misclassified(POSSample reference, POSSample prediction) {
     statsAdd(reference, prediction);
   }
 
+  @Override
   public void correctlyClassified(POSSample reference, POSSample prediction) {
     statsAdd(reference, prediction);
   }
@@ -62,6 +63,7 @@ public class POSTaggerFineGrainedReportListener
     getStats().add(reference.getSentence(), reference.getTags(), prediction.getTags());
   }
 
+  @Override
   public void writeReport() {
     printGeneralStatistics();
     // token stats

@@ -25,14 +25,17 @@ import opennlp.tools.tokenize.TokenizerModel;
 
 public final class TokenizerMETool extends BasicCmdLineTool {
 
+  @Override
   public String getShortDescription() {
     return "learnable tokenizer";
   }
 
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
+  @Override
   public void run(String[] args) {
     if (args.length != 1) {
       System.out.println(getHelp());

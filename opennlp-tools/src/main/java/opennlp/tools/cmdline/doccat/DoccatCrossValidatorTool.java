@@ -49,10 +49,12 @@ public final class DoccatCrossValidatorTool extends
     super(DocumentSample.class, CVToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "K-fold cross validator for the learnable Document Categorizer";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

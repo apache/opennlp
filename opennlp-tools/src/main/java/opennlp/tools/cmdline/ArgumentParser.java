@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.commons.Internal;
+
 /**
  * Parser for command line arguments. The parser creates a dynamic proxy which
  * can be access via a command line argument interface.
@@ -47,6 +49,7 @@ import java.util.Set;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public class ArgumentParser {
 
   public @Retention(RetentionPolicy.RUNTIME) @interface OptionalParameter {
@@ -70,6 +73,7 @@ public class ArgumentParser {
 
   private static class IntegerArgumentFactory  implements ArgumentFactory {
 
+    @Override
     public Object parseArgument(Method method, String argName, String argValue) {
 
       Object value;
@@ -88,6 +92,7 @@ public class ArgumentParser {
 
   private static class BooleanArgumentFactory implements ArgumentFactory {
 
+    @Override
     public Object parseArgument(Method method, String argName, String argValue) {
       return Boolean.parseBoolean(argValue);
     }
@@ -95,6 +100,7 @@ public class ArgumentParser {
 
   private static class StringArgumentFactory implements ArgumentFactory {
 
+    @Override
     public Object parseArgument(Method method, String argName, String argValue) {
       return argValue;
     }
@@ -102,6 +108,7 @@ public class ArgumentParser {
 
   private static class FileArgumentFactory implements ArgumentFactory {
 
+    @Override
     public Object parseArgument(Method method, String argName, String argValue) {
       return new File(argValue);
     }
@@ -109,6 +116,7 @@ public class ArgumentParser {
 
   private static class CharsetArgumentFactory implements ArgumentFactory {
 
+    @Override
     public Object parseArgument(Method method, String argName, String charsetName) {
 
       try {
@@ -135,6 +143,7 @@ public class ArgumentParser {
       this.arguments = arguments;
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args)
         throws Throwable {
 
@@ -293,10 +302,7 @@ public class ArgumentParser {
               duplicateFilter.add(paramName);
             }
 
-            boolean isOptional = false;
-
-            if (optional != null)
-              isOptional = true;
+            boolean isOptional = optional != null;
 
             Argument arg = new Argument(paramName.substring(1),
                 desc.valueName(), desc.description(), isOptional);

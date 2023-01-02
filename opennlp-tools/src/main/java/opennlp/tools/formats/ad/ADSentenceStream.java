@@ -26,6 +26,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
@@ -44,6 +45,7 @@ import opennlp.tools.util.ObjectStream;
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
+@Internal
 public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStream.Sentence> {
 
   public static class Sentence {

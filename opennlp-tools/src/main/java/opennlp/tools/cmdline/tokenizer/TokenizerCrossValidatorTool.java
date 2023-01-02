@@ -41,10 +41,12 @@ public final class TokenizerCrossValidatorTool
     super(TokenSample.class, CVToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "K-fold cross validator for the learnable tokenizer";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

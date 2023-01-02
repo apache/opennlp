@@ -28,13 +28,12 @@ import opennlp.tools.lemmatizer.LemmatizerEvaluationMonitor;
  * <p>
  * It is possible to use it from an API and access the statistics using the
  * provided getters.
- *
  */
 public class LemmatizerFineGrainedReportListener
     extends FineGrainedReportListener implements LemmatizerEvaluationMonitor {
 
   /**
-   * Creates a listener that will print to {@link System#err}
+   * Creates a listener that will print to {@code System#err}.
    */
   public LemmatizerFineGrainedReportListener() {
     super(System.err);
@@ -49,10 +48,12 @@ public class LemmatizerFineGrainedReportListener
 
   // methods inherited from EvaluationMonitor
 
+  @Override
   public void misclassified(LemmaSample reference, LemmaSample prediction) {
     statsAdd(reference, prediction);
   }
 
+  @Override
   public void correctlyClassified(LemmaSample reference, LemmaSample prediction) {
     statsAdd(reference, prediction);
   }
@@ -61,6 +62,7 @@ public class LemmatizerFineGrainedReportListener
     getStats().add(reference.getTokens(), reference.getTags(), prediction.getTags());
   }
 
+  @Override
   public void writeReport() {
     printGeneralStatistics();
     // token stats

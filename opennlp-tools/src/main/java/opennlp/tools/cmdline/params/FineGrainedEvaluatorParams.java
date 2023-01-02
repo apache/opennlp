@@ -20,12 +20,14 @@ package opennlp.tools.cmdline.params;
 import java.io.File;
 
 import opennlp.tools.cmdline.ArgumentParser;
+import opennlp.tools.commons.Internal;
 
 /**
  * Common evaluation parameters.
- *
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public interface FineGrainedEvaluatorParams {
 
   @ArgumentParser.ParameterDescription(valueName = "outputFile",

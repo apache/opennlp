@@ -46,10 +46,12 @@ public final class POSTaggerCrossValidatorTool
     super(POSSample.class, CVToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "K-fold cross validator for the learnable POS tagger";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

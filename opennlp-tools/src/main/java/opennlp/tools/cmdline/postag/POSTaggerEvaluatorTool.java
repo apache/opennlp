@@ -44,10 +44,12 @@ public final class POSTaggerEvaluatorTool
     super(POSSample.class, EvalToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "Measures the performance of the POS tagger model with the reference data";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

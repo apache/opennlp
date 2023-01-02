@@ -40,10 +40,12 @@ public final class LemmatizerEvaluatorTool
     super(LemmaSample.class, EvalToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "Measures the performance of the Lemmatizer model with the reference data";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

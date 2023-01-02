@@ -47,6 +47,7 @@ abstract class ModelUpdaterTool
       ObjectStream<Parse> parseSamples, ModelUpdaterParams parameters)
       throws IOException;
 
+  @Override
   public final void run(String format, String[] args) {
     ModelUpdaterParams params = validateAndParseParams(
         ArgumentParser.filter(args, ModelUpdaterParams.class), ModelUpdaterParams.class);

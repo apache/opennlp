@@ -50,10 +50,12 @@ public final class DoccatEvaluatorTool extends
     super(DocumentSample.class, EvalToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "Measures the performance of the Doccat model with the reference data";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -86,17 +88,20 @@ public final class DoccatEvaluatorTool extends
 
     final PerformanceMonitor monitor = new PerformanceMonitor("doc");
 
-    try (ObjectStream<DocumentSample> measuredSampleStream = new ObjectStream<DocumentSample>() {
+    try (ObjectStream<DocumentSample> measuredSampleStream = new ObjectStream<>() {
 
+      @Override
       public DocumentSample read() throws IOException {
         monitor.incrementCounter();
         return sampleStream.read();
       }
 
+      @Override
       public void reset() throws IOException {
         sampleStream.reset();
       }
 
+      @Override
       public void close() throws IOException {
         sampleStream.close();
       }

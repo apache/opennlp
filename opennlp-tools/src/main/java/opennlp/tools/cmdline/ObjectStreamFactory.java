@@ -31,7 +31,7 @@ public interface ObjectStreamFactory<T,P> {
   Class<P> getParameters();
 
   /**
-   * Creates the <code>ObjectStream</code>.
+   * Creates the {@link ObjectStream}.
    *
    * @param args arguments
    * @return ObjectStream instance

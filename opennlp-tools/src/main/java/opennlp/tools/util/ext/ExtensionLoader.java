@@ -19,12 +19,15 @@ package opennlp.tools.util.ext;
 
 import java.lang.reflect.Field;
 
+import opennlp.tools.commons.Internal;
+
 /**
  * The {@link ExtensionLoader} is responsible to load extensions to the OpenNLP library.
  * <p>
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
+@Internal
 public class ExtensionLoader {
 
   private static boolean isOsgiAvailable = false;

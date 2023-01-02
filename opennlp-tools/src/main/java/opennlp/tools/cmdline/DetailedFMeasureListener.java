@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
@@ -36,15 +37,17 @@ import opennlp.tools.util.eval.EvaluationMonitor;
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public abstract class DetailedFMeasureListener<T> implements
     EvaluationMonitor<T> {
 
   private int samples = 0;
-  private Stats generalStats = new Stats();
-  private Map<String, Stats> statsForOutcome = new HashMap<>();
+  private final Stats generalStats = new Stats();
+  private final Map<String, Stats> statsForOutcome = new HashMap<>();
 
   protected abstract Span[] asSpanArray(T sample);
 
+  @Override
   public void correctlyClassified(T reference, T prediction) {
     samples++;
     // add all true positives!
@@ -54,6 +57,7 @@ public abstract class DetailedFMeasureListener<T> implements
     }
   }
 
+  @Override
   public void misclassified(T reference, T prediction) {
     samples++;
     Span[] references = asSpanArray(reference);
@@ -159,6 +163,8 @@ public abstract class DetailedFMeasureListener<T> implements
   }
 
   private class F1Comparator implements Comparator<String> {
+
+    @Override
     public int compare(String o1, String o2) {
       if (o1.equals(o2))
         return 0;
@@ -184,9 +190,9 @@ public abstract class DetailedFMeasureListener<T> implements
   }
 
   /**
-   * Store the statistics.
+   * Holds the statistics.
    */
-  private class Stats {
+  private static class Stats {
 
     // maybe we could use FMeasure class, but it wouldn't allow us to get
     // details like total number of false positives and true positives.

@@ -19,6 +19,7 @@ package opennlp.tools.sentdetect;
 
 import java.io.IOException;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
@@ -32,10 +33,11 @@ import opennlp.tools.util.ObjectStream;
  * <br>
  * This stream should be used by the components that mark empty lines to mark document boundaries.
  * <p>
- * <b>Note:</b>
- * This class is not thread safe. <br>
- * Do not use this class, internal use only!
+ * <b>Note:</b> This class is not thread safe.
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public class EmptyLinePreprocessorStream extends FilterObjectStream<String, String> {
 
   private boolean lastLineWasEmpty = true;

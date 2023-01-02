@@ -26,10 +26,8 @@ public abstract class CmdLineTool {
   }
 
   /**
-   * Retrieves the name of the training data tool. The name (used as command)
-   * must not contain white spaces.
-   *
-   * @return the name of the command line tool
+   * @return Retrieves the name of the command line tool. The name (used as command)
+   *         must not contain white spaces.
    */
   public String getName() {
     if (getClass().getName().endsWith("Tool")) {
@@ -40,8 +38,7 @@ public abstract class CmdLineTool {
   }
 
   /**
-   * Returns whether the tool has any command line params.
-   * @return whether the tool has any command line params
+   * @return Retrieves whether the tool has any command line params
    */
   public boolean hasParams() {
     return true;
@@ -57,9 +54,7 @@ public abstract class CmdLineTool {
   }
 
   /**
-   * Retrieves a description on how to use the tool.
-   *
-   * @return a description on how to use the tool
+   * @return Retrieves a description on how to use the tool
    */
   public abstract String getHelp();
 
@@ -72,9 +67,7 @@ public abstract class CmdLineTool {
   }
 
   /**
-   * Retrieves a short description of what the tool does.
-   *
-   * @return a short description of what the tool does
+   * @return Retrieves a short description of what the tool does
    */
   public String getShortDescription() {
     return "";

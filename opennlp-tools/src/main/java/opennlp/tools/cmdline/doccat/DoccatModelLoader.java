@@ -21,13 +21,15 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import opennlp.tools.cmdline.ModelLoader;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.doccat.DoccatModel;
 
 /**
- * Loads a Document Categorizer Model for the command line tools.
+ * Loads a {@link DoccatModel} for the command line tools.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public class DoccatModelLoader extends ModelLoader<DoccatModel> {
 
   public DoccatModelLoader() {
