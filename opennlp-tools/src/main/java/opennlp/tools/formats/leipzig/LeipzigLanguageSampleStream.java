@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.langdetect.Language;
 import opennlp.tools.langdetect.LanguageSample;
 import opennlp.tools.util.InvalidFormatException;
@@ -161,6 +162,11 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
                 && pathname.getName().substring(0,3).matches("[a-z]+");
       }
     });
+
+    if (null == sentencesFiles) {
+      throw new TerminateToolException(-1 , "Directory " + leipzigFolder + " empty , No files to read!");
+    }
+
     Arrays.sort(sentencesFiles);
 
     Map<String, Integer> langCounts = Arrays.stream(sentencesFiles)
