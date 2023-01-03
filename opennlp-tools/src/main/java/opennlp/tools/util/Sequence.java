@@ -122,7 +122,32 @@ public class Sequence implements Comparable<Sequence> {
    * @return Retrieves a list of outcomes for this {@link Sequence}.
    */
   public List<String> getOutcomes() {
-    return outcomes;
+    return List.copyOf(outcomes);
+  }
+
+  /**
+   * @return Retrieves the size of the outcomes for this {@link Sequence}.
+   */
+  public int getSize() {
+    return outcomes.size();
+  }
+
+  /**
+   * @param index must be greater than or equal to zero and must be less than {@link Sequence#getSize()}.
+   * @return the outcome at the specified index.
+   * @throws IndexOutOfBoundsException thrown if the given index is out of range.
+   */
+  public String getOutcome(int index) {
+    return outcomes.get(index);
+  }
+
+  /**
+   * @param index must be greater than or equal to zero and must be less than {@link Sequence#getSize()}.
+   * @return the probability at the specified index.
+   * @throws IndexOutOfBoundsException thrown if the given index is out of range.
+   */
+  public double getProb(int index) {
+    return probs.get(index);
   }
 
   /**
