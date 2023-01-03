@@ -73,10 +73,12 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
       super();
     }
 
+    @Override
     public AnnotationIterator iterator() {
       return this;
     }
 
+    @Override
     public boolean hasNext() {
       if (AnnotationComboIterator.this.nextLowerChecked) {
         return AnnotationComboIterator.this.nextLowerAvailable;
@@ -102,6 +104,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
       return AnnotationComboIterator.this.nextLowerAvailable;
     }
 
+    @Override
     public AnnotationFS next() {
       if (AnnotationComboIterator.this.nextLowerChecked) {
         if (!AnnotationComboIterator.this.nextLowerAvailable) {
@@ -116,6 +119,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
       return rv;
     }
 
+    @Override
     public void remove() {
       throw new UnsupportedOperationException();
     }
@@ -146,11 +150,11 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
    * Create a new combo iterator.
    *
    * @param cas
-   *          The CAS we're operating on.
+   *          The {@link CAS} we're operating on.
    * @param upper
-   *          The type of the upper iterator, e.g., sentence.
+   *          The {@link Type} of the upper iterator, e.g., sentence.
    * @param lower
-   *          The type of the lower iterator, e.g., token.
+   *          The {@link Type} of the lower iterator, e.g., token.
    */
   public AnnotationComboIterator(CAS cas, Type upper, Type lower) {
     this.upperIt = cas.getAnnotationIndex(upper).iterator();
@@ -166,10 +170,12 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
     }
   }
 
+  @Override
   public boolean hasNext() {
     return this.upperIt.hasNext();
   }
 
+  @Override
   public AnnotationIteratorPair next() {
     if (!this.upperIt.hasNext()) {
       throw new NoSuchElementException();
@@ -181,6 +187,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
     return new AnnotationIteratorPair(upperFS, new AnnotationIterator());
   }
 
+  @Override
   public Iterator<AnnotationIteratorPair> iterator() {
     return this;
   }
@@ -188,6 +195,7 @@ public class AnnotationComboIterator implements Iterable<AnnotationIteratorPair>
   /**
    * Not supported.
    */
+  @Override
   public void remove() {
     throw new UnsupportedOperationException();
   }

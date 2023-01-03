@@ -19,7 +19,7 @@ package opennlp.uima.util;
 
 /**
  * This class contains constants for the exception messages in the exception
- * massage catalog.
+ * message catalog.
  */
 public class ExceptionMessages {
 

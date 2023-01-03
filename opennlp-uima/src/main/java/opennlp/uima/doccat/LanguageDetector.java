@@ -20,9 +20,11 @@ package opennlp.uima.doccat;
 import org.apache.uima.cas.CAS;
 
 /**
- * Analysis Engine which can detected the language of a text. The AE uses the OpenNLP document
- * categorizer and a special language detection model. The outcome of the document categorizer
- * model is written into the language field of the CAS view.
+ * Analysis Engine (AE) which can detect the language of a text.
+ * <p>
+ * The AE uses the OpenNLP {@link DocumentCategorizer} and a special language detection model.
+ * The outcome of the document categorizer model is written into the language field of
+ * the {@link CAS} view.
  */
 public class LanguageDetector extends AbstractDocumentCategorizer {
 

@@ -44,10 +44,11 @@ public final class AnnotatorUtil {
   /**
    * Retrieves a type of the given name from the given type system.
    *
-   * @param typeSystem
-   * @param name
-   * @return the type
-   * @throws AnalysisEngineProcessException
+   * @param typeSystem The {@link TypeSystem} to use.
+   * @param name The name of the type to retrieve.
+   *
+   * @return The {@link Type} for the {@code name}.
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Type} could be found.
    */
   public static Type getType(TypeSystem typeSystem, String name)
       throws AnalysisEngineProcessException {
@@ -63,12 +64,13 @@ public final class AnnotatorUtil {
   }
 
   /**
-   * Checks if the given feature has the expected type otherwise
+   * Checks if a {@link Feature} has the expected type, otherwise
    * an exception is thrown.
    *
-   * @param feature
-   * @param expectedType
-   * @throws AnalysisEngineProcessException - if type does not match
+   * @param feature The {@link Feature} to check for.
+   * @param expectedType The type that is expected.
+   *                     
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Type} did match.
    */
   private static void checkFeatureType(Feature feature, String expectedType)
       throws AnalysisEngineProcessException {
@@ -80,6 +82,17 @@ public final class AnnotatorUtil {
     }
   }
 
+
+  /**
+   * Retrieves a {@link Feature} for a specified type and {@code featureName},
+   * otherwise an exception is thrown.
+   *
+   * @param type The {@link Type} to use.
+   * @param featureName The name of the feature to retrieve.
+   *
+   * @return The {@link Feature} if found.
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Feature} did match.
+   */
   public static Feature getRequiredFeature(Type type, String featureName)
       throws AnalysisEngineProcessException {
 
@@ -94,13 +107,14 @@ public final class AnnotatorUtil {
   }
 
   /**
-   * Retrieves a required feature from the given type.
+   * Retrieves a {@link Feature} of the given type.
    *
-   * @param type        the type
-   * @param featureName the name of the feature
-   * @param rangeType   the expected range type
-   * @return the requested parameter
-   * @throws AnalysisEngineProcessException
+   * @param type        The {@link Type} to use.
+   * @param featureName The name of the feature to retrieve.
+   * @param rangeType   The expected range type.
+   *                    
+   * @return The {@link Feature} if found.
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Feature} did match.
    */
   public static Feature getRequiredFeature(Type type, String featureName,
                                            String rangeType)
@@ -113,6 +127,16 @@ public final class AnnotatorUtil {
     return feature;
   }
 
+  /**
+   * Retrieves a {@link Feature feature parameter} of specified type.
+   *
+   * @param context The {@link UimaContext} to use.
+   * @param type The {@link Type} of the {@link Feature} to get.
+   * @param featureNameParameter The name of the feature parameter.
+   *
+   * @return The {@link Feature} if found.
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Feature} did match.
+   */
   public static Feature getRequiredFeatureParameter(UimaContext context, Type type,
                                                     String featureNameParameter)
       throws AnalysisEngineProcessException {
@@ -128,6 +152,17 @@ public final class AnnotatorUtil {
     return getRequiredFeature(type, featureName);
   }
 
+  /**
+   * Retrieves a {@link Feature feature parameter} of specified type.
+   *
+   * @param context The {@link UimaContext} to use.
+   * @param type The {@link Type} of the {@link Feature} to get.
+   * @param featureNameParameter The name of the feature parameter.
+   * @param rangeTypeName The name of expected range type.
+   *
+   * @return The {@link Feature} if found.
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Feature} did match.
+   */
   public static Feature getRequiredFeatureParameter(UimaContext context,
                                                     Type type, String featureNameParameter,
                                                     String rangeTypeName)
@@ -143,6 +178,16 @@ public final class AnnotatorUtil {
     return getRequiredFeature(type, featureName, rangeTypeName);
   }
 
+  /**
+   * Retrieves a type of the given name from the given type system.
+   *
+   * @param context The {@link UimaContext} to use.
+   * @param typeSystem The {@link TypeSystem} to use.
+   * @param parameter The name of the type to retrieve.
+   *
+   * @return The {@link Type} for the {@code name}.
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Type} could be found.
+   */
   public static Type getRequiredTypeParameter(UimaContext context,
                                               TypeSystem typeSystem, String parameter)
       throws AnalysisEngineProcessException {
@@ -161,13 +206,13 @@ public final class AnnotatorUtil {
   /**
    * Retrieves a required parameter from the given context.
    *
-   * @param context
-   * @param parameter
-   * @return the requested parameter
-   * @throws ResourceInitializationException
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the type to retrieve.
+   *
+   * @return The {@link String} value retrieved for a specified {@code parameter}
+   *         from the {@code context}.
    */
-  public static String getRequiredStringParameter(UimaContext context,
-                                                  String parameter)
+  public static String getRequiredStringParameter(UimaContext context, String parameter)
       throws ResourceInitializationException {
 
     String value = getOptionalStringParameter(context, parameter);
@@ -180,13 +225,14 @@ public final class AnnotatorUtil {
   /**
    * Retrieves a required parameter from the given context.
    *
-   * @param context
-   * @param parameter
-   * @return the requested parameter
-   * @throws ResourceInitializationException
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the type to retrieve.
+   *
+   * @return The {@link Integer} value retrieved for a specified {@code parameter}
+   *         from the {@code context}.
+   * @throws ResourceInitializationException Thrown if no value} could be found.
    */
-  public static Integer getRequiredIntegerParameter(UimaContext context,
-                                                    String parameter)
+  public static Integer getRequiredIntegerParameter(UimaContext context, String parameter)
       throws ResourceInitializationException {
 
     Integer value = getOptionalIntegerParameter(context, parameter);
@@ -199,13 +245,14 @@ public final class AnnotatorUtil {
   /**
    * Retrieves a required parameter from the given context.
    *
-   * @param context
-   * @param parameter
-   * @return the requested parameter
-   * @throws ResourceInitializationException
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the type to retrieve.
+   *
+   * @return The {@link Float} value retrieved for a specified {@code parameter}
+   *         from the {@code context}.
+   * @throws ResourceInitializationException Thrown if no value} could be found.
    */
-  public static Float getRequiredFloatParameter(UimaContext context,
-                                                String parameter)
+  public static Float getRequiredFloatParameter(UimaContext context, String parameter)
       throws ResourceInitializationException {
 
     Float value = getOptionalFloatParameter(context, parameter);
@@ -218,13 +265,14 @@ public final class AnnotatorUtil {
   /**
    * Retrieves a required parameter from the given context.
    *
-   * @param context
-   * @param parameter
-   * @return the requested parameter
-   * @throws ResourceInitializationException
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the type to retrieve.
+   *
+   * @return The {@link Boolean} value retrieved for a specified {@code parameter}
+   *         from the {@code context}.
+   * @throws ResourceInitializationException Thrown if no value} could be found.
    */
-  public static Boolean getRequiredBooleanParameter(UimaContext context,
-                                                    String parameter)
+  public static Boolean getRequiredBooleanParameter(UimaContext context, String parameter)
       throws ResourceInitializationException {
 
     Boolean value = getOptionalBooleanParameter(context, parameter);
@@ -245,6 +293,17 @@ public final class AnnotatorUtil {
   }
 
 
+  /**
+   * Retrieves an optional {@link Feature feature parameter} of specified type.
+   *
+   * @param context The {@link UimaContext} to use.
+   * @param nameType The {@link Type} of the {@link Feature} to get.
+   * @param featureNameParameter The name of the feature parameter.
+   * @param rangeTypeName The name of expected range type.
+   *
+   * @return The {@link Feature} if found.
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Feature} did match.
+   */
   public static Feature getOptionalFeatureParameter(UimaContext context,
                                                     Type nameType, String featureNameParameter,
                                                     String rangeTypeName)
@@ -264,6 +323,16 @@ public final class AnnotatorUtil {
     }
   }
 
+  /**
+   * Retrieves an optional {@link Feature feature parameter} of specified type.
+   *
+   * @param type The {@link Type} of the {@link Feature} to get.
+   * @param featureName The name of the feature parameter.
+   * @param rangeType The expected range type.
+   *
+   * @return The {@link Feature} if found.
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Feature} did match.
+   */
   public static Feature getOptionalFeature(Type type, String featureName, String rangeType)
       throws AnalysisEngineProcessException {
 
@@ -274,6 +343,16 @@ public final class AnnotatorUtil {
     return feature;
   }
 
+  /**
+   * Retrieves an optional {@link Feature feature parameter} of specified type.
+   *
+   * @param context The {@link UimaContext} to use.
+   * @param typeSystem The {@link TypeSystem} to use.
+   * @param parameter The name of the type to retrieve.
+   *
+   * @return The {@link Type} for the {@code name}.
+   * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Type} could be found.
+   */
   public static Type getOptionalTypeParameter(UimaContext context,
                                               TypeSystem typeSystem, String parameter)
       throws AnalysisEngineProcessException {
@@ -293,12 +372,13 @@ public final class AnnotatorUtil {
   }
 
   /**
-   * Retrieves an optional parameter from the given context.
+   * Retrieves an optional parameter from the given {@link UimaContext}.
    *
-   * @param context
-   * @param parameter
-   * @return the parameter or null if not set
-   * @throws ResourceInitializationException
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the parameter to retrieve.
+   *
+   * @return The {@link String parameter} or {@code null} if not set.
+   * @throws ResourceInitializationException Thrown if the parameter type was not of the expected type.
    */
   public static String getOptionalStringParameter(UimaContext context,
                                                   String parameter)
@@ -317,6 +397,15 @@ public final class AnnotatorUtil {
     }
   }
 
+  /**
+   * Retrieves an optional parameter array from the given {@link UimaContext}.
+   *
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the parameter to retrieve.
+   *
+   * @return The {@link String parameter array} or an empty array if not set.
+   * @throws ResourceInitializationException Thrown if the parameter type was not of the expected type.
+   */
   public static String[] getOptionalStringArrayParameter(UimaContext context,
                                                          String parameter)
       throws ResourceInitializationException {
@@ -334,12 +423,13 @@ public final class AnnotatorUtil {
   }
 
   /**
-   * Retrieves an optional parameter from the given context.
+   * Retrieves an optional parameter from the given {@link UimaContext}.
    *
-   * @param context
-   * @param parameter
-   * @return the parameter or null if not set
-   * @throws ResourceInitializationException
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the parameter to retrieve.
+   *
+   * @return The {@link Integer parameter} or {@code null} if not set.
+   * @throws ResourceInitializationException Thrown if the parameter type was not of the expected type.
    */
   public static Integer getOptionalIntegerParameter(UimaContext context,
                                                     String parameter)
@@ -360,12 +450,13 @@ public final class AnnotatorUtil {
   }
 
   /**
-   * Retrieves an optional parameter from the given context.
+   * Retrieves an optional parameter from the given {@link UimaContext}.
    *
-   * @param context
-   * @param parameter
-   * @return the parameter or null if not set
-   * @throws ResourceInitializationException
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the parameter to retrieve.
+   *
+   * @return The {@link Float parameter} or {@code null} if not set.
+   * @throws ResourceInitializationException Thrown if the parameter type was not of the expected type.
    */
   public static Float getOptionalFloatParameter(UimaContext context,
                                                 String parameter)
@@ -386,12 +477,13 @@ public final class AnnotatorUtil {
   }
 
   /**
-   * Retrieves an optional parameter from the given context.
+   * Retrieves an optional parameter from the given {@link UimaContext}.
    *
-   * @param context
-   * @param parameter
-   * @return the parameter or null if not set
-   * @throws ResourceInitializationException
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the parameter to retrieve.
+   *
+   * @return The {@link Boolean parameter} or {@code null} if not set.
+   * @throws ResourceInitializationException Thrown if the parameter type was not of the expected type.
    */
   public static Boolean getOptionalBooleanParameter(UimaContext context,
                                                     String parameter)
@@ -410,6 +502,15 @@ public final class AnnotatorUtil {
     }
   }
 
+  /**
+   * Retrieves an optional parameter from the given {@link UimaContext}.
+   *
+   * @param context The {@link UimaContext} to use.
+   * @param parameter The name of the parameter to retrieve.
+   *
+   * @return The {@link Object parameter} or {@code null} if not set.
+   * @throws ResourceInitializationException Thrown if the parameter type was not of the expected type.
+   */
   private static Object getOptionalParameter(UimaContext context,
                                              String parameter)
       throws ResourceInitializationException {
@@ -427,17 +528,17 @@ public final class AnnotatorUtil {
   }
 
   /**
-   * Retrieves a resource as stream from the given context.
+   * Opens an {@link InputStream} for a resource via the given {@link UimaContext}.
    *
-   * @param context
-   * @param name
-   * @return the stream
-   * @throws ResourceInitializationException
+   * @param context The {@link UimaContext} to use.
+   * @param name The name that identifies the resource.
+   * @return A valid, open {@link InputStream}.
+   * @throws ResourceInitializationException Thrown if the resource could not be found.
    */
   public static InputStream getResourceAsStream(UimaContext context, String name)
       throws ResourceInitializationException {
 
-    InputStream inResource = getOptionalResourceAsStream(context, name);
+    final InputStream inResource = getOptionalResourceAsStream(context, name);
 
     if (inResource == null) {
       throw new ResourceInitializationException(
@@ -448,11 +549,19 @@ public final class AnnotatorUtil {
     return inResource;
   }
 
+  /**
+   * Opens an {@link InputStream} for an optional resource via the given {@link UimaContext}.
+   *
+   * @param context The {@link UimaContext} to use.
+   * @param name The name that identifies the resource.
+   * @return A valid, open {@link InputStream}.
+   * @throws ResourceInitializationException Thrown if the resource could not be found.
+   */
   public static InputStream getOptionalResourceAsStream(UimaContext context,
                                                         String name)
       throws ResourceInitializationException {
 
-    InputStream inResource;
+    final InputStream inResource;
 
     try {
       inResource = context.getResourceAsStream(name);
@@ -463,6 +572,15 @@ public final class AnnotatorUtil {
     return inResource;
   }
 
+  /**
+   * Creates a {@link Dictionary} via the given {@link UimaContext}.
+   *
+   * @param context The {@link UimaContext} to use.
+   * @param dictionaryParameter The name that identifies the dictionary.
+   *                            
+   * @return A valid {@link Dictionary} or {@code null} if IO errors occurred.
+   * @throws ResourceInitializationException Thrown if the resource could not be found.
+   */
   public static Dictionary createOptionalDictionary(UimaContext context,
                                                     String dictionaryParameter)
       throws ResourceInitializationException {
@@ -476,10 +594,8 @@ public final class AnnotatorUtil {
 
       Logger logger = context.getLogger();
 
-      try {
-
-        InputStream dictIn = AnnotatorUtil.getOptionalResourceAsStream(context,
-            dictionaryName);
+      try (InputStream dictIn = AnnotatorUtil.getOptionalResourceAsStream(context,
+              dictionaryName)) {
 
         if (dictIn == null) {
           String message = "The dictionary file " + dictionaryName

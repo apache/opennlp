@@ -26,6 +26,7 @@ import opennlp.uima.util.AbstractModelResource;
 public class ChunkerModelResourceImpl extends AbstractModelResource<ChunkerModel>
     implements ChunkerModelResource {
 
+  @Override
   public ChunkerModel getModel() {
     return model;
   }

@@ -50,6 +50,7 @@ public class DictionaryNameFinder extends AbstractNameFinder {
    * <p>
    * Note: Do all initialization in this method, do not use the constructor.
    */
+  @Override
   public void initialize() throws ResourceInitializationException {
 
     Dictionary nameFinderDictionary;
@@ -83,6 +84,7 @@ public class DictionaryNameFinder extends AbstractNameFinder {
         nameFinderDictionary);
   }
 
+  @Override
   protected Span[] find(CAS cas, String[] tokens) {
     return mNameFinder.find(tokens);
   }
@@ -90,6 +92,7 @@ public class DictionaryNameFinder extends AbstractNameFinder {
   /**
    * Releases allocated resources.
    */
+  @Override
   public void destroy() {
     mNameFinder = null;
   }

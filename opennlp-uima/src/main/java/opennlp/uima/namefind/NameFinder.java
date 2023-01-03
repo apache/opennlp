@@ -112,6 +112,7 @@ public final class NameFinder extends AbstractNameFinder {
    * <p>
    * Note: Do all initialization in this method, do not use the constructor.
    */
+  @Override
   public void initialize()
       throws ResourceInitializationException {
 
@@ -134,6 +135,7 @@ public final class NameFinder extends AbstractNameFinder {
   /**
    * Initializes the type system.
    */
+  @Override
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
 
@@ -152,6 +154,7 @@ public final class NameFinder extends AbstractNameFinder {
     }
   }
 
+  @Override
   protected Span[] find(CAS cas, String[] tokens) {
 
     Span[] names = mNameFinder.find(tokens);
@@ -165,6 +168,7 @@ public final class NameFinder extends AbstractNameFinder {
     return names;
   }
 
+  @Override
   protected void postProcessAnnotations(Span[] detectedNames,
                                         AnnotationFS[] nameAnnotations) {
 
@@ -177,6 +181,7 @@ public final class NameFinder extends AbstractNameFinder {
     }
   }
 
+  @Override
   protected void documentDone(CAS cas) {
 
     // TODO: Create confidence FS
@@ -200,6 +205,7 @@ public final class NameFinder extends AbstractNameFinder {
   /**
    * Releases allocated resources.
    */
+  @Override
   public void destroy() {
     mNameFinder = null;
   }
