@@ -21,7 +21,6 @@ import java.io.File;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;

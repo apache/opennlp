@@ -72,7 +72,7 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
     }
     else { // use defaults
       this.featureGenerators =
-        new AdaptiveFeatureGenerator[]{WINDOW_FEATURES, new PreviousMapFeatureGenerator()};
+          new AdaptiveFeatureGenerator[]{WINDOW_FEATURES, new PreviousMapFeatureGenerator()};
     }
   }
 

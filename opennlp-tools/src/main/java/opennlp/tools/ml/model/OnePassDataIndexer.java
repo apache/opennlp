@@ -36,7 +36,7 @@ import opennlp.tools.util.ObjectStreamUtils;
  */
 public class OnePassDataIndexer extends AbstractDataIndexer {
 
-  public OnePassDataIndexer(){}
+  public OnePassDataIndexer() {}
 
   /**
    * {@inheritDoc}

@@ -31,7 +31,7 @@ import org.apache.uima.cas.text.AnnotationFS;
  */
 public final class UimaUtil {
 
-  private UimaUtil(){
+  private UimaUtil() {
     // this is util class must not be instantiated
   }
 
