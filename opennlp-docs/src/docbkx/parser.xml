@@ -43,7 +43,7 @@ under the License.
 		<para>
 		The easiest way to try out the Parser is the command line tool.
 		The tool is only intended for demonstration and testing.
-		Download the English chunking parser model from the our website and start the Parse
+		Download the English chunking parser model from the website and start the Parse
  		Tool with the following command.
 				<screen>
 				<![CDATA[
@@ -140,7 +140,7 @@ Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);]]>
 		Penn Treebank annotation guidelines can be found on the
             <ulink url="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">Penn Treebank home page</ulink>.
 		A parser model also contains a pos tagger model, depending on the amount of available
-		training data it is recommend to switch the tagger model against a tagger model which
+		training data it is recommended to switch the tagger model against a tagger model which
 		was trained on a larger corpus. The pre-trained parser model provided on the website
 		is doing this to achieve a better performance. (TODO: On which data is the model on
 		the website trained, and say on which data the tagger model is trained)
@@ -322,7 +322,7 @@ Usage: opennlp ParserEvaluator[.ontonotes|frenchtreebank] [-misclassified true|f
                -data sampleData [-encoding charsetName]]]>
 		</screen>
 				A sample of the command considering you have a data sample named
-				en-parser-chunking.eval
+				en-parser-chunking.eval,
 				and you trained a model called en-parser-chunking.bin:
 				<screen>
 				<![CDATA[

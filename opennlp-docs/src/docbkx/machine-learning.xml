@@ -31,7 +31,7 @@ under the License.
 		Maximum entropy modeling is a framework for integrating information from many heterogeneous
 		information sources for classification.  The data for a  classification problem is described
 		as a (potentially large) number of features.  These features can be quite complex and allow
-		the experimenter to make use of prior knowledge about what types of informations are expected
+		the experimenter to make use of prior knowledge about what types of information are expected
 		to be important for classification. Each feature corresponds to a constraint on the model.
 		We then compute the maximum entropy model, the model with the maximum entropy of all the models
 		that satisfy the constraints.  This term may seem perverse, since we have spent most of the book
@@ -80,7 +80,7 @@ under the License.
 		</para>
 		<para>
 		We have also set in place some interfaces and code to make it easier to automate the training
-		and evaluation process (the Evalable interface and the TrainEval class).  It is not necessary
+		and evaluation process (the Evaluable interface and the TrainEval class).  It is not necessary
 		to use this functionality, but if you do you'll find it much easier to see how well your models
 		are doing.  The opennlp.grok.preprocess.namefind package is an example of a maximum entropy
 		component which uses this functionality.
