@@ -159,7 +159,7 @@
 		<junit.version>5.9.1</junit.version>
 		<morfologik.version>2.1.7</morfologik.version>
 		<osgi.version>4.2.0</osgi.version>
-		<checkstyle.plugin.version>2.17</checkstyle.plugin.version>
+		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
 		<onnxruntime.version>1.10.0</onnxruntime.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
@@ -203,7 +203,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>7.2</version>
+							<version>10.6.0</version>
 						</dependency>
 					</dependencies>
 					<executions>
@@ -212,10 +212,9 @@
 							<phase>validate</phase>
 							<configuration>
 								<configLocation>checkstyle.xml</configLocation>
-								<encoding>UTF-8</encoding>
 								<consoleOutput>true</consoleOutput>
 								<includeTestSourceDirectory>true</includeTestSourceDirectory>
-								<testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+								<testSourceDirectories>${project.basedir}/src/test/java</testSourceDirectories>
 								<violationSeverity>error</violationSeverity>
 								<failOnViolation>true</failOnViolation>
 							</configuration>

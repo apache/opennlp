@@ -39,7 +39,7 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
    * For tokenization the {@link SimpleTokenizer} is used.
    */
   public TokenPatternFeatureGenerator() {
-      this(SimpleTokenizer.INSTANCE);
+    this(SimpleTokenizer.INSTANCE);
   }
 
   /**

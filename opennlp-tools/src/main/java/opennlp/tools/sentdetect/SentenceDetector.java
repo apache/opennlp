@@ -26,22 +26,22 @@ import opennlp.tools.util.Span;
  */
 public interface SentenceDetector {
 
-    /**
-     * Detects sentences in a character sequence.
-     *
-     * @param s The {@link CharSequence} for which sentences shall to be detected.
-     * @return  The String[] with the individual sentences as the array
-     *          elements.
-     */
-    String[] sentDetect(CharSequence s);
+  /**
+   * Detects sentences in a character sequence.
+   *
+   * @param s The {@link CharSequence} for which sentences shall to be detected.
+   * @return  The String[] with the individual sentences as the array
+   *          elements.
+   */
+  String[] sentDetect(CharSequence s);
 
-    /**
-     * Detects sentences in a character sequence.
-     *
-     * @param s The {@link CharSequence} for which sentences shall be detected.
-     *
-     * @return The array of {@link Span spans} (offsets into {@code s}) for each
-     * detected sentence as the individuals array elements.
-     */
-    Span[] sentPosDetect(CharSequence s);
+  /**
+   * Detects sentences in a character sequence.
+   *
+   * @param s The {@link CharSequence} for which sentences shall be detected.
+   *
+   * @return The array of {@link Span spans} (offsets into {@code s}) for each
+   * detected sentence as the individuals array elements.
+   */
+  Span[] sentPosDetect(CharSequence s);
 }

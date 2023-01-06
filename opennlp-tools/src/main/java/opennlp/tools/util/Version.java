@@ -75,7 +75,7 @@ public class Version {
    * @param revision Must not be negative.
    */
   public Version(int major, int minor, int revision) {
-   this(major, minor, revision, false);
+    this(major, minor, revision, false);
   }
 
   /**

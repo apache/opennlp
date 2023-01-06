@@ -20,7 +20,6 @@ package opennlp.tools.formats.irishsentencebank;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.StringBuilder;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import javax.xml.parsers.DocumentBuilder;
 
 import org.w3c.dom.Document;
@@ -198,7 +196,7 @@ public class IrishSentenceBankDocument {
           List<Span> spans = new ArrayList<>();
           NodeList sentnl = sentnode.getChildNodes();
           int flexes = 1;
-          StringBuilder orig = new StringBuilder();
+          java.lang.StringBuilder orig = new java.lang.StringBuilder();
 
           for (int j = 0; j < sentnl.getLength(); j++) {
             final String name = sentnl.item(j).getNodeName();
