@@ -158,7 +158,6 @@
 		<glassfish.version>2.30.1</glassfish.version>
 		<junit.version>5.9.1</junit.version>
 		<morfologik.version>2.1.7</morfologik.version>
-		<osgi.version>4.2.0</osgi.version>
 		<checkstyle.plugin.version>2.17</checkstyle.plugin.version>
 		<onnxruntime.version>1.10.0</onnxruntime.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>

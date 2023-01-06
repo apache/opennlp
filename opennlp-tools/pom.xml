@@ -30,26 +30,10 @@
   </parent>
 
   <artifactId>opennlp-tools</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <name>Apache OpenNLP Tools</name>
 
   <dependencies>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
-      <version>${osgi.version}</version>
-      <scope>provided</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.compendium</artifactId>
-      <version>${osgi.version}</version>
-      <scope>provided</scope>
-      <optional>true</optional>
-    </dependency>
-
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -127,24 +111,6 @@
           </execution>
         </executions>
       </plugin>
-
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Bundle-Activator>opennlp.tools.util.ext.OSGiExtensionLoader</Bundle-Activator>
-            <Bundle-RequiredExecutionEnvironment>JavaSE-1.8</Bundle-RequiredExecutionEnvironment>
-            <Export-Package>
-              !opennlp.tools.cmdline.*,
-              opennlp.tools.*
-            </Export-Package>
-            <Import-Package>*</Import-Package>
-          </instructions>
-        </configuration>
-      </plugin>
-
     </plugins>
   </build>
 </project>
