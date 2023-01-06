@@ -33,8 +33,7 @@ public class ExtensionLoader {
   /**
    * Instantiates an user provided extension to OpenNLP.
    * <p>
-   * The extension is either loaded from the class path or if running
-   * inside an OSGi environment via an OSGi service.
+   * The extension is loaded from the class path.
    * <p>
    * Initially it tries using the public default
    * constructor. If it is not found, it will check if the class follows the singleton

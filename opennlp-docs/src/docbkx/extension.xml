@@ -38,26 +38,4 @@ of it. And some components allow to add new feature generators.
 	interface and should have a public no-argument constructor.
 	</para>
 </section>
-
-<section id="tools.extension.osgi">
-	<title>Running in an OSGi container</title>
-	<para>
-	The traditional way of loading an extension via Class.forName does not work
-	in an OSGi environment because the class paths of the OpenNLP Tools and extension
-	bundle are isolated. OSGi uses services to provide functionality from one bundle
-	to another. The extension bundle must register its extensions as services so that
-	the OpenNLP tools bundle can use them.
-	The following code illustrates how that can be done:
-				<programlisting language="java">
-				<![CDATA[
-Dictionary<String, String> props = new Hashtable<String, String>();
-props.put(ExtensionServiceKeys.ID, "org.test.SuperTokenizer");
-context.registerService(Tokenizer.class.getName(), new org.test.SuperTokenizer(), props);]]>
-		</programlisting>
-	The service OpenNLP is looking for might not be (yet) available. In this case OpenNLP
-	waits until a timeout is reached. If loading the extension fails an ExtensionNotLoadedException
-	is thrown. This exception is also thrown when the thread is interrupted while it is waiting for the
-	extension, the interrupted flag will be set again and the calling code has a chance to handle it.
-	</para>
-</section>
 </chapter>
