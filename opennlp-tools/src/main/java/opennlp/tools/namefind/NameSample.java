@@ -31,7 +31,7 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.Span;
 
 /**
- * Class for holding names for a single unit of text.
+ * Encapsulates names for a single unit of text.
  */
 public class NameSample implements Sample {
 
@@ -42,11 +42,22 @@ public class NameSample implements Sample {
   private final String[][] additionalContext;
   private final boolean isClearAdaptiveData;
 
-  /** The a default type value when there is no type in training data. */
+  /** The default type value when there is no type in training data. */
   public static final String DEFAULT_TYPE = "default";
 
-  public NameSample(String id, String[] sentence, Span[] names,
-      String[][] additionalContext, boolean clearAdaptiveData) {
+  /**
+   * Initializes a {@link NameSample} instance with given parameters.
+   * 
+   * @param id The identifier to use.
+   * @param sentence The tokens representing a training sentence. Must not be {@code null}.
+   * @param names The {@link Span names} to use.
+   * @param additionalContext Additional context in a 2-dimensional array.
+   * @param clearAdaptiveData If {@code true} the adaptive data of the feature generators is cleared.
+   *
+   * @throws RuntimeException Thrown if name spans are overlapping.
+   */
+  public NameSample(String id, String[] sentence, Span[] names, String[][] additionalContext,
+                    boolean clearAdaptiveData) {
     this.id = id;
 
     Objects.requireNonNull(sentence, "sentence must not be null");
@@ -84,41 +95,68 @@ public class NameSample implements Sample {
       }
     }
   }
-
+  
   /**
-   * Initializes the current instance.
+   * Initializes a {@link NameSample} instance with given parameters.
    *
-   * @param sentence training sentence
-   * @param names
-   * @param additionalContext
-   * @param clearAdaptiveData if true the adaptive data of the
-   *     feature generators is cleared
+   * @param sentence The tokens representing a sentence. Must not be {@code null}.
+   * @param names The {@link Span names} to use.
+   * @param additionalContext Additional context in a 2-dimensional array.
+   * @param clearAdaptiveData If {@code true} the adaptive data of the feature generators is cleared.
+   *
+   * @throws RuntimeException Thrown if name spans are overlapping.
    */
   public NameSample(String[] sentence, Span[] names,
       String[][] additionalContext, boolean clearAdaptiveData) {
     this(null, sentence, names, additionalContext, clearAdaptiveData);
   }
 
+  /**
+   * Initializes a {@link NameSample} instance with given parameters.
+   *
+   * @param sentence The tokens representing a sentence. Must not be {@code null}.
+   * @param names The {@link Span names} to use.
+   * @param clearAdaptiveData If {@code true} the adaptive data of the feature generators is cleared.
+   *
+   * @throws RuntimeException Thrown if name spans are overlapping.
+   */
   public NameSample(String[] sentence, Span[] names, boolean clearAdaptiveData) {
     this(sentence, names, null, clearAdaptiveData);
   }
 
+  /**
+   * @return Retrieves the current identifier. May be {@code null}.
+   */
   public String getId() {
     return id;
   }
 
+  /**
+   * @return Retrieves the sentence in tokenized form.
+   */
   public String[] getSentence() {
     return sentence.toArray(new String[sentence.size()]);
   }
 
+  /**
+   * @return Retrieves the {@link Span names}.
+   */
   public Span[] getNames() {
     return names.toArray(new Span[names.size()]);
   }
 
+
+  /**
+   * @return Retrieves additional context. May be {@code null}.
+   */
   public String[][] getAdditionalContext() {
     return additionalContext;
   }
 
+  /**
+   * @return {@code true} if the adaptive data of the feature generators are cleared,
+   *         {@code false} otherwise.
+   */
   public boolean isClearAdaptiveDataSet() {
     return isClearAdaptiveData;
   }
@@ -219,14 +257,33 @@ public class NameSample implements Sample {
 
   private static final Pattern START_TAG_PATTERN = Pattern.compile("<START(:([^:>\\s]*))?>");
 
-  public static NameSample parse(String taggedTokens,
-      boolean isClearAdaptiveData) throws IOException {
-    return parse(taggedTokens, DEFAULT_TYPE, isClearAdaptiveData);
+
+  /**
+   * Parses given input into a {@link NameSample}.
+   * 
+   * @param taggedTokens The input data to parse.
+   * @param clearAdaptiveData {@code true} if the adaptive data of the feature generators should be cleared,
+   *                          {@code false} otherwise.
+   * @return A {@link NameSample} instance resulting from the parsing.
+   * @throws IOException Thrown if IO errors occurred during parsing.
+   */
+  public static NameSample parse(String taggedTokens, boolean clearAdaptiveData) throws IOException {
+    return parse(taggedTokens, DEFAULT_TYPE, clearAdaptiveData);
   }
 
-  public static NameSample parse(String taggedTokens, String defaultType,
-      boolean isClearAdaptiveData) throws IOException {
-    // TODO: Should throw another exception, and then convert it into an IOException in the stream
+  /**
+   * Parses given input into a {@link NameSample}.
+   *
+   * @param taggedTokens The input data to parse.
+   * @param defaultType The type to set by default.
+   * @param clearAdaptiveData {@code true} if the adaptive data of the feature generators should be cleared,
+   *                          {@code false} otherwise.
+   * @return A {@link NameSample} instance resulting from the parsing.
+   * @throws IOException Thrown if IO errors occurred during parsing.
+   */
+  // TODO: Should throw another exception, and then convert it into an IOException in the stream
+  public static NameSample parse(String taggedTokens, String defaultType, boolean clearAdaptiveData)
+          throws IOException {
 
     String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(taggedTokens);
 
@@ -276,6 +333,6 @@ public class NameSample implements Sample {
     String[] sentence = tokenList.toArray(new String[tokenList.size()]);
     Span[] names = nameList.toArray(new Span[nameList.size()]);
 
-    return new NameSample(sentence, names, isClearAdaptiveData);
+    return new NameSample(sentence, names, clearAdaptiveData);
   }
 }

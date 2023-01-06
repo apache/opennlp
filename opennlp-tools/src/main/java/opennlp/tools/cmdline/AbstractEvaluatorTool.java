@@ -22,7 +22,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * Base class for evaluator tools.
  */
-public class AbstractEvaluatorTool<T, P> extends AbstractTypedParamTool<T, P> {
+public abstract class AbstractEvaluatorTool<T, P> extends AbstractTypedParamTool<T, P> {
 
   protected P params;
   protected ObjectStreamFactory<T, P> factory;
@@ -38,6 +38,7 @@ public class AbstractEvaluatorTool<T, P> extends AbstractTypedParamTool<T, P> {
     super(sampleType, params);
   }
 
+  @Override
   public void run(String format, String[] args) {
     validateAllArgs(args, this.paramsClass, format);
 

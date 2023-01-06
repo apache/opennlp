@@ -24,11 +24,30 @@ import opennlp.tools.ml.maxent.quasinewton.QNModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.DataReader;
 
+/**
+ * The base class for readers of {@link QNModel QN models}.
+ *
+ * @see QNModel
+ * @see GISModelReader
+ */
 public class QNModelReader extends GISModelReader {
+
+  /**
+   * Initializes a {@link QNModelReader} via a {@link DataReader}.
+   *
+   * @param dataReader The {@link DataReader} that references the model to be read.
+   */
   public QNModelReader(DataReader dataReader) {
     super(dataReader);
   }
 
+  /**
+   * Initializes a {@link QNModelReader} via a {@link File}.
+   *
+   * @param file The {@link File} that references the model to be read.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public QNModelReader(File file) throws IOException {
     super(file);
   }
@@ -41,6 +60,18 @@ public class QNModelReader extends GISModelReader {
           + " model as a MAXENT_QN model." + " You should expect problems.");
   }
 
+  /**
+   * Retrieves a model from disk.
+   *
+   * <p>
+   * If you are creating a reader for a format which won't work with this
+   * (perhaps a database or xml file), override this method and ignore the other
+   * methods provided in this abstract class.
+   *
+   * @return The {@link QNModel} stored in the format and location specified to this
+   *         {@link QNModelReader} (usually via its constructor).
+   */
+  @Override
   public QNModel constructModel() throws IOException {
     String[] outcomeLabels = getOutcomes();
     int[][] outcomePatterns = getOutcomePatterns();

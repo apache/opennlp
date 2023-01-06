@@ -23,6 +23,9 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceStream;
 
+/**
+ * A basic {@link EventModelSequenceTrainer} implementation that processes {@link Event events}.
+ */
 public abstract class AbstractEventModelSequenceTrainer extends AbstractTrainer implements
     EventModelSequenceTrainer<Event> {
 

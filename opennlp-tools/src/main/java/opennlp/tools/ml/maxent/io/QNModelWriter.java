@@ -20,15 +20,34 @@ package opennlp.tools.ml.maxent.io;
 import java.io.IOException;
 import java.util.List;
 
+import opennlp.tools.ml.maxent.quasinewton.QNModel;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.ComparablePredicate;
 
+/**
+ * The base class for writers of {@link QNModel models}.
+ * <p>
+ * It provides the {@link #persist()} method which takes care of the structure of a
+ * stored document, and requires an extending class to define precisely how
+ * the data should be stored.
+ */
 public abstract class QNModelWriter extends GISModelWriter {
 
   public QNModelWriter(AbstractModel model) {
     super(model);
   }
 
+  /**
+   * Writes the {@link AbstractModel QN model}, using the
+   * {@link #writeUTF(String)}, {@link #writeDouble(double)}, or {@link #writeInt(int)}}
+   * methods implemented by extending classes.
+   *
+   * <p>If you wish to create a {@link QNModelWriter} which uses a different
+   * structure, it will be necessary to override the {@code #persist()} method in
+   * addition to implementing the {@code writeX(..)} methods.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   @Override
   public void persist() throws IOException {
     // the type of model (QN)

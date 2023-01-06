@@ -29,6 +29,9 @@ import java.util.Map;
 import opennlp.tools.util.java.Experimental;
 
 /**
+ *
+ * GloVe is an unsupervised learning algorithm for obtaining vector representations for words.
+ * Details are found on this <a href="https://nlp.stanford.edu/projects/glove/"> web site</a>.
  * <p>
  * Warning: Experimental new feature, see OPENNLP-1144 for details, the API might be changed anytime.
  */
@@ -41,10 +44,8 @@ public class Glove {
   /**
    * Parses a glove vector plain text file.
    * <p>
-   * Warning: Experimental new feature, see OPENNLP-1144 for details, the API might be changed anytime.
-   *
-   * @param in the input stream for Glove vectors
-   * @return a Glove based wv table
+   * @param in A valid, open {@link InputStream} to Glove vectors from.
+   * @return A Glove based {@link WordVectorTable}, guaranteed to be non {@code null}.
    * @throws IOException if any error occurs during parsing
    */
   @Experimental

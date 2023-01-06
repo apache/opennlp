@@ -26,9 +26,16 @@ import java.security.NoSuchAlgorithmException;
 import opennlp.tools.util.AbstractObjectStream;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * A hash sum based {@link AbstractObjectStream} implementation.
+ *
+ * @see Event
+ * @see MessageDigest
+ * @see AbstractObjectStream
+ */
 public class HashSumEventStream extends AbstractObjectStream<Event> {
 
-  private MessageDigest digest;
+  private final MessageDigest digest;
 
   public HashSumEventStream(ObjectStream<Event> eventStream) {
     super(eventStream);
@@ -36,7 +43,7 @@ public class HashSumEventStream extends AbstractObjectStream<Event> {
     try {
       digest = MessageDigest.getInstance("MD5");
     } catch (NoSuchAlgorithmException e) {
-      // should never happen, does all java runtimes have md5 ?!
+      // should never happen: do all java runtimes have md5 ?!
       throw new IllegalStateException(e);
     }
   }
@@ -53,17 +60,15 @@ public class HashSumEventStream extends AbstractObjectStream<Event> {
   }
 
   /**
-   * Calculates the hash sum of the stream. The method must be
-   * called after the stream is completely consumed.
+   * Calculates the hash sum of the stream and wraps it into a {@link BigInteger}.
+   * Note: The method must be called after the stream is completely consumed.
    *
-   * @return the hash sum
-   * @throws IllegalStateException if the stream is not consumed completely,
-   *     completely means that hasNext() returns false
+   * @return The calculated hash sum as {@link BigInteger}.
+   * @throws IllegalStateException Thrown if the stream is not consumed completely,
+   *     completely means that hasNext() returns {@code false}.
    */
   public BigInteger calculateHashSum() {
     return new BigInteger(1, digest.digest());
   }
 
-  public void remove() {
-  }
 }

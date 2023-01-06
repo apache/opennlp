@@ -45,6 +45,7 @@ public final class TokenizerTrainerTool
     super(TokenSample.class, TrainerToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "trainer for the learnable tokenizer";
   }
@@ -58,6 +59,7 @@ public final class TokenizerTrainerTool
     return dict;
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
     if (null != params.getParams())

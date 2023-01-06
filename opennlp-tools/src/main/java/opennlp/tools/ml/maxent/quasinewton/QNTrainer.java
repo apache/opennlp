@@ -31,7 +31,10 @@ import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Maxent model trainer using L-BFGS algorithm.
+ * A Maxent model {@link opennlp.tools.commons.Trainer} using L-BFGS algorithm.
+ *
+ * @see QNModel
+ * @see AbstractEventTrainer
  */
 public class QNTrainer extends AbstractEventTrainer {
 
@@ -67,28 +70,63 @@ public class QNTrainer extends AbstractEventTrainer {
   private int m;
   private int maxFctEval;
 
+  /**
+   * Initializes a {@link QNTrainer}.
+   * <p>
+   * <b>Note:</b><br>
+   * The resulting instance does not print progress messages about training to STDOUT.
+   */
+  public QNTrainer() {
+  }
+
+  /**
+   * Initializes a {@link QNTrainer}.
+   *
+   * @param parameters The {@link TrainingParameters} to use.
+   */
   public QNTrainer(TrainingParameters parameters) {
     super(parameters);
   }
   
-  // Constructor -- to log. For testing purpose
-  public QNTrainer(boolean printMessages) {
-    this(M_DEFAULT, printMessages);
+  /**
+   * Initializes a {@link QNTrainer}.
+   *
+   * @param verbose Whether to send progress messages about training to
+   *                STDOUT when {@code true}; trains silently otherwise.
+   */
+  public QNTrainer(boolean verbose) {
+    this(M_DEFAULT, verbose);
   }
 
-  // Constructor -- m : number of hessian updates to store. For testing purpose
+  /**
+   * Initializes a {@link QNTrainer}.
+   *
+   * @param m The number of hessian updates to store.
+   */
   public QNTrainer(int m) {
     this(m, true);
   }
 
-  // Constructor -- to log, number of hessian updates to store. For testing purpose
+  /**
+   * Initializes a {@link QNTrainer}.
+   *
+   * @param m The number of hessian updates to store.
+   * @param verbose Whether to send progress messages about training to
+   *                STDOUT when {@code true}; trains silently otherwise.
+   */
   public QNTrainer(int m, boolean verbose) {
     this(m, MAX_FCT_EVAL_DEFAULT, verbose);
   }
 
-  // For testing purpose
-  public QNTrainer(int m, int maxFctEval, boolean printMessages) {
-    this.printMessages    = printMessages;
+  /**
+   * Initializes a {@link QNTrainer}.
+   *
+   * @param m The number of hessian updates to store.
+   * @param verbose Whether to send progress messages about training to
+   *                STDOUT when {@code true}; trains silently otherwise.
+   */
+  public QNTrainer(int m, int maxFctEval, boolean verbose) {
+    this.printMessages    = verbose;
     this.m          = m < 0 ? M_DEFAULT : m;
     this.maxFctEval = maxFctEval < 0 ? MAX_FCT_EVAL_DEFAULT : maxFctEval;
     this.threads    = THREADS_DEFAULT;
@@ -97,9 +135,6 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   // >> Members related to AbstractEventTrainer
-  public QNTrainer() {
-  }
-
   @Override
   public void init(TrainingParameters trainingParameters, Map<String, String> reportMap) {
     super.init(trainingParameters,reportMap);
@@ -151,6 +186,11 @@ public class QNTrainer extends AbstractEventTrainer {
     }
   }
 
+  /**
+   * @return {@code true} if the validation of the internal configuration succeeds,
+   *         {@code false} otherwise.
+   * @deprecated Use {@link #validate()} instead.
+   */
   @Deprecated
   @Override
   public boolean isValid() {
@@ -163,16 +203,27 @@ public class QNTrainer extends AbstractEventTrainer {
     }
   }
 
+  @Override
   public boolean isSortAndMerge() {
     return true;
   }
 
+  @Override
   public AbstractModel doTrain(DataIndexer indexer) throws IOException {
     int iterations = getIterations();
     return trainModel(iterations, indexer);
   }
 
-  // << Members related to AbstractEventTrainer
+  /**
+   * Trains a model using the QN algorithm.
+   *
+   * @param iterations The number of QN iterations to perform.
+   * @param indexer    The {@link DataIndexer} used to compress events in memory.
+   *
+   * @return A trained {@link QNModel} which can be used immediately or saved to
+   *         disk using an {@link opennlp.tools.ml.maxent.io.QNModelWriter}.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
+   */
   public QNModel trainModel(int iterations, DataIndexer indexer) {
 
     // Train model's parameters
@@ -215,11 +266,11 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   /**
-   * For measuring model's training accuracy
+   * For measuring model's training accuracy.
    */
   private static class ModelEvaluator implements Evaluator {
 
-    private DataIndexer indexer;
+    private final DataIndexer indexer;
 
     public ModelEvaluator(DataIndexer indexer) {
       this.indexer = indexer;

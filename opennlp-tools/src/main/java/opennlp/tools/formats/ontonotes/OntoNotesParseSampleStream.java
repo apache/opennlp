@@ -27,10 +27,19 @@ import opennlp.tools.util.ObjectStream;
 // Should be possible with this one, to train the parser and pos tagger!
 public class OntoNotesParseSampleStream extends FilterObjectStream<String, Parse> {
 
+  /**
+   * Initializes a {@link OntoNotesParseSampleStream}.
+   *
+   * @param samples The {@link ObjectStream<String> samples} as input.
+   *                Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   public OntoNotesParseSampleStream(ObjectStream<String> samples) {
     super(samples);
   }
 
+  @Override
   public Parse read() throws IOException {
 
     StringBuilder parseString = new StringBuilder();

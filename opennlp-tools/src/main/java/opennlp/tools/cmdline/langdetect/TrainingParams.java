@@ -19,12 +19,14 @@ package opennlp.tools.cmdline.langdetect;
 
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.commons.Internal;
 
 /**
  * TrainingParams for Language Detector.
- *
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 interface TrainingParams {
 
   @ParameterDescription(valueName = "paramsFile", description = "training parameters file.")

@@ -18,7 +18,7 @@
 package opennlp.tools.ml.maxent.quasinewton;
 
 /**
- * Interface for a function
+ * Interface for a function.
  */
 public interface Function {
 

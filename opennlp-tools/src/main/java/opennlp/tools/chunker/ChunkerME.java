@@ -87,8 +87,7 @@ public class ChunkerME implements Chunker {
    * @throws IOException Thrown if the model cannot be downloaded or saved.
    */
   public ChunkerME(String language) throws IOException {
-    this((ChunkerModel) DownloadUtil.downloadModel(language, DownloadUtil.ModelType.CHUNKER,
-            ChunkerModel.class));
+    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.CHUNKER, ChunkerModel.class));
   }
 
   /**

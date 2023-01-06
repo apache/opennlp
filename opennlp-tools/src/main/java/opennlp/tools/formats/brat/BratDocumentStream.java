@@ -32,12 +32,12 @@ import opennlp.tools.util.ObjectStream;
 
 public class BratDocumentStream implements ObjectStream<BratDocument> {
 
-  private AnnotationConfiguration config;
+  private final AnnotationConfiguration config;
   private List<String> documentIds = new LinkedList<>();
   private Iterator<String> documentIdIterator;
 
   /**
-   * Creates a BratDocumentStream which reads the documents from the given input directory.
+   * Creates a {@link BratDocumentStream} which reads the documents from the given input directory.
    *
    * @param config the annotation.conf from the brat project as an Annotation Configuration object
    * @param bratCorpusDirectory the directory containing all the brat training data files
@@ -86,6 +86,7 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
     reset();
   }
 
+  @Override
   public BratDocument read() throws IOException {
 
     BratDocument doc = null;
@@ -102,10 +103,12 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
     return doc;
   }
 
+  @Override
   public void reset() {
     documentIdIterator = documentIds.iterator();
   }
 
+  @Override
   public void close() {
     // No longer needed, make the object unusable
     documentIds = null;

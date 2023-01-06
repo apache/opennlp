@@ -49,6 +49,7 @@ public class LanguageDetectorSampleStreamFactory<P>
     super(params);
   }
 
+  @Override
   public ObjectStream<LanguageSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 

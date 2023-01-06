@@ -27,20 +27,26 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.ModelParameterChunker;
 
 /**
- * Model writer that saves models in binary format.
+ * A {@link GISModelWriter} that writes models in a binary format.
+ *
+ * @see opennlp.tools.ml.maxent.GISModel
  */
 public class BinaryGISModelWriter extends GISModelWriter {
-  private DataOutputStream output;
+  private final DataOutputStream output;
 
   /**
-   * Constructor which takes a GISModel and a File and prepares itself to write
-   * the model to that file. Detects whether the file is gzipped or not based on
-   * whether the suffix contains ".gz".
+   * Instantiates {@link BinaryGISModelWriter} via an
+   * {@link AbstractModel GIS model} and a {@link File}.
+   * <p>
+   * Prepares writing of a {@code model} to the file.
+   * Based on whether the file's suffix contains {@code .gz}, it detects whether
+   * the file is gzipped or not.
    *
-   * @param model
-   *          The GISModel which is to be persisted.
-   * @param f
-   *          The File in which the model is to be persisted.
+   * @param model The {@link AbstractModel GIS model} which is to be persisted.
+   * @param f The {@link File} in which the model is to be persisted.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   * @see opennlp.tools.ml.maxent.GISModel
    */
   public BinaryGISModelWriter(AbstractModel model, File f) throws IOException {
 
@@ -55,31 +61,43 @@ public class BinaryGISModelWriter extends GISModelWriter {
   }
 
   /**
-   * Constructor which takes a GISModel and a DataOutputStream and prepares
-   * itself to write the model to that stream.
+   * Instantiates {@link BinaryGISModelWriter} via
+   * an {@link AbstractModel GIS model} and a {@link DataOutputStream}.
    *
-   * @param model
-   *          The GISModel which is to be persisted.
-   * @param dos
-   *          The stream which will be used to persist the model.
+   * @param model The {@link AbstractModel GIS model} which is to be persisted.
+   * @param dos The {@link DataOutputStream} which is used to persist the {@code model}.
+   *            The {@code dos} must be opened.
    */
   public BinaryGISModelWriter(AbstractModel model, DataOutputStream dos) {
     super(model);
     output = dos;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public void writeUTF(String s) throws java.io.IOException {
     ModelParameterChunker.writeUTF(output, s);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public void writeInt(int i) throws java.io.IOException {
     output.writeInt(i);
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public void writeDouble(double d) throws java.io.IOException {
     output.writeDouble(d);
   }
-
+  
+  @Override
   public void close() throws java.io.IOException {
     output.flush();
     output.close();

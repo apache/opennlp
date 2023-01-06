@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InsufficientTrainingDataException;
@@ -35,8 +34,10 @@ import opennlp.tools.util.TrainingParameters;
 
 
 /**
- * Abstract class for collecting event and context counts used in training.
- *
+ * Abstract {@link DataIndexer} implementation for collecting
+ * event and context counts used in training.
+ * 
+ * @see DataIndexer
  */
 public abstract class AbstractDataIndexer implements DataIndexer {
 
@@ -51,7 +52,11 @@ public abstract class AbstractDataIndexer implements DataIndexer {
 
   protected boolean printMessages;
 
-  public void init(TrainingParameters indexingParameters,Map<String, String> reportMap) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void init(TrainingParameters indexingParameters, Map<String, String> reportMap) {
     this.reportMap = reportMap;
     if (this.reportMap == null) reportMap = new HashMap<>();
     trainingParameters = indexingParameters;
@@ -65,47 +70,82 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   protected int[][] contexts;
   /** The integer outcome associated with each unique event. */
   protected int[] outcomeList;
-  /** The number of times an event occured in the training data. */
+  /** The number of times an event occurred in the training data. */
   protected int[] numTimesEventsSeen;
   /** The predicate/context names. */
   protected String[] predLabels;
   /** The names of the outcomes. */
   protected String[] outcomeLabels;
-  /** The number of times each predicate occured. */
+  /** The number of times each predicate occurred. */
   protected int[] predCounts;
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public int[][] getContexts() {
     return contexts;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public int[] getNumTimesEventsSeen() {
     return numTimesEventsSeen;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public int[] getOutcomeList() {
     return outcomeList;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public String[] getPredLabels() {
     return predLabels;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public String[] getOutcomeLabels() {
     return outcomeLabels;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public int[] getPredCounts() {
     return predCounts;
   }
 
   /**
+   * {@inheritDoc}
+   */
+  @Override
+  public int getNumEvents() {
+    return numEvents;
+  }
+  
+  /**
    * Sorts and uniques the array of comparable events and return the number of unique events.
-   * This method will alter the eventsToCompare array -- it does an in place
-   * sort, followed by an in place edit to remove duplicates.
+   * This method will alter the {@code eventsToCompare} list.
+   * <p>
+   * It does an in place sort, followed by an in place edit to remove duplicates.
    *
-   * @param eventsToCompare a <code>ComparableEvent[]</code> value
+   * @param eventsToCompare The {@link List<ComparableEvent>} events used as input.
+   * @param sort Whether to use sorting, or not.
+   *
    * @return The number of unique events in the specified list.
-   * @throws InsufficientTrainingDataException if not enough events are provided
+   * @throws InsufficientTrainingDataException Thrown if not enough events are provided
    * @since maxent 1.2.6
    */
   protected int sortAndMerge(List<ComparableEvent> eventsToCompare, boolean sort)
@@ -158,6 +198,17 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     return numUniqueEvents;
   }
 
+  /**
+   * Performs the data indexing.
+   * <p>
+   * <b>Note:</b>
+   * Make sure the {@link #init(TrainingParameters, Map)} method is called first.
+   *
+   * @param events A {@link ObjectStream<Event>} of events used as input.
+   * @param predicateIndex A {@link Map} providing the data of a predicate index.
+   *
+   * @throws IOException Thrown if IO errors occurred during indexing.
+   */
   protected List<ComparableEvent> index(ObjectStream<Event> events,
                                         Map<String, Integer> predicateIndex) throws IOException {
     Map<String, Integer> omap = new HashMap<>();
@@ -170,7 +221,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
       omap.putIfAbsent(ev.getOutcome(), omap.size());
 
       int[] cons = Arrays.stream(ev.getContext())
-          .map(pred -> predicateIndex.get(pred))
+          .map(predicateIndex::get)
           .filter(Objects::nonNull)
           .mapToInt(i -> i).toArray();
 
@@ -188,34 +239,11 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     return eventsToCompare;
   }
 
-  public int getNumEvents() {
-    return numEvents;
-  }
-
   /**
-   * Updates the set of predicated and counter with the specified event contexts and cutoff.
-   * @param ec The contexts/features which occur in a event.
-   * @param predicateSet The set of predicates which will be used for model building.
-   * @param counter The predicate counters.
-   * @param cutoff The cutoff which determines whether a predicate is included.
-   * @deprecated will be removed after 1.8.1 release
-   */
-  @Deprecated
-  protected static void update(String[] ec, Set<String> predicateSet,
-      Map<String,Integer> counter, int cutoff) {
-    for (String s : ec) {
-      counter.merge(s, 1, (value, one) -> value + one);
-
-      if (!predicateSet.contains(s) && counter.get(s) >= cutoff) {
-        predicateSet.add(s);
-      }
-    }
-  }
-
-  /**
-   * Updates the set of predicated and counter with the specified event contexts.
-   * @param ec The contexts/features which occur in a event.
-   * @param counter The predicate counters.
+   * Updates the {@link Map} of predicates and counter with the specified event contexts.
+   *
+   * @param ec The contexts/features which occur in an event.
+   * @param counter The predicate counters in form of a {@link Map}.
    */
   protected static void update(String[] ec, Map<String,Integer> counter) {
     for (String s : ec) {
@@ -224,19 +252,21 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   }
 
   /**
-   * Utility method for creating a String[] array from a map whose
+   * Utility method for creating a {@code String[]} from a map whose
    * keys are labels (Strings) to be stored in the array and whose
    * values are the indices (Integers) at which the corresponding
    * labels should be inserted.
    *
-   * @param labelToIndexMap a <code>TObjectIntHashMap</code> value
-   * @return a <code>String[]</code> value
+   * @param labelToIndexMap A {@link Map} that holds labels to index positions.
+   * @return The resulting {@code String[]}.
    */
   protected static String[] toIndexedStringArray(Map<String, Integer> labelToIndexMap) {
-    return labelToIndexMap.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue))
-        .map(Map.Entry::getKey).toArray(String[]::new);
+    return labelToIndexMap.entrySet().stream()
+            .sorted(Comparator.comparingInt(Map.Entry::getValue))
+            .map(Map.Entry::getKey).toArray(String[]::new);
   }
 
+  @Override
   public float[][] getValues() {
     return null;
   }

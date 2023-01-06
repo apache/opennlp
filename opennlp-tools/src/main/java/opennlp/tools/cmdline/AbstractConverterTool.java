@@ -25,8 +25,8 @@ import opennlp.tools.util.ObjectStream;
 /**
  * Base class for format conversion tools.
  *
- * @param <T> class of data sample the tool converts, for example {@link opennlp.tools.postag
- * .POSSample}
+ * @param <T> The class of data sample the tool converts,
+ *           for example {@link opennlp.tools.postag.POSSample}
  */
 public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
 
@@ -39,6 +39,7 @@ public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
     super(sampleType);
   }
 
+  @Override
   public String getShortDescription() {
     Map<String, ObjectStreamFactory<T,P>> factories = StreamFactoryRegistry.getFactories(type);
     StringBuilder help = new StringBuilder();
@@ -67,6 +68,7 @@ public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
     return "Usage: " + CLI.CMD + " " + getName() + " " + format + " " + usage;
   }
 
+  @Override
   public String getHelp() {
     Map<String, ObjectStreamFactory<T,P>> factories = StreamFactoryRegistry.getFactories(type);
     StringBuilder help = new StringBuilder("help|");
@@ -78,10 +80,12 @@ public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
     return createHelpString(help.substring(0, help.length() - 1), "[help|options...]");
   }
 
+  @Override
   public String getHelp(String format) {
     return getHelp();
   }
 
+  @Override
   public void run(String format, String[] args) {
     if (0 == args.length) {
       System.out.println(getHelp());

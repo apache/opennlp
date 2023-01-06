@@ -25,32 +25,32 @@ import org.apache.uima.cas.FeatureStructure;
 import org.apache.uima.cas.text.AnnotationFS;
 
 /**
- * Checks if an AnnotationFS is contained by the given AnnotationFS.
+ * Checks if an {@link AnnotationFS} is contained by the given AnnotationFS.
  */
 public final class ContainingConstraint implements FSMatchConstraint {
   private static final long serialVersionUID = 1;
 
-  private Collection<AnnotationFS> mContainingAnnotations = new LinkedList<>();
+  private final Collection<AnnotationFS> mContainingAnnotations = new LinkedList<>();
 
   /**
-   * Initializes a new instance.
+   * Initializes a {@link ContainingConstraint}.
    */
   public ContainingConstraint() {
-    // does currently nothing
   }
 
   /**
-   * Initializes a new instance.
+   * Initializes a {@link ContainingConstraint}.
    *
-   * @param containingAnnotation
+   * @param containingAnnotation The {@link AnnotationFS} to initialize with.
    */
   public ContainingConstraint(AnnotationFS containingAnnotation) {
     mContainingAnnotations.add(containingAnnotation);
   }
 
   /**
-   * Checks if the given FeatureStructure match the constraint.
+   * Checks if the given {@link FeatureStructure} matches the constraint.
    */
+  @Override
   public boolean match(FeatureStructure featureStructure) {
     if (!(featureStructure instanceof AnnotationFS)) {
       return false;

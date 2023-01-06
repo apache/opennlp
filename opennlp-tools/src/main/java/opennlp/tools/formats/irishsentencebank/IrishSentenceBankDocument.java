@@ -18,17 +18,15 @@
 package opennlp.tools.formats.irishsentencebank;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.StringBuilder;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import javax.xml.parsers.DocumentBuilder;
 
 import org.w3c.dom.Document;
@@ -44,8 +42,13 @@ import opennlp.tools.util.XmlUtil;
  * A structure to hold an Irish Sentence Bank document, which is a collection
  * of tokenized sentences.
  * <p>
- * The sentence bank can be downloaded from, and is described
- * <a href="http://www.lexiconista.com/datasets/sentencebank-ga/">here</a>
+ * The sentence bank can be downloaded from this
+ * <a href="https://github.com/michmech/irish-sentence-bank">website</a>.
+ * <p>
+ * It was originally published and described
+ * <a href="http://www.lexiconista.com/datasets/sentencebank-ga/">
+ *   http://www.lexiconista.com/datasets/sentencebank-ga/</a>, yet this
+ * page was gone when last checked in December 2022.
  */
 public class IrishSentenceBankDocument {
 
@@ -65,11 +68,12 @@ public class IrishSentenceBankDocument {
   }
 
   public static class IrishSentenceBankSentence {
-    private String source;
-    private String translation;
-    private String original;
-    private Span[] tokens;
-    private IrishSentenceBankFlex[] flex;
+    private final String source;
+    private final String translation;
+    private final String original;
+    private final Span[] tokens;
+    private final IrishSentenceBankFlex[] flex;
+    
     public String getSource() {
       return source;
     }
@@ -98,25 +102,35 @@ public class IrishSentenceBankDocument {
     }
   }
 
-  private List<IrishSentenceBankSentence> sentences;
+  private final List<IrishSentenceBankSentence> sentences;
 
+  /**
+   * Initializes an empty {@link IrishSentenceBankDocument}.
+   */
   public IrishSentenceBankDocument() {
-    sentences = new ArrayList<IrishSentenceBankSentence>();
+    sentences = new ArrayList<>();
   }
 
+  /**
+   * @param sent A {@link IrishSentenceBankSentence} to be added.
+   */
   public void add(IrishSentenceBankSentence sent) {
     this.sentences.add(sent);
   }
 
+  /**
+   * @return Retrieves an unmodifiable list of all {@link IrishSentenceBankSentence sentences}.
+   */
   public List<IrishSentenceBankSentence> getSentences() {
     return Collections.unmodifiableList(sentences);
   }
 
   /**
-   * Helper to adjust the span of punctuation tokens: ignores spaces to the left of the string
-   * @param s the string to check
-   * @param start the offset of the start of the string
-   * @return the offset adjusted to ignore spaces to the left
+   * Helper to adjust the span of punctuation tokens: ignores spaces to the left of the string.
+   * @param s The string to check.
+   * @param start The offset of the start of the string.
+   *
+   * @return The offset adjusted to ignore spaces to the left.
    */
   private static int advanceLeft(String s, int start) {
     int ret = start;
@@ -131,10 +145,11 @@ public class IrishSentenceBankDocument {
   }
 
   /**
-   * Helper to adjust the span of punctuation tokens: ignores spaces to the right of the string
-   * @param s the string to check
-   * @param start the offset of the start of the string
-   * @return the offset of the end of the string, adjusted to ignore spaces to the right
+   * Helper to adjust the span of punctuation tokens: ignores spaces to the right of the string.
+   * @param s The string to check.
+   * @param start The offset of the start of the string.
+   *              
+   * @return The offset of the end of the string, adjusted to ignore spaces to the right.
    */
   private static int advanceRight(String s, int start) {
     int end = s.length() - 1;
@@ -149,6 +164,15 @@ public class IrishSentenceBankDocument {
     return ret;
   }
 
+  /**
+   * Parses the data provided via an {@link InputStream} into a
+   * {@link IrishSentenceBankDocument}.
+   *
+   * @param is A valid, open {@link InputStream} ready for use.
+   *           
+   * @return A valid {@link IrishSentenceBankDocument}.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public static IrishSentenceBankDocument parse(InputStream is) throws IOException {
     IrishSentenceBankDocument document = new IrishSentenceBankDocument();
 
@@ -172,7 +196,7 @@ public class IrishSentenceBankDocument {
           List<Span> spans = new ArrayList<>();
           NodeList sentnl = sentnode.getChildNodes();
           int flexes = 1;
-          StringBuilder orig = new StringBuilder();
+          java.lang.StringBuilder orig = new java.lang.StringBuilder();
 
           for (int j = 0; j < sentnl.getLength(); j++) {
             final String name = sentnl.item(j).getNodeName();
@@ -203,7 +227,7 @@ public class IrishSentenceBankDocument {
                       spans.add(new Span(last, last + tmptok.length()));
 
                       String slottmpb = orignl.item(k).getAttributes().getNamedItem("slot").getNodeValue();
-                      Integer tokslot = Integer.parseInt(slottmpb);
+                      int tokslot = Integer.parseInt(slottmpb);
                       if (tokslot > flexes) {
                         flexes = tokslot;
                       }
@@ -265,8 +289,17 @@ public class IrishSentenceBankDocument {
     }
   }
 
+  /**
+   * Parses the data provided via a {@link File} into a
+   * {@link IrishSentenceBankDocument}.
+   *
+   * @param file A valid {@link File} that holds the data to process.
+   *
+   * @return A valid {@link IrishSentenceBankDocument}.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   static IrishSentenceBankDocument parse(File file) throws IOException {
-    try (InputStream in = new FileInputStream(file)) {
+    try (InputStream in = Files.newInputStream(file.toPath())) {
       return parse(in);
     }
   }

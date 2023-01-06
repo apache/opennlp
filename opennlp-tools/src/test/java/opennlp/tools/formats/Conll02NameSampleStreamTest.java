@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.Conll02NameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
@@ -32,62 +31,58 @@ import opennlp.tools.util.Span;
  * Note:
  * Sample training data must be UTF-8 encoded and uncompressed!
  */
-public class Conll02NameSampleStreamTest {
-
-  private static ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(Conll02NameSampleStreamTest.class,
-        "/opennlp/tools/formats/" + name);
-
-    return new Conll02NameSampleStream(lang, in, Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
-  }
+public class Conll02NameSampleStreamTest extends AbstractSampleStreamTest {
 
   @Test
   void testParsingSpanishSample() throws IOException {
 
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.SPA, "conll2002-es.sample");
+    try (ObjectStream<NameSample> sampleStream = openData(LANGUAGE.SPA, "conll2002-es.sample")) {
+      NameSample personName = sampleStream.read();
 
-    NameSample personName = sampleStream.read();
+      Assertions.assertNotNull(personName);
+      Assertions.assertEquals(5, personName.getSentence().length);
+      Assertions.assertEquals(1, personName.getNames().length);
+      Assertions.assertTrue(personName.isClearAdaptiveDataSet());
 
-    Assertions.assertNotNull(personName);
+      Span nameSpan = personName.getNames()[0];
+      Assertions.assertEquals(0, nameSpan.getStart());
+      Assertions.assertEquals(4, nameSpan.getEnd());
+      Assertions.assertTrue(personName.isClearAdaptiveDataSet());
 
-    Assertions.assertEquals(5, personName.getSentence().length);
-    Assertions.assertEquals(1, personName.getNames().length);
-    Assertions.assertEquals(true, personName.isClearAdaptiveDataSet());
+      Assertions.assertEquals(0, sampleStream.read().getNames().length);
 
-    Span nameSpan = personName.getNames()[0];
-    Assertions.assertEquals(0, nameSpan.getStart());
-    Assertions.assertEquals(4, nameSpan.getEnd());
-    Assertions.assertEquals(true, personName.isClearAdaptiveDataSet());
-
-    Assertions.assertEquals(0, sampleStream.read().getNames().length);
-
-    Assertions.assertNull(sampleStream.read());
+      Assertions.assertNull(sampleStream.read());
+    }
   }
 
   @Test
   void testParsingDutchSample() throws IOException {
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NLD, "conll2002-nl.sample");
+    try (ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NLD, "conll2002-nl.sample")) {
+      NameSample personName = sampleStream.read();
 
-    NameSample personName = sampleStream.read();
+      Assertions.assertEquals(0, personName.getNames().length);
+      Assertions.assertTrue(personName.isClearAdaptiveDataSet());
 
-    Assertions.assertEquals(0, personName.getNames().length);
-    Assertions.assertTrue(personName.isClearAdaptiveDataSet());
+      personName = sampleStream.read();
 
-    personName = sampleStream.read();
-
-    Assertions.assertFalse(personName.isClearAdaptiveDataSet());
-
-    Assertions.assertNull(sampleStream.read());
+      Assertions.assertFalse(personName.isClearAdaptiveDataSet());
+      Assertions.assertNull(sampleStream.read());
+    }
   }
 
   @Test
   void testReset() throws IOException {
-    ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NLD, "conll2002-nl.sample");
+    try (ObjectStream<NameSample> sampleStream = openData(LANGUAGE.NLD, "conll2002-nl.sample")) {
+      NameSample sample = sampleStream.read();
+      sampleStream.reset();
 
-    NameSample sample = sampleStream.read();
-
-    sampleStream.reset();
-
-    Assertions.assertEquals(sample, sampleStream.read());
+      Assertions.assertEquals(sample, sampleStream.read());
+    }
   }
+
+  private ObjectStream<NameSample> openData(LANGUAGE lang, String name) throws IOException {
+    return new Conll02NameSampleStream(
+            lang, getFactory(name), Conll02NameSampleStream.GENERATE_PERSON_ENTITIES);
+  }
+
 }

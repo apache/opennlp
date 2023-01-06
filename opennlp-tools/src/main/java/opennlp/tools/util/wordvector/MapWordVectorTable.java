@@ -20,6 +20,13 @@ package opennlp.tools.util.wordvector;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * A {@link WordVectorTable} implementation that maps tokens to
+ * {@link WordVector word vectors} via a {@link Map}.
+ *
+ * @see WordVector
+ * @see WordVectorTable
+ */
 class MapWordVectorTable implements WordVectorTable {
 
   private final Map<String, WordVector> vectors;

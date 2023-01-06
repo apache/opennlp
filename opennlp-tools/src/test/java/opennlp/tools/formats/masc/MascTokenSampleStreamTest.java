@@ -17,12 +17,12 @@
 
 package opennlp.tools.formats.masc;
 
-import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.tokenize.TokenSample;
@@ -34,18 +34,22 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
-public class MascTokenSampleStreamTest {
+public class MascTokenSampleStreamTest extends AbstractMascSampleStreamTest {
+
+  private MascTokenSampleStream stream;
+
+  @BeforeEach
+  public void setup() throws IOException {
+    super.setup();
+    FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
+    stream = new MascTokenSampleStream(
+             new MascDocumentStream(directory, true, fileFilter));
+    Assertions.assertNotNull(stream);
+  }
 
   @Test
   void read() {
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascTokenSampleStream stream;
-      stream = new MascTokenSampleStream(
-          new MascDocumentStream(directory, true, fileFilter));
-
       TokenSample s = stream.read();
 
       String expectedString = "This is a test Sentence.";
@@ -80,13 +84,6 @@ public class MascTokenSampleStreamTest {
   @Test
   void close() {
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascTokenSampleStream stream;
-      stream = new MascTokenSampleStream(
-          new MascDocumentStream(directory, true, fileFilter));
-
       stream.close();
       TokenSample s = stream.read();
     } catch (IOException e) {
@@ -99,13 +96,6 @@ public class MascTokenSampleStreamTest {
   @Test
   void reset() {
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascTokenSampleStream stream;
-      stream = new MascTokenSampleStream(
-          new MascDocumentStream(directory, true, fileFilter));
-
       TokenSample s = stream.read();
       s = stream.read();
       s = stream.read();
@@ -136,12 +126,9 @@ public class MascTokenSampleStreamTest {
   @Test
   void train() {
     try {
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
       FileFilter fileFilter = pathname -> pathname.getName().contains("");
       ObjectStream<TokenSample> trainTokens = new MascTokenSampleStream(
-          new MascDocumentStream(directory,
-              true, fileFilter));
+          new MascDocumentStream(directory, true, fileFilter));
 
       System.out.println("Training");
       TokenizerModel model = null;
@@ -152,8 +139,7 @@ public class MascTokenSampleStreamTest {
           trainingParameters);
 
       ObjectStream<TokenSample> testTokens = new MascTokenSampleStream(
-          new MascDocumentStream(directory,
-              true, fileFilter));
+          new MascDocumentStream(directory, true, fileFilter));
       TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model));
       evaluator.evaluate(testTokens);
       System.out.println(evaluator.getFMeasure());
@@ -164,8 +150,6 @@ public class MascTokenSampleStreamTest {
       Assertions.fail("Exception raised");
     }
 
-
   }
-
 
 }

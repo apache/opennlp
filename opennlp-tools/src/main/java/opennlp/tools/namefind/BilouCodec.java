@@ -27,6 +27,23 @@ import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 
+/**
+ * The default {@link SequenceCodec} implementation according to the {@code BILOU} scheme.
+ * <ul>
+ *   <li>B: 'beginning' of a NE</li>
+ *   <li>I: 'inside', the word is inside a NE</li>
+ *   <li>L: 'last', the last (I) word inside a NE</li>
+ *   <li>O: 'outside', the word is a regular word outside a NE</li>
+ *   <li>U: 'unit', any standalone token following words outside of NE</li>
+ * </ul>
+ *
+ * See paper by Roth D. and Ratinov L. (2009):
+ * <a href="https://cogcomp.seas.upenn.edu/page/publication_view/199">
+ *  Design Challenges and Misconceptions in Named Entity Recognition</a>.
+ *
+ * @see SequenceCodec
+ * @see BioCodec
+ */
 public class BilouCodec implements SequenceCodec<String> {
 
   public static final String START = "start";
@@ -114,15 +131,17 @@ public class BilouCodec implements SequenceCodec<String> {
   }
 
   /**
-   * B requires CL or L
-   * C requires BL
-   * L requires B
-   * O requires any valid combo/unit
-   * U requires none
+   * {@code
+   * B requires CL or L,
+   * C requires BL,
+   * L requires B,
+   * O requires any valid combo/unit,
+   * U requires none.
+   * }
+   * 
+   * @param outcomes All potential model outcomes check.
    *
-   * @param outcomes all possible model outcomes
-   *
-   * @return true, if model outcomes are compatible
+   * @return {@code true}, if model outcomes are compatible, {@code false} otherwise.
    */
   @Override
   public boolean areOutcomesCompatible(String[] outcomes) {

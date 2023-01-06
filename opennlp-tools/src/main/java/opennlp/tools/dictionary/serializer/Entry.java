@@ -23,22 +23,22 @@ import opennlp.tools.util.StringList;
 /**
  * An {@link Entry} is a {@link StringList} which can
  * optionally be mapped to attributes.
- *
- * {@link Entry}s is a read and written by the {@link DictionaryEntryPersistor}.
+ * <p>
+ * {@link Entry entries} are read and written by the {@link DictionaryEntryPersistor}.
  *
  * @see DictionaryEntryPersistor
  * @see Attributes
  */
 public class Entry {
 
-  private StringList tokens;
-  private Attributes attributes;
+  private final StringList tokens;
+  private final Attributes attributes;
 
   /**
-   * Initializes the current instance.
+   * Initializes an {@link Entry}.
    *
-   * @param tokens
-   * @param attributes
+   * @param tokens The tokens to keep.
+   * @param attributes  The (optional) {@link Attributes} to set.
    */
   public Entry(StringList tokens, Attributes attributes) {
     this.tokens = tokens;
@@ -46,18 +46,14 @@ public class Entry {
   }
 
   /**
-   * Retrieves the tokens.
-   *
-   * @return the tokens
+   * @return Retrieves the tokens.
    */
   public StringList getTokens() {
     return tokens;
   }
 
   /**
-   * Retrieves the {@link Attributes}.
-   *
-   * @return the {@link Attributes}
+   * @return  Retrieves the {@link Attributes}.
    */
   public Attributes getAttributes() {
     return attributes;

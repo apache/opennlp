@@ -29,9 +29,6 @@ import java.util.Objects;
  */
 public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  /**
-   * Contains all aggregated {@link AdaptiveFeatureGenerator}s.
-   */
   private Collection<AdaptiveFeatureGenerator> generators;
 
   /**
@@ -60,6 +57,7 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    * Calls the {@link AdaptiveFeatureGenerator#clearAdaptiveData()} method
    * on all aggregated {@link AdaptiveFeatureGenerator}s.
    */
+  @Override
   public void clearAdaptiveData() {
 
     for (AdaptiveFeatureGenerator generator : generators) {
@@ -71,6 +69,7 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
    * Calls the {@link AdaptiveFeatureGenerator#createFeatures(List, String[], int, String[])}
    * method on all aggregated {@link AdaptiveFeatureGenerator}s.
    */
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 

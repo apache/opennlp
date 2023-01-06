@@ -19,7 +19,8 @@ package opennlp.tools.util.normalizer;
 import java.util.regex.Pattern;
 
 /**
- * Normalizer for Twitter character sequences
+ * A {@link TwitterCharSequenceNormalizer} implementation that normalizes text
+ * in terms of Twitter character patterns. Every encounter will be replaced by a whitespace.
  */
 public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
 
@@ -43,6 +44,7 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
+  @Override
   public CharSequence normalize (CharSequence text) {
     String modified = HASH_USER_REGEX.matcher(text).replaceAll(" ");
     modified = RT_REGEX.matcher(modified).replaceAll(" ");

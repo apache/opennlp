@@ -24,10 +24,10 @@ import java.util.Optional;
 
 public class ConlluSentence {
 
-  private List<ConlluWordLine> wordLines;
+  private final List<ConlluWordLine> wordLines;
 
-  private String sentenceIdComment;
-  private String textComment;
+  private final String sentenceIdComment;
+  private final String textComment;
   private boolean newDocument;
   private String documentId;
   private boolean newParagraph;

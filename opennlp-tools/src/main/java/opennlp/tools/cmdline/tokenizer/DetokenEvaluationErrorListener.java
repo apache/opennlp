@@ -32,14 +32,14 @@ public class DetokenEvaluationErrorListener extends
     EvaluationErrorPrinter<TokenSample> implements TokenizerEvaluationMonitor {
 
   /**
-   * Creates a listener that will print to System.err
+   * Creates a listener that will print to {@code System.err}.
    */
   public DetokenEvaluationErrorListener() {
     super(System.err);
   }
 
   /**
-   * Creates a listener that will print to a given {@link OutputStream}
+   * Creates a listener that will print to a given {@link OutputStream}.
    */
   public DetokenEvaluationErrorListener(OutputStream outputStream) {
     super(outputStream);

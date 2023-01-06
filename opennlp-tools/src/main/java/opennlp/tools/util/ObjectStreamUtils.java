@@ -24,12 +24,12 @@ import java.util.Iterator;
 public class ObjectStreamUtils {
 
   /**
-   * Creates an {@link ObjectStream} form an array.
+   * Creates an {@link ObjectStream} form an array of {@link T}.
    *
-   * @param <T>
-   * @param array
+   * @param array The elements to feed into the new {@link ObjectStream}.
+   * @param <T> The generic type of the elements in the {@code array}.
    *
-   * @return the object stream over the array elements
+   * @return The {@link ObjectStream} over the array elements.
    */
   @SafeVarargs
   public static <T> ObjectStream<T> createObjectStream(final T... array) {
@@ -38,6 +38,7 @@ public class ObjectStreamUtils {
 
       private int index = 0;
 
+      @Override
       public T read() {
         if (index < array.length)
           return array[index++];
@@ -45,22 +46,24 @@ public class ObjectStreamUtils {
           return null;
       }
 
+      @Override
       public void reset() {
         index = 0;
       }
 
+      @Override
       public void close() {
       }
     };
   }
 
   /**
-   * Creates an {@link ObjectStream} form a collection.
+   * Creates an {@link ObjectStream} form a {@link Collection<T>}.
    *
-   * @param <T>
-   * @param collection
+   * @param collection The elements to feed into the new {@link ObjectStream}.
+   * @param <T> The generic type of the elements in the {@code collection}.
    *
-   * @return the object stream over the collection elements
+   * @return The {@link ObjectStream} over the collection elements
    */
   public static <T> ObjectStream<T> createObjectStream(final Collection<T> collection) {
 
@@ -68,6 +71,7 @@ public class ObjectStreamUtils {
 
       private Iterator<T> iterator = collection.iterator();
 
+      @Override
       public T read() {
         if (iterator.hasNext())
           return iterator.next();
@@ -75,21 +79,26 @@ public class ObjectStreamUtils {
           return null;
       }
 
+      @Override
       public void reset() {
         iterator = collection.iterator();
       }
 
+      @Override
       public void close() {
       }
     };
   }
 
   /**
-   * Creates a single concatenated ObjectStream from multiple individual
-   * ObjectStreams with the same type.
+   * Creates a single concatenated {@link ObjectStream} from multiple individual
+   * {@link ObjectStream streams} with the same type {@link T}.
    *
-   * @param streams
-   * @return
+   * @param streams The collection of streams to feed into the concatenated {@link ObjectStream}.
+   *                Every element of the collection must not be {@code null}.
+   * @param <T> The generic type of the elements in the {@code collection}.
+   *
+   * @return The concatenated {@link ObjectStream} aggregating all elements in {@code streams}.
    */
   public static <T> ObjectStream<T> concatenateObjectStream(final Collection<ObjectStream<T>> streams) {
 
@@ -138,11 +147,14 @@ public class ObjectStreamUtils {
   }
 
   /**
-   * Creates a single concatenated ObjectStream from multiple individual
-   * ObjectStreams with the same type.
+   * Creates a single concatenated {@link ObjectStream} from multiple individual
+   * {@link ObjectStream streams} with the same type.
    *
-   * @param streams
-   * @return
+   * @param streams One or more stream to feed into the concatenated {@link ObjectStream}.
+   *                Every element of the collection must not be {@code null}.
+   * @param <T> The generic type of the elements in the {@code streams}.
+   *           
+   * @return The concatenated {@link ObjectStream} aggregating all elements in {@code streams}.
    */
   @SafeVarargs
   public static <T> ObjectStream<T> concatenateObjectStream(final ObjectStream<T>... streams) {
@@ -157,6 +169,7 @@ public class ObjectStreamUtils {
 
       private int streamIndex = 0;
 
+      @Override
       public T read() throws IOException {
 
         T object = null;
@@ -171,6 +184,7 @@ public class ObjectStreamUtils {
         return object;
       }
 
+      @Override
       public void reset() throws IOException, UnsupportedOperationException {
         streamIndex = 0;
 
@@ -179,6 +193,7 @@ public class ObjectStreamUtils {
         }
       }
 
+      @Override
       public void close() throws IOException {
 
         for (ObjectStream<T> stream : streams) {

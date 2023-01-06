@@ -36,6 +36,7 @@ public class ComparablePredicate implements Comparable<ComparablePredicate> {
     params = ps;
   }
 
+  @Override
   public int compareTo(ComparablePredicate cp) {
     int smallerLength = StrictMath.min(outcomes.length, cp.outcomes.length);
 
@@ -70,6 +71,7 @@ public class ComparablePredicate implements Comparable<ComparablePredicate> {
     return false;
   }
 
+  @Override
   public String toString() {
     StringBuilder s = new StringBuilder();
     for (int outcome : outcomes) {

@@ -24,15 +24,15 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.formats.AbstractFormatTest;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.Span;
 
-public class IrishSentenceBankDocumentTest {
+public class IrishSentenceBankDocumentTest extends AbstractFormatTest {
 
   @Test
   void testParsingSimpleDoc() throws IOException {
-    try (InputStream irishSBXmlIn =
-             IrishSentenceBankDocumentTest.class.getResourceAsStream("irishsentencebank-sample.xml")) {
+    try (InputStream irishSBXmlIn = getResourceStream("irishsentencebank/irishsentencebank-sample.xml")) {
 
       IrishSentenceBankDocument doc = IrishSentenceBankDocument.parse(irishSBXmlIn);
 

@@ -71,7 +71,7 @@ public final class ModelParameterChunker {
 
   private static final int MAX_CHUNK_SIZE_BYTES = 65535; // the maximum 'utflen' DataOutputStream can handle
 
-  private ModelParameterChunker(){
+  private ModelParameterChunker() {
     // private utility class ct s
   }
 

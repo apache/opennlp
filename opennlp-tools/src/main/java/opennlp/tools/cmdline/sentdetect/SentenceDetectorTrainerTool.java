@@ -46,6 +46,7 @@ public final class SentenceDetectorTrainerTool
     super(SentenceSample.class, TrainerToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "trainer for the learnable sentence detector";
   }
@@ -59,6 +60,7 @@ public final class SentenceDetectorTrainerTool
     return dict;
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

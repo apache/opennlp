@@ -27,13 +27,14 @@ import opennlp.tools.util.ObjectStream;
 public class OntoNotesPOSSampleStreamFactory
         extends AbstractSampleStreamFactory<POSSample, OntoNotesFormatParameters> {
 
-  private OntoNotesParseSampleStreamFactory parseSampleStreamFactory =
+  private final OntoNotesParseSampleStreamFactory parseSampleStreamFactory =
       new OntoNotesParseSampleStreamFactory();
 
   protected OntoNotesPOSSampleStreamFactory() {
     super(OntoNotesFormatParameters.class);
   }
 
+  @Override
   public ObjectStream<POSSample> create(String[] args) {
     ObjectStream<Parse> parseSampleStream = parseSampleStreamFactory.create(args);
     return new ParseToPOSSampleStream(parseSampleStream);

@@ -20,6 +20,7 @@ package opennlp.tools.formats.convert;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.DetokenizerParameter;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
 import opennlp.tools.parser.Parse;
@@ -27,8 +28,10 @@ import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class ParseToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory
         <SentenceSample, ParseToSentenceSampleStreamFactory.Parameters> {
 
@@ -39,6 +42,7 @@ public class ParseToSentenceSampleStreamFactory extends DetokenizerSampleStreamF
     super(Parameters.class);
   }
 
+  @Override
   public ObjectStream<SentenceSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 

@@ -23,25 +23,29 @@ import java.io.IOException;
 
 import opennlp.tools.ml.model.BinaryFileDataReader;
 
+/**
+ * A {@link PerceptronModelReader} that reads models from a binary format.
+ */
 public class BinaryPerceptronModelReader extends PerceptronModelReader {
 
 
   /**
-   * Constructor which directly instantiates the DataInputStream containing
-   * the model contents.
+   * Instantiates {@link BinaryPerceptronModelReader} via a {@link DataInputStream}
+   * containing the model contents.
    *
-   * @param dis The DataInputStream containing the model information.
+   * @param dis The {@link DataInputStream} containing the model information.
+   *            It must be open and have bytes available.
    */
   public BinaryPerceptronModelReader(DataInputStream dis) {
     super(new BinaryFileDataReader(dis));
   }
 
   /**
-   * Constructor which takes a File and creates a reader for it. Detects
-   * whether the file is gzipped or not based on whether the suffix contains
-   * ".gz"
+   * Instantiates {@link BinaryPerceptronModelReader} via a {@link File} and creates
+   * a reader for it. Based on whether the file's suffix contains {@code .gz},
+   * it detects whether the file is gzipped or not.
    *
-   * @param f The File in which the model is stored.
+   * @param f The {@link File} that references the model to be read.
    */
   public BinaryPerceptronModelReader(File f) throws IOException {
     super(f);

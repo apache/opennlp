@@ -26,6 +26,11 @@ import opennlp.tools.util.StringUtil;
 
 public class ConlluTokenSampleStream extends FilterObjectStream<ConlluSentence, TokenSample> {
 
+  /**
+   * Initializes a {@link ConlluTokenSampleStream}.
+   *
+   * @param samples The {@link ObjectStream<ConlluSentence> samples} used as input.
+   */
   public ConlluTokenSampleStream(ObjectStream<ConlluSentence> samples) {
     super(samples);
   }

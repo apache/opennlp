@@ -40,6 +40,9 @@ import opennlp.uima.util.AnnotationIteratorPair;
 import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
 
+/**
+ * Base implementation of a name finder.
+ */
 abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
 
   protected final String name;
@@ -65,6 +68,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
   protected void initialize() throws ResourceInitializationException {
   }
 
+  @Override
   public final void initialize(UimaContext context) throws ResourceInitializationException {
 
     super.initialize(context);
@@ -88,8 +92,9 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
   }
 
   /**
-   * Initializes the type system.
+   * Initializes the {@link TypeSystem}.
    */
+  @Override
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
 
@@ -147,8 +152,9 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
   protected abstract Span[] find(CAS cas, String[] tokens);
 
   /**
-   * Performs name finding on the given cas object.
+   * Performs name finding on the given {@link CAS} object.
    */
+  @Override
   public final void process(CAS cas) {
 
     if (isRemoveExistingAnnotations) {

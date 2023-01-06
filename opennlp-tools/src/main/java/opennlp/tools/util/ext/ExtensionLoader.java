@@ -19,11 +19,15 @@ package opennlp.tools.util.ext;
 
 import java.lang.reflect.Field;
 
+import opennlp.tools.commons.Internal;
+
 /**
  * The {@link ExtensionLoader} is responsible to load extensions to the OpenNLP library.
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class ExtensionLoader {
 
   private ExtensionLoader() {
@@ -31,21 +35,23 @@ public class ExtensionLoader {
 
   // Pass in the type (interface) of the class to load
   /**
-   * Instantiates an user provided extension to OpenNLP.
+   * Instantiates a user provided extension to OpenNLP.
    * <p>
    * The extension is loaded from the class path.
    * <p>
-   * Initially it tries using the public default
-   * constructor. If it is not found, it will check if the class follows the singleton
-   * pattern: a static field named <code>INSTANCE</code> that returns an object of the type
-   * <code>T</code>.
+   * Initially, the load is conducted using the public no-arg constructor.
+   * If no such constructor is not found, it is checked if the class follows the
+   * {@code Singleton} pattern: a static field named {@code INSTANCE} that
+   * returns an object of the type {@link T}.
    *
-   * @param clazz
-   * @param extensionClassName
+   * @param clazz A reference to {@link Class<T>}.
+   * @param extensionClassName The (fully-qualified) name of the class
+   *                           by which the extension shall be loaded.
    *
    * @return the instance of the extension class
+   *
+   * @throws ExtensionNotLoadedException Thrown if the load operation failed.
    */
-  // TODO: Throw custom exception if loading fails ...
   @SuppressWarnings("unchecked")
   public static <T> T instantiateExtension(Class<T> clazz, String extensionClassName) {
 

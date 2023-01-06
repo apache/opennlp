@@ -55,7 +55,7 @@ public final class CLI {
   }
 
   /**
-   * @return a set which contains all tool names
+   * @return A set which contains all tool names.
    */
   public static Set<String> getToolNames() {
     return toolLookupMap.keySet();

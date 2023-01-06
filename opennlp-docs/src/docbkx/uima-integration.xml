@@ -21,13 +21,13 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<chapter id="org.apche.opennlp.uima">
+<chapter id="org.apache.opennlp.uima">
 <title>UIMA Integration</title>
 <para>
 	The UIMA Integration wraps the OpenNLP components in UIMA Analysis Engines which can 
 	be used to automatically annotate text and train new OpenNLP models from annotated text.
 </para>
-	<section id="org.apche.opennlp.running-pear-sample">
+	<section id="org.apache.opennlp.running-pear-sample">
 		<title>Running the pear sample in CVD</title>
 		<para>
 			The Cas Visual Debugger is shipped as part of the UIMA distribution and is a tool which can run
@@ -55,27 +55,27 @@ createPear:
      [copy] Copying 1 file to OpenNlpTextAnalyzer/lib
      [copy] Copying 3 files to OpenNlpTextAnalyzer/lib
     [mkdir] Created dir: OpenNlpTextAnalyzer/models
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-token.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-token.bin
       [get] To: OpenNlpTextAnalyzer/models/en-token.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-sent.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-sent.bin
       [get] To: OpenNlpTextAnalyzer/models/en-sent.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-ner-date.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-date.bin
       [get] To: OpenNlpTextAnalyzer/models/en-ner-date.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-ner-location.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-location.bin
       [get] To: OpenNlpTextAnalyzer/models/en-ner-location.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-ner-money.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-money.bin
       [get] To: OpenNlpTextAnalyzer/models/en-ner-money.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-ner-organization.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-organization.bin
       [get] To: OpenNlpTextAnalyzer/models/en-ner-organization.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-ner-percentage.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-percentage.bin
       [get] To: OpenNlpTextAnalyzer/models/en-ner-percentage.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-person.bin
       [get] To: OpenNlpTextAnalyzer/models/en-ner-person.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-ner-time.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-time.bin
       [get] To: OpenNlpTextAnalyzer/models/en-ner-time.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin
       [get] To: OpenNlpTextAnalyzer/models/en-pos-maxent.bin
-      [get] Getting: http://opennlp.sourceforge.net/models-1.5/en-chunker.bin
+      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-chunker.bin
       [get] To: OpenNlpTextAnalyzer/models/en-chunker.bin
       [zip] Building zip: OpenNlpTextAnalyzer.pear
 
@@ -92,7 +92,7 @@ Total time: 3 minutes 20 seconds]]>
 			must be written in English.
 		</para>
 	</section>
-	<section id="org.apche.opennlp.further-help">
+	<section id="org.apache.opennlp.further-help">
 		<title>Further Help</title>
 		<para>
 			For more information about how to use the integration please consult the javadoc of the individual

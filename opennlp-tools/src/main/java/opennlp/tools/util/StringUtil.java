@@ -20,21 +20,19 @@ package opennlp.tools.util;
 public class StringUtil {
 
   /**
-   * Determines if the specified character is a whitespace.
-   *
-   * A character is considered a whitespace when one
-   * of the following conditions is meet:
-   *
+   * Determines if the specified {@link Character} is a whitespace.
+   * A character is considered a whitespace when one of the following conditions is met:
    * <ul>
-   * <li>Its a {@link Character#isWhitespace(int)} whitespace.</li>
-   * <li>Its a part of the Unicode Zs category ({@link Character#SPACE_SEPARATOR}).</li>
+   * <li>It's a {@link Character#isWhitespace(int)} whitespace.</li>
+   * <li>It's a part of the Unicode Zs category ({@link Character#SPACE_SEPARATOR}).</li>
    * </ul>
    *
-   * <code>Character.isWhitespace(int)</code> does not include no-break spaces.
+   * {@link Character#isWhitespace(int)} does not include no-break spaces.
    * In OpenNLP no-break spaces are also considered as white spaces.
    *
-   * @param charCode
-   * @return true if white space otherwise false
+   * @param charCode The character to check.
+   *                 
+   * @return {@code true} if {@code charCode} represents a white space, {@code false} otherwise.
    */
   public static boolean isWhitespace(char charCode) {
     return Character.isWhitespace(charCode)  ||
@@ -42,21 +40,20 @@ public class StringUtil {
   }
 
   /**
-   * Determines if the specified character is a whitespace.
-   *
-   * A character is considered a whitespace when one
-   * of the following conditions is meet:
+   * Determines if the specified {@link Character} is a whitespace.
+   * A character is considered a whitespace when one of the following conditions is met:
    *
    * <ul>
    * <li>Its a {@link Character#isWhitespace(int)} whitespace.</li>
    * <li>Its a part of the Unicode Zs category ({@link Character#SPACE_SEPARATOR}).</li>
    * </ul>
    *
-   * <code>Character.isWhitespace(int)</code> does not include no-break spaces.
+   * {@link Character#isWhitespace(int)} does not include no-break spaces.
    * In OpenNLP no-break spaces are also considered as white spaces.
    *
-   * @param charCode
-   * @return true if white space otherwise false
+   * @param charCode An int representation of a character to check.
+   *
+   * @return {@code true} if {@code charCode} represents a white space, {@code false} otherwise.
    */
   public static boolean isWhitespace(int charCode) {
     return Character.isWhitespace(charCode)  ||
@@ -65,12 +62,12 @@ public class StringUtil {
 
 
   /**
-   * Converts to lower case independent of the current locale via
-   * {@link Character#toLowerCase(int)} which uses mapping information
-   * from the UnicodeData file.
+   * Converts a {@link CharSequence} to lower case, independent of the current
+   * {@link java.util.Locale} via {@link Character#toLowerCase(int)} which uses
+   * mapping information from the UnicodeData file.
    *
-   * @param string
-   * @return lower cased String
+   * @param string The {@link CharSequence} to transform.
+   * @return The lower-cased String.
    */
   public static String toLowerCase(CharSequence string) {
     int[] cp = string.codePoints().map(Character::toLowerCase).toArray();
@@ -78,12 +75,12 @@ public class StringUtil {
   }
 
   /**
-   * Converts to upper case independent of the current locale via
-   * {@link Character#toUpperCase(char)} which uses mapping information
-   * from the UnicodeData file.
+   * Converts a {@link CharSequence} to upper case, independent of the current
+   * {@link java.util.Locale} via {@link Character#toUpperCase(char)} which uses
+   * mapping information from the UnicodeData file.
    *
-   * @param string
-   * @return upper cased String
+   * @param string The {@link CharSequence} to transform.
+   * @return The upper-cased String
    */
   public static String toUpperCase(CharSequence string) {
     char[] upperCaseChars = new char[string.length()];
@@ -96,10 +93,7 @@ public class StringUtil {
   }
 
   /**
-   * Returns {@code true} if {@link CharSequence#length()} is
-   * {@code 0} or {@code null}.
-   *
-   * @return {@code true} if {@link CharSequence#length()} is {@code 0}, otherwise
+   * @return {@code true} if {@link CharSequence#length()} is {@code 0} or {@code null}, otherwise
    *         {@code false}
    *
    * @since 1.5.1
@@ -109,11 +103,12 @@ public class StringUtil {
   }
 
   /**
-   * Get mininum of three values.
+   * Get the minimum of three values.
+   *
    * @param a number a
    * @param b number b
    * @param c number c
-   * @return the minimum
+   * @return the minimum among the three parameters {@code a}, {@code b} or {@code c}.
    */
   private static int minimum(int a, int b, int c) {
     int minValue;
@@ -128,14 +123,16 @@ public class StringUtil {
   }
 
   /**
-   * Computes the Levenshtein distance of two strings in a matrix.
-   * Based on pseudo-code provided here:
-   * https://en.wikipedia.org/wiki/Levenshtein_distance#Computing_Levenshtein_distance
-   * which in turn is based on the paper Wagner, Robert A.; Fischer, Michael J. (1974),
+   * Computes the <i>Levenshtein</i> distance of two strings in a matrix.
+   * <p>
+   * Based on this
+   * <a href="https://en.wikipedia.org/wiki/Levenshtein_distance#Computing_Levenshtein_distance">
+   * pseudo-code</a> which in turn is based on the paper Wagner, Robert A.; Fischer, Michael J. (1974),
    * "The String-to-String Correction Problem", Journal of the ACM 21 (1): 168-173
-   * @param wordForm the form
-   * @param lemma the lemma
-   * @return the distance
+   * 
+   * @param wordForm The form as input.
+   * @param lemma The target lemma.
+   * @return A 2-dimensional Levenshtein distance matrix.
    */
   public static int[][] levenshteinDistance(String wordForm, String lemma) {
     int wordLength = wordForm.length();
@@ -177,10 +174,11 @@ public class StringUtil {
   /**
    * Computes the Shortest Edit Script (SES) to convert a word into its lemma.
    * This is based on Chrupala's PhD thesis (2008).
-   * @param wordForm the token
-   * @param lemma the target lemma
-   * @param distance the levenshtein distance
-   * @param permutations the number of permutations
+   *
+   * @param wordForm The token.
+   * @param lemma The target lemma.
+   * @param distance A 2-dimensional Levenshtein distance matrix.
+   * @param permutations The number of permutations.
    */
   public static void computeShortestEditScript(String wordForm, String lemma,
       int[][] distance, StringBuffer permutations) {
@@ -197,7 +195,7 @@ public class StringUtil {
       }
       if ((lemmaLength > 0 && wordFormLength > 0) && (distance[wordFormLength - 1][lemmaLength - 1]
           < distance[wordFormLength][lemmaLength])) {
-        permutations.append('R').append(Integer.toString(wordFormLength - 1))
+        permutations.append('R').append(wordFormLength - 1)
             .append(wordForm.charAt(wordFormLength - 1)).append(lemma.charAt(lemmaLength - 1));
         lemmaLength--;
         wordFormLength--;
@@ -205,14 +203,14 @@ public class StringUtil {
       }
       if (lemmaLength > 0 && (distance[wordFormLength][lemmaLength - 1]
           < distance[wordFormLength][lemmaLength])) {
-        permutations.append('I').append(Integer.toString(wordFormLength))
+        permutations.append('I').append(wordFormLength)
             .append(lemma.charAt(lemmaLength - 1));
         lemmaLength--;
         continue;
       }
       if (wordFormLength > 0 && (distance[wordFormLength - 1][lemmaLength]
           < distance[wordFormLength][lemmaLength])) {
-        permutations.append('D').append(Integer.toString(wordFormLength - 1))
+        permutations.append('D').append(wordFormLength - 1)
             .append(wordForm.charAt(wordFormLength - 1));
         wordFormLength--;
         continue;
@@ -236,11 +234,12 @@ public class StringUtil {
   }
 
   /**
-   * Read predicted SES by the lemmatizer model and apply the
-   * permutations to obtain the lemma from the wordForm.
-   * @param wordForm the wordForm
-   * @param permutations the permutations predicted by the lemmatizer model
-   * @return the lemma
+   * Reads the predicted Shortest Edit Script (SES) by a lemmatizer model and applies the
+   * permutations to obtain the lemma from the {@code wordForm}.
+   *
+   * @param wordForm The wordForm as input.
+   * @param permutations The permutations predicted by the lemmatizer model.
+   * @return The decoded lemma.
    */
   public static String decodeShortestEditScript(String wordForm, String permutations) {
 
@@ -308,10 +307,9 @@ public class StringUtil {
   }
 
   /**
-   * Get the SES required to go from a word to a lemma.
-   * @param wordForm the word
-   * @param lemma the lemma
-   * @return the shortest edit script
+   * @param wordForm The word as input.
+   * @param lemma The target lemma.
+   * @return Retrieves the Shortest Edit Script (SES) required to go from a word to a lemma.
    */
   public static String getShortestEditScript(String wordForm, String lemma) {
     String reversedWF = new StringBuffer(wordForm.toLowerCase()).reverse().toString();

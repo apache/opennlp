@@ -32,7 +32,7 @@ public class UncloseableInputStream extends FilterInputStream {
   }
 
   /**
-   * This method does not has any effect the {@link InputStream}
+   * This method does not have any effect, as the {@link InputStream}
    * cannot be closed.
    */
   @Override

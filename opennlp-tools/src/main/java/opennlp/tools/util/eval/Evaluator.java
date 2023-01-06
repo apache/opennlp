@@ -26,14 +26,13 @@ import java.util.List;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * The {@link Evaluator} is an abstract base class for evaluators.
- *
+ * An abstract base class for evaluators.
  * Evaluation results are the arithmetic mean of the
  * scores calculated for each reference sample.
  */
 public abstract class Evaluator<T> {
 
-  private List<EvaluationMonitor<T>> listeners;
+  private final List<EvaluationMonitor<T>> listeners;
 
   @SafeVarargs
   public Evaluator(EvaluationMonitor<T>... aListeners) {
@@ -52,12 +51,12 @@ public abstract class Evaluator<T> {
 
   /**
    * Evaluates the given reference {@link T} sample object.
-   *
+   * <p>
    * The implementation has to update the score after every invocation.
    *
-   * @param reference the reference sample.
+   * @param reference A {@link T reference sample}.
    *
-   * @return the predicted {@link T} sample
+   * @return The predicted {@link T sample}.
    */
   protected abstract T processSample(T reference);
 
@@ -68,12 +67,11 @@ public abstract class Evaluator<T> {
    * <p>
    * <b>note:</b> this method will be changed to private in the future.
    * Implementations should override {@link Evaluator#processSample(Object)} instead.
-   * If this method is override, the implementation has to update the score
+   * If this method is overridden, the implementation has to update the score
    * after every invocation.
    * </p>
    *
-   * @param sample
-   *          the sample to be evaluated
+   * @param sample A {@link T sample} to be evaluated.
    */
   public void evaluateSample(T sample) {
     T predicted = processSample(sample);
@@ -91,14 +89,14 @@ public abstract class Evaluator<T> {
   }
 
   /**
-   * Reads all sample objects from the stream
-   * and evaluates each sample object with
+   * Reads all {@link ObjectStream<T> sample objects}
+   * and evaluates each instance via the
    * {@link #evaluateSample(Object)} method.
    *
-   * @param samples the stream of reference which
-   *     should be evaluated.
+   * @param samples The {@link ObjectStream<T> stream} of reference
+   *                which shall be evaluated.
    *
-   * @throws IOException IOException
+   * @throws IOException Thrown if IO errors occurred.
    */
   public void evaluate(ObjectStream<T> samples) throws IOException {
     T sample;

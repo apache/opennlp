@@ -116,7 +116,7 @@ $ opennlp TokenizerME en-token.bin < article.txt > article-tokenized.txt]]>
 		</para>
 		<para>
 			Since most text comes truly raw and doesn't have sentence boundaries
-			and such, its possible to create a pipe which first performs sentence
+			and such, it's possible to create a pipe which first performs sentence
 			boundary detection and tokenization. The following sample illustrates
 			that.
 			<screen>
@@ -179,7 +179,7 @@ String tokens[] = tokenizer.tokenize("An input sample sentence.");]]>
 "An", "input", "sample", "sentence", "."]]>
 		 </programlisting>
 			The second method, tokenizePos returns an array of Spans, each Span
-			contain the begin and end character offsets of the token in the input
+			contain the start and end character offsets of the token in the input
 			String.
 			<programlisting language="java">
 			<![CDATA[
@@ -215,7 +215,7 @@ double tokenProbs[] = tokenizer.getTokenProbabilities();]]>
 				available from the model download page on various corpora. The data
 				can be converted to the OpenNLP Tokenizer training format or used directly.
                 The OpenNLP format contains one sentence per line. Tokens are either separated by a
-                whitespace or by a special &lt;SPLIT&gt; tag. Tokens are split automaticaly on whitespace
+                whitespace or by a special &lt;SPLIT&gt; tag. Tokens are split automatically on whitespace
                 and at least one &lt;SPLIT&gt; tag must be present in the training text.
 				
 				The following sample shows the sample from above in the correct format.
@@ -413,12 +413,12 @@ He said "This is a test".]]>
 InputStream dictIn = new FileInputStream("latin-detokenizer.xml");
 DetokenizationDictionary dict = new DetokenizationDictionary(dictIn);]]>
 				</programlisting>
-				After the rule dictionary is loadeed the DictionaryDetokenizer can be instantiated.
+				After the rule dictionary is loaded the DictionaryDetokenizer can be instantiated.
 				<programlisting language="java">
 					<![CDATA[
 Detokenizer detokenizer = new DictionaryDetokenizer(dict);]]>
 				</programlisting>
-				The detokenizer offers two detokenize methods,the first detokenize the input tokens into a String.
+				The detokenizer offers two detokenize methods, the first detokenize the input tokens into a String.
 				<programlisting language="java">
 					<![CDATA[
 String[] tokens = new String[]{"A", "co", "-", "worker", "helped", "."};

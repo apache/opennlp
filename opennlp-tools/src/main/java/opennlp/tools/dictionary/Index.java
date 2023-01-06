@@ -24,24 +24,23 @@ import java.util.Set;
 import opennlp.tools.util.StringList;
 
 /**
- * This classes indexes {@link StringList}s. This makes it possible
+ * This classes indexes {@link StringList string lists}. This makes it possible
  * to check if a certain token is contained in at least one of the
  * {@link StringList}s.
  */
 public class Index {
 
-  private Set<String> tokens = new HashSet<>();
+  private final Set<String> tokens = new HashSet<>();
 
   /**
-   * Initializes the current instance with the given
-   * {@link StringList} {@link Iterator}.
+   * Initializes an {@link Index} with the given {@link Iterator}
+   * over {@link StringList} elements.
    *
-   * @param tokenLists
+   * @param tokenLists The iterable {@link StringList} elements.
    */
   public Index(Iterator<StringList> tokenLists) {
 
     while (tokenLists.hasNext()) {
-
       StringList tokens = tokenLists.next();
 
       for (int i = 0; i < tokens.size(); i++) {
@@ -51,12 +50,11 @@ public class Index {
   }
 
   /**
-   * Checks if at leat one {@link StringList} contains the
-   * given token.
+   * Checks if at least one {@link StringList} contains the specified {@code token}.
    *
-   * @param token
+   * @param token The element to check for.
    *
-   * @return true if the token is contained otherwise false.
+   * @return {@code true} if the token is contained, {@code false} otherwise.
    */
   public boolean contains(String token) {
     return tokens.contains(token);

@@ -70,10 +70,16 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   private boolean isClearAdaptiveData = false;
   private final Stack<Span> incompleteNames = new Stack<>();
 
-  private List<Span> names = new ArrayList<>();
+  private final List<Span> names = new ArrayList<>();
 
-  public MucNameContentHandler(Tokenizer tokenizer,
-      List<NameSample> storedSamples) {
+  /**
+   * Initializes a {@link MucNameContentHandler}.
+   *
+   * @param tokenizer The {@link Tokenizer} to use. Must not be {@code null}.
+   * @param storedSamples The {@link List<NameSample> samples} as input.
+   *                      Must not be {@code null}.
+   */
+  public MucNameContentHandler(Tokenizer tokenizer, List<NameSample> storedSamples) {
     this.tokenizer = tokenizer;
     this.storedSamples = storedSamples;
   }

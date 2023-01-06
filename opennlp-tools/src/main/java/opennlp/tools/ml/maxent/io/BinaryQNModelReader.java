@@ -22,16 +22,16 @@ import java.io.DataInputStream;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 
 /**
- * A reader for quasi-newton models stored in binary format.
+ * A {@link QNModelReader} that reads models from a binary format.
  */
 public class BinaryQNModelReader extends QNModelReader {
 
   /**
-   * Constructor which directly instantiates the DataInputStream containing the
-   * model contents.
+   * Instantiates {@link BinaryQNModelReader} via a {@link DataInputStream}
+   * containing the model contents.
    *
-   * @param dis
-   *          The DataInputStream containing the model information.
+   * @param dis The {@link DataInputStream} containing the model information.
+   *            It must be open and have bytes available.
    */
   public BinaryQNModelReader(DataInputStream dis) {
     super(new BinaryFileDataReader(dis));

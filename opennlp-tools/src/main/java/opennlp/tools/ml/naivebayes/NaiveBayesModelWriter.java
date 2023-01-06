@@ -30,9 +30,14 @@ import opennlp.tools.ml.model.ComparablePredicate;
 import opennlp.tools.ml.model.Context;
 
 /**
- * Abstract parent class for NaiveBayes writers.  It provides the persist method
- * which takes care of the structure of a stored document, and requires an
- * extending class to define precisely how the data should be stored.
+ * The base class for {@link NaiveBayesModel} writers.
+ * <p>
+ * It provides the {@link #persist()} method which takes care of the structure
+ * of a stored document, and requires an extending class to define precisely
+ * how the data should be stored.
+ *
+ * @see NaiveBayesModel
+ * @see AbstractModelWriter
  */
 public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
   protected Context[] PARAMS;
@@ -61,7 +66,11 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
     }
   }
 
-
+  /**
+   * Sorts and optimizes the model parameters.
+   *
+   * @return A {@link ComparablePredicate[]}.
+   */
   protected ComparablePredicate[] sortValues() {
 
     ComparablePredicate[] sortPreds = new ComparablePredicate[PARAMS.length];
@@ -89,6 +98,12 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
     return sortPreds;
   }
 
+  /**
+   * Compresses outcome patterns.
+   *
+   * @return A {@link List} of {@link List<ComparablePredicate>} that represent
+   *         the remaining outcomes patterns.
+   */
   protected List<List<ComparablePredicate>> compressOutcomes(ComparablePredicate[] sorted) {
     List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
     if (sorted.length > 0) {
@@ -109,8 +124,12 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
     return outcomePatterns;
   }
 
-
-
+  /**
+   * Computes outcome patterns via {@link ComparablePredicate[] predicates}.
+   *
+   * @return A {@link List} of {@link List<ComparablePredicate>} that represent
+   *         the outcomes patterns.
+   */
   protected List<List<ComparablePredicate>> computeOutcomePatterns(ComparablePredicate[] sorted) {
     ComparablePredicate cp = sorted[0];
     List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
@@ -129,15 +148,19 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
     System.err.println(outcomePatterns.size() + " outcome patterns");
     return outcomePatterns;
   }
-
+  
   /**
-   * Writes the model to disk, using the <code>writeX()</code> methods
-   * provided by extending classes.
+   * Writes the {@link AbstractModel perceptron model}, using the
+   * {@link #writeUTF(String)}, {@link #writeDouble(double)}, or {@link #writeInt(int)}}
+   * methods implemented by extending classes.
    *
-   * <p>If you wish to create a NaiveBayesModelWriter which uses a different
-   * structure, it will be necessary to override the persist method in
-   * addition to implementing the <code>writeX()</code> methods.
+   * <p>If you wish to create a {@link NaiveBayesModelWriter} which uses a different
+   * structure, it will be necessary to override the {@code #persist()} method in
+   * addition to implementing the {@code writeX(..)} methods.
+   *
+   * @throws IOException Thrown if IO errors occurred.
    */
+  @Override
   public void persist() throws IOException {
 
     // the type of model (NaiveBayes)

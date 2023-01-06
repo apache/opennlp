@@ -29,6 +29,9 @@ import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
+/**
+ * A basic {@link EventTrainer} implementation.
+ */
 public abstract class AbstractEventTrainer extends AbstractTrainer implements EventTrainer {
 
   public static final String DATA_INDEXER_PARAM = "DataIndexer";
@@ -48,6 +51,11 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
     super.validate();
   }
 
+  /**
+   * @return {@code true} if the validation of the internal configuration succeeds,
+   *         {@code false} otherwise.
+   * @deprecated Use {@link #validate()} instead.
+   */
   @Deprecated
   @Override
   public boolean isValid() {
@@ -71,6 +79,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
 
   public abstract MaxentModel doTrain(DataIndexer indexer) throws IOException;
 
+  @Override
   public final MaxentModel train(DataIndexer indexer) throws IOException {
     validate();
 
@@ -83,6 +92,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
     return model;
   }
 
+  @Override
   public final MaxentModel train(ObjectStream<Event> events) throws IOException {
     validate();
 

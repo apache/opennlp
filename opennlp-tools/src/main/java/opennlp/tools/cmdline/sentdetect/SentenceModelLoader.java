@@ -21,14 +21,16 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import opennlp.tools.cmdline.ModelLoader;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
- * Loads a Tokenizer Model for the command line tools.
+ * Loads a {@link SentenceModel} for the command line tools.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 final class SentenceModelLoader extends ModelLoader<SentenceModel> {
 
   public SentenceModelLoader() {

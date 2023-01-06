@@ -23,22 +23,28 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.RealValueFileEventStream;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * Class for real-valued {@link Event events} as an
+ * {@link ObjectStream event stream}.
+ * .
+ * @see Event
+ * @see ObjectStream
+ */
 public class RealBasicEventStream implements ObjectStream<Event> {
-  ContextGenerator<String> cg = new BasicContextGenerator();
-  private ObjectStream<String> ds;
+
+  private final ObjectStream<String> ds;
 
   public RealBasicEventStream(ObjectStream<String> ds) {
     this.ds = ds;
   }
 
+  @Override
   public Event read() throws IOException {
 
     String eventString = ds.read();
-
     if (eventString != null) {
       return createEvent(eventString);
     }
-
     return null;
   }
 

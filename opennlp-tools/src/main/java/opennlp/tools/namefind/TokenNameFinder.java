@@ -24,19 +24,21 @@ import opennlp.tools.util.Span;
  */
 public interface TokenNameFinder {
 
-  /** Generates name tags for the given sequence, typically a sentence,
-   * returning token spans for any identified names.
+  /**
+   * Generates name tags for the given sequence, typically a sentence,
+   * returning {@link Span token spans} for any identified names.
    *
-   * @param tokens an array of the tokens or words of the sequence, typically a sentence.
-   * @return an array of spans for each of the names identified.
+   * @param tokens An array of the tokens or words of the sequence, typically a sentence.
+   * @return An array of {@link Span spans} for each of the names identified.
    */
   Span[] find(String[] tokens);
 
   /**
    * Forgets all adaptive data which was collected during previous
    * calls to one of the find methods.
-   *
-   * This method is typical called at the end of a document.
+   * <p>
+   * Note:
+   * This method should typically be called at the end of the processing of a document.
    */
   void clearAdaptiveData();
 

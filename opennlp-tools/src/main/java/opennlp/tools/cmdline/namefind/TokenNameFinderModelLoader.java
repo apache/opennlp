@@ -21,13 +21,15 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import opennlp.tools.cmdline.ModelLoader;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.namefind.TokenNameFinderModel;
 
 /**
- * Loads a Token Name Finder Model for the command line tools.
+ * Loads a {@link TokenNameFinderModel} for the command line tools.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public final class TokenNameFinderModelLoader extends ModelLoader<TokenNameFinderModel> {
 
   public TokenNameFinderModelLoader() {

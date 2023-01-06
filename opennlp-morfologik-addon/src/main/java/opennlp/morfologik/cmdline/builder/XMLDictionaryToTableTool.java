@@ -36,16 +36,18 @@ import opennlp.tools.postag.POSDictionary;
 
 public class XMLDictionaryToTableTool extends BasicCmdLineTool {
 
-  private String SEPARATOR;
+  private static String SEPARATOR;
 
   public String getShortDescription() {
     return "reads an OpenNLP XML tag dictionary and outputs it in a tabular file";
   }
 
+  @Override
   public String getHelp() {
     return getBasicHelp(Params.class);
   }
 
+  @Override
   public void run(String[] args) {
     Params params = validateAndParseParams(args, Params.class);
 

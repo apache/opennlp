@@ -28,7 +28,7 @@ import opennlp.tools.util.ObjectStream;
 
 class SampleShuffleStream<T> implements ObjectStream<T> {
 
-  private List<T> bufferedSamples = new ArrayList<>();
+  private final List<T> bufferedSamples = new ArrayList<>();
 
   private Iterator<T> sampleIt;
 

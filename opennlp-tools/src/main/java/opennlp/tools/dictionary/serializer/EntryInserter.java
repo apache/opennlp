@@ -23,9 +23,9 @@ import opennlp.tools.util.InvalidFormatException;
 public interface EntryInserter {
 
   /**
-   *
-   * @param entry
-   * @throws InvalidFormatException
+   * @param entry The {@link Entry} to insert.
+   *              
+   * @throws InvalidFormatException Thrown if the {@code entry} has an invalid format.
    */
   void insert(Entry entry) throws InvalidFormatException;
 }

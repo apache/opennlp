@@ -22,13 +22,16 @@ package opennlp.tools.util;
  */
 public interface BeamSearchContextGenerator<T> {
 
-  /** Returns the context for the specified position in the specified sequence (list).
-     * @param index The index of the sequence.
-     * @param sequence  The sequence of items over which the beam search is performed.
-     * @param priorDecisions The sequence of decisions made prior to the context for
-     *     which this decision is being made.
-     * @param additionalContext Any addition context specific to a class implementing this interface.
-     * @return the context for the specified position in the specified sequence.
-     */
+  /**
+   * Returns the context for the specified position in the specified {@code sequence} (list).
+   *
+   * @param index The index of the {@code sequence}.
+   * @param sequence The sequence of {@link T items} over which the beam search is performed.
+   * @param priorDecisions The sequence of decisions made prior to the context for
+   *                       which this decision is being made.
+   * @param additionalContext Any addition context specific to a class implementing this interface.
+   *
+   * @return The context for the specified {@code index} in the specified {@code sequence}.
+   */
   String[] getContext(int index, T[] sequence, String[] priorDecisions, Object[] additionalContext);
 }

@@ -48,6 +48,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
     super(Parse.class, TrainerToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "trains the learnable parser";
   }
@@ -114,6 +115,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
   }
 
   // TODO: Add param to train tree insert parser
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

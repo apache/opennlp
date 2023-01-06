@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -40,28 +39,30 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
- * This class is used by for reading and writing dictionaries of all kinds.
+ * A persistor used by for reading and writing {@link Dictionary dictionaries}
+ * of all kinds.
+ *
+ * @see Dictionary
  */
 public class DictionaryEntryPersistor {
 
   // TODO: should check for invalid format, make it save
   private static class DictionaryContenthandler implements ContentHandler {
 
-    private EntryInserter mInserter;
+    private final EntryInserter mInserter;
 
-    //    private boolean mIsInsideDictionaryElement;
-    //    private boolean mIsInsideEntryElement;
     private boolean mIsInsideTokenElement;
     private boolean mIsCaseSensitiveDictionary;
 
-    private List<String> mTokenList = new LinkedList<>();
+    private final List<String> mTokenList = new LinkedList<>();
 
-    private StringBuilder token = new StringBuilder();
+    private final StringBuilder token = new StringBuilder();
 
     private Attributes mAttributes;
 
@@ -73,6 +74,7 @@ public class DictionaryEntryPersistor {
     /**
      * Not implemented.
      */
+    @Override
     public void processingInstruction(String target, String data)
         throws SAXException {
     }
@@ -80,9 +82,11 @@ public class DictionaryEntryPersistor {
     /**
      * Not implemented.
      */
+    @Override
     public void startDocument() throws SAXException {
     }
 
+    @Override
     public void startElement(String uri, String localName, String qName,
         org.xml.sax.Attributes atts) throws SAXException {
       if (DICTIONARY_ELEMENT.equals(localName)) {
@@ -111,6 +115,7 @@ public class DictionaryEntryPersistor {
       }
     }
 
+    @Override
     public void characters(char[] ch, int start, int length)
         throws SAXException {
       if (mIsInsideTokenElement) {
@@ -122,6 +127,7 @@ public class DictionaryEntryPersistor {
      * Creates the Profile object after processing is complete
      * and switches mIsInsideNgramElement flag.
      */
+    @Override
     public void endElement(String uri, String localName, String qName)
         throws SAXException {
 
@@ -151,18 +157,21 @@ public class DictionaryEntryPersistor {
     /**
      * Not implemented.
      */
+    @Override
     public void endDocument() throws SAXException {
     }
 
     /**
      * Not implemented.
      */
+    @Override
     public void endPrefixMapping(String prefix) throws SAXException {
     }
 
     /**
      * Not implemented.
      */
+    @Override
     public void ignorableWhitespace(char[] ch, int start, int length)
         throws SAXException {
     }
@@ -170,18 +179,21 @@ public class DictionaryEntryPersistor {
     /**
      * Not implemented.
      */
+    @Override
     public void setDocumentLocator(Locator locator) {
     }
 
     /**
      * Not implemented.
      */
+    @Override
     public void skippedEntity(String name) throws SAXException {
     }
 
     /**
      * Not implemented.
      */
+    @Override
     public void startPrefixMapping(String prefix, String uri)
         throws SAXException {
     }
@@ -198,16 +210,17 @@ public class DictionaryEntryPersistor {
   /**
    * Creates {@link Entry}s from the given {@link InputStream} and
    * forwards these {@link Entry}s to the {@link EntryInserter}.
-   *
+   * <p>
+   * <b>Note:</b>
    * After creation is finished the provided {@link InputStream} is closed.
    *
-   * @param in stream to read entries from
+   * @param in The open {@link InputStream} to read entries from.
    * @param inserter inserter to forward entries to
    *
-   * @return isCaseSensitive attribute for Dictionary
+   * @return The {@code isCaseSensitive} attribute of a {@link Dictionary}.
    *
-   * @throws IOException
-   * @throws InvalidFormatException
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws InvalidFormatException Thrown if parameters were invalid.
    */
   public static boolean create(InputStream in, EntryInserter inserter)
       throws IOException {
@@ -230,16 +243,17 @@ public class DictionaryEntryPersistor {
 
   /**
    * Serializes the given entries to the given {@link OutputStream}.
-   *
+   * <p>
+   * <b>Note:</b>
    * After the serialization is finished the provided
    * {@link OutputStream} remains open.
    *
-   * @param out stream to serialize to
-   * @param entries entries to serialize
+   * @param out The {@link OutputStream} to serialize to.
+   * @param entries The {@link Entry entries} to serialize.
    *
-   * @throws IOException If an I/O error occurs
-   * @deprecated Use
-   *     {@link DictionaryEntryPersistor#serialize(java.io.OutputStream, java.util.Iterator, boolean)} instead
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws InvalidFormatException Thrown if parameters were invalid.
+   * @deprecated Use {@link DictionaryEntryPersistor#serialize(OutputStream, Iterator, boolean)} instead.
    */
   @Deprecated
   public static void serialize(OutputStream out, Iterator<Entry> entries)
@@ -249,16 +263,18 @@ public class DictionaryEntryPersistor {
 
   /**
    * Serializes the given entries to the given {@link OutputStream}.
-   *
+   * <p>
+   * <b>Note:</b>
    * After the serialization is finished the provided
    * {@link OutputStream} remains open.
    *
-   * @param out stream to serialize to
-   * @param entries entries to serialize
-   * @param casesensitive indicates if the written dictionary
-   *        should be case sensitive or case insensitive.
+   * @param out The {@link OutputStream} to serialize to.
+   * @param entries The {@link Entry entries} to serialize.
+   * @param casesensitive Indicates if the written dictionary should be
+   *                      case-sensitive, or not.
    *
-   * @throws IOException If an I/O error occurs
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws InvalidFormatException Thrown if parameters were invalid.
    */
   public static void serialize(OutputStream out, Iterator<Entry> entries,
       boolean casesensitive) throws IOException {
@@ -270,7 +286,7 @@ public class DictionaryEntryPersistor {
     try {
       hd = tf.newTransformerHandler();
     } catch (TransformerConfigurationException e) {
-      throw new AssertionError("The Transformer configuration must be valid!");
+      throw new InvalidFormatException("The Transformer configuration must be valid!");
     }
 
     Transformer serializer = hd.getTransformer();
@@ -279,24 +295,20 @@ public class DictionaryEntryPersistor {
 
     hd.setResult(streamResult);
 
-
     try {
       hd.startDocument();
 
       AttributesImpl dictionaryAttributes = new AttributesImpl();
-
       dictionaryAttributes.addAttribute("", "", ATTRIBUTE_CASE_SENSITIVE,
           "", String.valueOf(casesensitive));
       hd.startElement("", "", DICTIONARY_ELEMENT, dictionaryAttributes);
 
       while (entries.hasNext()) {
         Entry entry = entries.next();
-
         serializeEntry(hd, entry);
       }
 
       hd.endElement("", "", DICTIONARY_ELEMENT);
-
       hd.endDocument();
     }
     catch (SAXException e) {

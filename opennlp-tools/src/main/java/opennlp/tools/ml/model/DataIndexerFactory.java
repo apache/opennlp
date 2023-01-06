@@ -23,9 +23,26 @@ import java.util.Map;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.ext.ExtensionLoader;
+import opennlp.tools.util.ext.ExtensionNotLoadedException;
 
+/**
+ * A factory that produces {@link DataIndexer} instances.
+ *
+ * @see DataIndexer
+ */
 public class DataIndexerFactory {
 
+  /**
+   * Instantiates a {@link DataIndexer} configured via {@link TrainingParameters}.
+   *
+   * @param parameters The {@link TrainingParameters} used for configuration.
+   * @param reportMap The {@link Map} used for reporting.
+   * @return A ready to use {@link DataIndexer} instance.
+   *
+   * @throws ExtensionNotLoadedException Thrown if a class name was configured for the indexer, yet
+   *                                     the extension could not be loaded.
+   * @see ExtensionLoader
+   */
   public static DataIndexer getDataIndexer(TrainingParameters parameters, Map<String, String> reportMap) {
     // The default is currently a 2-Pass data index.  Is this what we really want?
     String indexerParam = parameters.getStringParameter(AbstractEventTrainer.DATA_INDEXER_PARAM,

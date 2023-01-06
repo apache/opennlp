@@ -22,16 +22,16 @@ import java.io.DataInputStream;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 
 /**
- * A reader for GIS models stored in binary format.
+ * A {@link GISModelReader} that reads models from a binary format.
  */
 public class BinaryGISModelReader extends GISModelReader {
-
+  
   /**
-   * Constructor which directly instantiates the DataInputStream containing the
-   * model contents.
+   * Instantiates {@link BinaryGISModelReader} via a {@link DataInputStream}
+   * containing the model contents.
    *
-   * @param dis
-   *          The DataInputStream containing the model information.
+   * @param dis The {@link DataInputStream} containing the model information.
+   *            It must be open and have bytes available.
    */
   public BinaryGISModelReader(DataInputStream dis) {
     super(new BinaryFileDataReader(dis));

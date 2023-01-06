@@ -22,16 +22,16 @@ import java.util.Comparator;
 import org.apache.uima.cas.text.AnnotationFS;
 
 /**
- * Checks two annotations for equality.
+ * Checks two {@link AnnotationFS annotations} for equality.
  */
 public class AnnotationComparator implements Comparator<AnnotationFS>
 {
 
   /**
-   * Compares the begin indexes of the annotations.
+   * Compares the start indexes of the annotations.
    *
-   * @param a - first annotation
-   * @param b - second annotation
+   * @param a - first {@link AnnotationFS annotation}.
+   * @param b - second {@link AnnotationFS annotation}.
    *
    * @return 0 if equals,  &lt; 0 if before and &gt; 0 if after
    */

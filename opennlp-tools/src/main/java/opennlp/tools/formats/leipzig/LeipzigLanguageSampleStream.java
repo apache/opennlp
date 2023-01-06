@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.langdetect.Language;
 import opennlp.tools.langdetect.LanguageSample;
 import opennlp.tools.util.InvalidFormatException;
@@ -47,8 +48,19 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
 
     private final String lang;
 
-    private Iterator<String> lineIterator;
+    private final Iterator<String> lineIterator;
 
+    /**
+     * Initializes a {@link LeipzigSentencesStream}.
+     *
+     * @param lang An ISO language code.
+     * @param sentencesFile The {@link File} which contains sentences to process.
+     * @param sentencesPerSample The number of sentences per sample.
+     * @param numberOfSamples The number of samples to process at maximum.
+     *                        
+     * @throws IOException Thrown if IO errors occurred.
+     * @throws InvalidFormatException Thrown if {@code sentencesFile} has not enough lines to process.
+     */
     LeipzigSentencesStream(String lang, File sentencesFile, int sentencesPerSample, int numberOfSamples)
         throws IOException {
 
@@ -106,7 +118,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
         String line = lineIterator.next();
         int textStart = line.indexOf('\t') + 1;
 
-        sampleString.append(line.substring(textStart) + " ");
+        sampleString.append(line.substring(textStart)).append(" ");
 
         count++;
       }
@@ -121,14 +133,23 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
 
   private final int sentencesPerSample;
 
-  private Map<String, Integer> langSampleCounts;
-  private File[] sentencesFiles;
+  private final Map<String, Integer> langSampleCounts;
+  private final File[] sentencesFiles;
 
   private Iterator<File> sentencesFilesIt;
   private ObjectStream<LanguageSample> sampleStream;
 
   private final Random random;
 
+  /**
+   * Initializes a {@link LeipzigLanguageSampleStream}.
+   *
+   * @param leipzigFolder The {@link File directory} which contains files to process.
+   * @param sentencesPerSample The number of sentences per sample.
+   * @param samplesPerLanguage The number of samples per language to process at maximum.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public LeipzigLanguageSampleStream(File leipzigFolder, final int sentencesPerSample,
                                      final int samplesPerLanguage) throws IOException {
     this.sentencesPerSample = sentencesPerSample;
@@ -141,6 +162,11 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
                 && pathname.getName().substring(0,3).matches("[a-z]+");
       }
     });
+
+    if (null == sentencesFiles) {
+      throw new TerminateToolException(-1 , "Directory " + leipzigFolder + " empty , No files to read!");
+    }
+
     Arrays.sort(sentencesFiles);
 
     Map<String, Integer> langCounts = Arrays.stream(sentencesFiles)
@@ -155,6 +181,7 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
     reset();
   }
 
+  @Override
   public LanguageSample read() throws IOException {
     LanguageSample sample;
     if (sampleStream != null && (sample = sampleStream.read()) != null) {

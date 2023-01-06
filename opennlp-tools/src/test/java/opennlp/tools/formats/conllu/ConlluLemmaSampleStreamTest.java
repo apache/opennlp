@@ -23,24 +23,20 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.lemmatizer.LemmaSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
-public class ConlluLemmaSampleStreamTest {
+public class ConlluLemmaSampleStreamTest extends AbstractConlluSampleStreamTest<LemmaSample> {
 
 
   @Test
   void testParseSpanishS300() throws IOException {
-    InputStreamFactory streamFactory =
-        new ResourceAsStreamFactory(ConlluStreamTest.class, "es-ud-sample.conllu");
-
-    try (ObjectStream<LemmaSample> stream = new ConlluLemmaSampleStream(
-        new ConlluStream(streamFactory), ConlluTagset.U)) {
+    ConlluStream cStream = getStream("es-ud-sample.conllu");
+    Assertions.assertNotNull(cStream);
+    
+    try (ObjectStream<LemmaSample> stream = new ConlluLemmaSampleStream(cStream, ConlluTagset.U)) {
 
       LemmaSample predicted = stream.read();
-      System.out.println(predicted);
       Assertions.assertEquals("digám+tú+él", predicted.getLemmas()[0]);
       Assertions.assertEquals("la", predicted.getTokens()[3]);
       Assertions.assertEquals("el", predicted.getLemmas()[3]);

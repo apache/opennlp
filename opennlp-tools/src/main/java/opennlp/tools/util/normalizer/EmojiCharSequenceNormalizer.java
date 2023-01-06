@@ -19,7 +19,8 @@ package opennlp.tools.util.normalizer;
 import java.util.regex.Pattern;
 
 /**
- * Normalizer for emojis.
+ * A {@link EmojiCharSequenceNormalizer} implementation that normalizes text
+ * in terms of emojis. Every encounter will be replaced by a whitespace.
  */
 public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
 
@@ -34,6 +35,7 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
   private static final Pattern EMOJI_REGEX =
       Pattern.compile("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+");
 
+  @Override
   public CharSequence normalize (CharSequence text) {
     return EMOJI_REGEX.matcher(text).replaceAll(" ");
   }

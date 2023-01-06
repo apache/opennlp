@@ -24,15 +24,22 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * A markable File Input Stream.
+ * Implements a markable {@link FileInputStream}.
  */
 class MarkableFileInputStream extends InputStream {
 
-  private FileInputStream in;
+  private final FileInputStream in;
 
   private long markedPosition = -1;
   private IOException markException;
 
+  /**
+   * Initializes a {@link MarkableFileInputStream}.
+   *
+   * @param file The {@link File} used as input source.
+   *
+   * @throws FileNotFoundException Thrown if {@code file} could not be found.
+   */
   MarkableFileInputStream(File file) throws FileNotFoundException {
     in = new FileInputStream(file);
   }
@@ -51,7 +58,7 @@ class MarkableFileInputStream extends InputStream {
     return true;
   }
 
-  private void throwMarkExceptionIfOccured() throws IOException {
+  private void throwMarkExceptionIfOccurred() throws IOException {
     if (markException != null) {
       throw markException;
     }
@@ -59,7 +66,7 @@ class MarkableFileInputStream extends InputStream {
 
   @Override
   public synchronized void reset() throws IOException {
-    throwMarkExceptionIfOccured();
+    throwMarkExceptionIfOccurred();
 
     if (markedPosition >= 0) {
       in.getChannel().position(markedPosition);

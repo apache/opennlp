@@ -19,7 +19,6 @@ package opennlp.tools.eval;
 
 import java.io.File;
 import java.io.IOException;
-
 import java.math.BigInteger;
 
 import org.junit.jupiter.api.Assertions;

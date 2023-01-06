@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
@@ -32,6 +33,7 @@ import opennlp.tools.util.InvalidFormatException;
  *
  * @param <T>
  */
+@Internal
 public abstract class ModelLoader<T> {
 
   private final String modelName;

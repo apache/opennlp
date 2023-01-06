@@ -53,7 +53,7 @@ public abstract class FineGrainedReportListener {
 
   /**
    * Writes the report to the {@link OutputStream}. Should be called only after
-   * the evaluation process
+   * the evaluation process.
    */
   public FineGrainedReportListener(OutputStream outputStream) {
     this.printStream = new PrintStream(outputStream);
@@ -171,8 +171,7 @@ public abstract class FineGrainedReportListener {
     return stats.getConfusionMatrix(token);
   }
 
-  private String matrixToString(SortedSet<String> tagset, double[][] data,
-                                boolean filter) {
+  private String matrixToString(SortedSet<String> tagset, double[][] data, boolean filter) {
     // we dont want to print trivial cases (acc=1)
     int initialIndex = 0;
     String[] tags = tagset.toArray(new String[tagset.size()]);
@@ -223,25 +222,19 @@ public abstract class FineGrainedReportListener {
   protected void printGeneralStatistics() {
     printHeader("Evaluation summary");
     printStream.append(
-        String.format("%21s: %6s", "Number of sentences",
-            Long.toString(getNumberOfSentences()))).append("\n");
+        String.format("%21s: %6s", "Number of sentences", getNumberOfSentences())).append("\n");
     printStream.append(
-        String.format("%21s: %6s", "Min sentence size", getMinSentenceSize()))
-        .append("\n");
+        String.format("%21s: %6s", "Min sentence size", getMinSentenceSize())).append("\n");
     printStream.append(
-        String.format("%21s: %6s", "Max sentence size", getMaxSentenceSize()))
-        .append("\n");
+        String.format("%21s: %6s", "Max sentence size", getMaxSentenceSize())).append("\n");
     printStream.append(
         String.format("%21s: %6s", "Average sentence size",
-            MessageFormat.format("{0,number,#.##}", getAverageSentenceSize())))
-        .append("\n");
+            MessageFormat.format("{0,number,#.##}", getAverageSentenceSize()))).append("\n");
     printStream.append(
-        String.format("%21s: %6s", "Tags count", getNumberOfTags())).append(
-        "\n");
+        String.format("%21s: %6s", "Tags count", getNumberOfTags())).append("\n");
     printStream.append(
         String.format("%21s: %6s", "Accuracy",
-            MessageFormat.format("{0,number,#.##%}", getAccuracy()))).append(
-        "\n");
+            MessageFormat.format("{0,number,#.##%}", getAccuracy()))).append("\n");
     printFooter("Evaluation Corpus Statistics");
   }
 
@@ -266,8 +259,7 @@ public abstract class FineGrainedReportListener {
     String format = "| %3s | %6s | %" + maxTokSize + "s |";
 
     printLine(tableSize);
-    printStream.append(String.format(format, "Pos", "Count", "Token")).append(
-        "\n");
+    printStream.append(String.format(format, "Pos", "Count", "Token")).append("\n");
     printLine(tableSize);
 
     // get the first 20 errors
@@ -306,8 +298,7 @@ public abstract class FineGrainedReportListener {
     String format = "| %" + maxTokenSize + "s | %6s | %5s | %7s |\n";
 
     printLine(tableSize);
-    printStream.append(String.format(format, "Token", "Errors", "Count",
-        "% Err"));
+    printStream.append(String.format(format, "Token", "Errors", "Count", "% Err"));
     printLine(tableSize);
 
     // get the first 20 errors
@@ -463,6 +454,7 @@ public abstract class FineGrainedReportListener {
       this.confusionMatrix = confusionMatrix;
     }
 
+    @Override
     public int compare(String o1, String o2) {
       if (o1.equals(o2)) {
         return 0;
@@ -491,7 +483,7 @@ public abstract class FineGrainedReportListener {
   public static class GroupedMatrixLabelComparator implements Comparator<String> {
 
     private final HashMap<String, Double> categoryAccuracy;
-    private Map<String, ConfusionMatrixLine> confusionMatrix;
+    private final Map<String, ConfusionMatrixLine> confusionMatrix;
 
     public GroupedMatrixLabelComparator(Map<String, ConfusionMatrixLine> confusionMatrix) {
       this.confusionMatrix = confusionMatrix;
@@ -512,6 +504,7 @@ public abstract class FineGrainedReportListener {
       }
     }
 
+    @Override
     public int compare(String o1, String o2) {
       if (o1.equals(o2)) {
         return 0;
@@ -573,7 +566,7 @@ public abstract class FineGrainedReportListener {
 
   public static class SimpleLabelComparator implements Comparator<String> {
 
-    private Map<String, Counter> map;
+    private final Map<String, Counter> map;
 
     public SimpleLabelComparator(Map<String, Counter> map) {
       this.map = map;
@@ -603,7 +596,7 @@ public abstract class FineGrainedReportListener {
   public static class GroupedLabelComparator implements Comparator<String> {
 
     private final HashMap<String, Integer> categoryCounter;
-    private Map<String, Counter> labelCounter;
+    private final Map<String, Counter> labelCounter;
 
     public GroupedLabelComparator(Map<String, Counter> map) {
       this.labelCounter = map;
@@ -624,6 +617,7 @@ public abstract class FineGrainedReportListener {
       }
     }
 
+    @Override
     public int compare(String o1, String o2) {
       if (o1.equals(o2)) {
         return 0;
@@ -684,8 +678,8 @@ public abstract class FineGrainedReportListener {
    */
   public static class ConfusionMatrixLine {
 
-    private Map<String, Counter> line = new HashMap<>();
-    private String ref;
+    private final Map<String, Counter> line = new HashMap<>();
+    private final String ref;
     private int total = 0;
     private int correct = 0;
     private double acc = -1;

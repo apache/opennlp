@@ -17,12 +17,12 @@
 
 package opennlp.tools.formats.masc;
 
-import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.postag.POSEvaluator;
@@ -33,18 +33,22 @@ import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
-public class MascPOSSampleStreamTest {
+public class MascPOSSampleStreamTest extends AbstractMascSampleStreamTest {
+
+  private MascPOSSampleStream stream;
+
+  @BeforeEach
+  public void setup() throws IOException {
+    super.setup();
+    FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
+    stream = new MascPOSSampleStream(
+             new MascDocumentStream(directory, true, fileFilter));
+    Assertions.assertNotNull(stream);
+  }
 
   @Test
   void read() {
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascPOSSampleStream stream;
-      stream = new MascPOSSampleStream(
-          new MascDocumentStream(directory, true, fileFilter));
-
       POSSample s = stream.read();
 
       String[] expectedTokens = {"This", "is", "a", "test", "Sentence", "."};
@@ -67,13 +71,6 @@ public class MascPOSSampleStreamTest {
   @Test
   void close() {
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascPOSSampleStream stream;
-      stream = new MascPOSSampleStream(
-          new MascDocumentStream(directory, true, fileFilter));
-
       stream.close();
       POSSample s = stream.read();
     } catch (IOException e) {
@@ -86,13 +83,6 @@ public class MascPOSSampleStreamTest {
   @Test
   void reset() {
     try {
-      FileFilter fileFilter = pathname -> pathname.getName().contains("MASC");
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
-      MascPOSSampleStream stream;
-      stream = new MascPOSSampleStream(
-          new MascDocumentStream(directory, true, fileFilter));
-
       POSSample s = stream.read();
       s = stream.read();
       s = stream.read();
@@ -116,12 +106,9 @@ public class MascPOSSampleStreamTest {
   @Test
   void train() {
     try {
-      File directory = new File(this.getClass().getResource(
-          "/opennlp/tools/formats/masc/").getFile());
       FileFilter fileFilter = pathname -> pathname.getName().contains("");
       ObjectStream<POSSample> trainPOS = new MascPOSSampleStream(
-          new MascDocumentStream(directory,
-              true, fileFilter));
+          new MascDocumentStream(directory, true, fileFilter));
 
       System.out.println("Training");
       POSModel model = null;
@@ -131,8 +118,8 @@ public class MascPOSSampleStreamTest {
       model = POSTaggerME.train("en", trainPOS,
           trainingParameters, new POSTaggerFactory());
 
-      ObjectStream<POSSample> testPOS = new MascPOSSampleStream(new MascDocumentStream(directory,
-          true, fileFilter));
+      ObjectStream<POSSample> testPOS = new MascPOSSampleStream(
+              new MascDocumentStream(directory, true, fileFilter));
       POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
       evaluator.evaluate(testPOS);
       System.out.println("Accuracy: " + evaluator.getWordAccuracy());
@@ -144,8 +131,6 @@ public class MascPOSSampleStreamTest {
       Assertions.fail("Exception raised");
     }
 
-
   }
-
 
 }

@@ -29,10 +29,19 @@ import opennlp.tools.util.Span;
 
 public class MosesSentenceSampleStream extends FilterObjectStream<String, SentenceSample> {
 
+  /**
+   * Initializes a {@link MosesSentenceSampleStream}.
+   *
+   * @param sentences The {@link ObjectStream<String> samples} as input.
+   *                  Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   public MosesSentenceSampleStream(ObjectStream<String> sentences) {
     super(new EmptyLinePreprocessorStream(sentences));
   }
 
+  @Override
   public SentenceSample read() throws IOException {
 
     StringBuilder sentencesString = new StringBuilder();

@@ -40,14 +40,17 @@ public class ChunkerTrainerTool
     super(ChunkSample.class, TrainerToolParams.class);
   }
 
+  @Override
   public String getName() {
     return "ChunkerTrainerME";
   }
 
+  @Override
   public String getShortDescription() {
     return "trainer for the learnable chunker";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

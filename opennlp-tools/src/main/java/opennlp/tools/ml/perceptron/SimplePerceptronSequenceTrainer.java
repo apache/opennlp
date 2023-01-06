@@ -35,13 +35,20 @@ import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.ml.model.SequenceStreamEventStream;
 
 /**
- * Trains models for sequences using the perceptron algorithm.  Each outcome is represented as
- * a binary perceptron classifier.  This supports standard (integer) weighting as well
- * average weighting.  Sequence information is used in a simplified was to that described in:
+ * Trains {@link PerceptronModel models} with sequences using the perceptron algorithm.
+ * <p>
+ * Each outcome is represented as a binary perceptron classifier.
+ * This supports standard (integer) weighting as well average weighting.
+ * <p>
+ * Sequence information is used in a simplified was to that described in:
  * Discriminative Training Methods for Hidden Markov Models: Theory and Experiments
  * with the Perceptron Algorithm. Michael Collins, EMNLP 2002.
+ * <p>
  * Specifically only updates are applied to tokens which were incorrectly tagged by a sequence tagger
  * rather than to all feature across the sequence which differ from the training sequence.
+ *
+ * @see PerceptronModel
+ * @see AbstractEventModelSequenceTrainer
  */
 public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceTrainer {
 
@@ -80,9 +87,19 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   private String[] predLabels;
   private int numSequences;
 
+  /**
+   * Instantiates a {@link SimplePerceptronSequenceTrainer} with a default
+   * configuration of training parameters.
+   */
   public SimplePerceptronSequenceTrainer() {
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if the algorithm name is not equal to
+   *                                  {{@link #PERCEPTRON_SEQUENCE_VALUE}}.
+   */
   @Override
   public void validate() {
     super.validate();
@@ -95,6 +112,11 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     }
   }
 
+  /**
+   * @return {@code true} if the validation of the internal configuration succeeds,
+   *         {@code false} otherwise.
+   * @deprecated Use {@link #validate()} instead.
+   */
   @Deprecated
   @Override
   public boolean isValid() {
@@ -119,6 +141,16 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
 
   // << members related to AbstractSequenceTrainer
 
+  /**
+   * Trains a {@link PerceptronModel} with given parameters.
+   *
+   * @param iterations The number of iterations to use for training.
+   * @param sequenceStream The {@link SequenceStream<Event>} used as data input.
+   * @param cutoff The {{@link #CUTOFF_PARAM}} value to use for training.
+   * @param useAverage Whether to use 'averaging', or not.
+   *
+   * @return A valid, trained {@link AbstractModel perceptron model}.
+   */
   public AbstractModel trainModel(int iterations, SequenceStream<Event> sequenceStream,
                                   int cutoff, boolean useAverage) throws IOException {
     this.iterations = iterations;

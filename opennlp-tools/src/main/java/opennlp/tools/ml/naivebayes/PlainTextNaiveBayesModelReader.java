@@ -23,24 +23,30 @@ import java.io.IOException;
 
 import opennlp.tools.ml.model.PlainTextFileDataReader;
 
+/**
+ * A {@link NaiveBayesModelReader} that reads models from a plain text format.
+ *
+ * @see NaiveBayesModelReader
+ */
 public class PlainTextNaiveBayesModelReader extends NaiveBayesModelReader {
-
+  
   /**
-   * Constructor which directly instantiates the BufferedReader containing
-   * the model contents.
+   * Instantiates {@link PlainTextNaiveBayesModelReader} via a {@link BufferedReader}
+   * containing the model contents.
    *
-   * @param br The BufferedReader containing the model information.
+   * @param br The {@link BufferedReader} containing the model information.
+   *            It must be open and have bytes available.
    */
   public PlainTextNaiveBayesModelReader(BufferedReader br) {
     super(new PlainTextFileDataReader(br));
   }
 
   /**
-   * Constructor which takes a File and creates a reader for it. Detects
-   * whether the file is gzipped or not based on whether the suffix contains
-   * ".gz".
+   * Instantiates {@link PlainTextNaiveBayesModelReader} via a {@link File} and creates
+   * a reader for it. Based on whether the file's suffix contains {@code .gz},
+   * it detects whether the file is gzipped or not.
    *
-   * @param f The File in which the model is stored.
+   * @param f The {@link File} that references the model to be read.
    */
   public PlainTextNaiveBayesModelReader(File f) throws IOException {
     super(f);

@@ -24,7 +24,7 @@ import java.util.List;
 import opennlp.tools.util.Cache;
 
 /**
- * Caches features of the aggregated {@link AdaptiveFeatureGenerator}s.
+ * Caches features of the aggregated {@link AdaptiveFeatureGenerator generators}.
  */
 public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
@@ -32,7 +32,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private String[] prevTokens;
 
-  private Cache<Integer, List<String>> contextsCache;
+  private final Cache<Integer, List<String>> contextsCache;
 
   private long numberOfCacheHits;
   private long numberOfCacheMisses;
@@ -48,6 +48,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
     contextsCache = new Cache<>(100);
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 
@@ -77,27 +78,25 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
     features.addAll(cacheFeatures);
   }
 
+  @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
     generator.updateAdaptiveData(tokens, outcomes);
   }
 
+  @Override
   public void clearAdaptiveData() {
     generator.clearAdaptiveData();
   }
 
   /**
-   * Retrieves the number of times a cache hit occurred.
-   *
-   * @return number of cache hits
+   * @return Retrieves the number of times a cache hit occurred.
    */
   public long getNumberOfCacheHits() {
     return numberOfCacheHits;
   }
 
   /**
-   * Retrieves the number of times a cache miss occurred.
-   *
-   * @return number of cache misses
+   * @return Retrieves the number of times a cache miss occurred.
    */
   public long getNumberOfCacheMisses() {
     return numberOfCacheMisses;

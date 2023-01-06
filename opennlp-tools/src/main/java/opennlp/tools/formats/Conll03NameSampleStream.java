@@ -19,7 +19,6 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,10 +46,12 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
   private final int types;
 
   /**
-   *
-   * @param lang the language of the CONLL 03 data
-   * @param lineStream an Object Stream over the lines in the CONLL 03 data file
-   * @param types the entity types to include in the Name Sample object stream
+   * Initializes a {@link Conll03NameSampleStream}.
+   * 
+   * @param lang The language of the CONLL 03 data.
+   * @param lineStream An {@link ObjectStream<String>} over the lines
+   *                   in the CONLL 03 data file.
+   * @param types The entity types to include in the Name Sample object stream.
    */
   public Conll03NameSampleStream(LANGUAGE lang, ObjectStream<String> lineStream, int types) {
     this.lang = lang;
@@ -58,19 +59,21 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
     this.types = types;
   }
 
+  /**
+   * Initializes a {@link Conll03NameSampleStream}.
+   *
+   * @param lang The language of the CONLL 03 data.
+   * @param in  The {@link InputStreamFactory} for the input file.
+   * @param types The entity types to include in the Name Sample object stream.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public Conll03NameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
-
-    this.lang = lang;
-    try {
-      this.lineStream = new PlainTextByLineStream(in, StandardCharsets.UTF_8);
-      System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
-    } catch (UnsupportedEncodingException e) {
-      // UTF-8 is available on all JVMs, will never happen
-      throw new IllegalStateException(e);
-    }
-    this.types = types;
+    this(lang, new PlainTextByLineStream(in, StandardCharsets.UTF_8), types);
+    System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
   }
 
+  @Override
   public NameSample read() throws IOException {
 
     List<String> sentence = new ArrayList<>();
@@ -192,10 +195,12 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
     }
   }
 
+  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     lineStream.reset();
   }
 
+  @Override
   public void close() throws IOException {
     lineStream.close();
   }

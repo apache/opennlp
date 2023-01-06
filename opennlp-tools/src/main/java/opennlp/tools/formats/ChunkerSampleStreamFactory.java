@@ -46,6 +46,7 @@ public class ChunkerSampleStreamFactory<P> extends AbstractSampleStreamFactory<C
     super(params);
   }
 
+  @Override
   public ObjectStream<ChunkSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 

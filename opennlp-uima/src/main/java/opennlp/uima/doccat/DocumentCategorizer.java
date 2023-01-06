@@ -28,9 +28,7 @@ import org.apache.uima.cas.text.AnnotationFS;
 import opennlp.uima.util.AnnotatorUtil;
 
 /**
- * OpenNLP Document Categorizer.
- * <p>
- * Mandatory parameters:
+ * A default implementation of an OpenNLP Document Categorizer.
  */
 public class DocumentCategorizer extends AbstractDocumentCategorizer {
 

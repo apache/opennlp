@@ -37,7 +37,10 @@ import opennlp.tools.util.model.DictionarySerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
- * This class is a dictionary.
+ * An iterable and serializable dictionary implementation.
+ *
+ * @see SerializableArtifact
+ * @see Iterable
  */
 public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
@@ -90,19 +93,24 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
     }
   }
 
-  private Set<StringListWrapper> entrySet = new HashSet<>();
+  private final Set<StringListWrapper> entrySet = new HashSet<>();
   private final boolean isCaseSensitive;
   private int minTokenCount = 99999;
   private int maxTokenCount = 0;
 
-
   /**
    * Initializes an empty {@link Dictionary}.
+   * By default, the resulting instance will not be case-sensitive.
    */
   public Dictionary() {
     this(false);
   }
 
+  /**
+   * Initializes an empty {@link Dictionary}.
+   *
+   * @param caseSensitive Whether the new instance will operate case-sensitive, or not.
+   */
   public Dictionary(boolean caseSensitive) {
     isCaseSensitive = caseSensitive;
   }
@@ -110,8 +118,9 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   /**
    * Initializes the {@link Dictionary} from an existing dictionary resource.
    *
-   * @param in {@link InputStream}
-   * @throws IOException
+   * @param in The {@link InputStream} that references the dictionary content.
+   *           
+   * @throws IOException Thrown if IO errors occurred.
    */
   public Dictionary(InputStream in) throws IOException {
     isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> put(entry.getTokens()));
@@ -128,18 +137,10 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
     maxTokenCount = StrictMath.max(maxTokenCount, tokens.size());
   }
 
-  /**
-   *
-   * @return minimum token count in the dictionary
-   */
   public int getMinTokenCount() {
     return minTokenCount;
   }
 
-  /**
-   *
-   * @return maximum token count in the dictionary
-   */
   public int getMaxTokenCount() {
     return maxTokenCount;
   }
@@ -147,8 +148,8 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   /**
    * Checks if this dictionary has the given entry.
    *
-   * @param tokens query
-   * @return true if it contains the entry otherwise false
+   * @param tokens The query of tokens to be checked for.
+   * @return {@code true} if it contains the entry, {@code false} otherwise.
    */
   public boolean contains(StringList tokens) {
     return entrySet.contains(new StringListWrapper(tokens));
@@ -157,30 +158,32 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   /**
    * Removes the given tokens form the current instance.
    *
-   * @param tokens filter tokens
+   * @param tokens The tokens to be filtered out (= removed).
    */
   public void remove(StringList tokens) {
     entrySet.remove(new StringListWrapper(tokens));
   }
 
   /**
-   * Retrieves an Iterator over all tokens.
-   *
-   * @return token-{@link Iterator}
+   * @return Retrieves a token-{@link Iterator} over all elements.
    */
+  @Override
   public Iterator<StringList> iterator() {
     final Iterator<StringListWrapper> entries = entrySet.iterator();
 
-    return new Iterator<StringList>() {
+    return new Iterator<>() {
 
+      @Override
       public boolean hasNext() {
         return entries.hasNext();
       }
 
+      @Override
       public StringList next() {
         return entries.next().getStringList();
       }
 
+      @Override
       public void remove() {
         entries.remove();
       }
@@ -188,9 +191,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
-   * Retrieves the number of tokens in the current instance.
-   *
-   * @return number of tokens
+   * @return Retrieves the number of tokens in the current instance.
    */
   public int size() {
     return entrySet.size();
@@ -199,18 +200,20 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   /**
    * Writes the current instance to the given {@link OutputStream}.
    *
-   * @param out {@link OutputStream}
-   * @throws IOException
+   * @param out A valid {@link OutputStream}, ready for serialization.
+   * @throws IOException Thrown if IO errors occurred.
    */
   public void serialize(OutputStream out) throws IOException {
 
-    Iterator<Entry> entryIterator = new Iterator<Entry>() {
-      private Iterator<StringList> dictionaryIterator = Dictionary.this.iterator();
+    Iterator<Entry> entryIterator = new Iterator<>() {
+      private final Iterator<StringList> dictionaryIterator = Dictionary.this.iterator();
 
+      @Override
       public boolean hasNext() {
         return dictionaryIterator.hasNext();
       }
 
+      @Override
       public Entry next() {
 
         StringList tokens = dictionaryIterator.next();
@@ -218,6 +221,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
         return new Entry(tokens, new Attributes());
       }
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException();
       }
@@ -258,12 +262,12 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
-   * Reads a dictionary which has one entry per line. The tokens inside an
-   * entry are whitespace delimited.
+   * Reads a {@link Dictionary} which has one entry per line.
+   * The tokens inside an entry are whitespace delimited.
    *
-   * @param in {@link Reader}
-   * @return the parsed dictionary
-   * @throws IOException
+   * @param in A {@link Reader} instance used to parse the dictionary from.
+   * @return The parsed {@link Dictionary} instance; guaranteed to be non-{@code null}.
+   * @throws IOException Thrown if IO errors occurred during read and parse operations.
    */
   public static Dictionary parseOneEntryPerLine(Reader in) throws IOException {
     BufferedReader lineReader = new BufferedReader(in);
@@ -291,31 +295,33 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
-   * Gets this dictionary as a {@code Set<String>}. Only {@code iterator()},
-   * {@code size()} and {@code contains(Object)} methods are implemented.
-   *
+   * Converts this {@link Dictionary} to a {@link Set<String>}.
+   * <p>
+   * Note: Only {@link AbstractSet#iterator()}, {@link AbstractSet#size()} and
+   * {@link AbstractSet#contains(Object)} methods are implemented.
+   * <p>
    * If this dictionary entries are multi tokens only the first token of the
-   * entry will be part of the Set.
+   * entry will be part of the {@link Set}.
    *
-   * @return a Set containing the entries of this dictionary
+   * @return A {@link Set} containing all entries of this {@link Dictionary}.
    */
   public Set<String> asStringSet() {
-    return new AbstractSet<String>() {
+    return new AbstractSet<>() {
 
       @Override
       public Iterator<String> iterator() {
         final Iterator<StringListWrapper> entries = entrySet.iterator();
 
-        return new Iterator<String>() {
-
+        return new Iterator<>() {
+          @Override
           public boolean hasNext() {
             return entries.hasNext();
           }
-
+          @Override
           public String next() {
             return entries.next().getStringList().getToken(0);
           }
-
+          @Override
           public void remove() {
             throw new UnsupportedOperationException();
           }
@@ -344,8 +350,9 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   }
 
   /**
-   * Gets the Serializer Class for {@link Dictionary}
-   * @return {@link DictionarySerializer}
+   * @return Retrieves the serializer class for {@link Dictionary}
+   *
+   * @see DictionarySerializer
    */
   @Override
   public Class<?> getArtifactSerializerClass() {

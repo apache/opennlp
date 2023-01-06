@@ -17,6 +17,7 @@
 
 package opennlp.tools.cmdline;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -227,8 +228,9 @@ public final class StreamFactoryRegistry {
         // Otherwise there will be class cast exceptions later in the flow
 
         try {
-          return (ObjectStreamFactory<T,P>) factoryClazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+          return (ObjectStreamFactory<T,P>) factoryClazz.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | NoSuchMethodException |
+                 InvocationTargetException | IllegalAccessException e) {
           return null;
         }
 

@@ -27,14 +27,20 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
 /**
- * An indexer for maxent model data which handles cutoffs for uncommon
+ * A {@link DataIndexer} for maxent model data which handles cutoffs for uncommon
  * contextual predicates and provides a unique integer index for each of the
  * predicates.
+ *
+ * @see DataIndexer
+ * @see AbstractDataIndexer
  */
 public class OnePassDataIndexer extends AbstractDataIndexer {
 
-  public OnePassDataIndexer(){}
+  public OnePassDataIndexer() {}
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void index(ObjectStream<Event> eventStream) throws IOException {
     int cutoff = trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);

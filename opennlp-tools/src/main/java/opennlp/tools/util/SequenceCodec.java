@@ -19,40 +19,44 @@ package opennlp.tools.util;
 
 import java.util.List;
 
+/**
+ * A codec for sequences of type {@link T}.
+ * Defines methods to en- or decode, and validate.
+ *
+ * @param <T> The generic type for the elements to handle.
+ */
 public interface SequenceCodec<T> {
 
   /**
-   * Decodes a sequence T objects into Span objects.
+   * Decodes a sequence of {@link T objects} into {@link Span} objects.
    *
-   * @param c
+   * @param c A list of {@link T} to decode.
    *
-   * @return
+   * @return A {@link Span} array encapsulating the decoded elements in {@code c}.
    */
   Span[] decode(List<T> c);
 
   /**
-   * Encodes Span objects into a sequence of T objects.
+   * Encodes {@link Span} objects into a sequence of {@link T objects}.
    *
-   * @param names
-   * @param length
+   * @param names A list of {@link Span elements} to encode.
+   * @param length The length to respect.
    *
-   * @return
+   * @return An array of {@link T} to encode.
    */
   T[] encode(Span[] names, int length);
 
   /**
-   * Creates a sequence validator which can validate a sequence of outcomes.
-   *
-   * @return
+   * @return A {@link SequenceValidator} which can validate a sequence of {@link T outcomes}.
    */
   SequenceValidator<T> createSequenceValidator();
 
   /**
-   * Checks if the outcomes of the model are compatible with the codec.
+   * Checks if the {@code outcomes} of a model are compatible with this {@link SequenceCodec}.
    *
-   * @param outcomes all possible model outcomes
+   * @param outcomes The possible model outcomes.
    *
-   * @return
+   * @return {@code true} if {@code outcomes} are type compatible, {@code false} otherwise.
    */
   boolean areOutcomesCompatible(String[] outcomes);
 }

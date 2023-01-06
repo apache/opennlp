@@ -26,16 +26,26 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 import opennlp.tools.ml.model.GenericModelReader;
 
+/**
+ * An {@link ArtifactSerializer} implementation for {@link AbstractModel models}.
+ */
 public class GenericModelSerializer implements ArtifactSerializer<AbstractModel> {
 
+  @Override
   public AbstractModel create(InputStream in) throws IOException {
     return new GenericModelReader(new BinaryFileDataReader(in)).getModel();
   }
 
+  @Override
   public void serialize(AbstractModel artifact, OutputStream out) throws IOException {
     ModelUtil.writeModel(artifact, out);
   }
 
+  /**
+   * Registers a new {@link GenericModelSerializer} in the given {@code factories} mapping.
+   *
+   * @param factories A {@link Map} holding {@link ArtifactSerializer} for re-use.
+   */
   public static void register(Map<String, ArtifactSerializer<?>> factories) {
     factories.put("model", new GenericModelSerializer());
   }

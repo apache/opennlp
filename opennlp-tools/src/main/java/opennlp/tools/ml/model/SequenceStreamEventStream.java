@@ -26,6 +26,9 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * Class which turns a {@link SequenceStream} into an event stream.
+ *
+ * @see Event
+ * @see ObjectStream
  */
 public class SequenceStreamEventStream implements ObjectStream<Event> {
 

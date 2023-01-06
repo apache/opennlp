@@ -36,19 +36,22 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public final class SentenceDetectorTool extends BasicCmdLineTool {
 
+  @Override
   public String getShortDescription() {
     return "learnable sentence detector";
   }
 
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
   /**
    * Perform sentence detection the input stream.
-   *
+   * <p>
    * A newline will be treated as a paragraph boundary.
    */
+  @Override
   public void run(String[] args) {
 
     if (args.length != 1) {

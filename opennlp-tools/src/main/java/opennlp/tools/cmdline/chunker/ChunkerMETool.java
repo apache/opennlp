@@ -35,14 +35,17 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkerMETool extends BasicCmdLineTool {
 
+  @Override
   public String getShortDescription() {
     return "learnable chunker";
   }
 
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model < sentences";
   }
 
+  @Override
   public void run(String[] args) {
     if (args.length != 1) {
       System.out.println(getHelp());

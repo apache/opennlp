@@ -23,8 +23,8 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        java: [ 11 ]
+        os: [ubuntu-latest, windows-latest]
+        java: [ 11, 17, 18, 19 ]
         experimental: [false]
 #        include:
 #          - java: 18-ea
@@ -48,8 +48,3 @@ jobs:
       run: mvn -V clean test install --no-transfer-progress -Pjacoco
     - name: Jacoco
       run: mvn jacoco:report
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
-      continue-on-error: true
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}

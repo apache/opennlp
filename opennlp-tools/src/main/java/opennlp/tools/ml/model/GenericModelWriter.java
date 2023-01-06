@@ -30,10 +30,24 @@ import opennlp.tools.ml.model.AbstractModel.ModelType;
 import opennlp.tools.ml.naivebayes.BinaryNaiveBayesModelWriter;
 import opennlp.tools.ml.perceptron.BinaryPerceptronModelWriter;
 
+/**
+ * An generic {@link AbstractModelWriter} implementation.
+ *
+ * @see AbstractModelWriter
+ */
 public class GenericModelWriter extends AbstractModelWriter {
 
   private AbstractModelWriter delegateWriter;
 
+  /**
+   * Initializes a {@link GenericModelWriter} for an {@link AbstractModel}
+   * with an associated {@link File} the model shall be written to.
+   *
+   * @param model The {@link AbstractModel model} to write out.
+   * @param file The {@link File} that used to be written to.
+   *
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public GenericModelWriter(AbstractModel model, File file) throws IOException {
     String filename = file.getName();
     OutputStream os;
@@ -48,6 +62,13 @@ public class GenericModelWriter extends AbstractModelWriter {
     init(model, new DataOutputStream(os));
   }
 
+  /**
+   * Initializes a {@link GenericModelWriter} for an {@link AbstractModel}
+   * with an associated {@link DataOutputStream} the model shall be written to.
+   *
+   * @param model The {@link AbstractModel model} to write out.
+   * @param dos The {@link DataOutputStream} that used to be written to.
+   */
   public GenericModelWriter(AbstractModel model, DataOutputStream dos) {
     init(model, dos);
   }

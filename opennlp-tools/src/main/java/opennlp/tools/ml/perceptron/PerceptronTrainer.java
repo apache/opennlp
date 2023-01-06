@@ -28,12 +28,16 @@ import opennlp.tools.ml.model.MutableContext;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Trains models using the perceptron algorithm.  Each outcome is represented as
- * a binary perceptron classifier.  This supports standard (integer) weighting as well
- * average weighting as described in:
+ * Trains {@link PerceptronModel models} using the perceptron algorithm.
+ * <p>
+ * Each outcome is represented as a binary perceptron classifier.
+ * This supports standard (integer) weighting as well average weighting as described in:
+ * <p>
  * Discriminative Training Methods for Hidden Markov Models: Theory and Experiments
  * with the Perceptron Algorithm. Michael Collins, EMNLP 2002.
  *
+ * @see PerceptronModel
+ * @see AbstractEventTrainer
  */
 public class PerceptronTrainer extends AbstractEventTrainer {
 
@@ -61,7 +65,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   /** Records the num of times an event has been seen for each event i, in context[i]. */
   private int[] numTimesEventsSeen;
 
-  /** Stores the String names of the outcomes.  The GIS only tracks outcomes
+  /** Stores the String names of the outcomes. The GIS only tracks outcomes
   as ints, and so this array is needed to save the model to disk and
   thereby allow users to know what the outcome was in human
   understandable terms. */
@@ -79,13 +83,28 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   private boolean useSkippedlAveraging;
 
+  /**
+   * Instantiates a {@link PerceptronTrainer} with default training parameters.
+   */
   public PerceptronTrainer() {
   }
 
+  /**
+   * Instantiates a {@link PerceptronTrainer} with specific
+   * {@link TrainingParameters}.
+   *
+   * @param parameters The {@link TrainingParameters parameter} to use.
+   */
   public PerceptronTrainer(TrainingParameters parameters) {
     super(parameters);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if the algorithm name is not equal to
+   *                                  {{@link #PERCEPTRON_VALUE}}.
+   */
   @Override
   public void validate() {
     super.validate();
@@ -98,6 +117,11 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     }
   }
 
+  /**
+   * @return {@code true} if the validation of the internal configuration succeeds,
+   *         {@code false} otherwise.
+   * @deprecated Use {@link #validate()} instead.
+   */
   @Deprecated
   @Override
   public boolean isValid() {
@@ -114,18 +138,17 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     }
   }
 
+  @Override
   public boolean isSortAndMerge() {
     return false;
   }
 
+  @Override
   public AbstractModel doTrain(DataIndexer indexer) throws IOException {
     int iterations = getIterations();
     int cutoff = getCutoff();
 
-    AbstractModel model;
-
     boolean useAverage = trainingParameters.getBooleanParameter("UseAverage", true);
-
     boolean useSkippedAveraging = trainingParameters.getBooleanParameter("UseSkippedAveraging", false);
 
     // overwrite otherwise it might not work
@@ -133,7 +156,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       useAverage = true;
 
     double stepSizeDecrease = trainingParameters.getDoubleParameter("StepSizeDecrease", 0);
-
     double tolerance = trainingParameters.getDoubleParameter("Tolerance",
         PerceptronTrainer.TOLERANCE_DEFAULT);
 
@@ -144,18 +166,18 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
     this.setTolerance(tolerance);
 
-    model = this.trainModel(iterations, indexer, cutoff, useAverage);
-
-    return model;
+    return this.trainModel(iterations, indexer, cutoff, useAverage);
   }
 
-  // << members related to AbstractSequenceTrainer
+  // << members related to AbstractEventTrainer
 
   /**
    * Specifies the tolerance. If the change in training set accuracy
    * is less than this, stop iterating.
    *
-   * @param tolerance
+   * @param tolerance The level of tolerance.
+   *                  Must not be negative.
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
    */
   public void setTolerance(double tolerance) {
 
@@ -171,7 +193,9 @@ public class PerceptronTrainer extends AbstractEventTrainer {
    * Enables and sets step size decrease. The step size is
    * decreased every iteration by the specified value.
    *
-   * @param decrease - step size decrease in percent
+   * @param decrease The step size decrease in percent.
+   *                 Must not be negative.
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
    */
   public void setStepSizeDecrease(double decrease) {
 
@@ -188,7 +212,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
    * averaging to special averaging instead.
    * <p>
    * If we are doing averaging, and the current iteration is one
-   * of the first 20 or it is a perfect square, then updated the
+   * of the first 20, or if it is a perfect square, then updated the
    * summed parameters.
    * <p>
    * The reason we don't take all of them is that the parameters change
@@ -196,16 +220,36 @@ public class PerceptronTrainer extends AbstractEventTrainer {
    * of the more volatile early iterations. The use of perfect
    * squares allows us to sample from successively farther apart iterations.
    *
-   * @param averaging averaging flag
+   * @param averaging Whether to skip 'averaging', or not.
    */
   public void setSkippedAveraging(boolean averaging) {
     useSkippedlAveraging = averaging;
   }
 
+  /**
+   * Trains a {@link PerceptronModel} with given parameters.
+   * 
+   * @param iterations The number of iterations to use for training.
+   * @param di The {@link DataIndexer} used as data input.
+   * @param cutoff The {{@link #CUTOFF_PARAM}} value to use for training.
+   *               
+   * @return A valid, trained {@link AbstractModel perceptron model}.
+   */
   public AbstractModel trainModel(int iterations, DataIndexer di, int cutoff) {
     return trainModel(iterations,di,cutoff,true);
   }
 
+  /**
+   * Trains a {@link PerceptronModel} with given parameters.
+   *
+   * @param iterations The number of iterations to use for training.
+   * @param di The {@link DataIndexer} used as data input.
+   * @param cutoff The {{@link #CUTOFF_PARAM}} value to use for training.
+   * @param useAverage Whether to use 'averaging', or not.
+   *                   See {{@link #setSkippedAveraging(boolean)}} for details.
+   *
+   * @return A valid, trained {@link AbstractModel perceptron model}.
+   */
   public AbstractModel trainModel(int iterations, DataIndexer di, int cutoff, boolean useAverage) {
     display("Incorporating indexed data for training...  \n");
     contexts = di.getContexts();
@@ -411,8 +455,8 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       display(i + ":  ");
   }
 
-  // See whether a number is a perfect square. Inefficient, but fine
-  // for our purposes.
+  // See whether a number is a perfect square.
+  // Inefficient, but fine for our purposes.
   private static boolean isPerfectSquare(int n) {
     int root = (int) StrictMath.sqrt(n);
     return root * root == n;

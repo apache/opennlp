@@ -38,10 +38,12 @@ public final class TokenizerMEEvaluatorTool
     super(TokenSample.class, EvalToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "evaluator for the learnable tokenizer";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -71,7 +73,6 @@ public final class TokenizerMEEvaluatorTool
     }
 
     System.out.println("done");
-
     System.out.println();
 
     System.out.println(evaluator.getFMeasure());

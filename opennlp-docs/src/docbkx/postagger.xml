@@ -134,7 +134,7 @@ That_DT sounds_VBZ good_JJ ._.]]>
 			training material it is suggested to use an empty line.
 		</para>
 		<para>The Part-of-Speech Tagger can either be trained with a command line tool,
-		or via an training API.
+		or via a training API.
 		</para>
 		
 		<section id="tools.postagger.training.tool">
@@ -195,7 +195,7 @@ $ opennlp POSTaggerTrainer -type maxent -model en-pos-maxent.bin \
 				<para>The application must open a sample data stream</para>
 			</listitem>
 			<listitem>
-				<para>Call the POSTagger.train method</para>
+				<para>Call the 'POSTagger.train' method</para>
 			</listitem>
 			<listitem>
 				<para>Save the POSModel to a file</para>
@@ -232,10 +232,10 @@ try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(model
 		<para>
 		The tag dictionary is a word dictionary which specifies which tags a specific token can have. Using a tag
 		dictionary has two advantages, inappropriate tags can not been assigned to tokens in the dictionary and the
-		beam search algorithm has to consider less possibilities and can search faster.
+		beam search algorithm has to consider fewer possibilities and can search faster.
 		</para>
 		<para>
-		The dictionary is defined in an xml format and can be created and stored with the POSDictionary class.
+		The dictionary is defined in a xml format and can be created and stored with the POSDictionary class.
 		Please for now checkout the javadoc and source code of that class.
 		</para>
 		<para>Note: The format should be documented and sample code should show how to use the dictionary.

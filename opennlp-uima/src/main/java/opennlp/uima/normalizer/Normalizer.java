@@ -54,8 +54,8 @@ import opennlp.uima.util.UimaUtil;
  * or period boolean tokens must be parsed eg is there any ???
  * <p>
  * <p>
- * restricted set of outcomes throw error if not matched or silently fail
- * unrestricted set of outcomes
+ * Restricted set of outcomes throw an error if not matched or silently fail
+ * unrestricted set of outcomes.
  */
 public class Normalizer extends CasAnnotator_ImplBase {
 

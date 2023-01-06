@@ -24,16 +24,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.tools.AbstractTempDirTest;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
@@ -42,12 +40,9 @@ import opennlp.tools.util.InvalidFormatException;
 /**
  * Tests for the {@link TokenizerTrainerTool} class.
  */
-public class TokenizerTrainerToolTest {
+public class TokenizerTrainerToolTest extends AbstractTempDirTest {
 
   private TokenizerTrainerTool tokenizerTrainerTool;
-
-  @TempDir
-  public Path tempFolder;
 
   private String sampleSuccessData =
       "Pierre Vinken<SPLIT>, 61 years old<SPLIT>, will join the board as a nonexecutive " +
@@ -89,7 +84,7 @@ public class TokenizerTrainerToolTest {
 
   @Test()
   public void testTestRunHappyCase() throws IOException {
-    File model = tempFolder.resolve("model-en.bin").toFile();
+    File model = tempDir.resolve("model-en.bin").toFile();
 
     String[] args =
         new String[] { "-model" , model.getAbsolutePath() , "-alphaNumOpt" , "false" , "-lang" , "en" ,
@@ -111,7 +106,7 @@ public class TokenizerTrainerToolTest {
 
   @Test
   public void testTestRunExceptionCase() throws IOException {
-    File model = tempFolder.resolve("model-en.bin").toFile();
+    File model = tempDir.resolve("model-en.bin").toFile();
     model.deleteOnExit();
 
     String[] args =
@@ -133,7 +128,7 @@ public class TokenizerTrainerToolTest {
 
   private File prepareDataFile(String input) throws IOException {
     // This is guaranteed to be deleted after the test finishes.
-    File dataFile = tempFolder.resolve("data-en.train").toFile();
+    File dataFile = tempDir.resolve("data-en.train").toFile();
     FileUtils.writeStringToFile(dataFile , input , "ISO-8859-1");
     return dataFile;
   }

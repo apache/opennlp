@@ -23,17 +23,17 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class NKJPTextDocumentTest {
+import opennlp.tools.formats.AbstractFormatTest;
+
+public class NKJPTextDocumentTest extends AbstractFormatTest {
   @Test
   void testParsingSimpleDoc() throws Exception {
-    try (InputStream nkjpTextXmlIn =
-             NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
+    try (InputStream nkjpTextXmlIn = getResourceStream("nkjp/text_structure.xml")) {
 
       NKJPTextDocument doc = NKJPTextDocument.parse(nkjpTextXmlIn);
 
       Assertions.assertEquals(1, doc.getDivtypes().size());
       Assertions.assertEquals("article", doc.getDivtypes().get("div-1"));
-
       Assertions.assertEquals(1, doc.getTexts().size());
       Assertions.assertEquals(1, doc.getTexts().get("text-1").size());
       Assertions.assertEquals(2, doc.getTexts().get("text-1").get("div-1").size());
@@ -45,8 +45,7 @@ public class NKJPTextDocumentTest {
 
   @Test
   void testGetParagraphs() throws Exception {
-    try (InputStream nkjpTextXmlIn =
-             NKJPTextDocumentTest.class.getResourceAsStream("text_structure.xml")) {
+    try (InputStream nkjpTextXmlIn = getResourceStream("nkjp/text_structure.xml")) {
 
       NKJPTextDocument doc = NKJPTextDocument.parse(nkjpTextXmlIn);
       Map<String, String> paras = doc.getParagraphs();

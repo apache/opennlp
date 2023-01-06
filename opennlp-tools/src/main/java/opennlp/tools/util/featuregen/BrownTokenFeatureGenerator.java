@@ -20,16 +20,17 @@ package opennlp.tools.util.featuregen;
 import java.util.List;
 
 /**
- * Generates Brown cluster features for current token.
+ * Generates {@link BrownCluster} features for current token.
  */
 public class BrownTokenFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private BrownCluster brownLexicon;
+  private final BrownCluster brownLexicon;
 
   public BrownTokenFeatureGenerator(BrownCluster dict) {
     this.brownLexicon = dict;
   }
 
+  @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 

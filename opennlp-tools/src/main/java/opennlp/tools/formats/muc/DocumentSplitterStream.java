@@ -30,12 +30,13 @@ class DocumentSplitterStream extends FilterObjectStream<String, String> {
   private static final String DOC_START_ELEMENT = "<DOC>";
   private static final String DOC_END_ELEMENT = "</DOC>";
 
-  private List<String> docs = new ArrayList<>();
+  private final List<String> docs = new ArrayList<>();
 
   DocumentSplitterStream(ObjectStream<String> samples) {
     super(samples);
   }
 
+  @Override
   public String read() throws IOException {
 
     if (docs.isEmpty()) {

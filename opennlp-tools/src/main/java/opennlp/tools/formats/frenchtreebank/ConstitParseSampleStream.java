@@ -21,7 +21,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.parsers.SAXParser;
 
 import org.xml.sax.SAXException;
@@ -33,15 +32,23 @@ import opennlp.tools.util.XmlUtil;
 
 public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> {
 
-  private SAXParser saxParser;
+  private final SAXParser saxParser;
 
-  private List<Parse> parses = new ArrayList<>();
+  private final List<Parse> parses = new ArrayList<>();
 
+  /**
+   * Initializes a {@link ConstitParseSampleStream}.
+   *
+   * @param samples The {@link ObjectStream byte[] samples} as input. Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   protected ConstitParseSampleStream(ObjectStream<byte[]> samples) {
     super(samples);
     saxParser = XmlUtil.createSaxParser();
   }
 
+  @Override
   public Parse read() throws IOException {
     if (parses.isEmpty()) {
       byte[] xmlbytes = samples.read();
@@ -53,7 +60,6 @@ public class ConstitParseSampleStream extends FilterObjectStream<byte[], Parse> 
           saxParser.parse(new ByteArrayInputStream(xmlbytes),
               new ConstitDocumentHandler(producedParses));
         } catch (SAXException e) {
-          //TODO update after Java6 upgrade
           throw new IOException(e.getMessage(), e);
         }
 

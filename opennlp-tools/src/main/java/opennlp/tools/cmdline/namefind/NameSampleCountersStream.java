@@ -28,7 +28,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
- * Counts tokens, sentences and names by type
+ * Counts tokens, sentences and names by type.
  */
 public class NameSampleCountersStream
     extends FilterObjectStream<NameSample, NameSample> {

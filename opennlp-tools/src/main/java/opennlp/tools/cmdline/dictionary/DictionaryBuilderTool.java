@@ -35,14 +35,17 @@ public class DictionaryBuilderTool extends BasicCmdLineTool {
   interface Params extends DictionaryBuilderParams {
   }
 
+  @Override
   public String getShortDescription() {
     return "builds a new dictionary";
   }
 
+  @Override
   public String getHelp() {
     return getBasicHelp(Params.class);
   }
 
+  @Override
   public void run(String[] args) {
     Params params = validateAndParseParams(args, Params.class);
 

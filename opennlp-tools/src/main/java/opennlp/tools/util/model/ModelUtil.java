@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.GenericModelWriter;
@@ -35,7 +36,7 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Utility class for handling of {@link MaxentModel}s.
+ * Utility class for handling of {@link MaxentModel models}.
  */
 public final class ModelUtil {
 
@@ -44,15 +45,16 @@ public final class ModelUtil {
   }
 
   /**
-   * Writes the given model to the given {@link OutputStream}.
+   * Writes the given {@link MaxentModel} to the specified {@link OutputStream}.
+   * <p>
+   * <b>Note:</b>
+   * The provided stream is not closed.
    *
-   * This methods does not closes the provided stream.
+   * @param model The {@link MaxentModel model} to be written.
+   * @param out the {@link OutputStream stream} to be used for writing.
    *
-   * @param model the model to be written
-   * @param out the stream the model should be written to
-   *
-   * @throws IOException
-   * @throws IllegalArgumentException in case one of the parameters is null
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if one of the parameters is {@code null}.
    */
   public static void writeModel(MaxentModel model, final OutputStream out)
           throws IOException, IllegalArgumentException {
@@ -72,12 +74,14 @@ public final class ModelUtil {
   }
 
   /**
-   * Checks if the expected outcomes are all contained as outcomes in the given model.
+   * Checks if the {@code expectedOutcomes} are all contained as outcomes in the
+   * given {@link MaxentModel model}.
    *
-   * @param model
-   * @param expectedOutcomes
+   * @param model A valid {@link MaxentModel} instance.
+   * @param expectedOutcomes The outcomes to be checked for.
    *
-   * @return true if all expected outcomes are the only outcomes of the model.
+   * @return {@code true} if all expected outcomes are the only outcomes of the model
+   *         {@code false} otherwise.
    */
   public static boolean validateOutcomes(MaxentModel model, String... expectedOutcomes) {
 
@@ -102,14 +106,13 @@ public final class ModelUtil {
   }
 
   /**
-   * Writes the provided {@link InputStream} into a byte array
-   * which is returned
+   * Reads from the provided {@link InputStream} into a byte array.
    *
-   * @param in stream to read data for the byte array from
-   * @return byte array with the contents of the stream
+   * @param in A valid, open {@link InputStream} to read data from.
    *
-   * @throws IOException if an exception is thrown while reading
-   *     from the provided {@link InputStream}
+   * @return A {@code byte[]} with the data read.
+   *
+   * @throws IOException Thrown if IO errors occurred.
    */
   public static byte[] read(InputStream in) throws IOException {
     ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
@@ -124,6 +127,13 @@ public final class ModelUtil {
     return byteArrayOut.toByteArray();
   }
 
+  /**
+   * Adds {@code cutoff} and {@code iterations} to {@code manifestInfoEntries}.
+   *
+   * @param manifestInfoEntries A {@link Map} representing a {@code manifest.properties} config.
+   * @param cutoff The cut-off value to set. Must be greater than {@code 0}.
+   * @param iterations The number of iterations to set. Must be greater than {@code 0}.
+   */
   public static void addCutoffAndIterations(Map<String, String> manifestInfoEntries,
       int cutoff, int iterations) {
     manifestInfoEntries.put(BaseModel.TRAINING_CUTOFF_PROPERTY, Integer.toString(cutoff));
@@ -131,13 +141,14 @@ public final class ModelUtil {
   }
 
   /**
-   * Creates the default training parameters in case they are not provided.
+   * Creates the default {@link TrainingParameters} in case they are not provided.
+   * <p>
+   * <b>Note:</b>
+   * Do not use this method, internal use only!
    *
-   * Note: Do not use this method, internal use only!
-   *
-   *
-   * @return training parameters instance
+   * @return The {@link TrainingParameters} instance with default configuration.
    */
+  @Internal
   public static TrainingParameters createDefaultTrainingParameters() {
     TrainingParameters mlParams = new TrainingParameters();
     mlParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);

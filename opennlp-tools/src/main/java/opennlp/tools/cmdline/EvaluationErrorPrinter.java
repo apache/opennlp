@@ -23,12 +23,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> {
 
   protected PrintStream printStream;
@@ -231,10 +233,12 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
     }
   }
 
+  @Override
   public void correctlyClassified(T reference, T prediction) {
     // do nothing
   }
 
+  @Override
   public abstract void misclassified(T reference, T prediction) ;
 
 }

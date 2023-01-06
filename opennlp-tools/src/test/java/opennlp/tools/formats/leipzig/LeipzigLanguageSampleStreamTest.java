@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.tools.util.InvalidFormatException;
 
@@ -33,6 +34,9 @@ public class LeipzigLanguageSampleStreamTest {
 
   private static String testDataPath = LeipzigLanguageSampleStreamTest.class
       .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
+
+  @TempDir
+  File emptyTempDir;
 
   @Test
   void testReadSentenceFiles() {
@@ -66,8 +70,24 @@ public class LeipzigLanguageSampleStreamTest {
       while (stream.read() != null) ;
 
     });
+  }
 
+  @Test
+  void testReadSentenceFilesWithEmptyDir() {
 
+    int samplesPerLanguage = 2;
+    int sentencesPerSample = 1;
+    try {
+      LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(emptyTempDir,
+          sentencesPerSample, samplesPerLanguage);
+      int count = 0;
+      while (stream.read() != null) {
+        count++;
+      }
+      Assertions.assertEquals(0, count);
+    } catch (IOException e) {
+      Assertions.fail();
+    }
   }
 
 }

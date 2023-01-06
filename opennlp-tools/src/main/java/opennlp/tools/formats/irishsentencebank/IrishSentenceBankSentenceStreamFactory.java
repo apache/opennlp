@@ -27,6 +27,9 @@ import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * @see IrishSentenceBankSentenceStream
+ */
 public class IrishSentenceBankSentenceStreamFactory<P>
         extends AbstractSampleStreamFactory<SentenceSample, P> {
 

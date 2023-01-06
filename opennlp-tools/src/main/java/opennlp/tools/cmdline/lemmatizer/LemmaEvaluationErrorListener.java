@@ -27,13 +27,12 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 /**
  * A default implementation of {@link EvaluationMonitor} that prints to an
  * output stream.
- *
  */
 public class LemmaEvaluationErrorListener extends
     EvaluationErrorPrinter<LemmaSample> implements LemmatizerEvaluationMonitor {
 
   /**
-   * Creates a listener that will print to System.err
+   * Creates a listener that will print to {@code System.err}.
    */
   public LemmaEvaluationErrorListener() {
     super(System.err);

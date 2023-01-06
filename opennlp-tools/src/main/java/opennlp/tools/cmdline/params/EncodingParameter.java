@@ -21,12 +21,15 @@ import java.nio.charset.Charset;
 
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.commons.Internal;
 
 /**
- * Encoding parameter. The DEFAULT_CHARSET is handled by ArgumentParser.Parse().
- *
- * Note: Do not use this class, internal use only!
+ * Encoding parameter. The DEFAULT_CHARSET is handled by
+ * {@link opennlp.tools.cmdline.ArgumentParser#parse(String[], Class)}.
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public interface EncodingParameter {
 
   @ParameterDescription(valueName = "charsetName",

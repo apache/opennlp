@@ -20,6 +20,7 @@ package opennlp.tools.formats.convert;
 import java.io.IOException;
 import java.util.Objects;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.tokenize.TokenSample;
@@ -27,22 +28,31 @@ import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class POSToTokenSampleStream extends FilterObjectStream<POSSample, TokenSample> {
 
   private final Detokenizer detokenizer;
 
+  /**
+   * Initializes a {@link POSToTokenSampleStream}.
+   *
+   * @param detokenizer The {@link Detokenizer} to use. Must not be {@code null}.
+   * @param samples The {@link ObjectStream<POSSample> samples} as input. Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   public POSToTokenSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples) {
     super(samples);
-
     this.detokenizer = Objects.requireNonNull(detokenizer, "detokenizer must not be null!");
   }
 
+  @Override
   public TokenSample read() throws IOException {
 
     POSSample posSample = samples.read();
-
     TokenSample tokenSample = null;
 
     if (posSample != null ) {

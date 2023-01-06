@@ -21,12 +21,14 @@ import java.io.File;
 
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.params.EncodingParameter;
+import opennlp.tools.commons.Internal;
 
 /**
  * Params for Dictionary tools.
- *
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 interface DictionaryBuilderParams extends EncodingParameter {
 
   @ParameterDescription(valueName = "in", description = "Plain file with one entry per line")

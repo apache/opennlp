@@ -34,7 +34,7 @@ under the License.
         </para>
 
         <para>
-        The goal of the OpenNLP project will be to create a mature toolkit for the abovementioned tasks.
+        The goal of the OpenNLP project will be to create a mature toolkit for the aforementioned tasks.
         An additional goal is to provide a large number of pre-built models for a variety of languages, as
         well as the annotated text resources that those models are derived from.
         </para>
@@ -306,7 +306,7 @@ $ opennlp ToolNameEvaluator -model en-model-name.bin -lang en -data input.test -
                 documentation we will refer to these models as "OpenNLP models." All NLP
                 components of OpenNLP support this type of model. The sections below in
                 this documentation describe how to train and use these models. <ulink url="https://opennlp.apache.org/models.html">Pre-trained
-                models</ulink> are available for some languages and some of the OpenNLP components.
+                models</ulink> are available for some languages and some OpenNLP components.
             </para>
         </section>
         <section id="intro.models.onnx">
@@ -318,7 +318,7 @@ $ opennlp ToolNameEvaluator -model en-model-name.bin -lang en -data input.test -
                 each of the OpenNLP components that supports ONNX models describes how to
                 use ONNX models for inference. Note that OpenNLP does not support training
                 models that can be used by the ONNX Runtime - ONNX models must be created
-                outside of OpenNLP using other tools.
+                outside OpenNLP using other tools.
             </para>
         </section>
     </section>

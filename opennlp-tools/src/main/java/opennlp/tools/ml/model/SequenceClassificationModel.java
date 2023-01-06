@@ -22,55 +22,56 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.SequenceValidator;
 
 /**
- * A classification model that can label an input sequence.
+ * A classification model that can label an input {@link Sequence}.
  *
- * @param <T>
+ * @param <T> The type of the object which is the source.
  */
 public interface SequenceClassificationModel<T> {
 
   /**
-   * Finds the sequence with the highest probability.
+   * Finds the {@link Sequence} with the highest probability.
    *
-   * @param sequence
-   * @param additionalContext
-   * @param cg
-   * @param validator
+   * @param sequence The {@link T sequence} used as input.
+   * @param additionalContext An array that provides additional information (context).
+   * @param cg The {@link BeamSearchContextGenerator} to use.
+   * @param validator The {@link SequenceValidator} to validate with.
    *
-   * @return
+   * @return The {@link Sequence} with the highest probability.
    */
   Sequence bestSequence(T[] sequence, Object[] additionalContext,
       BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
 
   /**
-   * Finds the n most probable sequences.
+   * Finds the n most probable {@link Sequence sequences} with the highest probability.
    *
-   * @param sequence
-   * @param additionalContext
-   * @param cg
-   * @param validator
+   * @param numSequences The number of sequences to compute.
+   * @param sequence The {@link T sequence} used as input.
+   * @param additionalContext An array that provides additional information (context).
+   * @param minSequenceScore The minimum score to achieve.
+   * @param cg The {@link BeamSearchContextGenerator} to use.
+   * @param validator The {@link SequenceValidator} to validate with.
    *
-   * @return
+   * @return The {@link Sequence sequences} with the highest probability.
    */
   Sequence[] bestSequences(int numSequences, T[] sequence, Object[] additionalContext,
       double minSequenceScore, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
 
   /**
-   * Finds the n most probable sequences.
+   * Finds the n most probable {@link Sequence sequences} with the highest probability.
    *
-   * @param sequence
-   * @param additionalContext
-   * @param cg
-   * @param validator
+   * @param numSequences The number of sequences to compute.
+   * @param sequence The {@link T sequence} used as input.
+   * @param additionalContext An array that provides additional information (context).
+   * @param cg The {@link BeamSearchContextGenerator} to use.
+   * @param validator The {@link SequenceValidator} to validate with.
    *
-   * @return
+   * @return The {@link Sequence sequences} with the highest probability.
    */
   Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
 
   /**
-   * Returns all possible outcomes.
-   *
-   * @return
+   * @return Retrieves all possible outcomes.
    */
   String[] getOutcomes();
 }

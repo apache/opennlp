@@ -32,7 +32,7 @@ under the License.
 
 <title>The Command Line Interface</title>
 
-<para>This section details the available tools and parameters of the Command Line Interface. For a introduction in its usage please refer to <xref linkend='intro.cli'/>.  </para>
+<para>This section details the available tools and parameters of the Command Line Interface. For an introduction in its usage please refer to <xref linkend='intro.cli'/>.  </para>
 
 <section id='tools.cli.doccat'>
 
@@ -92,7 +92,7 @@ Arguments description:
 <entry>sentencesDir</entry>
 <entry>sentencesDir</entry>
 <entry>No</entry>
-<entry>Dir with Leipig sentences to be used</entry>
+<entry>Dir with Leipzig sentences to be used</entry>
 </row>
 <row>
 <entry>encoding</entry>
@@ -139,7 +139,7 @@ Arguments description:
 <entry>sentencesDir</entry>
 <entry>sentencesDir</entry>
 <entry>No</entry>
-<entry>Dir with Leipig sentences to be used</entry>
+<entry>Dir with Leipzig sentences to be used</entry>
 </row>
 <row>
 <entry>encoding</entry>
@@ -197,7 +197,7 @@ Arguments description:
 <entry>sentencesDir</entry>
 <entry>sentencesDir</entry>
 <entry>No</entry>
-<entry>Dir with Leipig sentences to be used</entry>
+<entry>Dir with Leipzig sentences to be used</entry>
 </row>
 <row>
 <entry>encoding</entry>
@@ -232,7 +232,7 @@ Usage: opennlp DoccatConverter help|leipzig [help|options...]
 <entry>sentencesDir</entry>
 <entry>sentencesDir</entry>
 <entry>No</entry>
-<entry>Dir with Leipig sentences to be used</entry>
+<entry>Dir with Leipzig sentences to be used</entry>
 </row>
 <row>
 <entry>encoding</entry>
@@ -299,7 +299,7 @@ Arguments description:
 <entry>sentencesDir</entry>
 <entry>sentencesDir</entry>
 <entry>No</entry>
-<entry>Dir with Leipig sentences to be used</entry>
+<entry>Dir with Leipzig sentences to be used</entry>
 </row>
 <row>
 <entry>sentencesPerSample</entry>
@@ -346,7 +346,7 @@ Usage: opennlp LanguageDetectorConverter help|leipzig [help|options...]
 <entry>sentencesDir</entry>
 <entry>sentencesDir</entry>
 <entry>No</entry>
-<entry>Dir with Leipig sentences to be used</entry>
+<entry>Dir with Leipzig sentences to be used</entry>
 </row>
 <row>
 <entry>sentencesPerSample</entry>
@@ -410,7 +410,7 @@ Arguments description:
 <entry>sentencesDir</entry>
 <entry>sentencesDir</entry>
 <entry>No</entry>
-<entry>Dir with Leipig sentences to be used</entry>
+<entry>Dir with Leipzig sentences to be used</entry>
 </row>
 <row>
 <entry>sentencesPerSample</entry>
@@ -469,7 +469,7 @@ Arguments description:
 <entry>sentencesDir</entry>
 <entry>sentencesDir</entry>
 <entry>No</entry>
-<entry>Dir with Leipig sentences to be used</entry>
+<entry>Dir with Leipzig sentences to be used</entry>
 </row>
 <row>
 <entry>sentencesPerSample</entry>
@@ -3919,7 +3919,7 @@ Usage: opennlp ChunkerConverter help|ad [help|options...]
 Usage: opennlp Parser [-bs n -ap n -k n -tk tok_model] model < sentences 
 -bs n: Use a beam size of n.
 -ap f: Advance outcomes in with at least f% of the probability mass.
--k n: Show the top n parses.  This will also display their log-probablities.
+-k n: Show the top n parses.  This will also display their log-probabilities.
 -tk tok_model: Use the specified tokenizer model to tokenize the sentences. Defaults to a WhitespaceTokenizer.
 
 ]]>

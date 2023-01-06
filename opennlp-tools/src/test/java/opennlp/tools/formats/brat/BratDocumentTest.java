@@ -19,26 +19,25 @@ package opennlp.tools.formats.brat;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class BratDocumentTest {
+public class BratDocumentTest extends AbstractBratTest {
+
+  @BeforeEach
+  public void setup() throws IOException {
+    super.setup();
+  }
 
   @Test
   void testDocumentWithEntitiesParsing() throws IOException {
 
-    Map<String, String> typeToClassMap = new HashMap<>();
-    BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
-    InputStream txtIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/voa-with-entities.txt");
-
-    InputStream annIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/voa-with-entities.ann");
+    InputStream txtIn = getResourceStream("brat/voa-with-entities.txt");
+    InputStream annIn = getResourceStream("brat/voa-with-entities.ann");
 
     BratDocument doc = BratDocument.parseDocument(config, "voa-with-entities", txtIn, annIn);
 
@@ -68,15 +67,10 @@ public class BratDocumentTest {
    */
   @Test
   void testSpanWithMultiFragments() throws IOException {
-    Map<String, String> typeToClassMap = new HashMap<>();
-    BratAnnotationStreamTest.addEntityTypes(typeToClassMap);
     AnnotationConfiguration config = new AnnotationConfiguration(typeToClassMap);
 
-    InputStream txtIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/opennlp-1193.txt");
-
-    InputStream annIn = BratDocumentTest.class.getResourceAsStream(
-        "/opennlp/tools/formats/brat/opennlp-1193.ann");
+    InputStream txtIn = getResourceStream("brat/opennlp-1193.txt");
+    InputStream annIn = getResourceStream("brat/opennlp-1193.ann");
 
     BratDocument doc = BratDocument.parseDocument(config, "opennlp-1193", txtIn, annIn);
 

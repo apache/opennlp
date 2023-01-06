@@ -20,11 +20,15 @@ package opennlp.tools.namefind;
 import opennlp.tools.util.SequenceValidator;
 
 /**
- * This class is created by the {@link BioCodec}.
+ * The default name finder {@link SequenceValidator} implementation.
+ * Created by the {@link BioCodec}.
+ *
+ * @see TokenNameFinder
+ * @see BioCodec
  */
-public class NameFinderSequenceValidator implements
-    SequenceValidator<String> {
+public class NameFinderSequenceValidator implements SequenceValidator<String> {
 
+  @Override
   public boolean validSequence(int i, String[] inputSequence,
       String[] outcomesSequence, String outcome) {
 

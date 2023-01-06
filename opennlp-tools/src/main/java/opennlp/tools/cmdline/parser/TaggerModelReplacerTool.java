@@ -29,14 +29,17 @@ import opennlp.tools.postag.POSModel;
 // user should train with the POS tool
 public final class TaggerModelReplacerTool extends BasicCmdLineTool {
 
+  @Override
   public String getShortDescription() {
     return "replaces the tagger model in a parser model";
   }
 
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " parser.model tagger.model";
   }
 
+  @Override
   public void run(String[] args) {
 
     if (args.length != 2) {

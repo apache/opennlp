@@ -86,7 +86,7 @@ public class NKJPSegmentationDocument {
     Map<String, Map<String, Pointer>> sentences = new LinkedHashMap<>();
 
     try {
-      DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();;
+      DocumentBuilder docBuilder = XmlUtil.createDocumentBuilder();
       Document doc = docBuilder.parse(is);
 
       XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -231,8 +231,8 @@ public class NKJPSegmentationDocument {
     }
 
     String docid = pieces[0];
-    int offset = 0;
-    int length = 0;
+    int offset;
+    int length;
     if (pieces.length == 3) {
       offset = Integer.parseInt(pieces[1]);
       length = Integer.parseInt(pieces[2]);

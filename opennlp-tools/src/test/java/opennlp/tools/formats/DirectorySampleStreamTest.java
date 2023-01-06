@@ -27,19 +27,23 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-public class DirectorySampleStreamTest {
+import opennlp.tools.AbstractTempDirTest;
 
-  @TempDir
-  Path tempDirectory;
-  
+public class DirectorySampleStreamTest extends AbstractTempDirTest {
+
+  private FileFilter filter;
+
+  @BeforeEach
+  public void setup() {
+    filter = new TempFileNameFilter();
+  }
+
   @Test
   public void directoryTest() throws IOException {
 
-    FileFilter filter = new TempFileNameFilter();
-    
     List<File> files = new ArrayList<>();
     
     File temp1 = createTempFile();
@@ -48,7 +52,7 @@ public class DirectorySampleStreamTest {
     File temp2 = createTempFile();
     files.add(temp2);
     
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), filter, false);
+    DirectorySampleStream stream = new DirectorySampleStream(tempDir.toFile(), filter, false);
     
     File file = stream.read();
     Assertions.assertTrue(files.contains(file));
@@ -74,7 +78,7 @@ public class DirectorySampleStreamTest {
     File temp2 = createTempFile();
     files.add(temp2);
     
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), null, false);
+    DirectorySampleStream stream = new DirectorySampleStream(tempDir.toFile(), null, false);
     
     File file = stream.read();
     Assertions.assertTrue(files.contains(file));
@@ -92,8 +96,6 @@ public class DirectorySampleStreamTest {
   @Test
   public void recursiveDirectoryTest() throws IOException {
 
-    FileFilter filter = new TempFileNameFilter();
-    
     List<File> files = new ArrayList<>();
     
     File temp1 = createTempFile();
@@ -103,7 +105,7 @@ public class DirectorySampleStreamTest {
     File temp2 = Files.createTempFile(tempSubDirectory.toPath(), "sub1", ".tmp").toFile();
     files.add(temp2);
 
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), filter, true);
+    DirectorySampleStream stream = new DirectorySampleStream(tempDir.toFile(), filter, true);
     
     File file = stream.read();
     Assertions.assertTrue(files.contains(file));
@@ -121,8 +123,6 @@ public class DirectorySampleStreamTest {
   @Test
   public void resetDirectoryTest() throws IOException {
 
-    FileFilter filter = new TempFileNameFilter();
-    
     List<File> files = new ArrayList<>();
     
     File temp1 = createTempFile();
@@ -131,7 +131,7 @@ public class DirectorySampleStreamTest {
     File temp2 = createTempFile();
     files.add(temp2);
 
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), filter, false);
+    DirectorySampleStream stream = new DirectorySampleStream(tempDir.toFile(), filter, false);
     
     File file = stream.read();
     Assertions.assertTrue(files.contains(file));
@@ -154,10 +154,7 @@ public class DirectorySampleStreamTest {
   @Test
   public void emptyDirectoryTest() throws IOException {
 
-    FileFilter filter = new TempFileNameFilter();
-    
-    DirectorySampleStream stream = new DirectorySampleStream(tempDirectory.toFile(), filter, false);
-    
+    DirectorySampleStream stream = new DirectorySampleStream(tempDir.toFile(), filter, false);
     Assertions.assertNull(stream.read());
     
     stream.close();
@@ -179,7 +176,7 @@ public class DirectorySampleStreamTest {
 
   private File createTempFolder(String name) {
 
-    Path subDir = tempDirectory.resolve(name);
+    Path subDir = tempDir.resolve(name);
 
     try {
       Files.createDirectory(subDir);
@@ -193,7 +190,7 @@ public class DirectorySampleStreamTest {
 
   private File createTempFile() {
 
-    Path tempFile = tempDirectory.resolve(UUID.randomUUID() + ".tmp");
+    Path tempFile = tempDir.resolve(UUID.randomUUID() + ".tmp");
 
     try {
       Files.createFile(tempFile);
@@ -205,7 +202,7 @@ public class DirectorySampleStreamTest {
 
   }
   
-  class TempFileNameFilter implements FileFilter {
+  static class TempFileNameFilter implements FileFilter {
   
     @Override
     public boolean accept(File file) {

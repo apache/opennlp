@@ -20,8 +20,7 @@ package opennlp.tools.util.featuregen;
 
 /**
  * The {@link FeatureGeneratorResourceProvider} provides access to the resources
- * provided in the model. Inside the model resources are identified by a
- * name.
+ * available in the model. Inside the model resources are identified by a name.
  * <p>
  * <b>Note:</b><br>
  * This class is not be intended to be implemented by users.<br>
@@ -30,11 +29,9 @@ package opennlp.tools.util.featuregen;
 public interface FeatureGeneratorResourceProvider {
 
   /**
-   * Retrieves the resource object for the given name/identifier.
+   * @param resourceIdentifier The identifier which names the resource.
    *
-   * @param resourceIdentifier the identifier which names the resource.
-   *
-   * @return the resource object
+   * @return Retrieves the resource object for the given {@code resourceIdentifier}.
    */
   Object getResource(String resourceIdentifier);
 }

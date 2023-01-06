@@ -23,7 +23,6 @@ import opennlp.tools.util.ObjectStream;
 
 class SampleSkipStream<T> implements ObjectStream<T> {
 
-
   private final ObjectStream<T> samples;
   private final int samplesToSkip;
 

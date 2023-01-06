@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
@@ -40,8 +41,10 @@ import opennlp.tools.util.StringUtil;
  * <li>The last is a ranking.
  * </ul>
  * <p>
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
 
   private final Locale locale;
@@ -49,10 +52,9 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
   private final ObjectStream<String> lineStream;
 
   /**
-   * This constructor takes an ObjectStream and initializes the class to handle
-   * the stream.
+   * Initializes a {@link NameFinderCensus90NameStream} via {@link ObjectStream<String>}.
    *
-   * @param lineStream  an <code>ObjectSteam&lt;String&gt;</code> that represents the
+   * @param lineStream  An {@link ObjectStream<String>} that represents the
    *                    input file to be attached to this class.
    */
   public NameFinderCensus90NameStream(ObjectStream<String> lineStream) {
@@ -63,12 +65,14 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
   }
 
   /**
-   * This constructor takes an <code>InputStream</code> and a <code>Charset</code>
-   * and opens an associated stream object with the specified encoding specified.
+   * Initializes a {@link NameFinderCensus90NameStream} via an {@link InputStreamFactory}
+   * and a {@link Charset}.
+   * Opens an associated stream object with the specified encoding specified.
    *
-   * @param in  an <code>InputStreamFactory</code> for the input file.
-   * @param encoding  the <code>Charset</code> to apply to the input stream.
-   * @throws IOException
+   * @param in  The {@link InputStreamFactory} for the input file.
+   * @param encoding  the {@link Charset} to apply to the input stream.
+   *
+   * @throws IOException Thrown if IO errors occurred.
    */
   public NameFinderCensus90NameStream(InputStreamFactory in, Charset encoding)
       throws IOException {
@@ -77,6 +81,7 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
     this.lineStream = new PlainTextByLineStream(in, this.encoding);
   }
 
+  @Override
   public StringList read() throws IOException {
     String line = lineStream.read();
     StringList name = null;
@@ -107,10 +112,12 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
     return name;
   }
 
+  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     lineStream.reset();
   }
 
+  @Override
   public void close() throws IOException {
     lineStream.close();
   }

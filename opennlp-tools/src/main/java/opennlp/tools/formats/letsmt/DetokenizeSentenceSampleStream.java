@@ -34,6 +34,14 @@ public class DetokenizeSentenceSampleStream
 
   private final Detokenizer detokenizer;
 
+  /**
+   * Initializes a {@link DetokenizeSentenceSampleStream}.
+   *
+   * @param detokenizer The {@link Detokenizer} to use. Must not be {@code null}.
+   * @param samples The {@link ObjectStream<SentenceSample> samples} as input. Must not be {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   public DetokenizeSentenceSampleStream(Detokenizer detokenizer, ObjectStream<SentenceSample> samples) {
     super(samples);
     this.detokenizer = Objects.requireNonNull(detokenizer);

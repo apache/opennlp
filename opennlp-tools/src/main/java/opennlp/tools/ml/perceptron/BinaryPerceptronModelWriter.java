@@ -27,21 +27,24 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.ModelParameterChunker;
 
 /**
- * Model writer that saves models in binary format.
+ * A {@link PerceptronModelWriter} that writes models in a binary format.
  */
 public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
-  private DataOutputStream output;
+
+  private final DataOutputStream output;
 
   /**
-   * Constructor which takes a GISModel and a File and prepares itself to
-   * write the model to that file. Detects whether the file is gzipped or not
-   * based on whether the suffix contains ".gz".
+   * Instantiates {@link BinaryPerceptronModelWriter} via an {@link AbstractModel perceptron model}
+   * and a {@link File}. Prepares writing of the {@code model} to the file.
+   * Based on whether the file's suffix contains {@code .gz}, it detects whether
+   * the file is gzipped or not.
    *
-   * @param model The GISModel which is to be persisted.
-   * @param f The File in which the model is to be persisted.
+   * @param model The {@link AbstractModel perceptron model} which is to be persisted.
+   * @param f The {@link File} in which the model is to be persisted.
+   *
+   * @see PerceptronModel
    */
   public BinaryPerceptronModelWriter(AbstractModel model, File f) throws IOException {
-
     super(model);
 
     if (f.getName().endsWith(".gz")) {
@@ -54,30 +57,37 @@ public class BinaryPerceptronModelWriter extends PerceptronModelWriter {
   }
 
   /**
-   * Constructor which takes a GISModel and a DataOutputStream and prepares
-   * itself to write the model to that stream.
+   * Instantiates {@link BinaryPerceptronModelWriter} via an {@link AbstractModel perceptron model}
+   * and a {@link DataOutputStream}. Prepares writing a {@code model} to the file.
+   * Based on whether the file's suffix contains {@code .gz}, it detects whether
+   * the file is gzipped or not.
    *
-   * @param model The GISModel which is to be persisted.
-   * @param dos The stream which will be used to persist the model.
+   * @param model The {@link AbstractModel perceptron model} which is to be persisted.
+   * @param dos The {@link DataOutputStream} which is used to persist the {@code model}.
+   *            The {@code dos} must be opened.
    */
   public BinaryPerceptronModelWriter(AbstractModel model, DataOutputStream dos) {
     super(model);
     output = dos;
   }
 
-  public void writeUTF(String s) throws java.io.IOException {
+  @Override
+  public void writeUTF(String s) throws IOException {
     ModelParameterChunker.writeUTF(output, s);
   }
 
-  public void writeInt(int i) throws java.io.IOException {
+  @Override
+  public void writeInt(int i) throws IOException {
     output.writeInt(i);
   }
 
-  public void writeDouble(double d) throws java.io.IOException {
+  @Override
+  public void writeDouble(double d) throws IOException {
     output.writeDouble(d);
   }
 
-  public void close() throws java.io.IOException {
+  @Override
+  public void close() throws IOException {
     output.flush();
     output.close();
   }

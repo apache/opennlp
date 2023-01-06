@@ -17,15 +17,27 @@
 
 package opennlp.tools.formats.convert;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.tokenize.Detokenizer;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b> Do not use this class, internal use only!
+ * <b>Note:</b>
+ * Do not use this class, internal use only!
  */
+@Internal
 public class POSToSentenceSampleStream extends AbstractToSentenceSampleStream<POSSample> {
 
+  /**
+   * Initializes a {@link POSToSentenceSampleStream}.
+   *
+   * @param detokenizer The {@link Detokenizer} to use. Must not be {@code null}.
+   * @param samples The {@link ObjectStream<POSSample> samples} as input. Must not be {@code null}.
+   * @param chunkSize The size of chunks. Must be equal to or greater than {@code 0}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
+   */
   public POSToSentenceSampleStream(Detokenizer detokenizer, ObjectStream<POSSample> samples,
                                    int chunkSize) {
     super(detokenizer, samples, chunkSize);

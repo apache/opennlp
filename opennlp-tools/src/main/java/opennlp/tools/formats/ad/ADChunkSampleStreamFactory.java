@@ -27,6 +27,7 @@ import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
@@ -39,6 +40,7 @@ import opennlp.tools.util.PlainTextByLineStream;
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
+@Internal
 public class ADChunkSampleStreamFactory<P> extends LanguageSampleStreamFactory<ChunkSample, P> {
 
   interface Parameters {

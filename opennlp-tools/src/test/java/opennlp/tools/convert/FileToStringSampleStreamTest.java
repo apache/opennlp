@@ -21,22 +21,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.tools.AbstractTempDirTest;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 
-public class FileToStringSampleStreamTest {
-
-  @TempDir
-  public Path directory;
+public class FileToStringSampleStreamTest extends AbstractTempDirTest {
 
   @Test
   public void readFileTest() throws IOException {
@@ -47,12 +43,12 @@ public class FileToStringSampleStreamTest {
     List<String> sentences = Arrays.asList(sentence1, sentence2);
 
     DirectorySampleStream directorySampleStream =
-        new DirectorySampleStream(directory.toFile(), null, false);
+        new DirectorySampleStream(tempDir.toFile(), null, false);
 
-    File tempFile1 = directory.resolve("tempFile1").toFile();
+    File tempFile1 = tempDir.resolve("tempFile1").toFile();
     FileUtils.writeStringToFile(tempFile1, sentence1, StandardCharsets.UTF_8);
 
-    File tempFile2 = directory.resolve("tempFile2").toFile();
+    File tempFile2 = tempDir.resolve("tempFile2").toFile();
     FileUtils.writeStringToFile(tempFile2, sentence2, StandardCharsets.UTF_8);
 
     try (FileToStringSampleStream stream =

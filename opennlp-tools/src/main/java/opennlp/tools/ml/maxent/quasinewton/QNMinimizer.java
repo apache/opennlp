@@ -22,7 +22,9 @@ import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
 
 /**
  * Implementation of L-BFGS which supports L1-, L2-regularization
- * and Elastic Net for solving convex optimization problems. <p>
+ * and Elastic Net for solving convex optimization problems.
+ *
+ * <p>
  * Usage example:
  * <blockquote><pre>
  *  // Quadratic function f(x) = (x-1)^2 + 10
@@ -81,22 +83,22 @@ public class QNMinimizer {
   public static final int MAX_FCT_EVAL_DEFAULT = 30000;
 
   // L1-regularization cost
-  private double l1Cost;
+  private final double l1Cost;
 
   // L2-regularization cost
-  private double l2Cost;
+  private final double l2Cost;
 
   // Maximum number of iterations
-  private int iterations;
+  private final int iterations;
 
   // Number of Hessian updates to store
-  private int m;
+  private final int m;
 
   // Maximum number of function evaluations
-  private int maxFctEval;
+  private final int maxFctEval;
 
   // Verbose output
-  private boolean verbose;
+  private final boolean verbose;
 
   // Objective function's dimension
   private int dimension;
@@ -108,31 +110,57 @@ public class QNMinimizer {
   // This is optional and can be omitted.
   private Evaluator evaluator;
 
+  /**
+   * Initializes a {@link QNMinimizer} with default parameters.
+   */
   public QNMinimizer() {
     this(L1COST_DEFAULT, L2COST_DEFAULT);
   }
 
+  /**
+   * Initializes a {@link QNMinimizer}.
+   *
+   * @param l1Cost The L1-regularization cost.
+   * @param l2Cost The L2-regularization cost.
+   */
   public QNMinimizer(double l1Cost, double l2Cost) {
     this(l1Cost, l2Cost, NUM_ITERATIONS_DEFAULT);
   }
 
+  /**
+   * Initializes a {@link QNMinimizer}.
+   *
+   * @param l1Cost The L1-regularization cost.
+   * @param l2Cost The L2-regularization cost.
+   * @param iterations The maximum number of iterations.
+   */
   public QNMinimizer(double l1Cost, double l2Cost, int iterations) {
     this(l1Cost, l2Cost, iterations, M_DEFAULT, MAX_FCT_EVAL_DEFAULT);
   }
 
+  /**
+   * Initializes a {@link QNMinimizer}.
+   *
+   * @param l1Cost The L1-regularization cost.
+   * @param l2Cost The L2-regularization cost.
+   * @param iterations The maximum number of iterations.
+   * @param m The number of Hessian updates to store.
+   * @param maxFctEval The maximum number of function evaluations.
+   */
   public QNMinimizer(double l1Cost, double l2Cost,
       int iterations, int m, int maxFctEval) {
     this(l1Cost, l2Cost, iterations, m, maxFctEval, true);
   }
 
   /**
-   * Constructor
-   * @param l1Cost L1-regularization cost
-   * @param l2Cost L2-regularization cost
-   * @param iterations maximum number of iterations
-   * @param m number of Hessian updates to store
-   * @param maxFctEval maximum number of function evaluations
-   * @param verbose verbose output
+   * Initializes a {@link QNMinimizer}.
+   * 
+   * @param l1Cost The L1-regularization cost.
+   * @param l2Cost The L2-regularization cost.
+   * @param iterations The maximum number of iterations.
+   * @param m The number of Hessian updates to store.
+   * @param maxFctEval The maximum number of function evaluations.
+   * @param verbose Whether verbose output is printed, or not.
    */
   public QNMinimizer(double l1Cost, double l2Cost, int iterations,
       int m, int maxFctEval, boolean verbose)
@@ -171,9 +199,10 @@ public class QNMinimizer {
   }
 
   /**
-   * Find the parameters that minimize the objective function
-   * @param function objective function
-   * @return minimizing parameters
+   * Finds the parameters that minimize the objective function.
+   *
+   * @param function The objective {@link Function}.
+   * @return The minimizing parameters.
    */
   public double[] minimize(Function function) {
 
@@ -404,9 +433,6 @@ public class QNMinimizer {
     return false;
   }
 
-  /**
-   * Shorthand for System.out.print
-   */
   private void display(String s) {
     System.out.print(s);
   }
@@ -415,11 +441,11 @@ public class QNMinimizer {
    * Class to store vectors for Hessian approximation update.
    */
   private class UpdateInfo {
-    private double[][] S;
-    private double[][] Y;
-    private double[] rho;
-    private double[] alpha;
-    private int m;
+    private final double[][] S;
+    private final double[][] Y;
+    private final double[] rho;
+    private final double[] alpha;
+    private final int m;
 
     private int kCounter;
 
@@ -472,11 +498,11 @@ public class QNMinimizer {
   }
 
   /**
-   * L2-regularized objective function
+   * L2-regularized objective {@link Function}.
    */
   public static class L2RegFunction implements Function {
-    private Function f;
-    private double l2Cost;
+    private final Function f;
+    private final double l2Cost;
 
     public L2RegFunction(Function f, double l2Cost) {
       this.f = f;
@@ -524,9 +550,10 @@ public class QNMinimizer {
    */
   public interface Evaluator {
     /**
-     * Measure quality of the training parameters
-     * @param parameters
-     * @return evaluated result
+     * Measure quality of the training parameters.
+     * 
+     * @param parameters The parameters used for training.
+     * @return The evaluated result.
      */
     double evaluate(double[] parameters);
   }

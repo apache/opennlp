@@ -19,10 +19,20 @@ package opennlp.tools.util;
 
 import java.io.IOException;
 
-public class AbstractObjectStream<T> implements ObjectStream<T> {
+/**
+ * A base {@link ObjectStream} implementation.
+ *
+ * @param <T> The generic type representing samples in the stream of samples.
+ */
+public abstract class AbstractObjectStream<T> implements ObjectStream<T> {
 
   private final ObjectStream<T> stream;
 
+  /**
+   * Initializes an {@link AbstractObjectStream}.
+   *
+   * @param stream The {@link ObjectStream} that provides the {@link T} samples.
+   */
   protected AbstractObjectStream(ObjectStream<T> stream) {
     this.stream = stream;
   }

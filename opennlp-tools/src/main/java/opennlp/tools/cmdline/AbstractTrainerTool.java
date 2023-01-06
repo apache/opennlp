@@ -25,7 +25,7 @@ import opennlp.tools.util.TrainingParameters;
 /**
  * Base class for trainer tools.
  */
-public class AbstractTrainerTool<T, P> extends AbstractEvaluatorTool<T, P> {
+public abstract class AbstractTrainerTool<T, P> extends AbstractEvaluatorTool<T, P> {
 
   protected TrainingParameters mlParams;
 

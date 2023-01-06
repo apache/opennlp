@@ -31,26 +31,27 @@ import opennlp.tools.util.StringUtil;
  */
 public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private Pattern noLetters = Pattern.compile("[^a-zA-Z]");
-  private Tokenizer tokenizer;
+  private final Pattern noLetters = Pattern.compile("[^a-zA-Z]");
+  private final Tokenizer tokenizer;
 
   /**
-   * Initializes a new instance.
-   * For tokinization the {@link SimpleTokenizer} is used.
+   * Initializes a {@link TokenPatternFeatureGenerator}.
+   * For tokenization the {@link SimpleTokenizer} is used.
    */
   public TokenPatternFeatureGenerator() {
-      this(SimpleTokenizer.INSTANCE);
+    this(SimpleTokenizer.INSTANCE);
   }
 
   /**
-   * Initializes a new instance.
+   * Initializes a {@link TokenPatternFeatureGenerator} instance.
    *
-   * @param supportTokenizer
+   * @param supportTokenizer The {@link Tokenizer} to be used.
    */
   public TokenPatternFeatureGenerator(Tokenizer supportTokenizer) {
     tokenizer = supportTokenizer;
   }
 
+  @Override
   public void createFeatures(List<String> feats, String[] toks, int index, String[] preds) {
 
     String[] tokenized = tokenizer.tokenize(toks[index]);

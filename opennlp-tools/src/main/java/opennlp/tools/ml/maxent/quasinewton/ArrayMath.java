@@ -24,9 +24,9 @@ package opennlp.tools.ml.maxent.quasinewton;
 public class ArrayMath extends opennlp.tools.ml.ArrayMath {
 
   /**
-   * Find index of maximum element in the vector x
-   * @param x input vector
-   * @return index of the maximum element. Index of the first
+   * Find index of maximum element in the vector {@code x}.
+   * @param x The input vector.
+   * @return The index of the maximum element. Index of the first
    *     maximum element is returned if multiple maximums are found.
    */
   public static int maxIdx(double[] x) {

@@ -20,16 +20,49 @@ package opennlp.tools.ml.model;
 import java.io.File;
 import java.io.IOException;
 
+import opennlp.tools.util.ObjectStream;
+
+/**
+ * Class for using a file of real-valued {@link Event events} as an
+ * {@link ObjectStream event stream}.
+ * The format of the file is one event per line with
+ * each line consisting of outcome followed by contexts (space delimited).
+ *
+ * @see Event
+ * @see FileEventStream
+ */
 public class RealValueFileEventStream extends FileEventStream {
 
+  /**
+   * Instantiates a {@link RealValueFileEventStream} from the specified file name.
+   *
+   * @param fileName The name fo the file containing the events.
+   *
+   * @throws IOException Thrown if the specified file can not be read.
+   */
   public RealValueFileEventStream(String fileName) throws IOException {
     super(fileName);
   }
 
+  /**
+   * Instantiates a {@link RealValueFileEventStream} from the specified file name.
+   *
+   * @param fileName The name fo the file containing the events.
+   * @param encoding The name of the {@link java.nio.charset.Charset character encoding}.
+   *
+   * @throws IOException Thrown if the specified file can not be read.
+   */
   public RealValueFileEventStream(String fileName, String encoding) throws IOException {
     super(fileName, encoding);
   }
 
+  /**
+   * Instantiates a {@link RealValueFileEventStream} via a {@link File}.
+   *
+   * @param file The {@link File} that holds events.
+   *
+   * @throws IOException Thrown if the specified file can not be read.
+   */
   public RealValueFileEventStream(File file) throws IOException {
     super(file);
   }
@@ -37,7 +70,7 @@ public class RealValueFileEventStream extends FileEventStream {
   /**
    * Parses the specified contexts and re-populates context array with features
    * and returns the values for these features. If all values are unspecified,
-   * then null is returned.
+   * then {@code null} is returned.
    *
    * @param contexts The contexts with real values specified.
    * @return The value for each context or null if all values are unspecified.

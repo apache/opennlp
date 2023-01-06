@@ -19,6 +19,9 @@ package opennlp.tools.namefind;
 
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * A marker interface for evaluating {@link TokenNameFinder name finders}.
+ */
 public interface TokenNameFinderEvaluationMonitor extends EvaluationMonitor<NameSample> {
 
 }

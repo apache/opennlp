@@ -26,6 +26,7 @@ import opennlp.uima.util.AbstractModelResource;
 public class TokenNameFinderModelResourceImpl extends AbstractModelResource<TokenNameFinderModel>
     implements TokenNameFinderModelResource {
 
+  @Override
   public TokenNameFinderModel getModel() {
     return model;
   }

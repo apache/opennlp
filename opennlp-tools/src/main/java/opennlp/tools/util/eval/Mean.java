@@ -44,7 +44,7 @@ public class Mean {
   }
 
   /**
-   * Adds a value count times to the arithmetic mean.
+   * Adds a value {@code count} times to the arithmetic mean.
    *
    * @param value the value which should be added
    *     to the arithmetic mean.
@@ -58,22 +58,23 @@ public class Mean {
   }
 
   /**
-   * Retrieves the mean of all values added with
-   * {@link #add(double)} or 0 if there are zero added
-   * values.
+   * @return Retrieves the mean of all values added with {@link #add(double)}
+   * or {@code 0} if there are zero add values.
    */
   public double mean() {
     return count > 0 ? sum / count : 0;
   }
 
   /**
-   * Retrieves the number of times a value
-   * was added to the mean.
+   * @return Retrieves the number of times a value was added to the mean.
    */
   public long count() {
     return count;
   }
 
+  /**
+   * @return A human-readable {@link String} representation.
+   */
   @Override
   public String toString() {
     return Double.toString(mean());

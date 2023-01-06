@@ -21,12 +21,14 @@ import java.io.File;
 
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
+import opennlp.tools.commons.Internal;
 
 /**
  * Common evaluation parameters.
- *
- * Note: Do not use this class, internal use only!
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public interface EvaluatorParams {
 
   @ParameterDescription(valueName = "model", description = "the model file to be evaluated.")

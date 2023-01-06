@@ -20,7 +20,6 @@ package opennlp.tools.util;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 

@@ -25,10 +25,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * A {@link DataReader} that reads files from a binary format.
+ */
 public class BinaryFileDataReader implements DataReader {
 
-  private DataInputStream input;
+  private final DataInputStream input;
 
+  /**
+   * Instantiates {@link BinaryFileDataReader} via a {@link File} and creates
+   * a {@link DataInputStream} for it.
+   * Based on whether the file's suffix contains {@code .gz},
+   * it detects whether the file is gzipped or not.
+   *
+   * @param f The {@link File} that references the model to be read.
+   */
   public BinaryFileDataReader(File f) throws IOException {
     if (f.getName().endsWith(".gz")) {
       input = new DataInputStream(new BufferedInputStream(
@@ -39,22 +50,45 @@ public class BinaryFileDataReader implements DataReader {
     }
   }
 
+  /**
+   * Instantiates {@link BinaryFileDataReader} via an {@link InputStream} and creates
+   * a {@link DataInputStream} for it.
+   *
+   * @param in The {@link InputStream} that references the model to be read.
+   */
   public BinaryFileDataReader(InputStream in) {
-    input = new DataInputStream(in);
+    this(new DataInputStream(in));
   }
 
+  /**
+   * Instantiates {@link BinaryFileDataReader} via an {@link DataInputStream}.
+   *
+   * @param in The {@link DataInputStream} that references the model to be read.
+   */
   public BinaryFileDataReader(DataInputStream in) {
     input = in;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public double readDouble() throws IOException {
     return input.readDouble();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public int readInt() throws IOException {
     return input.readInt();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public String readUTF() throws IOException {
     return ModelParameterChunker.readUTF(input);
   }

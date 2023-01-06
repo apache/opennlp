@@ -40,7 +40,7 @@ import opennlp.uima.util.UimaUtil;
 
 /**
  * Abstract document categorizer which can be implemented to define how the
- * output of the categorizer should be written into the CAS.
+ * output of the {@link DocumentCategorizer} should be written into the CAS.
  */
 abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
 
@@ -77,6 +77,7 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
     mCategorizer = new DocumentCategorizerME(model);
   }
 
+  @Override
   public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
     mTokenType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         UimaUtil.TOKEN_TYPE_PARAMETER);
@@ -84,6 +85,7 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
 
   protected abstract void setBestCategory(CAS cas, String bestCategory);
 
+  @Override
   public void process(CAS cas) {
 
     FSIterator<AnnotationFS> tokenAnnotations = cas.getAnnotationIndex(mTokenType).iterator();

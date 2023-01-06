@@ -27,8 +27,12 @@ import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.util.Version;
 
+/**
+ * An {@link ArtifactSerializer} implementation for {@link POSModel models}.
+ */
 public class POSModelSerializer implements ArtifactSerializer<POSModel> {
 
+  @Override
   public POSModel create(InputStream in) throws IOException {
     POSModel posModel = new POSModel(new UncloseableInputStream(in));
 
@@ -52,6 +56,7 @@ public class POSModelSerializer implements ArtifactSerializer<POSModel> {
     return posModel;
   }
 
+  @Override
   public void serialize(POSModel artifact, OutputStream out)
       throws IOException {
     artifact.serialize(out);

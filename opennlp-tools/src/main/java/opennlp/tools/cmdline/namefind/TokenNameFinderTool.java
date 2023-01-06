@@ -39,10 +39,12 @@ import opennlp.tools.util.Span;
 
 public final class TokenNameFinderTool extends BasicCmdLineTool {
 
+  @Override
   public String getShortDescription() {
     return "learnable name finder";
   }
 
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " model1 model2 ... modelN < sentences";
   }

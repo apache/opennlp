@@ -56,10 +56,12 @@ public final class TokenNameFinderCrossValidatorTool
     super(NameSample.class, CVToolParams.class);
   }
 
+  @Override
   public String getShortDescription() {
     return "K-fold cross validator for the learnable Name Finder";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 
@@ -104,9 +106,12 @@ public final class TokenNameFinderCrossValidatorTool
       sequenceCodecImplName = BilouCodec.class.getName();
     }
 
-    SequenceCodec<String> sequenceCodec =
-        TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
-
+    SequenceCodec<String> sequenceCodec;
+    try {
+      sequenceCodec = TokenNameFinderFactory.instantiateSequenceCodec(sequenceCodecImplName);
+    } catch (InvalidFormatException e) {
+      throw new TerminateToolException(-1, e.getMessage(), e);
+    }
 
     TokenNameFinderFineGrainedReportListener reportListener = null;
     File reportFile = params.getReportOutputFile();
@@ -151,7 +156,6 @@ public final class TokenNameFinderCrossValidatorTool
     }
 
     System.out.println("done");
-
     System.out.println();
 
     if (reportFile != null) {

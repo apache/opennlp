@@ -40,14 +40,17 @@ public class LemmatizerTrainerTool
     super(LemmaSample.class, TrainerToolParams.class);
   }
 
+  @Override
   public String getName() {
     return "LemmatizerTrainerME";
   }
 
+  @Override
   public String getShortDescription() {
     return "trainer for the learnable lemmatizer";
   }
 
+  @Override
   public void run(String format, String[] args) {
     super.run(format, args);
 

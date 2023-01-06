@@ -24,13 +24,15 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
-public class SgmlParserTest {
+import opennlp.tools.formats.AbstractFormatTest;
+
+public class SgmlParserTest extends AbstractFormatTest {
 
   @Test
   void testParse1() throws IOException {
 
-    try (Reader in = new InputStreamReader(
-        SgmlParserTest.class.getResourceAsStream("parsertest1.sgml"), StandardCharsets.UTF_8)) {
+    try (Reader in = new InputStreamReader(getResourceStream("muc/parsertest1.sgml"),
+            StandardCharsets.UTF_8)) {
       SgmlParser parser = new SgmlParser();
       parser.parse(in, new SgmlParser.ContentHandler() {
       });

@@ -30,22 +30,22 @@ import opennlp.tools.util.SequenceCodec;
  * Generates a detailed report for the NameFinder.
  * <p>
  * It is possible to use it from an API and access the statistics using the
- * provided getters
+ * provided getters.
  */
 public class TokenNameFinderFineGrainedReportListener
     extends FineGrainedReportListener implements TokenNameFinderEvaluationMonitor {
 
-  private SequenceCodec<String> sequenceCodec;
+  private final SequenceCodec<String> sequenceCodec;
 
   /**
-   * Creates a listener that will print to {@link System#err}
+   * Creates a listener that will print to {@code System#err}.
    */
   public TokenNameFinderFineGrainedReportListener(SequenceCodec<String> seqCodec) {
     this(seqCodec, System.err);
   }
 
   /**
-   * Creates a listener that prints to a given {@link OutputStream}
+   * Creates a listener that prints to a given {@link OutputStream}.
    */
   public TokenNameFinderFineGrainedReportListener(SequenceCodec<String> seqCodec, OutputStream outputStream) {
     super(outputStream);
@@ -53,11 +53,12 @@ public class TokenNameFinderFineGrainedReportListener
   }
 
   // methods inherited from EvaluationMonitor
-
+  @Override
   public void misclassified(NameSample reference, NameSample prediction) {
     statsAdd(reference, prediction);
   }
 
+  @Override
   public void correctlyClassified(NameSample reference,
                                   NameSample prediction) {
     statsAdd(reference, prediction);
@@ -67,7 +68,7 @@ public class TokenNameFinderFineGrainedReportListener
     String[] refTags = sequenceCodec.encode(reference.getNames(), reference.getSentence().length);
     String[] predTags = sequenceCodec.encode(prediction.getNames(), prediction.getSentence().length);
 
-    // we don' want it to compute token frequency, so we pass an array of empty strings instead
+    // we don't want it to compute token frequency, so we pass an array of empty strings instead
     // of tokens
     getStats().add(new String[reference.getSentence().length], refTags, predTags);
   }
@@ -82,6 +83,7 @@ public class TokenNameFinderFineGrainedReportListener
     return new GroupedLabelComparator(map);
   }
 
+  @Override
   public void writeReport() {
     printGeneralStatistics();
     printTagsErrorRank();

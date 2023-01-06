@@ -33,7 +33,7 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 /**
- * Reads the annotations from the brat .ann annotation file.
+ * Reads the annotations from the brat {@code .ann} annotation file.
  */
 public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
 

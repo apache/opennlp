@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Leaf;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
@@ -62,6 +63,7 @@ import opennlp.tools.util.Span;
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
+@Internal
 public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   /*

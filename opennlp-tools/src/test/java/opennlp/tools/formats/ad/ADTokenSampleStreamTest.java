@@ -19,10 +19,6 @@ package opennlp.tools.formats.ad;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,13 +27,11 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
-public class ADTokenSampleStreamTest {
-
-  private final List<TokenSample> samples = new ArrayList<>();
+public class ADTokenSampleStreamTest extends AbstractADSampleStreamTest<TokenSample> {
 
   @Test
   void testSimpleCount() {
-    Assertions.assertEquals(ADParagraphStreamTest.NUM_SENTENCES, samples.size());
+    Assertions.assertEquals(NUM_SENTENCES, samples.size());
   }
 
   @Test
@@ -46,25 +40,27 @@ public class ADTokenSampleStreamTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, URISyntaxException {
+  void setup() throws IOException {
+    super.setup();
+    
     ADTokenSampleStreamFactory<ADTokenSampleStreamFactory.Parameters> factory =
             new ADTokenSampleStreamFactory<>(ADTokenSampleStreamFactory.Parameters.class);
 
-    File dict = new File(Objects.requireNonNull(getClass().getClassLoader()
-        .getResource("opennlp/tools/tokenize/latin-detokenizer.xml")).toURI());
-    File data = new File(Objects.requireNonNull(getClass().getClassLoader()
-        .getResource("opennlp/tools/formats/ad.sample")).toURI());
+    File data = new File(getResource("ad.sample").getFile());
+    Assertions.assertNotNull(data);
+    File dict = new File(getResourceWithoutPrefix("opennlp/tools/tokenize/latin-detokenizer.xml").getFile());
+    Assertions.assertNotNull(dict);
+
     String[] args = {"-data", data.getCanonicalPath(), "-encoding", "UTF-8",
         "-lang", "por", "-detokenizer", dict.getCanonicalPath()};
-    ObjectStream<TokenSample> tokenSampleStream = factory.create(args);
+    try (ObjectStream<TokenSample> tokenSampleStream = factory.create(args)) {
+      TokenSample sample = tokenSampleStream.read();
 
-    TokenSample sample = tokenSampleStream.read();
-
-    while (sample != null) {
-      samples.add(sample);
-      sample = tokenSampleStream.read();
+      while (sample != null) {
+        samples.add(sample);
+        sample = tokenSampleStream.read();
+      }
     }
-
   }
 
 }

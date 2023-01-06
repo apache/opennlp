@@ -19,7 +19,7 @@ package opennlp.tools.util.normalizer;
 import java.util.regex.Pattern;
 
 /**
- * Normalizer to shrink repeated spaces / chars
+ * A {@link ShrinkCharSequenceNormalizer} implementation that shrinks repeated spaces / chars in text.
  */
 public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
 

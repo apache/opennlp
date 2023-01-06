@@ -20,13 +20,18 @@ package opennlp.tools.ml.naivebayes;
 /**
  * Class implementing the probability for a label.
  *
- * @param <T> the label (category) class
+ * @param <T> The label (category) class.
  *
  */
 public class Probability<T> {
   protected T label;
   protected double probability = 1.0;
 
+  /**
+   * Instantiates a {@link Probability} with a given {@code label}.
+   * 
+   * @param label The {@link T label} to assign probabilities to.
+   */
   public Probability(T label) {
     this.label = label;
   }
@@ -34,7 +39,7 @@ public class Probability<T> {
   /**
    * Assigns a probability to a label, discarding any previously assigned probability.
    *
-   * @param probability the probability to assign
+   * @param probability The probability to assign.
    */
   public void set(double probability) {
     this.probability = probability;
@@ -43,9 +48,9 @@ public class Probability<T> {
   /**
    * Assigns a probability to a label, discarding any previously assigned probability.
    *
-   * @param probability the probability to assign
+   * @param probability The probability to assign.
    */
-  public void set(Probability probability) {
+  public void set(Probability<T> probability) {
     this.probability = probability.get();
   }
 
@@ -53,7 +58,7 @@ public class Probability<T> {
    * Assigns a probability to a label, discarding any previously assigned probability,
    * if the new probability is greater than the old one.
    *
-   * @param probability the probability to assign
+   * @param probability The probability to assign.
    */
   public void setIfLarger(double probability) {
     if (this.probability < probability) {
@@ -65,9 +70,9 @@ public class Probability<T> {
    * Assigns a probability to a label, discarding any previously assigned probability,
    * if the new probability is greater than the old one.
    *
-   * @param probability the probability to assign
+   * @param probability The probability to assign.
    */
-  public void setIfLarger(Probability probability) {
+  public void setIfLarger(Probability<T> probability) {
     if (this.probability < probability.get()) {
       this.probability = probability.get();
     }
@@ -76,16 +81,17 @@ public class Probability<T> {
   /**
    * Checks if a probability is greater than the old one.
    *
-   * @param probability the probability to assign
+   * @param probability The probability to assign.
+   * @return {@code true} if a probability is greater than the old one, {@code false} otherwise.
    */
-  public boolean isLarger(Probability probability) {
+  public boolean isLarger(Probability<T> probability) {
     return this.probability < probability.get();
   }
 
   /**
    * Assigns a log probability to a label, discarding any previously assigned probability.
    *
-   * @param probability the log probability to assign
+   * @param probability The log probability to assign.
    */
   public void setLog(double probability) {
     set(StrictMath.exp(probability));
@@ -94,34 +100,28 @@ public class Probability<T> {
   /**
    * Compounds the existing probability mass on the label with the new probability passed in to the method.
    *
-   * @param probability the probability weight to add
+   * @param probability The probability weight to add.
    */
   public void addIn(double probability) {
     set(this.probability * probability);
   }
 
   /**
-   * Returns the probability associated with a label
-   *
-   * @return the probability associated with the label
+   * @return Retrieves the probability associated with a label.
    */
   public Double get() {
     return probability;
   }
 
   /**
-   * Returns the log probability associated with a label
-   *
-   * @return the log probability associated with the label
+   * @return Retrieves the log probability associated with a label.
    */
   public Double getLog() {
     return StrictMath.log(get());
   }
 
   /**
-   * Returns the probabilities associated with all labels
-   *
-   * @return the HashMap of labels and their probabilities
+   * @return Retrieves the probabilities associated with all labels.
    */
   public T getLabel() {
     return label;

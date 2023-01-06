@@ -18,13 +18,15 @@
 package opennlp.tools.ml.maxent;
 
 /**
- * Generate contexts for maxent decisions.
+ * Represents a generator of contexts for maxent decisions.
  */
 public interface ContextGenerator<T> {
 
   /**
-   * Builds up the list of contextual predicates given an Object.
+   * Builds up the list of contextual predicates given an {@link T object}.
+   *
+   * @param o The {@link T object} used as input.
    */
-  public String[] getContext(T o);
+  String[] getContext(T o);
 
 }

@@ -24,6 +24,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InputStreamFactory;
@@ -32,6 +33,7 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b> Do not use this class, internal use only!
  */
+@Internal
 public class ConlluPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
 
   public static final String CONLLU_FORMAT = "conllu";
@@ -65,7 +67,7 @@ public class ConlluPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory
         tagset = ConlluTagset.X;
         break;
       default:
-        throw new TerminateToolException(-1, "Unkown tagset parameter: " + params.getTagset());
+        throw new TerminateToolException(-1, "Unknown tagset parameter: " + params.getTagset());
     }
 
     InputStreamFactory inFactory =

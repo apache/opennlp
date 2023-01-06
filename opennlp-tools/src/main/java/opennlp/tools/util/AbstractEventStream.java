@@ -23,29 +23,32 @@ import java.util.Iterator;
 
 import opennlp.tools.ml.model.Event;
 
+/**
+ * A base {@link ObjectStream} implementation for events.
+ *
+ * @param <T> The generic type representing samples.
+ */
 public abstract class AbstractEventStream<T> implements ObjectStream<Event> {
 
-  private ObjectStream<T> samples;
+  private final ObjectStream<T> samples;
 
-  private Iterator<Event> events = Collections.<Event>emptyList().iterator();
+  private Iterator<Event> events = Collections.emptyIterator();
 
   /**
-   * Initializes the current instance with a sample {@link Iterator}.
+   * Initializes an {@link AbstractEventStream} with a sample {@link Iterator}.
    *
-   * @param samples the sample {@link Iterator}.
+   * @param samples The {@link Iterator} that provides the {@link T} samples.
    */
   public AbstractEventStream(ObjectStream<T> samples) {
     this.samples = samples;
   }
 
   /**
-   * Creates events for the provided sample.
+   * Creates events for the provided {@code sample}.
    *
-   * @param sample the sample for which training {@link Event}s
-   *     are be created.
+   * @param sample The {@link T sample} for which training {@link Event events} are created.
    *
-   * @return an {@link Iterator} of training events or
-   *     an empty {@link Iterator}.
+   * @return An {@link Iterator} of training events or an empty {@link Iterator}.
    */
   protected abstract Iterator<Event> createEvents(T sample);
 

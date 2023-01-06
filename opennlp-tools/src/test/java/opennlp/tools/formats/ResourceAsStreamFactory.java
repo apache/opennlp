@@ -24,11 +24,11 @@ import opennlp.tools.util.InputStreamFactory;
 
 public class ResourceAsStreamFactory implements InputStreamFactory {
 
-  private Class<?> clazz;
-  private String name;
+  private final Class<?> clazz;
+  private final String name;
 
   public ResourceAsStreamFactory(Class<?> clazz, String name) {
-    this.clazz = Objects.requireNonNull(clazz, "callz must not be null");
+    this.clazz = Objects.requireNonNull(clazz, "clazz must not be null");
     this.name = Objects.requireNonNull(name, "name must not be null");
   }
 
