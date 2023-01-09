@@ -23,26 +23,11 @@ package opennlp.tools.util.ext;
 @SuppressWarnings("serial")
 public class ExtensionNotLoadedException extends RuntimeException {
 
-  private final boolean isOSGiEnvironment;
-
   public ExtensionNotLoadedException(String message) {
     super(message);
-
-    isOSGiEnvironment = ExtensionLoader.isOSGiAvailable();
   }
 
   public ExtensionNotLoadedException(Throwable t) {
     super(t);
-
-    isOSGiEnvironment = ExtensionLoader.isOSGiAvailable();
-  }
-
-  /**
-   * Indicates if OpenNLP is running in an OSGi environment or not.
-   *
-   * @return {@code true} if running in an OSGi environment, {@code false} otherwise.
-   */
-  public boolean isOSGiEnvironment() {
-    return isOSGiEnvironment;
   }
 }

@@ -21,7 +21,7 @@ public final class ExtensionServiceKeys {
 
   /**
    * Property key for the unique {@code id} which identifies an
-   * OSGi OpenNLP extension service.
+   * OpenNLP extension service.
    */
   public static final String ID = "OPENLP_EXTENSION_ID";
 }
