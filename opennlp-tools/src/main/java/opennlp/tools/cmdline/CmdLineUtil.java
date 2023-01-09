@@ -17,6 +17,7 @@
 
 package opennlp.tools.cmdline;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -319,7 +320,7 @@ public final class CmdLineUtil {
 
       checkInputFile("Training Parameter", new File(paramFile));
 
-      try (InputStream paramsIn  = new FileInputStream(new File(paramFile))) {
+      try (InputStream paramsIn  = new BufferedInputStream(new FileInputStream(paramFile))) {
         params = new opennlp.tools.util.TrainingParameters(paramsIn);
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Error during parameters loading: " + e.getMessage(), e);

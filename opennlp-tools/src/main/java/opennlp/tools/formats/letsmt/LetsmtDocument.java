@@ -17,6 +17,7 @@
 
 package opennlp.tools.formats.letsmt;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -153,7 +154,7 @@ public class LetsmtDocument {
    * @throws IOException Thrown if IO errors occurred during loading or parsing.
    */
   static LetsmtDocument parse(File file) throws IOException {
-    try (InputStream in = new FileInputStream(file)) {
+    try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
       return parse(in);
     }
   }

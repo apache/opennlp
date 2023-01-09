@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -123,7 +124,7 @@ public class TokenNameFinderToolTest {
 
     File modelFile = Files.createTempFile("model", ".bin").toFile();
 
-    try (BufferedOutputStream modelOut =
+    try (OutputStream modelOut =
              new BufferedOutputStream(new FileOutputStream(modelFile))) {
       model.serialize(modelOut);
     }

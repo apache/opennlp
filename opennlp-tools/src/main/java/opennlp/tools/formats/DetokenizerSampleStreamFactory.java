@@ -17,7 +17,7 @@
 
 package opennlp.tools.formats;
 
-import java.io.File;
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -39,7 +39,7 @@ public abstract class DetokenizerSampleStreamFactory<T, P> extends AbstractSampl
   protected Detokenizer createDetokenizer(DetokenizerParameter p) {
     try {
       return new DictionaryDetokenizer(new DetokenizationDictionary(
-          new FileInputStream(new File(p.getDetokenizer()))));
+              new BufferedInputStream(new FileInputStream(p.getDetokenizer()))));
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while loading detokenizer dict: " + e.getMessage(), e);
     }

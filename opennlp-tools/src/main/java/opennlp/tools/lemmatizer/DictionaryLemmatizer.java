@@ -17,6 +17,7 @@
 
 package opennlp.tools.lemmatizer;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -114,7 +115,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
    *                     {@code dictionaryFile}.
    */
   public DictionaryLemmatizer(File dictionaryFile, Charset charset) throws IOException {
-    try (InputStream in = new FileInputStream(dictionaryFile)) {
+    try (InputStream in = new BufferedInputStream(new FileInputStream(dictionaryFile))) {
       init(in, charset);
     }
   }

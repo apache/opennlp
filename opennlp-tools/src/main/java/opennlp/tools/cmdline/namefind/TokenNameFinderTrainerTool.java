@@ -17,6 +17,7 @@
 
 package opennlp.tools.cmdline.namefind;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,7 +70,8 @@ public final class TokenNameFinderTrainerTool
     // load descriptor file into memory
     if (featureGenDescriptorFile != null) {
 
-      try (InputStream bytesIn = CmdLineUtil.openInFile(featureGenDescriptorFile)) {
+      try (InputStream bytesIn = new BufferedInputStream(
+              CmdLineUtil.openInFile(featureGenDescriptorFile))) {
         featureGeneratorBytes = ModelUtil.read(bytesIn);
       } catch (IOException e) {
         throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
@@ -96,7 +98,8 @@ public final class TokenNameFinderTrainerTool
 
       if (featureGenDescriptor != null) {
 
-        try (InputStream xmlDescriptorIn = CmdLineUtil.openInFile(featureGenDescriptor)) {
+        try (InputStream xmlDescriptorIn = new BufferedInputStream(
+                CmdLineUtil.openInFile(featureGenDescriptor))) {
           artifactSerializers.putAll(
               GeneratorFactory.extractArtifactSerializerMappings(xmlDescriptorIn));
         }
@@ -104,7 +107,8 @@ public final class TokenNameFinderTrainerTool
 
       for (Map.Entry<String, ArtifactSerializer<?>> serializerMapping : artifactSerializers.entrySet()) {
         String resourceName = serializerMapping.getKey();
-        try (InputStream resourceIn = CmdLineUtil.openInFile(new File(resourcePath, resourceName))) {
+        try (InputStream resourceIn = new BufferedInputStream(
+                CmdLineUtil.openInFile(new File(resourcePath, resourceName)))) {
           resources.put(resourceName, serializerMapping.getValue().create(resourceIn));
         }
       }

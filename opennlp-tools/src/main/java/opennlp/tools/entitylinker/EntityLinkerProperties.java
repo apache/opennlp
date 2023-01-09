@@ -17,6 +17,7 @@
 
 package opennlp.tools.entitylinker;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class EntityLinkerProperties {
    * @throws IOException Thrown if IO errors occurred.
    */
   public EntityLinkerProperties(File propertiesfile) throws IOException {
-    try (InputStream stream = new FileInputStream(propertiesfile)) {
+    try (InputStream stream = new BufferedInputStream(new FileInputStream(propertiesfile))) {
       init(stream);
     }
   }

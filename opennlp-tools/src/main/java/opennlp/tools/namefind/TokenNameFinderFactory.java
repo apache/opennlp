@@ -17,6 +17,7 @@
 
 package opennlp.tools.namefind;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -90,13 +91,13 @@ public class TokenNameFinderFactory extends BaseToolFactory {
   private static byte[] loadDefaultFeatureGeneratorBytes() {
 
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-    try (InputStream in = TokenNameFinderFactory.class.getResourceAsStream(
-        "/opennlp/tools/namefind/ner-default-features.xml")) {
-
-      if (in == null) {
-        throw new IllegalStateException("Classpath must contain 'ner-default-features.xml' file!");
-      }
-
+    InputStream resource = TokenNameFinderFactory.class.getResourceAsStream(
+            "/opennlp/tools/namefind/ner-default-features.xml");
+    if (resource == null) {
+      throw new IllegalStateException("Classpath must contain 'ner-default-features.xml' file!");
+    }
+    
+    try (InputStream in = new BufferedInputStream(resource)) {
       byte[] buf = new byte[1024];
       int len;
       while ((len = in.read(buf)) > 0) {

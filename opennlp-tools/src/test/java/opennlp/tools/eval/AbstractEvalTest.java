@@ -17,6 +17,7 @@
 
 package opennlp.tools.eval;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -63,7 +64,7 @@ public abstract class AbstractEvalTest {
 
     MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
 
-    try (InputStream in = Files.newInputStream(file)) {
+    try (InputStream in = new BufferedInputStream(Files.newInputStream(file))) {
       byte[] buf = new byte[65536];
       int len;
       while ((len = in.read(buf)) > 0) {
@@ -89,7 +90,7 @@ public abstract class AbstractEvalTest {
     Collections.sort(paths);
 
     for (Path p : paths) {
-      try (InputStream in = Files.newInputStream(p)) {
+      try (InputStream in = new BufferedInputStream(Files.newInputStream(p))) {
         byte[] buf = new byte[65536];
         int len;
         while ((len = in.read(buf)) > 0) {
