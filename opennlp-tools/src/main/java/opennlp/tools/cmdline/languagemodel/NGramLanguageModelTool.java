@@ -16,9 +16,11 @@
  */
 package opennlp.tools.cmdline.languagemodel;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
@@ -44,7 +46,7 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
   @Override
   public void run(String[] args) {
     File lmFile = new File(args[0]);
-    try (FileInputStream stream = new FileInputStream(lmFile)) {
+    try (InputStream stream = new BufferedInputStream(new FileInputStream(lmFile))) {
       NGramLanguageModel nGramLanguageModel = new NGramLanguageModel(stream);
 
       ObjectStream<String> lineStream;

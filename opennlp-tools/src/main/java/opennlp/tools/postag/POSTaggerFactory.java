@@ -17,6 +17,7 @@
 
 package opennlp.tools.postag;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,7 +33,6 @@ import java.util.Set;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceValidator;
@@ -106,16 +106,20 @@ public class POSTaggerFactory extends BaseToolFactory {
     this.resources = resources;
     this.posDictionary = posDictionary;
   }
+
+  /*
+   * Loads the default feature generator bytes via classpath resources.
+   */
   private static byte[] loadDefaultFeatureGeneratorBytes() {
 
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-    try (InputStream in = TokenNameFinderFactory.class.getResourceAsStream(
-        "/opennlp/tools/postag/pos-default-features.xml")) {
+    InputStream resource = POSTaggerFactory.class.getResourceAsStream(
+            "/opennlp/tools/postag/pos-default-features.xml");
+    if (resource == null) {
+      throw new IllegalStateException("Classpath must contain 'pos-default-features.xml' file!");
+    }
 
-      if (in == null) {
-        throw new IllegalStateException("Classpath must contain pos-default-features.xml file!");
-      }
-
+    try (InputStream in = new BufferedInputStream(resource)) {
       byte[] buf = new byte[1024];
       int len;
       while ((len = in.read(buf)) > 0) {
@@ -123,7 +127,7 @@ public class POSTaggerFactory extends BaseToolFactory {
       }
     }
     catch (IOException e) {
-      throw new IllegalStateException("Failed reading from pos-default-features.xml file on classpath!");
+      throw new IllegalStateException("Failed reading from 'pos-default-features.xml' file on classpath!");
     }
 
     return bytes.toByteArray();
@@ -137,6 +141,7 @@ public class POSTaggerFactory extends BaseToolFactory {
    * The generators are created on every call to this method.
    *
    * @return the feature generator or {@code null} if there is no descriptor in the model
+   * @throws IllegalStateException Thrown if inconsistencies occurred during creation.
    */
   public AdaptiveFeatureGenerator createFeatureGenerators() {
 
@@ -216,7 +221,7 @@ public class POSTaggerFactory extends BaseToolFactory {
    */
   public TagDictionary createTagDictionary(File dictionary)
       throws IOException {
-    return createTagDictionary(new FileInputStream(dictionary));
+    return createTagDictionary(new BufferedInputStream(new FileInputStream(dictionary)));
   }
 
   /**
@@ -267,7 +272,7 @@ public class POSTaggerFactory extends BaseToolFactory {
     return this.posDictionary;
   }
 
-  @Deprecated // will be removed when only 8 series models are supported
+  @Deprecated(forRemoval = true) // will be removed when only 8 series models are supported
   private Dictionary getDictionary() {
     if (this.ngramDictionary == null && artifactProvider != null)
       this.ngramDictionary = artifactProvider.getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);

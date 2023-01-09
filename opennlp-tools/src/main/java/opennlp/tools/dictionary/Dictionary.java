@@ -272,7 +272,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   public static Dictionary parseOneEntryPerLine(Reader in) throws IOException {
     BufferedReader lineReader = new BufferedReader(in);
 
-    Dictionary dictionary = new Dictionary();
+    final Dictionary dictionary = new Dictionary();
 
     String line;
 

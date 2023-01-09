@@ -109,8 +109,7 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
     InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(testData);
 
     Dictionary mDictionary;
-    try (
-        ObjectStream<StringList> sampleStream = new NameFinderCensus90NameStream(
+    try (ObjectStream<StringList> sampleStream = new NameFinderCensus90NameStream(
             sampleDataIn, Charset.forName(params.getEncoding()))) {
       System.out.println("Creating Dictionary...");
       mDictionary = createDictionary(sampleStream);

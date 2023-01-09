@@ -17,6 +17,7 @@
 
 package opennlp.tools.formats.irishsentencebank;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -299,7 +300,7 @@ public class IrishSentenceBankDocument {
    * @throws IOException Thrown if IO errors occurred.
    */
   static IrishSentenceBankDocument parse(File file) throws IOException {
-    try (InputStream in = Files.newInputStream(file.toPath())) {
+    try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
       return parse(in);
     }
   }

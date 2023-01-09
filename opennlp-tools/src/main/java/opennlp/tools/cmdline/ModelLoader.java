@@ -54,7 +54,7 @@ public abstract class ModelLoader<T> {
 
     T model;
     try (InputStream modelIn = new BufferedInputStream(
-        CmdLineUtil.openInFile(modelFile), CmdLineUtil.IO_BUFFER_SIZE)) {
+            CmdLineUtil.openInFile(modelFile), CmdLineUtil.IO_BUFFER_SIZE)) {
       model = loadModel(modelIn);
     }
     catch (InvalidFormatException e) {

@@ -96,15 +96,11 @@ public class TokenNameFinderModelTest {
 
 
     File model = Files.createTempFile("nermodel", ".bin").toFile();
-    try {
-      FileOutputStream modelOut = new FileOutputStream(model);
+    try (FileOutputStream modelOut = new FileOutputStream(model)) {
       nameFinderModel.serialize(modelOut);
-
-      modelOut.close();
-
       Assertions.assertTrue(model.exists());
     } finally {
-      model.delete();
+      Assertions.assertTrue(model.delete());
       FileUtil.deleteDirectory(resourcesFolder.toFile());
     }
   }

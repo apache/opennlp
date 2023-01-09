@@ -17,6 +17,7 @@
 
 package opennlp.tools.cmdline.tokenizer;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -54,7 +55,7 @@ public final class TokenizerTrainerTool
     Dictionary dict = null;
     if (f != null) {
       CmdLineUtil.checkInputFile("abb dict", f);
-      dict = new Dictionary(new FileInputStream(f));
+      dict = new Dictionary(new BufferedInputStream(new FileInputStream(f)));
     }
     return dict;
   }
