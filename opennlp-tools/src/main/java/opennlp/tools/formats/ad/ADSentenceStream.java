@@ -96,6 +96,8 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     private static final Pattern BIZARRE_LEAF_PATTERN = Pattern
         .compile("^([=-]*)([^:=]+=[^\\(\\s]+)\\(([\"'].+[\"'])?\\s*([^\\)]+)?\\)\\s+(.+)");
     private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("^(=*)(\\W+)$");
+    private static final Pattern PUNCTUATION_DOT_PATTERN = Pattern.compile("\\»\\s+\\.");
+    private static final Pattern PUNCTUATION_COMMA_PATTERN = Pattern.compile("\\»\\s+\\,");
 
     private String text,meta;
 
@@ -238,8 +240,8 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
     }
 
     private String fixPunctuation(String text) {
-      text = text.replaceAll("\\»\\s+\\.", "».");
-      text = text.replaceAll("\\»\\s+\\,", "»,");
+      text = PUNCTUATION_DOT_PATTERN.matcher(text).replaceAll("».");
+      text = PUNCTUATION_COMMA_PATTERN.matcher(text).replaceAll("»,");
       return text;
     }
 

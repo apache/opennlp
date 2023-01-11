@@ -20,11 +20,14 @@ package opennlp.uima.normalizer;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Provides methods to parse numbers which occur in natural language texts.
  */
 public final class NumberUtil {
+
+  private final static Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
 
   /**
    * Checks if the language is supported.
@@ -69,7 +72,7 @@ public final class NumberUtil {
 
     Locale locale = new Locale(languageCode);
     NumberFormat numberFormat = NumberFormat.getInstance(locale);
-    number = number.replaceAll("\\s", "");
+    number = WHITESPACE_PATTERN.matcher(number).replaceAll("");
     return numberFormat.parse(number);
   }
 }

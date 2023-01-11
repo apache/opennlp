@@ -57,6 +57,8 @@ public class NameFinderDL implements TokenNameFinder {
   public static final String B_PER = "B-PER";
   public static final String SEPARATOR = "[SEP]";
 
+  private static final String CHARS_TO_REPLACE = "##";
+
   protected final OrtSession session;
 
   private final SentenceDetector sentenceDetector;
@@ -137,6 +139,8 @@ public class NameFinderDL implements TokenNameFinder {
           // spans we can get the next one instead of the first one each time.
           int characterStart = 0;
 
+          final String[] toks = tokens.getTokens();
+
           // We are looping over the vector for each word,
           // finding the index of the array that has the maximum value,
           // and then finding the token classification that corresponds to that index.
@@ -156,7 +160,7 @@ public class NameFinderDL implements TokenNameFinder {
               String spanText;
 
               // Find the end index of the span in the array (where the label is not I-PER).
-              final SpanEnd spanEnd = findSpanEnd(v, x, ids2Labels, tokens.getTokens());
+              final SpanEnd spanEnd = findSpanEnd(v, x, ids2Labels, toks);
 
               // If the end is -1 it means this is a single-span token.
               // If the end is != -1 it means this is a multi-span token.
@@ -172,12 +176,12 @@ public class NameFinderDL implements TokenNameFinder {
                 for (int i = x; i <= end; i++) {
 
                   // If the next token starts with ##, combine it with this token.
-                  if (tokens.getTokens()[i + 1].startsWith("##")) {
+                  if (toks[i + 1].startsWith(CHARS_TO_REPLACE)) {
 
-                    sb.append(tokens.getTokens()[i] + tokens.getTokens()[i + 1].replaceAll("##", ""));
+                    sb.append(toks[i]).append(toks[i + 1].replace(CHARS_TO_REPLACE, ""));
 
                     // Append a space unless the next (next) token starts with ##.
-                    if (!tokens.getTokens()[i + 2].startsWith("##")) {
+                    if (!toks[i + 2].startsWith(CHARS_TO_REPLACE)) {
                       sb.append(" ");
                     }
 
@@ -186,10 +190,10 @@ public class NameFinderDL implements TokenNameFinder {
 
                   } else {
 
-                    sb.append(tokens.getTokens()[i].replaceAll("##", ""));
+                    sb.append(toks[i].replace(CHARS_TO_REPLACE, ""));
 
                     // Append a space unless the next token is a period.
-                    if (!".".equals(tokens.getTokens()[i + 1])) {
+                    if (!".".equals(toks[i + 1])) {
                       sb.append(" ");
                     }
 
@@ -204,13 +208,13 @@ public class NameFinderDL implements TokenNameFinder {
               } else {
 
                 // This is a single-token span so there is nothing else to do except grab the token.
-                spanText = tokens.getTokens()[x];
+                spanText = toks[x];
 
               }
 
               if (!SEPARATOR.equals(spanText)) {
 
-                spanText = spanText.replaceAll("##", "");
+                spanText = spanText.replace(CHARS_TO_REPLACE, "");
 
                 // This ignores other potential matches in the same sentence
                 // by only taking the first occurrence.

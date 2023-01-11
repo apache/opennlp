@@ -20,6 +20,7 @@ package opennlp.tools.tokenize;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import opennlp.tools.util.Span;
 
@@ -44,6 +45,7 @@ import opennlp.tools.util.Span;
  */
 public class WordpieceTokenizer implements Tokenizer {
 
+  private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("\\p{Punct}+");
   private static final String CLASSIFICATION_TOKEN = "[CLS]";
   private static final String SEPARATOR_TOKEN = "[SEP]";
   private static final String UNKNOWN_TOKEN = "[UNK]";
@@ -86,7 +88,7 @@ public class WordpieceTokenizer implements Tokenizer {
     tokens.add(CLASSIFICATION_TOKEN);
 
     // Put spaces around punctuation.
-    final String spacedPunctuation = text.replaceAll("\\p{Punct}+", " $0 ");
+    final String spacedPunctuation = PUNCTUATION_PATTERN.matcher(text).replaceAll(" $0 ");
 
     // Split based on whitespace.
     final String[] split = WhitespaceTokenizer.INSTANCE.tokenize(spacedPunctuation);

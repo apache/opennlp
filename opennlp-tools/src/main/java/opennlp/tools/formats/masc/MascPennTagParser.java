@@ -65,8 +65,7 @@ public class MascPennTagParser extends DefaultHandler {
         }
 
         String[] targets = attributes.getValue("targets")
-            .replaceAll("seg-r", "")
-            .split(" ");
+            .replace("seg-r", "").split(" ");
 
         int[] regions = new int[targets.length];
         for (int i = 0; i < targets.length; i++) {
