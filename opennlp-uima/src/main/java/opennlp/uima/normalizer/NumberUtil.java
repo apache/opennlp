@@ -51,28 +51,6 @@ public final class NumberUtil {
   }
 
   /**
-   * Removes a character from given string {@code s}.
-   *
-   * @param s The string to process.
-   * @param remove The {@link Character} to remove from {@code s}.
-   */
-  private static String removeChar(String s, char remove) {
-
-    StringBuilder result = new StringBuilder();
-
-    int lastPosition = 0;
-    int position;
-    while ((position = s.indexOf(remove, lastPosition)) != -1) {
-      result.append(s.substring(lastPosition, position));
-      lastPosition = position + 1;
-    }
-
-    result.append(s.substring(lastPosition, s.length()));
-
-    return result.toString();
-  }
-
-  /**
    * Parses a specified {@link String number} for a certain {@code languageCode}.
    *
    * @param number The suspected number to parse.
@@ -90,12 +68,8 @@ public final class NumberUtil {
     }
 
     Locale locale = new Locale(languageCode);
-
     NumberFormat numberFormat = NumberFormat.getInstance(locale);
-
-    number = number.trim();
-    number = removeChar(number, ' ');
-
+    number = number.replaceAll("\\s", "");
     return numberFormat.parse(number);
   }
 }
