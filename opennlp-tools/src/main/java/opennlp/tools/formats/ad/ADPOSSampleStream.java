@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.Sentence;
@@ -38,6 +39,8 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 @Internal
 public class ADPOSSampleStream implements ObjectStream<POSSample> {
+
+  private static final Pattern WHITESPACES_PATTERN = Pattern.compile("\\s+");
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;
   private final boolean expandME;
@@ -115,7 +118,7 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
       if (isIncludeFeatures && leaf.getMorphologicalTag() != null) {
         tag += " " + leaf.getMorphologicalTag();
       }
-      tag = tag.replaceAll("\\s+", "=");
+      tag = WHITESPACES_PATTERN.matcher(tag).replaceAll("=");
 
       if (tag == null)
         tag = lexeme;
