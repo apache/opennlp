@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.commons.Internal;
 import opennlp.tools.util.InvalidFormatException;
 
@@ -35,6 +38,8 @@ import opennlp.tools.util.InvalidFormatException;
  */
 @Internal
 public abstract class ModelLoader<T> {
+
+  private static final Logger logger = LoggerFactory.getLogger(ModelLoader.class);
 
   private final String modelName;
 
@@ -50,7 +55,7 @@ public abstract class ModelLoader<T> {
 
     CmdLineUtil.checkInputFile(modelName + " model", modelFile);
 
-    System.err.print("Loading " + modelName + " model ... ");
+    logger.info("Loading {} model ... ", modelName);
 
     T model;
     try (InputStream modelIn = new BufferedInputStream(
@@ -58,17 +63,15 @@ public abstract class ModelLoader<T> {
       model = loadModel(modelIn);
     }
     catch (InvalidFormatException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1, "Model has invalid format", e);
     }
     catch (IOException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while loading model file '" + modelFile + "'", e);
     }
 
     long modelLoadingDuration = System.currentTimeMillis() - beginModelLoadingTime;
 
-    System.err.printf("done (%.3fs)\n", modelLoadingDuration / 1000d);
+    logger.info(String.format("done (%.3fs)\n", modelLoadingDuration / 1000d));
 
     return model;
   }

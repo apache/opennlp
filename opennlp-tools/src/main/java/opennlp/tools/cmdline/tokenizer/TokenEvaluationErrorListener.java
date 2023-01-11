@@ -19,7 +19,11 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
+import opennlp.tools.log.LogPrintStream;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerEvaluationMonitor;
 import opennlp.tools.util.eval.EvaluationMonitor;
@@ -31,11 +35,13 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public class TokenEvaluationErrorListener extends
     EvaluationErrorPrinter<TokenSample> implements TokenizerEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(TokenEvaluationErrorListener.class);
+
   /**
-   * Creates a listener that will print to {@code System.err}.
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public TokenEvaluationErrorListener() {
-    super(System.err);
+    super(new LogPrintStream(logger));
   }
 
   /**

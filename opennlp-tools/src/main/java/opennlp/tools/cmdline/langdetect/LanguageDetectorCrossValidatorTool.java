@@ -25,6 +25,9 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -43,6 +46,8 @@ public final class LanguageDetectorCrossValidatorTool extends
 
   interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(LanguageDetectorCrossValidatorTool.class);
 
   public LanguageDetectorCrossValidatorTool() {
     super(LanguageSample.class, CVToolParams.class);
@@ -102,11 +107,11 @@ public final class LanguageDetectorCrossValidatorTool extends
       }
     }
 
-    System.out.println("done");
+    logger.info("done");
 
     if (reportListener != null) {
-      System.out.println("Writing fine-grained report to "
-          + params.getReportOutputFile().getAbsolutePath());
+      logger.info("Writing fine-grained report to {}",
+          params.getReportOutputFile().getAbsolutePath());
       reportListener.writeReport();
 
       try {
@@ -117,9 +122,7 @@ public final class LanguageDetectorCrossValidatorTool extends
       }
     }
 
-    System.out.println();
-
-    System.out.println("Accuracy: " + validator.getDocumentAccuracy() + "\n" +
-        "Number of documents: " + validator.getDocumentCount());
+    logger.info("Accuracy: {} Number of documents: {}",
+            validator.getDocumentAccuracy(), validator.getDocumentCount());
   }
 }

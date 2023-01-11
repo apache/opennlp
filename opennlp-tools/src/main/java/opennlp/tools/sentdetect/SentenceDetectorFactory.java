@@ -130,8 +130,6 @@ public class SentenceDetectorFactory extends BaseToolFactory {
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
           + ". The initialization throw an exception.";
-      System.err.println(msg);
-      e.printStackTrace();
       throw new InvalidFormatException(msg, e);
     }
   }

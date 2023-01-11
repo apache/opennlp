@@ -21,7 +21,11 @@ import java.io.OutputStream;
 import java.util.Comparator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.FineGrainedReportListener;
+import opennlp.tools.log.LogPrintStream;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.util.SequenceCodec;
@@ -35,13 +39,16 @@ import opennlp.tools.util.SequenceCodec;
 public class TokenNameFinderFineGrainedReportListener
     extends FineGrainedReportListener implements TokenNameFinderEvaluationMonitor {
 
+  private static final Logger logger =
+      LoggerFactory.getLogger(TokenNameFinderFineGrainedReportListener.class);
+
   private final SequenceCodec<String> sequenceCodec;
 
   /**
-   * Creates a listener that will print to {@code System#err}.
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public TokenNameFinderFineGrainedReportListener(SequenceCodec<String> seqCodec) {
-    this(seqCodec, System.err);
+    this(seqCodec, new LogPrintStream(logger));
   }
 
   /**

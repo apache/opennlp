@@ -17,7 +17,12 @@
 
 package opennlp.tools.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StringUtil {
+
+  private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
   /**
    * Determines if the specified {@link Character} is a whitespace.
@@ -252,7 +257,9 @@ public class StringUtil {
       }
       //read first letter of permutation string
       char nextOperation = permutations.charAt(permIndex);
-      //System.err.println("-> NextOP: " + nextOperation);
+      if (logger.isTraceEnabled()) {
+        logger.trace("-> NextOP: {}", nextOperation);
+      }
       //go to the next permutation letter
       permIndex++;
       if (nextOperation == 'R') {
@@ -273,7 +280,9 @@ public class StringUtil {
         if (lemma.charAt(charIndex) == replace) {
           lemma.setCharAt(charIndex, with);
         }
-        //System.err.println("-> ROP: " + lemma.toString());
+        if (logger.isTraceEnabled()) {
+          logger.trace("-> ROP: {}", lemma);
+        }
         //go to next permutation
         permIndex++;
 
@@ -288,7 +297,10 @@ public class StringUtil {
           return wordForm;
         }
         lemma.insert(charIndex, in);
-        //System.err.println("-> IOP " + lemma.toString());
+
+        if (logger.isTraceEnabled()) {
+          logger.trace("-> IOP {}", lemma);
+        }
         //go to next permutation
         permIndex++;
       } else if (nextOperation == 'D') {

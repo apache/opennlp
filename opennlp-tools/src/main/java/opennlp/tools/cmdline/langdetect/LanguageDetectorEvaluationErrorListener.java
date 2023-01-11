@@ -19,9 +19,13 @@ package opennlp.tools.cmdline.langdetect;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.langdetect.LanguageDetectorEvaluationMonitor;
 import opennlp.tools.langdetect.LanguageSample;
+import opennlp.tools.log.LogPrintStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
@@ -31,11 +35,13 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public class LanguageDetectorEvaluationErrorListener extends
     EvaluationErrorPrinter<LanguageSample> implements LanguageDetectorEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(LanguageDetectorEvaluationErrorListener.class);
+
   /**
-   * Creates a listener that will print to System.err
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public LanguageDetectorEvaluationErrorListener() {
-    super(System.err);
+    super(new LogPrintStream(logger));
   }
 
   /**

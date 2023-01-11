@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
@@ -45,6 +48,7 @@ import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.featuregen.StringPattern;
 
+
 /**
  * A {@link POSTagger part-of-speech tagger} that uses maximum entropy.
  * <p>
@@ -52,6 +56,8 @@ import opennlp.tools.util.featuregen.StringPattern;
  * depending on their surrounding context.
  */
 public class POSTaggerME implements POSTagger {
+
+  private static final Logger logger = LoggerFactory.getLogger(POSTaggerME.class);
 
   public static final int DEFAULT_BEAM_SIZE = 3;
 
@@ -319,7 +325,7 @@ public class POSTaggerME implements POSTagger {
   public static void populatePOSDictionary(ObjectStream<POSSample> samples,
       MutableTagDictionary dict, int cutoff) throws IOException {
 
-    System.out.println("Expanding POS Dictionary ...");
+    logger.info("Expanding POS Dictionary ...");
     long start = System.nanoTime();
 
     // the data structure will store the word, the tag, and the number of
@@ -380,7 +386,6 @@ public class POSTaggerME implements POSTagger {
       }
     }
 
-    System.out.println("... finished expanding POS Dictionary. ["
-        + (System.nanoTime() - start) / 1000000 + "ms]");
+    logger.info("... finished expanding POS Dictionary. [ {} ms]", (System.nanoTime() - start) / 1000000 );
   }
 }

@@ -117,7 +117,6 @@ public class MascNamedEntitySampleStreamTest extends AbstractMascSampleStreamTes
       ObjectStream<NameSample> trainSample = new MascNamedEntitySampleStream(
           new MascDocumentStream(directory, true, fileFilter));
 
-      System.out.println("Training");
       TrainingParameters trainingParameters = new TrainingParameters();
       trainingParameters.put(TrainingParameters.ITERATIONS_PARAM, 100);
 
@@ -129,15 +128,8 @@ public class MascNamedEntitySampleStreamTest extends AbstractMascSampleStreamTes
       TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(new NameFinderME(model));
       evaluator.evaluate(testNames);
 
-      System.out.println(evaluator.getFMeasure());
-
     } catch (Exception e) {
-      System.err.println(e.getMessage());
-      StackTraceElement[] traces = e.getStackTrace();
-      for (StackTraceElement trace : traces) {
-        System.err.println(trace.toString());
-      }
-      Assertions.fail("Exception raised");
+      Assertions.fail("Exception raised", e);
     }
   }
 

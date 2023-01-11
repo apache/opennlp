@@ -25,6 +25,8 @@ import java.util.Map;
 import ai.onnxruntime.OrtException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.dl.AbstactDLTest;
 import opennlp.tools.sentdetect.SentenceDetector;
@@ -33,6 +35,7 @@ import opennlp.tools.util.Span;
 
 public class NameFinderDLEval extends AbstactDLTest {
 
+  private static final Logger logger = LoggerFactory.getLogger(NameFinderDLEval.class);
   private final SentenceDetector sentenceDetector ;
 
   public NameFinderDLEval() throws IOException {
@@ -55,7 +58,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final Span[] spans = nameFinderDL.find(tokens);
 
     for (Span span : spans) {
-      System.out.println(span.toString());
+      logger.debug(span.toString());
     }
 
     Assertions.assertEquals(1, spans.length);
@@ -81,7 +84,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final Span[] spans = nameFinderDL.find(tokens);
 
     for (Span span : spans) {
-      System.out.println(span.toString());
+      logger.debug(span.toString());
     }
 
     Assertions.assertEquals(1, spans.length);
@@ -105,7 +108,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final Span[] spans = nameFinderDL.find(tokens);
 
     for (Span span : spans) {
-      System.out.println(span.toString());
+      logger.debug(span.toString());
     }
 
     Assertions.assertEquals(1, spans.length);
@@ -166,7 +169,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     final Span[] spans = nameFinderDL.find(tokens);
 
     for (Span span : spans) {
-      System.out.println(span.toString());
+      logger.debug(span.toString());
     }
 
     Assertions.assertEquals(2, spans.length);

@@ -26,6 +26,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.DataIndexer;
 
@@ -33,6 +36,8 @@ import opennlp.tools.ml.model.DataIndexer;
  * Evaluate negative log-likelihood and its gradient in parallel
  */
 public class ParallelNegLogLikelihood extends NegLogLikelihood {
+
+  private static final Logger logger = LoggerFactory.getLogger(ParallelNegLogLikelihood.class);
 
   // Number of threads
   private final int threads;
@@ -149,7 +154,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
         future.get();
 
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.warn(e.getLocalizedMessage(), e);
     }
 
     executor.shutdown();

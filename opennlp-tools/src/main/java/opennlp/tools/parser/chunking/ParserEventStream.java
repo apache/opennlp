@@ -17,7 +17,11 @@
 
 package opennlp.tools.parser.chunking;
 
+import java.util.Arrays;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.model.Event;
@@ -34,6 +38,7 @@ import opennlp.tools.util.ObjectStream;
  */
 public class ParserEventStream extends AbstractParserEventStream {
 
+  private static final Logger logger = LoggerFactory.getLogger(ParserEventStream.class);
   protected BuildContextGenerator bcg;
   protected CheckContextGenerator kcg;
 
@@ -133,7 +138,10 @@ public class ParserEventStream extends AbstractParserEventStream {
   protected void addParseEvents(List<Event> parseEvents, Parse[] chunks) {
     int ci = 0;
     while (ci < chunks.length) {
-      //System.err.println("parserEventStream.addParseEvents: chunks="+Arrays.asList(chunks));
+      if (logger.isTraceEnabled()) {
+        logger.trace("parserEventStream.addParseEvents: chunks={}", Arrays.asList(chunks));
+      }
+
       Parse c = chunks[ci];
       Parse parent = c.getParent();
       if (parent != null) {
@@ -145,8 +153,10 @@ public class ParserEventStream extends AbstractParserEventStream {
         else {
           outcome = AbstractBottomUpParser.CONT + type;
         }
-        // System.err.println("parserEventStream.addParseEvents: chunks["+ci+"]="+c+" label="
-        // +outcome+" bcg="+bcg);
+        if (logger.isTraceEnabled()) {
+          logger.trace("parserEventStream.addParseEvents: chunks[" + ci + "]="
+              + c + " label=" + outcome + " bcg=" + bcg);
+        }
         c.setLabel(outcome);
         if (etype == ParserEventTypeEnum.BUILD) {
           parseEvents.add(new Event(outcome, bcg.getContext(chunks, ci)));

@@ -20,6 +20,9 @@ package opennlp.tools.ml.model;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -32,6 +35,8 @@ import opennlp.tools.util.ObjectStream;
  * @see FileEventStream
  */
 public class RealValueFileEventStream extends FileEventStream {
+
+  private static final Logger logger = LoggerFactory.getLogger(RealValueFileEventStream.class);
 
   /**
    * Instantiates a {@link RealValueFileEventStream} from the specified file name.
@@ -86,7 +91,7 @@ public class RealValueFileEventStream extends FileEventStream {
           values[ci] = Float.parseFloat(contexts[ci].substring(ei + 1));
         } catch (NumberFormatException e) {
           gotReal = false;
-          System.err.println("Unable to determine value in context:" + contexts[ci]);
+          logger.error("Unable to determine value in context: {}", contexts[ci]);
           values[ci] = 1;
         }
         if (gotReal) {

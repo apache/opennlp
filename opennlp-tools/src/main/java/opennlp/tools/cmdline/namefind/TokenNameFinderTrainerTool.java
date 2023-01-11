@@ -192,9 +192,7 @@ public final class TokenNameFinderTrainerTool
       }
     }
 
-    System.out.println();
     counters.printSummary();
-    System.out.println();
 
     CmdLineUtil.writeModel("name finder", modelOutFile, model);
 

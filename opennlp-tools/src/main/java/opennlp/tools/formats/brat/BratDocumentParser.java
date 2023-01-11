@@ -26,12 +26,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.Span;
 
 public class BratDocumentParser {
+
+  private static final Logger logger = LoggerFactory.getLogger(BratDocumentParser.class);
 
   private final SentenceDetector sentDetector;
   private final Tokenizer tokenizer;
@@ -86,8 +91,7 @@ public class BratDocumentParser {
         Span lastSentence = sentences.remove(sentences.size() - 1);
         sentences.add(new Span(lastSentence.getStart(), sentence.getEnd()));
 
-        System.out.println("Correcting sentence segmentation in document " +
-            sample.getId());
+        logger.info("Correcting sentence segmentation in document {}", sample.getId());
       }
       else {
         sentences.add(sentence);
@@ -144,7 +148,7 @@ public class BratDocumentParser {
               if (nameBeginIndex != null && nameEndIndex != null) {
                 mappedFragments.add(new Span(nameBeginIndex, nameEndIndex, entity.getType()));
               } else {
-                System.err.println("Dropped entity " + entity.getId() + " ("
+                logger.warn("Dropped entity " + entity.getId() + " ("
                     + entitySpan.getCoveredText(sample.getText()) + ") " + " in document "
                     + sample.getId() + ", it is not matching tokenization!");
               }
@@ -175,8 +179,8 @@ public class BratDocumentParser {
     }
 
     for (String id : entityIdSet) {
-      System.err.println("Dropped entity " + id + " in document " +
-          sample.getId() + ", is not matching sentence segmentation!");
+      logger.warn("Dropped entity {} in document {}"
+              + ", is not matching sentence segmentation!", id, sample.getId());
     }
 
     return samples;

@@ -27,11 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-
 
 /**
  * Abstract {@link DataIndexer} implementation for collecting
@@ -40,6 +42,8 @@ import opennlp.tools.util.TrainingParameters;
  * @see DataIndexer
  */
 public abstract class AbstractDataIndexer implements DataIndexer {
+
+  private static final Logger logger = LoggerFactory.getLogger(AbstractDataIndexer.class);
 
   public static final String CUTOFF_PARAM = AbstractTrainer.CUTOFF_PARAM;
   public static final int CUTOFF_DEFAULT = AbstractTrainer.CUTOFF_DEFAULT;
@@ -50,8 +54,6 @@ public abstract class AbstractDataIndexer implements DataIndexer {
   protected TrainingParameters trainingParameters;
   protected Map<String,String> reportMap;
 
-  protected boolean printMessages;
-
   /**
    * {@inheritDoc}
    */
@@ -60,9 +62,6 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     this.reportMap = reportMap;
     if (this.reportMap == null) reportMap = new HashMap<>();
     trainingParameters = indexingParameters;
-
-    printMessages = trainingParameters.getBooleanParameter(AbstractTrainer.VERBOSE_PARAM,
-        AbstractTrainer.VERBOSE_DEFAULT);
   }
 
   private int numEvents;
@@ -179,7 +178,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
       throw new InsufficientTrainingDataException("Insufficient training data to create model.");
     }
 
-    if (sort) display("done. Reduced " + numEvents + " events to " + numUniqueEvents + ".\n");
+    if (sort) logger.info("done. Reduced {} events to {}.", numEvents, numUniqueEvents);
 
     contexts = new int[numUniqueEvents][];
     outcomeList = new int[numUniqueEvents];
@@ -230,8 +229,7 @@ public abstract class AbstractDataIndexer implements DataIndexer {
         int ocID = omap.get(ev.getOutcome());
         eventsToCompare.add(new ComparableEvent(ocID, cons, ev.getValues()));
       } else {
-        display("Dropped event " + ev.getOutcome() + ":"
-            + Arrays.asList(ev.getContext()) + "\n");
+        logger.info("Dropped event {}:{}", ev.getOutcome(), Arrays.asList(ev.getContext()));
       }
     }
     outcomeLabels = toIndexedStringArray(omap);
@@ -271,9 +269,4 @@ public abstract class AbstractDataIndexer implements DataIndexer {
     return null;
   }
 
-  protected void display(String s) {
-    if (printMessages) {
-      System.out.print(s);
-    }
-  }
 }

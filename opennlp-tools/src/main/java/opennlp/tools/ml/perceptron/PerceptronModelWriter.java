@@ -23,6 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
 import opennlp.tools.ml.model.ComparablePredicate;
@@ -39,6 +42,8 @@ import opennlp.tools.ml.model.Context;
  * @see AbstractModelWriter
  */
 public abstract class PerceptronModelWriter extends AbstractModelWriter {
+
+  private static final Logger logger = LoggerFactory.getLogger(PerceptronModelWriter.class);
   protected Context[] PARAMS;
   protected String[] OUTCOME_LABELS;
   protected String[] PRED_LABELS;
@@ -108,7 +113,7 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
         numPreds++;
       }
     }
-    System.out.println("Compressed " + PARAMS.length + " parameters to " + numPreds);
+    logger.info("Compressed {} parameters to {}", PARAMS.length , numPreds);
     sortPreds = new ComparablePredicate[numPreds];
     System.arraycopy(tmpPreds, 0, sortPreds, 0, numPreds);
     Arrays.sort(sortPreds);
@@ -136,7 +141,7 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
       }
     }
     outcomePatterns.add(newGroup);
-    System.out.println(outcomePatterns.size() + " outcome patterns");
+    logger.info("{} outcome patterns", outcomePatterns.size());
     return outcomePatterns;
   }
 

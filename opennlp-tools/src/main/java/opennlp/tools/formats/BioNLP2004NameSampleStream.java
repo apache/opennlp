@@ -18,7 +18,6 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +84,6 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
    */
   public BioNLP2004NameSampleStream(InputStreamFactory in, int types) throws IOException {
     this.lineStream = new PlainTextByLineStream(in, StandardCharsets.UTF_8);
-    System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
     this.types = types;
   }
 

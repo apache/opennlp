@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
@@ -31,6 +34,8 @@ import opennlp.tools.util.ObjectStream;
  */
 public class DummyChunkSampleStream extends
     FilterObjectStream<String, ChunkSample> {
+
+  private static final Logger logger = LoggerFactory.getLogger(DummyChunkSampleStream.class);
 
   private boolean mIsPredicted;
   private int count = 0;
@@ -59,8 +64,7 @@ public class DummyChunkSampleStream extends
         .read()) {
       String[] parts = line.split(" ");
       if (parts.length != 4) {
-        System.err.println("Skipping corrupt line " + count + ": "
-            + line);
+        logger.warn("Skipping corrupt line {}: {}", count, line);
       } else {
         toks.add(parts[0]);
         posTags.add(parts[1]);

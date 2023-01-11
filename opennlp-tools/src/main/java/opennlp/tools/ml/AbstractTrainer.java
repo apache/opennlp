@@ -36,13 +36,8 @@ public abstract class AbstractTrainer implements Trainer {
   public static final String ITERATIONS_PARAM = "Iterations";
   public static final int ITERATIONS_DEFAULT = 100;
 
-  public static final String VERBOSE_PARAM = "PrintMessages";
-  public static final boolean VERBOSE_DEFAULT = true;
-
   protected TrainingParameters trainingParameters;
   protected Map<String,String> reportMap;
-
-  protected boolean printMessages;
 
   public AbstractTrainer() {
   }
@@ -68,7 +63,6 @@ public abstract class AbstractTrainer implements Trainer {
     this.trainingParameters = trainParams;
     if (reportMap == null) reportMap = new HashMap<>();
     this.reportMap = reportMap;
-    printMessages = trainParams.getBooleanParameter(VERBOSE_PARAM, VERBOSE_DEFAULT);
   }
 
   /**
@@ -201,9 +195,4 @@ public abstract class AbstractTrainer implements Trainer {
     reportMap.put(key, value);
   }
 
-  protected void display(String s) {
-    if (printMessages) {
-      System.out.print(s);
-    }
-  }
 }

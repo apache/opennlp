@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.morfologik.cmdline.builder.MorfologikDictionaryBuilderTool;
 import opennlp.morfologik.cmdline.builder.XMLDictionaryToTableTool;
 import opennlp.tools.cmdline.BasicCmdLineTool;
@@ -35,6 +38,7 @@ import opennlp.tools.util.Version;
 
 public final class CLI {
 
+  private static final Logger logger = LoggerFactory.getLogger(CLI.class);
   private static final String CMD = "opennlp-morfologik-addon";
 
   private static Map<String, CmdLineTool> toolLookupMap;
@@ -62,10 +66,8 @@ public final class CLI {
   }
 
   private static void usage() {
-    System.out.print("OpenNLP Morfologik Addon "
-        + Version.currentVersion().toString() + ". ");
-    System.out.println("Usage: " + CMD + " TOOL");
-    System.out.println("where TOOL is one of:");
+    logger.info("OpenNLP Morfologik Addon {}.", Version.currentVersion());
+    logger.info("Usage: {} TOOL", CMD);
 
     // distance of tool name from line start
     int numberOfSpaces = -1;
@@ -76,20 +78,22 @@ public final class CLI {
     }
     numberOfSpaces = numberOfSpaces + 4;
 
+    final StringBuilder sb = new StringBuilder("where TOOL is one of: \n\n");
     for (CmdLineTool tool : toolLookupMap.values()) {
 
-      System.out.print("  " + tool.getName());
+      sb.append("  " + tool.getName());
 
       for (int i = 0; i < StrictMath.abs(tool.getName().length()
           - numberOfSpaces); i++) {
-        System.out.print(" ");
+        sb.append(" ");
       }
 
-      System.out.println(tool.getShortDescription());
+      sb.append(tool.getShortDescription()).append("\n");
     }
+    logger.info(sb.toString());
 
-    System.out.println("All tools print help when invoked with help parameter");
-    System.out.println("Example: opennlp-morfologik-addon POSDictionaryBuilder help");
+    logger.info("All tools print help when invoked with help parameter");
+    logger.info("Example: opennlp-morfologik-addon POSDictionaryBuilder help");
   }
 
 
@@ -123,9 +127,9 @@ public final class CLI {
       if ((0 == toolArguments.length && tool.hasParams()) ||
           0 < toolArguments.length && "help".equals(toolArguments[0])) {
         if (tool instanceof TypedCmdLineTool) {
-          System.out.println(((TypedCmdLineTool) tool).getHelp(formatName));
+          logger.info(((TypedCmdLineTool) tool).getHelp(formatName));
         } else if (tool instanceof BasicCmdLineTool) {
-          System.out.println(tool.getHelp());
+          logger.info(tool.getHelp());
         }
 
         System.exit(0);
@@ -143,16 +147,7 @@ public final class CLI {
         throw new TerminateToolException(1, "Tool " + toolName + " is not supported.");
       }
     } catch (TerminateToolException e) {
-
-      if (e.getMessage() != null) {
-        System.err.println(e.getMessage());
-      }
-
-      if (e.getCause() != null) {
-        System.err.println(e.getCause().getMessage());
-        e.getCause().printStackTrace(System.err);
-      }
-
+      logger.error(e.getLocalizedMessage(), e);
       System.exit(e.getCode());
     }
   }

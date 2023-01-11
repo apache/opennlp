@@ -85,7 +85,6 @@ public class PrepAttachDataUtil {
     }
 
     double accuracy = correct / (double) total;
-    System.out.println("Accuracy on PPA devset: (" + correct + "/" + total + ") " + accuracy);
 
     Assertions.assertEquals(expecedAccuracy, accuracy, .00001);
   }

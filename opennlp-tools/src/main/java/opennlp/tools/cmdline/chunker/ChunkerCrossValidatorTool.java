@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerCrossValidator;
 import opennlp.tools.chunker.ChunkerEvaluationMonitor;
@@ -34,11 +37,14 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
 
+
 public final class ChunkerCrossValidatorTool
     extends AbstractCrossValidatorTool<ChunkSample, CVToolParams> {
 
   interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(ChunkerCrossValidatorTool.class);
 
   public ChunkerCrossValidatorTool() {
     super(ChunkSample.class, CVToolParams.class);
@@ -92,9 +98,9 @@ public final class ChunkerCrossValidatorTool
 
     if (detailedFMeasureListener == null) {
       FMeasure result = validator.getFMeasure();
-      System.out.println(result);
+      logger.info(result.toString());
     } else {
-      System.out.println(detailedFMeasureListener);
+      logger.info(detailedFMeasureListener.toString());
     }
   }
 }

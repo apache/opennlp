@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.BasicCmdLineTool;
@@ -63,6 +66,8 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
     @ParameterDescription(valueName = "dict")
     String getDict();
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(CensusDictionaryCreatorTool.class);
 
   public String getShortDescription() {
     return "Converts 1990 US Census names into a dictionary";
@@ -111,14 +116,14 @@ public class CensusDictionaryCreatorTool extends BasicCmdLineTool {
     Dictionary mDictionary;
     try (ObjectStream<StringList> sampleStream = new NameFinderCensus90NameStream(
             sampleDataIn, Charset.forName(params.getEncoding()))) {
-      System.out.println("Creating Dictionary...");
+      logger.info("Creating Dictionary...");
       mDictionary = createDictionary(sampleStream);
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
           + e.getMessage(), e);
     }
 
-    System.out.println("Saving Dictionary...");
+    logger.info("Saving Dictionary...");
 
     try (OutputStream out = new FileOutputStream(dictOutFile)) {
       mDictionary.serialize(out);

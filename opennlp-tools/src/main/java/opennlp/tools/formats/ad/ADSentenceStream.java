@@ -26,6 +26,9 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.ad.ADSentenceStream.SentenceParser.Node;
 import opennlp.tools.util.FilterObjectStream;
@@ -89,6 +92,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
    */
   public static class SentenceParser {
 
+    private static final Logger logger = LoggerFactory.getLogger(SentenceParser.class);
     private static final Pattern NODE_PATTERN = Pattern
         .compile("([=-]*)([^:=]+:[^\\(\\s]+)(\\(([^\\)]+)\\))?\\s*(?:(\\((<.+>)\\))*)\\s*$");
     private static final Pattern LEAF_PATTERN = Pattern
@@ -219,7 +223,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
               if (!nodeStack.isEmpty() && nodeStack.peek().getLevel() < element.getLevel()) {
                 nodeStack.peek().addElement(element);
               } else {
-                System.err.println("should not happen!");
+                logger.warn("should not happen!");
               }
               // 4) Add it to the stack so it is a parent candidate.
               nodeStack.push((Node) element);
@@ -230,8 +234,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         }
 
       } catch (Exception e) {
-        System.err.println(sentenceString);
-        e.printStackTrace();
+        logger.warn("Caught exception for the given sentence: '{}'", sentenceString, e);
         return sentence;
       }
       // second line should be SOURCE
@@ -341,7 +344,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         }
       }
 
-      System.err.println("Couldn't parse leaf: " + line);
+      logger.warn("Couldn't parse leaf: {}", line);
       Leaf leaf = new Leaf();
       leaf.setLevel(1);
       leaf.setSyntacticTag("");

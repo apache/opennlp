@@ -19,9 +19,13 @@ package opennlp.tools.cmdline.chunker;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerEvaluationMonitor;
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
+import opennlp.tools.log.LogPrintStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
@@ -32,11 +36,12 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public class ChunkEvaluationErrorListener extends
     EvaluationErrorPrinter<ChunkSample> implements ChunkerEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(ChunkEvaluationErrorListener.class);
   /**
-   * Creates a listener that will print to {@code System.err}.
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public ChunkEvaluationErrorListener() {
-    super(System.err);
+    super(new LogPrintStream(logger));
   }
 
   /**

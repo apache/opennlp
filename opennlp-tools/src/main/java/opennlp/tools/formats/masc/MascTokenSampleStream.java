@@ -20,6 +20,9 @@ package opennlp.tools.formats.masc;
 import java.io.IOException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
@@ -27,6 +30,7 @@ import opennlp.tools.util.Span;
 
 public class MascTokenSampleStream extends FilterObjectStream<MascDocument, TokenSample> {
 
+  private static final Logger logger = LoggerFactory.getLogger(MascTokenSampleStream.class);
   private MascDocument buffer;
 
   /**
@@ -76,20 +80,16 @@ public class MascTokenSampleStream extends FilterObjectStream<MascDocument, Toke
         tokenSpans = sentence.getTokensSpans();
 
         if (sentenceString.length() == 0) {
-          System.err.println("[WARNING] Zero sentence found: " +
-              "there is a sentence without any tokens.");
-          System.err.println(sentenceString);
-          System.err.println(tokenSpans.toString());
+          logger.warn("Zero sentence found. There is a sentence " +
+                  "without any tokens. sentence: {}, spans: {}", sentenceString, tokenSpans);
           sentenceFound = false;
         }
 
         for (int i = 0; i < tokenSpans.size(); i++) {
           Span t = tokenSpans.get(i);
           if (t.getEnd() - t.getStart() == 0) {
-            System.err.println("[WARNING] Zero token found: " +
-                "there is a token without any quarks.");
-            System.err.println(sentenceString);
-            System.err.println(tokenSpans);
+            logger.warn("Zero token found. There is a token without any quarks." +
+                    " sentence: {}, spans: {}", sentenceString, tokenSpans);
             sentenceFound = false;
           }
         }

@@ -19,6 +19,9 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -36,6 +39,8 @@ import opennlp.tools.util.model.ModelUtil;
  */
 public final class CheckModelUpdaterTool extends ModelUpdaterTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(CheckModelUpdaterTool.class);
+
   @Override
   public String getShortDescription() {
     return "trains and updates the check model in a parser model";
@@ -52,7 +57,7 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
 
     // TODO: Maybe that should be part of the ChunkingParser ...
     // Training build
-    System.out.println("Training check model");
+    logger.info("Training check model");
     ObjectStream<Event> bes = new ParserEventStream(parseSamples,
         originalModel.getHeadRules(), ParserEventTypeEnum.CHECK, mdict);
 

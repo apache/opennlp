@@ -146,7 +146,6 @@ public class NaiveBayesSerializedCorrectnessTest {
     modelWriter = new PlainTextNaiveBayesModelWriter(model2, new BufferedWriter(sw2));
     modelWriter.persist();
 
-    System.out.println(sw1.toString());
     Assertions.assertEquals(sw1.toString(), sw2.toString());
 
   }

@@ -23,6 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -42,6 +45,8 @@ import opennlp.tools.lemmatizer.LemmatizerModel;
  */
 public final class LemmatizerEvaluatorTool
     extends AbstractEvaluatorTool<LemmaSample, LemmatizerEvaluatorTool.EvalToolParams> {
+
+  private static final Logger logger = LoggerFactory.getLogger(LemmatizerEvaluatorTool.class);
 
   public LemmatizerEvaluatorTool() {
     super(LemmaSample.class, EvalToolParams.class);
@@ -83,11 +88,10 @@ public final class LemmatizerEvaluatorTool
         new opennlp.tools.lemmatizer.LemmatizerME(model),
         missclassifiedListener, reportListener);
 
-    System.out.print("Evaluating ... ");
+    logger.info("Evaluating ... ");
     try {
       evaluator.evaluate(sampleStream);
     } catch (IOException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1,
           "IO error while reading test data: " + e.getMessage(), e);
     } finally {
@@ -98,11 +102,11 @@ public final class LemmatizerEvaluatorTool
       }
     }
 
-    System.out.println("done");
+    logger.info("done");
 
     if (reportListener != null) {
-      System.out.println("Writing fine-grained report to "
-          + params.getReportOutputFile().getAbsolutePath());
+      logger.info("Writing fine-grained report to {}",
+          params.getReportOutputFile().getAbsolutePath());
       reportListener.writeReport();
 
       try {
@@ -113,9 +117,7 @@ public final class LemmatizerEvaluatorTool
       }
     }
 
-    System.out.println();
-
-    System.out.println("Accuracy: " + evaluator.getWordAccuracy());
+    logger.info("Accuracy: {}", evaluator.getWordAccuracy());
   }
 
   interface EvalToolParams extends EvaluatorParams, FineGrainedEvaluatorParams {

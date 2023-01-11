@@ -26,6 +26,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -51,6 +54,8 @@ public final class TokenNameFinderCrossValidatorTool
   interface CVToolParams extends TrainingParams, CVParams,
       DetailedFMeasureEvaluatorParams, FineGrainedEvaluatorParams {
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(TokenNameFinderCrossValidatorTool.class);
 
   public TokenNameFinderCrossValidatorTool() {
     super(NameSample.class, CVToolParams.class);
@@ -155,17 +160,16 @@ public final class TokenNameFinderCrossValidatorTool
       }
     }
 
-    System.out.println("done");
-    System.out.println();
+    logger.info("done");
 
     if (reportFile != null) {
       reportListener.writeReport();
     }
 
     if (detailedFListener == null) {
-      System.out.println(validator.getFMeasure());
+      logger.info(validator.getFMeasure().toString());
     } else {
-      System.out.println(detailedFListener);
+      logger.info(detailedFListener.toString());
     }
   }
 }

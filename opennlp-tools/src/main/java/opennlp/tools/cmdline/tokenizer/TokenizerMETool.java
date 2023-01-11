@@ -19,11 +19,15 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.tokenize.TokenizerModel;
 
 public final class TokenizerMETool extends BasicCmdLineTool {
+  private static final Logger logger = LoggerFactory.getLogger(TokenizerMETool.class);
 
   @Override
   public String getShortDescription() {
@@ -38,7 +42,7 @@ public final class TokenizerMETool extends BasicCmdLineTool {
   @Override
   public void run(String[] args) {
     if (args.length != 1) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
 
       TokenizerModel model = new TokenizerModelLoader().load(new File(args[0]));

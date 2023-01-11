@@ -20,6 +20,9 @@ package opennlp.tools.cmdline.langdetect;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -36,6 +39,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class LanguageDetectorTool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(LanguageDetectorTool.class);
+
   @Override
   public String getShortDescription() {
     return "learned language detector";
@@ -50,7 +55,7 @@ public class LanguageDetectorTool extends BasicCmdLineTool {
   public void run(String[] args) {
 
     if (0 == args.length) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
 
       LanguageDetectorModel model = new LanguageDetectorModelLoader().load(new File(args[0]));
@@ -62,7 +67,7 @@ public class LanguageDetectorTool extends BasicCmdLineTool {
        */
       ObjectStream<String> documentStream;
 
-      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "doc");
+      PerformanceMonitor perfMon = new PerformanceMonitor("doc");
       perfMon.start();
 
       try {
@@ -74,7 +79,7 @@ public class LanguageDetectorTool extends BasicCmdLineTool {
           Language lang = langDetectME.predictLanguage(document);
 
           LanguageSample sample = new LanguageSample(lang, document);
-          System.out.println(sample);
+          logger.info(sample.toString());
 
           perfMon.incrementCounter();
         }

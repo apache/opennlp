@@ -20,6 +20,9 @@ package opennlp.tools.cmdline.lemmatizer;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -35,6 +38,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class LemmatizerMETool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(LemmatizerMETool.class);
+
   public String getShortDescription() {
     return "learnable lemmatizer";
   }
@@ -47,7 +52,7 @@ public class LemmatizerMETool extends BasicCmdLineTool {
   @Override
   public void run(String[] args) {
     if (args.length != 1) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
       LemmatizerModel model = new LemmatizerModelLoader()
           .load(new File(args[0]));
@@ -60,7 +65,7 @@ public class LemmatizerMETool extends BasicCmdLineTool {
       try {
         lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
             SystemInputStreamFactory.encoding());
-        perfMon = new PerformanceMonitor(System.err, "sent");
+        perfMon = new PerformanceMonitor("sent");
         perfMon.start();
         String line;
         while ((line = lineStream.read()) != null) {
@@ -69,16 +74,15 @@ public class LemmatizerMETool extends BasicCmdLineTool {
           try {
             posSample = POSSample.parse(line);
           } catch (InvalidFormatException e) {
-            System.err.println("Invalid format:");
-            System.err.println(line);
+            logger.warn("Invalid format: {}", line);
             continue;
           }
 
           String[] lemmas = lemmatizer.lemmatize(posSample.getSentence(),
               posSample.getTags());
 
-          System.out.println(new LemmaSample(posSample.getSentence(),
-              posSample.getTags(), lemmas));
+          logger.info(new LemmaSample(posSample.getSentence(),
+              posSample.getTags(), lemmas).toString());
 
           perfMon.incrementCounter();
         }

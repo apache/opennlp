@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -39,6 +42,8 @@ import opennlp.tools.util.Span;
 
 public final class TokenNameFinderTool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(TokenNameFinderTool.class);
+
   @Override
   public String getShortDescription() {
     return "learnable name finder";
@@ -53,7 +58,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
   public void run(String[] args) {
 
     if (args.length == 0) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
 
       NameFinderME[] nameFinders = new NameFinderME[args.length];
@@ -66,7 +71,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
       // ObjectStream<String> untokenizedLineStream =
       // new PlainTextByLineStream(new InputStreamReader(System.in));
       ObjectStream<String> untokenizedLineStream;
-      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+      PerformanceMonitor perfMon = new PerformanceMonitor("sent");
       perfMon.start();
 
       try {
@@ -99,7 +104,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
           NameSample nameSample = new NameSample(whitespaceTokenizerLine,
                   reducedNames, false);
 
-          System.out.println(nameSample);
+          logger.info(nameSample.toString());
 
           perfMon.incrementCounter();
         }

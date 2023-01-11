@@ -93,7 +93,6 @@ public class OnePassRealValueDataIndexerTest {
         .build();
 
     indexer.index(eventStream);
-    System.out.println(indexer);
     Assertions.assertEquals(3, indexer.getContexts().length);
     Assertions.assertArrayEquals(new int[] {0}, indexer.getContexts()[0]);
     Assertions.assertArrayEquals(new int[] {0}, indexer.getContexts()[1]);

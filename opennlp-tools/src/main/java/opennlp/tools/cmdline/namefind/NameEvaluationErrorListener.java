@@ -19,7 +19,11 @@ package opennlp.tools.cmdline.namefind;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
+import opennlp.tools.log.LogPrintStream;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinderEvaluationMonitor;
 import opennlp.tools.util.eval.EvaluationMonitor;
@@ -31,11 +35,13 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public class NameEvaluationErrorListener extends
     EvaluationErrorPrinter<NameSample> implements TokenNameFinderEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(NameEvaluationErrorListener.class);
+
   /**
-   * Creates a listener that will print to {@code System.err}.
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public NameEvaluationErrorListener() {
-    super(System.err);
+    super(new LogPrintStream(logger));
   }
 
   /**

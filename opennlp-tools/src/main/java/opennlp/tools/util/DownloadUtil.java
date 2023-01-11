@@ -36,6 +36,9 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.commons.Internal;
 import opennlp.tools.util.model.BaseModel;
 
@@ -43,6 +46,8 @@ import opennlp.tools.util.model.BaseModel;
  * This class facilitates the downloading of pretrained OpenNLP models.
  */
 public class DownloadUtil {
+
+  private static final Logger logger = LoggerFactory.getLogger(DownloadUtil.class);
 
   /**
    * The type of model.
@@ -127,13 +132,13 @@ public class DownloadUtil {
     final Path localFile = Paths.get(homeDirectory.toString(), filename);
 
     if (!Files.exists(localFile)) {
-      System.out.println("Downloading model " + url + " to " + localFile);
+      logger.debug("Downloading model from {} to {}.", url, localFile);
 
       try (final InputStream in = url.openStream()) {
         Files.copy(in, localFile, StandardCopyOption.REPLACE_EXISTING);
       }
 
-      System.out.println("Download complete.");
+      logger.debug("Download complete.");
     }
 
     try {
@@ -215,7 +220,7 @@ public class DownloadUtil {
           html.append(line);
         }
       } catch (IOException e) {
-        System.err.println("Could not read page index from " + indexUrl);
+        logger.error("Could not read page index from {}", indexUrl, e);
       }
 
       return html.toString();
