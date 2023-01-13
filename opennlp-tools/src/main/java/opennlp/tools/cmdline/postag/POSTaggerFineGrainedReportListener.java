@@ -68,7 +68,7 @@ public class POSTaggerFineGrainedReportListener
     printGeneralStatistics();
     // token stats
     printTokenErrorRank();
-    printTokenOcurrenciesRank();
+    printTokenOccurrencesRank();
     // tag stats
     printTagsErrorRank();
     // confusion tables

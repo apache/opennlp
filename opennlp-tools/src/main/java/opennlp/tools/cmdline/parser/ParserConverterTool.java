@@ -21,6 +21,13 @@ import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.parser.Parse;
 
+/**
+ * Tool to convert multiple data formats into native OpenNLP parser
+ * format.
+ *
+ * @see AbstractConverterTool
+ * @see Parse
+ */
 public class ParserConverterTool extends AbstractConverterTool<Parse, BasicFormatParams> {
 
   public ParserConverterTool() {

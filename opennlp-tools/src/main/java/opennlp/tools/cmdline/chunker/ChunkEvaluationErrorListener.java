@@ -33,7 +33,7 @@ public class ChunkEvaluationErrorListener extends
     EvaluationErrorPrinter<ChunkSample> implements ChunkerEvaluationMonitor {
 
   /**
-   * Creates a listener that will print to System.err
+   * Creates a listener that will print to {@code System.err}.
    */
   public ChunkEvaluationErrorListener() {
     super(System.err);

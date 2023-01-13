@@ -20,11 +20,10 @@ package opennlp.tools.cmdline;
 import java.util.Map;
 
 /**
- * Base class for tools which support processing of samples of some type T
+ * Base class for tools which support processing of samples of some type {@link T}
  * coming from a stream of a certain format.
  */
-public abstract class TypedCmdLineTool<T, P>
-    extends CmdLineTool {
+public abstract class TypedCmdLineTool<T, P> extends CmdLineTool {
 
   /**
    * variable to access the type of the generic parameter.
@@ -44,7 +43,7 @@ public abstract class TypedCmdLineTool<T, P>
    * Returns stream factory for the type of this tool for the <code>format</code>.
    *
    * @param format data format name
-   * @return stream factory for the type of this tool for the format
+   * @return The {@link ObjectStreamFactory factory} for the type of this tool for the format.
    */
   protected ObjectStreamFactory<T, P> getStreamFactory(String format) {
     ObjectStreamFactory<T, P> factory = StreamFactoryRegistry.getFactory(type, format);
@@ -56,26 +55,26 @@ public abstract class TypedCmdLineTool<T, P>
   }
 
   /**
-   * Validates arguments using parameters from <code>argProxyInterface</code> and the parameters of the
+   * Validates arguments using parameters from {@code argProxyInterface} and the parameters of the
    * <code>format</code>.
    *
    * @param args arguments
    * @param argProxyInterface interface with parameter descriptions
    * @param format data format name
-   * @param <A> A
+   * @param <A> The generic type.
    */
   protected <A> void validateAllArgs(String[] args, Class<A> argProxyInterface, String format) {
     ObjectStreamFactory<T, P> factory = getStreamFactory(format);
     String errMessage = ArgumentParser.validateArgumentsLoudly(args, argProxyInterface,
-        factory.<A>getParameters());
+        factory.getParameters());
     if (null != errMessage) {
       throw new TerminateToolException(1, errMessage + "\n" + getHelp(format));
     }
   }
 
   /**
-   * Validates arguments for a format processed by the <code>factory</code>.
-   * @param factory a stream factory
+   * Validates arguments for a format processed by the {@code factory}.
+   * @param factory The {@link ObjectStreamFactory factory} to use.
    * @param args arguments
    */
   protected void validateFactoryArgs(ObjectStreamFactory<T, P> factory, String[] args) {
@@ -119,10 +118,8 @@ public abstract class TypedCmdLineTool<T, P>
   public abstract void run(String format, String[] args);
 
   /**
-   * Retrieves a description on how to use the tool.
-   *
    * @param format data format
-   * @return a description on how to use the tool
+   * @return Retrieves a description on how to use the tool.
    */
   public abstract String getHelp(String format);
 }

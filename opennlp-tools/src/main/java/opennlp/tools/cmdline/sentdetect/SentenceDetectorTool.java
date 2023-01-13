@@ -47,7 +47,7 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
   }
 
   /**
-   * Perform sentence detection the input stream.
+   * Perform sentence detection on a stream of sentences.
    * <p>
    * A newline will be treated as a paragraph boundary.
    */

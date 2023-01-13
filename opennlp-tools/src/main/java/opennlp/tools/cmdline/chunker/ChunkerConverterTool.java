@@ -24,6 +24,9 @@ import opennlp.tools.cmdline.params.BasicFormatParams;
 /**
  * Tool to convert multiple data formats into native OpenNLP chunker training
  * format.
+ *
+ * @see AbstractConverterTool
+ * @see ChunkSample
  */
 public class ChunkerConverterTool extends AbstractConverterTool<ChunkSample, BasicFormatParams> {
 

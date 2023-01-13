@@ -23,7 +23,7 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
 import opennlp.tools.commons.Internal;
 
 /**
- * TrainingParams for Chunker.
+ * TrainingParams for Chunker tools.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */

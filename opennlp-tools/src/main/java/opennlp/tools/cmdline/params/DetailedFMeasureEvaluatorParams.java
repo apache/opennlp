@@ -33,7 +33,7 @@ public interface DetailedFMeasureEvaluatorParams {
   @ParameterDescription(valueName = "true|false",
       description = "if true (default) will print detailed FMeasure results.")
   @OptionalParameter(defaultValue = "true")
-  @Deprecated // this will be removed in 1.8.0
+  @Deprecated(forRemoval = true) // this will be removed in 1.8.0
   Boolean getDetailedF();
 
 }

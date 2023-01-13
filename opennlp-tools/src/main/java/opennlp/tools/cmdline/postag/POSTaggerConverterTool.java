@@ -21,6 +21,13 @@ import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.postag.POSSample;
 
+/**
+ * Tool to convert multiple data formats into native OpenNLP part of speech tagging
+ * training format.
+ *
+ * @see AbstractConverterTool
+ * @see POSSample
+ */
 public class POSTaggerConverterTool extends AbstractConverterTool<POSSample, BasicFormatParams> {
 
   public POSTaggerConverterTool() {

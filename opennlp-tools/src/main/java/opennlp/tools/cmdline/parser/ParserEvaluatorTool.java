@@ -28,6 +28,13 @@ import opennlp.tools.parser.ParserEvaluator;
 import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
 
+/**
+ * A default {@link Parse}-centric implementation of {@link AbstractEvaluatorTool}
+ * that prints to an output stream.
+ *
+ * @see AbstractEvaluatorTool
+ * @see EvaluatorParams
+ */
 public class ParserEvaluatorTool extends AbstractEvaluatorTool<Parse, EvaluatorParams> {
 
   public ParserEvaluatorTool() {

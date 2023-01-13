@@ -40,6 +40,13 @@ import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * A default {@link DocumentSample}-centric implementation of {@link AbstractEvaluatorTool}
+ * that prints to an output stream.
+ *
+ * @see AbstractEvaluatorTool
+ * @see EvalToolParams
+ */
 public final class DoccatEvaluatorTool extends
     AbstractEvaluatorTool<DocumentSample, EvalToolParams> {
 

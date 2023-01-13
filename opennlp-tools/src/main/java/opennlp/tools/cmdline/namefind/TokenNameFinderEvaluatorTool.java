@@ -44,6 +44,13 @@ import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * A default {@link NameSample}-centric implementation of {@link AbstractEvaluatorTool}
+ * that prints to an output stream.
+ *
+ * @see AbstractEvaluatorTool
+ * @see EvalToolParams
+ */
 public final class TokenNameFinderEvaluatorTool
     extends AbstractEvaluatorTool<NameSample, EvalToolParams> {
 

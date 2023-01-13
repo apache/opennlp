@@ -21,6 +21,13 @@ import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.langdetect.LanguageSample;
 
+/**
+ * Tool to convert multiple data formats into native OpenNLP language detection
+ * training format.
+ *
+ * @see AbstractConverterTool
+ * @see LanguageSample
+ */
 public class LanguageDetectorConverterTool extends AbstractConverterTool<LanguageSample, BasicFormatParams> {
 
   public LanguageDetectorConverterTool() {

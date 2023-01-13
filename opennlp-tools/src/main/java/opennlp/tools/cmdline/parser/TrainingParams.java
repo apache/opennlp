@@ -25,7 +25,7 @@ import opennlp.tools.cmdline.params.BasicTrainingParams;
 import opennlp.tools.commons.Internal;
 
 /**
- * TrainingParams for Parser.
+ * TrainingParams for {@link opennlp.tools.parser.Parser}.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */

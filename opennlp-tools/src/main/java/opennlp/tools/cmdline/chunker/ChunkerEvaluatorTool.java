@@ -35,6 +35,13 @@ import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * A default {@link ChunkSample}-centric implementation of {@link AbstractEvaluatorTool}
+ * that prints to an output stream.
+ *
+ * @see AbstractEvaluatorTool
+ * @see EvalToolParams
+ */
 public final class ChunkerEvaluatorTool
     extends AbstractEvaluatorTool<ChunkSample, EvalToolParams> {
 

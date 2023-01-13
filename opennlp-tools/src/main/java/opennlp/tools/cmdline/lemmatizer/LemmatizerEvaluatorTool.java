@@ -33,6 +33,13 @@ import opennlp.tools.lemmatizer.LemmatizerEvaluationMonitor;
 import opennlp.tools.lemmatizer.LemmatizerEvaluator;
 import opennlp.tools.lemmatizer.LemmatizerModel;
 
+/**
+ * A default {@link LemmaSample}-centric implementation of {@link AbstractEvaluatorTool}
+ * that prints to an output stream.
+ *
+ * @see AbstractEvaluatorTool
+ * @see EvalToolParams
+ */
 public final class LemmatizerEvaluatorTool
     extends AbstractEvaluatorTool<LemmaSample, LemmatizerEvaluatorTool.EvalToolParams> {
 
