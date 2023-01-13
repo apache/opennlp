@@ -38,6 +38,7 @@ public abstract class AbstractTypedParamTool<T, P> extends TypedCmdLineTool<T, P
     this.paramsClass = paramsClass;
   }
 
+  @Override
   public String getHelp(String format) {
     if ("".equals(format) || StreamFactoryRegistry.DEFAULT_FORMAT.equals(format)) {
       return getBasicHelp(paramsClass,

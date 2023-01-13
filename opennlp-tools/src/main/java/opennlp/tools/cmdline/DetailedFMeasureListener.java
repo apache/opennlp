@@ -38,8 +38,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
  * <b>Note:</b> Do not use this class, internal use only!
  */
 @Internal
-public abstract class DetailedFMeasureListener<T> implements
-    EvaluationMonitor<T> {
+public abstract class DetailedFMeasureListener<T> implements EvaluationMonitor<T> {
 
   private int samples = 0;
   private final Stats generalStats = new Stats();
@@ -251,8 +250,8 @@ public abstract class DetailedFMeasureListener<T> implements
 
     /**
      * Retrieves the f-measure score.
-     *
-     * f-measure = 2 * precision * recall / (precision + recall)
+     * <p>
+     * {@code f-measure = 2 * precision * recall / (precision + recall)}
      *
      * @return the f-measure or -1 if precision + recall <= 0
      */

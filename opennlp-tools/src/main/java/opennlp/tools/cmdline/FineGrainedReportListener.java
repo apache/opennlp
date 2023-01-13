@@ -172,7 +172,7 @@ public abstract class FineGrainedReportListener {
   }
 
   private String matrixToString(SortedSet<String> tagset, double[][] data, boolean filter) {
-    // we dont want to print trivial cases (acc=1)
+    // we don't want to print trivial cases (acc=1)
     int initialIndex = 0;
     String[] tags = tagset.toArray(new String[tagset.size()]);
     StringBuilder sb = new StringBuilder();
@@ -238,7 +238,7 @@ public abstract class FineGrainedReportListener {
     printFooter("Evaluation Corpus Statistics");
   }
 
-  protected void printTokenOcurrenciesRank() {
+  protected void printTokenOccurrencesRank() {
     printHeader("Most frequent tokens");
 
     SortedSet<String> toks = getTokensOrderedByFrequency();
@@ -267,9 +267,9 @@ public abstract class FineGrainedReportListener {
     tokIterator = toks.iterator();
     while (tokIterator.hasNext() && count++ < maxLines) {
       String tok = tokIterator.next();
-      int ocurrencies = getTokenFrequency(tok);
+      int frequency = getTokenFrequency(tok);
 
-      printStream.append(String.format(format, count, ocurrencies, tok)
+      printStream.append(String.format(format, count, frequency, tok)
 
       ).append("\n");
     }
@@ -448,7 +448,7 @@ public abstract class FineGrainedReportListener {
    */
   public static class MatrixLabelComparator implements Comparator<String> {
 
-    private Map<String, ConfusionMatrixLine> confusionMatrix;
+    private final Map<String, ConfusionMatrixLine> confusionMatrix;
 
     public MatrixLabelComparator(Map<String, ConfusionMatrixLine> confusionMatrix) {
       this.confusionMatrix = confusionMatrix;
@@ -711,9 +711,7 @@ public abstract class FineGrainedReportListener {
     }
 
     /**
-     * Gets the calculated accuracy of this element
-     *
-     * @return the accuracy
+     * @return Retrieves the calculated accuracy of this element
      */
     public double getAccuracy() {
       // we save the accuracy because it is frequently used by the comparator
@@ -726,11 +724,8 @@ public abstract class FineGrainedReportListener {
     }
 
     /**
-     * Gets the value given a column
-     *
-     * @param column
-     *          the column
-     * @return the counter value
+     * @param column The column to retrieve the counter value for.
+     * @return Retrieves the counter value for the given {@code column}.
      */
     public int getValue(String column) {
       Counter c = line.get(column);
@@ -762,10 +757,10 @@ public abstract class FineGrainedReportListener {
     private final Mean averageSentenceLength = new Mean();
     // token statistics
     private final Map<String, Mean> tokAccuracies = new HashMap<>();
-    private final Map<String, Counter> tokOcurrencies = new HashMap<>();
+    private final Map<String, Counter> tokOccurrences = new HashMap<>();
     private final Map<String, Counter> tokErrors = new HashMap<>();
     // tag statistics
-    private final Map<String, Counter> tagOcurrencies = new HashMap<>();
+    private final Map<String, Counter> tagOccurrences = new HashMap<>();
     private final Map<String, Counter> tagErrors = new HashMap<>();
     private final Map<String, FMeasure> tagFMeasure = new HashMap<>();
     // represents a Confusion Matrix that aggregates all tokens
@@ -825,7 +820,7 @@ public abstract class FineGrainedReportListener {
 
 
     /**
-     * Includes a new evaluation data
+     * Includes new evaluation data.
      *
      * @param tok
      *          the evaluated token
@@ -838,17 +833,17 @@ public abstract class FineGrainedReportListener {
       // token stats
       if (!tokAccuracies.containsKey(tok)) {
         tokAccuracies.put(tok, new Mean());
-        tokOcurrencies.put(tok, new Counter());
+        tokOccurrences.put(tok, new Counter());
         tokErrors.put(tok, new Counter());
       }
-      tokOcurrencies.get(tok).increment();
+      tokOccurrences.get(tok).increment();
 
       // tag stats
-      if (!tagOcurrencies.containsKey(ref)) {
-        tagOcurrencies.put(ref, new Counter());
+      if (!tagOccurrences.containsKey(ref)) {
+        tagOccurrences.put(ref, new Counter());
         tagErrors.put(ref, new Counter());
       }
-      tagOcurrencies.get(ref).increment();
+      tagOccurrences.get(ref).increment();
 
       // updates general, token and tag error stats
       if (ref.equals(pred)) {
@@ -896,7 +891,7 @@ public abstract class FineGrainedReportListener {
         if (!this.tagFMeasure.containsKey(tag)) {
           this.tagFMeasure.put(tag, new FMeasure());
         }
-        // populate the fmeasure
+        // populate the F-measure
         this.tagFMeasure.get(tag).updateScores(
             reference.toArray(new Span[reference.size()]),
             prediction.toArray(new Span[prediction.size()]));
@@ -908,7 +903,7 @@ public abstract class FineGrainedReportListener {
     }
 
     private int getNumberOfTags() {
-      return this.tagOcurrencies.keySet().size();
+      return this.tagOccurrences.keySet().size();
     }
 
     private long getNumberOfSentences() {
@@ -936,12 +931,12 @@ public abstract class FineGrainedReportListener {
     }
 
     private int getTokenFrequency(String token) {
-      return tokOcurrencies.get(token).value();
+      return tokOccurrences.get(token).value();
     }
 
     private SortedSet<String> getTokensOrderedByFrequency() {
-      SortedSet<String> toks = new TreeSet<>(new SimpleLabelComparator(tokOcurrencies));
-      toks.addAll(tokOcurrencies.keySet());
+      SortedSet<String> toks = new TreeSet<>(new SimpleLabelComparator(tokOccurrences));
+      toks.addAll(tokOccurrences.keySet());
       return Collections.unmodifiableSortedSet(toks);
     }
 
@@ -952,7 +947,7 @@ public abstract class FineGrainedReportListener {
     }
 
     private int getTagFrequency(String tag) {
-      return tagOcurrencies.get(tag).value();
+      return tagOccurrences.get(tag).value();
     }
 
     private int getTagErrors(String tag) {
@@ -996,7 +991,7 @@ public abstract class FineGrainedReportListener {
     }
 
     /**
-     * Creates a matrix with N lines and N + 1 columns with the data from
+     * Creates a matrix with {@code N} lines and {@code N + 1} columns with the data from
      * confusion matrix. The last column is the accuracy.
      */
     private double[][] createConfusionMatrix(SortedSet<String> tagset,

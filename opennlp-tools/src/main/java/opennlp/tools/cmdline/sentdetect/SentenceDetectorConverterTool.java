@@ -21,6 +21,13 @@ import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.sentdetect.SentenceSample;
 
+/**
+ * Tool to convert multiple data formats into native OpenNLP sentence detector
+ * training format.
+ *
+ * @see AbstractConverterTool
+ * @see SentenceSample
+ */
 public class SentenceDetectorConverterTool extends AbstractConverterTool<SentenceSample, BasicFormatParams> {
 
   public SentenceDetectorConverterTool() {

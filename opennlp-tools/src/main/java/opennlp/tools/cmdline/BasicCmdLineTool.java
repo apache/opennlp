@@ -20,7 +20,7 @@ package opennlp.tools.cmdline;
 import opennlp.tools.commons.Internal;
 
 /**
- * A simple tool which can be executed from the command line.
+ * A simple {@link CmdLineTool tool} which can be executed from the command line.
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */

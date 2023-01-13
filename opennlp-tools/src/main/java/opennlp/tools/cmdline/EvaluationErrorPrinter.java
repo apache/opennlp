@@ -193,10 +193,8 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   /**
    * Auxiliary method to print expected and predicted samples.
    *
-   * @param referenceSample
-   *          the reference sample
-   * @param predictedSample
-   *          the predicted sample
+   * @param referenceSample The {@link S} from the references.
+   * @param predictedSample The {@link S} of the predictions.
    */
   private <S> void printSamples(S referenceSample, S predictedSample) {
     String details = "Expected: {\n" + referenceSample + "}\nPredicted: {\n"
@@ -208,12 +206,10 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
    * Outputs falseNegatives and falsePositives spans from the references and
    * predictions list.
    *
-   * @param references
-   * @param predictions
-   * @param falseNegatives
-   *          [out] the false negatives list
-   * @param falsePositives
-   *          [out] the false positives list
+   * @param references The {@link Span spans} from the references.
+   * @param predictions The {@link Span spans} of the predictions.
+   * @param falseNegatives The false negatives list.
+   * @param falsePositives The false positives list.
    */
   private void findErrors(Span[] references, Span[] predictions,
       List<Span> falseNegatives, List<Span> falsePositives) {

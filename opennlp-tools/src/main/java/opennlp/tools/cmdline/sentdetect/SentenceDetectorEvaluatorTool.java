@@ -29,6 +29,13 @@ import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.sentdetect.SentenceSample;
 
+/**
+ * A default {@link SentenceSample}-centric implementation of {@link AbstractEvaluatorTool}
+ * that prints to an output stream.
+ *
+ * @see AbstractEvaluatorTool
+ * @see EvalToolParams
+ */
 public final class SentenceDetectorEvaluatorTool
     extends AbstractEvaluatorTool<SentenceSample, EvalToolParams> {
 

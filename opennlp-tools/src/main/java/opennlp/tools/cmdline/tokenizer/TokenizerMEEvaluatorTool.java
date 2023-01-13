@@ -28,6 +28,13 @@ import opennlp.tools.tokenize.TokenizerEvaluationMonitor;
 import opennlp.tools.tokenize.TokenizerEvaluator;
 import opennlp.tools.tokenize.TokenizerModel;
 
+/**
+ * A default {@link TokenSample}-centric implementation of {@link AbstractEvaluatorTool}
+ * that prints to an output stream.
+ *
+ * @see AbstractEvaluatorTool
+ * @see EvalToolParams
+ */
 public final class TokenizerMEEvaluatorTool
     extends AbstractEvaluatorTool<TokenSample, EvalToolParams> {
 

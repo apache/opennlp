@@ -22,8 +22,11 @@ import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.namefind.NameSample;
 
 /**
- * Tool to convert multiple data formats into native OpenNLP name finder training
- * format.
+ * Tool to convert multiple data formats into native OpenNLP name finder
+ * training format.
+ *
+ * @see AbstractConverterTool
+ * @see NameSample
  */
 public class TokenNameFinderConverterTool extends AbstractConverterTool<NameSample, BasicFormatParams> {
 

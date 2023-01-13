@@ -55,7 +55,7 @@ public class GenerateManualTool {
 
       if (!packageNameToolMap.containsKey(packageName)) {
         packageNameToolMap.put(packageName,
-            new LinkedHashMap<String, CmdLineTool>());
+            new LinkedHashMap<>());
       }
       packageNameToolMap.get(packageName).put(toolName, tool);
     }
@@ -85,9 +85,9 @@ public class GenerateManualTool {
   /**
    * Appends a group of tools, based on the tool package name
    *
-   * @param groupName
-   * @param toolsMap
-   * @param sb
+   * @param groupName The groupName to use.
+   * @param toolsMap  The {@link Map} of all cmd-line tools available.
+   * @param sb The {@link StringBuilder} to fill.
    */
   private static void appendToolGroup(String groupName,
       Map<String, CmdLineTool> toolsMap, StringBuilder sb) {
@@ -103,12 +103,12 @@ public class GenerateManualTool {
   }
 
   /**
-   * Appends a tool
+   * Appends a tool.
    *
-   * @param groupName
-   * @param toolName
-   * @param tool
-   * @param sb
+   * @param groupName The groupName to use.
+   * @param toolName  The name of the tool to use.
+   * @param tool  The {@link CmdLineTool} to append.
+   * @param sb The {@link StringBuilder} to fill.
    */
   private static void appendTool(String groupName, String toolName,
       CmdLineTool tool, StringBuilder sb) {
@@ -185,7 +185,7 @@ public class GenerateManualTool {
   private static void appendHeader(StringBuilder sb) {
     sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         + "<!DOCTYPE chapter PUBLIC \"-//OASIS//DTD DocBook XML V4.4//EN\"\n"
-        + "\"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd\"[\n"
+        + "\"https://docbook.org/xml/4.4/docbookx.dtd\"[\n"
         + "]>\n" + "<!--\n"
         + "Licensed to the Apache Software Foundation (ASF) under one\n"
         + "or more contributor license agreements.  See the NOTICE file\n"
@@ -194,7 +194,7 @@ public class GenerateManualTool {
         + "to you under the Apache License, Version 2.0 (the\n"
         + "\"License\"); you may not use this file except in compliance\n"
         + "with the License.  You may obtain a copy of the License at\n" + "\n"
-        + "   http://www.apache.org/licenses/LICENSE-2.0\n" + "\n"
+        + "   https://www.apache.org/licenses/LICENSE-2.0\n" + "\n"
         + "Unless required by applicable law or agreed to in writing,\n"
         + "software distributed under the License is distributed on an\n"
         + "\"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n"
@@ -239,9 +239,6 @@ public class GenerateManualTool {
 
   /**
    * Prevents long lines. Lines are optimized for printing.
-   *
-   * @param stringBlock
-   * @return
    */
   private static String splitLongLines(String stringBlock) {
     StringBuilder sb = new StringBuilder();

@@ -59,22 +59,15 @@ abstract class ModelUpdaterTool
     ObjectStreamFactory<Parse,ModelUpdaterParams> factory = getStreamFactory(format);
     String[] fargs = ArgumentParser.filter(args, factory.getParameters());
     validateFactoryArgs(factory, fargs);
-    ObjectStream<Parse> sampleStream = factory.create(fargs);
+    ;
 
     ParserModel updatedParserModel;
-    try {
+    try (ObjectStream<Parse> sampleStream = factory.create(fargs)) {
       updatedParserModel = trainAndUpdate(originalParserModel, sampleStream, params);
     }
     catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
           + e.getMessage(), e);
-    }
-    finally {
-      try {
-        sampleStream.close();
-      } catch (IOException e) {
-        // sorry that this can fail
-      }
     }
 
     CmdLineUtil.writeModel("parser", modelFile, updatedParserModel);

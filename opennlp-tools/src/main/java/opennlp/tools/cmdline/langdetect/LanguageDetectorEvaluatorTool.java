@@ -39,6 +39,13 @@ import opennlp.tools.langdetect.LanguageSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
+/**
+ * A default {@link LanguageSample}-centric implementation of {@link AbstractEvaluatorTool}
+ * that prints to an output stream.
+ *
+ * @see AbstractEvaluatorTool
+ * @see EvalToolParams
+ */
 public final class LanguageDetectorEvaluatorTool extends
     AbstractEvaluatorTool<LanguageSample, LanguageDetectorEvaluatorTool.EvalToolParams> {
 

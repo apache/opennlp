@@ -17,7 +17,6 @@
 
 package opennlp.tools.cmdline;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
@@ -32,7 +31,7 @@ public class SystemInputStreamFactory implements InputStreamFactory {
   }
 
   @Override
-  public InputStream createInputStream() throws IOException {
+  public InputStream createInputStream() {
 
     if (!isTainted) {
       isTainted = true;

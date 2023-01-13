@@ -55,7 +55,7 @@ public final class ParserTool extends BasicCmdLineTool {
     return "Usage: " + CLI.CMD + " " + getName() + " [-bs n -ap n -k n -tk tok_model] model < sentences \n"
             + "-bs n: Use a beam size of n.\n"
             + "-ap f: Advance outcomes in with at least f% of the probability mass.\n"
-            + "-k n: Show the top n parses.  This will also display their log-probablities.\n"
+            + "-k n: Show the top n parses. This will also display their log-probabilities.\n"
             + "-tk tok_model: Use the specified tokenizer model to tokenize the sentences. "
             + "Defaults to a WhitespaceTokenizer.";
   }

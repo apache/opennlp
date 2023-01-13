@@ -21,6 +21,13 @@ import opennlp.tools.cmdline.AbstractConverterTool;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.doccat.DocumentSample;
 
+/**
+ * Tool to convert multiple data formats into native OpenNLP doccat training
+ * format.
+ *
+ * @see AbstractConverterTool
+ * @see DocumentSample
+ */
 public class DoccatConverterTool extends AbstractConverterTool<DocumentSample, BasicFormatParams> {
 
   public DoccatConverterTool() {

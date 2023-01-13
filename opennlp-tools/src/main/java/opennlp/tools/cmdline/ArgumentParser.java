@@ -224,7 +224,7 @@ public class ArgumentParser {
   /**
    * Creates a usage string which can be printed in case the user did specify the arguments
    * incorrectly. Incorrectly is defined as {@link ArgumentParser#validateArguments(String[], Class)}
-   * returns false.
+   * returns {@code false}.
    *
    * @param argProxyInterface interface with parameter descriptions
    * @return the help message usage string
@@ -235,7 +235,7 @@ public class ArgumentParser {
 
   /**
    * Auxiliary class that holds information about an argument. This is used by the
-   * GenerateManualTool, which creates a Docbook for the CLI automatically.
+   * {@link GenerateManualTool}, which creates a Docbook for the CLI automatically.
    */
   static class Argument {
     private final String argument;
@@ -272,7 +272,7 @@ public class ArgumentParser {
 
 
   /**
-   * Outputs the arguments as a data structure so it can be used to create documentation.
+   * Outputs the arguments as a data structure, so it can be used to create documentation.
    *
    * @param argProxyInterfaces interfaces with parameter descriptions
    * @return the help message usage string
@@ -320,8 +320,7 @@ public class ArgumentParser {
   /**
    * Creates a usage string which can be printed in case the user did specify the arguments
    * incorrectly. Incorrectly is defined as {@link ArgumentParser#validateArguments(String[],
-   * Class[])}
-   * returns false.
+   * Class[])} returns {@code false}.
    *
    * @param argProxyInterfaces interfaces with parameter descriptions
    * @return the help message usage string
@@ -387,7 +386,7 @@ public class ArgumentParser {
    *
    * @param args command line arguments
    * @param argProxyInterface interface with parameters description
-   * @return true, if arguments are valid
+   * @return {@code true} if arguments are valid, {@code false otherwise}
    */
   public static <T> boolean validateArguments(String[] args, Class<T> argProxyInterface) {
     return validateArguments(args, new Class<?>[]{argProxyInterface});
@@ -400,7 +399,7 @@ public class ArgumentParser {
    *
    * @param args command line arguments
    * @param argProxyInterfaces interfaces with parameters description
-   * @return true, if arguments are valid
+   * @return {@code true} if arguments are valid, {@code false otherwise}
    */
   public static boolean validateArguments(String[] args, Class<?>... argProxyInterfaces) {
     return null == validateArgumentsLoudly(args, argProxyInterfaces);
@@ -411,7 +410,7 @@ public class ArgumentParser {
    *
    * @param args command line arguments
    * @param argProxyInterface interface with parameters description
-   * @return null, if arguments are valid or error message otherwise
+   * @return {@code null}, if arguments are valid or error message otherwise
    */
   public static String validateArgumentsLoudly(String[] args, Class<?> argProxyInterface) {
     return validateArgumentsLoudly(args, new Class<?>[]{argProxyInterface});
@@ -422,7 +421,7 @@ public class ArgumentParser {
    *
    * @param args command line arguments
    * @param argProxyInterfaces interfaces with parameters description
-   * @return null, if arguments are valid or error message otherwise
+   * @return {@code null}, if arguments are valid or error message otherwise
    */
   public static String validateArgumentsLoudly(String[] args, Class<?>... argProxyInterfaces) {
     // number of parameters must be always be even
@@ -478,7 +477,7 @@ public class ArgumentParser {
    * @return parsed parameters
    *
    * @throws TerminateToolException if an argument value cannot be parsed.
-   * @throws IllegalArgumentException if validateArguments returns false,
+   * @throws IllegalArgumentException if validateArguments returns {@code false},
    *     if the proxy interface is not compatible.
    */
   @SuppressWarnings("unchecked")
@@ -501,8 +500,6 @@ public class ArgumentParser {
 
         if (optionalParam.defaultValue().length() > 0)
           valueString = optionalParam.defaultValue();
-        else
-          valueString = null;
       }
 
       Class<?> returnType = method.getReturnType();
@@ -530,12 +527,12 @@ public class ArgumentParser {
   }
 
   /**
-   * Filters arguments leaving only those pertaining to argProxyInterface.
+   * Filters arguments leaving only those pertaining to {@code argProxyInterface}.
    *
    * @param args arguments
    * @param argProxyInterface interface with parameters description
    * @param <T> T
-   * @return arguments pertaining to argProxyInterface
+   * @return arguments pertaining to {@code argProxyInterface}
    */
   public static <T> String[] filter(String[] args, Class<T> argProxyInterface) {
     ArrayList<String> parameters = new ArrayList<>(args.length);

@@ -57,13 +57,13 @@ public final class CmdLineUtil {
    * <p>
    * To pass the test it must:<br>
    * - exist<br>
-   * - not be a directory<br>
-   * - accessibly<br>
+   * - not be a directory,<br>
+   * - and be accessibly.<br>
    *
    * @param name the name which is used to refer to the file in an error message, it
    *     should start with a capital letter.
    *
-   * @param inFile the particular file to check to qualify an input file
+   * @param inFile the particular {@link File} to check to qualify an input file
    *
    * @throws TerminateToolException  if test does not pass this exception is
    *     thrown and an error message is printed to the console.
@@ -99,7 +99,7 @@ public final class CmdLineUtil {
    * time-consuming computation it could frustrate the user.
    *
    * @param name human-friendly file name. for example perceptron model
-   * @param outFile file
+   * @param outFile the particular {@link File} to check to qualify an output file
    */
   public static void checkOutputFile(String name, File outFile) {
 
@@ -168,7 +168,7 @@ public final class CmdLineUtil {
    * Writes a {@link BaseModel} to disk. Occurring errors are printed to the console
    * to inform the user.
    *
-   * @param modelName type of the model, name is used in error messages.
+   * @param modelName name of the model, name is used in error messages.
    * @param modelFile output file of the model
    * @param model the model itself which should be written to disk
    */
@@ -201,11 +201,11 @@ public final class CmdLineUtil {
   }
 
   /**
-   * Returns the index of the parameter in the arguments, or -1 if the parameter is not found.
+   * Returns the index of the parameter in the arguments, or {@code -1} if the parameter is not found.
    *
    * @param param parameter name
    * @param args arguments
-   * @return the index of the parameter in the arguments, or -1 if the parameter is not found
+   * @return the index of the parameter in the arguments, or {@code -1} if the parameter is not found
    */
   public static int getParameterIndex(String param, String[] args) {
     for (int i = 0; i < args.length; i++) {
