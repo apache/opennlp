@@ -47,7 +47,7 @@ public interface POSTagger {
    *
    * @param sentence The sentence of tokens to be tagged.
    *
-   * @return An array of {@link Sequence sequeneces} for each token provided in {@code sentence}.
+   * @return An array of {@link Sequence sequences} for each token provided in {@code sentence}.
    */
   Sequence[] topKSequences(String[] sentence);
 

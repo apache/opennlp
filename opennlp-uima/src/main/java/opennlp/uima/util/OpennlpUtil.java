@@ -88,14 +88,14 @@ final public class OpennlpUtil {
    * @return The {@link TrainingParameters} that have been read.
    *
    * @throws ResourceInitializationException Thrown if IO errors occurred or the {@code inFileValue}
-   *                                         does not reference a valid trainging parameters file.
+   *                                         does not reference a valid training parameters file.
    */
   public static TrainingParameters loadTrainingParams(String inFileValue,
       boolean isSequenceTrainingAllowed) throws ResourceInitializationException {
 
     TrainingParameters params;
     if (inFileValue != null) {
-      try (InputStream paramsIn = new FileInputStream(new File(inFileValue))) {
+      try (InputStream paramsIn = new FileInputStream(inFileValue)) {
         params = new opennlp.tools.util.TrainingParameters(paramsIn);
       } catch (IOException e) {
         throw new ResourceInitializationException(e);

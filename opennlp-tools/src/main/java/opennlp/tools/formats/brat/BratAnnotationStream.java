@@ -233,7 +233,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
           throw new InvalidFormatException("annotation id is empty");
         }
 
-        // The first leter of the annotation id marks the annotation type
+        // The first letter of the annotation id marks the annotation type
 
         final BratAnnotationParser parser;
         switch (annId.charAt(0)) {

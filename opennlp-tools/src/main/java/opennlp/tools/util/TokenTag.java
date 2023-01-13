@@ -27,11 +27,11 @@ public class TokenTag {
   private final String tag;
   private final String[] additionalData;
 
-  public TokenTag(String token, String tag, String[] addtionalData) {
+  public TokenTag(String token, String tag, String[] additionalData) {
     this.token = token;
     this.tag = tag;
-    if (addtionalData != null) {
-      this.additionalData = Arrays.copyOf(addtionalData, addtionalData.length);
+    if (additionalData != null) {
+      this.additionalData = Arrays.copyOf(additionalData, additionalData.length);
     } else {
       this.additionalData = null;
     }
@@ -89,7 +89,7 @@ public class TokenTag {
 
   @Override
   public int hashCode() {
-    return Objects.hash(token, tag, additionalData);
+    return Objects.hash(token, tag, Arrays.hashCode(additionalData));
   }
 
   @Override

@@ -137,7 +137,7 @@ public class TokenizerME extends AbstractTokenizer {
     this.alphanumeric = factory.getAlphaNumericPattern();
     this.cg = factory.getContextGenerator();
     this.model = model.getMaxentModel();
-    this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptmization();
+    this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
 
     newTokens = new ArrayList<>();
     tokProbs = new ArrayList<>(50);
@@ -247,7 +247,7 @@ public class TokenizerME extends AbstractTokenizer {
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
     ObjectStream<Event> eventStream = new TokSpanEventStream(samples,
-        factory.isUseAlphaNumericOptmization(),
+        factory.isUseAlphaNumericOptimization(),
         factory.getAlphaNumericPattern(), factory.getContextGenerator());
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(

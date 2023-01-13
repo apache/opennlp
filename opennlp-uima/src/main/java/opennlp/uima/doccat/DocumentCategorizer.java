@@ -40,7 +40,7 @@ public class DocumentCategorizer extends AbstractDocumentCategorizer {
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
 
-    // get category type and feature (it a document propery, one object with a feature)
+    // get category type and feature (it a document property, one object with a feature)
     mCategoryType = AnnotatorUtil.getRequiredTypeParameter(getContext(), typeSystem,
         "opennlp.uima.doccat.CategoryType");
 

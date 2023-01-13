@@ -36,13 +36,13 @@ public class EntityLinkerProperties {
   /**
    * Initializes {@link EntityLinkerProperties} via a {@link File} reference.
    *
-   * @param propertiesfile The {@link File} that references the {@code *.properties}
+   * @param propertiesFile The {@link File} that references the {@code *.properties}
    *                       configuration.
    *
    * @throws IOException Thrown if IO errors occurred.
    */
-  public EntityLinkerProperties(File propertiesfile) throws IOException {
-    try (InputStream stream = new BufferedInputStream(new FileInputStream(propertiesfile))) {
+  public EntityLinkerProperties(File propertiesFile) throws IOException {
+    try (InputStream stream = new BufferedInputStream(new FileInputStream(propertiesFile))) {
       init(stream);
     }
   }

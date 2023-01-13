@@ -77,7 +77,7 @@ public class TokenizerFactoryTest {
     Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertFalse(factory.isUseAlphaNumericOptmization());
+    Assertions.assertFalse(factory.isUseAlphaNumericOptimization());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -92,7 +92,7 @@ public class TokenizerFactoryTest {
     Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertFalse(factory.isUseAlphaNumericOptmization());
+    Assertions.assertFalse(factory.isUseAlphaNumericOptimization());
   }
 
   @Test
@@ -110,7 +110,7 @@ public class TokenizerFactoryTest {
     Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertFalse(factory.isUseAlphaNumericOptmization());
+    Assertions.assertFalse(factory.isUseAlphaNumericOptimization());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -125,7 +125,7 @@ public class TokenizerFactoryTest {
     Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertFalse(factory.isUseAlphaNumericOptmization());
+    Assertions.assertFalse(factory.isUseAlphaNumericOptimization());
   }
 
   @Test
@@ -145,7 +145,7 @@ public class TokenizerFactoryTest {
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assertions.assertTrue(factory.isUseAlphaNumericOptimization());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -159,7 +159,7 @@ public class TokenizerFactoryTest {
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assertions.assertTrue(factory.isUseAlphaNumericOptimization());
   }
 
   @Test
@@ -178,7 +178,7 @@ public class TokenizerFactoryTest {
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assertions.assertTrue(factory.isUseAlphaNumericOptimization());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -192,7 +192,7 @@ public class TokenizerFactoryTest {
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assertions.assertTrue(factory.isUseAlphaNumericOptimization());
   }
 
   @Test
@@ -209,6 +209,6 @@ public class TokenizerFactoryTest {
     Assertions.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
-    Assertions.assertTrue(factory.isUseAlphaNumericOptmization());
+    Assertions.assertTrue(factory.isUseAlphaNumericOptimization());
   }
 }

@@ -293,7 +293,7 @@ public class POSTaggerFactory extends BaseToolFactory {
   public POSContextGenerator getPOSContextGenerator(int cacheSize) {
 
     if (artifactProvider != null) {
-      Properties manifest = (Properties) artifactProvider.getArtifact("manifest.properties");
+      Properties manifest = artifactProvider.getArtifact("manifest.properties");
 
       String version = manifest.getProperty("OpenNLP-Version");
       Version v = Version.parse(version);

@@ -115,7 +115,7 @@ public class TokenizerFactory extends BaseToolFactory {
     Map<String, String> manifestEntries = super.createManifestEntries();
 
     manifestEntries.put(USE_ALPHA_NUMERIC_OPTIMIZATION,
-        Boolean.toString(isUseAlphaNumericOptmization()));
+        Boolean.toString(isUseAlphaNumericOptimization()));
 
     // alphanumeric pattern is optional
     if (getAlphaNumericPattern() != null) {
@@ -188,7 +188,7 @@ public class TokenizerFactory extends BaseToolFactory {
   /**
    * @return {@code true} if the alphanumeric optimization is enabled, otherwise {@code false}.
    */
-  public boolean isUseAlphaNumericOptmization() {
+  public boolean isUseAlphaNumericOptimization() {
     if (artifactProvider != null) {
       this.useAlphaNumericOptimization = Boolean.valueOf(this.artifactProvider
           .getManifestProperty(USE_ALPHA_NUMERIC_OPTIMIZATION));

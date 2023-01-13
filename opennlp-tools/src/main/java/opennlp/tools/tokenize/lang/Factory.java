@@ -28,13 +28,12 @@ public class Factory {
   public static final String DEFAULT_ALPHANUMERIC = "^[A-Za-z0-9]+$";
 
   /**
-   * Gets the alpha numeric pattern for the language. Please save the value
+   * Gets the alphanumeric pattern for the language. Please save the value
    * locally because this call is expensive.
    *
-   * @param languageCode
-   *          the language code. If null or unknow the default pattern will be
-   *          returned.
-   * @return the alpha numeric pattern for the language or the default pattern.
+   * @param languageCode The language code. If {@code null}, or unknown,
+   *                     the default pattern will be returned.
+   * @return The alphanumeric pattern for the language or the default pattern.
    */
   public Pattern getAlphanumeric(String languageCode) {
     if ("pt".equals(languageCode) || "por".equals(languageCode)) {

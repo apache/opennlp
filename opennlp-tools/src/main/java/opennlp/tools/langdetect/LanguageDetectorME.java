@@ -43,7 +43,7 @@ import opennlp.tools.util.TrainingParameters;
  * <p>
  * If you want this to stop early, use {@link #probingPredictLanguages(CharSequence)}
  * or {@link #probingPredictLanguages(CharSequence, LanguageDetectorConfig)}.
- * When run in probing mode, this starts at the beginning of the charsequence
+ * When run in probing mode, this starts at the beginning of the char sequence
  * and runs language detection on chunks of text.  If the end of the
  * string is reached or there are {@link LanguageDetectorConfig#getMinConsecImprovements()}
  * consecutive predictions for the best language and the confidence
