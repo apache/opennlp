@@ -123,11 +123,11 @@ public final class Tokenizer extends AbstractTokenizer {
                                         AnnotationFS[] tokenAnnotations) {
     // if interest
     if (probabilityFeature != null) {
-      double[] tokenProbabilties = tokenizer.getTokenProbabilities();
+      double[] tokenProbabilities = tokenizer.getTokenProbabilities();
 
       for (int i = 0; i < tokenAnnotations.length; i++) {
         tokenAnnotations[i].setDoubleValue(probabilityFeature,
-            tokenProbabilties[i]);
+            tokenProbabilities[i]);
       }
     }
   }

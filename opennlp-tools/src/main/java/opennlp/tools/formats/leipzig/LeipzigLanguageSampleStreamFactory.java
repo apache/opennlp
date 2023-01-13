@@ -43,7 +43,7 @@ public class LeipzigLanguageSampleStreamFactory<P>
 
   interface Parameters extends EncodingParameter {
     @ParameterDescription(valueName = "sentencesDir",
-        description = "dir with Leipig sentences to be used")
+        description = "dir with Leipzig sentences to be used")
     File getSentencesDir();
 
     @ParameterDescription(valueName = "sentencesPerSample",

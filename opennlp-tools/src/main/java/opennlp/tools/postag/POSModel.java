@@ -68,10 +68,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
         Objects.requireNonNull(posModel, "posModel must not be null"));
 
     artifactMap.put(GENERATOR_DESCRIPTOR_ENTRY_NAME, posFactory.getFeatureGenerator());
-
-    for (Map.Entry<String, Object> resource : posFactory.getResources().entrySet()) {
-      artifactMap.put(resource.getKey(), resource.getValue());
-    }
+    artifactMap.putAll(posFactory.getResources());
 
     // TODO: This fails probably for the sequence model ... ?!
     // checkArtifactMap();

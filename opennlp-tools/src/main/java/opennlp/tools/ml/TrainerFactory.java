@@ -234,7 +234,7 @@ public class TrainerFactory {
       return false;
     }
 
-    // no reason to require that the dataIndexer be a 1-pass or 2-pass dataindexer.
+    // no reason to require that the dataIndexer be a 1-pass or 2-pass data indexer.
     trainParams.getStringParameter(AbstractEventTrainer.DATA_INDEXER_PARAM, null);
 
     // TODO: Check data indexing ...

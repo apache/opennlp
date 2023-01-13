@@ -78,7 +78,7 @@ public class NameFinderAnnService {
       } else if ("simple".equals(args[ruleBasedTokenizerIndex])) {
         tokenizer = SimpleTokenizer.INSTANCE;
       } else {
-        System.out.println("unkown tokenizer: " + args[ruleBasedTokenizerIndex]);
+        System.out.println("unknown tokenizer: " + args[ruleBasedTokenizerIndex]);
         return;
       }
     }

@@ -103,7 +103,7 @@ public class NGramUtils {
    * @param x1  the second word in the bigram
    * @param set the vocabulary
    * @param k   the smoothing factor
-   * @return the prior Laplace smoothiing probability
+   * @return the prior Laplace smoothing probability
    */
   public static double calculateBigramPriorSmoothingProbability(String x0, String x1,
                                                                 Collection<StringList> set, Double k) {

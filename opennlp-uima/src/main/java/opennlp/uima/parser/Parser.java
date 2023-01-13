@@ -318,9 +318,9 @@ public class Parser extends CasAnnotator_ImplBase {
           mIndexMap.get(start), mIndexMap.get(end)), parseFromTagger.getType(),
           parseFromTagger.getProb(), parseFromTagger.getHeadIndex());
 
-      Parse[] parseFromTaggerChildrens = parseFromTagger.getChildren();
+      Parse[] parseFromTaggerChildren = parseFromTagger.getChildren();
 
-      for (Parse child : parseFromTaggerChildrens) {
+      for (Parse child : parseFromTaggerChildren) {
         transformedParse.insert(transformParseFromTagger(child));
       }
 

@@ -55,7 +55,7 @@ public class MucNameSampleStream extends FilterObjectStream<String, NameSample> 
 
       if (document != null) {
 
-        // Note: This is a hack to fix invalid formating in
+        // Note: This is a hack to fix invalid formatting in
         // some MUC files ...
         document = document.replace(">>", ">");
 

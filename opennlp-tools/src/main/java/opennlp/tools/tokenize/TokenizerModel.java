@@ -161,7 +161,7 @@ public final class TokenizerModel extends BaseModel {
    * @return {@code true} if alphanumeric optimization is active, {@code false} otherwise.
    */
   public boolean useAlphaNumericOptimization() {
-    return getFactory() != null && getFactory().isUseAlphaNumericOptmization();
+    return getFactory() != null && getFactory().isUseAlphaNumericOptimization();
   }
 
   @Override

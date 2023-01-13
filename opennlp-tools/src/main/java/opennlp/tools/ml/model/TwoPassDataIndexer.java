@@ -175,9 +175,9 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     public Event read() throws IOException {
       if (inputStream.available() != 0) {
         String outcome = inputStream.readUTF();
-        int contextLenght = inputStream.readInt();
-        String[] context = new String[contextLenght];
-        for (int i = 0; i < contextLenght; i++)
+        int contextLength = inputStream.readInt();
+        String[] context = new String[contextLength];
+        for (int i = 0; i < contextLength; i++)
           context[i] = inputStream.readUTF();
         int valuesLength = inputStream.readInt();
         float[] values = null;
