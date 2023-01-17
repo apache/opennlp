@@ -26,6 +26,7 @@ on:
 jobs:
   publish:
     name: Publish snapshot artifacts
+    if: github.repository == 'apache/opennlp'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
