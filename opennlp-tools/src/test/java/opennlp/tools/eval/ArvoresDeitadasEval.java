@@ -209,7 +209,7 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
   @Test
   void evalPortugueseChunkerQn() throws IOException {
     chunkerCrossEval(createMaxentQnParams(),
-        0.9648211936491359d);
+        0.9651009811896799d);
   }
 
   @Test
