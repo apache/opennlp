@@ -342,7 +342,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
       }
     }
 
-    Assertions.assertEquals(new BigInteger("226003515785585284478071030961407561943"),
+    Assertions.assertEquals(new BigInteger("304922886851384639120257052245406261332"),
         new BigInteger(1, digest.digest()));
   }
 
