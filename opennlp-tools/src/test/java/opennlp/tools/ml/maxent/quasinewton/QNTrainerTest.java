@@ -69,7 +69,6 @@ public class QNTrainerTest {
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     testDataIndexer.index(rvfes1);
-    ;
     // when
     QNModel trainedModel = new QNTrainer(15, true).trainModel(ITERATIONS, testDataIndexer);
     String[] features2Classify = new String[] {

@@ -59,7 +59,6 @@ abstract class ModelUpdaterTool
     ObjectStreamFactory<Parse,ModelUpdaterParams> factory = getStreamFactory(format);
     String[] fargs = ArgumentParser.filter(args, factory.getParameters());
     validateFactoryArgs(factory, fargs);
-    ;
 
     ParserModel updatedParserModel;
     try (ObjectStream<Parse> sampleStream = factory.create(fargs)) {
