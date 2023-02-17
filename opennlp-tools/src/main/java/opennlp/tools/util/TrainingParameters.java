@@ -158,7 +158,7 @@ public class TrainingParameters {
 
     for (Entry<String, Object> entry: settings.entrySet()) {
       String key = entry.getKey();
-      Object value = entry.getValue();;
+      Object value = entry.getValue();
       if (value instanceof Integer) {
         params.put(key, (Integer)value);
       }

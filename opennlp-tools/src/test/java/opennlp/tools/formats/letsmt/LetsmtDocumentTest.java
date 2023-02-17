@@ -30,7 +30,7 @@ public class LetsmtDocumentTest extends AbstractFormatTest {
 
   @Test
   void testParsingSimpleDoc() throws IOException {
-    try (InputStream letsmtXmlIn = getResourceStream("letsmt/letsmt-with-words.xml");) {
+    try (InputStream letsmtXmlIn = getResourceStream("letsmt/letsmt-with-words.xml")) {
 
       LetsmtDocument doc = LetsmtDocument.parse(letsmtXmlIn);
 
