@@ -178,7 +178,7 @@ public final class POSTagger extends CasAnnotator_ImplBase {
       }
 
       final List<String> posTags = Arrays.asList(this.posTagger.tag(
-          sentenceTokenList.toArray(new String[sentenceTokenList.size()])));
+          sentenceTokenList.toArray(new String[0])));
 
       double[] posProbabilities = null;
 

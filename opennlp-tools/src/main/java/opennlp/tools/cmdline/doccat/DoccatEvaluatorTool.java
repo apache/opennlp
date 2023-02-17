@@ -91,7 +91,7 @@ public final class DoccatEvaluatorTool extends
 
     DocumentCategorizerEvaluator evaluator = new DocumentCategorizerEvaluator(
         new DocumentCategorizerME(model),
-        listeners.toArray(new DoccatEvaluationMonitor[listeners.size()]));
+        listeners.toArray(new DoccatEvaluationMonitor[0]));
 
     final PerformanceMonitor monitor = new PerformanceMonitor("doc");
 

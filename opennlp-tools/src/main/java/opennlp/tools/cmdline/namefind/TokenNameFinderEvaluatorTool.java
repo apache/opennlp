@@ -111,7 +111,7 @@ public final class TokenNameFinderEvaluatorTool
 
     TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
         new NameFinderME(model),
-        listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
+        listeners.toArray(new TokenNameFinderEvaluationMonitor[0]));
 
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");
 

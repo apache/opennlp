@@ -76,7 +76,7 @@ public final class ChunkerCrossValidatorTool
 
       validator = new ChunkerCrossValidator(params.getLang(), mlParams,
           chunkerFactory,
-          listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
+          listeners.toArray(new ChunkerEvaluationMonitor[0]));
       validator.evaluate(sampleStream, params.getFolds());
     }
     catch (IOException e) {

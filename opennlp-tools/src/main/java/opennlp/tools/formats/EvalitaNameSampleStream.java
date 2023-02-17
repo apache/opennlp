@@ -204,8 +204,8 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
       if (beginIndex != -1)
         names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
 
-      return new NameSample(sentence.toArray(new String[sentence.size()]),
-          names.toArray(new Span[names.size()]), isClearAdaptiveData);
+      return new NameSample(sentence.toArray(new String[0]),
+          names.toArray(new Span[0]), isClearAdaptiveData);
     }
     else if (line != null) {
       // Just filter out empty events, if two lines in a row are empty

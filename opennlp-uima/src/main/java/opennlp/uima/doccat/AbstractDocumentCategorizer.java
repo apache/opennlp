@@ -96,7 +96,7 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
     }
 
     double[] result =
-        mCategorizer.categorize(tokensList.toArray(new String[tokensList.size()]));
+        mCategorizer.categorize(tokensList.toArray(new String[0]));
 
     String bestCategory = mCategorizer.getBestCategory(result);
 

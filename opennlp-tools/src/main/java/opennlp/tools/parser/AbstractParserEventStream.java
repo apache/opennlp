@@ -99,7 +99,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
   public static Parse[] getInitialChunks(Parse p) {
     List<Parse> chunks = new ArrayList<>();
     getInitialChunks(p, chunks);
-    return chunks.toArray(new Parse[chunks.size()]);
+    return chunks.toArray(new Parse[0]);
   }
 
   private static void getInitialChunks(Parse p, List<Parse> ichunks) {
@@ -162,8 +162,8 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
     }
     for (int ti = 0, tl = toks.size(); ti < tl; ti++) {
       chunkEvents.add(new Event(preds.get(ti),
-          chunkerContextGenerator.getContext(ti, toks.toArray(new String[toks.size()]),
-          tags.toArray(new String[tags.size()]), preds.toArray(new String[preds.size()]))));
+          chunkerContextGenerator.getContext(ti, toks.toArray(new String[0]),
+          tags.toArray(new String[0]), preds.toArray(new String[0]))));
     }
   }
 
@@ -184,7 +184,7 @@ public abstract class AbstractParserEventStream extends opennlp.tools.util.Abstr
     }
     for (int ti = 0, tl = toks.size(); ti < tl; ti++) {
       tagEvents.add(new Event(preds.get(ti), tagContextGenerator.getContext(ti,
-          toks.toArray(new String[toks.size()]), preds.toArray(new String[preds.size()]), null)));
+          toks.toArray(new String[0]), preds.toArray(new String[0]), null)));
     }
   }
 

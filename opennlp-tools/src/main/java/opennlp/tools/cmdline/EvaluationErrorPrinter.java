@@ -187,7 +187,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
    */
   private String print(List<Span> spans, String[] toks) {
     return Arrays.toString(Span.spansToStrings(
-        spans.toArray(new Span[spans.size()]), toks));
+        spans.toArray(new Span[0]), toks));
   }
 
   /**

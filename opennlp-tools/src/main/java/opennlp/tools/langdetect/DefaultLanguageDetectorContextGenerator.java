@@ -59,6 +59,6 @@ public class DefaultLanguageDetectorContextGenerator implements LanguageDetector
     for (String token : model) {
       context.add(token);
     }
-    return context.toArray(new String[context.size()]);
+    return context.toArray(new String[0]);
   }
 }

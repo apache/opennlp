@@ -69,21 +69,21 @@ public class LemmaSample implements Sample {
    * @return Retrieves the tokens of a {@link LemmaSample}.
    */
   public String[] getTokens() {
-    return tokens.toArray(new String[tokens.size()]);
+    return tokens.toArray(new String[0]);
   }
 
   /**
    * @return Retrieves the postags of a {@link LemmaSample}.
    */
   public String[] getTags() {
-    return tags.toArray(new String[tags.size()]);
+    return tags.toArray(new String[0]);
   }
 
   /**
    * @return Retrieves the lemmas of a {@link LemmaSample}.
    */
   public String[] getLemmas() {
-    return lemmas.toArray(new String[lemmas.size()]);
+    return lemmas.toArray(new String[0]);
   }
 
   private void validateArguments(int tokensSize, int tagsSize, int lemmasSize)

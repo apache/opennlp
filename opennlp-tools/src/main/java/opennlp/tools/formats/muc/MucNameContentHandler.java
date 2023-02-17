@@ -127,8 +127,8 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
     }
 
     if (MucElementNames.CONTENT_ELEMENTS.contains(name)) {
-      storedSamples.add(new NameSample(text.toArray(new String[text.size()]),
-          names.toArray(new Span[names.size()]), isClearAdaptiveData));
+      storedSamples.add(new NameSample(text.toArray(new String[0]),
+          names.toArray(new Span[0]), isClearAdaptiveData));
 
       if (isClearAdaptiveData) {
         isClearAdaptiveData = false;

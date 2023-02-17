@@ -96,7 +96,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
     }
 
     public String[] getText() {
-      return text.toArray(new String[text.size()]);
+      return text.toArray(new String[0]);
     }
 
     @Override
@@ -152,7 +152,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
       }
 
       if (tokensList.size() > 0) {
-        return new LeipzigTestSample(tokensList.toArray(new String[tokensList.size()]));
+        return new LeipzigTestSample(tokensList.toArray(new String[0]));
       }
 
       return null;

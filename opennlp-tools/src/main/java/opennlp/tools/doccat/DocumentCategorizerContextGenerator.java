@@ -49,6 +49,6 @@ class DocumentCategorizerContextGenerator {
       context.addAll(extractedFeatures);
     }
 
-    return context.toArray(new String[context.size()]);
+    return context.toArray(new String[0]);
   }
 }

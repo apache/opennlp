@@ -86,7 +86,7 @@ public final class DoccatCrossValidatorTool extends
         .createFeatureGenerators(params.getFeatureGenerators());
 
     DoccatEvaluationMonitor[] listenersArr = listeners
-        .toArray(new DoccatEvaluationMonitor[listeners.size()]);
+        .toArray(new DoccatEvaluationMonitor[0]);
 
     DoccatCrossValidator validator;
     try {

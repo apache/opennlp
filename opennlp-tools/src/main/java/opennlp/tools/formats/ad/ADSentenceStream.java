@@ -396,7 +396,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       }
 
       public TreeElement[] getElements() {
-        return elems.toArray(new TreeElement[elems.size()]);
+        return elems.toArray(new TreeElement[0]);
       }
 
       @Override

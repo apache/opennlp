@@ -187,7 +187,7 @@ public class GeneratorFactory {
       if (generators.size() > 1) {
         AdaptiveFeatureGenerator aggregatedFeatureGenerator =
             new AggregatedFeatureGenerator(generators.toArray(
-                new AdaptiveFeatureGenerator[generators.size()]));
+                    new AdaptiveFeatureGenerator[0]));
         args.put("generator#0", aggregatedFeatureGenerator);
       }
     }
@@ -473,7 +473,7 @@ public class GeneratorFactory {
         featureGenerator = generators.get(0);
       else if (generators.size() > 1)
         featureGenerator = new AggregatedFeatureGenerator(generators.toArray(
-            new AdaptiveFeatureGenerator[generators.size()]));
+                new AdaptiveFeatureGenerator[0]));
       else
         throw new InvalidFormatException("featureGenerators must have one or more generators");
 

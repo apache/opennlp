@@ -60,7 +60,7 @@ public class MosesSentenceSampleStream extends FilterObjectStream<String, Senten
 
     if (sentenceSpans.size() > 0) {
       return new SentenceSample(sentencesString.toString(),
-          sentenceSpans.toArray(new Span[sentenceSpans.size()]));
+          sentenceSpans.toArray(new Span[0]));
     }
 
     return null;

@@ -122,7 +122,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
       doc = document.toString();
     }
 
-    return new SentenceSample(doc, sentences.toArray(new Span[sentences.size()]));
+    return new SentenceSample(doc, sentences.toArray(new Span[0]));
   }
 
   private boolean hasPunctuation(String text) {

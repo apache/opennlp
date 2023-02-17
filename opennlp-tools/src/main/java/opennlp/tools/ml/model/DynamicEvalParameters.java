@@ -40,7 +40,7 @@ public class DynamicEvalParameters {
   }
 
   public Context[] getParams() {
-    return params.toArray(new Context[params.size()]);
+    return params.toArray(new Context[0]);
   }
 
   public int getNumOutcomes() {

@@ -109,8 +109,8 @@ public class ConllXPOSSampleStream extends FilterObjectStream<String, POSSample>
       if (tokens.size() == 0)
         sample = read();
 
-      sample = new POSSample(tokens.toArray(new String[tokens.size()]),
-          tags.toArray(new String[tags.size()]));
+      sample = new POSSample(tokens.toArray(new String[0]),
+          tags.toArray(new String[0]));
     }
 
     return sample;

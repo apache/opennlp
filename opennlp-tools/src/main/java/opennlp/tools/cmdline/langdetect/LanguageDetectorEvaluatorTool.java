@@ -90,7 +90,7 @@ public final class LanguageDetectorEvaluatorTool extends
 
     LanguageDetectorEvaluator evaluator = new LanguageDetectorEvaluator(
         new LanguageDetectorME(model),
-        listeners.toArray(new LanguageDetectorEvaluationMonitor[listeners.size()]));
+        listeners.toArray(new LanguageDetectorEvaluationMonitor[0]));
 
     final PerformanceMonitor monitor = new PerformanceMonitor("doc");
 

@@ -74,7 +74,7 @@ public final class ChunkerEvaluatorTool
     }
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model),
-        listeners.toArray(new ChunkerEvaluationMonitor[listeners.size()]));
+        listeners.toArray(new ChunkerEvaluationMonitor[0]));
 
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");
 

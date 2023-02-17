@@ -73,7 +73,7 @@ public class MascSentenceSampleStream extends FilterObjectStream<MascDocument, S
       if (documentText.length() > 0) {
         documentText.setLength(documentText.length() - 1);
         return new SentenceSample(documentText,
-            sentenceSpans.toArray(new Span[sentenceSpans.size()]));
+            sentenceSpans.toArray(new Span[0]));
       }
 
       return null;

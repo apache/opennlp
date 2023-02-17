@@ -120,7 +120,7 @@ public class TokenSample implements Sample {
    * @return Retrieves the token {@link Span spans}.
    */
   public Span[] getTokenSpans() {
-    return tokenSpans.toArray(new Span[tokenSpans.size()]);
+    return tokenSpans.toArray(new Span[0]);
   }
 
   @Override
@@ -219,7 +219,7 @@ public class TokenSample implements Sample {
     }
 
     return new TokenSample(untaggedSampleString.toString(), realTokenSpans.toArray(
-        new Span[realTokenSpans.size()]));
+            new Span[0]));
   }
 
   @Override

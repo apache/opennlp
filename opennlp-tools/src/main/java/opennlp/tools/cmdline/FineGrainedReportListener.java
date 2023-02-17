@@ -174,7 +174,7 @@ public abstract class FineGrainedReportListener {
   private String matrixToString(SortedSet<String> tagset, double[][] data, boolean filter) {
     // we don't want to print trivial cases (acc=1)
     int initialIndex = 0;
-    String[] tags = tagset.toArray(new String[tagset.size()]);
+    String[] tags = tagset.toArray(new String[0]);
     StringBuilder sb = new StringBuilder();
     int minColumnSize = Integer.MIN_VALUE;
     String[][] matrix = new String[data.length][data[0].length];
@@ -893,8 +893,8 @@ public abstract class FineGrainedReportListener {
         }
         // populate the F-measure
         this.tagFMeasure.get(tag).updateScores(
-            reference.toArray(new Span[reference.size()]),
-            prediction.toArray(new Span[prediction.size()]));
+            reference.toArray(new Span[0]),
+            prediction.toArray(new Span[0]));
       }
     }
 

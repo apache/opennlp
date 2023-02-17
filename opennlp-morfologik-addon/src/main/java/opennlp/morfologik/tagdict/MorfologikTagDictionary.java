@@ -74,7 +74,7 @@ public class MorfologikTagDictionary implements TagDictionary {
         tags.add(aData.getTag().toString());
       }
       if (tags.size() > 0)
-        return tags.toArray(new String[tags.size()]);
+        return tags.toArray(new String[0]);
       return null;
     }
     return null;

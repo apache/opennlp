@@ -94,7 +94,7 @@ public class ParserEvaluator extends Evaluator<Parse> {
       }
     }
 
-    return consts.toArray(new Span[consts.size()]);
+    return consts.toArray(new Span[0]);
   }
 
   @Override

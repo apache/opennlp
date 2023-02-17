@@ -109,7 +109,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
       e.printStackTrace();
       line = null;
     }
-    return new TokenSample(sb.toString(),spans.toArray(new Span[spans.size()]));
+    return new TokenSample(sb.toString(),spans.toArray(new Span[0]));
   }
 
 

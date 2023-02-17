@@ -62,8 +62,8 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
     }
 
     if (toks.size() > 0) {
-      return new ChunkSample(toks.toArray(new String[toks.size()]),
-          tags.toArray(new String[tags.size()]), preds.toArray(new String[preds.size()]));
+      return new ChunkSample(toks.toArray(new String[0]),
+          tags.toArray(new String[0]), preds.toArray(new String[0]));
     }
 
     return null;

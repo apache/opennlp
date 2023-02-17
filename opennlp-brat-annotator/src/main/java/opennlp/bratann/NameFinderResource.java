@@ -118,7 +118,7 @@ public class NameFinderResource {
           }
 
           NameAnn ann = new NameAnn();
-          ann.texts = textSegments.toArray(new String[textSegments.size()]);
+          ann.texts = textSegments.toArray(new String[0]);
           ann.offsets = spanSegments.toArray(new int[spanSegments.size()][]);
           ann.type = name.getType();
 

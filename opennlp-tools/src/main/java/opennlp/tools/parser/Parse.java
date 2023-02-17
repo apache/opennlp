@@ -476,7 +476,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
    * @return Retrieves the {@link Parse child constituents} of this constituent.
    */
   public Parse[] getChildren() {
-    return parts.toArray(new Parse[parts.size()]);
+    return parts.toArray(new Parse[0]);
   }
 
   /**
@@ -732,7 +732,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
       for (Parse c : parts) {
         c.updateHeads(rules);
       }
-      this.head = rules.getHead(parts.toArray(new Parse[parts.size()]), type);
+      this.head = rules.getHead(parts.toArray(new Parse[0]), type);
       if (head == null) {
         head = this;
       }
@@ -932,7 +932,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
         nodes.addAll(0,p.parts);
       }
     }
-    return tags.toArray(new Parse[tags.size()]);
+    return tags.toArray(new Parse[0]);
   }
 
   public Parse[] getTokenNodes() {
@@ -947,7 +947,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
         nodes.addAll(0, p.parts);
       }
     }
-    return tokens.toArray(new Parse[tokens.size()]);
+    return tokens.toArray(new Parse[0]);
   }
 
   /**

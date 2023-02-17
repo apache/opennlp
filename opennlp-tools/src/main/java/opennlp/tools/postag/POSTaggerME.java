@@ -148,7 +148,7 @@ public class POSTaggerME implements POSTagger {
   public String[] tag(String[] sentence, Object[] additionalContext) {
     bestSequence = model.bestSequence(sentence, additionalContext, contextGen, sequenceValidator);
     List<String> t = bestSequence.getOutcomes();
-    return t.toArray(new String[t.size()]);
+    return t.toArray(new String[0]);
   }
 
   /**
@@ -165,7 +165,7 @@ public class POSTaggerME implements POSTagger {
     String[][] tags = new String[bestSequences.length][];
     for (int si = 0; si < tags.length; si++) {
       List<String> t = bestSequences[si].getOutcomes();
-      tags[si] = t.toArray(new String[t.size()]);
+      tags[si] = t.toArray(new String[0]);
     }
     return tags;
   }
@@ -207,8 +207,8 @@ public class POSTaggerME implements POSTagger {
       MaxentModel posModel = modelPackage.getPosModel();
 
       double[] probs = posModel.eval(contextGen.getContext(index,
-          words.toArray(new String[words.size()]),
-          tags.toArray(new String[tags.size()]),null));
+          words.toArray(new String[0]),
+          tags.toArray(new String[0]),null));
 
       String[] orderedTags = new String[probs.length];
       for (int i = 0; i < probs.length; i++) {
@@ -376,7 +376,7 @@ public class POSTaggerME implements POSTagger {
       }
       if (tagsForWord.size() > 0) {
         dict.put(wordEntry.getKey(),
-            tagsForWord.toArray(new String[tagsForWord.size()]));
+            tagsForWord.toArray(new String[0]));
       }
     }
 
