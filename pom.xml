@@ -159,7 +159,7 @@
 		<junit.version>5.9.1</junit.version>
 		<morfologik.version>2.1.7</morfologik.version>
 		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
-		<onnxruntime.version>1.10.0</onnxruntime.version>
+		<onnxruntime.version>1.14.0</onnxruntime.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.7.9</jacoco.maven.plugin>
