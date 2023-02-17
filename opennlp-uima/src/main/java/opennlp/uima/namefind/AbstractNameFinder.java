@@ -190,7 +190,7 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
       }
 
       Span[] names  = find(cas,
-          sentenceTokenList.toArray(new String[sentenceTokenList.size()]));
+          sentenceTokenList.toArray(new String[0]));
 
       AnnotationFS[] nameAnnotations = new AnnotationFS[names.length];
 

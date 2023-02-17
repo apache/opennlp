@@ -139,7 +139,7 @@ public class DictionaryEntryPersistor {
       else if (ENTRY_ELEMENT.equals(localName)) {
 
         String[] tokens = mTokenList.toArray(
-            new String[mTokenList.size()]);
+                new String[0]);
 
         Entry entry = new Entry(new StringList(tokens), mAttributes);
 

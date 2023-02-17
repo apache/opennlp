@@ -173,7 +173,7 @@ public class Parser extends CasAnnotator_ImplBase {
           token.getEnd() - sentenceAnnotation.getBegin()));
     }
 
-    ParseConverter converter = new ParseConverter(sentence, tokenSpans.toArray(new Span[tokenSpans.size()]));
+    ParseConverter converter = new ParseConverter(sentence, tokenSpans.toArray(new Span[0]));
 
     Parse unparsedTree = converter.getParseForTagger();
 

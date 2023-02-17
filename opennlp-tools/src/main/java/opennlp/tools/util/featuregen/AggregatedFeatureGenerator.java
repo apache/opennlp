@@ -50,7 +50,7 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
   }
 
   public AggregatedFeatureGenerator(Collection<AdaptiveFeatureGenerator> generators) {
-    this(generators.toArray(new AdaptiveFeatureGenerator[generators.size()]));
+    this(generators.toArray(new AdaptiveFeatureGenerator[0]));
   }
 
   /**

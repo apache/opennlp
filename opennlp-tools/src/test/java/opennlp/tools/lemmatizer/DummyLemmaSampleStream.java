@@ -66,13 +66,13 @@ public class DummyLemmaSampleStream
 
     if (toks.size() > 0) {
       if (mIsPredicted) {
-        return new LemmaSample(toks.toArray(new String[toks.size()]),
-            posTags.toArray(new String[posTags.size()]),
-            predictedLemmas.toArray(new String[predictedLemmas.size()]));
+        return new LemmaSample(toks.toArray(new String[0]),
+            posTags.toArray(new String[0]),
+            predictedLemmas.toArray(new String[0]));
       } else
-        return new LemmaSample(toks.toArray(new String[toks.size()]),
-            posTags.toArray(new String[posTags.size()]),
-            goldLemmas.toArray(new String[goldLemmas.size()]));
+        return new LemmaSample(toks.toArray(new String[0]),
+            posTags.toArray(new String[0]),
+            goldLemmas.toArray(new String[0]));
     } else {
       return null;
     }

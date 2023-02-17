@@ -94,7 +94,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
           // Simple way to drop intersecting spans, otherwise the
           // NameSample is invalid
           Span[] reducedNames = NameFinderME.dropOverlappingSpans(
-                  names.toArray(new Span[names.size()]));
+                  names.toArray(new Span[0]));
 
           NameSample nameSample = new NameSample(whitespaceTokenizerLine,
                   reducedNames, false);

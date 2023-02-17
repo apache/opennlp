@@ -60,7 +60,7 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
 
     if (sentenceSpans.size() > 0) {
       return new SentenceSample(sentencesString.toString(),
-          sentenceSpans.toArray(new Span[sentenceSpans.size()]));
+          sentenceSpans.toArray(new Span[0]));
     }
     return null;
   }

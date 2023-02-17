@@ -211,8 +211,8 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
       List<Span> names = new ArrayList<>();
       process(root, sentence, names);
 
-      return new NameSample(sentence.toArray(new String[sentence.size()]),
-          names.toArray(new Span[names.size()]), clearData);
+      return new NameSample(sentence.toArray(new String[0]),
+          names.toArray(new Span[0]), clearData);
     }
     return null;
   }

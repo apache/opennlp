@@ -243,7 +243,7 @@ public abstract class AbstractBottomUpParser implements Parser {
       return chunks;
     }
     //System.err.println("collapsedPunctuation: collapsedParses"+collapsedParses);
-    return collapsedParses.toArray(new Parse[collapsedParses.size()]);
+    return collapsedParses.toArray(new Parse[0]);
   }
 
 
@@ -363,7 +363,7 @@ public abstract class AbstractBottomUpParser implements Parser {
         topParses.add(tp);
         //parses.remove(tp);
       }
-      return topParses.toArray(new Parse[topParses.size()]);
+      return topParses.toArray(new Parse[0]);
     }
   }
 

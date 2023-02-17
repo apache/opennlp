@@ -108,7 +108,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
     if (charType != CharacterEnum.WHITESPACE) {
       tokens.add(new Span(start, sl));
     }
-    return tokens.toArray(new Span[tokens.size()]);
+    return tokens.toArray(new Span[0]);
   }
 
   private boolean isLineSeparator(char character) {

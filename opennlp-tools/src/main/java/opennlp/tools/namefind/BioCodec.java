@@ -90,7 +90,7 @@ public class BioCodec implements SequenceCodec<String> {
       spans.add(new Span(start, end, extractNameType(c.get(c.size() - 1))));
     }
 
-    return spans.toArray(new Span[spans.size()]);
+    return spans.toArray(new Span[0]);
   }
 
   @Override

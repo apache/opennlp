@@ -78,7 +78,7 @@ public class BilouCodec implements SequenceCodec<String> {
       }
     }
 
-    return spans.toArray(new Span[spans.size()]);
+    return spans.toArray(new Span[0]);
   }
 
   @Override

@@ -72,14 +72,14 @@ public class DummyChunkSampleStream extends
 
     if (toks.size() > 0) {
       if (mIsPredicted) {
-        return new ChunkSample(toks.toArray(new String[toks.size()]),
-            posTags.toArray(new String[posTags.size()]),
+        return new ChunkSample(toks.toArray(new String[0]),
+            posTags.toArray(new String[0]),
             predictedChunkTags
-            .toArray(new String[predictedChunkTags.size()]));
+            .toArray(new String[0]));
       } else
-        return new ChunkSample(toks.toArray(new String[toks.size()]),
-            posTags.toArray(new String[posTags.size()]),
-            chunkTags.toArray(new String[chunkTags.size()]));
+        return new ChunkSample(toks.toArray(new String[0]),
+            posTags.toArray(new String[0]),
+            chunkTags.toArray(new String[0]));
     } else {
       return null;
     }

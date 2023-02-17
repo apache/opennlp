@@ -74,21 +74,21 @@ public class ChunkSample implements Sample {
    * @return Retrieves the training sentence.
    */
   public String[] getSentence() {
-    return sentence.toArray(new String[sentence.size()]);
+    return sentence.toArray(new String[0]);
   }
 
   /**
    * @return Retrieves the POS Tags for the sentence.
    */
   public String[] getTags() {
-    return tags.toArray(new String[tags.size()]);
+    return tags.toArray(new String[0]);
   }
 
   /**
    * @return Retrieves the chunk tags in B-* I-* notation.
    */
   public String[] getPreds() {
-    return preds.toArray(new String[preds.size()]);
+    return preds.toArray(new String[0]);
   }
 
   /**
@@ -142,7 +142,7 @@ public class ChunkSample implements Sample {
       phrases.add(new Span(startIndex, aPreds.length, startTag));
     }
 
-    return phrases.toArray(new Span[phrases.size()]);
+    return phrases.toArray(new Span[0]);
   }
 
   private static void validateArguments(int sentenceSize, int tagsSize, int predsSize)

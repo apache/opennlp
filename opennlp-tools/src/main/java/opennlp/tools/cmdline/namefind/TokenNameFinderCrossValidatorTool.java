@@ -143,7 +143,7 @@ public final class TokenNameFinderCrossValidatorTool
     try {
       validator = new TokenNameFinderCrossValidator(params.getLang(),
           params.getType(), mlParams, nameFinderFactory,
-          listeners.toArray(new TokenNameFinderEvaluationMonitor[listeners.size()]));
+          listeners.toArray(new TokenNameFinderEvaluationMonitor[0]));
       validator.evaluate(sampleStream, params.getFolds());
     } catch (IOException e) {
       throw createTerminationIOException(e);

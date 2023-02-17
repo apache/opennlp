@@ -109,7 +109,7 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
 
     featureGenerator.createFeatures(e, tokens, index, tags);
 
-    String[] contexts = e.toArray(new String[e.size()]);
+    String[] contexts = e.toArray(new String[0]);
     if (contextsCache != null) {
       contextsCache.put(cacheKey, contexts);
     }

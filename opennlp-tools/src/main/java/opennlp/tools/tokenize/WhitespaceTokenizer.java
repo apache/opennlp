@@ -76,7 +76,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
       tokens.add(new Span(tokStart, end));
     }
 
-    return tokens.toArray(new Span[tokens.size()]);
+    return tokens.toArray(new Span[0]);
   }
 
   private boolean isLineSeparator(char character) {

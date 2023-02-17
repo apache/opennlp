@@ -39,8 +39,8 @@ public class DummyChunker implements Chunker {
   }
 
   public List<String> chunk(List<String> toks, List<String> tags) {
-    return Arrays.asList(chunk(toks.toArray(new String[toks.size()]),
-        tags.toArray(new String[tags.size()])));
+    return Arrays.asList(chunk(toks.toArray(new String[0]),
+        tags.toArray(new String[0])));
   }
 
   public String[] chunk(String[] toks, String[] tags) {

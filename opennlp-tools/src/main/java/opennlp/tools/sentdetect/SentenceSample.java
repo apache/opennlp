@@ -88,7 +88,7 @@ public class SentenceSample implements Sample {
    * @return the {@link Span spans} of the sentences in a document.
    */
   public Span[] getSentences() {
-    return sentences.toArray(new Span[sentences.size()]);
+    return sentences.toArray(new Span[0]);
   }
 
   // TODO: This one must output the tags!

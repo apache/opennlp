@@ -98,7 +98,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
             values[values.length - 1].getEnd()).toString();
 
         try {
-          return new SpanAnnotation(id, type, fragments.toArray(new Span[fragments.size()]), coveredText);
+          return new SpanAnnotation(id, type, fragments.toArray(new Span[0]), coveredText);
         }
         catch (IllegalArgumentException e) {
           throw new InvalidFormatException(e);

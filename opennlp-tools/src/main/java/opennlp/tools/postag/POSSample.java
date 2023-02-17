@@ -115,14 +115,14 @@ public class POSSample implements Sample {
    * @return Retrieves the sentence as array.
    */
   public String[] getSentence() {
-    return sentence.toArray(new String[sentence.size()]);
+    return sentence.toArray(new String[0]);
   }
 
   /**
    * @return Retrieves the tags as array.
    */
   public String[] getTags() {
-    return tags.toArray(new String[tags.size()]);
+    return tags.toArray(new String[0]);
   }
 
   /**

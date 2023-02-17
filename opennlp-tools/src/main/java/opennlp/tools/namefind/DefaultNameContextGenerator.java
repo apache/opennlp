@@ -147,6 +147,6 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
       features.add("ppo=" + ppo);
     }
 
-    return features.toArray(new String[features.size()]);
+    return features.toArray(new String[0]);
   }
 }

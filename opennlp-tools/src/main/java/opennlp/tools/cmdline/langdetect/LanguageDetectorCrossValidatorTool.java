@@ -82,7 +82,7 @@ public final class LanguageDetectorCrossValidatorTool extends
     }
 
     LanguageDetectorEvaluationMonitor[] listenersArr = listeners
-        .toArray(new LanguageDetectorEvaluationMonitor[listeners.size()]);
+        .toArray(new LanguageDetectorEvaluationMonitor[0]);
 
     LanguageDetectorCrossValidator validator;
     try {

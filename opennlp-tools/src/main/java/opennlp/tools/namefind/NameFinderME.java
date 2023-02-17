@@ -134,7 +134,7 @@ public class NameFinderME implements TokenNameFinder {
 
     List<String> c = bestSequence.getOutcomes();
 
-    contextGenerator.updateAdaptiveData(tokens, c.toArray(new String[c.size()]));
+    contextGenerator.updateAdaptiveData(tokens, c.toArray(new String[0]));
     Span[] spans = seqCodec.decode(c);
     spans = setProbs(spans);
     return spans;
@@ -333,6 +333,6 @@ public class NameFinderME implements TokenNameFinder {
       lastSpan = span;
     }
 
-    return sortedSpans.toArray(new Span[sortedSpans.size()]);
+    return sortedSpans.toArray(new Span[0]);
   }
 }

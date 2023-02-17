@@ -171,7 +171,7 @@ public class BratDocumentParser {
       }
 
       samples.add(new NameSample(sample.getId(), Span.spansToStrings(tokens, sentenceText),
-          names.toArray(new Span[names.size()]), null, samples.size() == 0));
+          names.toArray(new Span[0]), null, samples.size() == 0));
     }
 
     for (String id : entityIdSet) {
