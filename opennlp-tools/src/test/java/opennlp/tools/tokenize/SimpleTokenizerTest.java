@@ -38,14 +38,14 @@ public class SimpleTokenizerTest {
 
     String[] tokenizedText = mTokenizer.tokenize(text);
 
-    Assertions.assertTrue("a".equals(tokenizedText[0]));
-    Assertions.assertTrue("b".equals(tokenizedText[1]));
-    Assertions.assertTrue("c".equals(tokenizedText[2]));
-    Assertions.assertTrue("d".equals(tokenizedText[3]));
-    Assertions.assertTrue("e".equals(tokenizedText[4]));
-    Assertions.assertTrue("f".equals(tokenizedText[5]));
+    Assertions.assertEquals("a", tokenizedText[0]);
+    Assertions.assertEquals("b", tokenizedText[1]);
+    Assertions.assertEquals("c", tokenizedText[2]);
+    Assertions.assertEquals("d", tokenizedText[3]);
+    Assertions.assertEquals("e", tokenizedText[4]);
+    Assertions.assertEquals("f", tokenizedText[5]);
 
-    Assertions.assertTrue(tokenizedText.length == 6);
+    Assertions.assertEquals(6, tokenizedText.length);
   }
 
   /**
@@ -57,9 +57,9 @@ public class SimpleTokenizerTest {
 
     String[] tokenizedText = mTokenizer.tokenize(text);
 
-    Assertions.assertTrue("a".equals(tokenizedText[0]));
-    Assertions.assertTrue(".".equals(tokenizedText[1]));
-    Assertions.assertTrue(tokenizedText.length == 2);
+    Assertions.assertEquals("a", tokenizedText[0]);
+    Assertions.assertEquals(".", tokenizedText[1]);
+    Assertions.assertEquals(2, tokenizedText.length);
   }
 
   /**
@@ -71,9 +71,9 @@ public class SimpleTokenizerTest {
 
     String[] tokenizedText = mTokenizer.tokenize(text);
 
-    Assertions.assertTrue("305".equals(tokenizedText[0]));
-    Assertions.assertTrue("KW".equals(tokenizedText[1]));
-    Assertions.assertTrue(tokenizedText.length == 2);
+    Assertions.assertEquals("305", tokenizedText[0]);
+    Assertions.assertEquals("KW", tokenizedText[1]);
+    Assertions.assertEquals(2, tokenizedText.length);
   }
 
   @Test
@@ -82,12 +82,12 @@ public class SimpleTokenizerTest {
 
     String[] tokenizedText = mTokenizer.tokenize(text);
 
-    Assertions.assertTrue("rebecca".equals(tokenizedText[0]));
-    Assertions.assertTrue(".".equals(tokenizedText[1]));
-    Assertions.assertTrue("sleep".equals(tokenizedText[2]));
-    Assertions.assertTrue("(".equals(tokenizedText[3]));
-    Assertions.assertTrue(")".equals(tokenizedText[4]));
-    Assertions.assertTrue(tokenizedText.length == 5);
+    Assertions.assertEquals("rebecca", tokenizedText[0]);
+    Assertions.assertEquals(".", tokenizedText[1]);
+    Assertions.assertEquals("sleep", tokenizedText[2]);
+    Assertions.assertEquals("(", tokenizedText[3]);
+    Assertions.assertEquals(")", tokenizedText[4]);
+    Assertions.assertEquals(5, tokenizedText.length);
   }
 
   @Test

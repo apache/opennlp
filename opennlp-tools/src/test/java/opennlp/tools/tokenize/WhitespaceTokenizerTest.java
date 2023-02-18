@@ -42,14 +42,14 @@ public class WhitespaceTokenizerTest {
 
     String[] tokenizedText = WhitespaceTokenizer.INSTANCE.tokenize(text);
 
-    Assertions.assertTrue("a".equals(tokenizedText[0]));
-    Assertions.assertTrue("b".equals(tokenizedText[1]));
-    Assertions.assertTrue("c".equals(tokenizedText[2]));
-    Assertions.assertTrue("d".equals(tokenizedText[3]));
-    Assertions.assertTrue("e".equals(tokenizedText[4]));
-    Assertions.assertTrue("f".equals(tokenizedText[5]));
+    Assertions.assertEquals("a", tokenizedText[0]);
+    Assertions.assertEquals("b", tokenizedText[1]);
+    Assertions.assertEquals("c", tokenizedText[2]);
+    Assertions.assertEquals("d", tokenizedText[3]);
+    Assertions.assertEquals("e", tokenizedText[4]);
+    Assertions.assertEquals("f", tokenizedText[5]);
 
-    Assertions.assertTrue(tokenizedText.length == 6);
+    Assertions.assertEquals(6, tokenizedText.length);
   }
 
   @Test

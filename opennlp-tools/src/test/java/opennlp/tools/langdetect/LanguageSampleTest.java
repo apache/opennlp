@@ -125,6 +125,6 @@ public class LanguageSampleTest {
     Assertions.assertNotEquals(sampleA, sampleB);
     Assertions.assertNotEquals(sampleA, sampleC);
     Assertions.assertNotEquals(sampleB, sampleC);
-    Assertions.assertNotEquals(sampleA, "something else");
+    Assertions.assertNotEquals(sampleA.getContext(), "something else");
   }
 }

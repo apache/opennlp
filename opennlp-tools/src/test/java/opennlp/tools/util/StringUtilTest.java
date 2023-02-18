@@ -52,7 +52,7 @@ public class StringUtilTest {
   @Test
   void testIsEmpty() {
     Assertions.assertTrue(StringUtil.isEmpty(""));
-    Assertions.assertTrue(!StringUtil.isEmpty("a"));
+    Assertions.assertFalse(StringUtil.isEmpty("a"));
   }
 
   @Test

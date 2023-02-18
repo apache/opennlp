@@ -92,7 +92,7 @@ public class QNTrainerTest {
     QNModel trainedModel = new QNTrainer(15, true).trainModel(
         ITERATIONS, testDataIndexer);
 
-    Assertions.assertFalse(trainedModel.equals(null));
+    Assertions.assertNotEquals(null, trainedModel);
   }
 
   @Test
@@ -115,7 +115,7 @@ public class QNTrainerTest {
     AbstractModel readModel = modelReader.getModel();
     QNModel deserModel = (QNModel) readModel;
 
-    Assertions.assertTrue(trainedModel.equals(deserModel));
+    Assertions.assertEquals(trainedModel, deserModel);
 
     String[] features2Classify = new String[] {
         "feature2", "feature3", "feature3",

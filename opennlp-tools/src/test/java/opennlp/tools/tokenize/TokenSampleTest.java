@@ -126,9 +126,9 @@ public class TokenSampleTest {
 
   @Test
   void testEquals() {
-    Assertions.assertFalse(createGoldSample() == createGoldSample());
-    Assertions.assertTrue(createGoldSample().equals(createGoldSample()));
-    Assertions.assertFalse(createPredSample().equals(createGoldSample()));
-    Assertions.assertFalse(createPredSample().equals(new Object()));
+    Assertions.assertNotSame(createGoldSample(), createGoldSample());
+    Assertions.assertEquals(createGoldSample(), createGoldSample());
+    Assertions.assertNotEquals(createPredSample(), createGoldSample());
+    Assertions.assertNotEquals(createPredSample(), new Object());
   }
 }

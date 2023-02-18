@@ -53,8 +53,8 @@ public class DictionaryNameFinderEvaluatorTest {
     sample.close();
     FMeasure fmeasure = evaluator.getFMeasure();
 
-    Assertions.assertTrue(fmeasure.getFMeasure() == 1);
-    Assertions.assertTrue(fmeasure.getRecallScore() == 1);
+    Assertions.assertEquals(1, fmeasure.getFMeasure());
+    Assertions.assertEquals(1, fmeasure.getRecallScore());
   }
 
   /**

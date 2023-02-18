@@ -63,6 +63,6 @@ public class VersionTest {
       return;
     }
 
-    Assertions.assertTrue(false);
+    Assertions.fail();
   }
 }

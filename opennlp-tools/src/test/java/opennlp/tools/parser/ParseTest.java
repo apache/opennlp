@@ -46,15 +46,15 @@ public class ParseTest {
   @Test
   void testEquals() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
-    Assertions.assertTrue(p1.equals(p1));
+    Assertions.assertEquals(p1, p1);
   }
 
   @Test
   void testParseClone() {
     Parse p1 = Parse.parseParse(PARSE_STRING);
     Parse p2 = (Parse) p1.clone();
-    Assertions.assertTrue(p1.equals(p2));
-    Assertions.assertTrue(p2.equals(p1));
+    Assertions.assertEquals(p1, p2);
+    Assertions.assertEquals(p2, p1);
   }
 
   @Test

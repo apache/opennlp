@@ -98,7 +98,7 @@ public class DictionaryEntryPersistor {
         }
         /* get the attribute here ... */
         if (mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE) != null) {
-          mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));
+          mIsCaseSensitiveDictionary = Boolean.parseBoolean(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));
         }
         mAttributes = null;
       }

@@ -63,7 +63,7 @@ public class DictionaryTest {
 
     Assertions.assertTrue(dict.contains(entry1));
     Assertions.assertTrue(dict.contains(entry1u));
-    Assertions.assertTrue(!dict.contains(entry2));
+    Assertions.assertFalse(dict.contains(entry2));
   }
 
   /**
@@ -80,8 +80,8 @@ public class DictionaryTest {
     dict.put(entry1);
 
     Assertions.assertTrue(dict.contains(entry1));
-    Assertions.assertTrue(!dict.contains(entry1u));
-    Assertions.assertTrue(!dict.contains(entry2));
+    Assertions.assertFalse(dict.contains(entry1u));
+    Assertions.assertFalse(dict.contains(entry2));
   }
 
   /**
@@ -108,7 +108,7 @@ public class DictionaryTest {
     Dictionary recreated = new Dictionary(
         new ByteArrayInputStream(out.toByteArray()));
 
-    Assertions.assertTrue(reference.equals(recreated));
+    Assertions.assertEquals(reference, recreated);
   }
 
   /**
@@ -125,7 +125,7 @@ public class DictionaryTest {
     Dictionary dictionay =
         Dictionary.parseOneEntryPerLine(new StringReader(testDictionary));
 
-    Assertions.assertTrue(dictionay.size() == 4);
+    Assertions.assertEquals(4, dictionay.size());
     Assertions.assertTrue(dictionay.contains(new StringList("1a", "1b", "1c", "1d")));
     Assertions.assertTrue(dictionay.contains(new StringList("2a", "2b", "2c")));
     Assertions.assertTrue(dictionay.contains(new StringList(new String[] {"3a"})));
@@ -152,9 +152,9 @@ public class DictionaryTest {
     dictC.put(entry1);
     dictC.put(entry2);
 
-    Assertions.assertTrue(dictA.equals(dictB));
-    Assertions.assertTrue(dictC.equals(dictA));
-    Assertions.assertTrue(dictB.equals(dictC));
+    Assertions.assertEquals(dictA, dictB);
+    Assertions.assertEquals(dictC, dictA);
+    Assertions.assertEquals(dictB, dictC);
   }
 
   /**
@@ -227,7 +227,7 @@ public class DictionaryTest {
 
     dict.put(entry1);
 
-    Assertions.assertTrue(!dict.contains(entry2));
+    Assertions.assertFalse(dict.contains(entry2));
   }
 
 }
