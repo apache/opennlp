@@ -68,14 +68,14 @@ public class TrainerFactoryTest {
 
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams);
 
-    Assertions.assertTrue(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
+    Assertions.assertEquals(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER, trainerType);
   }
 
   @Test
   void testIsSequenceTrainerFalse() {
     mlParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams);
-    Assertions.assertFalse(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType));
+    Assertions.assertNotEquals(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER, trainerType);
   }
 
 }

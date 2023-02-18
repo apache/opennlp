@@ -61,7 +61,7 @@ public class DictionaryNameFinderTest {
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String[] tokens = tokenizer.tokenize(sentence);
     Span[] names = mNameFinder.find(tokens);
-    Assertions.assertTrue(names.length == 1);
+    Assertions.assertEquals(1, names.length);
     Assertions.assertTrue(names[0].getStart() == 0 && names[0].getEnd() == 1);
   }
 
@@ -71,7 +71,7 @@ public class DictionaryNameFinderTest {
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String[] tokens = tokenizer.tokenize(sentence);
     Span[] names = mNameFinder.find(tokens);
-    Assertions.assertTrue(names.length == 1);
+    Assertions.assertEquals(1, names.length);
     Assertions.assertTrue(names[0].getStart() == 2 && names[0].getEnd() == 3);
   }
 
@@ -82,7 +82,7 @@ public class DictionaryNameFinderTest {
     SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
     String[] tokens = tokenizer.tokenize(sentence);
     Span[] names = mNameFinder.find(tokens);
-    Assertions.assertTrue(names.length == 1);
+    Assertions.assertEquals(1, names.length);
     Assertions.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
   }
 
@@ -90,7 +90,7 @@ public class DictionaryNameFinderTest {
   void testLastMatchingTokenNameIsChoosen() {
     String[] sentence = {"a", "b", "c", "Vanessa"};
     Span[] names = mNameFinder.find(sentence);
-    Assertions.assertTrue(names.length == 1);
+    Assertions.assertEquals(1, names.length);
     Assertions.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 4);
   }
 
@@ -98,7 +98,7 @@ public class DictionaryNameFinderTest {
   void testLongerTokenNameIsPreferred() {
     String[] sentence = {"a", "b", "c", "Vanessa", "Williams"};
     Span[] names = mNameFinder.find(sentence);
-    Assertions.assertTrue(names.length == 1);
+    Assertions.assertEquals(1, names.length);
     Assertions.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
   }
 
@@ -106,7 +106,7 @@ public class DictionaryNameFinderTest {
   void testCaseSensitivity() {
     String[] sentence = {"a", "b", "c", "vanessa", "williams"};
     Span[] names = mNameFinder.find(sentence);
-    Assertions.assertTrue(names.length == 1);
+    Assertions.assertEquals(1, names.length);
     Assertions.assertTrue(names[0].getStart() == 3 && names[0].getEnd() == 5);
   }
 
@@ -114,7 +114,7 @@ public class DictionaryNameFinderTest {
   void testCaseLongerEntry() {
     String[] sentence = {"a", "b", "michael", "jordan"};
     Span[] names = mNameFinder.find(sentence);
-    Assertions.assertTrue(names.length == 1);
-    Assertions.assertTrue(names[0].length() == 2);
+    Assertions.assertEquals(1, names.length);
+    Assertions.assertEquals(2, names[0].length());
   }
 }

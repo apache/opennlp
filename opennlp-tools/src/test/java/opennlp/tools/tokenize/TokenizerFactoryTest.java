@@ -71,7 +71,7 @@ public class TokenizerFactoryTest {
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
     TokenizerFactory factory = model.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() != null);
+    Assertions.assertNotNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
     Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
@@ -86,7 +86,7 @@ public class TokenizerFactoryTest {
     TokenizerModel fromSerialized = new TokenizerModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() != null);
+    Assertions.assertNotNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
     Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());

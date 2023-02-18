@@ -118,7 +118,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    Assertions.assertTrue(setA.equals(setB));
+    Assertions.assertEquals(setA, setB);
   }
 
   /**
@@ -139,7 +139,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    Assertions.assertTrue(setA.equals(setB));
+    Assertions.assertEquals(setA, setB);
   }
 
   /**
