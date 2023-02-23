@@ -144,7 +144,7 @@ public class DictionaryAsSetCaseSensitiveTest {
   }
 
   /**
-   * Tests the {@link Dictionary#hashCode()} method.
+   * Tests the {@link Dictionary#asStringSet()#hashCode()} method.
    */
   @Test
   void testHashCode() {
@@ -164,7 +164,7 @@ public class DictionaryAsSetCaseSensitiveTest {
   }
 
   /**
-   * Tests the {@link Dictionary#hashCode()} method.
+   * Tests the {@link Dictionary#asStringSet()#hashCode()} method.
    */
   @Test
   void testHashCodeDifferentCase() {
@@ -180,8 +180,7 @@ public class DictionaryAsSetCaseSensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    // TODO: should it be equal??
-    Assertions.assertNotSame(setA.hashCode(), setB.hashCode());
+    Assertions.assertEquals(setA.hashCode(), setB.hashCode());
   }
 
   /**

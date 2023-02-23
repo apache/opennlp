@@ -343,8 +343,36 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
           result = entrySet.contains(new StringListWrapper(new StringList(str)));
 
         }
-
         return result;
+      }
+
+      @Override
+      public boolean equals(Object o) {
+        if (! (o instanceof Set)) {
+          return false;
+        }
+        Set<String> toCheck = (Set<String>) o;
+        if (entrySet.size() != toCheck.size()) {
+          return false;
+        }
+        Iterator<String> toCheckIter = toCheck.iterator();
+        for (StringListWrapper entry : entrySet) {
+          if (isCaseSensitive) {
+            if (!entry.stringList.equals(new StringList(toCheckIter.next()))) {
+              return false;
+            }
+          } else {
+            if (!entry.stringList.compareToIgnoreCase(new StringList(toCheckIter.next()))) {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      @Override
+      public int hashCode() {
+        return entrySet.hashCode();
       }
     };
   }
