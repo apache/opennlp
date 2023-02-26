@@ -44,12 +44,12 @@
 package opennlp.tools.stemmer;
 
 /**
- *
- * Stemmer, implementing the Porter Stemming Algorithm
- *
- * The Stemmer class transforms a word into its root form.  The input
- * word can be provided a character at time (by calling add()), or at once
- * by calling one of the various stem(something) methods.
+ * A {@link Stemmer}, implementing the <a href="https://tartarus.org/martin/PorterStemmer/">
+ * Porter Stemming Algorithm</a>
+ * <p>
+ * The Stemmer implementation transforms a word into its root form. The input
+ * word can be provided a character at time (by calling {@link #add(char)}),
+ * or at once by calling one of the various {@code stem(..)} methods.
  */
 // CHECKSTYLE:OFF
 public class PorterStemmer implements Stemmer {
