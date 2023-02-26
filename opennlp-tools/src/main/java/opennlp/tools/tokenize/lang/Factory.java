@@ -25,24 +25,45 @@ import opennlp.tools.tokenize.TokenContextGenerator;
 
 public class Factory {
 
-  public static final String DEFAULT_ALPHANUMERIC = "^[A-Za-z0-9]+$";
+  public static final Pattern DEFAULT_ALPHANUMERIC = Pattern.compile("^[A-Za-z0-9]+$");
+
+  private static final Pattern PORTUGUESE = Pattern.compile("^[0-9a-záãâàéêíóõôúüçA-ZÁÃÂÀÉÊÍÓÕÔÚÜÇ]+$");
+  private static final Pattern FRENCH = Pattern.compile("^[a-zA-Z0-9àâäèéêëîïôœùûüÿçÀÂÄÈÉÊËÎÏÔŒÙÛÜŸÇ]+$");
+
+  // For reference: https://www.sttmedia.com/characterfrequency-dutch
+  private static final Pattern DUTCH = Pattern.compile("^[A-Za-z0-9äöüëèéïĳÄÖÜËÉÈÏĲ]+$");
+  private static final Pattern GERMAN = Pattern.compile("^[A-Za-z0-9äöüÄÖÜß]+$");
 
   /**
-   * Gets the alphanumeric pattern for the language. Please save the value
-   * locally because this call is expensive.
+   * Gets the alphanumeric pattern for a language.
    *
-   * @param languageCode The language code. If {@code null}, or unknown,
-   *                     the default pattern will be returned.
-   * @return The alphanumeric pattern for the language or the default pattern.
+   * @param languageCode The ISO_639-1 code. If {@code null}, or unknown, the
+   *                     {@link #DEFAULT_ALPHANUMERIC} pattern will be returned.
+   * @return The alphanumeric {@link Pattern} for the language, or the default pattern.
    */
   public Pattern getAlphanumeric(String languageCode) {
+    // For reference: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     if ("pt".equals(languageCode) || "por".equals(languageCode)) {
-      return Pattern.compile("^[0-9a-záãâàéêíóõôúüçA-ZÁÃÂÀÉÊÍÓÕÔÚÜÇ]+$");
+      return PORTUGUESE;
     }
-
-    return Pattern.compile(DEFAULT_ALPHANUMERIC);
+    if ("fr".equals(languageCode) || "fre".equals(languageCode) || "fra".equals(languageCode)) {
+      return FRENCH;
+    }
+    if ("nl".equals(languageCode) || "nld".equals(languageCode) || "dut".equals(languageCode)) {
+      return DUTCH;
+    }
+    if ("de".equals(languageCode) || "deu".equals(languageCode) || "ger".equals(languageCode)) {
+      return GERMAN;
+    }
+    return DEFAULT_ALPHANUMERIC;
   }
 
+  /**
+   * Initializes a customized {@link TokenContextGenerator} via a set of {@code abbreviations}.
+   * 
+   * @param languageCode The ISO_639-1 code to be used.
+   * @param abbreviations The abbreviations to be used for new instance.
+   */
   public TokenContextGenerator createTokenContextGenerator(String languageCode, Set<String> abbreviations) {
     return new DefaultTokenContextGenerator(abbreviations);
   }
