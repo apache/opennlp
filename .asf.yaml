@@ -1,0 +1,21 @@
+## Licensed under the terms of http://www.apache.org/licenses/LICENSE-2.0
+
+## See https://s.apache.org/asfyaml
+
+# notifications...
+
+github:
+  description: "Apache OpenNLP"
+  homepage: https://opennlp.apache.org/
+#  protected_branches:
+#    main
+#  features:
+#    issues: true
+  labels:
+    - apache
+    - opennlp
+    - nlp
+    - languagetechnology
+    - textprocessing
+    - compling
+
