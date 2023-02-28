@@ -126,7 +126,6 @@ public class CLITest {
   void testHelpMessageOfTools() {
 
     for (String toolName : CLI.getToolNames()) {
-      System.err.println("-> ToolName" + toolName);
       try {
         CLI.main(new String[] {toolName, "help"});
       } catch (ExitException e) {

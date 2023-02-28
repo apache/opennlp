@@ -19,6 +19,9 @@ package opennlp.tools.ml.perceptron;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
@@ -40,6 +43,8 @@ import opennlp.tools.util.TrainingParameters;
  * @see AbstractEventTrainer
  */
 public class PerceptronTrainer extends AbstractEventTrainer {
+
+  private static final Logger logger = LoggerFactory.getLogger(PerceptronTrainer.class);
 
   public static final String PERCEPTRON_VALUE = "PERCEPTRON";
   public static final double TOLERANCE_DEFAULT = .00001;
@@ -251,7 +256,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
    * @return A valid, trained {@link AbstractModel perceptron model}.
    */
   public AbstractModel trainModel(int iterations, DataIndexer di, int cutoff, boolean useAverage) {
-    display("Incorporating indexed data for training...  \n");
+    logger.info("Incorporating indexed data for training... ");
     contexts = di.getContexts();
     values = di.getValues();
     numTimesEventsSeen = di.getNumTimesEventsSeen();
@@ -265,17 +270,17 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     numPreds = predLabels.length;
     numOutcomes = outcomeLabels.length;
 
-    display("done.\n");
+    logger.info("done.");
 
-    display("\tNumber of Event Tokens: " + numUniqueEvents + "\n");
-    display("\t    Number of Outcomes: " + numOutcomes + "\n");
-    display("\t  Number of Predicates: " + numPreds + "\n");
+    logger.info("\tNumber of Event Tokens: {} " +
+        "\n\t Number of Outcomes: {} " +
+        "\n\t Number of Predicates: {}", numUniqueEvents, numOutcomes, numPreds);
 
-    display("Computing model parameters...\n");
+    logger.info("Computing model parameters...");
 
     MutableContext[] finalParameters = findParameters(iterations, useAverage);
 
-    display("...done.\n");
+    logger.info("...done.");
 
     /* Create and return the model *************/
     return new PerceptronModel(finalParameters, predLabels, outcomeLabels);
@@ -283,7 +288,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   private MutableContext[] findParameters(int iterations, boolean useAverage) {
 
-    display("Performing " + iterations + " iterations.\n");
+    logger.info("Performing " + iterations + " iterations.");
 
     int[] allOutcomesPattern = new int[numOutcomes];
     for (int oi = 0; oi < numOutcomes; oi++)
@@ -325,8 +330,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       // Decrease the stepsize by a small amount.
       if (stepSizeDecrease != null)
         stepsize *= 1 - stepSizeDecrease;
-
-      displayIteration(i);
 
       int numCorrect = 0;
 
@@ -370,7 +373,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       // Calculate the training accuracy and display.
       double trainingAccuracy = (double) numCorrect / numEvents;
       if (i < 10 || (i % 10) == 0)
-        display(". (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy + "\n");
+        logger.info("{}: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy, i);
 
       // TODO: Make averaging configurable !!!
 
@@ -391,7 +394,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       if (StrictMath.abs(prevAccuracy1 - trainingAccuracy) < tolerance
           && StrictMath.abs(prevAccuracy2 - trainingAccuracy) < tolerance
           && StrictMath.abs(prevAccuracy3 - trainingAccuracy) < tolerance) {
-        display("Stopping: change in training set accuracy less than " + tolerance + "\n");
+        logger.info("Stopping: change in training set accuracy less than {}", tolerance);
         break;
       }
 
@@ -439,20 +442,8 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       }
     }
     double trainingAccuracy = (double) numCorrect / numEvents;
-    display("Stats: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy + "\n");
+    logger.info("Stats: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy);
     return trainingAccuracy;
-  }
-
-  private void displayIteration(int i) {
-    if (i > 10 && (i % 10) != 0)
-      return;
-
-    if (i < 10)
-      display("  " + i + ":  ");
-    else if (i < 100)
-      display(" " + i + ":  ");
-    else
-      display(i + ":  ");
   }
 
   // See whether a number is a perfect square.

@@ -19,6 +19,9 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
@@ -36,6 +39,8 @@ import opennlp.tools.parser.ParserModel;
  * @see EvaluatorParams
  */
 public class ParserEvaluatorTool extends AbstractEvaluatorTool<Parse, EvaluatorParams> {
+
+  private static final Logger logger = LoggerFactory.getLogger(ParserEvaluatorTool.class);
 
   public ParserEvaluatorTool() {
     super(Parse.class, EvaluatorParams.class);
@@ -57,12 +62,11 @@ public class ParserEvaluatorTool extends AbstractEvaluatorTool<Parse, EvaluatorP
 
     ParserEvaluator evaluator = new ParserEvaluator(parser);
 
-    System.out.print("Evaluating ... ");
+    logger.info("Evaluating ... ");
     try {
       evaluator.evaluate(sampleStream);
     }
     catch (IOException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
     } finally {
       try {
@@ -71,9 +75,8 @@ public class ParserEvaluatorTool extends AbstractEvaluatorTool<Parse, EvaluatorP
         // sorry that this can fail
       }
     }
-    System.out.println("done");
-    System.out.println();
+    logger.info("done");
 
-    System.out.println(evaluator.getFMeasure());
+    logger.info(evaluator.getFMeasure().toString());
   }
 }

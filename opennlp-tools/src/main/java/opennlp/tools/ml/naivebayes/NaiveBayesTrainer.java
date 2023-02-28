@@ -19,6 +19,9 @@ package opennlp.tools.ml.naivebayes;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
@@ -39,6 +42,8 @@ import opennlp.tools.util.TrainingParameters;
  * @see AbstractEventTrainer
  */
 public class NaiveBayesTrainer extends AbstractEventTrainer {
+
+  private static final Logger logger = LoggerFactory.getLogger(NaiveBayesTrainer.class);
 
   public static final String NAIVE_BAYES_VALUE = "NAIVEBAYES";
 
@@ -131,7 +136,7 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
    * @return A valid, trained {@link AbstractModel Naive Bayes model}.
    */
   public AbstractModel trainModel(DataIndexer di) {
-    display("Incorporating indexed data for training...  \n");
+    logger.info("Incorporating indexed data for training...");
     contexts = di.getContexts();
     values = di.getValues();
     numTimesEventsSeen = di.getNumTimesEventsSeen();
@@ -145,17 +150,17 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
     numPreds = predLabels.length;
     numOutcomes = outcomeLabels.length;
 
-    display("done.\n");
+    logger.info("done.");
 
-    display("\tNumber of Event Tokens: " + numUniqueEvents + "\n");
-    display("\t    Number of Outcomes: " + numOutcomes + "\n");
-    display("\t  Number of Predicates: " + numPreds + "\n");
+    logger.info("\tNumber of Event Tokens: {} " +
+        "\n\t Number of Outcomes: {} " +
+        "\n\t Number of Predicates: {}", numUniqueEvents, numOutcomes, numPreds);
 
-    display("Computing model parameters...\n");
+    logger.info("Computing model parameters...");
 
     MutableContext[] finalParameters = findParameters();
 
-    display("...done.\n");
+    logger.info("...done.");
 
     /* Create and return the model ****/
     return new NaiveBayesModel(finalParameters, predLabels, outcomeLabels);
@@ -228,7 +233,7 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
       }
     }
     double trainingAccuracy = (double) numCorrect / numEvents;
-    display("Stats: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy + "\n");
+    logger.info("Stats: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy);
     return trainingAccuracy;
   }
 

@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -41,6 +44,8 @@ public final class POSTaggerCrossValidatorTool
 
   interface CVToolParams extends CVParams, TrainingParams, FineGrainedEvaluatorParams {
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(POSTaggerCrossValidatorTool.class);
 
   public POSTaggerCrossValidatorTool() {
     super(POSSample.class, CVToolParams.class);
@@ -108,11 +113,11 @@ public final class POSTaggerCrossValidatorTool
       }
     }
 
-    System.out.println("done");
+    logger.info("done");
 
     if (reportListener != null) {
-      System.out.println("Writing fine-grained report to "
-          + params.getReportOutputFile().getAbsolutePath());
+      logger.info("Writing fine-grained report to {}",
+          params.getReportOutputFile().getAbsolutePath());
       reportListener.writeReport();
 
       try {
@@ -123,8 +128,6 @@ public final class POSTaggerCrossValidatorTool
       }
     }
 
-    System.out.println();
-
-    System.out.println("Accuracy: " + validator.getWordAccuracy());
+    logger.info("Accuracy: {}", validator.getWordAccuracy());
   }
 }

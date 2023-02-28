@@ -99,7 +99,6 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
 
     cv.evaluate(samples, 10);
 
-    System.out.println(cv.getFMeasure());
     Assertions.assertEquals(expectedScore, cv.getFMeasure().getFMeasure(), 0.0001d);
   }
 
@@ -124,7 +123,6 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
 
     validator.evaluate(samples, 10);
 
-    System.out.println(validator.getFMeasure());
     Assertions.assertEquals(expectedScore, validator.getFMeasure().getFMeasure(), 0.0001d);
   }
 

@@ -25,6 +25,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ngram.NGramModel;
@@ -47,6 +50,8 @@ import opennlp.tools.util.TrainingParameters;
  * the results of earlier calls.<br>
  */
 public abstract class AbstractBottomUpParser implements Parser {
+
+  private static final Logger logger = LoggerFactory.getLogger(AbstractBottomUpParser.class);
 
   /**
    * The maximum number of parses advanced from all preceding
@@ -162,11 +167,6 @@ public abstract class AbstractBottomUpParser implements Parser {
    */
   protected boolean createDerivationString = false;
 
-  /**
-   * Turns debug print on or off.
-   */
-  protected boolean debugOn = false;
-
   public AbstractBottomUpParser(POSTagger tagger, Chunker chunker, HeadRules headRules,
       int beamSize, double advancePercentage) {
     this.tagger = tagger;
@@ -242,7 +242,6 @@ public abstract class AbstractBottomUpParser implements Parser {
     if (collapsedParses.size() == chunks.length) {
       return chunks;
     }
-    //System.err.println("collapsedPunctuation: collapsedParses"+collapsedParses);
     return collapsedParses.toArray(new Parse[0]);
   }
 
@@ -295,10 +294,9 @@ public abstract class AbstractBottomUpParser implements Parser {
         if (guess == null && derivationStage == 2) {
           guess = tp;
         }
-        if (debugOn) {
-          System.out.print(derivationStage + " " + derivationRank + " " + tp.getProb());
+        if (logger.isDebugEnabled()) {
+          logger.debug(derivationStage + " " + derivationRank + " " + tp.getProb());
           tp.show();
-          System.out.println();
         }
         Parse[] nd;
         if (0 == derivationStage) {
@@ -306,11 +304,9 @@ public abstract class AbstractBottomUpParser implements Parser {
         }
         else if (1 == derivationStage) {
           if (ndh.size() < K) {
-            //System.err.println("advancing ts "+j+" "+ndh.size()+" < "+K);
             nd = advanceChunks(tp,bestComplete);
           }
           else {
-            //System.err.println("advancing ts "+j+" prob="+((Parse) ndh.last()).getProb());
             nd = advanceChunks(tp,(ndh.last()).getProb());
           }
         }
@@ -334,10 +330,6 @@ public abstract class AbstractBottomUpParser implements Parser {
           }
         }
         else {
-          //if (reportFailedParse) {
-          //  System.err.println("Couldn't advance parse " + derivationStage
-          //      + " stage " + derivationRank + "!\n");
-          //}
           advanceTop(tp);
           completeParses.add(tp);
         }
@@ -346,10 +338,6 @@ public abstract class AbstractBottomUpParser implements Parser {
       odh = ndh;
     }
     if (completeParses.size() == 0) {
-      // if (reportFailedParse) System.err.println("Couldn't find parse for: " + tokens);
-      //Parse r = (Parse) odh.first();
-      //r.show();
-      //System.out.println();
       return new Parse[] {guess};
     }
     else if (numParses == 1) {
@@ -399,7 +387,6 @@ public abstract class AbstractBottomUpParser implements Parser {
       words[i] = sp.getHead().getCoveredText();
       ptags[i] = sp.getType();
     }
-    //System.err.println("adjusted mcs = "+(minChunkScore-p.getProb()));
     Sequence[] cs = chunker.topKSequences(words, ptags,minChunkScore - p.getProb());
     Parse[] newParses = new Parse[cs.length];
     for (int si = 0, sl = cs.length; si < sl; si++) {
@@ -411,8 +398,6 @@ public abstract class AbstractBottomUpParser implements Parser {
       int end = 0;
       String type = null;
       for (int j = 0; j <= tags.length; j++) {
-        // if (j != tags.length) {System.err.println(words[j]+" "
-        // +ptags[j]+" "+tags[j]+" "+probs.get(j));}
         if (j != tags.length) {
           newParses[si].addProb(StrictMath.log(probs[j]));
         }
@@ -424,8 +409,6 @@ public abstract class AbstractBottomUpParser implements Parser {
           if (type != null) {
             Parse p1 = p.getChildren()[start];
             Parse p2 = p.getChildren()[end];
-            // System.err.println("Putting "+type+" at "+start+","+end+" for "
-            // +j+" "+newParses[si].getProb());
             Parse[] cons = new Parse[end - start + 1];
             cons[0] = p1;
             //cons[0].label="Start-"+type;
@@ -454,7 +437,6 @@ public abstract class AbstractBottomUpParser implements Parser {
           }
         }
       }
-      //newParses[si].show();System.out.println();
     }
     return newParses;
   }

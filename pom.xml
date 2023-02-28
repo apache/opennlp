@@ -95,6 +95,19 @@
 		<dependencies>
 
 			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-simple</artifactId>
+				<version>${slf4j.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter-api</artifactId>
 				<version>${junit.version}</version>
@@ -160,6 +173,8 @@
 		<morfologik.version>2.1.7</morfologik.version>
 		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
 		<onnxruntime.version>1.14.0</onnxruntime.version>
+		<slf4j.version>1.7.36</slf4j.version>
+		<log4j2.version>2.19.0</log4j2.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.7.9</jacoco.maven.plugin>
@@ -270,7 +285,7 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${maven.surefire.plugin}</version>
 					<configuration>
-						<argLine>-Xmx2048m</argLine>
+						<argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off</argLine>
 						<forkCount>${opennlp.forkCount}</forkCount>
 						<failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
 						<excludes>

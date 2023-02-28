@@ -31,6 +31,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.commons.Internal;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.util.InputStreamFactory;
@@ -45,6 +48,8 @@ import opennlp.tools.util.model.BaseModel;
  */
 @Internal
 public final class CmdLineUtil {
+
+  private static final Logger logger = LoggerFactory.getLogger(CmdLineUtil.class);
 
   static final int IO_BUFFER_SIZE = 1024 * 1024;
 
@@ -176,7 +181,7 @@ public final class CmdLineUtil {
 
     CmdLineUtil.checkOutputFile(modelName + " model", modelFile);
 
-    System.err.print("Writing " + modelName + " model ... ");
+    logger.info("Writing {} model ... ", modelName);
 
     long beginModelWritingTime = System.currentTimeMillis();
 
@@ -184,20 +189,14 @@ public final class CmdLineUtil {
         new FileOutputStream(modelFile), IO_BUFFER_SIZE)) {
       model.serialize(modelOut);
     } catch (IOException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1, "Error during writing model file '" + modelFile + "'", e);
     }
 
     long modelWritingDuration = System.currentTimeMillis() - beginModelWritingTime;
 
-    System.err.printf("done (%.3fs)\n", modelWritingDuration / 1000d);
+    logger.info(String.format("done (%.3fs)\n", modelWritingDuration / 1000d));
 
-    System.err.println();
-
-    System.err.println("Wrote " + modelName + " model to");
-    System.err.println("path: " + modelFile.getAbsolutePath());
-
-    System.err.println();
+    logger.info("Wrote {} model to path: {}", modelName, modelFile.getAbsolutePath());
   }
 
   /**

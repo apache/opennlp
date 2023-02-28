@@ -24,7 +24,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.commons.Internal;
+import opennlp.tools.log.LogPrintStream;
 
 /**
  * The {@link PerformanceMonitor} measures increments to a counter.
@@ -38,6 +42,8 @@ import opennlp.tools.commons.Internal;
  */
 @Internal
 public class PerformanceMonitor {
+
+  private static final Logger logger = LoggerFactory.getLogger(PerformanceMonitor.class);
 
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, runnable -> {
     Thread thread = new Thread(runnable);
@@ -62,7 +68,7 @@ public class PerformanceMonitor {
   }
 
   public PerformanceMonitor(String unit) {
-    this(System.out, unit);
+    this(new LogPrintStream(logger), unit);
   }
 
   public boolean isStarted() {
@@ -161,9 +167,6 @@ public class PerformanceMonitor {
     else {
       average = 0;
     }
-
-    out.println();
-    out.println();
 
     out.printf("Average: %.1f " + unit + "/s %n", average);
     out.println("Total: " + counter + " " + unit);

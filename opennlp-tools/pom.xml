@@ -35,6 +35,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
@@ -66,6 +71,11 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -128,7 +138,7 @@
               <artifactId>maven-surefire-plugin</artifactId>
               <version>${maven.surefire.plugin}</version>
               <configuration>
-                <argLine>-Xmx2048m -Djava.security.manager=allow</argLine>
+                <argLine>-Xmx2048m -Djava.security.manager=allow -Dorg.slf4j.simpleLogger.defaultLogLevel=off</argLine>
                 <forkCount>${opennlp.forkCount}</forkCount>
                 <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                 <excludes>

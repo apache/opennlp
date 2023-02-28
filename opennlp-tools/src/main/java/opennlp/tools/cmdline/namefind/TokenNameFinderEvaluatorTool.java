@@ -25,6 +25,9 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
@@ -60,6 +63,8 @@ public final class TokenNameFinderEvaluatorTool
     @ParameterDescription(valueName = "types", description = "name types to use for evaluation")
     String getNameTypes();
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(TokenNameFinderEvaluatorTool.class);
 
   public TokenNameFinderEvaluatorTool() {
     super(NameSample.class, EvalToolParams.class);
@@ -136,23 +141,20 @@ public final class TokenNameFinderEvaluatorTool
       monitor.startAndPrintThroughput();
       evaluator.evaluate(measuredSampleStream);
     } catch (IOException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
     }
     // sorry that this can fail
 
     monitor.stopAndPrintFinalResult();
 
-    System.out.println();
-
     if (reportFile != null) {
       reportListener.writeReport();
     }
 
     if (detailedFListener == null) {
-      System.out.println(evaluator.getFMeasure());
+      logger.info(evaluator.getFMeasure().toString());
     } else {
-      System.out.println(detailedFListener);
+      logger.info(detailedFListener.toString());
     }
   }
 }

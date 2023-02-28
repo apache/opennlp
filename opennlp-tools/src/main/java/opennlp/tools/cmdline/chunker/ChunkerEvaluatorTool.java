@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerEvaluationMonitor;
 import opennlp.tools.chunker.ChunkerEvaluator;
@@ -47,6 +50,8 @@ public final class ChunkerEvaluatorTool
 
   interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(ChunkerEvaluatorTool.class);
 
   public ChunkerEvaluatorTool() {
     super(ChunkSample.class, EvalToolParams.class);
@@ -96,19 +101,16 @@ public final class ChunkerEvaluatorTool
       monitor.startAndPrintThroughput();
       evaluator.evaluate(measuredSampleStream);
     } catch (IOException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
     }
     // sorry that this can fail
 
     monitor.stopAndPrintFinalResult();
 
-    System.out.println();
-
     if (detailedFMeasureListener == null) {
-      System.out.println(evaluator.getFMeasure());
+      logger.info(evaluator.getFMeasure().toString());
     } else {
-      System.out.println(detailedFMeasureListener);
+      logger.info(detailedFMeasureListener.toString());
     }
   }
 }

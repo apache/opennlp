@@ -30,6 +30,7 @@ import org.apache.uima.resource.ResourceAccessException;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -60,6 +61,7 @@ import opennlp.uima.util.UimaUtil;
  */
 public final class Chunker extends CasAnnotator_ImplBase {
 
+  private static org.slf4j.Logger logger = LoggerFactory.getLogger(Chunker.class);
   /**
    * The chunk type parameter.
    */
@@ -212,7 +214,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
           end = -1;
         }
       } else {
-        System.out.println("Unexpected tag: " + result[i]);
+        logger.warn("Unexpected tag: {}", result[i]);
       }
     }
 

@@ -24,6 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -44,6 +47,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 
 public final class ParserTool extends BasicCmdLineTool {
+
+  private static final Logger logger = LoggerFactory.getLogger(ParserTool.class);
 
   @Override
   public String getShortDescription() {
@@ -97,7 +102,7 @@ public final class ParserTool extends BasicCmdLineTool {
   public void run(String[] args) {
 
     if (args.length < 1) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
 
       ParserModel model = new ParserModelLoader().load(new File(args[args.length - 1]));
@@ -136,18 +141,18 @@ public final class ParserTool extends BasicCmdLineTool {
       try {
         lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
             SystemInputStreamFactory.encoding());
-        perfMon = new PerformanceMonitor(System.err, "sent");
+        perfMon = new PerformanceMonitor("sent");
         perfMon.start();
         String line;
         while ((line = lineStream.read()) != null) {
           if (line.trim().length() == 0) {
-            System.out.println();
+            logger.debug("empty line");
           } else {
             Parse[] parses = parseLine(line, parser, tokenizer, numParses);
 
             for (int pi = 0, pn = parses.length; pi < pn; pi++) {
               if (showTopK) {
-                System.out.print(pi + " " + parses[pi].getProb() + " ");
+                logger.debug(pi + " " + parses[pi].getProb() + " ");
               }
 
               parses[pi].show();

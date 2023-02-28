@@ -19,7 +19,11 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
+import opennlp.tools.log.LogPrintStream;
 import opennlp.tools.sentdetect.SentenceDetectorEvaluationMonitor;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.eval.EvaluationMonitor;
@@ -32,11 +36,13 @@ public class SentenceEvaluationErrorListener extends
     EvaluationErrorPrinter<SentenceSample> implements
     SentenceDetectorEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(SentenceEvaluationErrorListener.class);
+
   /**
-   * Creates a listener that will print to {@code System.err}.
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public SentenceEvaluationErrorListener() {
-    super(System.err);
+    super(new LogPrintStream(logger));
   }
 
   /**

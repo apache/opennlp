@@ -19,6 +19,9 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.params.CVParams;
@@ -34,6 +37,8 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class SentenceDetectorCrossValidatorTool
     extends AbstractCrossValidatorTool<SentenceSample, CVToolParams> {
+
+  private static final Logger logger = LoggerFactory.getLogger(SentenceDetectorCrossValidatorTool.class);
 
   interface CVToolParams extends TrainingParams, CVParams {
   }
@@ -91,6 +96,6 @@ public final class SentenceDetectorCrossValidatorTool
 
     FMeasure result = validator.getFMeasure();
 
-    System.out.println(result);
+    logger.info(result.toString());
   }
 }

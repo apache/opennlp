@@ -19,6 +19,9 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.SystemInputStreamFactory;
@@ -30,6 +33,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 final class CommandLineTokenizer {
 
+  private static final Logger logger = LoggerFactory.getLogger(CommandLineTokenizer.class);
   private final Tokenizer tokenizer;
 
   CommandLineTokenizer(Tokenizer tokenizer) {
@@ -48,13 +52,13 @@ final class CommandLineTokenizer {
       tokenizedLineStream = new WhitespaceTokenStream(
               new TokenizerStream(tokenizer, untokenizedLineStream));
 
-      perfMon = new PerformanceMonitor(System.err, "sent");
+      perfMon = new PerformanceMonitor("sent");
       perfMon.start();
 
 
       String tokenizedLine;
       while ((tokenizedLine = tokenizedLineStream.read()) != null) {
-        System.out.println(tokenizedLine);
+        logger.info(tokenizedLine);
         perfMon.incrementCounter();
       }
     } catch (IOException e) {

@@ -46,6 +46,6 @@ FOR %%A IN ("%OPENNLP_HOME%\lib\*.jar") DO (
 )
 set CLASSPATH=!CLASSPATH!"
 
-%JAVA_CMD% -Xmx1024m -cp %CLASSPATH% opennlp.bratann.NameFinderAnnService %*
+%JAVA_CMD% -Xmx1024m "-Dlog4j.configurationFile=%OPENNLP_HOME%\conf\log4j2.xml" -cp %CLASSPATH% opennlp.bratann.NameFinderAnnService %*
 
 ENDLOCAL

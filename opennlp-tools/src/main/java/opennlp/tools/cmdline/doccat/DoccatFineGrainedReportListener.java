@@ -19,9 +19,13 @@ package opennlp.tools.cmdline.doccat;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.FineGrainedReportListener;
 import opennlp.tools.doccat.DoccatEvaluationMonitor;
 import opennlp.tools.doccat.DocumentSample;
+import opennlp.tools.log.LogPrintStream;
 
 /**
  * Generates a detailed report for the POS Tagger.
@@ -32,11 +36,13 @@ import opennlp.tools.doccat.DocumentSample;
 public class DoccatFineGrainedReportListener
     extends FineGrainedReportListener implements DoccatEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(DoccatFineGrainedReportListener.class);
+
   /**
-   * Creates a listener that will print to {@link System#err}
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public DoccatFineGrainedReportListener() {
-    this(System.err);
+    this(new LogPrintStream(logger));
   }
 
   /**

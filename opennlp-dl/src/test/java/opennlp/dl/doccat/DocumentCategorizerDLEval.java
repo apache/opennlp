@@ -29,12 +29,16 @@ import ai.onnxruntime.OrtException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.dl.AbstactDLTest;
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
 
 public class DocumentCategorizerDLEval extends AbstactDLTest {
+
+  private static final Logger logger = LoggerFactory.getLogger(DocumentCategorizerDLEval.class);
 
   @Test
   public void categorize() throws IOException, OrtException {
@@ -76,8 +80,8 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
         0.11939861625432968,
         0.03615010157227516};
 
-    System.out.println("Actual:   " + Arrays.toString(sortedResult));
-    System.out.println("Expected: " + Arrays.toString(expected));
+    logger.debug("Actual: {}", Arrays.toString(sortedResult));
+    logger.debug("Expected: {}", Arrays.toString(expected));
 
     Assertions.assertArrayEquals(expected, sortedResult, 0.0);
     Assertions.assertEquals(5, result.length);
@@ -106,7 +110,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
             new InferenceOptions());
 
     final double[] result = documentCategorizerDL.categorize(new String[]{"I am happy"});
-    System.out.println(Arrays.toString(result));
+    logger.debug(Arrays.toString(result));
 
     final double[] expected = new double[]
         {0.007819971069693565,

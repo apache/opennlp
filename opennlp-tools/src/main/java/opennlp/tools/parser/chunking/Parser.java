@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -59,6 +62,7 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class Parser extends AbstractBottomUpParser {
 
+  private static final Logger logger = LoggerFactory.getLogger(Parser.class);
   private final MaxentModel buildModel;
   private final MaxentModel checkModel;
 
@@ -81,14 +85,12 @@ public class Parser extends AbstractBottomUpParser {
    * other configuration parameters. Uses the default implementations of
    * {@link POSTaggerME} and {@link ChunkerME}.
    *
-   * @param model The {@link ParserModel} to use.
-   * @param beamSize The number of different parses kept during parsing.
+   * @param model             The {@link ParserModel} to use.
+   * @param beamSize          The number of different parses kept during parsing.
    * @param advancePercentage The minimal amount of probability mass which advanced outcomes
    *                          must represent. Only outcomes which contribute to the top
    *                          {@code advancePercentage} will be explored.
-   *
    * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
-   *
    * @see ParserModel
    * @see POSTaggerME
    * @see ChunkerME
@@ -97,7 +99,7 @@ public class Parser extends AbstractBottomUpParser {
     this(model.getBuildModel(), model.getCheckModel(),
         new POSTaggerME(model.getParserTaggerModel()),
         new ChunkerME(model.getParserChunkerModel()),
-            model.getHeadRules(), beamSize, advancePercentage);
+        model.getHeadRules(), beamSize, advancePercentage);
   }
 
   /**
@@ -106,9 +108,7 @@ public class Parser extends AbstractBottomUpParser {
    * and default values for {@code beamSize} and {@code advancePercentage}.
    *
    * @param model The {@link ParserModel} to use.
-   *
    * @throws IllegalStateException Thrown if the {@link ParserType} is not supported.
-   *
    * @see ParserModel
    * @see POSTaggerME
    * @see ChunkerME
@@ -120,12 +120,12 @@ public class Parser extends AbstractBottomUpParser {
   /**
    * Instantiates a {@link Parser} via a given {@code model} and other configuration parameters.
    *
-   * @param buildModel A valid {@link MaxentModel} used to build.
-   * @param checkModel A valid {@link MaxentModel} used to check.
-   * @param tagger A valid {@link POSModel} used to tag.
-   * @param chunker A valid {@link ChunkerModel} used to chunk.
-   * @param headRules The {@link HeadRules} for head word percolation.
-   * @param beamSize The number of different parses kept during parsing.
+   * @param buildModel        A valid {@link MaxentModel} used to build.
+   * @param checkModel        A valid {@link MaxentModel} used to check.
+   * @param tagger            A valid {@link POSModel} used to tag.
+   * @param chunker           A valid {@link ChunkerModel} used to chunk.
+   * @param headRules         The {@link HeadRules} for head word percolation.
+   * @param beamSize          The number of different parses kept during parsing.
    * @param advancePercentage The minimal amount of probability mass which advanced outcomes
    *                          must represent. Only outcomes which contribute to the top
    *                          {@code advancePercentage} will be explored.
@@ -146,11 +146,14 @@ public class Parser extends AbstractBottomUpParser {
     for (int boi = 0, bon = buildModel.getNumOutcomes(); boi < bon; boi++) {
       String outcome = buildModel.getOutcome(boi);
       if (outcome.startsWith(START)) {
-        //System.err.println("startMap "+outcome+"->"+outcome.substring(START.length()));
+        if (logger.isTraceEnabled()) {
+          logger.trace("startMap " + outcome + "->" + outcome.substring(START.length()));
+        }
         startTypeMap.put(outcome, outcome.substring(START.length()));
-      }
-      else if (outcome.startsWith(CONT)) {
-        //System.err.println("contMap "+outcome+"->"+outcome.substring(CONT.length()));
+      } else if (outcome.startsWith(CONT)) {
+        if (logger.isTraceEnabled()) {
+          logger.trace("contMap " + outcome + "->" + outcome.substring(CONT.length()));
+        }
         contTypeMap.put(outcome, outcome.substring(CONT.length()));
       }
     }
@@ -182,7 +185,7 @@ public class Parser extends AbstractBottomUpParser {
     /* The node which will be labeled in this iteration of advancing the parse. */
     Parse advanceNode = null;
     Parse[] originalChildren = p.getChildren();
-    Parse[] children = collapsePunctuation(originalChildren,punctSet);
+    Parse[] children = collapsePunctuation(originalChildren, punctSet);
     int numNodes = children.length;
     if (numNodes == 0) {
       return null;
@@ -192,15 +195,17 @@ public class Parser extends AbstractBottomUpParser {
       advanceNode = children[advanceNodeIndex];
       if (advanceNode.getLabel() == null) {
         break;
-      }
-      else if (startTypeMap.containsKey(advanceNode.getLabel())) {
+      } else if (startTypeMap.containsKey(advanceNode.getLabel())) {
         lastStartType = startTypeMap.get(advanceNode.getLabel());
         lastStartNode = advanceNode;
         lastStartIndex = advanceNodeIndex;
-        //System.err.println("lastStart "+i+" "+lastStart.label+" "+lastStart.prob);
+        if (logger.isTraceEnabled()) {
+          logger.trace("lastStart " + lastStartIndex + " "
+              + lastStartNode.getLabel() + " " + lastStartNode.getProb());
+        }
       }
     }
-    int originalAdvanceIndex = mapParseIndex(advanceNodeIndex,children,originalChildren);
+    int originalAdvanceIndex = mapParseIndex(advanceNodeIndex, children, originalChildren);
     List<Parse> newParsesList = new ArrayList<>(buildModel.getNumOutcomes());
     //call build
     buildModel.eval(buildContextGenerator.getContext(children, advanceNodeIndex), bprobs);
@@ -220,38 +225,48 @@ public class Parser extends AbstractBottomUpParser {
       bprobs[max] = 0; //zero out so new max can be found
       bprobSum += bprob;
       String tag = buildModel.getOutcome(max);
-      //System.out.println("trying "+tag+" "+bprobSum+" lst="+lst);
+      if (logger.isTraceEnabled()) {
+        logger.trace("trying " + tag + " " + bprobSum + " lst=" + tag);
+      }
       if (max == topStartIndex) { // can't have top until complete
         continue;
       }
-      //System.err.println(i+" "+tag+" "+bprob);
+      if (logger.isTraceEnabled()) {
+        logger.trace(tag + " " + bprob);
+      }
       if (startTypeMap.containsKey(tag)) { //update last start
         lastStartIndex = advanceNodeIndex;
         lastStartNode = advanceNode;
         lastStartType = startTypeMap.get(tag);
-      }
-      else if (contTypeMap.containsKey(tag)) {
+      } else if (contTypeMap.containsKey(tag)) {
         if (lastStartNode == null || !lastStartType.equals(contTypeMap.get(tag))) {
           continue; //Cont must match previous start or continue
         }
       }
       Parse newParse1 = (Parse) p.clone(); //clone parse
-      if (createDerivationString) newParse1.getDerivation().append(max).append("-");
+      if (createDerivationString) {
+        newParse1.getDerivation().append(max).append("-");
+      }
       //replace constituent being labeled to create new derivation
-      newParse1.setChild(originalAdvanceIndex,tag);
+      newParse1.setChild(originalAdvanceIndex, tag);
       newParse1.addProb(StrictMath.log(bprob));
       //check
-      //String[] context = checkContextGenerator.getContext(newParse1.getChildren(), lastStartType,
-      // lastStartIndex, advanceNodeIndex);
       checkModel.eval(checkContextGenerator.getContext(
-          collapsePunctuation(newParse1.getChildren(),punctSet), lastStartType, lastStartIndex,
+          collapsePunctuation(newParse1.getChildren(), punctSet), lastStartType, lastStartIndex,
           advanceNodeIndex), cprobs);
-      //System.out.println("check "+lastStartType+" "+cprobs[completeIndex]+" "+cprobs[incompleteIndex]
-      // +" "+tag+" "+java.util.Arrays.asList(context));
+      if (logger.isTraceEnabled()) {
+        String[] context = checkContextGenerator.getContext(newParse1.getChildren(),
+            lastStartType, lastStartIndex, advanceNodeIndex);
+        logger.trace(("check " + lastStartType + " " + cprobs[completeIndex] + " "
+            + cprobs[incompleteIndex] + " " + tag + " " + java.util.Arrays.asList(context)));
+      }
+
       Parse newParse2;
       if (cprobs[completeIndex] > q) { //make sure a reduce is likely
         newParse2 = (Parse) newParse1.clone();
-        if (createDerivationString) newParse2.getDerivation().append(1).append(".");
+        if (createDerivationString) {
+          newParse2.getDerivation().append(1).append(".");
+        }
         newParse2.addProb(StrictMath.log(cprobs[completeIndex]));
         Parse[] cons = new Parse[advanceNodeIndex - lastStartIndex + 1];
         boolean flat = true;
@@ -269,13 +284,15 @@ public class Parser extends AbstractBottomUpParser {
         if (!flat) { //flat chunks are done by chunker
           //check for top node to include end and begining punctuation
           if (lastStartIndex == 0 && advanceNodeIndex == numNodes - 1) {
-            //System.err.println("ParserME.advanceParses: reducing entire span: "
-            // +new Span(lastStartNode.getSpan().getStart(), advanceNode.getSpan().getEnd())+" "
-            // +lastStartType+" "+java.util.Arrays.asList(children));
+            if (logger.isTraceEnabled()) {
+              logger.trace("ParserME.advanceParses: reducing entire span: "
+                  + new Span(lastStartNode.getSpan().getStart(), advanceNode.getSpan().getEnd()) + " "
+                  + lastStartType + " " + java.util.Arrays.asList(children));
+            }
+
             newParse2.insert(new Parse(p.getText(), p.getSpan(), lastStartType, cprobs[1],
                 headRules.getHead(cons, lastStartType)));
-          }
-          else {
+          } else {
             newParse2.insert(new Parse(p.getText(), new Span(lastStartNode.getSpan().getStart(),
                 advanceNode.getSpan().getEnd()), lastStartType, cprobs[1],
                 headRules.getHead(cons, lastStartType)));
@@ -284,7 +301,9 @@ public class Parser extends AbstractBottomUpParser {
         }
       }
       if (cprobs[incompleteIndex] > q) { //make sure a shift is likely
-        if (createDerivationString) newParse1.getDerivation().append(0).append(".");
+        if (createDerivationString) {
+          newParse1.getDerivation().append(0).append(".");
+        }
         if (advanceNodeIndex != numNodes - 1) { //can't shift last element
           newParse1.addProb(StrictMath.log(cprobs[incompleteIndex]));
           newParsesList.add(newParse1);
@@ -297,7 +316,7 @@ public class Parser extends AbstractBottomUpParser {
   }
 
   public static void mergeReportIntoManifest(Map<String, String> manifest,
-      Map<String, String> report, String namespace) {
+                                             Map<String, String> report, String namespace) {
 
     for (Map.Entry<String, String> entry : report.entrySet()) {
       manifest.put(namespace + "." + entry.getKey(), entry.getValue());
@@ -306,19 +325,19 @@ public class Parser extends AbstractBottomUpParser {
 
   /**
    * Starts a training of a {@link ParserModel}.
-   * 
+   *
    * @param languageCode An ISO conform language code.
    * @param parseSamples The {@link ObjectStream<Parse> samples} as input.
-   * @param rules The {@link HeadRules} to use.
-   * @param mlParams The {@link TrainingParameters parameters} for training.
+   * @param rules        The {@link HeadRules} to use.
+   * @param mlParams     The {@link TrainingParameters parameters} for training.
    * @return A valid {@link ParserModel}.
    * @throws IOException Thrown if IO errors occurred during training.
    */
   public static ParserModel train(String languageCode, ObjectStream<Parse> parseSamples,
                                   HeadRules rules, TrainingParameters mlParams)
-          throws IOException {
+      throws IOException {
 
-    System.err.println("Building dictionary");
+    logger.info("Building dictionary");
 
     Dictionary mdict = buildDictionary(parseSamples, rules, mlParams);
 
@@ -327,7 +346,7 @@ public class Parser extends AbstractBottomUpParser {
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
     // build
-    System.err.println("Training builder");
+    logger.info("Training builder");
     ObjectStream<Event> bes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.BUILD, mdict);
     Map<String, String> buildReportMap = new HashMap<>();
     EventTrainer buildTrainer =
@@ -354,7 +373,7 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
 
     // check
-    System.err.println("Training checker");
+    logger.info("Training checker");
     ObjectStream<Event> kes = new ParserEventStream(parseSamples, rules, ParserEventTypeEnum.CHECK);
     Map<String, String> checkReportMap = new HashMap<>();
     EventTrainer checkTrainer =

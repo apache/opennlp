@@ -18,7 +18,6 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +83,6 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
   public EvalitaNameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
     this(lang, new PlainTextByLineStream(in, StandardCharsets.UTF_8),types);
-    System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
   }
 
   private static Span extract(int begin, int end, String beginTag) throws InvalidFormatException {

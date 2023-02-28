@@ -23,6 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -34,6 +37,7 @@ import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerEvaluationMonitor;
 
+
 /**
  * A default {@link POSSample}-centric implementation of {@link AbstractEvaluatorTool}
  * that prints to an output stream.
@@ -43,6 +47,8 @@ import opennlp.tools.postag.POSTaggerEvaluationMonitor;
  */
 public final class POSTaggerEvaluatorTool
     extends AbstractEvaluatorTool<POSSample, EvalToolParams> {
+
+  private static final Logger logger = LoggerFactory.getLogger(POSTaggerEvaluatorTool.class);
 
   interface EvalToolParams extends EvaluatorParams, FineGrainedEvaluatorParams {
   }
@@ -87,12 +93,11 @@ public final class POSTaggerEvaluatorTool
         new opennlp.tools.postag.POSTaggerME(model), missclassifiedListener,
         reportListener);
 
-    System.out.print("Evaluating ... ");
+    logger.info("Evaluating ... ");
     try {
       evaluator.evaluate(sampleStream);
     }
     catch (IOException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
     } finally {
       try {
@@ -102,11 +107,11 @@ public final class POSTaggerEvaluatorTool
       }
     }
 
-    System.out.println("done");
+    logger.info("done");
 
     if (reportListener != null) {
-      System.out.println("Writing fine-grained report to "
-          + params.getReportOutputFile().getAbsolutePath());
+      logger.info("Writing fine-grained report to {}",
+          params.getReportOutputFile().getAbsolutePath());
       reportListener.writeReport();
 
       try {
@@ -117,8 +122,6 @@ public final class POSTaggerEvaluatorTool
       }
     }
 
-    System.out.println();
-
-    System.out.println("Accuracy: " + evaluator.getWordAccuracy());
+    logger.info("Accuracy: {}", evaluator.getWordAccuracy());
   }
 }

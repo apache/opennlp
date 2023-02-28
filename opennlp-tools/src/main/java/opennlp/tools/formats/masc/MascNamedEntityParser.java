@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -30,6 +32,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * A class to process the MASC Named entity stand-off annotation file
  */
 public class MascNamedEntityParser extends DefaultHandler {
+
+  private static final Logger logger = LoggerFactory.getLogger(MascNamedEntityParser.class);
 
   private final Map<Integer, String> entityIDtoEntityType = new HashMap<>();
   private final Map<Integer, List<Integer>> entityIDsToTokens = new HashMap<>();
@@ -83,7 +87,7 @@ public class MascNamedEntityParser extends DefaultHandler {
         //todo: Do we want to give the user control over which types have priority?
         String type = entityIDtoEntityType.get(entityID);
         if (tokenToEntity.containsKey(tokenID) && !type.equals(tokenToEntity.get(tokenID))) {
-          System.out.println("[WARNING] One token assigned to different named entity types.\n" +
+          logger.warn("One token assigned to different named entity types.\n" +
               "\tPenn-TokenID: " + tokenID + "\n\tToken types: \"" + type + "\", \"" +
               tokenToEntity.get(tokenID) + "\"\n\tKeeping only " + "\"type\"");
         }

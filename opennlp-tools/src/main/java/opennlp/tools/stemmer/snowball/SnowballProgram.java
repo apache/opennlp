@@ -32,9 +32,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package opennlp.tools.stemmer.snowball;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 
 class SnowballProgram {
+
+	private static final Logger logger = LoggerFactory.getLogger(SnowballProgram.class);
+
     protected SnowballProgram()
     {
 	current = new StringBuffer();
@@ -279,10 +285,10 @@ class SnowballProgram {
 		    res = resobj.toString().equals("true");
 		} catch (InvocationTargetException e) {
 		    res = false;
-		    // FIXME - debug message
+			logger.warn(e.getLocalizedMessage(), e);
 		} catch (IllegalAccessException e) {
 		    res = false;
-		    // FIXME - debug message
+			logger.warn(e.getLocalizedMessage(), e);
 		}
 		cursor = c + w.s_size;
 		if (res) return w.result;
@@ -352,10 +358,10 @@ class SnowballProgram {
 		    res = resobj.toString().equals("true");
 		} catch (InvocationTargetException e) {
 		    res = false;
-		    // FIXME - debug message
+			logger.warn(e.getLocalizedMessage(), e);
 		} catch (IllegalAccessException e) {
 		    res = false;
-		    // FIXME - debug message
+			logger.warn(e.getLocalizedMessage(), e);
 		}
 		cursor = c - w.s_size;
 		if (res) return w.result;
@@ -389,8 +395,7 @@ class SnowballProgram {
 	    ket > limit ||
 	    limit > current.length())   // this line could be removed
 	{
-	    System.err.println("faulty slice operation");
-	// FIXME: report error somehow.
+	    logger.error("faulty slice operation");
 	/*
 	    fprintf(stderr, "faulty slice operation:\n");
 	    debug(z, -1, 0);

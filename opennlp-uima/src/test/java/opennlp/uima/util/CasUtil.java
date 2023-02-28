@@ -37,9 +37,13 @@ import org.apache.uima.util.CasCreationUtils;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.XMLInputSource;
 import org.apache.uima.util.XMLParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 public class CasUtil {
+
+  private static final Logger logger = LoggerFactory.getLogger(CasUtil.class);
 
   public static TypeSystemDescription createTypeSystemDescription(InputStream in) {
 
@@ -59,7 +63,7 @@ public class CasUtil {
 
       typeSystemDesciptor.resolveImports();
     } catch (InvalidXMLException e) {
-      e.printStackTrace();
+      logger.error(e.getLocalizedMessage(), e);
       typeSystemDesciptor = null;
     }
 
@@ -82,7 +86,7 @@ public class CasUtil {
       cas = CasCreationUtils.createCas(typeSystem, typePriorities,
           new FsIndexDescription[] { indexDesciptor });
     } catch (ResourceInitializationException e) {
-      e.printStackTrace();
+      logger.error(e.getLocalizedMessage(), e);
       cas = null;
     }
 

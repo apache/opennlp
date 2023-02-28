@@ -111,7 +111,6 @@ public class DictionaryResourceTest {
       }
       Assertions.assertEquals(0, expectedLocations.size());
     } catch (Exception e) {
-      e.printStackTrace();
       Assertions.fail(e.getLocalizedMessage());
     }
 

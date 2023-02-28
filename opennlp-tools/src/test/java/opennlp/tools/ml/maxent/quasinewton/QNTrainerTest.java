@@ -58,7 +58,7 @@ public class QNTrainerTest {
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     testDataIndexer.index(rvfes1);
     // when
-    QNModel trainedModel = new QNTrainer(false).trainModel(ITERATIONS, testDataIndexer);
+    QNModel trainedModel = new QNTrainer().trainModel(ITERATIONS, testDataIndexer);
     // then
     Assertions.assertNotNull(trainedModel);
   }
@@ -70,7 +70,7 @@ public class QNTrainerTest {
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     testDataIndexer.index(rvfes1);
     // when
-    QNModel trainedModel = new QNTrainer(15, true).trainModel(ITERATIONS, testDataIndexer);
+    QNModel trainedModel = new QNTrainer(15).trainModel(ITERATIONS, testDataIndexer);
     String[] features2Classify = new String[] {
         "feature2", "feature3", "feature3",
         "feature3", "feature3", "feature3",
@@ -88,7 +88,7 @@ public class QNTrainerTest {
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     testDataIndexer.index(rvfes1);
     // when
-    QNModel trainedModel = new QNTrainer(15, true).trainModel(
+    QNModel trainedModel = new QNTrainer(15).trainModel(
         ITERATIONS, testDataIndexer);
 
     Assertions.assertNotEquals(null, trainedModel);
@@ -101,7 +101,7 @@ public class QNTrainerTest {
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     testDataIndexer.index(rvfes1);
     // when
-    QNModel trainedModel = new QNTrainer(5, 700, true).trainModel(ITERATIONS, testDataIndexer);
+    QNModel trainedModel = new QNTrainer(5, 700).trainModel(ITERATIONS, testDataIndexer);
 
     ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
     GenericModelWriter modelWriter = new GenericModelWriter(trainedModel,

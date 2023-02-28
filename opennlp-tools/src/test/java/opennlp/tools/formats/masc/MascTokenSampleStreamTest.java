@@ -19,7 +19,6 @@ package opennlp.tools.formats.masc;
 
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -130,7 +129,6 @@ public class MascTokenSampleStreamTest extends AbstractMascSampleStreamTest {
       ObjectStream<TokenSample> trainTokens = new MascTokenSampleStream(
           new MascDocumentStream(directory, true, fileFilter));
 
-      System.out.println("Training");
       TokenizerModel model = null;
       TrainingParameters trainingParameters = new TrainingParameters();
       trainingParameters.put(TrainingParameters.ITERATIONS_PARAM, 20);
@@ -142,12 +140,9 @@ public class MascTokenSampleStreamTest extends AbstractMascSampleStreamTest {
           new MascDocumentStream(directory, true, fileFilter));
       TokenizerEvaluator evaluator = new TokenizerEvaluator(new TokenizerME(model));
       evaluator.evaluate(testTokens);
-      System.out.println(evaluator.getFMeasure());
 
     } catch (Exception e) {
-      System.err.println(e.getMessage());
-      System.err.println(Arrays.toString(e.getStackTrace()));
-      Assertions.fail("Exception raised");
+      Assertions.fail("Exception raised", e);
     }
 
   }

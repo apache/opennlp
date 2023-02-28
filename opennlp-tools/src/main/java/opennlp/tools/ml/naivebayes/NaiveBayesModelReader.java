@@ -20,6 +20,9 @@ package opennlp.tools.ml.naivebayes;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelReader;
 import opennlp.tools.ml.model.Context;
@@ -44,6 +47,7 @@ import opennlp.tools.ml.model.DataReader;
  */
 public class NaiveBayesModelReader extends AbstractModelReader {
 
+  private static final Logger logger = LoggerFactory.getLogger(NaiveBayesModelReader.class);
   /**
    * Initializes a {@link NaiveBayesModelReader} via a {@link File}.
    *
@@ -94,8 +98,8 @@ public class NaiveBayesModelReader extends AbstractModelReader {
   public void checkModelType() throws IOException {
     String modelType = readUTF();
     if (!modelType.equals("NaiveBayes"))
-      System.out.println("Error: attempting to load a " + modelType +
+      logger.error("Attempting to load a {}" +
           " model as a NaiveBayes model." +
-          " You should expect problems.");
+          " You should expect problems.", modelType);
   }
 }

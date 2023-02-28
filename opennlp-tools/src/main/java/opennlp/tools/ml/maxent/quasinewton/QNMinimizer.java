@@ -17,6 +17,9 @@
 
 package opennlp.tools.ml.maxent.quasinewton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
 
@@ -54,6 +57,8 @@ import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
  * </pre></blockquote>
  */
 public class QNMinimizer {
+
+  private static final Logger logger = LoggerFactory.getLogger(QNMinimizer.class);
 
   // Function change rate tolerance
   public static final double CONVERGE_TOLERANCE = 1e-4;
@@ -97,9 +102,6 @@ public class QNMinimizer {
   // Maximum number of function evaluations
   private final int maxFctEval;
 
-  // Verbose output
-  private final boolean verbose;
-
   // Objective function's dimension
   private int dimension;
 
@@ -140,30 +142,15 @@ public class QNMinimizer {
 
   /**
    * Initializes a {@link QNMinimizer}.
-   *
-   * @param l1Cost The L1-regularization cost.
-   * @param l2Cost The L2-regularization cost.
-   * @param iterations The maximum number of iterations.
-   * @param m The number of Hessian updates to store.
-   * @param maxFctEval The maximum number of function evaluations.
-   */
-  public QNMinimizer(double l1Cost, double l2Cost,
-      int iterations, int m, int maxFctEval) {
-    this(l1Cost, l2Cost, iterations, m, maxFctEval, true);
-  }
-
-  /**
-   * Initializes a {@link QNMinimizer}.
    * 
    * @param l1Cost The L1-regularization cost.
    * @param l2Cost The L2-regularization cost.
    * @param iterations The maximum number of iterations.
    * @param m The number of Hessian updates to store.
    * @param maxFctEval The maximum number of function evaluations.
-   * @param verbose Whether verbose output is printed, or not.
    */
   public QNMinimizer(double l1Cost, double l2Cost, int iterations,
-      int m, int maxFctEval, boolean verbose)
+      int m, int maxFctEval)
   {
     // Check arguments
     if (l1Cost < 0 || l2Cost < 0)
@@ -187,7 +174,6 @@ public class QNMinimizer {
     this.iterations = iterations;
     this.m          = m;
     this.maxFctEval = maxFctEval;
-    this.verbose    = verbose;
   }
 
   public Evaluator getEvaluator() {
@@ -237,11 +223,11 @@ public class QNMinimizer {
           currValue, currGrad, currPoint);
     }
 
-    if (verbose) {
-      display("\nSolving convex optimization problem.");
-      display("\nObjective function has " + dimension + " variable(s).");
-      display("\n\nPerforming " + iterations + " iterations with " +
-          "L1Cost=" + l1Cost + " and L2Cost=" + l2Cost + "\n");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Solving convex optimization problem.");
+      logger.debug("Objective function has {} variable(s).", dimension);
+      logger.debug("Performing " + iterations + " iterations with " +
+          "L1Cost=" + l1Cost + " and L2Cost=" + l2Cost );
     }
 
     double[] direction = new double[dimension];
@@ -281,20 +267,14 @@ public class QNMinimizer {
       // Save Hessian updates
       updateInfo.update(lsr);
 
-      if (verbose) {
-        if (iter < 10)
-          display("  " + iter + ":  ");
-        else if (iter < 100)
-          display(" " + iter + ":  ");
-        else
-          display(iter + ":  ");
+      if (logger.isDebugEnabled()) {
 
         if (evaluator != null) {
-          display("\t" + lsr.getValueAtNext() + "\t" + lsr.getFuncChangeRate()
-              + "\t" + evaluator.evaluate(lsr.getNextPoint()) + "\n");
+          logger.debug("{}: \t" + lsr.getValueAtNext() + "\t" + lsr.getFuncChangeRate()
+              + "\t" + evaluator.evaluate(lsr.getNextPoint()), iter);
         } else {
-          display("\t " + lsr.getValueAtNext() +
-              "\t" + lsr.getFuncChangeRate() + "\n");
+          logger.debug("{}: \t " + lsr.getValueAtNext() +
+              "\t" + lsr.getFuncChangeRate() + "\n", iter);
         }
       }
       if (isConverged(lsr))
@@ -314,7 +294,7 @@ public class QNMinimizer {
 
     long endTime = System.currentTimeMillis();
     long duration = endTime - startTime;
-    display("Running time: " + (duration / 1000.) + "s\n");
+    logger.info("Running time: " + (duration / 1000.) + "s\n");
 
     // Release memory
     this.updateInfo = null;
@@ -397,9 +377,9 @@ public class QNMinimizer {
 
     // Check function's change rate
     if (lsr.getFuncChangeRate() < CONVERGE_TOLERANCE) {
-      if (verbose)
-        display("Function change rate is smaller than the threshold "
-            + CONVERGE_TOLERANCE + ".\nTraining will stop.\n\n");
+      if (logger.isDebugEnabled())
+        logger.debug("Function change rate is smaller than the threshold {}. " +
+                "Training will stop.", CONVERGE_TOLERANCE);
       return true;
     }
 
@@ -408,33 +388,29 @@ public class QNMinimizer {
     double gradNorm = l1Cost > 0 ?
         ArrayMath.l2norm(lsr.getPseudoGradAtNext()) : ArrayMath.l2norm(lsr.getGradAtNext());
     if (gradNorm / xNorm < REL_GRAD_NORM_TOL) {
-      if (verbose)
-        display("Relative L2-norm of the gradient is smaller than the threshold "
-            + REL_GRAD_NORM_TOL + ".\nTraining will stop.\n\n");
+      if (logger.isDebugEnabled())
+        logger.debug("Relative L2-norm of the gradient is smaller than the threshold {}. " +
+                "Training will stop.", REL_GRAD_NORM_TOL);
       return true;
     }
 
     // Check step size
     if (lsr.getStepSize() < MIN_STEP_SIZE) {
-      if (verbose)
-        display("Step size is smaller than the minimum step size "
-            + MIN_STEP_SIZE + ".\nTraining will stop.\n\n");
+      if (logger.isDebugEnabled())
+        logger.debug("Step size is smaller than the minimum step size {}. " +
+                "Training will stop.", MIN_STEP_SIZE);
       return true;
     }
 
     // Check number of function evaluations
     if (lsr.getFctEvalCount() > this.maxFctEval) {
-      if (verbose)
-        display("Maximum number of function evaluations has exceeded the threshold "
-            + this.maxFctEval + ".\nTraining will stop.\n\n");
+      if (logger.isDebugEnabled())
+        logger.debug("Maximum number of function evaluations has exceeded the threshold {}. " +
+                "Training will stop.", this.maxFctEval);
       return true;
     }
 
     return false;
-  }
-
-  private void display(String s) {
-    System.out.print(s);
   }
 
   /**

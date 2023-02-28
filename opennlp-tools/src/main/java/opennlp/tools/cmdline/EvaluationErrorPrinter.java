@@ -36,7 +36,11 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   protected PrintStream printStream;
 
   protected EvaluationErrorPrinter(OutputStream outputStream) {
-    this.printStream = new PrintStream(outputStream);
+    this(new PrintStream(outputStream));
+  }
+
+  protected EvaluationErrorPrinter(PrintStream printStream) {
+    this.printStream = printStream;
   }
 
   // for the sentence detector

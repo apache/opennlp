@@ -20,7 +20,6 @@ package opennlp.tools.formats.masc;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -113,9 +112,7 @@ public class MascSentenceSampleStreamTest extends AbstractMascSampleStreamTest {
       Assertions.assertNull(testSample);
 
     } catch (IOException e) {
-      System.out.println(e.getMessage());
-      System.out.println(Arrays.toString(e.getStackTrace()));
-      Assertions.fail("IO Exception");
+      Assertions.fail("IO Exception", e);
     }
 
   }
@@ -129,7 +126,6 @@ public class MascSentenceSampleStreamTest extends AbstractMascSampleStreamTest {
           new MascDocumentStream(directory,
               true, fileFilter), 1);
 
-      System.out.println("Training");
       SentenceModel model = null;
       TrainingParameters trainingParameters = new TrainingParameters();
       trainingParameters.put(TrainingParameters.ITERATIONS_PARAM, 20);
@@ -142,12 +138,9 @@ public class MascSentenceSampleStreamTest extends AbstractMascSampleStreamTest {
       SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
           new SentenceDetectorME(model));
       evaluator.evaluate(testPOS);
-      System.out.println(evaluator.getFMeasure());
 
     } catch (Exception e) {
-      System.err.println(e.getMessage());
-      System.err.println(Arrays.toString(e.getStackTrace()));
-      Assertions.fail("Exception raised");
+      Assertions.fail("Exception raised", e);
     }
 
 

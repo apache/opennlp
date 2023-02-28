@@ -20,6 +20,9 @@ package opennlp.tools.cmdline.doccat;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -35,6 +38,8 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class DoccatTool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(DoccatTool.class);
+
   @Override
   public String getShortDescription() {
     return "learned document categorizer";
@@ -49,7 +54,7 @@ public class DoccatTool extends BasicCmdLineTool {
   public void run(String[] args) {
 
     if (0 == args.length) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
 
       DoccatModel model = new DoccatModelLoader().load(new File(args[0]));
@@ -61,7 +66,7 @@ public class DoccatTool extends BasicCmdLineTool {
        */
       ObjectStream<String> documentStream;
 
-      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "doc");
+      PerformanceMonitor perfMon = new PerformanceMonitor("doc");
       perfMon.start();
 
       try {
@@ -75,7 +80,7 @@ public class DoccatTool extends BasicCmdLineTool {
           String category = documentCategorizerME.getBestCategory(prob);
 
           DocumentSample sample = new DocumentSample(category, tokens);
-          System.out.println(sample);
+          logger.info(sample.toString());
 
           perfMon.incrementCounter();
         }

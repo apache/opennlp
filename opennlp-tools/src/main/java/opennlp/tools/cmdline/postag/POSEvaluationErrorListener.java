@@ -19,7 +19,11 @@ package opennlp.tools.cmdline.postag;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
+import opennlp.tools.log.LogPrintStream;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerEvaluationMonitor;
 import opennlp.tools.util.eval.EvaluationMonitor;
@@ -31,11 +35,13 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public class POSEvaluationErrorListener extends
     EvaluationErrorPrinter<POSSample> implements POSTaggerEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(POSEvaluationErrorListener.class);
+
   /**
-   * Creates a listener that will print to {@code System.err}.
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public POSEvaluationErrorListener() {
-    super(System.err);
+    super(new LogPrintStream(logger));
   }
 
   /**

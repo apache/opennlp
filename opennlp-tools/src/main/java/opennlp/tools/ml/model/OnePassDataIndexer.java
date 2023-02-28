@@ -23,6 +23,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
@@ -36,6 +39,8 @@ import opennlp.tools.util.ObjectStreamUtils;
  */
 public class OnePassDataIndexer extends AbstractDataIndexer {
 
+  private static final Logger logger = LoggerFactory.getLogger(OnePassDataIndexer.class);
+
   public OnePassDataIndexer() {}
 
   /**
@@ -48,22 +53,22 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
 
     long start = System.currentTimeMillis();
 
-    display("Indexing events with OnePass using cutoff of " + cutoff + "\n\n");
+    logger.info("Indexing events with OnePass using cutoff of {}", cutoff);
 
-    display("\tComputing event counts...  ");
+    logger.info("Computing event counts...");
     Map<String, Integer> predicateIndex = new HashMap<>();
     List<Event> events = computeEventCounts(eventStream, predicateIndex, cutoff);
-    display("done. " + events.size() + " events\n");
+    logger.info("done. {} events", events.size());
 
-    display("\tIndexing...  ");
+    logger.info("Indexing...  ");
     List<ComparableEvent> eventsToCompare =
         index(ObjectStreamUtils.createObjectStream(events), predicateIndex);
 
-    display("done.\n");
+    logger.info("done.");
 
-    display("Sorting and merging events... ");
+    logger.info("Sorting and merging events... ");
     sortAndMerge(eventsToCompare, sort);
-    display(String.format("Done indexing in %.2f s.\n", (System.currentTimeMillis() - start) / 1000d));
+    logger.info(String.format("Done indexing in %.2f s.", (System.currentTimeMillis() - start) / 1000d));
   }
 
   /**

@@ -19,7 +19,6 @@ package opennlp.tools.formats.masc;
 
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -110,7 +109,6 @@ public class MascPOSSampleStreamTest extends AbstractMascSampleStreamTest {
       ObjectStream<POSSample> trainPOS = new MascPOSSampleStream(
           new MascDocumentStream(directory, true, fileFilter));
 
-      System.out.println("Training");
       POSModel model = null;
       TrainingParameters trainingParameters = new TrainingParameters();
       trainingParameters.put(TrainingParameters.ITERATIONS_PARAM, 20);
@@ -122,13 +120,9 @@ public class MascPOSSampleStreamTest extends AbstractMascSampleStreamTest {
               new MascDocumentStream(directory, true, fileFilter));
       POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
       evaluator.evaluate(testPOS);
-      System.out.println("Accuracy: " + evaluator.getWordAccuracy());
-      System.out.println("Words: " + evaluator.getWordCount());
 
     } catch (Exception e) {
-      System.err.println(e.getMessage());
-      System.err.println(Arrays.toString(e.getStackTrace()));
-      Assertions.fail("Exception raised");
+      Assertions.fail("Exception raised", e);
     }
 
   }

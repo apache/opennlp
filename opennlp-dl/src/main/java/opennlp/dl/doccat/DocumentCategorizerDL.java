@@ -37,6 +37,8 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
@@ -51,6 +53,7 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
  */
 public class DocumentCategorizerDL implements DocumentCategorizer {
 
+  private static final Logger logger = LoggerFactory.getLogger(DocumentCategorizerDL.class);
   public static final String INPUT_IDS = "input_ids";
   public static final String ATTENTION_MASK = "attention_mask";
   public static final String TOKEN_TYPE_IDS = "token_type_ids";
@@ -132,7 +135,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
       return classificationScoringStrategy.score(scores);
 
     } catch (Exception ex) {
-      System.err.println("Unload to perform document classification inference: " + ex.getMessage());
+      logger.error("Unload to perform document classification inference", ex);
     }
 
     return new double[]{};

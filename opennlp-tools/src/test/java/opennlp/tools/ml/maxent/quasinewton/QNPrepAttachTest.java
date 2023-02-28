@@ -44,7 +44,7 @@ public class QNPrepAttachTest {
     indexer.init(indexingParameters, new HashMap<>());
     indexer.index(PrepAttachDataUtil.createTrainingStream());
 
-    AbstractModel model = new QNTrainer(true).trainModel(100, indexer);
+    AbstractModel model = new QNTrainer().trainModel(100, indexer);
 
     PrepAttachDataUtil.testModel(model, 0.8155484030700668);
   }

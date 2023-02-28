@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -38,6 +41,8 @@ import opennlp.tools.util.Span;
 
 public class EntityLinkerTool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(EntityLinkerTool.class);
+
   @Override
   public String getShortDescription() {
     return "links an entity to an external data set";
@@ -47,7 +52,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
   public void run(String[] args) {
 
     if (0 == args.length) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     }
     else {
       // TODO: Ask Mark if we can remove the type, the user knows upfront if s/he tries
@@ -76,7 +81,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
         throw new TerminateToolException(-1, "Failed to instantiate the Entity Linker: " + e.getMessage());
       }
 
-      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+      PerformanceMonitor perfMon = new PerformanceMonitor("sent");
       perfMon.start();
 
       try (ObjectStream<String> untokenizedLineStream = new PlainTextByLineStream(
@@ -123,7 +128,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
                 entityLinker.find(text.toString(), sentences, tokensBySentence, namesBySentence);
 
             for (Span linkedSpan : linkedSpans) {
-              System.out.println(linkedSpan);
+              logger.info(linkedSpan.toString());
             }
 
             perfMon.incrementCounter(document.size());

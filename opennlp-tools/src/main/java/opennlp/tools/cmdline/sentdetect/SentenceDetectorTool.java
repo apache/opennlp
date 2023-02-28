@@ -20,6 +20,9 @@ package opennlp.tools.cmdline.sentdetect;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -35,6 +38,8 @@ import opennlp.tools.util.PlainTextByLineStream;
  * A sentence detector which uses a maxent model to predict the sentences.
  */
 public final class SentenceDetectorTool extends BasicCmdLineTool {
+
+  private static final Logger logger = LoggerFactory.getLogger(SentenceDetectorTool.class);
 
   @Override
   public String getShortDescription() {
@@ -55,14 +60,14 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
   public void run(String[] args) {
 
     if (args.length != 1) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
 
       SentenceModel model = new SentenceModelLoader().load(new File(args[0]));
 
       SentenceDetectorME sdetector = new SentenceDetectorME(model);
 
-      PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+      PerformanceMonitor perfMon = new PerformanceMonitor("sent");
       perfMon.start();
 
       try (ObjectStream<String> paraStream = new ParagraphStream(new PlainTextByLineStream(
@@ -73,12 +78,11 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
 
           String[] sents = sdetector.sentDetect(para);
           for (String sentence : sents) {
-            System.out.println(sentence);
+            logger.info(sentence);
           }
 
           perfMon.incrementCounter(sents.length);
 
-          System.out.println();
         }
       }
       catch (IOException e) {

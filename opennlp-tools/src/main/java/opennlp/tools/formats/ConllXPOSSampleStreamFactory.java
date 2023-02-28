@@ -18,7 +18,6 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
@@ -63,8 +62,6 @@ public class ConllXPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory
         CmdLineUtil.createInputStreamFactory(params.getData());
 
     try {
-      System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
-
       return new ConllXPOSSampleStream(inFactory, StandardCharsets.UTF_8);
     } catch (UnsupportedEncodingException e) {
       // this shouldn't happen

@@ -19,6 +19,9 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -28,6 +31,8 @@ import opennlp.tools.postag.POSModel;
 
 // user should train with the POS tool
 public final class TaggerModelReplacerTool extends BasicCmdLineTool {
+
+  private static final Logger logger = LoggerFactory.getLogger(TaggerModelReplacerTool.class);
 
   @Override
   public String getShortDescription() {
@@ -43,7 +48,7 @@ public final class TaggerModelReplacerTool extends BasicCmdLineTool {
   public void run(String[] args) {
 
     if (args.length != 2) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
 
       File parserModelInFile = new File(args[0]);

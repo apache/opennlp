@@ -20,6 +20,9 @@ package opennlp.tools.postag;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
@@ -29,6 +32,8 @@ import opennlp.tools.util.ObjectStream;
  * words and tags in {@code word_tag} format and outputs a {@link POSSample} objects.
  */
 public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
+
+  private static final Logger logger = LoggerFactory.getLogger(WordTagSampleStream.class);
 
   /**
    * Initializes a {@link POSSample} instance.
@@ -62,7 +67,7 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
         sample = POSSample.parse(sentence);
       } catch (InvalidFormatException e) {
         // TODO: An exception in error case should be thrown.
-        System.out.println("Error during parsing, ignoring sentence: " + sentence);
+        logger.warn("Error during parsing, ignoring sentence: {}", sentence, e);
 
         sample = new POSSample(new String[]{}, new String[]{});
       }

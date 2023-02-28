@@ -28,16 +28,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.ArgumentParser.Argument;
 
 public class GenerateManualTool {
+
+  private static final Logger logger = LoggerFactory.getLogger(GenerateManualTool.class);
 
   private static final int MAX_LINE_LENGTH = 110; // optimized for printing
 
   public static void main(String[] args) throws FileNotFoundException {
 
     if (args.length != 1) {
-      System.out.print(getUsage());
+      logger.info(getUsage());
       System.exit(0);
     }
 
