@@ -394,7 +394,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       if (StrictMath.abs(prevAccuracy1 - trainingAccuracy) < tolerance
           && StrictMath.abs(prevAccuracy2 - trainingAccuracy) < tolerance
           && StrictMath.abs(prevAccuracy3 - trainingAccuracy) < tolerance) {
-        logger.info("Stopping: change in training set accuracy less than {}", tolerance);
+        logger.warn("Stopping: change in training set accuracy less than {}", tolerance);
         break;
       }
 

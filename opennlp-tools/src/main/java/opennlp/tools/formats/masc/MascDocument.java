@@ -353,7 +353,7 @@ public class MascDocument {
       //Check that all tokens have at least one quark.
       for (Map.Entry<Integer, int[]> token : tokenToQuarks.entrySet()) {
         if (token.getValue().length == 0) {
-          logger.error("Token without quarks: {}", token.getKey());
+          logger.warn("Token without quarks: {}", token.getKey());
         }
       }
 
