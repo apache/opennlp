@@ -143,7 +143,7 @@ public class MascDocumentStream implements ObjectStream<MascDocument> {
               documents.add(MascDocument.parseDocument(hdrFilePath, f_primary, f_seg,
                   f_penn, f_s, f_ne));
             } catch (IOException e) {
-              logger.warn("Failed to parse the file: {}", hdrFilePath, e);
+              logger.error("Failed to parse the file: {}", hdrFilePath, e);
               failedLoads++;
             }
           }

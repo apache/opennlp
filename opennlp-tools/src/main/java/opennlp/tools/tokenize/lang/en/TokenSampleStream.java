@@ -121,7 +121,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   }
 
   private static void usage() {
-    logger.error("TokenSampleStream [-spans] < in");
-    logger.error("Where in is a space delimited list of tokens.");
+    logger.info("TokenSampleStream [-spans] < in");
+    logger.info("Where in is a space delimited list of tokens.");
   }
 }

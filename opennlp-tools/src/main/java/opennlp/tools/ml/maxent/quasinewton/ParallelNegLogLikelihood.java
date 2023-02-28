@@ -154,7 +154,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
         future.get();
 
     } catch (Exception e) {
-      logger.warn(e.getLocalizedMessage(), e);
+      logger.error(e.getLocalizedMessage(), e);
     }
 
     executor.shutdown();
