@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -37,7 +39,6 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
@@ -51,6 +52,9 @@ import opennlp.tools.util.model.UncloseableInputStream;
  * @see Dictionary
  */
 public class DictionaryEntryPersistor {
+  
+  private static final SAXParserFactory SAX_PARSER_FACTORY = SAXParserFactory.newInstance();
+  private static final String SAX_FEATURE_NAMESPACES = "http://xml.org/sax/features/namespaces";
 
   // TODO: should check for invalid format, make it save
   private static class DictionaryContenthandler implements ContentHandler {
@@ -199,13 +203,10 @@ public class DictionaryEntryPersistor {
     }
   }
 
-  private static final String CHARSET = StandardCharsets.UTF_8.name();
-
   private static final String DICTIONARY_ELEMENT = "dictionary";
   private static final String ENTRY_ELEMENT = "entry";
   private static final String TOKEN_ELEMENT = "token";
   private static final String ATTRIBUTE_CASE_SENSITIVE = "case_sensitive";
-
 
   /**
    * Creates {@link Entry}s from the given {@link InputStream} and
@@ -225,16 +226,19 @@ public class DictionaryEntryPersistor {
   public static boolean create(InputStream in, EntryInserter inserter)
       throws IOException {
 
-    DictionaryContenthandler profileContentHandler =
-        new DictionaryContenthandler(inserter);
+    DictionaryContenthandler profileContentHandler = new DictionaryContenthandler(inserter);
 
     XMLReader xmlReader;
     try {
-      xmlReader = XMLReaderFactory.createXMLReader();
+      xmlReader = SAX_PARSER_FACTORY.newSAXParser().getXMLReader();
+      // Note:
+      // There is a compatibility problem here: JAXP default is false while SAX 2 default is true!
+      // OpenNLP requires it activated!
+      xmlReader.setFeature(SAX_FEATURE_NAMESPACES, true);
       xmlReader.setContentHandler(profileContentHandler);
       xmlReader.parse(new InputSource(new UncloseableInputStream(in)));
     }
-    catch (SAXException e) {
+    catch (ParserConfigurationException | SAXException e) {
       throw new InvalidFormatException("The profile data stream has " +
           "an invalid format!", e);
     }
@@ -290,7 +294,7 @@ public class DictionaryEntryPersistor {
     }
 
     Transformer serializer = hd.getTransformer();
-    serializer.setOutputProperty(OutputKeys.ENCODING, CHARSET);
+    serializer.setOutputProperty(OutputKeys.ENCODING, StandardCharsets.UTF_8.name());
     serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 
     hd.setResult(streamResult);
