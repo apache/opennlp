@@ -92,6 +92,57 @@ public abstract class AbstractParserModelTest {
   }
 
   /*
+   * Verifies / addresses OPENNLP-509
+   * See: https://issues.apache.org/jira/projects/OPENNLP/issues/OPENNLP-509
+   */
+  @Test
+  void testParsingCheckParentReferencesArePopulated() {
+    // fixtures
+    final String sent = "Martin is testing.";
+    // prepare
+    List<String> tokens = Arrays.asList(WhitespaceTokenizer.INSTANCE.tokenize(sent));
+    String text = String.join(" ", tokens);
+
+    Parse sentP = new Parse(text, new Span(0, text.length()),
+            AbstractBottomUpParser.INC_NODE, 0, null);
+    int start = 0;
+    int i = 0;
+    for (Iterator<String> ti = tokens.iterator(); ti.hasNext(); i++) {
+      String tok = ti.next();
+      sentP.insert(new Parse(text, new Span(start, start + tok.length()),
+              AbstractBottomUpParser.TOK_NODE, 0, i));
+      start += tok.length() + 1;
+    }
+
+    Parser parser = ParserFactory.create(getModel());
+    Assertions.assertNotNull(parser);
+
+    // Verifies parents of top-k parses (k=2)
+    Parse[] parses = parser.parse(sentP, 2);
+    Assertions.assertNotNull(parses);
+    for (Parse parent : parses) {
+      checkParentsEqual(parent);
+    }
+  }
+
+  /*
+   * Recursively traverses the parse tree and verifies parent references are populated.
+   */
+  private void checkParentsEqual(Parse parent) {
+    for (Parse child : parent.getChildren()) {
+      Parse cParent = child.getParent();
+      // System.out.println(cParent.toStringPennTreebank() " --- type: " cParent.getType());
+      if (AbstractBottomUpParser.TOK_NODE.equals(child.getType())) {
+        return; // found a leaf node: stopping recursion
+      }
+      Assertions.assertEquals(parent, cParent);
+      if (cParent.getChildren() != null) {
+        checkParentsEqual(child);
+      }
+    }
+  }
+
+  /*
    * Verifies changes in OPENNLP-1330 and addresses follow-up OPENNLP-1333
    * See: https://issues.apache.org/jira/projects/OPENNLP/issues/OPENNLP-1333
    *
