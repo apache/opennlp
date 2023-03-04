@@ -338,15 +338,30 @@ public abstract class AbstractBottomUpParser implements Parser {
       odh = ndh;
     }
     if (completeParses.size() == 0) {
+      if (guess != null) {
+        setParents(guess);
+        for (Parse childGuess: guess.getChildren()) {
+          setParents(childGuess);
+        }
+      }
       return new Parse[] {guess};
     }
     else if (numParses == 1) {
-      return new Parse[] {completeParses.first()};
+      Parse best = completeParses.first();
+      setParents(best);
+      for (Parse childBest: best.getChildren()) {
+        setParents(childBest);
+      }
+      return new Parse[] {best};
     }
     else {
       List<Parse> topParses = new ArrayList<>(numParses);
       while (!completeParses.isEmpty() && topParses.size() < numParses) {
         Parse tp = completeParses.first();
+        setParents(tp);
+        for (Parse childTp: tp.getChildren()) {
+          setParents(childTp);
+        }
         completeParses.remove(tp);
         topParses.add(tp);
         //parses.remove(tp);
