@@ -54,14 +54,14 @@ public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
           help.append(format);
         }
       }
-      return "converts " + help + " data format to native OpenNLP format";
+      return "Converts " + help + " data format to native OpenNLP format";
     } else if (2 < factories.keySet().size()) {
       for (String format : factories.keySet()) {
         if (!StreamFactoryRegistry.DEFAULT_FORMAT.equals(format)) {
           help.append(format).append(",");
         }
       }
-      return "converts foreign data formats (" + help.substring(0, help.length() - 1 ) +
+      return "Converts external data formats (" + help.substring(0, help.length() - 1 ) +
           ") to native OpenNLP format";
     } else {
       throw new AssertionError("There should be more than 1 factory registered for converter " +

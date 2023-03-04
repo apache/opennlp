@@ -39,7 +39,7 @@ public final class BuildModelUpdaterTool extends ModelUpdaterTool {
   private static final Logger logger = LoggerFactory.getLogger(BuildModelUpdaterTool.class);
 
   public String getShortDescription() {
-    return "trains and updates the build model in a parser model";
+    return "Trains and updates the build model in a parser model";
   }
 
   @Override

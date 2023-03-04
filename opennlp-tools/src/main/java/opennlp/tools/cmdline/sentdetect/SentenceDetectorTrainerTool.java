@@ -49,7 +49,7 @@ public final class SentenceDetectorTrainerTool
 
   @Override
   public String getShortDescription() {
-    return "trainer for the learnable sentence detector";
+    return "Trainer for the learnable sentence detector";
   }
 
   static Dictionary loadDict(File f) throws IOException {

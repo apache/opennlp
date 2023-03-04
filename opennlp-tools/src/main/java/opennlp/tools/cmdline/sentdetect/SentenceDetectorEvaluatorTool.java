@@ -54,7 +54,7 @@ public final class SentenceDetectorEvaluatorTool
 
   @Override
   public String getShortDescription() {
-    return "evaluator for the learnable sentence detector";
+    return "Measures the performance of the learnable sentence detector";
   }
 
   @Override

@@ -41,7 +41,7 @@ public class LemmatizerMETool extends BasicCmdLineTool {
   private static final Logger logger = LoggerFactory.getLogger(LemmatizerMETool.class);
 
   public String getShortDescription() {
-    return "learnable lemmatizer";
+    return "Learnable lemmatizer";
   }
 
   @Override

@@ -39,6 +39,11 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
   private static final Logger logger = LoggerFactory.getLogger(DictionaryDetokenizerTool.class);
 
   @Override
+  public String getShortDescription() {
+    return "Normalizes tokenized text according to rules defined in a detokenizer dictionary";
+  }
+
+  @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " detokenizerDictionary";
   }

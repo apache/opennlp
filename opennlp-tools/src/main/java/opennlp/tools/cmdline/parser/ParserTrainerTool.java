@@ -55,7 +55,7 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
 
   @Override
   public String getShortDescription() {
-    return "trains the learnable parser";
+    return "Trains the learnable parser";
   }
 
   static Dictionary buildDictionary(ObjectStream<Parse> parseSamples, HeadRules headRules, int cutoff) {

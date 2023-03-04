@@ -46,7 +46,7 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "learnable name finder";
+    return "Learnable name finder";
   }
 
   @Override

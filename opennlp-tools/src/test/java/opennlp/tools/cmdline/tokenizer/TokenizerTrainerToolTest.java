@@ -66,7 +66,7 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
   public void testGetShortDescription() {
     tokenizerTrainerTool = new TokenizerTrainerTool();
     Assertions.assertEquals(tokenizerTrainerTool.getShortDescription() ,
-        "trainer for the learnable tokenizer");
+        "Trainer for the learnable tokenizer");
   }
 
   @Test

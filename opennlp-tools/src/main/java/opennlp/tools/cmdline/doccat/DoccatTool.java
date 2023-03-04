@@ -42,7 +42,7 @@ public class DoccatTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "learned document categorizer";
+    return "Learned document categorizer";
   }
 
   @Override

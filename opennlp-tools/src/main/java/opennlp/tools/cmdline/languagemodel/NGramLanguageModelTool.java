@@ -44,7 +44,7 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "gives the probability and most probable next token(s) of a sequence of tokens in a " +
+    return "Gives the probability and most probable next token(s) of a sequence of tokens in a " +
         "language model";
   }
 
@@ -54,12 +54,10 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
     try (InputStream stream = new BufferedInputStream(new FileInputStream(lmFile))) {
       NGramLanguageModel nGramLanguageModel = new NGramLanguageModel(stream);
 
-      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
 
-      try {
-        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
-                SystemInputStreamFactory.encoding());
+      try (ObjectStream<String> lineStream = new PlainTextByLineStream(
+              new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
         perfMon = new PerformanceMonitor("nglm");
         perfMon.start();
         String line;

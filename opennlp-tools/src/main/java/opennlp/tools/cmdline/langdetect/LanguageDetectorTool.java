@@ -43,7 +43,7 @@ public class LanguageDetectorTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "learned language detector";
+    return "Learned language detector";
   }
 
   @Override

@@ -36,7 +36,7 @@ public final class TaggerModelReplacerTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "replaces the tagger model in a parser model";
+    return "Replaces the tagger model in a parser model";
   }
 
   @Override

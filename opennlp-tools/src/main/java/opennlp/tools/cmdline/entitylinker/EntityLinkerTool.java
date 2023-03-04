@@ -45,7 +45,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "links an entity to an external data set";
+    return "Links an entity to an external data set";
   }
 
   @Override

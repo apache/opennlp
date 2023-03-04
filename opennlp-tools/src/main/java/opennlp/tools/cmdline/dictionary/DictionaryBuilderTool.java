@@ -39,7 +39,7 @@ public class DictionaryBuilderTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "builds a new dictionary";
+    return "Builds a new dictionary";
   }
 
   @Override
