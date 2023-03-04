@@ -52,7 +52,7 @@ public final class TokenizerMEEvaluatorTool
 
   @Override
   public String getShortDescription() {
-    return "evaluator for the learnable tokenizer";
+    return "Measures the performance of the learnable tokenizer";
   }
 
   @Override

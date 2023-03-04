@@ -47,7 +47,7 @@ public class ChunkerTrainerTool
 
   @Override
   public String getShortDescription() {
-    return "trainer for the learnable chunker";
+    return "Trainer for the learnable chunker";
   }
 
   @Override

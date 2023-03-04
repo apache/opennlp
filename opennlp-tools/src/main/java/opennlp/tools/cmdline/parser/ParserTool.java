@@ -52,7 +52,7 @@ public final class ParserTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "performs full syntactic parsing";
+    return "Performs full syntactic parsing";
   }
 
   @Override

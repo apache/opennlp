@@ -43,7 +43,7 @@ public final class CheckModelUpdaterTool extends ModelUpdaterTool {
 
   @Override
   public String getShortDescription() {
-    return "trains and updates the check model in a parser model";
+    return "Trains and updates the check model in a parser model";
   }
 
   @Override

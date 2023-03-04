@@ -43,7 +43,7 @@ public final class SentenceDetectorTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "learnable sentence detector";
+    return "Learnable sentence detector";
   }
 
   @Override

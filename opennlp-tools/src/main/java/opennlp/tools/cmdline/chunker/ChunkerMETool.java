@@ -42,7 +42,7 @@ public class ChunkerMETool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "learnable chunker";
+    return "Learnable chunker";
   }
 
   @Override

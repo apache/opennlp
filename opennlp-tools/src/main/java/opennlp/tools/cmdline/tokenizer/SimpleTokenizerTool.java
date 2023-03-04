@@ -29,7 +29,7 @@ public final class SimpleTokenizerTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "character class tokenizer";
+    return "Character class tokenizer";
   }
 
   @Override

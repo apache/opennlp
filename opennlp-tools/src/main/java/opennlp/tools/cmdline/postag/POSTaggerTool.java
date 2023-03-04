@@ -41,7 +41,7 @@ public final class POSTaggerTool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "learnable part of speech tagger";
+    return "Learnable part of speech tagger";
   }
 
   @Override

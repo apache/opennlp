@@ -31,7 +31,7 @@ public final class TokenizerMETool extends BasicCmdLineTool {
 
   @Override
   public String getShortDescription() {
-    return "learnable tokenizer";
+    return "Learnable tokenizer";
   }
 
   @Override

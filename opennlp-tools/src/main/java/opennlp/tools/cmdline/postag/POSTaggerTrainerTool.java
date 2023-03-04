@@ -49,7 +49,7 @@ public final class POSTaggerTrainerTool
 
   @Override
   public String getShortDescription() {
-    return "trains a model for the part-of-speech tagger";
+    return "Trains a model for the part-of-speech tagger";
   }
 
   @Override
