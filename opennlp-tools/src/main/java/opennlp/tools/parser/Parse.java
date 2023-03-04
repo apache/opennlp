@@ -450,6 +450,15 @@ public class Parse implements Cloneable, Comparable<Parse> {
   }
 
   /**
+   * @return Retrieves a String representation using Penn Treebank-style formatting.
+   */
+  public String toStringPennTreebank() {
+    StringBuffer buffer = new StringBuffer();
+    show(buffer);
+    return buffer.toString();
+  }
+
+  /**
    * Represents this {@link Parse} in a human-readable way.
    */
   @Override
