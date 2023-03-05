@@ -29,7 +29,7 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * This dummy chunk sample stream reads a file formatted as described at
- * <a hraf="http://www.cnts.ua.ac.be/conll2000/chunking/output.html/">] and
+ * <a href="http://www.cnts.ua.ac.be/conll2000/chunking/output.html/">] and
  * can be used together with DummyChunker simulate a chunker.
  */
 public class DummyChunkSampleStream extends
