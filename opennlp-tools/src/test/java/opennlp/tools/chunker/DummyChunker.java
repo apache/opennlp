@@ -26,7 +26,7 @@ import opennlp.tools.util.Span;
 
 /**
  * This dummy chunker implementation reads a file formatted as described at
- * <a hraf="http://www.cnts.ua.ac.be/conll2000/chunking/output.html/">] to
+ * <a href="http://www.cnts.ua.ac.be/conll2000/chunking/output.html/">] to
  * simulate a Chunker. The file has samples of sentences, with target and
  * predicted values.
  */
