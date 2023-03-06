@@ -19,7 +19,13 @@ package opennlp.tools.parser;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -28,7 +34,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import opennlp.tools.cmdline.parser.ParserTool;
+import opennlp.tools.eval.SourceForgeModelEval;
+import opennlp.tools.tokenize.SimpleTokenizer;
+import opennlp.tools.util.MarkableFileInputStreamFactory;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+
+import static opennlp.tools.eval.AbstractEvalTest.getOpennlpDataDir;
 
 /**
  * Common test class for {@link ParserModel}-driven test cases.
@@ -112,4 +125,46 @@ public abstract class AbstractParserModelTest {
     ) ;
   }
 
+  /**
+   * Verifies that parsing with a {@link ParserModel} picks up top k.
+   */
+  @ParameterizedTest(name = "Parse example {index}.")
+  @MethodSource("provideParsePairsForTopKEquals2")
+  void testParsingForTopKEquals2(String input, String reference) {
+    // prepare
+    Assertions.assertNotNull(getModel());
+    Parse p = Parse.parseParse(input);
+    Assertions.assertNotNull(p);
+    Assertions.assertTrue(p.complete());
+    Assertions.assertEquals(reference , p.getText());
+
+    opennlp.tools.parser.Parser parser = ParserFactory.create(getModel());
+    Assertions.assertNotNull(parser);
+
+    // TEST: parsing with numParses = 2
+    Parse[] pArr = parser.parse(p , 2);
+    Assertions.assertNotNull(pArr);
+    Assertions.assertEquals(2 , pArr.length);
+    Assertions.assertEquals(reference , p.getText());
+  }
+
+  /*
+   * Produces a stream of <parse|text> pairs for parameterized unit tests.
+   */
+  private static Stream<Arguments> provideParsePairsForTopKEquals2() {
+    return Stream.of(
+        // Example 1:
+        Arguments.of("(TOP " +
+                "(VP (VBG Testing) " +
+                "(PP (IN for) " +
+                "(NP (DT the) " +
+                "(NNP AbstractBottomUpParser))) " +
+                "(S (VP (TO to) (VP (VB return) " +
+                "(NP (JJ top) (JJ first) (NN k)) (, ,) " +
+                "(PP (RB instead) (IN of) (NP (DT the) (NN bottom) (NN k)))))) (. parses.)))" ,
+            "Testing for the AbstractBottomUpParser to return top first k , " +
+                "instead of the bottom k parses. ")
+    );
+  }
 }
+
