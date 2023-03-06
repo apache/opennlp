@@ -19,13 +19,7 @@ package opennlp.tools.parser;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -34,14 +28,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import opennlp.tools.cmdline.parser.ParserTool;
-import opennlp.tools.eval.SourceForgeModelEval;
-import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.util.MarkableFileInputStreamFactory;
-import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
-
-import static opennlp.tools.eval.AbstractEvalTest.getOpennlpDataDir;
 
 /**
  * Common test class for {@link ParserModel}-driven test cases.
