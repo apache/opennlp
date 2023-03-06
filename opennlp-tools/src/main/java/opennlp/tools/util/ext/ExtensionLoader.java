@@ -18,6 +18,7 @@
 package opennlp.tools.util.ext;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 import opennlp.tools.commons.Internal;
 
@@ -62,8 +63,8 @@ public class ExtensionLoader {
       if (clazz.isAssignableFrom(extClazz)) {
 
         try {
-          return (T) extClazz.newInstance();
-        } catch (InstantiationException e) {
+          return (T) extClazz.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | NoSuchMethodException e) {
           throw new ExtensionNotLoadedException(e);
         } catch (IllegalAccessException e) {
           // constructor is private. Try to load using INSTANCE
@@ -81,6 +82,8 @@ public class ExtensionLoader {
             }
           }
           throw new ExtensionNotLoadedException(e);
+        } catch (InvocationTargetException e) {
+          throw new RuntimeException(e);
         }
       }
       else {
