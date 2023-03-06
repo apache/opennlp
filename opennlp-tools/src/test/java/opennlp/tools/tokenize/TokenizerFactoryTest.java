@@ -65,7 +65,7 @@ public class TokenizerFactoryTest {
   void testDefault() throws IOException {
 
     Dictionary dic = loadAbbDictionary();
-    final String lang = "spa";
+    final String lang = "eng";
 
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
@@ -99,7 +99,7 @@ public class TokenizerFactoryTest {
   void testNullDict() throws IOException {
 
     Dictionary dic = null;
-    final String lang = "spa";
+    final String lang = "eng";
 
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
@@ -134,7 +134,7 @@ public class TokenizerFactoryTest {
 
     Dictionary dic = null;
     final String lang = "spa";
-    String pattern = "^[0-9A-Za-z]+$";
+    String pattern = "^[0-9a-záéíóúüýñA-ZÁÉÍÓÚÝÑ]+$";
 
     TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
         Pattern.compile(pattern)));
@@ -167,7 +167,7 @@ public class TokenizerFactoryTest {
   void testDummyFactory() throws IOException {
 
     Dictionary dic = loadAbbDictionary();
-    final String lang = "spa";
+    final String lang = "eng";
     String pattern = "^[0-9A-Za-z]+$";
 
     TokenizerModel model = train(new DummyTokenizerFactory(lang, dic, true,
@@ -199,7 +199,7 @@ public class TokenizerFactoryTest {
   @Test
   void testCreateDummyFactory() throws IOException {
     Dictionary dic = loadAbbDictionary();
-    final String lang = "spa";
+    final String lang = "eng";
     String pattern = "^[0-9A-Za-z]+$";
 
     TokenizerFactory factory = TokenizerFactory.create(
