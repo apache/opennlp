@@ -69,6 +69,12 @@ public class SnowballStemmerTest {
 
   }
 
+  @Test // Context: OpenNLP-1229 - This is here to demonstrate & verify.
+  void testStemThis() {
+    SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.ENGLISH);
+    Assertions.assertEquals("this", stemmer.stem("this"));
+  }
+
   @Test
   void testFinnish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.FINNISH);

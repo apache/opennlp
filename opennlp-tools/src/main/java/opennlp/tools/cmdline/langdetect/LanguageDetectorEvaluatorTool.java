@@ -25,6 +25,9 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
@@ -51,6 +54,9 @@ public final class LanguageDetectorEvaluatorTool extends
 
   interface EvalToolParams extends EvaluatorParams, FineGrainedEvaluatorParams {
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(LanguageDetectorEvaluatorTool.class);
+
 
   public LanguageDetectorEvaluatorTool() {
     super(LanguageSample.class, EvalToolParams.class);
@@ -90,7 +96,7 @@ public final class LanguageDetectorEvaluatorTool extends
 
     LanguageDetectorEvaluator evaluator = new LanguageDetectorEvaluator(
         new LanguageDetectorME(model),
-        listeners.toArray(new LanguageDetectorEvaluationMonitor[listeners.size()]));
+        listeners.toArray(new LanguageDetectorEvaluationMonitor[0]));
 
     final PerformanceMonitor monitor = new PerformanceMonitor("doc");
 
@@ -115,7 +121,6 @@ public final class LanguageDetectorEvaluatorTool extends
       monitor.startAndPrintThroughput();
       evaluator.evaluate(measuredSampleStream);
     } catch (IOException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: "
               + e.getMessage(), e);
     }
@@ -123,13 +128,11 @@ public final class LanguageDetectorEvaluatorTool extends
 
     monitor.stopAndPrintFinalResult();
 
-    System.out.println();
-
-    System.out.println(evaluator);
+    logger.info(evaluator.toString());
 
     if (reportListener != null) {
-      System.out.println("Writing fine-grained report to "
-          + params.getReportOutputFile().getAbsolutePath());
+      logger.info("Writing fine-grained report to {}",
+          params.getReportOutputFile().getAbsolutePath());
       reportListener.writeReport();
 
       try {

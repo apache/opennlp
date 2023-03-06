@@ -26,7 +26,7 @@ import opennlp.tools.util.Span;
 
 /**
  * This dummy chunker implementation reads a file formatted as described at
- * <a hraf="http://www.cnts.ua.ac.be/conll2000/chunking/output.html/">] to
+ * <a href="http://www.cnts.ua.ac.be/conll2000/chunking/output.html/">] to
  * simulate a Chunker. The file has samples of sentences, with target and
  * predicted values.
  */
@@ -39,8 +39,8 @@ public class DummyChunker implements Chunker {
   }
 
   public List<String> chunk(List<String> toks, List<String> tags) {
-    return Arrays.asList(chunk(toks.toArray(new String[toks.size()]),
-        tags.toArray(new String[tags.size()])));
+    return Arrays.asList(chunk(toks.toArray(new String[0]),
+        tags.toArray(new String[0])));
   }
 
   public String[] chunk(String[] toks, String[] tags) {

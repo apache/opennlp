@@ -105,7 +105,7 @@ public class ChunkerME implements Chunker {
     TokenTag[] tuples = TokenTag.create(toks, tags);
     bestSequence = model.bestSequence(tuples, new Object[] {}, contextGenerator, sequenceValidator);
     List<String> c = bestSequence.getOutcomes();
-    return c.toArray(new String[c.size()]);
+    return c.toArray(new String[0]);
   }
 
   @Override

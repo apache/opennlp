@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import morfologik.stemming.DictionaryMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -36,6 +38,7 @@ import opennlp.tools.postag.POSDictionary;
 
 public class XMLDictionaryToTableTool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(XMLDictionaryToTableTool.class);
   private static String SEPARATOR;
 
   public String getShortDescription() {
@@ -80,7 +83,7 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
           }
         }
       }
-      System.out.println("Created dictionary: " + dictOutFile.toPath());
+      logger.info("Created dictionary: {}", dictOutFile.toPath());
     } catch (IOException e) {
       throw new TerminateToolException(-1, "Error while writing output: "
           + e.getMessage(), e);
@@ -99,15 +102,13 @@ public class XMLDictionaryToTableTool extends BasicCmdLineTool {
       throw new TerminateToolException(-1, "Error while writing metadata output: "
           + e.getMessage(), e);
     }
-    System.out.println("Created metadata: " + dictOutFile.toPath());
+    logger.info("Created metadata: {}", dictOutFile.toPath());
 
   }
 
   private boolean valid(String word, String tag) {
     if (word.contains(SEPARATOR) || tag.contains(SEPARATOR)) {
-      System.out
-          .println("Warn: invalid entry because contains separator - word: "
-              + word + " tag: " + tag);
+      logger.warn("invalid entry because contains separator - word: {} tag: {}", word, tag);
       return false;
     }
 

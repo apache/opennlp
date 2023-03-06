@@ -22,7 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
@@ -40,6 +42,9 @@ import opennlp.tools.ml.model.Context;
  * @see AbstractModelWriter
  */
 public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
+
+  private static final Logger logger = LoggerFactory.getLogger(NaiveBayesModelWriter.class);
+
   protected Context[] PARAMS;
   protected String[] OUTCOME_LABELS;
   protected String[] PRED_LABELS;
@@ -145,7 +150,7 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
       }
     }
     outcomePatterns.add(newGroup);
-    System.err.println(outcomePatterns.size() + " outcome patterns");
+    logger.info("{} outcome patterns", outcomePatterns.size());
     return outcomePatterns;
   }
   

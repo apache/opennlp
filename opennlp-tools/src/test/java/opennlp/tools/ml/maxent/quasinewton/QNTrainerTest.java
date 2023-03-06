@@ -58,7 +58,7 @@ public class QNTrainerTest {
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     testDataIndexer.index(rvfes1);
     // when
-    QNModel trainedModel = new QNTrainer(false).trainModel(ITERATIONS, testDataIndexer);
+    QNModel trainedModel = new QNTrainer().trainModel(ITERATIONS, testDataIndexer);
     // then
     Assertions.assertNotNull(trainedModel);
   }
@@ -69,9 +69,8 @@ public class QNTrainerTest {
     RealValueFileEventStream rvfes1 = new RealValueFileEventStream(
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     testDataIndexer.index(rvfes1);
-    ;
     // when
-    QNModel trainedModel = new QNTrainer(15, true).trainModel(ITERATIONS, testDataIndexer);
+    QNModel trainedModel = new QNTrainer(15).trainModel(ITERATIONS, testDataIndexer);
     String[] features2Classify = new String[] {
         "feature2", "feature3", "feature3",
         "feature3", "feature3", "feature3",
@@ -89,10 +88,10 @@ public class QNTrainerTest {
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     testDataIndexer.index(rvfes1);
     // when
-    QNModel trainedModel = new QNTrainer(15, true).trainModel(
+    QNModel trainedModel = new QNTrainer(15).trainModel(
         ITERATIONS, testDataIndexer);
 
-    Assertions.assertFalse(trainedModel.equals(null));
+    Assertions.assertNotEquals(null, trainedModel);
   }
 
   @Test
@@ -102,7 +101,7 @@ public class QNTrainerTest {
         "src/test/resources/data/opennlp/maxent/real-valued-weights-training-data.txt");
     testDataIndexer.index(rvfes1);
     // when
-    QNModel trainedModel = new QNTrainer(5, 700, true).trainModel(ITERATIONS, testDataIndexer);
+    QNModel trainedModel = new QNTrainer(5, 700).trainModel(ITERATIONS, testDataIndexer);
 
     ByteArrayOutputStream modelBytes = new ByteArrayOutputStream();
     GenericModelWriter modelWriter = new GenericModelWriter(trainedModel,
@@ -115,7 +114,7 @@ public class QNTrainerTest {
     AbstractModel readModel = modelReader.getModel();
     QNModel deserModel = (QNModel) readModel;
 
-    Assertions.assertTrue(trainedModel.equals(deserModel));
+    Assertions.assertEquals(trainedModel, deserModel);
 
     String[] features2Classify = new String[] {
         "feature2", "feature3", "feature3",

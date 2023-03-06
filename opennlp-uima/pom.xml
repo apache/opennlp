@@ -25,7 +25,7 @@
 	<parent>
 	    <groupId>org.apache.opennlp</groupId>
 	    <artifactId>opennlp</artifactId>
-	    <version>2.1.1-SNAPSHOT</version>
+	    <version>2.1.2-SNAPSHOT</version>
 	    <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -42,12 +42,6 @@
 		</repository>
 	</repositories>
 
-	<properties>
-		<!--This property should be aligned with the version UIMA uses-->
-		<slf4j.version>1.7.36</slf4j.version>
-	</properties>
-
-
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.opennlp</groupId>
@@ -59,6 +53,11 @@
 			<artifactId>uimaj-core</artifactId>
 			<version>3.3.1</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 
 		<dependency>
@@ -83,7 +82,6 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>${slf4j.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

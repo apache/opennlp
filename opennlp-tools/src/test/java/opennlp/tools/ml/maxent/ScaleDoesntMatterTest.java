@@ -80,7 +80,6 @@ public class ScaleDoesntMatterTest {
     double[] smallResults = smallModel.eval(contexts, values);
 
     String smallResultString = smallModel.getAllOutcomes(smallResults);
-    System.out.println("smallResults: " + smallResultString);
 
     ObjectStream<Event> largeEventStream = new RealBasicEventStream(
         new PlainTextByLineStream(new MockInputStreamFactory(largeValues), StandardCharsets.UTF_8));
@@ -96,16 +95,9 @@ public class ScaleDoesntMatterTest {
     double[] largeResults = largeModel.eval(contexts, values);
 
     String largeResultString = largeModel.getAllOutcomes(largeResults);
-    System.out.println("largeResults: " + largeResultString);
 
     Assertions.assertEquals(smallResults.length, largeResults.length);
     for (int i = 0; i < smallResults.length; i++) {
-      System.out.println(String.format(
-          "classifiy with smallModel: %1$s = %2$f", smallModel.getOutcome(i),
-          smallResults[i]));
-      System.out.println(String.format(
-          "classifiy with largeModel: %1$s = %2$f", largeModel.getOutcome(i),
-          largeResults[i]));
       Assertions.assertEquals(largeResults[i], smallResults[i], 0.01f);
     }
   }

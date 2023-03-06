@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.maxent.quasinewton.QNMinimizer.Evaluator;
@@ -37,6 +40,8 @@ import opennlp.tools.util.TrainingParameters;
  * @see AbstractEventTrainer
  */
 public class QNTrainer extends AbstractEventTrainer {
+
+  private static final Logger logger = LoggerFactory.getLogger(QNTrainer.class);
 
   public static final String MAXENT_QN_VALUE = "MAXENT_QN";
 
@@ -77,6 +82,7 @@ public class QNTrainer extends AbstractEventTrainer {
    * The resulting instance does not print progress messages about training to STDOUT.
    */
   public QNTrainer() {
+    this(M_DEFAULT);
   }
 
   /**
@@ -87,15 +93,14 @@ public class QNTrainer extends AbstractEventTrainer {
   public QNTrainer(TrainingParameters parameters) {
     super(parameters);
   }
-  
+
   /**
    * Initializes a {@link QNTrainer}.
    *
-   * @param verbose Whether to send progress messages about training to
-   *                STDOUT when {@code true}; trains silently otherwise.
+   * @param m The number of hessian updates to store.
    */
-  public QNTrainer(boolean verbose) {
-    this(M_DEFAULT, verbose);
+  public QNTrainer(int m ) {
+    this(m, MAX_FCT_EVAL_DEFAULT);
   }
 
   /**
@@ -103,30 +108,7 @@ public class QNTrainer extends AbstractEventTrainer {
    *
    * @param m The number of hessian updates to store.
    */
-  public QNTrainer(int m) {
-    this(m, true);
-  }
-
-  /**
-   * Initializes a {@link QNTrainer}.
-   *
-   * @param m The number of hessian updates to store.
-   * @param verbose Whether to send progress messages about training to
-   *                STDOUT when {@code true}; trains silently otherwise.
-   */
-  public QNTrainer(int m, boolean verbose) {
-    this(m, MAX_FCT_EVAL_DEFAULT, verbose);
-  }
-
-  /**
-   * Initializes a {@link QNTrainer}.
-   *
-   * @param m The number of hessian updates to store.
-   * @param verbose Whether to send progress messages about training to
-   *                STDOUT when {@code true}; trains silently otherwise.
-   */
-  public QNTrainer(int m, int maxFctEval, boolean verbose) {
-    this.printMessages    = verbose;
+  public QNTrainer(int m, int maxFctEval) {
     this.m          = m < 0 ? M_DEFAULT : m;
     this.maxFctEval = maxFctEval < 0 ? MAX_FCT_EVAL_DEFAULT : maxFctEval;
     this.threads    = THREADS_DEFAULT;
@@ -229,15 +211,15 @@ public class QNTrainer extends AbstractEventTrainer {
     // Train model's parameters
     Function objectiveFunction;
     if (threads == 1) {
-      System.out.println("Computing model parameters ...");
+      logger.info("Computing model parameters ...");
       objectiveFunction = new NegLogLikelihood(indexer);
     } else {
-      System.out.println("Computing model parameters in " + threads + " threads ...");
+      logger.info("Computing model parameters with {} threads...", threads);
       objectiveFunction = new ParallelNegLogLikelihood(indexer, threads);
     }
 
     QNMinimizer minimizer = new QNMinimizer(
-        l1Cost, l2Cost, iterations, m, maxFctEval, printMessages);
+        l1Cost, l2Cost, iterations, m, maxFctEval);
     minimizer.setEvaluator(new ModelEvaluator(indexer));
 
     double[] parameters = minimizer.minimize(objectiveFunction);

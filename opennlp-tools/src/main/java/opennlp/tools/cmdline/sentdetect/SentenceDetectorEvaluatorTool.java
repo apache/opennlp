@@ -19,6 +19,9 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
@@ -42,13 +45,16 @@ public final class SentenceDetectorEvaluatorTool
   interface EvalToolParams extends EvaluatorParams {
   }
 
+  private static final Logger logger = LoggerFactory.getLogger(SentenceDetectorEvaluatorTool.class);
+
+
   public SentenceDetectorEvaluatorTool() {
     super(SentenceSample.class, EvalToolParams.class);
   }
 
   @Override
   public String getShortDescription() {
-    return "evaluator for the learnable sentence detector";
+    return "Measures the performance of the learnable sentence detector";
   }
 
   @Override
@@ -65,7 +71,7 @@ public final class SentenceDetectorEvaluatorTool
     SentenceDetectorEvaluator evaluator = new SentenceDetectorEvaluator(
         new SentenceDetectorME(model), errorListener);
 
-    System.out.print("Evaluating ... ");
+    logger.info("Evaluating ... ");
     try {
       evaluator.evaluate(sampleStream);
     }
@@ -81,9 +87,8 @@ public final class SentenceDetectorEvaluatorTool
       }
     }
 
-    System.err.println("done");
-    System.out.println();
+    logger.info("done");
 
-    System.out.println(evaluator.getFMeasure());
+    logger.info(evaluator.getFMeasure().toString());
   }
 }

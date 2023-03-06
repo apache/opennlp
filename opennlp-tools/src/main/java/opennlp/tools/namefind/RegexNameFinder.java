@@ -142,7 +142,7 @@ public final class RegexNameFinder implements TokenNameFinder {
       }
     }
 
-    return annotations.toArray(new Span[annotations.size()]);
+    return annotations.toArray(new Span[0]);
   }
 
   /**
@@ -177,7 +177,7 @@ public final class RegexNameFinder implements TokenNameFinder {
       }
     }
 
-    return annotations.toArray(new Span[annotations.size()]);
+    return annotations.toArray(new Span[0]);
   }
 
   @Override

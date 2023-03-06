@@ -45,7 +45,7 @@ public class DoccatTrainerTool
 
   @Override
   public String getShortDescription() {
-    return "trainer for the learnable document categorizer";
+    return "Trainer for the learnable document categorizer";
   }
 
   @Override

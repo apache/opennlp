@@ -27,11 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.util.Span;
 
 public class MascSentence extends Span {
 
-  private static final long serialVersionUID = -3963079332759345419L;
+  private static final Logger logger = LoggerFactory.getLogger(MascSentence.class);
+  private static final long serialVersionUID = 6295507533472650848L;
 
   private static class QuarkExtractor {
 
@@ -141,15 +145,15 @@ public class MascSentence extends Span {
 
             int[] quarksOfToken = tokenToQuarks.get(token); // Get the quark IDs contained in the token
             if (quarksOfToken == null) {
-              System.err.println("Token without quarks found: " + token);
+              logger.warn("Token without quarks found: {}", token);
             }
 
             for (int quark : quarksOfToken) {
               if (!wordsById.containsKey(quark)) {
                 fileWithoutIssues = false;
-                System.out.println("[WARNING] Some tokens cross sentence boundaries." +
-                    "\n\tQuark ID: " + quark +
-                    "\n\tPenn token ID: " + token);
+                logger.warn("Some tokens cross sentence boundaries." +
+                    "\n\tQuark ID: {}" +
+                    "\n\tPenn token ID: {}", quark, token );
               }
             }
 
@@ -239,7 +243,7 @@ public class MascSentence extends Span {
       Span leftSpan = namedEntities.get(leftIndex);
       Span rightSpan = namedEntities.get(rightIndex);
       if (leftSpan.contains(rightSpan) || leftSpan.crosses(rightSpan)) {
-        System.out.println("[WARNING] Named entities overlap. This is forbidden in the OpenNLP." +
+        logger.warn("Named entities overlap. This is forbidden in the OpenNLP." +
             "\n\tKeeping the longer of them.");
         if (rightSpan.length() > leftSpan.length()) {
           overlaps.add(leftIndex);

@@ -22,7 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -78,7 +77,7 @@ public class SentenceDetectorFactoryTest {
     SentenceDetectorFactory factory = sdModel.getFactory();
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
     Assertions.assertTrue(factory.getEndOfSentenceScanner() instanceof DefaultEndOfSentenceScanner);
-    Assertions.assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));
+    Assertions.assertArrayEquals(eos, factory.getEOSCharacters());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     sdModel.serialize(out);
@@ -89,7 +88,7 @@ public class SentenceDetectorFactoryTest {
     factory = fromSerialized.getFactory();
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
     Assertions.assertTrue(factory.getEndOfSentenceScanner() instanceof DefaultEndOfSentenceScanner);
-    Assertions.assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));
+    Assertions.assertArrayEquals(eos, factory.getEOSCharacters());
   }
 
   @Test
@@ -104,7 +103,7 @@ public class SentenceDetectorFactoryTest {
     Assertions.assertNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
     Assertions.assertTrue(factory.getEndOfSentenceScanner() instanceof DefaultEndOfSentenceScanner);
-    Assertions.assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));
+    Assertions.assertArrayEquals(eos, factory.getEOSCharacters());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     sdModel.serialize(out);
@@ -116,7 +115,7 @@ public class SentenceDetectorFactoryTest {
     Assertions.assertNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
     Assertions.assertTrue(factory.getEndOfSentenceScanner() instanceof DefaultEndOfSentenceScanner);
-    Assertions.assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));
+    Assertions.assertArrayEquals(eos, factory.getEOSCharacters());
   }
 
   @Test
@@ -131,8 +130,7 @@ public class SentenceDetectorFactoryTest {
     Assertions.assertNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
     Assertions.assertTrue(factory.getEndOfSentenceScanner() instanceof DefaultEndOfSentenceScanner);
-    Assertions.assertTrue(Arrays.equals(Factory.defaultEosCharacters,
-        factory.getEOSCharacters()));
+    Assertions.assertArrayEquals(Factory.defaultEosCharacters, factory.getEOSCharacters());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     sdModel.serialize(out);
@@ -144,8 +142,7 @@ public class SentenceDetectorFactoryTest {
     Assertions.assertNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
     Assertions.assertTrue(factory.getEndOfSentenceScanner() instanceof DefaultEndOfSentenceScanner);
-    Assertions.assertTrue(Arrays.equals(Factory.defaultEosCharacters,
-        factory.getEOSCharacters()));
+    Assertions.assertArrayEquals(Factory.defaultEosCharacters, factory.getEOSCharacters());
   }
 
   @Test
@@ -161,7 +158,7 @@ public class SentenceDetectorFactoryTest {
     Assertions.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DummySDContextGenerator);
     Assertions.assertTrue(factory.getEndOfSentenceScanner() instanceof DummyEOSScanner);
-    Assertions.assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));
+    Assertions.assertArrayEquals(eos, factory.getEOSCharacters());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     sdModel.serialize(out);
@@ -173,10 +170,10 @@ public class SentenceDetectorFactoryTest {
     Assertions.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DummySDContextGenerator);
     Assertions.assertTrue(factory.getEndOfSentenceScanner() instanceof DummyEOSScanner);
-    Assertions.assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));
+    Assertions.assertArrayEquals(eos, factory.getEOSCharacters());
 
     Assertions.assertEquals(factory.getAbbreviationDictionary(), sdModel.getAbbreviations());
-    Assertions.assertTrue(Arrays.equals(factory.getEOSCharacters(), sdModel.getEosCharacters()));
+    Assertions.assertArrayEquals(factory.getEOSCharacters(), sdModel.getEosCharacters());
   }
 
   @Test
@@ -191,7 +188,7 @@ public class SentenceDetectorFactoryTest {
     Assertions.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DummySDContextGenerator);
     Assertions.assertTrue(factory.getEndOfSentenceScanner() instanceof DummyEOSScanner);
-    Assertions.assertTrue(Arrays.equals(eos, factory.getEOSCharacters()));
+    Assertions.assertArrayEquals(eos, factory.getEOSCharacters());
   }
 
 }

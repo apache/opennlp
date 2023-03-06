@@ -27,6 +27,9 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.DataIndexer;
@@ -39,7 +42,6 @@ import opennlp.tools.ml.model.Prior;
 import opennlp.tools.ml.model.UniformPrior;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
-
 
 /**
  * An implementation of Generalized Iterative Scaling (GIS).
@@ -63,6 +65,7 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class GISTrainer extends AbstractEventTrainer {
 
+  private static final Logger logger = LoggerFactory.getLogger(GISTrainer.class);
   @Deprecated
   public static final String OLD_LL_THRESHOLD_PARAM = "llthreshold";
   
@@ -168,7 +171,6 @@ public class GISTrainer extends AbstractEventTrainer {
    * The resulting instance does not print progress messages about training to STDOUT.
    */
   public GISTrainer() {
-    printMessages = false;
   }
 
   /**
@@ -189,9 +191,8 @@ public class GISTrainer extends AbstractEventTrainer {
     // Just in case someone is using "llthreshold" instead of LLThreshold...
     // this warning can be removed in a future version of OpenNLP.
     if (trainingParameters.getDoubleParameter(OLD_LL_THRESHOLD_PARAM, -1.) > 0. ) {
-      display("WARNING: the training parameter: " + OLD_LL_THRESHOLD_PARAM + 
-          " has been deprecated.  Please use " +
-          LOG_LIKELIHOOD_THRESHOLD_DEFAULT + " instead");
+      logger.warn("The training parameter: {} has been deprecated. Please use {} instead.",
+              OLD_LL_THRESHOLD_PARAM, LOG_LIKELIHOOD_THRESHOLD_DEFAULT);
       // if they didn't supply a value for both llthreshold AND LLThreshold  copy it over..
       if (trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, -1.) < 0. ) {
         trainingParameters.put(LOG_LIKELIHOOD_THRESHOLD_PARAM,
@@ -228,16 +229,6 @@ public class GISTrainer extends AbstractEventTrainer {
 
     int threads = trainingParameters.getIntParameter(TrainingParameters.THREADS_PARAM, 1);
     return trainModel(iterations, indexer, threads);
-  }
-
-  /**
-   * Initializes a {@link GISTrainer}.
-   *
-   * @param printMessages Whether to send progress messages about training to
-   *                      STDOUT when {@code true}; trains silently otherwise.
-   */
-  GISTrainer(boolean printMessages) {
-    this.printMessages = printMessages;
   }
 
   /**
@@ -367,7 +358,7 @@ public class GISTrainer extends AbstractEventTrainer {
     modelExpects = new MutableContext[threads][];
 
     /* Incorporate all of the needed info *****/
-    display("Incorporating indexed data for training...  \n");
+    logger.info("Incorporating indexed data for training...");
     contexts = di.getContexts();
     values = di.getValues();
     /*
@@ -397,7 +388,7 @@ public class GISTrainer extends AbstractEventTrainer {
         }
       }
     }
-    display("done.\n");
+    logger.info("done.");
 
     outcomeLabels = di.getOutcomeLabels();
     outcomeList = di.getOutcomeList();
@@ -407,9 +398,9 @@ public class GISTrainer extends AbstractEventTrainer {
     prior.setLabels(outcomeLabels, predLabels);
     numPreds = predLabels.length;
 
-    display("\tNumber of Event Tokens: " + numUniqueEvents + "\n");
-    display("\t    Number of Outcomes: " + numOutcomes + "\n");
-    display("\t  Number of Predicates: " + numPreds + "\n");
+    logger.info("\tNumber of Event Tokens: {} " +
+        "\n\t Number of Outcomes: {} " +
+        "\n\t Number of Predicates: {}", numUniqueEvents, numOutcomes, numPreds);
 
     // set up feature arrays
     float[][] predCount = new float[numPreds][numOutcomes];
@@ -489,13 +480,13 @@ public class GISTrainer extends AbstractEventTrainer {
       }
     }
 
-    display("...done.\n");
+    logger.info("...done.");
 
     /* Find the parameters *****/
     if (threads == 1) {
-      display("Computing model parameters ...\n");
+      logger.info("Computing model parameters ...");
     } else {
-      display("Computing model parameters in " + threads + " threads...\n");
+      logger.info("Computing model parameters in {} threads...", threads);
     }
 
     findParameters(iterations, correctionConstant);
@@ -520,19 +511,12 @@ public class GISTrainer extends AbstractEventTrainer {
         new ExecutorCompletionService<>(executor);
     double prevLL = 0.0;
     double currLL;
-    display("Performing " + iterations + " iterations.\n");
+    logger.info("Performing {} iterations.", iterations);
     for (int i = 1; i <= iterations; i++) {
-      if (i < 10) {
-        display("  " + i + ":  ");
-      } else if (i < 100) {
-        display(" " + i + ":  ");
-      } else {
-        display(i + ":  ");
-      }
-      currLL = nextIteration(correctionConstant, completionService);
+      currLL = nextIteration(correctionConstant, completionService, i);
       if (i > 1) {
         if (prevLL > currLL) {
-          System.err.println("Model Diverging: loglikelihood decreased");
+          logger.warn("Model Diverging: loglikelihood decreased");
           break;
         }
         if (currLL - prevLL < llThreshold) {
@@ -575,7 +559,8 @@ public class GISTrainer extends AbstractEventTrainer {
 
   /* Compute one iteration of GIS and return log-likelihood.*/
   private double nextIteration(double correctionConstant,
-                               CompletionService<ModelExpectationComputeTask> completionService) {
+                               CompletionService<ModelExpectationComputeTask> completionService,
+                               int iteration) {
     // compute contribution of p(a|b_i) for each feature and the new
     // correction parameter
     double loglikelihood = 0.0;
@@ -606,9 +591,8 @@ public class GISTrainer extends AbstractEventTrainer {
         finishedTask = completionService.take().get();
       } catch (InterruptedException e) {
         // TODO: We got interrupted, but that is currently not really supported!
-        // For now we just print the exception and fail hard. We hopefully soon
+        // For now we fail hard. We hopefully soon
         // handle this case properly!
-        e.printStackTrace();
         throw new IllegalStateException("Interruption is not supported!", e);
       } catch (ExecutionException e) {
         // Only runtime exception can be thrown during training, if one was thrown
@@ -623,8 +607,6 @@ public class GISTrainer extends AbstractEventTrainer {
       loglikelihood += finishedTask.getLoglikelihood();
     }
 
-    display(".");
-
     // merge the results of the two computations
     for (int pi = 0; pi < numPreds; pi++) {
       int[] activeOutcomes = params[pi].getOutcomes();
@@ -636,8 +618,6 @@ public class GISTrainer extends AbstractEventTrainer {
       }
     }
 
-    display(".");
-
     // compute the new parameter values
     for (int pi = 0; pi < numPreds; pi++) {
       double[] observed = observedExpects[pi].getParameters();
@@ -648,7 +628,7 @@ public class GISTrainer extends AbstractEventTrainer {
           params[pi].updateParameter(aoi, gaussianUpdate(pi, aoi, correctionConstant));
         } else {
           if (model[aoi] == 0) {
-            System.err.println("Model expects == 0 for " + predLabels[pi] + " " + outcomeLabels[aoi]);
+            logger.warn("Model expects == 0 for " + predLabels[pi] + " " + outcomeLabels[aoi]);
           }
           //params[pi].updateParameter(aoi,(StrictMath.log(observed[aoi]) - StrictMath.log(model[aoi])));
           params[pi].updateParameter(aoi, ((StrictMath.log(observed[aoi]) - StrictMath.log(model[aoi]))
@@ -662,15 +642,9 @@ public class GISTrainer extends AbstractEventTrainer {
       }
     }
 
-    display(". loglikelihood=" + loglikelihood + "\t" + ((double) numCorrect / numEvents) + "\n");
+    logger.info("{} - loglikelihood=" + loglikelihood + "\t" + ((double) numCorrect / numEvents), iteration);
 
     return loglikelihood;
-  }
-
-  protected void display(String s) {
-    if (printMessages) {
-      System.out.print(s);
-    }
   }
 
   private class ModelExpectationComputeTask implements Callable<ModelExpectationComputeTask> {
@@ -725,11 +699,10 @@ public class GISTrainer extends AbstractEventTrainer {
         loglikelihood += StrictMath.log(modelDistribution[outcomeList[ei]]) * numTimesEventsSeen[ei];
 
         numEvents += numTimesEventsSeen[ei];
-        if (printMessages) {
-          int max = ArrayMath.argmax(modelDistribution);
-          if (max == outcomeList[ei]) {
-            numCorrect += numTimesEventsSeen[ei];
-          }
+
+        int max = ArrayMath.argmax(modelDistribution);
+        if (max == outcomeList[ei]) {
+          numCorrect += numTimesEventsSeen[ei];
         }
 
       }

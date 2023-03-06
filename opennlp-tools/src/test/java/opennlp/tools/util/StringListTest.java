@@ -34,7 +34,7 @@ public class StringListTest {
   void testIntern() {
     StringList l1 = new StringList("a");
     StringList l2 = new StringList("a", "b");
-    Assertions.assertTrue(l1.getToken(0) == l2.getToken(0));
+    Assertions.assertSame(l1.getToken(0), l2.getToken(0));
   }
 
   /**
@@ -89,8 +89,7 @@ public class StringListTest {
     Assertions.assertEquals(new StringList("a", "b"),
         new StringList("a", "b"));
 
-    Assertions.assertFalse(new StringList("a", "b").equals(
-        new StringList("A", "B")));
+    Assertions.assertNotEquals(new StringList("a", "b"), new StringList("A", "B"));
   }
 
   /**

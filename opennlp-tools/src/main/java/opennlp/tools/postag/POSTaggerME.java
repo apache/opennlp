@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
@@ -45,6 +48,7 @@ import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.featuregen.StringPattern;
 
+
 /**
  * A {@link POSTagger part-of-speech tagger} that uses maximum entropy.
  * <p>
@@ -52,6 +56,8 @@ import opennlp.tools.util.featuregen.StringPattern;
  * depending on their surrounding context.
  */
 public class POSTaggerME implements POSTagger {
+
+  private static final Logger logger = LoggerFactory.getLogger(POSTaggerME.class);
 
   public static final int DEFAULT_BEAM_SIZE = 3;
 
@@ -148,7 +154,7 @@ public class POSTaggerME implements POSTagger {
   public String[] tag(String[] sentence, Object[] additionalContext) {
     bestSequence = model.bestSequence(sentence, additionalContext, contextGen, sequenceValidator);
     List<String> t = bestSequence.getOutcomes();
-    return t.toArray(new String[t.size()]);
+    return t.toArray(new String[0]);
   }
 
   /**
@@ -165,7 +171,7 @@ public class POSTaggerME implements POSTagger {
     String[][] tags = new String[bestSequences.length][];
     for (int si = 0; si < tags.length; si++) {
       List<String> t = bestSequences[si].getOutcomes();
-      tags[si] = t.toArray(new String[t.size()]);
+      tags[si] = t.toArray(new String[0]);
     }
     return tags;
   }
@@ -207,8 +213,8 @@ public class POSTaggerME implements POSTagger {
       MaxentModel posModel = modelPackage.getPosModel();
 
       double[] probs = posModel.eval(contextGen.getContext(index,
-          words.toArray(new String[words.size()]),
-          tags.toArray(new String[tags.size()]),null));
+          words.toArray(new String[0]),
+          tags.toArray(new String[0]),null));
 
       String[] orderedTags = new String[probs.length];
       for (int i = 0; i < probs.length; i++) {
@@ -319,7 +325,7 @@ public class POSTaggerME implements POSTagger {
   public static void populatePOSDictionary(ObjectStream<POSSample> samples,
       MutableTagDictionary dict, int cutoff) throws IOException {
 
-    System.out.println("Expanding POS Dictionary ...");
+    logger.info("Expanding POS Dictionary ...");
     long start = System.nanoTime();
 
     // the data structure will store the word, the tag, and the number of
@@ -376,11 +382,10 @@ public class POSTaggerME implements POSTagger {
       }
       if (tagsForWord.size() > 0) {
         dict.put(wordEntry.getKey(),
-            tagsForWord.toArray(new String[tagsForWord.size()]));
+            tagsForWord.toArray(new String[0]));
       }
     }
 
-    System.out.println("... finished expanding POS Dictionary. ["
-        + (System.nanoTime() - start) / 1000000 + "ms]");
+    logger.info("... finished expanding POS Dictionary. [ {} ms]", (System.nanoTime() - start) / 1000000 );
   }
 }

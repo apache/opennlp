@@ -60,7 +60,7 @@ public class POSDictionaryTest {
     dictionary.put("c", "7", "8", "9");
     dictionary.put("Always", "RB", "NNP");
 
-    Assertions.assertTrue(dictionary.equals(serializeDeserializeDict(dictionary)));
+    Assertions.assertEquals(dictionary, serializeDeserializeDict(dictionary));
   }
 
   @Test

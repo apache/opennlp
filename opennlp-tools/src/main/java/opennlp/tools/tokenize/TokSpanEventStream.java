@@ -23,6 +23,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.AbstractEventStream;
@@ -36,6 +39,7 @@ import opennlp.tools.util.Span;
  */
 public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
 
+  private static final Logger logger = LoggerFactory.getLogger(TokSpanEventStream.class);
   private final TokenContextGenerator cg;
 
   private final boolean skipAlphaNumerics;
@@ -134,7 +138,7 @@ public class TokSpanEventStream extends AbstractEventStream<TokenSample> {
               //keep looking
             }
             else {
-              System.out.println("Bad training token: " + tokens[ti] + " cand: " + cSpan +
+              logger.warn("Bad training token: " + tokens[ti] + " cand: " + cSpan +
                   " token=" + text.substring(tokens[ti].getStart(), tokens[ti].getEnd()));
             }
           }

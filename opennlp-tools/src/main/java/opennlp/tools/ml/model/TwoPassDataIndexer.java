@@ -32,8 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.util.ObjectStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import opennlp.tools.util.ObjectStream;
 
 /**
  * Collecting event and context counts by making two passes over the events.
@@ -49,6 +51,8 @@ import opennlp.tools.util.ObjectStream;
  */
 public class TwoPassDataIndexer extends AbstractDataIndexer {
 
+  private static final Logger logger = LoggerFactory.getLogger(TwoPassDataIndexer.class);
+
   public TwoPassDataIndexer() {}
 
   /**
@@ -61,9 +65,9 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
 
     long start = System.currentTimeMillis();
 
-    display("Indexing events with TwoPass using cutoff of " + cutoff + "\n\n");
+    logger.info("Indexing events with TwoPass using cutoff of {}", cutoff);
 
-    display("\tComputing event counts...  ");
+    logger.info("Computing event counts...");
 
     Map<String,Integer> predicateIndex = new HashMap<>();
 
@@ -77,9 +81,8 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     }
     writeHash = writeEventStream.calculateHashSum();
 
-    display("done. " + numEvents + " events\n");
-
-    display("\tIndexing...  ");
+    logger.info("done. {} events", numEvents);
+    logger.info("Indexing...");
 
     List<ComparableEvent> eventsToCompare;
     BigInteger readHash = null;
@@ -92,16 +95,16 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     if (readHash.compareTo(writeHash) != 0)
       throw new IOException("Event hash for writing and reading events did not match.");
 
-    display("done.\n");
+    logger.info("done.");
 
     if (sort) {
-      display("Sorting and merging events... ");
+      logger.info("Sorting and merging events... ");
     }
     else {
-      display("Collecting events... ");
+      logger.info("Collecting events... ");
     }
     sortAndMerge(eventsToCompare,sort);
-    display(String.format("Done indexing in %.2f s.\n", (System.currentTimeMillis() - start) / 1000d));
+    logger.info(String.format("Done indexing in %.2f s.", (System.currentTimeMillis() - start) / 1000d));
   }
 
   /**

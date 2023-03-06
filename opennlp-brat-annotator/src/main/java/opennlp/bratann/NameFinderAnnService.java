@@ -25,6 +25,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinder;
@@ -41,6 +43,7 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 public class NameFinderAnnService {
 
+  private static Logger logger = LoggerFactory.getLogger(NameFinderAnnService.class);
   public static SentenceDetector sentenceDetector = new NewlineSentenceDetector();
   public static Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
   public static TokenNameFinder[] nameFinders;
@@ -48,8 +51,8 @@ public class NameFinderAnnService {
   public static void main(String[] args) throws Exception {
 
     if (args.length == 0) {
-      System.out.println("Usage:");
-      System.out.println("[NameFinderAnnService -serverPort port] [-tokenizerModel file] "
+      logger.info("Usage:");
+      logger.info("[NameFinderAnnService -serverPort port] [-tokenizerModel file] "
           + "[-ruleBasedTokenizer whitespace|simple] "
           + "[-sentenceDetectorModel file] namefinderFile|nameFinderURI");
       return;
@@ -78,7 +81,7 @@ public class NameFinderAnnService {
       } else if ("simple".equals(args[ruleBasedTokenizerIndex])) {
         tokenizer = SimpleTokenizer.INSTANCE;
       } else {
-        System.out.println("unknown tokenizer: " + args[ruleBasedTokenizerIndex]);
+        logger.error("unknown tokenizer: " + args[ruleBasedTokenizerIndex]);
         return;
       }
     }

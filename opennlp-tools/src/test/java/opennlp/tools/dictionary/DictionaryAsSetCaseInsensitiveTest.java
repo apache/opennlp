@@ -118,7 +118,7 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    Assertions.assertTrue(setA.equals(setB));
+    Assertions.assertEquals(setA, setB);
   }
 
   /**
@@ -139,11 +139,11 @@ public class DictionaryAsSetCaseInsensitiveTest {
 
     Set<String> setB = dictB.asStringSet();
 
-    Assertions.assertTrue(setA.equals(setB));
+    Assertions.assertEquals(setA, setB);
   }
 
   /**
-   * Tests the {@link Dictionary#hashCode()} method.
+   * Tests the {@link Dictionary#asStringSet()#hashCode()} method without case changes.
    */
   @Test
   void testHashCode() {
@@ -152,18 +152,19 @@ public class DictionaryAsSetCaseInsensitiveTest {
     Dictionary dictA = getDict();
     dictA.put(asSL(entry1));
 
-    Set<String> setA = dictA.asStringSet();
-
     Dictionary dictB = getDict();
     dictB.put(asSL(entry1));
 
+    Assertions.assertEquals(dictA.hashCode(), dictB.hashCode());
+
+    Set<String> setA = dictA.asStringSet();
     Set<String> setB = dictB.asStringSet();
 
     Assertions.assertEquals(setA.hashCode(), setB.hashCode());
   }
 
   /**
-   * Tests the {@link Dictionary#hashCode()} method.
+   * Tests the {@link Dictionary#asStringSet()#hashCode()}} method with case changes.
    */
   @Test
   void testHashCodeDifferentCase() {
@@ -172,15 +173,15 @@ public class DictionaryAsSetCaseInsensitiveTest {
     Dictionary dictA = getDict();
     dictA.put(asSL(entry1));
 
-    Set<String> setA = dictA.asStringSet();
-
     Dictionary dictB = getDict();
-    dictB.put(asSL(entry1.toUpperCase()));
+    dictB.put(asSL(entry1.toUpperCase())); // adjusting entry to differ case-wise.
 
+    Assertions.assertEquals(dictA.hashCode(), dictB.hashCode());
+
+    Set<String> setA = dictA.asStringSet();
     Set<String> setB = dictB.asStringSet();
 
-    // TODO: should it be equal??
-    Assertions.assertNotSame(setA.hashCode(), setB.hashCode());
+    Assertions.assertEquals(setA.hashCode(), setB.hashCode());
   }
 
   /**

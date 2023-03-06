@@ -280,13 +280,13 @@ path: .\es_ner_person.bin]]>
 		To convert the information to the OpenNLP format:
 		<screen>
 			<![CDATA[
-$ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data eng.train > corpus_train.txt]]>
+$ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data corpus_train.txt > eng.train]]>
 		</screen>
 		Optionally, you can convert the training test samples as well.
 		<screen>
 			<![CDATA[
-$ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data eng.testa > corpus_testa.txt
-$ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data eng.testb > corpus_testb.txt]]>
+$ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data corpus_testa.txt > eng.testa
+$ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data corpus_testb.txt > eng.testb]]>
 		</screen>
 		</para>
 		</section>
@@ -296,7 +296,7 @@ $ opennlp TokenNameFinderConverter conll03 -lang eng -types per -data eng.testb 
                 You can train the model for the name finder this way:
                 <screen>
                 <![CDATA[
-$ opennlp TokenNameFinderTrainer.conll03 -model en_ner_person.bin -iterations 500 \
+$ opennlp TokenNameFinderTrainer.conll03 -model en_ner_person.bin \
                                  -lang eng -types per -data eng.train -encoding utf8]]>
                 </screen>
             </para>
@@ -304,40 +304,55 @@ $ opennlp TokenNameFinderTrainer.conll03 -model en_ner_person.bin -iterations 50
                 If you have converted the data, then you can train the model for the name finder this way:
                 <screen>
                 <![CDATA[
-$ opennlp TokenNameFinderTrainer -model en_ner_person.bin -iterations 500 \
-                                 -lang en -data corpus_train.txt -encoding utf8]]>
+$ opennlp TokenNameFinderTrainer.conll03 -model en_ner_person.bin \
+                                 -lang eng -types per -data corpus_train.txt -encoding utf8]]>
 		        </screen>
             </para>
             <para>
                 Either way you should see the following output during the training process:
 		        <screen>
 			    <![CDATA[
-Indexing events using cutoff of 5
+Indexing events with TwoPass using cutoff of 0
 
 	Computing event counts...  done. 203621 events
 	Indexing...  done.
-Sorting and merging events... done. Reduced 203621 events to 179409.
-Done indexing.
-Incorporating indexed data for training...  
+Collecting events... Done indexing in 6,01 s.
+Incorporating indexed data for training...
 done.
-	Number of Event Tokens: 179409
+	Number of Event Tokens: 203621
 	    Number of Outcomes: 3
-	  Number of Predicates: 58814
-...done.
+	  Number of Predicates: 442041
 Computing model parameters...
-Performing 500 iterations.
-  1:  .. loglikelihood=-223700.5328318588	0.9453494482396216
-  2:  .. loglikelihood=-40525.939777363084	0.9467933071736215
-  3:  .. loglikelihood=-24893.98837874921	0.9598518816821447
-  4:  .. loglikelihood=-18420.3379471033	0.9712996203731442
-... cut lots of iterations ...
-498:  .. loglikelihood=-952.8501399442295	0.9988950059178572
-499:  .. loglikelihood=-952.0600155746948	0.9988950059178572
-500:  .. loglikelihood=-951.2722802086295	0.9988950059178572
-Writing name finder model ... done (1.638s)
+Performing 300 iterations.
+  1:  . (201717/203621) 0.9906492945226671
+  2:  . (202770/203621) 0.9958206668270955
+  3:  . (203129/203621) 0.9975837462737144
+  4:  . (203261/203621) 0.9982320094685715
+  5:  . (203381/203621) 0.9988213396457143
+  6:  . (203429/203621) 0.9990570717165714
+  7:  . (203454/203621) 0.9991798488368095
+  8:  . (203494/203621) 0.9993762922291906
+  9:  . (203509/203621) 0.9994499585013333
+ 10:  . (203533/203621) 0.999567824536762
+ 20:  . (203592/203621) 0.9998575785405238
+ 30:  . (203613/203621) 0.9999607113215239
+Stopping: change in training set accuracy less than 1.0E-5
+Stats: (203621/203621) 1.0
+...done.
+
+Training data summary:
+#Sentences: 14041
+#Tokens: 203621
+#person entities: 6600
+
+Writing name finder model ... Compressed 442041 parameters to 29538
+4 outcome patterns
+done (0,395s)
 
 Wrote name finder model to
-path: .\en_ner_person.bin]]>
+path: ./en_ner_person.bin
+
+Execution time: 11,498 seconds]]>
 		        </screen>
 		    </para>
 		</section>
@@ -356,29 +371,27 @@ $ opennlp TokenNameFinderEvaluator.conll03 -model en_ner_person.bin \
                 model.
 		        <screen>
 			<![CDATA[
-$ opennlp TokenNameFinderEvaluator -model en_ner_person.bin -lang en -data corpus_testa.txt \
-                                   -encoding utf8]]>
+$ opennlp TokenNameFinderEvaluator.conll03 -model en_ner_person.bin \
+                                   -lang eng -types per -data corpus_testa.txt -encoding utf8]]>
 		        </screen>
             </para>
             <para>
                 Either way you should see the following output:
 		        <screen>
 			<![CDATA[
-Loading Token Name Finder model ... done (0.359s)
-current: 190.2 sent/s avg: 190.2 sent/s total: 199 sent
-current: 648.3 sent/s avg: 415.9 sent/s total: 850 sent
-current: 530.1 sent/s avg: 453.6 sent/s total: 1380 sent
-current: 793.8 sent/s avg: 539.0 sent/s total: 2178 sent
-current: 705.4 sent/s avg: 571.9 sent/s total: 2882 sent
+Loading Token Name Finder model ... done (0,176s)
+current: 1805,4 sent/s avg: 1805,4 sent/s total: 1961 sent
 
 
-Average: 569.4 sent/s
-Total: 3251 sent
-Runtime: 5.71s
+Average: 2298,1 sent/s
+Total: 3454 sent
+Runtime: 1.503s
 
-Precision: 0.9366247297154147
-Recall: 0.739956568946797
-F-Measure: 0.8267557582133971]]>
+Evaluated 3453 samples with 1617 entities; found: 1472 entities; correct: 1370.
+       TOTAL: precision:   93,07%;  recall:   84,72%; F1:   88,70%.
+      person: precision:   93,07%;  recall:   84,72%; F1:   88,70%. [target: 1617; tp: 1370; fp: 102]
+
+Execution time: 1,955 seconds]]>
 		</screen>
 		</para>
 		</section>

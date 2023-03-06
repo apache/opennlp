@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.SAXParser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import opennlp.tools.util.Span;
@@ -41,6 +43,7 @@ import opennlp.tools.util.XmlUtil;
 
 public class MascDocument {
 
+  private static final Logger logger = LoggerFactory.getLogger(MascDocument.class);
   private final List<MascSentence> sentences;
   private final String pathToFile;
   private Iterator<MascSentence> sentenceIterator;
@@ -222,8 +225,7 @@ public class MascDocument {
       try {
         saxParser.parse(bStream, handler);
       } catch (SAXException e) {
-        System.out.println(e.getMessage());
-        throw new IOException("Could not parse the named entity annotation file");
+        throw new IOException("Could not parse the named entity annotation file", e);
       }
 
       Map<Integer, String> entityIDtoEntityType = handler.getEntityIDtoEntityType();
@@ -323,15 +325,13 @@ public class MascDocument {
       for (MascSentence s : sentences) {
         boolean success = s.addNamedEntities(entityIDtoEntityType, entityIDsToTokens);
         if (!success) {
-          System.out.println("\tIssues occurred in the file: " + pathToFile);
+          logger.warn("Issues occurred in the file:  {}", pathToFile);
         }
       }
       hasNamedEntities = true;
     } catch (IOException e) {
-      System.err.println("[ERROR] Failed connecting tokens and named entities.");
-      System.err.println("\tThe error occurred in the file: " + pathToFile);
-      System.err.println(e.getMessage());
-      System.err.println(Arrays.toString(e.getStackTrace()));
+      logger.error("Failed connecting tokens and named entities. " +
+              "The error occurred in the file: {}", pathToFile, e);
     }
   }
 
@@ -353,7 +353,7 @@ public class MascDocument {
       //Check that all tokens have at least one quark.
       for (Map.Entry<Integer, int[]> token : tokenToQuarks.entrySet()) {
         if (token.getValue().length == 0) {
-          System.err.println("[ERROR] Token without quarks: " + token.getKey());
+          logger.warn("Token without quarks: {}", token.getKey());
         }
       }
 
@@ -369,9 +369,8 @@ public class MascDocument {
             int[] newTokens = new int[tokens.length + 1];
             newTokens[0] = token;
             System.arraycopy(tokens, 0, newTokens, 1, tokens.length);
-            System.out.println("[WARNING] One quark belongs to several tokens. f-seg ID: " +
-                quark);
-            System.out.println("\tThe error occurred in file: " + pathToFile);
+            logger.warn("One quark belongs to several tokens. f-seg ID: {}.", quark);
+            logger.warn("The error occurred in file: {}", pathToFile);
             quarkToTokens.put(quark, newTokens);
           } else {
             quarkToTokens.put(quark, new int[] {token});
@@ -382,7 +381,7 @@ public class MascDocument {
       for (MascSentence s : sentences) {
         boolean success = s.tokenizePenn(tokenToQuarks, quarkToTokens, tokenToBase, tokenToTag);
         if (!success) {
-          System.out.println("\tIssue occurred in file: " + pathToFile);
+          logger.warn("Issues occurred in the file:  {}", pathToFile);
         }
       }
 

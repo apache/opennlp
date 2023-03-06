@@ -161,8 +161,8 @@ public class OntoNotesNameSampleStream extends
           }
 
           nameSamples.add(new NameSample(cleanedTokens
-              .toArray(new String[cleanedTokens.size()]), entities
-              .toArray(new Span[entities.size()]), clearAdaptiveData));
+              .toArray(new String[0]), entities
+              .toArray(new Span[0]), clearAdaptiveData));
 
           clearAdaptiveData = false;
         }

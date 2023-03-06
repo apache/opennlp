@@ -20,6 +20,9 @@ package opennlp.tools.cmdline.tokenizer;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -33,6 +36,13 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(DictionaryDetokenizerTool.class);
+
+  @Override
+  public String getShortDescription() {
+    return "Normalizes tokenized text according to rules defined in a detokenizer dictionary";
+  }
+
   @Override
   public String getHelp() {
     return "Usage: " + CLI.CMD + " " + getName() + " detokenizerDictionary";
@@ -41,7 +51,7 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
   @Override
   public void run(String[] args) {
     if (args.length != 1) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
       try {
         Detokenizer detokenizer = new DictionaryDetokenizer(
@@ -50,7 +60,7 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
         try (ObjectStream<String> tokenizedLineStream =
             new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
 
-          PerformanceMonitor perfMon = new PerformanceMonitor(System.err, "sent");
+          PerformanceMonitor perfMon = new PerformanceMonitor("sent");
           perfMon.start();
 
           String tokenizedLine;
@@ -59,7 +69,7 @@ public final class DictionaryDetokenizerTool extends BasicCmdLineTool {
             // white space tokenize line
             String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(tokenizedLine);
 
-            System.out.println(detokenizer.detokenize(tokens, null));
+            logger.info(detokenizer.detokenize(tokens, null));
 
             perfMon.incrementCounter();
           }

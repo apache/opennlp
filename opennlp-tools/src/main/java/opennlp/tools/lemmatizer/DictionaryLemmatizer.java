@@ -171,7 +171,7 @@ public class DictionaryLemmatizer implements Lemmatizer {
     for (int i = 0; i < tokens.length; i++) {
       lemmas.add(this.lemmatize(tokens[i], postags[i]));
     }
-    return lemmas.toArray(new String[lemmas.size()]);
+    return lemmas.toArray(new String[0]);
   }
 
   @Override

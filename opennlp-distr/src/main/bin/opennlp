@@ -37,4 +37,4 @@ fi
 # Might fail if $0 is a link
 OPENNLP_HOME=`dirname "$0"`/..
 
-$JAVACMD $HEAP -cp $(echo $OPENNLP_HOME/lib/*.jar | tr ' ' ':') opennlp.tools.cmdline.CLI $@
+$JAVACMD $HEAP -Dlog4j.configurationFile=../conf/log4j2.xml -cp $(echo $OPENNLP_HOME/lib/*.jar | tr ' ' ':') opennlp.tools.cmdline.CLI $@

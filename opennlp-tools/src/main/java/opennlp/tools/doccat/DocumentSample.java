@@ -77,7 +77,7 @@ public class DocumentSample implements Sample {
    * @return Retrieves the text in a tokenized form.
    */
   public String[] getText() {
-    return text.toArray(new String[text.size()]);
+    return text.toArray(new String[0]);
   }
 
   /**

@@ -18,7 +18,6 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +69,6 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
    */
   public Conll03NameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
     this(lang, new PlainTextByLineStream(in, StandardCharsets.UTF_8), types);
-    System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
   }
 
   @Override
@@ -182,8 +180,8 @@ public class Conll03NameSampleStream implements ObjectStream<NameSample> {
       if (beginIndex != -1)
         names.add(Conll02NameSampleStream.extract(beginIndex, endIndex, tags.get(beginIndex)));
 
-      return new NameSample(sentence.toArray(new String[sentence.size()]),
-          names.toArray(new Span[names.size()]), isClearAdaptiveData);
+      return new NameSample(sentence.toArray(new String[0]),
+          names.toArray(new Span[0]), isClearAdaptiveData);
     }
     else if (line != null) {
       // Just filter out empty events, if two lines in a row are empty

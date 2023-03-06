@@ -550,6 +550,6 @@ public class ArgumentParser {
       }
     }
 
-    return parameters.toArray(new String[parameters.size()]);
+    return parameters.toArray(new String[0]);
   }
 }

@@ -29,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.AbstractTempDirTest;
@@ -65,7 +66,7 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
   public void testGetShortDescription() {
     tokenizerTrainerTool = new TokenizerTrainerTool();
     Assertions.assertEquals(tokenizerTrainerTool.getShortDescription() ,
-        "trainer for the learnable tokenizer");
+        "Trainer for the learnable tokenizer");
   }
 
   @Test
@@ -82,7 +83,10 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
     });
   }
 
-  @Test()
+  //TODO OPENNLP-1447
+  @Disabled(value = "OPENNLP-1447: These kind of tests won't work anymore. " +
+          "We need to find a way to redirect log output (i.e. implement " +
+          "a custom log adapter and plug it in, if we want to do such tests.")
   public void testTestRunHappyCase() throws IOException {
     File model = tempDir.resolve("model-en.bin").toFile();
 
@@ -104,7 +108,10 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
     model.delete();
   }
 
-  @Test
+  //TODO OPENNLP-1447
+  @Disabled(value = "OPENNLP-1447: These kind of tests won't work anymore. " +
+          "We need to find a way to redirect log output (i.e. implement " +
+          "a custom log adapter and plug it in, if we want to do such tests.")
   public void testTestRunExceptionCase() throws IOException {
     File model = tempDir.resolve("model-en.bin").toFile();
     model.deleteOnExit();

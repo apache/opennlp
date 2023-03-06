@@ -47,7 +47,7 @@ public class LanguageDetectorTrainerTool
 
   @Override
   public String getShortDescription() {
-    return "trainer for the learnable language detector";
+    return "Trainer for the learnable language detector";
   }
 
   @Override

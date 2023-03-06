@@ -20,6 +20,9 @@ package opennlp.tools.cmdline;
 import java.io.IOException;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.util.ObjectStream;
 
 /**
@@ -29,6 +32,8 @@ import opennlp.tools.util.ObjectStream;
  *           for example {@link opennlp.tools.postag.POSSample}
  */
 public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
+
+  private static final Logger logger = LoggerFactory.getLogger(AbstractConverterTool.class);
 
   /**
    * Constructor with type parameter.
@@ -49,14 +54,14 @@ public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
           help.append(format);
         }
       }
-      return "converts " + help + " data format to native OpenNLP format";
+      return "Converts " + help + " data format to native OpenNLP format";
     } else if (2 < factories.keySet().size()) {
       for (String format : factories.keySet()) {
         if (!StreamFactoryRegistry.DEFAULT_FORMAT.equals(format)) {
           help.append(format).append(",");
         }
       }
-      return "converts foreign data formats (" + help.substring(0, help.length() - 1 ) +
+      return "Converts external data formats (" + help.substring(0, help.length() - 1 ) +
           ") to native OpenNLP format";
     } else {
       throw new AssertionError("There should be more than 1 factory registered for converter " +
@@ -88,7 +93,7 @@ public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
   @Override
   public void run(String format, String[] args) {
     if (0 == args.length) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
       format = args[0];
       ObjectStreamFactory<T,P> streamFactory = getStreamFactory(format);
@@ -98,7 +103,7 @@ public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
 
       String helpString = createHelpString(format, ArgumentParser.createUsage(streamFactory.getParameters()));
       if (0 == formatArgs.length || (1 == formatArgs.length && "help".equals(formatArgs[0]))) {
-        System.out.println(helpString);
+        logger.info(helpString);
         System.exit(0);
       }
 
@@ -110,7 +115,7 @@ public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
       try (ObjectStream<T> sampleStream = streamFactory.create(formatArgs)) {
         Object sample;
         while ((sample = sampleStream.read()) != null) {
-          System.out.println(sample);
+          logger.info(sample.toString());
         }
       }
       catch (IOException e) {

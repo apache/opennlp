@@ -20,6 +20,9 @@ package opennlp.tools.cmdline.chunker;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.chunker.ChunkSample;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -35,9 +38,11 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public class ChunkerMETool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(ChunkerMETool.class);
+
   @Override
   public String getShortDescription() {
-    return "learnable chunker";
+    return "Learnable chunker";
   }
 
   @Override
@@ -48,7 +53,7 @@ public class ChunkerMETool extends BasicCmdLineTool {
   @Override
   public void run(String[] args) {
     if (args.length != 1) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
       ChunkerModel model = new ChunkerModelLoader().load(new File(args[0]));
 
@@ -60,7 +65,7 @@ public class ChunkerMETool extends BasicCmdLineTool {
       try {
         lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
             SystemInputStreamFactory.encoding());
-        perfMon = new PerformanceMonitor(System.err, "sent");
+        perfMon = new PerformanceMonitor("sent");
         perfMon.start();
         String line;
         while ((line = lineStream.read()) != null) {
@@ -69,14 +74,13 @@ public class ChunkerMETool extends BasicCmdLineTool {
           try {
             posSample = POSSample.parse(line);
           } catch (InvalidFormatException e) {
-            System.err.println("Invalid format:");
-            System.err.println(line);
+            logger.warn("Invalid format: {}", line, e);
             continue;
           }
 
           String[] chunks = chunker.chunk(posSample.getSentence(), posSample.getTags());
 
-          System.out.println(new ChunkSample(posSample.getSentence(),
+          logger.info(new ChunkSample(posSample.getSentence(),
               posSample.getTags(), chunks).nicePrint());
 
           perfMon.incrementCounter();

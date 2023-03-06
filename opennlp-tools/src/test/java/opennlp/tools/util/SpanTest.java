@@ -58,7 +58,7 @@ public class SpanTest {
     Span a = new Span(500, 900);
     Span b = new Span(520, 600);
 
-    Assertions.assertEquals(true, a.contains(b));
+    Assertions.assertTrue(a.contains(b));
   }
 
   /**
@@ -67,7 +67,7 @@ public class SpanTest {
   @Test
   void testContainsWithEqual() {
     Span a = new Span(500, 900);
-    Assertions.assertEquals(true, a.contains(a));
+    Assertions.assertTrue(a.contains(a));
   }
 
   /**
@@ -77,7 +77,7 @@ public class SpanTest {
   void testContainsWithLowerIntersect() {
     Span a = new Span(500, 900);
     Span b = new Span(450, 1000);
-    Assertions.assertEquals(false, a.contains(b));
+    Assertions.assertFalse(a.contains(b));
   }
 
   /**
@@ -87,7 +87,7 @@ public class SpanTest {
   void testContainsWithHigherIntersect() {
     Span a = new Span(500, 900);
     Span b = new Span(500, 1000);
-    Assertions.assertEquals(false, a.contains(b));
+    Assertions.assertFalse(a.contains(b));
   }
 
   /**
@@ -167,7 +167,7 @@ public class SpanTest {
   void testCompareToLower() {
     Span a = new Span(100, 1000);
     Span b = new Span(10, 50);
-    Assertions.assertEquals(true, a.compareTo(b) > 0);
+    Assertions.assertTrue(a.compareTo(b) > 0);
   }
 
   /**
@@ -177,7 +177,7 @@ public class SpanTest {
   void testCompareToHigher() {
     Span a = new Span(100, 200);
     Span b = new Span(300, 400);
-    Assertions.assertEquals(true, a.compareTo(b) < 0);
+    Assertions.assertTrue(a.compareTo(b) < 0);
   }
 
   /**
@@ -187,7 +187,7 @@ public class SpanTest {
   void testCompareToEquals() {
     Span a = new Span(30, 1000);
     Span b = new Span(30, 1000);
-    Assertions.assertEquals(true, a.compareTo(b) == 0);
+    Assertions.assertTrue(a.compareTo(b) == 0);
   }
 
   ///
@@ -199,7 +199,7 @@ public class SpanTest {
   void testCompareToEqualsSameType() {
     Span a = new Span(30, 1000, "a");
     Span b = new Span(30, 1000, "a");
-    Assertions.assertEquals(true, a.compareTo(b) == 0);
+    Assertions.assertTrue(a.compareTo(b) == 0);
   }
 
   /**
@@ -209,7 +209,7 @@ public class SpanTest {
   void testCompareToEqualsDiffType1() {
     Span a = new Span(30, 1000, "a");
     Span b = new Span(30, 1000, "b");
-    Assertions.assertEquals(true, a.compareTo(b) == -1);
+    Assertions.assertTrue(a.compareTo(b) == -1);
   }
 
   /**
@@ -219,7 +219,7 @@ public class SpanTest {
   void testCompareToEqualsDiffType2() {
     Span a = new Span(30, 1000, "b");
     Span b = new Span(30, 1000, "a");
-    Assertions.assertEquals(true, a.compareTo(b) == 1);
+    Assertions.assertTrue(a.compareTo(b) == 1);
   }
 
   /**
@@ -229,7 +229,7 @@ public class SpanTest {
   void testCompareToEqualsNullType1() {
     Span a = new Span(30, 1000);
     Span b = new Span(30, 1000, "b");
-    Assertions.assertEquals(true, a.compareTo(b) == 1);
+    Assertions.assertTrue(a.compareTo(b) == 1);
   }
 
   /**
@@ -239,7 +239,7 @@ public class SpanTest {
   void testCompareToEqualsNullType2() {
     Span a = new Span(30, 1000, "b");
     Span b = new Span(30, 1000);
-    Assertions.assertEquals(true, a.compareTo(b) == -1);
+    Assertions.assertTrue(a.compareTo(b) == -1);
   }
 
   /**
@@ -256,7 +256,7 @@ public class SpanTest {
   @Test
   void testEqualsWithNull() {
     Span a = new Span(0, 0);
-    Assertions.assertEquals(a.equals(null), false);
+    Assertions.assertFalse(a.equals(null));
   }
 
   /**
@@ -266,19 +266,19 @@ public class SpanTest {
   void testEquals() {
     Span a1 = new Span(100, 1000, "test");
     Span a2 = new Span(100, 1000, "test");
-    Assertions.assertTrue(a1.equals(a2));
+    Assertions.assertEquals(a1, a2);
 
     // end is different
     Span b1 = new Span(100, 100, "test");
-    Assertions.assertFalse(a1.equals(b1));
+    Assertions.assertNotEquals(a1, b1);
 
     // type is different
     Span c1 = new Span(100, 1000, "Test");
-    Assertions.assertFalse(a1.equals(c1));
+    Assertions.assertNotEquals(a1, c1);
 
     Span d1 = new Span(100, 1000);
-    Assertions.assertFalse(d1.equals(a1));
-    Assertions.assertFalse(a1.equals(d1));
+    Assertions.assertNotEquals(d1, a1);
+    Assertions.assertNotEquals(a1, d1);
 
   }
 

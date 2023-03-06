@@ -48,7 +48,7 @@ public final class TokenizerTrainerTool
 
   @Override
   public String getShortDescription() {
-    return "trainer for the learnable tokenizer";
+    return "Trainer for the learnable tokenizer";
   }
 
   static Dictionary loadDict(File f) throws IOException {

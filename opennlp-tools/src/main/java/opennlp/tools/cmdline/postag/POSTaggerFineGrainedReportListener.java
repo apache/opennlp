@@ -19,7 +19,11 @@ package opennlp.tools.cmdline.postag;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.FineGrainedReportListener;
+import opennlp.tools.log.LogPrintStream;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.POSTaggerEvaluationMonitor;
 
@@ -33,11 +37,13 @@ import opennlp.tools.postag.POSTaggerEvaluationMonitor;
 public class POSTaggerFineGrainedReportListener
     extends FineGrainedReportListener implements POSTaggerEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(POSTaggerFineGrainedReportListener.class);
+
   /**
-   * Creates a listener that will print to {@code System#err}.
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public POSTaggerFineGrainedReportListener() {
-    this(System.err);
+    this(new LogPrintStream(logger));
   }
 
   /**

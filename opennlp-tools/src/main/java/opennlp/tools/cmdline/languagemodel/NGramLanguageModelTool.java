@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -37,9 +40,11 @@ import opennlp.tools.util.PlainTextByLineStream;
  */
 public class NGramLanguageModelTool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(NGramLanguageModelTool.class);
+
   @Override
   public String getShortDescription() {
-    return "gives the probability and most probable next token(s) of a sequence of tokens in a " +
+    return "Gives the probability and most probable next token(s) of a sequence of tokens in a " +
         "language model";
   }
 
@@ -49,13 +54,11 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
     try (InputStream stream = new BufferedInputStream(new FileInputStream(lmFile))) {
       NGramLanguageModel nGramLanguageModel = new NGramLanguageModel(stream);
 
-      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
 
-      try {
-        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
-                SystemInputStreamFactory.encoding());
-        perfMon = new PerformanceMonitor(System.err, "nglm");
+      try (ObjectStream<String> lineStream = new PlainTextByLineStream(
+              new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
+        perfMon = new PerformanceMonitor("nglm");
         perfMon.start();
         String line;
         while ((line = lineStream.read()) != null) {
@@ -67,12 +70,11 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
             probability = nGramLanguageModel.calculateProbability(tokens);
             predicted = nGramLanguageModel.predictNextTokens(tokens);
           } catch (Exception e) {
-            System.err.println("Error:" + e.getLocalizedMessage());
-            System.err.println(line);
+            logger.error("Error for line: {}", line, e);
             continue;
           }
 
-          System.out.println(Arrays.toString(tokens) + " -> prob:" + probability + ", " +
+          logger.info(Arrays.toString(tokens) + " -> prob:" + probability + ", " +
                   "next:" + Arrays.toString(predicted));
 
           perfMon.incrementCounter();
@@ -84,7 +86,7 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
       perfMon.stopAndPrintFinalResult();
 
     } catch (IOException e) {
-      System.err.println(e.getLocalizedMessage());
+      logger.error(e.getLocalizedMessage(), e);
     }
     // do nothing
   }

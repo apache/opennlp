@@ -110,7 +110,6 @@ public class ChunkerMETest {
   @Test
   void testChunkAsSpan() {
     Span[] preds = chunker.chunkAsSpans(toks1, tags1);
-    System.out.println(Arrays.toString(preds));
 
     Assertions.assertEquals(10, preds.length);
     Assertions.assertEquals(new Span(0, 1, "NP"), preds[0]);

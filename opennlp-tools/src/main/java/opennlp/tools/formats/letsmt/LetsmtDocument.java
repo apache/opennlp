@@ -99,7 +99,7 @@ public class LetsmtDocument {
           LetsmtSentence sentence = new LetsmtSentence();
 
           if (tokens.size() > 0) {
-            sentence.tokens = tokens.toArray(new String[tokens.size()]);
+            sentence.tokens = tokens.toArray(new String[0]);
             tokens = new ArrayList<>();
           }
           else {

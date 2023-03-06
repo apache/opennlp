@@ -62,6 +62,6 @@ public class NewlineSentenceDetector implements SentenceDetector {
       }
     }
 
-    return sentences.toArray(new Span[sentences.size()]);
+    return sentences.toArray(new Span[0]);
   }
 }

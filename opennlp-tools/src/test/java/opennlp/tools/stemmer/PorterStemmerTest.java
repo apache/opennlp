@@ -18,23 +18,38 @@
 package opennlp.tools.stemmer;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class PorterStemmerTest {
 
-  private PorterStemmer stemmer = new PorterStemmer();
+  private PorterStemmer stemmer;
 
-  @Test
-  void testNotNull() {
-    Assertions.assertNotNull(stemmer);
+  @BeforeEach
+  public void setup() {
+    stemmer = new PorterStemmer();
   }
 
   @Test
-  void testStemming() {
-    Assertions.assertEquals(stemmer.stem("deny"), "deni");
-    Assertions.assertEquals(stemmer.stem("declining"), "declin");
-    Assertions.assertEquals(stemmer.stem("diversity"), "divers");
-    Assertions.assertEquals(stemmer.stem("divers"), "diver");
-    Assertions.assertEquals(stemmer.stem("dental"), "dental");
+  void testStem() {
+    Assertions.assertEquals("deni", stemmer.stem("deny"));
+    Assertions.assertEquals("declin", stemmer.stem("declining"));
+    Assertions.assertEquals("divers", stemmer.stem("diversity"));
+    Assertions.assertEquals("diver", stemmer.stem("divers"));
+    Assertions.assertEquals("dental", stemmer.stem("dental"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"likes", "liked", "likely", "liking"})
+  void testStemLike(String input) {
+    Assertions.assertEquals("like", stemmer.stem(input));
+  }
+
+
+  @Test // Context: OpenNLP-1229 - This is here to demonstrate & verify.
+  void testStemThis() {
+    Assertions.assertEquals("thi", stemmer.stem("this"));
   }
 }

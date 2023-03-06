@@ -20,6 +20,9 @@ package opennlp.tools.cmdline.postag;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -34,9 +37,11 @@ import opennlp.tools.util.PlainTextByLineStream;
 
 public final class POSTaggerTool extends BasicCmdLineTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(POSTaggerTool.class);
+
   @Override
   public String getShortDescription() {
-    return "learnable part of speech tagger";
+    return "Learnable part of speech tagger";
   }
 
   @Override
@@ -48,7 +53,7 @@ public final class POSTaggerTool extends BasicCmdLineTool {
   public void run(String[] args) {
 
     if (args.length != 1) {
-      System.out.println(getHelp());
+      logger.info(getHelp());
     } else {
 
       POSModel model = new POSModelLoader().load(new File(args[0]));
@@ -61,7 +66,7 @@ public final class POSTaggerTool extends BasicCmdLineTool {
       try {
         lineStream =
             new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
-        perfMon = new PerformanceMonitor(System.err, "sent");
+        perfMon = new PerformanceMonitor("sent");
         perfMon.start();
         String line;
         while ((line = lineStream.read()) != null) {
@@ -70,7 +75,7 @@ public final class POSTaggerTool extends BasicCmdLineTool {
           String[] tags = tagger.tag(whitespaceTokenizerLine);
 
           POSSample sample = new POSSample(whitespaceTokenizerLine, tags);
-          System.out.println(sample);
+          logger.info(sample.toString());
 
           perfMon.incrementCounter();
         }

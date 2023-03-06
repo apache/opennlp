@@ -49,10 +49,10 @@ public class RegexNameFinderTest {
 
     Span[] result = finder.find(sentence);
 
-    Assertions.assertTrue(result.length == 1);
+    Assertions.assertEquals(1, result.length);
 
-    Assertions.assertTrue(result[0].getStart() == 1);
-    Assertions.assertTrue(result[0].getEnd() == 2);
+    Assertions.assertEquals(1, result[0].getStart());
+    Assertions.assertEquals(2, result[0].getEnd());
   }
 
   @Test
@@ -72,11 +72,11 @@ public class RegexNameFinderTest {
 
     Span[] result = finder.find(sentence);
 
-    Assertions.assertTrue(result.length == 1);
+    Assertions.assertEquals(1, result.length);
 
-    Assertions.assertTrue(result[0].getStart() == 1);
-    Assertions.assertTrue(result[0].getEnd() == 3);
-    Assertions.assertTrue(result[0].getType().equals("match"));
+    Assertions.assertEquals(1, result[0].getStart());
+    Assertions.assertEquals(3, result[0].getEnd());
+    Assertions.assertEquals("match", result[0].getType());
   }
 
   @Test
@@ -94,6 +94,6 @@ public class RegexNameFinderTest {
 
     Span[] result = finder.find(sentence);
 
-    Assertions.assertTrue(result.length == 0);
+    Assertions.assertEquals(0, result.length);
   }
 }

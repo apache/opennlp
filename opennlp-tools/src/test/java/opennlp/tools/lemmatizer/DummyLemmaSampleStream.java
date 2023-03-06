@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
@@ -32,6 +35,7 @@ import opennlp.tools.util.ObjectStream;
 public class DummyLemmaSampleStream
     extends FilterObjectStream<String, LemmaSample> {
 
+  private static final Logger logger = LoggerFactory.getLogger(DummyLemmaSampleStream.class);
   private boolean mIsPredicted;
   private int count = 0;
 
@@ -54,7 +58,7 @@ public class DummyLemmaSampleStream
         && !line.equals(""); line = samples.read()) {
       String[] parts = line.split("\t");
       if (parts.length != 4) {
-        System.err.println("Skipping corrupt line " + count + ": " + line);
+        logger.warn("Skipping corrupt line {}: {}", count, line);
       } else {
         toks.add(parts[0]);
         posTags.add(parts[1]);
@@ -66,13 +70,13 @@ public class DummyLemmaSampleStream
 
     if (toks.size() > 0) {
       if (mIsPredicted) {
-        return new LemmaSample(toks.toArray(new String[toks.size()]),
-            posTags.toArray(new String[posTags.size()]),
-            predictedLemmas.toArray(new String[predictedLemmas.size()]));
+        return new LemmaSample(toks.toArray(new String[0]),
+            posTags.toArray(new String[0]),
+            predictedLemmas.toArray(new String[0]));
       } else
-        return new LemmaSample(toks.toArray(new String[toks.size()]),
-            posTags.toArray(new String[posTags.size()]),
-            goldLemmas.toArray(new String[goldLemmas.size()]));
+        return new LemmaSample(toks.toArray(new String[0]),
+            posTags.toArray(new String[0]),
+            goldLemmas.toArray(new String[0]));
     } else {
       return null;
     }

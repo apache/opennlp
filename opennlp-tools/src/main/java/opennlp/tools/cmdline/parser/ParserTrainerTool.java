@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
@@ -44,27 +47,29 @@ public final class ParserTrainerTool extends AbstractTrainerTool<Parse, TrainerT
   interface TrainerToolParams extends TrainingParams, TrainingToolParams, EncodingParameter {
   }
 
+  private static final Logger logger = LoggerFactory.getLogger(ParserTrainerTool.class);
+
   public ParserTrainerTool() {
     super(Parse.class, TrainerToolParams.class);
   }
 
   @Override
   public String getShortDescription() {
-    return "trains the learnable parser";
+    return "Trains the learnable parser";
   }
 
   static Dictionary buildDictionary(ObjectStream<Parse> parseSamples, HeadRules headRules, int cutoff) {
-    System.err.print("Building dictionary ...");
+    logger.info("Building dictionary ...");
 
     Dictionary mdict;
     try {
       mdict = Parser.
           buildDictionary(parseSamples, headRules, cutoff);
     } catch (IOException e) {
-      System.err.println("Error while building dictionary: " + e.getMessage());
+      logger.error("Error while building dictionary.", e);
       mdict = null;
     }
-    System.err.println("done");
+    logger.info("done");
 
     return mdict;
   }

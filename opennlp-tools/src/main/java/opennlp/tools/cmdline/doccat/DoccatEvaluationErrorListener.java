@@ -19,9 +19,13 @@ package opennlp.tools.cmdline.doccat;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.EvaluationErrorPrinter;
 import opennlp.tools.doccat.DoccatEvaluationMonitor;
 import opennlp.tools.doccat.DocumentSample;
+import opennlp.tools.log.LogPrintStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
@@ -31,11 +35,13 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public class DoccatEvaluationErrorListener extends
     EvaluationErrorPrinter<DocumentSample> implements DoccatEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(DoccatEvaluationErrorListener.class);
+
   /**
-   * Creates a listener that will print to System.err
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public DoccatEvaluationErrorListener() {
-    super(System.err);
+    super(new LogPrintStream(logger));
   }
 
   /**

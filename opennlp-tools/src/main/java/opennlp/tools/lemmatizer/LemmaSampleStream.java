@@ -21,9 +21,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
-
 
 /**
  * Reads data for training and testing the {@link Lemmatizer}.
@@ -32,6 +34,8 @@ import opennlp.tools.util.ObjectStream;
  * {@code word\tpostag\tlemma}.
  */
 public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
+
+  private static final Logger logger = LoggerFactory.getLogger(LemmaSampleStream.class);
 
   /**
    * Initializes a {@link LemmaSampleStream instance}.
@@ -52,7 +56,7 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
     for (String line = samples.read(); line != null && !line.equals(""); line = samples.read()) {
       String[] parts = line.split("\t");
       if (parts.length != 3) {
-        System.err.println("Skipping corrupt line: " + line);
+        logger.warn("Skipping corrupt line: {}", line);
       }
       else {
         toks.add(parts[0]);
@@ -61,8 +65,8 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
       }
     }
     if (toks.size() > 0) {
-      return new LemmaSample(toks.toArray(new String[toks.size()]), tags.toArray(new String[tags.size()]),
-          preds.toArray(new String[preds.size()]));
+      return new LemmaSample(toks.toArray(new String[0]), tags.toArray(new String[0]),
+          preds.toArray(new String[0]));
     }
     else {
       return null;

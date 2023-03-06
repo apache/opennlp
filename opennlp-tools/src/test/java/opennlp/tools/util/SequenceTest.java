@@ -38,7 +38,7 @@ public class SequenceTest {
 
     Assertions.assertEquals(sequence.getOutcomes(), copy.getOutcomes());
     Assertions.assertArrayEquals(copy.getProbs(), sequence.getProbs(), 0.0);
-    Assertions.assertTrue(sequence.compareTo(copy) == 0);
+    Assertions.assertEquals(0, sequence.compareTo(copy));
   }
 
   /**

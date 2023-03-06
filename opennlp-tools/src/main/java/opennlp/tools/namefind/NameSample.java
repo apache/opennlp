@@ -135,14 +135,14 @@ public class NameSample implements Sample {
    * @return Retrieves the sentence in tokenized form.
    */
   public String[] getSentence() {
-    return sentence.toArray(new String[sentence.size()]);
+    return sentence.toArray(new String[0]);
   }
 
   /**
    * @return Retrieves the {@link Span names}.
    */
   public Span[] getNames() {
-    return names.toArray(new Span[names.size()]);
+    return names.toArray(new Span[0]);
   }
 
 
@@ -330,8 +330,8 @@ public class NameSample implements Sample {
         wordIndex++;
       }
     }
-    String[] sentence = tokenList.toArray(new String[tokenList.size()]);
-    Span[] names = nameList.toArray(new Span[nameList.size()]);
+    String[] sentence = tokenList.toArray(new String[0]);
+    Span[] names = nameList.toArray(new Span[0]);
 
     return new NameSample(sentence, names, clearAdaptiveData);
   }

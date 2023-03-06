@@ -19,6 +19,9 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.params.CVParams;
@@ -36,6 +39,8 @@ public final class TokenizerCrossValidatorTool
 
   interface CVToolParams extends CVParams, TrainingParams {
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(TokenizerCrossValidatorTool.class);
 
   public TokenizerCrossValidatorTool() {
     super(TokenSample.class, CVToolParams.class);
@@ -86,6 +91,6 @@ public final class TokenizerCrossValidatorTool
 
     FMeasure result = validator.getFMeasure();
 
-    System.out.println(result);
+    logger.info(result.toString());
   }
 }

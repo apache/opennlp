@@ -50,7 +50,6 @@ public class NaiveBayesSerializedCorrectnessTest {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
-    ;
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }
@@ -147,7 +146,6 @@ public class NaiveBayesSerializedCorrectnessTest {
     modelWriter = new PlainTextNaiveBayesModelWriter(model2, new BufferedWriter(sw2));
     modelWriter.persist();
 
-    System.out.println(sw1.toString());
     Assertions.assertEquals(sw1.toString(), sw2.toString());
 
   }

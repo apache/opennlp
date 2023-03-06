@@ -94,7 +94,7 @@ public class NKJPSentenceSampleStream implements ObjectStream<SentenceSample> {
     }
 
     return new SentenceSample(sentencesString.toString(),
-      sentenceSpans.toArray(new Span[sentenceSpans.size()]));
+      sentenceSpans.toArray(new Span[0]));
   }
 
   @Override

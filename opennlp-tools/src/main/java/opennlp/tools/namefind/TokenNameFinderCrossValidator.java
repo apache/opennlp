@@ -98,7 +98,7 @@ public class TokenNameFinderCrossValidator {
         beginSample = null;
       }
 
-      return new DocumentSample(document.toArray(new NameSample[document.size()]));
+      return new DocumentSample(document.toArray(new NameSample[0]));
     }
 
     @Override

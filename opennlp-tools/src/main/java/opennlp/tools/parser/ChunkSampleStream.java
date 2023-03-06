@@ -64,7 +64,7 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
   public static Parse[] getInitialChunks(Parse p) {
     List<Parse> chunks = new ArrayList<>();
     getInitialChunks(p, chunks);
-    return chunks.toArray(new Parse[chunks.size()]);
+    return chunks.toArray(new Parse[0]);
   }
 
   @Override
@@ -98,9 +98,9 @@ public class ChunkSampleStream extends FilterObjectStream<Parse, ChunkSample> {
         }
       }
 
-      return new ChunkSample(toks.toArray(new String[toks.size()]),
-          tags.toArray(new String[tags.size()]),
-          preds.toArray(new String[preds.size()]));
+      return new ChunkSample(toks.toArray(new String[0]),
+          tags.toArray(new String[0]),
+          preds.toArray(new String[0]));
     }
     else {
       return null;

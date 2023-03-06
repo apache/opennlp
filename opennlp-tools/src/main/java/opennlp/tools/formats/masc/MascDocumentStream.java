@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Stack;
 import javax.xml.parsers.SAXParser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -40,6 +42,7 @@ import opennlp.tools.util.XmlUtil;
 
 public class MascDocumentStream implements ObjectStream<MascDocument> {
 
+  private static final Logger logger = LoggerFactory.getLogger(MascDocumentStream.class);
   /**
    * A helper class to parse the header (.hdr) files.
    */
@@ -140,8 +143,7 @@ public class MascDocumentStream implements ObjectStream<MascDocument> {
               documents.add(MascDocument.parseDocument(hdrFilePath, f_primary, f_seg,
                   f_penn, f_s, f_ne));
             } catch (IOException e) {
-              System.err.println("Failed to parse the file: " + hdrFilePath);
-              System.err.println('\t' + e.getMessage());
+              logger.error("Failed to parse the file: {}", hdrFilePath, e);
               failedLoads++;
             }
           }
@@ -152,9 +154,9 @@ public class MascDocumentStream implements ObjectStream<MascDocument> {
       }
     }
 
-    System.out.println("Documents loaded: " + documents.size());
+    logger.info("Documents loaded: {}", documents.size());
     if (failedLoads > 0) {
-      System.err.println("Failed loading " + failedLoads + " documents.");
+      logger.info("Failed loading {} documents.", failedLoads);
     }
     reset();
 

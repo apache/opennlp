@@ -71,7 +71,7 @@ public class DetokenizeSentenceSampleStream
         documentText.append(' ');
       }
 
-      return new SentenceSample(documentText, newSentenceSpans.toArray(new Span[newSentenceSpans.size()]));
+      return new SentenceSample(documentText, newSentenceSpans.toArray(new Span[0]));
     }
 
     return null;

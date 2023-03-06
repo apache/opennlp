@@ -56,7 +56,7 @@ public class MaxentPrepAttachTest {
     // TODO: make sure that the trainingParameter cutoff and the 
     // cutoff value passed here are equal.
     AbstractModel model =
-        new GISTrainer(true).trainModel(100,
+        new GISTrainer().trainModel(100,
             testDataIndexer,
             new UniformPrior(), 1);
     PrepAttachDataUtil.testModel(model, 0.7997028967566229);
@@ -66,7 +66,7 @@ public class MaxentPrepAttachTest {
   void testMaxentOnPrepAttachData2Threads() throws IOException {
     testDataIndexer.index(PrepAttachDataUtil.createTrainingStream());
     AbstractModel model =
-        new GISTrainer(true).trainModel(100,
+        new GISTrainer().trainModel(100,
             testDataIndexer,
             new UniformPrior(), 2);
     PrepAttachDataUtil.testModel(model, 0.7997028967566229);

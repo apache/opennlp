@@ -102,8 +102,8 @@ public class LemmatizerME implements Lemmatizer {
   @Override
   public List<List<String>> lemmatize(List<String> toks,
       List<String> tags) {
-    String[] tokens = toks.toArray(new String[toks.size()]);
-    String[] posTags = tags.toArray(new String[tags.size()]);
+    String[] tokens = toks.toArray(new String[0]);
+    String[] posTags = tags.toArray(new String[0]);
     String[][] allLemmas = predictLemmas(LEMMA_NUMBER, tokens, posTags);
     List<List<String>> predictedLemmas = new ArrayList<>();
     for (String[] allLemma : allLemmas) {
@@ -123,7 +123,7 @@ public class LemmatizerME implements Lemmatizer {
   public String[] predictSES(String[] toks, String[] tags) {
     bestSequence = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
     List<String> ses = bestSequence.getOutcomes();
-    return ses.toArray(new String[ses.size()]);
+    return ses.toArray(new String[0]);
   }
 
   /**
@@ -141,7 +141,7 @@ public class LemmatizerME implements Lemmatizer {
     String[][] allLemmas = new String[bestSequences.length][];
     for (int i = 0; i < allLemmas.length; i++) {
       List<String> ses = bestSequences[i].getOutcomes();
-      String[] sesArray = ses.toArray(new String[ses.size()]);
+      String[] sesArray = ses.toArray(new String[0]);
       allLemmas[i] = decodeLemmas(toks,sesArray);
     }
     return allLemmas;
@@ -164,7 +164,7 @@ public class LemmatizerME implements Lemmatizer {
       }
       lemmas.add(lemma);
     }
-    return lemmas.toArray(new String[lemmas.size()]);
+    return lemmas.toArray(new String[0]);
   }
 
   /**
@@ -184,7 +184,7 @@ public class LemmatizerME implements Lemmatizer {
       }
       sesList.add(ses);
     }
-    return sesList.toArray(new String[sesList.size()]);
+    return sesList.toArray(new String[0]);
   }
 
   /**

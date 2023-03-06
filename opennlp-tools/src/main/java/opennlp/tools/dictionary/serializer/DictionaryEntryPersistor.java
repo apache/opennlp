@@ -98,7 +98,7 @@ public class DictionaryEntryPersistor {
         }
         /* get the attribute here ... */
         if (mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE) != null) {
-          mIsCaseSensitiveDictionary = Boolean.valueOf(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));
+          mIsCaseSensitiveDictionary = Boolean.parseBoolean(mAttributes.getValue(ATTRIBUTE_CASE_SENSITIVE));
         }
         mAttributes = null;
       }
@@ -139,7 +139,7 @@ public class DictionaryEntryPersistor {
       else if (ENTRY_ELEMENT.equals(localName)) {
 
         String[] tokens = mTokenList.toArray(
-            new String[mTokenList.size()]);
+                new String[0]);
 
         Entry entry = new Entry(new StringList(tokens), mAttributes);
 

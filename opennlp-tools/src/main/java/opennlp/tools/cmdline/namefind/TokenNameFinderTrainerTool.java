@@ -55,7 +55,7 @@ public final class TokenNameFinderTrainerTool
 
   @Override
   public String getShortDescription() {
-    return "trainer for the learnable name finder";
+    return "Trainer for the learnable name finder";
   }
 
   static byte[] openFeatureGeneratorBytes(String featureGenDescriptorFile) {
@@ -192,9 +192,7 @@ public final class TokenNameFinderTrainerTool
       }
     }
 
-    System.out.println();
     counters.printSummary();
-    System.out.println();
 
     CmdLineUtil.writeModel("name finder", modelOutFile, model);
 

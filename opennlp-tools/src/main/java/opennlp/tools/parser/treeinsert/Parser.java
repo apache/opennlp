@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.chunker.Chunker;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
@@ -68,6 +71,8 @@ import opennlp.tools.util.TrainingParameters;
  * @see opennlp.tools.parser.Parser
  */
 public class Parser extends AbstractBottomUpParser {
+
+  private static final Logger logger = LoggerFactory.getLogger(Parser.class);
 
   /** Outcome used when a constituent needs an no additional parent node/building. */
   public static final String DONE = "d";
@@ -299,8 +304,8 @@ public class Parser extends AbstractBottomUpParser {
     //call build model
     buildModel.eval(buildContextGenerator.getContext(children, advanceNodeIndex), bprobs);
     double doneProb = bprobs[doneIndex];
-    if (debugOn)
-      System.out.println("adi=" + advanceNodeIndex + " " + advanceNode.getType() + "."
+    if (logger.isDebugEnabled())
+      logger.debug("adi=" + advanceNodeIndex + " " + advanceNode.getType() + "."
           + advanceNode.getLabel() + " " + advanceNode + " choose build=" + (1 - doneProb)
           + " attach=" + doneProb);
 
@@ -330,19 +335,20 @@ public class Parser extends AbstractBottomUpParser {
           if (checkComplete) {
             cprobs = checkModel.eval(checkContextGenerator.getContext(newNode, children,
                 advanceNodeIndex,false));
-            if (debugOn) System.out.println("building " + tag + " " + bprob + " c=" + cprobs[completeIndex]);
+            if (logger.isDebugEnabled())
+              logger.debug("building " + tag + " " + bprob + " c=" + cprobs[completeIndex]);
             if (cprobs[completeIndex] > probMass) { //just complete advances
               setComplete(newNode);
               newParse1.addProb(StrictMath.log(cprobs[completeIndex]));
-              if (debugOn) System.out.println("Only advancing complete node");
+              if (logger.isDebugEnabled()) logger.debug("Only advancing complete node");
             }
             else if (1 - cprobs[completeIndex] > probMass) { //just incomplete advances
               setIncomplete(newNode);
               newParse1.addProb(StrictMath.log(1 - cprobs[completeIndex]));
-              if (debugOn) System.out.println("Only advancing incomplete node");
+              if (logger.isDebugEnabled()) logger.debug("Only advancing incomplete node");
             }
             else { //both complete and incomplete advance
-              if (debugOn) System.out.println("Advancing both complete and incomplete nodes");
+              if (logger.isDebugEnabled()) logger.debug("Advancing both complete and incomplete nodes");
               setComplete(newNode);
               newParse1.addProb(StrictMath.log(cprobs[completeIndex]));
 
@@ -356,7 +362,7 @@ public class Parser extends AbstractBottomUpParser {
             }
           }
           else {
-            if (debugOn) System.out.println("building " + tag + " " + bprob);
+            if (logger.isDebugEnabled()) logger.debug("building " + tag + " " + bprob);
           }
         }
       }
@@ -388,10 +394,10 @@ public class Parser extends AbstractBottomUpParser {
         for (int fi = 0,fs = rf.size(); fi < fs; fi++) {
           Parse fn = rf.get(fi);
           attachModel.eval(attachContextGenerator.getContext(children, advanceNodeIndex, rf, fi), aprobs);
-          if (debugOn) {
+          if (logger.isDebugEnabled()) {
             // List cs = java.util.Arrays.asList(attachContextGenerator.getContext(children,
             //     advanceNodeIndex,rf,fi,punctSet));
-            System.out.println("Frontier node(" + fi + "): " + fn.getType() + "." + fn.getLabel()
+            logger.debug("Frontier node(" + fi + "): " + fn.getType() + "." + fn.getLabel()
                 + " " + fn + " <- " + advanceNode.getType() + " " + advanceNode + " d="
                 + aprobs[daughterAttachIndex] + " s=" + aprobs[sisterAttachIndex] + " ");
           }
@@ -410,8 +416,10 @@ public class Parser extends AbstractBottomUpParser {
               Parse[] newKids = Parser.collapsePunctuation(newParse2.getChildren(), punctSet);
               //remove node from top level since were going to attach it (including punct)
               for (int ri = originalZeroIndex + 1; ri <= originalAdvanceIndex; ri++) {
-                //System.out.println(at"-removing "+(originalZeroIndex+1)+" "
-                // +newParse2.getChildren()[originalZeroIndex+1]);
+                if (logger.isTraceEnabled()) {
+                  logger.trace(ri + "-removing " + (originalZeroIndex + 1) + " "
+                      + newParse2.getChildren()[originalZeroIndex + 1]);
+                }
                 newParse2.remove(originalZeroIndex + 1);
               }
               List<Parse> crf = getRightFrontier(newParse2, punctSet);
@@ -444,11 +452,11 @@ public class Parser extends AbstractBottomUpParser {
                 if (cprobs[completeIndex] > probMass) {
                   setComplete(updatedNode);
                   newParse2.addProb(StrictMath.log(cprobs[completeIndex]));
-                  if (debugOn) System.out.println("Only advancing complete node");
+                  if (logger.isDebugEnabled()) logger.debug("Only advancing complete node");
                 } else if (1 - cprobs[completeIndex] > probMass) {
                   setIncomplete(updatedNode);
                   newParse2.addProb(StrictMath.log(1 - cprobs[completeIndex]));
-                  if (debugOn) System.out.println("Only advancing incomplete node");
+                  if (logger.isDebugEnabled()) logger.debug("Only advancing incomplete node");
                 } else {
                   setComplete(updatedNode);
                   Parse newParse3 = newParse2.cloneRoot(updatedNode, originalZeroIndex);
@@ -456,21 +464,21 @@ public class Parser extends AbstractBottomUpParser {
                   newParsesList.add(newParse3);
                   setIncomplete(updatedNode);
                   newParse2.addProb(StrictMath.log(1 - cprobs[completeIndex]));
-                  if (debugOn)
-                    System.out.println("Advancing both complete and incomplete nodes; c="
+                  if (logger.isDebugEnabled())
+                    logger.debug("Advancing both complete and incomplete nodes; c="
                             + cprobs[completeIndex]);
                 }
               }
             } else {
-              if (debugOn)
-                System.out.println("Skipping " + fn.getType() + "." + fn.getLabel() + " "
+              if (logger.isDebugEnabled())
+                logger.debug("Skipping " + fn.getType() + "." + fn.getLabel() + " "
                         + fn + " daughter=" + (attachment == daughterAttachIndex)
                         + " complete=" + isComplete(fn) + " prob=" + prob);
             }
           }
           if (checkComplete && !isComplete(fn)) {
-            if (debugOn)
-              System.out.println("Stopping at incomplete node(" + fi + "): "
+            if (logger.isDebugEnabled())
+              logger.debug("Stopping at incomplete node(" + fi + "): "
                   + fn.getType() + "." + fn.getLabel() + " " + fn);
             break;
           }
@@ -502,7 +510,7 @@ public class Parser extends AbstractBottomUpParser {
 
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
-    System.err.println("Building dictionary");
+    logger.info("Building dictionary");
     Dictionary mdict = buildDictionary(parseSamples, rules, mlParams);
 
     parseSamples.reset();
@@ -520,7 +528,7 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
 
     // build
-    System.err.println("Training builder");
+    logger.info("Training builder");
     ObjectStream<Event> bes = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.BUILD, mdict);
     Map<String, String> buildReportMap = new HashMap<>();
@@ -534,7 +542,7 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
 
     // check
-    System.err.println("Training checker");
+    logger.info("Training checker");
     ObjectStream<Event>  kes = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.CHECK);
     Map<String, String> checkReportMap = new HashMap<>();
@@ -548,7 +556,7 @@ public class Parser extends AbstractBottomUpParser {
     parseSamples.reset();
 
     // attach
-    System.err.println("Training attacher");
+    logger.info("Training attacher");
     ObjectStream<Event>  attachEvents = new ParserEventStream(parseSamples, rules,
         ParserEventTypeEnum.ATTACH);
     Map<String, String> attachReportMap = new HashMap<>();

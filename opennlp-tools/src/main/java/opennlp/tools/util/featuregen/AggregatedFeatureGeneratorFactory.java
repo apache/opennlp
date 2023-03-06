@@ -58,7 +58,7 @@ public class AggregatedFeatureGeneratorFactory
     }
 
     return new AggregatedFeatureGenerator(aggregatedGenerators.toArray(
-        new AdaptiveFeatureGenerator[aggregatedGenerators.size()]));
+            new AdaptiveFeatureGenerator[0]));
   }
 
   @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
@@ -75,6 +75,6 @@ public class AggregatedFeatureGeneratorFactory
       }
     }
     return new AggregatedFeatureGenerator(aggregatedGenerators.toArray(
-        new AdaptiveFeatureGenerator[aggregatedGenerators.size()]));
+            new AdaptiveFeatureGenerator[0]));
   }
 }

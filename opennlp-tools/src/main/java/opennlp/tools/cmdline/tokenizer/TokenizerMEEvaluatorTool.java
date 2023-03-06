@@ -19,6 +19,9 @@ package opennlp.tools.cmdline.tokenizer;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EvaluatorParams;
@@ -38,6 +41,8 @@ import opennlp.tools.tokenize.TokenizerModel;
 public final class TokenizerMEEvaluatorTool
     extends AbstractEvaluatorTool<TokenSample, EvalToolParams> {
 
+  private static final Logger logger = LoggerFactory.getLogger(TokenizerMEEvaluatorTool.class);
+
   interface EvalToolParams extends EvaluatorParams {
   }
 
@@ -47,7 +52,7 @@ public final class TokenizerMEEvaluatorTool
 
   @Override
   public String getShortDescription() {
-    return "evaluator for the learnable tokenizer";
+    return "Measures the performance of the learnable tokenizer";
   }
 
   @Override
@@ -64,12 +69,11 @@ public final class TokenizerMEEvaluatorTool
     TokenizerEvaluator evaluator = new TokenizerEvaluator(
         new opennlp.tools.tokenize.TokenizerME(model), misclassifiedListener);
 
-    System.out.print("Evaluating ... ");
+    logger.info("Evaluating ... ");
 
     try {
       evaluator.evaluate(sampleStream);
     } catch (IOException e) {
-      System.err.println("failed");
       throw new TerminateToolException(-1, "IO error while reading test data: " + e.getMessage(), e);
     } finally {
       try {
@@ -79,9 +83,8 @@ public final class TokenizerMEEvaluatorTool
       }
     }
 
-    System.out.println("done");
-    System.out.println();
+    logger.info("done");
 
-    System.out.println(evaluator.getFMeasure());
+    logger.info(evaluator.getFMeasure().toString());
   }
 }

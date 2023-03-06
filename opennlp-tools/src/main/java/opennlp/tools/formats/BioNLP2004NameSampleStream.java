@@ -18,7 +18,6 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +84,6 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
    */
   public BioNLP2004NameSampleStream(InputStreamFactory in, int types) throws IOException {
     this.lineStream = new PlainTextByLineStream(in, StandardCharsets.UTF_8);
-    System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
     this.types = types;
   }
 
@@ -178,8 +176,8 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
       if (beginIndex != -1)
         names.add(new Span(beginIndex, endIndex, tags.get(beginIndex).substring(2)));
 
-      return new NameSample(sentence.toArray(new String[sentence.size()]),
-          names.toArray(new Span[names.size()]), isClearAdaptiveData);
+      return new NameSample(sentence.toArray(new String[0]),
+          names.toArray(new Span[0]), isClearAdaptiveData);
     }
     else if (line != null) {
       // Just filter out empty events, if two lines in a row are empty

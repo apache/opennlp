@@ -19,6 +19,9 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -33,8 +36,10 @@ import opennlp.tools.util.model.ModelUtil;
 
 public final class BuildModelUpdaterTool extends ModelUpdaterTool {
 
+  private static final Logger logger = LoggerFactory.getLogger(BuildModelUpdaterTool.class);
+
   public String getShortDescription() {
-    return "trains and updates the build model in a parser model";
+    return "Trains and updates the build model in a parser model";
   }
 
   @Override
@@ -48,7 +53,7 @@ public final class BuildModelUpdaterTool extends ModelUpdaterTool {
 
     // TODO: training individual models should be in the chunking parser, not here
     // Training build
-    System.out.println("Training builder");
+    logger.info("Training builder");
     ObjectStream<Event> bes = new ParserEventStream(parseSamples,
         originalModel.getHeadRules(), ParserEventTypeEnum.BUILD, mdict);
 

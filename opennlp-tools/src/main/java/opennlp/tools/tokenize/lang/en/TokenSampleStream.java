@@ -26,6 +26,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.Span;
 
@@ -36,6 +39,7 @@ import opennlp.tools.util.Span;
  */
 public class TokenSampleStream implements Iterator<TokenSample> {
 
+  private static final Logger logger = LoggerFactory.getLogger(TokenSampleStream.class);
   private BufferedReader in;
   private String line;
   private Pattern alphaNumeric = Pattern.compile("[A-Za-z0-9]");
@@ -81,7 +85,6 @@ public class TokenSampleStream implements Iterator<TokenSample> {
               token.equals("(")  || token.equals("&")  || token.equals("#") ||
               (token.equals("\"") && (evenq && ti != tokens.length - 1)))
               && (!lastToken.equals("(") || !lastToken.equals("{"))) {
-            //System.out.print(" "+token);
             length++;
           }
         }
@@ -106,10 +109,10 @@ public class TokenSampleStream implements Iterator<TokenSample> {
     try {
       line = in.readLine();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.getLocalizedMessage(), e);
       line = null;
     }
-    return new TokenSample(sb.toString(),spans.toArray(new Span[spans.size()]));
+    return new TokenSample(sb.toString(),spans.toArray(new Span[0]));
   }
 
 
@@ -118,7 +121,7 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   }
 
   private static void usage() {
-    System.err.println("TokenSampleStream [-spans] < in");
-    System.err.println("Where in is a space delimited list of tokens.");
+    logger.info("TokenSampleStream [-spans] < in");
+    logger.info("Where in is a space delimited list of tokens.");
   }
 }

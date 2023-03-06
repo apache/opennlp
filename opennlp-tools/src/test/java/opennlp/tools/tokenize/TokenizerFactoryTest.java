@@ -42,8 +42,7 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class TokenizerFactoryTest {
 
-  private static ObjectStream<TokenSample> createSampleStream()
-      throws IOException {
+  private static ObjectStream<TokenSample> createSampleStream() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(
         TokenizerFactoryTest.class, "/opennlp/tools/tokenize/token.train");
 
@@ -71,10 +70,11 @@ public class TokenizerFactoryTest {
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
     TokenizerFactory factory = model.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() != null);
+    Assertions.assertNotNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
+    String defaultPattern = Factory.DEFAULT_ALPHANUMERIC.pattern();
+    Assertions.assertEquals(defaultPattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
     Assertions.assertFalse(factory.isUseAlphaNumericOptimization());
@@ -86,10 +86,10 @@ public class TokenizerFactoryTest {
     TokenizerModel fromSerialized = new TokenizerModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() != null);
+    Assertions.assertNotNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
+    Assertions.assertEquals(defaultPattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
     Assertions.assertFalse(factory.isUseAlphaNumericOptimization());
@@ -107,7 +107,8 @@ public class TokenizerFactoryTest {
     Assertions.assertNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
+    String defaultPattern = Factory.DEFAULT_ALPHANUMERIC.pattern();
+    Assertions.assertEquals(defaultPattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
     Assertions.assertFalse(factory.isUseAlphaNumericOptimization());
@@ -122,7 +123,7 @@ public class TokenizerFactoryTest {
     Assertions.assertNull(factory.getAbbreviationDictionary());
     Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
 
-    Assertions.assertEquals(Factory.DEFAULT_ALPHANUMERIC, factory.getAlphaNumericPattern().pattern());
+    Assertions.assertEquals(defaultPattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
     Assertions.assertFalse(factory.isUseAlphaNumericOptimization());

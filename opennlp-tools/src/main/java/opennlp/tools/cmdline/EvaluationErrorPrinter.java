@@ -36,7 +36,11 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
   protected PrintStream printStream;
 
   protected EvaluationErrorPrinter(OutputStream outputStream) {
-    this.printStream = new PrintStream(outputStream);
+    this(new PrintStream(outputStream));
+  }
+
+  protected EvaluationErrorPrinter(PrintStream printStream) {
+    this.printStream = printStream;
   }
 
   // for the sentence detector
@@ -187,7 +191,7 @@ public abstract class EvaluationErrorPrinter<T> implements EvaluationMonitor<T> 
    */
   private String print(List<Span> spans, String[] toks) {
     return Arrays.toString(Span.spansToStrings(
-        spans.toArray(new Span[spans.size()]), toks));
+        spans.toArray(new Span[0]), toks));
   }
 
   /**

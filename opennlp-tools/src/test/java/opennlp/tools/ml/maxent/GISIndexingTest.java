@@ -132,7 +132,6 @@ public class GISIndexingTest {
       params.put(AbstractTrainer.ITERATIONS_PARAM, 10);
       params.put(AbstractTrainer.CUTOFF_PARAM, 1);
       params.put("smoothing", false);
-      params.put(AbstractTrainer.VERBOSE_PARAM, false);
 
       EventTrainer trainer = TrainerFactory.getEventTrainer(params, null);
       Assertions.assertNotNull(trainer.train(eventStream));

@@ -90,7 +90,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
         offsetFrom += nameFound.length() - 1;
       }
     }
-    return namesFound.toArray(new Span[namesFound.size()]);
+    return namesFound.toArray(new Span[0]);
   }
 
   @Override

@@ -113,7 +113,7 @@ public class DefaultLemmatizerContextGenerator implements LemmatizerContextGener
       features.add("d");
     }
 
-    return features.toArray(new String[features.size()]);
+    return features.toArray(new String[0]);
   }
 }
 

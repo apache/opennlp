@@ -47,7 +47,7 @@ public class LemmatizerTrainerTool
 
   @Override
   public String getShortDescription() {
-    return "trainer for the learnable lemmatizer";
+    return "Trainer for the learnable lemmatizer";
   }
 
   @Override

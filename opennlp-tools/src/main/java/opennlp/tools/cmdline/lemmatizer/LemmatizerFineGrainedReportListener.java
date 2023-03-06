@@ -19,9 +19,13 @@ package opennlp.tools.cmdline.lemmatizer;
 
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.cmdline.FineGrainedReportListener;
 import opennlp.tools.lemmatizer.LemmaSample;
 import opennlp.tools.lemmatizer.LemmatizerEvaluationMonitor;
+import opennlp.tools.log.LogPrintStream;
 
 /**
  * Generates a detailed report for the Lemmatizer.
@@ -32,11 +36,13 @@ import opennlp.tools.lemmatizer.LemmatizerEvaluationMonitor;
 public class LemmatizerFineGrainedReportListener
     extends FineGrainedReportListener implements LemmatizerEvaluationMonitor {
 
+  private static final Logger logger = LoggerFactory.getLogger(LemmatizerFineGrainedReportListener.class);
+
   /**
-   * Creates a listener that will print to {@code System#err}.
+   * Creates a listener that will print to the configured {@code logger}.
    */
   public LemmatizerFineGrainedReportListener() {
-    super(System.err);
+    super(new LogPrintStream(logger));
   }
 
   /**
