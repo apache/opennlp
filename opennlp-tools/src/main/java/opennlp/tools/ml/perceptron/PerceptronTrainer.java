@@ -288,7 +288,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
   private MutableContext[] findParameters(int iterations, boolean useAverage) {
 
-    logger.info("Performing " + iterations + " iterations.");
+    logger.info("Performing {} iterations.", iterations);
 
     int[] allOutcomesPattern = new int[numOutcomes];
     for (int oi = 0; oi < numOutcomes; oi++)
@@ -373,7 +373,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       // Calculate the training accuracy and display.
       double trainingAccuracy = (double) numCorrect / numEvents;
       if (i < 10 || (i % 10) == 0)
-        logger.info("{}: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy, i);
+        logger.info("{}: ({}/{}) {}", i, numCorrect, numEvents, trainingAccuracy);
 
       // TODO: Make averaging configurable !!!
 
@@ -442,7 +442,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       }
     }
     double trainingAccuracy = (double) numCorrect / numEvents;
-    logger.info("Stats: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy);
+    logger.info("Stats: ({}/{}) {}", numCorrect, numEvents, trainingAccuracy);
     return trainingAccuracy;
   }
 

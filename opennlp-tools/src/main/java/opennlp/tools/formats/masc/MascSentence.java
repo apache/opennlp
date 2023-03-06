@@ -243,7 +243,7 @@ public class MascSentence extends Span {
       Span leftSpan = namedEntities.get(leftIndex);
       Span rightSpan = namedEntities.get(rightIndex);
       if (leftSpan.contains(rightSpan) || leftSpan.crosses(rightSpan)) {
-        logger.warn("Named entities overlap. This is forbidden in the OpenNLP." +
+        logger.warn("Named entities overlap. This is forbidden in OpenNLP." +
             "\n\tKeeping the longer of them.");
         if (rightSpan.length() > leftSpan.length()) {
           overlaps.add(leftIndex);

@@ -74,8 +74,8 @@ public class NGramLanguageModelTool extends BasicCmdLineTool {
             continue;
           }
 
-          logger.info(Arrays.toString(tokens) + " -> prob:" + probability + ", " +
-                  "next:" + Arrays.toString(predicted));
+          logger.info("{} -> prob: {}, next: {}",
+              Arrays.toString(tokens), probability, Arrays.toString(predicted));
 
           perfMon.incrementCounter();
         }

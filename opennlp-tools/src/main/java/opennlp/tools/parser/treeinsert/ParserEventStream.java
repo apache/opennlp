@@ -224,8 +224,8 @@ public class ParserEventStream extends AbstractParserEventStream {
         /* Right frontier consisting of partially-built nodes based on current state of the parse.*/
         List<Parse> currentRightFrontier = Parser.getRightFrontier(currentChunks[0],punctSet);
         if (currentRightFrontier.size() != rightFrontier.size()) {
-          logger.error("Frontiers mis-aligned: " + currentRightFrontier.size() + " != "
-              + rightFrontier.size() + " " + currentRightFrontier + " " + rightFrontier);
+          logger.error("Frontiers mis-aligned: {} != {} {} {}", currentRightFrontier.size(),
+              rightFrontier.size(), currentRightFrontier, rightFrontier);
           System.exit(1);
         }
         Map<Parse, Integer> parents = getNonAdjoinedParent(chunks[ci]);
@@ -236,10 +236,10 @@ public class ParserEventStream extends AbstractParserEventStream {
           if (!Parser.checkComplete || !Parser.COMPLETE.equals(cfn.getLabel())) {
             Integer i = parents.get(frontierNode);
             if (logger.isDebugEnabled())
-              logger.debug("Looking at attachment site (" + cfi + "): "
-                  + cfn.getType() + " ci=" + i + " cs=" + nonPunctChildCount(cfn)
-                  + ", " + cfn + " :for " + currentChunks[ci].getType() + " "
-                  + currentChunks[ci] + " -> " + parents);
+              logger.debug("Looking at attachment site ({}): {} ci={} cs={}, {} :for {} {} -> {}",
+                  cfi, cfn.getType(), i, nonPunctChildCount(cfn), cfn, currentChunks[ci].getType(),
+                  currentChunks[ci], parents
+              );
 
             if (attachNode == null &&  i != null && i == nonPunctChildCount(cfn)) {
               attachType = Parser.ATTACH_DAUGHTER;
@@ -253,13 +253,13 @@ public class ParserEventStream extends AbstractParserEventStream {
           }
           else {
             if (logger.isDebugEnabled())
-              logger.debug("Skipping (" + cfi + "): " + cfn.getType() + ","
-                  + cfn.getPreviousPunctuationSet() + " " + cfn + " :for "
-                  + currentChunks[ci].getType() + " " + currentChunks[ci] + " -> " + parents);
+              logger.debug("Skipping ({}): {},{} {} :for {} {} -> {}",
+                  cfi, cfn.getType(), cfn.getPreviousPunctuationSet(), cfn,
+                  currentChunks[ci].getType(), currentChunks[ci], parents);
           }
           // Can't attach past first incomplete node.
           if (Parser.checkComplete && cfn.getLabel().equals(Parser.INCOMPLETE)) {
-            if (logger.isDebugEnabled()) logger.debug("breaking on incomplete:" + cfn.getType() + " " + cfn);
+            if (logger.isDebugEnabled()) logger.debug("breaking on incomplete: {} {}",  cfn.getType(), cfn);
             break;
           }
         }
@@ -290,7 +290,7 @@ public class ParserEventStream extends AbstractParserEventStream {
           }
           //Can't attach past first incomplete node.
           if (Parser.checkComplete && cfn.getLabel().equals(Parser.INCOMPLETE)) {
-            if (logger.isDebugEnabled()) logger.debug("breaking on incomplete:" + cfn.getType() + " " + cfn);
+            if (logger.isDebugEnabled()) logger.debug("breaking on incomplete: {} {}",  cfn.getType(), cfn);
             break;
           }
         }
@@ -299,9 +299,8 @@ public class ParserEventStream extends AbstractParserEventStream {
           if (Parser.ATTACH_DAUGHTER.equals(attachType)) {
             Parse daughter = currentChunks[ci];
             if (logger.isDebugEnabled())
-              logger.debug("daughter attach a=" + attachNode.getType() + ":"
-                  + attachNode + " d=" + daughter + " com="
-                  + lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
+              logger.debug("daughter attach a={}:{} d={} com={}", attachNode.getType(),
+                  attachNode, daughter, lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
 
             attachNode.add(daughter,rules);
             daughter.setParent(attachNode);
@@ -324,9 +323,9 @@ public class ParserEventStream extends AbstractParserEventStream {
             rightFrontier.set(attachNodeIndex,frontierNode.getParent());
             Parse sister = currentChunks[ci];
             if (logger.isDebugEnabled())
-              logger.debug("sister attach a=" + attachNode.getType()
-                + ":" + attachNode + " s=" + sister + " ap=" + attachNode.getParent()
-                + " com=" + lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
+              logger.debug("sister attach a={}:{} s={} ap={} com={}", attachNode.getType(),
+                  attachNode, sister, attachNode.getParent(),
+                  lastChild(chunks[ci], rightFrontier.get(attachNodeIndex)));
 
             Parse newParent = attachNode.getParent().adjoin(sister,rules);
 

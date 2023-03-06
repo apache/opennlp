@@ -628,7 +628,7 @@ public class GISTrainer extends AbstractEventTrainer {
           params[pi].updateParameter(aoi, gaussianUpdate(pi, aoi, correctionConstant));
         } else {
           if (model[aoi] == 0) {
-            logger.warn("Model expects == 0 for " + predLabels[pi] + " " + outcomeLabels[aoi]);
+            logger.warn("Model expects == 0 for {} {}", predLabels[pi], outcomeLabels[aoi]);
           }
           //params[pi].updateParameter(aoi,(StrictMath.log(observed[aoi]) - StrictMath.log(model[aoi])));
           params[pi].updateParameter(aoi, ((StrictMath.log(observed[aoi]) - StrictMath.log(model[aoi]))
@@ -642,7 +642,8 @@ public class GISTrainer extends AbstractEventTrainer {
       }
     }
 
-    logger.info("{} - loglikelihood=" + loglikelihood + "\t" + ((double) numCorrect / numEvents), iteration);
+    logger.info("{} - loglikelihood={}\t{}",
+        iteration, loglikelihood, ((double) numCorrect / numEvents));
 
     return loglikelihood;
   }

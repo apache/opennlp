@@ -305,9 +305,9 @@ public class Parser extends AbstractBottomUpParser {
     buildModel.eval(buildContextGenerator.getContext(children, advanceNodeIndex), bprobs);
     double doneProb = bprobs[doneIndex];
     if (logger.isDebugEnabled())
-      logger.debug("adi=" + advanceNodeIndex + " " + advanceNode.getType() + "."
-          + advanceNode.getLabel() + " " + advanceNode + " choose build=" + (1 - doneProb)
-          + " attach=" + doneProb);
+      logger.debug("adi={} {}.{} {} choose build={} attach={}",
+          advanceNodeIndex, advanceNode.getType(), advanceNode.getLabel(),
+          advanceNode, (1 - doneProb), doneProb);
 
     if (1 - doneProb > q) {
       double bprobSum = 0;
@@ -336,7 +336,7 @@ public class Parser extends AbstractBottomUpParser {
             cprobs = checkModel.eval(checkContextGenerator.getContext(newNode, children,
                 advanceNodeIndex,false));
             if (logger.isDebugEnabled())
-              logger.debug("building " + tag + " " + bprob + " c=" + cprobs[completeIndex]);
+              logger.debug("building {} {} c={}", tag, bprob, cprobs[completeIndex]);
             if (cprobs[completeIndex] > probMass) { //just complete advances
               setComplete(newNode);
               newParse1.addProb(StrictMath.log(cprobs[completeIndex]));
@@ -362,7 +362,7 @@ public class Parser extends AbstractBottomUpParser {
             }
           }
           else {
-            if (logger.isDebugEnabled()) logger.debug("building " + tag + " " + bprob);
+            if (logger.isDebugEnabled()) logger.debug("building {} {}", tag, bprob);
           }
         }
       }
@@ -397,9 +397,9 @@ public class Parser extends AbstractBottomUpParser {
           if (logger.isDebugEnabled()) {
             // List cs = java.util.Arrays.asList(attachContextGenerator.getContext(children,
             //     advanceNodeIndex,rf,fi,punctSet));
-            logger.debug("Frontier node(" + fi + "): " + fn.getType() + "." + fn.getLabel()
-                + " " + fn + " <- " + advanceNode.getType() + " " + advanceNode + " d="
-                + aprobs[daughterAttachIndex] + " s=" + aprobs[sisterAttachIndex] + " ");
+            logger.debug("Frontier node({}): {}.{} {} <- {} {} d={} s={} ",
+                fi, fn.getType(), fn.getLabel(), fn, advanceNode.getType(),
+                advanceNode, aprobs[daughterAttachIndex], aprobs[sisterAttachIndex]);
           }
           for (int attachment : attachments) {
             double prob = aprobs[attachment];
@@ -417,8 +417,8 @@ public class Parser extends AbstractBottomUpParser {
               //remove node from top level since were going to attach it (including punct)
               for (int ri = originalZeroIndex + 1; ri <= originalAdvanceIndex; ri++) {
                 if (logger.isTraceEnabled()) {
-                  logger.trace(ri + "-removing " + (originalZeroIndex + 1) + " "
-                      + newParse2.getChildren()[originalZeroIndex + 1]);
+                  logger.trace("{}-removing {} {}", ri, (originalZeroIndex + 1),
+                      newParse2.getChildren()[originalZeroIndex + 1]);
                 }
                 newParse2.remove(originalZeroIndex + 1);
               }
@@ -465,21 +465,21 @@ public class Parser extends AbstractBottomUpParser {
                   setIncomplete(updatedNode);
                   newParse2.addProb(StrictMath.log(1 - cprobs[completeIndex]));
                   if (logger.isDebugEnabled())
-                    logger.debug("Advancing both complete and incomplete nodes; c="
-                            + cprobs[completeIndex]);
+                    logger.debug("Advancing both complete and incomplete nodes; c={}",
+                            cprobs[completeIndex]);
                 }
               }
             } else {
               if (logger.isDebugEnabled())
-                logger.debug("Skipping " + fn.getType() + "." + fn.getLabel() + " "
-                        + fn + " daughter=" + (attachment == daughterAttachIndex)
-                        + " complete=" + isComplete(fn) + " prob=" + prob);
+                logger.debug("Skipping {}.{} {} daughter={} complete={} prob={}",
+                     fn.getType(), fn.getLabel(), fn, (attachment == daughterAttachIndex),
+                        isComplete(fn), prob);
             }
           }
           if (checkComplete && !isComplete(fn)) {
             if (logger.isDebugEnabled())
-              logger.debug("Stopping at incomplete node(" + fi + "): "
-                  + fn.getType() + "." + fn.getLabel() + " " + fn);
+              logger.debug("Stopping at incomplete node({}): {} . {} {}",
+                  fi, fn.getType(), fn.getLabel(), fn);
             break;
           }
         }

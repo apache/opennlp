@@ -253,7 +253,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
   }
 
   private void findParameters(int iterations) throws IOException {
-    logger.info("Performing " + iterations + " iterations.\n");
+    logger.info("Performing {} iterations.\n", iterations);
     for (int i = 1; i <= iterations; i++) {
       nextIteration(i);
     }
@@ -356,8 +356,8 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
             int pi = pmap.getOrDefault(feature, -1);
             if (pi != -1) {
               if (logger.isTraceEnabled()) {
-                logger.trace(si + " " + outcomeLabels[oi] + " " + feature + " "
-                    + featureCounts.get(oi).get(feature));
+                logger.trace("{} {} {} {}",
+                    si, outcomeLabels[oi], feature, featureCounts.get(oi).get(feature));
               }
               params[pi].updateParameter(oi, featureCounts.get(oi).get(feature));
               if (useAverage) {
@@ -365,14 +365,13 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
                   averageParams[pi].updateParameter(oi, updates[pi][oi][VALUE] * (numSequences
                       * (iteration - updates[pi][oi][ITER]) + (si - updates[pi][oi][EVENT])));
                   if (logger.isTraceEnabled()) {
-                    logger.trace("p avp[" + pi + "]." + oi + "=" + averageParams[pi].getParameters()[oi]);
+                    logger.trace("p avp[{}].{}={}", pi, oi, averageParams[pi].getParameters()[oi]);
                   }
                 }
                 if (logger.isTraceEnabled()) {
-                  logger.trace("p updates[" + pi + "][" + oi + "]=(" + updates[pi][oi][ITER] + ","
-                      + updates[pi][oi][EVENT] + "," + updates[pi][oi][VALUE] + ") + ("
-                      + iteration + "," + oei + "," + params[pi].getParameters()[oi]
-                      + ") -> " + averageParams[pi].getParameters()[oi]);
+                  logger.trace("p updates[{}]{{}]=({},{},{})({},{},{}) -> {}", pi, oi, updates[pi][oi][ITER],
+                      updates[pi][oi][EVENT], updates[pi][oi][VALUE], iteration, oei,
+                      params[pi].getParameters()[oi], averageParams[pi].getParameters()[oi]);
                 }
                 updates[pi][oi][VALUE] = (int) params[pi].getParameters()[oi];
                 updates[pi][oi][ITER] = iteration;
@@ -399,16 +398,16 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
             predParams[oi] /= totIterations;
             averageParams[pi].setParameter(oi, predParams[oi]);
             if (logger.isTraceEnabled()) {
-              logger.trace("updates[" + pi + "][" + oi + "]=(" + updates[pi][oi][ITER] + ","
-                  + updates[pi][oi][EVENT] + "," + updates[pi][oi][VALUE] + ") + (" + iterations
-                  + "," + 0 + "," + params[pi].getParameters()[oi] + ") -> "
-                  + averageParams[pi].getParameters()[oi]);
+              logger.trace("updates[{}][{}]=({},{},{})({},{},{}) -> {}", pi, oi, updates[pi][oi][ITER],
+                  updates[pi][oi][EVENT], updates[pi][oi][VALUE], iterations, 0,
+                  params[pi].getParameters()[oi], averageParams[pi].getParameters()[oi]);
             }
           }
         }
       }
     }
-    logger.info("{}. (" + numCorrect + "/" + numEvents + ") " + ((double) numCorrect / numEvents), iteration);
+    logger.info("{}. ({}/{}) {}", iteration, numCorrect,
+        numEvents, ((double) numCorrect / numEvents));
   }
 
   private void trainingStats(MutableContext[] params) throws IOException {
@@ -428,6 +427,6 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
         }
       }
     }
-    logger.info(". (" + numCorrect + "/" + numEvents + ") " + ((double) numCorrect / numEvents));
+    logger.info(". ({}/{}) {}", numCorrect, numEvents, ((double) numCorrect / numEvents));
   }
 }

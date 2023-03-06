@@ -233,7 +233,7 @@ public class NaiveBayesTrainer extends AbstractEventTrainer {
       }
     }
     double trainingAccuracy = (double) numCorrect / numEvents;
-    logger.info("Stats: (" + numCorrect + "/" + numEvents + ") " + trainingAccuracy);
+    logger.info("Stats: ({}/{}) {}", numCorrect, numEvents, trainingAccuracy);
     return trainingAccuracy;
   }
 
