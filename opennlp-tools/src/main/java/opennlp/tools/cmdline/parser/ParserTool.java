@@ -152,7 +152,7 @@ public final class ParserTool extends BasicCmdLineTool {
 
             for (int pi = 0, pn = parses.length; pi < pn; pi++) {
               if (showTopK) {
-                logger.debug(pi + " " + parses[pi].getProb() + " ");
+                logger.debug("{} {} ", pi,  parses[pi].getProb());
               }
 
               parses[pi].show();

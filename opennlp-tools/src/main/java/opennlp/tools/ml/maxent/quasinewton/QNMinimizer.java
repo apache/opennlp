@@ -226,8 +226,8 @@ public class QNMinimizer {
     if (logger.isDebugEnabled()) {
       logger.debug("Solving convex optimization problem.");
       logger.debug("Objective function has {} variable(s).", dimension);
-      logger.debug("Performing " + iterations + " iterations with " +
-          "L1Cost=" + l1Cost + " and L2Cost=" + l2Cost );
+      logger.debug("Performing {} iterations with L1Cost={} and L2Cost={}",
+          iterations, l1Cost, l2Cost);
     }
 
     double[] direction = new double[dimension];
@@ -270,11 +270,10 @@ public class QNMinimizer {
       if (logger.isDebugEnabled()) {
 
         if (evaluator != null) {
-          logger.debug("{}: \t" + lsr.getValueAtNext() + "\t" + lsr.getFuncChangeRate()
-              + "\t" + evaluator.evaluate(lsr.getNextPoint()), iter);
+          logger.debug("{}: \t{}\t{}\t{}", iter,
+              lsr.getValueAtNext(), lsr.getFuncChangeRate(),evaluator.evaluate(lsr.getNextPoint()));
         } else {
-          logger.debug("{}: \t " + lsr.getValueAtNext() +
-              "\t" + lsr.getFuncChangeRate() + "\n", iter);
+          logger.debug("{}: \t {}\t{}\n", iter, lsr.getValueAtNext(), lsr.getFuncChangeRate());
         }
       }
       if (isConverged(lsr))
@@ -294,7 +293,7 @@ public class QNMinimizer {
 
     long endTime = System.currentTimeMillis();
     long duration = endTime - startTime;
-    logger.info("Running time: " + (duration / 1000.) + "s\n");
+    logger.info("Running time: {}s\n", (duration / 1000.));
 
     // Release memory
     this.updateInfo = null;

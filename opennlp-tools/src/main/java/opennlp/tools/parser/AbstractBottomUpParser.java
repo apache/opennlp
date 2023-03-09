@@ -295,7 +295,7 @@ public abstract class AbstractBottomUpParser implements Parser {
           guess = tp;
         }
         if (logger.isDebugEnabled()) {
-          logger.debug(derivationStage + " " + derivationRank + " " + tp.getProb());
+          logger.debug("{} {} {}", derivationStage, derivationRank, tp.getProb());
           tp.show();
         }
         Parse[] nd;

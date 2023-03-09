@@ -154,8 +154,8 @@ public class ParserEventStream extends AbstractParserEventStream {
           outcome = AbstractBottomUpParser.CONT + type;
         }
         if (logger.isTraceEnabled()) {
-          logger.trace("parserEventStream.addParseEvents: chunks[" + ci + "]="
-              + c + " label=" + outcome + " bcg=" + bcg);
+          logger.trace("parserEventStream.addParseEvents: chunks[{}]={} label={} bcg={}",
+              ci, c, outcome, bcg);
         }
         c.setLabel(outcome);
         if (etype == ParserEventTypeEnum.BUILD) {

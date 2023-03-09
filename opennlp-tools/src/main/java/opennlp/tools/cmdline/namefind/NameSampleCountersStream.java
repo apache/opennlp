@@ -98,8 +98,9 @@ public class NameSampleCountersStream
 
     int totalNames = 0;
     for (Map.Entry<String, Integer> counter : getNameCounters().entrySet()) {
-      logger.info("#" + counter.getKey() + " entities: " + counter.getValue());
+      logger.info("# {} entities: {}", counter.getKey(), counter.getValue());
       totalNames += counter.getValue();
     }
+    logger.info("# total: {}", totalNames);
   }
 }

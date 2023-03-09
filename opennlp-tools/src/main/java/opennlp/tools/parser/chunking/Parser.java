@@ -147,12 +147,12 @@ public class Parser extends AbstractBottomUpParser {
       String outcome = buildModel.getOutcome(boi);
       if (outcome.startsWith(START)) {
         if (logger.isTraceEnabled()) {
-          logger.trace("startMap " + outcome + "->" + outcome.substring(START.length()));
+          logger.trace("startMap {} -> {} ", outcome, outcome.substring(START.length()));
         }
         startTypeMap.put(outcome, outcome.substring(START.length()));
       } else if (outcome.startsWith(CONT)) {
         if (logger.isTraceEnabled()) {
-          logger.trace("contMap " + outcome + "->" + outcome.substring(CONT.length()));
+          logger.trace("contMap {} -> {}", outcome, outcome.substring(CONT.length()));
         }
         contTypeMap.put(outcome, outcome.substring(CONT.length()));
       }
@@ -200,8 +200,8 @@ public class Parser extends AbstractBottomUpParser {
         lastStartNode = advanceNode;
         lastStartIndex = advanceNodeIndex;
         if (logger.isTraceEnabled()) {
-          logger.trace("lastStart " + lastStartIndex + " "
-              + lastStartNode.getLabel() + " " + lastStartNode.getProb());
+          logger.trace("lastStart {} {} {}", lastStartIndex,
+              lastStartNode.getLabel(), lastStartNode.getProb());
         }
       }
     }
@@ -226,13 +226,13 @@ public class Parser extends AbstractBottomUpParser {
       bprobSum += bprob;
       String tag = buildModel.getOutcome(max);
       if (logger.isTraceEnabled()) {
-        logger.trace("trying " + tag + " " + bprobSum + " lst=" + tag);
+        logger.trace("trying {} {} list={}", tag, bprobSum, tag);
       }
       if (max == topStartIndex) { // can't have top until complete
         continue;
       }
       if (logger.isTraceEnabled()) {
-        logger.trace(tag + " " + bprob);
+        logger.trace("{} {}", tag, bprob);
       }
       if (startTypeMap.containsKey(tag)) { //update last start
         lastStartIndex = advanceNodeIndex;
@@ -257,8 +257,8 @@ public class Parser extends AbstractBottomUpParser {
       if (logger.isTraceEnabled()) {
         String[] context = checkContextGenerator.getContext(newParse1.getChildren(),
             lastStartType, lastStartIndex, advanceNodeIndex);
-        logger.trace(("check " + lastStartType + " " + cprobs[completeIndex] + " "
-            + cprobs[incompleteIndex] + " " + tag + " " + java.util.Arrays.asList(context)));
+        logger.trace("check {} {} {} {} {}", lastStartType, cprobs[completeIndex],
+            cprobs[incompleteIndex], tag, java.util.Arrays.asList(context));
       }
 
       Parse newParse2;
@@ -285,9 +285,9 @@ public class Parser extends AbstractBottomUpParser {
           //check for top node to include end and begining punctuation
           if (lastStartIndex == 0 && advanceNodeIndex == numNodes - 1) {
             if (logger.isTraceEnabled()) {
-              logger.trace("ParserME.advanceParses: reducing entire span: "
-                  + new Span(lastStartNode.getSpan().getStart(), advanceNode.getSpan().getEnd()) + " "
-                  + lastStartType + " " + java.util.Arrays.asList(children));
+              logger.trace("ParserME.advanceParses: reducing entire span: {} {} {}",
+                  new Span(lastStartNode.getSpan().getStart(), advanceNode.getSpan().getEnd()),
+                  lastStartType, java.util.Arrays.asList(children));
             }
 
             newParse2.insert(new Parse(p.getText(), p.getSpan(), lastStartType, cprobs[1],

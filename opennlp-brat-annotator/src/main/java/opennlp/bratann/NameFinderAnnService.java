@@ -81,7 +81,7 @@ public class NameFinderAnnService {
       } else if ("simple".equals(args[ruleBasedTokenizerIndex])) {
         tokenizer = SimpleTokenizer.INSTANCE;
       } else {
-        logger.error("unknown tokenizer: " + args[ruleBasedTokenizerIndex]);
+        logger.error("unknown tokenizer: {}", args[ruleBasedTokenizerIndex]);
         return;
       }
     }

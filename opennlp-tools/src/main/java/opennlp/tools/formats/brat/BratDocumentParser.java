@@ -148,9 +148,9 @@ public class BratDocumentParser {
               if (nameBeginIndex != null && nameEndIndex != null) {
                 mappedFragments.add(new Span(nameBeginIndex, nameEndIndex, entity.getType()));
               } else {
-                logger.warn("Dropped entity " + entity.getId() + " ("
-                    + entitySpan.getCoveredText(sample.getText()) + ") " + " in document "
-                    + sample.getId() + ", it is not matching tokenization!");
+                logger.warn("Dropped entity {} ({}) in document {} as it is not matching " +
+                        "tokenization!", entity.getId(),
+                    entitySpan.getCoveredText(sample.getText()), sample.getId());
               }
             }
           }

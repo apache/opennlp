@@ -88,8 +88,8 @@ public class MascNamedEntityParser extends DefaultHandler {
         String type = entityIDtoEntityType.get(entityID);
         if (tokenToEntity.containsKey(tokenID) && !type.equals(tokenToEntity.get(tokenID))) {
           logger.warn("One token assigned to different named entity types.\n" +
-              "\tPenn-TokenID: " + tokenID + "\n\tToken types: \"" + type + "\", \"" +
-              tokenToEntity.get(tokenID) + "\"\n\tKeeping only " + "\"type\"");
+              "\tPenn-TokenID: {}\n\tToken types: \"{}\", \"{}\"\n\tKeeping only " + "\"type\"",
+              tokenID, type, tokenToEntity.get(tokenID));
         }
         tokenToEntity.put(tokenID, type);
       }
