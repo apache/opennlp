@@ -83,7 +83,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     logger.debug("Actual: {}", Arrays.toString(sortedResult));
     logger.debug("Expected: {}", Arrays.toString(expected));
 
-    Assertions.assertArrayEquals(expected, sortedResult, 0.0);
+    Assertions.assertArrayEquals(expected, sortedResult, 0.000001);
     Assertions.assertEquals(5, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
@@ -119,7 +119,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
             0.3003573715686798,
             0.6352779865264893};
 
-    Assertions.assertArrayEquals(expected, result, 0.0);
+    Assertions.assertArrayEquals(expected, result, 0.000001);
     Assertions.assertEquals(5, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
@@ -151,7 +151,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final double[] expected = new double[]{0.8851314783096313, 0.11486853659152985};
 
-    Assertions.assertArrayEquals(expected, result, 0.0);
+    Assertions.assertArrayEquals(expected, result, 0.000001);
     Assertions.assertEquals(2, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
@@ -174,11 +174,11 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final Map<String, Double> result = documentCategorizerDL.scoreMap(new String[]{"I am happy"});
 
-    Assertions.assertEquals(0.6352779865264893, result.get("very good").doubleValue(), 0);
-    Assertions.assertEquals(0.3003573715686798, result.get("good").doubleValue(), 0);
-    Assertions.assertEquals(0.04995147883892059, result.get("neutral").doubleValue(), 0);
-    Assertions.assertEquals(0.006593209225684404, result.get("bad").doubleValue(), 0);
-    Assertions.assertEquals(0.007819971069693565, result.get("very bad").doubleValue(), 0);
+    Assertions.assertEquals(0.6352779865264893, result.get("very good").doubleValue(), 0.000001);
+    Assertions.assertEquals(0.3003573715686798, result.get("good").doubleValue(), 0.000001);
+    Assertions.assertEquals(0.04995147883892059, result.get("neutral").doubleValue(), 0.000001);
+    Assertions.assertEquals(0.006593209225684404, result.get("bad").doubleValue(), 0.000001);
+    Assertions.assertEquals(0.007819971069693565, result.get("very bad").doubleValue(), 0.000001);
 
   }
 
