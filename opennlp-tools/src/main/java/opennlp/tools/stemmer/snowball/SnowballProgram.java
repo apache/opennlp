@@ -283,10 +283,7 @@ class SnowballProgram {
 		    Object resobj = w.method.invoke(w.methodobject,
 						    new Object[0]);
 		    res = resobj.toString().equals("true");
-		} catch (InvocationTargetException e) {
-		    res = false;
-			logger.warn(e.getLocalizedMessage(), e);
-		} catch (IllegalAccessException e) {
+		} catch (InvocationTargetException | IllegalAccessException e) {
 		    res = false;
 			logger.warn(e.getLocalizedMessage(), e);
 		}
@@ -353,13 +350,9 @@ class SnowballProgram {
 
 		boolean res;
 		try {
-		    Object resobj = w.method.invoke(w.methodobject,
-						    new Object[0]);
+		    Object resobj = w.method.invoke(w.methodobject, new Object[0]);
 		    res = resobj.toString().equals("true");
-		} catch (InvocationTargetException e) {
-		    res = false;
-			logger.warn(e.getLocalizedMessage(), e);
-		} catch (IllegalAccessException e) {
+		} catch (InvocationTargetException | IllegalAccessException e) {
 		    res = false;
 			logger.warn(e.getLocalizedMessage(), e);
 		}

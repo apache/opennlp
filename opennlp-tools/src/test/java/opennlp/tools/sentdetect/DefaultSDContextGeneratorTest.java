@@ -31,7 +31,7 @@ public class DefaultSDContextGeneratorTest {
   @Test
   void testGetContext() {
     SDContextGenerator sdContextGenerator =
-        new DefaultSDContextGenerator(Collections.<String>emptySet(), Factory.defaultEosCharacters);
+        new DefaultSDContextGenerator(Collections.emptySet(), Factory.defaultEosCharacters);
 
     String[] context = sdContextGenerator.getContext(
         "Mr. Smith joined RONDHUIT Inc. as a manager of sales department.", 2);

@@ -32,7 +32,7 @@ public class DetokenizerEvaluatorTest {
     DetokenEvaluationErrorListener listener = new DetokenEvaluationErrorListener(stream);
 
     DetokenizerEvaluator eval = new DetokenizerEvaluator(new DummyDetokenizer(
-        TokenSampleTest.createGoldSample()), listener);
+            TokenSampleTest.createGoldSample()), listener);
 
     eval.evaluateSample(TokenSampleTest.createGoldSample());
 
@@ -48,7 +48,7 @@ public class DetokenizerEvaluatorTest {
         stream);
 
     DetokenizerEvaluator eval = new DetokenizerEvaluator(new DummyDetokenizer(
-        TokenSampleTest.createGoldSample()), listener);
+            TokenSampleTest.createGoldSample()), listener);
 
     eval.evaluateSample(TokenSampleTest.createPredSilverSample());
 
@@ -60,9 +60,9 @@ public class DetokenizerEvaluatorTest {
   /**
    * a dummy tokenizer that always return something expected
    */
-  class DummyDetokenizer implements Detokenizer {
+  static class DummyDetokenizer implements Detokenizer {
 
-    private TokenSample sample;
+    private final TokenSample sample;
 
     public DummyDetokenizer(TokenSample sample) {
       this.sample = sample;

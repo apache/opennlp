@@ -32,7 +32,7 @@ import opennlp.tools.util.Span;
  */
 public class DummyChunker implements Chunker {
 
-  private DummyChunkSampleStream mSampleStream;
+  private final DummyChunkSampleStream mSampleStream;
 
   public DummyChunker(DummyChunkSampleStream aSampleStream) {
     mSampleStream = aSampleStream;

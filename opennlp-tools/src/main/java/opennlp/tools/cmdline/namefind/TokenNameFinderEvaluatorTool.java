@@ -81,7 +81,7 @@ public final class TokenNameFinderEvaluatorTool
 
     TokenNameFinderModel model = new TokenNameFinderModelLoader().load(params.getModel());
 
-    List<EvaluationMonitor<NameSample>> listeners = new LinkedList<EvaluationMonitor<NameSample>>();
+    List<EvaluationMonitor<NameSample>> listeners = new LinkedList<>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
     }
@@ -120,7 +120,7 @@ public final class TokenNameFinderEvaluatorTool
 
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");
 
-    try (ObjectStream<NameSample> measuredSampleStream = new ObjectStream<NameSample>() {
+    try (ObjectStream<NameSample> measuredSampleStream = new ObjectStream<>() {
 
       @Override
       public NameSample read() throws IOException {

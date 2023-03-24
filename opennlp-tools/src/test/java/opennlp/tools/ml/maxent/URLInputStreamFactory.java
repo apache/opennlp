@@ -26,7 +26,7 @@ import opennlp.tools.util.InputStreamFactory;
 public class URLInputStreamFactory implements InputStreamFactory {
 
 
-  private URL url;
+  private final URL url;
 
   public URLInputStreamFactory(URL url) {
     this.url = url;

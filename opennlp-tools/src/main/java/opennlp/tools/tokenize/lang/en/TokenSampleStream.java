@@ -40,9 +40,9 @@ import opennlp.tools.util.Span;
 public class TokenSampleStream implements Iterator<TokenSample> {
 
   private static final Logger logger = LoggerFactory.getLogger(TokenSampleStream.class);
-  private BufferedReader in;
+  private final BufferedReader in;
   private String line;
-  private Pattern alphaNumeric = Pattern.compile("[A-Za-z0-9]");
+  private final Pattern alphaNumeric = Pattern.compile("[A-Za-z0-9]");
   private boolean evenq = true;
 
   public TokenSampleStream(InputStream is) throws IOException {

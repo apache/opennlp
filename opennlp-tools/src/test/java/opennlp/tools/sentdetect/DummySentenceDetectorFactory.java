@@ -95,7 +95,7 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
   }
 
   public static class DummyDictionary extends Dictionary {
-    private Dictionary indict;
+    private final Dictionary indict;
 
     public DummyDictionary(Dictionary dict) {
       this.indict = dict;

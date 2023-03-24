@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Generates previous and next features for a given {@link AdaptiveFeatureGenerator}.
  * The window size can be specified.
- *
+ * <p>
  * Features:
  * Current token is always included unchanged
  * Previous tokens are prefixed with p distance

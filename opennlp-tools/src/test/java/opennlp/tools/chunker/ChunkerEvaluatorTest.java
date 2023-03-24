@@ -32,8 +32,6 @@ import opennlp.tools.util.eval.FMeasure;
 
 /**
  * Tests for {@link ChunkerEvaluator}.
- *
- * @see ChunkerEvaluator
  */
 public class ChunkerEvaluatorTest {
 
@@ -41,11 +39,11 @@ public class ChunkerEvaluatorTest {
 
   /**
    * Checks the evaluator results against the results got using the conlleval,
-   * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html
-   * The output.txt file has only 3 sentences, but can be replaced by the one
+   * available at <a href="https://www.cnts.ua.ac.be/conll2000/chunking/output.html">
+   *   https://www.cnts.ua.ac.be/conll2000/chunking/output.html</a>.
+   * <p>
+   * The {@code output.txt} file has only 3 sentences, but can be replaced by the one
    * available at the conll2000 site to validate using a bigger sample.
-   *
-   * @throws IOException
    */
   @Test
   void testEvaluator() throws IOException {

@@ -202,7 +202,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
     String form = contraction.getForm();
     String lemma = expandedParts.stream()
         .filter(p -> !"_".equals(p.getLemma()))
-        .map(p -> p.getLemma())
+        .map(ConlluWordLine::getLemma)
         .collect(Collectors.joining("+"));
 
     String uPosTag = expandedParts.stream()
@@ -217,7 +217,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
 
     String feats = expandedParts.stream()
         .filter(p -> !"_".equals(p.getFeats()))
-        .map(p -> p.getFeats())
+        .map(ConlluWordLine::getFeats)
         .collect(Collectors.joining("+"));
 
     String head = contraction.getHead();

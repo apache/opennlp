@@ -118,7 +118,7 @@ public class BioCodecTest {
   @Test
   void testDecodeEmpty() {
     Span[] expected = new Span[] {};
-    Span[] actual = codec.decode(new ArrayList<String>());
+    Span[] actual = codec.decode(new ArrayList<>());
     Assertions.assertArrayEquals(expected, actual);
   }
 

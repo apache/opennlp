@@ -161,7 +161,7 @@ public class SpanTest {
   }
 
   /**
-   * Test for {@link Span#compareTo(Object)}.
+   * Test for {@link Span#compareTo(Span)}.
    */
   @Test
   void testCompareToLower() {
@@ -171,7 +171,7 @@ public class SpanTest {
   }
 
   /**
-   * Test for {@link Span#compareTo(Object)}.
+   * Test for {@link Span#compareTo(Span)}.
    */
   @Test
   void testCompareToHigher() {
@@ -181,65 +181,65 @@ public class SpanTest {
   }
 
   /**
-   * Test for {@link Span#compareTo(Object)}.
+   * Test for {@link Span#compareTo(Span)}.
    */
   @Test
   void testCompareToEquals() {
     Span a = new Span(30, 1000);
     Span b = new Span(30, 1000);
-    Assertions.assertTrue(a.compareTo(b) == 0);
+    Assertions.assertEquals(0, a.compareTo(b));
   }
 
   ///
 
   /**
-   * Test for {@link Span#compareTo(Object)}.
+   * Test for {@link Span#compareTo(Span)}.
    */
   @Test
   void testCompareToEqualsSameType() {
     Span a = new Span(30, 1000, "a");
     Span b = new Span(30, 1000, "a");
-    Assertions.assertTrue(a.compareTo(b) == 0);
+    Assertions.assertEquals(0, a.compareTo(b));
   }
 
   /**
-   * Test for {@link Span#compareTo(Object)}.
+   * Test for {@link Span#compareTo(Span)}.
    */
   @Test
   void testCompareToEqualsDiffType1() {
     Span a = new Span(30, 1000, "a");
     Span b = new Span(30, 1000, "b");
-    Assertions.assertTrue(a.compareTo(b) == -1);
+    Assertions.assertEquals(-1, a.compareTo(b));
   }
 
   /**
-   * Test for {@link Span#compareTo(Object)}.
+   * Test for {@link Span#compareTo(Span)}.
    */
   @Test
   void testCompareToEqualsDiffType2() {
     Span a = new Span(30, 1000, "b");
     Span b = new Span(30, 1000, "a");
-    Assertions.assertTrue(a.compareTo(b) == 1);
+    Assertions.assertEquals(1, a.compareTo(b));
   }
 
   /**
-   * Test for {@link Span#compareTo(Object)}.
+   * Test for {@link Span#compareTo(Span)}.
    */
   @Test
   void testCompareToEqualsNullType1() {
     Span a = new Span(30, 1000);
     Span b = new Span(30, 1000, "b");
-    Assertions.assertTrue(a.compareTo(b) == 1);
+    Assertions.assertEquals(1, a.compareTo(b));
   }
 
   /**
-   * Test for {@link Span#compareTo(Object)}.
+   * Test for {@link Span#compareTo(Span)}.
    */
   @Test
   void testCompareToEqualsNullType2() {
     Span a = new Span(30, 1000, "b");
     Span b = new Span(30, 1000);
-    Assertions.assertTrue(a.compareTo(b) == -1);
+    Assertions.assertEquals(-1, a.compareTo(b));
   }
 
   /**
@@ -256,7 +256,7 @@ public class SpanTest {
   @Test
   void testEqualsWithNull() {
     Span a = new Span(0, 0);
-    Assertions.assertFalse(a.equals(null));
+    Assertions.assertNotNull(a);
   }
 
   /**

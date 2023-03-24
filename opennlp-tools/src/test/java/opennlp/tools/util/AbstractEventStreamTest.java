@@ -89,7 +89,7 @@ public class AbstractEventStreamTest {
    * testing the {@link AbstractEventStream#hasNext()}
    * and {@link AbstractEventStream#next()} methods.
    */
-  class TestEventStream extends AbstractEventStream<RESULT> {
+  static class TestEventStream extends AbstractEventStream<RESULT> {
 
 
     public TestEventStream(ObjectStream<RESULT> samples) {

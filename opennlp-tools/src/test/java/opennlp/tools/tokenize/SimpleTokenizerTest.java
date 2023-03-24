@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 public class SimpleTokenizerTest {
 
   // The SimpleTokenizer is thread safe
-  private SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
+  private final SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
 
   /**
    * Tests if it can tokenize whitespace separated tokens.

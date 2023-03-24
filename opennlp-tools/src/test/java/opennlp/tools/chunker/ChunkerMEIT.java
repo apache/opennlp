@@ -24,14 +24,14 @@ import org.junit.jupiter.api.Test;
 
 public class ChunkerMEIT {
 
-  private static String[] toks1 = {"Rockwell", "said", "the", "agreement", "calls", "for",
+  private static final String[] toks1 = {"Rockwell", "said", "the", "agreement", "calls", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipsets",
       "for", "the", "planes", "."};
 
-  private static String[] tags1 = {"NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
+  private static final String[] tags1 = {"NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
       "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "."};
 
-  private static String[] expect1 = {"B-NP", "B-VP", "B-NP", "I-NP", "B-VP", "B-SBAR",
+  private static final String[] expect1 = {"B-NP", "B-VP", "B-NP", "I-NP", "B-VP", "B-SBAR",
       "B-NP", "B-VP", "I-VP", "B-NP", "I-NP", "I-NP", "I-NP", "B-PP", "B-NP",
       "I-NP", "O"};
 

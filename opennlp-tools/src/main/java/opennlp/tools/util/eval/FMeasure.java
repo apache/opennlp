@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * The {@link FMeasure} is a utility class for {@link Evaluator evaluators}
  * which measures precision, recall and the resulting f-measure.
- *
+ * <p>
  * Evaluation results are the arithmetic mean of the precision
  * scores calculated for each reference sample and
  * the arithmetic mean of the recall scores calculated for

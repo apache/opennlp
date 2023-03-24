@@ -49,7 +49,7 @@ public class QNMinimizerTest {
   /**
    * Quadratic function: f(x,y) = (x-1)^2 + (y-5)^2 + 10
    */
-  public class QuadraticFunction implements Function {
+  public static class QuadraticFunction implements Function {
 
     @Override
     public int getDimension() {
@@ -68,14 +68,18 @@ public class QNMinimizerTest {
   }
 
   /**
-   * Rosenbrock function (http://en.wikipedia.org/wiki/Rosenbrock_function)
-   * f(x,y) = (1-x)^2 + 100*(y-x^2)^2
-   * f(x,y) is non-convex and has global minimum at (x,y) = (1,1) where f(x,y) = 0
+   * <a href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock function</a>:
    * <p>
-   * f_x = -2*(1-x) - 400*(y-x^2)*x
-   * f_y = 200*(y-x^2)
+   * {@code f(x,y) = (1-x)^2 + 100*(y-x^2)^2}
+   * {@code f(x,y)} is non-convex and has global minimum at {@code (x,y) = (1,1)} where {@code f(x,y) = 0}.
+   * <p>
+   * with
+   * <ul>
+   *   <li>{@code f_x = -2*(1-x) - 400*(y-x^2)*x}</li>
+   *   <li>{@code f_y = 200*(y-x^2)}</li>
+   * </ul>
    */
-  public class Rosenbrock implements Function {
+  public static class Rosenbrock implements Function {
 
     @Override
     public int getDimension() {

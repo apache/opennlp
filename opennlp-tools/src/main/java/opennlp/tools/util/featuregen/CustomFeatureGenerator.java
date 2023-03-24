@@ -27,7 +27,7 @@ public abstract class CustomFeatureGenerator implements AdaptiveFeatureGenerator
   /**
    * Initializes {@link CustomFeatureGenerator} with defined properties and loaded resources.
    *
-   * @param properties The {@link Map<String, String>} properties to use.
+   * @param properties The {@link Map} properties to use.
    * @param resourceProvider The {@link FeatureGeneratorResourceProvider} to use.
    */
   public abstract void init(Map<String, String> properties, FeatureGeneratorResourceProvider resourceProvider)

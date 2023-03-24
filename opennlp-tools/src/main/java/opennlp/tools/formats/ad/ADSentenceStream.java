@@ -392,7 +392,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
 
     /** Represents the AD node */
     public static class Node extends TreeElement {
-      private List<TreeElement> elems = new ArrayList<>();
+      private final List<TreeElement> elems = new ArrayList<>();
 
       public void addElement(TreeElement element) {
         elems.add(element);

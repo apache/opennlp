@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
  */
 public class CachedFeatureGeneratorTest {
 
-  private AdaptiveFeatureGenerator[] identityGenerator = new AdaptiveFeatureGenerator[] {
+  private final AdaptiveFeatureGenerator[] identityGenerator = new AdaptiveFeatureGenerator[] {
       new IdentityFeatureGenerator()};
 
   private String[] testSentence1;

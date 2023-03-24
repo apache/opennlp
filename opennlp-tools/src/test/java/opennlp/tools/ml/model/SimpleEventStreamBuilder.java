@@ -62,7 +62,7 @@ public class SimpleEventStreamBuilder {
   }
 
   public ObjectStream<Event> build() {
-    return new ObjectStream<Event>() {
+    return new ObjectStream<>() {
       @Override
       public Event read() {
         if (eventList.size() <= pos) {

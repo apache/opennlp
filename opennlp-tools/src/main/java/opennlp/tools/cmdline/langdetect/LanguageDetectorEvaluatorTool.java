@@ -100,7 +100,7 @@ public final class LanguageDetectorEvaluatorTool extends
 
     final PerformanceMonitor monitor = new PerformanceMonitor("doc");
 
-    try (ObjectStream<LanguageSample> measuredSampleStream = new ObjectStream<LanguageSample>() {
+    try (ObjectStream<LanguageSample> measuredSampleStream = new ObjectStream<>() {
 
       @Override
       public LanguageSample read() throws IOException {

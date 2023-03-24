@@ -35,20 +35,14 @@ public class POSDictionaryTest {
   }
 
   private static POSDictionary serializeDeserializeDict(POSDictionary dict) throws IOException {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-    try {
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
       dict.serialize(out);
-    } finally {
-      out.close();
+      POSDictionary serializedDictionary;
+      try (InputStream in = new ByteArrayInputStream(out.toByteArray())) {
+        serializedDictionary = POSDictionary.create(in);
+      }
+      return serializedDictionary;
     }
-
-    POSDictionary serializedDictionary;
-    try (InputStream in = new ByteArrayInputStream(out.toByteArray())) {
-      serializedDictionary = POSDictionary.create(in);
-    }
-
-    return serializedDictionary;
   }
 
   @Test

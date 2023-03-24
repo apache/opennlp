@@ -203,10 +203,10 @@ public class NameSampleTest {
   /**
    * Tests if an additional space is correctly treated as one space.
    *
-   * @throws Exception
+   * @throws IOException Thrown if IO errors occurred.
    */
   @Test
-  void testParseWithAdditionalSpace() throws Exception {
+  void testParseWithAdditionalSpace() throws IOException {
     String line = "<START> M . K . <END> <START> Schwitters <END> ?  <START> Heartfield <END> ?";
 
     NameSample test = NameSample.parse(line, false);

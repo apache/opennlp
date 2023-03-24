@@ -92,6 +92,7 @@ public class BratNameSampleStreamFactory
     return true;
   }
 
+  @Override
   public ObjectStream<NameSample> create(String[] args) {
 
     Parameters params = ArgumentParser.parse(args, Parameters.class);

@@ -56,8 +56,7 @@ public abstract class QNModelWriter extends GISModelWriter {
     // the mapping from outcomes to their integer indexes
     writeInt(OUTCOME_LABELS.length);
 
-    for (int i = 0; i < OUTCOME_LABELS.length; i++)
-      writeUTF(OUTCOME_LABELS[i]);
+    for (String outcomeLabel : OUTCOME_LABELS) writeUTF(outcomeLabel);
 
     // the mapping from predicates to the outcomes they contributed to.
     // The sorting is done so that we actually can write this out more
@@ -67,21 +66,19 @@ public abstract class QNModelWriter extends GISModelWriter {
 
     writeInt(compressed.size());
 
-    for (int i = 0; i < compressed.size(); i++) {
-      List<ComparablePredicate> a = compressed.get(i);
+    for (List<ComparablePredicate> a : compressed) {
       writeUTF(a.size() + a.get(0).toString());
     }
 
     // the mapping from predicate names to their integer indexes
     writeInt(PARAMS.length);
 
-    for (int i = 0; i < sorted.length; i++)
-      writeUTF(sorted[i].name);
+    for (ComparablePredicate predicate : sorted) writeUTF(predicate.name);
 
     // write out the parameters
-    for (int i = 0; i < sorted.length; i++)
-      for (int j = 0; j < sorted[i].params.length; j++)
-        writeDouble(sorted[i].params[j]);
+    for (ComparablePredicate comparablePredicate : sorted)
+      for (int j = 0; j < comparablePredicate.params.length; j++)
+        writeDouble(comparablePredicate.params[j]);
 
     close();
   }

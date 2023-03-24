@@ -45,14 +45,14 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
 
   private TokenizerTrainerTool tokenizerTrainerTool;
 
-  private String sampleSuccessData =
+  private final String sampleSuccessData =
       "Pierre Vinken<SPLIT>, 61 years old<SPLIT>, will join the board as a nonexecutive " +
           "director Nov. 29<SPLIT>.\n" +
           "Mr. Vinken is chairman of Elsevier N.V.<SPLIT>, the Dutch publishing group<SPLIT>.\n" +
           "Rudolph Agnew<SPLIT>, 55 years old and former chairman of Consolidated Gold Fields PLC<SPLIT>,\n" +
           "    was named a nonexecutive director of this British industrial conglomerate<SPLIT>.\n";
 
-  private String sampleFailureData = "It is Fail Test Case.\n\nNothing in this sentence.";
+  private final String sampleFailureData = "It is Fail Test Case.\n\nNothing in this sentence.";
 
   @BeforeEach
   void setUp() {

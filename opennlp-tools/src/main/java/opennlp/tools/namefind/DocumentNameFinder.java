@@ -22,7 +22,7 @@ import opennlp.tools.util.Span;
 /**
  * Interface for processing an entire document allowing a {@link TokenNameFinder} to use context
  * from the entire document.
- *
+ * <p>
  * <strong>EXPERIMENTAL</strong>:
  * This interface has been added as part of a work in progress and might change without notice.
  */

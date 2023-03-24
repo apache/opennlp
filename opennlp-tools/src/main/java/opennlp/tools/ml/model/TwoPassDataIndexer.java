@@ -112,7 +112,7 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
    * predicates associated with each event are counted and any which
    * occur at least <tt>cutoff</tt> times are added to the
    * <tt>predicatesInOut</tt> map along with a unique integer index.
-   *
+   * <p>
    * Protocol:
    *  1 - (utf string) - Event outcome
    *  2 - (int) - Event context array length

@@ -27,7 +27,7 @@ import opennlp.tools.util.ObjectStream;
 
 public abstract class SegmenterObjectStream<S, T> extends FilterObjectStream<S, T> {
 
-  private Iterator<T> sampleIt = Collections.<T>emptySet().iterator();
+  private Iterator<T> sampleIt = Collections.emptyIterator();
 
   public SegmenterObjectStream(ObjectStream<S> in) {
     super(in);

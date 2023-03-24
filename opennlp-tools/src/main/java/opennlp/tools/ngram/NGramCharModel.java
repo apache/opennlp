@@ -27,13 +27,13 @@ import opennlp.tools.util.StringUtil;
 /**
  * The {@link NGramCharModel} can be used to create character ngrams.
  *
- * @see {@link NGramModel}
+ * @see NGramModel
  */
 public class NGramCharModel implements Iterable<String> {
 
   protected static final String COUNT = "count";
 
-  private Map<String, Integer> mNGrams = new HashMap<>();
+  private final Map<String, Integer> mNGrams = new HashMap<>();
 
   /**
    * Initializes an empty instance.

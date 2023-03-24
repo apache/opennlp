@@ -143,10 +143,10 @@ public class NGramUtils {
    * @param set      the vocabulary
    * @return the probability
    */
-  public static double calculateMissingNgramProbabilityMass(StringList ngram, Double discount,
+  public static double calculateMissingNgramProbabilityMass(StringList ngram, double discount,
                                                             Iterable<StringList> set) {
-    Double missingMass = 0d;
-    Double countWord = count(ngram, set);
+    double missingMass = 0d;
+    double countWord = count(ngram, set);
     for (String word : flatSet(set)) {
       missingMass += (count(getNPlusOneNgram(ngram, word), set) - discount) / countWord;
     }

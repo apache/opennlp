@@ -36,7 +36,7 @@ public class DummyLemmaSampleStream
     extends FilterObjectStream<String, LemmaSample> {
 
   private static final Logger logger = LoggerFactory.getLogger(DummyLemmaSampleStream.class);
-  private boolean mIsPredicted;
+  private final boolean mIsPredicted;
   private int count = 0;
 
   // the predicted flag sets if the stream will contain the expected or the
