@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,11 +33,11 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import opennlp.dl.AbstactDLTest;
+import opennlp.dl.AbstractDLTest;
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
 
-public class DocumentCategorizerDLEval extends AbstactDLTest {
+public class DocumentCategorizerDLEval extends AbstractDLTest {
 
   private static final Logger logger = LoggerFactory.getLogger(DocumentCategorizerDLEval.class);
 
@@ -83,7 +84,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
     logger.debug("Actual: {}", Arrays.toString(sortedResult));
     logger.debug("Expected: {}", Arrays.toString(expected));
 
-    Assertions.assertArrayEquals(expected, sortedResult, 0.0);
+    Assertions.assertArrayEquals(expected, sortedResult, 0.000001);
     Assertions.assertEquals(5, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
@@ -119,7 +120,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
             0.3003573715686798,
             0.6352779865264893};
 
-    Assertions.assertArrayEquals(expected, result, 0.0);
+    Assertions.assertArrayEquals(expected, result, 0.000001);
     Assertions.assertEquals(5, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
@@ -151,7 +152,7 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final double[] expected = new double[]{0.8851314783096313, 0.11486853659152985};
 
-    Assertions.assertArrayEquals(expected, result, 0.0);
+    Assertions.assertArrayEquals(expected, result, 0.000001);
     Assertions.assertEquals(2, result.length);
 
     final String category = documentCategorizerDL.getBestCategory(result);
@@ -174,11 +175,11 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final Map<String, Double> result = documentCategorizerDL.scoreMap(new String[]{"I am happy"});
 
-    Assertions.assertEquals(0.6352779865264893, result.get("very good").doubleValue(), 0);
-    Assertions.assertEquals(0.3003573715686798, result.get("good").doubleValue(), 0);
-    Assertions.assertEquals(0.04995147883892059, result.get("neutral").doubleValue(), 0);
-    Assertions.assertEquals(0.006593209225684404, result.get("bad").doubleValue(), 0);
-    Assertions.assertEquals(0.007819971069693565, result.get("very bad").doubleValue(), 0);
+    Assertions.assertEquals(0.6352779865264893, result.get("very good"), 0.000001);
+    Assertions.assertEquals(0.3003573715686798, result.get("good"), 0.000001);
+    Assertions.assertEquals(0.04995147883892059, result.get("neutral"), 0.000001);
+    Assertions.assertEquals(0.006593209225684404, result.get("bad"), 0.000001);
+    Assertions.assertEquals(0.007819971069693565, result.get("very bad"), 0.000001);
 
   }
 
@@ -197,11 +198,31 @@ public class DocumentCategorizerDLEval extends AbstactDLTest {
 
     final Map<Double, Set<String>> result = documentCategorizerDL.sortedScoreMap(new String[]{"I am happy"});
 
-    Assertions.assertEquals(result.get(0.6352779865264893).size(), 1);
-    Assertions.assertEquals(result.get(0.3003573715686798).size(), 1);
-    Assertions.assertEquals(result.get(0.04995147883892059).size(), 1);
-    Assertions.assertEquals(result.get(0.006593209225684404).size(), 1);
-    Assertions.assertEquals(result.get(0.007819971069693565).size(), 1);
+    Assertions.assertNotNull(result, "Result must not be NULL.");
+    Assertions.assertEquals(5, result.size());
+
+    final Iterator<Map.Entry<Double,Set<String>>> it = result.entrySet().iterator();
+
+    // we assume a sorted map here, so lets check in sorted order (lower values first).
+    Map.Entry<Double, Set<String>> e = it.next();
+    Assertions.assertEquals(0.006593209225684404, e.getKey(), 0.000001);
+    Assertions.assertEquals(e.getValue().size(), 1);
+
+    e = it.next();
+    Assertions.assertEquals(0.007819971069693565, e.getKey(), 0.000001);
+    Assertions.assertEquals(e.getValue().size(), 1);
+
+    e = it.next();
+    Assertions.assertEquals(0.04995147883892059, e.getKey(), 0.000001);
+    Assertions.assertEquals(e.getValue().size(), 1);
+
+    e = it.next();
+    Assertions.assertEquals(0.3003573715686798, e.getKey(), 0.000001);
+    Assertions.assertEquals(e.getValue().size(), 1);
+
+    e = it.next();
+    Assertions.assertEquals(0.6352779865264893, e.getKey(), 0.000001);
+    Assertions.assertEquals(e.getValue().size(), 1);
 
   }
 

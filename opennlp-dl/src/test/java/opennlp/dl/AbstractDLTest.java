@@ -22,11 +22,11 @@ import java.io.FileNotFoundException;
 
 import opennlp.tools.util.StringUtil;
 
-public abstract class AbstactDLTest {
+public abstract class AbstractDLTest {
 
   public File getOpennlpDataDir() throws FileNotFoundException {
     final String dataDirectory = System.getProperty("OPENNLP_DATA_DIR");
-    if (StringUtil.isEmpty(dataDirectory)) {
+    if (dataDirectory == null || StringUtil.isEmpty(dataDirectory)) {
       throw new IllegalArgumentException("The OPENNLP_DATA_DIR is not set.");
     }
     final File file = new File(dataDirectory);

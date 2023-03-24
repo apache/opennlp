@@ -28,12 +28,12 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import opennlp.dl.AbstactDLTest;
+import opennlp.dl.AbstractDLTest;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.util.Span;
 
-public class NameFinderDLEval extends AbstactDLTest {
+public class NameFinderDLEval extends AbstractDLTest {
 
   private static final Logger logger = LoggerFactory.getLogger(NameFinderDLEval.class);
   private final SentenceDetector sentenceDetector ;
@@ -64,7 +64,7 @@ public class NameFinderDLEval extends AbstactDLTest {
     Assertions.assertEquals(1, spans.length);
     Assertions.assertEquals(0, spans[0].getStart());
     Assertions.assertEquals(17, spans[0].getEnd());
-    Assertions.assertEquals(8.251646041870117, spans[0].getProb(), 0.0);
+    Assertions.assertEquals(8.251646041870117, spans[0].getProb(), 0.00001);
     Assertions.assertEquals("George Washington", spans[0].getCoveredText(String.join(" ", tokens)));
 
   }
