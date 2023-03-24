@@ -17,9 +17,7 @@
 
 package opennlp.dl.doccat;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.LongBuffer;
 import java.util.Arrays;
@@ -40,43 +38,36 @@ import ai.onnxruntime.OrtSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.dl.AbstractDL;
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
 import opennlp.dl.doccat.scoring.ClassificationScoringStrategy;
 import opennlp.tools.doccat.DocumentCategorizer;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
 /**
  * An implementation of {@link DocumentCategorizer} that performs document classification
  * using ONNX models.
  */
-public class DocumentCategorizerDL implements DocumentCategorizer {
+public class DocumentCategorizerDL extends AbstractDL implements DocumentCategorizer {
 
   private static final Logger logger = LoggerFactory.getLogger(DocumentCategorizerDL.class);
-  public static final String INPUT_IDS = "input_ids";
-  public static final String ATTENTION_MASK = "attention_mask";
-  public static final String TOKEN_TYPE_IDS = "token_type_ids";
 
-  private final Tokenizer tokenizer;
-  private final Map<String, Integer> vocabulary;
   private final Map<Integer, String> categories;
   private final ClassificationScoringStrategy classificationScoringStrategy;
   private final InferenceOptions inferenceOptions;
-  protected final OrtEnvironment env;
-  protected final OrtSession session;
 
   /**
    * Creates a new document categorizer using ONNX models.
-   * @param model The ONNX model file.
-   * @param vocab The model's vocabulary file.
+   * @param modelFile The ONNX modelFile file.
+   * @param vocabFile The modelFile's vocabulary file.
    * @param categories The categories.
    * @param classificationScoringStrategy Implementation of {@link ClassificationScoringStrategy} used
    *                                      to calculate the classification scores given the score of each
    *                                      individual document part.
    * @param inferenceOptions {@link InferenceOptions} to control the inference.
    */
-  public DocumentCategorizerDL(File model, File vocab, Map<Integer, String> categories,
+  public DocumentCategorizerDL(File modelFile, File vocabFile, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy,
                                InferenceOptions inferenceOptions)
       throws IOException, OrtException {
@@ -88,9 +79,9 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
       sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
     }
 
-    this.session = env.createSession(model.getPath(), sessionOptions);
-    this.vocabulary = loadVocab(vocab);
-    this.tokenizer = new WordpieceTokenizer(vocabulary.keySet());
+    this.session = env.createSession(modelFile.getPath(), sessionOptions);
+    this.vocab = loadVocab(vocabFile);
+    this.tokenizer = new WordpieceTokenizer(vocab.keySet());
     this.categories = categories;
     this.classificationScoringStrategy = classificationScoringStrategy;
     this.inferenceOptions = inferenceOptions;
@@ -223,33 +214,6 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
 
   }
 
-  /**
-   * Loads a vocabulary file from disk.
-   * @param vocab The vocabulary file.
-   * @return A map of vocabulary words to integer IDs.
-   * @throws IOException Thrown if the vocabulary file cannot be opened and read.
-   */
-  private Map<String, Integer> loadVocab(File vocab) throws IOException {
-
-    final Map<String, Integer> v = new HashMap<>();
-
-    BufferedReader br = new BufferedReader(new FileReader(vocab.getPath()));
-    String line = br.readLine();
-    int x = 0;
-
-    while (line != null) {
-
-      line = br.readLine();
-      x++;
-
-      v.put(line, x);
-
-    }
-
-    return v;
-
-  }
-
   private Tokens oldTokenize(String text) {
 
     final String[] tokens = tokenizer.tokenize(text);
@@ -257,7 +221,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
     final int[] ids = new int[tokens.length];
 
     for (int x = 0; x < tokens.length; x++) {
-      ids[x] = vocabulary.get(tokens[x]);
+      ids[x] = vocab.get(tokens[x]);
     }
 
     final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
@@ -306,7 +270,7 @@ public class DocumentCategorizerDL implements DocumentCategorizer {
       final int[] ids = new int[tokens.length];
 
       for (int x = 0; x < tokens.length; x++) {
-        ids[x] = vocabulary.get(tokens[x]);
+        ids[x] = vocab.get(tokens[x]);
       }
 
       final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
