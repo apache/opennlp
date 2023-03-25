@@ -25,19 +25,19 @@ import org.junit.jupiter.api.Test;
  */
 public class BilouNameFinderSequenceValidatorTest {
 
-  private static BilouNameFinderSequenceValidator validator = new BilouNameFinderSequenceValidator();
-  private static String START_A = "TypeA-" + BilouCodec.START;
-  private static String CONTINUE_A = "TypeA-" + BilouCodec.CONTINUE;
-  private static String LAST_A = "TypeA-" + BilouCodec.LAST;
-  private static String UNIT_A = "TypeA-" + BilouCodec.UNIT;
+  private static final BilouNameFinderSequenceValidator validator = new BilouNameFinderSequenceValidator();
+  private static final String START_A = "TypeA-" + BilouCodec.START;
+  private static final String CONTINUE_A = "TypeA-" + BilouCodec.CONTINUE;
+  private static final String LAST_A = "TypeA-" + BilouCodec.LAST;
+  private static final String UNIT_A = "TypeA-" + BilouCodec.UNIT;
 
 
-  private static String START_B = "TypeB-" + BilouCodec.START;
-  private static String CONTINUE_B = "TypeB-" + BilouCodec.CONTINUE;
-  private static String LAST_B = "TypeB-" + BilouCodec.LAST;
+  private static final String START_B = "TypeB-" + BilouCodec.START;
+  private static final String CONTINUE_B = "TypeB-" + BilouCodec.CONTINUE;
+  private static final String LAST_B = "TypeB-" + BilouCodec.LAST;
 
   //private static String UNIT = BilouCodec.UNIT;
-  private static String OTHER = BilouCodec.OTHER;
+  private static final String OTHER = BilouCodec.OTHER;
 
   @Test
   void testStartAsFirstLabel() {

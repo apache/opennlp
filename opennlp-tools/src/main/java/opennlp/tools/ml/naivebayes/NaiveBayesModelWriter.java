@@ -114,14 +114,14 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
     if (sorted.length > 0) {
       ComparablePredicate cp = sorted[0];
       List<ComparablePredicate> newGroup = new ArrayList<>();
-      for (int i = 0; i < sorted.length; i++) {
-        if (cp.compareTo(sorted[i]) == 0) {
-          newGroup.add(sorted[i]);
+      for (ComparablePredicate comparablePredicate : sorted) {
+        if (cp.compareTo(comparablePredicate) == 0) {
+          newGroup.add(comparablePredicate);
         } else {
-          cp = sorted[i];
+          cp = comparablePredicate;
           outcomePatterns.add(newGroup);
           newGroup = new ArrayList<>();
-          newGroup.add(sorted[i]);
+          newGroup.add(comparablePredicate);
         }
       }
       outcomePatterns.add(newGroup);
@@ -198,9 +198,9 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
     }
 
     // write out the parameters
-    for (int i = 0; i < sorted.length; i++)
-      for (int j = 0; j < sorted[i].params.length; j++)
-        writeDouble(sorted[i].params[j]);
+    for (ComparablePredicate comparablePredicate : sorted)
+      for (int j = 0; j < comparablePredicate.params.length; j++)
+        writeDouble(comparablePredicate.params[j]);
 
     close();
   }

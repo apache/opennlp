@@ -27,7 +27,7 @@ import opennlp.tools.util.Span;
 public class Constituent {
 
   private String label;
-  private Span span;
+  private final Span span;
 
   public Constituent(String label, Span span) {
     this.label = label;

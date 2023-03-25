@@ -168,14 +168,14 @@ public abstract class GISModelWriter extends AbstractModelWriter {
     if (sorted.length > 0) {
       ComparablePredicate cp = sorted[0];
       List<ComparablePredicate> newGroup = new ArrayList<>();
-      for (int i = 0; i < sorted.length; i++) {
-        if (cp.compareTo(sorted[i]) == 0) {
-          newGroup.add(sorted[i]);
+      for (ComparablePredicate comparablePredicate : sorted) {
+        if (cp.compareTo(comparablePredicate) == 0) {
+          newGroup.add(comparablePredicate);
         } else {
-          cp = sorted[i];
+          cp = comparablePredicate;
           outcomePatterns.add(newGroup);
           newGroup = new ArrayList<>();
-          newGroup.add(sorted[i]);
+          newGroup.add(comparablePredicate);
         }
       }
       outcomePatterns.add(newGroup);

@@ -24,12 +24,12 @@ import org.junit.jupiter.api.Test;
  */
 public class NameFinderSequenceValidatorTest {
 
-  private static NameFinderSequenceValidator validator = new NameFinderSequenceValidator();
-  private static String START_A = "TypeA-" + NameFinderME.START;
-  private static String CONTINUE_A = "TypeA-" + NameFinderME.CONTINUE;
-  private static String START_B = "TypeB-" + NameFinderME.START;
-  private static String CONTINUE_B = "TypeB-" + NameFinderME.CONTINUE;
-  private static String OTHER = NameFinderME.OTHER;
+  private static final NameFinderSequenceValidator validator = new NameFinderSequenceValidator();
+  private static final String START_A = "TypeA-" + NameFinderME.START;
+  private static final String CONTINUE_A = "TypeA-" + NameFinderME.CONTINUE;
+  private static final String START_B = "TypeB-" + NameFinderME.START;
+  private static final String CONTINUE_B = "TypeB-" + NameFinderME.CONTINUE;
+  private static final String OTHER = NameFinderME.OTHER;
 
   @Test
   void testContinueCannotBeFirstOutcome() {

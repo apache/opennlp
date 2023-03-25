@@ -34,7 +34,7 @@ public class TokenizerEvaluatorTest {
     TokenizerEvaluationMonitor listener = new TokenEvaluationErrorListener(stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-        TokenSampleTest.createGoldSample()), listener);
+            TokenSampleTest.createGoldSample()), listener);
 
     eval.evaluateSample(TokenSampleTest.createGoldSample());
 
@@ -50,7 +50,7 @@ public class TokenizerEvaluatorTest {
         stream);
 
     TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-        TokenSampleTest.createGoldSample()), listener);
+            TokenSampleTest.createGoldSample()), listener);
 
     eval.evaluateSample(TokenSampleTest.createPredSample());
 
@@ -62,9 +62,9 @@ public class TokenizerEvaluatorTest {
   /**
    * a dummy tokenizer that always return something expected
    */
-  class DummyTokenizer implements Tokenizer {
+  static class DummyTokenizer implements Tokenizer {
 
-    private TokenSample sample;
+    private final TokenSample sample;
 
     public DummyTokenizer(TokenSample sample) {
       this.sample = sample;

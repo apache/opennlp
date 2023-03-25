@@ -29,7 +29,7 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
 
 /**
  * Default factory used by {@link LanguageDetector}.
- *
+ * <p>
  * Extend this class to change the Language Detector behaviour,
  * such as the {@link LanguageDetectorContextGenerator}.
  * The default {@link DefaultLanguageDetectorContextGenerator} will use char n-grams of

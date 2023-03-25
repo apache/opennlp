@@ -20,7 +20,6 @@ package opennlp.tools.langdetect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import opennlp.tools.ngram.NGramModel;
@@ -77,10 +76,8 @@ public class DummyFactory extends LanguageDetectorFactory {
       NGramModel tokenNgramModel = new NGramModel();
       if (words.length > 0) {
         tokenNgramModel.add(new StringList(words), 1, 3);
-        Iterator<StringList> tokenNgramIterator = tokenNgramModel.iterator();
 
-        while (tokenNgramIterator.hasNext()) {
-          StringList tokenList = tokenNgramIterator.next();
+        for (StringList tokenList : tokenNgramModel) {
           if (tokenList.size() > 0) {
             context.add("tg=" + tokenList.toString());
           }

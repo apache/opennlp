@@ -78,7 +78,7 @@ public class TokenNameFinderEvaluatorTest {
   }
 
 
-  private static String[] sentence = {"U", ".", "S", ".", "President", "Barack", "Obama", "is",
+  private static final String[] sentence = {"U", ".", "S", ".", "President", "Barack", "Obama", "is",
       "considering", "sending", "additional", "American", "forces",
       "to", "Afghanistan", "."};
 

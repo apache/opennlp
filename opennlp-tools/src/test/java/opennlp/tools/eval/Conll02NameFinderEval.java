@@ -41,10 +41,10 @@ import opennlp.tools.util.model.ModelUtil;
  * Evaluates the name finder against the Dutch and Spanish CONLL2002 corpus.
  * <p>
  * Download the tarball from the CONLL2002 shared task
- * <a href="http://www.cnts.ua.ac.be/conll2002/ner/"> site </a>
+ * <a href="https://www.cnts.ua.ac.be/conll2002/ner/"> site </a>
  * and decompress it into this directory: $OPENNLP_DATA_DIR/conll2002.
  * Also decompress the training files.
- *
+ * <p>
  * TODO:
  * - Files are provided in gzipped. It would be better if they would not be unpacked by the user.
  * - Double check the encoding which is used to open the files. Currently that is UTF-8.

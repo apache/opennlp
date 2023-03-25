@@ -49,7 +49,7 @@ public class ParserTestUtil {
   public static ObjectStream<Parse> openTestTrainingData()
       throws IOException {
 
-    ObjectStream<Parse> resetableSampleStream = new ObjectStream<Parse>() {
+    ObjectStream<Parse> resetableSampleStream = new ObjectStream<>() {
 
       private ObjectStream<Parse> samples;
 
@@ -67,7 +67,7 @@ public class ParserTestUtil {
             samples.close();
           }
           InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
-              "/opennlp/tools/parser/parser.train");
+                  "/opennlp/tools/parser/parser.train");
           samples = new ParseSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
         } catch (UnsupportedEncodingException e) {
           // Should never happen

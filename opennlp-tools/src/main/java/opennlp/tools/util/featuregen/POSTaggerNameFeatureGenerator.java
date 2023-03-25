@@ -30,7 +30,7 @@ import opennlp.tools.postag.POSTaggerME;
  */
 public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private POSTagger posTagger;
+  private final POSTagger posTagger;
 
   private String[] cachedTokens;
   private String[] cachedTags;

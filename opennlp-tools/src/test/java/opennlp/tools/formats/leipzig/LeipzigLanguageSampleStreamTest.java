@@ -32,7 +32,7 @@ import opennlp.tools.util.InvalidFormatException;
 
 public class LeipzigLanguageSampleStreamTest {
 
-  private static String testDataPath = LeipzigLanguageSampleStreamTest.class
+  private static final String testDataPath = LeipzigLanguageSampleStreamTest.class
       .getClassLoader().getResource("opennlp/tools/formats/leipzig/samples").getPath();
 
   @TempDir

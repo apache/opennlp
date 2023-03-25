@@ -49,7 +49,7 @@ import opennlp.tools.util.model.POSModelSerializer;
 
 /**
  * Creates a set of feature generators based on a provided XML descriptor.
- *
+ * <p>
  * Example of an XML descriptor:
  * <p>
  * &lt;featureGenerators name="namefind"&gt;
@@ -83,7 +83,7 @@ import opennlp.tools.util.model.POSModelSerializer;
  * calls the
  * {@link GeneratorFactory.XmlFeatureGeneratorFactory#create(Element, FeatureGeneratorResourceProvider)}
  * method.
- *
+ * <p>
  * In the example above the generators element is mapped to the
  * {@link AggregatedFeatureGeneratorFactory} which then
  * creates all the aggregated {@link AdaptiveFeatureGenerator}s to
@@ -528,9 +528,9 @@ public class GeneratorFactory {
     }
     else {
       try {
-        Class factoryClass = Class.forName(className);
+        Class<?> factoryClass = Class.forName(className);
         try {
-          Constructor constructor = factoryClass.getConstructor();
+          Constructor<?> constructor = factoryClass.getConstructor();
           AbstractXmlFeatureGeneratorFactory factory =
               (AbstractXmlFeatureGeneratorFactory)constructor.newInstance();
           factory.init(generatorElement, resourceManager);
@@ -562,7 +562,7 @@ public class GeneratorFactory {
 
   /**
    * Creates an {@link AdaptiveFeatureGenerator} from an provided XML descriptor.
-   *
+   * <p>
    * Usually this XML descriptor contains a set of nested feature generators
    * which are then used to generate the features by one of the opennlp
    * components.

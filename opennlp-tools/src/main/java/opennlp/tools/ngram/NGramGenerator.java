@@ -21,22 +21,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Generates an nGram, with optional separator, and returns the grams as a list
+ * Generates an nGram, via an optional separator, and returns the grams as a list
  * of strings
  */
 public class NGramGenerator {
 
-
   /**
-   * Creates an ngram separated
-   * by the separator param value i.e. a,b,c,d with n = 3 and separator = "-"
-   * would return a-b-c,b-c-d
+   * Creates nGrams separated
+   * by the separator param value i.e. {@code a,b,c,d} with {@code n = 3} and a
+   * separator as {@code "-"} would return {@code a-b-c,b-c-d}.
    *
    * @param input     the input tokens the output ngrams will be derived from
    * @param n         the number of tokens as the sliding window
    * @param separator each string in each gram will be separated by this value if desired.
    *                  Pass in empty string if no separator is desired
-   * @return
+   * @return The generated list of resulting nGrams.
    */
   public static List<String> generate(List<String> input, int n, String separator) {
 
@@ -57,12 +56,12 @@ public class NGramGenerator {
   }
 
   /**
-   *Generates an nGram based on a char[] input
+   * Generates nGrams based on a {@code char[]} input.
    * @param input the array of chars to convert to nGram
    * @param n The number of grams (chars) that each output gram will consist of
    * @param separator each char in each gram will be separated by this value if desired.
    *                  Pass in empty string if no separator is desired
-   * @return
+   * @return The generated list of resulting nGrams.
    */
   public static List<String> generate(char[] input, int n, String separator) {
 

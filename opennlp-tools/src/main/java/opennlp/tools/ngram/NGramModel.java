@@ -42,7 +42,7 @@ public class NGramModel implements Iterable<StringList> {
 
   protected static final String COUNT = "count";
 
-  private Map<StringList, Integer> mNGrams = new LinkedHashMap<>();
+  private final Map<StringList, Integer> mNGrams = new LinkedHashMap<>();
 
   /**
    * Initializes an empty instance.
@@ -264,9 +264,9 @@ public class NGramModel implements Iterable<StringList> {
   /**
    * Creates a dictionary which contain all {@link StringList} which
    * are in the current {@link NGramModel}.
-   *
+   * <p>
    * Entries which are only different in the case are merged into one.
-   *
+   * <p>
    * Calling this method is the same as calling {@link #toDictionary(boolean)} with true.
    *
    * @return a dictionary of the ngrams
@@ -303,9 +303,8 @@ public class NGramModel implements Iterable<StringList> {
    * @throws IOException if an I/O Error during writing occurs
    */
   public void serialize(OutputStream out) throws IOException {
-    Iterator<Entry> entryIterator = new Iterator<Entry>()
-    {
-      private Iterator<StringList> mDictionaryIterator = NGramModel.this.iterator();
+    Iterator<Entry> entryIterator = new Iterator<>() {
+      private final Iterator<StringList> mDictionaryIterator = NGramModel.this.iterator();
 
       @Override
       public boolean hasNext() {
@@ -320,7 +319,7 @@ public class NGramModel implements Iterable<StringList> {
         Attributes attributes = new Attributes();
 
         attributes.setValue(COUNT, Integer.toString(getCount(tokens)));
-        
+
         return new Entry(tokens, attributes);
       }
 

@@ -66,10 +66,10 @@ public class NameSampleDataStreamTest {
    * Create a NameSampleDataStream from a corpus with entities annotated but
    * without nameType and validate it.
    *
-   * @throws Exception
+   * @throws IOException Thrown if IO errors occurred.
    */
   @Test
-  void testWithoutNameTypes() throws Exception {
+  void testWithoutNameTypes() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/namefind/AnnotatedSentences.txt");
 
@@ -164,10 +164,10 @@ public class NameSampleDataStreamTest {
    * Create a NameSampleDataStream from a corpus with entities annotated
    * with multiple nameTypes, like person, date, location and organization, and validate it.
    *
-   * @throws Exception
+   * @throws IOException Thrown if IO errors occurred.
    */
   @Test
-  void testWithNameTypes() throws Exception {
+  void testWithNameTypes() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
         "/opennlp/tools/namefind/voa1.train");
 

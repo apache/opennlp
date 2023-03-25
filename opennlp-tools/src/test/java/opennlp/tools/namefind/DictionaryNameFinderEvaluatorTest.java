@@ -18,7 +18,6 @@
 package opennlp.tools.namefind;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +41,8 @@ import opennlp.tools.util.eval.FMeasure;
 public class DictionaryNameFinderEvaluatorTest {
 
   @Test
-  void testEvaluator() throws IOException, URISyntaxException {
-    DictionaryNameFinder nameFinder = new DictionaryNameFinder(
-        createDictionary());
+  void testEvaluator() throws IOException {
+    DictionaryNameFinder nameFinder = new DictionaryNameFinder(createDictionary());
     TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(
         nameFinder, new NameEvaluationErrorListener());
     ObjectStream<NameSample> sample = createSample();
@@ -58,10 +56,8 @@ public class DictionaryNameFinderEvaluatorTest {
   }
 
   /**
-   * Creates a NameSample stream using an annotated corpus
-   *
-   * @return
-   * @throws IOException
+   * @return A {@link NameSample} stream using an annotated corpus
+   * @throws IOException Thrown if IO errors occurred.
    */
   private static ObjectStream<NameSample> createSample() throws IOException {
 
@@ -73,14 +69,10 @@ public class DictionaryNameFinderEvaluatorTest {
   }
 
   /**
-   * Creates a dictionary with all names from the sample data.
-   *
-   * @return a dictionary
-   * @throws IOException
-   * @throws URISyntaxException
+   * @return A {@link Dictionary} with all names from the sample data.
+   * @throws IOException Thrown if IO errors occurred.
    */
-  private static Dictionary createDictionary() throws IOException,
-      URISyntaxException {
+  private static Dictionary createDictionary() throws IOException {
     ObjectStream<NameSample> sampleStream = createSample();
     NameSample sample = sampleStream.read();
     List<String[]> entries = new ArrayList<>();

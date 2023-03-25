@@ -93,7 +93,7 @@ public class DummyTokenizerFactory extends TokenizerFactory {
   }
 
   public static class DummyDictionary extends Dictionary {
-    private Dictionary indict;
+    private final Dictionary indict;
 
     public DummyDictionary(Dictionary dict) {
       this.indict = dict;

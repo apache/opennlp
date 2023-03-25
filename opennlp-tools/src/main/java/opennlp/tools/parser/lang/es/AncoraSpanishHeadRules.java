@@ -48,15 +48,15 @@ import opennlp.tools.util.model.SerializableArtifact;
  * Class for storing the Ancora Spanish head rules associated with parsing. In this class
  * headrules for noun phrases are specified. The rest of the rules are
  * in opennlp-tools/lang/es/parser/es-head-rules
- *
+ * <p>
  * NOTE: This class has been adapted from opennlp.tools.parser.lang.en.HeadRules
- *
+ * <p>
  * The main change is the constituents search direction in the first for loop.
- *
+ * <p>
  * Note also the change in the return of the getHead() method:
  * In the lang.en.HeadRules class: return constituents[ci].getHead();
  * Now: return constituents[ci];
- *
+ * <p>
  * Other changes include removal of deprecated methods.
  *
  */
@@ -182,19 +182,19 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
       int cl = constituents.length;
       int tl = tags.length;
       if (hr.leftToRight) {
-        for (int ti = 0; ti < tl; ti++) {
-          for (int ci = 0; ci < cl; ci++) {
-            if (constituents[ci].getType().matches(tags[ti])) {
-              return constituents[ci];
+        for (String tag : tags) {
+          for (Parse constituent : constituents) {
+            if (constituent.getType().matches(tag)) {
+              return constituent;
             }
           }
         }
         return constituents[0].getHead();
       }
       else {
-        for (int ti = 0; ti < tl; ti++) {
+        for (String tag : tags) {
           for (int ci = cl - 1; ci >= 0; ci--) {
-            if (constituents[ci].getType().matches(tags[ti])) {
+            if (constituents[ci].getType().matches(tag)) {
               return constituents[ci];
             }
           }

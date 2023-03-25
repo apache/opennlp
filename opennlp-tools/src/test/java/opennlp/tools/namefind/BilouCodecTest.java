@@ -110,7 +110,7 @@ public class BilouCodecTest {
   @Test
   void testDecodeEmpty() {
     Span[] expected = new Span[] {};
-    Span[] actual = codec.decode(new ArrayList<String>());
+    Span[] actual = codec.decode(new ArrayList<>());
     Assertions.assertArrayEquals(expected, actual);
   }
 
@@ -213,7 +213,7 @@ public class BilouCodecTest {
     Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {}));
   }
 
-  /**
+  /*
    * Singles and singles in combination with other valid type (unit/start+last)
    */
 

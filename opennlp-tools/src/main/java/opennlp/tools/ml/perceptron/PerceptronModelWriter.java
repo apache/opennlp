@@ -189,9 +189,9 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
     }
 
     // write out the parameters
-    for (int i = 0; i < sorted.length; i++)
-      for (int j = 0; j < sorted[i].params.length; j++)
-        writeDouble(sorted[i].params[j]);
+    for (ComparablePredicate comparablePredicate : sorted)
+      for (int j = 0; j < comparablePredicate.params.length; j++)
+        writeDouble(comparablePredicate.params[j]);
 
     close();
   }

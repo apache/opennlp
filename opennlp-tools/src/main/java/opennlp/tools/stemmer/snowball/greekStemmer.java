@@ -1180,7 +1180,7 @@ public class greekStemmer extends AbstractSnowballStemmer {
 
     private static final char g_v2[] = {81, 65, 0, 1 };
 
-    private StringBuilder S_s = new StringBuilder();
+    private final StringBuilder S_s = new StringBuilder();
     private boolean B_test1;
 
 

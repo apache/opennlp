@@ -25,7 +25,6 @@ import java.io.StringReader;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
 
 /**
@@ -87,8 +86,7 @@ public class DictionaryTest {
   /**
    * Tests serialization and deserailization of the {@link Dictionary}.
    *
-   * @throws IOException
-   * @throws InvalidFormatException
+   * @throws IOException Thrown if IO errors occurred.
    */
   @Test
   void testSerialization() throws IOException {
@@ -115,7 +113,7 @@ public class DictionaryTest {
    * Tests for the {@link Dictionary#parseOneEntryPerLine(java.io.Reader)}
    * method.
    *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred.
    */
   @Test
   void testParseOneEntryPerLine() throws IOException {

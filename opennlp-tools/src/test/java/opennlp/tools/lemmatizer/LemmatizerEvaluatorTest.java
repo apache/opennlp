@@ -41,10 +41,11 @@ public class LemmatizerEvaluatorTest {
 
   /**
    * Checks the evaluator results against the results got using the conlleval,
-   * available at http://www.cnts.ua.ac.be/conll2000/chunking/output.html but
+   * available at <a href="https://www.cnts.ua.ac.be/conll2000/chunking/output.html">
+   *   https://www.cnts.ua.ac.be/conll2000/chunking/output.html</a> but
    * containing lemmas instead of chunks.
    *
-   * @throws IOException
+   * @throws IOException Thrown if IO errors occurred.
    */
   @Test
   void testEvaluator() throws IOException {

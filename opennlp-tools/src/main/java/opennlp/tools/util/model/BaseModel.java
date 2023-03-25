@@ -251,7 +251,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
       if ("manifest.properties".equals(entry.getName())) {
         // TODO: Probably better to use the serializer here directly!
-        ArtifactSerializer factory = artifactSerializers.get("properties");
+        ArtifactSerializer<?> factory = artifactSerializers.get("properties");
         artifactMap.put(entry.getName(), factory.create(zip));
         isSearchingForManifest = false;
       }
@@ -327,7 +327,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
       String entryName = entry.getName();
       String extension = getEntryExtension(entryName);
 
-      ArtifactSerializer factory = artifactSerializers.get(extension);
+      ArtifactSerializer<?> factory = artifactSerializers.get(extension);
 
       String artifactSerializerClazzName =
           getManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + entryName);
@@ -373,7 +373,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    *                     {link ArtifactSerializer} for.
    * @return Retrieves an {@link ArtifactSerializer artifact serialize}.
    */
-  protected ArtifactSerializer getArtifactSerializer(String resourceName) {
+  protected ArtifactSerializer<?> getArtifactSerializer(String resourceName) {
     try {
       return artifactSerializers.get(getEntryExtension(resourceName));
     } catch (InvalidFormatException e) {
@@ -414,14 +414,12 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param serializers The key of the map is the file extension used to look up
    *                    an {@link ArtifactSerializer}.
    */
-  protected void createArtifactSerializers(
-      Map<String, ArtifactSerializer> serializers) {
+  protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
     if (this.toolFactory != null)
       serializers.putAll(this.toolFactory.createArtifactSerializersMap());
   }
 
-  private void createBaseArtifactSerializers(
-      Map<String, ArtifactSerializer> serializers) {
+  private void createBaseArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
     serializers.putAll(createArtifactSerializers());
   }
 

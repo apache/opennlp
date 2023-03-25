@@ -42,12 +42,12 @@ import opennlp.tools.util.model.ModelUtil;
 
 public class GISIndexingTest {
 
-  private static String[][] cntx = new String[][] {
+  private static final String[][] cntx = new String[][] {
       {"dog", "cat", "mouse"},
       {"text", "print", "mouse"},
       {"dog", "pig", "cat", "mouse"}
   };
-  private static String[] outputs = new String[] {"A", "B", "A"};
+  private static final String[] outputs = new String[] {"A", "B", "A"};
 
   private ObjectStream<Event> createEventStream() {
     List<Event> events = new ArrayList<>();

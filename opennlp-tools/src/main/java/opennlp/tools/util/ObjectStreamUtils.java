@@ -34,7 +34,7 @@ public class ObjectStreamUtils {
   @SafeVarargs
   public static <T> ObjectStream<T> createObjectStream(final T... array) {
 
-    return new ObjectStream<T>() {
+    return new ObjectStream<>() {
 
       private int index = 0;
 
@@ -67,7 +67,7 @@ public class ObjectStreamUtils {
    */
   public static <T> ObjectStream<T> createObjectStream(final Collection<T> collection) {
 
-    return new ObjectStream<T>() {
+    return new ObjectStream<>() {
 
       private Iterator<T> iterator = collection.iterator();
 
@@ -109,7 +109,7 @@ public class ObjectStreamUtils {
       }
     }
 
-    return new ObjectStream<T>() {
+    return new ObjectStream<>() {
 
       private Iterator<ObjectStream<T>> iterator = streams.iterator();
       private ObjectStream<T> currentStream = iterator.next();
@@ -165,7 +165,7 @@ public class ObjectStreamUtils {
       }
     }
 
-    return new ObjectStream<T>() {
+    return new ObjectStream<>() {
 
       private int streamIndex = 0;
 

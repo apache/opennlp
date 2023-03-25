@@ -51,14 +51,14 @@ public class LemmatizerMETest {
 
   private LemmatizerME lemmatizer;
 
-  private static String[] tokens = {"Rockwell", "said", "the", "agreement", "calls", "for",
+  private static final String[] tokens = {"Rockwell", "said", "the", "agreement", "calls", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipsets", "for",
       "the", "planes", "."};
 
-  private static String[] postags = {"NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
+  private static final String[] postags = {"NNP", "VBD", "DT", "NN", "VBZ", "IN", "PRP", "TO", "VB",
       "CD", "JJ", "JJ", "NNS", "IN", "DT", "NNS", "."};
 
-  private static String[] expect = {"rockwell", "say", "the", "agreement", "call", "for",
+  private static final String[] expect = {"rockwell", "say", "the", "agreement", "call", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipset", "for",
       "the", "plane", "."};
 

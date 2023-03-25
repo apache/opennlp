@@ -170,7 +170,7 @@ public class LineSearchTest {
   /**
    * Quadratic function: f(x) = (x-2)^2 + 4
    */
-  public class QuadraticFunction1 implements Function {
+  public static class QuadraticFunction1 implements Function {
 
     public double valueAt(double[] x) {
       // (x-2)^2 + 4;
@@ -190,7 +190,7 @@ public class LineSearchTest {
   /**
    * Quadratic function: f(x) = x^2
    */
-  public class QuadraticFunction2 implements Function {
+  public static class QuadraticFunction2 implements Function {
 
     public double valueAt(double[] x) {
       // x^2;

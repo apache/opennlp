@@ -31,7 +31,7 @@ public class BeamSearchTest {
 
   static class IdentityFeatureGenerator implements BeamSearchContextGenerator<String> {
 
-    private String[] outcomeSequence;
+    private final String[] outcomeSequence;
 
     IdentityFeatureGenerator(String[] outcomeSequence) {
       this.outcomeSequence = outcomeSequence;
@@ -46,12 +46,12 @@ public class BeamSearchTest {
 
   static class IdentityModel implements MaxentModel {
 
-    private String[] outcomes;
+    private final String[] outcomes;
 
-    private Map<String, Integer> outcomeIndexMap = new HashMap<>();
+    private final Map<String, Integer> outcomeIndexMap = new HashMap<>();
 
-    private double bestOutcomeProb = 0.8d;
-    private double otherOutcomeProb;
+    private final double bestOutcomeProb = 0.8d;
+    private final double otherOutcomeProb;
 
     IdentityModel(String[] outcomes) {
       this.outcomes = outcomes;

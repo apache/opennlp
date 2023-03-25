@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
  */
 public class WindowFeatureGeneratorTest {
 
-  private String[] testSentence = new String[] {"a", "b", "c", "d",
+  private final String[] testSentence = new String[] {"a", "b", "c", "d",
       "e", "f", "g", "h"};
 
   private List<String> features;

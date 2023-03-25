@@ -29,7 +29,7 @@ public class FMeasureTest {
 
   private static final double DELTA = 1.0E-9d;
 
-  private Span[] gold = {
+  private final Span[] gold = {
       new Span(8, 9),
       new Span(9, 10),
       new Span(10, 12),
@@ -38,7 +38,7 @@ public class FMeasureTest {
       new Span(15, 16)
   };
 
-  private Span[] predicted = {
+  private final Span[] predicted = {
       new Span(14, 15),
       new Span(15, 16),
       new Span(100, 120),
@@ -46,7 +46,7 @@ public class FMeasureTest {
       new Span(220, 230)
   };
 
-  private Span[] predictedCompletelyDistinct = {
+  private final Span[] predictedCompletelyDistinct = {
       new Span(100, 120),
       new Span(210, 220),
       new Span(211, 220),
@@ -54,7 +54,7 @@ public class FMeasureTest {
       new Span(220, 230)
   };
 
-  private Span[] goldToMerge = {
+  private final Span[] goldToMerge = {
       new Span(8, 9),
       new Span(9, 10),
       new Span(11, 11),
@@ -64,7 +64,7 @@ public class FMeasureTest {
       new Span(18, 19),
   };
 
-  private Span[] predictedToMerge = {
+  private final Span[] predictedToMerge = {
       new Span(8, 9),
       new Span(14, 15),
       new Span(15, 16),
@@ -75,7 +75,7 @@ public class FMeasureTest {
 
 
   /**
-   * Test for the {@link EvaluatorUtil#countTruePositives(Span[], Span[])} method.
+   * Test for the {@link FMeasure#countTruePositives(Object[], Object[])} method.
    */
   @Test
   public void testCountTruePositives() {
@@ -86,7 +86,7 @@ public class FMeasureTest {
   }
 
   /**
-   * Test for the {@link EvaluatorUtil#precision(Span[], Span[])} method.
+   * Test for the {@link FMeasure#precision(Object[], Object[])} method.
    */
   @Test
   public void testPrecision() {
@@ -98,7 +98,7 @@ public class FMeasureTest {
   }
 
   /**
-   * Test for the {@link EvaluatorUtil#recall(Span[], Span[])} method.
+   * Test for the {@link FMeasure#recall(Object[], Object[])} method.
    */
   @Test
   public void testRecall() {

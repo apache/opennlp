@@ -42,7 +42,7 @@ public interface ArtifactProvider {
 
   /**
    * Indicates if this provider was loaded from a serialized form.
-   *
+   * <p>
    * It is useful, for example, during the validation of artifacts:
    * Skip the time-consuming ones if those were already validated during the
    * serialization process.

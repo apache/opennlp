@@ -37,7 +37,7 @@ public class POSEvaluatorTest {
     POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
 
     POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(
-        POSSampleTest.createGoldSample()), listener);
+            POSSampleTest.createGoldSample()), listener);
 
     eval.evaluateSample(POSSampleTest.createGoldSample());
     Assertions.assertEquals(1.0, eval.getWordAccuracy(), 0.0);
@@ -50,16 +50,16 @@ public class POSEvaluatorTest {
     POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
 
     POSEvaluator eval = new POSEvaluator(
-        new DummyPOSTagger(POSSampleTest.createGoldSample()), listener);
+            new DummyPOSTagger(POSSampleTest.createGoldSample()), listener);
 
     eval.evaluateSample(POSSampleTest.createPredSample());
     Assertions.assertEquals(.7, eval.getWordAccuracy(), .1d);
     Assertions.assertNotSame(0, stream.toString().length());
   }
 
-  class DummyPOSTagger implements POSTagger {
+  static class DummyPOSTagger implements POSTagger {
 
-    private POSSample sample;
+    private final POSSample sample;
 
     public DummyPOSTagger(POSSample sample) {
       this.sample = sample;

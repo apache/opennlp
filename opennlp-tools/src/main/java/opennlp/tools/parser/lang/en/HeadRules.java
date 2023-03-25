@@ -181,19 +181,19 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
       int cl = constituents.length;
       int tl = tags.length;
       if (hr.leftToRight) {
-        for (int ti = 0; ti < tl; ti++) {
-          for (int ci = 0; ci < cl; ci++) {
-            if (constituents[ci].getType().equals(tags[ti])) {
-              return constituents[ci].getHead();
+        for (String tag : tags) {
+          for (Parse constituent : constituents) {
+            if (constituent.getType().equals(tag)) {
+              return constituent.getHead();
             }
           }
         }
         return constituents[0].getHead();
       }
       else {
-        for (int ti = 0; ti < tl; ti++) {
+        for (String tag : tags) {
           for (int ci = cl - 1; ci >= 0; ci--) {
-            if (constituents[ci].getType().equals(tags[ti])) {
+            if (constituents[ci].getType().equals(tag)) {
               return constituents[ci].getHead();
             }
           }

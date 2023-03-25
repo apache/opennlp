@@ -83,7 +83,7 @@ public final class ChunkerEvaluatorTool
 
     final PerformanceMonitor monitor = new PerformanceMonitor("sent");
 
-    try (ObjectStream<ChunkSample> measuredSampleStream = new ObjectStream<ChunkSample>() {
+    try (ObjectStream<ChunkSample> measuredSampleStream = new ObjectStream<>() {
 
       public ChunkSample read() throws IOException {
         monitor.incrementCounter();

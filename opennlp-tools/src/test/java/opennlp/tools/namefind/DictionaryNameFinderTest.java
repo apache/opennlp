@@ -31,7 +31,7 @@ import opennlp.tools.util.StringList;
  */
 public class DictionaryNameFinderTest {
 
-  private Dictionary mDictionary = new Dictionary();
+  private final Dictionary mDictionary = new Dictionary();
   private TokenNameFinder mNameFinder;
 
   public DictionaryNameFinderTest() {
