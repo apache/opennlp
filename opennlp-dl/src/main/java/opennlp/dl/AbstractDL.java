@@ -17,12 +17,13 @@
 
 package opennlp.dl;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtSession;
@@ -49,24 +50,21 @@ public abstract class AbstractDL {
    * @return A map of vocabulary words to integer IDs.
    * @throws IOException Thrown if the vocabulary file cannot be opened and read.
    */
-  public Map<String, Integer> loadVocab(File vocabFile) throws IOException {
+  public Map<String, Integer> loadVocab(final File vocabFile) throws IOException {
 
-    final Map<String, Integer> v = new HashMap<>();
+    final Map<String, Integer> vocab = new HashMap<>();
 
-    BufferedReader br = new BufferedReader(new FileReader(vocabFile.getPath()));
-    String line = br.readLine();
-    int x = 0;
+    int counter = 0;
 
-    while (line != null) {
+    try (Stream<String> lines = Files.lines(Path.of(vocabFile.getPath()))) {
 
-      line = br.readLine();
-      x++;
-
-      v.put(line, x);
+      lines.forEach(line -> {
+        vocab.put(line, counter);
+      });
 
     }
 
-    return v;
+    return vocab;
 
   }
 

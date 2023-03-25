@@ -24,9 +24,9 @@ import ai.onnxruntime.OrtException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.dl.AbstactDLTest;
+import opennlp.dl.AbstractDLTest;
 
-public class SentenceVectorsDLEval extends AbstactDLTest {
+public class SentenceVectorsDLEval extends AbstractDLTest {
 
   @Test
   public void generateVectorsTest() throws IOException, OrtException {
