@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import ai.onnxruntime.OrtEnvironment;
@@ -54,12 +55,12 @@ public abstract class AbstractDL {
 
     final Map<String, Integer> vocab = new HashMap<>();
 
-    int counter = 0;
+    final AtomicInteger counter = new AtomicInteger(0);
 
     try (Stream<String> lines = Files.lines(Path.of(vocabFile.getPath()))) {
 
       lines.forEach(line -> {
-        vocab.put(line, counter);
+        vocab.put(line, counter.getAndIncrement());
       });
 
     }
