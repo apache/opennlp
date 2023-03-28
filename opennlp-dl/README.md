@@ -8,33 +8,33 @@ Models used in the tests are available in the opennlp evaluation test data.
 
 ## NameFinderDL
 
-* Export a Huggingface NER model to ONNX, e.g.:
+Export a Huggingface NER model to ONNX, e.g.:
 
-```
+```bash
 python -m transformers.onnx --model=dslim/bert-base-NER --feature token-classification exported
 ```
 
 ## DocumentCategorizerDL
 
-* Export a Huggingface classification (e.g. sentiment) model to ONNX, e.g.:
+Export a Huggingface classification (e.g. sentiment) model to ONNX, e.g.:
 
-```
+```bash
 python -m transformers.onnx --model=nlptown/bert-base-multilingual-uncased-sentiment --feature sequence-classification exported
 ```
 
 ## SentenceVectors
 
-* Convert a sentence vectors model to ONNX, e.g.:
+Convert a sentence vectors model to ONNX, e.g.:
 
 Install dependencies:
 
-```
+```bash
 python3 -m pip install optimum onnx onnxruntime
 ```
 
 Convert the model:
 
-```
+```python
 from optimum.onnxruntime import ORTModelForFeatureExtraction
 from transformers import AutoTokenizer
 from pathlib import Path
