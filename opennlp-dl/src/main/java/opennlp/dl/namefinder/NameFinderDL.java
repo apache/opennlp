@@ -17,10 +17,7 @@
 
 package opennlp.dl.namefinder;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.nio.LongBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,23 +32,19 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
+import opennlp.dl.AbstractDL;
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.SpanEnd;
 import opennlp.dl.Tokens;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.sentdetect.SentenceDetector;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 
 /**
  * An implementation of {@link TokenNameFinder} that uses ONNX models.
  */
-public class NameFinderDL implements TokenNameFinder {
-
-  public static final String INPUT_IDS = "input_ids";
-  public static final String ATTENTION_MASK = "attention_mask";
-  public static final String TOKEN_TYPE_IDS = "token_type_ids";
+public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
   public static final String I_PER = "I-PER";
   public static final String B_PER = "B-PER";
@@ -59,14 +52,9 @@ public class NameFinderDL implements TokenNameFinder {
 
   private static final String CHARS_TO_REPLACE = "##";
 
-  protected final OrtSession session;
-
   private final SentenceDetector sentenceDetector;
   private final Map<Integer, String> ids2Labels;
-  private final Tokenizer tokenizer;
-  private final Map<String, Integer> vocab;
   private final InferenceOptions inferenceOptions;
-  protected final OrtEnvironment env;
 
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       SentenceDetector sentenceDetector) throws Exception {
@@ -381,36 +369,6 @@ public class NameFinderDL implements TokenNameFinder {
     }
 
     return t;
-
-  }
-
-  /**
-   * Loads a vocabulary file from disk.
-   * @param vocab The vocabulary file.
-   * @return A map of vocabulary words to integer IDs.
-   * @throws IOException Thrown if the vocabulary file cannot be opened and read.
-   */
-  private Map<String, Integer> loadVocab(File vocab) throws IOException {
-
-    final Map<String, Integer> v = new HashMap<>();
-
-    try (final BufferedReader br = new BufferedReader(new FileReader(vocab.getPath()))) {
-
-      String line = br.readLine();
-      int x = 0;
-
-      while (line != null) {
-
-        line = br.readLine();
-        x++;
-
-        v.put(line, x);
-
-      }
-
-    }
-
-    return v;
 
   }
 

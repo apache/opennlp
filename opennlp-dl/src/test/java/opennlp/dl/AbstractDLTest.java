@@ -24,7 +24,7 @@ import opennlp.tools.util.StringUtil;
 
 public abstract class AbstractDLTest {
 
-  public static File getOpennlpDataDir() throws FileNotFoundException {
+  public File getOpennlpDataDir() throws FileNotFoundException {
     final String dataDirectory = System.getProperty("OPENNLP_DATA_DIR");
     if (dataDirectory == null || StringUtil.isEmpty(dataDirectory)) {
       throw new IllegalArgumentException("The OPENNLP_DATA_DIR is not set.");
