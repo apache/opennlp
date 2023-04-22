@@ -377,10 +377,10 @@
 
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.5.0</version>
 				<configuration>
 					<doclint>none</doclint>
-					<source>8</source>
+					<source>${java.version}</source>
 					<sourcepath>src/main/java</sourcepath>
 				</configuration>
 				<executions>
