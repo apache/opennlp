@@ -174,7 +174,7 @@
 		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
 		<onnxruntime.version>1.14.0</onnxruntime.version>
 		<slf4j.version>1.7.36</slf4j.version>
-		<log4j2.version>2.19.0</log4j2.version>
+		<log4j2.version>2.20.0</log4j2.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.7.9</jacoco.maven.plugin>
