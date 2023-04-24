@@ -26,32 +26,34 @@ under the License.
 	<section id="opennlp.evaltest.whatisit">
 		<title>What is it ?</title>
 		<para>
-			Eval test data is the data that helps with the evaluation tests to evaluate the functionality and
-			performance of OpenNLP.
+			The evaluation test data is the data used in the tests that evaluate functionality and performance of
+			OpenNLP.
 			These tests ensure reliability and can help identify potential bugs, errors, or performance issues.
 		</para>
 		<para>
 			The evaluation tests leverage the k-fold cross-validation procedure.
-			This technique works by dividing the eval-data into 'k' equally sized parts or folds.
-			The algorithm is then trained on 'k-1' of the folds and tested on the remaining fold.
-			This process is repeated 'k' times, so that each of the k-folds is used exactly once as the test data,
+			This technique works by dividing the evaluation data into <code>k</code> equally sized parts or folds.
+			The algorithm is then trained on <code>k-1</code> of the folds and tested on the remaining fold.
+			This process is repeated <code>k</code> times, so that each of the k-folds is used exactly once as the test data,
 			and the results of each fold are combined to produce an overall estimate of the algorithm's performance.
 		</para>
 	</section>
 	<section id="opennlp.evaltest.whereisit">
 		<title>Where is it?</title>
 		<para>
-			OpenNLP Eval Test Data is available at <ulink url="https://nightlies.apache.org/opennlp/opennlp-data.zip">
-			https://nightlies.apache.org/opennlp/opennlp-data.zip</ulink>
-			Here's a link to the eval-tests build on Jenkins:<ulink url="https://builds.apache.org/job/OpenNLP/">
+			OpenNLP evaluation tests data is available at <ulink url="https://nightlies.apache.org/opennlp/">
+			https://nightlies.apache.org/opennlp/</ulink> (file name : <code>opennlp-data.zip</code>)
+		</para>
+		<para>
+			Here's a link to the evaluation-tests build on Jenkins:<ulink url="https://builds.apache.org/job/OpenNLP/">
 			https://builds.apache.org/job/OpenNLP/</ulink>
 		</para>
  	 </section>
   	<section id="opennlp.evaltest.howtouseit">
-		<title>How to use the eval-data to run test?</title>
+		<title>How to use the evaluation test data to run test?</title>
 		<para>
-			The Eval Test Data can be downloaded and saved in the desired directory and can be used to run
-			OpenNLP Eval Test as below:
+			The evaluation tests data can be downloaded and saved in the desired directory and can be used to run
+			OpenNLP Evaluation Tests as below:
 		<screen>
 			<![CDATA[
 mvn test -DOPENNLP_DATA_DIR=/path/to/opennlp-eval-test-data/ -Peval-tests
@@ -60,18 +62,19 @@ mvn test -DOPENNLP_DATA_DIR=/path/to/opennlp-eval-test-data/ -Peval-tests
 		</para>
 	</section>
 	<section id="opennlp.evaltest.howtochangeit">
-		<title>How to change eval-data?</title>
+		<title>How to change evaluation data?</title>
 		<para>
-			OpenNLP Eval Tests use <code><ulink url="nightlies.apache.org">nightlies.apache.org</ulink></code> to share
-			data for testing and releasing candidate build.
+			OpenNLP Evaluation Tests use <code><ulink url="https://nightlies.apache.org/">nightlies.apache.org</ulink></code> to
+			share data for testing and releasing candidate build.
 			You can also upload the opennlp-data.zip to <code>nightlies.apache.org</code> as below:
 			<screen>
 				<![CDATA[
 curl -u your_asf_username -T ./opennlp-data.zip "https://nightlies.apache.org/opennlp/"
 				]]>
 			</screen>
-			More information about changing the eval-data on <code>nightlies.apache.org</code> can be found at :
-			<ulink url="https://nightlies.apache.org/authoring.html">https://nightlies.apache.org/authoring.html</ulink>
+			More information about changing the evaluation test data on <code>nightlies.apache.org</code> can be found
+			at :<ulink url="https://nightlies.apache.org/authoring.html">https://nightlies.apache.org/authoring.html
+			</ulink>
 		</para>
 	</section>
 </chapter>
