@@ -92,4 +92,5 @@ under the License.
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./uima-integration.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./morfologik-addon.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./cli.xml" />
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="evaltest.xml" />
 </book>
