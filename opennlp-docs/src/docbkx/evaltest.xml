@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter id="opennlp.evaltest">
+<title>Evaluation Test Data</title>
+	<section id="opennlp.evaltest.whatisit">
+		<title>What is it ?</title>
+		<para>
+			The evaluation test data is the data used in the tests that evaluate functionality and performance of
+			OpenNLP.
+			These tests ensure reliability and can help identify potential bugs, errors, or performance issues.
+		</para>
+		<para>
+			The evaluation tests leverage the k-fold cross-validation procedure.
+			This technique works by dividing the evaluation data into <code>k</code> equally sized parts or folds.
+			The algorithm is then trained on <code>k-1</code> of the folds and tested on the remaining fold.
+			This process is repeated <code>k</code> times, so that each of the k-folds is used exactly once as the test data,
+			and the results of each fold are combined to produce an overall estimate of the algorithm's performance.
+		</para>
+	</section>
+	<section id="opennlp.evaltest.whereisit">
+		<title>Where is it?</title>
+		<para>
+			OpenNLP evaluation tests data is available at <ulink url="https://nightlies.apache.org/opennlp/">
+			https://nightlies.apache.org/opennlp/</ulink> (file name : <code>opennlp-data.zip</code>)
+		</para>
+		<para>
+			Here's a link to the evaluation-tests build on Jenkins:<ulink url="https://builds.apache.org/job/OpenNLP/">
+			https://builds.apache.org/job/OpenNLP/</ulink>
+		</para>
+ 	 </section>
+  	<section id="opennlp.evaltest.howtouseit">
+		<title>How to use the evaluation test data to run test?</title>
+		<para>
+			The evaluation tests data can be downloaded and saved in the desired directory and can be used to run
+			OpenNLP Evaluation Tests as below:
+		<screen>
+			<![CDATA[
+mvn test -DOPENNLP_DATA_DIR=/path/to/opennlp-eval-test-data/ -Peval-tests
+			]]>
+		</screen>
+		</para>
+	</section>
+	<section id="opennlp.evaltest.howtochangeit">
+		<title>How to change evaluation data?</title>
+		<para>
+			OpenNLP Evaluation Tests use <code><ulink url="https://nightlies.apache.org/">nightlies.apache.org</ulink></code> to
+			share data for testing and releasing candidate build.
+			You can also upload the opennlp-data.zip to <code>nightlies.apache.org</code> as below:
+			<screen>
+				<![CDATA[
+curl -u your_asf_username -T ./opennlp-data.zip "https://nightlies.apache.org/opennlp/"
+				]]>
+			</screen>
+			More information about changing the evaluation test data on <code>nightlies.apache.org</code> can be found
+			at :<ulink url="https://nightlies.apache.org/authoring.html">https://nightlies.apache.org/authoring.html
+			</ulink>
+		</para>
+	</section>
+</chapter>
