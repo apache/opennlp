@@ -170,7 +170,7 @@
 		<enforcer.plugin.version>3.0.0-M3</enforcer.plugin.version>
 		<glassfish.version>2.30.1</glassfish.version>
 		<junit.version>5.9.2</junit.version>
-		<morfologik.version>2.1.7</morfologik.version>
+		<morfologik.version>2.1.9</morfologik.version>
 		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
 		<onnxruntime.version>1.14.0</onnxruntime.version>
 		<slf4j.version>1.7.36</slf4j.version>
