@@ -322,7 +322,7 @@
 				<plugin>
 					<groupId>de.thetaphi</groupId>
 					<artifactId>forbiddenapis</artifactId>
-					<version>3.4</version>
+					<version>3.5.1</version>
 					<configuration>
 						<failOnUnsupportedJava>false</failOnUnsupportedJava>
 						<bundledSignatures>
