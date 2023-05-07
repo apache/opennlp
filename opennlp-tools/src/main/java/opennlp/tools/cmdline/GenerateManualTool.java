@@ -248,8 +248,7 @@ public class GenerateManualTool {
   private static String splitLongLines(String stringBlock) {
     StringBuilder sb = new StringBuilder();
     String line;
-    try {
-      BufferedReader reader = new BufferedReader(new StringReader(stringBlock));
+    try (BufferedReader reader = new BufferedReader(new StringReader(stringBlock))) {
       while ((line = reader.readLine()) != null) {
         if (line.length() <= MAX_LINE_LENGTH) {
           sb.append(line).append("\n");
