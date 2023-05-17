@@ -18,8 +18,6 @@
 package opennlp.tools.util;
 
 import java.io.IOException;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
@@ -31,33 +29,27 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.extension.ConditionEvaluationResult;
-import org.junit.jupiter.api.extension.ExecutionCondition;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.EnabledWhenCDNAvailable;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 
 public class DownloadUtilTest {
 
   private static final String APACHE_CDN = "dlcdn.apache.org";
 
-  private static final int TIMEOUT_MS = 2000;
-
   @BeforeAll
   public static void cleanupWhenOnline() {
     boolean isOnline;
     try (Socket socket = new Socket()) {
-      socket.connect(new InetSocketAddress(APACHE_CDN, 80), TIMEOUT_MS);
+      socket.connect(new InetSocketAddress(APACHE_CDN, 80), EnabledWhenCDNAvailable.TIMEOUT_MS);
       isOnline = true;
     } catch (IOException e) {
       // Unreachable, unresolvable or timeout
@@ -131,36 +123,5 @@ public class DownloadUtilTest {
             Arguments.of("it", DownloadUtil.available_models.get("it").get(MT_TOKENIZER)),
             Arguments.of("nl", DownloadUtil.available_models.get("nl").get(MT_TOKENIZER))
     );
-  }
-
-  // JUnit5 execution condition to decide whether tests can assume CDN downloads are possible (= online).
-  private static class CDNAvailableCondition implements ExecutionCondition {
-
-    @Override
-    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-      final var optional = findAnnotation(context.getElement(), EnabledWhenCDNAvailable.class);
-      if (optional.isPresent()) {
-        final EnabledWhenCDNAvailable annotation = optional.get();
-        final String host = annotation.hostname();
-        try (Socket socket = new Socket()) {
-          socket.connect(new InetSocketAddress(host, 80), TIMEOUT_MS);
-          return ConditionEvaluationResult.enabled("CDN is reachable.");
-        } catch (IOException e) {
-          // Unreachable, unresolvable or timeout
-          return ConditionEvaluationResult.disabled("CDN is unreachable.");
-        }
-      }
-      return ConditionEvaluationResult.enabled("Nothing annotated with DisabledWhenOffline.");
-    }
-  }
-
-  // Custom JUnit5 conditional @Disabled.. annotation
-  @Retention(RetentionPolicy.RUNTIME)
-  @ExtendWith(CDNAvailableCondition.class)
-  @ParameterizedTest
-  public @interface EnabledWhenCDNAvailable {
-
-    String hostname();
-
   }
 }
