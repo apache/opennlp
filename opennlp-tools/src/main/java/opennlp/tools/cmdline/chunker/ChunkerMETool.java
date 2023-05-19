@@ -59,12 +59,10 @@ public class ChunkerMETool extends BasicCmdLineTool {
 
       ChunkerME chunker = new ChunkerME(model);
 
-      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
 
-      try {
-        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
-            SystemInputStreamFactory.encoding());
+      try (ObjectStream<String> lineStream = new PlainTextByLineStream(
+              new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
         perfMon = new PerformanceMonitor("sent");
         perfMon.start();
         String line;

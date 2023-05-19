@@ -40,11 +40,12 @@ public class ParseSampleStreamTest {
 
   @Test
   void testReadTestStream() throws IOException {
-    ObjectStream<Parse> parseStream = createParseSampleStream();
-    Assertions.assertNotNull(parseStream.read());
-    Assertions.assertNotNull(parseStream.read());
-    Assertions.assertNotNull(parseStream.read());
-    Assertions.assertNotNull(parseStream.read());
-    Assertions.assertNull(parseStream.read());
+    try (ObjectStream<Parse> parseStream = createParseSampleStream()) {
+      Assertions.assertNotNull(parseStream.read());
+      Assertions.assertNotNull(parseStream.read());
+      Assertions.assertNotNull(parseStream.read());
+      Assertions.assertNotNull(parseStream.read());
+      Assertions.assertNull(parseStream.read());
+    }
   }
 }
