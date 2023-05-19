@@ -18,6 +18,7 @@
 package opennlp.tools.ml.naivebayes;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -34,24 +35,24 @@ import opennlp.tools.ml.model.TwoPassDataIndexer;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * Tests for persisting and reading naive bayes models
+ * Tests for persisting and reading naive bayes models.
  */
-public class NaiveBayesModelReadWriteTest {
+public class NaiveBayesModelReadWriteTest extends AbstractNaiveBayesTest {
 
   private DataIndexer testDataIndexer;
 
   @BeforeEach
-  void initIndexer() {
+  void initIndexer() throws IOException {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
+    testDataIndexer.index(createTrainingStream());
   }
 
   @Test
-  void testBinaryModelPersistence() throws Exception {
-    testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
+  void testBinaryModelPersistence() throws IOException {
     NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
     Path tempFile = Files.createTempFile("bnb-", ".bin");
     File file = tempFile.toFile();
@@ -69,7 +70,6 @@ public class NaiveBayesModelReadWriteTest {
 
   @Test
   void testTextModelPersistence() throws Exception {
-    testDataIndexer.index(NaiveBayesCorrectnessTest.createTrainingStream());
     NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
     Path tempFile = Files.createTempFile("ptnb-", ".txt");
     File file = tempFile.toFile();

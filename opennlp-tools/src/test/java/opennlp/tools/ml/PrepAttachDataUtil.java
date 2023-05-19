@@ -23,36 +23,39 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.perceptron.PerceptronPrepAttachTest;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 
 public class PrepAttachDataUtil {
 
+  /* Caches ppa files as List<Event> via their name (key) */
+  private static final Map<String, List<Event>> PPA_FILE_EVENTS = new HashMap<>();
+
   private static List<Event> readPpaFile(String filename) throws IOException {
-
-    List<Event> events = new ArrayList<>();
-
-    try (InputStream in = PerceptronPrepAttachTest.class.getResourceAsStream("/data/ppa/" +
-            filename)) {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-      String line;
-      while ((line = reader.readLine()) != null) {
-        String[] items = line.split("\\s+");
-        String label = items[5];
-        String[] context = {"verb=" + items[1], "noun=" + items[2],
-            "prep=" + items[3], "prep_obj=" + items[4]};
-        events.add(new Event(label, context));
+    if (!PPA_FILE_EVENTS.containsKey(filename)) {
+      List<Event> events = new ArrayList<>();
+      try (InputStream in = PrepAttachDataUtil.class.getResourceAsStream("/data/ppa/" + filename);
+           BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          String[] items = line.split("\\s+");
+          String label = items[5];
+          String[] context = {"verb=" + items[1], "noun=" + items[2],
+              "prep=" + items[3], "prep_obj=" + items[4]};
+          events.add(new Event(label, context));
+        }
+        PPA_FILE_EVENTS.put(filename, events);
       }
     }
-
-    return events;
+    return PPA_FILE_EVENTS.get(filename);
   }
 
   public static ObjectStream<Event> createTrainingStream() throws IOException {

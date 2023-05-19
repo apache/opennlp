@@ -18,14 +18,13 @@
 package opennlp.tools.ml.perceptron;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.ml.AbstractMLModelWriter;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
 import opennlp.tools.ml.model.ComparablePredicate;
@@ -40,14 +39,11 @@ import opennlp.tools.ml.model.Context;
  *
  * @see PerceptronModel
  * @see AbstractModelWriter
+ * @see AbstractMLModelWriter
  */
-public abstract class PerceptronModelWriter extends AbstractModelWriter {
+public abstract class PerceptronModelWriter extends AbstractMLModelWriter {
 
   private static final Logger logger = LoggerFactory.getLogger(PerceptronModelWriter.class);
-  protected Context[] PARAMS;
-  protected String[] OUTCOME_LABELS;
-  protected String[] PRED_LABELS;
-  private final int numOutcomes;
 
   /**
    * Initializes a {@link PerceptronModelWriter} for a
@@ -56,9 +52,9 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
    * @param model The {@link AbstractModel perceptron model} to be written.
    */
   public PerceptronModelWriter(AbstractModel model) {
-
+    super();
     Object[] data = model.getDataStructures();
-    this.numOutcomes = model.getNumOutcomes();
+    numOutcomes = model.getNumOutcomes();
     PARAMS = (Context[]) data[0];
 
     @SuppressWarnings("unchecked")
@@ -77,11 +73,9 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
   }
 
   /**
-   * Sorts and optimizes the model parameters. Thereby, parameters with
-   * {@code 0} weight and predicates with no parameters are removed.
-   *
-   * @return A {@link ComparablePredicate[]}.
+   * {@inheritDoc}
    */
+  @Override
   protected ComparablePredicate[] sortValues() {
     ComparablePredicate[] sortPreds;
     ComparablePredicate[] tmpPreds = new ComparablePredicate[PARAMS.length];
@@ -121,78 +115,20 @@ public abstract class PerceptronModelWriter extends AbstractModelWriter {
   }
 
   /**
-   * Computes outcome patterns via {@link ComparablePredicate[] predicates}.
-   *
-   * @return A {@link List} of {@link List<ComparablePredicate>} that represent
-   *         the outcomes patterns.
-   */
-  protected List<List<ComparablePredicate>> computeOutcomePatterns(ComparablePredicate[] sorted) {
-    ComparablePredicate cp = sorted[0];
-    List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
-    List<ComparablePredicate> newGroup = new ArrayList<>();
-    for (ComparablePredicate predicate : sorted) {
-      if (cp.compareTo(predicate) == 0) {
-        newGroup.add(predicate);
-      } else {
-        cp = predicate;
-        outcomePatterns.add(newGroup);
-        newGroup = new ArrayList<>();
-        newGroup.add(predicate);
-      }
-    }
-    outcomePatterns.add(newGroup);
-    logger.info("{} outcome patterns", outcomePatterns.size());
-    return outcomePatterns;
-  }
-
-  /**
    * Writes the {@link AbstractModel perceptron model}, using the
    * {@link #writeUTF(String)}, {@link #writeDouble(double)}, or {@link #writeInt(int)}}
    * methods implemented by extending classes.
    *
    * <p>If you wish to create a {@link PerceptronModelWriter} which uses a different
-   * structure, it will be necessary to override the {@code #persist()} method in
+   * structure, it will be necessary to override the {@link #persist()} method in
    * addition to implementing the {@code writeX(..)} methods.
    *
    * @throws IOException Thrown if IO errors occurred.
    */
   @Override
   public void persist() throws IOException {
-
     // the type of model (Perceptron)
     writeUTF("Perceptron");
-
-    // the mapping from outcomes to their integer indexes
-    writeInt(OUTCOME_LABELS.length);
-
-    for (String label : OUTCOME_LABELS) {
-      writeUTF(label);
-    }
-
-    // the mapping from predicates to the outcomes they contributed to.
-    // The sorting is done so that we actually can write this out more
-    // compactly than as the entire list.
-    ComparablePredicate[] sorted = sortValues();
-    List<List<ComparablePredicate>> compressed = computeOutcomePatterns(sorted);
-
-    writeInt(compressed.size());
-
-    for (List<ComparablePredicate> a : compressed) {
-      writeUTF(a.size() + a.get(0).toString());
-    }
-
-    // the mapping from predicate names to their integer indexes
-    writeInt(sorted.length);
-
-    for (ComparablePredicate s : sorted) {
-      writeUTF(s.name);
-    }
-
-    // write out the parameters
-    for (ComparablePredicate comparablePredicate : sorted)
-      for (int j = 0; j < comparablePredicate.params.length; j++)
-        writeDouble(comparablePredicate.params[j]);
-
-    close();
+    super.persist();
   }
 }

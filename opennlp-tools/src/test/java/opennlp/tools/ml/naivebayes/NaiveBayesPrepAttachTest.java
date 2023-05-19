@@ -30,8 +30,10 @@ import opennlp.tools.ml.PrepAttachDataUtil;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.DataIndexer;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
+import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -39,20 +41,23 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class NaiveBayesPrepAttachTest {
 
-  private DataIndexer testDataIndexer;
+  private ObjectStream<Event> trainingStream;
 
   @BeforeEach
-  void initIndexer() {
-    TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
-    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
-    testDataIndexer = new TwoPassDataIndexer();
-    testDataIndexer.init(trainingParameters, new HashMap<>());
+  void initIndexer() throws IOException {
+    trainingStream = PrepAttachDataUtil.createTrainingStream();
+    Assertions.assertNotNull(trainingStream);
   }
 
   @Test
   void testNaiveBayesOnPrepAttachData() throws IOException {
-    testDataIndexer.index(PrepAttachDataUtil.createTrainingStream());
+    TrainingParameters trainingParameters = new TrainingParameters();
+    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
+    DataIndexer testDataIndexer = new TwoPassDataIndexer();
+    testDataIndexer.init(trainingParameters, new HashMap<>());
+    testDataIndexer.index(trainingStream);
+    
     MaxentModel model = new NaiveBayesTrainer().trainModel(testDataIndexer);
     Assertions.assertTrue(model instanceof NaiveBayesModel);
     PrepAttachDataUtil.testModel(model, 0.7897994553107205);
@@ -65,7 +70,7 @@ public class NaiveBayesPrepAttachTest {
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
-    MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
+    MaxentModel model = trainer.train(trainingStream);
     Assertions.assertTrue(model instanceof NaiveBayesModel);
     PrepAttachDataUtil.testModel(model, 0.7897994553107205);
   }
@@ -77,7 +82,7 @@ public class NaiveBayesPrepAttachTest {
     trainParams.put(AbstractTrainer.CUTOFF_PARAM, 5);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
-    MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
+    MaxentModel model = trainer.train(trainingStream);
     Assertions.assertTrue(model instanceof NaiveBayesModel);
     PrepAttachDataUtil.testModel(model, 0.7945035899975241);
   }
