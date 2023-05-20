@@ -326,7 +326,7 @@
 					<configuration>
 						<failOnUnsupportedJava>false</failOnUnsupportedJava>
 						<bundledSignatures>
-							<bundledSignature>jdk-deprecated</bundledSignature>
+							<bundledSignature>jdk-deprecated-${java.version}</bundledSignature>
 							<bundledSignature>jdk-non-portable</bundledSignature>
 						</bundledSignatures>
 					</configuration>

@@ -18,13 +18,14 @@
 package opennlp.tools.ml.naivebayes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractDataIndexer;
@@ -32,87 +33,45 @@ import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.TwoPassDataIndexer;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.TrainingParameters;
 
 /**
  * Test for naive bayes classification correctness without smoothing
  */
-public class NaiveBayesCorrectnessTest {
+public class NaiveBayesCorrectnessTest extends AbstractNaiveBayesTest {
 
   private DataIndexer testDataIndexer;
 
   @BeforeEach
-  void initIndexer() {
+  void initIndexer() throws IOException {
     TrainingParameters trainingParameters = new TrainingParameters();
     trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
+    testDataIndexer.index(createTrainingStream());
   }
 
-  @Test
-  void testNaiveBayes1() throws IOException {
-
-    testDataIndexer.index(createTrainingStream());
-    NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
-
-    String label = "politics";
-    String[] context = {"bow=united", "bow=nations"};
+  @ParameterizedTest
+  @MethodSource("provideLabelsWithContextAndProb")
+  void testNaiveBayes(String label, String[] context, double expectedProb) {
+    NaiveBayesModel model = (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
     Event event = new Event(label, context);
-
-    // testModel(model, event, 1.0);  // Expected value without smoothing
-    testModel(model, event, 0.9681650180264167);   // Expected value with smoothing
-
+    
+    testModel(model, event, expectedProb);   // Expected value with smoothing
   }
 
-  @Test
-  void testNaiveBayes2() throws IOException {
-
-    testDataIndexer.index(createTrainingStream());
-    NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
-
-    String label = "sports";
-    String[] context = {"bow=manchester", "bow=united"};
-    Event event = new Event(label, context);
-
-    // testModel(model, event, 1.0);  // Expected value without smoothing
-    testModel(model, event, 0.9658833555831029);   // Expected value with smoothing
-
-  }
-
-  @Test
-  void testNaiveBayes3() throws IOException {
-
-    testDataIndexer.index(createTrainingStream());
-    NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
-
-    String label = "politics";
-    String[] context = {"bow=united"};
-    Event event = new Event(label, context);
-
-    //testModel(model, event, 2.0/3.0);  // Expected value without smoothing
-    testModel(model, event, 0.6655036407766989);  // Expected value with smoothing
-
-  }
-
-  @Test
-  void testNaiveBayes4() throws IOException {
-
-    testDataIndexer.index(createTrainingStream());
-    NaiveBayesModel model =
-        (NaiveBayesModel) new NaiveBayesTrainer().trainModel(testDataIndexer);
-
-    String label = "politics";
-    String[] context = {};
-    Event event = new Event(label, context);
-
-    testModel(model, event, 7.0 / 12.0);
-
+  /*
+   * Produces a stream of <label|context> pairs for parameterized unit tests.
+   */
+  private static Stream<Arguments> provideLabelsWithContextAndProb() {
+    return Stream.of(
+            // Example 1:
+            Arguments.of("politics" , new String[] {"bow=united", "bow=nations"}, 0.9681650180264167),
+            Arguments.of("sports",  new String[] {"bow=manchester", "bow=united"}, 0.9658833555831029),
+            Arguments.of("politics",  new String[] {"bow=united"}, 0.6655036407766989),
+            Arguments.of("politics",  new String[] {}, 7.0 / 12.0)
+    );
   }
 
   private void testModel(MaxentModel model, Event event, double higher_probability) {
@@ -132,28 +91,6 @@ public class NaiveBayesCorrectnessTest {
     if (!event.getOutcome().equals(model.getOutcome(1))) {
       Assertions.assertEquals(1.0 - higher_probability, outcomes[1], 0.0001);
     }
-  }
-
-  public static ObjectStream<Event> createTrainingStream() {
-    List<Event> trainingEvents = new ArrayList<>();
-
-    String label1 = "politics";
-    String[] context1 = {"bow=the", "bow=united", "bow=nations"};
-    trainingEvents.add(new Event(label1, context1));
-
-    String label2 = "politics";
-    String[] context2 = {"bow=the", "bow=united", "bow=states", "bow=and"};
-    trainingEvents.add(new Event(label2, context2));
-
-    String label3 = "sports";
-    String[] context3 = {"bow=manchester", "bow=united"};
-    trainingEvents.add(new Event(label3, context3));
-
-    String label4 = "sports";
-    String[] context4 = {"bow=manchester", "bow=and", "bow=barca"};
-    trainingEvents.add(new Event(label4, context4));
-
-    return ObjectStreamUtils.createObjectStream(trainingEvents);
   }
 
 }

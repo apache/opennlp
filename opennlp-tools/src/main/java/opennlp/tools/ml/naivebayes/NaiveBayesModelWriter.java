@@ -18,14 +18,10 @@
 package opennlp.tools.ml.naivebayes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import opennlp.tools.ml.AbstractMLModelWriter;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.AbstractModelWriter;
 import opennlp.tools.ml.model.ComparablePredicate;
@@ -40,18 +36,18 @@ import opennlp.tools.ml.model.Context;
  *
  * @see NaiveBayesModel
  * @see AbstractModelWriter
+ * @see AbstractMLModelWriter
  */
-public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
+public abstract class NaiveBayesModelWriter extends AbstractMLModelWriter {
 
-  private static final Logger logger = LoggerFactory.getLogger(NaiveBayesModelWriter.class);
-
-  protected Context[] PARAMS;
-  protected String[] OUTCOME_LABELS;
-  protected String[] PRED_LABELS;
-  int numOutcomes;
-
+  /**
+   * Initializes a {@link NaiveBayesModelWriter} for a
+   * {@link AbstractModel NaiveBayes model}.
+   *
+   * @param model The {@link AbstractModel NaiveBayes model} to be written.
+   */
   public NaiveBayesModelWriter(AbstractModel model) {
-
+    super();
     Object[] data = model.getDataStructures();
     this.numOutcomes = model.getNumOutcomes();
     PARAMS = (Context[]) data[0];
@@ -72,10 +68,9 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
   }
 
   /**
-   * Sorts and optimizes the model parameters.
-   *
-   * @return A {@link ComparablePredicate[]}.
+   * {@inheritDoc}
    */
+  @Override
   protected ComparablePredicate[] sortValues() {
 
     ComparablePredicate[] sortPreds = new ComparablePredicate[PARAMS.length];
@@ -104,104 +99,20 @@ public abstract class NaiveBayesModelWriter extends AbstractModelWriter {
   }
 
   /**
-   * Compresses outcome patterns.
-   *
-   * @return A {@link List} of {@link List<ComparablePredicate>} that represent
-   *         the remaining outcomes patterns.
-   */
-  protected List<List<ComparablePredicate>> compressOutcomes(ComparablePredicate[] sorted) {
-    List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
-    if (sorted.length > 0) {
-      ComparablePredicate cp = sorted[0];
-      List<ComparablePredicate> newGroup = new ArrayList<>();
-      for (ComparablePredicate comparablePredicate : sorted) {
-        if (cp.compareTo(comparablePredicate) == 0) {
-          newGroup.add(comparablePredicate);
-        } else {
-          cp = comparablePredicate;
-          outcomePatterns.add(newGroup);
-          newGroup = new ArrayList<>();
-          newGroup.add(comparablePredicate);
-        }
-      }
-      outcomePatterns.add(newGroup);
-    }
-    return outcomePatterns;
-  }
-
-  /**
-   * Computes outcome patterns via {@link ComparablePredicate[] predicates}.
-   *
-   * @return A {@link List} of {@link List<ComparablePredicate>} that represent
-   *         the outcomes patterns.
-   */
-  protected List<List<ComparablePredicate>> computeOutcomePatterns(ComparablePredicate[] sorted) {
-    ComparablePredicate cp = sorted[0];
-    List<List<ComparablePredicate>> outcomePatterns = new ArrayList<>();
-    List<ComparablePredicate> newGroup = new ArrayList<>();
-    for (ComparablePredicate predicate : sorted) {
-      if (cp.compareTo(predicate) == 0) {
-        newGroup.add(predicate);
-      } else {
-        cp = predicate;
-        outcomePatterns.add(newGroup);
-        newGroup = new ArrayList<>();
-        newGroup.add(predicate);
-      }
-    }
-    outcomePatterns.add(newGroup);
-    logger.info("{} outcome patterns", outcomePatterns.size());
-    return outcomePatterns;
-  }
-  
-  /**
    * Writes the {@link AbstractModel perceptron model}, using the
    * {@link #writeUTF(String)}, {@link #writeDouble(double)}, or {@link #writeInt(int)}}
    * methods implemented by extending classes.
    *
    * <p>If you wish to create a {@link NaiveBayesModelWriter} which uses a different
-   * structure, it will be necessary to override the {@code #persist()} method in
+   * structure, it will be necessary to override the {@link #persist()} method in
    * addition to implementing the {@code writeX(..)} methods.
    *
    * @throws IOException Thrown if IO errors occurred.
    */
   @Override
   public void persist() throws IOException {
-
     // the type of model (NaiveBayes)
     writeUTF("NaiveBayes");
-
-    // the mapping from outcomes to their integer indexes
-    writeInt(OUTCOME_LABELS.length);
-
-    for (String label : OUTCOME_LABELS) {
-      writeUTF(label);
-    }
-
-    // the mapping from predicates to the outcomes they contributed to.
-    // The sorting is done so that we actually can write this out more
-    // compactly than as the entire list.
-    ComparablePredicate[] sorted = sortValues();
-    List<List<ComparablePredicate>> compressed = computeOutcomePatterns(sorted);
-
-    writeInt(compressed.size());
-
-    for (List<ComparablePredicate> a : compressed) {
-      writeUTF(a.size() + a.get(0).toString());
-    }
-
-    // the mapping from predicate names to their integer indexes
-    writeInt(sorted.length);
-
-    for (ComparablePredicate s : sorted) {
-      writeUTF(s.name);
-    }
-
-    // write out the parameters
-    for (ComparablePredicate comparablePredicate : sorted)
-      for (int j = 0; j < comparablePredicate.params.length; j++)
-        writeDouble(comparablePredicate.params[j]);
-
-    close();
+    super.persist();
   }
 }
