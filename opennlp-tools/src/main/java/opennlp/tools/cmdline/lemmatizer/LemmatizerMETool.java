@@ -54,17 +54,14 @@ public class LemmatizerMETool extends BasicCmdLineTool {
     if (args.length != 1) {
       logger.info(getHelp());
     } else {
-      LemmatizerModel model = new LemmatizerModelLoader()
-          .load(new File(args[0]));
-
+      LemmatizerModel model = new LemmatizerModelLoader().load(new File(args[0]));
       LemmatizerME lemmatizer = new LemmatizerME(model);
 
-      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
 
-      try {
-        lineStream = new PlainTextByLineStream(new SystemInputStreamFactory(),
-            SystemInputStreamFactory.encoding());
+      try (ObjectStream<String> lineStream = new PlainTextByLineStream(
+              new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
+
         perfMon = new PerformanceMonitor("sent");
         perfMon.start();
         String line;

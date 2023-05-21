@@ -73,23 +73,23 @@ public class ParserCrossValidator {
     CrossValidationPartitioner<Parse> partitioner = new CrossValidationPartitioner<>(samples, nFolds);
 
     while (partitioner.hasNext()) {
-      CrossValidationPartitioner.TrainingSampleStream<Parse> trainingSampleStream = partitioner.next();
+      try (CrossValidationPartitioner.TrainingSampleStream<Parse> trainingSampleStream = partitioner.next()) {
+        ParserModel model;
+        if (ParserType.CHUNKING.equals(parserType)) {
+          model = opennlp.tools.parser.chunking.Parser.train(languageCode, samples, rules, params);
+        }
+        else if (ParserType.TREEINSERT.equals(parserType)) {
+          model = opennlp.tools.parser.treeinsert.Parser.train(languageCode, samples, rules, params);
+        }
+        else {
+          throw new IllegalStateException("Unexpected parser type: " + parserType);
+        }
 
-      ParserModel model;
-      if (ParserType.CHUNKING.equals(parserType)) {
-        model = opennlp.tools.parser.chunking.Parser.train(languageCode, samples, rules, params);
-      }
-      else if (ParserType.TREEINSERT.equals(parserType)) {
-        model = opennlp.tools.parser.treeinsert.Parser.train(languageCode, samples, rules, params);
-      }
-      else {
-        throw new IllegalStateException("Unexpected parser type: " + parserType);
-      }
+        ParserEvaluator evaluator = new ParserEvaluator(ParserFactory.create(model), monitors);
+        evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
-      ParserEvaluator evaluator = new ParserEvaluator(ParserFactory.create(model), monitors);
-      evaluator.evaluate(trainingSampleStream.getTestSampleStream());
-
-      fmeasure.mergeInto(evaluator.getFMeasure());
+        fmeasure.mergeInto(evaluator.getFMeasure());
+      }
     }
   }
 

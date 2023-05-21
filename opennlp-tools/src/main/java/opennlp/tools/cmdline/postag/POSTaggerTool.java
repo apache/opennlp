@@ -60,12 +60,11 @@ public final class POSTaggerTool extends BasicCmdLineTool {
 
       POSTaggerME tagger = new POSTaggerME(model);
 
-      ObjectStream<String> lineStream;
       PerformanceMonitor perfMon = null;
 
-      try {
-        lineStream =
-            new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+      try (ObjectStream<String> lineStream = new PlainTextByLineStream(
+              new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
+
         perfMon = new PerformanceMonitor("sent");
         perfMon.start();
         String line;

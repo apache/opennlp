@@ -86,13 +86,12 @@ public class MascDocumentStream implements ObjectStream<MascDocument> {
     }
 
   }
-  private List<MascDocument> documents = new LinkedList<>();
+  private final List<MascDocument> documents = new LinkedList<>();
   private Iterator<MascDocument> documentIterator;
-  private SAXParser saxParser;
+  private final SAXParser saxParser;
 
   public MascDocumentStream(File mascCorpusDirectory) throws IOException {
-    FileFilter fileFilter = pathname -> pathname.getName().contains("");
-    new MascDocumentStream(mascCorpusDirectory, true, fileFilter);
+    this(mascCorpusDirectory, true, pathname -> pathname.getName().contains(""));
   }
 
   /**
@@ -200,6 +199,7 @@ public class MascDocumentStream implements ObjectStream<MascDocument> {
    * Reset the reading of all documents to the first sentence.
    * Reset the corpus to the first document.
    */
+  @Override
   public void reset() {
     for (MascDocument doc : documents) {
       doc.reset();
@@ -213,6 +213,7 @@ public class MascDocumentStream implements ObjectStream<MascDocument> {
    * @return A corpus document with all its annotations.
    * @throws IOException if anything goes wrong.
    */
+  @Override
   public MascDocument read() throws IOException {
 
     MascDocument doc = null;
@@ -227,8 +228,8 @@ public class MascDocumentStream implements ObjectStream<MascDocument> {
   /**
    * Remove the corpus from the memory.
    */
+  @Override
   public void close() {
-    documents = null;
     documentIterator = null;
   }
 

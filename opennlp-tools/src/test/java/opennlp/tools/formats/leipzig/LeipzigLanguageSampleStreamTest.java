@@ -40,12 +40,11 @@ public class LeipzigLanguageSampleStreamTest {
 
   @Test
   void testReadSentenceFiles() {
-
     int samplesPerLanguage = 2;
     int sentencesPerSample = 1;
-    try {
-      LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(new File(testDataPath),
-          sentencesPerSample, samplesPerLanguage);
+    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(new File(testDataPath),
+            sentencesPerSample, samplesPerLanguage)) {
+      
       int count = 0;
       while (stream.read() != null) {
         count++;
@@ -64,22 +63,22 @@ public class LeipzigLanguageSampleStreamTest {
       int samplesPerLanguage = 2;
       int sentencesPerSample = 2;
 
-      LeipzigLanguageSampleStream stream =
-          new LeipzigLanguageSampleStream(new File(testDataPath),
-              sentencesPerSample, samplesPerLanguage);
-      while (stream.read() != null) ;
+      try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(
+              new File(testDataPath), sentencesPerSample, samplesPerLanguage)) {
+
+        while (stream.read() != null) ;
+      }
 
     });
   }
 
   @Test
   void testReadSentenceFilesWithEmptyDir() {
-
     int samplesPerLanguage = 2;
     int sentencesPerSample = 1;
-    try {
-      LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(emptyTempDir,
-          sentencesPerSample, samplesPerLanguage);
+    try (LeipzigLanguageSampleStream stream = new LeipzigLanguageSampleStream(
+            emptyTempDir, sentencesPerSample, samplesPerLanguage)) {
+
       int count = 0;
       while (stream.read() != null) {
         count++;

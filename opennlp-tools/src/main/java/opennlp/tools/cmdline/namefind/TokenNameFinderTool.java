@@ -68,15 +68,12 @@ public final class TokenNameFinderTool extends BasicCmdLineTool {
         nameFinders[i] = new NameFinderME(model);
       }
 
-      // ObjectStream<String> untokenizedLineStream =
-      // new PlainTextByLineStream(new InputStreamReader(System.in));
-      ObjectStream<String> untokenizedLineStream;
       PerformanceMonitor perfMon = new PerformanceMonitor("sent");
       perfMon.start();
 
-      try {
-        untokenizedLineStream = new PlainTextByLineStream(
-                new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
+      try (ObjectStream<String> untokenizedLineStream = new PlainTextByLineStream(
+              new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
+
         String line;
         while ((line = untokenizedLineStream.read()) != null) {
           String[] whitespaceTokenizerLine = WhitespaceTokenizer.INSTANCE.tokenize(line);
