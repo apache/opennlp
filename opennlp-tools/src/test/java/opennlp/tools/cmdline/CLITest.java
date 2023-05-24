@@ -17,105 +17,45 @@
 
 package opennlp.tools.cmdline;
 
-import java.security.Permission;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import com.ginsberg.junit.exit.ExpectSystemExitWithStatus;
 import org.junit.jupiter.api.Test;
 
 public class CLITest {
-
-  private static class ExitException extends SecurityException {
-
-    private static final long serialVersionUID = 6144359372794123631L;
-    
-    private final int status;
-
-    public ExitException(int status) {
-      this.status = status;
-    }
-
-    int status() {
-      return status;
-    }
-  }
-
-  /**
-   * A <code>SecurityManager</code> which prevents System.exit anything else is allowed.
-   */
-  private static class NoExitSecurityManager extends SecurityManager {
-
-    @Override
-    public void checkPermission(Permission perm) {
-    }
-
-    @Override
-    public void checkPermission(Permission perm, Object context) {
-    }
-
-    @Override
-    public void checkExit(int status) {
-      super.checkExit(status);
-
-      throw new ExitException(status);
-    }
-  }
-
-  private final SecurityManager originalSecurityManager = System.getSecurityManager();
-
-  @BeforeEach
-  void installNoExitSecurityManager() {
-    System.setSecurityManager(new NoExitSecurityManager());
-  }
 
   /**
    * Ensure the main method does not fail to print help message.
    */
   @Test
+  @ExpectSystemExitWithStatus(0)
   void testMainHelpMessage() {
-
-    try {
-      CLI.main(new String[] {});
-    } catch (ExitException e) {
-      Assertions.assertEquals(0, e.status());
-    }
+    CLI.main(new String[] {});
   }
 
   /**
    * Ensure the main method prints error and returns 1.
    */
   @Test
+  @ExpectSystemExitWithStatus(1)
   void testUnknownToolMessage() {
-    try {
-      CLI.main(new String[] {"unknown name"});
-    } catch (ExitException e) {
-      Assertions.assertEquals(1, e.status());
-    }
+    CLI.main(new String[] {"unknown name"});
   }
 
   /**
    * Ensure the tool checks the parameter and returns 1.
    */
   @Test
+  @ExpectSystemExitWithStatus(1)
   void testToolParameterMessage() {
-    try {
-      CLI.main(new String[] {"DoccatTrainer", "-param", "value"});
-    } catch (ExitException e) {
-      Assertions.assertEquals(1, e.status());
-    }
+    CLI.main(new String[] {"DoccatTrainer", "-param", "value"});
   }
 
   /**
    * Ensure the main method prints error and returns -1
    */
   @Test
+  @ExpectSystemExitWithStatus(-1)
   void testUnknownFileMessage() {
-    try {
-      CLI.main(new String[] {"Doccat", "unknown.model"});
-    } catch (ExitException e) {
-      Assertions.assertEquals(-1, e.status());
-    }
+    CLI.main(new String[] {"Doccat", "unknown.model"});
   }
 
 
@@ -123,20 +63,11 @@ public class CLITest {
    * Ensure all tools do not fail printing help message;
    */
   @Test
+  @ExpectSystemExitWithStatus(0)
   void testHelpMessageOfTools() {
-
     for (String toolName : CLI.getToolNames()) {
-      try {
-        CLI.main(new String[] {toolName, "help"});
-      } catch (ExitException e) {
-        Assertions.assertEquals(0, e.status());
-      }
+      CLI.main(new String[] {toolName, "help"});
     }
-  }
-
-  @AfterEach
-  void restoreSecurityManager() {
-    System.setSecurityManager(originalSecurityManager);
   }
 
 }
