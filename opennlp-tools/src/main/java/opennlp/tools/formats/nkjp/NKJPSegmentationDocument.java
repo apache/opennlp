@@ -62,8 +62,8 @@ public class NKJPSegmentationDocument {
 
     @Override
     public String toString() {
-      return doc + "#string-range(" + id + "," + Integer.toString(offset)
-          + "," + Integer.toString(length) + ")";
+      return doc + "#string-range(" + id + "," + offset
+          + "," + length + ")";
     }
   }
 

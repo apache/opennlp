@@ -17,14 +17,15 @@
 
 package opennlp.tools.convert;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -45,11 +46,11 @@ public class FileToStringSampleStreamTest extends AbstractTempDirTest {
     DirectorySampleStream directorySampleStream =
         new DirectorySampleStream(tempDir.toFile(), null, false);
 
-    File tempFile1 = tempDir.resolve("tempFile1").toFile();
-    FileUtils.writeStringToFile(tempFile1, sentence1, StandardCharsets.UTF_8);
+    Path tempFile1 = tempDir.resolve("tempFile1");
+    Files.writeString(tempFile1, sentence1, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-    File tempFile2 = tempDir.resolve("tempFile2").toFile();
-    FileUtils.writeStringToFile(tempFile2, sentence2, StandardCharsets.UTF_8);
+    Path tempFile2 = tempDir.resolve("tempFile2");
+    Files.writeString(tempFile2, sentence2, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
     try (FileToStringSampleStream stream =
              new FileToStringSampleStream(directorySampleStream, Charset.defaultCharset())) {

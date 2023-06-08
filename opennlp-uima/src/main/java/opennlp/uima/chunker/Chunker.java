@@ -61,7 +61,7 @@ import opennlp.uima.util.UimaUtil;
  */
 public final class Chunker extends CasAnnotator_ImplBase {
 
-  private static org.slf4j.Logger logger = LoggerFactory.getLogger(Chunker.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Chunker.class);
   /**
    * The chunk type parameter.
    */
@@ -214,7 +214,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
           end = -1;
         }
       } else {
-        logger.warn("Unexpected tag: {}", result[i]);
+        LOG.warn("Unexpected tag: {}", result[i]);
       }
     }
 

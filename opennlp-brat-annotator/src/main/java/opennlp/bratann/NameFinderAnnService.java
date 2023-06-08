@@ -43,16 +43,16 @@ import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 public class NameFinderAnnService {
 
-  private static Logger logger = LoggerFactory.getLogger(NameFinderAnnService.class);
-  public static SentenceDetector sentenceDetector = new NewlineSentenceDetector();
-  public static Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
-  public static TokenNameFinder[] nameFinders;
+  private static final Logger LOG = LoggerFactory.getLogger(NameFinderAnnService.class);
+  static SentenceDetector sentenceDetector = new NewlineSentenceDetector();
+  static Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+  static TokenNameFinder[] nameFinders;
 
   public static void main(String[] args) throws Exception {
 
     if (args.length == 0) {
-      logger.info("Usage:");
-      logger.info("[NameFinderAnnService -serverPort port] [-tokenizerModel file] "
+      LOG.info("Usage:");
+      LOG.info("[NameFinderAnnService -serverPort port] [-tokenizerModel file] "
           + "[-ruleBasedTokenizer whitespace|simple] "
           + "[-sentenceDetectorModel file] namefinderFile|nameFinderURI");
       return;
@@ -81,7 +81,7 @@ public class NameFinderAnnService {
       } else if ("simple".equals(args[ruleBasedTokenizerIndex])) {
         tokenizer = SimpleTokenizer.INSTANCE;
       } else {
-        logger.error("unknown tokenizer: {}", args[ruleBasedTokenizerIndex]);
+        LOG.error("unknown tokenizer: {}", args[ruleBasedTokenizerIndex]);
         return;
       }
     }

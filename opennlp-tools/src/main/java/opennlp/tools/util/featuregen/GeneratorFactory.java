@@ -145,7 +145,7 @@ public class GeneratorFactory {
           Element elem = (Element)childNode;
           String type = elem.getTagName();
           if (type.equals("generator")) {
-            String key = "generator#" + Integer.toString(generators.size());
+            String key = "generator#" + generators.size();
             AdaptiveFeatureGenerator afg = buildGenerator(elem, resourceManager);
             generators.add(afg);
             if (afg != null)

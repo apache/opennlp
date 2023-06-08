@@ -409,10 +409,10 @@ public abstract class FineGrainedReportListener {
             .append("\n");
         printStream.append(
             String.format("%12s: %-8s", "Ocurrencies",
-                Integer.toString(getTokenFrequency(t)))).append("\n");
+                    getTokenFrequency(t))).append("\n");
         printStream.append(
             String.format("%12s: %-8s", "Errors",
-                Integer.toString(getTokenErrors(t)))).append("\n");
+                    getTokenErrors(t))).append("\n");
 
         SortedSet<String> labels = getConfusionMatrixTagset(t);
 

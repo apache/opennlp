@@ -24,11 +24,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -54,14 +54,6 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
 
   private final String sampleFailureData = "It is Fail Test Case.\n\nNothing in this sentence.";
 
-  @BeforeEach
-  void setUp() {
-  }
-
-  @AfterEach
-  void tearDown() {
-  }
-
   @Test
   public void testGetShortDescription() {
     tokenizerTrainerTool = new TokenizerTrainerTool();
@@ -77,9 +69,9 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
   }
 
   @Test
-  public void testLoadDictFailCase() throws IOException {
+  public void testLoadDictFailCase() {
     Assertions.assertThrows(InvalidFormatException.class , () -> {
-      Dictionary dictionary = TokenizerTrainerTool.loadDict(prepareDataFile(""));
+      TokenizerTrainerTool.loadDict(prepareDataFile(""));
     });
   }
 
@@ -103,7 +95,7 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
     tokenizerTrainerTool = new TokenizerTrainerTool();
     tokenizerTrainerTool.run(StreamFactoryRegistry.DEFAULT_FORMAT , args);
 
-    final String content = new String(baos.toByteArray() , StandardCharsets.UTF_8);
+    final String content = baos.toString(StandardCharsets.UTF_8);
     Assertions.assertTrue(content.contains("Number of Event Tokens: 171"));
     model.delete();
   }
@@ -133,10 +125,12 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
 
   }
 
+  // This is guaranteed to be deleted after the test finishes.
   private File prepareDataFile(String input) throws IOException {
-    // This is guaranteed to be deleted after the test finishes.
-    File dataFile = tempDir.resolve("data-en.train").toFile();
-    FileUtils.writeStringToFile(dataFile , input , "ISO-8859-1");
-    return dataFile;
+    Path dataFile = tempDir.resolve("data-en.train");
+    Files.writeString(dataFile, input, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+    File f = dataFile.toFile();
+    f.deleteOnExit();
+    return f;
   }
 }

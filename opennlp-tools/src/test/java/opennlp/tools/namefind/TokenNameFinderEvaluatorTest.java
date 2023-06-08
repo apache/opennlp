@@ -31,10 +31,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * This is the test class for {@link TokenNameFinderEvaluator}..
+ * This is the test class for {@link TokenNameFinderEvaluator}.
  */
 public class TokenNameFinderEvaluatorTest {
-
 
   /**
    * Return a dummy name finder that always return something expected
