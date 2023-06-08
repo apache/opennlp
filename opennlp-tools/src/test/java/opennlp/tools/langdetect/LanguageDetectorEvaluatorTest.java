@@ -70,7 +70,7 @@ public class LanguageDetectorEvaluatorTest {
     Assertions.assertEquals(3, evaluator.getDocumentCount());
     Assertions.assertEquals(evaluator.getAccuracy(), 0.01, 0.33);
 
-    String report = outputStream.toString(StandardCharsets.UTF_8.name());
+    String report = outputStream.toString(StandardCharsets.UTF_8);
 
     Assertions.assertEquals("Expected\tPredicted\tContext" + System.lineSeparator() +
         "fra\tpob\tescreve e faz palestras pelo mundo inteiro sobre anjos" + System.lineSeparator() +

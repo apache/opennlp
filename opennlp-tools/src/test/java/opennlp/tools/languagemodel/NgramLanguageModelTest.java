@@ -17,12 +17,14 @@
 
 package opennlp.tools.languagemodel;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -136,8 +138,10 @@ public class NgramLanguageModelTest {
   public void testTrigramLanguageModelCreationFromText() throws Exception {
     int ngramSize = 3;
     NGramLanguageModel languageModel = new NGramLanguageModel(ngramSize);
-    try (InputStream stream = getClass().getResourceAsStream("/opennlp/tools/languagemodel/sentences.txt")) {
-      for (String line : IOUtils.readLines(stream, StandardCharsets.UTF_8)) {
+
+    try (InputStream is = getClass().getResourceAsStream("/opennlp/tools/languagemodel/sentences.txt");
+         BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+      for (String line : reader.lines().collect(Collectors.toList())) {
         String[] array = line.split(" ");
         List<String> split = Arrays.asList(array);
         List<String> generatedStrings = NGramGenerator.generate(split, ngramSize, " ");
@@ -148,14 +152,11 @@ public class NgramLanguageModelTest {
           }
         }
       }
-      String[] tokens = languageModel.predictNextTokens("neural",
-          "network", "language");
+      String[] tokens = languageModel.predictNextTokens("neural", "network", "language");
       Assertions.assertNotNull(tokens);
       Assertions.assertArrayEquals(new String[] {"models"}, tokens);
-      double p1 = languageModel.calculateProbability("neural", "network",
-          "language", "models");
-      double p2 = languageModel.calculateProbability("neural", "network",
-          "language", "model");
+      double p1 = languageModel.calculateProbability("neural", "network", "language", "models");
+      double p2 = languageModel.calculateProbability("neural", "network", "language", "model");
       Assertions.assertTrue(p1 > p2);
     }
   }

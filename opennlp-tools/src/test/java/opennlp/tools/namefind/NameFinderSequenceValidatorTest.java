@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * This is the test class for {@link NameFinderSequenceValidator}..
+ * This is the test class for {@link NameFinderSequenceValidator}.
  */
 public class NameFinderSequenceValidatorTest {
 
@@ -34,68 +34,56 @@ public class NameFinderSequenceValidatorTest {
   @Test
   void testContinueCannotBeFirstOutcome() {
 
-    final String outcome = CONTINUE_A;
-
     String[] inputSequence = new String[] {"PersonA", "is", "here"};
     String[] outcomesSequence = new String[] {};
-    Assertions.assertFalse(validator.validSequence(0, inputSequence, outcomesSequence, outcome));
+    Assertions.assertFalse(validator.validSequence(0, inputSequence, outcomesSequence, CONTINUE_A));
 
   }
 
   @Test
   void testContinueAfterStartAndSameType() {
 
-    final String outcome = CONTINUE_A;
-
     // previous start, same name type
     String[] inputSequence = new String[] {"Stefanie", "Schmidt", "is", "German"};
     String[] outcomesSequence = new String[] {START_A};
-    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assertions.assertTrue(validator.validSequence(1, inputSequence, outcomesSequence, CONTINUE_A));
 
   }
 
   @Test
   void testContinueAfterStartAndNotSameType() {
 
-    final String outcome = CONTINUE_B;
-
     // previous start, not same name type
     String[] inputSequence = new String[] {"PersonA", "LocationA", "something"};
     String[] outcomesSequence = new String[] {START_A};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, CONTINUE_B));
   }
 
   @Test
   void testContinueAfterContinueAndSameType() {
 
-    final String outcome = CONTINUE_A;
-
     // previous continue, same name type
     String[] inputSequence = new String[] {"FirstName", "MidleName", "LastName", "is", "a", "long", "name"};
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A};
-    Assertions.assertTrue(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
+    Assertions.assertTrue(validator.validSequence(2, inputSequence, outcomesSequence, CONTINUE_A));
   }
 
   @Test
   void testContinueAfterContinueAndNotSameType() {
 
-    final String outcome = CONTINUE_B;
-
     // previous continue, not same name type
     String[] inputSequence = new String[] {"FirstName", "LastName", "LocationA", "something"};
     String[] outcomesSequence = new String[] {START_A, CONTINUE_A};
-    Assertions.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, outcome));
+    Assertions.assertFalse(validator.validSequence(2, inputSequence, outcomesSequence, CONTINUE_B));
   }
 
   @Test
   void testContinueAfterOther() {
 
-    final String outcome = CONTINUE_A;
-
     // previous other
     String[] inputSequence = new String[] {"something", "is", "wrong", "here"};
     String[] outcomesSequence = new String[] {OTHER};
-    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, outcome));
+    Assertions.assertFalse(validator.validSequence(1, inputSequence, outcomesSequence, CONTINUE_A));
   }
 
   @Test

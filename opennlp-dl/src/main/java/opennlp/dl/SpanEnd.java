@@ -19,8 +19,8 @@ package opennlp.dl;
 
 public class SpanEnd {
 
-  private int index;
-  private int characterEnd;
+  private final int index;
+  private final int characterEnd;
 
   public SpanEnd(int index, int characterEnd) {
     this.index = index;

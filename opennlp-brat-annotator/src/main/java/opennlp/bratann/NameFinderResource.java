@@ -36,9 +36,9 @@ import opennlp.tools.util.Span;
 @Path("/ner")
 public class NameFinderResource {
 
-  private SentenceDetector sentDetect = NameFinderAnnService.sentenceDetector;
-  private Tokenizer tokenizer = NameFinderAnnService.tokenizer;
-  private TokenNameFinder[] nameFinders = NameFinderAnnService.nameFinders;
+  private final SentenceDetector sentDetect = NameFinderAnnService.sentenceDetector;
+  private final Tokenizer tokenizer = NameFinderAnnService.tokenizer;
+  private final TokenNameFinder[] nameFinders = NameFinderAnnService.nameFinders;
 
   private static int findNextNonWhitespaceChar(CharSequence s, int beginOffset, int endOffset) {
     for (int i = beginOffset; i < endOffset; i++) {

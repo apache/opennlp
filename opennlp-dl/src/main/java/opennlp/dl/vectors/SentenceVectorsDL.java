@@ -83,9 +83,7 @@ public class SentenceVectorsDL extends AbstractDL {
 
     final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
 
-    final float[] vectors = v[0][0];
-
-    return vectors;
+    return v[0][0];
 
   }
 

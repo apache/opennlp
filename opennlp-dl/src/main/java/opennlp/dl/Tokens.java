@@ -22,10 +22,10 @@ package opennlp.dl;
  */
 public class Tokens {
 
-  private String[] tokens;
-  private long[] ids;
-  private long[] mask;
-  private long[] types;
+  private final String[] tokens;
+  private final long[] ids;
+  private final long[] mask;
+  private final long[] types;
 
   /**
    * Creates a new instance to hold the tokens for input to an ONNX model.
