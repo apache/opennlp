@@ -39,13 +39,14 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-grizzly2-http</artifactId>
-			<version>${glassfish.version}</version>
+			<version>${jersey.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
-			<version>${glassfish.version}</version>
+			<version>${jersey.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
