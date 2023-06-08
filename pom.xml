@@ -170,6 +170,7 @@
 		<enforcer.plugin.version>3.3.0</enforcer.plugin.version>
 		<jersey.version>2.39.1</jersey.version>
 		<junit.version>5.9.2</junit.version>
+		<uimaj.version>3.4.1</uimaj.version>
 		<morfologik.version>2.1.9</morfologik.version>
 		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
 		<onnxruntime.version>1.15.0</onnxruntime.version>
