@@ -18,14 +18,8 @@
 package opennlp.tools.util.featuregen;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import opennlp.tools.util.InvalidFormatException;
 
@@ -33,48 +27,22 @@ import opennlp.tools.util.InvalidFormatException;
  * @see AggregatedFeatureGenerator
  */
 public class AggregatedFeatureGeneratorFactory
-    extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory
-    implements GeneratorFactory.XmlFeatureGeneratorFactory {
+    extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 
   public AggregatedFeatureGeneratorFactory() {
     super();
   }
 
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager)  throws InvalidFormatException {
-
-    Collection<AdaptiveFeatureGenerator> aggregatedGenerators = new LinkedList<>();
-
-    NodeList childNodes = generatorElement.getChildNodes();
-
-    for (int i = 0; i < childNodes.getLength(); i++) {
-      Node childNode = childNodes.item(i);
-      if (childNode instanceof Element) {
-        Element aggregatedGeneratorElement = (Element) childNode;
-        aggregatedGenerators.add(
-            GeneratorFactory.createGenerator(aggregatedGeneratorElement, resourceManager));
-      }
-    }
-
-    return new AggregatedFeatureGenerator(aggregatedGenerators.toArray(
-            new AdaptiveFeatureGenerator[0]));
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("generators", new AggregatedFeatureGeneratorFactory());
-  }
 
   @Override
   public AdaptiveFeatureGenerator create() throws InvalidFormatException {
     List<AdaptiveFeatureGenerator> aggregatedGenerators = new ArrayList<>();
-    for (Map.Entry<String, Object> arg: args.entrySet()) {
+    for (Map.Entry<String, Object> arg : args.entrySet()) {
       if (arg.getKey().startsWith("generator#")) {
-        aggregatedGenerators.add((AdaptiveFeatureGenerator)arg.getValue());
+        aggregatedGenerators.add((AdaptiveFeatureGenerator) arg.getValue());
       }
     }
     return new AggregatedFeatureGenerator(aggregatedGenerators.toArray(
-            new AdaptiveFeatureGenerator[0]));
+        new AdaptiveFeatureGenerator[0]));
   }
 }

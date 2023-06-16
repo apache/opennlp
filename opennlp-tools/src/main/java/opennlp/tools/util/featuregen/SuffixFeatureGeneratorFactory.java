@@ -17,42 +17,16 @@
 
 package opennlp.tools.util.featuregen;
 
-import java.util.Map;
-import java.util.Objects;
-
-import org.w3c.dom.Element;
-
 import opennlp.tools.util.InvalidFormatException;
 
 /**
  * @see SuffixFeatureGenerator
  */
 public class SuffixFeatureGeneratorFactory
-    extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory
-    implements GeneratorFactory.XmlFeatureGeneratorFactory {
+    extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 
   public SuffixFeatureGeneratorFactory() {
     super();
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) {
-
-    String attribute = generatorElement.getAttribute("length");
-
-    int suffixLength = SuffixFeatureGenerator.DEFAULT_MAX_LENGTH;
-
-    if (!Objects.equals(attribute, "")) {
-      suffixLength = Integer.parseInt(attribute);
-    }
-
-    return new SuffixFeatureGenerator(suffixLength);
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("suffix", new SuffixFeatureGeneratorFactory());
   }
 
   @Override
