@@ -174,8 +174,7 @@ public class NameSample implements Sample {
       return true;
     }
 
-    if (obj instanceof NameSample) {
-      NameSample a = (NameSample) obj;
+    if (obj instanceof NameSample a) {
 
       return Arrays.equals(getSentence(), a.getSentence()) &&
           Arrays.equals(getNames(), a.getNames()) &&

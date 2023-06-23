@@ -250,33 +250,28 @@ public class QNTrainer extends AbstractEventTrainer {
   /**
    * For measuring model's training accuracy.
    */
-  private static class ModelEvaluator implements Evaluator {
-
-    private final DataIndexer indexer;
-
-    public ModelEvaluator(DataIndexer indexer) {
-      this.indexer = indexer;
-    }
+  private record ModelEvaluator(DataIndexer indexer) implements Evaluator {
 
     /**
      * Evaluate the current model on training data set
+     *
      * @return model's training accuracy
      */
     @Override
     public double evaluate(double[] parameters) {
-      int[][] contexts  = indexer.getContexts();
-      float[][] values  = indexer.getValues();
+      int[][] contexts = indexer.getContexts();
+      float[][] values = indexer.getValues();
       int[] nEventsSeen = indexer.getNumTimesEventsSeen();
       int[] outcomeList = indexer.getOutcomeList();
-      int nOutcomes     = indexer.getOutcomeLabels().length;
-      int nPredLabels   = indexer.getPredLabels().length;
+      int nOutcomes = indexer.getOutcomeLabels().length;
+      int nPredLabels = indexer.getPredLabels().length;
 
-      int nCorrect     = 0;
+      int nCorrect = 0;
       int nTotalEvents = 0;
 
       for (int ei = 0; ei < contexts.length; ei++) {
-        int[] context  = contexts[ei];
-        float[] value  = values == null ? null : values[ei];
+        int[] context = contexts[ei];
+        float[] value = values == null ? null : values[ei];
 
         double[] probs = new double[nOutcomes];
         QNModel.eval(context, value, probs, nOutcomes, nPredLabels, parameters);

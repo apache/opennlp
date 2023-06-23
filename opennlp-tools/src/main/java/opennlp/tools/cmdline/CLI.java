@@ -207,11 +207,8 @@ public final class CLI {
     for (CmdLineTool tool : toolLookupMap.values()) {
 
       sb.append("  ").append(tool.getName());
-
-      for (int i = 0; i < StrictMath.abs(tool.getName().length() - numberOfSpaces); i++) {
-        sb.append(" ");
-      }
-
+      sb.append(" ".repeat(Math.max(0, StrictMath.abs(
+              tool.getName().length() - numberOfSpaces))));
       sb.append(tool.getShortDescription()).append("\n");
     }
     logger.info(sb.toString());

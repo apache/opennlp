@@ -70,9 +70,8 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
 
   @Test
   public void testLoadDictFailCase() {
-    Assertions.assertThrows(InvalidFormatException.class , () -> {
-      TokenizerTrainerTool.loadDict(prepareDataFile(""));
-    });
+    Assertions.assertThrows(InvalidFormatException.class , () ->
+            TokenizerTrainerTool.loadDict(prepareDataFile("")));
   }
 
   //TODO OPENNLP-1447

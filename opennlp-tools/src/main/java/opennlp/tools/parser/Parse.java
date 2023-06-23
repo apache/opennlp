@@ -989,8 +989,7 @@ public class Parse implements Cloneable, Comparable<Parse> {
       return true;
     }
 
-    if (obj instanceof Parse) {
-      Parse p = (Parse) obj;
+    if (obj instanceof Parse p) {
 
       return Objects.equals(label, p.label) && span.equals(p.span)
           && text.equals(p.text) && parts.equals(p.parts);

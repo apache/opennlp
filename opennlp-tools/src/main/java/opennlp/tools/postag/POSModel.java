@@ -242,8 +242,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
       return true;
     }
 
-    if (obj instanceof POSModel) {
-      POSModel model = (POSModel) obj;
+    if (obj instanceof POSModel model) {
       Map<String, Object> artifactMapToCheck = model.artifactMap;
       AbstractModel abstractModel = (AbstractModel) artifactMapToCheck.get("pos.model");
 

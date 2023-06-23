@@ -379,8 +379,7 @@ public class ParserModel extends BaseModel {
       return true;
     }
 
-    if (obj instanceof ParserModel) {
-      ParserModel model = (ParserModel) obj;
+    if (obj instanceof ParserModel model) {
       Map<String, Object> artifactMapToCheck = model.artifactMap;
       AbstractModel abstractModel = (AbstractModel) artifactMapToCheck.get(BUILD_MODEL_ENTRY_NAME);
 

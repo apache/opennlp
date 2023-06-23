@@ -19,13 +19,8 @@
 package opennlp.tools.util;
 
 import java.util.Arrays;
-import java.util.Objects;
 
-public class TokenTag {
-
-  private final String token;
-  private final String tag;
-  private final String[] additionalData;
+public record TokenTag(String token, String tag, String[] additionalData) {
 
   public TokenTag(String token, String tag, String[] additionalData) {
     this.token = token;
@@ -37,14 +32,17 @@ public class TokenTag {
     }
   }
 
+  @Deprecated(forRemoval = true)
   public String getToken() {
     return token;
   }
 
+  @Deprecated(forRemoval = true)
   public String getTag() {
     return tag;
   }
 
+  @Deprecated(forRemoval = true)
   public String[] getAdditionalData() {
     return additionalData;
   }
@@ -52,7 +50,7 @@ public class TokenTag {
   public static String[] extractTokens(TokenTag[] tuples) {
     String[] tokens = new String[tuples.length];
     for (int i = 0; i < tuples.length; i++) {
-      tokens[i] = tuples[i].getToken();
+      tokens[i] = tuples[i].token();
     }
 
     return tokens;
@@ -61,7 +59,7 @@ public class TokenTag {
   public static String[] extractTags(TokenTag[] tuples) {
     String[] tags = new String[tuples.length];
     for (int i = 0; i < tuples.length; i++) {
-      tags[i] = tuples[i].getTag();
+      tags[i] = tuples[i].tag();
     }
 
     return tags;
@@ -73,23 +71,6 @@ public class TokenTag {
       tuples[i] = new TokenTag(toks[i], tags[i], null);
     }
     return tuples;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    } else if (o instanceof TokenTag) {
-      return Objects.equals(this.token, ((TokenTag) o).token)
-          && Objects.equals(this.tag, ((TokenTag) o).tag)
-          && Arrays.equals(this.additionalData, ((TokenTag) o).additionalData);
-    }
-    return false;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(token, tag, Arrays.hashCode(additionalData));
   }
 
   @Override

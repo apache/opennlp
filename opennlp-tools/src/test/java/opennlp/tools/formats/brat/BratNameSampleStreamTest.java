@@ -69,10 +69,8 @@ public class BratNameSampleStreamTest extends AbstractBratTest {
 
   @Test
   void emptySample() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      createNameSampleWith("overlapping",
-          Collections.emptySet());
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () -> createNameSampleWith("overlapping",
+        Collections.emptySet()));
   }
 
   @Test

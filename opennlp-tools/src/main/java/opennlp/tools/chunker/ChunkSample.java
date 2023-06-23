@@ -221,8 +221,7 @@ public class ChunkSample implements Sample {
       return true;
     }
 
-    if (obj instanceof ChunkSample) {
-      ChunkSample a = (ChunkSample) obj;
+    if (obj instanceof ChunkSample a) {
 
       return Arrays.equals(getSentence(), a.getSentence())
           && Arrays.equals(getTags(), a.getTags())

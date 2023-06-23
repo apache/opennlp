@@ -216,8 +216,7 @@ public final class GISModel extends AbstractModel {
       return true;
     }
 
-    if (obj instanceof GISModel) {
-      GISModel model = (GISModel) obj;
+    if (obj instanceof GISModel model) {
 
       return pmap.equals(model.pmap) && Objects.deepEquals(outcomeNames, model.outcomeNames)
               && Objects.equals(prior, model.prior);

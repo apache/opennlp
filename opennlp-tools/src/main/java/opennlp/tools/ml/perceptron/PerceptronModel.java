@@ -174,8 +174,7 @@ public class PerceptronModel extends AbstractModel {
       return true;
     }
 
-    if (obj instanceof PerceptronModel) {
-      PerceptronModel model = (PerceptronModel) obj;
+    if (obj instanceof PerceptronModel model) {
 
       /*
        * Note:

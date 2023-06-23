@@ -233,8 +233,7 @@ public class TokenSample implements Sample {
       return true;
     }
 
-    if (obj instanceof TokenSample) {
-      TokenSample a = (TokenSample) obj;
+    if (obj instanceof TokenSample a) {
 
       return getText().equals(a.getText())
           && Arrays.equals(getTokenSpans(), a.getTokenSpans());

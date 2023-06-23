@@ -125,8 +125,7 @@ public class Version {
       return true;
     }
 
-    if (obj instanceof Version) {
-      Version version = (Version) obj;
+    if (obj instanceof Version version) {
 
       return getMajor() == version.getMajor()
           && getMinor() == version.getMinor()

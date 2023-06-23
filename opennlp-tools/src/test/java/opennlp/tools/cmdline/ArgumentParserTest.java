@@ -35,9 +35,8 @@ public class ArgumentParserTest {
 
   @Test
   void testZeroMethods() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ArgumentParser.createUsage(ZeroMethods.class);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+            ArgumentParser.createUsage(ZeroMethods.class));
   }
 
   interface InvalidMethodName {
@@ -46,9 +45,8 @@ public class ArgumentParserTest {
 
   @Test
   void testInvalidMethodName() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ArgumentParser.createUsage(InvalidMethodName.class);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+            ArgumentParser.createUsage(InvalidMethodName.class));
   }
 
   interface InvalidReturnType {
@@ -57,9 +55,8 @@ public class ArgumentParserTest {
 
   @Test
   void testInvalidReturnType() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ArgumentParser.createUsage(InvalidReturnType.class);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+            ArgumentParser.createUsage(InvalidReturnType.class));
   }
 
   interface SimpleArguments extends AllOptionalArguments {

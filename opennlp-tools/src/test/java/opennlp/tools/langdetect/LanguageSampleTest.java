@@ -37,8 +37,8 @@ public class LanguageSampleTest {
 
     LanguageSample sample = new LanguageSample(lang, context);
 
-    Assertions.assertEquals(lang, sample.getLanguage());
-    Assertions.assertEquals(context, sample.getContext());
+    Assertions.assertEquals(lang, sample.language());
+    Assertions.assertEquals(context, sample.context());
   }
 
   @Test
@@ -65,8 +65,8 @@ public class LanguageSampleTest {
     }
 
     Assertions.assertNotNull(deSerializedLanguageSample);
-    Assertions.assertEquals(languageSample.getContext(), deSerializedLanguageSample.getContext());
-    Assertions.assertEquals(languageSample.getLanguage(), deSerializedLanguageSample.getLanguage());
+    Assertions.assertEquals(languageSample.context(), deSerializedLanguageSample.context());
+    Assertions.assertEquals(languageSample.language(), deSerializedLanguageSample.language());
     Assertions.assertEquals(languageSample, deSerializedLanguageSample);
   }
 
@@ -125,6 +125,6 @@ public class LanguageSampleTest {
     Assertions.assertNotEquals(sampleA, sampleB);
     Assertions.assertNotEquals(sampleA, sampleC);
     Assertions.assertNotEquals(sampleB, sampleC);
-    Assertions.assertNotEquals(sampleA.getContext(), "something else");
+    Assertions.assertNotEquals(sampleA.context(), "something else");
   }
 }

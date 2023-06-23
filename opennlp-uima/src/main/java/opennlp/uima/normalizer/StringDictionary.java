@@ -44,8 +44,8 @@ public class StringDictionary {
    */
   public StringDictionary(InputStream in) throws IOException {
     DictionaryEntryPersistor.create(in, entry -> {
-      String valueString = entry.getAttributes().getValue("value");
-      put(entry.getTokens(), valueString);
+      String valueString = entry.attributes().getValue("value");
+      put(entry.tokens(), valueString);
     });
   }
 

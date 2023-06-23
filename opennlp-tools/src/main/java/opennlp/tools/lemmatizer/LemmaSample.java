@@ -119,8 +119,7 @@ public class LemmaSample implements Sample {
       return true;
     }
 
-    if (obj instanceof LemmaSample) {
-      LemmaSample a = (LemmaSample) obj;
+    if (obj instanceof LemmaSample a) {
 
       return Arrays.equals(getTokens(), a.getTokens())
           && Arrays.equals(getTags(), a.getTags())

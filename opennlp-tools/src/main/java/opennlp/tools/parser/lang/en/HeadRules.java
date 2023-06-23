@@ -86,8 +86,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
         return true;
       }
 
-      if (obj instanceof HeadRule) {
-        HeadRule rule = (HeadRule) obj;
+      if (obj instanceof HeadRule rule) {
 
         return rule.leftToRight == leftToRight &&
             Arrays.equals(rule.tags, tags);
@@ -305,8 +304,7 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
       return true;
     }
 
-    if (obj instanceof HeadRules) {
-      HeadRules rules = (HeadRules) obj;
+    if (obj instanceof HeadRules rules) {
 
       return rules.headRules.equals(headRules)
           && rules.punctSet.equals(punctSet);

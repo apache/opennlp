@@ -195,8 +195,7 @@ public class NGramCharModel implements Iterable<String> {
     if (obj == this) {
       result = true;
     }
-    else if (obj instanceof NGramCharModel) {
-      NGramCharModel model  = (NGramCharModel) obj;
+    else if (obj instanceof NGramCharModel model) {
 
       result = mNGrams.equals(model.mNGrams);
     }

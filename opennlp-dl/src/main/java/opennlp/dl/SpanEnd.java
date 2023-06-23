@@ -17,27 +17,21 @@
 
 package opennlp.dl;
 
-public class SpanEnd {
+public record SpanEnd(int index, int characterEnd) {
 
-  private final int index;
-  private final int characterEnd;
-
-  public SpanEnd(int index, int characterEnd) {
-    this.index = index;
-    this.characterEnd = characterEnd;
+  @Deprecated(forRemoval = true)
+  public int getIndex() {
+    return index;
+  }
+  
+  @Deprecated(forRemoval = true)
+  public int getCharacterEnd() {
+    return characterEnd;
   }
 
   @Override
   public String toString() {
     return "index: " + index + "; character end: " + characterEnd;
-  }
-
-  public int getIndex() {
-    return index;
-  }
-
-  public int getCharacterEnd() {
-    return characterEnd;
   }
 
 }

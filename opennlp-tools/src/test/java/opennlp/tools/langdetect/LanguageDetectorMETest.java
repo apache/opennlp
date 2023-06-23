@@ -58,12 +58,10 @@ public class LanguageDetectorMETest {
     LanguageDetectorME ld = new LanguageDetectorME(this.model);
     for (int i = 0; i < 10000; i += 1000) {
       StringBuilder sb = new StringBuilder();
-      for (int j = 0; j <= i; j++) {
-        sb.append("estava em uma marcenaria na Rua Bruno ");
-      }
+      sb.append("estava em uma marcenaria na Rua Bruno ".repeat(Math.max(0, i + 1)));
       ProbingLanguageDetectionResult result = ld.probingPredictLanguages(sb.toString());
-      Assertions.assertTrue(result.getLength() <= 600);
-      Language[] languages = result.getLanguages();
+      Assertions.assertTrue(result.length() <= 600);
+      Language[] languages = result.languages();
       Assertions.assertEquals(4, languages.length);
       Assertions.assertEquals("pob", languages[0].getLang());
       Assertions.assertEquals("ita", languages[1].getLang());

@@ -97,8 +97,7 @@ public class Sequence implements Comparable<Sequence> {
     if (this == obj)
       return true;
 
-    if (obj instanceof Sequence) {
-      Sequence other = (Sequence) obj;
+    if (obj instanceof Sequence other) {
       double epsilon = 0.0000001;
       return Objects.equals(outcomes, other.outcomes) &&
           Objects.equals(probs, other.probs) &&

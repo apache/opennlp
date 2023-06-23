@@ -64,8 +64,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
       if (obj == this) {
         result = true;
       }
-      else if (obj instanceof StringListWrapper) {
-        StringListWrapper other = (StringListWrapper) obj;
+      else if (obj instanceof StringListWrapper other) {
 
         if (isCaseSensitive) {
           result = this.stringList.equals(other.getStringList());
@@ -123,7 +122,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
    * @throws IOException Thrown if IO errors occurred.
    */
   public Dictionary(InputStream in) throws IOException {
-    isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> put(entry.getTokens()));
+    isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> put(entry.tokens()));
   }
 
   /**
@@ -239,8 +238,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
     if (obj == this) {
       result = true;
     }
-    else if (obj instanceof Dictionary) {
-      Dictionary dictionary  = (Dictionary) obj;
+    else if (obj instanceof Dictionary dictionary) {
 
       result = entrySet.equals(dictionary.entrySet);
     }
@@ -337,8 +335,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
       public boolean contains(Object obj) {
         boolean result = false;
 
-        if (obj instanceof String) {
-          String str = (String) obj;
+        if (obj instanceof String str) {
 
           result = entrySet.contains(new StringListWrapper(new StringList(str)));
 

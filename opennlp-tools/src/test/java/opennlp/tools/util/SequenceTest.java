@@ -109,21 +109,14 @@ public class SequenceTest {
     final Sequence sequence = new Sequence();
     sequence.add("A", 1d);
 
-    Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-      sequence.getOutcome(-1);
-    });
-
-    Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-      sequence.getOutcome(sequence.getSize() + 1);
-    });
-
-    Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-      sequence.getProb(-1);
-    });
-
-    Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-      sequence.getProb(sequence.getSize() + 1);
-    });
+    Assertions.assertThrows(IndexOutOfBoundsException.class,
+            () -> sequence.getOutcome(-1));
+    Assertions.assertThrows(IndexOutOfBoundsException.class,
+            () -> sequence.getOutcome(sequence.getSize() + 1));
+    Assertions.assertThrows(IndexOutOfBoundsException.class,
+            () -> sequence.getProb(-1));
+    Assertions.assertThrows(IndexOutOfBoundsException.class,
+            () -> sequence.getProb(sequence.getSize() + 1));
   }
 
   @Test
@@ -132,10 +125,7 @@ public class SequenceTest {
     sequence.add("A", 1d);
 
     Assertions.assertEquals(1, sequence.getSize());
-
-    Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-      sequence.getOutcomes().add("This should fail! " +
-          "It should not be possible to modify the internal state");
-    });
+    Assertions.assertThrows(UnsupportedOperationException.class, () -> sequence.getOutcomes().add(
+                    "This should fail! It should not be possible to modify the internal state"));
   }
 }

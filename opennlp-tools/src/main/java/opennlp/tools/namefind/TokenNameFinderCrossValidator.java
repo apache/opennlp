@@ -38,19 +38,9 @@ import opennlp.tools.util.eval.FMeasure;
  */
 public class TokenNameFinderCrossValidator {
 
-  private static class DocumentSample implements Sample {
+  private record DocumentSample(NameSample[] samples) implements Sample {
 
-    private static final long serialVersionUID = -7032022251020271479L;
-    
-    private final NameSample[] samples;
-
-    DocumentSample(NameSample[] samples) {
-      this.samples = samples;
-    }
-
-    private NameSample[] getSamples() {
-      return samples;
-    }
+    private static final long serialVersionUID = -4199121634493414749L;
   }
 
   /**
@@ -132,7 +122,7 @@ public class TokenNameFinderCrossValidator {
         DocumentSample docSample = samples.read();
 
         if (docSample != null) {
-          documentSamples = Arrays.asList(docSample.getSamples()).iterator();
+          documentSamples = Arrays.asList(docSample.samples()).iterator();
 
           return read();
         }

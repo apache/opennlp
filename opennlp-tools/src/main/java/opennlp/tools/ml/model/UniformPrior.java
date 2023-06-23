@@ -61,8 +61,7 @@ public class UniformPrior implements Prior {
       return true;
     }
 
-    if (obj instanceof UniformPrior) {
-      UniformPrior prior = (UniformPrior) obj;
+    if (obj instanceof UniformPrior prior) {
 
       return numOutcomes == prior.numOutcomes && r == prior.r;
     }

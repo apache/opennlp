@@ -68,8 +68,7 @@ public class Context {
       return true;
     }
 
-    if (obj instanceof Context) {
-      Context context = (Context) obj;
+    if (obj instanceof Context context) {
 
       return Arrays.equals(parameters, context.parameters)
            && Arrays.equals(outcomes, context.outcomes);

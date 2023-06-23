@@ -44,16 +44,12 @@ public class LanguageTest {
 
   @Test
   void emptyLanguage() {
-    Assertions.assertThrows(NullPointerException.class, () -> {
-      new Language(null);
-    });
+    Assertions.assertThrows(NullPointerException.class, () -> new Language(null));
   }
 
   @Test
   void emptyLanguageConfidence() {
-    Assertions.assertThrows(NullPointerException.class, () -> {
-      new Language(null, 0.05);
-    });
+    Assertions.assertThrows(NullPointerException.class, () -> new Language(null, 0.05));
   }
 
   @Test

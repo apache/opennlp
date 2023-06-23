@@ -37,32 +37,23 @@ public class MascSentence extends Span {
   private static final Logger logger = LoggerFactory.getLogger(MascSentence.class);
   private static final long serialVersionUID = 6295507533472650848L;
 
-  private static class QuarkExtractor {
-
-    private final Map<Integer, MascWord> wordsById;
-    private final List<MascWord> allDocumentWords;
-
-    /**
-     * A helper class to extract the extract a quark from the corpus file even if it is beyond the
-     * bounds of the sentence
-     *
-     * @param wordsById        Quarks of the sentence organized by their id
-     * @param allDocumentWords Quarks of the document organized by their id
-     */
-    protected QuarkExtractor(Map<Integer, MascWord> wordsById, List<MascWord> allDocumentWords) {
-      this.wordsById = wordsById;
-      this.allDocumentWords = allDocumentWords;
-    }
+  /**
+   * A helper class to extract the extract a quark from the corpus file even if it is beyond the
+   * bounds of the sentence.
+   *
+   * @param wordsById        Quarks of the sentence organized by their id
+   * @param allDocumentWords Quarks of the document organized by their id
+   */
+  private record QuarkExtractor(Map<Integer, MascWord> wordsById, List<MascWord> allDocumentWords) {
 
     /**
      * Extract a quark by its key
      *
      * @param key The quark's ID
      * @return The {@link MascWord quark reference}.
-     *
      * @throws IOException Thrown if the {@code key} was not found in the document.
      */
-    protected MascWord get(int key) throws IOException {
+    private MascWord get(int key) throws IOException {
       // First, check if this word is in the sentence
       // TODO: evaluate the necessity: HashMaps are O(1), right?
       if (wordsById.containsKey(key)) {
