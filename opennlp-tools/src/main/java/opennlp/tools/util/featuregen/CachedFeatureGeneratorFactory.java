@@ -18,60 +18,21 @@
 package opennlp.tools.util.featuregen;
 
 
-import java.util.Map;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import opennlp.tools.util.InvalidFormatException;
 
 /**
  * @see CachedFeatureGenerator
  */
 public class CachedFeatureGeneratorFactory
-    extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory
-    implements GeneratorFactory.XmlFeatureGeneratorFactory {
+    extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 
   public CachedFeatureGeneratorFactory() {
     super();
   }
 
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) throws InvalidFormatException {
-
-    Element cachedGeneratorElement = null;
-
-    NodeList kids = generatorElement.getChildNodes();
-
-    for (int i = 0; i < kids.getLength(); i++) {
-      Node childNode = kids.item(i);
-
-      if (childNode instanceof Element) {
-        cachedGeneratorElement = (Element) childNode;
-        break;
-      }
-    }
-
-    if (cachedGeneratorElement == null) {
-      throw new InvalidFormatException("Could not find containing generator element!");
-    }
-
-    AdaptiveFeatureGenerator cachedGenerator =
-        GeneratorFactory.createGenerator(cachedGeneratorElement, resourceManager);
-
-    return new CachedFeatureGenerator(cachedGenerator);
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("cache", new CachedFeatureGeneratorFactory());
-  }
-
   @Override
   public AdaptiveFeatureGenerator create() throws InvalidFormatException {
-    AdaptiveFeatureGenerator generator = (AdaptiveFeatureGenerator)args.get("generator#0");
+    AdaptiveFeatureGenerator generator = (AdaptiveFeatureGenerator) args.get("generator#0");
     if (generator == null) {
       throw new InvalidFormatException("Could not find containing generator element!");
     }

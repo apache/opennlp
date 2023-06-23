@@ -68,8 +68,8 @@ public class POSTaggerFactory extends BaseToolFactory {
    * Initializes a {@link POSTaggerFactory} from a given set of the resources.
    *
    * @param featureGeneratorBytes The bytes for feature generation.
-   * @param resources Additional resources as key-value map.
-   * @param posDictionary A {@link TagDictionary} used for the new instance.
+   * @param resources             Additional resources as key-value map.
+   * @param posDictionary         A {@link TagDictionary} used for the new instance.
    */
   public POSTaggerFactory(byte[] featureGeneratorBytes, final Map<String, Object> resources,
                           TagDictionary posDictionary) {
@@ -94,7 +94,8 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
 
   // reduced visibility to ensure deprecation is respected in future versions
-  @Deprecated // will be removed when only 8 series models are supported
+  @Deprecated
+  // will be removed when only 8 series models are supported
   void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
     this.ngramDictionary = ngramDictionary;
     this.posDictionary = posDictionary;
@@ -114,7 +115,7 @@ public class POSTaggerFactory extends BaseToolFactory {
 
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     InputStream resource = POSTaggerFactory.class.getResourceAsStream(
-            "/opennlp/tools/postag/pos-default-features.xml");
+        "/opennlp/tools/postag/pos-default-features.xml");
     if (resource == null) {
       throw new IllegalStateException("Classpath must contain 'pos-default-features.xml' file!");
     }
@@ -125,8 +126,7 @@ public class POSTaggerFactory extends BaseToolFactory {
       while ((len = in.read(buf)) > 0) {
         bytes.write(buf, 0, len);
       }
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new IllegalStateException("Failed reading from 'pos-default-features.xml' file on classpath!");
     }
 
@@ -154,15 +154,12 @@ public class POSTaggerFactory extends BaseToolFactory {
       featureGeneratorBytes = loadDefaultFeatureGeneratorBytes();
     }
 
-    InputStream descriptorIn = new ByteArrayInputStream(featureGeneratorBytes);
-
     AdaptiveFeatureGenerator generator;
-    try {
+    try (InputStream descriptorIn = new ByteArrayInputStream(featureGeneratorBytes)) {
       generator = GeneratorFactory.create(descriptorIn, key -> {
         if (artifactProvider != null) {
           return artifactProvider.getArtifact(key);
-        }
-        else {
+        } else {
           return resources.get(key);
         }
       });
@@ -178,7 +175,7 @@ public class POSTaggerFactory extends BaseToolFactory {
       // that this can only be caused by a programming mistake and therefore
       // throwing a Runtime Exception is reasonable
 
-      throw new IllegalStateException(); // FeatureGeneratorCreationError(e);
+      throw new IllegalStateException(e); // FeatureGeneratorCreationError(e);
     } catch (IOException e) {
       throw new IllegalStateException("Reading from mem cannot result in an I/O error", e);
     }
@@ -202,11 +199,13 @@ public class POSTaggerFactory extends BaseToolFactory {
   public Map<String, Object> createArtifactMap() {
     Map<String, Object> artifactMap = super.createArtifactMap();
 
-    if (posDictionary != null)
+    if (posDictionary != null) {
       artifactMap.put(TAG_DICTIONARY_ENTRY_NAME, posDictionary);
+    }
 
-    if (ngramDictionary != null)
+    if (ngramDictionary != null) {
       artifactMap.put(NGRAM_DICTIONARY_ENTRY_NAME, ngramDictionary);
+    }
 
     return artifactMap;
   }
@@ -216,7 +215,6 @@ public class POSTaggerFactory extends BaseToolFactory {
    *
    * @param dictionary The {@link File} used for creating the dictionary.
    * @return A valid {@link TagDictionary} ready for use.
-   *
    * @throws IOException Thrown if IO errors occurred during creation.
    */
   public TagDictionary createTagDictionary(File dictionary)
@@ -229,7 +227,6 @@ public class POSTaggerFactory extends BaseToolFactory {
    *
    * @param in The {@link InputStream} used for creating the dictionary.
    * @return A valid {@link TagDictionary} ready for use.
-   *
    * @throws IOException Thrown if IO errors occurred during creation.
    */
   public TagDictionary createTagDictionary(InputStream in)
@@ -267,15 +264,17 @@ public class POSTaggerFactory extends BaseToolFactory {
    * @return The {@link TagDictionary} used.
    */
   public TagDictionary getTagDictionary() {
-    if (this.posDictionary == null && artifactProvider != null)
+    if (this.posDictionary == null && artifactProvider != null) {
       this.posDictionary = artifactProvider.getArtifact(TAG_DICTIONARY_ENTRY_NAME);
+    }
     return this.posDictionary;
   }
 
   @Deprecated(forRemoval = true) // will be removed when only 8 series models are supported
   private Dictionary getDictionary() {
-    if (this.ngramDictionary == null && artifactProvider != null)
+    if (this.ngramDictionary == null && artifactProvider != null) {
       this.ngramDictionary = artifactProvider.getArtifact(NGRAM_DICTIONARY_ENTRY_NAME);
+    }
     return this.ngramDictionary;
   }
 
@@ -302,7 +301,7 @@ public class POSTaggerFactory extends BaseToolFactory {
         return new DefaultPOSContextGenerator(cacheSize, getDictionary());
       }
     }
-    
+
     return new ConfigurablePOSContextGenerator(cacheSize, createFeatureGenerators());
   }
 
@@ -333,7 +332,7 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
 
   protected void validatePOSDictionary(POSDictionary posDict, AbstractModel posModel)
-          throws InvalidFormatException {
+      throws InvalidFormatException {
     Set<String> dictTags = new HashSet<>();
 
     for (String word : posDict) {
@@ -392,7 +391,7 @@ public class POSTaggerFactory extends BaseToolFactory {
   // reduced visibility to ensure deprecation is respected in future versions
   @Deprecated
   static POSTaggerFactory create(String subclassName,
-      Dictionary ngramDictionary, TagDictionary posDictionary)
+                                 Dictionary ngramDictionary, TagDictionary posDictionary)
       throws InvalidFormatException {
     if (subclassName == null) {
       // will create the default factory
@@ -413,15 +412,14 @@ public class POSTaggerFactory extends BaseToolFactory {
   /**
    * Instantiates a {@link POSTaggerFactory} via a given {@code subclassName}.
    *
-   * @param subclassName The class name used for instantiation. If {@code null}, an
-   *                     instance of {@link POSTaggerFactory} will be returned
-   *                     per default. Otherwise, the {@link ExtensionLoader} mechanism
-   *                     is applied to load the requested {@code subclassName}.
+   * @param subclassName          The class name used for instantiation. If {@code null}, an
+   *                              instance of {@link POSTaggerFactory} will be returned
+   *                              per default. Otherwise, the {@link ExtensionLoader} mechanism
+   *                              is applied to load the requested {@code subclassName}.
    * @param featureGeneratorBytes The bytes for feature generation.
-   * @param resources Additional resources as key-value map.
-   * @param posDictionary A {@link TagDictionary} used for the new instance.
+   * @param resources             Additional resources as key-value map.
+   * @param posDictionary         A {@link TagDictionary} used for the new instance.
    * @return @return A valid {@link POSTaggerFactory} instance.
-   * 
    * @throws InvalidFormatException Thrown if the {@link ExtensionLoader} mechanism failed to
    *                                load the factory via the {@code subclassName}.
    */
@@ -435,8 +433,7 @@ public class POSTaggerFactory extends BaseToolFactory {
       // will create the default factory
       theFactory = new POSTaggerFactory();
       theFactory.init(featureGeneratorBytes, resources, posDictionary);
-    }
-    else {
+    } else {
       try {
         theFactory = ExtensionLoader.instantiateExtension(POSTaggerFactory.class, subclassName);
       } catch (Exception e) {

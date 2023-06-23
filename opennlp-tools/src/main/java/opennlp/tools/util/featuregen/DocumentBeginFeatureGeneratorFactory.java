@@ -17,29 +17,13 @@
 
 package opennlp.tools.util.featuregen;
 
-import java.util.Map;
-
-import org.w3c.dom.Element;
-
 import opennlp.tools.util.InvalidFormatException;
 
 public class DocumentBeginFeatureGeneratorFactory
-    extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory
-    implements GeneratorFactory.XmlFeatureGeneratorFactory {
+    extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 
   public DocumentBeginFeatureGeneratorFactory() {
     super();
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  public AdaptiveFeatureGenerator create(Element generatorElement,
-             FeatureGeneratorResourceProvider resourceManager) {
-    return new DocumentBeginFeatureGenerator();
-  }
-
-  @Deprecated // TODO: (OPENNLP-1174) just remove when back-compat is no longer needed
-  static void register(Map<String, GeneratorFactory.XmlFeatureGeneratorFactory> factoryMap) {
-    factoryMap.put("docbegin", new DocumentBeginFeatureGeneratorFactory());
   }
 
   @Override
