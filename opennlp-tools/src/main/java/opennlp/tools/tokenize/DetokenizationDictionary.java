@@ -158,9 +158,9 @@ public class DetokenizationDictionary {
   private void init(InputStream in) throws IOException {
     DictionaryEntryPersistor.create(in, entry -> {
 
-      String operationString = entry.getAttributes().getValue("operation");
+      String operationString = entry.attributes().getValue("operation");
 
-      StringList word = entry.getTokens();
+      StringList word = entry.tokens();
 
       if (word.size() != 1)
         throw new InvalidFormatException("Each entry must have exactly one token! " + word);

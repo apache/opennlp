@@ -192,8 +192,7 @@ public class POSSample implements Sample {
       return true;
     }
 
-    if (obj instanceof POSSample) {
-      POSSample a = (POSSample) obj;
+    if (obj instanceof POSSample a) {
 
       return Arrays.equals(getSentence(), a.getSentence())
           && Arrays.equals(getTags(), a.getTags());

@@ -23,48 +23,28 @@ import java.util.Objects;
 /**
  * Holds a classified document and its {@link Language}.
  */
-public class LanguageSample implements Serializable {
+public record LanguageSample(Language language, CharSequence context) implements Serializable {
 
-  private static final long serialVersionUID = -5206320996868984440L;
-  private final Language language;
-  private final CharSequence context;
+  private static final long serialVersionUID = -2222893493240468729L;
 
   public LanguageSample(Language language, CharSequence context) {
     this.language = Objects.requireNonNull(language, "language must not be null");
     this.context = Objects.requireNonNull(context, "context must not be null");
   }
 
+  @Deprecated(forRemoval = true)
   public Language getLanguage() {
     return language;
   }
 
+  @Deprecated(forRemoval = true)
   public CharSequence getContext() {
     return context;
   }
 
   @Override
   public String toString() {
-    return language.getLang() + '\t' +  context;
+    return language.getLang() + '\t' + context;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(getContext(), getLanguage());
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-
-    if (obj instanceof LanguageSample) {
-      LanguageSample a = (LanguageSample) obj;
-
-      return getLanguage().equals(a.getLanguage())
-          && getContext().equals(a.getContext());
-    }
-
-    return false;
-  }
 }

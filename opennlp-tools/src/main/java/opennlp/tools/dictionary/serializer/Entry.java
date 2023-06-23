@@ -29,32 +29,14 @@ import opennlp.tools.util.StringList;
  * @see DictionaryEntryPersistor
  * @see Attributes
  */
-public class Entry {
+public record Entry(StringList tokens, Attributes attributes) {
 
-  private final StringList tokens;
-  private final Attributes attributes;
-
-  /**
-   * Initializes an {@link Entry}.
-   *
-   * @param tokens The tokens to keep.
-   * @param attributes  The (optional) {@link Attributes} to set.
-   */
-  public Entry(StringList tokens, Attributes attributes) {
-    this.tokens = tokens;
-    this.attributes = attributes;
-  }
-
-  /**
-   * @return Retrieves the tokens.
-   */
+  @Deprecated(forRemoval = true)
   public StringList getTokens() {
     return tokens;
   }
-
-  /**
-   * @return  Retrieves the {@link Attributes}.
-   */
+  
+  @Deprecated(forRemoval = true)
   public Attributes getAttributes() {
     return attributes;
   }

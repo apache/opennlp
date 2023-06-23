@@ -106,29 +106,23 @@ public class POSTaggerFactoryTest {
 
   @Test
   void testCreateWithInvalidName() {
-    Assertions.assertThrows(InvalidFormatException.class, () -> {
-      BaseToolFactory.create("X", null);
-    });
+    Assertions.assertThrows(InvalidFormatException.class, () -> BaseToolFactory.create("X", null));
   }
 
   @Test
   void testCreateWithInvalidName2() {
-    Assertions.assertThrows(InvalidFormatException.class, () -> {
-      POSTaggerFactory.create("X", null, null);
-    });
+    Assertions.assertThrows(InvalidFormatException.class, () -> POSTaggerFactory.create("X", null, null));
   }
 
   @Test
   void testCreateWithHierarchy() {
-    Assertions.assertThrows(InvalidFormatException.class, () -> {
-      BaseToolFactory.create(Object.class.getCanonicalName(), null);
-    });
+    Assertions.assertThrows(InvalidFormatException.class, () ->
+            BaseToolFactory.create(Object.class.getCanonicalName(), null));
   }
 
   @Test
   void testCreateWithHierarchy2() {
-    Assertions.assertThrows(InvalidFormatException.class, () -> {
-      POSTaggerFactory.create(this.getClass().getCanonicalName(), null, null);
-    });
+    Assertions.assertThrows(InvalidFormatException.class, () ->
+            POSTaggerFactory.create(this.getClass().getCanonicalName(), null, null));
   }
 }

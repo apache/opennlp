@@ -117,8 +117,7 @@ public abstract class BaseLink {
       return true;
     }
 
-    if (obj instanceof BaseLink) {
-      BaseLink other = (BaseLink) obj;
+    if (obj instanceof BaseLink other) {
 
       return Objects.equals(itemParentID, other.itemParentID)
           && Objects.equals(itemID, other.itemID)

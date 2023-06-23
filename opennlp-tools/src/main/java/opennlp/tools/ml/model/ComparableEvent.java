@@ -83,8 +83,7 @@ public class ComparableEvent implements Comparable<ComparableEvent> {
     if (this == obj)
       return true;
 
-    if (obj instanceof ComparableEvent) {
-      ComparableEvent other = (ComparableEvent) obj;
+    if (obj instanceof ComparableEvent other) {
       return outcome == other.outcome &&
           Arrays.equals(predIndexes, other.predIndexes) &&
           seen == other.seen &&

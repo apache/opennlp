@@ -169,12 +169,12 @@ public class GenerateManualTool {
           sb.append("<entry morerows='").append(arguments.size() - 1)
               .append("' valign='middle'>").append(format).append("</entry>\n");
         }
-        sb.append("<entry>").append(argument.getArgument())
+        sb.append("<entry>").append(argument.argument())
             .append("</entry>\n");
-        sb.append("<entry>").append(argument.getValue()).append("</entry>\n");
-        sb.append("<entry>").append(yes(argument.getOptional()))
+        sb.append("<entry>").append(argument.value()).append("</entry>\n");
+        sb.append("<entry>").append(yes(argument.optional()))
             .append("</entry>\n");
-        sb.append("<entry>").append(firstCaps(argument.getDescription()))
+        sb.append("<entry>").append(firstCaps(argument.description()))
             .append("</entry>\n");
         sb.append("</row>\n");
         i++;

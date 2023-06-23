@@ -63,7 +63,7 @@ public class NGramModel implements Iterable<StringList> {
       String countValueString = null;
 
       try {
-        countValueString = entry.getAttributes().getValue(COUNT);
+        countValueString = entry.attributes().getValue(COUNT);
 
         if (countValueString == null) {
           throw new InvalidFormatException(
@@ -76,8 +76,8 @@ public class NGramModel implements Iterable<StringList> {
             + "' must be a number!", e);
       }
 
-      add(entry.getTokens());
-      setCount(entry.getTokens(), count);
+      add(entry.tokens());
+      setCount(entry.tokens(), count);
     });
   }
 
@@ -340,8 +340,7 @@ public class NGramModel implements Iterable<StringList> {
     if (obj == this) {
       result = true;
     }
-    else if (obj instanceof NGramModel) {
-      NGramModel model  = (NGramModel) obj;
+    else if (obj instanceof NGramModel model) {
 
       result = mNGrams.equals(model.mNGrams);
     }

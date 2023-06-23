@@ -59,8 +59,8 @@ public class LanguageDetectorFineGrainedReportListener
   }
 
   private void statsAdd(LanguageSample reference, LanguageSample prediction) {
-    getStats().add(reference.getContext(),
-        reference.getLanguage().getLang(), prediction.getLanguage().getLang());
+    getStats().add(reference.context(),
+        reference.language().getLang(), prediction.language().getLang());
   }
 
   @Override

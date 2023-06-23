@@ -406,9 +406,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       public String toString() {
         StringBuilder sb = new StringBuilder();
         // print itself and its children
-        for (int i = 0; i < this.getLevel(); i++) {
-          sb.append("=");
-        }
+        sb.append("=".repeat(Math.max(0, this.getLevel())));
         sb.append(this.getSyntacticTag());
         if (this.getMorphologicalTag() != null) {
           sb.append(this.getMorphologicalTag());
@@ -467,9 +465,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       public String toString() {
         StringBuilder sb = new StringBuilder();
         // print itself and its children
-        for (int i = 0; i < this.getLevel(); i++) {
-          sb.append("=");
-        }
+        sb.append("=".repeat(Math.max(0, this.getLevel())));
         if (this.getSyntacticTag() != null) {
           sb.append(this.getSyntacticTag()).append(":")
               .append(getFunctionalTag()).append("(")

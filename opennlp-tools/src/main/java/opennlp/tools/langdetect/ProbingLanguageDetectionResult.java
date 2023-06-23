@@ -19,28 +19,19 @@ package opennlp.tools.langdetect;
 
 /**
  * A data container encapsulating language detection results.
+ *
+ * @param languages The {@link Language languages} detected.
+ * @param length    The length in codepoints of text processed.
  */
-public class ProbingLanguageDetectionResult {
-  private final Language[] languages;
-  private final int length;
+public record ProbingLanguageDetectionResult(Language[] languages, int length) {
 
-  public ProbingLanguageDetectionResult(Language[] languages, int length) {
-    this.languages = languages;
-    this.length = length;
-  }
-
-  /**
-   * @return The {@link Language languages} detected.
-   */
+  @Deprecated(forRemoval = true)
   public Language[] getLanguages() {
     return languages;
   }
 
-  /**
-   * @return The length in codepoints of text processed.
-   */
+  @Deprecated(forRemoval = true)
   public int getLength() {
     return length;
   }
-
 }

@@ -326,8 +326,7 @@ public class Span implements Comparable<Span>, Serializable {
       return true;
     }
 
-    if (o instanceof Span) {
-      Span s = (Span) o;
+    if (o instanceof Span s) {
 
       return getStart() == s.getStart() && getEnd() == s.getEnd()
           && Objects.equals(getType(), s.getType());

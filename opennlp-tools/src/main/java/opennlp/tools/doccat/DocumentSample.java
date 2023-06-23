@@ -116,8 +116,7 @@ public class DocumentSample implements Sample {
       return true;
     }
 
-    if (obj instanceof DocumentSample) {
-      DocumentSample a = (DocumentSample) obj;
+    if (obj instanceof DocumentSample a) {
 
       return getCategory().equals(a.getCategory())
           && Arrays.equals(getText(), a.getText());

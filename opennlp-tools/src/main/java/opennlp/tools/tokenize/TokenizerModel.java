@@ -175,8 +175,7 @@ public final class TokenizerModel extends BaseModel {
       return true;
     }
 
-    if (obj instanceof TokenizerModel) {
-      TokenizerModel model = (TokenizerModel) obj;
+    if (obj instanceof TokenizerModel model) {
       Map<String, Object> artifactMapToCheck = model.artifactMap;
       AbstractModel abstractModel = (AbstractModel) artifactMapToCheck.get(TOKENIZER_MODEL_ENTRY);
 

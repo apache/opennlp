@@ -28,7 +28,7 @@ import org.apache.uima.cas.text.AnnotationFS;
  * Checks if an {@link AnnotationFS} is contained by the given AnnotationFS.
  */
 public final class ContainingConstraint implements FSMatchConstraint {
-  private static final long serialVersionUID = 1;
+  private static final long serialVersionUID = 8393109549729168545L;
 
   private final Collection<AnnotationFS> mContainingAnnotations = new LinkedList<>();
 
@@ -52,11 +52,9 @@ public final class ContainingConstraint implements FSMatchConstraint {
    */
   @Override
   public boolean match(FeatureStructure featureStructure) {
-    if (!(featureStructure instanceof AnnotationFS)) {
+    if (!(featureStructure instanceof AnnotationFS annotation)) {
       return false;
     }
-
-    AnnotationFS annotation = (AnnotationFS) featureStructure;
 
     for (AnnotationFS containingAnnotation : mContainingAnnotations) {
       if (isContaining(annotation, containingAnnotation)) {

@@ -237,9 +237,7 @@ public class NameSampleTest {
    */
   @Test
   void testMissingType() {
-    Assertions.assertThrows(IOException.class, () -> {
-      NameSample.parse("<START:> token <END>", false);
-    });
+    Assertions.assertThrows(IOException.class, () -> NameSample.parse("<START:> token <END>", false));
   }
 
   /**
@@ -248,9 +246,7 @@ public class NameSampleTest {
    */
   @Test
   void testTypeWithSpace() {
-    Assertions.assertThrows(IOException.class, () -> {
-      NameSample.parse("<START:abc a> token <END>", false);
-    });
+    Assertions.assertThrows(IOException.class, () -> NameSample.parse("<START:abc a> token <END>", false));
   }
 
   /**
@@ -259,9 +255,7 @@ public class NameSampleTest {
    */
   @Test
   void testTypeWithNewLine() {
-    Assertions.assertThrows(IOException.class, () -> {
-      NameSample.parse("<START:abc\na> token <END>", false);
-    });
+    Assertions.assertThrows(IOException.class, () -> NameSample.parse("<START:abc\na> token <END>", false));
   }
 
   /**
@@ -270,9 +264,7 @@ public class NameSampleTest {
    */
   @Test
   void testTypeWithInvalidChar1() {
-    Assertions.assertThrows(IOException.class, () -> {
-      NameSample.parse("<START:abc:a> token <END>", false);
-    });
+    Assertions.assertThrows(IOException.class, () -> NameSample.parse("<START:abc:a> token <END>", false));
   }
 
   /**
@@ -281,9 +273,7 @@ public class NameSampleTest {
    */
   @Test
   void testTypeWithInvalidChar2() {
-    Assertions.assertThrows(IOException.class, () -> {
-      NameSample.parse("<START:abc>a> token <END>", false);
-    });
+    Assertions.assertThrows(IOException.class, () -> NameSample.parse("<START:abc>a> token <END>", false));
   }
 
   /**
@@ -292,9 +282,8 @@ public class NameSampleTest {
    */
   @Test
   void testNestedNameSpans() {
-    Assertions.assertThrows(IOException.class, () -> {
-      NameSample.parse("<START:Person> <START:Location> Kennedy <END> City <END>", false);
-    });
+    Assertions.assertThrows(IOException.class, () -> NameSample.parse(
+            "<START:Person> <START:Location> Kennedy <END> City <END>", false));
   }
 
   @Test

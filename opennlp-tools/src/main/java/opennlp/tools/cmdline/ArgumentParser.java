@@ -71,7 +71,7 @@ public class ArgumentParser {
     Object parseArgument(Method method, String argName, String argValue);
   }
 
-  private static class IntegerArgumentFactory  implements ArgumentFactory {
+  private static class IntegerArgumentFactory implements ArgumentFactory {
 
     @Override
     public Object parseArgument(Method method, String argName, String argValue) {
@@ -135,17 +135,10 @@ public class ArgumentParser {
     }
   }
 
-  private static class ArgumentProxy implements InvocationHandler {
-
-    private final Map<String, Object> arguments;
-
-    ArgumentProxy(Map<String, Object> arguments) {
-      this.arguments = arguments;
-    }
+  private record ArgumentProxy(Map<String, Object> arguments) implements InvocationHandler {
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args)
-        throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
       if (args != null)
         throw new IllegalStateException();
@@ -234,42 +227,12 @@ public class ArgumentParser {
   }
 
   /**
-   * Auxiliary class that holds information about an argument. This is used by the
+   * Auxiliary record that holds information about an argument. This is used by the
    * {@link GenerateManualTool}, which creates a Docbook for the CLI automatically.
    */
-  static class Argument {
-    private final String argument;
-    private final String value;
-    private final String description;
-    private final boolean optional;
+  record Argument(String argument, String value, String description, boolean optional) {
 
-    public Argument(String argument, String value, String description,
-        boolean optional) {
-      super();
-      this.argument = argument;
-      this.value = value;
-      this.description = description;
-      this.optional = optional;
-    }
-
-    public String getArgument() {
-      return argument;
-    }
-
-    public String getValue() {
-      return value;
-    }
-
-    public String getDescription() {
-      return description;
-    }
-
-    public boolean getOptional() {
-      return optional;
-    }
   }
-
-
 
   /**
    * Outputs the arguments as a data structure, so it can be used to create documentation.

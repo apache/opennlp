@@ -143,10 +143,9 @@ public class ChunkSampleTest {
 
   @Test
   void testParameterValidation() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      new ChunkSample(new String[] {""}, new String[] {""},
-          new String[] {"test", "one element to much"});
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+            new ChunkSample(new String[] {""}, new String[] {""},
+                    new String[] {"test", "one element to much"}));
   }
 
   @Test
@@ -263,38 +262,33 @@ public class ChunkSampleTest {
 
   @Test
   void testInvalidPhraseAsSpan1() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ChunkSample.phrasesAsSpanList(new String[2], new String[1], new String[1]);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+            ChunkSample.phrasesAsSpanList(new String[2], new String[1], new String[1]));
   }
 
   @Test
   void testInvalidPhraseAsSpan2() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ChunkSample.phrasesAsSpanList(new String[1], new String[2], new String[1]);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+            ChunkSample.phrasesAsSpanList(new String[1], new String[2], new String[1]));
   }
 
   @Test
   void testInvalidPhraseAsSpan3() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ChunkSample.phrasesAsSpanList(new String[1], new String[1], new String[2]);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+            ChunkSample.phrasesAsSpanList(new String[1], new String[1], new String[2]));
   }
 
   @Test
   void testInvalidChunkSampleArray() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      new ChunkSample(new String[1], new String[1], new String[2]);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+            new ChunkSample(new String[1], new String[1], new String[2]));
   }
 
   @Test
   void testInvalidChunkSampleList() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      new ChunkSample(Arrays.asList(new String[1]), Arrays.asList(new String[1]),
-          Arrays.asList(new String[2]));
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+            new ChunkSample(Arrays.asList(new String[1]), Arrays.asList(new String[1]),
+                    Arrays.asList(new String[2])));
   }
 
   @Test

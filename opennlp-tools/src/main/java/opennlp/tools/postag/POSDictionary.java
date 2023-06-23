@@ -168,8 +168,7 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
       return true;
     }
 
-    if (obj instanceof POSDictionary) {
-      POSDictionary posDictionary = (POSDictionary) obj;
+    if (obj instanceof POSDictionary posDictionary) {
 
       if (this.dictionary.size() == posDictionary.dictionary.size()) {
         for (String word : this) {
@@ -214,9 +213,9 @@ public class POSDictionary implements Iterable<String>, MutableTagDictionary, Se
 
     boolean isCaseSensitive = DictionaryEntryPersistor.create(in, entry -> {
 
-      String tagString = entry.getAttributes().getValue("tags");
+      String tagString = entry.attributes().getValue("tags");
       String[] tags = tagString.split(" ");
-      StringList word = entry.getTokens();
+      StringList word = entry.tokens();
 
       if (word.size() != 1)
         throw new InvalidFormatException("Each entry must have exactly one token! " + word);

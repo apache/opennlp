@@ -58,8 +58,8 @@ public class LanguageDetectorEventStream extends AbstractEventStream<LanguageSam
 
         isVirgin = false;
 
-        return new Event(sample.getLanguage().getLang(),
-            mContextGenerator.getContext(sample.getContext().toString()));
+        return new Event(sample.language().getLang(),
+            mContextGenerator.getContext(sample.context().toString()));
       }
 
       public void remove() {

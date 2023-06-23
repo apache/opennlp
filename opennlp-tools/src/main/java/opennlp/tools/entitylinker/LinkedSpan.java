@@ -172,8 +172,7 @@ public class LinkedSpan<T extends BaseLink> extends Span {
       return false;
     }
 
-    if (obj instanceof LinkedSpan) {
-      final LinkedSpan<?> other = (LinkedSpan<?>) obj;
+    if (obj instanceof LinkedSpan<?> other) {
       return Objects.equals(this.linkedEntries, other.linkedEntries)
           && this.sentenceid == other.sentenceid
           && Objects.equals(this.searchTerm, other.searchTerm);

@@ -153,8 +153,7 @@ public class StringList implements Iterable<String> {
       return true;
     }
 
-    if (obj instanceof StringList) {
-      StringList tokenList = (StringList) obj;
+    if (obj instanceof StringList tokenList) {
 
       return Arrays.equals(tokens, tokenList.tokens);
     }

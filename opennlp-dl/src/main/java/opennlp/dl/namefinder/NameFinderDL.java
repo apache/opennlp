@@ -104,17 +104,17 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
           // The inputs to the ONNX model.
           final Map<String, OnnxTensor> inputs = new HashMap<>();
-          inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getIds()),
-              new long[] {1, tokens.getIds().length}));
+          inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
+              new long[] {1, tokens.ids().length}));
 
           if (inferenceOptions.isIncludeAttentionMask()) {
             inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-                LongBuffer.wrap(tokens.getMask()), new long[] {1, tokens.getMask().length}));
+                LongBuffer.wrap(tokens.mask()), new long[] {1, tokens.mask().length}));
           }
 
           if (inferenceOptions.isIncludeTokenTypeIds()) {
             inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-                LongBuffer.wrap(tokens.getTypes()), new long[] {1, tokens.getTypes().length}));
+                LongBuffer.wrap(tokens.types()), new long[] {1, tokens.types().length}));
           }
 
           // The outputs from the model.
@@ -127,7 +127,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
           // spans we can get the next one instead of the first one each time.
           int characterStart = 0;
 
-          final String[] toks = tokens.getTokens();
+          final String[] toks = tokens.tokens();
 
           // We are looping over the vector for each word,
           // finding the index of the array that has the maximum value,
@@ -152,7 +152,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
               // If the end is -1 it means this is a single-span token.
               // If the end is != -1 it means this is a multi-span token.
-              if (spanEnd.getIndex() != -1) {
+              if (spanEnd.index() != -1) {
 
                 final StringBuilder sb = new StringBuilder();
 
@@ -160,7 +160,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
                 // Add each token in the array and separate them with a space.
                 // We'll separate each with a single space because later we'll find the original span
                 // in the text and ignore spacing between individual tokens in findByRegex().
-                int end = spanEnd.getIndex();
+                int end = spanEnd.index();
                 for (int i = x; i <= end; i++) {
 
                   // If the next token starts with ##, combine it with this token.

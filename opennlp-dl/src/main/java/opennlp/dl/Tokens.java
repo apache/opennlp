@@ -19,44 +19,31 @@ package opennlp.dl;
 
 /**
  * Holds the tokens for input to an ONNX model.
+ * 
+ * @param tokens The tokens themselves.
+ * @param ids    The token IDs as retrieved from the vocabulary.
+ * @param mask   The token mask. (Typically all 1.)
+ * @param types  The token types. (Typically all 1.)
  */
-public class Tokens {
+public record Tokens(String[] tokens, long[] ids, long[] mask, long[] types) {
 
-  private final String[] tokens;
-  private final long[] ids;
-  private final long[] mask;
-  private final long[] types;
-
-  /**
-   * Creates a new instance to hold the tokens for input to an ONNX model.
-   * @param tokens The tokens themselves.
-   * @param ids The token IDs as retrieved from the vocabulary.
-   * @param mask The token mask. (Typically all 1.)
-   * @param types The token types. (Typically all 1.)
-   */
-  public Tokens(String[] tokens, long[] ids, long[] mask, long[] types) {
-
-    this.tokens = tokens;
-    this.ids = ids;
-    this.mask = mask;
-    this.types = types;
-
-  }
-
+  @Deprecated(forRemoval = true)
   public String[] getTokens() {
     return tokens;
   }
 
+  @Deprecated(forRemoval = true)
   public long[] getIds() {
     return ids;
   }
 
+  @Deprecated(forRemoval = true)
   public long[] getMask() {
     return mask;
   }
 
+  @Deprecated(forRemoval = true)
   public long[] getTypes() {
     return types;
   }
-
 }

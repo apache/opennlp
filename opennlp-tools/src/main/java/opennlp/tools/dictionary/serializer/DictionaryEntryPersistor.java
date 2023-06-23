@@ -325,16 +325,16 @@ public class DictionaryEntryPersistor {
 
     AttributesImpl entryAttributes = new AttributesImpl();
 
-    for (Iterator<String> it = entry.getAttributes().iterator(); it.hasNext();) {
+    for (Iterator<String> it = entry.attributes().iterator(); it.hasNext();) {
       String key = it.next();
 
       entryAttributes.addAttribute("", "", key,
-          "", entry.getAttributes().getValue(key));
+          "", entry.attributes().getValue(key));
     }
 
     hd.startElement("", "", ENTRY_ELEMENT, entryAttributes);
 
-    StringList tokens = entry.getTokens();
+    StringList tokens = entry.tokens();
 
     for (String token : tokens) {
 

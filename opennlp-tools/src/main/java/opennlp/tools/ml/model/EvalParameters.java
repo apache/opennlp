@@ -64,8 +64,7 @@ public class EvalParameters {
       return true;
     }
 
-    if (obj instanceof EvalParameters) {
-      EvalParameters evalParameters = (EvalParameters) obj;
+    if (obj instanceof EvalParameters evalParameters) {
 
       return Arrays.equals(params, evalParameters.params)
           && numOutcomes == evalParameters.numOutcomes

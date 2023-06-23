@@ -52,23 +52,8 @@ public class GeneratorFactoryTest {
     }
   }
 
-  static class TestParametersFeatureGenerator implements AdaptiveFeatureGenerator {
-
-    public final int ip;
-    public final float fp;
-    public final long lp;
-    public final double dp;
-    public final boolean bp;
-    public final String sp;
-
-    TestParametersFeatureGenerator(int ip, float fp, long lp, double dp, boolean bp, String sp) {
-      this.ip = ip;
-      this.fp = fp;
-      this.lp = lp;
-      this.dp = dp;
-      this.bp = bp;
-      this.sp = sp;
-    }
+  record TestParametersFeatureGenerator(int ip, float fp, long lp, double dp, boolean bp,
+                                        String sp) implements AdaptiveFeatureGenerator {
 
     @Override
     public void createFeatures(List<String> features, String[] tokens, int index,

@@ -82,16 +82,12 @@ public class ArrayMathTest {
 
   @Test
   public void testArgmaxException1() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ArrayMath.argmax(null);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () -> ArrayMath.argmax(null));
   }
 
   @Test
   public void testArgmaxException2() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      ArrayMath.argmax(new double[] {});
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () -> ArrayMath.argmax(new double[] {}));
   }
 
   @Test

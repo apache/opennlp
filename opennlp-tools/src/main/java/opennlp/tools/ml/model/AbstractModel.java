@@ -194,8 +194,7 @@ public abstract class AbstractModel implements MaxentModel {
       return true;
     }
 
-    if (obj instanceof AbstractModel) {
-      AbstractModel model = (AbstractModel) obj;
+    if (obj instanceof AbstractModel model) {
 
       return pmap.equals(model.pmap) && Objects.deepEquals(outcomeNames, model.outcomeNames)
           && Objects.equals(prior, model.prior);

@@ -114,8 +114,7 @@ public class SentenceSample implements Sample {
       return true;
     }
 
-    if (obj instanceof SentenceSample) {
-      SentenceSample a = (SentenceSample) obj;
+    if (obj instanceof SentenceSample a) {
 
       return getDocument().equals(a.getDocument())
           && Arrays.equals(getSentences(), a.getSentences());

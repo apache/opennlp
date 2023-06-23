@@ -143,7 +143,7 @@ public class LanguageDetectorME implements LanguageDetector {
         }
       }
       start += chunk.length();
-      updateCounts(mContextGenerator.getContext(chunk.getString()), ngramCounts);
+      updateCounts(mContextGenerator.getContext(chunk.s), ngramCounts);
       currPredictions = predict(ngramCounts);
       if (seenEnough(predictions, currPredictions, ngramCounts, config)) {
         return new ProbingLanguageDetectionResult(currPredictions, start);
@@ -276,30 +276,15 @@ public class LanguageDetectorME implements LanguageDetector {
     mlParams.putIfAbsent(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE);
 
-    EventTrainer trainer = TrainerFactory.getEventTrainer(
-        mlParams, manifestInfoEntries);
-
+    EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams, manifestInfoEntries);
     MaxentModel model = trainer.train(
         new LanguageDetectorEventStream(samples, factory.getContextGenerator()));
 
     return new LanguageDetectorModel(model, manifestInfoEntries, factory);
   }
 
-  private static class StringCPLengthPair {
-    private final String s;
-    private final int length;
+  private record StringCPLengthPair(String s, int length) {
 
-    StringCPLengthPair(String s, int length) {
-      this.s = s;
-      this.length = length;
-    }
-
-    int length() {
-      return length;
-    }
-
-    String getString() {
-      return s;
-    }
   }
+
 }

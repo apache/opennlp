@@ -70,8 +70,7 @@ public class Language implements Serializable {
       return true;
     }
 
-    if (obj instanceof Language) {
-      Language a = (Language) obj;
+    if (obj instanceof Language a) {
 
       return getLang().equals(a.getLang());
     }

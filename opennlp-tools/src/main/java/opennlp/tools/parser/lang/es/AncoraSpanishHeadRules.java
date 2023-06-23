@@ -100,8 +100,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
         return true;
       }
 
-      if (obj instanceof HeadRule) {
-        HeadRule rule = (HeadRule) obj;
+      if (obj instanceof HeadRule rule) {
 
         return (rule.leftToRight == leftToRight) &&
             Arrays.equals(rule.tags, tags);
@@ -306,8 +305,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
       return true;
     }
 
-    if (obj instanceof AncoraSpanishHeadRules) {
-      AncoraSpanishHeadRules rules = (AncoraSpanishHeadRules) obj;
+    if (obj instanceof AncoraSpanishHeadRules rules) {
 
       return rules.headRules.equals(headRules)
           && rules.punctSet.equals(punctSet);

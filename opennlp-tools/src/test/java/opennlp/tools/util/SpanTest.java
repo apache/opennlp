@@ -310,9 +310,7 @@ public class SpanTest {
    */
   @Test
   void testTooSmallStart() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      new Span(-1, 100);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new Span(-1, 100));
   }
 
   /**
@@ -320,9 +318,7 @@ public class SpanTest {
    */
   @Test
   void testTooSmallEnd() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      new Span(50, -1);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new Span(50, -1));
   }
 
   /**
@@ -330,8 +326,6 @@ public class SpanTest {
    */
   @Test
   void testStartLargerThanEnd() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      new Span(100, 50);
-    });
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new Span(100, 50));
   }
 }

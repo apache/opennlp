@@ -34,10 +34,9 @@ public class LemmaSampleTest {
 
   @Test
   void testParameterValidation() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      new LemmaSample(new String[] {""}, new String[] {""},
-          new String[] {"test", "one element to much"});
-    });
+    Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new LemmaSample(new String[] {""}, new String[] {""},
+                    new String[] {"test", "one element to much"}));
   }
 
   private static String[] createSentence() {

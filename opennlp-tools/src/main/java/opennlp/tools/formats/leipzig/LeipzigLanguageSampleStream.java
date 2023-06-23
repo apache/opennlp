@@ -18,7 +18,6 @@
 package opennlp.tools.formats.leipzig;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -154,14 +153,9 @@ public class LeipzigLanguageSampleStream implements ObjectStream<LanguageSample>
                                      final int samplesPerLanguage) throws IOException {
     this.sentencesPerSample = sentencesPerSample;
 
-    sentencesFiles = leipzigFolder.listFiles(new FileFilter() {
-      @Override
-      public boolean accept(File pathname) {
-        return !pathname.isHidden() && pathname.isFile()
-                && pathname.getName().length() >= 3
-                && pathname.getName().substring(0,3).matches("[a-z]+");
-      }
-    });
+    sentencesFiles = leipzigFolder.listFiles(pathname -> !pathname.isHidden() && pathname.isFile()
+            && pathname.getName().length() >= 3
+            && pathname.getName().substring(0,3).matches("[a-z]+"));
 
     if (null == sentencesFiles) {
       throw new TerminateToolException(-1 , "Directory " + leipzigFolder + " empty , No files to read!");

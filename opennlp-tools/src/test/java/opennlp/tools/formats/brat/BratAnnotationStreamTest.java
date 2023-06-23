@@ -94,8 +94,7 @@ public class BratAnnotationStreamTest extends AbstractBratTest {
       String coveredText = null;
       RelationAnnotation rAnnotation = null;
       AnnotatorNoteAnnotation aAnnotation = null;
-      if (ann instanceof SpanAnnotation) {
-        SpanAnnotation sAnnotation = (SpanAnnotation) ann;
+      if (ann instanceof SpanAnnotation sAnnotation) {
         coveredText = sAnnotation.getCoveredText();
         Assertions.assertNotNull(coveredText);
       } else if (ann instanceof RelationAnnotation) {

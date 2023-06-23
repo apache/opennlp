@@ -61,8 +61,7 @@ public class ComparablePredicate implements Comparable<ComparablePredicate> {
     if (this == obj)
       return true;
 
-    if (obj instanceof ComparablePredicate) {
-      ComparablePredicate other = (ComparablePredicate) obj;
+    if (obj instanceof ComparablePredicate other) {
       return Objects.equals(name, other.name) &&
           Arrays.equals(outcomes, other.outcomes) &&
           Arrays.equals(params, other.params);

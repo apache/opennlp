@@ -58,17 +58,17 @@ public class LanguageDetectorEvaluator extends Evaluator<LanguageSample> {
    */
   public LanguageSample processSample(LanguageSample sample) {
 
-    CharSequence document = sample.getContext();
+    CharSequence document = sample.context();
     Language predicted = languageDetector.predictLanguage(document);
 
-    if (sample.getLanguage().getLang().equals(predicted.getLang())) {
+    if (sample.language().getLang().equals(predicted.getLang())) {
       accuracy.add(1);
     }
     else {
       accuracy.add(0);
     }
 
-    return new LanguageSample(predicted, sample.getContext());
+    return new LanguageSample(predicted, sample.context());
   }
 
   /**

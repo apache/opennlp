@@ -72,14 +72,14 @@ public class SentenceVectorsDL extends AbstractDL {
 
     final Map<String, OnnxTensor> inputs = new HashMap<>();
 
-    inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.getIds()),
-        new long[] {1, tokens.getIds().length}));
+    inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
+        new long[] {1, tokens.ids().length}));
 
     inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-        LongBuffer.wrap(tokens.getMask()), new long[] {1, tokens.getMask().length}));
+        LongBuffer.wrap(tokens.mask()), new long[] {1, tokens.mask().length}));
 
     inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-        LongBuffer.wrap(tokens.getTypes()), new long[] {1, tokens.getTypes().length}));
+        LongBuffer.wrap(tokens.types()), new long[] {1, tokens.types().length}));
 
     final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
 

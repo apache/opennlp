@@ -579,9 +579,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     for (Entry<String, Object> entry : artifactMap.entrySet()) {
       final String name = entry.getKey();
       final Object artifact = entry.getValue();
-      if (artifact instanceof SerializableArtifact) {
-
-        SerializableArtifact serializableArtifact = (SerializableArtifact) artifact;
+      if (artifact instanceof SerializableArtifact serializableArtifact) {
 
         String artifactSerializerName = serializableArtifact
             .getArtifactSerializerClass().getName();
@@ -602,9 +600,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
       // If model is serialize-able always use the provided serializer
-      if (artifact instanceof SerializableArtifact) {
-
-        SerializableArtifact serializableArtifact = (SerializableArtifact) artifact;
+      if (artifact instanceof SerializableArtifact serializableArtifact) {
 
         String artifactSerializerName =
             serializableArtifact.getArtifactSerializerClass().getName();

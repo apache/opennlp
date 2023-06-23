@@ -102,16 +102,16 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
         final Map<String, OnnxTensor> inputs = new HashMap<>();
 
         inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(t.getIds()), new long[] {1, t.getIds().length}));
+            LongBuffer.wrap(t.ids()), new long[] {1, t.ids().length}));
 
         if (inferenceOptions.isIncludeAttentionMask()) {
           inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-              LongBuffer.wrap(t.getMask()), new long[] {1, t.getMask().length}));
+              LongBuffer.wrap(t.mask()), new long[] {1, t.mask().length}));
         }
 
         if (inferenceOptions.isIncludeTokenTypeIds()) {
           inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-              LongBuffer.wrap(t.getTypes()), new long[] {1, t.getTypes().length}));
+              LongBuffer.wrap(t.types()), new long[] {1, t.types().length}));
         }
 
         // The outputs from the model.

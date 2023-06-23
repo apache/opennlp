@@ -61,9 +61,7 @@ public class DownloadParserTest {
 
   @Test
   void testNullUrl() {
-    assertThrows(NullPointerException.class, () -> {
-          new DownloadUtil.DownloadParser(null);
-        }
+    assertThrows(NullPointerException.class, () -> new DownloadUtil.DownloadParser(null)
     );
   }
 
