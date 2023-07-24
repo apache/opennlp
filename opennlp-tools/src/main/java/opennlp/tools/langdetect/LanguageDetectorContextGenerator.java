@@ -31,5 +31,5 @@ public interface LanguageDetectorContextGenerator extends Serializable {
    *
    * @return An array of contexts on which a model basis its decisions.
    */
-  String[] getContext(CharSequence document);
+  <T extends CharSequence> T[] getContext(CharSequence document);
 }

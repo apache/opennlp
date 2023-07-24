@@ -50,15 +50,15 @@ public class DefaultLanguageDetectorContextGenerator implements LanguageDetector
   }
 
   @Override
-  public String[] getContext(CharSequence document) {
-    Collection<String> context = new ArrayList<>();
+  public <T extends CharSequence> T[] getContext(CharSequence document) {
+    Collection<CharSequence> context = new ArrayList<>();
 
     NGramCharModel model = new NGramCharModel();
     model.add(normalizer.normalize(document), minLength, maxLength);
 
-    for (String token : model) {
+    for (CharSequence token : model) {
       context.add(token);
     }
-    return context.toArray(new String[0]);
+    return (T[]) context.toArray(new CharSequence[0]);
   }
 }

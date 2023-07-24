@@ -17,6 +17,7 @@
 
 package opennlp.tools.langdetect;
 
+import java.nio.CharBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -30,14 +31,14 @@ public class DefaultLanguageDetectorContextGeneratorTest {
   void extractContext() {
     String doc = "abcde fghijk";
 
-    LanguageDetectorContextGenerator cg = new DefaultLanguageDetectorContextGenerator(1, 3);
+    DefaultLanguageDetectorContextGenerator cg = new DefaultLanguageDetectorContextGenerator(1, 3);
 
-    Collection<String> features = Arrays.asList(cg.getContext(doc));
+    Collection<CharSequence> features = Arrays.asList(cg.getContext(doc));
 
     Assertions.assertEquals(33, features.size());
-    Assertions.assertTrue(features.contains("ab"));
-    Assertions.assertTrue(features.contains("abc"));
-    Assertions.assertTrue(features.contains("e f"));
-    Assertions.assertTrue(features.contains(" fg"));
+    Assertions.assertTrue(features.contains(CharBuffer.wrap("ab")));
+    Assertions.assertTrue(features.contains(CharBuffer.wrap("abc")));
+    Assertions.assertTrue(features.contains(CharBuffer.wrap("e f")));
+    Assertions.assertTrue(features.contains(CharBuffer.wrap(" fg")));
   }
 }

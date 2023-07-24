@@ -20,6 +20,7 @@ package opennlp.tools.ngram;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.CharBuffer;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -169,15 +170,11 @@ public class NGramModel implements Iterable<StringList> {
    * @param maxLength
    */
   public void add(CharSequence chars, int minLength, int maxLength) {
-
+    CharBuffer cb = StringUtil.toLowerCaseCharBuffer(chars);
     for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
-      for (int textIndex = 0;
-          textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
-
-        String gram = StringUtil.toLowerCase(
-            chars.subSequence(textIndex, textIndex + lengthIndex));
-
-        add(new StringList(new String[]{gram}));
+      for (int textIndex = 0; textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
+        CharSequence gram = cb.subSequence(textIndex, textIndex + lengthIndex);
+        add(new StringList(new String[]{gram.toString()}));
       }
     }
   }
@@ -315,9 +312,7 @@ public class NGramModel implements Iterable<StringList> {
       public Entry next() {
 
         StringList tokens = mDictionaryIterator.next();
-
         Attributes attributes = new Attributes();
-
         attributes.setValue(COUNT, Integer.toString(getCount(tokens)));
 
         return new Entry(tokens, attributes);

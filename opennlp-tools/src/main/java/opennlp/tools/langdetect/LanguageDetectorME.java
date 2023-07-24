@@ -78,8 +78,7 @@ public class LanguageDetectorME implements LanguageDetector {
 
   @Override
   public Language[] predictLanguages(CharSequence content) {
-    return predict(arrayToCounts(
-            mContextGenerator.getContext(content)));
+    return predict(arrayToCounts(mContextGenerator.getContext(content)));
   }
   
   @Override
@@ -128,7 +127,7 @@ public class LanguageDetectorME implements LanguageDetector {
     int start = 0;//where to start the next chunk in codepoints
     Language[] currPredictions = null;
     //cache ngram counts across chunks
-    Map<String, MutableInt> ngramCounts = new HashMap<>();
+    Map<CharSequence, MutableInt> ngramCounts = new HashMap<>();
     while (true) {
       int actualChunkSize =
               (start + config.getChunkSize() > config.getMaxLength()) ?
@@ -151,8 +150,8 @@ public class LanguageDetectorME implements LanguageDetector {
     }
   }
 
-  private void updateCounts(String[] context, Map<String, MutableInt> ngrams) {
-    for (String ngram : context) {
+  private void updateCounts(CharSequence[] context, Map<CharSequence, MutableInt> ngrams) {
+    for (CharSequence ngram : context) {
       MutableInt i = ngrams.get(ngram);
       if (i == null) {
         i = new MutableInt(1);
@@ -163,18 +162,18 @@ public class LanguageDetectorME implements LanguageDetector {
     }
   }
 
-  private Map<String, MutableInt> arrayToCounts(String[] context) {
-    Map<String, MutableInt> ngrams = new HashMap<>();
+  private Map<CharSequence, MutableInt> arrayToCounts(CharSequence[] context) {
+    Map<CharSequence, MutableInt> ngrams = new HashMap<>();
     updateCounts(context, ngrams);
     return ngrams;
   }
 
-  private Language[] predict(Map<String, MutableInt> ngramCounts) {
+  private Language[] predict(Map<CharSequence, MutableInt> ngramCounts) {
     String[] allGrams = new String[ngramCounts.size()];
     float[] counts = new float[ngramCounts.size()];
     int i = 0;
-    for (Map.Entry<String, MutableInt> e : ngramCounts.entrySet()) {
-      allGrams[i] = e.getKey();
+    for (Map.Entry<CharSequence, MutableInt> e : ngramCounts.entrySet()) {
+      allGrams[i] = e.getKey().toString();
       // TODO -- once OPENNLP-1261 is fixed,
       // change this to e.getValue().getValue().
       counts[i] = 1;
@@ -201,7 +200,7 @@ public class LanguageDetectorME implements LanguageDetector {
    *         else {@code false}.
    */
   boolean seenEnough(List<Language[]> predictionsQueue, Language[] newPredictions,
-                     Map<String, MutableInt> ngramCounts, LanguageDetectorConfig config) {
+                     Map<CharSequence, MutableInt> ngramCounts, LanguageDetectorConfig config) {
 
     if (predictionsQueue.size() < config.getMinConsecImprovements()) {
       predictionsQueue.add(newPredictions);
@@ -285,6 +284,8 @@ public class LanguageDetectorME implements LanguageDetector {
 
   private record StringCPLengthPair(String s, int length) {
 
+    String getString() {
+      return s;
+    }
   }
-
 }

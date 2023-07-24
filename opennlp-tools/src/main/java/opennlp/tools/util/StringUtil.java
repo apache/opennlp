@@ -17,6 +17,8 @@
 
 package opennlp.tools.util;
 
+import java.nio.CharBuffer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +80,30 @@ public class StringUtil {
     int[] cp = string.codePoints().map(Character::toLowerCase).toArray();
     return new String(cp, 0, cp.length);
   }
+
+  public static CharBuffer toLowerCaseCharBuffer(CharSequence sequence) {
+    CharBuffer result = CharBuffer.allocate(sequence.length());
+    for (int cp : sequence.codePoints().toArray()) {
+      for (char c : Character.toChars(Character.toLowerCase(cp))) {
+        result.append(c);
+      }
+    }
+    result.clear();
+    return result;
+  }
+
+  /*
+  public static CharBuffer toLowerCaseCharBuffer(CharSequence string) {
+    int[] cp = string.codePoints().map(Character::toLowerCase).toArray();
+    CharBuffer result = CharBuffer.allocate(string.length());
+    for (int j : cp) {
+      char[] chars = Character.toChars(j);
+      result.put(chars, 0, chars.length);
+    }
+    result.clear();
+    return result;
+  }
+  */
 
   /**
    * Converts a {@link CharSequence} to upper case, independent of the current

@@ -50,10 +50,12 @@ public class LanguageDetectorEventStream extends AbstractEventStream<LanguageSam
 
       private boolean isVirgin = true;
 
+      @Override
       public boolean hasNext() {
         return isVirgin;
       }
 
+      @Override
       public Event next() {
 
         isVirgin = false;

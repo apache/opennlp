@@ -35,7 +35,7 @@ public class Event {
    * @param outcome The outcome to use. Must not be {@code null}.
    * @param context The {@link String array} of context elements. Must not be {@code null}.
    */
-  public Event(String outcome, String[] context) {
+  public Event(String outcome, CharSequence[] context) {
     this(outcome,context,null);
   }
 
@@ -49,6 +49,23 @@ public class Event {
   public Event(String outcome, String[] context, float[] values) {
     this.outcome = Objects.requireNonNull(outcome, "outcome must not be null");
     this.context = Objects.requireNonNull(context, "context must not be null");
+    this.values = values;
+  }
+
+  /**
+   * Instantiates an {@link Event}.
+   *
+   * @param outcome The outcome to use. Must not be {@code null}.
+   * @param context The {@link CharSequence array} of context elements. Must not be {@code null}.
+   * @param values The {@code float} array to use.
+   */
+  public Event(String outcome, CharSequence[] context, float[] values) {
+    this.outcome = Objects.requireNonNull(outcome, "outcome must not be null");
+    final String[] ctx = new String[context.length];
+    for (int i = 0; i < context.length; i++) {
+      ctx[i] = context[i].toString();
+    }
+    this.context = ctx;
     this.values = values;
   }
 
