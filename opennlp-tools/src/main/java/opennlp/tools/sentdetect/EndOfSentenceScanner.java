@@ -32,12 +32,6 @@ import java.util.Set;
 public interface EndOfSentenceScanner {
 
   /**
-   * @return an array of character which can indicate the end of a sentence.
-   */
-  @Deprecated
-  char[] getEndOfSentenceCharacters();
-
-  /**
    * @return a set of {@link Character characters} which can indicate the end of a sentence.
    */
   Set<Character> getEOSCharacters();
