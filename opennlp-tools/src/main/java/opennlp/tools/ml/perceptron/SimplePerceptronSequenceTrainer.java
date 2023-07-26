@@ -128,22 +128,6 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     }
   }
 
-  /**
-   * @return {@code true} if the validation of the internal configuration succeeds,
-   * {@code false} otherwise.
-   * @deprecated Use {@link #validate()} instead.
-   */
-  @Deprecated
-  @Override
-  public boolean isValid() {
-    try {
-      validate();
-      return true;
-    } catch (IllegalArgumentException e) {
-      return false;
-    }
-  }
-
   @Override
   public AbstractModel doTrain(SequenceStream<Event> events) throws IOException {
     int iterations = getIterations();

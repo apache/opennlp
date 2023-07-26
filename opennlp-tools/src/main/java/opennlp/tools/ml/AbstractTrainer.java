@@ -66,20 +66,6 @@ public abstract class AbstractTrainer implements Trainer {
   }
 
   /**
-   * Initializes a {@link AbstractTrainer} via {@link TrainingParameters} and
-   * a {@link Map report map}.
-   *
-   * @param trainParams The {@link Map} that maps training parameters on a key-value basis.
-   * @param reportMap The {@link Map} instance used as report map.
-   *
-   * @deprecated Use {@link #init(TrainingParameters, Map)} instead.
-   */
-  @Deprecated
-  public void init(Map<String, Object> trainParams, Map<String, String> reportMap) {
-    init(new TrainingParameters(trainParams),reportMap);
-  }
-
-  /**
    * @return Retrieves the configured {@link #ALGORITHM_PARAM} value.
    */
   public String getAlgorithm() {
@@ -116,74 +102,6 @@ public abstract class AbstractTrainer implements Trainer {
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(e);
     }
-  }
-
-  /**
-   * @return {@code true} if the validation of the internal configuration succeeds,
-   *         {@code false} otherwise.
-   * @deprecated Use {@link #validate()} instead.
-   */
-  @Deprecated
-  public boolean isValid() {
-    try {
-      validate();
-      return true;
-    }
-    catch (IllegalArgumentException e) {
-      return false;
-    }
-  }
-
-  /**
-   * @param key The identifying string associated with a certain training parameter.
-   * @param defaultValue The default value to return in case no entry for {@code key} is present
-   * @return Retrieves the {@code String} {@link TrainingParameters value} for {@code key} or the
-   *         specified {@code defaultValue} if no entry for {@code key} is present.
-   *
-   * @deprecated Use the {@link TrainingParameters} directly.
-   */
-  @Deprecated
-  protected String getStringParam(String key, String defaultValue) {
-    return trainingParameters.getStringParameter(key, defaultValue);
-  }
-
-  /**
-   * @param key The identifying string associated with a certain training parameter.
-   * @param defaultValue The default value to return in case no entry for {@code key} is present
-   * @return Retrieves the {@code int} {@link TrainingParameters value} for {@code key} or the
-   *         specified {@code defaultValue} if no entry for {@code key} is present.
-   *
-   * @deprecated Use the {@link TrainingParameters} directly.
-   */
-  @Deprecated
-  protected int TrainingParameters(String key, int defaultValue) {
-    return trainingParameters.getIntParameter(key, defaultValue);
-  }
-
-  /**
-   * @param key The identifying string associated with a certain training parameter.
-   * @param defaultValue The default value to return in case no entry for {@code key} is present
-   * @return Retrieves the {@code double} {@link TrainingParameters value} for {@code key} or the
-   *         specified {@code defaultValue} if no entry for {@code key} is present.
-   *
-   * @deprecated Use the {@link TrainingParameters} directly.
-   */
-  @Deprecated
-  protected double getDoubleParam(String key, double defaultValue) {
-    return trainingParameters.getDoubleParameter(key, defaultValue);
-  }
-
-  /**
-   * @param key The identifying string associated with a certain training parameter.
-   * @param defaultValue The default value to return in case no entry for {@code key} is present
-   * @return Retrieves the {@code boolean} {@link TrainingParameters value} for {@code key} or the
-   *         specified {@code defaultValue} if no entry for {@code key} is present.
-   *
-   * @deprecated Use the {@link TrainingParameters} directly.
-   */
-  @Deprecated
-  protected boolean getBooleanParam(String key, boolean defaultValue) {
-    return trainingParameters.getBooleanParameter(key, defaultValue);
   }
 
   /**
