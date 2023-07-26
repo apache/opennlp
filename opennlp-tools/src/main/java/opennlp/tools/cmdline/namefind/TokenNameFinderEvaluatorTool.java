@@ -35,7 +35,6 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderEvaluatorTool.EvalToolParams;
-import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.cmdline.params.FineGrainedEvaluatorParams;
 import opennlp.tools.namefind.NameFinderME;
@@ -57,8 +56,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public final class TokenNameFinderEvaluatorTool
     extends AbstractEvaluatorTool<NameSample, EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams,
-      DetailedFMeasureEvaluatorParams, FineGrainedEvaluatorParams {
+  interface EvalToolParams extends EvaluatorParams, FineGrainedEvaluatorParams {
     @OptionalParameter
     @ParameterDescription(valueName = "types", description = "name types to use for evaluation")
     String getNameTypes();
@@ -84,11 +82,6 @@ public final class TokenNameFinderEvaluatorTool
     List<EvaluationMonitor<NameSample>> listeners = new LinkedList<>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
-    }
-    TokenNameFinderDetailedFMeasureListener detailedFListener = null;
-    if (params.getDetailedF()) {
-      detailedFListener = new TokenNameFinderDetailedFMeasureListener();
-      listeners.add(detailedFListener);
     }
 
     TokenNameFinderFineGrainedReportListener reportListener = null;
@@ -151,10 +144,6 @@ public final class TokenNameFinderEvaluatorTool
       reportListener.writeReport();
     }
 
-    if (detailedFListener == null) {
-      logger.info(evaluator.getFMeasure().toString());
-    } else {
-      logger.info(detailedFListener.toString());
-    }
+    logger.info(evaluator.getFMeasure().toString());
   }
 }

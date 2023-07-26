@@ -32,7 +32,6 @@ import opennlp.tools.cmdline.AbstractCrossValidatorTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.chunker.ChunkerCrossValidatorTool.CVToolParams;
 import opennlp.tools.cmdline.params.CVParams;
-import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.util.eval.EvaluationMonitor;
 import opennlp.tools.util.eval.FMeasure;
 import opennlp.tools.util.model.ModelUtil;
@@ -41,7 +40,7 @@ import opennlp.tools.util.model.ModelUtil;
 public final class ChunkerCrossValidatorTool
     extends AbstractCrossValidatorTool<ChunkSample, CVToolParams> {
 
-  interface CVToolParams extends TrainingParams, CVParams, DetailedFMeasureEvaluatorParams {
+  interface CVToolParams extends TrainingParams, CVParams {
   }
 
   private static final Logger logger = LoggerFactory.getLogger(ChunkerCrossValidatorTool.class);
@@ -65,13 +64,8 @@ public final class ChunkerCrossValidatorTool
     }
 
     List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<>();
-    ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if (params.getMisclassified()) {
       listeners.add(new ChunkEvaluationErrorListener());
-    }
-    if (params.getDetailedF()) {
-      detailedFMeasureListener = new ChunkerDetailedFMeasureListener();
-      listeners.add(detailedFMeasureListener);
     }
 
     ChunkerCrossValidator validator;
@@ -96,11 +90,7 @@ public final class ChunkerCrossValidatorTool
       }
     }
 
-    if (detailedFMeasureListener == null) {
-      FMeasure result = validator.getFMeasure();
-      logger.info(result.toString());
-    } else {
-      logger.info(detailedFMeasureListener.toString());
-    }
+    FMeasure result = validator.getFMeasure();
+    logger.info(result.toString());
   }
 }

@@ -34,7 +34,6 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderCrossValidatorTool.CVToolParams;
 import opennlp.tools.cmdline.params.CVParams;
-import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.FineGrainedEvaluatorParams;
 import opennlp.tools.namefind.BilouCodec;
 import opennlp.tools.namefind.BioCodec;
@@ -51,8 +50,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public final class TokenNameFinderCrossValidatorTool
     extends AbstractCrossValidatorTool<NameSample, CVToolParams> {
 
-  interface CVToolParams extends TrainingParams, CVParams,
-      DetailedFMeasureEvaluatorParams, FineGrainedEvaluatorParams {
+  interface CVToolParams extends TrainingParams, CVParams, FineGrainedEvaluatorParams {
   }
 
   private static final Logger logger = LoggerFactory.getLogger(TokenNameFinderCrossValidatorTool.class);
@@ -95,11 +93,6 @@ public final class TokenNameFinderCrossValidatorTool
     List<EvaluationMonitor<NameSample>> listeners = new LinkedList<>();
     if (params.getMisclassified()) {
       listeners.add(new NameEvaluationErrorListener());
-    }
-    TokenNameFinderDetailedFMeasureListener detailedFListener = null;
-    if (params.getDetailedF()) {
-      detailedFListener = new TokenNameFinderDetailedFMeasureListener();
-      listeners.add(detailedFListener);
     }
 
     String sequenceCodecImplName = params.getSequenceCodec();
@@ -166,10 +159,6 @@ public final class TokenNameFinderCrossValidatorTool
       reportListener.writeReport();
     }
 
-    if (detailedFListener == null) {
-      logger.info(validator.getFMeasure().toString());
-    } else {
-      logger.info(detailedFListener.toString());
-    }
+    logger.info(validator.getFMeasure().toString());
   }
 }

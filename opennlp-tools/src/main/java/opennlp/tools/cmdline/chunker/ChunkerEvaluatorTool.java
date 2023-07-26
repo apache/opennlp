@@ -33,7 +33,6 @@ import opennlp.tools.cmdline.AbstractEvaluatorTool;
 import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.chunker.ChunkerEvaluatorTool.EvalToolParams;
-import opennlp.tools.cmdline.params.DetailedFMeasureEvaluatorParams;
 import opennlp.tools.cmdline.params.EvaluatorParams;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.eval.EvaluationMonitor;
@@ -48,7 +47,7 @@ import opennlp.tools.util.eval.EvaluationMonitor;
 public final class ChunkerEvaluatorTool
     extends AbstractEvaluatorTool<ChunkSample, EvalToolParams> {
 
-  interface EvalToolParams extends EvaluatorParams, DetailedFMeasureEvaluatorParams {
+  interface EvalToolParams extends EvaluatorParams {
   }
 
   private static final Logger logger = LoggerFactory.getLogger(ChunkerEvaluatorTool.class);
@@ -69,13 +68,8 @@ public final class ChunkerEvaluatorTool
     ChunkerModel model = new ChunkerModelLoader().load(params.getModel());
 
     List<EvaluationMonitor<ChunkSample>> listeners = new LinkedList<>();
-    ChunkerDetailedFMeasureListener detailedFMeasureListener = null;
     if (params.getMisclassified()) {
       listeners.add(new ChunkEvaluationErrorListener());
-    }
-    if (params.getDetailedF()) {
-      detailedFMeasureListener = new ChunkerDetailedFMeasureListener();
-      listeners.add(detailedFMeasureListener);
     }
 
     ChunkerEvaluator evaluator = new ChunkerEvaluator(new ChunkerME(model),
@@ -107,10 +101,6 @@ public final class ChunkerEvaluatorTool
 
     monitor.stopAndPrintFinalResult();
 
-    if (detailedFMeasureListener == null) {
-      logger.info(evaluator.getFMeasure().toString());
-    } else {
-      logger.info(detailedFMeasureListener.toString());
-    }
+    logger.info(evaluator.getFMeasure().toString());
   }
 }
