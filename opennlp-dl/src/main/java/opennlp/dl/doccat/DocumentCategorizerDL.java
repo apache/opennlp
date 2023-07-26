@@ -48,6 +48,10 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
 /**
  * An implementation of {@link DocumentCategorizer} that performs document classification
  * using ONNX models.
+ *
+ * @see DocumentCategorizer
+ * @see InferenceOptions
+ * @see ClassificationScoringStrategy
  */
 public class DocumentCategorizerDL extends AbstractDL implements DocumentCategorizer {
 
@@ -58,16 +62,20 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   private final InferenceOptions inferenceOptions;
 
   /**
-   * Creates a new document categorizer using ONNX models.
-   * @param modelFile The ONNX modelFile file.
-   * @param vocabFile The modelFile's vocabulary file.
+   * Instantiates a {@link DocumentCategorizer document categorizer} using ONNX models.
+   *
+   * @param model The ONNX model file.
+   * @param vocabulary The model file's vocabulary file.
    * @param categories The categories.
    * @param classificationScoringStrategy Implementation of {@link ClassificationScoringStrategy} used
    *                                      to calculate the classification scores given the score of each
    *                                      individual document part.
    * @param inferenceOptions {@link InferenceOptions} to control the inference.
+   *
+   * @throws OrtException Thrown if the {@code model} cannot be loaded.
+   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
    */
-  public DocumentCategorizerDL(File modelFile, File vocabFile, Map<Integer, String> categories,
+  public DocumentCategorizerDL(File model, File vocabulary, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy,
                                InferenceOptions inferenceOptions)
       throws IOException, OrtException {
@@ -79,8 +87,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
     }
 
-    this.session = env.createSession(modelFile.getPath(), sessionOptions);
-    this.vocab = loadVocab(vocabFile);
+    this.session = env.createSession(model.getPath(), sessionOptions);
+    this.vocab = loadVocab(vocabulary);
     this.tokenizer = new WordpieceTokenizer(vocab.keySet());
     this.categories = categories;
     this.classificationScoringStrategy = classificationScoringStrategy;

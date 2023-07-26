@@ -28,8 +28,6 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import opennlp.dl.AbstractDL;
 import opennlp.dl.Tokens;
@@ -42,14 +40,14 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
  */
 public class SentenceVectorsDL extends AbstractDL {
 
-  private static final Logger logger = LoggerFactory.getLogger(SentenceVectorsDL.class);
-
   /**
-   * Creates an instance of the class.
+   * Instantiates a {@link SentenceVectorsDL sentence detector} using ONNX models.
+   *
    * @param model The file name of a sentence vectors ONNX model.
    * @param vocabulary The file name of the vocabulary file for the model.
-   * @throws OrtException Thrown if the model cannot be loaded.
-   * @throws IOException Thrown if the vocabulary file cannot be loaded.
+   *
+   * @throws OrtException Thrown if the {@code model} cannot be loaded.
+   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
    */
   public SentenceVectorsDL(final File model, final File vocabulary)
       throws OrtException, IOException {
@@ -63,7 +61,9 @@ public class SentenceVectorsDL extends AbstractDL {
 
   /**
    * Generates vectors given a sentence.
+   * 
    * @param sentence The input sentence.
+   *
    * @throws OrtException Thrown if an error occurs during inference.
    */
   public float[] getVectors(final String sentence) throws OrtException {
