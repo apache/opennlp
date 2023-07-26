@@ -31,8 +31,6 @@ import java.util.Set;
 public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
 
   private final Set<Character> eosCharacters;
-  @Deprecated
-  private final char[] eosChars;
 
   /**
    * Initializes the current instance.
@@ -41,10 +39,10 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
    */
   public DefaultEndOfSentenceScanner(char[] eosCharacters) {
     this.eosCharacters = new HashSet<>();
+
     for (char eosChar: eosCharacters) {
       this.eosCharacters.add(eosChar);
     }
-    this.eosChars = eosCharacters;
   }
 
   @Override
@@ -73,11 +71,6 @@ public class DefaultEndOfSentenceScanner implements EndOfSentenceScanner {
       }
     }
     return l;
-  }
-
-  @Deprecated
-  public char[] getEndOfSentenceCharacters() {
-    return eosChars;
   }
 
   @Override

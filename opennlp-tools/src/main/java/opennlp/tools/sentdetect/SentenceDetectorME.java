@@ -37,7 +37,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.model.ModelUtil;
 
 /**
  * A sentence detector for splitting up raw text into sentences.
@@ -340,15 +339,4 @@ public class SentenceDetectorME implements SentenceDetector {
     return new SentenceModel(languageCode, sentModel, manifestInfoEntries, sdFactory);
   }
 
-  /**
-   * @deprecated Use
-   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
-   *             and pass in af {@link SentenceDetectorFactory}.
-   */
-  @Deprecated
-  public static SentenceModel train(String languageCode, ObjectStream<SentenceSample> samples,
-      boolean useTokenEnd, Dictionary abbreviations) throws IOException {
-    return train(languageCode, samples, useTokenEnd, abbreviations,
-        ModelUtil.createDefaultTrainingParameters());
-  }
 }
