@@ -20,8 +20,10 @@ package opennlp.dl.doccat.scoring;
 import java.util.List;
 
 /**
- * Calculates the document classification scores by averaging the scores for
- * all individual parts of a document.
+ * A {@link ClassificationScoringStrategy} which calculates the document classification scores
+ * by averaging the scores for all individual parts of a document.
+ *
+ * @see ClassificationScoringStrategy
  */
 public class AverageClassificationScoringStrategy implements ClassificationScoringStrategy {
 

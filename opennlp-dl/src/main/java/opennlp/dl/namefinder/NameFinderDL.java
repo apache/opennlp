@@ -18,6 +18,7 @@
 package opennlp.dl.namefinder;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.LongBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,6 +44,9 @@ import opennlp.tools.util.Span;
 
 /**
  * An implementation of {@link TokenNameFinder} that uses ONNX models.
+ *
+ * @see TokenNameFinder
+ * @see InferenceOptions
  */
 public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
@@ -56,16 +60,39 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   private final Map<Integer, String> ids2Labels;
   private final InferenceOptions inferenceOptions;
 
+  /**
+   * Instantiates a {@link TokenNameFinder name finder} using ONNX models.
+   * 
+   * @param model The ONNX model file.
+   * @param vocabulary The model file's vocabulary file.
+   * @param ids2Labels The mapping of ids to labels.
+   * @param sentenceDetector The {@link SentenceDetector} to be used.
+   *
+   * @throws OrtException Thrown if the {@code model} cannot be loaded.
+   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
-                      SentenceDetector sentenceDetector) throws Exception {
+                      SentenceDetector sentenceDetector) throws IOException, OrtException {
 
     this(model, vocabulary, ids2Labels, new InferenceOptions(), sentenceDetector);
 
   }
 
+  /**
+   * Instantiates a {@link TokenNameFinder name finder} using ONNX models.
+   *
+   * @param model The ONNX model file.
+   * @param vocabulary The model file's vocabulary file.
+   * @param ids2Labels The mapping of ids to labels.
+   * @param inferenceOptions {@link InferenceOptions} to control the inference.
+   * @param sentenceDetector The {@link SentenceDetector} to be used.
+   *
+   * @throws OrtException Thrown if the {@code model} cannot be loaded.
+   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       InferenceOptions inferenceOptions,
-                      SentenceDetector sentenceDetector) throws Exception {
+                      SentenceDetector sentenceDetector) throws IOException, OrtException {
 
     this.env = OrtEnvironment.getEnvironment();
 

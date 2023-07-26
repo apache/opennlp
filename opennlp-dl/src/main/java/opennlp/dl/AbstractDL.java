@@ -46,27 +46,24 @@ public abstract class AbstractDL {
   protected Map<String, Integer> vocab;
 
   /**
-   * Loads a vocabulary file from disk.
+   * Loads a vocabulary {@link File} from disk.
+   *
    * @param vocabFile The vocabulary file.
    * @return A map of vocabulary words to integer IDs.
-   * @throws IOException Thrown if the vocabulary file cannot be opened and read.
+   *
+   * @throws IOException Thrown if the vocabulary file cannot be opened or read.
    */
   public Map<String, Integer> loadVocab(final File vocabFile) throws IOException {
 
     final Map<String, Integer> vocab = new HashMap<>();
-
     final AtomicInteger counter = new AtomicInteger(0);
 
     try (Stream<String> lines = Files.lines(Path.of(vocabFile.getPath()))) {
 
-      lines.forEach(line -> {
-        vocab.put(line, counter.getAndIncrement());
-      });
-
+      lines.forEach(line -> vocab.put(line, counter.getAndIncrement()));
     }
 
     return vocab;
-
   }
 
 }
