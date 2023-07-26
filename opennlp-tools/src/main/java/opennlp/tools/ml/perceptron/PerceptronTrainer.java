@@ -122,27 +122,6 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     }
   }
 
-  /**
-   * @return {@code true} if the validation of the internal configuration succeeds,
-   *         {@code false} otherwise.
-   * @deprecated Use {@link #validate()} instead.
-   */
-  @Deprecated
-  @Override
-  public boolean isValid() {
-    if (!super.isValid()) {
-      return false;
-    }
-
-    String algorithmName = getAlgorithm();
-    if (algorithmName != null) {
-      return PERCEPTRON_VALUE.equals(algorithmName);
-    }
-    else {
-      return true;
-    }
-  }
-
   @Override
   public boolean isSortAndMerge() {
     return false;

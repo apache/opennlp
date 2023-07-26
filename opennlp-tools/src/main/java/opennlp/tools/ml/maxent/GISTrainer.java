@@ -66,9 +66,7 @@ import opennlp.tools.util.TrainingParameters;
 public class GISTrainer extends AbstractEventTrainer {
 
   private static final Logger logger = LoggerFactory.getLogger(GISTrainer.class);
-  @Deprecated
-  public static final String OLD_LL_THRESHOLD_PARAM = "llthreshold";
-  
+
   public static final String LOG_LIKELIHOOD_THRESHOLD_PARAM = "LLThreshold";
   public static final double LOG_LIKELIHOOD_THRESHOLD_DEFAULT = 0.0001;
   private double llThreshold = 0.0001;
@@ -188,19 +186,7 @@ public class GISTrainer extends AbstractEventTrainer {
   public void init(TrainingParameters trainingParameters, Map<String, String> reportMap) {
     super.init(trainingParameters, reportMap);
 
-    // Just in case someone is using "llthreshold" instead of LLThreshold...
-    // this warning can be removed in a future version of OpenNLP.
-    if (trainingParameters.getDoubleParameter(OLD_LL_THRESHOLD_PARAM, -1.) > 0. ) {
-      logger.warn("The training parameter: {} has been deprecated. Please use {} instead.",
-              OLD_LL_THRESHOLD_PARAM, LOG_LIKELIHOOD_THRESHOLD_DEFAULT);
-      // if they didn't supply a value for both llthreshold AND LLThreshold  copy it over..
-      if (trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, -1.) < 0. ) {
-        trainingParameters.put(LOG_LIKELIHOOD_THRESHOLD_PARAM,
-            trainingParameters.getDoubleParameter(OLD_LL_THRESHOLD_PARAM, LOG_LIKELIHOOD_THRESHOLD_DEFAULT));
-      }
-    }
-
-    llThreshold = trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM, 
+    llThreshold = trainingParameters.getDoubleParameter(LOG_LIKELIHOOD_THRESHOLD_PARAM,
         LOG_LIKELIHOOD_THRESHOLD_DEFAULT);
 
     useSimpleSmoothing = trainingParameters.getBooleanParameter(SMOOTHING_PARAM, SMOOTHING_DEFAULT);

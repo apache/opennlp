@@ -51,17 +51,6 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
     super.validate();
   }
 
-  /**
-   * @return {@code true} if the validation of the internal configuration succeeds,
-   *         {@code false} otherwise.
-   * @deprecated Use {@link #validate()} instead.
-   */
-  @Deprecated
-  @Override
-  public boolean isValid() {
-    return super.isValid();
-  }
-
   public abstract boolean isSortAndMerge();
 
   public DataIndexer getDataIndexer(ObjectStream<Event> events) throws IOException {

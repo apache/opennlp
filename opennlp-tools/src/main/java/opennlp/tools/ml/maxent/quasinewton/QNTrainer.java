@@ -128,11 +128,6 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   @Override
-  public void init(Map<String, Object> trainParams, Map<String, String> reportMap) {
-    init(new TrainingParameters(trainParams),reportMap);
-  }
-
-  @Override
   public void validate() {
     super.validate();
 
@@ -165,23 +160,6 @@ public class QNTrainer extends AbstractEventTrainer {
 
     if (l2Cost < 0) {
       throw new IllegalArgumentException("Regularization costs must be >= 0");
-    }
-  }
-
-  /**
-   * @return {@code true} if the validation of the internal configuration succeeds,
-   *         {@code false} otherwise.
-   * @deprecated Use {@link #validate()} instead.
-   */
-  @Deprecated
-  @Override
-  public boolean isValid() {
-    try {
-      validate();
-      return true;
-    }
-    catch (IllegalArgumentException e) {
-      return false;
     }
   }
 
