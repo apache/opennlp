@@ -92,16 +92,14 @@ public class LanguageDetectorMETest {
     byte[] serialized = serializeModel(model);
 
     LanguageDetectorModel myModel = new LanguageDetectorModel(new ByteArrayInputStream(serialized));
-
     Assertions.assertNotNull(myModel);
-
   }
 
   protected static byte[] serializeModel(LanguageDetectorModel model) throws IOException {
-
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    model.serialize(out);
-    return out.toByteArray();
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+      model.serialize(out);
+      return out.toByteArray();
+    }
   }
 
   public static LanguageDetectorModel trainModel() throws Exception {
@@ -109,8 +107,6 @@ public class LanguageDetectorMETest {
   }
 
   public static LanguageDetectorModel trainModel(LanguageDetectorFactory factory) throws Exception {
-
-
     LanguageDetectorSampleStream sampleStream = createSampleStream();
 
     TrainingParameters params = new TrainingParameters();

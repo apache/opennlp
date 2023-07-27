@@ -35,8 +35,9 @@ import opennlp.tools.util.TrainingParameters;
 
 public class LanguageDetectorFactoryTest {
 
-
   private static LanguageDetectorModel model;
+
+  private static byte[] serialized;
 
   @BeforeAll
   static void train() throws Exception {
@@ -54,24 +55,20 @@ public class LanguageDetectorFactoryTest {
     params.put(TrainingParameters.ALGORITHM_PARAM, "NAIVEBAYES");
 
     model = LanguageDetectorME.train(sampleStream, params, new DummyFactory());
+    serialized = LanguageDetectorMETest.serializeModel(model);
   }
 
   @Test
   void testCorrectFactory() throws IOException {
-    byte[] serialized = LanguageDetectorMETest.serializeModel(model);
-
     LanguageDetectorModel myModel = new LanguageDetectorModel(new ByteArrayInputStream(serialized));
-
-    Assertions.assertTrue(myModel.getFactory() instanceof DummyFactory);
-
+    Assertions.assertNotNull(myModel.getFactory());
+    Assertions.assertTrue(myModel.getFactory() instanceof LanguageDetectorFactory);
   }
 
   @Test
-  void testDummyFactory() throws Exception {
-    byte[] serialized = LanguageDetectorMETest.serializeModel(model);
-
+  void testDummyFactory() throws IOException {
     LanguageDetectorModel myModel = new LanguageDetectorModel(new ByteArrayInputStream(serialized));
-
+    Assertions.assertNotNull(myModel.getFactory());
     Assertions.assertTrue(myModel.getFactory() instanceof DummyFactory);
   }
 

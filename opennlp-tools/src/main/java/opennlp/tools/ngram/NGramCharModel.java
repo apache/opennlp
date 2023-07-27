@@ -17,6 +17,7 @@
 
 package opennlp.tools.ngram;
 
+import java.nio.CharBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,11 +30,11 @@ import opennlp.tools.util.StringUtil;
  *
  * @see NGramModel
  */
-public class NGramCharModel implements Iterable<String> {
+public class NGramCharModel implements Iterable<CharSequence> {
 
   protected static final String COUNT = "count";
 
-  private final Map<String, Integer> mNGrams = new HashMap<>();
+  private final Map<CharSequence, Integer> mNGrams = new HashMap<>();
 
   /**
    * Initializes an empty instance.
@@ -42,15 +43,18 @@ public class NGramCharModel implements Iterable<String> {
   }
 
   /**
-   * Retrieves the count of the given ngram.
+   * Retrieves the count of the given {@link CharSequence ngram}.
    *
-   * @param ngram an ngram
-   * @return count of the ngram or 0 if it is not contained
-   *
+   * @param ngram The {@code ngram} to get the count for.
+   * @return Count of the {@code ngram} or {@code 0} if it is not contained at all.
    */
-  public int getCount(String ngram) {
-
-    Integer count = mNGrams.get(ngram);
+  public int getCount(CharSequence ngram) {
+    Integer count;
+    if (ngram instanceof CharBuffer) {
+      count = mNGrams.get(ngram);
+    } else {
+      count = mNGrams.get(CharBuffer.wrap(ngram));
+    }
 
     if (count == null) {
       return 0;
@@ -60,12 +64,12 @@ public class NGramCharModel implements Iterable<String> {
   }
 
   /**
-   * Sets the count of an existing ngram.
+   * Sets the count of an existing {@link CharSequence ngram}.
    *
-   * @param ngram
-   * @param count
+   * @param ngram The {@code ngram} to get the count for.
+   * @param count The count of the {@code ngram} to set.
    */
-  public void setCount(String ngram, int count) {
+  public void setCount(CharSequence ngram, int count) {
 
     Integer oldCount = mNGrams.put(ngram, count);
 
@@ -76,75 +80,84 @@ public class NGramCharModel implements Iterable<String> {
   }
 
   /**
-   * Adds one NGram, if it already exists the count increase by one.
+   * Adds an {@code ngram}. If it already exists the count increase by one.
    *
-   * @param ngram
+   * @param ngram The {@link CharSequence} to be added.
    */
-  public void add(String ngram) {
+  public void add(CharSequence ngram) {
     if (contains(ngram)) {
       setCount(ngram, getCount(ngram) + 1);
     } else {
-      mNGrams.put(ngram, 1);
+      mNGrams.put(CharBuffer.wrap(ngram), 1);
     }
   }
 
   /**
-   * Adds CharSequence that will be ngrammed into chars.
+   * Adds a {@link CharSequence} that will be ngrammed into chars.
    *
-   * @param chars
-   * @param minLength
-   * @param maxLength
+   * @param chars The {@link CharSequence} to be ngrammed.
+   * @param minLength The minimal length for {@code 'n'} to populate ngrams with.
+   * @param maxLength The maximum length for {@code 'n'} to populate ngrams with.
    */
   public void add(CharSequence chars, int minLength, int maxLength) {
-
+    CharBuffer cb = StringUtil.toLowerCaseCharBuffer(chars);
     for (int lengthIndex = minLength; lengthIndex < maxLength + 1; lengthIndex++) {
-      for (int textIndex = 0;
-          textIndex + lengthIndex - 1 < chars.length(); textIndex++) {
-
-        String gram = StringUtil.toLowerCase(
-            chars.subSequence(textIndex, textIndex + lengthIndex));
-
+      for (int textIndex = 0; textIndex + lengthIndex - 1 < cb.length(); textIndex++) {
+        CharSequence gram = cb.subSequence(textIndex, textIndex + lengthIndex);
         add(gram);
       }
     }
   }
 
   /**
-   * Removes the specified tokens form the NGram model, they are just dropped.
+   * Removes the specified {@code ngram} is from a {@link NGramCharModel}.
    *
-   * @param ngram
+   * @param ngram The {@code ngram} to remove. If {@code null}, the model keeps its state.
    */
-  public void remove(String ngram) {
-    mNGrams.remove(ngram);
+  public void remove(CharSequence ngram) {
+    if (ngram instanceof CharBuffer) {
+      mNGrams.remove(ngram);
+    } else {
+      if (ngram != null) {
+        mNGrams.remove(CharBuffer.wrap(ngram));
+      }
+    }
   }
 
   /**
-   * Checks fit he given tokens are contained by the current instance.
+   * Checks if the given {@code ngram} is contained in a {@link NGramCharModel}.
    *
-   * @param ngram
+   * @param ngram The {@code ngram} to check. If {@code null}, the model keeps its state.
    *
-   * @return true if the ngram is contained
+   * @return {@code true} if the ngram is contained, {@code false} otherwise.
    */
-  public boolean contains(String ngram) {
-    return mNGrams.containsKey(ngram);
+  public boolean contains(CharSequence ngram) {
+    if (ngram instanceof CharBuffer) {
+      return mNGrams.containsKey(ngram);
+    } else {
+      if (ngram != null) {
+        return mNGrams.containsKey(CharBuffer.wrap(ngram));
+      }
+      return false;
+    }
   }
 
   /**
-   * Retrieves the number of {@link String} entries in the current instance.
+   * Retrieves the number of {@link CharSequence entries} in a {@link NGramCharModel}.
    *
-   * @return number of different grams
+   * @return Number of different grams or {@code 0} if the model is empty.
    */
   public int size() {
     return mNGrams.size();
   }
 
   /**
-   * Retrieves an {@link Iterator} over all {@link String} entries.
+   * Retrieves an {@link Iterator} over all {@link CharSequence entries}.
    *
-   * @return iterator over all grams
+   * @return iterator over all ngrams
    */
   @Override
-  public Iterator<String> iterator() {
+  public Iterator<CharSequence> iterator() {
     return mNGrams.keySet().iterator();
   }
 
@@ -156,7 +169,7 @@ public class NGramCharModel implements Iterable<String> {
   public int numberOfGrams() {
     int counter = 0;
 
-    for (String ngram : this) {
+    for (CharSequence ngram : this) {
       counter += getCount(ngram);
     }
 
@@ -164,19 +177,21 @@ public class NGramCharModel implements Iterable<String> {
   }
 
   /**
-   * Deletes all ngram which do appear less than the cutoffUnder value
-   * and more often than the cutoffOver value.
+   * Deletes all ngram which do appear less than the {@code cutoffUnder} value
+   * and more often than the {@code cutoffOver} value.
    *
-   * @param cutoffUnder
-   * @param cutoffOver
+   * @param cutoffUnder The lower boundary to use for deletions.
+   *                    Must be greater than {@code 0}.
+   * @param cutoffOver The upper boundary to use for deletions.
+   *                   Must be greater than {@code 0}
    */
   public void cutoff(int cutoffUnder, int cutoffOver) {
 
     if (cutoffUnder > 0 || cutoffOver < Integer.MAX_VALUE) {
 
-      for (Iterator<String> it = iterator(); it.hasNext(); ) {
+      for (Iterator<CharSequence> it = iterator(); it.hasNext(); ) {
 
-        String ngram = it.next();
+        CharSequence ngram = it.next();
 
         int count = getCount(ngram);
 

@@ -19,7 +19,6 @@ package opennlp.tools.langdetect;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import opennlp.tools.ngram.NGramModel;
@@ -65,9 +64,12 @@ public class DummyFactory extends LanguageDetectorFactory {
 
     @Override
     public String[] getContext(CharSequence document) {
-      String[] superContext = super.getContext(document);
+      CharSequence[] superContext = super.getContext(document);
 
-      List<String> context = new ArrayList<>(Arrays.asList(superContext));
+      List<String> context = new ArrayList<>(superContext.length);
+      for (CharSequence cs : superContext) {
+        context.add(cs.toString());
+      }
 
       document = this.normalizer.normalize(document);
 
