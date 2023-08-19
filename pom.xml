@@ -436,7 +436,7 @@
 						<configuration>
 						<rules>
 							<requireJavaVersion>
-								<message>Java 11 or higher is required to compile this module</message>
+								<message>Java 17 or higher is required to compile this module</message>
 								<version>[${java.version},)</version>
 							</requireJavaVersion>
 							<requireMavenVersion>
