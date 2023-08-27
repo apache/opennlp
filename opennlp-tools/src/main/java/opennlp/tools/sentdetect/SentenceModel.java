@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.sentdetect;
 
 import java.io.File;
@@ -40,7 +39,7 @@ import opennlp.tools.util.model.ModelUtil;
  */
 public class SentenceModel extends BaseModel {
 
-  private static final long serialVersionUID = -3921848998444722554L;
+  private static final long serialVersionUID = -8374532795287293730L;
   private static final String COMPONENT_NAME = "SentenceDetectorME";
   private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
 
@@ -49,43 +48,6 @@ public class SentenceModel extends BaseModel {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, sdFactory);
     artifactMap.put(MAXENT_MODEL_ENTRY_NAME, sentModel);
     checkArtifactMap();
-  }
-
-  /**
-   * TODO: was added in 1.5.3 -&gt; remove
-   * @deprecated Use
-   *             {@link #SentenceModel(String, MaxentModel, Map, SentenceDetectorFactory)}
-   *             instead and pass in a {@link SentenceDetectorFactory}
-   */
-  public SentenceModel(String languageCode, MaxentModel sentModel, boolean useTokenEnd,
-      Dictionary abbreviations, char[] eosCharacters, Map<String, String> manifestInfoEntries) {
-    this(languageCode, sentModel, manifestInfoEntries,
-        new SentenceDetectorFactory(languageCode, useTokenEnd, abbreviations,
-            eosCharacters));
-  }
-
-  /**
-   * TODO: was added in 1.5.3 -&gt; remove
-   *
-   * @deprecated Use
-   *             {@link #SentenceModel(String, MaxentModel, Map, SentenceDetectorFactory)}
-   *             instead and pass in a {@link SentenceDetectorFactory}
-   */
-  public SentenceModel(String languageCode, MaxentModel sentModel,
-      boolean useTokenEnd, Dictionary abbreviations, char[] eosCharacters) {
-    this(languageCode, sentModel, useTokenEnd, abbreviations, eosCharacters,
-        null);
-  }
-
-  public SentenceModel(String languageCode, MaxentModel sentModel,
-      boolean useTokenEnd, Dictionary abbreviations, Map<String, String> manifestInfoEntries) {
-    this(languageCode, sentModel, useTokenEnd, abbreviations, null,
-        manifestInfoEntries);
-  }
-
-  public SentenceModel(String languageCode, MaxentModel sentModel,
-      boolean useTokenEnd, Dictionary abbreviations) {
-    this (languageCode, sentModel, useTokenEnd, abbreviations, null, null);
   }
 
   public SentenceModel(InputStream in) throws IOException {

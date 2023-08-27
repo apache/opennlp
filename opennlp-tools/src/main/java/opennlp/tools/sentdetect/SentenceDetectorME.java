@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
@@ -307,19 +306,6 @@ public class SentenceDetectorME implements SentenceDetector {
    */
   protected boolean isAcceptableBreak(CharSequence s, int fromIndex, int candidateIndex) {
     return true;
-  }
-
-  /**
-   * @deprecated Use
-   *             {@link #train(String, ObjectStream, SentenceDetectorFactory, TrainingParameters)}
-   *             and pass in af {@link SentenceDetectorFactory}.
-   */
-  public static SentenceModel train(String languageCode,
-      ObjectStream<SentenceSample> samples, boolean useTokenEnd,
-      Dictionary abbreviations, TrainingParameters mlParams) throws IOException {
-    SentenceDetectorFactory sdFactory = new SentenceDetectorFactory(
-        languageCode, useTokenEnd, abbreviations, null);
-    return train(languageCode, samples, sdFactory, mlParams);
   }
 
   public static SentenceModel train(String languageCode,

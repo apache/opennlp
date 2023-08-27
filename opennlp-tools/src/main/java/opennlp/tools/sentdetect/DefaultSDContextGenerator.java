@@ -159,21 +159,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     collectFeats.clear();
     return context;
   }
-
-  /**
-   * Determines some features for the sentence detector and adds them to list features.
-   *
-   * @param prefix String preceding the eos character in the eos token.
-   * @param suffix String following the eos character in the eos token.
-   * @param previous Space delimited token preceding token containing eos character.
-   * @param next Space delimited token following token containing eos character.
-   *
-   * @deprecated use {@link #collectFeatures(String, String, String, String, Character)} instead.
-   */
-  protected void collectFeatures(String prefix, String suffix, String previous, String next) {
-    collectFeatures(prefix, suffix, previous, next, null);
-  }
-
+  
   /**
    * Determines some features for the sentence detector and adds them to list features.
    *

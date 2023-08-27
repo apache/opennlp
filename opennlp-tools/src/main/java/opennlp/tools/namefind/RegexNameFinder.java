@@ -64,27 +64,6 @@ public final class RegexNameFinder implements TokenNameFinder {
     sType = type;
   }
 
-
-  /**
-   * Initializes a {@link RegexNameFinder} instance.
-   *
-   * @param patterns The {@link Pattern[] patterns} to use.
-   *                 Must not be {@code null} and not be empty.
-   *
-   * @throws IllegalArgumentException Thrown if {@code patterns} were {@code null} or empty.
-   * @deprecated Use constructor {@link #RegexNameFinder(Pattern[], String)}
-   *             for single types, and/or constructor {@link #RegexNameFinder(Map)} instead.
-   */
-  @Deprecated
-  public RegexNameFinder(Pattern[] patterns) {
-    if (patterns == null || patterns.length == 0) {
-      throw new IllegalArgumentException("patterns must not be null or empty!");
-    }
-
-    mPatterns = patterns;
-    sType = null;
-  }
-
   @Override
   public Span[] find(String[] tokens) {
     Map<Integer, Integer> sentencePosTokenMap = new HashMap<>();

@@ -56,12 +56,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
    */
   public static final SimpleTokenizer INSTANCE = new SimpleTokenizer();
 
-  /**
-   * @deprecated Use {@link SimpleTokenizer#INSTANCE} field instead to obtain an instance.
-   *     This constructor will be made private in the future.
-   */
-  @Deprecated // TODO Decide when this will be private (see deprecation note!)
-  public SimpleTokenizer() {
+  private SimpleTokenizer() {
   }
 
   @Override

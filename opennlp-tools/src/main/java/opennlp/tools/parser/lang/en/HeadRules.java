@@ -18,7 +18,6 @@
 package opennlp.tools.parser.lang.en;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -98,20 +97,6 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
 
   private Map<String, HeadRule> headRules;
   private final Set<String> punctSet;
-
-  /**
-   * Creates a new set of head rules based on the specified {@code ruleFile}.
-   *
-   * @param ruleFile A string representation for a head rules file.
-   *
-   * @throws IOException Thrown if the head rules file can not be read.
-   *
-   * @deprecated Use {@link #HeadRules(Reader)} instead.
-   */
-  @Deprecated
-  public HeadRules(String ruleFile) throws IOException {
-    this(new FileReader(ruleFile));
-  }
 
   /**
    * Creates a new set of head rules based on the specified reader.
