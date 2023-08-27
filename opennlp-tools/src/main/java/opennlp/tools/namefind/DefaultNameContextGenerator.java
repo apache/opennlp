@@ -47,17 +47,6 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
       new BigramNameFeatureGenerator());
 
   /**
-   * Creates a name context generator.
-   * 
-   * @deprecated use {@link #DefaultNameContextGenerator(AdaptiveFeatureGenerator...)} and
-   *             always provide one or more {@link AdaptiveFeatureGenerator feature generators}.
-   */
-  @Deprecated
-  public DefaultNameContextGenerator() {
-    this((AdaptiveFeatureGenerator[]) null);
-  }
-
-  /**
    * Creates a name context generator with the specified
    * {@link AdaptiveFeatureGenerator feature generators}.
    *

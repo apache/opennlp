@@ -83,9 +83,8 @@ public class POSTaggerFactory extends BaseToolFactory {
     this.posDictionary = posDictionary;
   }
 
-
   // reduced visibility to ensure deprecation is respected in future versions
-  @Deprecated
+  @Deprecated(forRemoval = true)
   POSTaggerFactory(Dictionary ngramDictionary, TagDictionary posDictionary) {
     this.init(ngramDictionary, posDictionary);
 
@@ -94,8 +93,8 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
 
   // reduced visibility to ensure deprecation is respected in future versions
-  @Deprecated
   // will be removed when only 8 series models are supported
+  @Deprecated(forRemoval = true)
   void init(Dictionary ngramDictionary, TagDictionary posDictionary) {
     this.ngramDictionary = ngramDictionary;
     this.posDictionary = posDictionary;
@@ -316,10 +315,12 @@ public class POSTaggerFactory extends BaseToolFactory {
   // use the SerializableArtifact interface
   public static class POSDictionarySerializer implements ArtifactSerializer<POSDictionary> {
 
+    @Override
     public POSDictionary create(InputStream in) throws IOException {
       return POSDictionary.create(new UncloseableInputStream(in));
     }
 
+    @Override
     public void serialize(POSDictionary artifact, OutputStream out)
         throws IOException {
       artifact.serialize(out);

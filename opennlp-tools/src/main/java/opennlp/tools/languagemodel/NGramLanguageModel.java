@@ -110,31 +110,6 @@ public class NGramLanguageModel extends NGramModel implements LanguageModel {
     return probability;
   }
 
-  @Override
-  @Deprecated
-  public StringList predictNextTokens(StringList tokens) {
-    double maxProb = Double.NEGATIVE_INFINITY;
-    StringList token = null;
-
-    for (StringList ngram : this) {
-      String[] sequence = new String[ngram.size() + tokens.size()];
-      for (int i = 0; i < tokens.size(); i++) {
-        sequence[i] = tokens.getToken(i);
-      }
-      for (int i = 0; i < ngram.size(); i++) {
-        sequence[i + tokens.size()] = ngram.getToken(i);
-      }
-      StringList sample = new StringList(sequence);
-      double v = calculateProbability(sample);
-      if (v > maxProb) {
-        maxProb = v;
-        token = ngram;
-      }
-    }
-
-    return token;
-  }
-
   private double calculateProbability(StringList tokens) {
     double probability = 0d;
     if (size() > 0) {

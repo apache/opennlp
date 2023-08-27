@@ -254,26 +254,6 @@ public class DictionaryEntryPersistor {
    *
    * @param out The {@link OutputStream} to serialize to.
    * @param entries The {@link Entry entries} to serialize.
-   *
-   * @throws IOException Thrown if IO errors occurred.
-   * @throws InvalidFormatException Thrown if parameters were invalid.
-   * @deprecated Use {@link DictionaryEntryPersistor#serialize(OutputStream, Iterator, boolean)} instead.
-   */
-  @Deprecated
-  public static void serialize(OutputStream out, Iterator<Entry> entries)
-      throws IOException {
-    DictionaryEntryPersistor.serialize(out, entries, true);
-  }
-
-  /**
-   * Serializes the given entries to the given {@link OutputStream}.
-   * <p>
-   * <b>Note:</b>
-   * After the serialization is finished the provided
-   * {@link OutputStream} remains open.
-   *
-   * @param out The {@link OutputStream} to serialize to.
-   * @param entries The {@link Entry entries} to serialize.
    * @param casesensitive Indicates if the written dictionary should be
    *                      case-sensitive, or not.
    *

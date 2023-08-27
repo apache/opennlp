@@ -17,8 +17,6 @@
 
 package opennlp.tools.languagemodel;
 
-import opennlp.tools.util.StringList;
-
 /**
  * A language model can calculate the probability <i>p</i> (between 0 and 1) of a
  * certain {@link opennlp.tools.util.StringList sequence of tokens}, given its underlying vocabulary.
@@ -33,16 +31,6 @@ public interface LanguageModel {
    * @return the probability of the given text tokens in the vocabulary
    */
   double calculateProbability(String... tokens);
-
-  /**
-   * Predict the most probable output sequence of tokens, given an input sequence of {@code tokens}.
-   *
-   * @param tokens a sequence of tokens.
-   * @return the most probable subsequent token sequence
-   * @deprecated use {@link #predictNextTokens(String...)}
-   */
-  @Deprecated
-  StringList predictNextTokens(StringList tokens);
 
   /**
    * Predict the most probable output sequence of tokens, given an input sequence of {@code tokens}.
