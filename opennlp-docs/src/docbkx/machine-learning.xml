@@ -26,7 +26,7 @@ under the License.
 	<section id="opennlp.ml.maxent">
 		<title>Maximum Entropy</title>
 		<para>
-		To explain what maximum entropy is, it will be simplest to quote from Manning and Schutze* (p. 589):
+		To explain what maximum entropy is, it will be simplest to quote from Manning and Schütze* (p. 589):
 		<quote>
 		Maximum entropy modeling is a framework for integrating information from many heterogeneous
 		information sources for classification.  The data for a  classification problem is described
@@ -67,7 +67,7 @@ under the License.
 		provides an excellent introduction and discussion of the framework.
 		</para>
 		<para>
-		*Foundations of statistical natural language processing . Christopher D. Manning, Hinrich Schutze. 
+		*Foundations of statistical natural language processing . Christopher D. Manning, Hinrich Schütze.
 		Cambridge, Mass. : MIT Press, c1999.
 		</para>
 			<section id="opennlp.ml.maxent.impl">
