@@ -113,7 +113,7 @@ public abstract class AbstractConverterTool<T,P> extends TypedCmdLineTool<T,P> {
       }
 
       try (ObjectStream<T> sampleStream = streamFactory.create(formatArgs)) {
-        Object sample;
+        T sample;
         while ((sample = sampleStream.read()) != null) {
           logger.info(sample.toString());
         }

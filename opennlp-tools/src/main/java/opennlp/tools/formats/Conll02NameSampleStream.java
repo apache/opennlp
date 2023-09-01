@@ -91,7 +91,20 @@ public class Conll02NameSampleStream implements ObjectStream<NameSample> {
    * @throws IOException Thrown if IO errors occurred.
    */
   public Conll02NameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
-    this (lang, new PlainTextByLineStream(in, StandardCharsets.UTF_8), types);
+    /*
+     * NOTE: KEEP this encoding here! The original CONLL 2002 data is provided as: ISO_8859_1.
+     */
+    this (lang, new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1), types);
+    /*
+     * If related files are (incorrectly) interpreted as 'UTF-8' without prior conversion of
+     * the train/test files, then á, é, ñ,.. will be misinterpreted during processing and in
+     * resulting outcomes, e.g. produced via TokenNameFinderConverter.
+     *
+     * As a consequence, users of related tooling (OpenNLP Doc: CONLL 2002) will thus suffer
+     * from corrupted intermediate files, as an out-of the box experience.
+     * 
+     * Details see: https://issues.apache.org/jira/browse/OPENNLP-1512
+     */
   }
 
   static Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
