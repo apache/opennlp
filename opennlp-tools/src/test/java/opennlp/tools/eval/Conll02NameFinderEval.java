@@ -336,7 +336,7 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
 
     eval(maxentModel, dutchTestAFile, LANGUAGE.NLD, combinedType, 0.7084501401682018d);
 
-    eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.7101430258496261d);
+    eval(maxentModel, dutchTestBFile, LANGUAGE.NLD, combinedType, 0.7370923015977816d);
   }
 
   @Test
