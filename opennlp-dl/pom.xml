@@ -38,8 +38,7 @@
     </dependency>
     <dependency>
       <groupId>com.microsoft.onnxruntime</groupId>
-      <!-- This dependency supports CPU and GPU -->
-      <artifactId>onnxruntime_gpu</artifactId>
+      <artifactId>onnxruntime</artifactId>
       <version>${onnxruntime.version}</version>
     </dependency>
     <dependency>
