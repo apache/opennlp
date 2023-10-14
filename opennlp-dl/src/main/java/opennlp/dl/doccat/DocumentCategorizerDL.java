@@ -20,6 +20,7 @@ package opennlp.dl.doccat;
 import java.io.File;
 import java.io.IOException;
 import java.nio.LongBuffer;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +36,8 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,6 +94,41 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     this.vocab = loadVocab(vocabulary);
     this.tokenizer = new WordpieceTokenizer(vocab.keySet());
     this.categories = categories;
+    this.classificationScoringStrategy = classificationScoringStrategy;
+    this.inferenceOptions = inferenceOptions;
+
+  }
+
+  /**
+   * Instantiates a {@link DocumentCategorizer document categorizer} using ONNX models.
+   *
+   * @param model The ONNX model file.
+   * @param vocabulary The model file's vocabulary file.
+   * @param config The model's config file. The file will be used to determine the classification categories.
+   * @param classificationScoringStrategy Implementation of {@link ClassificationScoringStrategy} used
+   *                                      to calculate the classification scores given the score of each
+   *                                      individual document part.
+   * @param inferenceOptions {@link InferenceOptions} to control the inference.
+   *
+   * @throws OrtException Thrown if the {@code model} cannot be loaded.
+   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   */
+  public DocumentCategorizerDL(File model, File vocabulary, File config,
+                               ClassificationScoringStrategy classificationScoringStrategy,
+                               InferenceOptions inferenceOptions)
+          throws IOException, OrtException {
+
+    this.env = OrtEnvironment.getEnvironment();
+
+    final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
+    if (inferenceOptions.isGpu()) {
+      sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
+    }
+
+    this.session = env.createSession(model.getPath(), sessionOptions);
+    this.vocab = loadVocab(vocabulary);
+    this.tokenizer = new WordpieceTokenizer(vocab.keySet());
+    this.categories = readCategoriesFromFile(config);
     this.classificationScoringStrategy = classificationScoringStrategy;
     this.inferenceOptions = inferenceOptions;
 
@@ -222,28 +260,6 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   }
 
-  private Tokens oldTokenize(String text) {
-
-    final String[] tokens = tokenizer.tokenize(text);
-
-    final int[] ids = new int[tokens.length];
-
-    for (int x = 0; x < tokens.length; x++) {
-      ids[x] = vocab.get(tokens[x]);
-    }
-
-    final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
-
-    final long[] mask = new long[ids.length];
-    Arrays.fill(mask, 1);
-
-    final long[] types = new long[ids.length];
-    Arrays.fill(types, 0);
-
-    return new Tokens(tokens, lids, mask, types);
-
-  }
-
   private List<Tokens> tokenize(final String text) {
 
     final List<Tokens> t = new LinkedList<>();
@@ -327,6 +343,25 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     return IntStream.range(0, arr.length)
         .reduce((i, j) -> arr[i] > arr[j] ? i : j)
         .orElse(-1);
+  }
+
+  private Map<Integer, String> readCategoriesFromFile(File config) throws IOException {
+
+    final String json = new String(Files.readAllBytes(config.toPath()));
+
+    final ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    final DocumentCategorizerConfig documentCategorizerConfig =
+        objectMapper.readValue(json, DocumentCategorizerConfig.class);
+
+    final Map<Integer, String> categories = new HashMap<>();
+    for (final String key : documentCategorizerConfig.getId2label().keySet()) {
+      categories.put(Integer.valueOf(key), documentCategorizerConfig.getId2label().get(key));
+    }
+
+    return categories;
+
   }
 
 }
