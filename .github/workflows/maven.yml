@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: [ 17, 19 ]
+        java: [ 17, 21 ]
         experimental: [false]
 #        include:
 #          - java: 18-ea
@@ -42,7 +42,7 @@ jobs:
     - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v3
       with:
-        distribution: adopt
+        distribution: temurin
         java-version: ${{ matrix.java }}
     - name: Build with Maven
       run: mvn -V clean test install --no-transfer-progress -Pjacoco
