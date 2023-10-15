@@ -34,6 +34,7 @@ import opennlp.tools.sentdetect.lang.Factory;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 
@@ -75,6 +76,11 @@ public class SentenceDetectorME implements SentenceDetector {
    */
   private final List<Double> sentProbs = new ArrayList<>();
 
+  /**
+   * The {@link Dictionary abbreviation dictionary} if available (may be {@code null}).
+   */
+  private final Dictionary abbDict;
+
   protected boolean useTokenEnd;
 
   /**
@@ -83,8 +89,8 @@ public class SentenceDetectorME implements SentenceDetector {
    * @throws IOException Thrown if the model cannot be downloaded or saved.
    */
   public SentenceDetectorME(String language) throws IOException {
-    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.SENTENCE_DETECTOR,
-            SentenceModel.class));
+    this(DownloadUtil.downloadModel(language,
+            DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class));
   }
 
   /**
@@ -97,6 +103,7 @@ public class SentenceDetectorME implements SentenceDetector {
     this.model = model.getMaxentModel();
     cgen = sdFactory.getSDContextGenerator();
     scanner = sdFactory.getEndOfSentenceScanner();
+    abbDict = model.getAbbreviations();
     useTokenEnd = sdFactory.isUseTokenEnd();
   }
 
@@ -118,6 +125,7 @@ public class SentenceDetectorME implements SentenceDetector {
           getAbbreviations(model.getAbbreviations()), customEOSCharacters);
       scanner = factory.createEndOfSentenceScanner(customEOSCharacters);
     }
+    abbDict = model.getAbbreviations();
     useTokenEnd = model.useTokenEnd();
   }
 
@@ -296,18 +304,42 @@ public class SentenceDetectorME implements SentenceDetector {
    * trained) model from flagging obvious non-breaks as breaks based
    * on some boolean determination of a break's acceptability.
    *
-   * <p>The implementation here always returns {@link true}, which means
-   * that the MaxentModel's outcome is taken as is.</p>
+   * <p>Note: The implementation always returns {@code true} if no
+   * abbreviation dictionary is available for the underlying model.</p>
    *
    * @param s the {@link CharSequence} in which the break occurred.
    * @param fromIndex the start of the segment currently being evaluated.
    * @param candidateIndex the index of the candidate sentence ending.
-   * @return {@link true} if the break is acceptable.
+   * @return {@code true} if the break is acceptable, {@code false} otherwise.
    */
   protected boolean isAcceptableBreak(CharSequence s, int fromIndex, int candidateIndex) {
+    if (abbDict == null)
+      return true;
+
+    for (StringList abb : abbDict) {
+      String token = abb.getToken(0);
+      int tokenLength = token.length();
+      int tokenPosition = s.toString().indexOf(token, fromIndex);
+      if (tokenPosition + tokenLength < candidateIndex || tokenPosition > candidateIndex)
+        continue;
+
+      return false;
+    }
     return true;
   }
 
+  /**
+   * Starts a training of a {@link SentenceModel} with the given parameters.
+   *
+   * @param languageCode The ISO language code to train the model. Must not be {@code null}.
+   * @param samples The {@link ObjectStream} of {@link SentenceSample} used as input for training.
+   * @param sdFactory The {@link SentenceDetectorFactory} for creating related objects as defined
+   *                  via {@code mlParams}.
+   * @param mlParams The {@link TrainingParameters} for the context of the training process.
+   *
+   * @return A valid, trained {@link SentenceModel} instance.
+   * @throws IOException Thrown if IO errors occurred.
+   */
   public static SentenceModel train(String languageCode,
       ObjectStream<SentenceSample> samples, SentenceDetectorFactory sdFactory,
       TrainingParameters mlParams) throws IOException {
@@ -319,7 +351,6 @@ public class SentenceDetectorME implements SentenceDetector {
         sdFactory.getSDContextGenerator(), sdFactory.getEndOfSentenceScanner());
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams, manifestInfoEntries);
-
     MaxentModel sentModel = trainer.train(eventStream);
 
     return new SentenceModel(languageCode, sentModel, manifestInfoEntries, sdFactory);
