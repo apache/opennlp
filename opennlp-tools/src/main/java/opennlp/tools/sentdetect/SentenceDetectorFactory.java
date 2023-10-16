@@ -112,20 +112,36 @@ public class SentenceDetectorFactory extends BaseToolFactory {
     return manifestEntries;
   }
 
-  public static SentenceDetectorFactory create(String subclassName,
-      String languageCode, boolean useTokenEnd,
-      Dictionary abbreviationDictionary, char[] eosCharacters)
-      throws InvalidFormatException {
+  /**
+   * Instantiates a {@link SentenceDetectorFactory} via a given {@code subclassName}.
+   *
+   * @param subclassName The class name used for instantiation. If {@code null}, an
+   *                     instance of {@link SentenceDetectorFactory} will be returned
+   *                     per default. Otherwise, the {@link ExtensionLoader} mechanism
+   *                     is applied to load the requested {@code subclassName}.
+   * @param languageCode The ISO language code to be used. Must not be {@code null}.
+   * @param useTokenEnd {@code true} if {@link #TOKEN_END_PROPERTY} shall be set,
+   *                    {@code false} otherwise.
+   * @param abbrDictionary The {@link Dictionary} of abbreviations if available;
+   *                       may be {@code null}.
+   * @param eosChars An array of characters representing end of sentence
+   *                 symbols / characters.
+   *
+   * @return A valid {@link SentenceDetectorFactory} instance.
+   * @throws InvalidFormatException Thrown if the {@link ExtensionLoader} mechanism failed to
+   *                                create the factory associated with {@code subclassName}.
+   */
+  public static SentenceDetectorFactory create(String subclassName, String languageCode,
+                                               boolean useTokenEnd, Dictionary abbrDictionary,
+                                               char[] eosChars) throws InvalidFormatException {
     if (subclassName == null) {
       // will create the default factory
-      return new SentenceDetectorFactory(languageCode, useTokenEnd,
-          abbreviationDictionary, eosCharacters);
+      return new SentenceDetectorFactory(languageCode, useTokenEnd, abbrDictionary, eosChars);
     }
     try {
-      SentenceDetectorFactory theFactory = ExtensionLoader
-          .instantiateExtension(SentenceDetectorFactory.class, subclassName);
-      theFactory.init(languageCode, useTokenEnd, abbreviationDictionary,
-          eosCharacters);
+      SentenceDetectorFactory theFactory = ExtensionLoader.instantiateExtension(
+              SentenceDetectorFactory.class, subclassName);
+      theFactory.init(languageCode, useTokenEnd, abbrDictionary, eosChars);
       return theFactory;
     } catch (Exception e) {
       String msg = "Could not instantiate the " + subclassName
@@ -159,6 +175,9 @@ public class SentenceDetectorFactory extends BaseToolFactory {
     return this.useTokenEnd;
   }
 
+  /**
+   * @return An abbreviation {@link Dictionary} or {@code null} if unset.
+   */
   public Dictionary getAbbreviationDictionary() {
     if (this.abbreviationDictionary == null && artifactProvider != null) {
       this.abbreviationDictionary = artifactProvider
@@ -174,6 +193,9 @@ public class SentenceDetectorFactory extends BaseToolFactory {
     return this.languageCode;
   }
 
+  /**
+   * @return An {@link EndOfSentenceScanner} instance, guaranteed to be not {@code null}.
+   */
   public EndOfSentenceScanner getEndOfSentenceScanner() {
     Factory f = new Factory();
     char[] eosChars = getEOSCharacters();
@@ -184,6 +206,9 @@ public class SentenceDetectorFactory extends BaseToolFactory {
     }
   }
 
+  /**
+   * @return A {@link SDContextGenerator} instance, guaranteed to be not {@code null}.
+   */
   public SDContextGenerator getSDContextGenerator() {
     Factory f = new Factory();
     char[] eosChars = getEOSCharacters();

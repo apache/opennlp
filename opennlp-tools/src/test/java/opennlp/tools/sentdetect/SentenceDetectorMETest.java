@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
@@ -34,27 +35,22 @@ import opennlp.tools.util.TrainingParameters;
 /**
  * Tests for the {@link SentenceDetectorME} class.
  */
+public class SentenceDetectorMETest extends AbstractSentenceDetectorTest {
 
-public class SentenceDetectorMETest {
+  private static SentenceModel sentdetectModel;
+
+  @BeforeAll
+  public static void prepareResources() throws IOException {
+    Dictionary abbreviationDict = loadAbbDictionary();
+    SentenceDetectorFactory factory = new SentenceDetectorFactory(
+            "eng", true, abbreviationDict, null);
+    sentdetectModel = train(factory);
+    Assertions.assertNotNull(sentdetectModel);
+    Assertions.assertEquals("eng", sentdetectModel.getLanguage());
+  }
 
   @Test
-  void testSentenceDetector() throws IOException {
-
-    InputStreamFactory in = new ResourceAsStreamFactory(getClass(),
-        "/opennlp/tools/sentdetect/Sentences.txt");
-
-    TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, 0);
-
-    SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
-
-    SentenceModel sentdetectModel = SentenceDetectorME.train(
-        "eng", new SentenceSampleStream(new PlainTextByLineStream(in,
-            StandardCharsets.UTF_8)), factory, mlParams);
-
-    Assertions.assertEquals("eng", sentdetectModel.getLanguage());
-
+  void testSentDetect() {
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
 
     // Tests sentence detector with sentDetect method
@@ -137,8 +133,26 @@ public class SentenceDetectorMETest {
 
   }
 
+  /*
+   * Tests OPENNLP-793 -> known abbreviations shall be respected (= no sentence break)
+   * see: https://issues.apache.org/jira/projects/OPENNLP/issues/OPENNLP-793
+   */
   @Test
-  void testInsufficientData() {
+  void testSentDetectWithInlineAbbreviations() {
+    SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
+
+    String sampleSentences1 = "This is a test for Mr. Miller. " +
+            "His wife, Ms. Susan Miller, is also part of this test.";
+    String[] sents = sentDetect.sentDetect(sampleSentences1);
+    Assertions.assertEquals(sents.length, 2);
+    Assertions.assertEquals(sents[0], "This is a test for Mr. Miller.");
+    Assertions.assertEquals(sents[1], "His wife, Ms. Susan Miller, is also part of this test.");
+    double[] probs = sentDetect.getSentenceProbabilities();
+    Assertions.assertEquals(probs.length, 2);
+  }
+
+  @Test
+  void testTrainWithInsufficientData() {
 
     Assertions.assertThrows(InsufficientTrainingDataException.class, () -> {
 
@@ -152,8 +166,7 @@ public class SentenceDetectorMETest {
       SentenceDetectorFactory factory = new SentenceDetectorFactory("eng", true, null, null);
 
       SentenceDetectorME.train("eng",
-          new SentenceSampleStream(
-              new PlainTextByLineStream(in, StandardCharsets.UTF_8)), factory, mlParams);
+          new SentenceSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8)), factory, mlParams);
 
     });
 

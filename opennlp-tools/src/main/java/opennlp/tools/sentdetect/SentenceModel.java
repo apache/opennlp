@@ -32,8 +32,8 @@ import opennlp.tools.util.model.BaseModel;
 import opennlp.tools.util.model.ModelUtil;
 
 /**
- * The {@link SentenceModel} is the model used
- * by a learnable {@link SentenceDetector}.
+ * The {@link SentenceModel} is the model used by a learnable
+ * {@link SentenceDetector}.
  *
  * @see SentenceDetectorME
  */
@@ -43,6 +43,14 @@ public class SentenceModel extends BaseModel {
   private static final String COMPONENT_NAME = "SentenceDetectorME";
   private static final String MAXENT_MODEL_ENTRY_NAME = "sent.model";
 
+  /**
+   * Initializes a {@link SentenceModel} instance via given parameters.
+   *
+   * @param languageCode The ISO language code for this model. Must not be {@code null}.
+   * @param sentModel A valid {@link MaxentModel}.
+   * @param manifestInfoEntries Additional information kept in the manifest.
+   * @param sdFactory The {@link SentenceDetectorFactory} for creating related objects.
+   */
   public SentenceModel(String languageCode, MaxentModel sentModel,
       Map<String, String> manifestInfoEntries, SentenceDetectorFactory sdFactory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, sdFactory);
@@ -50,18 +58,46 @@ public class SentenceModel extends BaseModel {
     checkArtifactMap();
   }
 
+  /**
+   * Initializes a {@link SentenceModel} instance via a valid {@link InputStream}.
+   *
+   * @param in The {@link InputStream} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public SentenceModel(InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
+  /**
+   * Initializes a {@link SentenceModel} instance via a valid {@link File}.
+   *
+   * @param modelFile The {@link File} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public SentenceModel(File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
+  /**
+   * Initializes a {@link SentenceModel} instance via a valid {@link Path}.
+   *
+   * @param modelPath The {@link Path} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public SentenceModel(Path modelPath) throws IOException {
     this(modelPath.toFile());
   }
 
+  /**
+   * Initializes a {@link SentenceModel} instance via a valid {@link URL}.
+   *
+   * @param modelURL The {@link URL} used for loading the model.
+   *
+   * @throws IOException Thrown if IO errors occurred during initialization.
+   */
   public SentenceModel(URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }

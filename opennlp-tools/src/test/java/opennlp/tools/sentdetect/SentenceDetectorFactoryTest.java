@@ -20,50 +20,20 @@ package opennlp.tools.sentdetect;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyDictionary;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummyEOSScanner;
 import opennlp.tools.sentdetect.DummySentenceDetectorFactory.DummySDContextGenerator;
 import opennlp.tools.sentdetect.lang.Factory;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.TrainingParameters;
 
 /**
  * Tests for the {@link SentenceDetectorME} class.
  */
-public class SentenceDetectorFactoryTest {
-
-  private static ObjectStream<SentenceSample> createSampleStream()
-      throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(
-        SentenceDetectorFactoryTest.class,
-        "/opennlp/tools/sentdetect/Sentences.txt");
-
-    return new SentenceSampleStream(new PlainTextByLineStream(
-        in, StandardCharsets.UTF_8));
-  }
-
-  private static SentenceModel train(SentenceDetectorFactory factory)
-      throws IOException {
-    return SentenceDetectorME.train("eng", createSampleStream(), factory,
-        TrainingParameters.defaultParams());
-  }
-
-  private static Dictionary loadAbbDictionary() throws IOException {
-    InputStream in = SentenceDetectorFactoryTest.class.getClassLoader()
-        .getResourceAsStream("opennlp/tools/sentdetect/abb.xml");
-
-    return new Dictionary(in);
-  }
+public class SentenceDetectorFactoryTest extends AbstractSentenceDetectorTest {
 
   @Test
   void testDefault() throws IOException {
@@ -71,8 +41,7 @@ public class SentenceDetectorFactoryTest {
     Dictionary dic = loadAbbDictionary();
 
     char[] eos = {'.', '?'};
-    SentenceModel sdModel = train(new SentenceDetectorFactory("eng", true, dic,
-        eos));
+    SentenceModel sdModel = train(new SentenceDetectorFactory("eng", true, dic, eos));
 
     SentenceDetectorFactory factory = sdModel.getFactory();
     Assertions.assertTrue(factory.getSDContextGenerator() instanceof DefaultSDContextGenerator);
