@@ -17,6 +17,7 @@
 
 package opennlp.dl.doccat;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class DocumentCategorizerConfig {
@@ -24,7 +25,7 @@ public class DocumentCategorizerConfig {
   private Map<String, String> id2label;
 
   public Map<String, String> getId2label() {
-    return id2label;
+    return Collections.unmodifiableMap(id2label);
   }
 
   public void setId2label(Map<String, String> id2label) {
