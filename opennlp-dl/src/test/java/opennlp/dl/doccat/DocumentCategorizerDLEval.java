@@ -41,6 +41,19 @@ public class DocumentCategorizerDLEval extends AbstractDLTest {
 
   private static final Logger logger = LoggerFactory.getLogger(DocumentCategorizerDLEval.class);
 
+  final String text = "We try hard to identify the sources and licenses of all media such as text," +
+          " images or sounds used in our encyclopedia articles. Still, we cannot guarantee that all " +
+          "media are used or marked correctly: for example, if an image description page states " +
+          "that an image was in the public domain, you should still check yourself whether that claim " +
+          "appears correct and decide for yourself whether your use of the image would be fine under " +
+          "the laws applicable to you. Wikipedia is primarily subject to U.S. law; re-users outside " +
+          "the U.S. should be aware that they are subject to the laws of their country, which almost " +
+          "certainly are different. Images published under the GFDL or one of the Creative Commons " +
+          "Licenses are unlikely to pose problems, as these are specific licenses with precise terms " +
+          "worldwide. Public domain images may need to be re-evaluated by a re-user because it depends " +
+          "on each country's copyright laws what is in the public domain there. There is no guarantee " +
+          "that something in the public domain in the U.S. was also in the public domain in your country.";
+
   @Test
   public void categorize() throws IOException, OrtException {
 
@@ -53,19 +66,6 @@ public class DocumentCategorizerDLEval extends AbstractDLTest {
             new DocumentCategorizerDL(model, vocab, getCategories(),
                 new AverageClassificationScoringStrategy(),
                 new InferenceOptions());
-
-    final String text = "We try hard to identify the sources and licenses of all media such as text, images" +
-        " or sounds used in our encyclopedia articles. Still, we cannot guarantee that all media are used " +
-        "or marked correctly: for example, if an image description page states that an image was in the " +
-        "public domain, you should still check yourself whether that claim appears correct and decide for " +
-        "yourself whether your use of the image would be fine under the laws applicable to you. Wikipedia " +
-        "is primarily subject to U.S. law; re-users outside the U.S. should be aware that they are subject " +
-        "to the laws of their country, which almost certainly are different. Images published under the " +
-        "GFDL or one of the Creative Commons Licenses are unlikely to pose problems, as these are specific " +
-        "licenses with precise terms worldwide. Public domain images may need to be re-evaluated by a " +
-        "re-user because it depends on each country's copyright laws what is in the public domain there. " +
-        "There is no guarantee that something in the public domain in the U.S. was also in the public " +
-        "domain in your country.";
 
     final double[] result = documentCategorizerDL.categorize(new String[]{text});
 
@@ -89,6 +89,46 @@ public class DocumentCategorizerDLEval extends AbstractDLTest {
 
     final String category = documentCategorizerDL.getBestCategory(result);
     Assertions.assertEquals("bad", category);
+
+  }
+
+  @Test
+  public void categorizeWithAutomaticLabels() throws IOException, OrtException {
+
+    final File model = new File(getOpennlpDataDir(),
+            "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
+    final File vocab = new File(getOpennlpDataDir(),
+            "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
+    final File config = new File(getOpennlpDataDir(),
+            "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.json");
+
+    final DocumentCategorizerDL documentCategorizerDL =
+            new DocumentCategorizerDL(model, vocab, config,
+                    new AverageClassificationScoringStrategy(),
+                    new InferenceOptions());
+
+    final double[] result = documentCategorizerDL.categorize(new String[]{text});
+
+    // Sort the result for easier comparison.
+    final double[] sortedResult = Arrays.stream(result)
+            .boxed()
+            .sorted(Collections.reverseOrder()).mapToDouble(Double::doubleValue).toArray();
+
+    final double[] expected = new double[]
+        {0.3391093313694,
+            0.2611352801322937,
+            0.24420668184757233,
+            0.11939861625432968,
+            0.03615010157227516};
+
+    logger.debug("Actual: {}", Arrays.toString(sortedResult));
+    logger.debug("Expected: {}", Arrays.toString(expected));
+
+    Assertions.assertArrayEquals(expected, sortedResult, 0.000001);
+    Assertions.assertEquals(5, result.length);
+
+    final String category = documentCategorizerDL.getBestCategory(result);
+    Assertions.assertEquals("2 stars", category);
 
   }
 
