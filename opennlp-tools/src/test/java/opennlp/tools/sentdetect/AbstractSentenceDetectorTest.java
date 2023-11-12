@@ -18,8 +18,8 @@
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.formats.ResourceAsStreamFactory;
@@ -30,22 +30,37 @@ import opennlp.tools.util.TrainingParameters;
 
 public abstract class AbstractSentenceDetectorTest {
   
-  static ObjectStream<SentenceSample> createSampleStream() throws IOException {
+  static ObjectStream<SentenceSample> createSampleStream(Locale loc) throws IOException {
+    final String trainingResource;
+    if (loc.equals(Locale.GERMAN)) {
+      trainingResource = "/opennlp/tools/sentdetect/Sentences_DE.txt";
+    } else {
+      trainingResource = "/opennlp/tools/sentdetect/Sentences.txt";
+    }
     InputStreamFactory in = new ResourceAsStreamFactory(
-            AbstractSentenceDetectorTest.class, "/opennlp/tools/sentdetect/Sentences.txt");
-
+            AbstractSentenceDetectorTest.class, trainingResource);
     return new SentenceSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
   }
 
-  static SentenceModel train(SentenceDetectorFactory factory) throws IOException {
-    return SentenceDetectorME.train("eng", createSampleStream(), factory,
+  static SentenceModel train(SentenceDetectorFactory factory, Locale loc) throws IOException {
+    final String languageCode;
+    if (loc.equals(Locale.GERMAN)) {
+      languageCode = "deu";
+    } else {
+      languageCode = "eng";
+    }
+    return SentenceDetectorME.train(languageCode, createSampleStream(loc), factory,
             TrainingParameters.defaultParams());
   }
 
-  static Dictionary loadAbbDictionary() throws IOException {
-    InputStream in = AbstractSentenceDetectorTest.class.getClassLoader()
-            .getResourceAsStream("opennlp/tools/sentdetect/abb.xml");
-
-    return new Dictionary(in);
+  static Dictionary loadAbbDictionary(Locale loc) throws IOException {
+    final String abbrevDict;
+    if (loc.equals(Locale.GERMAN)) {
+      abbrevDict = "opennlp/tools/sentdetect/abb_DE.xml";
+    } else {
+      abbrevDict = "opennlp/tools/sentdetect/abb.xml";
+    }
+    return new Dictionary(AbstractSentenceDetectorTest.class.getClassLoader()
+            .getResourceAsStream(abbrevDict));
   }
 }

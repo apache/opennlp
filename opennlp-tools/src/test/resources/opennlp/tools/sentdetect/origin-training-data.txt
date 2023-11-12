@@ -1,0 +1,6 @@
+################
+Sentences_DE.txt:
+- Sigmund Freud - Die Traumdeutung
+- chapter VI: Die Traumarbeit | section A "Die Verdichtungsarbeit"
+available here: https://www.projekt-gutenberg.org/freud/traumdeu/chap006.html
+################
