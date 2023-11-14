@@ -1,0 +1,668 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+-->
+
+<dictionary case_sensitive="false">
+  <entry>
+    <token>östl.</token>
+  </entry>
+  <entry>
+    <token>AB-Whg.</token>
+  </entry>
+  <entry>
+    <token>Abl.</token>
+  </entry>
+  <entry>
+    <token>Abs.</token>
+  </entry>
+  <entry>
+    <token>Anm.</token>
+  </entry>
+  <entry>
+    <token>Aufl.</token>
+  </entry>
+  <entry>
+    <token>Ausf.</token>
+  </entry>
+  <entry>
+    <token>Bd.</token>
+  </entry>
+  <entry>
+    <token>Best.-Nr.</token>
+  </entry>
+  <entry>
+    <token>Bio.</token>
+  </entry>
+  <entry>
+    <token>Bj.</token>
+  </entry>
+  <entry>
+    <token>Blk.</token>
+  </entry>
+  <entry>
+    <token>Bsp.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Ing.</token>
+  </entry>
+  <entry>
+    <token>Eigent.-Whg.</token>
+  </entry>
+  <entry>
+    <token>Eigent.-Whgn.</token>
+  </entry>
+  <entry>
+    <token>Eigt.-Whg.</token>
+  </entry>
+  <entry>
+    <token>Eigt.-Whgn.</token>
+  </entry>
+  <entry>
+    <token>Fr.</token>
+  </entry>
+  <entry>
+    <token>Gal.</token>
+  </entry>
+  <entry>
+    <token>Gart.ant.</token>
+  </entry>
+  <entry>
+    <token>Grd.</token>
+  </entry>
+  <entry>
+    <token>Grdst.</token>
+  </entry>
+  <entry>
+    <token>H.</token>
+  </entry>
+  <entry>
+    <token>Hdt.</token>
+  </entry>
+  <entry>
+    <token>Hr.</token>
+  </entry>
+  <entry>
+    <token>Hrsg.</token>
+  </entry>
+  <entry>
+    <token>Jahrh.</token>
+  </entry>
+  <entry>
+    <token>Jg.</token>
+  </entry>
+  <entry>
+    <token>Jh.</token>
+  </entry>
+  <entry>
+    <token>Kl.-Whg.</token>
+  </entry>
+  <entry>
+    <token>Kl.-Whgn.</token>
+  </entry>
+  <entry>
+    <token>Mais.-Whg.</token>
+  </entry>
+  <entry>
+    <token>Mais.-Whgn.</token>
+  </entry>
+  <entry>
+    <token>Md.</token>
+  </entry>
+  <entry>
+    <token>Mio.</token>
+  </entry>
+  <entry>
+    <token>Mrd.</token>
+  </entry>
+  <entry>
+    <token>MwSt.</token>
+  </entry>
+  <entry>
+    <token>N cont.</token>
+  </entry>
+  <entry>
+    <token>NB-Whg.</token>
+  </entry>
+  <entry>
+    <token>Nb.-Whg.</token>
+  </entry>
+  <entry>
+    <token>Nb.-Whgn.</token>
+  </entry>
+  <entry>
+    <token>Nfl.</token>
+  </entry>
+  <entry>
+    <token>Nordd.</token>
+  </entry>
+  <entry>
+    <token>Nr.</token>
+  </entry>
+  <entry>
+    <token>Pak.</token>
+  </entry>
+  <entry>
+    <token>Prov.</token>
+  </entry>
+  <entry>
+    <token>Südd.</token>
+  </entry>
+  <entry>
+    <token>S.</token>
+  </entry>
+  <entry>
+    <token>Sout.</token>
+  </entry>
+  <entry>
+    <token>Str.</token>
+  </entry>
+  <entry>
+    <token>Tsd.</token>
+  </entry>
+  <entry>
+    <token>Wdh.</token>
+  </entry>
+  <entry>
+    <token>Wg.Whg.</token>
+  </entry>
+  <entry>
+    <token>Whgn.</token>
+  </entry>
+  <entry>
+    <token>Zi.</token>
+  </entry>
+  <entry>
+    <token>Ziegelbauw.</token>
+  </entry>
+  <entry>
+    <token>Ztr.-Hzg.</token>
+  </entry>
+  <entry>
+    <token>Ztrhzg.</token>
+  </entry>
+  <entry>
+    <token>Zw.-Whg.</token>
+  </entry>
+  <entry>
+    <token>Zw.-Whgn.</token>
+  </entry>
+  <entry>
+    <token>a.a.O.</token>
+  </entry>
+  <entry>
+    <token>abzgl.</token>
+  </entry>
+  <entry>
+    <token>afrz.</token>
+  </entry>
+  <entry>
+    <token>ahd.</token>
+  </entry>
+  <entry>
+    <token>b.</token>
+  </entry>
+  <entry>
+    <token>bezugsf.</token>
+  </entry>
+  <entry>
+    <token>bibl.</token>
+  </entry>
+  <entry>
+    <token>bspw.</token>
+  </entry>
+  <entry>
+    <token>bzgl.</token>
+  </entry>
+  <entry>
+    <token>bzw.</token>
+  </entry>
+  <entry>
+    <token>c.</token>
+  </entry>
+  <entry>
+    <token>d. h.</token>
+  </entry>
+  <entry>
+    <token>d.h.</token>
+  </entry>
+  <entry>
+    <token>dgl.</token>
+  </entry>
+  <entry>
+    <token>dt.</token>
+  </entry>
+  <entry>
+    <token>ev.</token>
+  </entry>
+  <entry>
+    <token>e.V.</token>
+  </entry>
+  <entry>
+    <token>e. V.</token>
+  </entry>
+  <entry>
+    <token>ebd.</token>
+  </entry>
+  <entry>
+    <token>ebda.</token>
+  </entry>
+  <entry>
+    <token>ehem.</token>
+  </entry>
+  <entry>
+    <token>engl.</token>
+  </entry>
+  <entry>
+    <token>ff.</token>
+  </entry>
+  <entry>
+    <token>frühnhd.</token>
+  </entry>
+  <entry>
+    <token>freist.</token>
+  </entry>
+  <entry>
+    <token>frz.</token>
+  </entry>
+  <entry>
+    <token>geb.</token>
+  </entry>
+  <entry>
+    <token>gestr.</token>
+  </entry>
+  <entry>
+    <token>ggf.</token>
+  </entry>
+  <entry>
+    <token>grds.</token>
+  </entry>
+  <entry>
+    <token>griech.</token>
+  </entry>
+  <entry>
+    <token>hd.</token>
+  </entry>
+  <entry>
+    <token>hl.</token>
+  </entry>
+  <entry>
+    <token>i. d. R.</token>
+  </entry>
+  <entry>
+    <token>i.G.</token>
+  </entry>
+  <entry>
+    <token>i.d.R.</token>
+  </entry>
+  <entry>
+    <token>i.e.S.</token>
+  </entry>
+  <entry>
+    <token>kath.</token>
+  </entry>
+  <entry>
+    <token>lat.</token>
+  </entry>
+  <entry>
+    <token>lt.</token>
+  </entry>
+  <entry>
+    <token>möbl.</token>
+  </entry>
+  <entry>
+    <token>mfrz.</token>
+  </entry>
+  <entry>
+    <token>mhd.</token>
+  </entry>
+  <entry>
+    <token>mnl.</token>
+  </entry>
+  <entry>
+    <token>näml.</token>
+  </entry>
+  <entry>
+    <token>nördl.</token>
+  </entry>
+  <entry>
+    <token>n. Chr.</token>
+  </entry>
+  <entry>
+    <token>n.Chr.</token>
+  </entry>
+  <entry>
+    <token>n.V.</token>
+  </entry>
+  <entry>
+    <token>nhd.</token>
+  </entry>
+  <entry>
+    <token>nl.</token>
+  </entry>
+  <entry>
+    <token>o.Ä.</token>
+  </entry>
+  <entry>
+    <token>o.ä.</token>
+  </entry>
+  <entry>
+    <token>o. Ä.</token>
+  </entry>
+  <entry>
+    <token>o. ä.</token>
+  </entry>
+  <entry>
+    <token>o. g.</token>
+  </entry>
+  <entry>
+    <token>o.g.</token>
+  </entry>
+  <entry>
+    <token>röm.-kath.</token>
+  </entry>
+  <entry>
+    <token>rd.</token>
+  </entry>
+  <entry>
+    <token>ren.</token>
+  </entry>
+  <entry>
+    <token>ren.bed.</token>
+  </entry>
+  <entry>
+    <token>rest.</token>
+  </entry>
+  <entry>
+    <token>südl.</token>
+  </entry>
+  <entry>
+    <token>südnl.</token>
+  </entry>
+  <entry>
+    <token>s. d.</token>
+  </entry>
+  <entry>
+    <token>s. o.</token>
+  </entry>
+  <entry>
+    <token>s. u.</token>
+  </entry>
+  <entry>
+    <token>s.d.</token>
+  </entry>
+  <entry>
+    <token>s.o.</token>
+  </entry>
+  <entry>
+    <token>s.u.</token>
+  </entry>
+  <entry>
+    <token>san.</token>
+  </entry>
+  <entry>
+    <token>spätmnl.</token>
+  </entry>
+  <entry>
+    <token>u.</token>
+  </entry>
+  <entry>
+    <token>u. a.</token>
+  </entry>
+  <entry>
+    <token>u.a.</token>
+  </entry>
+  <entry>
+    <token>USt-IdNr.</token>
+  </entry>
+  <entry>
+    <token>usw.</token>
+  </entry>
+  <entry>
+    <token>v. Chr.</token>
+  </entry>
+  <entry>
+    <token>v. a.</token>
+  </entry>
+  <entry>
+    <token>v.Chr.</token>
+  </entry>
+  <entry>
+    <token>v.a.</token>
+  </entry>
+  <entry>
+    <token>vgl.</token>
+  </entry>
+  <entry>
+    <token>westl.</token>
+  </entry>
+  <entry>
+    <token>wg.</token>
+  </entry>
+  <entry>
+    <token>z. B.</token>
+  </entry>
+  <entry>
+    <token>z. T.</token>
+  </entry>
+  <entry>
+    <token>z.B.</token>
+  </entry>
+  <entry>
+    <token>z.T.</token>
+  </entry>
+  <entry>
+    <token>zz.</token>
+  </entry>
+  <entry>
+    <token>zzgl.</token>
+  </entry>
+  <entry>
+    <token>zzt.</token>
+  </entry>
+  <entry>
+    <token>B. a.</token>
+  </entry>
+  <entry>
+    <token>B. A.</token>
+  </entry>
+  <entry>
+    <token>B. eng.</token>
+  </entry>
+  <entry>
+    <token>B. Eng.</token>
+  </entry>
+  <entry>
+    <token>B. sc.</token>
+  </entry>
+  <entry>
+    <token>B. Sc.</token>
+  </entry>
+  <entry>
+    <token>M. a.</token>
+  </entry>
+  <entry>
+    <token>M. A.</token>
+  </entry>
+  <entry>
+    <token>M. eng.</token>
+  </entry>
+  <entry>
+    <token>M. Eng.</token>
+  </entry>
+  <entry>
+    <token>M. sc.</token>
+  </entry>
+  <entry>
+    <token>M. Sc.</token>
+  </entry>
+  <entry>
+    <token>Mag. iur.</token>
+  </entry>
+  <entry>
+    <token>Dipl.med.</token>
+  </entry>
+  <entry>
+    <token>Dipl. med.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Med.</token>
+  </entry>
+  <entry>
+    <token>Dipl.biol.</token>
+  </entry>
+  <entry>
+    <token>Dipl. biol.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Biol.</token>
+  </entry>
+  <entry>
+    <token>Dipl.chem.</token>
+  </entry>
+  <entry>
+    <token>Dipl. chem.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Chem.</token>
+  </entry>
+  <entry>
+    <token>Dipl.kff.</token>
+  </entry>
+  <entry>
+    <token>Dipl. Kff.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Kff.</token>
+  </entry>
+  <entry>
+    <token>Dipl.kfm.</token>
+  </entry>
+  <entry>
+    <token>Dipl. Kfm.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Kfm.</token>
+  </entry>
+  <entry>
+    <token>Dipl.math.</token>
+  </entry>
+  <entry>
+    <token>Dipl. math.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Math.</token>
+  </entry>
+  <entry>
+    <token>Dipl.inf.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Inf.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Inform.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Inform. Med.</token>
+  </entry>
+  <entry>
+    <token>Dipl.ing.</token>
+  </entry>
+  <entry>
+    <token>Dipl. ing.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Ing.</token>
+  </entry>
+  <entry>
+    <token>Dipl.phys.</token>
+  </entry>
+  <entry>
+    <token>Dipl. phys.</token>
+  </entry>
+  <entry>
+    <token>Dipl.-Phys.</token>
+  </entry>
+  <entry>
+    <token>Dipl. rer. oec.</token>
+  </entry>
+  <entry>
+    <token>Dipl. rer. pol.</token>
+  </entry>
+  <entry>
+    <token>Dr. h. c.</token>
+  </entry>
+  <entry>
+    <token>Dr. h.c.</token>
+  </entry>
+  <entry>
+    <token>Dr.-Ing.</token>
+  </entry>
+  <entry>
+    <token>Dr. Ing.</token>
+  </entry>
+  <entry>
+    <token>Dr. iur.</token>
+  </entry>
+  <entry>
+    <token>Dr. med.</token>
+  </entry>
+  <entry>
+    <token>Dr.med.</token>
+  </entry>
+  <entry>
+    <token>Dr. med. dent.</token>
+  </entry>
+  <entry>
+    <token>Dr.phil.</token>
+  </entry>
+  <entry>
+    <token>Dr. phil.</token>
+  </entry>
+  <entry>
+    <token>Dr. rer. nat.</token>
+  </entry>
+  <entry>
+    <token>Dr. sc. hum.</token>
+  </entry>
+  <entry>
+    <token>Dr. sc. Hum.</token>
+  </entry>
+  <entry>
+    <token>Dr.</token>
+  </entry>
+  <entry>
+    <token>Prof.Dr.</token>
+  </entry>
+  <entry>
+    <token>Prof. Dr.</token>
+  </entry>
+  <entry>
+    <token>Prof. Dr. med.</token>
+  </entry>
+  <entry>
+    <token>Prof.Dr.med.</token>
+  </entry>
+  <entry>
+    <token>Prof. Dr.med.</token>
+  </entry>
+  <entry>
+    <token>Prof. Dr.-Ing.</token>
+  </entry>
+</dictionary>

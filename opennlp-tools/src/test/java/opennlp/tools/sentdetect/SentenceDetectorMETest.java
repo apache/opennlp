@@ -19,6 +19,7 @@ package opennlp.tools.sentdetect;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,10 +42,10 @@ public class SentenceDetectorMETest extends AbstractSentenceDetectorTest {
 
   @BeforeAll
   public static void prepareResources() throws IOException {
-    Dictionary abbreviationDict = loadAbbDictionary();
+    Dictionary abbreviationDict = loadAbbDictionary(Locale.ENGLISH);
     SentenceDetectorFactory factory = new SentenceDetectorFactory(
             "eng", true, abbreviationDict, null);
-    sentdetectModel = train(factory);
+    sentdetectModel = train(factory, Locale.ENGLISH);
     Assertions.assertNotNull(sentdetectModel);
     Assertions.assertEquals("eng", sentdetectModel.getLanguage());
   }
