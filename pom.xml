@@ -561,6 +561,7 @@
 		<module>opennlp-docs</module>
 		<module>opennlp-distr</module>
 		<module>opennlp-dl</module>
+		<module>opennlp-dl-gpu</module>
   </modules>
 
 </project>
