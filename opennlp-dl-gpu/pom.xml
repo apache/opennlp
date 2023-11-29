@@ -28,27 +28,25 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>org.apache.opennlp</groupId>
-  <artifactId>opennlp-dl</artifactId>
-  <name>Apache OpenNLP DL</name>
+  <artifactId>opennlp-dl-gpu</artifactId>
+  <name>Apache OpenNLP DL (GPU)</name>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.opennlp</groupId>
-      <artifactId>opennlp-tools</artifactId>
+      <artifactId>opennlp-dl</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.microsoft.onnxruntime</groupId>
+          <artifactId>onnxruntime</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.microsoft.onnxruntime</groupId>
-      <artifactId>onnxruntime</artifactId>
+      <artifactId>onnxruntime_gpu</artifactId>
       <version>${onnxruntime.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -65,22 +63,53 @@
       <artifactId>slf4j-simple</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-dl</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <dependenciesToScan>
+            <dependency>org.apache.opennlp:opennlp-dl</dependency>
+          </dependenciesToScan>
+        </configuration>
       </plugin>
     </plugins>
   </build>
 
+  <profiles>
+    <profile>
+      <id>eval-tests</id>
+      <properties>
+        <opennlp.forkCount>0.5C</opennlp.forkCount>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>-Xmx4g</argLine>
+              <includes>
+                <include>**/*Test.java</include>
+                <include>**/*Eval.java</include>
+              </includes>
+              <dependenciesToScan>
+                <dependency>org.apache.opennlp:opennlp-dl</dependency>
+              </dependenciesToScan>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

@@ -58,12 +58,14 @@ You can also follow our [mailing lists](http://opennlp.apache.org/mailing-lists.
 
 ## Overview
 
-Currently the library has different packages:
+Currently, the library has different packages:
 
 * `opennlp-tools` : The core toolkit.
 * `opennlp-uima` : A set of [Apache UIMA](https://uima.apache.org) annotators.
 * `opennlp-brat-annotator` : A set of annotators for [BRAT](http://brat.nlplab.org/)
 * `opennlp-morfologik-addon` : An addon for Morfologik
+* `opennlp-dl` : OpenNLP interface implementations for ONNX models using the `onnxruntime` dependency.
+* `opennlp-dl-gpu` : Replaces `onnxruntime` with the `onnxruntime_gpu` dependency to support GPU acceleration.
 * `opennlp-sandbox`: Other projects in progress are found in the [sandbox](https://github.com/apache/opennlp-sandbox)
 
 ## Getting Started
