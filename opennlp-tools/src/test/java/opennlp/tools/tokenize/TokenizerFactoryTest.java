@@ -164,6 +164,27 @@ public class TokenizerFactoryTest {
   }
 
   @Test
+  void testCustomPatternForTokenizerME() throws IOException {
+
+    Dictionary dic = null;
+    String lang = "deu";
+    String pattern = "^[A-Za-z0-9äéöüÄÉÖÜß]+$";
+
+    TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
+        Pattern.compile(pattern)));
+
+    TokenizerME tokenizer = new TokenizerME(model);
+    String sentence = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
+    String[] tokens = tokenizer.tokenize(sentence);
+
+    Assertions.assertEquals(16, tokens.length);
+    String[] sentSplit = sentence.replaceAll("\\.", " .").split(" ");
+    for (int i = 0; i < sentSplit.length; i++) {
+      Assertions.assertEquals(sentSplit[i], tokens[i]);
+    }
+  }
+
+  @Test
   void testDummyFactory() throws IOException {
 
     Dictionary dic = loadAbbDictionary();

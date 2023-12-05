@@ -36,4 +36,16 @@ public class TokenizerMEIT {
     Assertions.assertEquals(",", tokens[1]);
   }
 
+  @Test
+  void testTokenizerDownloadedModelDe() throws IOException {
+
+    TokenizerME tokenizer = new TokenizerME("de");
+
+    String[] tokens = tokenizer.tokenize("prüfen,");
+
+    Assertions.assertEquals(2, tokens.length);
+    Assertions.assertEquals("prüfen", tokens[0]);
+    Assertions.assertEquals(",", tokens[1]);
+  }
+
 }
