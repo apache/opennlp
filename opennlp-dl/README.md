@@ -4,7 +4,7 @@ This module provides OpenNLP interface implementations for ONNX models using the
 
 **Important**: This does not provide the ability to train models. Model training is done outside of OpenNLP. This code provides the ability to use ONNX models from OpenNLP.
 
-Models used in the tests are available in the opennlp evaluation test data.
+Models used in the tests are available in the [opennlp evaluation test data](???) directory.
 
 ## NameFinderDL
 
