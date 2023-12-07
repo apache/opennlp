@@ -53,11 +53,11 @@ package opennlp.tools.stemmer;
  */
 // CHECKSTYLE:OFF
 public class PorterStemmer implements Stemmer {
+  private static final int INC = 50;
   private char[] b;
   private int i,    /* offset into b */
-    j, k, k0;
+      j, k, k0;
   private boolean dirty = false;
-  private static final int INC = 50;
 
   public PorterStemmer() {
     b = new char[INC];
@@ -69,7 +69,10 @@ public class PorterStemmer implements Stemmer {
    * the stemmer by calling add(char) and then stem(), you must call reset()
    * before starting another word.
    */
-  public void reset() { i = 0; dirty = false; }
+  public void reset() {
+    i = 0;
+    dirty = false;
+  }
 
   /**
    * Add a character to the word being stemmed.  When you are finished
@@ -78,7 +81,7 @@ public class PorterStemmer implements Stemmer {
   public void add(char ch) {
     if (b.length == i) {
 
-      char[] new_b = new char[i+INC];
+      char[] new_b = new char[i + INC];
       System.arraycopy(b, 0, new_b, 0, i);
       {
         b = new_b;
@@ -93,30 +96,40 @@ public class PorterStemmer implements Stemmer {
    * and getResultLength (which is generally more efficient.)
    */
   @Override
-  public String toString() { return new String(b,0,i); }
+  public String toString() {
+    return new String(b, 0, i);
+  }
 
   /**
    * Returns the length of the word resulting from the stemming process.
    */
-  public int getResultLength() { return i; }
+  public int getResultLength() {
+    return i;
+  }
 
   /**
    * Returns a reference to a character buffer containing the results of
    * the stemming process.  You also need to consult getResultLength()
    * to determine the length of the result.
    */
-  public char[] getResultBuffer() { return b; }
+  public char[] getResultBuffer() {
+    return b;
+  }
 
   /* cons(i) is true <=> b[i] is a consonant. */
 
   private boolean cons(int i) {
     switch (b[i]) {
-    case 'a': case 'e': case 'i': case 'o': case 'u':
-      return false;
-    case 'y':
-      return (i == k0) || !cons(i - 1);
-    default:
-      return true;
+      case 'a':
+      case 'e':
+      case 'i':
+      case 'o':
+      case 'u':
+        return false;
+      case 'y':
+        return (i == k0) || !cons(i - 1);
+      default:
+        return true;
     }
   }
 
@@ -134,29 +147,35 @@ public class PorterStemmer implements Stemmer {
   private int m() {
     int n = 0;
     int i = k0;
-    while(true) {
-      if (i > j)
+    while (true) {
+      if (i > j) {
         return n;
-      if (! cons(i))
+      }
+      if (!cons(i)) {
         break;
+      }
       i++;
     }
     i++;
-    while(true) {
-      while(true) {
-        if (i > j)
+    while (true) {
+      while (true) {
+        if (i > j) {
           return n;
-        if (cons(i))
+        }
+        if (cons(i)) {
           break;
+        }
         i++;
       }
       i++;
       n++;
-      while(true) {
-        if (i > j)
+      while (true) {
+        if (i > j) {
           return n;
-        if (! cons(i))
+        }
+        if (!cons(i)) {
           break;
+        }
         i++;
       }
       i++;
@@ -167,9 +186,11 @@ public class PorterStemmer implements Stemmer {
 
   private boolean vowelinstem() {
     int i;
-    for (i = k0; i <= j; i++)
-      if (! cons(i))
+    for (i = k0; i <= j; i++) {
+      if (!cons(i)) {
         return true;
+      }
+    }
     return false;
   }
 
@@ -189,24 +210,29 @@ public class PorterStemmer implements Stemmer {
   */
 
   private boolean cvc(int i) {
-    if (i < k0+2 || !cons(i) || cons(i-1) || !cons(i-2))
+    if (i < k0 + 2 || !cons(i) || cons(i - 1) || !cons(i - 2)) {
       return false;
-    else {
+    } else {
       int ch = b[i];
-      if (ch == 'w' || ch == 'x' || ch == 'y') return false;
+      if (ch == 'w' || ch == 'x' || ch == 'y') {
+        return false;
+      }
     }
     return true;
   }
 
   private boolean ends(String s) {
     int l = s.length();
-    int o = k-l+1;
-    if (o < k0)
+    int o = k - l + 1;
+    if (o < k0) {
       return false;
-    for (int i = 0; i < l; i++)
-      if (b[o+i] != s.charAt(i))
+    }
+    for (int i = 0; i < l; i++) {
+      if (b[o + i] != s.charAt(i)) {
         return false;
-    j = k-l;
+      }
+    }
+    j = k - l;
     return true;
   }
 
@@ -215,16 +241,21 @@ public class PorterStemmer implements Stemmer {
 
   void setto(String s) {
     int l = s.length();
-    int o = j+1;
-    for (int i = 0; i < l; i++)
-      b[o+i] = s.charAt(i);
-    k = j+l;
+    int o = j + 1;
+    for (int i = 0; i < l; i++) {
+      b[o + i] = s.charAt(i);
+    }
+    k = j + l;
     dirty = true;
   }
 
   /* r(s) is used further down. */
 
-  void r(String s) { if (m() > 0) setto(s); }
+  void r(String s) {
+    if (m() > 0) {
+      setto(s);
+    }
+  }
 
   /* step1() gets rid of plurals and -ed or -ing. e.g.
 
@@ -250,26 +281,34 @@ public class PorterStemmer implements Stemmer {
 
   private void step1() {
     if (b[k] == 's') {
-      if (ends("sses")) k -= 2;
-      else if (ends("ies")) setto("i");
-      else if (b[k-1] != 's') k--;
+      if (ends("sses")) {
+        k -= 2;
+      } else if (ends("ies")) {
+        setto("i");
+      } else if (b[k - 1] != 's') {
+        k--;
+      }
     }
     if (ends("eed")) {
-      if (m() > 0)
+      if (m() > 0) {
         k--;
-    }
-    else if ((ends("ed") || ends("ing")) && vowelinstem()) {
-      k = j;
-      if (ends("at")) setto("ate");
-      else if (ends("bl")) setto("ble");
-      else if (ends("iz")) setto("ize");
-      else if (doublec(k)) {
-        int ch = b[k--];
-        if (ch == 'l' || ch == 's' || ch == 'z')
-          k++;
       }
-      else if (m() == 1 && cvc(k))
+    } else if ((ends("ed") || ends("ing")) && vowelinstem()) {
+      k = j;
+      if (ends("at")) {
+        setto("ate");
+      } else if (ends("bl")) {
+        setto("ble");
+      } else if (ends("iz")) {
+        setto("ize");
+      } else if (doublec(k)) {
+        int ch = b[k--];
+        if (ch == 'l' || ch == 's' || ch == 'z') {
+          k++;
+        }
+      } else if (m() == 1 && cvc(k)) {
         setto("e");
+      }
     }
   }
 
@@ -287,44 +326,109 @@ public class PorterStemmer implements Stemmer {
      m() > 0. */
 
   private void step3() {
-    if (k == k0) return; /* For Bug 1 */
-    switch (b[k-1]) {
-    case 'a':
-      if (ends("ational")) { r("ate"); break; }
-      if (ends("tional")) { r("tion"); break; }
-      break;
-    case 'c':
-      if (ends("enci")) { r("ence"); break; }
-      if (ends("anci")) { r("ance"); break; }
-      break;
-    case 'e':
-      if (ends("izer")) { r("ize"); break; }
-      break;
-    case 'l':
-      if (ends("bli")) { r("ble"); break; }
-      if (ends("alli")) { r("al"); break; }
-      if (ends("entli")) { r("ent"); break; }
-      if (ends("eli")) { r("e"); break; }
-      if (ends("ousli")) { r("ous"); break; }
-      break;
-    case 'o':
-      if (ends("ization")) { r("ize"); break; }
-      if (ends("ation")) { r("ate"); break; }
-      if (ends("ator")) { r("ate"); break; }
-      break;
-    case 's':
-      if (ends("alism")) { r("al"); break; }
-      if (ends("iveness")) { r("ive"); break; }
-      if (ends("fulness")) { r("ful"); break; }
-      if (ends("ousness")) { r("ous"); break; }
-      break;
-    case 't':
-      if (ends("aliti")) { r("al"); break; }
-      if (ends("iviti")) { r("ive"); break; }
-      if (ends("biliti")) { r("ble"); break; }
-      break;
-    case 'g':
-      if (ends("logi")) { r("log"); break; }
+    if (k == k0) {
+      return; /* For Bug 1 */
+    }
+    switch (b[k - 1]) {
+      case 'a':
+        if (ends("ational")) {
+          r("ate");
+          break;
+        }
+        if (ends("tional")) {
+          r("tion");
+          break;
+        }
+        break;
+      case 'c':
+        if (ends("enci")) {
+          r("ence");
+          break;
+        }
+        if (ends("anci")) {
+          r("ance");
+          break;
+        }
+        break;
+      case 'e':
+        if (ends("izer")) {
+          r("ize");
+          break;
+        }
+        break;
+      case 'l':
+        if (ends("bli")) {
+          r("ble");
+          break;
+        }
+        if (ends("alli")) {
+          r("al");
+          break;
+        }
+        if (ends("entli")) {
+          r("ent");
+          break;
+        }
+        if (ends("eli")) {
+          r("e");
+          break;
+        }
+        if (ends("ousli")) {
+          r("ous");
+          break;
+        }
+        break;
+      case 'o':
+        if (ends("ization")) {
+          r("ize");
+          break;
+        }
+        if (ends("ation")) {
+          r("ate");
+          break;
+        }
+        if (ends("ator")) {
+          r("ate");
+          break;
+        }
+        break;
+      case 's':
+        if (ends("alism")) {
+          r("al");
+          break;
+        }
+        if (ends("iveness")) {
+          r("ive");
+          break;
+        }
+        if (ends("fulness")) {
+          r("ful");
+          break;
+        }
+        if (ends("ousness")) {
+          r("ous");
+          break;
+        }
+        break;
+      case 't':
+        if (ends("aliti")) {
+          r("al");
+          break;
+        }
+        if (ends("iviti")) {
+          r("ive");
+          break;
+        }
+        if (ends("biliti")) {
+          r("ble");
+          break;
+        }
+        break;
+      case 'g':
+        if (ends("logi")) {
+          r("log");
+          break;
+        }
     }
   }
 
@@ -332,77 +436,142 @@ public class PorterStemmer implements Stemmer {
 
   private void step4() {
     switch (b[k]) {
-    case 'e':
-      if (ends("icate")) { r("ic"); break; }
-      if (ends("ative")) { r(""); break; }
-      if (ends("alize")) { r("al"); break; }
-      break;
-    case 'i':
-      if (ends("iciti")) { r("ic"); break; }
-      break;
-    case 'l':
-      if (ends("ical")) { r("ic"); break; }
-      if (ends("ful")) { r(""); break; }
-      break;
-    case 's':
-      if (ends("ness")) { r(""); break; }
-      break;
+      case 'e':
+        if (ends("icate")) {
+          r("ic");
+          break;
+        }
+        if (ends("ative")) {
+          r("");
+          break;
+        }
+        if (ends("alize")) {
+          r("al");
+          break;
+        }
+        break;
+      case 'i':
+        if (ends("iciti")) {
+          r("ic");
+          break;
+        }
+        break;
+      case 'l':
+        if (ends("ical")) {
+          r("ic");
+          break;
+        }
+        if (ends("ful")) {
+          r("");
+          break;
+        }
+        break;
+      case 's':
+        if (ends("ness")) {
+          r("");
+          break;
+        }
+        break;
     }
   }
 
   /* step5() takes off -ant, -ence etc., in context <c>vcvc<v>. */
 
   private void step5() {
-    if (k == k0) return; /* for Bug 1 */
-    switch (b[k-1]) {
-    case 'a':
-      if (ends("al")) break;
-      return;
-    case 'c':
-      if (ends("ance")) break;
-      if (ends("ence")) break;
-      return;
-    case 'e':
-      if (ends("er")) break; return;
-    case 'i':
-      if (ends("ic")) break; return;
-    case 'l':
-      if (ends("able")) break;
-      if (ends("ible")) break; return;
-    case 'n':
-      if (ends("ant")) break;
-      if (ends("ement")) break;
-      if (ends("ment")) break;
-      /* element etc. not stripped before the m */
-      if (ends("ent")) break;
-      return;
-    case 'o':
-      if (ends("ion") && j >= 0 && (b[j] == 's' || b[j] == 't')) break;
-      /* j >= 0 fixes Bug 2 */
-      if (ends("ou")) break;
-      return;
-      /* takes care of -ous */
-    case 's':
-      if (ends("ism")) break;
-      return;
-    case 't':
-      if (ends("ate")) break;
-      if (ends("iti")) break;
-      return;
-    case 'u':
-      if (ends("ous")) break;
-      return;
-    case 'v':
-      if (ends("ive")) break;
-      return;
-    case 'z':
-      if (ends("ize")) break;
-      return;
-    default:
-      return;
+    if (k == k0) {
+      return; /* for Bug 1 */
     }
-    if (m() > 1)
+    switch (b[k - 1]) {
+      case 'a':
+        if (ends("al")) {
+          break;
+        }
+        return;
+      case 'c':
+        if (ends("ance")) {
+          break;
+        }
+        if (ends("ence")) {
+          break;
+        }
+        return;
+      case 'e':
+        if (ends("er")) {
+          break;
+        }
+        return;
+      case 'i':
+        if (ends("ic")) {
+          break;
+        }
+        return;
+      case 'l':
+        if (ends("able")) {
+          break;
+        }
+        if (ends("ible")) {
+          break;
+        }
+        return;
+      case 'n':
+        if (ends("ant")) {
+          break;
+        }
+        if (ends("ement")) {
+          break;
+        }
+        if (ends("ment")) {
+          break;
+        }
+        /* element etc. not stripped before the m */
+        if (ends("ent")) {
+          break;
+        }
+        return;
+      case 'o':
+        if (ends("ion") && j >= 0 && (b[j] == 's' || b[j] == 't')) {
+          break;
+        }
+        /* j >= 0 fixes Bug 2 */
+        if (ends("ou")) {
+          break;
+        }
+        return;
+      /* takes care of -ous */
+      case 's':
+        if (ends("ism")) {
+          break;
+        }
+        return;
+      case 't':
+        if (ends("ate")) {
+          break;
+        }
+        if (ends("iti")) {
+          break;
+        }
+        return;
+      case 'u':
+        if (ends("ous")) {
+          break;
+        }
+        return;
+      case 'v':
+        if (ends("ive")) {
+          break;
+        }
+        return;
+      case 'z':
+        if (ends("ize")) {
+          break;
+        }
+        return;
+      default:
+        return;
+    }
+    if (m() > 1) {
       k = j;
+    }
   }
 
   /* step6() removes a final -e if m() > 1. */
@@ -411,11 +580,13 @@ public class PorterStemmer implements Stemmer {
     j = k;
     if (b[k] == 'e') {
       int a = m();
-      if (a > 1 || a == 1 && !cvc(k-1))
+      if (a > 1 || a == 1 && !cvc(k - 1)) {
         k--;
+      }
     }
-    if (b[k] == 'l' && doublec(k) && m() > 1)
+    if (b[k] == 'l' && doublec(k) && m() > 1) {
       k--;
+    }
   }
 
 
@@ -423,10 +594,11 @@ public class PorterStemmer implements Stemmer {
    * Stem a word provided as a String.  Returns the result as a String.
    */
   public String stem(String s) {
-    if (stem(s.toCharArray(), s.length()))
+    if (stem(s.toCharArray(), s.length())) {
       return toString();
-    else
+    } else {
       return s;
+    }
   }
 
   /**
@@ -437,7 +609,8 @@ public class PorterStemmer implements Stemmer {
     return stem(word.toString());
   }
 
-  /** Stem a word contained in a char[].  Returns true if the stemming process
+  /**
+   * Stem a word contained in a char[].  Returns true if the stemming process
    * resulted in a word different from the input.  You can retrieve the
    * result with getResultLength()/getResultBuffer() or toString().
    */
@@ -445,7 +618,8 @@ public class PorterStemmer implements Stemmer {
     return stem(word, word.length);
   }
 
-  /** Stem a word contained in a portion of a char[] array.  Returns
+  /**
+   * Stem a word contained in a portion of a char[] array.  Returns
    * true if the stemming process resulted in a word different from
    * the input.  You can retrieve the result with
    * getResultLength()/getResultBuffer() or toString().
@@ -460,7 +634,8 @@ public class PorterStemmer implements Stemmer {
     return stem(0);
   }
 
-  /** Stem a word contained in a leading portion of a char[] array.
+  /**
+   * Stem a word contained in a leading portion of a char[] array.
    * Returns true if the stemming process resulted in a word different
    * from the input.  You can retrieve the result with
    * getResultLength()/getResultBuffer() or toString().
@@ -469,7 +644,8 @@ public class PorterStemmer implements Stemmer {
     return stem(word, 0, wordLen);
   }
 
-  /** Stem the word placed into the Stemmer buffer through calls to add().
+  /**
+   * Stem the word placed into the Stemmer buffer through calls to add().
    * Returns true if the stemming process resulted in a word different
    * from the input.  You can retrieve the result with
    * getResultLength()/getResultBuffer() or toString().
@@ -481,14 +657,20 @@ public class PorterStemmer implements Stemmer {
   public boolean stem(int i0) {
     k = i - 1;
     k0 = i0;
-    if (k > k0+1) {
-      step1(); step2(); step3(); step4(); step5(); step6();
+    if (k > k0 + 1) {
+      step1();
+      step2();
+      step3();
+      step4();
+      step5();
+      step6();
     }
     // Also, a word is considered dirty if we lopped off letters
     // Thanks to Ifigenia Vairelles for pointing this out.
-    if (i != k+1)
+    if (i != k + 1) {
       dirty = true;
-    i = k+1;
+    }
+    i = k + 1;
     return dirty;
   }
 }
