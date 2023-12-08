@@ -163,109 +163,60 @@ public class TokenizerFactoryTest {
     Assertions.assertTrue(factory.isUseAlphaNumericOptimization());
   }
 
-  @Test
-  void testCustomPatternForTokenizerMEDeu() throws IOException {
+  void checkCustomPatternForTokenizerME(String lang, String pattern, String sentence,
+      int expectedNumTokens) throws IOException {
 
-    Dictionary dic = null;
-    String lang = "deu";
-    String pattern = "^[A-Za-z0-9äéöüÄÉÖÜß]+$";
-
-    TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
+    TokenizerModel model = train(new TokenizerFactory(lang, null, true,
         Pattern.compile(pattern)));
 
     TokenizerME tokenizer = new TokenizerME(model);
-    String sentence = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
     String[] tokens = tokenizer.tokenize(sentence);
 
-    Assertions.assertEquals(16, tokens.length);
+    Assertions.assertEquals(expectedNumTokens, tokens.length);
     String[] sentSplit = sentence.replaceAll("\\.", " .").split(" ");
     for (int i = 0; i < sentSplit.length; i++) {
       Assertions.assertEquals(sentSplit[i], tokens[i]);
     }
+  }
+
+  @Test
+  void testCustomPatternForTokenizerMEDeu() throws IOException {
+    String lang = "deu";
+    String pattern = "^[A-Za-z0-9äéöüÄÉÖÜß]+$";
+    String sentence = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 16);
   }
 
   @Test
   void testCustomPatternForTokenizerMEPor() throws IOException {
-
-    Dictionary dic = null;
     String lang = "por";
     String pattern = "^[0-9a-záãâàéêíóõôúüçA-ZÁÃÂÀÉÊÍÓÕÔÚÜÇ]+$";
-
-    TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
-        Pattern.compile(pattern)));
-
-    TokenizerME tokenizer = new TokenizerME(model);
     String sentence = "Na floresta mágica a raposa dança com unicórnios felizes.";
-    String[] tokens = tokenizer.tokenize(sentence);
-
-    Assertions.assertEquals(10, tokens.length);
-    String[] sentSplit = sentence.replaceAll("\\.", " .").split(" ");
-    for (int i = 0; i < sentSplit.length; i++) {
-      Assertions.assertEquals(sentSplit[i], tokens[i]);
-    }
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 10);
   }
 
   @Test
   void testCustomPatternForTokenizerMESpa() throws IOException {
-
-    Dictionary dic = null;
     String lang = "spa";
     String pattern = "^[0-9a-záéíóúüýñA-ZÁÉÍÓÚÝÑ]+$";
-
-    TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
-        Pattern.compile(pattern)));
-
-    TokenizerME tokenizer = new TokenizerME(model);
     String sentence = "En el verano los niños juegan en el parque y sus risas crean alegría.";
-    String[] tokens = tokenizer.tokenize(sentence);
-
-    Assertions.assertEquals(15, tokens.length);
-    String[] sentSplit = sentence.replaceAll("\\.", " .").split(" ");
-    for (int i = 0; i < sentSplit.length; i++) {
-      Assertions.assertEquals(sentSplit[i], tokens[i]);
-    }
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 15);
   }
 
   @Test
   void testCustomPatternForTokenizerMECat() throws IOException {
-
-    Dictionary dic = null;
     String lang = "cat";
     String pattern = "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ]+$";
-
-    TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
-        Pattern.compile(pattern)));
-
-    TokenizerME tokenizer = new TokenizerME(model);
     String sentence = "Als xiuxiuejants avets el ós blau neda amb cignes i se ho passen bé.";
-    String[] tokens = tokenizer.tokenize(sentence);
-
-    Assertions.assertEquals(15, tokens.length);
-    String[] sentSplit = sentence.replaceAll("\\.", " .").split(" ");
-    for (int i = 0; i < sentSplit.length; i++) {
-      Assertions.assertEquals(sentSplit[i], tokens[i]);
-    }
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 15);
   }
 
   @Test
   void testCustomPatternForTokenizerMEIta() throws IOException {
-
-    Dictionary dic = null;
     String lang = "ita";
     String pattern = "^[0-9a-zàèéìîíòóùüA-ZÀÈÉÌÎÍÒÓÙÜ]+$";
-
-    TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
-        Pattern.compile(pattern)));
-
-    TokenizerME tokenizer = new TokenizerME(model);
     String sentence = "Cosa fare di domenica per migliorare il tuo lunedì.";
-    String[] tokens = tokenizer.tokenize(sentence);
-
-    Assertions.assertEquals(10, tokens.length);
-    String[] sentSplit = sentence.replaceAll("\\.", " .").split(" ");
-    for (int i = 0; i < sentSplit.length; i++) {
-      Assertions.assertEquals(sentSplit[i], tokens[i]);
-    }
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 10);
   }
 
   @Test
