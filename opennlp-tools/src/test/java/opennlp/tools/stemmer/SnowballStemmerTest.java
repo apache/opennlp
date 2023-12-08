@@ -160,7 +160,7 @@ public class SnowballStemmerTest {
   void testRomanian() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.ROMANIAN);
     Assertions.assertEquals(stemmer.stem("absurdităţilor"), "absurd");
-    Assertions.assertEquals(stemmer.stem("laşi"), "laş");
+    Assertions.assertEquals(stemmer.stem("laşi"), "laș");
     Assertions.assertEquals(stemmer.stem("saracilor"), "sarac");
   }
 
@@ -188,4 +188,14 @@ public class SnowballStemmerTest {
     Assertions.assertEquals(stemmer.stem("kaçmamaktadır"), "kaçmamak");
     Assertions.assertEquals(stemmer.stem("sarayı'nı"), "sarayı'nı");
   }
+
+  @Test
+  void testFinish() {
+    SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.FINNISH);
+    // reference: https://snowballstem.org/demo.html#Finnish
+    Assertions.assertEquals("edeltän", stemmer.stem("edeltäneeseen"));  //r_LONG()
+    Assertions.assertEquals("voita", stemmer.stem("voitaisiin")); // r_VI()
+    Assertions.assertEquals("innostuks", stemmer.stem("innostuksessaan"));
+  }
+
 }
