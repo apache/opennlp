@@ -269,6 +269,50 @@ public class TokenizerFactoryTest {
   }
 
   @Test
+  void testContractionsIta() throws IOException {
+
+    Dictionary dic = null;
+    String lang = "ita";
+    String pattern = "^[0-9a-zàèéìîíòóùüA-ZÀÈÉÌÎÍÒÓÙÜ]+$";
+
+    TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
+        Pattern.compile(pattern)));
+
+    TokenizerME tokenizer = new TokenizerME(model);
+    String sentence = "La contrazione di \"dove è\" è \"dov'è\".";
+    String[] tokens = tokenizer.tokenize(sentence);
+
+    Assertions.assertEquals(11, tokens.length);
+    String[] sentSplit = sentence.replaceAll("\\.", " .")
+        .replaceAll("'", " '").replaceAll("([^ ])\"", "$1 \"").split(" ");
+    for (int i = 0; i < sentSplit.length; i++) {
+      Assertions.assertEquals(sentSplit[i], tokens[i]);
+    }
+  }
+
+  @Test
+  void testContractionsEng() throws IOException {
+
+    Dictionary dic = null;
+    String lang = "eng";
+    String pattern = "^[A-Za-z0-9]+$";
+
+    TokenizerModel model = train(new TokenizerFactory(lang, dic, true,
+        Pattern.compile(pattern)));
+
+    TokenizerME tokenizer = new TokenizerME(model);
+    String sentence = "The cat wasn't in the house and the dog wasn't either.";
+    String[] tokens = tokenizer.tokenize(sentence);
+
+    Assertions.assertEquals(14, tokens.length);
+    String[] sentSplit = sentence.replaceAll("\\.", " .")
+        .replaceAll("'", " '").split(" ");
+    for (int i = 0; i < sentSplit.length; i++) {
+      Assertions.assertEquals(sentSplit[i], tokens[i]);
+    }
+  }
+
+  @Test
   void testDummyFactory() throws IOException {
 
     Dictionary dic = loadAbbDictionary();
