@@ -173,7 +173,8 @@ public class TokenizerFactoryTest {
     String[] tokens = tokenizer.tokenize(sentence);
 
     Assertions.assertEquals(expectedNumTokens, tokens.length);
-    String[] sentSplit = sentence.replaceAll("\\.", " .").split(" ");
+    String[] sentSplit = sentence.replaceAll("\\.", " .")
+        .replaceAll("'", " '").split(" ");
     for (int i = 0; i < sentSplit.length; i++) {
       Assertions.assertEquals(sentSplit[i], tokens[i]);
     }
@@ -207,7 +208,7 @@ public class TokenizerFactoryTest {
   void testCustomPatternForTokenizerMECat() throws IOException {
     String lang = "cat";
     String pattern = "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ]+$";
-    String sentence = "Als xiuxiuejants avets el ós blau neda amb cignes i se ho passen bé.";
+    String sentence = "Als xiuxiuejants avets l'ós blau neda amb cignes i s'ho passen bé.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 15);
   }
 
