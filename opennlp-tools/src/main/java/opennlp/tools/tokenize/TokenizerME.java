@@ -35,6 +35,7 @@ import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringList;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -110,6 +111,11 @@ public class TokenizerME extends AbstractTokenizer {
 
   private final List<Span> newTokens;
 
+  /*
+   * The {@link Dictionary abbreviation dictionary} if available (may be {@code null}).
+   */
+  private final Dictionary abbDict;
+
   /**
    * Initializes a {@link TokenizerME} by downloading a default model.
    * @param language The language of the tokenizer.
@@ -132,6 +138,7 @@ public class TokenizerME extends AbstractTokenizer {
     this.model = model.getMaxentModel();
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
 
+    abbDict = model.getAbbreviations();
     newTokens = new ArrayList<>();
     tokProbs = new ArrayList<>(50);
   }
@@ -151,6 +158,7 @@ public class TokenizerME extends AbstractTokenizer {
     this.model = model.getMaxentModel();
     useAlphaNumericOptimization = model.useAlphaNumericOptimization();
 
+    abbDict = model.getAbbreviations();
     newTokens = new ArrayList<>();
     tokProbs = new ArrayList<>(50);
   }
@@ -182,6 +190,7 @@ public class TokenizerME extends AbstractTokenizer {
    *
    * @return   A {@link Span} array containing individual tokens as elements.
    */
+  @Override
   public Span[] tokenizePos(String d) {
     WhitespaceTokenizer whitespaceTokenizer = WhitespaceTokenizer.INSTANCE;
     whitespaceTokenizer.setKeepNewLines(keepNewLines);
@@ -208,14 +217,22 @@ public class TokenizerME extends AbstractTokenizer {
           String best = model.getBestOutcome(probs);
           tokenProb *= probs[model.getIndex(best)];
           if (best.equals(TokenizerME.SPLIT)) {
-            newTokens.add(new Span(start, j));
-            tokProbs.add(tokenProb);
-            start = j;
+            if (isAcceptableAbbreviation(tok)) {
+              newTokens.add(new Span(start, end));
+              tokProbs.add(tokenProb);
+              start = j + 1; // To compensate for the abbreviation dot
+            } else {
+              newTokens.add(new Span(start, j));
+              tokProbs.add(tokenProb);
+              start = j;
+            }
             tokenProb = 1.0;
           }
         }
-        newTokens.add(new Span(start, end));
-        tokProbs.add(tokenProb);
+        if (start < end) {
+          newTokens.add(new Span(start, end));
+          tokProbs.add(tokenProb);
+        }
       }
     }
 
@@ -258,4 +275,19 @@ public class TokenizerME extends AbstractTokenizer {
     return useAlphaNumericOptimization;
   }
 
+  /**
+   * Allows checking a token abbreviation candidate for acceptability.
+   *
+   * <p>Note: The implementation always returns {@code false} if no
+   * abbreviation dictionary is available for the underlying model.</p>
+   *
+   * @param s the {@link CharSequence token} to check for.
+   * @return {@code true} if the candidate is acceptable, {@code false} otherwise.
+   */
+  protected boolean isAcceptableAbbreviation(CharSequence s) {
+    if (abbDict == null)
+      return false;
+
+    return abbDict.contains(new StringList(s.toString()));
+  }
 }

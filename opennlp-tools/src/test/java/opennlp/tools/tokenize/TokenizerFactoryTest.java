@@ -20,8 +20,8 @@ package opennlp.tools.tokenize;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
@@ -54,24 +54,28 @@ public class TokenizerFactoryTest {
     return TokenizerME.train(createSampleStream(), factory, TrainingParameters.defaultParams());
   }
 
-  private static Dictionary loadAbbDictionary() throws IOException {
-    InputStream in = TokenizerFactoryTest.class.getClassLoader()
-        .getResourceAsStream("opennlp/tools/sentdetect/abb.xml");
-
-    return new Dictionary(in);
+  private static Dictionary loadAbbDictionary(Locale loc) throws IOException {
+    final String abbrevDict;
+    if (loc.equals(Locale.GERMAN)) {
+      abbrevDict = "opennlp/tools/sentdetect/abb_DE.xml";
+    } else {
+      abbrevDict = "opennlp/tools/sentdetect/abb.xml";
+    }
+    return new Dictionary(TokenizerFactoryTest.class.getClassLoader()
+            .getResourceAsStream(abbrevDict));
   }
 
   @Test
   void testDefault() throws IOException {
 
-    Dictionary dic = loadAbbDictionary();
+    Dictionary dic = loadAbbDictionary(Locale.ENGLISH);
     final String lang = "eng";
 
     TokenizerModel model = train(new TokenizerFactory(lang, dic, false, null));
 
     TokenizerFactory factory = model.getFactory();
     Assertions.assertNotNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assertions.assertInstanceOf(DefaultTokenContextGenerator.class, factory.getContextGenerator());
 
     String defaultPattern = Factory.DEFAULT_ALPHANUMERIC.pattern();
     Assertions.assertEquals(defaultPattern, factory.getAlphaNumericPattern().pattern());
@@ -87,7 +91,7 @@ public class TokenizerFactoryTest {
 
     factory = fromSerialized.getFactory();
     Assertions.assertNotNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assertions.assertInstanceOf(DefaultTokenContextGenerator.class, factory.getContextGenerator());
 
     Assertions.assertEquals(defaultPattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
@@ -105,7 +109,7 @@ public class TokenizerFactoryTest {
 
     TokenizerFactory factory = model.getFactory();
     Assertions.assertNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assertions.assertInstanceOf(DefaultTokenContextGenerator.class, factory.getContextGenerator());
 
     String defaultPattern = Factory.DEFAULT_ALPHANUMERIC.pattern();
     Assertions.assertEquals(defaultPattern, factory.getAlphaNumericPattern().pattern());
@@ -121,7 +125,7 @@ public class TokenizerFactoryTest {
 
     factory = fromSerialized.getFactory();
     Assertions.assertNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assertions.assertInstanceOf(DefaultTokenContextGenerator.class, factory.getContextGenerator());
 
     Assertions.assertEquals(defaultPattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
@@ -141,7 +145,7 @@ public class TokenizerFactoryTest {
 
     TokenizerFactory factory = model.getFactory();
     Assertions.assertNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assertions.assertInstanceOf(DefaultTokenContextGenerator.class, factory.getContextGenerator());
 
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
@@ -156,7 +160,7 @@ public class TokenizerFactoryTest {
 
     factory = fromSerialized.getFactory();
     Assertions.assertNull(factory.getAbbreviationDictionary());
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultTokenContextGenerator);
+    Assertions.assertInstanceOf(DefaultTokenContextGenerator.class, factory.getContextGenerator());
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
@@ -165,18 +169,24 @@ public class TokenizerFactoryTest {
 
   void checkCustomPatternForTokenizerME(String lang, String pattern, String sentence,
       int expectedNumTokens) throws IOException {
-
-    TokenizerModel model = train(new TokenizerFactory(lang, null, true,
+    Locale loc = Locale.ENGLISH;
+    if ("deu".equals(lang)) {
+      loc = Locale.GERMAN;
+    }
+    TokenizerModel model = train(new TokenizerFactory(lang, loadAbbDictionary(loc), true,
         Pattern.compile(pattern)));
 
     TokenizerME tokenizer = new TokenizerME(model);
     String[] tokens = tokenizer.tokenize(sentence);
 
     Assertions.assertEquals(expectedNumTokens, tokens.length);
-    String[] sentSplit = sentence.replaceAll("\\.", " .")
-        .replaceAll("'", " '").split(" ");
+    String[] sentSplit = sentence.replaceAll("'", " '").split(" ");
     for (int i = 0; i < sentSplit.length; i++) {
-      Assertions.assertEquals(sentSplit[i], tokens[i]);
+      String sElement = sentSplit[i];
+      if (i == sentSplit.length - 1) {
+        sElement = sElement.replace(".", ""); // compensate for sentence ending
+      }
+      Assertions.assertEquals(sElement, tokens[i]);
     }
   }
 
@@ -185,7 +195,7 @@ public class TokenizerFactoryTest {
     String lang = "deu";
     String pattern = "^[A-Za-z0-9äéöüÄÉÖÜß]+$";
     String sentence = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
-    checkCustomPatternForTokenizerME(lang, pattern, sentence, 16);
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 14);
   }
 
   @Test
@@ -267,7 +277,7 @@ public class TokenizerFactoryTest {
   @Test
   void testDummyFactory() throws IOException {
 
-    Dictionary dic = loadAbbDictionary();
+    Dictionary dic = loadAbbDictionary(Locale.ENGLISH);
     final String lang = "eng";
     String pattern = "^[0-9A-Za-z]+$";
 
@@ -275,8 +285,8 @@ public class TokenizerFactoryTest {
         Pattern.compile(pattern)));
 
     TokenizerFactory factory = model.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
+    Assertions.assertInstanceOf(DummyDictionary.class, factory.getAbbreviationDictionary());
+    Assertions.assertInstanceOf(DummyContextGenerator.class, factory.getContextGenerator());
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
@@ -289,8 +299,8 @@ public class TokenizerFactoryTest {
     TokenizerModel fromSerialized = new TokenizerModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
+    Assertions.assertInstanceOf(DummyDictionary.class, factory.getAbbreviationDictionary());
+    Assertions.assertInstanceOf(DummyContextGenerator.class, factory.getContextGenerator());
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertEquals(lang, model.getLanguage());
@@ -299,7 +309,7 @@ public class TokenizerFactoryTest {
 
   @Test
   void testCreateDummyFactory() throws IOException {
-    Dictionary dic = loadAbbDictionary();
+    Dictionary dic = loadAbbDictionary(Locale.ENGLISH);
     final String lang = "eng";
     String pattern = "^[0-9A-Za-z]+$";
 
@@ -307,8 +317,8 @@ public class TokenizerFactoryTest {
         DummyTokenizerFactory.class.getCanonicalName(), lang, dic, true,
         Pattern.compile(pattern));
 
-    Assertions.assertTrue(factory.getAbbreviationDictionary() instanceof DummyDictionary);
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DummyContextGenerator);
+    Assertions.assertInstanceOf(DummyDictionary.class, factory.getAbbreviationDictionary());
+    Assertions.assertInstanceOf(DummyContextGenerator.class, factory.getContextGenerator());
     Assertions.assertEquals(pattern, factory.getAlphaNumericPattern().pattern());
     Assertions.assertEquals(lang, factory.getLanguageCode());
     Assertions.assertTrue(factory.isUseAlphaNumericOptimization());
