@@ -208,7 +208,7 @@ public class TokenizerFactoryTest {
   void testCustomPatternForTokenizerMECat() throws IOException {
     String lang = "cat";
     String pattern = "^[0-9a-zàèéíïòóúüçA-ZÀÈÉÍÏÒÓÚÜÇ]+$";
-    String sentence = "Als xiuxiuejants avets l'ós blau neda amb cignes i s'ho passen bé.";
+    String sentence = "Als xiuxiuejants avets l'os blau neda amb cignes i s'ho passen bé.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 15);
   }
 
