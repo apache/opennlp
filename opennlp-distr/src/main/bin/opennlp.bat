@@ -45,9 +45,8 @@ IF "%OPENNLP_HOME%" == "" (
 	FOR %%A IN ("%OPENNLP_HOME%") DO SET OPENNLP_HOME=%%~sfA
 )
 
-REM #  Get the library JAR file name (JIRA OPENNLP-554)
-FOR %%A IN ("%OPENNLP_HOME%\lib\opennlp-tools-*.jar") DO SET JAR_FILE=%%A
+SET CLASSPATH="%OPENNLP_HOME%\lib\*"
 
-%JAVA_CMD% %HEAP% "-Dlog4j.configurationFile=%OPENNLP_HOME%\conf\log4j2.xml" -jar %JAR_FILE% %*
+%JAVA_CMD% %HEAP% "-Dlog4j.configurationFile=%OPENNLP_HOME%\conf\log4j2.xml" -cp %CLASSPATH% opennlp.tools.cmdline.CLI %*
 
 ENDLOCAL
