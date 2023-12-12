@@ -1,4 +1,4 @@
-FROM openjdk:11-jre-slim
+FROM openjdk:17-alpine
 MAINTAINER Apache OpenNLP (dev@opennlp.apache.org)
 
 ARG OPENNLP_BINARY
