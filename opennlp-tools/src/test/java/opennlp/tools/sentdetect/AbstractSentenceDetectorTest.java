@@ -29,11 +29,15 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 
 public abstract class AbstractSentenceDetectorTest {
-  
+
+  protected static final Locale LOCALE_SPANISH = new Locale("es");
+
   static ObjectStream<SentenceSample> createSampleStream(Locale loc) throws IOException {
     final String trainingResource;
     if (loc.equals(Locale.GERMAN)) {
       trainingResource = "/opennlp/tools/sentdetect/Sentences_DE.txt";
+    } else if (loc.equals(LOCALE_SPANISH)) {
+      trainingResource = "/opennlp/tools/sentdetect/Sentences_ES.txt";
     } else {
       trainingResource = "/opennlp/tools/sentdetect/Sentences.txt";
     }
@@ -43,22 +47,26 @@ public abstract class AbstractSentenceDetectorTest {
   }
 
   static SentenceModel train(SentenceDetectorFactory factory, Locale loc) throws IOException {
-    final String languageCode;
+    final String lang;
     if (loc.equals(Locale.GERMAN)) {
-      languageCode = "deu";
+      lang = "deu";
+    } else if (loc.equals(LOCALE_SPANISH)) {
+      lang = "spa";
     } else {
-      languageCode = "eng";
+      lang = "eng";
     }
-    return SentenceDetectorME.train(languageCode, createSampleStream(loc), factory,
+    return SentenceDetectorME.train(lang, createSampleStream(loc), factory,
             TrainingParameters.defaultParams());
   }
 
   static Dictionary loadAbbDictionary(Locale loc) throws IOException {
     final String abbrevDict;
     if (loc.equals(Locale.GERMAN)) {
-      abbrevDict = "opennlp/tools/sentdetect/abb_DE.xml";
+      abbrevDict = "opennlp/tools/lang/abb_DE.xml";
+    } else if (loc.equals(LOCALE_SPANISH)) {
+      abbrevDict = "opennlp/tools/lang/abb_ES.xml";
     } else {
-      abbrevDict = "opennlp/tools/sentdetect/abb.xml";
+      abbrevDict = "opennlp/tools/lang/abb_EN.xml";
     }
     return new Dictionary(AbstractSentenceDetectorTest.class.getClassLoader()
             .getResourceAsStream(abbrevDict));

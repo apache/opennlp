@@ -63,7 +63,7 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
 
   @Test
   public void testLoadDictHappyCase() throws IOException {
-    File dictFile = new File("lang/ga/sentdetect/abb.xml");
+    File dictFile = new File("lang/ga/abb_GA.xml");
     Dictionary dict = TokenizerTrainerTool.loadDict(dictFile);
     Assertions.assertNotNull(dict);
   }
