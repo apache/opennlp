@@ -26,6 +26,7 @@ import org.openjdk.jmh.annotations.State;
 @State(Scope.Benchmark)
 public class ExecutionPlan {
 
+  private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   private static final Random RANDOM = new Random(42);
 
   public final String[] strings = new String[1_000_000];
@@ -38,12 +39,11 @@ public class ExecutionPlan {
   }
 
   private static String generateRandomString(int length) {
-    final String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     final StringBuilder randomString = new StringBuilder();
 
     for (int i = 0; i < length; i++) {
-      int index = RANDOM.nextInt(characters.length());
-      randomString.append(characters.charAt(index));
+      int index = RANDOM.nextInt(CHARS.length());
+      randomString.append(CHARS.charAt(index));
     }
 
     return randomString.toString();
