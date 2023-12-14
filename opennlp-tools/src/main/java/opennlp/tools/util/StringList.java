@@ -31,21 +31,15 @@ public class StringList implements Iterable<String> {
 
   /**
    * Initializes a {@link StringList} instance.
-   * <p>
-   * Note: <br>
-   * Token String will be replaced by identical internal String object.
    *
    * @param singleToken One single token
    */
   public StringList(String singleToken) {
-    tokens = new String[]{singleToken.intern()};
+    tokens = new String[]{singleToken};
   }
 
   /**
    * Initializes a {@link StringList} instance.
-   * <p>
-   * Note: <br>
-   * Token Strings will be replaced by identical internal String object.
    *
    * @param tokens The string parts of the new {@link StringList}.
    *               Must not be an empty tokens array or {@code null}.
@@ -62,9 +56,7 @@ public class StringList implements Iterable<String> {
 
     this.tokens = new String[tokens.length];
 
-    for (int i = 0; i < tokens.length; i++) {
-      this.tokens[i] = tokens[i].intern();
-    }
+    System.arraycopy(tokens, 0, this.tokens, 0, tokens.length);
   }
 
   /**
