@@ -187,7 +187,7 @@
                 </goals>
                 <configuration>
                   <sources>
-                    <source>src/jmh/</source>
+                    <source>src/jmh/java</source>
                   </sources>
                 </configuration>
               </execution>
