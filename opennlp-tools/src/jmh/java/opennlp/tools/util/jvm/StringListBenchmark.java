@@ -14,28 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opennlp.tools;
-
-import java.util.concurrent.TimeUnit;
+package opennlp.tools.util.jvm;
 
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
-import opennlp.tools.jmh.ExecutionPlan;
+import opennlp.tools.util.jvm.jmh.ExecutionPlan;
 import opennlp.tools.util.StringList;
 
-@Fork(warmups = 1, value = 1)
-@Warmup(iterations = 5)
-@Measurement(iterations = 10, timeUnit = TimeUnit.MILLISECONDS)
+/**
+ * A benchmark class to test different implementation of {@link StringList} within OpenNLP
+ */
 public class StringListBenchmark {
 
   @Benchmark
-  @BenchmarkMode(Mode.Throughput)
   public void newWithArrayConstructor(Blackhole blackhole, ExecutionPlan exec) {
     blackhole.consume(new StringList(exec.strings));
   }

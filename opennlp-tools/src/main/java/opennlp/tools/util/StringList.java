@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import opennlp.tools.util.jvm.StringInterners;
+
 /**
  * A {@link StringList} is an immutable list of {@link String}s.
  */
@@ -31,15 +33,21 @@ public class StringList implements Iterable<String> {
 
   /**
    * Initializes a {@link StringList} instance.
+   * <p>
+   * Note: <br>
+   * Token String will be interened via {@link StringInterners}.
    *
    * @param singleToken One single token
    */
   public StringList(String singleToken) {
-    tokens = new String[]{singleToken};
+    tokens = new String[]{StringInterners.intern(singleToken)};
   }
 
   /**
    * Initializes a {@link StringList} instance.
+   * <p>
+   * Note: <br>
+   * Token Strings will be interened via {@link StringInterners}.
    *
    * @param tokens The string parts of the new {@link StringList}.
    *               Must not be an empty tokens array or {@code null}.
@@ -56,7 +64,9 @@ public class StringList implements Iterable<String> {
 
     this.tokens = new String[tokens.length];
 
-    System.arraycopy(tokens, 0, this.tokens, 0, tokens.length);
+    for (int i = 0; i < tokens.length; i++) {
+      this.tokens[i] = StringInterners.intern(tokens[i]);
+    }
   }
 
   /**

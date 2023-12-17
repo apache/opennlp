@@ -14,11 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opennlp.tools;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+package opennlp.tools.util.jvm;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Param;
@@ -45,40 +41,25 @@ public class StringDeduplicationBenchmark {
   @Param({"1", "100", "10000", "1000000"})
   private int size;
 
-  private StringInterner str;
-  private CHMInterner chm;
-  private HMInterner hm;
+  private JvmStringInterner str;
+  private CHMStringInterner chm;
+  private HMStringInterner hm;
+  private CHMStringDeduplicator chmd05;
+  private NoOpStringInterner noop;
 
   @Setup
   public void setup() {
-    str = new StringInterner();
-    chm = new CHMInterner();
-    hm = new HMInterner();
-  }
-
-  public static class StringInterner {
-    public String intern(String s) {
-      return s.intern();
-    }
+    str = new JvmStringInterner();
+    chm = new CHMStringInterner();
+    hm = new HMStringInterner();
+    chmd05 = new CHMStringDeduplicator();
+    noop = new NoOpStringInterner();
   }
 
   @Benchmark
   public void intern(Blackhole bh) {
     for (int c = 0; c < size; c++) {
       bh.consume(str.intern("String" + c));
-    }
-  }
-
-  public static class CHMInterner {
-    private final Map<String, String> map;
-
-    public CHMInterner() {
-      map = new ConcurrentHashMap<>();
-    }
-
-    public String intern(String s) {
-      String exist = map.putIfAbsent(s, s);
-      return (exist == null) ? s : exist;
     }
   }
 
@@ -89,23 +70,24 @@ public class StringDeduplicationBenchmark {
     }
   }
 
-  public static class HMInterner {
-    private final Map<String, String> map;
-
-    public HMInterner() {
-      map = new HashMap<>();
-    }
-
-    public String intern(String s) {
-      String exist = map.putIfAbsent(s, s);
-      return (exist == null) ? s : exist;
-    }
-  }
-
   @Benchmark
   public void hm(Blackhole bh) {
     for (int c = 0; c < size; c++) {
       bh.consume(hm.intern("String" + c));
+    }
+  }
+
+  @Benchmark
+  public void chmd05(Blackhole bh) {
+    for (int c = 0; c < size; c++) {
+      bh.consume(chmd05.intern("String" + c));
+    }
+  }
+
+  @Benchmark
+  public void noop(Blackhole bh) {
+    for (int c = 0; c < size; c++) {
+      bh.consume(noop.intern("String" + c));
     }
   }
 }

@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opennlp.tools.jmh;
+package opennlp.tools.util.jvm.jmh;
 
 import java.util.Random;
 
 import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -29,11 +30,15 @@ public class ExecutionPlan {
   private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   private static final Random RANDOM = new Random(42);
 
-  public final String[] strings = new String[1_000_000];
+  @Param({"1", "100", "10000", "1000000"})
+  private int size;
+
+  public String[] strings;
 
   @Setup(Level.Invocation)
   public void setUp() {
-    for (int i = 0; i < 1_000_000; i++) {
+    strings = new String[size];
+    for (int i = 0; i < size; i++) {
       strings[i] = generateRandomString(15);
     }
   }

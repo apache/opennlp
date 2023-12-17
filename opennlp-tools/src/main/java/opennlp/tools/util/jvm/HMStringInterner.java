@@ -14,23 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opennlp.tools;
+package opennlp.tools.util.jvm;
 
-import org.openjdk.jmh.profile.GCProfiler;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
+import java.util.HashMap;
+import java.util.Map;
 
-public class BenchmarkRunner {
+import opennlp.tools.commons.Internal;
 
-  public static void main(String[] args) throws Exception {
-    Options opt = new OptionsBuilder()
-            .include(StringListBenchmark.class.getSimpleName())
-//            .addProfiler(StackProfiler.class)
-            .addProfiler(GCProfiler.class)
-            .build();
+/**
+ * A {@link StringInterner} implementation based on {@link HashMap} by Aleksey Shipilëv.
+ * This implementation is <b>not</b> thread-safe.
+ * <p>
+ * Origin:
+ * <a href="https://shipilev.net/jvm/anatomy-quarks/10-string-intern/">
+ * https://shipilev.net/jvm/anatomy-quarks/10-string-intern/</a>
+ * <p>
+ */
+@Internal
+class HMStringInterner implements StringInterner {
+  private final Map<String, String> map;
 
-    new Runner(opt).run();
+  public HMStringInterner() {
+    map = new HashMap<>();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String intern(String sample) {
+    final String exist = map.putIfAbsent(sample, sample);
+    return (exist == null) ? sample : exist;
+  }
 }
