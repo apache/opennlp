@@ -25,12 +25,14 @@ import opennlp.tools.commons.ThreadSafe;
  * the JVM argument {@code -XX:MaxPermSize}.
  * <p>
  * Using this {@link StringInterner} brings back the default behaviour of OpenNLP before version
- * {@code 2.3.2}. You can use it by setting the system property {@code }
+ * {@code 2.3.2}. You can use it by setting the system property {@code opennlp.interner.class} to
+ * the full qualified classname of a {@link StringInterner} implementation.
  * </p>
  */
 @Internal
 @ThreadSafe
 class JvmStringInterner implements StringInterner {
+
   /**
    * {@inheritDoc}
    */

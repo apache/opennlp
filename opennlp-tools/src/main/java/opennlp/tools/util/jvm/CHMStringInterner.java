@@ -35,7 +35,6 @@ import opennlp.tools.commons.ThreadSafe;
 @ThreadSafe
 class CHMStringInterner implements StringInterner {
   private final Map<String, String> map;
-
   public CHMStringInterner() {
     map = new ConcurrentHashMap<>();
   }

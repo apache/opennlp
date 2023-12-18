@@ -32,6 +32,7 @@ import opennlp.tools.commons.Internal;
  */
 @Internal
 class HMStringInterner implements StringInterner {
+
   private final Map<String, String> map;
 
   public HMStringInterner() {
