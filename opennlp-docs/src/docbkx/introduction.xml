@@ -323,4 +323,27 @@ $ opennlp ToolNameEvaluator -model en-model-name.bin -lang en -data input.test -
         </section>
     </section>
 
+    <section id="intro.sysprops">
+        <title>System Properties</title>
+        <section id="intro.sysprops.interner">
+            <title>String Interning</title>
+            <para>
+                OpenNLP provides different implementations for String interning to reduce
+                memory footprint. By default, OpenNLP uses a custom String interner
+                implementation.
+            </para>
+            <para>
+                Users may override by setting the following system property:
+                <screen>
+                    <![CDATA[
+-Dopennlp.interner.class=opennlp.tools.util.jvm.JvmStringInterner]]>
+                </screen>
+            </para>
+            <para>
+                In addition, users can provide custom String interner implementations by implementing
+                the interface 'StringInterner' and specify this class via 'opennlp.interner.class'.
+            </para>
+        </section>
+    </section>
+
 </chapter>
