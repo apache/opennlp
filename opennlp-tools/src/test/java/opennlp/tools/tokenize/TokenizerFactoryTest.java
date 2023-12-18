@@ -60,6 +60,8 @@ public class TokenizerFactoryTest {
     final String abbrevDict;
     if (loc.equals(Locale.GERMAN)) {
       abbrevDict = "opennlp/tools/lang/abb_DE.xml";
+    } else if (loc.equals(Locale.ITALIAN)) {
+      abbrevDict = "opennlp/tools/lang/abb_IT.xml";
     } else if (loc.equals(LOCALE_SPANISH)) {
       abbrevDict = "opennlp/tools/lang/abb_ES.xml";
     } else {
@@ -176,6 +178,8 @@ public class TokenizerFactoryTest {
     Locale loc = Locale.ENGLISH;
     if ("deu".equals(lang)) {
       loc = Locale.GERMAN;
+    } else if ("ita".equals(lang)) {
+      loc = Locale.ITALIAN;
     } else if ("spa".equals(lang)) {
       loc = LOCALE_SPANISH;
     }
@@ -243,6 +247,15 @@ public class TokenizerFactoryTest {
     String pattern = "^[0-9a-zàèéìîíòóùüA-ZÀÈÉÌÎÍÒÓÙÜ]+$";
     String sentence = "Cosa fare di domenica per migliorare il tuo lunedì.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 10);
+  }
+
+  @Test
+  void testCustomPatternForTokenizerMEWithAbbreviationsIta() throws IOException {
+    String lang = "ita";
+    String pattern = "^[0-9a-zàèéìîíòóùüA-ZÀÈÉÌÎÍÒÓÙÜ]+$";
+    String sentence = "La chiesa fu costruita fra il 1258 ed il 1308 ca. come chiesa " +
+        "del convento degli Agostiniani.";
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 18);
   }
 
   @Test

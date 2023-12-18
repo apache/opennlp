@@ -36,6 +36,8 @@ public abstract class AbstractSentenceDetectorTest {
     final String trainingResource;
     if (loc.equals(Locale.GERMAN)) {
       trainingResource = "/opennlp/tools/sentdetect/Sentences_DE.txt";
+    } else if (loc.equals(Locale.ITALIAN)) {
+      trainingResource = "/opennlp/tools/sentdetect/Sentences_IT.txt";
     } else if (loc.equals(LOCALE_SPANISH)) {
       trainingResource = "/opennlp/tools/sentdetect/Sentences_ES.txt";
     } else {
@@ -50,6 +52,8 @@ public abstract class AbstractSentenceDetectorTest {
     final String lang;
     if (loc.equals(Locale.GERMAN)) {
       lang = "deu";
+    } else if (loc.equals(Locale.ITALIAN)) {
+      lang = "ita";
     } else if (loc.equals(LOCALE_SPANISH)) {
       lang = "spa";
     } else {
@@ -63,6 +67,8 @@ public abstract class AbstractSentenceDetectorTest {
     final String abbrevDict;
     if (loc.equals(Locale.GERMAN)) {
       abbrevDict = "opennlp/tools/lang/abb_DE.xml";
+    } else if (loc.equals(Locale.ITALIAN)) {
+      abbrevDict = "opennlp/tools/lang/abb_IT.xml";
     } else if (loc.equals(LOCALE_SPANISH)) {
       abbrevDict = "opennlp/tools/lang/abb_ES.xml";
     } else {

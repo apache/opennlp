@@ -10,3 +10,10 @@ Sentences_ES.txt:
 available here:
 https://ia600607.us.archive.org/9/items/El_Inconsciente/Freud_interpretacion_de_los_Suenios.pdf#page170
 ################
+################
+Sentences_IT.txt:
+- Gabriele Vaccari - training-set.txt provided in OpenNLP-1163
+- Reduced and cleaned sample of the first ~500 lines / sentences
+available here:
+https://issues.apache.org/jira/browse/OPENNLP-1163
+################
