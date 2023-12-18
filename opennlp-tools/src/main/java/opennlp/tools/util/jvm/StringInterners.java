@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Provides string interning utility methods. Interning mechanism can be configured via the
  * system property {@code opennlp.interner.class} by specifying an implementation via its
- * full qualified classname. It needs to implement {@link StringInterner}.
+ * fully qualified classname. It needs to implement {@link StringInterner}.
  * <p>
  * If not specified by the user, the default interner is {@link CHMStringInterner}.
  */
@@ -53,7 +53,7 @@ public class StringInterners {
 
   /**
    * Interns and returns a reference to the representative instance
-   * for any of a collection of string instances that are equal to each other.
+   * for any collection of string instances that are equal to each other.
    *
    * @param sample string instance to be interned
    * @return reference to the interned string instance

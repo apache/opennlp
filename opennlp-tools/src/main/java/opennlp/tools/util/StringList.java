@@ -35,7 +35,7 @@ public class StringList implements Iterable<String> {
    * Initializes a {@link StringList} instance.
    * <p>
    * Note: <br>
-   * Token String will be interened via {@link StringInterners}.
+   * Token String will be interned via {@link StringInterners}.
    *
    * @param singleToken One single token
    */
@@ -47,7 +47,7 @@ public class StringList implements Iterable<String> {
    * Initializes a {@link StringList} instance.
    * <p>
    * Note: <br>
-   * Token Strings will be interened via {@link StringInterners}.
+   * Token Strings will be interned via {@link StringInterners}.
    *
    * @param tokens The string parts of the new {@link StringList}.
    *               Must not be an empty tokens array or {@code null}.

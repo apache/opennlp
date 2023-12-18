@@ -32,7 +32,6 @@ import opennlp.tools.commons.ThreadSafe;
  * Origin:
  * <a href="https://shipilev.net/talks/joker-Oct2014-string-catechism.pdf">
  * https://shipilev.net/talks/joker-Oct2014-string-catechism.pdf</a>
- * <p>
  */
 @Internal
 @ThreadSafe
@@ -40,6 +39,9 @@ class CHMStringDeduplicator implements StringInterner {
   private final int prob;
   private final Map<String, String> map;
 
+  /**
+   * Creates a {@link CHMStringDeduplicator} with a probability of {@code 0.5}.
+   */
   public CHMStringDeduplicator() {
     this(0.5);
   }

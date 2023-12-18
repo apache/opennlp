@@ -29,7 +29,6 @@ import opennlp.tools.commons.ThreadSafe;
  * Origin:
  * <a href="https://shipilev.net/jvm/anatomy-quarks/10-string-intern/">
  * https://shipilev.net/jvm/anatomy-quarks/10-string-intern/</a>
- * <p>
  */
 @Internal
 @ThreadSafe

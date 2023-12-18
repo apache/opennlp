@@ -28,7 +28,6 @@ import opennlp.tools.commons.Internal;
  * Origin:
  * <a href="https://shipilev.net/jvm/anatomy-quarks/10-string-intern/">
  * https://shipilev.net/jvm/anatomy-quarks/10-string-intern/</a>
- * <p>
  */
 @Internal
 class HMStringInterner implements StringInterner {

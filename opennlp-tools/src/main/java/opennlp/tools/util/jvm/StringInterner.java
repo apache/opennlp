@@ -24,10 +24,10 @@ public interface StringInterner {
 
   /**
    * Interns and returns a reference to the representative instance
-   * for any of a collection of string instances that are equal to each other.
+   * for any collection of string instances that are equal to each other.
    *
-   * @param s string instance to be interned
+   * @param sample string instance to be interned
    * @return reference to the interned string instance
    */
-  String intern(String s);
+  String intern(String sample);
 }
