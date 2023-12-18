@@ -33,10 +33,19 @@ public class ExecutionPlan {
   @Param({"1", "100", "10000", "1000000"})
   private int size;
 
+  @Param({"opennlp.tools.util.jvm.CHMStringDeduplicator",
+      "opennlp.tools.util.jvm.CHMStringInterner",
+      "opennlp.tools.util.jvm.HMStringInterner",
+      "opennlp.tools.util.jvm.JvmStringInterner",
+      "opennlp.tools.util.jvm.NoOpStringInterner"})
+  private String internerClazz;
+
   public String[] strings;
 
-  @Setup(Level.Invocation)
+  @Setup(Level.Iteration)
   public void setUp() {
+    System.setProperty("opennlp.interner.class", internerClazz);
+
     strings = new String[size];
     for (int i = 0; i < size; i++) {
       strings[i] = generateRandomString(15);
