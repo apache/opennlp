@@ -17,7 +17,6 @@
 
 package opennlp.tools.sentdetect;
 
-
 import java.io.IOException;
 import java.util.Locale;
 
@@ -33,8 +32,8 @@ import opennlp.tools.dictionary.Dictionary;
  * Verifies OPENNLP-793 in combination with OPENNLP-570.
  * <p>
  * In this context, well-known known German (de_DE) abbreviations must be respected,
- * so that non-sentence breaks (words abbreviated with one or more '.' characters)
- * result in incorrect sentence boundaries .
+ * so that words abbreviated with one or more '.' characters do not
+ * result in incorrect sentence boundaries.
  * <p>
  * See:
  * <a href="https://issues.apache.org/jira/projects/OPENNLP/issues/OPENNLP-793">OPENNLP-793</a>
@@ -65,8 +64,8 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
     final String sent2 = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
 
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
-    String sampleSentences1 = sent1 + " " + sent2;
-    String[] sents = sentDetect.sentDetect(sampleSentences1);
+    String sampleSentences = sent1 + " " + sent2;
+    String[] sents = sentDetect.sentDetect(sampleSentences);
     Assertions.assertEquals(2, sents.length);
     Assertions.assertEquals(sent1, sents[0]);
     Assertions.assertEquals(sent2, sents[1]);

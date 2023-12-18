@@ -42,6 +42,8 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class TokenizerFactoryTest {
 
+  private static final Locale LOCALE_SPANISH = new Locale("es");
+
   private static ObjectStream<TokenSample> createSampleStream() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(
         TokenizerFactoryTest.class, "/opennlp/tools/tokenize/token.train");
@@ -57,9 +59,11 @@ public class TokenizerFactoryTest {
   private static Dictionary loadAbbDictionary(Locale loc) throws IOException {
     final String abbrevDict;
     if (loc.equals(Locale.GERMAN)) {
-      abbrevDict = "opennlp/tools/sentdetect/abb_DE.xml";
+      abbrevDict = "opennlp/tools/lang/abb_DE.xml";
+    } else if (loc.equals(LOCALE_SPANISH)) {
+      abbrevDict = "opennlp/tools/lang/abb_ES.xml";
     } else {
-      abbrevDict = "opennlp/tools/sentdetect/abb.xml";
+      abbrevDict = "opennlp/tools/lang/abb_EN.xml";
     }
     return new Dictionary(TokenizerFactoryTest.class.getClassLoader()
             .getResourceAsStream(abbrevDict));
@@ -172,6 +176,8 @@ public class TokenizerFactoryTest {
     Locale loc = Locale.ENGLISH;
     if ("deu".equals(lang)) {
       loc = Locale.GERMAN;
+    } else if ("spa".equals(lang)) {
+      loc = LOCALE_SPANISH;
     }
     TokenizerModel model = train(new TokenizerFactory(lang, loadAbbDictionary(loc), true,
         Pattern.compile(pattern)));
@@ -191,11 +197,20 @@ public class TokenizerFactoryTest {
   }
 
   @Test
-  void testCustomPatternForTokenizerMEDeu() throws IOException {
+  void testCustomPatternForTokenizerMEWithAbbreviationsDeu() throws IOException {
     String lang = "deu";
     String pattern = "^[A-Za-z0-9äéöüÄÉÖÜß]+$";
     String sentence = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 14);
+  }
+
+  @Test
+  void testCustomPatternForTokenizerMEWithAbbreviationsSpa() throws IOException {
+    String lang = "spa";
+    String pattern = "^[0-9a-záéíóúüýñA-ZÁÉÍÓÚÝÑ]+$";
+    String sentence = "Elegiremos el de la monografía botánica expuesto antes del " +
+            "capítulo V en pág. 448 del presente volumen.";
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 18);
   }
 
   @Test
