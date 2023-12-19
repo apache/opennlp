@@ -44,7 +44,7 @@ public class DictionaryNameFinder implements TokenNameFinder {
    * @param type the name type used for the produced spans. Must not be {@code null}.
    */
   public DictionaryNameFinder(Dictionary dictionary, String type) {
-    mDictionary = Objects.requireNonNull(dictionary, "dictionary must not be null");
+    this.mDictionary = Objects.requireNonNull(dictionary, "dictionary must not be null");
     this.type = Objects.requireNonNull(type, "type must not be null");
   }
 
@@ -61,7 +61,8 @@ public class DictionaryNameFinder implements TokenNameFinder {
   @Override
   public Span[] find(String[] textTokenized) {
     List<Span> namesFound = new LinkedList<>();
-
+    final boolean caseSensitive = mDictionary.isCaseSensitive();
+    final int maxTokenCount = mDictionary.getMaxTokenCount();
     for (int offsetFrom = 0; offsetFrom < textTokenized.length; offsetFrom++) {
       Span nameFound = null;
       String[] tokensSearching;
@@ -69,14 +70,14 @@ public class DictionaryNameFinder implements TokenNameFinder {
       for (int offsetTo = offsetFrom; offsetTo < textTokenized.length; offsetTo++) {
         int lengthSearching = offsetTo - offsetFrom + 1;
 
-        if (lengthSearching > mDictionary.getMaxTokenCount()) {
+        if (lengthSearching > maxTokenCount) {
           break;
         } else {
           tokensSearching = new String[lengthSearching];
           System.arraycopy(textTokenized, offsetFrom, tokensSearching, 0,
               lengthSearching);
 
-          StringList entryForSearch = new StringList(tokensSearching);
+          StringList entryForSearch = new StringList(caseSensitive, tokensSearching);
 
           if (mDictionary.contains(entryForSearch)) {
             nameFound = new Span(offsetFrom, offsetTo + 1, type);

@@ -31,8 +31,10 @@ public class StringList implements Iterable<String> {
 
   private final String[] tokens;
 
+  private final boolean caseSensitive;
+
   /**
-   * Initializes a {@link StringList} instance.
+   * Initializes a {@link StringList} instance. By default, this instance is case-sensitive.
    * <p>
    * Note: <br>
    * Token String will be interned via {@link StringInterners}.
@@ -40,11 +42,11 @@ public class StringList implements Iterable<String> {
    * @param singleToken One single token
    */
   public StringList(String singleToken) {
-    tokens = new String[]{StringInterners.intern(singleToken)};
+    this(true, singleToken);
   }
 
   /**
-   * Initializes a {@link StringList} instance.
+   * Initializes a {@link StringList} instance. By default, this instance is case-sensitive.
    * <p>
    * Note: <br>
    * Token Strings will be interned via {@link StringInterners}.
@@ -55,6 +57,22 @@ public class StringList implements Iterable<String> {
    * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public StringList(String... tokens) {
+    this(true, tokens);
+  }
+
+  /**
+   * Initializes a {@link StringList} instance.
+   * <p>
+   * Note: <br>
+   * Token Strings will be interned via {@link StringInterners}.
+   *
+   * @param isCaseSensitive Whether it will operate case-sensitive, or not.
+   * @param tokens The string parts of the new {@link StringList}.
+   *               Must not be an empty tokens array or {@code null}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
+   */
+  public StringList(boolean isCaseSensitive, String... tokens) {
 
     Objects.requireNonNull(tokens, "tokens must not be null");
 
@@ -67,6 +85,8 @@ public class StringList implements Iterable<String> {
     for (int i = 0; i < tokens.length; i++) {
       this.tokens[i] = StringInterners.intern(tokens[i]);
     }
+
+    this.caseSensitive = isCaseSensitive;
   }
 
   /**
@@ -127,44 +147,40 @@ public class StringList implements Iterable<String> {
    * @return {@code true} if identically with ignore the case, {@code false} otherwise.
    */
   public boolean compareToIgnoreCase(StringList tokens) {
-
     if (size() == tokens.size()) {
       for (int i = 0; i < size(); i++) {
-
-        if (getToken(i).compareToIgnoreCase(
-            tokens.getToken(i)) != 0) {
+        if (getToken(i).compareToIgnoreCase(tokens.getToken(i)) != 0) {
           return false;
         }
       }
-    }
-    else {
+    } else {
       return false;
     }
-
     return true;
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(tokens);
+    // if lookup is too slow optimize this
+    return StringUtil.toLowerCase(toString()).hashCode();
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
+    if (obj == this) {
       return true;
+    } else if (obj instanceof StringList tokenList) {
+      if (caseSensitive) {
+        return Arrays.equals(tokens, tokenList.tokens);
+      } else {
+        return compareToIgnoreCase(tokenList);
+      }
     }
-
-    if (obj instanceof StringList tokenList) {
-
-      return Arrays.equals(tokens, tokenList.tokens);
-    }
-
     return false;
   }
 
   /**
-   * @return A human-readable representation of this {@link Span}.
+   * @return A human-readable representation of this {@link StringList}.
    */
   @Override
   public String toString() {
@@ -183,5 +199,34 @@ public class StringList implements Iterable<String> {
     string.append(']');
 
     return string.toString();
+  }
+
+  /**
+   * @return {@code true}, if this {@link StringList} is case-sensitive.
+   */
+  public boolean isCaseSensitive() {
+    return caseSensitive;
+  }
+
+  /**
+   * @return If this {@link StringList} is case-insensitive,
+   * the same instance is returned. Otherwise, a new object is returned.
+   */
+  public StringList toCaseInsensitive() {
+    if (isCaseSensitive()) {
+      return new StringList(false, tokens);
+    }
+    return this;
+  }
+
+  /**
+   * @return If this {@link StringList} is case-sensitive,
+   * the same instance is returned. Otherwise, a new object is returned.
+   */
+  public StringList toCaseSensitive() {
+    if (!isCaseSensitive()) {
+      return new StringList(true, tokens);
+    }
+    return this;
   }
 }

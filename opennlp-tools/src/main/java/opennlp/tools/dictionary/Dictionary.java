@@ -32,7 +32,6 @@ import opennlp.tools.dictionary.serializer.Attributes;
 import opennlp.tools.dictionary.serializer.DictionaryEntryPersistor;
 import opennlp.tools.dictionary.serializer.Entry;
 import opennlp.tools.util.StringList;
-import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.model.DictionarySerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
@@ -43,56 +42,7 @@ import opennlp.tools.util.model.SerializableArtifact;
  * @see Iterable
  */
 public class Dictionary implements Iterable<StringList>, SerializableArtifact {
-
-  private class StringListWrapper {
-
-    private final StringList stringList;
-
-    private StringListWrapper(StringList stringList) {
-      this.stringList = stringList;
-    }
-
-    private StringList getStringList() {
-      return stringList;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-
-      boolean result;
-
-      if (obj == this) {
-        result = true;
-      }
-      else if (obj instanceof StringListWrapper other) {
-
-        if (isCaseSensitive) {
-          result = this.stringList.equals(other.getStringList());
-        }
-        else {
-          result = this.stringList.compareToIgnoreCase(other.getStringList());
-        }
-      }
-      else {
-        result = false;
-      }
-
-      return result;
-    }
-
-    @Override
-    public int hashCode() {
-      // if lookup is too slow optimize this
-      return StringUtil.toLowerCase(this.stringList.toString()).hashCode();
-    }
-
-    @Override
-    public String toString() {
-      return this.stringList.toString();
-    }
-  }
-
-  private final Set<StringListWrapper> entrySet = new HashSet<>();
+  private final Set<StringList> entrySet = new HashSet<>();
   private final boolean isCaseSensitive;
   private int minTokenCount = 99999;
   private int maxTokenCount = 0;
@@ -131,7 +81,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
    * @param tokens the new entry
    */
   public void put(StringList tokens) {
-    entrySet.add(new StringListWrapper(tokens));
+    entrySet.add(applyCaseSensitivity(tokens));
     minTokenCount = StrictMath.min(minTokenCount, tokens.size());
     maxTokenCount = StrictMath.max(maxTokenCount, tokens.size());
   }
@@ -151,7 +101,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
    * @return {@code true} if it contains the entry, {@code false} otherwise.
    */
   public boolean contains(StringList tokens) {
-    return entrySet.contains(new StringListWrapper(tokens));
+    return entrySet.contains(applyCaseSensitivity(tokens));
   }
 
   /**
@@ -160,7 +110,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
    * @param tokens The tokens to be filtered out (= removed).
    */
   public void remove(StringList tokens) {
-    entrySet.remove(new StringListWrapper(tokens));
+    entrySet.remove(applyCaseSensitivity(tokens));
   }
 
   /**
@@ -168,7 +118,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
    */
   @Override
   public Iterator<StringList> iterator() {
-    final Iterator<StringListWrapper> entries = entrySet.iterator();
+    final Iterator<StringList> entries = entrySet.iterator();
 
     return new Iterator<>() {
 
@@ -179,7 +129,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
       @Override
       public StringList next() {
-        return entries.next().getStringList();
+        return entries.next();
       }
 
       @Override
@@ -308,7 +258,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
       @Override
       public Iterator<String> iterator() {
-        final Iterator<StringListWrapper> entries = entrySet.iterator();
+        final Iterator<StringList> entries = entrySet.iterator();
 
         return new Iterator<>() {
           @Override
@@ -317,7 +267,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
           }
           @Override
           public String next() {
-            return entries.next().getStringList().getToken(0);
+            return entries.next().getToken(0);
           }
           @Override
           public void remove() {
@@ -337,7 +287,7 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
 
         if (obj instanceof String str) {
 
-          result = entrySet.contains(new StringListWrapper(new StringList(str)));
+          result = entrySet.contains(new StringList(isCaseSensitive, str));
 
         }
         return result;
@@ -353,13 +303,13 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
           return false;
         }
         Iterator<String> toCheckIter = toCheck.iterator();
-        for (StringListWrapper entry : entrySet) {
+        for (StringList entry : entrySet) {
           if (isCaseSensitive) {
-            if (!entry.stringList.equals(new StringList(toCheckIter.next()))) {
+            if (!entry.equals(new StringList(true, toCheckIter.next()))) {
               return false;
             }
           } else {
-            if (!entry.stringList.compareToIgnoreCase(new StringList(toCheckIter.next()))) {
+            if (!entry.compareToIgnoreCase(new StringList(false, toCheckIter.next()))) {
               return false;
             }
           }
@@ -382,5 +332,20 @@ public class Dictionary implements Iterable<StringList>, SerializableArtifact {
   @Override
   public Class<?> getArtifactSerializerClass() {
     return DictionarySerializer.class;
+  }
+
+  /**
+   * @return {@code true}, if this {@link Dictionary} is case-sensitive.
+   */
+  public boolean isCaseSensitive() {
+    return isCaseSensitive;
+  }
+
+  private StringList applyCaseSensitivity(StringList list) {
+    if (isCaseSensitive) {
+      return list.toCaseSensitive();
+    } else {
+      return list.toCaseInsensitive();
+    }
   }
 }
