@@ -18,6 +18,10 @@
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.jupiter.api.Assertions;
@@ -27,6 +31,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Tests for the {@link SentenceDetectorME} class.
@@ -90,4 +97,46 @@ public class SentenceDetectorMEItalianTest extends AbstractSentenceDetectorTest 
     Assertions.assertEquals(2, probs.length);
   }
 
+  /*
+   * Verifies OPENNLP-1163,
+   * see: https://issues.apache.org/jira/browse/OPENNLP-1163
+   *
+   * Original problem:
+   * "Even though the abbreviation "art." was included in the XML file,
+   * the sentence detector breaks the sentence on instances of this
+   * abbreviation preceded by article and apostrophe
+   * (e.g. nell'art., dall'art., dell'art.)"
+   *
+   * This test demonstrates it is working, with "art." in the abbreviations xml file.
+   */
+  @Test
+  void testSentDetectOpenNLP1163() throws IOException {
+    final SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
+
+    final String testResource = "/opennlp/tools/sentdetect/Test-Sample_OPENNLP-1163.txt";
+    InputStreamFactory in = new ResourceAsStreamFactory(
+            AbstractSentenceDetectorTest.class, testResource);
+    List<String> detectedSentences = new ArrayList<>();
+    try (PlainTextByLineStream stream = new PlainTextByLineStream(in, StandardCharsets.UTF_8)) {
+      StringBuilder text = new StringBuilder();
+      String line;
+      do {
+        line = stream.read();
+        text.append(line);
+      } while (line != null);
+
+      String[] sents = sentDetect.sentDetect(text.toString());
+      detectedSentences.addAll(Arrays.asList(sents));
+    }
+    
+    // Test
+    Assertions.assertEquals(11, detectedSentences.size());
+    for (String sent : detectedSentences) {
+      Assertions.assertFalse(hasMisplacedAbbreviationAtEnd(sent));
+    }
+  }
+
+  private boolean hasMisplacedAbbreviationAtEnd(String sent) {
+    return sent.endsWith("dell'art.") || sent.endsWith("dall'art.") || sent.endsWith("nell'art.");
+  }
 }
