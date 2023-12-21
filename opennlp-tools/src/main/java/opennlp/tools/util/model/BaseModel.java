@@ -596,6 +596,11 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
       zip.putNextEntry(new ZipEntry(name));
 
       Object artifact = entry.getValue();
+      // TODO Discuss if this is the correct location to have this workaround in place
+      if ("generator.featuregen".equals(name) && artifact == null) {
+        // An old model format was detected, skipping the process for this entry, see: OPENNLP-1369
+        continue;
+      }
 
       ArtifactSerializer serializer = getArtifactSerializer(name);
 

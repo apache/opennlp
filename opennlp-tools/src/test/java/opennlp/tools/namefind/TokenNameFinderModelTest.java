@@ -51,13 +51,17 @@ public class TokenNameFinderModelTest {
     // create a resources folder
     Path resourcesFolder = Files.createTempDirectory("resources").toAbsolutePath();
 
+    // TODO Restore old test and provide a separate one which does it with the pt-pos-perceptron.bin
     // save a POS model there
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
-    File posModelFile = new File(resourcesFolder.toFile(), "pos-model.bin");
+    File posModelFile = new File("pt-pos-perceptron.bin");
+    Files.copy(posModelFile.toPath(), resourcesFolder.resolve("pt-pos-perceptron.bin"));
 
-    posModel.serialize(posModelFile);
+    // posModel.serialize(posModelFile);
 
     Assertions.assertTrue(posModelFile.exists());
+    Assertions.assertTrue(resourcesFolder.resolve("pt-pos-perceptron.bin").toFile().exists());
+    // end TODO
 
     // load feature generator xml bytes
     InputStream fgInputStream = this.getClass().getResourceAsStream("ner-pos-features.xml");
