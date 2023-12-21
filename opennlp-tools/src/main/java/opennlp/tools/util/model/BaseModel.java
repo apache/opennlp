@@ -596,9 +596,8 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
       zip.putNextEntry(new ZipEntry(name));
 
       Object artifact = entry.getValue();
-      // TODO Discuss if this is the correct location to have this workaround in place
-      if ("generator.featuregen".equals(name) && artifact == null) {
-        // An old model format was detected, skipping the process for this entry, see: OPENNLP-1369
+
+      if (skipEntryForSerialization(entry)) {
         continue;
       }
 
@@ -688,5 +687,13 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     componentName = in.readUTF();
 
     this.loadModel(in);
+  }
+
+  /**
+   * @param entry the entry to check
+   * @return {@code true}, if the given entry should be skipped for serialization.
+   */
+  protected boolean skipEntryForSerialization(Entry<String, Object> entry) {
+    return false;
   }
 }

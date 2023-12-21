@@ -36,7 +36,6 @@ import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith(EnabledWhenCDNAvailable.CDNAvailableCondition.class)
-@ParameterizedTest
 public @interface EnabledWhenCDNAvailable {
 
   String hostname();

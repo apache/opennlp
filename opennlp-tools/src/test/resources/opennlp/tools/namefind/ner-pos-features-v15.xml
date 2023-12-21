@@ -30,7 +30,7 @@
     <int name="prevLength">2</int>
     <int name="nextLength">2</int>
     <generator class="opennlp.tools.util.featuregen.POSTaggerNameFeatureGeneratorFactory">
-      <str name="model">pos-model.bin</str>
+      <str name="model">pt-pos-perceptron.bin</str>
     </generator>
   </generator>
   <generator class="opennlp.tools.util.featuregen.PreviousMapFeatureGeneratorFactory"/>
