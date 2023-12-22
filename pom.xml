@@ -176,6 +176,7 @@
 		<onnxruntime.version>1.15.0</onnxruntime.version>
 		<slf4j.version>1.7.36</slf4j.version>
 		<log4j2.version>2.20.0</log4j2.version>
+		<jmh.version>1.37</jmh.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.7.9</jacoco.maven.plugin>
