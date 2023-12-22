@@ -27,7 +27,6 @@ import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.params.ParameterizedTest;
 
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
 
@@ -36,7 +35,6 @@ import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith(EnabledWhenCDNAvailable.CDNAvailableCondition.class)
-@ParameterizedTest
 public @interface EnabledWhenCDNAvailable {
 
   String hostname();

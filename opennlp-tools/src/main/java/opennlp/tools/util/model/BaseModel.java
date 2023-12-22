@@ -597,6 +597,10 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
       Object artifact = entry.getValue();
 
+      if (skipEntryForSerialization(entry)) {
+        continue;
+      }
+
       ArtifactSerializer serializer = getArtifactSerializer(name);
 
       // If model is serialize-able always use the provided serializer
@@ -683,5 +687,13 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     componentName = in.readUTF();
 
     this.loadModel(in);
+  }
+
+  /**
+   * @param entry the entry to check
+   * @return {@code true}, if the given entry should be skipped for serialization.
+   */
+  protected boolean skipEntryForSerialization(Entry<String, Object> entry) {
+    return false;
   }
 }

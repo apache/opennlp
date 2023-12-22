@@ -171,6 +171,12 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
     }
   }
 
+  @Override
+  protected boolean skipEntryForSerialization(Map.Entry<String, Object> entry) {
+    // An old model format was detected, skipping the process for this entry, see: OPENNLP-1369
+    return GENERATOR_DESCRIPTOR_ENTRY_NAME.equals(entry.getKey()) && entry.getValue() == null;
+  }
+
   /**
    * @deprecated use {@link POSModel#getPosSequenceModel} instead. This method will be removed soon.
    * Only required for Parser 1.5.x backward compatibility. Newer models don't need this anymore.
@@ -232,7 +238,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
   @Override
   public int hashCode() {
     return Objects.hash(artifactMap.get("manifest.properties"), artifactMap.get("pos.model"),
-            Arrays.hashCode((byte[]) artifactMap.get("generator.featuregen"))
+            Arrays.hashCode((byte[]) artifactMap.get(GENERATOR_DESCRIPTOR_ENTRY_NAME))
     );
   }
 
@@ -248,8 +254,8 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
 
       return artifactMap.get("manifest.properties").equals(artifactMapToCheck.get("manifest.properties")) &&
               artifactMap.get("pos.model").equals(abstractModel) &&
-              Arrays.equals((byte[]) artifactMap.get("generator.featuregen"),
-                            (byte[]) artifactMapToCheck.get("generator.featuregen"));
+              Arrays.equals((byte[]) artifactMap.get(GENERATOR_DESCRIPTOR_ENTRY_NAME),
+                            (byte[]) artifactMapToCheck.get(GENERATOR_DESCRIPTOR_ENTRY_NAME));
     }
     return false;
   }
