@@ -74,7 +74,7 @@ public class DummyChunkSampleStream extends
       count++;
     }
 
-    if (toks.size() > 0) {
+    if (!toks.isEmpty()) {
       if (mIsPredicted) {
         return new ChunkSample(toks.toArray(new String[0]),
             posTags.toArray(new String[0]),

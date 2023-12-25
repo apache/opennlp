@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,13 +80,11 @@ public abstract class AbstractEvalTest {
     MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
 
     final List<Path> paths = Files.walk(path)
-        .filter(Files::isRegularFile)
-        .filter(p -> p.toString().endsWith(extension))
-        .collect(Collectors.toList());
+            .filter(Files::isRegularFile)
+            .filter(p -> p.toString().endsWith(extension)).sorted().collect(Collectors.toList());
 
     // Ensure the paths are in a consistent order when
     // verifying the file checksums.
-    Collections.sort(paths);
 
     for (Path p : paths) {
       try (InputStream in = new BufferedInputStream(Files.newInputStream(p))) {

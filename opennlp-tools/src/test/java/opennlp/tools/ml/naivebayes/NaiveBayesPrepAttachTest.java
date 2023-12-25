@@ -59,7 +59,7 @@ public class NaiveBayesPrepAttachTest {
     testDataIndexer.index(trainingStream);
     
     MaxentModel model = new NaiveBayesTrainer().trainModel(testDataIndexer);
-    Assertions.assertTrue(model instanceof NaiveBayesModel);
+    Assertions.assertInstanceOf(NaiveBayesModel.class, model);
     PrepAttachDataUtil.testModel(model, 0.7897994553107205);
   }
 
@@ -71,7 +71,7 @@ public class NaiveBayesPrepAttachTest {
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(trainingStream);
-    Assertions.assertTrue(model instanceof NaiveBayesModel);
+    Assertions.assertInstanceOf(NaiveBayesModel.class, model);
     PrepAttachDataUtil.testModel(model, 0.7897994553107205);
   }
 
@@ -83,7 +83,7 @@ public class NaiveBayesPrepAttachTest {
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(trainingStream);
-    Assertions.assertTrue(model instanceof NaiveBayesModel);
+    Assertions.assertInstanceOf(NaiveBayesModel.class, model);
     PrepAttachDataUtil.testModel(model, 0.7945035899975241);
   }
 }

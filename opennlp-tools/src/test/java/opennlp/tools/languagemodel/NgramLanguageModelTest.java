@@ -23,7 +23,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -141,7 +140,7 @@ public class NgramLanguageModelTest {
 
     try (InputStream is = getClass().getResourceAsStream("/opennlp/tools/languagemodel/sentences.txt");
          BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-      for (String line : reader.lines().collect(Collectors.toList())) {
+      for (String line : reader.lines().toList()) {
         String[] array = line.split(" ");
         List<String> split = Arrays.asList(array);
         List<String> generatedStrings = NGramGenerator.generate(split, ngramSize, " ");

@@ -69,10 +69,10 @@ public class TokenNameFinderToolTest {
     TokenNameFinderTool tool = new TokenNameFinderTool();
     tool.run(args);
 
-    final String content = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+    final String content = baos.toString(StandardCharsets.UTF_8);
     Assertions.assertTrue(content.contains("It is <START:person> Stefanie Schmidt. <END>"));
 
-    model1.delete();
+    Assertions.assertTrue(model1.delete());
   }
 
   @Test
@@ -106,7 +106,7 @@ public class TokenNameFinderToolTest {
     TokenNameFinderTool tool = new TokenNameFinderTool();
     tool.run(args);
 
-    final String content = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+    final String content = baos.toString(StandardCharsets.UTF_8);
     Assertions.assertEquals(tool.getHelp(), content.trim());
 
   }

@@ -79,20 +79,15 @@ public class AbstractEventStreamTest {
     }
   }
 
-  private enum RESULT {
+  enum RESULT {
     EVENTS,
     EMPTY
   }
 
-  /**
-   * This class extends the {@link AbstractEventStream} to help
-   * testing the {@link AbstractEventStream#hasNext()}
-   * and {@link AbstractEventStream#next()} methods.
-   */
   static class TestEventStream extends AbstractEventStream<RESULT> {
 
 
-    public TestEventStream(ObjectStream<RESULT> samples) {
+    protected TestEventStream(ObjectStream<RESULT> samples) {
       super(samples);
     }
 

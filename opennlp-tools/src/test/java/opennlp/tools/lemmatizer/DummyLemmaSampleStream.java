@@ -68,7 +68,7 @@ public class DummyLemmaSampleStream
       count++;
     }
 
-    if (toks.size() > 0) {
+    if (!toks.isEmpty()) {
       if (mIsPredicted) {
         return new LemmaSample(toks.toArray(new String[0]),
             posTags.toArray(new String[0]),

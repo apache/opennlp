@@ -65,9 +65,9 @@ public class POSTaggerFactoryTest {
     POSModel posModel = trainPOSModel(new DummyPOSTaggerFactory(posDict));
 
     POSTaggerFactory factory = posModel.getFactory();
-    Assertions.assertTrue(factory.getTagDictionary() instanceof DummyPOSDictionary);
-    Assertions.assertTrue(factory.getPOSContextGenerator() instanceof DummyPOSContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator() instanceof DummyPOSSequenceValidator);
+    Assertions.assertInstanceOf(DummyPOSDictionary.class, factory.getTagDictionary());
+    Assertions.assertInstanceOf(DummyPOSContextGenerator.class, factory.getPOSContextGenerator());
+    Assertions.assertInstanceOf(DummyPOSSequenceValidator.class, factory.getSequenceValidator());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     posModel.serialize(out);
@@ -76,9 +76,9 @@ public class POSTaggerFactoryTest {
     POSModel fromSerialized = new POSModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getTagDictionary() instanceof DummyPOSDictionary);
-    Assertions.assertTrue(factory.getPOSContextGenerator() instanceof DummyPOSContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator() instanceof DummyPOSSequenceValidator);
+    Assertions.assertInstanceOf(DummyPOSDictionary.class, factory.getTagDictionary());
+    Assertions.assertInstanceOf(DummyPOSContextGenerator.class, factory.getPOSContextGenerator());
+    Assertions.assertInstanceOf(DummyPOSSequenceValidator.class, factory.getSequenceValidator());
   }
 
   @Test
@@ -88,9 +88,9 @@ public class POSTaggerFactoryTest {
     POSModel posModel = trainPOSModel(new POSTaggerFactory(null, null, posDict));
 
     POSTaggerFactory factory = posModel.getFactory();
-    Assertions.assertTrue(factory.getTagDictionary() instanceof POSDictionary);
+    Assertions.assertInstanceOf(POSDictionary.class, factory.getTagDictionary());
     Assertions.assertNotNull(factory.getPOSContextGenerator());
-    Assertions.assertTrue(factory.getSequenceValidator() instanceof DefaultPOSSequenceValidator);
+    Assertions.assertInstanceOf(DefaultPOSSequenceValidator.class, factory.getSequenceValidator());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     posModel.serialize(out);
@@ -99,9 +99,9 @@ public class POSTaggerFactoryTest {
     POSModel fromSerialized = new POSModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getTagDictionary() instanceof POSDictionary);
+    Assertions.assertInstanceOf(POSDictionary.class, factory.getTagDictionary());
     Assertions.assertNotNull(factory.getPOSContextGenerator());
-    Assertions.assertTrue(factory.getSequenceValidator() instanceof DefaultPOSSequenceValidator);
+    Assertions.assertInstanceOf(DefaultPOSSequenceValidator.class, factory.getSequenceValidator());
   }
 
   @Test

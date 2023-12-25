@@ -54,7 +54,7 @@ public class BratDocumentTest extends AbstractBratTest {
   }
 
   private void checkNote(BratAnnotation annotation, String expectedCoveredText, String expectedNote) {
-    Assertions.assertTrue(annotation instanceof SpanAnnotation);
+    Assertions.assertInstanceOf(SpanAnnotation.class, annotation);
     SpanAnnotation spanAnn = (SpanAnnotation) annotation;
     Assertions.assertEquals(expectedCoveredText, spanAnn.getCoveredText());
     Assertions.assertEquals(expectedNote, spanAnn.getNote());

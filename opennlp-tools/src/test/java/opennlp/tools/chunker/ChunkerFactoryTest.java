@@ -57,8 +57,8 @@ public class ChunkerFactoryTest {
     ChunkerModel model = trainModel(ModelType.MAXENT, new ChunkerFactory());
 
     ChunkerFactory factory = model.getFactory();
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
+    Assertions.assertInstanceOf(DefaultChunkerContextGenerator.class, factory.getContextGenerator());
+    Assertions.assertInstanceOf(DefaultChunkerSequenceValidator.class, factory.getSequenceValidator());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
@@ -67,8 +67,8 @@ public class ChunkerFactoryTest {
     ChunkerModel fromSerialized = new ChunkerModel(in);
 
     factory = fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getContextGenerator() instanceof DefaultChunkerContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator() instanceof DefaultChunkerSequenceValidator);
+    Assertions.assertInstanceOf(DefaultChunkerContextGenerator.class, factory.getContextGenerator());
+    Assertions.assertInstanceOf(DefaultChunkerSequenceValidator.class, factory.getSequenceValidator());
   }
 
 
@@ -78,10 +78,10 @@ public class ChunkerFactoryTest {
     ChunkerModel model = trainModel(ModelType.MAXENT, new DummyChunkerFactory());
 
     DummyChunkerFactory factory = (DummyChunkerFactory) model.getFactory();
-    Assertions.assertTrue(factory.getContextGenerator()
-        instanceof DummyChunkerFactory.DummyContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator()
-        instanceof DummyChunkerFactory.DummySequenceValidator);
+    Assertions.assertInstanceOf(DummyChunkerFactory.DummyContextGenerator.class,
+            factory.getContextGenerator());
+    Assertions.assertInstanceOf(DummyChunkerFactory.DummySequenceValidator.class,
+            factory.getSequenceValidator());
 
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -91,10 +91,8 @@ public class ChunkerFactoryTest {
     ChunkerModel fromSerialized = new ChunkerModel(in);
 
     factory = (DummyChunkerFactory) fromSerialized.getFactory();
-    Assertions.assertTrue(factory.getContextGenerator()
-        instanceof DefaultChunkerContextGenerator);
-    Assertions.assertTrue(factory.getSequenceValidator()
-        instanceof DefaultChunkerSequenceValidator);
+    Assertions.assertInstanceOf(DefaultChunkerContextGenerator.class, factory.getContextGenerator());
+    Assertions.assertInstanceOf(DefaultChunkerSequenceValidator.class, factory.getSequenceValidator());
 
 
     ChunkerME chunker = new ChunkerME(model);

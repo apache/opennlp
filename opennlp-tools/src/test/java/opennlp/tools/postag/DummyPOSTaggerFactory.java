@@ -29,7 +29,6 @@ import opennlp.tools.util.model.UncloseableInputStream;
 
 public class DummyPOSTaggerFactory extends POSTaggerFactory {
 
-
   private static final String DUMMY_POSDICT = "DUMMY_POSDICT";
   private DummyPOSDictionary dict;
 
@@ -48,7 +47,7 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
 
   @Override
   public DummyPOSDictionary getTagDictionary() {
-    return (DummyPOSDictionary) artifactProvider.getArtifact(DUMMY_POSDICT);
+    return artifactProvider.getArtifact(DUMMY_POSDICT);
   }
 
   @Override
@@ -84,10 +83,12 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
 
   public static class DummyPOSDictionarySerializer implements ArtifactSerializer<DummyPOSDictionary> {
 
+    @Override
     public DummyPOSDictionary create(InputStream in) throws IOException {
       return DummyPOSDictionary.create(new UncloseableInputStream(in));
     }
 
+    @Override
     public void serialize(DummyPOSDictionary artifact, OutputStream out)
         throws IOException {
       artifact.serialize(out);
@@ -96,6 +97,7 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
 
   static class DummyPOSSequenceValidator implements SequenceValidator<String> {
 
+    @Override
     public boolean validSequence(int i, String[] inputSequence,
                                  String[] outcomesSequence, String outcome) {
       return true;
@@ -103,7 +105,7 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
 
   }
 
-  static class DummyPOSDictionary extends POSDictionary {
+  public static class DummyPOSDictionary extends POSDictionary {
 
     private POSDictionary dict;
 

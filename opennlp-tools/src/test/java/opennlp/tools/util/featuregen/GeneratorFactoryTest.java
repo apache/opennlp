@@ -132,7 +132,7 @@ public class GeneratorFactoryTest {
     Map<String, ArtifactSerializer<?>> mapping =
         GeneratorFactory.extractArtifactSerializerMappings(descIn);
 
-    Assertions.assertTrue(mapping.get("test.dictionary") instanceof DictionarySerializer);
+    Assertions.assertInstanceOf(DictionarySerializer.class, mapping.get("test.dictionary"));
     // TODO: if make the following effective, the test fails.
     // this is strange because DictionaryFeatureGeneratorFactory cast dictResource to Dictionary...
     //Assert.assertTrue(mapping.get("test.dictionary") instanceof
@@ -149,7 +149,7 @@ public class GeneratorFactoryTest {
     Assertions.assertNotNull(generatorDescriptorIn);
 
     AdaptiveFeatureGenerator generator = GeneratorFactory.create(generatorDescriptorIn, null);
-    Assertions.assertTrue(generator instanceof TestParametersFeatureGenerator);
+    Assertions.assertInstanceOf(TestParametersFeatureGenerator.class, generator);
 
     TestParametersFeatureGenerator featureGenerator = (TestParametersFeatureGenerator) generator;
     Assertions.assertEquals(123, featureGenerator.ip);
@@ -170,7 +170,7 @@ public class GeneratorFactoryTest {
     Assertions.assertNotNull(generatorDescriptorIn);
 
     AdaptiveFeatureGenerator featureGenerator = GeneratorFactory.create(generatorDescriptorIn, null);
-    Assertions.assertTrue(featureGenerator instanceof OutcomePriorFeatureGenerator);
+    Assertions.assertInstanceOf(OutcomePriorFeatureGenerator.class, featureGenerator);
   }
 
   @Test
@@ -183,12 +183,12 @@ public class GeneratorFactoryTest {
     Assertions.assertNotNull(generatorDescriptorIn);
 
     AdaptiveFeatureGenerator featureGenerator = GeneratorFactory.create(generatorDescriptorIn, null);
-    Assertions.assertTrue(featureGenerator instanceof AggregatedFeatureGenerator);
+    Assertions.assertInstanceOf(AggregatedFeatureGenerator.class, featureGenerator);
 
     AggregatedFeatureGenerator aggregatedFeatureGenerator = (AggregatedFeatureGenerator) featureGenerator;
     Assertions.assertEquals(3, aggregatedFeatureGenerator.getGenerators().size());
     for (AdaptiveFeatureGenerator afg : aggregatedFeatureGenerator.getGenerators()) {
-      Assertions.assertTrue(afg instanceof OutcomePriorFeatureGenerator);
+      Assertions.assertInstanceOf(OutcomePriorFeatureGenerator.class, afg);
     }
   }
 
@@ -202,11 +202,11 @@ public class GeneratorFactoryTest {
     Assertions.assertNotNull(generatorDescriptorIn);
 
     AdaptiveFeatureGenerator featureGenerator = GeneratorFactory.create(generatorDescriptorIn, null);
-    Assertions.assertTrue(featureGenerator instanceof CachedFeatureGenerator);
+    Assertions.assertInstanceOf(CachedFeatureGenerator.class, featureGenerator);
 
     CachedFeatureGenerator cachedFeatureGenerator = (CachedFeatureGenerator) featureGenerator;
-    Assertions.assertTrue(cachedFeatureGenerator.getCachedFeatureGenerator()
-        instanceof OutcomePriorFeatureGenerator);
+    Assertions.assertInstanceOf(OutcomePriorFeatureGenerator.class,
+            cachedFeatureGenerator.getCachedFeatureGenerator());
   }
 
   @Test
@@ -219,16 +219,16 @@ public class GeneratorFactoryTest {
     Assertions.assertNotNull(generatorDescriptorIn);
 
     AdaptiveFeatureGenerator featureGenerator = GeneratorFactory.create(generatorDescriptorIn, null);
-    Assertions.assertTrue(featureGenerator instanceof CachedFeatureGenerator);
+    Assertions.assertInstanceOf(CachedFeatureGenerator.class, featureGenerator);
 
     CachedFeatureGenerator cachedFeatureGenerator = (CachedFeatureGenerator) featureGenerator;
     AdaptiveFeatureGenerator afg = cachedFeatureGenerator.getCachedFeatureGenerator();
-    Assertions.assertTrue(afg instanceof AggregatedFeatureGenerator);
+    Assertions.assertInstanceOf(AggregatedFeatureGenerator.class, afg);
 
     AggregatedFeatureGenerator aggregatedFeatureGenerator = (AggregatedFeatureGenerator) afg;
     Assertions.assertEquals(3, aggregatedFeatureGenerator.getGenerators().size());
     for (AdaptiveFeatureGenerator afgen : aggregatedFeatureGenerator.getGenerators()) {
-      Assertions.assertTrue(afgen instanceof OutcomePriorFeatureGenerator);
+      Assertions.assertInstanceOf(OutcomePriorFeatureGenerator.class, afgen);
     }
   }
 
@@ -242,16 +242,16 @@ public class GeneratorFactoryTest {
     Assertions.assertNotNull(generatorDescriptorIn);
 
     AdaptiveFeatureGenerator featureGenerator = GeneratorFactory.create(generatorDescriptorIn, null);
-    Assertions.assertTrue(featureGenerator instanceof CachedFeatureGenerator);
+    Assertions.assertInstanceOf(CachedFeatureGenerator.class, featureGenerator);
     CachedFeatureGenerator cachedFeatureGenerator = (CachedFeatureGenerator) featureGenerator;
 
-    Assertions.assertTrue(cachedFeatureGenerator.getCachedFeatureGenerator()
-        instanceof AggregatedFeatureGenerator);
+    Assertions.assertInstanceOf(AggregatedFeatureGenerator.class,
+            cachedFeatureGenerator.getCachedFeatureGenerator());
     AggregatedFeatureGenerator aggregatedFeatureGenerator =
         (AggregatedFeatureGenerator) cachedFeatureGenerator.getCachedFeatureGenerator();
     Assertions.assertEquals(3, aggregatedFeatureGenerator.getGenerators().size());
     for (AdaptiveFeatureGenerator afg : aggregatedFeatureGenerator.getGenerators()) {
-      Assertions.assertTrue(afg instanceof OutcomePriorFeatureGenerator);
+      Assertions.assertInstanceOf(OutcomePriorFeatureGenerator.class, afg);
     }
   }
 }

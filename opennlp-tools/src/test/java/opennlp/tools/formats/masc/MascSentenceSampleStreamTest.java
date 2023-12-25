@@ -126,11 +126,10 @@ public class MascSentenceSampleStreamTest extends AbstractMascSampleStreamTest {
           new MascDocumentStream(directory,
               true, fileFilter), 1);
 
-      SentenceModel model = null;
       TrainingParameters trainingParameters = new TrainingParameters();
       trainingParameters.put(TrainingParameters.ITERATIONS_PARAM, 20);
 
-      model = SentenceDetectorME.train("en", trainSentences,
+      SentenceModel model = SentenceDetectorME.train("en", trainSentences,
           new SentenceDetectorFactory(), trainingParameters);
 
       ObjectStream<SentenceSample> testPOS = new MascSentenceSampleStream(

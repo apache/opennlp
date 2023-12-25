@@ -109,11 +109,10 @@ public class MascPOSSampleStreamTest extends AbstractMascSampleStreamTest {
       ObjectStream<POSSample> trainPOS = new MascPOSSampleStream(
           new MascDocumentStream(directory, true, fileFilter));
 
-      POSModel model = null;
       TrainingParameters trainingParameters = new TrainingParameters();
       trainingParameters.put(TrainingParameters.ITERATIONS_PARAM, 20);
 
-      model = POSTaggerME.train("en", trainPOS,
+      POSModel model = POSTaggerME.train("en", trainPOS,
           trainingParameters, new POSTaggerFactory());
 
       ObjectStream<POSSample> testPOS = new MascPOSSampleStream(
