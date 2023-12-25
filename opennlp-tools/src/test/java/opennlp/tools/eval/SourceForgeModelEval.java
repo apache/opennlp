@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -92,7 +91,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
 
     private LeipzigTestSample(String[] text) {
       Objects.requireNonNull(text, "text must not be null");
-      this.text = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(text)));
+      this.text = List.of(text);
     }
 
     public String[] getText() {
@@ -110,7 +109,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
         sampleString.append(s).append(' ');
       }
 
-      if (sampleString.length() > 0) {
+      if (!sampleString.isEmpty()) {
         // remove last space
         sampleString.setLength(sampleString.length() - 1);
       }
@@ -151,7 +150,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
         count++;
       }
 
-      if (tokensList.size() > 0) {
+      if (!tokensList.isEmpty()) {
         return new LeipzigTestSample(tokensList.toArray(new String[0]));
       }
 

@@ -62,14 +62,14 @@ public class LanguageDetectorFactoryTest {
   void testCorrectFactory() throws IOException {
     LanguageDetectorModel myModel = new LanguageDetectorModel(new ByteArrayInputStream(serialized));
     Assertions.assertNotNull(myModel.getFactory());
-    Assertions.assertTrue(myModel.getFactory() instanceof LanguageDetectorFactory);
+    Assertions.assertInstanceOf(LanguageDetectorFactory.class, myModel.getFactory());
   }
 
   @Test
   void testDummyFactory() throws IOException {
     LanguageDetectorModel myModel = new LanguageDetectorModel(new ByteArrayInputStream(serialized));
     Assertions.assertNotNull(myModel.getFactory());
-    Assertions.assertTrue(myModel.getFactory() instanceof DummyFactory);
+    Assertions.assertInstanceOf(DummyFactory.class, myModel.getFactory());
   }
 
   @Test

@@ -111,7 +111,7 @@ public class BioCodecTest {
 
   @Test
   void testCreateSequenceValidator() {
-    Assertions.assertTrue(codec.createSequenceValidator() instanceof NameFinderSequenceValidator);
+    Assertions.assertInstanceOf(NameFinderSequenceValidator.class, codec.createSequenceValidator());
   }
 
 

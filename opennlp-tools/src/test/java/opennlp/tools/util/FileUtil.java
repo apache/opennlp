@@ -19,6 +19,8 @@ package opennlp.tools.util;
 
 import java.io.File;
 
+import org.junit.jupiter.api.Assertions;
+
 public class FileUtil {
 
   /**
@@ -29,14 +31,13 @@ public class FileUtil {
     if (file.exists()) {
       if (file.isDirectory()) {
         File[] files = file.listFiles();
-        for (File f: files) {
-          deleteDirectory(f);
+        if (files != null) {
+          for (File f: files) {
+            deleteDirectory(f);
+          }
         }
-        file.delete();
       }
-      else if (file.isFile()) {
-        file.delete();
-      }
+      Assertions.assertTrue(file.delete());
     }
   }
 }

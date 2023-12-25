@@ -87,7 +87,7 @@ public class ObjectStreamUtilsTest {
 
 
   private void compare(ObjectStream<String> stream, String[] expectedValues) throws IOException {
-    String value = "";
+    String value;
     int i = 0;
     while ((value = stream.read()) != null) {
       Assertions.assertTrue(i < expectedValues.length, "The stream is longer than expected at index: " + i +
@@ -100,7 +100,7 @@ public class ObjectStreamUtilsTest {
   private void compareUpToLastCharacter(ObjectStream<String> stream,
                                         String[] expectedValues) throws IOException {
 
-    String value = "";
+    String value;
     int i = 0;
     while ((value = stream.read()) != null) {
       Assertions.assertTrue(i < expectedValues.length, "The stream is longer than expected at index: " + i +

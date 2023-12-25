@@ -96,7 +96,7 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
 
     final String content = baos.toString(StandardCharsets.UTF_8);
     Assertions.assertTrue(content.contains("Number of Event Tokens: 171"));
-    model.delete();
+    Assertions.assertTrue(model.delete());
   }
 
   //TODO OPENNLP-1447

@@ -104,7 +104,7 @@ public class BilouCodecTest {
 
   @Test
   void testCreateSequenceValidator() {
-    Assertions.assertTrue(codec.createSequenceValidator() instanceof BilouNameFinderSequenceValidator);
+    Assertions.assertInstanceOf(BilouNameFinderSequenceValidator.class, codec.createSequenceValidator());
   }
 
   @Test

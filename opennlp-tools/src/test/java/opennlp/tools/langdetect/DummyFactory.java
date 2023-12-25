@@ -81,7 +81,7 @@ public class DummyFactory extends LanguageDetectorFactory {
 
         for (StringList tokenList : tokenNgramModel) {
           if (tokenList.size() > 0) {
-            context.add("tg=" + tokenList.toString());
+            context.add("tg=" + tokenList);
           }
         }
       }

@@ -56,14 +56,12 @@ public class DictionaryDetokenizerTest {
   }
 
   static Detokenizer createLatinDetokenizer() throws IOException {
-    InputStream dictIn = DictionaryDetokenizerTest.class.getResourceAsStream(
-        "/opennlp/tools/tokenize/latin-detokenizer.xml");
-
-    DetokenizationDictionary dict = new DetokenizationDictionary(dictIn);
-
-    dictIn.close();
-
-    return new DictionaryDetokenizer(dict);
+    try (InputStream dictIn = DictionaryDetokenizerTest.class.getResourceAsStream(
+        "/opennlp/tools/tokenize/latin-detokenizer.xml")) {
+      
+      DetokenizationDictionary dict = new DetokenizationDictionary(dictIn);
+      return new DictionaryDetokenizer(dict);
+    }
   }
 
   @Test

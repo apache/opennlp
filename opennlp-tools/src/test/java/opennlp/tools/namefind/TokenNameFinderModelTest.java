@@ -58,55 +58,54 @@ public class TokenNameFinderModelTest extends AbstractModelLoaderTest {
 
     // save a POS model there
     POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
-    File posModelFile = new File(resourcesFolder.toFile(), "pos-model.bin");
+    Assertions.assertNotNull(posModel);
 
+    File posModelFile = new File(resourcesFolder.toFile(), "pos-model.bin");
     posModel.serialize(posModelFile);
 
     Assertions.assertTrue(posModelFile.exists());
 
     // load feature generator xml bytes
-    InputStream fgInputStream = this.getClass().getResourceAsStream("ner-pos-features.xml");
-    BufferedReader buffers = new BufferedReader(new InputStreamReader(fgInputStream));
-    String featureGeneratorString = buffers.lines().
-        collect(Collectors.joining("\n"));
+    try (InputStream fgInputStream = this.getClass().getResourceAsStream("ner-pos-features.xml");
+         BufferedReader buffers = new BufferedReader(new InputStreamReader(fgInputStream))) {
+      
+      String featureGeneratorString = buffers.lines().collect(Collectors.joining("\n"));
 
-    // create a featuregenerator file
-    Path featureGenerator = Files.createTempFile("ner-featuregen", ".xml");
-    Files.write(featureGenerator, featureGeneratorString.getBytes());
+      // create a featuregenerator file
+      Path featureGenerator = Files.createTempFile("ner-featuregen", ".xml");
+      Files.write(featureGenerator, featureGeneratorString.getBytes());
 
+      Map<String, Object> resources;
+      try {
+        resources = TokenNameFinderTrainerTool.loadResources(resourcesFolder.toFile(),
+                featureGenerator.toAbsolutePath().toFile());
+      } catch (IOException e) {
+        throw new TerminateToolException(-1, e.getMessage(), e);
+      } finally {
+        Files.delete(featureGenerator);
+      }
 
-    Map<String, Object> resources;
-    try {
-      resources = TokenNameFinderTrainerTool.loadResources(resourcesFolder.toFile(),
-          featureGenerator.toAbsolutePath().toFile());
-    } catch (IOException e) {
-      throw new TerminateToolException(-1, e.getMessage(), e);
-    } finally {
-      Files.delete(featureGenerator);
-    }
+      // train a name finder
+      ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
+              new PlainTextByLineStream(new MockInputStreamFactory(
+                      new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
 
+      TrainingParameters params = new TrainingParameters();
+      params.put(TrainingParameters.ITERATIONS_PARAM, 70);
+      params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
-    // train a name finder
-    ObjectStream<NameSample> sampleStream = new NameSampleDataStream(
-        new PlainTextByLineStream(new MockInputStreamFactory(
-            new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
+      TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
+              params, TokenNameFinderFactory.create(null,
+                      featureGeneratorString.getBytes(), resources, new BioCodec()));
 
-    TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
-    params.put(TrainingParameters.CUTOFF_PARAM, 1);
-
-    TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
-        params, TokenNameFinderFactory.create(null,
-            featureGeneratorString.getBytes(), resources, new BioCodec()));
-
-
-    File model = Files.createTempFile("nermodel", ".bin").toFile();
-    try (FileOutputStream modelOut = new FileOutputStream(model)) {
-      nameFinderModel.serialize(modelOut);
-      Assertions.assertTrue(model.exists());
-    } finally {
-      Assertions.assertTrue(model.delete());
-      FileUtil.deleteDirectory(resourcesFolder.toFile());
+      File model = Files.createTempFile("nermodel", ".bin").toFile();
+      try (FileOutputStream modelOut = new FileOutputStream(model)) {
+        nameFinderModel.serialize(modelOut);
+        Assertions.assertTrue(model.exists());
+      } finally {
+        Assertions.assertTrue(model.delete());
+        FileUtil.deleteDirectory(resourcesFolder.toFile());
+      }
     }
   }
 

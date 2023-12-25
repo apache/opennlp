@@ -42,15 +42,7 @@ public class DictionaryLemmatizerMultiTest {
         "down", "the", "street");
     List<String> sentencePOS = Arrays.asList("DT", "NNS", "VBD", "VBG", "CC", "VBG", "RP", "DT", "NN");
     List<List<String>> expectedLemmas = new ArrayList<>();
-    expectedLemmas.add(Arrays.asList("the"));
-    expectedLemmas.add(Arrays.asList("dog"));
-    expectedLemmas.add(Arrays.asList("is"));
-    expectedLemmas.add(Arrays.asList("run,run"));
-    expectedLemmas.add(Arrays.asList("and"));
-    expectedLemmas.add(Arrays.asList("bark,bark"));
-    expectedLemmas.add(Arrays.asList("down"));
-    expectedLemmas.add(Arrays.asList("the"));
-    expectedLemmas.add(Arrays.asList("street"));
+    expectedLemmas.add(List.of("the", "dog", "is", "run,run", "and", "bark, bark", "down", "the", "street"));
 
     List<List<String>> actualLemmas = dictionaryLemmatizer.lemmatize(sentence, sentencePOS);
 
