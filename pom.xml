@@ -182,6 +182,7 @@
 		<jacoco.maven.plugin>0.7.9</jacoco.maven.plugin>
 		<maven.surefire.plugin>2.22.2</maven.surefire.plugin>
 		<maven.failsafe.plugin>2.22.2</maven.failsafe.plugin>
+		<forbiddenapis.plugin>3.6</forbiddenapis.plugin>
 		<mockito.version>3.9.0</mockito.version>
 	</properties>
 
@@ -324,7 +325,7 @@
 				<plugin>
 					<groupId>de.thetaphi</groupId>
 					<artifactId>forbiddenapis</artifactId>
-					<version>3.5.1</version>
+					<version>${forbiddenapis.plugin}</version>
 					<configuration>
 						<failOnUnsupportedJava>false</failOnUnsupportedJava>
 						<bundledSignatures>
