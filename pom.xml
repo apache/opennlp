@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>29</version>
+		<version>31</version>
 		<relativePath />
 	</parent>
 
@@ -180,8 +180,8 @@
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.7.9</jacoco.maven.plugin>
-		<maven.surefire.plugin>2.22.2</maven.surefire.plugin>
-		<maven.failsafe.plugin>2.22.2</maven.failsafe.plugin>
+		<maven.surefire.plugin>3.2.2</maven.surefire.plugin>
+		<maven.failsafe.plugin>3.2.2</maven.failsafe.plugin>
 		<forbiddenapis.plugin>3.6</forbiddenapis.plugin>
 		<mockito.version>3.9.0</mockito.version>
 	</properties>
@@ -350,7 +350,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.10.1</version>
 				<configuration>
 					<release>${java.version}</release>
 					<compilerArgument>-Xlint</compilerArgument>
