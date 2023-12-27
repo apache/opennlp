@@ -173,7 +173,7 @@
 		<uimaj.version>3.4.1</uimaj.version>
 		<morfologik.version>2.1.9</morfologik.version>
 		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
-		<onnxruntime.version>1.15.0</onnxruntime.version>
+		<onnxruntime.version>1.16.3</onnxruntime.version>
 		<slf4j.version>1.7.36</slf4j.version>
 		<log4j2.version>2.20.0</log4j2.version>
 		<jmh.version>1.37</jmh.version>
