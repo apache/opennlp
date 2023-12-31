@@ -43,6 +43,7 @@ import opennlp.tools.util.TrainingParameters;
 public class TokenizerFactoryTest {
 
   private static final Locale LOCALE_SPANISH = new Locale("es");
+  private static final Locale LOCALE_PORTUGUESE = new Locale("pt");
 
   private static ObjectStream<TokenSample> createSampleStream() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(
@@ -64,6 +65,8 @@ public class TokenizerFactoryTest {
       abbrevDict = "opennlp/tools/lang/abb_FR.xml";
     } else if (loc.equals(Locale.ITALIAN)) {
       abbrevDict = "opennlp/tools/lang/abb_IT.xml";
+    } else if (loc.equals(LOCALE_PORTUGUESE)) {
+      abbrevDict = "opennlp/tools/lang/abb_PT.xml";
     } else if (loc.equals(LOCALE_SPANISH)) {
       abbrevDict = "opennlp/tools/lang/abb_ES.xml";
     } else {
@@ -184,6 +187,8 @@ public class TokenizerFactoryTest {
       loc = Locale.FRENCH;
     } else if ("ita".equals(lang)) {
       loc = Locale.ITALIAN;
+    } else if ("por".equals(lang)) {
+      loc = LOCALE_PORTUGUESE;
     } else if ("spa".equals(lang)) {
       loc = LOCALE_SPANISH;
     }
@@ -194,7 +199,10 @@ public class TokenizerFactoryTest {
     String[] tokens = tokenizer.tokenize(sentence);
 
     Assertions.assertEquals(expectedNumTokens, tokens.length);
-    String[] sentSplit = sentence.replaceAll("'", " '").split(" ");
+    String[] sentSplit = sentence
+            .replaceAll("'", " '")
+            .replaceAll(",", " ,")
+            .split(" ");
     for (int i = 0; i < sentSplit.length; i++) {
       String sElement = sentSplit[i];
       if (i == sentSplit.length - 1) {
@@ -220,6 +228,16 @@ public class TokenizerFactoryTest {
     String pattern = "^[a-zA-Z0-9àâäèéêëîïôœùûüÿçÀÂÄÈÉÊËÎÏÔŒÙÛÜŸÇ]+$";
     String sentence = "Je choisis le rêve de la monographie botanique communiqué à la p. 205.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 14);
+  }
+
+  @Test
+  void testCustomPatternForTokenizerMEWithAbbreviationsPor() throws IOException {
+    String lang = "por";
+    String pattern = "^[0-9a-záãâàéêíóõôúüçA-ZÁÃÂÀÉÊÍÓÕÔÚÜÇ]+$";
+    String sentence = "O povo pernambucano, tradicionalmente inimigo dos imperadores, " +
+            "lembrava-se do tempo em que o Sr. D. Pedro de Alcantara dava-se ao luxo " +
+            "de visitar o norte.";
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 28);
   }
 
   @Test
