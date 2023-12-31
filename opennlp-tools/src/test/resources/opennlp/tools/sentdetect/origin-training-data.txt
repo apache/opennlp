@@ -22,3 +22,12 @@ Sentences_IT.txt:
 available here:
 https://issues.apache.org/jira/browse/OPENNLP-1163
 ################
+################
+Sentences_PT.txt:
+- Adolfo Ferreira Caminha - No Paiz dos Yankees
+available here:
+https://www.gutenberg.org/ebooks/24190
+- Eça de Queirós - A Cidade e as Serras
+available here:
+https://www.gutenberg.org/ebooks/18220
+################
