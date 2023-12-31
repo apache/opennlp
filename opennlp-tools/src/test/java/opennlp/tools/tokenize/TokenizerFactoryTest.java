@@ -60,6 +60,8 @@ public class TokenizerFactoryTest {
     final String abbrevDict;
     if (loc.equals(Locale.GERMAN)) {
       abbrevDict = "opennlp/tools/lang/abb_DE.xml";
+    } else if (loc.equals(Locale.FRENCH)) {
+      abbrevDict = "opennlp/tools/lang/abb_FR.xml";
     } else if (loc.equals(Locale.ITALIAN)) {
       abbrevDict = "opennlp/tools/lang/abb_IT.xml";
     } else if (loc.equals(LOCALE_SPANISH)) {
@@ -178,6 +180,8 @@ public class TokenizerFactoryTest {
     Locale loc = Locale.ENGLISH;
     if ("deu".equals(lang)) {
       loc = Locale.GERMAN;
+    } else if ("fra".equals(lang)) {
+      loc = Locale.FRENCH;
     } else if ("ita".equals(lang)) {
       loc = Locale.ITALIAN;
     } else if ("spa".equals(lang)) {
@@ -200,11 +204,21 @@ public class TokenizerFactoryTest {
     }
   }
 
+  // For language specific patterns see: opennlp.tools.tokenize.lang.Factory
+
   @Test
   void testCustomPatternForTokenizerMEWithAbbreviationsDeu() throws IOException {
     String lang = "deu";
     String pattern = "^[A-Za-z0-9äéöüÄÉÖÜß]+$";
     String sentence = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 14);
+  }
+
+  @Test
+  void testCustomPatternForTokenizerMEWithAbbreviationsFra() throws IOException {
+    String lang = "fra";
+    String pattern = "^[a-zA-Z0-9àâäèéêëîïôœùûüÿçÀÂÄÈÉÊËÎÏÔŒÙÛÜŸÇ]+$";
+    String sentence = "Je choisis le rêve de la monographie botanique communiqué à la p. 205.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 14);
   }
 
