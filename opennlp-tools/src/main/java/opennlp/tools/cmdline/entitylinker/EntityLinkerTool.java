@@ -73,7 +73,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
 
       // TODO: It should not just throw Exception.
 
-      EntityLinker entityLinker;
+      EntityLinker<? extends Span> entityLinker;
       try {
         entityLinker = EntityLinkerFactory.getLinker(entityType, properties);
       }
@@ -124,7 +124,7 @@ public class EntityLinkerTool extends BasicCmdLineTool {
               text.append("\n");
             }
 
-            List<Span> linkedSpans =
+            List<? extends  Span> linkedSpans =
                 entityLinker.find(text.toString(), sentences, tokensBySentence, namesBySentence);
 
             for (Span linkedSpan : linkedSpans) {

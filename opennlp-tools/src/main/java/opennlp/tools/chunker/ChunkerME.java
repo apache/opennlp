@@ -51,37 +51,13 @@ public class ChunkerME implements Chunker {
   /**
    * The model used to assign chunk tags to a sequence of tokens.
    */
-  protected SequenceClassificationModel<TokenTag> model;
+  private final SequenceClassificationModel<TokenTag> model;
 
   private final ChunkerContextGenerator contextGenerator;
   private final SequenceValidator<TokenTag> sequenceValidator;
 
   /**
-   * Initializes the current instance with the specified model and
-   * the specified beam size.
-   *
-   * @param model The model for this {@link Chunker}.
-   * @param beamSize The size of the beam that should be used when decoding sequences.
-   *
-   * @deprecated {@code beamSize} is now stored inside the model
-   */
-  @Deprecated
-  private ChunkerME(ChunkerModel model, int beamSize) {
-
-    contextGenerator = model.getFactory().getContextGenerator();
-    sequenceValidator = model.getFactory().getSequenceValidator();
-
-    if (model.getChunkerSequenceModel() != null) {
-      this.model = model.getChunkerSequenceModel();
-    }
-    else {
-      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
-          model.getChunkerModel(), 0);
-    }
-  }
-
-  /**
-   * Initializes the {@link Chunker} by downloading a default model.
+   * Initializes a {@link Chunker} by downloading a default model.
    *
    * @param language The language of the model.
    * @throws IOException Thrown if the model cannot be downloaded or saved.
@@ -91,13 +67,21 @@ public class ChunkerME implements Chunker {
   }
 
   /**
-   * Initializes the current instance with the specified {@link ChunkerModel}.
+   * Initializes a {@link Chunker} with the specified {@link ChunkerModel}.
    * The {@link #DEFAULT_BEAM_SIZE} is used.
    *
    * @param model A valid {@link ChunkerModel model} instance.
    */
   public ChunkerME(ChunkerModel model) {
-    this(model, DEFAULT_BEAM_SIZE);
+    contextGenerator = model.getFactory().getContextGenerator();
+    sequenceValidator = model.getFactory().getSequenceValidator();
+
+    if (model.getChunkerSequenceModel() != null) {
+      this.model = model.getChunkerSequenceModel();
+    }
+    else {
+      this.model = new BeamSearch<>(DEFAULT_BEAM_SIZE, model.getChunkerModel(), 0);
+    }
   }
 
   @Override
@@ -143,7 +127,7 @@ public class ChunkerME implements Chunker {
 
   /**
    * Returns an array with the probabilities of the last decoded sequence. The
-   * sequence was determined based on the previous call to {@code chunk}.
+   * sequence was determined based on the previous call to {@link #chunk(String[], String[])}.
    *
    * @return An array with the same number of probabilities as tokens when
    *         {@link ChunkerME#chunk(String[], String[])} was last called.
@@ -162,6 +146,7 @@ public class ChunkerME implements Chunker {
    *
    * @return A valid, trained {@link ChunkerModel} instance.
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if the specified {@link TrainerType} is not supported.
    */
   public static ChunkerModel train(String lang, ObjectStream<ChunkSample> in,
       TrainingParameters mlParams, ChunkerFactory factory) throws IOException {
@@ -176,8 +161,7 @@ public class ChunkerME implements Chunker {
 
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new ChunkerEventStream(in, factory.getContextGenerator());
-      EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams,
-          manifestInfoEntries);
+      EventTrainer trainer = TrainerFactory.getEventTrainer(mlParams, manifestInfoEntries);
       chunkerModel = trainer.train(es);
     }
     else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.chunker;
 
 import opennlp.tools.util.TokenTag;
@@ -31,11 +30,6 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
    * Initializes a {@link DefaultChunkerContextGenerator} instance.
    */
   public DefaultChunkerContextGenerator() {
-  }
-
-  public String[] getContext(int index, String[] tokens, String[] postags,
-      String[] priorDecisions, Object[] additionalContext) {
-    return getContext(index, tokens, postags, priorDecisions);
   }
 
   @Override
@@ -151,6 +145,6 @@ public class DefaultChunkerContextGenerator implements ChunkerContextGenerator {
                              Object[] additionalContext) {
     String[] token = TokenTag.extractTokens(sequence);
     String[] tags = TokenTag.extractTags(sequence);
-    return getContext(index, token, tags, priorDecisions, additionalContext);
+    return getContext(index, token, tags, priorDecisions);
   }
 }
