@@ -29,7 +29,7 @@ public interface BeamSearchContextGenerator<T> {
    * @param sequence The sequence of {@link T items} over which the beam search is performed.
    * @param priorDecisions The sequence of decisions made prior to the context for
    *                       which this decision is being made.
-   * @param additionalContext Any addition context specific to a class implementing this interface.
+   * @param additionalContext Any additional context specific to a class implementing this interface.
    *
    * @return The context for the specified {@code index} in the specified {@code sequence}.
    */

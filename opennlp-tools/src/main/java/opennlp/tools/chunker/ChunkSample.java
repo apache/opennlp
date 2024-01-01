@@ -19,7 +19,6 @@ package opennlp.tools.chunker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -65,9 +64,9 @@ public class ChunkSample implements Sample {
 
     validateArguments(sentence.size(), tags.size(), preds.size());
 
-    this.sentence = Collections.unmodifiableList(new ArrayList<>(sentence));
-    this.tags = Collections.unmodifiableList(new ArrayList<>(tags));
-    this.preds = Collections.unmodifiableList(new ArrayList<>(preds));
+    this.sentence = List.copyOf(sentence);
+    this.tags = List.copyOf(tags);
+    this.preds = List.copyOf(preds);
   }
 
   /**

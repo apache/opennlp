@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.chunker;
 
 import java.io.File;
@@ -159,11 +158,10 @@ public class ChunkerModel extends BaseModel {
 
     // Since 1.8.0 we changed the ChunkerFactory signature. This will check the if the model
     // declares a not default factory, and if yes, check if it was created before 1.8
-    if ( (getManifestProperty(FACTORY_NAME) != null
-            && !getManifestProperty(FACTORY_NAME).equals("opennlp.tools.chunker.ChunkerFactory") )
-        && this.getVersion().getMajor() <= 1
-        && this.getVersion().getMinor() < 8) {
-      throw new InvalidFormatException("The Chunker factory '" + getManifestProperty(FACTORY_NAME) +
+    final String factoryName = getManifestProperty(FACTORY_NAME);
+    if ( (factoryName != null && !factoryName.equals("opennlp.tools.chunker.ChunkerFactory") )
+        && this.getVersion().getMajor() <= 1 && this.getVersion().getMinor() < 8) {
+      throw new InvalidFormatException("The Chunker factory '" + factoryName +
       "' is no longer compatible. Please update it to match the latest ChunkerFactory.");
     }
 
