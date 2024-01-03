@@ -35,7 +35,6 @@ import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.ml.perceptron.PerceptronTrainer;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -101,7 +100,7 @@ public abstract class AbstractEvalTest {
 
   public static File getOpennlpDataDir() throws FileNotFoundException {
     final String dataDirectory = System.getProperty("OPENNLP_DATA_DIR");
-    if (StringUtil.isEmpty(dataDirectory)) {
+    if (dataDirectory == null || dataDirectory.isBlank()) {
       throw new IllegalArgumentException("The OPENNLP_DATA_DIR is not set.");
     }
     final File file = new File(System.getProperty("OPENNLP_DATA_DIR"));

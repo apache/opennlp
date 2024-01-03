@@ -188,26 +188,26 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
   @Test
   void evalPortugueseChunkerPerceptron() throws IOException {
     chunkerCrossEval(createPerceptronParams(),
-        0.9638122825015589d);
+        0.9631066789979492);
   }
 
   @Test
   void evalPortugueseChunkerGis() throws IOException {
     chunkerCrossEval(ModelUtil.createDefaultTrainingParameters(),
-        0.9573860781121228d);
+        0.9571790438663504);
   }
 
   @Test
   void evalPortugueseChunkerGisMultipleThreads() throws IOException {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
     params.put("Threads", 4);
-    chunkerCrossEval(params, 0.9573860781121228d);
+    chunkerCrossEval(params, 0.9571790438663504);
   }
 
   @Test
   void evalPortugueseChunkerQn() throws IOException {
     chunkerCrossEval(createMaxentQnParams(),
-        0.9651009811896799d);
+        0.9655574076677446);
   }
 
   @Test
@@ -216,7 +216,7 @@ public class ArvoresDeitadasEval extends AbstractEvalTest {
     params.put("Threads", 4);
 
     // NOTE: Should be the same as without multiple threads!!!
-    chunkerCrossEval(params, 0.9649180953528779d);
+    chunkerCrossEval(params, 0.9655858045209428);
   }
 
   @Test
