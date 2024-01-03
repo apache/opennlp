@@ -338,6 +338,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
           leaf.setLevel(level + 1);
           leaf.setSyntacticTag("");
           leaf.setMorphologicalTag("");
+          leaf.setFunctionalTag("");
           leaf.setLexeme(lexeme);
 
           return leaf;
@@ -349,6 +350,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
       leaf.setLevel(1);
       leaf.setSyntacticTag("");
       leaf.setMorphologicalTag("");
+      leaf.setFunctionalTag("");
       leaf.setLexeme(line);
 
       return leaf;

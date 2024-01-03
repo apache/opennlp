@@ -101,7 +101,7 @@ public abstract class AbstractEvalTest {
 
   public static File getOpennlpDataDir() throws FileNotFoundException {
     final String dataDirectory = System.getProperty("OPENNLP_DATA_DIR");
-    if (StringUtil.isEmpty(dataDirectory)) {
+    if (dataDirectory == null || dataDirectory.isBlank()) {
       throw new IllegalArgumentException("The OPENNLP_DATA_DIR is not set.");
     }
     final File file = new File(System.getProperty("OPENNLP_DATA_DIR"));
