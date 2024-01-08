@@ -43,6 +43,7 @@ import opennlp.tools.util.TrainingParameters;
 public class TokenizerFactoryTest {
 
   private static final Locale LOCALE_SPANISH = new Locale("es");
+  private static final Locale LOCALE_POLISH = new Locale("pl");
   private static final Locale LOCALE_PORTUGUESE = new Locale("pt");
 
   private static ObjectStream<TokenSample> createSampleStream() throws IOException {
@@ -65,6 +66,8 @@ public class TokenizerFactoryTest {
       abbrevDict = "opennlp/tools/lang/abb_FR.xml";
     } else if (loc.equals(Locale.ITALIAN)) {
       abbrevDict = "opennlp/tools/lang/abb_IT.xml";
+    } else if (loc.equals(LOCALE_POLISH)) {
+      abbrevDict = "opennlp/tools/lang/abb_PL.xml";
     } else if (loc.equals(LOCALE_PORTUGUESE)) {
       abbrevDict = "opennlp/tools/lang/abb_PT.xml";
     } else if (loc.equals(LOCALE_SPANISH)) {
@@ -187,6 +190,8 @@ public class TokenizerFactoryTest {
       loc = Locale.FRENCH;
     } else if ("ita".equals(lang)) {
       loc = Locale.ITALIAN;
+    } else if ("pol".equals(lang)) {
+      loc = LOCALE_POLISH;
     } else if ("por".equals(lang)) {
       loc = LOCALE_PORTUGUESE;
     } else if ("spa".equals(lang)) {
@@ -228,6 +233,15 @@ public class TokenizerFactoryTest {
     String pattern = "^[a-zA-Z0-9àâäèéêëîïôœùûüÿçÀÂÄÈÉÊËÎÏÔŒÙÛÜŸÇ]+$";
     String sentence = "Je choisis le rêve de la monographie botanique communiqué à la p. 205.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 14);
+  }
+
+  @Test
+  void testCustomPatternForTokenizerMEWithAbbreviationsPol() throws IOException {
+    String lang = "pol";
+    String pattern = "^[A-Za-z0-9żźćńółęąśŻŹĆĄŚĘŁÓŃ]+$";
+    String sentence = "W szkicu autobiograficznym pt. moje życie i psychoanaliza Freud pisze, że " +
+            "jego przodkowie żyli przez wiele lat w Kolonii.";
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 21);
   }
 
   @Test
