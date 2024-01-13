@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+-->
+
+<dictionary case_sensitive="false">
+  <entry>
+    <token>br.</token>
+  </entry>
+  <entry>
+    <token>cd.</token>
+  </entry>
+  <entry>
+    <token>cdn.</token>
+  </entry>
+  <entry>
+    <token>dn.</token>
+  </entry>
+  <entry>
+    <token>godz.</token>
+  </entry>
+  <entry>
+    <token>itp.</token>
+  </entry>
+  <entry>
+    <token>itd.</token>
+  </entry>
+  <entry>
+    <token>jw.</token>
+  </entry>
+  <entry>
+    <token>m.in.</token>
+  </entry>
+  <entry>
+    <token>min.</token>
+  </entry>
+  <entry>
+    <token>np.</token>
+  </entry>
+  <entry>
+    <token>nr.</token>
+  </entry>
+  <entry>
+    <token>pt.</token>
+  </entry>
+  <entry>
+    <token>r.</token>
+  </entry>
+  <entry>
+    <token>tj.</token>
+  </entry>
+  <entry>
+    <token>tzn.</token>
+  </entry>
+  <entry>
+    <token>tzw.</token>
+  </entry>
+  <entry>
+    <token>ul.</token>
+  </entry>
+  <entry>
+    <token>dr.</token>
+  </entry>
+  <entry>
+    <token>dyr.</token>
+  </entry>
+  <entry>
+    <token>lic.</token>
+  </entry>
+  <entry>
+    <token>mgr.</token>
+  </entry>
+  <entry>
+    <token>p.</token>
+  </entry>
+  <entry>
+    <token>p.o.</token>
+  </entry>
+  <entry>
+    <token>prof.</token>
+  </entry>
+  <entry>
+    <token>pon.</token>
+  </entry>
+  <entry>
+    <token>pn.</token>
+  </entry>
+  <entry>
+    <token>wt.</token>
+  </entry>
+  <entry>
+    <token>wto.</token>
+  </entry>
+  <entry>
+    <token>śr.</token>
+  </entry>
+  <entry>
+    <token>śro.</token>
+  </entry>
+  <entry>
+    <token>czw.</token>
+  </entry>
+  <entry>
+    <token>cz.</token>
+  </entry>
+  <entry>
+    <token>pią.</token>
+  </entry>
+  <entry>
+    <token>piąt.</token>
+  </entry>
+  <entry>
+    <token>pt.</token>
+  </entry>
+  <entry>
+    <token>sob.</token>
+  </entry>
+  <entry>
+    <token>so.</token>
+  </entry>
+  <entry>
+    <token>nie.</token>
+  </entry>
+  <entry>
+    <token>niedz.</token>
+  </entry>
+  <entry>
+    <token>ndz.</token>
+  </entry>
+  <entry>
+    <token>stycz.</token>
+  </entry>
+  <entry>
+    <token>mar.</token>
+  </entry>
+  <entry>
+    <token>kwiec.</token>
+  </entry>
+  <entry>
+    <token>czerw.</token>
+  </entry>
+  <entry>
+    <token>lip.</token>
+  </entry>
+  <entry>
+    <token>sierp.</token>
+  </entry>
+  <entry>
+    <token>wrzes.</token>
+  </entry>
+  <entry>
+    <token>pazdz.</token>
+  </entry>
+  <entry>
+    <token>listop.</token>
+  </entry>
+  <entry>
+    <token>grudz.</token>
+  </entry>
+</dictionary>

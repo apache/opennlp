@@ -31,6 +31,7 @@ import opennlp.tools.util.TrainingParameters;
 public abstract class AbstractSentenceDetectorTest {
 
   protected static final Locale LOCALE_SPANISH = new Locale("es");
+  protected static final Locale LOCALE_POLISH = new Locale("pl");
   protected static final Locale LOCALE_PORTUGUESE = new Locale("pt");
 
   static ObjectStream<SentenceSample> createSampleStream(Locale loc) throws IOException {
@@ -41,6 +42,8 @@ public abstract class AbstractSentenceDetectorTest {
       trainingResource = "/opennlp/tools/sentdetect/Sentences_FR.txt";
     } else if (loc.equals(Locale.ITALIAN)) {
       trainingResource = "/opennlp/tools/sentdetect/Sentences_IT.txt";
+    } else if (loc.equals(LOCALE_POLISH)) {
+      trainingResource = "/opennlp/tools/sentdetect/Sentences_PL.txt";
     } else if (loc.equals(LOCALE_PORTUGUESE)) {
       trainingResource = "/opennlp/tools/sentdetect/Sentences_PT.txt";
     } else if (loc.equals(LOCALE_SPANISH)) {
@@ -61,6 +64,8 @@ public abstract class AbstractSentenceDetectorTest {
       lang = "fra";
     } else if (loc.equals(Locale.ITALIAN)) {
       lang = "ita";
+    } else if (loc.equals(LOCALE_POLISH)) {
+      lang = "pol";
     } else if (loc.equals(LOCALE_PORTUGUESE)) {
       lang = "por";
     } else if (loc.equals(LOCALE_SPANISH)) {
@@ -80,6 +85,8 @@ public abstract class AbstractSentenceDetectorTest {
       abbrevDict = "opennlp/tools/lang/abb_FR.xml";
     } else if (loc.equals(Locale.ITALIAN)) {
       abbrevDict = "opennlp/tools/lang/abb_IT.xml";
+    } else if (loc.equals(LOCALE_POLISH)) {
+      abbrevDict = "opennlp/tools/lang/abb_PT.xml";
     } else if (loc.equals(LOCALE_PORTUGUESE)) {
       abbrevDict = "opennlp/tools/lang/abb_PT.xml";
     } else if (loc.equals(LOCALE_SPANISH)) {
