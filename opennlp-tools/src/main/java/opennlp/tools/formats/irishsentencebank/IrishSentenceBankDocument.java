@@ -54,8 +54,9 @@ import opennlp.tools.util.XmlUtil;
 public class IrishSentenceBankDocument {
 
   public static class IrishSentenceBankFlex {
-    String surface;
-    String[] flex;
+    final String surface;
+    final String[] flex;
+    
     public String getSurface() {
       return surface;
     }

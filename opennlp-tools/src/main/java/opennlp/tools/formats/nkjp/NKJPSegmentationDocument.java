@@ -42,11 +42,11 @@ import opennlp.tools.util.XmlUtil;
 public class NKJPSegmentationDocument {
 
   public static class Pointer {
-    String doc;
-    String id;
-    int offset;
-    int length;
-    boolean space_after;
+    final String doc;
+    final String id;
+    final int offset;
+    final int length;
+    final boolean space_after;
 
     public Pointer(String doc, String id, int offset, int length, boolean space_after) {
       this.doc = doc;

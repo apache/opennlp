@@ -62,11 +62,11 @@ public class NameFinderME implements TokenNameFinder {
   public static final String CONTINUE = "cont";
   public static final String OTHER = "other";
 
-  private SequenceCodec<String> seqCodec = new BioCodec();
+  private final SequenceCodec<String> seqCodec;
 
-  protected SequenceClassificationModel<String> model;
+  protected final SequenceClassificationModel<String> model;
 
-  protected NameContextGenerator contextGenerator;
+  protected final NameContextGenerator contextGenerator;
   private Sequence bestSequence;
 
   private final AdditionalContextFeatureGenerator additionalContextFeatureGenerator =

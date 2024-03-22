@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 public class TwitterCharSequenceNormalizerTest {
 
-  public TwitterCharSequenceNormalizer normalizer = TwitterCharSequenceNormalizer.getInstance();
+  private final TwitterCharSequenceNormalizer normalizer = TwitterCharSequenceNormalizer.getInstance();
 
   @Test
   void normalizeHashtag() {

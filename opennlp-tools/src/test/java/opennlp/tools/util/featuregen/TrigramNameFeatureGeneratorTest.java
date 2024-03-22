@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 public class TrigramNameFeatureGeneratorTest {
 
   private List<String> features;
-  static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
+  private static final String[] TEST_SENTENCE = new String[] {"This", "is", "an", "example", "sentence"};
 
   @BeforeEach
   void setUp()  {
@@ -41,7 +41,7 @@ public class TrigramNameFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new TrigramNameFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     Assertions.assertEquals(2, features.size());
     Assertions.assertEquals("w,nw,nnw=This,is,an", features.get(0));
@@ -55,7 +55,7 @@ public class TrigramNameFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new TrigramNameFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     Assertions.assertEquals(2, features.size());
     Assertions.assertEquals("w,nw,nnw=is,an,example", features.get(0));
@@ -69,7 +69,7 @@ public class TrigramNameFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new TrigramNameFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     Assertions.assertEquals(4, features.size());
     Assertions.assertEquals("ppw,pw,w=This,is,an", features.get(0));
@@ -85,7 +85,7 @@ public class TrigramNameFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new TrigramNameFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     Assertions.assertEquals(2, features.size());
     Assertions.assertEquals("ppw,pw,w=an,example,sentence", features.get(0));

@@ -61,8 +61,8 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
   }
 
   private static class HeadRule {
-    public boolean leftToRight;
-    public String[] tags;
+    public final boolean leftToRight;
+    public final String[] tags;
 
     public HeadRule(boolean l2r, String[] tags) {
       leftToRight = l2r;

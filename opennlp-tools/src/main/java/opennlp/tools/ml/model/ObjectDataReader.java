@@ -25,7 +25,7 @@ import java.io.ObjectInputStream;
  */
 public class ObjectDataReader implements DataReader {
 
-  protected ObjectInputStream ois;
+  protected final ObjectInputStream ois;
 
   /**
    * Instantiates an {@link ObjectDataReader}.

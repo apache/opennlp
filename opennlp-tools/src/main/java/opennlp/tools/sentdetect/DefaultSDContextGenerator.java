@@ -34,12 +34,12 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   /**
    * String buffer for generating features.
    */
-  protected StringBuffer buf;
+  protected final StringBuffer buf;
 
   /**
    * List for holding features as they are generated.
    */
-  protected List<String> collectFeats;
+  protected final List<String> collectFeats;
 
   private final Set<String> inducedAbbreviations;
 

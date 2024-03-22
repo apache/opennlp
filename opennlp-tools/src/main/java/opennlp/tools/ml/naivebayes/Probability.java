@@ -24,7 +24,7 @@ package opennlp.tools.ml.naivebayes;
  *
  */
 public class Probability<T> {
-  protected T label;
+  protected final T label;
   protected double probability = 1.0;
 
   /**

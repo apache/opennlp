@@ -31,7 +31,7 @@ import java.util.Set;
  *
  */
 public abstract class Probabilities<T> {
-  protected Map<T, Double> map = new HashMap<>();
+  protected final Map<T, Double> map = new HashMap<>();
 
   protected transient boolean isNormalised = false;
   protected Map<T, Double> normalised;

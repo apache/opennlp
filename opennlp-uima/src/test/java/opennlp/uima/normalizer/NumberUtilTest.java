@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test;
  * Tests for opennlp.uima.normalizer.NumberUtil
  */
 class NumberUtilTest {
-  String VALID_LANGUAGE_CODE = "en";
-  String INVALID_LANGUAGE_CODE = "INVALID";
+  private static final String VALID_LANGUAGE_CODE = "en";
+  private static final String INVALID_LANGUAGE_CODE = "INVALID";
 
   @Test
   void isLanguageSupported_EN_Pass() {
@@ -46,7 +46,6 @@ class NumberUtilTest {
     Number result = NumberUtil.parse(numberStr , VALID_LANGUAGE_CODE);
     Assertions.assertEquals(longValue , result);
   }
-
 
   @Test
   void parse_double() throws ParseException {

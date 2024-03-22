@@ -48,12 +48,12 @@ public final class UimaUtil {
   /**
    * The model parameter.
    */
-  public static String MODEL_PARAMETER = "opennlp.uima.ModelName";
+  public static final String MODEL_PARAMETER = "opennlp.uima.ModelName";
 
   /**
    * The sentence type parameter.
    */
-  public static String SENTENCE_TYPE_PARAMETER = "opennlp.uima.SentenceType";
+  public static final String SENTENCE_TYPE_PARAMETER = "opennlp.uima.SentenceType";
 
   /**
    * The beam size parameter.

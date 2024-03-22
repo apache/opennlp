@@ -25,11 +25,11 @@ import java.util.Objects;
  * predicates indexes contained in the events.
  */
 public class ComparableEvent implements Comparable<ComparableEvent> {
-  public int outcome;
-  public int[] predIndexes;
+  public final int outcome;
+  public final int[] predIndexes;
   public int seen = 1; // the number of times this event has been seen.
 
-  public float[] values;
+  public final float[] values;
 
   public ComparableEvent(int oc, int[] pids, float[] values) {
     outcome = oc;

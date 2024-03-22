@@ -48,7 +48,6 @@ import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.featuregen.StringPattern;
 
-
 /**
  * A {@link POSTagger part-of-speech tagger} that uses maximum entropy.
  * <p>
@@ -64,27 +63,19 @@ public class POSTaggerME implements POSTagger {
   private final POSModel modelPackage;
 
   /**
-   * The feature context generator.
+   * The {@link POSContextGenerator feature context generator}.
    */
-  protected POSContextGenerator contextGen;
+  protected final POSContextGenerator contextGen;
 
   /**
    * {@link TagDictionary} used for restricting words to a fixed set of tags.
    */
-  protected TagDictionary tagDictionary;
-
-  protected Dictionary ngramDictionary; // TODO unused - Could this be removed?
-
-  /**
-   * Says whether a filter should be used to check whether a tag assignment
-   * is to a word outside a closed class.
-   */
-  protected boolean useClosedClassTagsFilter = false; // TODO unused - Could this be removed?
+  protected final TagDictionary tagDictionary;
 
   /**
    * The size of the beam to be used in determining the best sequence of pos tags.
    */
-  protected int size;
+  protected final int size;
 
   private Sequence bestSequence;
 
