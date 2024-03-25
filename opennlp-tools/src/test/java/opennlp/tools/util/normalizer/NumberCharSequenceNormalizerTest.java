@@ -19,14 +19,11 @@ package opennlp.tools.util.normalizer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-
 public class NumberCharSequenceNormalizerTest {
-
-  public NumberCharSequenceNormalizer normalizer = NumberCharSequenceNormalizer.getInstance();
-
 
   @Test
   void normalize() {
-    Assertions.assertEquals("absc  ,  abcd", normalizer.normalize("absc 123,0123 abcd"));
+    Assertions.assertEquals("absc  ,  abcd",
+            NumberCharSequenceNormalizer.getInstance().normalize("absc 123,0123 abcd"));
   }
 }

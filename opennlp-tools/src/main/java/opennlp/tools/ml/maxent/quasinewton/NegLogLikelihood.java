@@ -28,10 +28,10 @@ import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
  */
 public class NegLogLikelihood implements Function {
 
-  protected int dimension;
-  protected int numOutcomes;
-  protected int numFeatures;
-  protected int numContexts;
+  protected final int dimension;
+  protected final int numOutcomes;
+  protected final int numFeatures;
+  protected final int numContexts;
 
   // Information from data index
   protected final float[][] values;
@@ -40,10 +40,10 @@ public class NegLogLikelihood implements Function {
   protected final int[] numTimesEventsSeen;
 
   // For calculating negLogLikelihood and gradient
-  protected double[] tempSums;
-  protected double[] expectation;
+  protected final double[] tempSums;
+  protected final double[] expectation;
 
-  protected double[] gradient;
+  protected final double[] gradient;
 
   /**
    * @param indexer The {@link DataIndexer} to use as input provider.

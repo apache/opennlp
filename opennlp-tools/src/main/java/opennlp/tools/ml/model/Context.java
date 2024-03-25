@@ -28,9 +28,9 @@ import java.util.Objects;
 public class Context {
 
   /** The real valued parameters or expected values for this context. */
-  protected double[] parameters;
+  protected final double[] parameters;
   /** The outcomes which occur with this context. */
-  protected int[] outcomes;
+  protected final int[] outcomes;
 
   /**
    * Creates a new parameters object with the specified parameters associated with the specified

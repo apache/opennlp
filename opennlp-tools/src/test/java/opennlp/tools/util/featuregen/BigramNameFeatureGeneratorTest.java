@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 public class BigramNameFeatureGeneratorTest {
 
   private List<String> features;
-  static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
+  private static final String[] TEST_SENTENCE = new String[] {"This", "is", "an", "example", "sentence"};
 
   @BeforeEach
   void setUp() {
@@ -41,7 +41,7 @@ public class BigramNameFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new BigramNameFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     Assertions.assertEquals(2, features.size());
     Assertions.assertEquals("w,nw=This,is", features.get(0));
@@ -55,7 +55,7 @@ public class BigramNameFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new BigramNameFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     Assertions.assertEquals(4, features.size());
     Assertions.assertEquals("pw,w=is,an", features.get(0));
@@ -71,7 +71,7 @@ public class BigramNameFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new BigramNameFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     Assertions.assertEquals(2, features.size());
     Assertions.assertEquals("pw,w=example,sentence", features.get(0));

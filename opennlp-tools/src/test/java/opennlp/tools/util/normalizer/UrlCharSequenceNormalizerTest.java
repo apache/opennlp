@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 public class UrlCharSequenceNormalizerTest {
 
-  public UrlCharSequenceNormalizer normalizer = UrlCharSequenceNormalizer.getInstance();
+  private final UrlCharSequenceNormalizer normalizer = UrlCharSequenceNormalizer.getInstance();
 
   @Test
   void normalizeUrl() {

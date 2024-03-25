@@ -55,7 +55,7 @@ public class LemmatizerME implements Lemmatizer {
 
   public static final int LEMMA_NUMBER = 29;
   public static final int DEFAULT_BEAM_SIZE = 3;
-  protected int beamSize;
+  protected final int beamSize;
   private Sequence bestSequence;
 
   private final SequenceClassificationModel<String> model;

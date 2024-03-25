@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 public class TokenFeatureGeneratorTest {
 
   private List<String> features;
-  static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
+  private static final String[] TEST_SENTENCE = new String[] {"This", "is", "an", "example", "sentence"};
 
   @BeforeEach
   void setUp()  {
@@ -41,7 +41,7 @@ public class TokenFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new TokenFeatureGenerator(false);
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     Assertions.assertEquals(1, features.size());
     Assertions.assertEquals("w=This", features.get(0));
@@ -54,7 +54,7 @@ public class TokenFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new TokenFeatureGenerator(true);
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     Assertions.assertEquals(1, features.size());
     Assertions.assertEquals("w=this", features.get(0));

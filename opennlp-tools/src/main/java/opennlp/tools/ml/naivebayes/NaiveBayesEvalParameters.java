@@ -27,8 +27,8 @@ import opennlp.tools.ml.model.EvalParameters;
  */
 public class NaiveBayesEvalParameters extends EvalParameters {
 
-  protected double[] outcomeTotals;
-  protected long vocabulary;
+  protected final double[] outcomeTotals;
+  protected final long vocabulary;
 
   public NaiveBayesEvalParameters(Context[] params, int numOutcomes,
                                   double[] outcomeTotals, long vocabulary) {

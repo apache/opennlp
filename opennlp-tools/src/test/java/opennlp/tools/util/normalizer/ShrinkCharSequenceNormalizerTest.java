@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 public class ShrinkCharSequenceNormalizerTest {
 
-  public ShrinkCharSequenceNormalizer normalizer = ShrinkCharSequenceNormalizer.getInstance();
+  private final ShrinkCharSequenceNormalizer normalizer = ShrinkCharSequenceNormalizer.getInstance();
 
   @Test
   void normalizeSpace() {

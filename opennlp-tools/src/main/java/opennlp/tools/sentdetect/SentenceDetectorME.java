@@ -81,7 +81,7 @@ public class SentenceDetectorME implements SentenceDetector {
    */
   private final Dictionary abbDict;
 
-  protected boolean useTokenEnd;
+  protected final boolean useTokenEnd;
 
   /**
    * Initializes the sentence detector by downloading a default model.

@@ -26,9 +26,9 @@ import java.util.Objects;
  * much more compact.
  */
 public class ComparablePredicate implements Comparable<ComparablePredicate> {
-  public String name;
-  public int[] outcomes;
-  public double[] params;
+  public final String name;
+  public final int[] outcomes;
+  public final double[] params;
 
   public ComparablePredicate(String n, int[] ocs, double[] ps) {
     name = n;

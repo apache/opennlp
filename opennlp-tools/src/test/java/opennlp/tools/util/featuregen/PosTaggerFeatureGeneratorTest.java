@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Test;
 public class PosTaggerFeatureGeneratorTest {
 
   private List<String> features;
-  static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
-  static String[] testTags = new String[] {"DT", "VBZ", "DT", "NN", "NN"};
+  private static final String[] TEST_SENTENCE = new String[] {"This", "is", "an", "example", "sentence"};
+  private static final String[] TEST_TAGS = new String[] {"DT", "VBZ", "DT", "NN", "NN"};
 
   @BeforeEach
   void setUp()  {
@@ -42,7 +42,7 @@ public class PosTaggerFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new PosTaggerFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, testTags);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, TEST_TAGS);
 
     Assertions.assertEquals(0, features.size());
   }
@@ -54,7 +54,7 @@ public class PosTaggerFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new PosTaggerFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, testTags);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, TEST_TAGS);
 
     Assertions.assertEquals(1, features.size());
     Assertions.assertEquals("t=DT", features.get(0));
@@ -67,7 +67,7 @@ public class PosTaggerFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new PosTaggerFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, testTags);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, TEST_TAGS);
 
     Assertions.assertEquals(2, features.size());
     Assertions.assertEquals("t=DT", features.get(0));

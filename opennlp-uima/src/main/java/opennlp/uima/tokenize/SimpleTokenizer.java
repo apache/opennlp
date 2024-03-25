@@ -39,7 +39,7 @@ public final class SimpleTokenizer extends AbstractTokenizer {
   /**
    * The OpenNLP simple tokenizer.
    */
-  private opennlp.tools.tokenize.SimpleTokenizer tokenizer =
+  private final opennlp.tools.tokenize.SimpleTokenizer tokenizer =
       opennlp.tools.tokenize.SimpleTokenizer.INSTANCE;
 
   /**

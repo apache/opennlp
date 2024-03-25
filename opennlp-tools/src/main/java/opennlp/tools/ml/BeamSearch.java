@@ -45,8 +45,8 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
 
   private static final Object[] EMPTY_ADDITIONAL_CONTEXT = new Object[0];
 
-  protected int size;
-  protected MaxentModel model;
+  protected final int size;
+  protected final MaxentModel model;
 
   private final double[] probs;
   private Cache<String[], double[]> contextsCache;

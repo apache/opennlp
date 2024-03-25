@@ -32,7 +32,7 @@ import opennlp.tools.ml.model.MaxentModel;
  */
 public class NaiveBayesModel extends AbstractModel {
 
-  protected double[] outcomeTotals;
+  protected final double[] outcomeTotals;
   protected long vocabulary;
 
   /**

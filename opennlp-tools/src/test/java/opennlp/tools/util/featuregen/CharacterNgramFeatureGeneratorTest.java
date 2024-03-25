@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 public class CharacterNgramFeatureGeneratorTest {
 
   private List<String> features;
-  static String[] testSentence = new String[] {"This", "is", "an", "example", "sentence"};
+  private static final String[] TEST_SENTENCE = new String[] {"This", "is", "an", "example", "sentence"};
 
   @BeforeEach
   void setUp()  {
@@ -41,7 +41,7 @@ public class CharacterNgramFeatureGeneratorTest {
 
     AdaptiveFeatureGenerator generator = new CharacterNgramFeatureGenerator();
 
-    generator.createFeatures(features, testSentence, testTokenIndex, null);
+    generator.createFeatures(features, TEST_SENTENCE, testTokenIndex, null);
 
     assertContainsNg(features,
         "ex", "exa", "exam", "examp",
