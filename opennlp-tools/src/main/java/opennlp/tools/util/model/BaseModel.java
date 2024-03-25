@@ -314,40 +314,41 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   private void finishLoadingArtifacts(InputStream in)
       throws IOException {
 
-    final ZipInputStream zip = new ZipInputStream(in);
+    try (final ZipInputStream zip = new ZipInputStream(in)) {
+      Map<String, Object> artifactMap = new HashMap<>();
 
-    Map<String, Object> artifactMap = new HashMap<>();
+      ZipEntry entry;
+      while ((entry = zip.getNextEntry()) != null ) {
 
-    ZipEntry entry;
-    while ((entry = zip.getNextEntry()) != null ) {
+        // Note: The manifest.properties file will be read here again,
+        // there should be no need to prevent that.
 
-      // Note: The manifest.properties file will be read here again,
-      // there should be no need to prevent that.
+        String entryName = entry.getName();
+        String extension = getEntryExtension(entryName);
 
-      String entryName = entry.getName();
-      String extension = getEntryExtension(entryName);
+        ArtifactSerializer<?> factory = artifactSerializers.get(extension);
 
-      ArtifactSerializer<?> factory = artifactSerializers.get(extension);
+        String artifactSerializerClazzName =
+                getManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + entryName);
 
-      String artifactSerializerClazzName =
-          getManifestProperty(SERIALIZER_CLASS_NAME_PREFIX + entryName);
+        if (artifactSerializerClazzName != null) {
+          factory = ExtensionLoader.instantiateExtension(
+                  ArtifactSerializer.class, artifactSerializerClazzName);
+        }
 
-      if (artifactSerializerClazzName != null) {
-        factory = ExtensionLoader.instantiateExtension(ArtifactSerializer.class, artifactSerializerClazzName);
+        if (factory != null) {
+          artifactMap.put(entryName, factory.create(zip));
+        } else {
+          throw new InvalidFormatException("Unknown artifact format: " + extension);
+        }
+
+        zip.closeEntry();
       }
 
-      if (factory != null) {
-        artifactMap.put(entryName, factory.create(zip));
-      } else {
-        throw new InvalidFormatException("Unknown artifact format: " + extension);
-      }
+      this.artifactMap.putAll(artifactMap);
 
-      zip.closeEntry();
+      finishedLoadingArtifacts = true;
     }
-
-    this.artifactMap.putAll(artifactMap);
-
-    finishedLoadingArtifacts = true;
   }
 
   /**
