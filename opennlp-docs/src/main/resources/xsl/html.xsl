@@ -27,7 +27,7 @@
   <!-- set bellow all your custom xsl configuration -->
   <xsl:import href="urn:docbkx:stylesheet/highlight.xsl"/>
 
-  <xsl:param name="generate.section.toc.level" select="4"></xsl:param>
+  <xsl:param name="generate.section.toc.level" select="4"/>
   <xsl:param name="toc.section.depth">4</xsl:param>
 
 </xsl:stylesheet>

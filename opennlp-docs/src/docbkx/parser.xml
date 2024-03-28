@@ -28,13 +28,14 @@ under the License.
 	<section id="tools.parser.parsing">
 		<title>Parsing</title>
 		<para>	
-	    A parser returns a parse tree from a sentence according to a phrase structure grammar. A parse tree specifies 
+			A parser returns a parse tree from a sentence according to a phrase structure grammar. A parse tree specifies
 		the internal structure of a sentence. For example, the following image represents a parse tree for 
-		the sentence 'The cellphone was broken in two days':
+		the sentence 'The cellphone was broken in two days':</para>
 		
 		<imagedata fileref="images/parsetree1.png" scalefit="1"/>
 		
-		A parse tree can be used to determine the role of subtrees or constituents in the sentence. For example, it is possible to 
+		<para>
+			A parse tree can be used to determine the role of subtrees or constituents in the sentence. For example, it is possible to
 		know that 'The cellphone' is the subject of the sentence and the verb (action) is 'was broken.'			
 		</para>
 		
@@ -44,7 +45,7 @@ under the License.
 		The easiest way to try out the Parser is the command line tool.
 		The tool is only intended for demonstration and testing.
 		Download the English chunking parser model from the website and start the Parse
- 		Tool with the following command.
+		Tool with the following command.
 				<screen>
 				<![CDATA[
 $ opennlp Parser en-parser-chunking.bin]]>
