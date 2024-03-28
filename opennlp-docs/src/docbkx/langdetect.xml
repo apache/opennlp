@@ -150,8 +150,8 @@ lav     Egija Tri-Active procedūru īpaši iesaka izmantot siltākajos gadalaik
 				The following command will train the language detector and write the model to langdetect.bin:
 				<screen>
 					<![CDATA[
-$ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] [-factory factoryName] -data sampleData [-encoding charsetName]
-]]>
+$ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] \
+  [-factory factoryName] -data sampleData [-encoding charsetName]]]>
 				</screen>
 				Note: To customize the language detector, extend the class opennlp.tools.langdetect.LanguageDetectorFactory
 				add it to the classpath and pass it in the -factory argument.
@@ -176,8 +176,7 @@ $ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params params
 					<![CDATA[
 $ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFile] [-factory factoryName] \
 	-sentencesDir sentencesDir -sentencesPerSample sentencesPerSample -samplesPerLanguage samplesPerLanguage \
-	[-encoding charsetName]
-]]>
+	[-encoding charsetName]]]>
 				</screen>
 
 			</para>
@@ -191,8 +190,7 @@ $ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFi
 $ bin/opennlp LanguageDetectorConverter leipzig -sentencesDir leipzig-train/ -sentencesPerSample 5 -samplesPerLanguage 10000 > leipzig.txt
 $ perl -MList::Util=shuffle -e 'print shuffle(<STDIN>);' < leipzig.txt > leipzig_shuf.txt
 $ head -100000 < leipzig_shuf.txt > leipzig.train
-$ tail -20000 < leipzig_shuf.txt > leipzig.eval
-]]>
+$ tail -20000 < leipzig_shuf.txt > leipzig.eval]]>
 				</screen>
 		</para>
 		</section>
@@ -216,9 +214,7 @@ params.put(TrainingParameters.CUTOFF_PARAM, 0);
 LanguageDetectorFactory factory = new LanguageDetectorFactory();
 
 LanguageDetectorModel model = LanguageDetectorME.train(sampleStream, params, factory);
-model.serialize(new File("langdetect.bin"));
-}
-]]>
+model.serialize(new File("langdetect.bin"));]]>
 	</programlisting>
 		</para>
 		</section>

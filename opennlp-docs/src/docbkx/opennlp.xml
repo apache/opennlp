@@ -28,6 +28,14 @@ under the License.
 
 		<productname>OpenNLP</productname>
 
+		<subtitle>
+			<inlinemediaobject>
+				<imageobject role="fo">
+					<imagedata fileref="./images/opennlp-logo.png" />
+				</imageobject>
+			</inlinemediaobject>
+		</subtitle>
+
 		<authorgroup>
 			<corpauthor>Written and maintained by the Apache OpenNLP Development
 				Community</corpauthor>
@@ -64,10 +72,10 @@ under the License.
 
 		<copyright>
 			<year>2011</year>
-			<year>2023</year>
+			<year>2024</year>
 			<holder>The Apache Software Foundation</holder>
 		</copyright>
-		
+
 		<!-- pubdate><?eval ${project.properties.buildMonth}?>
 			, <?eval ${project.properties.buildYear}?>
 		</pubdate -->
@@ -92,5 +100,5 @@ under the License.
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./uima-integration.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./morfologik-addon.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./cli.xml" />
-	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="evaltest.xml" />
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./evaltest.xml" />
 </book>

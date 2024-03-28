@@ -67,8 +67,7 @@ under the License.
                     <![CDATA[
 try (InputStream modelIn = new FileInputStream("lang-model-name.bin")) {
   SomeModel model = new SomeModel(modelIn);
-}
-]]>
+}]]>
             </programlisting>
         </para>
         <para>
@@ -178,8 +177,7 @@ where TOOL is one of:
   CheckModelUpdater                 trains and updates the check model in a parser model
   TaggerModelReplacer               replaces the tagger model in a parser model
 All tools print help when invoked with help parameter
-Example: opennlp SimpleTokenizer help
-]]>
+Example: opennlp SimpleTokenizer help]]>
                 </screen>
             </para>
             <para>OpenNLP tools have similar command line structure and options. To discover tool
