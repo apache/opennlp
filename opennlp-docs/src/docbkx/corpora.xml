@@ -148,7 +148,7 @@ F-Measure: 0.9230575441395671]]>
 		Spanish and Dutch.
 		</para>
 		<para>
-		The Spanish data is a collection of news wire articles made available by the Spanish EFE News Agency. The articles are
+		The Spanish data is a collection of newswire articles made available by the Spanish EFE News Agency. The articles are
 		from May 2000. The annotation was carried out by the <ulink url="https://www.talp.cat/">TALP Research Center</ulink> of the Technical University of Catalonia (UPC)
 		and the <ulink url="https://web.archive.org/web/20220516042208/http://clic.ub.edu/">Center of Language and Computation (CLiC)</ulink>of the University of Barcelona (UB), and funded by the European Commission
 		through the NAMIC project (IST-1999-12392). 
@@ -258,7 +258,7 @@ path: .\es_ner_person.bin]]>
 		<section id="tools.corpora.conll.2003.getting">
 		<title>Getting the data</title>
 		<para>
-		The English data is the Reuters Corpus, which is a collection of news wire articles.
+		The English data is the Reuters Corpus, which is a collection of newswire articles.
 		The Reuters Corpus can be obtained free of charges from the NIST for research
 		purposes: <ulink url="https://trec.nist.gov/data/reuters/reuters.html">https://trec.nist.gov/data/reuters/reuters.html</ulink>
 		</para>
@@ -539,12 +539,18 @@ path: /dev/opennlp/trunk/opennlp-tools/en-ontonotes.bin]]>
 		<para>
 			The brat annotation tool is an online environment for collaborative text annotation and
 			supports labeling documents with named entities. The best performance of a name finder
-			can only be achieved if it was trained on documents similar to the the documents it will
+			can only be achieved if it was trained on documents similar to the documents it will
 			process. For that reason it is often necessary to manually label a large number of documents and
 			build a custom corpus. This is where brat comes in handy.
+		</para>
 
-			<imagedata fileref="images/brat.png" width="6.5in" depth="4in" scalefit="1"/>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="images/brat.png" width="6.5in" depth="4in" scalefit="1"/>
+			</imageobject>
+		</mediaobject>
 
+		<para>
 			OpenNLP can directly be trained and evaluated on labeled data in the brat format.
 			Instructions on how to use, download and install brat can be found on the project website:
 
@@ -746,7 +752,7 @@ Performing 100 iterations.
   2:  . (552971/555858) 0.9948062274897546
 ...
 ...
-... (training and evaluationg x 10)
+... (training and evaluating x 10)
 ...
 done
 
