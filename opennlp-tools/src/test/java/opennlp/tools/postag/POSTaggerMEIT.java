@@ -37,13 +37,9 @@ public class POSTaggerMEIT {
         "injured",
         "."});
 
-    Assertions.assertEquals(6, tags.length);
-    Assertions.assertEquals("DT", tags[0]);
-    Assertions.assertEquals("NN", tags[1]);
-    Assertions.assertEquals("VBD", tags[2]);
-    Assertions.assertEquals("RB", tags[3]);
-    Assertions.assertEquals("VBN", tags[4]);
-    Assertions.assertEquals(".", tags[5]);
+    // TODO OPENNLP-1539 Adjust this depending on the POSFormat
+    String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    Assertions.assertArrayEquals(expected, tags);
   }
 
 }
