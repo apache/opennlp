@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline;
+package opennlp.tools;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

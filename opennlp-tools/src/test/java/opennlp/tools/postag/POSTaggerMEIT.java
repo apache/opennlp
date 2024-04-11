@@ -20,14 +20,20 @@ package opennlp.tools.postag;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class POSTaggerMEIT {
 
-  @Test
-  void testPOSTagger() throws IOException {
+  private static POSTagger tagger;
 
-    POSTagger tagger = new POSTaggerME("en");
+  @BeforeAll
+  public static void prepare() throws IOException {
+    tagger = new POSTaggerME("en");
+  }
+
+  @Test
+  void testPOSTagger() {
 
     String[] tags = tagger.tag(new String[] {
         "The",

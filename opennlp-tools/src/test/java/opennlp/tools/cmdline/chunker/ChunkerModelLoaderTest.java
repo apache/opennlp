@@ -27,9 +27,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.AbstractModelLoaderTest;
 import opennlp.tools.EnabledWhenCDNAvailable;
 import opennlp.tools.chunker.ChunkerModel;
-import opennlp.tools.cmdline.AbstractModelLoaderTest;
 
 @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
 public class ChunkerModelLoaderTest extends AbstractModelLoaderTest {
