@@ -20,14 +20,20 @@ package opennlp.tools.postag;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class POSTaggerMEIT {
 
-  @Test
-  void testPOSTagger() throws IOException {
+  private static POSTagger tagger;
 
-    POSTagger tagger = new POSTaggerME("en");
+  @BeforeAll
+  public static void prepare() throws IOException {
+    tagger = new POSTaggerME("en");
+  }
+
+  @Test
+  void testPOSTagger() {
 
     String[] tags = tagger.tag(new String[] {
         "The",
@@ -37,13 +43,9 @@ public class POSTaggerMEIT {
         "injured",
         "."});
 
-    Assertions.assertEquals(6, tags.length);
-    Assertions.assertEquals("DT", tags[0]);
-    Assertions.assertEquals("NN", tags[1]);
-    Assertions.assertEquals("VBD", tags[2]);
-    Assertions.assertEquals("RB", tags[3]);
-    Assertions.assertEquals("VBN", tags[4]);
-    Assertions.assertEquals(".", tags[5]);
+    // TODO OPENNLP-1539 Adjust this depending on the POSFormat
+    String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    Assertions.assertArrayEquals(expected, tags);
   }
 
 }

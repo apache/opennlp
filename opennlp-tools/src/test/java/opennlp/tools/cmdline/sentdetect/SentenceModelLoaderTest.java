@@ -27,8 +27,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.AbstractModelLoaderTest;
 import opennlp.tools.EnabledWhenCDNAvailable;
-import opennlp.tools.cmdline.AbstractModelLoaderTest;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.DownloadUtil;
 

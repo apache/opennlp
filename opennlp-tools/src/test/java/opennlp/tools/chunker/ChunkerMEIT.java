@@ -18,11 +18,15 @@
 package opennlp.tools.chunker;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class ChunkerMEIT {
+import opennlp.tools.AbstractModelLoaderTest;
+
+public class ChunkerMEIT extends AbstractModelLoaderTest {
 
   private static final String[] toks1 = {"Rockwell", "said", "the", "agreement", "calls", "for",
       "it", "to", "supply", "200", "additional", "so-called", "shipsets",
@@ -35,13 +39,22 @@ public class ChunkerMEIT {
       "B-NP", "B-VP", "I-VP", "B-NP", "I-NP", "I-NP", "I-NP", "B-PP", "B-NP",
       "I-NP", "O"};
 
+
+  private static final String modelName = "en-chunker.bin";
+
+  private static ChunkerME chunker;
+
+  @BeforeAll
+  public static void prepare() throws IOException {
+    downloadVersion15Model(modelName);
+    final Path modelPath = OPENNLP_DIR.resolve(modelName);
+    ChunkerModel model = new ChunkerModel(modelPath);
+    chunker = new ChunkerME(model);
+  }
+
   @Test
-  void downloadModel() throws IOException {
-
-    ChunkerME chunker = new ChunkerME("en");
-
+  void testChunk() {
     String[] preds = chunker.chunk(toks1, tags1);
-
     Assertions.assertArrayEquals(expect1, preds);
   }
 
