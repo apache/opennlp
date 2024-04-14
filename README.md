@@ -18,13 +18,14 @@ limitations under the License.
 Welcome to Apache OpenNLP!
 ===========
 
-[![Build Status](https://github.com/apache/opennlp/workflows/Java%20CI/badge.svg)](https://github.com/apache/opennlp/actions)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp)
-[![Documentation Status](https://img.shields.io/:docs-latest-green.svg)](http://opennlp.apache.org/docs/index.html)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/apache/opennlp.svg)](https://github.com/apache/opennlp/pulls)
 [![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/apache/opennlp/main/LICENSE)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp)
+[![Documentation Status](https://img.shields.io/:docs-latest-green.svg)](http://opennlp.apache.org/docs/index.html)
+[![Build Status](https://github.com/apache/opennlp/workflows/Java%20CI/badge.svg)](https://github.com/apache/opennlp/actions)
+[![Contributors](https://img.shields.io/github/contributors/apache/opennlp)](https://github.com/apache/opennlp/graphs/contributors)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/apache/opennlp.svg)](https://github.com/apache/opennlp/pulls)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/apache/opennlp/badge)](https://api.securityscorecards.dev/projects/github.com/apache/opennlp)
 [![Stack Overflow](https://img.shields.io/badge/stack%20overflow-opennlp-f1eefe.svg)](https://stackoverflow.com/questions/tagged/opennlp)
-[![Twitter Follow](https://img.shields.io/twitter/follow/ApacheOpennlp.svg?style=social)](https://twitter.com/ApacheOpenNLP)
 
 The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
 
@@ -56,7 +57,7 @@ Please train your own models for all other use cases.
 
 Documentation, including JavaDocs, code usage and command-line interface examples are available [here](http://opennlp.apache.org/docs/)
 
-You can also follow our [mailing lists](http://opennlp.apache.org/mailing-lists.html) for news and updates.
+You can also follow our [mailing lists](http://opennlp.apache.org/mailing-lists.html) for news and updates, or via social media channels: [![Twitter Follow](https://img.shields.io/twitter/follow/ApacheOpenNLP.svg?style=social)](https://twitter.com/ApacheOpenNLP)
 
 ## Overview
 
