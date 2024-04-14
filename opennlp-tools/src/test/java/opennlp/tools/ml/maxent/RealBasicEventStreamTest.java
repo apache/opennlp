@@ -15,36 +15,45 @@
  * limitations under the License.
  */
 
-package opennlp.tools.ml.model;
+package opennlp.tools.ml.maxent;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.AbstractEventStreamTest;
-import opennlp.tools.ml.maxent.RealBasicEventStream;
+import opennlp.tools.ml.model.Event;
+import opennlp.tools.ml.model.RealValueFileEventStream;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Verifies that the textual event (input) format in {@link RealValueFileEventStream} is:
+ * Verifies that the textual event (input) format in {@link RealBasicEventStream} is:
  * <br/>
  * {@code outcome context1 context2 context3 ...}
  * <p>
- * and is consistent with {@link RealBasicEventStream}. Moreover, the test checks that processing
+ * and is consistent with {@link RealValueFileEventStream}. Moreover, the test checks that processing
  * given input works as expected.
+ * <p>
+ * Reported in and adjusted via:
+ * <a href="https://issues.apache.org/jira/projects/OPENNLP/issues/OPENNLP-589">OPENNLP-589</a>.
  *
  * @see ObjectStream
- * @see RealBasicEventStream
+ * @see RealValueFileEventStream
  */
-public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
+public class RealBasicEventStreamTest extends AbstractEventStreamTest {
 
   @Override
-  protected RealValueFileEventStream createEventStream(String input) throws IOException {
-    return new RealValueFileEventStream(new StringReader(input));
+  protected RealBasicEventStream createEventStream(String input) throws IOException {
+    InputStreamFactory factory = () -> new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+    ObjectStream<String> stream = new PlainTextByLineStream(factory, StandardCharsets.UTF_8);
+    return new RealBasicEventStream(stream);
   }
 
   /**
@@ -73,7 +82,7 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
 
   @Test
   void testReadWithInvalidNegativeValues() throws IOException {
-    try (RealValueFileEventStream eventStream = createEventStream(EVENTS_INVALID_NEGATIVE)) {
+    try (RealBasicEventStream eventStream = createEventStream(EVENTS_INVALID_NEGATIVE)) {
       eventStream.read();
       fail("Negative values should not be tolerated as input!");
     } catch (RuntimeException rte) {
@@ -87,11 +96,12 @@ public class RealValueFileEventStreamTest extends AbstractEventStreamTest {
   }
 
   @Test
-  void testReset() throws IOException {
-    try (RealValueFileEventStream feStream = createEventStream(EVENTS)) {
-      feStream.reset();
-      Assertions.fail("UnsupportedOperationException should be thrown");
-    } catch (UnsupportedOperationException expected) {
+  void testReset() {
+    try (RealBasicEventStream rbeStream = createEventStream(EVENTS)) {
+      rbeStream.reset();
+    } catch (IOException ioe) {
+      fail(ioe.toString());
     }
   }
+
 }

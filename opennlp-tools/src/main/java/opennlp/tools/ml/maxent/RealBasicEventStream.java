@@ -38,6 +38,12 @@ public class RealBasicEventStream implements ObjectStream<Event> {
     this.ds = ds;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IOException Thrown if there is an error during reading.
+   * @throws RuntimeException Thrown if negative real values are detected in the input data.
+   */
   @Override
   public Event read() throws IOException {
 
@@ -49,13 +55,14 @@ public class RealBasicEventStream implements ObjectStream<Event> {
   }
 
   private Event createEvent(String obs) {
-    int lastSpace = obs.lastIndexOf(' ');
-    if (lastSpace == -1)
+    int si = obs.indexOf(' ');
+    if (si == -1)
       return null;
     else {
-      String[] contexts = obs.substring(0,lastSpace).split("\\s+");
+      String outcome = obs.substring(0, si);
+      String[] contexts = obs.substring(si + 1).split("\\s+");
       float[] values = RealValueFileEventStream.parseContexts(contexts);
-      return new Event(obs.substring(lastSpace + 1),contexts,values);
+      return new Event(outcome,contexts,values);
     }
   }
 
