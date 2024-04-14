@@ -21,7 +21,9 @@ Welcome to Apache OpenNLP!
 [![Build Status](https://github.com/apache/opennlp/workflows/Java%20CI/badge.svg)](https://github.com/apache/opennlp/actions)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp)
 [![Documentation Status](https://img.shields.io/:docs-latest-green.svg)](http://opennlp.apache.org/docs/index.html)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/apache/opennlp.svg)](https://github.com/apache/opennlp/pulls)
 [![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/apache/opennlp/main/LICENSE)
+[![Stack Overflow](https://img.shields.io/badge/stack%20overflow-opennlp-f1eefe.svg)](https://stackoverflow.com/questions/tagged/opennlp)
 [![Twitter Follow](https://img.shields.io/twitter/follow/ApacheOpennlp.svg?style=social)](https://twitter.com/ApacheOpenNLP)
 
 The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
