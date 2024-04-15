@@ -288,17 +288,19 @@ $ opennlp TokenNameFinderTrainer -featuregen brown.xml -sequenceCodec BILOU -res
 			The three steps are illustrated by the following sample code:
 			<programlisting language="java">
 				<![CDATA[
+TokenNameFinderFactory factory = TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec());
+File trainingFile = new File("en-ner-person.train");
 ObjectStream<String> lineStream =
-		new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-ner-person.train")), StandardCharsets.UTF_8);
+				new PlainTextByLineStream(new MarkableFileInputStreamFactory(trainingFile), StandardCharsets.UTF_8);
 
-TokenNameFinderModel model;
-
+TokenNameFinderModel trainedModel;
 try (ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream)) {
-  model = NameFinderME.train("eng", "person", sampleStream, TrainingParameters.defaultParams(), nameFinderFactory);
+	trainedModel = NameFinderME.train("eng", "person", sampleStream, TrainingParameters.defaultParams(), factory);
 }
 
-try (ObjectStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile)){
-  model.serialize(modelOut);
+File modelFile = new File("en-ner-person.bin");
+try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {
+	trainedModel.serialize(modelOut);
 }]]>
 			 </programlisting>
 		</para>
