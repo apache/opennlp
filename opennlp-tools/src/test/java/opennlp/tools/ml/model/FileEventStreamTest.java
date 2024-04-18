@@ -23,44 +23,47 @@ import java.io.StringReader;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class FileEventStreamTest {
+import opennlp.tools.ml.AbstractEventStreamTest;
+import opennlp.tools.util.ObjectStream;
 
-  private static final String EVENTS =
-      "other wc=ic w&c=he,ic n1wc=lc n1w&c=belongs,lc n2wc=lc\n" +
-          "other wc=lc w&c=belongs,lc p1wc=ic p1w&c=he,ic n1wc=lc\n" +
-          "other wc=lc w&c=to,lc p1wc=lc p1w&c=belongs,lc p2wc=ic\n" +
-          "org-start wc=ic w&c=apache,ic p1wc=lc p1w&c=to,lc\n" +
-          "org-cont wc=ic w&c=software,ic p1wc=ic p1w&c=apache,ic\n" +
-          "org-cont wc=ic w&c=foundation,ic p1wc=ic p1w&c=software,ic\n" +
-          "other wc=other w&c=.,other p1wc=ic\n";
+public class FileEventStreamTest extends AbstractEventStreamTest {
 
-  @Test
-  void testSimpleReading() throws IOException {
-    try (FileEventStream feStream = new FileEventStream(new StringReader(EVENTS))) {
-      Assertions.assertEquals("other [wc=ic w&c=he,ic n1wc=lc n1w&c=belongs,lc n2wc=lc]",
-          feStream.read().toString());
-      Assertions.assertEquals("other [wc=lc w&c=belongs,lc p1wc=ic p1w&c=he,ic n1wc=lc]",
-          feStream.read().toString());
-      Assertions.assertEquals("other [wc=lc w&c=to,lc p1wc=lc p1w&c=belongs,lc p2wc=ic]",
-          feStream.read().toString());
-      Assertions.assertEquals("org-start [wc=ic w&c=apache,ic p1wc=lc p1w&c=to,lc]",
-          feStream.read().toString());
-      Assertions.assertEquals("org-cont [wc=ic w&c=software,ic p1wc=ic p1w&c=apache,ic]",
-          feStream.read().toString());
-      Assertions.assertEquals("org-cont [wc=ic w&c=foundation,ic p1wc=ic p1w&c=software,ic]",
-          feStream.read().toString());
-      Assertions.assertEquals("other [wc=other w&c=.,other p1wc=ic]",
-          feStream.read().toString());
-      Assertions.assertNull(feStream.read());
-    }
+  @Override
+  protected FileEventStream createEventStream(String input) throws IOException {
+    return new FileEventStream(new StringReader(input));
   }
 
+  /**
+   * See: {@link AbstractEventStreamTest#EVENTS_PLAIN} for the input data.
+   */
+  @Test
+  void testReadWithValidInput() throws IOException {
+    try (ObjectStream<Event> eventStream = createEventStream(EVENTS_PLAIN)) {
+      Assertions.assertEquals("other [wc=ic w&c=he,ic n1wc=lc n1w&c=belongs,lc n2wc=lc]",
+          eventStream.read().toString());
+      Assertions.assertEquals("other [wc=lc w&c=belongs,lc p1wc=ic p1w&c=he,ic n1wc=lc]",
+          eventStream.read().toString());
+      Assertions.assertEquals("other [wc=lc w&c=to,lc p1wc=lc p1w&c=belongs,lc p2wc=ic]",
+          eventStream.read().toString());
+      Assertions.assertEquals("org-start [wc=ic w&c=apache,ic p1wc=lc p1w&c=to,lc]",
+          eventStream.read().toString());
+      Assertions.assertEquals("org-cont [wc=ic w&c=software,ic p1wc=ic p1w&c=apache,ic]",
+          eventStream.read().toString());
+      Assertions.assertEquals("org-cont [wc=ic w&c=foundation,ic p1wc=ic p1w&c=software,ic]",
+          eventStream.read().toString());
+      Assertions.assertEquals("other [wc=other w&c=.,other p1wc=ic]",
+          eventStream.read().toString());
+      Assertions.assertNull(eventStream.read());
+    }
+  }
+  
   @Test
   void testReset() throws IOException {
-    try (FileEventStream feStream = new FileEventStream(new StringReader(EVENTS))) {
+    try (FileEventStream feStream = createEventStream(EVENTS_PLAIN)) {
       feStream.reset();
       Assertions.fail("UnsupportedOperationException should be thrown");
     } catch (UnsupportedOperationException expected) {
     }
   }
+
 }

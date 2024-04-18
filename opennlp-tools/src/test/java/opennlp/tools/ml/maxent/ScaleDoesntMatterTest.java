@@ -55,48 +55,52 @@ public class ScaleDoesntMatterTest {
    * predicates doesn't matter when it comes the probability assigned to each
    * outcome. Strangely, if we use (1,2) and (10,20) there's no difference. If
    * we use (0.1,0.2) and (10,20) there is a difference.
+   * <p>
+   * Note: The textual event format is:
+   * <br/>
+   * {@code outcome context1 context2 context3 ...}
+   * <p>
+   * This was changed when
+   * <a href="https://issues.apache.org/jira/projects/OPENNLP/issues/OPENNLP-589">OPENNLP-589</a> was resolved.
    */
   @Test
   void testScaleResults() throws Exception {
-    String smallValues = "predA=0.1 predB=0.2 A\n" + "predB=0.3 predA=0.1 B\n";
-
-    String smallTest = "predA=0.2 predB=0.2";
-
-    String largeValues = "predA=10 predB=20 A\n" + "predB=30 predA=10 B\n";
-
-    String largeTest = "predA=20 predB=20";
+    final String smallValues = "A predA=0.1 predB=0.2\n" + "B predB=0.3 predA=0.1\n";
+    final String smallTest = "predA=0.2 predB=0.2";
+    final String largeValues = "A predA=10 predB=20\n" + "B predB=30 predA=10\n";
+    final String largeTest = "predA=20 predB=20";
 
     ObjectStream<Event> smallEventStream = new RealBasicEventStream(
         new PlainTextByLineStream(new MockInputStreamFactory(smallValues), StandardCharsets.UTF_8));
-
     testDataIndexer.index(smallEventStream);
 
     EventTrainer smallModelTrainer = TrainerFactory.getEventTrainer(
         ModelUtil.createDefaultTrainingParameters(), null);
 
     MaxentModel smallModel = smallModelTrainer.train(testDataIndexer);
-    String[] contexts = smallTest.split(" ");
+    String[] contexts = smallTest.split("\\s+");
     float[] values = RealValueFileEventStream.parseContexts(contexts);
     double[] smallResults = smallModel.eval(contexts, values);
 
     String smallResultString = smallModel.getAllOutcomes(smallResults);
+    Assertions.assertNotNull(smallResultString);
 
     ObjectStream<Event> largeEventStream = new RealBasicEventStream(
         new PlainTextByLineStream(new MockInputStreamFactory(largeValues), StandardCharsets.UTF_8));
-
     testDataIndexer.index(largeEventStream);
 
     EventTrainer largeModelTrainer = TrainerFactory.getEventTrainer(
         ModelUtil.createDefaultTrainingParameters(), null);
 
     MaxentModel largeModel = largeModelTrainer.train(testDataIndexer);
-    contexts = largeTest.split(" ");
+    contexts = largeTest.split("\\s+");
     values = RealValueFileEventStream.parseContexts(contexts);
     double[] largeResults = largeModel.eval(contexts, values);
 
     String largeResultString = largeModel.getAllOutcomes(largeResults);
-
+    Assertions.assertNotNull(largeResultString);
     Assertions.assertEquals(smallResults.length, largeResults.length);
+
     for (int i = 0; i < smallResults.length; i++) {
       Assertions.assertEquals(largeResults[i], smallResults[i], 0.01f);
     }

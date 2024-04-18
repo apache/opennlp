@@ -39,6 +39,8 @@ import opennlp.tools.util.ObjectStream;
  */
 public class FileEventStream implements ObjectStream<Event> {
 
+  private static final String LINE_SEPARATOR = System.lineSeparator();
+
   protected final BufferedReader reader;
 
   /**
@@ -88,6 +90,14 @@ public class FileEventStream implements ObjectStream<Event> {
              new FileInputStream(file), StandardCharsets.UTF_8));
   }
 
+  /**
+   * Returns the next {@link Event} object. Calling this method repeatedly until it returns
+   * {@code null} will return each object from the underlying source exactly once.
+   *
+   * @return The next object or {@code null} to signal that the stream is exhausted.
+   *
+   * @throws IOException Thrown if there is an error during reading.
+   */
   @Override
   public Event read() throws IOException {
     String line;
@@ -125,7 +135,7 @@ public class FileEventStream implements ObjectStream<Event> {
     for (String s : context) {
       sb.append(" ").append(s);
     }
-    sb.append(System.getProperty("line.separator"));
+    sb.append(LINE_SEPARATOR);
     return sb.toString();
   }
 

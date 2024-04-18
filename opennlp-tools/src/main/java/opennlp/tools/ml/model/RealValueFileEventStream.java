@@ -19,6 +19,7 @@ package opennlp.tools.ml.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,12 +74,25 @@ public class RealValueFileEventStream extends FileEventStream {
   }
 
   /**
-   * Parses the specified contexts and re-populates context array with features
+   * Instantiates a {@link RealValueFileEventStream} via a {@link Reader}.
+   *
+   * @param reader The {@link Reader} that holds events.
+   *
+   * @throws IOException Thrown if the specified file can not be read.
+   */
+  public RealValueFileEventStream(Reader reader) throws IOException {
+    super(reader);
+  }
+
+  /**
+   * Parses the specified {@code contexts} and re-populates context array with features
    * and returns the values for these features. If all values are unspecified,
    * then {@code null} is returned.
    *
    * @param contexts The contexts with real values specified.
-   * @return The value for each context or null if all values are unspecified.
+   * @return The value for each context or {@code null} if all values are unspecified.
+   *
+   * @throws RuntimeException Thrown if negative real values are detected in the input data.
    */
   public static float[] parseContexts(String[] contexts) {
     boolean hasRealValue = false;
@@ -111,13 +125,19 @@ public class RealValueFileEventStream extends FileEventStream {
     return values;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IOException Thrown if there is an error during reading.
+   * @throws RuntimeException Thrown if negative real values are detected in the input data.
+   */
   @Override
   public Event read() throws IOException {
     String line;
     if ((line = reader.readLine()) != null) {
       int si = line.indexOf(' ');
       String outcome = line.substring(0, si);
-      String[] contexts = line.substring(si + 1).split(" ");
+      String[] contexts = line.substring(si + 1).split("\\s+");
       float[] values = parseContexts(contexts);
       return new Event(outcome, contexts, values);
     }
