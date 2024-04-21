@@ -42,9 +42,10 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class TokenizerFactoryTest {
 
-  private static final Locale LOCALE_SPANISH = new Locale("es");
+  private static final Locale LOCALE_DUTCH = new Locale("nl");
   private static final Locale LOCALE_POLISH = new Locale("pl");
   private static final Locale LOCALE_PORTUGUESE = new Locale("pt");
+  private static final Locale LOCALE_SPANISH = new Locale("es");
 
   private static ObjectStream<TokenSample> createSampleStream() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(
@@ -60,7 +61,9 @@ public class TokenizerFactoryTest {
 
   private static Dictionary loadAbbDictionary(Locale loc) throws IOException {
     final String abbrevDict;
-    if (loc.equals(Locale.GERMAN)) {
+    if (loc.equals(LOCALE_DUTCH)) {
+      abbrevDict = "opennlp/tools/lang/abb_NL.xml";
+    } else if (loc.equals(Locale.GERMAN)) {
       abbrevDict = "opennlp/tools/lang/abb_DE.xml";
     } else if (loc.equals(Locale.FRENCH)) {
       abbrevDict = "opennlp/tools/lang/abb_FR.xml";
@@ -184,7 +187,9 @@ public class TokenizerFactoryTest {
   void checkCustomPatternForTokenizerME(String lang, String pattern, String sentence,
       int expectedNumTokens) throws IOException {
     Locale loc = Locale.ENGLISH;
-    if ("deu".equals(lang)) {
+    if ("dut".equals(lang) || "nld".equals(lang)) {
+      loc = LOCALE_DUTCH;
+    } else if ("deu".equals(lang)) {
       loc = Locale.GERMAN;
     } else if ("fra".equals(lang)) {
       loc = Locale.FRENCH;
@@ -225,6 +230,15 @@ public class TokenizerFactoryTest {
     String pattern = "^[A-Za-z0-9äéöüÄÉÖÜß]+$";
     String sentence = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 14);
+  }
+
+  @Test
+  void testCustomPatternForTokenizerMEWithAbbreviationsDut() throws IOException {
+    String lang = "dut";
+    String pattern = "^[A-Za-z0-9äöüëèéïĳÄÖÜËÉÈÏĲ]+$";
+    String sentence = "Ik kies voor de droom van de botanische monografie die " +
+            "op p. 183 en volgende wordt beschreven.";
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 18);
   }
 
   @Test

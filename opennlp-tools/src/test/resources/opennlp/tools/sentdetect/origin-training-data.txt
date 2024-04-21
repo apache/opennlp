@@ -22,12 +22,15 @@ Sentences_IT.txt:
 available here:
 https://issues.apache.org/jira/browse/OPENNLP-1163
 ################
+Sentences_NL.txt:
+- Sigmund Freud - De interpretatie van dromen
+- hoofdstuk VI: Het droomwerk | sectie A "Het condensatiewerk".
+automatically translated from the German version, see Sentences_DE.txt
 ################
 Sentences_PL.txt:
 - Zygmunt Freuda - Interpretacja marzeń sennych
 - Rozdział VI: Praca nad snem | sekcja A "Praca nad kondensacją"
 automatically translated from the German version, see Sentences_DE.txt
-################
 ################
 Sentences_PT.txt:
 - Adolfo Ferreira Caminha - No Paiz dos Yankees
