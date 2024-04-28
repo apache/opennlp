@@ -220,7 +220,9 @@ public class TokenizerME extends AbstractTokenizer {
             if (isAcceptableAbbreviation(tok)) {
               newTokens.add(new Span(start, end));
               tokProbs.add(tokenProb);
-              start = j + 1; // To compensate for the abbreviation dot
+              long numberOfDots = tok.codePoints().filter(ch -> ch == '.').count();
+              j = j + (int) numberOfDots; // To compensate for abbreviation dot(s)
+              start = j + 1;
             } else {
               newTokens.add(new Span(start, j));
               tokProbs.add(tokenProb);

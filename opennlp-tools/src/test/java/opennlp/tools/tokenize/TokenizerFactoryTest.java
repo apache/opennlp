@@ -228,8 +228,19 @@ public class TokenizerFactoryTest {
   void testCustomPatternForTokenizerMEWithAbbreviationsDeu() throws IOException {
     String lang = "deu";
     String pattern = "^[A-Za-z0-9äéöüÄÉÖÜß]+$";
-    String sentence = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
+    String sentence = "Ich wähle den auf S. 183 ff. mitgeteilten " +
+            "Traum von der botanischen Monographie.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 14);
+  }
+
+  @Test // to verify OPENNLP-1555
+  void testCustomPatternForTokenizerMEWithMultiDotAbbreviationsDeu() throws IOException {
+    String lang = "deu";
+    String pattern = "^[A-Za-z0-9äéöüÄÉÖÜß]+$";
+    // Adds an extra "z.B.", the compact form of "z. B." (zum Beispiel => for example)
+    String sentence = "Ich wähle z.B. den auf S. 183 ff. mitgeteilten " +
+            "Traum von der botanischen Monographie.";
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 15);
   }
 
   @Test
@@ -239,6 +250,15 @@ public class TokenizerFactoryTest {
     String sentence = "Ik kies voor de droom van de botanische monografie die " +
             "op p. 183 en volgende wordt beschreven.";
     checkCustomPatternForTokenizerME(lang, pattern, sentence, 18);
+  }
+
+  @Test // to verify OPENNLP-1555
+  void testCustomPatternForTokenizerMEWithMultiDotAbbreviationsDut() throws IOException {
+    String lang = "dut";
+    String pattern = "^[A-Za-z0-9äöüëèéïĳÄÖÜËÉÈÏĲ]+$";
+    String sentence = "Ik kies voor de droom van de botanische monografie die " +
+            "op p. 183 e.v. wordt beschreven.";
+    checkCustomPatternForTokenizerME(lang, pattern, sentence, 17);
   }
 
   @Test
