@@ -17,7 +17,6 @@
 
 package opennlp.tools.ml.model;
 
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -26,11 +25,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.CRC32C;
+import java.util.zip.CheckedInputStream;
+import java.util.zip.CheckedOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,48 +64,50 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
     int cutoff = trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
     boolean sort = trainingParameters.getBooleanParameter(SORT_PARAM, SORT_DEFAULT);
 
-    long start = System.currentTimeMillis();
-
     logger.info("Indexing events with TwoPass using cutoff of {}", cutoff);
-
     logger.info("Computing event counts...");
 
+    long start = System.currentTimeMillis();
     Map<String,Integer> predicateIndex = new HashMap<>();
-
     File tmp = Files.createTempFile("events", null).toFile();
     tmp.deleteOnExit();
     int numEvents;
-    BigInteger writeHash;
-    HashSumEventStream writeEventStream = new HashSumEventStream(eventStream);  // do not close.
-    try (DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(tmp)))) {
-      numEvents = computeEventCounts(writeEventStream, dos, predicateIndex, cutoff);
-    }
-    writeHash = writeEventStream.calculateHashSum();
+    long writeChecksum;
 
-    logger.info("done. {} events", numEvents);
-    logger.info("Indexing...");
+    try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(tmp));
+        CheckedOutputStream writeStream = new CheckedOutputStream(out, new CRC32C());
+        DataOutputStream dos = new DataOutputStream(writeStream)) {
+
+      numEvents = computeEventCounts(eventStream, dos, predicateIndex, cutoff);
+      writeChecksum = writeStream.getChecksum().getValue();
+      logger.info("done. {} events", numEvents);
+    }
 
     List<ComparableEvent> eventsToCompare;
-    BigInteger readHash = null;
-    try (HashSumEventStream readStream = new HashSumEventStream(new EventStream(tmp))) {
-      eventsToCompare = index(readStream, predicateIndex);
-      readHash = readStream.calculateHashSum();
+    long readChecksum;
+    try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(tmp));
+         CheckedInputStream readStream = new CheckedInputStream(in, new CRC32C());
+         EventStream readEventsStream = new EventStream(new DataInputStream(readStream))) {
+      logger.info("Indexing...");
+      eventsToCompare = index(readEventsStream, predicateIndex);
+      readChecksum = readStream.getChecksum().getValue();
     }
     tmp.delete();
 
-    if (readHash.compareTo(writeHash) != 0)
-      throw new IOException("Event hash for writing and reading events did not match.");
+    if (readChecksum != writeChecksum) {
+      throw new IOException("Checksum for writing and reading events did not match.");
+    } else {
+      logger.info("done.");
 
-    logger.info("done.");
-
-    if (sort) {
-      logger.info("Sorting and merging events... ");
+      if (sort) {
+        logger.info("Sorting and merging events... ");
+      }
+      else {
+        logger.info("Collecting events... ");
+      }
+      sortAndMerge(eventsToCompare,sort);
+      logger.info(String.format("Done indexing in %.2f s.", (System.currentTimeMillis() - start) / 1000d));
     }
-    else {
-      logger.info("Collecting events... ");
-    }
-    sortAndMerge(eventsToCompare,sort);
-    logger.info(String.format("Done indexing in %.2f s.", (System.currentTimeMillis() - start) / 1000d));
   }
 
   /**
@@ -170,8 +173,8 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
 
     private final DataInputStream inputStream;
 
-    public EventStream(File file) throws IOException {
-      inputStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+    public EventStream(DataInputStream dataInputStream) {
+      this.inputStream = dataInputStream;
     }
 
     @Override

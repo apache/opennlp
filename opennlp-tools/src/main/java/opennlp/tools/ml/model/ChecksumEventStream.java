@@ -18,57 +18,56 @@
 package opennlp.tools.ml.model;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.zip.CRC32C;
+import java.util.zip.Checksum;
 
 import opennlp.tools.util.AbstractObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * A hash sum based {@link AbstractObjectStream} implementation.
+ * A {@link Checksum}-based {@link AbstractObjectStream event stream} implementation.
+ * Computes the checksum while consuming the event stream.
+ * By default, this implementation will use {@link CRC32C} for checksum calculations
+ * as it can use of CPU-specific acceleration instructions at runtime.
  *
  * @see Event
- * @see MessageDigest
+ * @see Checksum
  * @see AbstractObjectStream
  */
-public class HashSumEventStream extends AbstractObjectStream<Event> {
+public class ChecksumEventStream extends AbstractObjectStream<Event> {
 
-  private final MessageDigest digest;
+  private final Checksum checksum;
 
-  public HashSumEventStream(ObjectStream<Event> eventStream) {
+
+  /**
+   * Initializes an {@link ChecksumEventStream}.
+   *
+   * @param eventStream The {@link ObjectStream} that provides the {@link Event} samples.
+   */
+  public ChecksumEventStream(ObjectStream<Event> eventStream) {
     super(eventStream);
-
-    try {
-      digest = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      // should never happen: do all java runtimes have md5 ?!
-      throw new IllegalStateException(e);
-    }
+    // CRC32C supports CPU-specific acceleration instructions
+    checksum = new CRC32C();
   }
 
   @Override
   public Event read() throws IOException {
     Event event = super.read();
-
     if (event != null) {
-      digest.update(event.toString().getBytes(StandardCharsets.UTF_8));
+      checksum.update(event.toString().getBytes(StandardCharsets.UTF_8));
     }
-
     return event;
   }
 
   /**
-   * Calculates the hash sum of the stream and wraps it into a {@link BigInteger}.
-   * Note: The method must be called after the stream is completely consumed.
+   * Calculates and returns the (current) checksum.
+   * <p>
+   * Note: This should be called once the underlying stream has been (fully) consumed.
    *
-   * @return The calculated hash sum as {@link BigInteger}.
-   * @throws IllegalStateException Thrown if the stream is not consumed completely,
-   *     completely means that hasNext() returns {@code false}.
+   * @return The calculated checksum as {@code long}.
    */
-  public BigInteger calculateHashSum() {
-    return new BigInteger(1, digest.digest());
+  public long calculateChecksum()  {
+    return checksum.getValue();
   }
-
 }

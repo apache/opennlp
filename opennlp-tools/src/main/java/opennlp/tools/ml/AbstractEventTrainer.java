@@ -20,10 +20,10 @@ package opennlp.tools.ml;
 import java.io.IOException;
 
 import opennlp.tools.ml.model.AbstractDataIndexer;
+import opennlp.tools.ml.model.ChecksumEventStream;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.DataIndexerFactory;
 import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.HashSumEventStream;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
@@ -85,10 +85,10 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
   public final MaxentModel train(ObjectStream<Event> events) throws IOException {
     validate();
 
-    HashSumEventStream hses = new HashSumEventStream(events);
+    ChecksumEventStream hses = new ChecksumEventStream(events);
     DataIndexer indexer = getDataIndexer(hses);
 
-    addToReport("Training-Eventhash", hses.calculateHashSum().toString(16));
+    addToReport("Training-Eventhash", String.valueOf(hses.calculateChecksum()));
     return train(indexer);
   }
 }
