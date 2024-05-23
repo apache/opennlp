@@ -57,7 +57,7 @@ public class TokenNameFinderModelTest extends AbstractModelLoaderTest {
     Path resourcesFolder = Files.createTempDirectory("resources").toAbsolutePath();
 
     // save a POS model there
-    POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
+    POSModel posModel = POSTaggerMETest.trainPennFormatPOSModel(ModelType.MAXENT);
     Assertions.assertNotNull(posModel);
 
     File posModelFile = new File(resourcesFolder.toFile(), "pos-model.bin");

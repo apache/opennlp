@@ -19,10 +19,13 @@ package opennlp.tools.postag;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.AbstractModelLoaderTest;
+import opennlp.tools.EnabledWhenCDNAvailable;
 import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
@@ -35,11 +38,11 @@ import opennlp.tools.util.model.ModelType;
  * Tests for the {@link POSTaggerME} class.
  */
 
-public class POSTaggerMETest {
+public class POSTaggerMETest extends AbstractModelLoaderTest {
 
   private static ObjectStream<POSSample> createSampleStream() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(POSTaggerMETest.class,
-        "/opennlp/tools/postag/AnnotatedSentences.txt");
+        "/opennlp/tools/postag/AnnotatedSentences.txt"); //PENN FORMAT
 
     return new WordTagSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
   }
@@ -49,7 +52,7 @@ public class POSTaggerMETest {
    *
    * @return {@link POSModel}
    */
-  public static POSModel trainPOSModel(ModelType type) throws IOException {
+  public static POSModel trainPennFormatPOSModel(ModelType type) throws IOException {
     TrainingParameters params = new TrainingParameters();
     params.put(TrainingParameters.ALGORITHM_PARAM, type.toString());
     params.put(TrainingParameters.ITERATIONS_PARAM, 100);
@@ -61,25 +64,127 @@ public class POSTaggerMETest {
 
   @Test
   void testPOSTagger() throws IOException {
-    POSModel posModel = trainPOSModel(ModelType.MAXENT);
-
-    POSTagger tagger = new POSTaggerME(posModel);
-
-    String[] tags = tagger.tag(new String[] {
+    final String[] sentence = {
         "The",
         "driver",
         "got",
         "badly",
         "injured",
-        "."});
+        "."};
 
-    Assertions.assertEquals(6, tags.length);
-    Assertions.assertEquals("DT", tags[0]);
-    Assertions.assertEquals("NN", tags[1]);
-    Assertions.assertEquals("VBD", tags[2]);
-    Assertions.assertEquals("RB", tags[3]);
-    Assertions.assertEquals("VBN", tags[4]);
-    Assertions.assertEquals(".", tags[5]);
+    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "."};
+    testPOSTagger(new POSTaggerME(trainPennFormatPOSModel(ModelType.MAXENT),
+        POSTagFormat.PENN), sentence, expected);
+  }
+
+  @Test
+  void testPOSTaggerPENNtoUD() throws IOException {
+    final String[] sentence = {
+        "The",
+        "driver",
+        "got",
+        "badly",
+        "injured",
+        "."};
+
+    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    //convert PENN to UD on the fly.
+    testPOSTagger(new POSTaggerME(trainPennFormatPOSModel(ModelType.MAXENT),
+        POSTagFormat.UD), sentence, expected);
+  }
+
+  @Test
+  @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
+  void testPOSTaggerDefault() throws IOException {
+    final String[] sentence = {
+        "The",
+        "driver",
+        "got",
+        "badly",
+        "injured",
+        "."};
+
+    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    //this downloads a UD model
+    testPOSTagger(new POSTaggerME("en"), sentence, expected);
+  }
+
+  @Test
+  @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+  void testPOSTaggerLegacyPerceptronPennToUD() throws IOException {
+    final String[] sentence = {
+        "The",
+        "driver",
+        "got",
+        "badly",
+        "injured",
+        "."};
+
+    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    //convert PENN to UD on the fly.
+    testPOSTagger(new POSTaggerME(getVersion15Model("en-pos-perceptron.bin"),
+        POSTagFormat.UD), sentence, expected);
+  }
+
+  @Test
+  @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+  void testPOSTaggerLegacyPerceptronPenn() throws IOException {
+    final String[] sentence = {
+        "The",
+        "driver",
+        "got",
+        "badly",
+        "injured",
+        "."};
+
+    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "."};
+    //convert PENN to UD on the fly.
+    testPOSTagger(new POSTaggerME(getVersion15Model("en-pos-perceptron.bin"),
+        POSTagFormat.PENN), sentence, expected);
+  }
+
+  @Test
+  @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+  void testPOSTaggerLegacyMaxentPennToUD() throws IOException {
+    final String[] sentence = {
+        "The",
+        "driver",
+        "got",
+        "badly",
+        "injured",
+        "."};
+
+    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    //convert PENN to UD on the fly.
+    testPOSTagger(new POSTaggerME(getVersion15Model("en-pos-maxent.bin"),
+        POSTagFormat.UD), sentence, expected);
+  }
+
+  @Test
+  @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
+  void testPOSTaggerLegacyMaxentPenn() throws IOException {
+    final String[] sentence = {
+        "The",
+        "driver",
+        "got",
+        "badly",
+        "injured",
+        "."};
+
+    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "."};
+    //convert PENN to UD on the fly.
+    testPOSTagger(new POSTaggerME(getVersion15Model("en-pos-maxent.bin"),
+        POSTagFormat.PENN), sentence, expected);
+  }
+
+  private POSModel getVersion15Model(String modelName) throws IOException {
+    downloadVersion15Model(modelName);
+    final Path modelPath = OPENNLP_DIR.resolve(modelName);
+    return new POSModel(modelPath);
+  }
+
+  private void testPOSTagger(POSTagger tagger, String[] sentences, String[] expectedTags) {
+    Assertions.assertArrayEquals(expectedTags, tagger.tag(sentences));
   }
 
   @Test
