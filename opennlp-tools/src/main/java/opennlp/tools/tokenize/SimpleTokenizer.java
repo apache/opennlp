@@ -73,7 +73,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
       if (StringUtil.isWhitespace(c)) {
         charType = CharacterEnum.WHITESPACE;
       }
-      else if (Character.isLetter(c)) {
+      else if (Character.isAlphabetic(c)) {
         charType = CharacterEnum.ALPHABETIC;
       }
       else if (Character.isDigit(c)) {
