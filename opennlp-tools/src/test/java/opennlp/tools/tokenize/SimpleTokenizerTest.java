@@ -135,11 +135,15 @@ public class SimpleTokenizerTest {
    */
   @Test
   void testNonSpacingLetters() {
-    String text = "طُوّر";
+    String text = "تمّ طُوّر المشروع بنجاح."; //In Arabic: "The project was developed successfully."
 
     String[] tokenizedText = mTokenizer.tokenize(text);
 
-    Assertions.assertEquals(1, tokenizedText.length);
-    Assertions.assertEquals("طُوّر", tokenizedText[0]);
+    Assertions.assertEquals(5, tokenizedText.length);
+    Assertions.assertEquals("تمّ", tokenizedText[0]);
+    Assertions.assertEquals("طُوّر", tokenizedText[1]);
+    Assertions.assertEquals("المشروع", tokenizedText[2]);
+    Assertions.assertEquals("بنجاح", tokenizedText[3]);
+    Assertions.assertEquals(".", tokenizedText[4]);
   }
 }
