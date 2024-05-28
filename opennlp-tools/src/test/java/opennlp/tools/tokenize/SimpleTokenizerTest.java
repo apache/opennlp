@@ -128,4 +128,22 @@ public class SimpleTokenizerTest {
     Assertions.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b", "\r", "\n", "\r", "\n", "c"},
         tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c"));
   }
+
+  /**
+   * Tests if it can tokenize a word containing a non-spacing character
+   * like Arabic Damma Unicode Character “◌ُ” (U+064F)
+   */
+  @Test
+  void testNonSpacingLetters() {
+    String text = "تمّ طُوّر المشروع بنجاح."; //In Arabic: "The project was developed successfully."
+
+    String[] tokenizedText = mTokenizer.tokenize(text);
+
+    Assertions.assertEquals(5, tokenizedText.length);
+    Assertions.assertEquals("تمّ", tokenizedText[0]);
+    Assertions.assertEquals("طُوّر", tokenizedText[1]);
+    Assertions.assertEquals("المشروع", tokenizedText[2]);
+    Assertions.assertEquals("بنجاح", tokenizedText[3]);
+    Assertions.assertEquals(".", tokenizedText[4]);
+  }
 }
