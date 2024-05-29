@@ -19,6 +19,7 @@ package opennlp.tools.postag;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,16 +84,30 @@ public class POSTaggerME implements POSTagger {
 
   private final SequenceValidator<String> sequenceValidator;
 
+  private final POSTagFormat posTagFormat;
+  private final POSTagFormatMapper posTagFormatMapper;
+
   /**
    * Initializes a {@link POSTaggerME} by downloading a default model for a given
    * {@code language}.
    *
    * @param language An ISO conform language code.
-   *                 
    * @throws IOException Thrown if the model could not be downloaded or saved.
    */
   public POSTaggerME(String language) throws IOException {
-    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.POS, POSModel.class));
+    this(language, POSTagFormat.UD);
+  }
+
+  /**
+   * Initializes a {@link POSTaggerME} by downloading a default model for a given
+   * {@code language}.
+   *
+   * @param language An ISO conform language code.
+   * @param format   A valid {@link POSTagFormat}.
+   * @throws IOException Thrown if the model could not be downloaded or saved.
+   */
+  public POSTaggerME(String language, POSTagFormat format) throws IOException {
+    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.POS, POSModel.class), format);
   }
 
   /**
@@ -101,6 +116,17 @@ public class POSTaggerME implements POSTagger {
    * @param model A valid {@link POSModel}.
    */
   public POSTaggerME(POSModel model) {
+    this(model, POSTagFormat.UD);
+  }
+
+  /**
+   * Initializes a {@link POSTaggerME} with the provided {@link POSModel model}.
+   *
+   * @param model  A valid {@link POSModel}.
+   * @param format A valid {@link POSTagFormat}.
+   */
+  public POSTaggerME(POSModel model, POSTagFormat format) {
+    this.posTagFormat = format;
     POSTaggerFactory factory = model.getFactory();
 
     int beamSize = POSTaggerME.DEFAULT_BEAM_SIZE;
@@ -121,11 +147,12 @@ public class POSTaggerME implements POSTagger {
 
     if (model.getPosSequenceModel() != null) {
       this.model = model.getPosSequenceModel();
-    }
-    else {
+    } else {
       this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
           model.getPosModel(), 0);
     }
+
+    this.posTagFormatMapper = new POSTagFormatMapper(getAllPosTags());
 
   }
 
@@ -144,16 +171,15 @@ public class POSTaggerME implements POSTagger {
   @Override
   public String[] tag(String[] sentence, Object[] additionalContext) {
     bestSequence = model.bestSequence(sentence, additionalContext, contextGen, sequenceValidator);
-    List<String> t = bestSequence.getOutcomes();
-    return t.toArray(new String[0]);
+    final List<String> t = bestSequence.getOutcomes();
+    return convertTags(t);
   }
 
   /**
    * Returns at most the specified {@code numTaggings} for the specified {@code sentence}.
    *
    * @param numTaggings The number of tagging to be returned.
-   * @param sentence An array of tokens which make up a sentence.
-   *
+   * @param sentence    An array of tokens which make up a sentence.
    * @return At most the specified number of taggings for the specified {@code sentence}.
    */
   public String[][] tag(int numTaggings, String[] sentence) {
@@ -162,9 +188,17 @@ public class POSTaggerME implements POSTagger {
     String[][] tags = new String[bestSequences.length][];
     for (int si = 0; si < tags.length; si++) {
       List<String> t = bestSequences[si].getOutcomes();
-      tags[si] = t.toArray(new String[0]);
+      tags[si] = convertTags(t);
     }
     return tags;
+  }
+
+  private String[] convertTags(List<String> t) {
+    if (posTagFormatMapper.getGuessedFormat() == posTagFormat) {
+      return t.toArray(new String[0]);
+    } else {
+      return posTagFormatMapper.convertTags(t);
+    }
   }
 
   @Override
@@ -194,10 +228,10 @@ public class POSTaggerME implements POSTagger {
   }
 
   public String[] getOrderedTags(List<String> words, List<String> tags, int index) {
-    return getOrderedTags(words,tags,index,null);
+    return getOrderedTags(words, tags, index, null);
   }
 
-  public String[] getOrderedTags(List<String> words, List<String> tags, int index,double[] tprobs) {
+  public String[] getOrderedTags(List<String> words, List<String> tags, int index, double[] tprobs) {
 
     if (modelPackage.getPosModel() != null) {
 
@@ -205,7 +239,7 @@ public class POSTaggerME implements POSTagger {
 
       double[] probs = posModel.eval(contextGen.getContext(index,
           words.toArray(new String[0]),
-          tags.toArray(new String[0]),null));
+          tags.toArray(new String[0]), null));
 
       String[] orderedTags = new String[probs.length];
       for (int i = 0; i < probs.length; i++) {
@@ -221,17 +255,16 @@ public class POSTaggerME implements POSTagger {
         }
         probs[max] = 0;
       }
-      return orderedTags;
-    }
-    else {
+      return convertTags(Arrays.stream(orderedTags).toList());
+    } else {
       throw new UnsupportedOperationException("This method can only be called if the "
           + "classification model is an event model!");
     }
   }
 
   public static POSModel train(String languageCode,
-      ObjectStream<POSSample> samples, TrainingParameters trainParams,
-      POSTaggerFactory posFactory) throws IOException {
+                               ObjectStream<POSSample> samples, TrainingParameters trainParams,
+                               POSTaggerFactory posFactory) throws IOException {
 
     int beamSize = trainParams.getIntParameter(BeamSearch.BEAM_SIZE_PARAMETER, POSTaggerME.DEFAULT_BEAM_SIZE);
 
@@ -249,14 +282,12 @@ public class POSTaggerME implements POSTagger {
       EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams,
           manifestInfoEntries);
       posModel = trainer.train(es);
-    }
-    else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
+    } else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
       EventModelSequenceTrainer<POSSample> trainer =
           TrainerFactory.getEventModelSequenceTrainer(trainParams, manifestInfoEntries);
       posModel = trainer.train(ss);
-    }
-    else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
+    } else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
       SequenceTrainer trainer = TrainerFactory.getSequenceModelTrainer(
           trainParams, manifestInfoEntries);
 
@@ -264,15 +295,13 @@ public class POSTaggerME implements POSTagger {
 
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
       seqPosModel = trainer.train(ss);
-    }
-    else {
+    } else {
       throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);
     }
 
     if (posModel != null) {
       return new POSModel(languageCode, posModel, beamSize, manifestInfoEntries, posFactory);
-    }
-    else {
+    } else {
       return new POSModel(languageCode, seqPosModel, manifestInfoEntries, posFactory);
     }
   }
@@ -282,9 +311,7 @@ public class POSTaggerME implements POSTagger {
    *
    * @param samples The {@link ObjectStream} to process.
    * @param cutoff  A non-negative cut-off value.
-   *
    * @return A valid {@link Dictionary} instance holding nGrams.
-   *
    * @throws IOException Thrown if IO errors occurred during dictionary construction.
    */
   public static Dictionary buildNGramDictionary(ObjectStream<POSSample> samples, int cutoff)
@@ -295,8 +322,9 @@ public class POSTaggerME implements POSTagger {
     while ((sample = samples.read()) != null) {
       String[] words = sample.getSentence();
 
-      if (words.length > 0)
+      if (words.length > 0) {
         ngramModel.add(new StringList(words), 1, 1);
+      }
     }
 
     ngramModel.cutoff(cutoff, Integer.MAX_VALUE);
@@ -308,13 +336,12 @@ public class POSTaggerME implements POSTagger {
    * Populates a {@link POSDictionary} from an {@link ObjectStream} of samples.
    *
    * @param samples The {@link ObjectStream} to process.
-   * @param dict The {@link MutableTagDictionary} to use during population.
+   * @param dict    The {@link MutableTagDictionary} to use during population.
    * @param cutoff  A non-negative cut-off value.
-   *
    * @throws IOException Thrown if IO errors occurred during dictionary construction.
    */
   public static void populatePOSDictionary(ObjectStream<POSSample> samples,
-      MutableTagDictionary dict, int cutoff) throws IOException {
+                                           MutableTagDictionary dict, int cutoff) throws IOException {
 
     logger.info("Expanding POS Dictionary ...");
     long start = System.nanoTime();
@@ -377,6 +404,7 @@ public class POSTaggerME implements POSTagger {
       }
     }
 
-    logger.info("... finished expanding POS Dictionary. [ {} ms]", (System.nanoTime() - start) / 1000000 );
+    logger.info("... finished expanding POS Dictionary. [ {} ms]", (System.nanoTime() - start) / 1000000);
   }
+
 }

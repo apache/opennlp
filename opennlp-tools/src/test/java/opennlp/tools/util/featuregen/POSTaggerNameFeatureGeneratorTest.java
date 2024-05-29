@@ -33,7 +33,7 @@ public class POSTaggerNameFeatureGeneratorTest {
   @Test
   void testFeatureGeneration() throws IOException {
     POSTaggerNameFeatureGenerator fg = new POSTaggerNameFeatureGenerator(
-        POSTaggerMETest.trainPOSModel(ModelType.MAXENT));
+        POSTaggerMETest.trainPennFormatPOSModel(ModelType.MAXENT));
 
     String[] tokens = {"Hi", "Mike", ",", "it", "'s", "Stefanie", "Schmidt", "."};
     for (int i = 0; i < tokens.length; i++) {

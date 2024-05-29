@@ -30,7 +30,7 @@ public class POSModelTest {
 
   @Test
   void testPOSModelSerializationMaxent() throws IOException {
-    POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.MAXENT);
+    POSModel posModel = POSTaggerMETest.trainPennFormatPOSModel(ModelType.MAXENT);
     Assertions.assertFalse(posModel.isLoadedFromSerialized());
 
     try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -45,7 +45,7 @@ public class POSModelTest {
 
   @Test
   void testPOSModelSerializationPerceptron() throws IOException {
-    POSModel posModel = POSTaggerMETest.trainPOSModel(ModelType.PERCEPTRON);
+    POSModel posModel = POSTaggerMETest.trainPennFormatPOSModel(ModelType.PERCEPTRON);
     Assertions.assertFalse(posModel.isLoadedFromSerialized());
     
     try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {

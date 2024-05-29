@@ -14,38 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.postag;
 
-import java.io.IOException;
+/**
+ * Defines the format for part-of-speech tagging, i.e.
+ * <a href="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">PENN</a>
+ * or <a href="https://universaldependencies.org/u/feat/index.html">UD</a> format.
+ */
+public enum POSTagFormat {
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-public class POSTaggerMEIT {
-
-  private static POSTagger tagger;
-
-  @BeforeAll
-  public static void prepare() throws IOException {
-    tagger = new POSTaggerME("en");
-  }
-
-  @Test
-  void testPOSTagger() {
-
-    String[] tags = tagger.tag(new String[] {
-        "The",
-        "driver",
-        "got",
-        "badly",
-        "injured",
-        "."});
-
-    // TODO OPENNLP-1539 Adjust this depending on the POSFormat
-    String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
-    Assertions.assertArrayEquals(expected, tags);
-  }
-
+  UD, PENN, UNKNOWN
 }
