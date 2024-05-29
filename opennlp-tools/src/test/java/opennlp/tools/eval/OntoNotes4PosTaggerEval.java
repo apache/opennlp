@@ -32,6 +32,7 @@ import opennlp.tools.formats.convert.ParseToPOSSampleStream;
 import opennlp.tools.formats.ontonotes.DocumentToLineStream;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStream;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTagFormat;
 import opennlp.tools.postag.POSTaggerCrossValidator;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.util.ObjectStream;
@@ -59,7 +60,8 @@ public class OntoNotes4PosTaggerEval extends AbstractEvalTest {
   private void crossEval(TrainingParameters params, double expectedScore)
       throws IOException {
     try (ObjectStream<POSSample> samples = createPOSSampleStream()) {
-      POSTaggerCrossValidator cv = new POSTaggerCrossValidator("eng", params, new POSTaggerFactory());
+      POSTaggerCrossValidator cv = new POSTaggerCrossValidator("eng", params,
+          new POSTaggerFactory(), POSTagFormat.PENN);
       cv.evaluate(samples, 5);
 
       Assertions.assertEquals(expectedScore, cv.getWordAccuracy(), 0.0001d);

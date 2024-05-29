@@ -44,6 +44,7 @@ import opennlp.tools.parser.ParserFactory;
 import opennlp.tools.parser.ParserModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTagFormat;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetector;
@@ -352,7 +353,7 @@ public class SourceForgeModelEval extends AbstractEvalTest {
 
     MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
 
-    POSTagger tagger = new POSTaggerME(model);
+    POSTagger tagger = new POSTaggerME(model, POSTagFormat.PENN);
 
     try (ObjectStream<LeipzigTestSample> lines = createLineWiseStream()) {
 

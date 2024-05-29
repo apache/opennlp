@@ -31,6 +31,7 @@ public class POSTaggerCrossValidator {
   private final String languageCode;
 
   private final TrainingParameters params;
+  private final POSTagFormat posTagFormat;
 
   private byte[] featureGeneratorBytes;
   private Map<String, Object> resources;
@@ -46,6 +47,36 @@ public class POSTaggerCrossValidator {
   private final Integer tagdicCutoff;
   private File tagDictionaryFile;
 
+
+  /**
+   * Initializes a {@link POSTaggerCrossValidator} that builds a ngram dictionary
+   * dynamically. It instantiates a subclass of {@link POSTaggerFactory} using
+   * the tag and the ngram dictionaries.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param trainParam The {@link TrainingParameters} for the context of cross validation.
+   * @param tagDictionary The {@link File} that references the a {@link TagDictionary}.
+   * @param featureGeneratorBytes The bytes for feature generation.
+   * @param resources  Additional resources as key-value map.
+   * @param factoryClass The class name used for factory instantiation.
+   * @param format   A valid {@link POSTagFormat}.
+   * @param listeners The {@link POSTaggerEvaluationMonitor evaluation listeners}.
+   */
+  public POSTaggerCrossValidator(String languageCode,
+                                 TrainingParameters trainParam, File tagDictionary,
+                                 byte[] featureGeneratorBytes, Map<String, Object> resources,
+                                 Integer tagdicCutoff, String factoryClass, POSTagFormat format,
+                                 POSTaggerEvaluationMonitor... listeners) {
+    this.languageCode = languageCode;
+    this.params = trainParam;
+    this.featureGeneratorBytes = featureGeneratorBytes;
+    this.resources = resources;
+    this.listeners = listeners;
+    this.factoryClassName = factoryClass;
+    this.tagdicCutoff = tagdicCutoff;
+    this.tagDictionaryFile = tagDictionary;
+    this.posTagFormat = format;
+  }
   /**
    * Initializes a {@link POSTaggerCrossValidator} that builds a ngram dictionary
    * dynamically. It instantiates a subclass of {@link POSTaggerFactory} using
@@ -64,14 +95,8 @@ public class POSTaggerCrossValidator {
                                  byte[] featureGeneratorBytes, Map<String, Object> resources,
                                  Integer tagdicCutoff, String factoryClass,
                                  POSTaggerEvaluationMonitor... listeners) {
-    this.languageCode = languageCode;
-    this.params = trainParam;
-    this.featureGeneratorBytes = featureGeneratorBytes;
-    this.resources = resources;
-    this.listeners = listeners;
-    this.factoryClassName = factoryClass;
-    this.tagdicCutoff = tagdicCutoff;
-    this.tagDictionaryFile = tagDictionary;
+    this(languageCode, trainParam, tagDictionary, featureGeneratorBytes, resources,
+        tagdicCutoff, factoryClass, POSTagFormat.UD, listeners);
   }
 
 
@@ -86,10 +111,27 @@ public class POSTaggerCrossValidator {
   public POSTaggerCrossValidator(String languageCode,
       TrainingParameters trainParam, POSTaggerFactory factory,
       POSTaggerEvaluationMonitor... listeners) {
+    this(languageCode, trainParam, factory, POSTagFormat.UD, listeners);
+  }
+
+
+  /**
+   * Creates a {@link POSTaggerCrossValidator} using the given {@link POSTaggerFactory}.
+   *
+   * @param languageCode An ISO conform language code.
+   * @param trainParam The {@link TrainingParameters} for the context of cross validation.
+   * @param factory The {@link POSTaggerFactory} to be used.
+   * @param format   A valid {@link POSTagFormat}.
+   * @param listeners The {@link POSTaggerEvaluationMonitor evaluation listeners}.
+   */
+  public POSTaggerCrossValidator(String languageCode,
+                                 TrainingParameters trainParam, POSTaggerFactory factory, POSTagFormat format,
+                                 POSTaggerEvaluationMonitor... listeners) {
     this.languageCode = languageCode;
     this.params = trainParam;
     this.listeners = listeners;
     this.factory = factory;
+    this.posTagFormat = format;
     this.tagdicCutoff = null;
   }
 
@@ -142,7 +184,7 @@ public class POSTaggerCrossValidator {
       POSModel model = POSTaggerME.train(languageCode, trainingSampleStream,
           params, this.factory);
 
-      POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model), listeners);
+      POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model, posTagFormat), listeners);
 
       evaluator.evaluate(trainingSampleStream.getTestSampleStream());
 
@@ -169,5 +211,5 @@ public class POSTaggerCrossValidator {
   public long getWordCount() {
     return wordAccuracy.count();
   }
-  
+
 }
