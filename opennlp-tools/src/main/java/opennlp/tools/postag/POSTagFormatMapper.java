@@ -206,4 +206,16 @@ public class POSTagFormatMapper {
       return POSTagFormat.UNKNOWN;
     }
   }
+
+  /**
+   * Guesses the {@link POSTagFormat} of a given {@link POSModel}
+   * @param posModel must not be {@code null}.
+   * @return the guessed {@link POSTagFormat}.
+   */
+  public static POSTagFormat guessFormat(POSModel posModel) {
+    Objects.requireNonNull(posModel, "POSModel must not be NULL.");
+    Objects.requireNonNull(posModel.getPosSequenceModel(), "POSSequenceModel must not be NULL.");
+    final POSTagFormatMapper mapper = new POSTagFormatMapper(posModel.getPosSequenceModel().getOutcomes());
+    return mapper.getGuessedFormat();
+  }
 }
