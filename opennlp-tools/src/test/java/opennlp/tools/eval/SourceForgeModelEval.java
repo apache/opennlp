@@ -324,7 +324,8 @@ public class SourceForgeModelEval extends AbstractEvalTest {
     MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
 
     POSTagger tagger = new POSTaggerME(new POSModel(
-        new File(getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin")));
+        new File(getOpennlpDataDir(), "models-sf/en-pos-perceptron.bin")),
+        POSTagFormat.PENN);
 
     Chunker chunker = new ChunkerME(new ChunkerModel(
         new File(getOpennlpDataDir(), "models-sf/en-chunker.bin")));
