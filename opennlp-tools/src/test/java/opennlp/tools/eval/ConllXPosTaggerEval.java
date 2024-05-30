@@ -31,6 +31,7 @@ import opennlp.tools.formats.ConllXPOSSampleStream;
 import opennlp.tools.postag.POSEvaluator;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTagFormat;
 import opennlp.tools.postag.POSTaggerFactory;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
@@ -73,7 +74,7 @@ public class ConllXPosTaggerEval extends AbstractEvalTest {
     ObjectStream<POSSample> samples = new ConllXPOSSampleStream(
         new MarkableFileInputStreamFactory(testData), StandardCharsets.UTF_8);
 
-    POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model));
+    POSEvaluator evaluator = new POSEvaluator(new POSTaggerME(model, POSTagFormat.PENN));
     evaluator.evaluate(samples);
 
     Assertions.assertEquals(expectedAccuracy, evaluator.getWordAccuracy(), 0.0001);

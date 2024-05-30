@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSTagFormatMapper;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 
@@ -50,8 +51,7 @@ public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
    * @param aPosModel a POSTagger model.
    */
   public POSTaggerNameFeatureGenerator(POSModel aPosModel) {
-
-    this.posTagger = new POSTaggerME(aPosModel);
+    this.posTagger = new POSTaggerME(aPosModel, POSTagFormatMapper.guessFormat(aPosModel));
   }
 
 
