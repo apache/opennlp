@@ -33,12 +33,15 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
+import opennlp.tools.sentdetect.segment.LanguageRule;
+import opennlp.tools.sentdetect.segment.Rule;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.XmlUtil;
 import opennlp.tools.util.model.ArtifactSerializer;
@@ -520,5 +523,80 @@ public class GeneratorFactory {
      * @throws InvalidFormatException
      */
     public abstract AdaptiveFeatureGenerator create() throws InvalidFormatException;
+  }
+
+  public static Map<String, LanguageRule> getLanguageRules(InputStream xmlDescriptionIn) throws IOException {
+    Document xmlDocument = createDOM(xmlDescriptionIn);
+    Element element = xmlDocument.getDocumentElement();
+    String tagName = element.getTagName();
+
+    Map<String, LanguageRule> mapping = new HashMap<>();
+    if ("languageRules".equals(tagName)) {
+      NodeList nodes = element.getChildNodes();
+      for (int i = 0; i < nodes.getLength(); i++) {
+        if (nodes.item(i) instanceof Element) {
+          Element childElem = (Element)nodes.item(i);
+          if ("languageRule".equals(childElem.getTagName())) {
+            getRules(mapping, childElem);
+          }
+        }
+      }
+    }
+    return mapping;
+  }
+
+  static void getRules(Map<String, LanguageRule> map, Element element) {
+    String name = element.getAttribute("name");
+    if (name != null) {
+      LanguageRule languageRule = new LanguageRule(name);
+      NodeList nodes = element.getChildNodes();
+      for (int i = 0; i < nodes.getLength(); i++) {
+        if (nodes.item(i) instanceof Element) {
+          Element childElem = (Element)nodes.item(i);
+          if ("rule".equals(childElem.getTagName())) {
+            getRule(languageRule, childElem);
+          }
+        }
+      }
+      map.put(name, languageRule);
+    }
+  }
+
+  static void getRule(LanguageRule languageRule, Element element) {
+    String breaking = element.getAttribute("break");
+    String beforeBreak = "";
+    String afterBreak = "";
+    if (breaking != null) {
+      NodeList nodes = element.getChildNodes();
+      for (int i = 0; i < nodes.getLength(); i++) {
+        if (nodes.item(i) instanceof Element) {
+          Element childElem = (Element)nodes.item(i);
+          if ("beforeBreak".equals(childElem.getTagName())) {
+            Node firstChild = childElem.getFirstChild();
+            Text text = (Text) firstChild;
+            if (text != null) {
+              beforeBreak = text.getWholeText();
+            } else {
+              beforeBreak = "";
+            }
+          }
+          if ("afterBreak".equals(childElem.getTagName())) {
+            Node firstChild = childElem.getFirstChild();
+            Text text = (Text) firstChild;
+            if (text != null) {
+              afterBreak = text.getWholeText();
+            } else {
+              afterBreak = "";
+            }
+          }
+        }
+      }
+      if ("yes".equals(breaking)) {
+        languageRule.addRule(new Rule(true, beforeBreak, afterBreak));
+      }
+      if ("no".equals(breaking)) {
+        languageRule.addRule(new Rule(false, beforeBreak, afterBreak));
+      }
+    }
   }
 }
