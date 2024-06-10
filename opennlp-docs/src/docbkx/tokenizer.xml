@@ -171,7 +171,7 @@ Tokenizer tokenizer = new TokenizerME(model);]]>
 			Strings, where each String is one token.
 			<programlisting language="java">
 			<![CDATA[
-String tokens[] = tokenizer.tokenize("An input sample sentence.");]]>
+String[] tokens = tokenizer.tokenize("An input sample sentence.");]]>
 		 </programlisting>
 			The output will be an array with these tokens.
 			<programlisting>
@@ -183,7 +183,7 @@ String tokens[] = tokenizer.tokenize("An input sample sentence.");]]>
 			String.
 			<programlisting language="java">
 			<![CDATA[
-Span tokenSpans[] = tokenizer.tokenizePos("An input sample sentence.");]]>		
+Span[] tokenSpans = tokenizer.tokenizePos("An input sample sentence.");]]>		
 			</programlisting>
 			The tokenSpans array now contain 5 elements. To get the text for one
 			span call Span.getCoveredText which takes a span and the input text.
@@ -195,8 +195,8 @@ Span tokenSpans[] = tokenizer.tokenizePos("An input sample sentence.");]]>
 			<![CDATA[
 TokenizerME tokenizer = ...
 
-String tokens[] = tokenizer.tokenize(...);
-double tokenProbs[] = tokenizer.getTokenProbabilities();]]>
+String[] tokens = tokenizer.tokenize(...);
+double[] tokenProbs = tokenizer.getTokenProbabilities();]]>
 			</programlisting>
 			The tokenProbs array now contains one double value per token, the
 			value is between 0 and 1, where 1 is the highest possible probability
