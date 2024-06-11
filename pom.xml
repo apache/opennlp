@@ -177,6 +177,8 @@
 		<slf4j.version>1.7.36</slf4j.version>
 		<log4j2.version>2.23.1</log4j2.version>
 		<jmh.version>1.37</jmh.version>
+		<classgraph.version>4.8.173</classgraph.version>
+		<opennlp.models.version>1.0.0-SNAPSHOT</opennlp.models.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.8.11</jacoco.maven.plugin>
@@ -555,6 +557,7 @@
 		<module>opennlp-distr</module>
 		<module>opennlp-dl</module>
 		<module>opennlp-dl-gpu</module>
-  </modules>
+        <module>opennlp-tools-models</module>
+    </modules>
 
 </project>
