@@ -174,7 +174,7 @@
 		<morfologik.version>2.1.9</morfologik.version>
 		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
 		<onnxruntime.version>1.17.1</onnxruntime.version>
-		<slf4j.version>1.7.36</slf4j.version>
+		<slf4j.version>2.0.13</slf4j.version>
 		<log4j2.version>2.23.1</log4j2.version>
 		<jmh.version>1.37</jmh.version>
 		<classgraph.version>4.8.173</classgraph.version>
