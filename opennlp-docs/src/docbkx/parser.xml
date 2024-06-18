@@ -111,7 +111,7 @@ Parser parser = ParserFactory.create(model);]]>
 				<programlisting language="java">
 				<![CDATA[
 String sentence = "The quick brown fox jumps over the lazy dog .";
-Parse topParses[] = ParserTool.parseLine(sentence, parser, 1);]]>
+Parse[] topParses = ParserTool.parseLine(sentence, parser, 1);]]>
 		</programlisting>
 		
 		The topParses array only contains one parse because the number of parses is set to 1.

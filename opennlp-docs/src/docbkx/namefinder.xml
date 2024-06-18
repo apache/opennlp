@@ -130,7 +130,7 @@ for (String document[][] : documents) {
 			 the following snippet shows a call to find
 			 <programlisting language="java">
 				<![CDATA[
-String sentence[] = new String[]{
+String[] sentence = new String[]{
     "Pierre",
     "Vinken",
     "is",
@@ -140,7 +140,7 @@ String sentence[] = new String[]{
     "."
     };
 
-Span nameSpans[] = nameFinder.find(sentence);]]>
+Span[] nameSpans = nameFinder.find(sentence);]]>
 			</programlisting>
 			The nameSpans arrays contains now exactly one Span which marks the name Pierre Vinken. 
 			The elements between the start and end offsets are the name tokens. In this case the start

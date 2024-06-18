@@ -81,7 +81,7 @@ ToolName toolName = new ToolName(model);]]>
         and the input is a String or an array of String.
         <programlisting language="java">
                 <![CDATA[
-String output[] = toolName.executeTask("This is a sample text.");]]>
+String[] output = toolName.executeTask("This is a sample text.");]]>
         </programlisting>
         </para>
     </section>
