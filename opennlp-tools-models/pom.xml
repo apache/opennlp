@@ -85,4 +85,21 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin}</version>
+                <configuration>
+                    <argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off --add-opens java.base/jdk.internal.loader=ALL-UNNAMED</argLine>
+                    <forkCount>${opennlp.forkCount}</forkCount>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                    <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>
