@@ -21,8 +21,8 @@ import java.io.File;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
-import javax.ws.rs.core.UriBuilder;
 
+import jakarta.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
