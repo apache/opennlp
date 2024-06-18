@@ -167,13 +167,13 @@
 		<java.version>17</java.version>
 		<maven.version>3.3.9</maven.version>
 		<enforcer.plugin.version>3.3.0</enforcer.plugin.version>
-		<jackson.version>2.17.0</jackson.version>
+		<jackson.version>2.17.1</jackson.version>
 		<jersey.version>3.1.7</jersey.version>
-		<junit.version>5.10.1</junit.version>
+		<junit.version>5.10.2</junit.version>
 		<uimaj.version>3.5.0</uimaj.version>
 		<morfologik.version>2.1.9</morfologik.version>
 		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
-		<onnxruntime.version>1.17.1</onnxruntime.version>
+		<onnxruntime.version>1.18.0</onnxruntime.version>
 		<slf4j.version>1.7.36</slf4j.version>
 		<log4j2.version>2.23.1</log4j2.version>
 		<jmh.version>1.37</jmh.version>
@@ -181,10 +181,10 @@
 		<opennlp.models.version>1.0.0-SNAPSHOT</opennlp.models.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
-		<jacoco.maven.plugin>0.8.11</jacoco.maven.plugin>
+		<jacoco.maven.plugin>0.8.12</jacoco.maven.plugin>
 		<maven.surefire.plugin>3.2.2</maven.surefire.plugin>
 		<maven.failsafe.plugin>3.2.2</maven.failsafe.plugin>
-		<forbiddenapis.plugin>3.6</forbiddenapis.plugin>
+		<forbiddenapis.plugin>3.7</forbiddenapis.plugin>
 		<mockito.version>3.9.0</mockito.version>
 	</properties>
 
@@ -222,7 +222,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.6.0</version>
+							<version>10.17.0</version>
 						</dependency>
 					</dependencies>
 					<executions>
