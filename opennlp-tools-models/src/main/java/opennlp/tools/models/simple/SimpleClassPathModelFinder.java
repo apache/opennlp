@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -63,6 +64,8 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
 
   private static final Logger logger = LoggerFactory.getLogger(SimpleClassPathModelFinder.class);
   private static final String FILE_PREFIX = "file";
+  private static final Pattern CLASSPATH_SEPARATOR_PATTERN = Pattern.compile("[;:]");
+  // ; for Windows, : for Linux/OSX
 
   /**
    * By default, it scans for "opennlp-models-*.jar".
@@ -99,6 +102,7 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
       return Collections.emptyList();
     }
 
+    final boolean isWindows = isWindows();
     final List<URL> cp = getClassPathElements();
     final List<URI> cpu = new ArrayList<>();
     final Pattern jarPattern = Pattern.compile(asRegex("*" + getJarModelPrefix()));
@@ -107,7 +111,7 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     for (URL url : cp) {
       if (matchesPattern(url, jarPattern)) {
         try {
-          for (URI u : getURIsFromJar(url)) {
+          for (URI u : getURIsFromJar(url, isWindows)) {
             if (matchesPattern(u.toURL(), filePattern)) {
               cpu.add(u);
             }
@@ -138,9 +142,13 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     return pattern.matcher(url.getFile()).matches();
   }
 
-  private List<URI> getURIsFromJar(URL fileUrl) throws IOException {
+  private List<URI> getURIsFromJar(URL fileUrl, boolean isWindows) throws IOException {
     final List<URI> uris = new ArrayList<>();
-    final URL jarUrl = new URL(JAR + ":" + escapeWindowsURL(fileUrl) + "!/");
+    final URL jarUrl = new URL(JAR + ":" +
+        (isWindows
+            ? fileUrl.toString().replace("\\", "/")
+            : fileUrl.toString())
+        + "!/");
     final JarURLConnection jarConnection = (JarURLConnection) jarUrl.openConnection();
     try (JarFile jarFile = jarConnection.getJarFile()) {
       final Enumeration<JarEntry> entries = jarFile.entries();
@@ -158,11 +166,6 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     }
 
     return uris;
-  }
-
-
-  private String escapeWindowsURL(URL url) {
-    return isWindows() ? url.toString().replace("\\", "/") : url.toString();
   }
 
   private boolean isWindows() {
@@ -189,11 +192,11 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
         return Arrays.asList(fromUcp);
       } else {
         final String cp = System.getProperty("java.class.path", "");
-        final String[] elements = cp.split("[;:]"); // ; for Windows, : for Linux/OSX
+        final Matcher matcher = CLASSPATH_SEPARATOR_PATTERN.matcher(cp);
         final List<URL> jarUrls = new ArrayList<>();
-        for (String element : elements) {
+        while (matcher.find()) {
           try {
-            jarUrls.add(new URL(FILE_PREFIX, "", element));
+            jarUrls.add(new URL(FILE_PREFIX, "", matcher.group()));
           } catch (MalformedURLException ignored) {
             //if we cannot parse a URL from the system property, just ignore it...
             //we couldn't load it anyway
@@ -210,13 +213,13 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
    */
   private URL[] getURLs(ClassLoader classLoader) {
     try {
-      final Class builtinClazzLoader = Class.forName("jdk.internal.loader.BuiltinClassLoader");
+      final Class<?> builtinClazzLoader = Class.forName("jdk.internal.loader.BuiltinClassLoader");
 
       final Field ucpField = builtinClazzLoader.getDeclaredField("ucp");
       ucpField.setAccessible(true);
 
       final Object ucpObject = ucpField.get(classLoader);
-      final Class clazz = Class.forName("jdk.internal.loader.URLClassPath");
+      final Class<?> clazz = Class.forName("jdk.internal.loader.URLClassPath");
 
       if (ucpObject != null) {
         final Method getURLs = clazz.getMethod("getURLs");
