@@ -185,7 +185,7 @@
 		<maven.surefire.plugin>3.2.2</maven.surefire.plugin>
 		<maven.failsafe.plugin>3.2.2</maven.failsafe.plugin>
 		<forbiddenapis.plugin>3.7</forbiddenapis.plugin>
-		<mockito.version>3.9.0</mockito.version>
+		<mockito.version>5.12.0</mockito.version>
 	</properties>
 
 	<build>
