@@ -26,10 +26,6 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.cmdline.namefind.NameEvaluationErrorListener;
 import opennlp.tools.util.Span;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 /**
  * This is the test class for {@link TokenNameFinderEvaluator}.
  */
@@ -39,9 +35,17 @@ public class TokenNameFinderEvaluatorTest {
    * Return a dummy name finder that always return something expected
    */
   public TokenNameFinder mockTokenNameFinder(Span[] ret) {
-    TokenNameFinder mockInstance = mock(TokenNameFinder.class);
-    when(mockInstance.find(any(String[].class))).thenReturn(ret);
-    return mockInstance;
+    return new TokenNameFinder() {
+      @Override
+      public Span[] find(String[] tokens) {
+        return ret;
+      }
+
+      @Override
+      public void clearAdaptiveData() {
+        //nothing to do here
+      }
+    };
   }
 
   @Test
