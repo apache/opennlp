@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.file.Files;
@@ -52,6 +53,9 @@ import opennlp.tools.util.ext.ExtensionLoader;
 // TODO: Provide subclasses access to serializers already in constructor
 public abstract class BaseModel implements ArtifactProvider, Serializable {
 
+  @Serial
+  private static final long serialVersionUID = -4593612444791752264L;
+
   protected static final String MANIFEST_ENTRY = "manifest.properties";
   protected static final String FACTORY_NAME = "factory";
 
@@ -67,7 +71,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
 
   private static final String SERIALIZER_CLASS_NAME_PREFIX = "serializer-class-";
 
-  private Map<String, ArtifactSerializer> artifactSerializers = new HashMap<>();
+  private Map<String, ArtifactSerializer<?>> artifactSerializers = new HashMap<>();
 
   protected Map<String, Object> artifactMap = new HashMap<>();
 
@@ -415,12 +419,12 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
    * @param serializers The key of the map is the file extension used to look up
    *                    an {@link ArtifactSerializer}.
    */
-  protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
+  protected void createArtifactSerializers(Map<String, ArtifactSerializer<?>> serializers) {
     if (this.toolFactory != null)
       serializers.putAll(this.toolFactory.createArtifactSerializersMap());
   }
 
-  private void createBaseArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
+  private void createBaseArtifactSerializers(Map<String, ArtifactSerializer<?>> serializers) {
     serializers.putAll(createArtifactSerializers());
   }
 
@@ -602,7 +606,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
         continue;
       }
 
-      ArtifactSerializer serializer = getArtifactSerializer(name);
+      ArtifactSerializer<Object> serializer = (ArtifactSerializer<Object>) getArtifactSerializer(name);
 
       // If model is serialize-able always use the provided serializer
       if (artifact instanceof SerializableArtifact serializableArtifact) {
@@ -674,11 +678,13 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
   // Serializable and remove the writeObject and readObject methods.
   // This will allow the usage of final for fields that should not change.
 
+  @Serial
   private void writeObject(ObjectOutputStream out) throws IOException {
     out.writeUTF(componentName);
     this.serialize(out);
   }
 
+  @Serial
   private void readObject(final ObjectInputStream in) throws IOException {
 
     isLoadedFromSerialized = true;

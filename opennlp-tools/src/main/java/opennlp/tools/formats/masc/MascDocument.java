@@ -315,7 +315,8 @@ public class MascDocument {
    *                      to entity type Strings, and entityIDsToTokens, mapping entity ID integers to Penn
    *                      token ID integers
    */
-  private void addNamedEntityTags(Map<String, Map<Integer, ?>> namedEntities) {
+  @SuppressWarnings("unchecked")
+  private void addNamedEntityTags(Map<String, Map<Integer, ? extends Object>> namedEntities) {
     try {
       Map<Integer, String> entityIDtoEntityType =
               (Map<Integer, String>) namedEntities.get("entityIDtoEntityType");
@@ -343,6 +344,7 @@ public class MascDocument {
    *                * tokenToBase, from Penn token ID (int) to the base and tokenToQuarks, from Penn token ID
    *                * (int) to a List of quark IDs contained in that token.
    */
+  @SuppressWarnings("unchecked")
   private void addPennTags(Map<String, Map<Integer, ?>> tagMaps) throws IOException {
     try {
       // Extract individual mappings

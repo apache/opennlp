@@ -20,6 +20,7 @@ package opennlp.tools.doccat;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Map;
@@ -34,6 +35,9 @@ import opennlp.tools.util.model.BaseModel;
  * A model for document categorization
  */
 public class DoccatModel extends BaseModel {
+
+  @Serial
+  private static final long serialVersionUID = -1348944493118276133L;
 
   private static final String COMPONENT_NAME = "DocumentCategorizerME";
   private static final String DOCCAT_MODEL_ENTRY_NAME = "doccat.model";

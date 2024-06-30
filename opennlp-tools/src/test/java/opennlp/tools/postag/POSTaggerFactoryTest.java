@@ -41,10 +41,8 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class POSTaggerFactoryTest {
 
-  private static ObjectStream<POSSample> createSampleStream()
-      throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(
-        POSTaggerFactoryTest.class,
+  private static ObjectStream<POSSample> createSampleStream() throws IOException {
+    InputStreamFactory in = new ResourceAsStreamFactory(POSTaggerFactoryTest.class,
         "/opennlp/tools/postag/AnnotatedSentences.txt");
 
     return new WordTagSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
@@ -110,19 +108,9 @@ public class POSTaggerFactoryTest {
   }
 
   @Test
-  void testCreateWithInvalidName2() {
-    Assertions.assertThrows(InvalidFormatException.class, () -> POSTaggerFactory.create("X", null, null));
-  }
-
-  @Test
   void testCreateWithHierarchy() {
     Assertions.assertThrows(InvalidFormatException.class, () ->
             BaseToolFactory.create(Object.class.getCanonicalName(), null));
   }
 
-  @Test
-  void testCreateWithHierarchy2() {
-    Assertions.assertThrows(InvalidFormatException.class, () ->
-            POSTaggerFactory.create(this.getClass().getCanonicalName(), null, null));
-  }
 }

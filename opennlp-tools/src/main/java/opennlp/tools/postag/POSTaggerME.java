@@ -80,7 +80,7 @@ public class POSTaggerME implements POSTagger {
 
   private Sequence bestSequence;
 
-  private final SequenceClassificationModel<String> model;
+  private final SequenceClassificationModel model;
 
   private final SequenceValidator<String> sequenceValidator;
 
@@ -148,8 +148,7 @@ public class POSTaggerME implements POSTagger {
     if (model.getPosSequenceModel() != null) {
       this.model = model.getPosSequenceModel();
     } else {
-      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
-          model.getPosModel(), 0);
+      this.model = new BeamSearch(beamSize, model.getArtifact(POSModel.POS_MODEL_ENTRY_NAME), 0);
     }
 
     this.posTagFormatMapper = new POSTagFormatMapper(getAllPosTags());
@@ -233,12 +232,10 @@ public class POSTaggerME implements POSTagger {
 
   public String[] getOrderedTags(List<String> words, List<String> tags, int index, double[] tprobs) {
 
-    if (modelPackage.getPosModel() != null) {
+    MaxentModel posModel = modelPackage.getArtifact(POSModel.POS_MODEL_ENTRY_NAME);
+    if (posModel != null) {
 
-      MaxentModel posModel = modelPackage.getPosModel();
-
-      double[] probs = posModel.eval(contextGen.getContext(index,
-          words.toArray(new String[0]),
+      double[] probs = posModel.eval(contextGen.getContext(index, words.toArray(new String[0]),
           tags.toArray(new String[0]), null));
 
       String[] orderedTags = new String[probs.length];
@@ -275,7 +272,7 @@ public class POSTaggerME implements POSTagger {
     TrainerType trainerType = TrainerFactory.getTrainerType(trainParams);
 
     MaxentModel posModel = null;
-    SequenceClassificationModel<String> seqPosModel = null;
+    SequenceClassificationModel seqPosModel = null;
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new POSSampleEventStream(samples, contextGenerator);
 
@@ -398,9 +395,8 @@ public class POSTaggerME implements POSTagger {
           tagsForWord.add(entry.getKey());
         }
       }
-      if (tagsForWord.size() > 0) {
-        dict.put(wordEntry.getKey(),
-            tagsForWord.toArray(new String[0]));
+      if (!tagsForWord.isEmpty()) {
+        dict.put(wordEntry.getKey(), tagsForWord.toArray(new String[0]));
       }
     }
 

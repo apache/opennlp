@@ -17,6 +17,7 @@
 
 package opennlp.tools.util;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -26,6 +27,7 @@ import java.util.Objects;
  */
 public class Span implements Comparable<Span>, Serializable {
 
+  @Serial
   private static final long serialVersionUID = -7648780019844573507L;
   private final int start;
   private final int end;

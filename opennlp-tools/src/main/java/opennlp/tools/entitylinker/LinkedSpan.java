@@ -16,6 +16,7 @@
  */
 package opennlp.tools.entitylinker;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -28,6 +29,9 @@ import opennlp.tools.util.Span;
  */
 public class LinkedSpan<T extends BaseLink> extends Span {
 
+  @Serial
+  private static final long serialVersionUID = 2089863052379334449L;
+  
   private ArrayList<T> linkedEntries;
   private int sentenceid = 0;
   private String searchTerm;

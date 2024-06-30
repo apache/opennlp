@@ -20,6 +20,7 @@ package opennlp.tools.lemmatizer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,6 +42,7 @@ import opennlp.tools.util.model.BaseModel;
  */
 public class LemmatizerModel extends BaseModel {
 
+  @Serial
   private static final long serialVersionUID = -3362902631186156673L;
   private static final String COMPONENT_NAME = "StatisticalLemmatizer";
   private static final String LEMMATIZER_MODEL_ENTRY_NAME = "lemmatizer.model";
@@ -53,7 +55,7 @@ public class LemmatizerModel extends BaseModel {
    * @param manifestInfoEntries Additional information kept in the manifest.
    * @param factory The {@link LemmatizerFactory} for creating related objects.
    */
-  public LemmatizerModel(String languageCode, SequenceClassificationModel<String> lemmatizerModel,
+  public LemmatizerModel(String languageCode, SequenceClassificationModel lemmatizerModel,
       Map<String, String> manifestInfoEntries, LemmatizerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
     artifactMap.put(LEMMATIZER_MODEL_ENTRY_NAME, lemmatizerModel);
@@ -159,7 +161,7 @@ public class LemmatizerModel extends BaseModel {
   /**
    * @return Retrieves a {@link SequenceClassificationModel} instance.
    */
-  public SequenceClassificationModel<String> getLemmatizerSequenceModel() {
+  public SequenceClassificationModel getLemmatizerSequenceModel() {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
 
@@ -171,10 +173,10 @@ public class LemmatizerModel extends BaseModel {
         beamSize = Integer.parseInt(beamSizeString);
       }
 
-      return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME));
+      return new BeamSearch(beamSize, (MaxentModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME));
     }
     else if (artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
-      return (SequenceClassificationModel<String>) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME);
+      return (SequenceClassificationModel) artifactMap.get(LEMMATIZER_MODEL_ENTRY_NAME);
     }
     else {
       return null;

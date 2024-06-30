@@ -36,5 +36,5 @@ public interface SequenceTrainer extends Trainer {
    * @return The trained {@link SequenceClassificationModel}.
    * @throws IOException Thrown if IO errors occurred.
    */
-  <T> SequenceClassificationModel<String> train(SequenceStream<T> events) throws IOException;
+  <T> SequenceClassificationModel train(SequenceStream<T> events) throws IOException;
 }

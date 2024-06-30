@@ -17,6 +17,7 @@
 
 package opennlp.tools.langdetect;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -25,9 +26,12 @@ import opennlp.tools.util.normalizer.AggregateCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
 
 /**
- * A context generator for language detector.
+ * A context generator for {@link LanguageDetectorContextGenerator language detector}.
  */
 public class DefaultLanguageDetectorContextGenerator implements LanguageDetectorContextGenerator {
+
+  @Serial
+  private static final long serialVersionUID = 8891936509865460799L;
 
   protected final int minLength;
   protected final int maxLength;
@@ -50,6 +54,7 @@ public class DefaultLanguageDetectorContextGenerator implements LanguageDetector
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T extends CharSequence> T[] getContext(CharSequence document) {
     Collection<CharSequence> context = new ArrayList<>();
 

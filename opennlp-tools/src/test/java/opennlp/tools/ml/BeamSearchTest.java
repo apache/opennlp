@@ -37,6 +37,7 @@ public class BeamSearchTest {
       this.outcomeSequence = outcomeSequence;
     }
 
+    @Override
     public String[] getContext(int index, String[] sequence,
                                String[] priorDecisions, Object[] additionalContext) {
       return new String[] {outcomeSequence[index]};
@@ -123,7 +124,7 @@ public class BeamSearchTest {
     String[] outcomes = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<>(3, model);
+    BeamSearch bs = new BeamSearch(3, model);
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence, String outcome) -> true);
@@ -143,7 +144,7 @@ public class BeamSearchTest {
     String[] outcomes = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<>(3, model);
+    BeamSearch bs = new BeamSearch(3, model);
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,
@@ -165,7 +166,7 @@ public class BeamSearchTest {
     String[] outcomes = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<>(2, model);
+    BeamSearch bs = new BeamSearch(2, model);
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,
@@ -191,7 +192,7 @@ public class BeamSearchTest {
     String[] outcomes = new String[] {"1", "2", "3"};
     MaxentModel model = new IdentityModel(outcomes);
 
-    BeamSearch<String> bs = new BeamSearch<>(2, model, 0);
+    BeamSearch bs = new BeamSearch(2, model, 0);
 
     Sequence seq = bs.bestSequence(sequence, null, cg,
         (int i, String[] inputSequence, String[] outcomesSequence,

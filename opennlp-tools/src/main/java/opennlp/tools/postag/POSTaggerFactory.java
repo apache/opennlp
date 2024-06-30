@@ -183,9 +183,8 @@ public class POSTaggerFactory extends BaseToolFactory {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
-    Map<String, ArtifactSerializer> serializers = super.createArtifactSerializersMap();
+  public Map<String, ArtifactSerializer<?>> createArtifactSerializersMap() {
+    Map<String, ArtifactSerializer<?>> serializers = super.createArtifactSerializersMap();
 
 
     // NOTE: This is only needed for old models and this if can be removed if support is dropped
@@ -326,8 +325,7 @@ public class POSTaggerFactory extends BaseToolFactory {
       artifact.serialize(out);
     }
 
-    @SuppressWarnings("rawtypes")
-    static void register(Map<String, ArtifactSerializer> factories) {
+    static void register(Map<String, ArtifactSerializer<?>> factories) {
       factories.put("tagdict", new POSDictionarySerializer());
     }
   }

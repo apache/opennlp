@@ -20,6 +20,7 @@ package opennlp.tools.chunker;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Map;
@@ -31,7 +32,6 @@ import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.TokenTag;
 import opennlp.tools.util.model.BaseModel;
 
 /**
@@ -41,9 +41,11 @@ import opennlp.tools.util.model.BaseModel;
  */
 public class ChunkerModel extends BaseModel {
 
-  private static final long serialVersionUID = 1608653769616498232L;
+  @Serial
+  private static final long serialVersionUID = -5450757164882452147L;
+
   private static final String COMPONENT_NAME = "ChunkerME";
-  private static final String CHUNKER_MODEL_ENTRY_NAME = "chunker.model";
+  static final String CHUNKER_MODEL_ENTRY_NAME = "chunker.model";
 
   /**
    * Initializes a {@link ChunkerModel} instance via given parameters.
@@ -53,7 +55,7 @@ public class ChunkerModel extends BaseModel {
    * @param manifestInfoEntries Additional information kept in the manifest.
    * @param factory The {@link ChunkerFactory} for creating related objects.
    */
-  public ChunkerModel(String languageCode, SequenceClassificationModel<String> chunkerModel,
+  public ChunkerModel(String languageCode, SequenceClassificationModel chunkerModel,
       Map<String, String> manifestInfoEntries, ChunkerFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
     artifactMap.put(CHUNKER_MODEL_ENTRY_NAME, chunkerModel);
@@ -167,23 +169,11 @@ public class ChunkerModel extends BaseModel {
 
   }
 
-  /**
-   * @deprecated use {@link ChunkerModel#getChunkerSequenceModel()} instead. This method will be removed soon.
-   */
-  @Deprecated
-  public MaxentModel getChunkerModel() {
-    if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof MaxentModel) {
-      return (MaxentModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);
-    }
-    else {
-      return null;
-    }
-  }
 
   /**
    * @return Retrieves a {@link SequenceClassificationModel}.
    */
-  public SequenceClassificationModel<TokenTag> getChunkerSequenceModel() {
+  public SequenceClassificationModel getChunkerSequenceModel() {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
 
@@ -195,7 +185,7 @@ public class ChunkerModel extends BaseModel {
         beamSize = Integer.parseInt(beamSizeString);
       }
 
-      return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME));
+      return new BeamSearch(beamSize, (MaxentModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME));
     }
     else if (artifactMap.get(CHUNKER_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
       return (SequenceClassificationModel) artifactMap.get(CHUNKER_MODEL_ENTRY_NAME);

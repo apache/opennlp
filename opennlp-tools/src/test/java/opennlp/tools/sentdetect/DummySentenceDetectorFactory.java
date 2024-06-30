@@ -66,9 +66,8 @@ public class DummySentenceDetectorFactory extends SentenceDetectorFactory {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
-    Map<String, ArtifactSerializer> serializers = super.createArtifactSerializersMap();
+  public Map<String, ArtifactSerializer<?>> createArtifactSerializersMap() {
+    Map<String, ArtifactSerializer<?>> serializers = super.createArtifactSerializersMap();
     serializers.put(DUMMY_DICT, new DummyDictionarySerializer());
     return serializers;
   }

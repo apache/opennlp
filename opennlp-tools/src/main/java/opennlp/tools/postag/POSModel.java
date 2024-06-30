@@ -20,6 +20,7 @@ package opennlp.tools.postag;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -46,7 +47,9 @@ import opennlp.tools.util.model.SerializableArtifact;
  */
 public final class POSModel extends BaseModel implements SerializableArtifact {
 
-  private static final long serialVersionUID = -6014331858195322339L;
+  @Serial
+  private static final long serialVersionUID = -3085487677101643697L;
+
   private static final String COMPONENT_NAME = "POSTaggerME";
   static final String POS_MODEL_ENTRY_NAME = "pos.model";
   static final String GENERATOR_DESCRIPTOR_ENTRY_NAME = "generator.featuregen";
@@ -59,7 +62,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
    * @param manifestInfoEntries Additional information kept in the manifest.
    * @param posFactory The {@link POSTaggerFactory} for creating related objects.
    */
-  public POSModel(String languageCode, SequenceClassificationModel<String> posModel,
+  public POSModel(String languageCode, SequenceClassificationModel posModel,
       Map<String, String> manifestInfoEntries, POSTaggerFactory posFactory) {
 
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, posFactory);
@@ -178,23 +181,9 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
   }
 
   /**
-   * @deprecated use {@link POSModel#getPosSequenceModel} instead. This method will be removed soon.
-   * Only required for Parser 1.5.x backward compatibility. Newer models don't need this anymore.
-   */
-  @Deprecated
-  public MaxentModel getPosModel() {
-    if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof MaxentModel) {
-      return (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
-    }
-    else {
-      return null;
-    }
-  }
-
-  /**
    * @return Retrieves a {@link SequenceClassificationModel}.
    */
-  public SequenceClassificationModel<String> getPosSequenceModel() {
+  public SequenceClassificationModel getPosSequenceModel() {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
 
@@ -206,7 +195,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
         beamSize = Integer.parseInt(beamSizeString);
       }
 
-      return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME));
+      return new BeamSearch(beamSize, (MaxentModel) artifactMap.get(POS_MODEL_ENTRY_NAME));
     }
     else if (artifactMap.get(POS_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
       return (SequenceClassificationModel) artifactMap.get(POS_MODEL_ENTRY_NAME);
@@ -224,7 +213,7 @@ public final class POSModel extends BaseModel implements SerializableArtifact {
   }
 
   @Override
-  protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
+  protected void createArtifactSerializers(Map<String, ArtifactSerializer<?>> serializers) {
     super.createArtifactSerializers(serializers);
 
     serializers.put("featuregen", new ByteArraySerializer());

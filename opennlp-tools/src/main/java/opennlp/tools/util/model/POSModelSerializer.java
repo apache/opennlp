@@ -48,7 +48,7 @@ public class POSModelSerializer implements ArtifactSerializer<POSModel> {
         // dependent code branches in other places fail
         manifestInfoEntries.put("OpenNLP-Version", "1.5.0");
 
-        posModel = new POSModel(posModel.getLanguage(), posModel.getPosModel(), 10,
+        posModel = new POSModel(posModel.getLanguage(), posModel.getArtifact("pos.model"), 10,
             manifestInfoEntries, posModel.getFactory());
       }
     }

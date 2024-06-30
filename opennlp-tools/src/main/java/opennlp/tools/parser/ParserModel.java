@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Serial;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -44,6 +45,9 @@ import opennlp.tools.util.model.POSModelSerializer;
  * This is the default {@link ParserModel} implementation.
  */
 public class ParserModel extends BaseModel {
+
+  @Serial
+  private static final long serialVersionUID = 8130378166122870498L;
 
   private static class HeadRulesSerializer implements
       ArtifactSerializer<opennlp.tools.parser.lang.en.HeadRules> {
@@ -203,7 +207,7 @@ public class ParserModel extends BaseModel {
   }
 
   @Override
-  protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
+  protected void createArtifactSerializers(Map<String, ArtifactSerializer<?>> serializers) {
 
     super.createArtifactSerializers(serializers);
 
