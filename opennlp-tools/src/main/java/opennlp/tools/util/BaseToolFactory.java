@@ -60,8 +60,7 @@ public abstract class BaseToolFactory {
    * The base implementation will return a {@link HashMap} that should be
    * populated by subclasses.
    */
-  @SuppressWarnings("rawtypes")
-  public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
+  public Map<String, ArtifactSerializer<?>> createArtifactSerializersMap() {
     return new HashMap<>();
   }
 

@@ -19,15 +19,15 @@ package opennlp.tools.ml;
 
 import java.util.Map;
 
-import opennlp.tools.commons.Sample;
 import opennlp.tools.ml.model.AbstractModel;
+import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.util.TrainingParameters;
 
-public class MockSequenceTrainer implements EventModelSequenceTrainer<Sample> {
+public class MockSequenceTrainer implements EventModelSequenceTrainer<Event> {
 
   @Override
-  public AbstractModel train(SequenceStream<Sample> events) {
+  public AbstractModel train(SequenceStream<Event> events) {
     return null;
   }
 

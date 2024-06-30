@@ -64,7 +64,7 @@ public class NameFinderME implements TokenNameFinder {
 
   private final SequenceCodec<String> seqCodec;
 
-  protected final SequenceClassificationModel<String> model;
+  protected final SequenceClassificationModel model;
 
   protected final NameContextGenerator contextGenerator;
   private Sequence bestSequence;
@@ -244,7 +244,7 @@ public class NameFinderME implements TokenNameFinder {
     Map<String, String> manifestInfoEntries = new HashMap<>();
 
     MaxentModel nameFinderModel = null;
-    SequenceClassificationModel<String> seqModel = null;
+    SequenceClassificationModel seqModel = null;
 
     TrainerType trainerType = TrainerFactory.getTrainerType(params);
 
@@ -259,7 +259,7 @@ public class NameFinderME implements TokenNameFinder {
     else if (TrainerType.EVENT_MODEL_SEQUENCE_TRAINER.equals(trainerType)) {
       NameSampleSequenceStream ss = new NameSampleSequenceStream(samples, factory.createContextGenerator());
 
-      EventModelSequenceTrainer trainer = TrainerFactory.getEventModelSequenceTrainer(
+      EventModelSequenceTrainer<NameSample> trainer = TrainerFactory.getEventModelSequenceTrainer(
               params, manifestInfoEntries);
       nameFinderModel = trainer.train(ss);
     } else if (TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {

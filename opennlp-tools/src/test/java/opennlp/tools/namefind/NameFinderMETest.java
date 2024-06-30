@@ -290,7 +290,7 @@ public class NameFinderMETest {
   }
 
   private boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
-    SequenceClassificationModel<String> model = nameFinderModel.getNameFinderSequenceModel();
+    SequenceClassificationModel model = nameFinderModel.getNameFinderSequenceModel();
     String[] outcomes = model.getOutcomes();
     for (String outcome : outcomes) {
       if (outcome.equals(NameFinderME.OTHER)) {

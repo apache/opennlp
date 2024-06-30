@@ -133,9 +133,8 @@ public class MorfologikPOSTaggerFactory extends POSTaggerFactory {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
-    Map<String, ArtifactSerializer> serializers = super.createArtifactSerializersMap();
+  public Map<String, ArtifactSerializer<?>> createArtifactSerializersMap() {
+    Map<String, ArtifactSerializer<?>> serializers = super.createArtifactSerializersMap();
 
     serializers.put(MORFOLOGIK_POSDICT_SUF, new ByteArraySerializer());
     serializers.put(MORFOLOGIK_DICT_INFO_SUF, new ByteArraySerializer());

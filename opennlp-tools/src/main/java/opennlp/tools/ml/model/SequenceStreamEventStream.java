@@ -43,7 +43,7 @@ public class SequenceStreamEventStream implements ObjectStream<Event> {
   @Override
   public Event read() throws IOException {
     while (!eventIt.hasNext()) {
-      Sequence<?> sequence = sequenceStream.read();
+      Sequence<Event> sequence = sequenceStream.read();
       if (sequence == null) {
         return null;
       }

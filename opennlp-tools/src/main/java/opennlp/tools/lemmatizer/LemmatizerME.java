@@ -58,7 +58,7 @@ public class LemmatizerME implements Lemmatizer {
   protected final int beamSize;
   private Sequence bestSequence;
 
-  private final SequenceClassificationModel<String> model;
+  private final SequenceClassificationModel model;
 
   private final LemmatizerContextGenerator contextGenerator;
   private final SequenceValidator<String> sequenceValidator;
@@ -88,7 +88,7 @@ public class LemmatizerME implements Lemmatizer {
       this.model = model.getLemmatizerSequenceModel();
     }
     else {
-      this.model = new opennlp.tools.ml.BeamSearch<>(beamSize,
+      this.model = new opennlp.tools.ml.BeamSearch(beamSize,
           (MaxentModel) model.getLemmatizerSequenceModel(), 0);
     }
   }
@@ -257,7 +257,7 @@ public class LemmatizerME implements Lemmatizer {
     TrainerType trainerType = TrainerFactory.getTrainerType(params);
 
     MaxentModel lemmatizerModel = null;
-    SequenceClassificationModel<String> seqLemmatizerModel = null;
+    SequenceClassificationModel seqLemmatizerModel = null;
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new LemmaSampleEventStream(samples, contextGenerator);
 

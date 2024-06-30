@@ -23,10 +23,8 @@ import opennlp.tools.util.SequenceValidator;
 
 /**
  * A classification model that can label an input {@link Sequence}.
- *
- * @param <T> The type of the object which is the source.
  */
-public interface SequenceClassificationModel<T> {
+public interface SequenceClassificationModel {
 
   /**
    * Finds the {@link Sequence} with the highest probability.
@@ -38,7 +36,7 @@ public interface SequenceClassificationModel<T> {
    *
    * @return The {@link Sequence} with the highest probability.
    */
-  Sequence bestSequence(T[] sequence, Object[] additionalContext,
+  <T> Sequence bestSequence(T[] sequence, Object[] additionalContext,
       BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
 
   /**
@@ -53,7 +51,7 @@ public interface SequenceClassificationModel<T> {
    *
    * @return The {@link Sequence sequences} with the highest probability.
    */
-  Sequence[] bestSequences(int numSequences, T[] sequence, Object[] additionalContext,
+  <T> Sequence[] bestSequences(int numSequences, T[] sequence, Object[] additionalContext,
       double minSequenceScore, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
 
   /**
@@ -67,7 +65,7 @@ public interface SequenceClassificationModel<T> {
    *
    * @return The {@link Sequence sequences} with the highest probability.
    */
-  Sequence[] bestSequences(int numSequences, T[] sequence,
+  <T> Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator);
 
   /**

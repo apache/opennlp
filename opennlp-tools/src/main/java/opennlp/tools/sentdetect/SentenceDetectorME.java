@@ -111,6 +111,7 @@ public class SentenceDetectorME implements SentenceDetector {
    * @deprecated Use a {@link SentenceDetectorFactory} to extend
    *             SentenceDetector functionality.
    */
+  @Deprecated
   public SentenceDetectorME(SentenceModel model, Factory factory) {
     this.model = model.getMaxentModel();
     // if the model has custom EOS characters set, use this to get the context

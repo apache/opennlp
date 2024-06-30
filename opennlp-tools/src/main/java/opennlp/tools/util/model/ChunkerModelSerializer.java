@@ -37,7 +37,8 @@ public class ChunkerModelSerializer implements ArtifactSerializer<ChunkerModel> 
 
     Version version = model.getVersion();
     if (version.getMajor() == 1 && version.getMinor() == 5) {
-      model = new ChunkerModel(model.getLanguage(), model.getChunkerModel(), new ParserChunkerFactory());
+      model = new ChunkerModel(model.getLanguage(), model.getArtifact("chunker.model"),
+              new ParserChunkerFactory());
     }
 
     return model;

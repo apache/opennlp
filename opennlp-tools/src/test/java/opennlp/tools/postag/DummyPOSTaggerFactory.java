@@ -56,9 +56,8 @@ public class DummyPOSTaggerFactory extends POSTaggerFactory {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public Map<String, ArtifactSerializer> createArtifactSerializersMap() {
-    Map<String, ArtifactSerializer> serializers = super.createArtifactSerializersMap();
+  public Map<String, ArtifactSerializer<?>> createArtifactSerializersMap() {
+    Map<String, ArtifactSerializer<?>> serializers = super.createArtifactSerializersMap();
 
     serializers.put(DUMMY_POSDICT, new DummyPOSDictionarySerializer());
     return serializers;

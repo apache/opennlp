@@ -20,6 +20,7 @@ package opennlp.tools.langdetect;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.util.Map;
 
@@ -35,6 +36,9 @@ import opennlp.tools.util.model.BaseModel;
  * @see LanguageDetectorME
  */
 public class LanguageDetectorModel extends BaseModel {
+
+  @Serial
+  private static final long serialVersionUID = -8894047401677394181L;
 
   private static final String COMPONENT_NAME = "LanguageDetectorME";
   private static final String LANGDETECT_MODEL_ENTRY_NAME = "langdetect.model";

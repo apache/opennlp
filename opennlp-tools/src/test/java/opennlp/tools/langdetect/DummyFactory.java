@@ -17,7 +17,7 @@
 
 package opennlp.tools.langdetect;
 
-
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +27,6 @@ import opennlp.tools.util.StringList;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
 
 public class DummyFactory extends LanguageDetectorFactory {
-
 
   public DummyFactory() {
     super();
@@ -40,12 +39,12 @@ public class DummyFactory extends LanguageDetectorFactory {
 
   @Override
   public LanguageDetectorContextGenerator getContextGenerator() {
-    return new MyContextGenerator(2, 5,
-            new UpperCaseNormalizer());
+    return new MyContextGenerator(2, 5, new UpperCaseNormalizer());
   }
 
-  public static class UpperCaseNormalizer implements CharSequenceNormalizer {
+  private static class UpperCaseNormalizer implements CharSequenceNormalizer {
 
+    @Serial
     private static final long serialVersionUID = 589425364183582853L;
 
     @Override
@@ -54,8 +53,9 @@ public class DummyFactory extends LanguageDetectorFactory {
     }
   }
 
-  public static class MyContextGenerator extends DefaultLanguageDetectorContextGenerator {
+  private static class MyContextGenerator extends DefaultLanguageDetectorContextGenerator {
 
+    @Serial
     private static final long serialVersionUID = 5737572653101696876L;
 
     public MyContextGenerator(int min, int max, CharSequenceNormalizer... normalizers) {
@@ -63,7 +63,8 @@ public class DummyFactory extends LanguageDetectorFactory {
     }
 
     @Override
-    public String[] getContext(CharSequence document) {
+    @SuppressWarnings("unchecked")
+    public <T extends CharSequence> T[] getContext(CharSequence document) {
       CharSequence[] superContext = super.getContext(document);
 
       List<String> context = new ArrayList<>(superContext.length);
@@ -86,7 +87,7 @@ public class DummyFactory extends LanguageDetectorFactory {
         }
       }
 
-      return context.toArray(new String[0]);
+      return (T[]) context.toArray(new String[0]);
     }
   }
 }

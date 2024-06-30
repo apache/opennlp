@@ -27,7 +27,7 @@ import opennlp.tools.ml.model.SequenceStream;
  * A basic {@link EventModelSequenceTrainer} implementation that processes {@link Event events}.
  */
 public abstract class AbstractEventModelSequenceTrainer extends AbstractTrainer implements
-    EventModelSequenceTrainer<Event> {
+    EventModelSequenceTrainer<Event>  {
 
   public AbstractEventModelSequenceTrainer() {
   }
@@ -39,8 +39,7 @@ public abstract class AbstractEventModelSequenceTrainer extends AbstractTrainer 
     validate();
 
     MaxentModel model = doTrain(events);
-    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM,
-        EventModelSequenceTrainer.SEQUENCE_VALUE);
+    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventModelSequenceTrainer.SEQUENCE_VALUE);
     return model;
   }
 

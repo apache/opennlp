@@ -51,7 +51,7 @@ public class ChunkerME implements Chunker {
   /**
    * The model used to assign chunk tags to a sequence of tokens.
    */
-  private final SequenceClassificationModel<TokenTag> model;
+  private final SequenceClassificationModel model;
 
   private final ChunkerContextGenerator contextGenerator;
   private final SequenceValidator<TokenTag> sequenceValidator;
@@ -80,7 +80,8 @@ public class ChunkerME implements Chunker {
       this.model = model.getChunkerSequenceModel();
     }
     else {
-      this.model = new BeamSearch<>(DEFAULT_BEAM_SIZE, model.getChunkerModel(), 0);
+      this.model = new BeamSearch(DEFAULT_BEAM_SIZE,
+              model.getArtifact(ChunkerModel.CHUNKER_MODEL_ENTRY_NAME), 0);
     }
   }
 
@@ -157,7 +158,7 @@ public class ChunkerME implements Chunker {
 
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams);
     MaxentModel chunkerModel = null;
-    SequenceClassificationModel<String> seqChunkerModel = null;
+    SequenceClassificationModel seqChunkerModel = null;
 
     if (TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       ObjectStream<Event> es = new ChunkerEventStream(in, factory.getContextGenerator());

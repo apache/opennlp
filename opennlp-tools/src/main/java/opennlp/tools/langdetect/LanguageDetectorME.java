@@ -18,6 +18,7 @@
 package opennlp.tools.langdetect;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -62,6 +63,9 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class LanguageDetectorME implements LanguageDetector {
 
+  @Serial
+  private static final long serialVersionUID = 2426614409522429702L;
+  
   protected final LanguageDetectorModel model;
   private final LanguageDetectorContextGenerator mContextGenerator;
 

@@ -45,7 +45,7 @@ public abstract class CmdLineTool {
   }
 
   protected String getBasicHelp(Class<?> argProxyInterface) {
-    return getBasicHelp(new Class[]{argProxyInterface});
+    return getBasicHelp(new Class<?>[]{argProxyInterface});
   }
 
   protected String getBasicHelp(Class<?>... argProxyInterfaces) {

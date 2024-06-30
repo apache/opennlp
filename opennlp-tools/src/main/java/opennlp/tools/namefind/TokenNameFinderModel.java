@@ -21,6 +21,7 @@ package opennlp.tools.namefind;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Map;
@@ -47,7 +48,14 @@ import opennlp.tools.util.model.ByteArraySerializer;
 // TODO: Fix the model validation, on loading via constructors and input streams
 public class TokenNameFinderModel extends BaseModel {
 
+  @Serial
+  private static final long serialVersionUID = -459655422186301499L;
+
   public static class FeatureGeneratorCreationError extends RuntimeException {
+
+    @Serial
+    private static final long serialVersionUID = -7004590770543145243L;
+
     FeatureGeneratorCreationError(Throwable t) {
       super(t);
     }
@@ -74,7 +82,7 @@ public class TokenNameFinderModel extends BaseModel {
    * @throws IllegalArgumentException Thrown if the {@code namFinderModel} incompatible
    *                                  with {@code seqCodec}.
    */
-  public TokenNameFinderModel(String languageCode, SequenceClassificationModel<String> nameFinderModel,
+  public TokenNameFinderModel(String languageCode, SequenceClassificationModel nameFinderModel,
       byte[] generatorDescriptor, Map<String, Object> resources, Map<String, String> manifestInfoEntries,
       SequenceCodec<String> seqCodec, TokenNameFinderFactory factory) {
     super(COMPONENT_NAME, languageCode, manifestInfoEntries, factory);
@@ -248,7 +256,7 @@ public class TokenNameFinderModel extends BaseModel {
    * @return Retrieves a valid {@link SequenceClassificationModel} or {@code null}
    *         if no matching one could be found.
    */
-  public SequenceClassificationModel<String> getNameFinderSequenceModel() {
+  public SequenceClassificationModel getNameFinderSequenceModel() {
 
     Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
 
@@ -260,7 +268,7 @@ public class TokenNameFinderModel extends BaseModel {
         beamSize = Integer.parseInt(beamSizeString);
       }
 
-      return new BeamSearch<>(beamSize, (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME));
+      return new BeamSearch(beamSize, (MaxentModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME));
     }
     else if (artifactMap.get(MAXENT_MODEL_ENTRY_NAME) instanceof SequenceClassificationModel) {
       return (SequenceClassificationModel) artifactMap.get(MAXENT_MODEL_ENTRY_NAME);
@@ -290,7 +298,7 @@ public class TokenNameFinderModel extends BaseModel {
   }
 
   @Override
-  protected void createArtifactSerializers(Map<String, ArtifactSerializer> serializers) {
+  protected void createArtifactSerializers(Map<String, ArtifactSerializer<?>> serializers) {
     super.createArtifactSerializers(serializers);
 
     serializers.put("featuregen", new ByteArraySerializer());

@@ -39,7 +39,7 @@ import opennlp.tools.util.SequenceValidator;
  * @see SequenceValidator
  * @see BeamSearchContextGenerator
  */
-public class BeamSearch<T> implements SequenceClassificationModel<T> {
+public class BeamSearch implements SequenceClassificationModel {
 
   public static final String BEAM_SIZE_PARAMETER = "BeamSize";
 
@@ -97,7 +97,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
    *         if no sequence could be found.
    */
   @Override
-  public Sequence[] bestSequences(int numSequences, T[] sequence,
+  public <T> Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, double minSequenceScore,
       BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
 
@@ -189,7 +189,7 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
    *         if no sequence could be found.
    */
   @Override
-  public Sequence[] bestSequences(int numSequences, T[] sequence,
+  public <T> Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
     return bestSequences(numSequences, sequence, additionalContext, zeroLog, cg, validator);
   }
@@ -208,9 +208,9 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
    *         if no sequence could be found.
    */
   @Override
-  public Sequence bestSequence(T[] sequence, Object[] additionalContext,
+  public <T> Sequence bestSequence(T[] sequence, Object[] additionalContext,
       BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
-    Sequence[] sequences =  bestSequences(1, sequence, additionalContext, cg, validator);
+    Sequence[] sequences = bestSequences(1, sequence, additionalContext, cg, validator);
 
     if (sequences.length > 0)
       return sequences[0];
@@ -225,7 +225,6 @@ public class BeamSearch<T> implements SequenceClassificationModel<T> {
     for (int i = 0; i < model.getNumOutcomes(); i++) {
       outcomes[i] = model.getOutcome(i);
     }
-
     return outcomes;
   }
 }
