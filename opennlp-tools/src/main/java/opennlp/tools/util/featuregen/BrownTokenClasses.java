@@ -18,12 +18,14 @@
 package opennlp.tools.util.featuregen;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Obtain the paths listed in the pathLengths array from the Brown class.
  * This class is not to be instantiated.
  *
+ * @see BrownCluster
  */
 public class BrownTokenClasses {
 
@@ -39,7 +41,7 @@ public class BrownTokenClasses {
    */
   public static List<String> getWordClasses(String token, BrownCluster brownLexicon) {
     if (brownLexicon.lookupToken(token) == null) {
-      return new ArrayList<>(0);
+      return Collections.emptyList();
     } else {
       String brownClass = brownLexicon.lookupToken(token);
       List<String> pathLengthsList = new ArrayList<>();

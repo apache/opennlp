@@ -25,7 +25,7 @@ import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
  * Defines a word cluster generator factory; it reads an element containing
- * 'w2vwordcluster' as a tag name; these clusters are typically produced by
+ * 'w2vwordcluster' as a tag name. These clusters are typically produced by
  * word2vec or clark pos induction systems.
  */
 public class WordClusterFeatureGeneratorFactory

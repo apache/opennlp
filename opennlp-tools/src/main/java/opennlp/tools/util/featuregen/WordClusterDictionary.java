@@ -57,14 +57,15 @@ public class WordClusterDictionary implements SerializableArtifact {
    * @throws IOException Thrown if IO errors occurred during read.
    */
   public WordClusterDictionary(InputStream in) throws IOException {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-    String line;
-    while ((line = reader.readLine()) != null) {
-      String[] parts = line.split(" ");
-      if (parts.length == 3) {
-        tokenToClusterMap.put(parts[0], parts[1].intern());
-      } else if (parts.length == 2) {
-        tokenToClusterMap.put(parts[0], parts[1].intern());
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        String[] parts = line.split(" ");
+        if (parts.length == 3) {
+          tokenToClusterMap.put(parts[0], parts[1].intern());
+        } else if (parts.length == 2) {
+          tokenToClusterMap.put(parts[0], parts[1].intern());
+        }
       }
     }
   }
@@ -74,13 +75,13 @@ public class WordClusterDictionary implements SerializableArtifact {
   }
 
   public void serialize(OutputStream out) throws IOException {
-    Writer writer = new BufferedWriter(new OutputStreamWriter(out));
+    try (Writer writer = new BufferedWriter(new OutputStreamWriter(out))) {
+      for (Map.Entry<String, String> entry : tokenToClusterMap.entrySet()) {
+        writer.write(entry.getKey() + " " + entry.getValue() + "\n");
+      }
 
-    for (Map.Entry<String, String> entry : tokenToClusterMap.entrySet()) {
-      writer.write(entry.getKey() + " " + entry.getValue() + "\n");
+      writer.flush();
     }
-
-    writer.flush();
   }
 
   @Override

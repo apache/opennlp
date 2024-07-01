@@ -21,12 +21,28 @@ import java.util.List;
 
 import opennlp.tools.util.StringUtil;
 
+/**
+ * An {@link AdaptiveFeatureGenerator} implementation of a word cluster feature generator.
+ * It is based on a pre-defined {@link WordClusterDictionary}.
+ *
+ * @see WordClusterDictionary
+ */
 public class WordClusterFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private final WordClusterDictionary tokenDictionary;
   private final String resourceName;
   private final boolean lowerCaseDictionary;
 
+  /**
+   * Instantiates a {@link WordClusterFeatureGenerator} via a specified
+   * {@link WordClusterDictionary}.
+   *
+   * @param dict The token {@link WordClusterDictionary dictionary} to use.
+   * @param dictResourceKey The prefix to use for detected features. Typically,
+   *                        the value for this prefix should be {@code "dict"}.
+   * @param lowerCaseDictionary {@code true} if tokens will be lower-cased during
+   *                            dictionary lookup, {@code false} otherwise.
+   */
   public WordClusterFeatureGenerator(WordClusterDictionary dict,
       String dictResourceKey, boolean lowerCaseDictionary) {
     tokenDictionary = dict;
