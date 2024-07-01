@@ -99,7 +99,7 @@ public class BioCodec implements SequenceCodec<String> {
     Arrays.fill(outcomes, BioCodec.OTHER);
     for (Span name : names) {
       if (name.getType() == null) {
-        outcomes[name.getStart()] = "default" + "-" + BioCodec.START;
+        outcomes[name.getStart()] = DEFAULT_PREFIX + BioCodec.START;
       }
       else {
         outcomes[name.getStart()] = name.getType() + "-" + BioCodec.START;
@@ -107,7 +107,7 @@ public class BioCodec implements SequenceCodec<String> {
       // now iterate from begin + 1 till end
       for (int i = name.getStart() + 1; i < name.getEnd(); i++) {
         if (name.getType() == null) {
-          outcomes[i] = "default" + "-" + BioCodec.CONTINUE;
+          outcomes[i] = DEFAULT_PREFIX + BioCodec.CONTINUE;
         }
         else {
           outcomes[i] = name.getType() + "-" + BioCodec.CONTINUE;
@@ -135,18 +135,16 @@ public class BioCodec implements SequenceCodec<String> {
 
     for (String outcome : outcomes) {
       if (outcome.endsWith(BioCodec.START)) {
-        start.add(outcome.substring(0, outcome.length()
-                - BioCodec.START.length()));
+        start.add(outcome.substring(0, outcome.length() - BioCodec.START.length()));
       } else if (outcome.endsWith(BioCodec.CONTINUE)) {
-        cont.add(outcome.substring(0, outcome.length()
-                - BioCodec.CONTINUE.length()));
+        cont.add(outcome.substring(0, outcome.length() - BioCodec.CONTINUE.length()));
       } else if (!outcome.equals(BioCodec.OTHER)) {
         // got unexpected outcome
         return false;
       }
     }
 
-    if (start.size() == 0) {
+    if (start.isEmpty()) {
       return false;
     } else {
       for (String contPreffix : cont) {

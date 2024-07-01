@@ -90,7 +90,7 @@ public class BilouCodec implements SequenceCodec<String> {
 
       if (name.length() > 1) {
         if (name.getType() == null) {
-          outcomes[name.getStart()] = "default" + "-" + BilouCodec.START;
+          outcomes[name.getStart()] = DEFAULT_PREFIX + BilouCodec.START;
         }
         else {
           outcomes[name.getStart()] = name.getType() + "-" + BilouCodec.START;
@@ -98,7 +98,7 @@ public class BilouCodec implements SequenceCodec<String> {
         // now iterate from begin + 1 till end
         for (int i = name.getStart() + 1; i < name.getEnd() - 1; i++) {
           if (name.getType() == null) {
-            outcomes[i] = "default" + "-" + BilouCodec.CONTINUE;
+            outcomes[i] = DEFAULT_PREFIX + BilouCodec.CONTINUE;
           }
           else {
             outcomes[i] = name.getType() + "-" + BilouCodec.CONTINUE;
@@ -106,7 +106,7 @@ public class BilouCodec implements SequenceCodec<String> {
         }
 
         if (name.getType() == null) {
-          outcomes[name.getEnd() - 1] = "default" + "-" + BilouCodec.LAST;
+          outcomes[name.getEnd() - 1] = DEFAULT_PREFIX + BilouCodec.LAST;
         }
         else {
           outcomes[name.getEnd() - 1] = name.getType() + "-" + BilouCodec.LAST;
@@ -114,7 +114,7 @@ public class BilouCodec implements SequenceCodec<String> {
       }
       else {
         if (name.getType() == null) {
-          outcomes[name.getEnd() - 1] = "default" + "-" + BilouCodec.UNIT;
+          outcomes[name.getEnd() - 1] = DEFAULT_PREFIX + BilouCodec.UNIT;
         }
         else {
           outcomes[name.getEnd() - 1] = name.getType() + "-" + BilouCodec.UNIT;
@@ -152,23 +152,19 @@ public class BilouCodec implements SequenceCodec<String> {
 
     for (String outcome : outcomes) {
       if (outcome.endsWith(BilouCodec.START)) {
-        start.add(outcome.substring(0, outcome.length()
-                - BilouCodec.START.length()));
+        start.add(outcome.substring(0, outcome.length() - BilouCodec.START.length()));
       } else if (outcome.endsWith(BilouCodec.CONTINUE)) {
-        cont.add(outcome.substring(0, outcome.length()
-                - BilouCodec.CONTINUE.length()));
+        cont.add(outcome.substring(0, outcome.length() - BilouCodec.CONTINUE.length()));
       } else if (outcome.endsWith(BilouCodec.LAST)) {
-        last.add(outcome.substring(0, outcome.length()
-                - BilouCodec.LAST.length()));
+        last.add(outcome.substring(0, outcome.length() - BilouCodec.LAST.length()));
       } else if (outcome.endsWith(BilouCodec.UNIT)) {
-        unit.add(outcome.substring(0, outcome.length()
-                - BilouCodec.UNIT.length()));
+        unit.add(outcome.substring(0, outcome.length() - BilouCodec.UNIT.length()));
       } else if (!outcome.equals(BilouCodec.OTHER)) {
         return false;
       }
     }
 
-    if (start.size() == 0 && unit.size() == 0) {
+    if (start.isEmpty() && unit.isEmpty()) {
       return false;
     } else {
       // Start, must have matching Last

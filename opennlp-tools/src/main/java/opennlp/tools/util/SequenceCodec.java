@@ -27,6 +27,8 @@ import java.util.List;
  */
 public interface SequenceCodec<T> {
 
+  String DEFAULT_PREFIX = "default-";
+
   /**
    * Decodes a sequence of {@link T objects} into {@link Span} objects.
    *
