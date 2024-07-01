@@ -25,10 +25,7 @@ import java.util.regex.Pattern;
  */
 public class FeatureGeneratorUtil {
 
-  private static final String TOKEN_CLASS_PREFIX = "wc";
-  private static final String TOKEN_AND_CLASS_PREFIX = "w&c";
-
-  private static final Pattern capPeriod = Pattern.compile("^[A-Z]\\.$");
+  private static final Pattern capPeriod = Pattern.compile("^[A-ZÄÖÜ]\\.$");
 
   /**
    * Generates a class name for the specified token.

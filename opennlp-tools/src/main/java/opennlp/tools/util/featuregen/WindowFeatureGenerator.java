@@ -22,13 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Generates previous and next features for a given {@link AdaptiveFeatureGenerator}.
- * The window size can be specified.
- * <p>
+ * Generates previous (left-sided) and next (right-sided) features for a
+ * given {@link AdaptiveFeatureGenerator}. The window size can be specified.
+ * <p><br/>
  * Features:
- * Current token is always included unchanged
- * Previous tokens are prefixed with p distance
- * Next tokens are prefix with n distance
+ * <ul>
+ * <li> Current token is always included unchanged,</li>
+ * <li>Previous tokens are prefixed with {@code p} distance,</li>
+ * <li>Next tokens are prefix with {@code n} distance.</li>
+ *
+ * @see AdaptiveFeatureGenerator
  */
 public class WindowFeatureGenerator implements AdaptiveFeatureGenerator {
 
