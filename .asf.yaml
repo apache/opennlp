@@ -7,7 +7,11 @@ github:
   homepage: https://opennlp.apache.org/
   protected_branches:
     # Prevent force pushes to primary branches
-    main: {}
+    main:
+      required_pull_request_reviews:
+        dismiss_stale_reviews: false
+        require_code_owner_reviews: false
+        required_approving_review_count: 1
   custom_subjects:
     new_pr: "[PR] {title} ({repository})"
     close_pr: "Re: [PR] {title} ({repository})"
