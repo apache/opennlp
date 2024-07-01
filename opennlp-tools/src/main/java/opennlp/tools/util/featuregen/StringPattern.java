@@ -141,49 +141,49 @@ public class StringPattern {
   }
 
   /**
-   * @return true if all characters are letters.
+   * @return {@code true} if all characters are letters.
    */
   public boolean isAllLetter() {
     return (pattern & ALL_LETTERS) > 0;
   }
 
   /**
-   * @return true if first letter is capital.
+   * @return {@code true} if first letter is capital.
    */
   public boolean isInitialCapitalLetter() {
     return (pattern & INITAL_CAPITAL_LETTER) > 0;
   }
 
   /**
-   * @return true if all letters are capital.
+   * @return {@code true} if all letters are capital.
    */
   public boolean isAllCapitalLetter() {
     return (pattern & ALL_CAPITAL_LETTER) > 0;
   }
 
   /**
-   * @return true if all letters are lower case.
+   * @return {@code true} if all letters are lower case.
    */
   public boolean isAllLowerCaseLetter() {
     return (pattern & ALL_LOWERCASE_LETTER) > 0;
   }
 
   /**
-   * @return true if all chars are digits.
+   * @return {@code true} if all chars are digits.
    */
   public boolean isAllDigit() {
     return (pattern & ALL_DIGIT) > 0;
   }
 
   /**
-   * @return true if all chars are hiragana.
+   * @return {@code true} if all chars are hiragana.
    */
   public boolean isAllHiragana() {
     return (pattern & ALL_HIRAGANA) > 0;
   }
 
   /**
-   * @return true if all chars are katakana.
+   * @return {@code true} if all chars are katakana.
    */
   public boolean isAllKatakana() {
     return (pattern & ALL_KATAKANA) > 0;
@@ -196,26 +196,44 @@ public class StringPattern {
     return digits;
   }
 
+  /**
+   * @return {@code true} if a period is contained.
+   */
   public boolean containsPeriod() {
     return (pattern & CONTAINS_PERIOD) > 0;
   }
 
+  /**
+   * @return {@code true} if a comma is contained.
+   */
   public boolean containsComma() {
     return (pattern & CONTAINS_COMMA) > 0;
   }
 
+  /**
+   * @return {@code true} if a slash is contained.
+   */
   public boolean containsSlash() {
     return (pattern & CONTAINS_SLASH) > 0;
   }
 
+  /**
+   * @return {@code true} if a digit is contained.
+   */
   public boolean containsDigit() {
     return (pattern & CONTAINS_DIGIT) > 0;
   }
 
+  /**
+   * @return {@code true} if a hypen is contained.
+   */
   public boolean containsHyphen() {
     return (pattern & CONTAINS_HYPHEN) > 0;
   }
 
+  /**
+   * @return {@code true} if a letters are contained.
+   */
   public boolean containsLetters() {
     return (pattern & CONTAINS_LETTERS) > 0;
   }

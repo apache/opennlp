@@ -46,16 +46,16 @@ public class NGramModel implements Iterable<StringList> {
   private final Map<StringList, Integer> mNGrams = new LinkedHashMap<>();
 
   /**
-   * Initializes an empty instance.
+   * Instantiates an empty {@link NGramModel} instance.
    */
   public NGramModel() {
   }
 
   /**
-   * Initializes the current instance.
+   * Instantiates a {@link NGramModel} via an {@link InputStream} reference.
    *
    * @param in the serialized model stream
-   * @throws IOException
+   * @throws IOException Thrown if errors occurred reading from {@code in}.
    */
   public NGramModel(InputStream in) throws IOException {
     DictionaryEntryPersistor.create(in, entry -> {
@@ -67,8 +67,7 @@ public class NGramModel implements Iterable<StringList> {
         countValueString = entry.attributes().getValue(COUNT);
 
         if (countValueString == null) {
-          throw new InvalidFormatException(
-              "The count attribute must be set!");
+          throw new InvalidFormatException("The count attribute must be set!");
         }
 
         count = Integer.parseInt(countValueString);

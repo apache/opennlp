@@ -29,6 +29,8 @@ import opennlp.tools.util.StringUtil;
  */
 public class CharacterNgramFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  private static final String PREFIX = "ng=";
+
   private final int minLength;
   private final int maxLength;
 
@@ -45,7 +47,7 @@ public class CharacterNgramFeatureGenerator implements AdaptiveFeatureGenerator 
 
   /**
    * Initializes a {@link CharacterNgramFeatureGenerator} with
-   * min 2 length and max 5 length of ngrams.
+   * min length of {@code 2} and max length of {@code 5} for ngrams.
    */
   public CharacterNgramFeatureGenerator() {
     this(2, 5);
@@ -58,7 +60,7 @@ public class CharacterNgramFeatureGenerator implements AdaptiveFeatureGenerator 
 
     for (StringList tokenList : model) {
       if (tokenList.size() > 0) {
-        features.add("ng=" + StringUtil.toLowerCase(tokenList.getToken(0)));
+        features.add(PREFIX + StringUtil.toLowerCase(tokenList.getToken(0)));
       }
     }
   }

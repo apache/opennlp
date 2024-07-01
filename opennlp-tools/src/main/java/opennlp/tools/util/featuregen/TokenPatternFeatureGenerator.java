@@ -31,6 +31,10 @@ import opennlp.tools.util.StringUtil;
  */
 public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  private static final String SUB_TOKEN_PREFIX = "st=" ;
+  private static final String SUB_TOKEN_PART2_PREFIX = "pt2=" ;
+  private static final String SUB_TOKEN_PART3_PREFIX = "pt3=" ;
+
   private final Pattern noLetters = Pattern.compile("[^a-zA-Z]");
   private final Tokenizer tokenizer;
 
@@ -57,7 +61,7 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
     String[] tokenized = tokenizer.tokenize(toks[index]);
 
     if (tokenized.length == 1) {
-      feats.add("st=" + StringUtil.toLowerCase(toks[index]));
+      feats.add(SUB_TOKEN_PREFIX + StringUtil.toLowerCase(toks[index]));
       return;
     }
 
@@ -68,12 +72,12 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
     for (int i = 0; i < tokenized.length; i++) {
 
       if (i < tokenized.length - 1) {
-        feats.add("pt2=" + FeatureGeneratorUtil.tokenFeature(tokenized[i]) +
+        feats.add(SUB_TOKEN_PART2_PREFIX + FeatureGeneratorUtil.tokenFeature(tokenized[i]) +
             FeatureGeneratorUtil.tokenFeature(tokenized[i + 1]));
       }
 
       if (i < tokenized.length - 2) {
-        feats.add("pt3=" + FeatureGeneratorUtil.tokenFeature(tokenized[i]) +
+        feats.add(SUB_TOKEN_PART3_PREFIX + FeatureGeneratorUtil.tokenFeature(tokenized[i]) +
             FeatureGeneratorUtil.tokenFeature(tokenized[i + 1]) +
             FeatureGeneratorUtil.tokenFeature(tokenized[i + 2]));
       }
@@ -81,7 +85,7 @@ public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
       pattern.append(FeatureGeneratorUtil.tokenFeature(tokenized[i]));
 
       if (!noLetters.matcher(tokenized[i]).find()) {
-        feats.add("st=" + StringUtil.toLowerCase(tokenized[i]));
+        feats.add(SUB_TOKEN_PREFIX + StringUtil.toLowerCase(tokenized[i]));
       }
     }
 

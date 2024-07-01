@@ -516,7 +516,7 @@ public class GeneratorFactory {
     }
 
     /**
-     * @return null if the subclass uses {@link #resourceManager} to instantiate
+     * @return {@code null} if the subclass uses {@link #resourceManager} to instantiate
      * @throws InvalidFormatException
      */
     public abstract AdaptiveFeatureGenerator create() throws InvalidFormatException;
