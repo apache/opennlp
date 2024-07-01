@@ -26,6 +26,12 @@ public class BrownTokenClassFeatureGenerator implements AdaptiveFeatureGenerator
 
   private final BrownCluster brownLexicon;
 
+  /**
+   * Instantiates a {@link BrownTokenClassFeatureGenerator} via a specified
+   * {@link BrownCluster}.
+   *
+   * @param dict The token {@link BrownCluster dictionary} to use.
+   */
   public BrownTokenClassFeatureGenerator(BrownCluster dict) {
     this.brownLexicon = dict;
   }

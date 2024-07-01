@@ -39,6 +39,7 @@ import opennlp.tools.util.model.SerializableArtifact;
  * <p>
  * Originally available at: <a href="http://metaoptimize.com/projects/wordreprs/">
  * http://metaoptimize.com/projects/wordreprs/</a>.
+ * <p>
  * Further details can be found in the
  * <a href="https://dl.acm.org/doi/10.5555/1858681.1858721">related research paper</a>.
  * <p>
@@ -66,29 +67,32 @@ public class BrownCluster implements SerializableArtifact {
   private final Map<String, String> tokenToClusterMap = new HashMap<>();
 
   /**
-   * Generates the token to cluster map from Brown cluster an {@link InputStream}.
+   * Instatiates a {@link BrownCluster} and its related token to cluster map
+   * via an {@link InputStream}.
    * <p>
    * <b>Note:</b>
-   * we only add those tokens with frequency bigger than {@code 5}.
+   * Only tokens with frequency bigger than {@code 5} will be added.
    * 
    * @param in A valid, open {@link InputStream} to read from.
-   * @throws IOException the io exception
+   * @throws IOException Thrown if errors occurred reading from {@link InputStream in}.
    */
   public BrownCluster(InputStream in) throws IOException {
 
-    BufferedReader breader =
-        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-    String line;
-    while ((line = breader.readLine()) != null) {
-      String[] lineArray = tabPattern.split(line);
-      if (lineArray.length == 3) {
-        int freq = Integer.parseInt(lineArray[2]);
-        if (freq > 5 ) {
-          tokenToClusterMap.put(lineArray[1], lineArray[0]);
+    try (BufferedReader breader = new BufferedReader(
+            new InputStreamReader(in, StandardCharsets.UTF_8))) {
+
+      String line;
+      while ((line = breader.readLine()) != null) {
+        String[] lineArray = tabPattern.split(line);
+        if (lineArray.length == 3) {
+          int freq = Integer.parseInt(lineArray[2]);
+          if (freq > 5 ) {
+            tokenToClusterMap.put(lineArray[1], lineArray[0]);
+          }
         }
-      }
-      else if (lineArray.length == 2) {
-        tokenToClusterMap.put(lineArray[0], lineArray[1]);
+        else if (lineArray.length == 2) {
+          tokenToClusterMap.put(lineArray[0], lineArray[1]);
+        }
       }
     }
   }
@@ -104,12 +108,12 @@ public class BrownCluster implements SerializableArtifact {
   }
 
   public void serialize(OutputStream out) throws IOException {
-    Writer writer = new BufferedWriter(new OutputStreamWriter(out));
-
-    for (Map.Entry<String, String> entry : tokenToClusterMap.entrySet()) {
-      writer.write(entry.getKey() + "\t" + entry.getValue() + "\n");
+    try (Writer writer = new BufferedWriter(new OutputStreamWriter(out))) {
+      for (Map.Entry<String, String> entry : tokenToClusterMap.entrySet()) {
+        writer.write(entry.getKey() + "\t" + entry.getValue() + "\n");
+      }
+      writer.flush();
     }
-    writer.flush();
   }
 
   @Override
