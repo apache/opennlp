@@ -50,6 +50,24 @@ public class FeatureGeneratorUtilTest {
     Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("#"));
     Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("%"));
     Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("&"));
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("§"));
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("^"));
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("°"));
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("("));
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature(")"));
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("/"));
+    Assertions.assertEquals("other", FeatureGeneratorUtil.tokenFeature("\\"));
+  }
+
+  @Test
+  void testGerman() {
+    Assertions.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("Änne"));
+    Assertions.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("Özlem"));
+    Assertions.assertEquals("ic", FeatureGeneratorUtil.tokenFeature("Ümit"));
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ä."));
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ö."));
+    Assertions.assertEquals("cp", FeatureGeneratorUtil.tokenFeature("Ü."));
+    Assertions.assertEquals("sc", FeatureGeneratorUtil.tokenFeature("Ü"));
   }
 
   @Test
