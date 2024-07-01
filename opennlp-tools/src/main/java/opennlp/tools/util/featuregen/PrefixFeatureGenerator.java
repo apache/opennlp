@@ -21,6 +21,8 @@ import java.util.List;
 
 public class PrefixFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  private static final String PREFIX = "pre=";
+
   static final int DEFAULT_MAX_LENGTH = 4;
   
   private final int prefixLength;
@@ -38,7 +40,7 @@ public class PrefixFeatureGenerator implements AdaptiveFeatureGenerator {
       String[] previousOutcomes) {
     String[] prefs = getPrefixes(tokens[index]);
     for (String pref : prefs) {
-      features.add("pre=" + pref);
+      features.add(PREFIX + pref);
     }
   }
   

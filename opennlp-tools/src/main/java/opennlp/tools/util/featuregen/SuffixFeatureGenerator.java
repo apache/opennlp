@@ -21,6 +21,8 @@ import java.util.List;
 
 public class SuffixFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  private static final String PREFIX = "suf=";
+
   static final int DEFAULT_MAX_LENGTH = 4;
     
   private final int suffixLength;
@@ -38,7 +40,7 @@ public class SuffixFeatureGenerator implements AdaptiveFeatureGenerator {
       String[] previousOutcomes) {
     String[] suffs = getSuffixes(tokens[index]);
     for (String suff : suffs) {
-      features.add("suf=" + suff);
+      features.add(PREFIX + suff);
     }
   }
   

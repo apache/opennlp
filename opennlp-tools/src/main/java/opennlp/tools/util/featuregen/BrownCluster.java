@@ -39,6 +39,7 @@ import opennlp.tools.util.model.SerializableArtifact;
  * <p>
  * Originally available at: <a href="http://metaoptimize.com/projects/wordreprs/">
  * http://metaoptimize.com/projects/wordreprs/</a>.
+ * <p>
  * Further details can be found in the
  * <a href="https://dl.acm.org/doi/10.5555/1858681.1858721">related research paper</a>.
  * <p>

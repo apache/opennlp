@@ -27,7 +27,7 @@ import opennlp.tools.util.StringUtil;
  */
 public class TokenFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private static final String WORD_PREFIX = "w";
+  private static final String WORD_PREFIX = "w=";
   private final boolean lowercase;
 
   /**
@@ -49,10 +49,10 @@ public class TokenFeatureGenerator implements AdaptiveFeatureGenerator {
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
     if (lowercase) {
-      features.add(WORD_PREFIX + "=" + StringUtil.toLowerCase(tokens[index]));
+      features.add(WORD_PREFIX + StringUtil.toLowerCase(tokens[index]));
     }
     else {
-      features.add(WORD_PREFIX + "=" + tokens[index]);
+      features.add(WORD_PREFIX + tokens[index]);
     }
   }
 }

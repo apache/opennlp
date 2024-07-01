@@ -31,7 +31,6 @@ public class SentenceFeatureGeneratorFactory
 
   @Override
   public AdaptiveFeatureGenerator create() throws InvalidFormatException {
-    String beginFeatureString = generatorElement.getAttribute("begin");
     return new SentenceFeatureGenerator(getBool("begin", true), getBool("end", true));
   }
 }

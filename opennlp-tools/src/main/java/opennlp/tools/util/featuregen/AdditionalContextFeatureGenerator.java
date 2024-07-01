@@ -26,6 +26,8 @@ import java.util.List;
  */
 public class AdditionalContextFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  private static final String PREFIX = "ne=";
+
   private String[][] additionalContext;
 
   @Override
@@ -36,7 +38,7 @@ public class AdditionalContextFeatureGenerator implements AdaptiveFeatureGenerat
       String[] context = additionalContext[index];
 
       for (String s : context) {
-        features.add("ne=" + s);
+        features.add(PREFIX + s);
       }
     }
   }
