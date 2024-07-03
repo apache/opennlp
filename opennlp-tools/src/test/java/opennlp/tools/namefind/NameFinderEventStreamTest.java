@@ -26,7 +26,6 @@ import opennlp.tools.ml.model.Event;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 /**
  * This is the test class for {@link NameFinderEventStream}.
@@ -37,17 +36,13 @@ public class NameFinderEventStreamTest {
       "the", "hint", "and", "enjoyed", "a", "delicious", "traditional", "meal",
       "."};
 
-  private static final NameContextGenerator CG = new DefaultNameContextGenerator(
-      (AdaptiveFeatureGenerator[]) null);
+  private static final NameContextGenerator CG = new TokenNameFinderFactory().createContextGenerator();
 
   /**
    * Tests the correctly generated outcomes for a test sentence.
    */
   @Test
   void testOutcomesForSingleTypeSentence() throws IOException {
-
-    NameContextGenerator CG = new DefaultNameContextGenerator(
-            (AdaptiveFeatureGenerator[]) null);
 
     NameSample nameSample = new NameSample(SENTENCE,
         new Span[] {new Span(0, 2, "person")}, false);

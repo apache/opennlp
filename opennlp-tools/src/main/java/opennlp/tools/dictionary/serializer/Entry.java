@@ -31,13 +31,4 @@ import opennlp.tools.util.StringList;
  */
 public record Entry(StringList tokens, Attributes attributes) {
 
-  @Deprecated(forRemoval = true)
-  public StringList getTokens() {
-    return tokens;
-  }
-  
-  @Deprecated(forRemoval = true)
-  public Attributes getAttributes() {
-    return attributes;
-  }
 }

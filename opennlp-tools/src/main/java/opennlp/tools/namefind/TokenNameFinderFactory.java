@@ -248,11 +248,8 @@ public class TokenNameFinderFactory extends BaseToolFactory {
       featureGeneratorBytes = loadDefaultFeatureGeneratorBytes();
     }
 
-    InputStream descriptorIn = new ByteArrayInputStream(featureGeneratorBytes);
-
-    AdaptiveFeatureGenerator generator;
-    try {
-      generator = GeneratorFactory.create(descriptorIn, key -> {
+    try (InputStream descriptorIn = new ByteArrayInputStream(featureGeneratorBytes)) {
+      return GeneratorFactory.create(descriptorIn, key -> {
         if (artifactProvider != null) {
           return artifactProvider.getArtifact(key);
         }
@@ -273,11 +270,10 @@ public class TokenNameFinderFactory extends BaseToolFactory {
       // throwing a Runtime Exception is reasonable
 
       throw new FeatureGeneratorCreationError(e);
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       throw new IllegalStateException("Reading from mem cannot result in an I/O error", e);
     }
-
-    return generator;
   }
 
   /**

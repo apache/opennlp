@@ -23,15 +23,14 @@ import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.namefind.DefaultNameContextGenerator;
 import opennlp.tools.namefind.NameContextGenerator;
 import opennlp.tools.namefind.NameFinderEventStream;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 public class TwoPassDataIndexerTest {
 
@@ -74,8 +73,7 @@ public class TwoPassDataIndexerTest {
 
     String[] sentence = "He belongs to Apache \n Software Foundation .".split(" ");
 
-    NameContextGenerator CG = new DefaultNameContextGenerator(
-        (AdaptiveFeatureGenerator[]) null);
+    NameContextGenerator CG = new TokenNameFinderFactory().createContextGenerator();
 
     NameSample nameSample = new NameSample(sentence,
         new Span[] {new Span(3, 7)}, false);

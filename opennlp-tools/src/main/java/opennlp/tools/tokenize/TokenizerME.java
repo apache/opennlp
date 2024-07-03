@@ -19,11 +19,9 @@ package opennlp.tools.tokenize;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
@@ -31,7 +29,6 @@ import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.tokenize.lang.Factory;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
@@ -141,33 +138,6 @@ public class TokenizerME extends AbstractTokenizer {
     abbDict = model.getAbbreviations();
     newTokens = new ArrayList<>();
     tokProbs = new ArrayList<>(50);
-  }
-
-  /**
-   * @deprecated use {@link TokenizerFactory} to extend the Tokenizer
-   *             functionality
-   */
-  @Deprecated
-  public TokenizerME(TokenizerModel model, Factory factory) {
-    String languageCode = model.getLanguage();
-
-    this.alphanumeric = factory.getAlphanumeric(languageCode);
-    this.cg = factory.createTokenContextGenerator(languageCode,
-        getAbbreviations(model.getAbbreviations()));
-
-    this.model = model.getMaxentModel();
-    useAlphaNumericOptimization = model.useAlphaNumericOptimization();
-
-    abbDict = model.getAbbreviations();
-    newTokens = new ArrayList<>();
-    tokProbs = new ArrayList<>(50);
-  }
-
-  private static Set<String> getAbbreviations(Dictionary abbreviations) {
-    if (abbreviations == null) {
-      return Collections.emptySet();
-    }
-    return abbreviations.asStringSet();
   }
 
   /**

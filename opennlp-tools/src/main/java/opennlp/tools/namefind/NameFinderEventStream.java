@@ -83,7 +83,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
    *
    * @deprecated use the {@link BioCodec} implementation of the SequenceValidator instead!
    */
-  @Deprecated
+  @Deprecated(forRemoval = true)
   public static String[] generateOutcomes(Span[] names, String type, int length) {
     String[] outcomes = new String[length];
     Arrays.fill(outcomes, NameFinderME.OTHER);

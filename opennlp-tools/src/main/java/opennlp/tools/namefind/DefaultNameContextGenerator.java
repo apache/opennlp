@@ -19,16 +19,10 @@ package opennlp.tools.namefind;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
-import opennlp.tools.util.featuregen.BigramNameFeatureGenerator;
-import opennlp.tools.util.featuregen.CachedFeatureGenerator;
 import opennlp.tools.util.featuregen.FeatureGeneratorUtil;
-import opennlp.tools.util.featuregen.OutcomePriorFeatureGenerator;
-import opennlp.tools.util.featuregen.PreviousMapFeatureGenerator;
-import opennlp.tools.util.featuregen.TokenClassFeatureGenerator;
-import opennlp.tools.util.featuregen.TokenFeatureGenerator;
-import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
  * A {@link NameContextGenerator} implementation for determining contextual features
@@ -38,31 +32,15 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
   protected AdaptiveFeatureGenerator[] featureGenerators;
 
-  @Deprecated
-  private static final AdaptiveFeatureGenerator WINDOW_FEATURES = new CachedFeatureGenerator(
-      new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
-      new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
-      new OutcomePriorFeatureGenerator(),
-      new PreviousMapFeatureGenerator(),
-      new BigramNameFeatureGenerator());
-
   /**
    * Creates a name context generator with the specified
    * {@link AdaptiveFeatureGenerator feature generators}.
    *
    * @param featureGenerators One or more {@link AdaptiveFeatureGenerator feature generators}.
-   *                          If none are provided, a default config ({@link #WINDOW_FEATURES})
-   *                          will be used.
    */
   public DefaultNameContextGenerator(AdaptiveFeatureGenerator... featureGenerators) {
-
-    if (featureGenerators != null) {
-      this.featureGenerators = featureGenerators;
-    }
-    else { // use defaults
-      this.featureGenerators =
-          new AdaptiveFeatureGenerator[]{WINDOW_FEATURES, new PreviousMapFeatureGenerator()};
-    }
+    this.featureGenerators = Objects.requireNonNull(
+            featureGenerators, "Please specify at least one featureGenerator");
   }
 
   @Override

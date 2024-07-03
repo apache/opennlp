@@ -32,21 +32,6 @@ public record TokenTag(String token, String tag, String[] additionalData) {
     }
   }
 
-  @Deprecated(forRemoval = true)
-  public String getToken() {
-    return token;
-  }
-
-  @Deprecated(forRemoval = true)
-  public String getTag() {
-    return tag;
-  }
-
-  @Deprecated(forRemoval = true)
-  public String[] getAdditionalData() {
-    return additionalData;
-  }
-
   public static String[] extractTokens(TokenTag[] tuples) {
     String[] tokens = new String[tuples.length];
     for (int i = 0; i < tuples.length; i++) {
