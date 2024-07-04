@@ -21,6 +21,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -54,6 +55,19 @@ public class NameFinderMETest {
   private static final String TYPE_OVERRIDE = "aType";
   private static final String DEFAULT = "default";
 
+  // SUT
+  private NameFinderME nameFinder;
+
+  @AfterEach
+  public void tearDown() {
+    if (nameFinder != null) {
+      // print cache statistics
+      System.out.println(nameFinder.contextGenerator);
+      // clear instance for potential next test run
+      nameFinder = null;
+    }
+  }
+
   @Test
   void testNameFinder() throws Exception {
 
@@ -72,7 +86,7 @@ public class NameFinderMETest {
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
-    TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
+    nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
 
@@ -130,7 +144,7 @@ public class NameFinderMETest {
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
-    NameFinderME nameFinder = new NameFinderME(nameFinderModel);
+    nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
 
@@ -174,7 +188,7 @@ public class NameFinderMETest {
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
-    NameFinderME nameFinder = new NameFinderME(nameFinderModel);
+    nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
 
@@ -204,7 +218,7 @@ public class NameFinderMETest {
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", TYPE_OVERRIDE, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
-    NameFinderME nameFinder = new NameFinderME(nameFinderModel);
+    nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
 
@@ -239,7 +253,7 @@ public class NameFinderMETest {
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
-    NameFinderME nameFinder = new NameFinderME(nameFinderModel);
+    nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
 
@@ -275,7 +289,7 @@ public class NameFinderMETest {
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
-    NameFinderME nameFinder = new NameFinderME(nameFinderModel);
+    nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
 
@@ -326,7 +340,7 @@ public class NameFinderMETest {
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
-    NameFinderME nameFinder = new NameFinderME(nameFinderModel);
+    nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
 

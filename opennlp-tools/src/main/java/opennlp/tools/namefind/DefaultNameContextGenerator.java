@@ -116,4 +116,9 @@ public class DefaultNameContextGenerator implements NameContextGenerator {
 
     return features.toArray(new String[0]);
   }
+
+  @Override
+  public String toString() {
+    return featureGenerators[0] .toString();
+  }
 }
