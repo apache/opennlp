@@ -18,6 +18,7 @@
 package opennlp.tools.util.featuregen;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -47,6 +48,40 @@ public class CachedFeatureGeneratorTest {
     features = new ArrayList<>();
   }
 
+  @Test
+  void testCachingOfRealWorldSentence() {
+    CachedFeatureGenerator generator = new CachedFeatureGenerator(identityGenerator);
+    final String[] sentence = "He belongs to Apache \n Software Foundation .".split(" ");
+    int testIndex = 0;
+
+    // after this call features are cached for testIndex
+    generator.createFeatures(features, sentence, testIndex, null);
+    Assertions.assertEquals(1, generator.getNumberOfCacheMisses());
+    Assertions.assertEquals(0, generator.getNumberOfCacheHits());
+
+    generator.createFeatures(features, sentence, testIndex, null);
+    Assertions.assertEquals(1, generator.getNumberOfCacheMisses());
+    Assertions.assertEquals(1, generator.getNumberOfCacheHits());
+
+    generator.createFeatures(features, sentence, testIndex + 1, null);
+    Assertions.assertEquals(2, generator.getNumberOfCacheMisses());
+    Assertions.assertEquals(1, generator.getNumberOfCacheHits());
+
+    generator.createFeatures(features, sentence, testIndex + 1, null);
+    Assertions.assertEquals(2, generator.getNumberOfCacheMisses());
+    Assertions.assertEquals(2, generator.getNumberOfCacheHits());
+
+    generator.clearCache();
+
+    Assertions.assertEquals(0, generator.getNumberOfCacheMisses());
+    Assertions.assertEquals(0, generator.getNumberOfCacheHits());
+
+    generator.createFeatures(features, sentence, testIndex + 1, null);
+    Assertions.assertEquals(1, generator.getNumberOfCacheMisses());
+    Assertions.assertEquals(0, generator.getNumberOfCacheHits());
+
+  }
+
   /**
    * Tests if cache works for one sentence and two different token indexes.
    */
@@ -70,9 +105,7 @@ public class CachedFeatureGeneratorTest {
 
     final String expectedToken = testSentence1[testIndex];
 
-    testSentence1[testIndex] = null;
-
-    generator.createFeatures(features, testSentence1, testIndex, null);
+    generator.createFeatures(features, Arrays.copyOf(testSentence1, testSentence1.length), testIndex, null);
 
     Assertions.assertEquals(1, generator.getNumberOfCacheMisses());
     Assertions.assertEquals(1, generator.getNumberOfCacheHits());
@@ -86,7 +119,7 @@ public class CachedFeatureGeneratorTest {
 
     int testIndex2 = testIndex + 1;
 
-    generator.createFeatures(features, testSentence1, testIndex2, null);
+    generator.createFeatures(features, Arrays.copyOf(testSentence1, testSentence1.length), testIndex2, null);
 
     Assertions.assertEquals(2, generator.getNumberOfCacheMisses());
     Assertions.assertEquals(1, generator.getNumberOfCacheHits());
@@ -116,7 +149,7 @@ public class CachedFeatureGeneratorTest {
     features.clear();
 
     // use another sentence but same index
-    generator.createFeatures(features, testSentence2, testIndex, null);
+    generator.createFeatures(features, Arrays.copyOf(testSentence2, testSentence2.length), testIndex, null);
 
     Assertions.assertEquals(2, generator.getNumberOfCacheMisses());
     Assertions.assertEquals(0, generator.getNumberOfCacheHits());
@@ -128,10 +161,7 @@ public class CachedFeatureGeneratorTest {
 
     // check if features are really cached
     final String expectedToken = testSentence2[testIndex];
-
-    testSentence2[testIndex] = null;
-
-    generator.createFeatures(features, testSentence2, testIndex, null);
+    generator.createFeatures(features, Arrays.copyOf(testSentence2, testSentence2.length), testIndex, null);
 
     Assertions.assertTrue(features.contains(expectedToken));
     Assertions.assertEquals(1, features.size());

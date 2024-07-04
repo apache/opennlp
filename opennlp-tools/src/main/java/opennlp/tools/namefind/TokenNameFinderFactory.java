@@ -212,13 +212,13 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     AdaptiveFeatureGenerator featureGenerator = createFeatureGenerators();
 
     if (featureGenerator == null) {
-      featureGenerator = new CachedFeatureGenerator(
+      featureGenerator = new CachedFeatureGenerator(new AggregatedFeatureGenerator(
           new WindowFeatureGenerator(new TokenFeatureGenerator(), 2, 2),
           new WindowFeatureGenerator(new TokenClassFeatureGenerator(true), 2, 2),
           new OutcomePriorFeatureGenerator(),
           new PreviousMapFeatureGenerator(),
           new BigramNameFeatureGenerator(),
-          new SentenceFeatureGenerator(true, false));
+          new SentenceFeatureGenerator(true, false)));
     }
 
     return new DefaultNameContextGenerator(featureGenerator);

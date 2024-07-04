@@ -19,6 +19,7 @@
 package opennlp.tools.util.featuregen;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import opennlp.tools.util.Cache;
@@ -30,52 +31,42 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private final AdaptiveFeatureGenerator generator;
 
-  private String[] prevTokens;
-
-  private final Cache<Integer, List<String>> contextsCache;
+  private final Cache<Integer, Cache<Integer, List<String>>> contextCaches;
+  private final int cacheSize;
 
   private long numberOfCacheHits;
   private long numberOfCacheMisses;
 
-  @Deprecated
-  public CachedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
-    this.generator = new AggregatedFeatureGenerator(generators);
-    contextsCache = new Cache<>(100);
+  public CachedFeatureGenerator(AdaptiveFeatureGenerator generator, int cacheSize) {
+    this.generator = generator;
+    this.contextCaches = new Cache<>(cacheSize);
+    this.cacheSize = cacheSize;
   }
 
   public CachedFeatureGenerator(AdaptiveFeatureGenerator generator) {
-    this.generator = generator;
-    contextsCache = new Cache<>(100);
+    this(generator, 100);
   }
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] previousOutcomes) {
+                             String[] previousOutcomes) {
 
-    List<String> cacheFeatures;
+    final int tokenHash = Arrays.hashCode(tokens);
 
-    if (tokens == prevTokens) {
-      cacheFeatures = contextsCache.get(index);
+    final Cache<Integer, List<String>> contextCache = contextCaches.computeIfAbsent(tokenHash,
+        k -> new Cache<>(cacheSize));
+    List<String> cacheFeatures = contextCache.get(index);
 
-      if (cacheFeatures != null) {
-        numberOfCacheHits++;
-        features.addAll(cacheFeatures);
-        return;
-      }
-
+    if (cacheFeatures != null) {
+      numberOfCacheHits++;
+      features.addAll(cacheFeatures);
     } else {
-      contextsCache.clear();
-      prevTokens = tokens;
+      numberOfCacheMisses++;
+      cacheFeatures = new ArrayList<>();
+      generator.createFeatures(cacheFeatures, tokens, index, previousOutcomes);
+      contextCache.put(index, cacheFeatures);
+      features.addAll(cacheFeatures);
     }
-
-    cacheFeatures = new ArrayList<>();
-
-    numberOfCacheMisses++;
-
-    generator.createFeatures(cacheFeatures, tokens, index, previousOutcomes);
-
-    contextsCache.put(index, cacheFeatures);
-    features.addAll(cacheFeatures);
   }
 
   @Override
@@ -100,6 +91,12 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
    */
   public long getNumberOfCacheMisses() {
     return numberOfCacheMisses;
+  }
+
+  public void clearCache() {
+    this.contextCaches.clear();
+    this.numberOfCacheMisses = 0;
+    this.numberOfCacheHits = 0;
   }
 
   @Override
