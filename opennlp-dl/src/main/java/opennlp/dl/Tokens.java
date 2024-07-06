@@ -27,23 +27,4 @@ package opennlp.dl;
  */
 public record Tokens(String[] tokens, long[] ids, long[] mask, long[] types) {
 
-  @Deprecated(forRemoval = true)
-  public String[] getTokens() {
-    return tokens;
-  }
-
-  @Deprecated(forRemoval = true)
-  public long[] getIds() {
-    return ids;
-  }
-
-  @Deprecated(forRemoval = true)
-  public long[] getMask() {
-    return mask;
-  }
-
-  @Deprecated(forRemoval = true)
-  public long[] getTypes() {
-    return types;
-  }
 }

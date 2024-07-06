@@ -19,16 +19,6 @@ package opennlp.dl;
 
 public record SpanEnd(int index, int characterEnd) {
 
-  @Deprecated(forRemoval = true)
-  public int getIndex() {
-    return index;
-  }
-  
-  @Deprecated(forRemoval = true)
-  public int getCharacterEnd() {
-    return characterEnd;
-  }
-
   @Override
   public String toString() {
     return "index: " + index + "; character end: " + characterEnd;

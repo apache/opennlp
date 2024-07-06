@@ -17,6 +17,7 @@
 
 package opennlp.tools.langdetect;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -25,21 +26,12 @@ import java.util.Objects;
  */
 public record LanguageSample(Language language, CharSequence context) implements Serializable {
 
-  private static final long serialVersionUID = -2222893493240468729L;
+  @Serial
+  private static final long serialVersionUID = -4791295976215940258L;
 
   public LanguageSample(Language language, CharSequence context) {
     this.language = Objects.requireNonNull(language, "language must not be null");
     this.context = Objects.requireNonNull(context, "context must not be null");
-  }
-
-  @Deprecated(forRemoval = true)
-  public Language getLanguage() {
-    return language;
-  }
-
-  @Deprecated(forRemoval = true)
-  public CharSequence getContext() {
-    return context;
   }
 
   @Override

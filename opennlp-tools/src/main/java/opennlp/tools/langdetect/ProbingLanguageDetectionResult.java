@@ -25,13 +25,4 @@ package opennlp.tools.langdetect;
  */
 public record ProbingLanguageDetectionResult(Language[] languages, int length) {
 
-  @Deprecated(forRemoval = true)
-  public Language[] getLanguages() {
-    return languages;
-  }
-
-  @Deprecated(forRemoval = true)
-  public int getLength() {
-    return length;
-  }
 }

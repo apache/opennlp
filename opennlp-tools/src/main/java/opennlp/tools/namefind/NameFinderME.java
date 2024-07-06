@@ -17,7 +17,6 @@
 
 package opennlp.tools.namefind;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,9 +43,7 @@ import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
-import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
@@ -90,26 +87,6 @@ public class NameFinderME implements TokenNameFinder {
     // TODO: We should deprecate this. And come up with a better solution!
     contextGenerator.addFeatureGenerator(
             new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
-  }
-
-  private static AdaptiveFeatureGenerator createFeatureGenerator(
-          byte[] generatorDescriptor, final Map<String, Object> resources)
-          throws IOException {
-    AdaptiveFeatureGenerator featureGenerator;
-
-    if (generatorDescriptor != null) {
-      featureGenerator = GeneratorFactory.create(new ByteArrayInputStream(
-          generatorDescriptor), key -> {
-            if (resources != null) {
-              return resources.get(key);
-            }
-            return null;
-          });
-    } else {
-      featureGenerator = null;
-    }
-
-    return featureGenerator;
   }
 
   @Override

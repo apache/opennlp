@@ -184,7 +184,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * @param splitHyphenatedTokens If {@code true} hyphenated tokens will be separated:
    *                              "carros-monstro" &gt; "carros" "-" "monstro".
    */
-  @Deprecated
+  @Deprecated(forRemoval = true)
   public ADNameSampleStream(InputStreamFactory in, String charsetName,
       boolean splitHyphenatedTokens) throws IOException {
     this(new PlainTextByLineStream(in, charsetName), splitHyphenatedTokens);
