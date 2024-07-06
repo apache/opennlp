@@ -144,8 +144,8 @@ public class GeneratorFactory {
               (AbstractXmlFeatureGeneratorFactory) constructor.newInstance();
           factory.init(generatorElement, resourceManager);
           return factory.create();
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
-                 | IllegalAccessException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                 InvalidFormatException | IllegalAccessException e) {
           throw new RuntimeException(e);
         }
       } catch (ClassNotFoundException e) {
@@ -351,8 +351,8 @@ public class GeneratorFactory {
           if (type.equals("generator")) {
             String key = "generator#" + generators.size();
             AdaptiveFeatureGenerator afg = buildGenerator(elem, resourceManager);
-            generators.add(afg);
             if (afg != null) {
+              generators.add(afg);
               args.put(key, afg);
             }
           } else {

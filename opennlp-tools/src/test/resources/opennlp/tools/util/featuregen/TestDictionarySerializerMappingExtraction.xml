@@ -17,8 +17,8 @@
 	under the License.
 -->
 
-<featureGenerators name="test">
-  <generator class="opennlp.tools.util.featuregen.DictionaryFeatureGeneratorFactory">
-    <str name="dict">test.dictionary</str>
-  </generator>
+<featureGenerators cache="true" name="test">
+    <generator class="opennlp.tools.util.featuregen.DictionaryFeatureGeneratorFactory">
+      <str name="dict">opennlp/tools/util/featuregen/DictionaryTest.xml</str>
+    </generator>
 </featureGenerators>

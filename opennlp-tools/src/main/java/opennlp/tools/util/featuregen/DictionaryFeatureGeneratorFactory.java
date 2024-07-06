@@ -17,6 +17,8 @@
 
 package opennlp.tools.util.featuregen;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,30 +33,43 @@ import opennlp.tools.util.model.DictionarySerializer;
 public class DictionaryFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 
+  private static final String DICT = "dict";
+
   public DictionaryFeatureGeneratorFactory() {
     super();
   }
 
   @Override
   public AdaptiveFeatureGenerator create() throws InvalidFormatException {
-    // if resourceManager is null, we don't instantiate
-    if (resourceManager == null) {
-      return null;
+    Dictionary d;
+    if (resourceManager == null) { // load the dictionary directly
+      String dictResourcePath = getStr(DICT);
+      ClassLoader cl = Thread.currentThread().getContextClassLoader();
+      try (InputStream is = cl.getResourceAsStream(dictResourcePath)) {
+        if (is != null) {
+          d = ((DictionarySerializer) getArtifactSerializerMapping().get(dictResourcePath)).create(is);
+        } else {
+          throw new InvalidFormatException("No dictionary resource at: '" + dictResourcePath);
+        }
+      } catch (IOException e) {
+        throw new InvalidFormatException("Error processing resource at: " + dictResourcePath, e);
+      }
+    } else { // get the dictionary via a resourceManager lookup
+      String dictResourceKey = getStr(DICT);
+      Object dictResource = resourceManager.getResource(dictResourceKey);
+      if (dictResource instanceof Dictionary dict) {
+        d = dict;
+      } else {
+        throw new InvalidFormatException("No dictionary resource for key: " + dictResourceKey);
+      }
     }
-
-    String dictResourceKey = getStr("dict");
-    Object dictResource = resourceManager.getResource(dictResourceKey);
-    if (!(dictResource instanceof Dictionary)) {
-      throw new InvalidFormatException("No dictionary resource for key: " + dictResourceKey);
-    }
-
-    return new DictionaryFeatureGenerator(getStr("prefix"), (Dictionary) dictResource);
+    return new DictionaryFeatureGenerator(d);
   }
 
   @Override
   public Map<String, ArtifactSerializer<?>> getArtifactSerializerMapping() throws InvalidFormatException {
     Map<String, ArtifactSerializer<?>> mapping = new HashMap<>();
-    mapping.put(getStr("dict"), new DictionarySerializer());
+    mapping.put(getStr(DICT), new DictionarySerializer());
     return mapping;
   }
 }
