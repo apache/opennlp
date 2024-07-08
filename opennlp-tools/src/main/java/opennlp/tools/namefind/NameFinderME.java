@@ -312,4 +312,8 @@ public class NameFinderME implements TokenNameFinder {
 
     return sortedSpans.toArray(new Span[0]);
   }
+
+  public NameContextGenerator getContextGenerator() {
+    return contextGenerator;
+  }
 }

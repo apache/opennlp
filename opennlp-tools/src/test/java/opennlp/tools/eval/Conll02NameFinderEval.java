@@ -76,8 +76,11 @@ public class Conll02NameFinderEval extends AbstractEvalTest {
     ObjectStream<NameSample> samples = new Conll02NameSampleStream(
         lang, new MarkableFileInputStreamFactory(testData), types);
 
-    TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(new NameFinderME(model));
+    final NameFinderME nameFinder = new NameFinderME(model);
+    TokenNameFinderEvaluator evaluator = new TokenNameFinderEvaluator(nameFinder);
     evaluator.evaluate(samples);
+
+    System.out.println(nameFinder.getContextGenerator());
 
     Assertions.assertEquals(expectedFMeasure, evaluator.getFMeasure().getFMeasure(), 0.0001);
   }
