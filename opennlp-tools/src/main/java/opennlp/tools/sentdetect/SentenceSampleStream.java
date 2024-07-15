@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
@@ -48,7 +47,7 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
     List<Span> sentenceSpans = new LinkedList<>();
 
     String sentence;
-    while ((sentence = samples.read()) != null && !sentence.equals("")) {
+    while ((sentence = samples.read()) != null && !sentence.isEmpty()) {
       int begin = sentencesString.length();
       sentence = sentence.trim();
       sentence = replaceNewLineEscapeTags(sentence);
@@ -58,9 +57,8 @@ public class SentenceSampleStream extends FilterObjectStream<String, SentenceSam
       sentencesString.append(' ');
     }
 
-    if (sentenceSpans.size() > 0) {
-      return new SentenceSample(sentencesString.toString(),
-          sentenceSpans.toArray(new Span[0]));
+    if (!sentenceSpans.isEmpty()) {
+      return new SentenceSample(sentencesString.toString(), sentenceSpans.toArray(new Span[0]));
     }
     return null;
   }

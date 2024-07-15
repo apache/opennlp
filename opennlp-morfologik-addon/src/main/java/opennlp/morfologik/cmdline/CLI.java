@@ -81,7 +81,7 @@ public final class CLI {
     final StringBuilder sb = new StringBuilder("where TOOL is one of: \n\n");
     for (CmdLineTool tool : toolLookupMap.values()) {
 
-      sb.append("  " + tool.getName());
+      sb.append("  ").append(tool.getName());
       sb.append(" ".repeat(Math.max(0, StrictMath.abs(
               tool.getName().length() - numberOfSpaces))));
       sb.append(tool.getShortDescription()).append("\n");
