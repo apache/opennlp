@@ -17,7 +17,6 @@
 
 package opennlp.tools.ml.maxent;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import opennlp.tools.ml.ArrayMath;
@@ -207,7 +206,7 @@ public final class GISModel extends AbstractModel {
 
   @Override
   public int hashCode() {
-    return Objects.hash(pmap, Arrays.hashCode(outcomeNames), evalParams, prior);
+    return super.hashCode();
   }
 
   @Override
