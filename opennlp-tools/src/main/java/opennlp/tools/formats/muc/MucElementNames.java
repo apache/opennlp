@@ -17,8 +17,6 @@
 
 package opennlp.tools.formats.muc;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 class MucElementNames {
@@ -32,13 +30,11 @@ class MucElementNames {
   static final Set<String> CONTENT_ELEMENTS;
 
   static {
-    Set<String> contentElementNames = new HashSet<>();
-    contentElementNames.add(MucElementNames.HEADLINE_ELEMENT);
-    contentElementNames.add(MucElementNames.DATELINE_ELEMENT);
-    contentElementNames.add(MucElementNames.DD_ELEMENT);
-    contentElementNames.add(MucElementNames.SENTENCE_ELEMENT);
-
-    CONTENT_ELEMENTS = Collections.unmodifiableSet(contentElementNames);
+    CONTENT_ELEMENTS = Set.of(
+            MucElementNames.HEADLINE_ELEMENT,
+            MucElementNames.DATELINE_ELEMENT,
+            MucElementNames.DD_ELEMENT,
+            MucElementNames.SENTENCE_ELEMENT);
   }
 
   private MucElementNames() {

@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,8 +41,7 @@ public class AnnotationConfiguration {
   private final Map<String, String> typeToClassMap;
 
   public AnnotationConfiguration(Map<String, String> typeToClassMap) {
-
-    this.typeToClassMap = Collections.unmodifiableMap(new HashMap<>(typeToClassMap));
+    this.typeToClassMap = Map.copyOf(typeToClassMap);
   }
 
   public String getTypeClass(String type) {

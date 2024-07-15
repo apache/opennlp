@@ -20,7 +20,6 @@ package opennlp.morfologik.lemmatizer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -71,7 +70,7 @@ public class MorfologikLemmatizer implements Lemmatizer {
         lemmas.add(asString(wordData.getStem()));
       }
     }
-    return Collections.unmodifiableList(new ArrayList<>(lemmas));
+    return List.copyOf(lemmas);
   }
 
   private String asString(CharSequence tag) {

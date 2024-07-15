@@ -66,7 +66,7 @@ public class NameSample implements Sample {
       names = new Span[0];
     }
 
-    this.sentence = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(sentence)));
+    this.sentence = List.of(sentence);
     List<Span> namesList = Arrays.asList(names);
     Collections.sort(namesList);
     this.names = Collections.unmodifiableList(namesList);

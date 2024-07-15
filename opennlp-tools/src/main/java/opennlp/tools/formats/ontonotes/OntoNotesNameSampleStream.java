@@ -37,8 +37,7 @@ import opennlp.tools.util.StringUtil;
 /**
  * Name Sample Stream parser for the OntoNotes 4.0 corpus.
  */
-public class OntoNotesNameSampleStream extends
-    FilterObjectStream<String, NameSample> {
+public class OntoNotesNameSampleStream extends FilterObjectStream<String, NameSample> {
 
   private final Map<String, String> tokenConversionMap;
 

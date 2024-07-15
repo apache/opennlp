@@ -56,7 +56,7 @@ public class NameSampleTypeFilter extends FilterObjectStream<NameSample, NameSam
    */
   public NameSampleTypeFilter(Set<String> types, ObjectStream<NameSample> samples) {
     super(samples);
-    this.types = Collections.unmodifiableSet(new HashSet<>(types));
+    this.types = Set.copyOf(types);
   }
 
   @Override

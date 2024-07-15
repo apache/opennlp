@@ -17,8 +17,6 @@
 
 package opennlp.tools.formats.brat;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -31,7 +29,7 @@ public class EventAnnotation extends BratAnnotation {
     super(id, type);
 
     this.eventTrigger = Objects.requireNonNull(eventTrigger);
-    this.arguments = Collections.unmodifiableMap(new HashMap<>(arguments));
+    this.arguments = Map.copyOf(arguments);
   }
 
   public String getEventTrigger() {
