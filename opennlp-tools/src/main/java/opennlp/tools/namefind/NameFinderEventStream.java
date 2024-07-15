@@ -58,11 +58,7 @@ public class NameFinderEventStream extends opennlp.tools.util.AbstractEventStrea
                                NameContextGenerator contextGenerator, SequenceCodec<String> codec) {
     super(dataStream);
 
-    if (codec == null) {
-      this.codec = new BioCodec();
-    } else {
-      this.codec = codec;
-    }
+    this.codec = Objects.requireNonNullElseGet(codec, BioCodec::new);
     this.contextGenerator = contextGenerator;
     this.contextGenerator.addFeatureGenerator(
         new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));

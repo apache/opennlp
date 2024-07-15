@@ -17,7 +17,6 @@
 
 package opennlp.tools.doccat;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -57,13 +56,8 @@ public class DocumentSample implements Sample {
     Objects.requireNonNull(text, "text must not be null");
 
     this.category = Objects.requireNonNull(category, "category must not be null");
-    this.text = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(text)));
-
-    if (extraInformation == null) {
-      this.extraInformation = Collections.emptyMap();
-    } else {
-      this.extraInformation = extraInformation;
-    }
+    this.text = List.of(text);
+    this.extraInformation = Objects.requireNonNullElse(extraInformation, Collections.emptyMap());
   }
 
   /**
@@ -117,7 +111,6 @@ public class DocumentSample implements Sample {
     }
 
     if (obj instanceof DocumentSample a) {
-
       return getCategory().equals(a.getCategory())
           && Arrays.equals(getText(), a.getText());
     }

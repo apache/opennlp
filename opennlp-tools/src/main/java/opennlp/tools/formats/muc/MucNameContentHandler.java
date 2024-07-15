@@ -19,8 +19,6 @@ package opennlp.tools.formats.muc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,23 +41,8 @@ public class MucNameContentHandler extends SgmlParser.ContentHandler {
   private static final Set<String> EXPECTED_TYPES;
 
   static {
-    Set<String> types = new HashSet<>();
-
-    types.add("PERSON");
-    types.add("ORGANIZATION");
-    types.add("LOCATION");
-    types.add("DATE");
-    types.add("TIME");
-    types.add("MONEY");
-    types.add("PERCENT");
-
-    EXPECTED_TYPES = Collections.unmodifiableSet(types);
-
-    Set<String> nameElements = new HashSet<>();
-    nameElements.add(ENTITY_ELEMENT_NAME);
-    nameElements.add(TIME_ELEMENT_NAME);
-    nameElements.add(NUM_ELEMENT_NAME);
-    NAME_ELEMENT_NAMES = Collections.unmodifiableSet(nameElements);
+    EXPECTED_TYPES = Set.of("PERSON", "ORGANIZATION", "LOCATION", "DATE", "TIME", "MONEY", "PERCENT");
+    NAME_ELEMENT_NAMES = Set.of(ENTITY_ELEMENT_NAME, TIME_ELEMENT_NAME, NUM_ELEMENT_NAME);
   }
 
   private final Tokenizer tokenizer;

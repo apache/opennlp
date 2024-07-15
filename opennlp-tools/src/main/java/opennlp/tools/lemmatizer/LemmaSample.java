@@ -17,9 +17,7 @@
 
 package opennlp.tools.lemmatizer;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,9 +58,9 @@ public class LemmaSample implements Sample {
 
     validateArguments(tokens.size(), tags.size(), lemmas.size());
 
-    this.tokens = Collections.unmodifiableList(new ArrayList<>(tokens));
-    this.tags = Collections.unmodifiableList(new ArrayList<>(tags));
-    this.lemmas = Collections.unmodifiableList(new ArrayList<>(lemmas));
+    this.tokens = List.copyOf(tokens);
+    this.tags = List.copyOf(tags);
+    this.lemmas = List.copyOf(lemmas);
   }
 
   /**
@@ -120,7 +118,6 @@ public class LemmaSample implements Sample {
     }
 
     if (obj instanceof LemmaSample a) {
-
       return Arrays.equals(getTokens(), a.getTokens())
           && Arrays.equals(getTags(), a.getTags())
           && Arrays.equals(getLemmas(), a.getLemmas());

@@ -53,7 +53,7 @@ public class TokenSample implements Sample {
     Objects.requireNonNull(tokenSpans, "tokenSpans must not be null");
 
     this.text = Objects.requireNonNull(text, "text must not be null");
-    this.tokenSpans = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(tokenSpans)));
+    this.tokenSpans = List.of(tokenSpans);
 
     for (Span tokenSpan : tokenSpans) {
       if (tokenSpan.getStart() < 0 || tokenSpan.getStart() > text.length() ||

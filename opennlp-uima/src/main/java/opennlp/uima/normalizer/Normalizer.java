@@ -20,8 +20,6 @@ package opennlp.uima.normalizer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.uima.UimaContext;
@@ -65,17 +63,10 @@ public class Normalizer extends CasAnnotator_ImplBase {
   private static final Set<String> SUPPORTED_TYPES;
 
   static {
-    Set<String> supportedTypes = new HashSet<>();
-
-    supportedTypes.add(CAS.TYPE_NAME_STRING);
-    supportedTypes.add(CAS.TYPE_NAME_BYTE);
-    supportedTypes.add(CAS.TYPE_NAME_SHORT);
-    supportedTypes.add(CAS.TYPE_NAME_INTEGER);
-    supportedTypes.add(CAS.TYPE_NAME_LONG);
-    supportedTypes.add(CAS.TYPE_NAME_FLOAT);
-    supportedTypes.add(CAS.TYPE_NAME_DOUBLE);
-
-    SUPPORTED_TYPES = Collections.unmodifiableSet(supportedTypes);
+    SUPPORTED_TYPES = Set.of(CAS.TYPE_NAME_STRING,
+            CAS.TYPE_NAME_BYTE, CAS.TYPE_NAME_SHORT,
+            CAS.TYPE_NAME_INTEGER, CAS.TYPE_NAME_LONG,
+            CAS.TYPE_NAME_FLOAT, CAS.TYPE_NAME_DOUBLE);
   }
 
   private UimaContext context;
@@ -100,23 +91,24 @@ public class Normalizer extends CasAnnotator_ImplBase {
   private StringDictionary mLookupDictionary;
 
   /**
-   * Initializes a new instance.
-   * <p>
-   * Note: Use {@link #initialize(UimaContext) } to initialize this instance. Not
-   * use the constructor.
+   * Initializes a {@link Normalizer} instance.
+   *
+   * @apiNote Use {@link #initialize(UimaContext)} to initialize this instance.
+   * Do not use the constructor.
    */
-  public Normalizer() {
+  private Normalizer() {
     // must not be implemented !
   }
 
   /**
-   * Initializes the current instance with the given context.
+   * Initializes the current instance with the given {@link UimaContext context}.
    * <p>
-   * Note: Do all initialization in this method, do not use the constructor.
    * @param context context to initialize
+   * @throws ResourceInitializationException Thrown if errors occurred during initialization of resources.
+   *
+   * @implNote Do all initialization in this method, do not use the constructor.
    */
-  public void initialize(UimaContext context)
-      throws ResourceInitializationException {
+  public void initialize(UimaContext context) throws ResourceInitializationException {
 
     super.initialize(context);
 
@@ -201,8 +193,9 @@ public class Normalizer extends CasAnnotator_ImplBase {
           text = normalizedText;
         }
       }
+      String name = mStructureFeature.getRange().getName();
 
-      if (CAS.TYPE_NAME_STRING.equals(mStructureFeature.getRange().getName())) {
+      if (CAS.TYPE_NAME_STRING.equals(name)) {
         nameAnnotation.setStringValue(mStructureFeature, text);
       } else {
 
@@ -216,24 +209,18 @@ public class Normalizer extends CasAnnotator_ImplBase {
           continue;
         }
 
-        if (CAS.TYPE_NAME_BYTE.equals(mStructureFeature.getRange().getName())) {
+        if (CAS.TYPE_NAME_BYTE.equals(name)) {
           nameAnnotation.setByteValue(mStructureFeature, number.byteValue());
-        } else if (CAS.TYPE_NAME_SHORT.equals(mStructureFeature.getRange()
-            .getName())) {
+        } else if (CAS.TYPE_NAME_SHORT.equals(name)) {
           nameAnnotation.setShortValue(mStructureFeature, number.shortValue());
-        } else if (CAS.TYPE_NAME_INTEGER.equals(mStructureFeature.getRange()
-            .getName())) {
+        } else if (CAS.TYPE_NAME_INTEGER.equals(name)) {
           nameAnnotation.setIntValue(mStructureFeature, number.intValue());
-        } else if (CAS.TYPE_NAME_LONG.equals(mStructureFeature.getRange()
-            .getName())) {
+        } else if (CAS.TYPE_NAME_LONG.equals(name)) {
           nameAnnotation.setLongValue(mStructureFeature, number.longValue());
-        } else if (CAS.TYPE_NAME_FLOAT.equals(mStructureFeature.getRange()
-            .getName())) {
+        } else if (CAS.TYPE_NAME_FLOAT.equals(name)) {
           nameAnnotation.setFloatValue(mStructureFeature, number.floatValue());
-        } else if (CAS.TYPE_NAME_DOUBLE.equals(mStructureFeature.getRange()
-            .getName())) {
-          nameAnnotation
-              .setDoubleValue(mStructureFeature, number.doubleValue());
+        } else if (CAS.TYPE_NAME_DOUBLE.equals(name)) {
+          nameAnnotation.setDoubleValue(mStructureFeature, number.doubleValue());
         }
       }
     }
