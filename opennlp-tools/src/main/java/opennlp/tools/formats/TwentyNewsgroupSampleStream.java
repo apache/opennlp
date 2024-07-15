@@ -28,7 +28,6 @@ import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
 
-
 public class TwentyNewsgroupSampleStream implements ObjectStream<DocumentSample> {
 
   private final Tokenizer tokenizer;
@@ -66,7 +65,4 @@ public class TwentyNewsgroupSampleStream implements ObjectStream<DocumentSample>
     catFileTupleIterator = catFileMap.entrySet().iterator();
   }
 
-  @Override
-  public void close() throws IOException {
-  }
 }

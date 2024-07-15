@@ -108,11 +108,6 @@ public class MascTokenSampleStream extends FilterObjectStream<MascDocument, Toke
   }
 
   @Override
-  public void close() throws IOException {
-    samples.close();
-  }
-
-  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     samples.reset();
     buffer = samples.read();
