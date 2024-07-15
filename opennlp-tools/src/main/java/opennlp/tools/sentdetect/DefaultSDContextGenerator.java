@@ -175,7 +175,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     buf.append(prefix);
     collectFeats.add(buf.toString());
     buf.setLength(0);
-    if (!prefix.equals("")) {
+    if (!prefix.isEmpty()) {
       collectFeats.add(Integer.toString(prefix.length()));
       if (isFirstUpper(prefix)) {
         collectFeats.add("xcap");
@@ -189,7 +189,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     buf.append(previous);
     collectFeats.add(buf.toString());
     buf.setLength(0);
-    if (!previous.equals("")) {
+    if (!previous.isEmpty()) {
       if (isFirstUpper(previous)) {
         collectFeats.add("vcap");
       }
@@ -202,7 +202,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     buf.append(suffix);
     collectFeats.add(buf.toString());
     buf.setLength(0);
-    if (!suffix.equals("")) {
+    if (!suffix.isEmpty()) {
       if (isFirstUpper(suffix)) {
         collectFeats.add("scap");
       }
@@ -215,7 +215,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     buf.append(next);
     collectFeats.add(buf.toString());
     buf.setLength(0);
-    if (!next.equals("")) {
+    if (!next.isEmpty()) {
       if (isFirstUpper(next)) {
         collectFeats.add("ncap");
       }

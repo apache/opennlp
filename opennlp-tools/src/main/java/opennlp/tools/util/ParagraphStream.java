@@ -48,7 +48,7 @@ public class ParagraphStream extends FilterObjectStream<String, String> {
       // The last paragraph in the input might not
       // be terminated well with a new line at the end.
 
-      if (line == null || line.equals("")) {
+      if (line == null || line.isEmpty()) {
         if (paragraph.length() > 0) {
           return paragraph.toString();
         }

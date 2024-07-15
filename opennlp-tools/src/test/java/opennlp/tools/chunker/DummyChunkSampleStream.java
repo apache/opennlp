@@ -60,7 +60,7 @@ public class DummyChunkSampleStream extends
     List<String> chunkTags = new ArrayList<>();
     List<String> predictedChunkTags = new ArrayList<>();
 
-    for (String line = samples.read(); line != null && !line.equals(""); line = samples
+    for (String line = samples.read(); line != null && !line.isEmpty(); line = samples
         .read()) {
       String[] parts = line.split(" ");
       if (parts.length != 4) {

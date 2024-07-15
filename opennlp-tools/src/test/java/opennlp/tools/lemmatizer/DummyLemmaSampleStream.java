@@ -55,7 +55,7 @@ public class DummyLemmaSampleStream
     List<String> predictedLemmas = new ArrayList<>();
 
     for (String line = samples.read(); line != null
-        && !line.equals(""); line = samples.read()) {
+        && !line.isEmpty(); line = samples.read()) {
       String[] parts = line.split("\t");
       if (parts.length != 4) {
         logger.warn("Skipping corrupt line {}: {}", count, line);

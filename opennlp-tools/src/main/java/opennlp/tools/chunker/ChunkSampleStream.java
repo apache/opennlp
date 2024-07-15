@@ -54,7 +54,7 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
     List<String> tags = new ArrayList<>();
     List<String> preds = new ArrayList<>();
 
-    for (String line = samples.read(); line != null && !line.equals(""); line = samples.read()) {
+    for (String line = samples.read(); line != null && !line.isEmpty(); line = samples.read()) {
       String[] parts = line.split(" ");
       if (parts.length != 3) {
         logger.error("Skipping corrupt line: {}", line);

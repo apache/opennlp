@@ -56,7 +56,7 @@ public class EntityLinkerFactory {
 
     String linkerImplFullName = properties.getProperty("linker." + entityType, "");
 
-    if (linkerImplFullName == null || linkerImplFullName.equals("")) {
+    if (linkerImplFullName == null || linkerImplFullName.isEmpty()) {
       throw new IllegalArgumentException("linker." + entityType + "  property must be set!");
     }
 
@@ -83,7 +83,7 @@ public class EntityLinkerFactory {
 
     String linkerImplFullName = properties.getProperty("linker", "");
 
-    if (linkerImplFullName == null || linkerImplFullName.equals("")) {
+    if (linkerImplFullName == null || linkerImplFullName.isEmpty()) {
       throw new IllegalArgumentException("\"linker\" property must be set!");
     }
 

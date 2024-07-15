@@ -53,7 +53,7 @@ public class LemmaSampleStream extends FilterObjectStream<String, LemmaSample> {
     List<String> tags = new ArrayList<>();
     List<String> preds = new ArrayList<>();
 
-    for (String line = samples.read(); line != null && !line.equals(""); line = samples.read()) {
+    for (String line = samples.read(); line != null && !line.isEmpty(); line = samples.read()) {
       String[] parts = line.split("\t");
       if (parts.length != 3) {
         logger.warn("Skipping corrupt line: {}", line);
