@@ -32,4 +32,8 @@ public record ClassPathModel(Properties properties, byte[] model) {
     return properties != null ? properties.getProperty("model.sha256", "unknown") : "unknown";
   }
 
+  public String getModelLanguage() {
+    return properties != null ? properties.getProperty("model.language", "unknown") : "unknown";
+  }
+
 }
