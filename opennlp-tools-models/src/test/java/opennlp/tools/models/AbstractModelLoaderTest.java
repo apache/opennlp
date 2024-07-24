@@ -33,6 +33,7 @@ public abstract class AbstractModelLoaderTest extends AbstractClassPathModelTest
         model.getModelSHA256());
     assertEquals("langdetect-183.bin", model.getModelName());
     assertEquals("1.8.3", model.getModelVersion());
+    assertEquals("root", model.getModelLanguage());
   }
 
 }
