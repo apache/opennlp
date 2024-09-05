@@ -119,7 +119,7 @@ public class POSTagFormatMapper {
   }
 
   /**
-   * Converts a a list of tags to the specified format.
+   * Converts a list of tags to the specified format.
    *
    * @param tags a list of tags to be converted.
    * @return an array containing the converted tags with the same order and size as the given input list.
@@ -217,5 +217,29 @@ public class POSTagFormatMapper {
     Objects.requireNonNull(posModel.getPosSequenceModel(), "POSSequenceModel must not be NULL.");
     final POSTagFormatMapper mapper = new POSTagFormatMapper(posModel.getPosSequenceModel().getOutcomes());
     return mapper.getGuessedFormat();
+  }
+
+  public static class NoOp extends POSTagFormatMapper {
+
+    protected NoOp() {
+      super(new String[0]);
+    }
+
+    @Override
+    public String[] convertTags(List<String> tags) {
+      Objects.requireNonNull(tags, "tags must not be NULL.");
+      return tags.toArray(new String[0]);
+    }
+
+    @Override
+    public String convertTag(String tag) {
+      return tag;
+    }
+
+    @Override
+    public POSTagFormat getGuessedFormat() {
+      return POSTagFormat.CUSTOM;
+    }
+
   }
 }

@@ -94,6 +94,22 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   }
 
   @Test
+  void testPOSTaggerMappingNoOp() throws IOException {
+    final String[] sentence = {
+        "The",
+        "driver",
+        "got",
+        "badly",
+        "injured",
+        "."};
+
+    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "."};
+    //leave it as is
+    testPOSTagger(new POSTaggerME(trainPennFormatPOSModel(ModelType.MAXENT),
+        POSTagFormat.CUSTOM), sentence, expected);
+  }
+
+  @Test
   @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
   void testPOSTaggerDefault() throws IOException {
     final String[] sentence = {

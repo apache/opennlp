@@ -85,7 +85,8 @@ public class POSTaggerME implements POSTagger {
   private final SequenceValidator<String> sequenceValidator;
 
   private final POSTagFormat posTagFormat;
-  private final POSTagFormatMapper posTagFormatMapper;
+
+  protected final POSTagFormatMapper posTagFormatMapper;
 
   /**
    * Initializes a {@link POSTaggerME} by downloading a default model for a given
@@ -151,7 +152,9 @@ public class POSTaggerME implements POSTagger {
       this.model = new BeamSearch(beamSize, model.getArtifact(POSModel.POS_MODEL_ENTRY_NAME), 0);
     }
 
-    this.posTagFormatMapper = new POSTagFormatMapper(getAllPosTags());
+    this.posTagFormatMapper = (format == POSTagFormat.CUSTOM)
+        ? new POSTagFormatMapper.NoOp()
+        : new POSTagFormatMapper(getAllPosTags());
 
   }
 
@@ -193,7 +196,8 @@ public class POSTaggerME implements POSTagger {
   }
 
   private String[] convertTags(List<String> t) {
-    if (posTagFormatMapper.getGuessedFormat() == posTagFormat) {
+    if (posTagFormat == POSTagFormat.CUSTOM
+        || posTagFormatMapper.getGuessedFormat() == posTagFormat) {
       return t.toArray(new String[0]);
     } else {
       return posTagFormatMapper.convertTags(t);
@@ -402,5 +406,4 @@ public class POSTaggerME implements POSTagger {
 
     logger.info("... finished expanding POS Dictionary. [ {} ms]", (System.nanoTime() - start) / 1000000);
   }
-
 }
