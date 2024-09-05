@@ -23,5 +23,5 @@ package opennlp.tools.postag;
  */
 public enum POSTagFormat {
 
-  UD, PENN, UNKNOWN
+  UD, PENN, CUSTOM, UNKNOWN
 }
