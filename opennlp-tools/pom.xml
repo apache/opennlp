@@ -67,7 +67,7 @@
     <dependency>
       <groupId>com.ginsberg</groupId>
       <artifactId>junit5-system-exit</artifactId>
-      <version>1.1.2</version>
+      <version>2.0.0</version>
       <scope>test</scope>
     </dependency>
 
