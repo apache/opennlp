@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -192,11 +191,11 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
         return Arrays.asList(fromUcp);
       } else {
         final String cp = System.getProperty("java.class.path", "");
-        final Matcher matcher = CLASSPATH_SEPARATOR_PATTERN.matcher(cp);
+        final String[] matches = CLASSPATH_SEPARATOR_PATTERN.split(cp);
         final List<URL> jarUrls = new ArrayList<>();
-        while (matcher.find()) {
+        for (String classPath: matches) {
           try {
-            jarUrls.add(new URL(FILE_PREFIX, "", matcher.group()));
+            jarUrls.add(new URL(FILE_PREFIX, "", classPath));
           } catch (MalformedURLException ignored) {
             //if we cannot parse a URL from the system property, just ignore it...
             //we couldn't load it anyway
