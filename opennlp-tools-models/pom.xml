@@ -91,13 +91,32 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin}</version>
                 <configuration>
-                    <argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off --add-opens java.base/jdk.internal.loader=ALL-UNNAMED</argLine>
                     <forkCount>${opennlp.forkCount}</forkCount>
                     <useSystemClassLoader>false</useSystemClassLoader>
                     <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>with-reflection</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off --add-opens java.base/jdk.internal.loader=ALL-UNNAMED</argLine>
+                        </configuration>
+                    </execution>
+                    <!-- This phase is here to trigger a fallback to the classpath from the system properties, which cannot be hit, if add-opens is present. -->
+                    <execution>
+                        <id>no-reflection</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off</argLine>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>
