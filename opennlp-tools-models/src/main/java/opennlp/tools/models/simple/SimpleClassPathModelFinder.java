@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -64,7 +63,8 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
 
   private static final Logger logger = LoggerFactory.getLogger(SimpleClassPathModelFinder.class);
   private static final String FILE_PREFIX = "file";
-  private static final Pattern CLASSPATH_SEPARATOR_PATTERN = Pattern.compile("[;:]");
+  private static final Pattern CLASSPATH_SEPARATOR_PATTERN_WINDOWS = Pattern.compile(";");
+  private static final Pattern CLASSPATH_SEPARATOR_PATTERN_UNIX = Pattern.compile(":");
   // ; for Windows, : for Linux/OSX
 
   /**
@@ -191,20 +191,26 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
       if (fromUcp != null && fromUcp.length > 0) {
         return Arrays.asList(fromUcp);
       } else {
-        final String cp = System.getProperty("java.class.path", "");
-        final Matcher matcher = CLASSPATH_SEPARATOR_PATTERN.matcher(cp);
-        final List<URL> jarUrls = new ArrayList<>();
-        while (matcher.find()) {
-          try {
-            jarUrls.add(new URL(FILE_PREFIX, "", matcher.group()));
-          } catch (MalformedURLException ignored) {
-            //if we cannot parse a URL from the system property, just ignore it...
-            //we couldn't load it anyway
-          }
-        }
-        return jarUrls;
+        return getClassPathUrlsFromSystemProperty();
       }
     }
+  }
+
+  private List<URL> getClassPathUrlsFromSystemProperty() {
+    final String cp = System.getProperty("java.class.path", "");
+    final String[] matches = isWindows()
+            ? CLASSPATH_SEPARATOR_PATTERN_WINDOWS.split(cp)
+            : CLASSPATH_SEPARATOR_PATTERN_UNIX.split(cp);
+    final List<URL> jarUrls = new ArrayList<>();
+    for (String classPath: matches) {
+      try {
+        jarUrls.add(new URL(FILE_PREFIX, "", classPath));
+      } catch (MalformedURLException ignored) {
+        //if we cannot parse a URL from the system property, just ignore it...
+        //we couldn't load it anyway
+      }
+    }
+    return jarUrls;
   }
 
   /*
