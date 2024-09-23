@@ -67,7 +67,7 @@
     <dependency>
       <groupId>com.ginsberg</groupId>
       <artifactId>junit5-system-exit</artifactId>
-      <version>1.1.2</version>
+      <version>${junit5-system-exit.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -116,38 +116,26 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven.surefire.plugin}</version>
+        <configuration>
+          <argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off -javaagent:${settings.localRepository}/com/ginsberg/junit5-system-exit/${junit5-system-exit.version}/junit5-system-exit-${junit5-system-exit.version}.jar</argLine>
+          <forkCount>${opennlp.forkCount}</forkCount>
+          <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+          <excludes>
+            <exclude>**/stemmer/*</exclude>
+            <exclude>**/stemmer/snowball/*</exclude>
+            <exclude>**/*IT.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
   <profiles>
-    <profile>
-      <id>jdk18+</id>
-      <activation>
-        <jdk>[18,]</jdk>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <version>${maven.surefire.plugin}</version>
-              <configuration>
-                <argLine>-Xmx2048m -Djava.security.manager=allow -Dorg.slf4j.simpleLogger.defaultLogLevel=off</argLine>
-                <forkCount>${opennlp.forkCount}</forkCount>
-                <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
-                <excludes>
-                  <exclude>**/stemmer/*</exclude>
-                  <exclude>**/stemmer/snowball/*</exclude>
-                  <exclude>**/*IT.java</exclude>
-                </excludes>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
-
     <profile>
       <id>jmh</id>
       <dependencies>

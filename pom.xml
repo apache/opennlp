@@ -180,6 +180,7 @@
 		<classgraph.version>4.8.175</classgraph.version>
 		<opennlp.models.version>1.0.1</opennlp.models.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
+		<junit5-system-exit.version>2.0.0</junit5-system-exit.version>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.8.12</jacoco.maven.plugin>
 		<maven.surefire.plugin>3.2.2</maven.surefire.plugin>
