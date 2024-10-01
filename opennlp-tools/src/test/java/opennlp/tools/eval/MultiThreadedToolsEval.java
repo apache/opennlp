@@ -23,10 +23,10 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.POSTaggerME_TS;
-import opennlp.tools.sentdetect.SentenceDetectorME_TS;
+import opennlp.tools.postag.ThreadSafePOSTaggerME;
 import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.tokenize.TokenizerME_TS;
+import opennlp.tools.sentdetect.ThreadSafeSentenceDetectorME;
+import opennlp.tools.tokenize.ThreadSafeTokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span;
 
@@ -41,15 +41,15 @@ public class MultiThreadedToolsEval extends AbstractEvalTest {
 
     File sModelFile = new File(getOpennlpDataDir(), "models-sf/en-sent.bin");
     SentenceModel sModel = new SentenceModel(sModelFile);
-    SentenceDetectorME_TS sentencer = new SentenceDetectorME_TS(sModel);
+    ThreadSafeSentenceDetectorME sentencer = new ThreadSafeSentenceDetectorME(sModel);
 
     File tModelFile = new File(getOpennlpDataDir(), "models-sf/en-token.bin");
     TokenizerModel tModel = new TokenizerModel(tModelFile);
-    TokenizerME_TS tokenizer = new TokenizerME_TS(tModel);
+    ThreadSafeTokenizerME tokenizer = new ThreadSafeTokenizerME(tModel);
 
     File pModelFile = new File(getOpennlpDataDir(), "models-sf/en-pos-maxent.bin");
     POSModel pModel = new POSModel(pModelFile);
-    POSTaggerME_TS tagger = new POSTaggerME_TS(pModel);
+    ThreadSafePOSTaggerME tagger = new ThreadSafePOSTaggerME(pModel);
 
     final String text = "All human beings are born free and equal in dignity and rights. They " +
         "are endowed with reason and conscience and should act towards one another in a " +

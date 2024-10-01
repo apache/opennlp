@@ -17,19 +17,21 @@
 
 package opennlp.tools.tokenize;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.Span;
 
 /**
  * A thread-safe version of TokenizerME. Using it is completely transparent. You can use it in
  * a single-threaded context as well, it only incurs a minimal overhead.
  */
-public class TokenizerME_TS implements Tokenizer {
+@ThreadSafe
+public class ThreadSafeTokenizerME implements Tokenizer {
 
-  private TokenizerModel model;
+  private final TokenizerModel model;
 
-  private ThreadLocal<TokenizerME> tokenizerThreadLocal = new ThreadLocal();
+  private final ThreadLocal<TokenizerME> tokenizerThreadLocal = new ThreadLocal<>();
 
-  public TokenizerME_TS(TokenizerModel model) {
+  public ThreadSafeTokenizerME(TokenizerModel model) {
     super();
     this.model = model;
   }

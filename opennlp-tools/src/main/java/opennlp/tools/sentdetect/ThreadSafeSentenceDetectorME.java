@@ -17,6 +17,7 @@
 
 package opennlp.tools.sentdetect;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.Span;
 
 /**
@@ -27,19 +28,20 @@ import opennlp.tools.util.Span;
  * lightweight as the model is not duplicated, if you have many long-running threads, you may run
  * into memory issues. Be careful when you use this in a JEE application, for example.
  */
-public class SentenceDetectorME_TS implements SentenceDetector {
+@ThreadSafe
+public class ThreadSafeSentenceDetectorME implements SentenceDetector {
 
-  private SentenceModel model;
+  private final SentenceModel model;
 
-  private ThreadLocal<SentenceDetectorME> sentenceDetectorThreadLocal =
+  private final ThreadLocal<SentenceDetectorME> sentenceDetectorThreadLocal =
       new ThreadLocal<>();
 
-  public SentenceDetectorME_TS(SentenceModel model) {
+  public ThreadSafeSentenceDetectorME(SentenceModel model) {
     super();
     this.model = model;
   }
 
-  // If a thread-local version exists, return it. Otherwise create, then return.
+  // If a thread-local version exists, return it. Otherwise, create, then return.
   private SentenceDetectorME getSD() {
     SentenceDetectorME sd = sentenceDetectorThreadLocal.get();
     if (sd == null) {

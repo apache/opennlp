@@ -17,24 +17,26 @@
 
 package opennlp.tools.postag;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.Sequence;
 
 /**
  * A thread-safe version of the POSTaggerME. Using it is completely transparent. You can use it in
  * a single-threaded context as well, it only incurs a minimal overhead.
  */
-public class POSTaggerME_TS implements POSTagger {
+@ThreadSafe
+public class ThreadSafePOSTaggerME implements POSTagger {
 
-  private POSModel model;
+  private final POSModel model;
 
-  private ThreadLocal<POSTaggerME> threadLocal = new ThreadLocal<>();
+  private final ThreadLocal<POSTaggerME> threadLocal = new ThreadLocal<>();
 
-  public POSTaggerME_TS(POSModel model) {
+  public ThreadSafePOSTaggerME(POSModel model) {
     super();
     this.model = model;
   }
 
-  private final POSTaggerME getTagger() {
+  private POSTaggerME getTagger() {
     POSTaggerME tagger = threadLocal.get();
     if (tagger == null) {
       tagger = new POSTaggerME(model);
