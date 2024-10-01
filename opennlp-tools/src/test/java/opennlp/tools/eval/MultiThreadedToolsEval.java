@@ -17,6 +17,11 @@
 
 package opennlp.tools.eval;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
+
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME_TS;
 import opennlp.tools.sentdetect.SentenceDetectorME_TS;
@@ -25,29 +30,24 @@ import opennlp.tools.tokenize.TokenizerME_TS;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span;
 
-import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-
 /**
- * Test the the reentrant tools implementations are really thread safe by running the concurrently.
+ * Test the reentrant tools implementations are really thread safe by running concurrently.
  * Replace the thread-safe versions with the non-safe versions to see this test case fail.
  */
-public class MultiThreadedToolsEval {
+public class MultiThreadedToolsEval extends AbstractEvalTest {
 
   @Test
   public void runMEToolsMultiThreaded() throws IOException, InterruptedException {
 
-    File sModelFile = new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-sent.bin");
+    File sModelFile = new File(getOpennlpDataDir(), "models-sf/en-sent.bin");
     SentenceModel sModel = new SentenceModel(sModelFile);
     SentenceDetectorME_TS sentencer = new SentenceDetectorME_TS(sModel);
 
-    File tModelFile = new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-token.bin");
+    File tModelFile = new File(getOpennlpDataDir(), "models-sf/en-token.bin");
     TokenizerModel tModel = new TokenizerModel(tModelFile);
     TokenizerME_TS tokenizer = new TokenizerME_TS(tModel);
 
-    File pModelFile = new File(EvalUtil.getOpennlpDataDir(), "models-sf/en-pos-maxent.bin");
+    File pModelFile = new File(getOpennlpDataDir(), "models-sf/en-pos-maxent.bin");
     POSModel pModel = new POSModel(pModelFile);
     POSTaggerME_TS tagger = new POSTaggerME_TS(pModel);
 

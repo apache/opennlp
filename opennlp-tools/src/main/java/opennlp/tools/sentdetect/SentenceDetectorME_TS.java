@@ -49,17 +49,17 @@ public class SentenceDetectorME_TS implements SentenceDetector {
     return sd;
   }
 
+  public double[] getSentenceProbabilities() {
+    return getSD().getSentenceProbabilities();
+  }
+
   @Override
-  public String[] sentDetect(String s) {
+  public String[] sentDetect(CharSequence s) {
     return getSD().sentDetect(s);
   }
 
   @Override
-  public Span[] sentPosDetect(String s) {
+  public Span[] sentPosDetect(CharSequence s) {
     return getSD().sentPosDetect(s);
-  }
-
-  public double[] getSentenceProbabilities() {
-    return getSD().getSentenceProbabilities();
   }
 }
