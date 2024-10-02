@@ -169,7 +169,7 @@
 		<enforcer.plugin.version>3.3.0</enforcer.plugin.version>
 		<jackson.version>2.17.2</jackson.version>
 		<jersey.version>3.1.8</jersey.version>
-		<junit.version>5.11.0</junit.version>
+		<junit.version>5.11.1</junit.version>
 		<uimaj.version>3.5.0</uimaj.version>
 		<morfologik.version>2.1.9</morfologik.version>
 		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
