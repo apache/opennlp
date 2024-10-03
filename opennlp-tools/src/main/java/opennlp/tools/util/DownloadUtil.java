@@ -28,7 +28,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,13 +87,11 @@ public class DownloadUtil {
   /**
    * Triggers a download for the specified {@link DownloadUtil.ModelType}.
    *
-   * @param language The ISO language code of the requested model.
+   * @param language  The ISO language code of the requested model.
    * @param modelType The {@link DownloadUtil.ModelType type} of model.
-   * @param type The class of the resulting model.
-   * @param <T> The generic type which is a subclass of {@link BaseModel}.
-   *
+   * @param type      The class of the resulting model.
+   * @param <T>       The generic type which is a subclass of {@link BaseModel}.
    * @return A model instance of type {@link T}.
-   *
    * @throws IOException Thrown if IO errors occurred or the model is invalid.
    */
   public static <T extends BaseModel> T downloadModel(String language, ModelType modelType,
@@ -113,14 +115,12 @@ public class DownloadUtil {
    * if it does not already exist. If a model to be downloaded already
    * exists in that directory, the model will not be re-downloaded.
    *
-   * @param url The model's {@link URL}.
+   * @param url  The model's {@link URL}.
    * @param type The class of the resulting model {@link T}.
-   * @param <T> The generic type which is a subclass of {@link BaseModel}.
-   *
+   * @param <T>  The generic type which is a subclass of {@link BaseModel}.
    * @return A model instance of type {@link T}.
-   *
    * @throws IOException Thrown if the model cannot be downloaded.
-  */
+   */
   public static <T extends BaseModel> T downloadModel(URL url, Class<T> type) throws IOException {
 
     final Path homeDirectory = Paths.get(System.getProperty("user.home") + "/.opennlp/");
@@ -138,6 +138,9 @@ public class DownloadUtil {
         Files.copy(in, localFile, StandardCopyOption.REPLACE_EXISTING);
       }
 
+      validateModel(new URL(url + ".sha512"), localFile);
+
+
       logger.debug("Download complete.");
     }
 
@@ -145,6 +148,57 @@ public class DownloadUtil {
       return type.getConstructor(Path.class).newInstance(localFile);
     } catch (Exception e) {
       throw new IOException("Could not initialize Model of type " + type.getTypeName(), e);
+    }
+  }
+
+  /**
+   * Validates the downloaded model.
+   *
+   * @param sha512          the url to get the sha512 hash
+   * @param downloadedModel the model file to check
+   * @throws IOException thrown if the checksum could not be computed
+   */
+  private static void validateModel(URL sha512, Path downloadedModel) throws IOException {
+    // Download SHA512 checksum file
+    String expectedChecksum;
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(sha512.openStream()))) {
+      expectedChecksum = reader.readLine();
+
+      if (expectedChecksum != null) {
+        expectedChecksum = expectedChecksum.split("\\s")[0].trim();
+      }
+    }
+
+    // Validate SHA512 checksum
+    final String actualChecksum = calculateSHA512(downloadedModel);
+    if (!actualChecksum.equalsIgnoreCase(expectedChecksum)) {
+      throw new IOException("SHA512 checksum validation failed. Expected: "
+          + expectedChecksum + ", but got: " + actualChecksum);
+    }
+  }
+
+  private static String calculateSHA512(Path file) throws IOException {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-512");
+      try (InputStream fis = Files.newInputStream(file);
+           DigestInputStream dis = new DigestInputStream(fis, digest)) {
+        byte[] buffer = new byte[4096];
+        while (dis.read(buffer) != -1) {
+          // Reading the file to update the digest
+        }
+      }
+      return byteArrayToHexString(digest.digest());
+    } catch (NoSuchAlgorithmException e) {
+      throw new IOException("SHA-512 algorithm not found", e);
+    }
+  }
+
+  private static String byteArrayToHexString(byte[] bytes) {
+    try (Formatter formatter = new Formatter()) {
+      for (byte b : bytes) {
+        formatter.format("%02x", b);
+      }
+      return formatter.toString();
     }
   }
 

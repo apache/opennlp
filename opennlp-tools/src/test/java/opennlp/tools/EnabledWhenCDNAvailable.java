@@ -52,10 +52,10 @@ public @interface EnabledWhenCDNAvailable {
         final String host = annotation.hostname();
         try (Socket socket = new Socket()) {
           socket.connect(new InetSocketAddress(host, 80), TIMEOUT_MS);
-          return ConditionEvaluationResult.enabled("Resouce (CDN) reachable.");
+          return ConditionEvaluationResult.enabled("Resource (CDN) reachable.");
         } catch (IOException e) {
           // Unreachable, unresolvable or timeout
-          return ConditionEvaluationResult.disabled("Resouce (CDN) unreachable.");
+          return ConditionEvaluationResult.disabled("Resource (CDN) unreachable.");
         }
       }
       return ConditionEvaluationResult.enabled("Nothing annotated with DisabledWhenOffline.");
