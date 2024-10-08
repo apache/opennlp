@@ -136,11 +136,10 @@ public final class ParserTool extends BasicCmdLineTool {
 
       Parser parser = ParserFactory.create(model, beamSize, advancePercentage);
 
-      PerformanceMonitor perfMon = null;
+      PerformanceMonitor perfMon = new PerformanceMonitor("sent");
       try (ObjectStream<String> lineStream = new PlainTextByLineStream(
               new SystemInputStreamFactory(), SystemInputStreamFactory.encoding())) {
         
-        perfMon = new PerformanceMonitor("sent");
         perfMon.start();
         String line;
         while ((line = lineStream.read()) != null) {
