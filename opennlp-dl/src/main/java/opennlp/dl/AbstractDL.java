@@ -34,7 +34,7 @@ import opennlp.tools.tokenize.Tokenizer;
 /**
  * Base class for OpenNLP deep-learning classes using ONNX Runtime.
  */
-public abstract class AbstractDL {
+public abstract class AbstractDL implements AutoCloseable {
 
   public static final String INPUT_IDS = "input_ids";
   public static final String ATTENTION_MASK = "attention_mask";
@@ -50,7 +50,6 @@ public abstract class AbstractDL {
    *
    * @param vocabFile The vocabulary file.
    * @return A map of vocabulary words to integer IDs.
-   *
    * @throws IOException Thrown if the vocabulary file cannot be opened or read.
    */
   public Map<String, Integer> loadVocab(final File vocabFile) throws IOException {
@@ -64,6 +63,21 @@ public abstract class AbstractDL {
     }
 
     return vocab;
+  }
+
+  /**
+   * Closes this resource, relinquishing any underlying resources.
+   *
+   * @throws Exception If it failed to close.
+   */
+  @Override
+  public void close() throws Exception {
+    if (session != null) {
+      session.close();
+    }
+    if (env != null) {
+      env.close();
+    }
   }
 
 }
