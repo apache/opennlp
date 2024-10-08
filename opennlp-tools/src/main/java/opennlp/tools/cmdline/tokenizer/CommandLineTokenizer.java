@@ -44,7 +44,7 @@ final class CommandLineTokenizer {
     ObjectStream<String> untokenizedLineStream;
 
     ObjectStream<String> tokenizedLineStream;
-    PerformanceMonitor perfMon = null;
+    PerformanceMonitor perfMon = new PerformanceMonitor("sent");
     try {
       untokenizedLineStream =
               new PlainTextByLineStream(new SystemInputStreamFactory(), SystemInputStreamFactory.encoding());
@@ -52,7 +52,6 @@ final class CommandLineTokenizer {
       tokenizedLineStream = new WhitespaceTokenStream(
               new TokenizerStream(tokenizer, untokenizedLineStream));
 
-      perfMon = new PerformanceMonitor("sent");
       perfMon.start();
 
 
