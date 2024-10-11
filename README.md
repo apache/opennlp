@@ -49,11 +49,12 @@ OpenNLP API can be easily plugged into distributed streaming data pipelines like
        
 For additional information, visit the [OpenNLP Home Page](http://opennlp.apache.org/)
 
-You can use OpenNLP with any language, demo models are provided [here](http://opennlp.sourceforge.net/models-1.5/).
+You can use OpenNLP with any language, demo models are provided [here](https://downloads.apache.org/opennlp/models/).
 
 The models are fully compatible with the latest release, they can be used for testing or getting started. 
 
-Please train your own models for all other use cases.
+> [!NOTE]  
+> Please train your own models for all other use cases.
 
 Documentation, including JavaDocs, code usage and command-line interface examples are available [here](http://opennlp.apache.org/docs/)
 
