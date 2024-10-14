@@ -185,7 +185,7 @@
 		<jacoco.maven.plugin>0.8.12</jacoco.maven.plugin>
 		<maven.surefire.plugin>3.2.2</maven.surefire.plugin>
 		<maven.failsafe.plugin>3.2.2</maven.failsafe.plugin>
-		<forbiddenapis.plugin>3.7</forbiddenapis.plugin>
+		<forbiddenapis.plugin>3.8</forbiddenapis.plugin>
 	</properties>
 
 	<build>
