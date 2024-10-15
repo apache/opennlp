@@ -23,13 +23,22 @@ import opennlp.tools.util.Span;
 /**
  * A thread-safe version of TokenizerME. Using it is completely transparent. You can use it in
  * a single-threaded context as well, it only incurs a minimal overhead.
+ * <p>
+ * Note, however, that this implementation uses a {@link ThreadLocal}. Although the implementation is
+ * lightweight because the model is not duplicated, if you have many long-running threads,
+ * you may run into memory problems.
+ * </p>
+ * <p>
+ * Be careful when using this in a Jakarta EE application, for example.
+ * </p>
+ * The user is responsible for clearing the {@link ThreadLocal}.
  */
 @ThreadSafe
-public class ThreadSafeTokenizerME implements Tokenizer {
+public class ThreadSafeTokenizerME implements Tokenizer, AutoCloseable {
 
   private final TokenizerModel model;
 
-  private final ThreadLocal<TokenizerME> tokenizerThreadLocal = new ThreadLocal<>();
+  private final ThreadLocal<TokenizerME> threadLocal = new ThreadLocal<>();
 
   public ThreadSafeTokenizerME(TokenizerModel model) {
     super();
@@ -37,10 +46,10 @@ public class ThreadSafeTokenizerME implements Tokenizer {
   }
 
   private TokenizerME getTokenizer() {
-    TokenizerME tokenizer = tokenizerThreadLocal.get();
+    TokenizerME tokenizer = threadLocal.get();
     if (tokenizer == null) {
       tokenizer = new TokenizerME(model);
-      tokenizerThreadLocal.set(tokenizer);
+      threadLocal.set(tokenizer);
     }
     return tokenizer;
   }
@@ -57,5 +66,10 @@ public class ThreadSafeTokenizerME implements Tokenizer {
 
   public double[] getProbabilities() {
     return getTokenizer().getTokenProbabilities();
+  }
+
+  @Override
+  public void close() {
+    threadLocal.remove();
   }
 }
