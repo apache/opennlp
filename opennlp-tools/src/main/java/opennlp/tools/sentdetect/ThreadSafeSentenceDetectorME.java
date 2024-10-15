@@ -24,16 +24,21 @@ import opennlp.tools.util.Span;
  * A thread-safe version of SentenceDetectorME. Using it is completely transparent. You can use it in
  * a single-threaded context as well, it only incurs a minimal overhead.
  * <p>
- * Note, however, that this implementation uses a ThreadLocal. Although the implementation is
- * lightweight as the model is not duplicated, if you have many long-running threads, you may run
- * into memory issues. Be careful when you use this in a JEE application, for example.
+ * Note, however, that this implementation uses a {@link ThreadLocal}. Although the implementation is
+ * lightweight because the model is not duplicated, if you have many long-running threads,
+ * you may run into memory problems.
+ * </p>
+ * <p>
+ * Be careful when using this in a Jakarta EE application, for example.
+ * </p>
+ * The user is responsible for clearing the {@link ThreadLocal}.
  */
 @ThreadSafe
-public class ThreadSafeSentenceDetectorME implements SentenceDetector {
+public class ThreadSafeSentenceDetectorME implements SentenceDetector, AutoCloseable {
 
   private final SentenceModel model;
 
-  private final ThreadLocal<SentenceDetectorME> sentenceDetectorThreadLocal =
+  private final ThreadLocal<SentenceDetectorME> threadLocal =
       new ThreadLocal<>();
 
   public ThreadSafeSentenceDetectorME(SentenceModel model) {
@@ -43,10 +48,10 @@ public class ThreadSafeSentenceDetectorME implements SentenceDetector {
 
   // If a thread-local version exists, return it. Otherwise, create, then return.
   private SentenceDetectorME getSD() {
-    SentenceDetectorME sd = sentenceDetectorThreadLocal.get();
+    SentenceDetectorME sd = threadLocal.get();
     if (sd == null) {
       sd = new SentenceDetectorME(model);
-      sentenceDetectorThreadLocal.set(sd);
+      threadLocal.set(sd);
     }
     return sd;
   }
@@ -63,5 +68,10 @@ public class ThreadSafeSentenceDetectorME implements SentenceDetector {
   @Override
   public Span[] sentPosDetect(CharSequence s) {
     return getSD().sentPosDetect(s);
+  }
+
+  @Override
+  public void close() {
+    threadLocal.remove();
   }
 }

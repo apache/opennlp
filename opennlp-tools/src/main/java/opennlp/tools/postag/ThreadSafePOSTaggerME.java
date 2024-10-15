@@ -23,9 +23,18 @@ import opennlp.tools.util.Sequence;
 /**
  * A thread-safe version of the POSTaggerME. Using it is completely transparent. You can use it in
  * a single-threaded context as well, it only incurs a minimal overhead.
+ * <p>
+ * Note, however, that this implementation uses a {@link ThreadLocal}. Although the implementation is
+ * lightweight because the model is not duplicated, if you have many long-running threads,
+ * you may run into memory problems.
+ * </p>
+ * <p>
+ * Be careful when using this in a Jakarta EE application, for example.
+ * </p>
+ * The user is responsible for clearing the {@link ThreadLocal}.
  */
 @ThreadSafe
-public class ThreadSafePOSTaggerME implements POSTagger {
+public class ThreadSafePOSTaggerME implements POSTagger, AutoCloseable {
 
   private final POSModel model;
 
@@ -63,5 +72,10 @@ public class ThreadSafePOSTaggerME implements POSTagger {
   @Override
   public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
     return getTagger().topKSequences(sentence, additionaContext);
+  }
+
+  @Override
+  public void close() {
+    threadLocal.remove();
   }
 }
