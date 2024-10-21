@@ -165,6 +165,8 @@
 	<properties>
 		<!-- Build Properties -->
 		<java.version>17</java.version>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven.version>3.3.9</maven.version>
 		<enforcer.plugin.version>3.3.0</enforcer.plugin.version>
 		<jackson.version>2.18.0</jackson.version>
