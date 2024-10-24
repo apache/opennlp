@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>31</version>
+		<version>33</version>
 		<relativePath />
 	</parent>
 
@@ -40,7 +40,7 @@
 		<connection>scm:git:https://github.com/apache/opennlp.git</connection>
 		<developerConnection>scm:git:git@github.com:apache/opennlp.git</developerConnection>
 		<url>https://github.com/apache/opennlp.git</url>
-		<tag>opennlp-2.3.1</tag>
+		<tag>opennlp-2.4.0</tag>
 	</scm>
 
 	<repositories>
@@ -60,7 +60,7 @@
 			<subscribe>users-subscribe@opennlp.apache.org</subscribe>
 			<unsubscribe>users-unsubscribe@opennlp.apache.org</unsubscribe>
 			<post>users@opennlp.apache.org</post>
-			<archive>http://mail-archives.apache.org/mod_mbox/opennlp-users/</archive>
+			<archive>https://mail-archives.apache.org/mod_mbox/opennlp-users/</archive>
 		</mailingList>
 
 		<mailingList>
@@ -68,21 +68,21 @@
 			<subscribe>dev-subscribe@opennlp.apache.org</subscribe>
 			<unsubscribe>dev-unsubscribe@opennlp.apache.org</unsubscribe>
 			<post>dev@opennlp.apache.org</post>
-			<archive>http://mail-archives.apache.org/mod_mbox/opennlp-dev/</archive>
+			<archive>https://mail-archives.apache.org/mod_mbox/opennlp-dev/</archive>
 		</mailingList>
 
 		<mailingList>
 			<name>Apache OpenNLP Commits</name>
 			<subscribe>commits-subscribe@opennlp.apache.org</subscribe>
 			<unsubscribe>commits-unsubscribe@opennlp.apache.org</unsubscribe>
-			<archive>http://mail-archives.apache.org/mod_mbox/opennlp-commits/</archive>
+			<archive>https://mail-archives.apache.org/mod_mbox/opennlp-commits/</archive>
 		</mailingList>
 
 		<mailingList>
 			<name>Apache OpenNLP Issues</name>
 			<subscribe>issues-subscribe@opennlp.apache.org</subscribe>
 			<unsubscribe>issues-unsubscribe@opennlp.apache.org</unsubscribe>
-			<archive>http://mail-archives.apache.org/mod_mbox/opennlp-issues/</archive>
+			<archive>https://mail-archives.apache.org/mod_mbox/opennlp-issues/</archive>
 		</mailingList>
 	</mailingLists>
 
@@ -165,14 +165,15 @@
 	<properties>
 		<!-- Build Properties -->
 		<java.version>17</java.version>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven.version>3.3.9</maven.version>
-		<enforcer.plugin.version>3.3.0</enforcer.plugin.version>
 		<jackson.version>2.18.0</jackson.version>
 		<jersey.version>3.1.9</jersey.version>
 		<junit.version>5.11.2</junit.version>
+		<junit5-system-exit.version>2.0.0</junit5-system-exit.version>
 		<uimaj.version>3.5.0</uimaj.version>
 		<morfologik.version>2.1.9</morfologik.version>
-		<checkstyle.plugin.version>3.2.0</checkstyle.plugin.version>
 		<onnxruntime.version>1.19.2</onnxruntime.version>
 		<slf4j.version>2.0.16</slf4j.version>
 		<log4j2.version>2.23.1</log4j2.version>
@@ -180,11 +181,9 @@
 		<classgraph.version>4.8.176</classgraph.version>
 		<opennlp.models.version>1.0.1</opennlp.models.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
-		<junit5-system-exit.version>2.0.0</junit5-system-exit.version>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.8.12</jacoco.maven.plugin>
-		<maven.surefire.plugin>3.2.2</maven.surefire.plugin>
-		<maven.failsafe.plugin>3.2.2</maven.failsafe.plugin>
+		<maven.failsafe.plugin>3.5.1</maven.failsafe.plugin>
 		<forbiddenapis.plugin>3.8</forbiddenapis.plugin>
 	</properties>
 
@@ -217,7 +216,6 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>${checkstyle.plugin.version}</version>
 					<dependencies>
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
@@ -288,7 +286,6 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>${maven.surefire.plugin}</version>
 					<configuration>
 						<argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off</argLine>
 						<forkCount>${opennlp.forkCount}</forkCount>
@@ -416,7 +413,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>${enforcer.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>enforce-java</id>
@@ -509,7 +505,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>
-						<version>${maven.surefire.plugin}</version>
 						<configuration>
 							<argLine>-Xmx4g</argLine>
 							<includes>
@@ -533,7 +528,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>
-						<version>${maven.surefire.plugin}</version>
 						<configuration>
 							<argLine>-Xmx20g</argLine>
 							<includes>

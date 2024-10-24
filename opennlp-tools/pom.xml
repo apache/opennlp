@@ -120,7 +120,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven.surefire.plugin}</version>
         <configuration>
           <argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off -javaagent:${settings.localRepository}/com/ginsberg/junit5-system-exit/${junit5-system-exit.version}/junit5-system-exit-${junit5-system-exit.version}.jar</argLine>
           <forkCount>${opennlp.forkCount}</forkCount>
