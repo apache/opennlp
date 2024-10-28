@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+        "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+        ]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter id="tools.model">
+    <title>Classpath Loading of OpenNLP Models</title>
+    <para>
+        Since version 2.4.0, OpenNLP supports the ability to load pre-trained OpenNLP models from the classpath.
+        It relies on either a simple implementation using the application's classpath or on the
+        <ulink url="https://github.com/classgraph/classgraph">classgraph</ulink>
+        library to locate OpenNLP model JAR files.
+        Our pre-trained models are bundled from the <ulink url="https://github.com/apache/opennlp-models">OpenNLP Models
+        repository</ulink>.
+
+        This section describes
+
+        <itemizedlist>
+            <listitem>
+                <para>how to load and use a pre-trained OpenNLP model from the classpath.</para>
+            </listitem>
+            <listitem>
+                <para>how to bundle a custom OpenNLP model to be loadable as a JAR file from the classpath.</para>
+            </listitem>
+        </itemizedlist>
+
+    </para>
+
+	<section id="tools.model.load">
+		<title>Loading a pre-trained OpenNLP model from the classpath</title>
+        <para>
+            First, you need to add the following dependency to your classpath:
+
+            <programlisting language="xml">
+                <![CDATA[
+<dependency>
+  <groupId>org.apache.opennlp</groupId>
+  <artifactId>opennlp-tools-models</artifactId>
+  <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>
+]]>
+            </programlisting>
+
+            by using our pre-trained models or by building custom models as described later in this section.
+            If you need advanced classpath scanning capabilities, you can also add the classgraph library to your classpath.
+
+            <programlisting language="xml">
+                <![CDATA[
+<dependency>
+    <groupId>io.github.classgraph</groupId>
+    <artifactId>classgraph</artifactId>
+    <version>CURRENT_CLASSGRAPH_VERSION</version>
+</dependency>
+]]>
+            </programlisting>
+
+            Make sure you replace the placeholders with the appropriate version values.
+
+            Next, you can search for such a model and load it from the classpath:
+
+            <programlisting language="java">
+                <![CDATA[
+final ClassgraphModelFinder finder = new ClassgraphModelFinder(); // or use new SimpleClassPathModelFinder()
+final ClassPathModelLoader loader = new ClassPathModelLoader();
+final Set<ClassPathModelEntry> models = finder.findModels(false);
+for(ClassPathModelEntry entry : models) {
+
+   final ClassPathModel model = loader.load(entry);
+
+   if(model != null) {
+                System.out.println(model.getModelName());
+                System.out.println(model.getModelSHA256());
+                System.out.println(model.getModelVersion());
+                System.out.println(model.getModeLanguage());
+      // do something with the model by consuming the byte array
+   }
+}]]>
+            </programlisting>
+
+        </para>
+	</section>
+
+
+	<section id="tools.model.bundle">
+		<title>Bundling a custom trained OpenNLP model for the classpath</title>
+		<para>
+            If you intend to provide your own custom trained OpenNLP models as JAR files for classpath discovery,
+            we recommend that you have a look at our setup in the <ulink url="https://github.com/apache/opennlp-models">OpenNLP Models
+            repository</ulink>. We recommend to bundle one model per JAR file.
+
+            Make sure you add a <emphasis>model.properties</emphasis> file with the following content
+
+       <programlisting language="java">
+                <![CDATA[
+model.name=${model.name}
+model.version=${model.version}
+model.sha256=${model.sha256}
+model.language=${model.language}
+]]>
+            </programlisting>
+
+            Make sure to replace the values accordingly and configure your build tool to include the binary model and the <emphasis>model.properties</emphasis>
+            in the resulting JAR file.
+
+            To load such a custom model, you may need to adjust the pattern for classpath scanning. For example, if you name your model "custom-opennlp-model",
+            you need the following code to successfully find and load it:
+
+            <programlisting language="java">
+                <![CDATA[
+final ClassgraphModelFinder finder = new ClassgraphModelFinder("custom-opennlp-model.jar"); // or use new SimpleClassPathModelFinder("custom-opennlp-model.jar")
+final ClassPathModelLoader loader = new ClassPathModelLoader();
+final Set<ClassPathModelEntry> models = finder.findModels(false);
+for(ClassPathModelEntry entry : models) {
+
+   final ClassPathModel model = loader.load(entry);
+
+   if(model != null) {
+                System.out.println(model.getModelName());
+                System.out.println(model.getModelSHA256());
+                System.out.println(model.getModelVersion());
+                System.out.println(model.getModeLanguage());
+      // do something with the model by consuming the byte array
+   }
+}]]>
+            </programlisting>
+
+        </para>
+    </section>
+</chapter>
