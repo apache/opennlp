@@ -59,7 +59,7 @@ public class TokenizerModelLoaderTest extends AbstractModelLoaderTest {
   @ParameterizedTest(name = "Verify \"{0}\" tokenizer model loading")
   @ValueSource(strings = {"en-ud-ewt", "de-ud-gsd"})
   public void testLoadModelByLanguage(String langModel) throws IOException {
-    String modelName = "opennlp-" + langModel + "-tokens-1.0-1.9.3.bin";
+    String modelName = "opennlp-" + langModel + "-tokens-1.1-2.4.0.bin";
     TokenizerModel model = loader.loadModel(Files.newInputStream(OPENNLP_DIR.resolve(modelName)));
     Assertions.assertNotNull(model);
     Assertions.assertTrue(model.isLoadedFromSerialized());
