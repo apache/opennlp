@@ -72,13 +72,13 @@ public class DownloadUtil {
   }
 
   private static final String BASE_URL = "https://dlcdn.apache.org/opennlp/";
-  private static final String MODELS_UD_MODELS_1_0 = "models/ud-models-1.0/";
+  private static final String MODELS_UD_MODELS_1_1 = "models/ud-models-1.1/";
 
   public static final Map<String, Map<ModelType, String>> available_models;
 
   static {
     try {
-      available_models = new DownloadParser(new URL(BASE_URL + MODELS_UD_MODELS_1_0)).getAvailableModels();
+      available_models = new DownloadParser(new URL(BASE_URL + MODELS_UD_MODELS_1_1)).getAvailableModels();
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
@@ -214,7 +214,6 @@ public class DownloadUtil {
     }
 
     Map<String, Map<ModelType, String>> getAvailableModels() {
-
       final Matcher matcher = LINK_PATTERN.matcher(fetchPageIndex());
 
       final List<String> links = new ArrayList<>();
@@ -226,27 +225,58 @@ public class DownloadUtil {
     }
 
     private Map<String, Map<ModelType, String>> toMap(List<String> links) {
-
       final Map<String, Map<ModelType, String>> result = new HashMap<>();
-
       for (String link : links) {
-
         if (link.endsWith(".bin")) {
-          if (link.contains("de-ud")) {
+          if (link.contains("de-ud")) { // German
             addModel("de", link, result);
-          } else if (link.contains("en-ud")) {
+          } else if (link.contains("en-ud")) { // English
             addModel("en", link, result);
-          } else if (link.contains("it-ud")) {
+          } else if (link.contains("it-ud")) { // Italian
             addModel("it", link, result);
-          } else if (link.contains("nl-ud")) {
+          } else if (link.contains("nl-ud")) { // Dutch
             addModel("nl", link, result);
-          } else if (link.contains("fr-ud")) {
+          } else if (link.contains("fr-ud")) { // French
             addModel("fr", link, result);
+          } else if (link.contains("bg-ud")) { // Bulgarian
+            addModel("bg", link, result);
+          } else if (link.contains("cs-ud")) { // Czech
+            addModel("cs", link, result);
+          } else if (link.contains("hr-ud")) { // Croatian
+            addModel("hr", link, result);
+          } else if (link.contains("da-ud")) { // Danish
+            addModel("da", link, result);
+          } else if (link.contains("es-ud")) { // Spanish
+            addModel("es", link, result);
+          } else if (link.contains("et-ud")) { // Estonian
+            addModel("et", link, result);
+          } else if (link.contains("fi-ud")) { // Finnish
+            addModel("fi", link, result);
+          } else if (link.contains("lv-ud")) { // Latvian
+            addModel("lv", link, result);
+          } else if (link.contains("no-ud")) { // Norwegian
+            addModel("no", link, result);
+          } else if (link.contains("pl-ud")) { // Polish
+            addModel("pl", link, result);
+          } else if (link.contains("pt-ud")) { // Portuguese
+            addModel("pt", link, result);
+          } else if (link.contains("ro-ud")) { // Romanian
+            addModel("ro", link, result);
+          } else if (link.contains("ru-ud")) { // Russian
+            addModel("ru", link, result);
+          } else if (link.contains("sr-ud")) { // Serbian
+            addModel("sr", link, result);
+          } else if (link.contains("sk-ud")) { // Slovak
+            addModel("sk", link, result);
+          } else if (link.contains("sl-ud")) { // Slovenian
+            addModel("sl", link, result);
+          } else if (link.contains("sv-ud")) { // Swedish
+            addModel("sv", link, result);
+          } else if (link.contains("uk-ud")) { // Ukrainian
+            addModel("uk", link, result);
           }
         }
-
       }
-
       return result;
     }
 

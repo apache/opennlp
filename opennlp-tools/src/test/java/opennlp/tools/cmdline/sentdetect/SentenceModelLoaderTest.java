@@ -59,7 +59,7 @@ public class SentenceModelLoaderTest extends AbstractModelLoaderTest {
   @ParameterizedTest(name = "Verify \"{0}\" sentence model loading")
   @ValueSource(strings = {"en-ud-ewt", "de-ud-gsd"})
   public void testLoadModelByLanguage(String langModel) throws IOException {
-    String modelName = "opennlp-" + langModel + "-sentence-1.0-1.9.3.bin";
+    String modelName = "opennlp-" + langModel + "-sentence-1.1-2.4.0.bin";
     SentenceModel model = loader.loadModel(Files.newInputStream(OPENNLP_DIR.resolve(modelName)));
     Assertions.assertNotNull(model);
     Assertions.assertTrue(model.isLoadedFromSerialized());

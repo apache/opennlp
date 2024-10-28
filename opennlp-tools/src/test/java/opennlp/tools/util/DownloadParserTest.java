@@ -45,7 +45,7 @@ public class DownloadParserTest {
     Map<String, Map<DownloadUtil.ModelType, String>> result = downloadParser.getAvailableModels();
 
     assertNotNull(result);
-    assertEquals(5, result.size());
+    assertEquals(23, result.size());
 
     final Map<DownloadUtil.ModelType, String> availableModels = result.get(language);
     assertNotNull(availableModels);
@@ -78,35 +78,109 @@ public class DownloadParserTest {
     return Thread.currentThread().getContextClassLoader().getResource(file);
   }
 
+  private static final String OPENNLP = "opennlp-";
+  private static final String MODEL_SENT = "sentence-";
+  private static final String MODEL_TOK = "tokens-";
+  private static final String MODEL_POS = "pos-";
+  private static final String VER = "1.1-2.4.0";
+  private static final String BIN = ".bin";
+
   // Note: This needs to be public as JUnit 5 requires it like this.
   public static Stream<Arguments> expectedModels() {
     // Data as defined in "test/resources/opennlp/tools/util/index.html"
     return Stream.of(
-        Arguments.of("en",
-            Map.of(
-                DownloadUtil.ModelType.SENTENCE_DETECTOR, "opennlp-en-ud-ewt-sentence-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.TOKENIZER, "opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.POS, "opennlp-en-ud-ewt-pos-1.0-1.9.3.bin")),
-        Arguments.of("fr",
-            Map.of(
-                DownloadUtil.ModelType.SENTENCE_DETECTOR, "opennlp-1.0-1.9.3fr-ud-ftb-sentence-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.TOKENIZER, "opennlp-fr-ud-ftb-tokens-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.POS, "opennlp-fr-ud-ftb-pos-1.0-1.9.3.bin")),
-        Arguments.of("de",
-            Map.of(
-                DownloadUtil.ModelType.SENTENCE_DETECTOR, "opennlp-de-ud-gsd-sentence-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.TOKENIZER, "opennlp-de-ud-gsd-tokens-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.POS, "opennlp-de-ud-gsd-pos-1.0-1.9.3.bin")),
-        Arguments.of("it",
-            Map.of(
-                DownloadUtil.ModelType.SENTENCE_DETECTOR, "opennlp-it-ud-vit-sentence-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.TOKENIZER, "opennlp-it-ud-vit-tokens-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.POS, "opennlp-it-ud-vit-pos-1.0-1.9.3.bin")),
-        Arguments.of("nl",
-            Map.of(
-                DownloadUtil.ModelType.SENTENCE_DETECTOR, "opennlp-nl-ud-alpino-sentence-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.TOKENIZER, "opennlp-nl-ud-alpino-tokens-1.0-1.9.3.bin",
-                DownloadUtil.ModelType.POS, "opennlp-nl-ud-alpino-pos-1.0-1.9.3.bin"))
+      Arguments.of("en",Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "en-ud-ewt-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "en-ud-ewt-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "en-ud-ewt-" + MODEL_POS + VER + BIN)),
+      Arguments.of("fr", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "fr-ud-gsd-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "fr-ud-gsd-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "fr-ud-gsd-" + MODEL_POS + VER + BIN)),
+      Arguments.of("de", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "de-ud-gsd-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "de-ud-gsd-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "de-ud-gsd-" + MODEL_POS + VER + BIN)),
+      Arguments.of("it", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "it-ud-vit-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "it-ud-vit-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "it-ud-vit-" + MODEL_POS + VER + BIN)),
+      Arguments.of("bg", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "bg-ud-btb-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "bg-ud-btb-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "bg-ud-btb-" + MODEL_POS + VER + BIN)),
+      Arguments.of("cs", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "cs-ud-pdt-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "cs-ud-pdt-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "cs-ud-pdt-" + MODEL_POS + VER + BIN)),
+      Arguments.of("da", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "da-ud-ddt-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "da-ud-ddt-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "da-ud-ddt-" + MODEL_POS + VER + BIN)),
+      Arguments.of("es", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "es-ud-gsd-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "es-ud-gsd-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "es-ud-gsd-" + MODEL_POS + VER + BIN)),
+      Arguments.of("et", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "et-ud-edt-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "et-ud-edt-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "et-ud-edt-" + MODEL_POS + VER + BIN)),
+      Arguments.of("fi", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "fi-ud-tdt-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "fi-ud-tdt-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "fi-ud-tdt-" + MODEL_POS + VER + BIN)),
+      Arguments.of("hr", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "hr-ud-set-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "hr-ud-set-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "hr-ud-set-" + MODEL_POS + VER + BIN)),
+      Arguments.of("lv", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "lv-ud-lvtb-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "lv-ud-lvtb-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "lv-ud-lvtb-" + MODEL_POS + VER + BIN)),
+      Arguments.of("lv", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "lv-ud-lvtb-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "lv-ud-lvtb-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "lv-ud-lvtb-" + MODEL_POS + VER + BIN)),
+      Arguments.of("no", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "no-ud-bokmaal-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "no-ud-bokmaal-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "no-ud-bokmaal-" + MODEL_POS + VER + BIN)),
+      Arguments.of("pl", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "pl-ud-pdb-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "pl-ud-pdb-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "pl-ud-pdb-" + MODEL_POS + VER + BIN)),
+      Arguments.of("pt", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "pt-ud-gsd-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "pt-ud-gsd-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "pt-ud-gsd-" + MODEL_POS + VER + BIN)),
+      Arguments.of("ro", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "ro-ud-rrt-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "ro-ud-rrt-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "ro-ud-rrt-" + MODEL_POS + VER + BIN)),
+      Arguments.of("ru", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "ru-ud-gsd-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "ru-ud-gsd-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "ru-ud-gsd-" + MODEL_POS + VER + BIN)),
+      Arguments.of("sr", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "sr-ud-set-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "sr-ud-set-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "sr-ud-set-" + MODEL_POS + VER + BIN)),
+      Arguments.of("sk", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "sk-ud-snk-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "sk-ud-snk-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "sk-ud-snk-" + MODEL_POS + VER + BIN)),
+      Arguments.of("sl", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "sl-ud-ssj-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "sl-ud-ssj-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "sl-ud-ssj-" + MODEL_POS + VER + BIN)),
+      Arguments.of("sv", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "sv-ud-talbanken-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "sv-ud-talbanken-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "sv-ud-talbanken-" + MODEL_POS + VER + BIN)),
+      Arguments.of("uk", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "uk-ud-iu-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "uk-ud-iu-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "uk-ud-iu-" + MODEL_POS + VER + BIN))
     );
   }
 }
