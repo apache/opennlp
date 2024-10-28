@@ -171,7 +171,7 @@
 		<jackson.version>2.18.0</jackson.version>
 		<jersey.version>3.1.9</jersey.version>
 		<junit.version>5.11.2</junit.version>
-		<junit5-system-exit.version>2.0.0</junit5-system-exit.version>
+		<junit5-system-exit.version>2.0.2</junit5-system-exit.version>
 		<uimaj.version>3.5.0</uimaj.version>
 		<morfologik.version>2.1.9</morfologik.version>
 		<onnxruntime.version>1.19.2</onnxruntime.version>
