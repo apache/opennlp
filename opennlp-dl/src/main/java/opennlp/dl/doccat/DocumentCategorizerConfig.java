@@ -18,18 +18,41 @@
 package opennlp.dl.doccat;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class DocumentCategorizerConfig {
+public record DocumentCategorizerConfig(Map<String, String> id2label) {
 
-  private Map<String, String> id2label;
+  private static final Pattern ID_TO_LABEL_PATTERN =
+      Pattern.compile("\"id2label\"\\s*:\\s*\\{(.*?)\\}", Pattern.DOTALL);
+  private static final Pattern ENTRY_PATTERN =
+      Pattern.compile("\"([^\"]+)\"\\s*:\\s*\"(.*?)\"");
 
-  public Map<String, String> getId2label() {
+  @Override
+  public Map<String, String> id2label() {
     return Collections.unmodifiableMap(id2label);
   }
 
-  public void setId2label(Map<String, String> id2label) {
-    this.id2label = id2label;
-  }
+  public static DocumentCategorizerConfig fromJson(String json) {
+    Objects.requireNonNull(json, "json must not be null");
 
+    final Map<String, String> id2label = new HashMap<>();
+    final Matcher matcher = ID_TO_LABEL_PATTERN.matcher(json);
+
+    if (matcher.find()) {
+      final String id2labelContent = matcher.group(1);
+      final Matcher entryMatcher = ENTRY_PATTERN.matcher(id2labelContent);
+
+      while (entryMatcher.find()) {
+        final String key = entryMatcher.group(1);
+        final String value = entryMatcher.group(2);
+        id2label.put(key, value);
+      }
+    }
+
+    return new DocumentCategorizerConfig(id2label);
+  }
 }
