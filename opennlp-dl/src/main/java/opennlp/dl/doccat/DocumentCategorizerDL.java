@@ -20,6 +20,7 @@ package opennlp.dl.doccat;
 import java.io.File;
 import java.io.IOException;
 import java.nio.LongBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,8 +37,6 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,16 +66,15 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   /**
    * Instantiates a {@link DocumentCategorizer document categorizer} using ONNX models.
    *
-   * @param model The ONNX model file.
-   * @param vocabulary The model file's vocabulary file.
-   * @param categories The categories.
+   * @param model                         The ONNX model file.
+   * @param vocabulary                    The model file's vocabulary file.
+   * @param categories                    The categories.
    * @param classificationScoringStrategy Implementation of {@link ClassificationScoringStrategy} used
    *                                      to calculate the classification scores given the score of each
    *                                      individual document part.
-   * @param inferenceOptions {@link InferenceOptions} to control the inference.
-   *
+   * @param inferenceOptions              {@link InferenceOptions} to control the inference.
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
-   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IOException  Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
    */
   public DocumentCategorizerDL(File model, File vocabulary, Map<Integer, String> categories,
                                ClassificationScoringStrategy classificationScoringStrategy,
@@ -102,21 +100,21 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   /**
    * Instantiates a {@link DocumentCategorizer document categorizer} using ONNX models.
    *
-   * @param model The ONNX model file.
-   * @param vocabulary The model file's vocabulary file.
-   * @param config The model's config file. The file will be used to determine the classification categories.
+   * @param model                         The ONNX model file.
+   * @param vocabulary                    The model file's vocabulary file.
+   * @param config                        The model's config file. The file will be used to
+   *                                      determine the classification categories.
    * @param classificationScoringStrategy Implementation of {@link ClassificationScoringStrategy} used
    *                                      to calculate the classification scores given the score of each
    *                                      individual document part.
-   * @param inferenceOptions {@link InferenceOptions} to control the inference.
-   *
+   * @param inferenceOptions              {@link InferenceOptions} to control the inference.
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
-   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IOException  Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
    */
   public DocumentCategorizerDL(File model, File vocabulary, File config,
                                ClassificationScoringStrategy classificationScoringStrategy,
                                InferenceOptions inferenceOptions)
-          throws IOException, OrtException {
+      throws IOException, OrtException {
 
     this.env = OrtEnvironment.getEnvironment();
 
@@ -175,7 +173,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       logger.error("Unload to perform document classification inference", ex);
     }
 
-    return new double[]{};
+    return new double[] {};
 
   }
 
@@ -315,6 +313,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   /**
    * Applies softmax to an array of values.
+   *
    * @param input An array of values.
    * @return The output array.
    */
@@ -346,18 +345,12 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   }
 
   private Map<Integer, String> readCategoriesFromFile(File config) throws IOException {
-
-    final String json = new String(Files.readAllBytes(config.toPath()));
-
-    final ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
     final DocumentCategorizerConfig documentCategorizerConfig =
-        objectMapper.readValue(json, DocumentCategorizerConfig.class);
+        DocumentCategorizerConfig.fromJson(Files.readString(config.toPath(), StandardCharsets.UTF_8));
 
     final Map<Integer, String> categories = new HashMap<>();
-    for (final String key : documentCategorizerConfig.getId2label().keySet()) {
-      categories.put(Integer.valueOf(key), documentCategorizerConfig.getId2label().get(key));
+    for (final String key : documentCategorizerConfig.id2label().keySet()) {
+      categories.put(Integer.valueOf(key), documentCategorizerConfig.id2label().get(key));
     }
 
     return categories;

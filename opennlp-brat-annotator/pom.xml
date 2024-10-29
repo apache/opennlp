@@ -61,13 +61,6 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 			<scope>runtime</scope>
-			<exclusions>
-				<!-- Byte-Buddy became a dependency by accident - TODO remove it with update version > 2.17.0 -->
-				<exclusion>
-					<groupId>net.bytebuddy</groupId>
-					<artifactId>byte-buddy</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
