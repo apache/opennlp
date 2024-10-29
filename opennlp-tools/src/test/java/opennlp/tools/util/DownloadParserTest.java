@@ -105,6 +105,10 @@ public class DownloadParserTest {
         DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "it-ud-vit-" + MODEL_SENT + VER + BIN,
         DownloadUtil.ModelType.TOKENIZER, OPENNLP + "it-ud-vit-" + MODEL_TOK + VER + BIN,
         DownloadUtil.ModelType.POS, OPENNLP + "it-ud-vit-" + MODEL_POS + VER + BIN)),
+      Arguments.of("nl", Map.of(
+        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "nl-ud-alpino-" + MODEL_SENT + VER + BIN,
+        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "nl-ud-alpino-" + MODEL_TOK + VER + BIN,
+        DownloadUtil.ModelType.POS, OPENNLP + "nl-ud-alpino-" + MODEL_POS + VER + BIN)),
       Arguments.of("bg", Map.of(
         DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "bg-ud-btb-" + MODEL_SENT + VER + BIN,
         DownloadUtil.ModelType.TOKENIZER, OPENNLP + "bg-ud-btb-" + MODEL_TOK + VER + BIN,
@@ -133,10 +137,6 @@ public class DownloadParserTest {
         DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "hr-ud-set-" + MODEL_SENT + VER + BIN,
         DownloadUtil.ModelType.TOKENIZER, OPENNLP + "hr-ud-set-" + MODEL_TOK + VER + BIN,
         DownloadUtil.ModelType.POS, OPENNLP + "hr-ud-set-" + MODEL_POS + VER + BIN)),
-      Arguments.of("lv", Map.of(
-        DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "lv-ud-lvtb-" + MODEL_SENT + VER + BIN,
-        DownloadUtil.ModelType.TOKENIZER, OPENNLP + "lv-ud-lvtb-" + MODEL_TOK + VER + BIN,
-        DownloadUtil.ModelType.POS, OPENNLP + "lv-ud-lvtb-" + MODEL_POS + VER + BIN)),
       Arguments.of("lv", Map.of(
         DownloadUtil.ModelType.SENTENCE_DETECTOR, OPENNLP + "lv-ud-lvtb-" + MODEL_SENT + VER + BIN,
         DownloadUtil.ModelType.TOKENIZER, OPENNLP + "lv-ud-lvtb-" + MODEL_TOK + VER + BIN,
