@@ -147,13 +147,7 @@
 				<version>${project.version}</version>
 			</dependency>
 
-			<dependency>
-				<artifactId>opennlp-brat-annotator</artifactId>
-				<groupId>${project.groupId}</groupId>
-				<version>${project.version}</version>
-			</dependency>
-
-			<dependency>
+				<dependency>
 				<artifactId>opennlp-morfologik-addon</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
@@ -168,8 +162,6 @@
 		<maven.compiler.release>${java.version}</maven.compiler.release>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven.version>3.3.9</maven.version>
-		<jackson.version>2.18.1</jackson.version>
-		<jersey.version>3.1.9</jersey.version>
 		<junit.version>5.11.3</junit.version>
 		<junit5-system-exit.version>2.0.2</junit5-system-exit.version>
 		<uimaj.version>3.5.0</uimaj.version>
@@ -545,7 +537,6 @@
 	<modules>
 		<module>opennlp-tools</module>
 		<module>opennlp-uima</module>
-		<module>opennlp-brat-annotator</module>
 		<module>opennlp-morfologik-addon</module>
 		<module>opennlp-docs</module>
 		<module>opennlp-distr</module>

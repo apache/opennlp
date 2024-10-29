@@ -101,13 +101,6 @@
         </fileSet>
 
         <fileSet>
-            <directory>../opennlp-brat-annotator/src/main/bin</directory>
-            <fileMode>755</fileMode>
-            <directoryMode>755</directoryMode>
-            <outputDirectory>bin</outputDirectory>
-        </fileSet>
-
-        <fileSet>
             <directory>../opennlp-tools/lang</directory>
             <fileMode>644</fileMode>
             <directoryMode>755</directoryMode>
@@ -126,13 +119,6 @@
             <fileMode>644</fileMode>
             <directoryMode>755</directoryMode>
             <outputDirectory>docs/apidocs/opennlp-tools</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <directory>../opennlp-brat-annotator/target/apidocs</directory>
-            <fileMode>644</fileMode>
-            <directoryMode>755</directoryMode>
-            <outputDirectory>docs/apidocs/opennlp-brat-annotator</outputDirectory>
         </fileSet>
 
         <fileSet>

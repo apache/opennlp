@@ -50,11 +50,7 @@
             <groupId>org.apache.opennlp</groupId>
             <artifactId>opennlp-morfologik-addon</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.opennlp</groupId>
-            <artifactId>opennlp-brat-annotator</artifactId>
-        </dependency>
-		<!-- ship the dist with a logging impl for cli users -->
+ 		<!-- ship the dist with a logging impl for cli users -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
