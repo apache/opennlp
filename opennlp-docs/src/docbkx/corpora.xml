@@ -562,27 +562,6 @@ path: /dev/opennlp/trunk/opennlp-tools/en-ontonotes.bin]]>
 
 		</para>
 
-
-		<section id="tools.corpora.brat.webtool">
-			<title>Sentences and Tokens</title>
-			<para>
-				The brat annotation tool only adds named entity spans to the data and doesn't provide information
-				about tokens and sentences. To train the name finder this information is required. By default, it
-				is assumed that each line is a sentence and that tokens are whitespace separated. This can be
-				adjusted by providing a custom sentence detector and optional also a tokenizer.
-
-				The opennlp brat command supports the following arguments for providing custom sentence detector
-				and tokenizer.
-
-				<simplelist type='horiz' columns='1'>
-					<member><para>-sentenceDetectorModel - your sentence model</para></member>
-					<member><para>-tokenizerModel - your tokenizer model</para></member>
-					<member><para>-ruleBasedTokenizer - simple | whitespace</para></member>
-				</simplelist>
-
-			</para>
-		</section>
-
 		<section id="tools.corpora.brat.training">
 			<title>Training</title>
 			<para>
