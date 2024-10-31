@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.AbstractModelLoaderTest;
 import opennlp.tools.EnabledWhenCDNAvailable;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
@@ -48,7 +47,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 
-public class TokenNameFinderModelTest extends AbstractModelLoaderTest {
+public class TokenNameFinderModelTest extends AbstractNameFinderTest {
 
   @Test
   void testNERWithPOSModel() throws IOException {
@@ -173,7 +172,6 @@ public class TokenNameFinderModelTest extends AbstractModelLoaderTest {
         params, TokenNameFinderFactory.create(null,
             Files.readString(featureGeneratorXmlPath, StandardCharsets.UTF_8)
                 .getBytes(StandardCharsets.UTF_8), resources, new BioCodec()));
-
 
     File nerModel = Files.createTempFile("nermodel", ".bin").toFile();
     try (FileOutputStream modelOut = new FileOutputStream(nerModel)) {
