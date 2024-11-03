@@ -121,7 +121,7 @@ public final class POSTaggerCrossValidatorTool
       reportListener.writeReport();
 
       try {
-        // TODO: is it a problem to close the stream now?
+        reportOutputStream.flush();
         reportOutputStream.close();
       } catch (IOException e) {
         // nothing to do
