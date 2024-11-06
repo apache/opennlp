@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.PrepAttachDataUtil;
 import opennlp.tools.ml.TrainerFactory;
@@ -52,7 +51,7 @@ public class NaiveBayesPrepAttachTest {
   @Test
   void testNaiveBayesOnPrepAttachData() throws IOException {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainingParameters.put(TrainingParameters.CUTOFF_PARAM, 1);
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     DataIndexer testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
@@ -66,8 +65,8 @@ public class NaiveBayesPrepAttachTest {
   @Test
   void testNaiveBayesOnPrepAttachDataUsingTrainUtil() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
+    trainParams.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(trainingStream);
@@ -78,8 +77,8 @@ public class NaiveBayesPrepAttachTest {
   @Test
   void testNaiveBayesOnPrepAttachDataUsingTrainUtilWithCutoff5() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 5);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
+    trainParams.put(TrainingParameters.CUTOFF_PARAM, 5);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(trainingStream);

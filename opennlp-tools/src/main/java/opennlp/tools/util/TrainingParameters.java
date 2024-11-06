@@ -35,14 +35,21 @@ import opennlp.tools.ml.EventTrainer;
  */
 public class TrainingParameters {
 
-  // TODO: are them duplicated?
   public static final String ALGORITHM_PARAM = "Algorithm";
   public static final String TRAINER_TYPE_PARAM = "TrainerType";
 
   public static final String ITERATIONS_PARAM = "Iterations";
   public static final String CUTOFF_PARAM = "Cutoff";
   public static final String THREADS_PARAM = "Threads";
+
+  /**
+   * The default number of iterations is 100.
+   */
   public static final int ITERATIONS_DEFAULT_VALUE = 100;
+
+  /**
+   * The default cut off value is 5.
+   */
   public static final int CUTOFF_DEFAULT_VALUE = 5;
 
   private final Map<String, Object> parameters = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -94,21 +101,6 @@ public class TrainingParameters {
    */
   public String algorithm() {
     return (String)parameters.get(ALGORITHM_PARAM);
-  }
-
-  private static String getStringValue(Object value) {
-    if (value instanceof Integer) {
-      return Integer.toString((Integer)value);
-    }
-    else if (value instanceof Double) {
-      return Double.toString((Double)value);
-    }
-    else if (value instanceof Boolean) {
-      return Boolean.toString((Boolean)value);
-    }
-    else {
-      return (String)value;
-    }
   }
 
   /**

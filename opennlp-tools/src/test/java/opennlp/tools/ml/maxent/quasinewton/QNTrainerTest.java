@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.BinaryFileDataReader;
 import opennlp.tools.ml.model.DataIndexer;
@@ -46,7 +45,7 @@ public class QNTrainerTest {
   @BeforeEach
   void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainingParameters.put(TrainingParameters.CUTOFF_PARAM, 1);
     testDataIndexer = new OnePassRealValueDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }

@@ -30,7 +30,6 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
@@ -44,9 +43,6 @@ import opennlp.tools.util.TrainingParameters;
 public abstract class AbstractDataIndexer implements DataIndexer {
 
   private static final Logger logger = LoggerFactory.getLogger(AbstractDataIndexer.class);
-
-  public static final String CUTOFF_PARAM = AbstractTrainer.CUTOFF_PARAM;
-  public static final int CUTOFF_DEFAULT = AbstractTrainer.CUTOFF_DEFAULT;
 
   public static final String SORT_PARAM = "sort";
   public static final boolean SORT_DEFAULT = true;

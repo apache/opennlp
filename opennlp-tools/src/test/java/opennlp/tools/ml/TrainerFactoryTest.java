@@ -63,7 +63,7 @@ public class TrainerFactoryTest {
 
   @Test
   void testIsSequenceTrainerTrue() {
-    mlParams.put(AbstractTrainer.ALGORITHM_PARAM,
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM,
         SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE);
 
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams);
@@ -73,7 +73,7 @@ public class TrainerFactoryTest {
 
   @Test
   void testIsSequenceTrainerFalse() {
-    mlParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams);
     Assertions.assertNotEquals(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER, trainerType);
   }

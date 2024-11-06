@@ -59,7 +59,7 @@ public class TrainerFactory {
 
   /**
    * Determines the {@link TrainerType} based on the
-   * {@link AbstractTrainer#ALGORITHM_PARAM} value.
+   * {@link TrainingParameters#ALGORITHM_PARAM} value.
    *
    * @param trainParams - A mapping of {@link TrainingParameters training parameters}.
    *
@@ -67,7 +67,7 @@ public class TrainerFactory {
    */
   public static TrainerType getTrainerType(TrainingParameters trainParams) {
 
-    String algorithmValue = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
+    String algorithmValue = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM,null);
 
     // Check if it is defaulting to the MAXENT trainer
     if (algorithmValue == null) {
@@ -122,7 +122,7 @@ public class TrainerFactory {
    * Retrieves a {@link SequenceTrainer} that fits the given parameters.
    *
    * @param trainParams The {@link TrainingParameters} to check for the trainer type.
-   *                    Note: The entry {@link AbstractTrainer#ALGORITHM_PARAM} is used
+   *                    Note: The entry {@link TrainingParameters#ALGORITHM_PARAM} is used
    *                    to determine the type.
    * @param reportMap A {@link Map} that shall be used during initialization of
    *                  the {@link SequenceTrainer}.
@@ -132,7 +132,7 @@ public class TrainerFactory {
    */
   public static SequenceTrainer getSequenceModelTrainer(
           TrainingParameters trainParams, Map<String, String> reportMap) {
-    String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
+    String trainerType = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM,null);
 
     if (trainerType != null) {
       final SequenceTrainer trainer;
@@ -153,7 +153,7 @@ public class TrainerFactory {
    * Retrieves an {@link EventModelSequenceTrainer} that fits the given parameters.
    *
    * @param trainParams The {@link TrainingParameters} to check for the trainer type.
-   *                    Note: The entry {@link AbstractTrainer#ALGORITHM_PARAM} is used
+   *                    Note: The entry {@link TrainingParameters#ALGORITHM_PARAM} is used
    *                    to determine the type.
    * @param reportMap A {@link Map} that shall be used during initialization of
    *                  the {@link EventModelSequenceTrainer}.
@@ -163,7 +163,7 @@ public class TrainerFactory {
    */
   public static <T> EventModelSequenceTrainer<T> getEventModelSequenceTrainer(
           TrainingParameters trainParams, Map<String, String> reportMap) {
-    String trainerType = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
+    String trainerType = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM,null);
 
     if (trainerType != null) {
       final EventModelSequenceTrainer<T> trainer;
@@ -184,7 +184,7 @@ public class TrainerFactory {
    * Retrieves an {@link EventTrainer} that fits the given parameters.
    *
    * @param trainParams The {@link TrainingParameters} to check for the trainer type.
-   *                    Note: The entry {@link AbstractTrainer#ALGORITHM_PARAM} is used
+   *                    Note: The entry {@link TrainingParameters#ALGORITHM_PARAM} is used
    *                    to determine the type. If the type is not defined, the
    *                    {@link GISTrainer#MAXENT_VALUE} will be used.
    * @param reportMap A {@link Map} that shall be used during initialization of
@@ -197,7 +197,7 @@ public class TrainerFactory {
 
     // if the trainerType is not defined -- use the GISTrainer.
     String trainerType = trainParams.getStringParameter(
-            AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+        TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
 
     final EventTrainer trainer;
     if (BUILTIN_TRAINERS.containsKey(trainerType)) {
@@ -216,7 +216,8 @@ public class TrainerFactory {
   public static boolean isValid(TrainingParameters trainParams) {
 
     // TODO: Need to validate all parameters correctly ... error prone?!
-    String algorithmName = trainParams.getStringParameter(AbstractTrainer.ALGORITHM_PARAM,null);
+    String algorithmName = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM,
+        null);
 
     // If a trainer type can be determined, then the trainer is valid!
     if (algorithmName != null &&
@@ -227,8 +228,10 @@ public class TrainerFactory {
     try {
       // require that the Cutoff and the number of iterations be an integer.
       // if they are not set, the default values will be ok.
-      trainParams.getIntParameter(AbstractTrainer.CUTOFF_PARAM, 0);
-      trainParams.getIntParameter(AbstractTrainer.ITERATIONS_PARAM, 0);
+      trainParams.getIntParameter(TrainingParameters.CUTOFF_PARAM,
+          TrainingParameters.CUTOFF_DEFAULT_VALUE);
+      trainParams.getIntParameter(TrainingParameters.ITERATIONS_PARAM,
+          TrainingParameters.ITERATIONS_DEFAULT_VALUE);
     }
     catch (NumberFormatException e) {
       return false;

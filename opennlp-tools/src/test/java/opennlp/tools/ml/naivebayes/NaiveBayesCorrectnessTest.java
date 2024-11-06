@@ -27,7 +27,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
@@ -45,7 +44,7 @@ public class NaiveBayesCorrectnessTest extends AbstractNaiveBayesTest {
   @BeforeEach
   void initIndexer() throws IOException {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainingParameters.put(TrainingParameters.CUTOFF_PARAM, 1);
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
