@@ -24,7 +24,6 @@ import java.util.SortedMap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
@@ -44,9 +43,9 @@ public class DocumentCategorizerNBTest {
         new DocumentSample("0", new String[] {"x", "y", "z", "7", "8"}));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, 100);
+    params.put(TrainingParameters.ITERATIONS_PARAM, TrainingParameters.ITERATIONS_DEFAULT_VALUE);
     params.put(TrainingParameters.CUTOFF_PARAM, 0);
-    params.put(AbstractTrainer.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
+    params.put(TrainingParameters.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
 
     DoccatModel model = DocumentCategorizerME.train("x-unspecified", samples,
         params, new DoccatFactory());

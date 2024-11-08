@@ -36,6 +36,7 @@ import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.Sequence;
 import opennlp.tools.ml.model.SequenceStream;
 import opennlp.tools.ml.model.SequenceStreamEventStream;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Trains {@link PerceptronModel models} with sequences using the perceptron algorithm.
@@ -145,7 +146,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
    *
    * @param iterations     The number of iterations to use for training.
    * @param sequenceStream The {@link SequenceStream<Event>} used as data input.
-   * @param cutoff         The {{@link #CUTOFF_PARAM}} value to use for training.
+   * @param cutoff         The {{@link TrainingParameters#CUTOFF_PARAM}} value to use for training.
    * @param useAverage     Whether to use 'averaging', or not.
    * @return A valid, trained {@link AbstractModel perceptron model}.
    */
@@ -154,7 +155,7 @@ public class SimplePerceptronSequenceTrainer extends AbstractEventModelSequenceT
     this.iterations = iterations;
     this.sequenceStream = sequenceStream;
 
-    trainingParameters.put(AbstractDataIndexer.CUTOFF_PARAM, cutoff);
+    trainingParameters.put(TrainingParameters.CUTOFF_PARAM, cutoff);
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     DataIndexer di = new OnePassDataIndexer();
     di.init(trainingParameters, reportMap);

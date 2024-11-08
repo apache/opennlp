@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * A {@link DataIndexer} for maxent model data which handles cutoffs for uncommon
@@ -48,7 +49,8 @@ public class OnePassDataIndexer extends AbstractDataIndexer {
    */
   @Override
   public void index(ObjectStream<Event> eventStream) throws IOException {
-    int cutoff = trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
+    int cutoff = trainingParameters.getIntParameter(TrainingParameters.CUTOFF_PARAM,
+        TrainingParameters.CUTOFF_DEFAULT_VALUE);
     boolean sort = trainingParameters.getBooleanParameter(SORT_PARAM, SORT_DEFAULT);
 
     long start = System.currentTimeMillis();

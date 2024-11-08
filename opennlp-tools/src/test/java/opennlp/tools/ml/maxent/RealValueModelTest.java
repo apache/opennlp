@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.FileEventStream;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
@@ -39,7 +38,7 @@ public class RealValueModelTest {
   @BeforeEach
   void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainingParameters.put(TrainingParameters.CUTOFF_PARAM, 1);
     testDataIndexer = new OnePassRealValueDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
   }

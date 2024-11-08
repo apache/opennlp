@@ -26,16 +26,6 @@ import opennlp.tools.util.TrainingParameters;
 
 public abstract class AbstractTrainer implements Trainer {
 
-  public static final String ALGORITHM_PARAM = "Algorithm";
-
-  public static final String TRAINER_TYPE_PARAM = "TrainerType";
-
-  public static final String CUTOFF_PARAM = "Cutoff";
-  public static final int CUTOFF_DEFAULT = 5;
-
-  public static final String ITERATIONS_PARAM = "Iterations";
-  public static final int ITERATIONS_DEFAULT = 100;
-
   protected TrainingParameters trainingParameters;
   protected Map<String,String> reportMap;
 
@@ -66,24 +56,27 @@ public abstract class AbstractTrainer implements Trainer {
   }
 
   /**
-   * @return Retrieves the configured {@link #ALGORITHM_PARAM} value.
+   * @return Retrieves the configured {@link TrainingParameters#ALGORITHM_PARAM} value.
    */
   public String getAlgorithm() {
-    return trainingParameters.getStringParameter(ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    return trainingParameters.getStringParameter(TrainingParameters.ALGORITHM_PARAM,
+        GISTrainer.MAXENT_VALUE);
   }
 
   /**
-   * @return Retrieves the configured {@link #CUTOFF_PARAM} value.
+   * @return Retrieves the configured {@link TrainingParameters#CUTOFF_PARAM} value.
    */
   public int getCutoff() {
-    return trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
+    return trainingParameters.getIntParameter(TrainingParameters.CUTOFF_PARAM,
+        TrainingParameters.CUTOFF_DEFAULT_VALUE);
   }
 
   /**
-   * @return Retrieves the configured {@link #ITERATIONS_PARAM} value.
+   * @return Retrieves the configured {@link TrainingParameters#ITERATIONS_PARAM} value.
    */
   public int getIterations() {
-    return trainingParameters.getIntParameter(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
+    return trainingParameters.getIntParameter(TrainingParameters.ITERATIONS_PARAM,
+        TrainingParameters.ITERATIONS_DEFAULT_VALUE);
   }
 
   /**
@@ -97,8 +90,10 @@ public abstract class AbstractTrainer implements Trainer {
     // should validate if algorithm is set? What about the Parser?
 
     try {
-      trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
-      trainingParameters.getIntParameter(ITERATIONS_PARAM, ITERATIONS_DEFAULT);
+      trainingParameters.getIntParameter(TrainingParameters.CUTOFF_PARAM,
+          TrainingParameters.CUTOFF_DEFAULT_VALUE);
+      trainingParameters.getIntParameter(TrainingParameters.ITERATIONS_PARAM,
+          TrainingParameters.ITERATIONS_DEFAULT_VALUE);
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(e);
     }

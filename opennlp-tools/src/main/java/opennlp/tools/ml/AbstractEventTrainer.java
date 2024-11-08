@@ -57,8 +57,8 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
 
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, isSortAndMerge());
     // If the cutoff was set, don't overwrite the value.
-    if (trainingParameters.getIntParameter(CUTOFF_PARAM, -1) == -1) {
-      trainingParameters.put(CUTOFF_PARAM, 5);
+    if (trainingParameters.getIntParameter(TrainingParameters.CUTOFF_PARAM, -1) == -1) {
+      trainingParameters.put(TrainingParameters.CUTOFF_PARAM, TrainingParameters.CUTOFF_DEFAULT_VALUE);
     }
     
     DataIndexer indexer = DataIndexerFactory.getDataIndexer(trainingParameters, reportMap);
@@ -77,7 +77,7 @@ public abstract class AbstractEventTrainer extends AbstractTrainer implements Ev
     }
 
     MaxentModel model = doTrain(indexer);
-    addToReport(AbstractTrainer.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
+    addToReport(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
     return model;
   }
 

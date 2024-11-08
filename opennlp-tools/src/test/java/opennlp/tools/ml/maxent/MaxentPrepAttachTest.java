@@ -24,7 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.AbstractEventTrainer;
-import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.PrepAttachDataUtil;
 import opennlp.tools.ml.TrainerFactory;
@@ -43,7 +42,7 @@ public class MaxentPrepAttachTest {
   @BeforeEach
   void initIndexer() {
     TrainingParameters trainingParameters = new TrainingParameters();
-    trainingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainingParameters.put(TrainingParameters.CUTOFF_PARAM, 1);
     trainingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     testDataIndexer = new TwoPassDataIndexer();
     testDataIndexer.init(trainingParameters, new HashMap<>());
@@ -76,10 +75,10 @@ public class MaxentPrepAttachTest {
   void testMaxentOnPrepAttachDataWithParams() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     trainParams.put(AbstractEventTrainer.DATA_INDEXER_PARAM,
         AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainParams.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
@@ -91,7 +90,7 @@ public class MaxentPrepAttachTest {
   void testMaxentOnPrepAttachDataWithParamsDefault() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
@@ -102,7 +101,7 @@ public class MaxentPrepAttachTest {
   @Test
   void testMaxentOnPrepAttachDataWithParamsLLThreshold() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     trainParams.put(GISTrainer.LOG_LIKELIHOOD_THRESHOLD_PARAM, 5.);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);

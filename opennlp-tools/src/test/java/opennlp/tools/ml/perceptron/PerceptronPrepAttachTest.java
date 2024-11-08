@@ -28,7 +28,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.ml.AbstractTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.PrepAttachDataUtil;
 import opennlp.tools.ml.TrainerFactory;
@@ -47,7 +46,7 @@ public class PerceptronPrepAttachTest {
   void testPerceptronOnPrepAttachData() throws IOException {
     TwoPassDataIndexer indexer = new TwoPassDataIndexer();
     TrainingParameters indexingParameters = new TrainingParameters();
-    indexingParameters.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    indexingParameters.put(TrainingParameters.CUTOFF_PARAM, 1);
     indexingParameters.put(AbstractDataIndexer.SORT_PARAM, false);
     indexer.init(indexingParameters, new HashMap<>());
     indexer.index(PrepAttachDataUtil.createTrainingStream());
@@ -59,8 +58,8 @@ public class PerceptronPrepAttachTest {
   void testPerceptronOnPrepAttachDataWithSkippedAveraging() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(TrainingParameters.CUTOFF_PARAM, 1);
     trainParams.put("UseSkippedAveraging", true);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
@@ -72,9 +71,9 @@ public class PerceptronPrepAttachTest {
   void testPerceptronOnPrepAttachDataWithTolerance() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
-    trainParams.put(AbstractTrainer.ITERATIONS_PARAM, 500);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(TrainingParameters.CUTOFF_PARAM, 1);
+    trainParams.put(TrainingParameters.ITERATIONS_PARAM, 500);
     trainParams.put("Tolerance", 0.0001d);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
@@ -86,9 +85,9 @@ public class PerceptronPrepAttachTest {
   void testPerceptronOnPrepAttachDataWithStepSizeDecrease() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
-    trainParams.put(AbstractTrainer.ITERATIONS_PARAM, 500);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(TrainingParameters.CUTOFF_PARAM, 1);
+    trainParams.put(TrainingParameters.ITERATIONS_PARAM, 500);
     trainParams.put("StepSizeDecrease", 0.06d);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
@@ -100,8 +99,8 @@ public class PerceptronPrepAttachTest {
   void testModelSerialization() throws IOException {
 
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(TrainingParameters.CUTOFF_PARAM, 1);
     trainParams.put("UseSkippedAveraging", true);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
@@ -124,8 +123,8 @@ public class PerceptronPrepAttachTest {
   @Test
   void testModelEquals() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(TrainingParameters.CUTOFF_PARAM, 1);
     trainParams.put("UseSkippedAveraging", true);
 
     EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, null);
@@ -139,10 +138,10 @@ public class PerceptronPrepAttachTest {
   @Test
   void verifyReportMap() throws IOException {
     TrainingParameters trainParams = new TrainingParameters();
-    trainParams.put(AbstractTrainer.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
-    trainParams.put(AbstractTrainer.CUTOFF_PARAM, 1);
+    trainParams.put(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    trainParams.put(TrainingParameters.CUTOFF_PARAM, 1);
     // Since we are verifying the report map, we don't need to have more than 1 iteration
-    trainParams.put(AbstractTrainer.ITERATIONS_PARAM, 1);
+    trainParams.put(TrainingParameters.ITERATIONS_PARAM, 1);
     trainParams.put("UseSkippedAveraging", true);
 
     Map<String, String> reportMap = new HashMap<>();

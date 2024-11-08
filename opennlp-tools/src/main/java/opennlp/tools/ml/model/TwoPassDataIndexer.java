@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Collecting event and context counts by making two passes over the events.
@@ -61,7 +62,8 @@ public class TwoPassDataIndexer extends AbstractDataIndexer {
    */
   @Override
   public void index(ObjectStream<Event> eventStream) throws IOException {
-    int cutoff = trainingParameters.getIntParameter(CUTOFF_PARAM, CUTOFF_DEFAULT);
+    int cutoff = trainingParameters.getIntParameter(TrainingParameters.CUTOFF_PARAM,
+        TrainingParameters.CUTOFF_DEFAULT_VALUE);
     boolean sort = trainingParameters.getBooleanParameter(SORT_PARAM, SORT_DEFAULT);
 
     logger.info("Indexing events with TwoPass using cutoff of {}", cutoff);
