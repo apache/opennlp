@@ -20,126 +20,130 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.apache.opennlp</groupId>
-		<artifactId>opennlp</artifactId>
-		<version>2.5.1-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp</artifactId>
+    <version>2.5.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-	<artifactId>opennlp-distr</artifactId>
-	<packaging>pom</packaging>
-	<name>Apache OpenNLP Distribution</name>
+  <artifactId>opennlp-distr</artifactId>
+  <packaging>pom</packaging>
+  <name>Apache OpenNLP Distribution</name>
 
-	<properties>
-		<opennlp.version>${project.version}</opennlp.version>
-	</properties>
+  <properties>
+    <opennlp.version>${project.version}</opennlp.version>
+  </properties>
 
-	<!--  Versions will automatically be updated by the release plugin -->
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.opennlp</groupId>
-			<artifactId>opennlp-tools</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.opennlp</groupId>
-			<artifactId>opennlp-uima</artifactId>
-		</dependency>
-		<dependency>
-            <groupId>org.apache.opennlp</groupId>
-            <artifactId>opennlp-morfologik-addon</artifactId>
-        </dependency>
- 		<!-- ship the dist with a logging impl for cli users -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j2-impl</artifactId>
-			<version>${log4j2.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-	</dependencies>
+  <!--  Versions will automatically be updated by the release plugin -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-tools</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-tools-models</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-morfologik-addon</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-uima</artifactId>
+    </dependency>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>com.ruleoftech</groupId>
-				<artifactId>markdown-page-generator-plugin</artifactId>
-				<version>2.4.2</version>
-				<executions>
-					<execution>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<inputDirectory>${basedir}/../</inputDirectory>
-					<outputDirectory>${basedir}/target</outputDirectory>
-					<headerHtmlFile>${basedir}/README_HEADER.html</headerHtmlFile>
-					<footerHtmlFile>${basedir}/README_FOOTER.html</footerHtmlFile>
-					<pegdownExtensions>TABLES,FENCED_CODE_BLOCKS,AUTOLINKS</pegdownExtensions>
-					<!-- needed for the opennlp.version property -->
-					<applyFiltering>true</applyFiltering>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>bundle-project-sources</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<descriptors>
-								<descriptor>src/main/assembly/bin.xml</descriptor>
-								<descriptor>src/main/assembly/src.xml</descriptor>
-							</descriptors>
-							<!-- Tar package is only compatible with gnu tar,
-							     many file have more than 100 chars.
-							     Right now only javadoc files are too long.
-							 -->
-							 <tarLongFileMode>posix</tarLongFileMode>
-							 
-							 <finalName>apache-opennlp-${project.version}</finalName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin> 
-	        <artifactId>maven-antrun-plugin</artifactId> 
-	        <version>1.8</version>
-	        <executions> 
-	          <execution> 
-	            <id>generate checksums for binary artifacts</id> 
-	            <goals><goal>run</goal></goals> 
-	            <phase>verify</phase> 
-	            <configuration> 
-	              <target> 
-	                <checksum algorithm="sha-512" format="MD5SUM" fileext=".sha512">
-	                  <fileset dir="${project.build.directory}"> 
-	                    <include name="*.zip" /> 
-	                    <include name="*.gz" /> 
-	                  </fileset> 
-	                </checksum>
-	              </target> 
-	            </configuration> 
-	          </execution> 
-	        </executions> 
-	      </plugin>
-		</plugins>
-	</build>
-	
-	<profiles>
+    <!-- ship the dist with a logging impl for cli users -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
+      <version>${log4j2.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.ruleoftech</groupId>
+        <artifactId>markdown-page-generator-plugin</artifactId>
+        <version>2.4.2</version>
+        <executions>
+          <execution>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <inputDirectory>${basedir}/../</inputDirectory>
+          <outputDirectory>${basedir}/target</outputDirectory>
+          <headerHtmlFile>${basedir}/README_HEADER.html</headerHtmlFile>
+          <footerHtmlFile>${basedir}/README_FOOTER.html</footerHtmlFile>
+          <pegdownExtensions>TABLES,FENCED_CODE_BLOCKS,AUTOLINKS</pegdownExtensions>
+          <!-- needed for the opennlp.version property -->
+          <applyFiltering>true</applyFiltering>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>bundle-project-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bin.xml</descriptor>
+                <descriptor>src/main/assembly/src.xml</descriptor>
+              </descriptors>
+              <!-- Tar package is only compatible with gnu tar,
+                   many file have more than 100 chars.
+                   Right now only javadoc files are too long.
+               -->
+              <tarLongFileMode>posix</tarLongFileMode>
+
+              <finalName>apache-opennlp-${project.version}</finalName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate checksums for binary artifacts</id>
+            <goals><goal>run</goal></goals>
+            <phase>verify</phase>
+            <configuration>
+              <target>
+                <checksum algorithm="sha-512" format="MD5SUM" fileext=".sha512">
+                  <fileset dir="${project.build.directory}">
+                    <include name="*.zip" />
+                    <include name="*.gz" />
+                  </fileset>
+                </checksum>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
     <profile>
       <id>apache-release</id>
-      
+
       <build>
         <!-- Run jira report -->
         <!-- depends on having -DjiraVersion set -->
@@ -147,12 +151,12 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-changes-plugin</artifactId>
-			  <version>2.12.1</version>
+            <version>2.12.1</version>
             <executions>
               <execution>
-              <id>default-cli</id>
-              <phase>generate-resources</phase> 
-              <goals><goal>jira-report</goal></goals>
+                <id>default-cli</id>
+                <phase>generate-resources</phase>
+                <goals><goal>jira-report</goal></goals>
                 <configuration>
                   <useJql>true</useJql>
                   <onlyCurrentVersion>true</onlyCurrentVersion>
@@ -160,48 +164,48 @@
                   <maxEntries>1000</maxEntries> <!-- hopefully, bigger than ever needed -->
                 </configuration>
               </execution>
-            </executions>  
+            </executions>
           </plugin>
-        </plugins>     
+        </plugins>
       </build>
     </profile>
     <profile>
       <id>docker</id>
       <build>
-      <plugins>
-        <plugin>
-        <groupId>com.spotify</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <version>1.2.2</version>
-        <executions>
-          <execution>
-          <phase>package</phase>
-          <goals>
-            <goal>build</goal>
-          </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <imageName>apacheopennlp</imageName>
-          <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-          <imageTags>
-          <imageTag>${project.version}</imageTag>
-          </imageTags>
-          <buildArgs>
-            <OPENNLP_BINARY>apache-opennlp-${project.version}-bin.tar.gz</OPENNLP_BINARY>
-          </buildArgs>
-          <resources>
-          <resource>
-            <targetPath>/</targetPath>
-            <directory>${project.build.directory}</directory>
-            <include>apache-opennlp-${project.version}-bin.tar.gz</include>
-          </resource>
-          </resources>
-        </configuration>
-        </plugin>
-      </plugins>
+        <plugins>
+          <plugin>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <version>1.2.2</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>build</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <imageName>apacheopennlp</imageName>
+              <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+              <imageTags>
+                <imageTag>${project.version}</imageTag>
+              </imageTags>
+              <buildArgs>
+                <OPENNLP_BINARY>apache-opennlp-${project.version}-bin.tar.gz</OPENNLP_BINARY>
+              </buildArgs>
+              <resources>
+                <resource>
+                  <targetPath>/</targetPath>
+                  <directory>${project.build.directory}</directory>
+                  <include>apache-opennlp-${project.version}-bin.tar.gz</include>
+                </resource>
+              </resources>
+            </configuration>
+          </plugin>
+        </plugins>
       </build>
     </profile>
-  </profiles> 
-  
+  </profiles>
+
 </project>
