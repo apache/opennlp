@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import ai.onnxruntime.OrtEnvironment;
+import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
 import opennlp.tools.tokenize.Tokenizer;
@@ -68,10 +69,11 @@ public abstract class AbstractDL implements AutoCloseable {
   /**
    * Closes this resource, relinquishing any underlying resources.
    *
-   * @throws Exception If it failed to close.
+   * @throws OrtException Thrown if it failed to close Ort resources.
+   * @throws IllegalStateException Thrown if the underlying resources were already closed.
    */
   @Override
-  public void close() throws Exception {
+  public void close() throws OrtException, IllegalStateException {
     if (session != null) {
       session.close();
     }
