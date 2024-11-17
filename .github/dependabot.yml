@@ -22,6 +22,11 @@ updates:
       interval: weekly
       time: '04:00'
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "com.puppycrawl.tools:*"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "io.github.classgraph:*"
+        update-types: [ "version-update:semver-minor" ]
 
   - package-ecosystem: "github-actions"
     directory: "/"
