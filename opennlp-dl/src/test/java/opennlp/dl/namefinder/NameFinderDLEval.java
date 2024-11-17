@@ -200,10 +200,8 @@ public class NameFinderDLEval extends AbstractDLTest {
 
       final File model = new File("invalid.onnx");
       final File vocab = new File("vocab.txt");
-
-      try (final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels(),
-          sentenceDetector)) {
-      }
+      //noinspection resource
+      new NameFinderDL(model, vocab, getIds2Labels(), sentenceDetector);
     });
 
   }
