@@ -37,7 +37,6 @@ import opennlp.tools.namefind.TokenNameFinderFactory;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.SequenceCodec;
-import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.featuregen.GeneratorFactory;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.ModelUtil;
@@ -122,7 +121,7 @@ public final class TokenNameFinderTrainerTool
 
     mlParams = CmdLineUtil.loadTrainingParameters(params.getParams(), true);
     if (mlParams == null) {
-      mlParams = new TrainingParameters();
+      mlParams = ModelUtil.createDefaultTrainingParameters();
     }
 
     File modelOutFile = params.getModel();
