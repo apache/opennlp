@@ -57,6 +57,7 @@ public class DownloadUtil {
    * The type of model.
    */
   public enum ModelType {
+    LEMMATIZER("lemma"),
     TOKENIZER("token"),
     SENTENCE_DETECTOR("sent"),
     POS("pos-perceptron"),
@@ -72,13 +73,13 @@ public class DownloadUtil {
   }
 
   private static final String BASE_URL = "https://dlcdn.apache.org/opennlp/";
-  private static final String MODELS_UD_MODELS_1_1 = "models/ud-models-1.1/";
+  private static final String MODELS_UD_MODELS_1_2 = "models/ud-models-1.2/";
 
   public static final Map<String, Map<ModelType, String>> available_models;
 
   static {
     try {
-      available_models = new DownloadParser(new URL(BASE_URL + MODELS_UD_MODELS_1_1)).getAvailableModels();
+      available_models = new DownloadParser(new URL(BASE_URL + MODELS_UD_MODELS_1_2)).getAvailableModels();
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
@@ -240,18 +241,34 @@ public class DownloadUtil {
             addModel("fr", link, result);
           } else if (link.contains("bg-ud")) { // Bulgarian
             addModel("bg", link, result);
+          } else if (link.contains("ca-ud")) { // Catalan
+            addModel("ca", link, result);
           } else if (link.contains("cs-ud")) { // Czech
             addModel("cs", link, result);
           } else if (link.contains("hr-ud")) { // Croatian
             addModel("hr", link, result);
           } else if (link.contains("da-ud")) { // Danish
             addModel("da", link, result);
+          } else if (link.contains("el-ud")) { // Greek
+            addModel("el", link, result);
           } else if (link.contains("es-ud")) { // Spanish
             addModel("es", link, result);
           } else if (link.contains("et-ud")) { // Estonian
             addModel("et", link, result);
+          } else if (link.contains("eu-ud")) { // Basque
+            addModel("eu", link, result);
           } else if (link.contains("fi-ud")) { // Finnish
             addModel("fi", link, result);
+          } else if (link.contains("hy-ud")) { // Armenian
+            addModel("hy", link, result);
+          } else if (link.contains("is-ud")) { // Icelandic
+            addModel("is", link, result);
+          } else if (link.contains("ka-ud")) { // Georgian
+            addModel("ka", link, result);
+          } else if (link.contains("kk-ud")) { // Kazakh
+            addModel("kk", link, result);
+          } else if (link.contains("ko-ud")) { // Korean
+            addModel("ko", link, result);
           } else if (link.contains("lv-ud")) { // Latvian
             addModel("lv", link, result);
           } else if (link.contains("no-ud")) { // Norwegian
@@ -272,6 +289,8 @@ public class DownloadUtil {
             addModel("sl", link, result);
           } else if (link.contains("sv-ud")) { // Swedish
             addModel("sv", link, result);
+          } else if (link.contains("tr-ud")) { // Turkish
+            addModel("tr", link, result);
           } else if (link.contains("uk-ud")) { // Ukrainian
             addModel("uk", link, result);
           }
@@ -288,6 +307,8 @@ public class DownloadUtil {
         models.put(ModelType.SENTENCE_DETECTOR, url);
       } else if (link.contains("tokens")) {
         models.put(ModelType.TOKENIZER, url);
+      } else if (link.contains("lemma")) {
+        models.put(ModelType.LEMMATIZER, url);
       } else if (link.contains("pos")) {
         models.put(ModelType.POS, url);
       }

@@ -45,7 +45,7 @@ public class DownloadParserTest {
     Map<String, Map<DownloadUtil.ModelType, String>> result = downloadParser.getAvailableModels();
 
     assertNotNull(result);
-    assertEquals(23, result.size());
+    assertEquals(32, result.size());
 
     final Map<DownloadUtil.ModelType, String> availableModels = result.get(language);
     assertNotNull(availableModels);
@@ -82,7 +82,7 @@ public class DownloadParserTest {
   private static final String MODEL_SENT = "sentence-";
   private static final String MODEL_TOK = "tokens-";
   private static final String MODEL_POS = "pos-";
-  private static final String VER = "1.1-2.4.0";
+  private static final String VER = "1.2-2.5.0";
   private static final String BIN = ".bin";
 
   // Note: This needs to be public as JUnit 5 requires it like this.

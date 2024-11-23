@@ -40,7 +40,7 @@
 		<connection>scm:git:https://github.com/apache/opennlp.git</connection>
 		<developerConnection>scm:git:git@github.com:apache/opennlp.git</developerConnection>
 		<url>https://github.com/apache/opennlp.git</url>
-		<tag>opennlp-2.4.0</tag>
+		<tag>opennlp-2.5.0</tag>
 	</scm>
 
 	<repositories>
@@ -177,6 +177,8 @@
 		<log4j2.version>2.23.1</log4j2.version>
 		<jmh.version>1.37</jmh.version>
 		<classgraph.version>4.8.179</classgraph.version>
+		
+		<!-- TODO Change to 1.2.0, once OPENNLP-1649 is resolved and artifacts are in Maven Central-->
 		<opennlp.models.version>1.1.0</opennlp.models.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>

@@ -40,6 +40,9 @@ import opennlp.tools.util.model.ModelType;
 
 public class POSTaggerMETest extends AbstractModelLoaderTest {
 
+  private static final String[] sentence =
+      {"The", "driver", "got", "badly", "injured", "by", "the", "accident", "."};
+
   private static ObjectStream<POSSample> createSampleStream() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(POSTaggerMETest.class,
         "/opennlp/tools/postag/AnnotatedSentences.txt"); //PENN FORMAT
@@ -64,30 +67,14 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
 
   @Test
   void testPOSTagger() throws IOException {
-    final String[] sentence = {
-        "The",
-        "driver",
-        "got",
-        "badly",
-        "injured",
-        "."};
-
-    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "."};
+    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "IN", "DT", "NN", "."};
     testPOSTagger(new POSTaggerME(trainPennFormatPOSModel(ModelType.MAXENT),
         POSTagFormat.PENN), sentence, expected);
   }
 
   @Test
   void testPOSTaggerPENNtoUD() throws IOException {
-    final String[] sentence = {
-        "The",
-        "driver",
-        "got",
-        "badly",
-        "injured",
-        "."};
-
-    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "ADP", "DET", "NOUN", "PUNCT"};
     //convert PENN to UD on the fly.
     testPOSTagger(new POSTaggerME(trainPennFormatPOSModel(ModelType.MAXENT),
         POSTagFormat.UD), sentence, expected);
@@ -95,15 +82,7 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
 
   @Test
   void testPOSTaggerMappingNoOp() throws IOException {
-    final String[] sentence = {
-        "The",
-        "driver",
-        "got",
-        "badly",
-        "injured",
-        "."};
-
-    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "."};
+    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "IN", "DT", "NN", "."};
     //leave it as is
     testPOSTagger(new POSTaggerME(trainPennFormatPOSModel(ModelType.MAXENT),
         POSTagFormat.CUSTOM), sentence, expected);
@@ -112,15 +91,7 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   @Test
   @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
   void testPOSTaggerDefault() throws IOException {
-    final String[] sentence = {
-        "The",
-        "driver",
-        "got",
-        "badly",
-        "injured",
-        "."};
-
-    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "ADP", "DET", "NOUN", "PUNCT"};
     //this downloads a UD model
     testPOSTagger(new POSTaggerME("en"), sentence, expected);
   }
@@ -128,15 +99,7 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   @Test
   @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
   void testPOSTaggerLegacyPerceptronPennToUD() throws IOException {
-    final String[] sentence = {
-        "The",
-        "driver",
-        "got",
-        "badly",
-        "injured",
-        "."};
-
-    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "ADP", "DET", "NOUN", "PUNCT"};
     //convert PENN to UD on the fly.
     testPOSTagger(new POSTaggerME(getVersion15Model("en-pos-perceptron.bin"),
         POSTagFormat.UD), sentence, expected);
@@ -145,15 +108,7 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   @Test
   @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
   void testPOSTaggerLegacyPerceptronPenn() throws IOException {
-    final String[] sentence = {
-        "The",
-        "driver",
-        "got",
-        "badly",
-        "injured",
-        "."};
-
-    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "."};
+    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "IN", "DT", "NN", "."};
     //convert PENN to UD on the fly.
     testPOSTagger(new POSTaggerME(getVersion15Model("en-pos-perceptron.bin"),
         POSTagFormat.PENN), sentence, expected);
@@ -162,15 +117,7 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   @Test
   @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
   void testPOSTaggerLegacyMaxentPennToUD() throws IOException {
-    final String[] sentence = {
-        "The",
-        "driver",
-        "got",
-        "badly",
-        "injured",
-        "."};
-
-    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "PUNCT"};
+    final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "ADP", "DET", "NOUN", "PUNCT"};
     //convert PENN to UD on the fly.
     testPOSTagger(new POSTaggerME(getVersion15Model("en-pos-maxent.bin"),
         POSTagFormat.UD), sentence, expected);
@@ -179,15 +126,7 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   @Test
   @EnabledWhenCDNAvailable(hostname = "opennlp.sourceforge.net")
   void testPOSTaggerLegacyMaxentPenn() throws IOException {
-    final String[] sentence = {
-        "The",
-        "driver",
-        "got",
-        "badly",
-        "injured",
-        "."};
-
-    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "."};
+    final String[] expected = {"DT", "NN", "VBD", "RB", "VBN", "IN", "DT", "NN", "."};
     //convert PENN to UD on the fly.
     testPOSTagger(new POSTaggerME(getVersion15Model("en-pos-maxent.bin"),
         POSTagFormat.PENN), sentence, expected);

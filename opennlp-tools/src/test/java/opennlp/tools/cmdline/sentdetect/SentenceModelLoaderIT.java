@@ -19,7 +19,6 @@ package opennlp.tools.cmdline.sentdetect;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,12 +39,9 @@ public class SentenceModelLoaderIT extends AbstractModelLoaderTest {
 
   @BeforeAll
   public static void initResources() {
-    List<String> langs = List.of("en", "fr", "de", "it", "nl", "bg", "cs", "da",
-            "es", "et", "fi", "hr", "lv", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv", "uk");
-    langs.forEach(lang -> {
+    SUPPORTED_LANG_CODES.forEach(lang -> {
       try {
-        DownloadUtil.downloadModel(lang,
-                DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
+        DownloadUtil.downloadModel(lang, DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -59,11 +55,12 @@ public class SentenceModelLoaderIT extends AbstractModelLoaderTest {
 
   @ParameterizedTest(name = "Verify \"{0}\" sentence model loading")
   @ValueSource(strings = {"en-ud-ewt", "fr-ud-gsd", "de-ud-gsd", "it-ud-vit", "nl-ud-alpino",
-      "bg-ud-btb", "cs-ud-pdt", "da-ud-ddt", "es-ud-gsd", "et-ud-edt", "fi-ud-tdt", "hr-ud-set",
-      "lv-ud-lvtb", "no-ud-bokmaal", "pl-ud-pdb", "pt-ud-gsd", "ro-ud-rrt", "ru-ud-gsd",
-      "sr-ud-set", "sk-ud-snk", "sl-ud-ssj", "sv-ud-talbanken", "uk-ud-iu"})
+      "bg-ud-btb", "ca-ud-ancora", "cs-ud-pdt", "da-ud-ddt", "el-ud-gdt", "es-ud-gsd", "et-ud-edt",
+      "eu-ud-bdt", "fi-ud-tdt", "hr-ud-set", "hy-ud-bsut", "is-ud-icepahc", "ka-ud-glc", "kk-ud-ktb",
+      "ko-ud-kaist", "lv-ud-lvtb", "no-ud-bokmaal", "pl-ud-pdb", "pt-ud-gsd", "ro-ud-rrt", "ru-ud-gsd",
+      "sr-ud-set", "sk-ud-snk", "sl-ud-ssj", "sv-ud-talbanken", "tr-ud-boun", "uk-ud-iu"})
   public void testLoadModelByLanguage(String langModel) throws IOException {
-    String modelName = "opennlp-" + langModel + "-sentence-1.1-2.4.0.bin";
+    String modelName = "opennlp-" + langModel + "-sentence-" + VER + BIN;
     SentenceModel model = loader.loadModel(Files.newInputStream(OPENNLP_DIR.resolve(modelName)));
     Assertions.assertNotNull(model);
     Assertions.assertTrue(model.isLoadedFromSerialized());
