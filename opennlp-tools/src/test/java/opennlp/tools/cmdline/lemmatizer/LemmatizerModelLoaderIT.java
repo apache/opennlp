@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package opennlp.tools.cmdline.postag;
+package opennlp.tools.cmdline.lemmatizer;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,20 +28,20 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.AbstractModelLoaderTest;
 import opennlp.tools.EnabledWhenCDNAvailable;
-import opennlp.tools.postag.POSModel;
+import opennlp.tools.lemmatizer.LemmatizerModel;
 import opennlp.tools.util.DownloadUtil;
 
 @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
-public class POSModelLoaderIT extends AbstractModelLoaderTest {
+public class LemmatizerModelLoaderIT extends AbstractModelLoaderTest {
 
   // SUT
-  private POSModelLoader loader;
+  private LemmatizerModelLoader loader;
 
   @BeforeAll
   public static void initResources() {
     SUPPORTED_LANG_CODES.forEach(lang -> {
       try {
-        DownloadUtil.downloadModel(lang, DownloadUtil.ModelType.POS, POSModel.class);
+        DownloadUtil.downloadModel(lang, DownloadUtil.ModelType.LEMMATIZER, LemmatizerModel.class);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -50,18 +50,18 @@ public class POSModelLoaderIT extends AbstractModelLoaderTest {
 
   @BeforeEach
   public void setup() {
-    loader = new POSModelLoader();
+    loader = new LemmatizerModelLoader();
   }
 
-  @ParameterizedTest(name = "Verify \"{0}\" POS model loading")
+  @ParameterizedTest(name = "Verify \"{0}\" tokenizer model loading")
   @ValueSource(strings = {"en-ud-ewt", "fr-ud-gsd", "de-ud-gsd", "it-ud-vit", "nl-ud-alpino",
       "bg-ud-btb", "ca-ud-ancora", "cs-ud-pdt", "da-ud-ddt", "el-ud-gdt", "es-ud-gsd", "et-ud-edt",
       "eu-ud-bdt", "fi-ud-tdt", "hr-ud-set", "hy-ud-bsut", "is-ud-icepahc", "ka-ud-glc", "kk-ud-ktb",
       "ko-ud-kaist", "lv-ud-lvtb", "no-ud-bokmaal", "pl-ud-pdb", "pt-ud-gsd", "ro-ud-rrt", "ru-ud-gsd",
       "sr-ud-set", "sk-ud-snk", "sl-ud-ssj", "sv-ud-talbanken", "tr-ud-boun", "uk-ud-iu"})
   public void testLoadModelByLanguage(String langModel) throws IOException {
-    String modelName = "opennlp-" + langModel + "-pos-" + VER + BIN;
-    POSModel model = loader.loadModel(Files.newInputStream(OPENNLP_DIR.resolve(modelName)));
+    String modelName = "opennlp-" + langModel + "-lemmas-" + VER + BIN;
+    LemmatizerModel model = loader.loadModel(Files.newInputStream(OPENNLP_DIR.resolve(modelName)));
     Assertions.assertNotNull(model);
     Assertions.assertTrue(model.isLoadedFromSerialized());
   }

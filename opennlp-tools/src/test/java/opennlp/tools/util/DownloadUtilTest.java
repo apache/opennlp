@@ -86,9 +86,10 @@ public class DownloadUtilTest {
   }
 
   @ParameterizedTest(name = "Verify \"{0}\" sentence model")
-  @ValueSource(strings = {"en", "fr", "de", "it", "nl", "bg", "cs", "da", "es", "et",
-                          "fi", "hr", "lv", "no", "pl", "pt", "ro", "ru", "sk", "sl",
-                          "sr", "sv", "uk"})
+  @ValueSource(strings = {"en", "fr", "de", "it", "nl", "bg", "ca", "cs", "da", "el",
+                          "es", "et", "eu", "fi", "hr", "hy", "is", "ka", "kk", "ko",
+                          "lv", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv",
+                          "tr", "uk"})
   @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
   public void testDownloadModelByLanguage(String lang) throws IOException {
     SentenceModel model = DownloadUtil.downloadModel(lang,
@@ -128,12 +129,20 @@ public class DownloadUtilTest {
             Arguments.of("it", DownloadUtil.available_models.get("it").get(MT_TOKENIZER)),
             Arguments.of("nl", DownloadUtil.available_models.get("nl").get(MT_TOKENIZER)),
             Arguments.of("bg", DownloadUtil.available_models.get("bg").get(MT_TOKENIZER)),
+            Arguments.of("ca", DownloadUtil.available_models.get("ca").get(MT_TOKENIZER)),
             Arguments.of("cs", DownloadUtil.available_models.get("cs").get(MT_TOKENIZER)),
             Arguments.of("da", DownloadUtil.available_models.get("da").get(MT_TOKENIZER)),
+            Arguments.of("el", DownloadUtil.available_models.get("el").get(MT_TOKENIZER)),
             Arguments.of("es", DownloadUtil.available_models.get("es").get(MT_TOKENIZER)),
             Arguments.of("et", DownloadUtil.available_models.get("et").get(MT_TOKENIZER)),
+            Arguments.of("eu", DownloadUtil.available_models.get("eu").get(MT_TOKENIZER)),
             Arguments.of("fi", DownloadUtil.available_models.get("fi").get(MT_TOKENIZER)),
             Arguments.of("hr", DownloadUtil.available_models.get("hr").get(MT_TOKENIZER)),
+            Arguments.of("hy", DownloadUtil.available_models.get("hy").get(MT_TOKENIZER)),
+            Arguments.of("is", DownloadUtil.available_models.get("is").get(MT_TOKENIZER)),
+            Arguments.of("ka", DownloadUtil.available_models.get("ka").get(MT_TOKENIZER)),
+            Arguments.of("kk", DownloadUtil.available_models.get("kk").get(MT_TOKENIZER)),
+            Arguments.of("ko", DownloadUtil.available_models.get("ko").get(MT_TOKENIZER)),
             Arguments.of("lv", DownloadUtil.available_models.get("lv").get(MT_TOKENIZER)),
             Arguments.of("no", DownloadUtil.available_models.get("no").get(MT_TOKENIZER)),
             Arguments.of("pl", DownloadUtil.available_models.get("pl").get(MT_TOKENIZER)),
@@ -144,6 +153,7 @@ public class DownloadUtilTest {
             Arguments.of("sl", DownloadUtil.available_models.get("sl").get(MT_TOKENIZER)),
             Arguments.of("sr", DownloadUtil.available_models.get("sr").get(MT_TOKENIZER)),
             Arguments.of("sv", DownloadUtil.available_models.get("sv").get(MT_TOKENIZER)),
+            Arguments.of("tr", DownloadUtil.available_models.get("tr").get(MT_TOKENIZER)),
             Arguments.of("uk", DownloadUtil.available_models.get("uk").get(MT_TOKENIZER))
     );
   }

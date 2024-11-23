@@ -108,7 +108,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
    * {@inheritDoc}
    *
    * @throws IllegalArgumentException Thrown if the algorithm name is not equal to
-   *                                  {{@link #PERCEPTRON_VALUE}}.
+   *                                  {@link #PERCEPTRON_VALUE}.
    */
   @Override
   public void validate() {
@@ -215,7 +215,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
    * 
    * @param iterations The number of iterations to use for training.
    * @param di The {@link DataIndexer} used as data input.
-   * @param cutoff The {{@link #CUTOFF_PARAM}} value to use for training.
+   * @param cutoff The {@link TrainingParameters#CUTOFF_PARAM} value to use for training.
    *               
    * @return A valid, trained {@link AbstractModel perceptron model}.
    */
@@ -228,9 +228,9 @@ public class PerceptronTrainer extends AbstractEventTrainer {
    *
    * @param iterations The number of iterations to use for training.
    * @param di The {@link DataIndexer} used as data input.
-   * @param cutoff The {{@link #CUTOFF_PARAM}} value to use for training.
+   * @param cutoff The {@link TrainingParameters#CUTOFF_PARAM} value to use for training.
    * @param useAverage Whether to use 'averaging', or not.
-   *                   See {{@link #setSkippedAveraging(boolean)}} for details.
+   *                   See {@link #setSkippedAveraging(boolean)} for details.
    *
    * @return A valid, trained {@link AbstractModel perceptron model}.
    */
