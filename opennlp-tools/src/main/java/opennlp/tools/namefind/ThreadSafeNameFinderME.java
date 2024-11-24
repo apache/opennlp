@@ -15,16 +15,13 @@
  * limitations under the License.
  */
 
-package opennlp.tools.sentdetect;
-
-import java.io.IOException;
+package opennlp.tools.namefind;
 
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.Span;
 
 /**
- * A thread-safe version of {@link SentenceDetectorME}. Using it is completely transparent.
+ * A thread-safe version of {@link NameFinderME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
  *
  * @implNote
@@ -36,63 +33,48 @@ import opennlp.tools.util.Span;
  * </p>
  * The user is responsible for clearing the {@link ThreadLocal}.
  *
- * @see SentenceDetector
- * @see SentenceDetectorME
+ * @see NameFinderME
+ * @see TokenNameFinder
  */
 @ThreadSafe
-public class ThreadSafeSentenceDetectorME implements SentenceDetector, AutoCloseable {
+public class ThreadSafeNameFinderME implements TokenNameFinder, AutoCloseable {
 
-  private final SentenceModel model;
+  private final TokenNameFinderModel model;
 
-  private final ThreadLocal<SentenceDetectorME> threadLocal = new ThreadLocal<>();
-
-  /**
-   * Initializes a {@link ThreadSafeSentenceDetectorME} by downloading a default model
-   * for a given {@code language}.
-   *
-   * @param language An ISO conform language code.
-   * @throws IOException Thrown if the model could not be downloaded or saved.
-   */
-  public ThreadSafeSentenceDetectorME(String language) throws IOException {
-    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class));
-  }
+  private final ThreadLocal<NameFinderME> threadLocal = new ThreadLocal<>();
 
   /**
-   * Initializes a {@link ThreadSafeSentenceDetectorME} with the specified {@code model}.
+   * Initializes a {@link ThreadSafeNameFinderME} with the specified {@code model}.
    *
-   * @param model A valid {@link SentenceModel}.
+   * @param model A valid {@link TokenNameFinderModel}.
    */
-  public ThreadSafeSentenceDetectorME(SentenceModel model) {
+  public ThreadSafeNameFinderME(TokenNameFinderModel model) {
     super();
     this.model = model;
   }
 
   // If a thread-local version exists, return it. Otherwise, create, then return.
-  private SentenceDetectorME getSD() {
-    SentenceDetectorME sd = threadLocal.get();
+  private NameFinderME getNameFinder() {
+    NameFinderME sd = threadLocal.get();
     if (sd == null) {
-      sd = new SentenceDetectorME(model);
+      sd = new NameFinderME(model);
       threadLocal.set(sd);
     }
     return sd;
   }
 
-  public double[] getSentenceProbabilities() {
-    return getSD().getSentenceProbabilities();
-  }
-
-  @Override
-  public String[] sentDetect(CharSequence s) {
-    return getSD().sentDetect(s);
-  }
-
-  @Override
-  public Span[] sentPosDetect(CharSequence s) {
-    return getSD().sentPosDetect(s);
-  }
-
   @Override
   public void close() {
     threadLocal.remove();
+  }
+
+  @Override
+  public Span[] find(String[] tokens) {
+    return getNameFinder().find(tokens);
+  }
+
+  @Override
+  public void clearAdaptiveData() {
+    getNameFinder().clearAdaptiveData();
   }
 }

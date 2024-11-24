@@ -24,17 +24,18 @@ import opennlp.tools.commons.ThreadSafe;
 /**
  * A thread-safe version of the {@link LemmatizerME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
- * <p>
- * Note, however, that this implementation uses a {@link ThreadLocal}. Although the implementation is
+ *
+ * @implNote
+ * This implementation uses a {@link ThreadLocal}. Although the implementation is
  * lightweight because the model is not duplicated, if you have many long-running threads,
  * you may run into memory problems.
- * </p>
  * <p>
  * Be careful when using this in a Jakarta EE application, for example.
  * </p>
  * The user is responsible for clearing the {@link ThreadLocal}.
  *
  * @see Lemmatizer
+ * @see LemmatizerME
  */
 @ThreadSafe
 public class ThreadSafeLemmatizerME implements Lemmatizer, AutoCloseable {

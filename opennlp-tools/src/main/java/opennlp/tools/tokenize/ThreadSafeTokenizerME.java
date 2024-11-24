@@ -17,21 +17,27 @@
 
 package opennlp.tools.tokenize;
 
+import java.io.IOException;
+
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.Span;
 
 /**
- * A thread-safe version of TokenizerME. Using it is completely transparent. You can use it in
- * a single-threaded context as well, it only incurs a minimal overhead.
- * <p>
- * Note, however, that this implementation uses a {@link ThreadLocal}. Although the implementation is
+ * A thread-safe version of {@link TokenizerME}. Using it is completely transparent.
+ * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
+ *
+ * @implNote
+ * This implementation uses a {@link ThreadLocal}. Although the implementation is
  * lightweight because the model is not duplicated, if you have many long-running threads,
  * you may run into memory problems.
- * </p>
  * <p>
  * Be careful when using this in a Jakarta EE application, for example.
  * </p>
  * The user is responsible for clearing the {@link ThreadLocal}.
+ *
+ * @see Tokenizer
+ * @see TokenizerME
  */
 @ThreadSafe
 public class ThreadSafeTokenizerME implements Tokenizer, AutoCloseable {
@@ -40,6 +46,22 @@ public class ThreadSafeTokenizerME implements Tokenizer, AutoCloseable {
 
   private final ThreadLocal<TokenizerME> threadLocal = new ThreadLocal<>();
 
+  /**
+   * Initializes a {@link ThreadSafeTokenizerME} by downloading a default model
+   * for a given {@code language}.
+   *
+   * @param language An ISO conform language code.
+   * @throws IOException Thrown if the model could not be downloaded or saved.
+   */
+  public ThreadSafeTokenizerME(String language) throws IOException {
+    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.TOKENIZER, TokenizerModel.class));
+  }
+
+  /**
+   * Initializes a {@link ThreadSafeTokenizerME} with the specified {@code model}.
+   *
+   * @param model A valid {@link TokenizerModel}.
+   */
   public ThreadSafeTokenizerME(TokenizerModel model) {
     super();
     this.model = model;
