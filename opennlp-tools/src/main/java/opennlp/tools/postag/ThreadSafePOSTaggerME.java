@@ -17,12 +17,15 @@
 
 package opennlp.tools.postag;
 
+import java.io.IOException;
+
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.Sequence;
 
 /**
- * A thread-safe version of the POSTaggerME. Using it is completely transparent. You can use it in
- * a single-threaded context as well, it only incurs a minimal overhead.
+ * A thread-safe version of the {@link POSTaggerME}. Using it is completely transparent.
+ * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
  * <p>
  * Note, however, that this implementation uses a {@link ThreadLocal}. Although the implementation is
  * lightweight because the model is not duplicated, if you have many long-running threads,
@@ -32,23 +35,66 @@ import opennlp.tools.util.Sequence;
  * Be careful when using this in a Jakarta EE application, for example.
  * </p>
  * The user is responsible for clearing the {@link ThreadLocal}.
+ *
+ * @see POSTagger
  */
 @ThreadSafe
 public class ThreadSafePOSTaggerME implements POSTagger, AutoCloseable {
 
   private final POSModel model;
 
+  private final POSTagFormat posTagFormat;
+
   private final ThreadLocal<POSTaggerME> threadLocal = new ThreadLocal<>();
 
+  /**
+   * Initializes a {@link ThreadSafePOSTaggerME} by downloading a default model for a given
+   * {@code language}.
+   *
+   * @param language An ISO conform language code.
+   * @throws IOException Thrown if the model could not be downloaded or saved.
+   */
+  public ThreadSafePOSTaggerME(String language) throws IOException {
+    this(language, POSTagFormat.UD);
+  }
+
+  /**
+   * Initializes a {@link ThreadSafePOSTaggerME} by downloading a default model
+   * for a given {@code language}.
+   *
+   * @param language An ISO conform language code.
+   * @param format   A valid {@link POSTagFormat}.
+   * @throws IOException Thrown if the model could not be downloaded or saved.
+   */
+  public ThreadSafePOSTaggerME(String language, POSTagFormat format) throws IOException {
+    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.POS, POSModel.class), format);
+  }
+
+  /**
+   * Initializes a {@link ThreadSafePOSTaggerME} with the specified {@code model}.
+   *
+   * @param model A valid {@link POSModel}.
+   */
   public ThreadSafePOSTaggerME(POSModel model) {
+    this(model, POSTagFormat.UD);
+  }
+
+  /**
+   * Initializes a {@link ThreadSafePOSTaggerME} with the specified {@link POSModel model}.
+   *
+   * @param model  A valid {@link POSModel}.
+   * @param format A valid {@link POSTagFormat}.
+   */
+  public ThreadSafePOSTaggerME(POSModel model, POSTagFormat format) {
     super();
     this.model = model;
+    this.posTagFormat = format;
   }
 
   private POSTaggerME getTagger() {
     POSTaggerME tagger = threadLocal.get();
     if (tagger == null) {
-      tagger = new POSTaggerME(model);
+      tagger = new POSTaggerME(model, posTagFormat);
       threadLocal.set(tagger);
     }
     return tagger;
