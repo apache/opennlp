@@ -20,6 +20,7 @@ package opennlp.tools.sentdetect;
 import java.io.IOException;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.Span;
 
@@ -43,6 +44,7 @@ import opennlp.tools.util.Span;
 public class ThreadSafeSentenceDetectorME implements SentenceDetector, AutoCloseable {
 
   private final SentenceModel model;
+  private final Dictionary abbDict;
 
   private final ThreadLocal<SentenceDetectorME> threadLocal = new ThreadLocal<>();
 
@@ -63,15 +65,25 @@ public class ThreadSafeSentenceDetectorME implements SentenceDetector, AutoClose
    * @param model A valid {@link SentenceModel}.
    */
   public ThreadSafeSentenceDetectorME(SentenceModel model) {
-    super();
+    this(model, model.getAbbreviations());
+  }
+
+  /**
+   * Instantiates a {@link ThreadSafeSentenceDetectorME} with an existing {@link SentenceModel}.
+   *
+   * @param model The {@link SentenceModel} to be used.
+   * @param abbDict The {@link Dictionary} to be used. It must fit the language of the {@code model}.
+   */
+  public ThreadSafeSentenceDetectorME(SentenceModel model, Dictionary abbDict) {
     this.model = model;
+    this.abbDict = abbDict;
   }
 
   // If a thread-local version exists, return it. Otherwise, create, then return.
   private SentenceDetectorME getSD() {
     SentenceDetectorME sd = threadLocal.get();
     if (sd == null) {
-      sd = new SentenceDetectorME(model);
+      sd = new SentenceDetectorME(model, abbDict);
       threadLocal.set(sd);
     }
     return sd;

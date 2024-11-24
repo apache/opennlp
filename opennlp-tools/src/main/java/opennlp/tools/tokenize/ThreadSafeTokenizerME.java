@@ -20,6 +20,7 @@ package opennlp.tools.tokenize;
 import java.io.IOException;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.Span;
 
@@ -43,6 +44,7 @@ import opennlp.tools.util.Span;
 public class ThreadSafeTokenizerME implements Tokenizer, AutoCloseable {
 
   private final TokenizerModel model;
+  private final Dictionary abbDict;
 
   private final ThreadLocal<TokenizerME> threadLocal = new ThreadLocal<>();
 
@@ -63,14 +65,24 @@ public class ThreadSafeTokenizerME implements Tokenizer, AutoCloseable {
    * @param model A valid {@link TokenizerModel}.
    */
   public ThreadSafeTokenizerME(TokenizerModel model) {
-    super();
+    this(model, model.getAbbreviations());
+  }
+
+  /**
+   * Instantiates a {@link ThreadSafeTokenizerME} with an existing {@link TokenizerModel}.
+   *
+   * @param model The {@link TokenizerModel} to be used.
+   * @param abbDict The {@link Dictionary} to be used. It must fit the language of the {@code model}.
+   */
+  public ThreadSafeTokenizerME(TokenizerModel model, Dictionary abbDict) {
     this.model = model;
+    this.abbDict = abbDict;
   }
 
   private TokenizerME getTokenizer() {
     TokenizerME tokenizer = threadLocal.get();
     if (tokenizer == null) {
-      tokenizer = new TokenizerME(model);
+      tokenizer = new TokenizerME(model, abbDict);
       threadLocal.set(tokenizer);
     }
     return tokenizer;
