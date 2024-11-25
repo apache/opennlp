@@ -31,6 +31,10 @@ import opennlp.tools.models.ClassPathModelFinder;
  * Enables the detection of OpenNLP models in the classpath via classgraph.
  * By default, this class will search for JAR files starting with "opennlp-models-*".
  * This wildcard pattern can be adjusted by using the alternative constructor of this class.
+ *
+ * @implNote This implementation relies on the <a href="https://github.com/classgraph/classgraph">Classgraph</a> library.
+ * When using this class, you have to take care of <i>Classgraph</i> being in the classpath
+ * of your application, as it is declared as an optional dependency for <i>opennlp-tools-models</i>.
  */
 public class ClassgraphModelFinder extends AbstractClassPathModelFinder implements ClassPathModelFinder {
 
@@ -50,7 +54,9 @@ public class ClassgraphModelFinder extends AbstractClassPathModelFinder implemen
   }
 
   /**
-   * @return a {@link ScanResult} ready for consumption. Caller is responsible for closing it.
+   * @apiNote The caller is responsible for closing it.
+   *
+   * @return A {@link ScanResult} ready for consumption.
    */
   @Override
   protected Object getContext() {
@@ -58,9 +64,11 @@ public class ClassgraphModelFinder extends AbstractClassPathModelFinder implemen
   }
 
   /**
-   * @param wildcardPattern the pattern. Must not be {@code null}.
-   * @param context         an object holding context information. It might be {@code null}.
-   * @return a list of matching classpath uris.
+   * Attempts to obtain {@link URI URIs} from the classpath.
+   * 
+   * @param wildcardPattern The pattern to use for scanning. Must not be {@code null}.
+   * @param context         An object holding context information. It might be {@code null}.
+   * @return A list of matching classpath {@link URI URIs}. It may be empty if nothing is found.
    */
   @Override
   protected List<URI> getMatchingURIs(String wildcardPattern, Object context) {
@@ -71,5 +79,4 @@ public class ClassgraphModelFinder extends AbstractClassPathModelFinder implemen
     }
     return Collections.emptyList();
   }
-
 }

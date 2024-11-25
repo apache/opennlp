@@ -29,8 +29,8 @@ public class ClassPathModelLoader {
   /**
    * Loads a {@link ClassPathModel} from a {@link ClassPathModelEntry}
    *
-   * @param entry must not be {@code null}.
-   * @return a {@link ClassPathModel} containing the model resources.
+   * @param entry A valid {@link ClassPathModelEntry}, it must not be {@code null}.
+   * @return A {@link ClassPathModel} containing the model resources.
    * @throws IOException thrown if something went wrong during reading resources from the classpath.
    */
   public ClassPathModel load(ClassPathModelEntry entry) throws IOException {

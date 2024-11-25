@@ -20,18 +20,34 @@ import java.util.Properties;
 
 public record ClassPathModel(Properties properties, byte[] model) {
 
+  /**
+   * @return Retrieves the value of the {@code model.version} property
+   *         or {@code "unknown"} if it could not be read.
+   */
   public String getModelVersion() {
     return properties != null ? properties.getProperty("model.version", "unknown") : "unknown";
   }
 
+  /**
+   * @return Retrieves the value of the {@code model.name} property
+   *         or {@code "unknown"} if it could not be read.
+   */
   public String getModelName() {
     return properties != null ? properties.getProperty("model.name", "unknown") : "unknown";
   }
 
+  /**
+   * @return Retrieves the value of the {@code model.sha256} property
+   *         or {@code "unknown"} if it could not be read.
+   */
   public String getModelSHA256() {
     return properties != null ? properties.getProperty("model.sha256", "unknown") : "unknown";
   }
 
+  /**
+   * @return Retrieves the value of the {@code model.language} property
+   *         or {@code "unknown"} if it could not  be read.
+   */
   public String getModelLanguage() {
     return properties != null ? properties.getProperty("model.language", "unknown") : "unknown";
   }
