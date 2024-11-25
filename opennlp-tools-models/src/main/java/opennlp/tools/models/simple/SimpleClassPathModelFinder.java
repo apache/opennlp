@@ -45,19 +45,25 @@ import opennlp.tools.models.ClassPathModelFinder;
  * Enables the detection of OpenNLP models in the classpath via JDK classes
  * By default, this class will search for JAR files starting with "opennlp-models-*".
  * This wildcard pattern can be adjusted by using the alternative constructor of this class.
- * <p>
+ *   
+ * @implNote
  * It is a rather simple implementation of scanning the classpath by trying to obtain {@link URL urls}
  * from the actual classpath via a chain of possible options. It might not work for every use-case
  * since it relies on JDK internals only and doesn't account for classloader hierarchies or edge-cases.
  * <p>
- * It will
- * (1) Try to see if we have a {@link URLClassLoader} available in the current thread.
- * (2) Try to obtain URLs via the build in classloader via reflections
- * (requires {@code --add-opens java.base/jdk.internal.loader=ALL-UNNAMED} as JVM argument)
- * (3) Try to use the bootstrap classpath via {@code java.class.path}.
+ * It will:
+ * <ol>
+ *  <li>Try to see if we have a {@link URLClassLoader} available in the current thread.</li>
+ *  <li>Try to obtain URLs via the build in classloader via reflections.
+ *  <br/>(requires {@code --add-opens java.base/jdk.internal.loader=ALL-UNNAMED} as JVM argument)</li>
+ *  <li>Try to use the bootstrap classpath via {@code java.class.path}.</li>
+ * </ol>
+ *
  * <p>
- * If you need a more sophisticated solution,
+ * If you need a more sophisticated implementation,
  * use {@link opennlp.tools.models.classgraph.ClassgraphModelFinder}.
+ *
+ * @see ClassPathModelFinder
  */
 public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder implements ClassPathModelFinder {
 
@@ -68,7 +74,7 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
   // ; for Windows, : for Linux/OSX
 
   /**
-   * By default, it scans for "opennlp-models-*.jar".
+   * By default, it scans for {@link #OPENNLP_MODEL_JAR_PREFIX}.
    */
   public SimpleClassPathModelFinder() {
     this(OPENNLP_MODEL_JAR_PREFIX);
@@ -83,7 +89,7 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
   }
 
   /**
-   * @return always {@code NULL} as it is not needed for the simple case.
+   * @return Always {@code null} as it is not needed for the simple case.
    */
   @Override
   protected Object getContext() {
@@ -91,10 +97,10 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
   }
 
   /**
-   * @param wildcardPattern the pattern. Must not be {@code null}.
-   * @param context         an object holding context information.
+   * @param wildcardPattern The pattern to use for scanning. Must not be {@code null}.
+   * @param context         An object holding context information. It might be {@code null}.
    *                        It is unused within this implementation.
-   * @return a list of matching classpath uris.
+   * @return A list of matching classpath {@link URI URIs}. It may be an empty list if nothing is found.
    */
   @Override
   protected List<URI> getMatchingURIs(String wildcardPattern, Object context) {
@@ -126,10 +132,10 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
   }
 
   /**
-   * Escapes a wildcard expressions for usage as a Java regular expression.
+   * Escapes a {@code wildcard} expressions for usage as a Java regular expression.
    *
-   * @param wildcard must not be {@code null}.
-   * @return the escaped regex.
+   * @param wildcard A valid expression. It must not be {@code null}.
+   * @return The escaped regex.
    */
   private String asRegex(String wildcard) {
     return wildcard
@@ -173,13 +179,16 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
   }
 
   /**
-   * Try to obtain URLs from the classpath in the following order:
+   * Attempts to obtain {@link URL URLs} from the classpath in the following order:
    * <p>
-   * (1) Try to see if we have a {@link URLClassLoader}.
-   * (2) Try to obtain URLs via the build in classloader via reflections (requires an add opens JVM argument)
-   * (3) Try to use the bootstrap classpath via {@code java.class.path}.
+   * <ol>
+   *  <li>Try to see if we have a {@link URLClassLoader} available in the current thread.</li>
+   *  <li>Try to obtain URLs via the build in classloader via reflections.
+   *  <br/>(requires {@code --add-opens java.base/jdk.internal.loader=ALL-UNNAMED} as JVM argument)</li>
+   *  <li>Try to use the bootstrap classpath via {@code java.class.path}.</li>
+   * </ol>
    *
-   * @return a list of URLs within the classpath.
+   * @return A list of {@link URL URLs} within the classpath.
    */
   private List<URL> getClassPathElements() {
     final ClassLoader cl = Thread.currentThread().getContextClassLoader();

@@ -36,7 +36,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
   private Set<ClassPathModelEntry> models;
 
   /**
-   * By default, it scans for "opennlp-models-*.jar".
+   * By default, it scans for {@link #OPENNLP_MODEL_JAR_PREFIX}.
    */
   public AbstractClassPathModelFinder() {
     this(OPENNLP_MODEL_JAR_PREFIX);
@@ -47,7 +47,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
    *                       May contain a wildcard glob ("opennlp-*.jar"). It must not be {@code null}.
    */
   public AbstractClassPathModelFinder(String jarModelPrefix) {
-    Objects.requireNonNull(jarModelPrefix, "modelJarPrefix must not be null");
+    Objects.requireNonNull(jarModelPrefix, "jarModelPrefix must not be null");
     this.jarModelPrefix = jarModelPrefix;
   }
 
@@ -76,19 +76,20 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
   }
 
   /**
+   * @apiNote 
    * Subclasses can implement this method to provide additional context to
    * {@link AbstractClassPathModelFinder#getMatchingURIs(String, Object)}.
    *
-   * @return a context information. May be {@code null}.
+   * @return A context information object. May be {@code null}.
    */
   protected abstract Object getContext();
 
   /**
-   * Return matching classpath URIs for the given pattern.
+   * Retrieve matching classpath {@link URI URIs} for the given {@code wildcardPattern}.
    *
-   * @param wildcardPattern the pattern. Must not be {@code null}.
-   * @param context         an object holding context information. It might be {@code null}.
-   * @return a list of matching classpath URIs.
+   * @param wildcardPattern The pattern to use for scanning. Must not be {@code null}.
+   * @param context         An object holding context information. It might be {@code null}.
+   * @return A list of matching classpath URIs.
    */
   protected abstract List<URI> getMatchingURIs(String wildcardPattern, Object context);
 

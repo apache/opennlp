@@ -25,8 +25,9 @@ public interface ClassPathModelFinder {
   /**
    * Finds OpenNLP models within the classpath.
    *
-   * @param reloadCache {@code true}, if the internal cache should explicitly be reloaded
-   * @return A Set of {@link ClassPathModelEntry ClassPathModelEntries}. It might be empty.
+   * @param reloadCache {@code true}, if the internal cache should explicitly be reloaded,
+   *                    {@code false} otherwise.
+   * @return A Set of {@link ClassPathModelEntry model entries}. It might be empty if none were found.
    */
   Set<ClassPathModelEntry> findModels(boolean reloadCache);
 }

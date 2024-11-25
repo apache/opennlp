@@ -19,6 +19,13 @@ package opennlp.tools.models;
 import java.net.URI;
 import java.util.Optional;
 
+/**
+ * Encapsulates a classpath entry that is associated with an {@link URI model URI}
+ * and optional {@code properties}.
+ * 
+ * @param model A valid {@link URI} associated with the model's location.
+ * @param properties Optional properties to use.
+ */
 public record ClassPathModelEntry(URI model, Optional<URI> properties) {
 
 }
