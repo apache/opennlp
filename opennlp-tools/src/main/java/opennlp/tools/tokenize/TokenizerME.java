@@ -129,13 +129,23 @@ public class TokenizerME extends AbstractTokenizer {
    * @param model The {@link TokenizerModel} to be used.
    */
   public TokenizerME(TokenizerModel model) {
-    TokenizerFactory factory = model.getFactory();
-    this.alphanumeric = factory.getAlphaNumericPattern();
-    this.cg = factory.getContextGenerator();
+    this(model, model.getAbbreviations());
+  }
+
+  /**
+   * Instantiates a {@link TokenizerME} with an existing {@link TokenizerModel}.
+   *
+   * @param model The {@link TokenizerModel} to be used.
+   * @param abbDict The {@link Dictionary} to be used. It must fit the language of the {@code model}.
+   */
+  public TokenizerME(TokenizerModel model, Dictionary abbDict) {
     this.model = model.getMaxentModel();
+    this.abbDict = abbDict;
+    TokenizerFactory factory = model.getFactory();
+    this.cg = factory.getContextGenerator();
+    this.alphanumeric = factory.getAlphaNumericPattern();
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
 
-    abbDict = model.getAbbreviations();
     newTokens = new ArrayList<>();
     tokProbs = new ArrayList<>(50);
   }

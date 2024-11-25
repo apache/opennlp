@@ -99,11 +99,21 @@ public class SentenceDetectorME implements SentenceDetector {
    * @param model the {@link SentenceModel}
    */
   public SentenceDetectorME(SentenceModel model) {
-    SentenceDetectorFactory sdFactory = model.getFactory();
+    this(model, model.getAbbreviations());
+  }
+
+  /**
+   * Instantiates a {@link SentenceDetectorME} with an existing {@link SentenceModel}.
+   *
+   * @param model The {@link SentenceModel} to be used.
+   * @param abbDict The {@link Dictionary} to be used. It must fit the language of the {@code model}.
+   */
+  public SentenceDetectorME(SentenceModel model, Dictionary abbDict) {
     this.model = model.getMaxentModel();
+    this.abbDict = abbDict;
+    SentenceDetectorFactory sdFactory = model.getFactory();
     cgen = sdFactory.getSDContextGenerator();
     scanner = sdFactory.getEndOfSentenceScanner();
-    abbDict = model.getAbbreviations();
     useTokenEnd = sdFactory.isUseTokenEnd();
   }
 
