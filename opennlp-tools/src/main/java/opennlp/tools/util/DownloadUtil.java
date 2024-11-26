@@ -32,6 +32,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
@@ -72,18 +73,12 @@ public class DownloadUtil {
     }
   }
 
-  private static final String BASE_URL = "https://dlcdn.apache.org/opennlp/";
-  private static final String MODELS_UD_MODELS_1_2 = "models/ud-models-1.2/";
+  private static final String BASE_URL =
+      System.getProperty("OPENNLP_DOWNLOAD_BASE_URL", "https://dlcdn.apache.org/opennlp/");
+  private static final String MODEL_URI_PATH =
+      System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.2/");
 
-  public static final Map<String, Map<ModelType, String>> available_models;
-
-  static {
-    try {
-      available_models = new DownloadParser(new URL(BASE_URL + MODELS_UD_MODELS_1_2)).getAvailableModels();
-    } catch (MalformedURLException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  private static Map<String, Map<ModelType, String>> availableModels;
 
   /**
    * Triggers a download for the specified {@link DownloadUtil.ModelType}.
@@ -98,14 +93,14 @@ public class DownloadUtil {
   public static <T extends BaseModel> T downloadModel(String language, ModelType modelType,
                                                       Class<T> type) throws IOException {
 
-    if (available_models.containsKey(language)) {
-      final String url = (available_models.get(language).get(modelType));
+    if (getAvailableModels().containsKey(language)) {
+      final String url = (getAvailableModels().get(language).get(modelType));
       if (url != null) {
         return downloadModel(new URL(url), type);
       }
     }
 
-    throw new IOException("Invalid model.");
+    throw new IOException("There is no model available: " + language + " " + modelType.name);
   }
 
   /**
@@ -124,9 +119,15 @@ public class DownloadUtil {
    */
   public static <T extends BaseModel> T downloadModel(URL url, Class<T> type) throws IOException {
 
-    final Path homeDirectory = Paths.get(System.getProperty("user.home") + "/.opennlp/");
+    final Path homeDirectory = Paths.get(System.getProperty("OPENNLP_DOWNLOAD_HOME",
+        System.getProperty("user.home"))).resolve(".opennlp");
+
     if (!Files.isDirectory(homeDirectory)) {
-      homeDirectory.toFile().mkdir();
+      try {
+        Files.createDirectories(homeDirectory);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     final String filename = url.toString().substring(url.toString().lastIndexOf("/") + 1);
@@ -141,8 +142,10 @@ public class DownloadUtil {
 
       validateModel(new URL(url + ".sha512"), localFile);
 
-
       logger.debug("Download complete.");
+    } else {
+      System.out.println("Model file already exists. Skipping download.");
+      logger.debug("Model file '{}' already exists. Skipping download.", filename);
     }
 
     try {
@@ -150,6 +153,17 @@ public class DownloadUtil {
     } catch (Exception e) {
       throw new IOException("Could not initialize Model of type " + type.getTypeName(), e);
     }
+  }
+
+  public static Map<String, Map<ModelType, String>> getAvailableModels() {
+    if (availableModels == null) {
+      try {
+        availableModels = new DownloadParser(new URL(BASE_URL + MODEL_URI_PATH)).getAvailableModels();
+      } catch (MalformedURLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return Collections.unmodifiableMap(availableModels);
   }
 
   /**

@@ -36,7 +36,8 @@ public abstract class AbstractModelLoaderTest {
 
   private static final String BASE_URL_MODELS_V15 = "https://opennlp.sourceforge.net/models-1.5/";
   private static final String BASE_URL_MODELS_V183 = "https://dlcdn.apache.org/opennlp/models/langdetect/1.8.3/";
-  protected static final Path OPENNLP_DIR = Paths.get(System.getProperty("user.home") + "/.opennlp/");
+  protected static final Path OPENNLP_DIR = Paths.get(System.getProperty("OPENNLP_DOWNLOAD_HOME",
+          System.getProperty("user.home"))).resolve(".opennlp");
   protected static final String VER = "1.2-2.5.0";
   protected static final String BIN = ".bin";
   protected static List<String> SUPPORTED_LANG_CODES = List.of(

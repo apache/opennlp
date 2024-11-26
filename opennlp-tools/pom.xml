@@ -57,17 +57,18 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <scope>test</scope>
-    </dependency>
-
     <!-- JUnit5 extension used in CLITest to prevent System.exit(..) calls terminating test runs -->
     <dependency>
       <groupId>com.ginsberg</groupId>
       <artifactId>junit5-system-exit</artifactId>
       <version>${junit5-system-exit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.hakky54</groupId>
+      <artifactId>logcaptor</artifactId>
+      <version>${logcaptor.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -121,7 +122,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off -javaagent:${settings.localRepository}/com/ginsberg/junit5-system-exit/${junit5-system-exit.version}/junit5-system-exit-${junit5-system-exit.version}.jar</argLine>
+          <argLine>-Xmx2048m -DOPENNLP_DOWNLOAD_HOME=${opennlp.download.home} -javaagent:${settings.localRepository}/com/ginsberg/junit5-system-exit/${junit5-system-exit.version}/junit5-system-exit-${junit5-system-exit.version}.jar</argLine>
           <forkCount>${opennlp.forkCount}</forkCount>
           <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
           <excludes>
@@ -131,10 +132,29 @@
           </excludes>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven.failsafe.plugin}</version>
+        <configuration>
+          <argLine>-DOPENNLP_DOWNLOAD_HOME=${opennlp.download.home}</argLine>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
+  <properties>
+    <opennlp.download.home>${user.home}</opennlp.download.home>
+  </properties>
+
   <profiles>
+    <profile>
+      <id>ci</id>
+      <properties>
+        <opennlp.download.home>${project.build.directory}</opennlp.download.home>
+      </properties>
+    </profile>
     <profile>
       <id>jmh</id>
       <dependencies>
