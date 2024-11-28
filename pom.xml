@@ -178,8 +178,7 @@
 		<jmh.version>1.37</jmh.version>
 		<classgraph.version>4.8.179</classgraph.version>
 		
-		<!-- TODO Change to 1.2.0, once OPENNLP-1649 is resolved and artifacts are in Maven Central-->
-		<opennlp.models.version>1.1.0</opennlp.models.version>
+		<opennlp.models.version>1.2.0</opennlp.models.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.8.12</jacoco.maven.plugin>
