@@ -15,7 +15,14 @@
 
 name: Java CI
 
-on: [push, pull_request]
+on:
+  # Run CI on Pushes to "main"" or on pull requests targeting "main".
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
