@@ -24,7 +24,7 @@ updates:
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "com.puppycrawl.tools:*"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
       - dependency-name: "io.github.classgraph:*"
         update-types: [ "version-update:semver-minor" ]
 
