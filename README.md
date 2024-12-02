@@ -25,7 +25,6 @@ Welcome to Apache OpenNLP!
 [![Contributors](https://img.shields.io/github/contributors/apache/opennlp)](https://github.com/apache/opennlp/graphs/contributors)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/apache/opennlp.svg)](https://github.com/apache/opennlp/pulls)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/apache/opennlp/badge)](https://api.securityscorecards.dev/projects/github.com/apache/opennlp)
-[![Stack Overflow](https://img.shields.io/badge/stack%20overflow-opennlp-f1eefe.svg)](https://stackoverflow.com/questions/tagged/opennlp)
 
 The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
 
@@ -58,7 +57,12 @@ The models are fully compatible with the latest release, they can be used for te
 
 Documentation, including JavaDocs, code usage and command-line interface examples are available [here](http://opennlp.apache.org/docs/)
 
-You can also follow our [mailing lists](http://opennlp.apache.org/mailing-lists.html) for news and updates, or via social media channels: [![Twitter Follow](https://img.shields.io/twitter/follow/ApacheOpenNLP.svg?style=social)](https://twitter.com/ApacheOpenNLP)
+For recent news, updates and topics, you can:  
+- join the regular [mailing lists](http://opennlp.apache.org/mailing-lists.html), 
+- follow the project's [![Bluesky](https://img.shields.io/badge/Bluesky-0285FF?logo=bluesky&logoColor=fff)](https://bsky.app/profile/apacheopennlp.bsky.social) social media channel, or
+- join the [![Slack](https://img.shields.io/badge/Slack-4A154B?logo=slack&logoColor=fff)](https://the-asf.slack.com) channel (available to people with an _@apache.org_ email address or upon invitation). 
+
+Please, also check the [![Stack Overflow](https://img.shields.io/badge/-Stack%20Overflow-FE7A16?logo=stack-overflow&logoColor=white)](https://stackoverflow.com/questions/tagged/opennlp) community's OpenNLP questions and answers.
 
 ## Overview
 
