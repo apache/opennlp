@@ -77,8 +77,44 @@ public class DownloadUtil {
       System.getProperty("OPENNLP_DOWNLOAD_BASE_URL", "https://dlcdn.apache.org/opennlp/");
   private static final String MODEL_URI_PATH =
       System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.2/");
+  private static final String OPENNLP_DOWNLOAD_HOME = "OPENNLP_DOWNLOAD_HOME";
 
   private static Map<String, Map<ModelType, String>> availableModels;
+
+  /**
+   * Checks if a model of the specified {@code modelType} has been downloaded already
+   * for a particular {@code language}.
+   *
+   * @param language  The ISO language code of the requested model.
+   * @param modelType The {@link DownloadUtil.ModelType type} of model.
+   * @return {@code true} if a model exists locally, {@code false} otherwise.
+   * @throws IOException Thrown if IO errors occurred or the computed hash sum
+   * of an associated, local model file was incorrect.
+   */
+  static boolean existsModel(String language, ModelType modelType) throws IOException {
+    Map<ModelType, String> modelsByLanguage = getAvailableModels().get(language);
+    if (modelsByLanguage == null) {
+      return false;
+    } else {
+      final String url = modelsByLanguage.get(modelType);
+      if (url != null) {
+        final Path homeDirectory = getDownloadHome();
+        final String filename = url.substring(url.lastIndexOf("/") + 1);
+        final Path localFile = homeDirectory.resolve(filename);
+        boolean exists;
+        if (Files.exists(localFile)) {
+          // if this does not throw the requested model is valid!
+          validateModel(new URL(url + ".sha512"), localFile);
+          exists = true;
+        } else {
+          exists = false;
+        }
+        return exists;
+      } else {
+        return false;
+      }
+    }
+  }
 
   /**
    * Triggers a download for the specified {@link DownloadUtil.ModelType}.
@@ -94,7 +130,7 @@ public class DownloadUtil {
                                                       Class<T> type) throws IOException {
 
     if (getAvailableModels().containsKey(language)) {
-      final String url = (getAvailableModels().get(language).get(modelType));
+      final String url = getAvailableModels().get(language).get(modelType);
       if (url != null) {
         return downloadModel(new URL(url), type);
       }
@@ -119,8 +155,7 @@ public class DownloadUtil {
    */
   public static <T extends BaseModel> T downloadModel(URL url, Class<T> type) throws IOException {
 
-    final Path homeDirectory = Paths.get(System.getProperty("OPENNLP_DOWNLOAD_HOME",
-        System.getProperty("user.home"))).resolve(".opennlp");
+    final Path homeDirectory = getDownloadHome();
 
     if (!Files.isDirectory(homeDirectory)) {
       try {
@@ -131,20 +166,17 @@ public class DownloadUtil {
     }
 
     final String filename = url.toString().substring(url.toString().lastIndexOf("/") + 1);
-    final Path localFile = Paths.get(homeDirectory.toString(), filename);
+    final Path localFile = homeDirectory.resolve(filename);
 
     if (!Files.exists(localFile)) {
-      logger.debug("Downloading model from {} to {}.", url, localFile);
+      logger.debug("Downloading model to {}.", localFile);
 
       try (final InputStream in = url.openStream()) {
         Files.copy(in, localFile, StandardCopyOption.REPLACE_EXISTING);
       }
-
       validateModel(new URL(url + ".sha512"), localFile);
-
       logger.debug("Download complete.");
     } else {
-      System.out.println("Model file already exists. Skipping download.");
       logger.debug("Model file '{}' already exists. Skipping download.", filename);
     }
 
@@ -167,7 +199,7 @@ public class DownloadUtil {
   }
 
   /**
-   * Validates the downloaded model.
+   * Validates a downloaded model via the specified {@link Path downloadedModel path}.
    *
    * @param sha512          the url to get the sha512 hash
    * @param downloadedModel the model file to check
@@ -187,8 +219,8 @@ public class DownloadUtil {
     // Validate SHA512 checksum
     final String actualChecksum = calculateSHA512(downloadedModel);
     if (!actualChecksum.equalsIgnoreCase(expectedChecksum)) {
-      throw new IOException("SHA512 checksum validation failed. Expected: "
-          + expectedChecksum + ", but got: " + actualChecksum);
+      throw new IOException("SHA512 checksum validation failed for " + downloadedModel.getFileName() +
+          ". Expected: " + expectedChecksum + ", but got: " + actualChecksum);
     }
   }
 
@@ -198,6 +230,7 @@ public class DownloadUtil {
       try (InputStream fis = Files.newInputStream(file);
            DigestInputStream dis = new DigestInputStream(fis, digest)) {
         byte[] buffer = new byte[4096];
+        //noinspection StatementWithEmptyBody
         while (dis.read(buffer) != -1) {
           // Reading the file to update the digest
         }
@@ -215,6 +248,11 @@ public class DownloadUtil {
       }
       return formatter.toString();
     }
+  }
+
+  private static Path getDownloadHome() {
+    return Paths.get(System.getProperty(OPENNLP_DOWNLOAD_HOME,
+            System.getProperty("user.home"))).resolve(".opennlp");
   }
 
   @Internal
