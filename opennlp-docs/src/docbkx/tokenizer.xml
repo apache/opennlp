@@ -66,18 +66,15 @@ A form of asbestos once used to make Kent cigarette filters has caused a high
 
 			Most part-of-speech taggers, parsers and so on, work with text
 			tokenized in this manner. It is important to ensure that your
-			tokenizer
-			produces tokens of the type expected by your later text
-			processing
-			components.
+			tokenizer produces tokens of the type expected by your later text
+			processing components.
 		</para>
 
 		<para>
 			With OpenNLP (as with many systems), tokenization is a two-stage
 			process:
 			first, sentence boundaries are identified, then tokens within
-			each
-			sentence are identified.
+			each sentence are identified.
 		</para>
 	
 	<section id="tools.tokenizer.cmdline">
@@ -100,7 +97,7 @@ $ opennlp SimpleTokenizer]]>
 			our website.
 			<screen>
 			<![CDATA[
-$ opennlp TokenizerME en-token.bin]]>
+$ opennlp TokenizerME opennlp-en-ud-ewt-tokens-1.2-2.5.0.bin]]>
 		    </screen>
 			To test the tokenizer copy the sample from above to the console. The
 			whitespace separated tokens will be written back to the
@@ -110,7 +107,7 @@ $ opennlp TokenizerME en-token.bin]]>
 			Usually the input is read from a file and written to a file.
 			<screen>
 			<![CDATA[
-$ opennlp TokenizerME en-token.bin < article.txt > article-tokenized.txt]]>
+$ opennlp TokenizerME opennlp-en-ud-ewt-tokens-1.2-2.5.0.bin < article.txt > article-tokenized.txt]]>
 		    </screen>
 			It can be done in the same way for the Simple Tokenizer.
 		</para>
@@ -154,8 +151,7 @@ London share prices were bolstered largely by continued gains on Wall Street and
 			can be loaded.
 			<programlisting language="java">
 			<![CDATA[
-
-try (InputStream modelIn = new FileInputStream("en-token.bin")) {
+try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-tokens-1.2-2.5.0.bin")) {
   TokenizerModel model = new TokenizerModel(modelIn);
 }]]>
 		 </programlisting>
@@ -258,7 +254,7 @@ Arguments description:
 				To train the english tokenizer use the following command:
 				<screen>
 			    <![CDATA[
-$ opennlp TokenizerTrainer -model en-token.bin -alphaNumOpt true -lang en -data en-token.train -encoding UTF-8
+$ opennlp TokenizerTrainer -model en-custom-token.bin -alphaNumOpt true -lang en -data en-custom-token.train -encoding UTF-8
 
 Indexing events with TwoPass using cutoff of 5
 
@@ -291,7 +287,7 @@ Performing 100 iterations.
 Writing tokenizer model ... done (0,044s)
 
 Wrote tokenizer model to
-Path: en-token.bin]]>
+Path: en-custom-token.bin]]>
 				</screen>
 			</para>
 		</section>
@@ -314,7 +310,7 @@ Path: en-token.bin]]>
                 The following sample code illustrates these steps:
                 <programlisting language="java">
                     <![CDATA[
-ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-sent.train")),
+ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-custom-sent.train")),
     StandardCharsets.UTF_8);
 
 ObjectStream<TokenSample> sampleStream = new TokenSampleStream(lineStream);
