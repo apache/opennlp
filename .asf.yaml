@@ -12,6 +12,8 @@ github:
         dismiss_stale_reviews: false
         require_code_owner_reviews: false
         required_approving_review_count: 1
+  autolink_jira:
+    - OPENNLP
   custom_subjects:
     new_pr: "[PR] {title} ({repository})"
     close_pr: "Re: [PR] {title} ({repository})"
@@ -38,3 +40,9 @@ github:
     - textprocessing
     - compling
 
+notifications:
+  commits:      commits@opennlp.apache.org
+  issues:       dev@opennlp.apache.org
+  pullrequests_status: dev@opennlp.apache.org
+  pullrequests_comment: dev@opennlp.apache.org
+  jira_options: link worklog
