@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -32,11 +33,12 @@ import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DownloadUtilTest extends AbstractDownloadUtilTest {
+public class DownloadUtilTest {
 
   @ParameterizedTest(name = "Verify \"{0}\" sentence model")
   @ValueSource(strings = {"en", "fr", "de", "it", "nl", "bg", "ca", "cs", "da", "el",
@@ -62,13 +64,33 @@ public class DownloadUtilTest extends AbstractDownloadUtilTest {
     assertTrue(model.isLoadedFromSerialized());
   }
 
+  @Test
+  @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
+  public void testExistsModel() throws IOException {
+    final String lang = "en";
+    final DownloadUtil.ModelType type = DownloadUtil.ModelType.SENTENCE_DETECTOR;
+    // Prepare
+    SentenceModel model = DownloadUtil.downloadModel(lang, type, SentenceModel.class);
+    assertNotNull(model);
+    assertEquals(lang, model.getLanguage());
+    // Test
+    assertTrue(DownloadUtil.existsModel(lang, type));
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = {"xy", "\t", "\n"})
+  @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
+  public void testExistsModelInvalid(String input) throws IOException {
+    assertFalse(DownloadUtil.existsModel(input, DownloadUtil.ModelType.SENTENCE_DETECTOR));
+  }
+
   @ParameterizedTest(name = "Detect invalid input: \"{0}\"")
   @NullAndEmptySource
   @ValueSource(strings = {" ", "\t", "\n"})
   public void testDownloadModelInvalid(String input) {
-    assertThrows(IOException.class, () -> DownloadUtil.downloadModel(
-            input, DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class),
-        "Invalid model");
+    assertThrows(IOException.class, () -> DownloadUtil.downloadModel(input,
+            DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class), "Invalid model");
   }
 
   private static final DownloadUtil.ModelType MT_TOKENIZER = DownloadUtil.ModelType.TOKENIZER;

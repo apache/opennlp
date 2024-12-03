@@ -35,7 +35,7 @@ import opennlp.tools.sentdetect.SentenceModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
-public class DownloadUtilDownloadTwiceTest extends AbstractDownloadUtilTest {
+public class DownloadUtilDownloadTwiceTest {
 
   /*
    * Programmatic change to debug log to ensure that we can see log messages to
@@ -60,24 +60,24 @@ public class DownloadUtilDownloadTwiceTest extends AbstractDownloadUtilTest {
 
   @Test
   public void testDownloadModelTwice() throws IOException {
+    String lang = "de";
+    DownloadUtil.ModelType type = DownloadUtil.ModelType.SENTENCE_DETECTOR;
+    
     try (LogCaptor logCaptor = LogCaptor.forClass(DownloadUtil.class)) {
+      boolean alreadyDownloaded = DownloadUtil.existsModel(lang, type);
+      DownloadUtil.downloadModel(lang, type, SentenceModel.class);
 
-      DownloadUtil.downloadModel("de",
-          DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
-
-      assertEquals(2, logCaptor.getDebugLogs().size());
-      checkDebugLogsContainMessageFragment(logCaptor.getDebugLogs(), "Download complete.");
+      if (! alreadyDownloaded) {
+        assertEquals(2, logCaptor.getDebugLogs().size());
+        checkDebugLogsContainMessageFragment(logCaptor.getDebugLogs(), "Download complete.");
+      } else {
+        assertEquals(1, logCaptor.getDebugLogs().size());
+        checkDebugLogsContainMessageFragment(logCaptor.getDebugLogs(), "already exists. Skipping download.");
+      }
       logCaptor.clearLogs();
 
       // try to download again
-      DownloadUtil.downloadModel("de",
-          DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
-      assertEquals(1, logCaptor.getDebugLogs().size());
-      checkDebugLogsContainMessageFragment(logCaptor.getDebugLogs(), "already exists. Skipping download.");
-      logCaptor.clearLogs();
-
-      DownloadUtil.downloadModel("de",
-          DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
+      DownloadUtil.downloadModel(lang, type, SentenceModel.class);
       assertEquals(1, logCaptor.getDebugLogs().size());
       checkDebugLogsContainMessageFragment(logCaptor.getDebugLogs(), "already exists. Skipping download.");
       logCaptor.clearLogs();
