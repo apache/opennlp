@@ -41,31 +41,31 @@
 			<para>
 				<screen>
 		   <![CDATA[
-$ opennlp LemmatizerME en-lemmatizer.bin < sentences]]>
+$ opennlp LemmatizerME opennlp-en-ud-ewt-lemmas-1.2-2.5.0.bin < sentences]]>
 		  </screen>
 				The Lemmatizer now reads a pos tagged sentence(s) per line from
 				standard input. For example, you can copy this sentence to the
 				console:
 				<screen>
 		    <![CDATA[
-Rockwell_NNP International_NNP Corp._NNP 's_POS Tulsa_NNP unit_NN said_VBD it_PRP 
-signed_VBD a_DT tentative_JJ agreement_NN extending_VBG its_PRP$ contract_NN with_IN
-Boeing_NNP Co._NNP to_TO provide_VB structural_JJ parts_NNS for_IN Boeing_NNP 's_POS 
-747_CD jetliners_NNS ._.]]>
+Rockwell_PROPN International_ADJ Corp_NOUN 's_PUNCT Tulsa_PROPN unit_NOUN said_VERB it_PRON
+signed_VERB a_DET tentative_NOUN agreement_NOUN extending_VERB its_PRON contract_NOUN
+with_ADP Boeing_PROPN Co._NOUN to_PART provide_VERB structural_ADJ parts_NOUN for_ADP
+Boeing_PROPN 's_PUNCT 747_NUM jetliners_NOUN ._PUNCT]]>
 		  </screen>
 				The Lemmatizer will now echo the lemmas for each word postag pair to
 				the console:
 				<screen>
 		    <![CDATA[
-Rockwell NNP rockwell
-International NNP international
-Corp. NNP corp.
-'s POS 's
-Tulsa NNP tulsa
-unit NN unit
-said VBD say
-it PRP it
-signed VBD sign
+Rockwell	PROPN	rockwell
+International	ADJ	international
+Corp	NOUN	corp
+'s	PUNCT	's
+Tulsa	PROPN	tulsa
+unit	NOUN	unit
+said	VERB	say
+it	PRON	it
+signed	VERB	sign
 ...
 ]]>
 		  </screen>
@@ -89,7 +89,7 @@ signed VBD sign
 				<programlisting language="java">
 		<![CDATA[
 LemmatizerModel model = null;
-try (InputStream modelIn = new FileInputStream("en-lemmatizer.bin"))) {
+try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-lemmas-1.2-2.5.0.bin"))) {
   model = new LemmatizerModel(modelIn);
 }
 ]]>
@@ -116,10 +116,10 @@ String[] tokens = new String[] { "Rockwell", "International", "Corp.", "'s",
     "provide", "structural", "parts", "for", "Boeing", "'s", "747",
     "jetliners", "." };
 
-String[] postags = new String[] { "NNP", "NNP", "NNP", "POS", "NNP", "NN",
-    "VBD", "PRP", "VBD", "DT", "JJ", "NN", "VBG", "PRP$", "NN", "IN",
-    "NNP", "NNP", "TO", "VB", "JJ", "NNS", "IN", "NNP", "POS", "CD", "NNS",
-    "." };
+String[] postags = new String[] { "PROPN", "ADJ", "NOUN", "PUNCT", "PROPN", "NOUN",
+    "VERB", "PRON", "VERB", "DET", "NOUN", "NOUN", "VERB", "PRON", "NOUN", "ADP",
+    "PROPN", "NOUN", "PART", "VERB", "ADJ", "NOUN", "ADP", "PROPN", "PUNCT", "NUM", "NOUN",
+    "PUNCT" };
 
 String[] lemmas = lemmatizer.lemmatize(tokens, postags);]]>
 		</programlisting>
@@ -136,20 +136,20 @@ String[] lemmas = lemmatizer.lemmatize(tokens, postags);]]>
 				corresponding lemma, each column separated by a tab character.
 				<screen>
 		<![CDATA[
-show		NN	show
-showcase	NN	showcase
-showcases	NNS	showcase
-showdown	NN	showdown
-showdowns	NNS	showdown
-shower		NN	shower
-showers		NNS	shower
-showman		NN	showman
-showmanship	NN	showmanship
-showmen		NNS	showman
-showroom	NN	showroom
-showrooms	NNS	showroom
-shows		NNS	show
-shrapnel	NN	shrapnel
+show		NOUN	show
+showcase	NOUN	showcase
+showcases	NOUN	showcase
+showdown	NOUN	showdown
+showdowns	NOUN	showdown
+shower		NOUN	shower
+showers		NOUN	shower
+showman		NOUN	showman
+showmanship	NOUN	showmanship
+showmen		NOUN	showman
+showroom	NOUN	showroom
+showrooms	NOUN	showroom
+shows		NOUN	show
+shrapnel	NOUN	shrapnel
 		]]>
 		</screen>
 				Alternatively, if a (word,postag) pair can output multiple lemmas, the
@@ -157,10 +157,10 @@ shrapnel	NN	shrapnel
 				each row, a word, its postag and the corresponding lemmas separated by "#":
 				<screen>
 		<![CDATA[
-muestras	NN	muestra
-cantaba		V	cantar
-fue		V	ir#ser
-entramos	V	entrar
+muestras	NOUN	muestra
+cantaba		VERB	cantar
+fue		VERB	ir#ser
+entramos	VERB	entrar
 		]]>
 					</screen>
 				First the dictionary must be loaded into memory from disk or another
@@ -170,7 +170,7 @@ entramos	V	entrar
 				<![CDATA[
 InputStream dictLemmatizer = null;
 
-try (dictLemmatizer = new FileInputStream("english-lemmatizer.txt")) {
+try (dictLemmatizer = new FileInputStream("english-dict-lemmatizer.txt")) {
 
 }
 ]]>
@@ -217,22 +217,22 @@ String[] lemmas = lemmatizer.lemmatize(tokens, postags);
 				Sample sentence of the training data:
 				<screen>
 		<![CDATA[
-He        PRP  he
-reckons   VBZ  reckon
-the       DT   the
-current   JJ   current
-accounts  NNS  account
-deficit   NN   deficit
-will      MD   will
-narrow    VB   narrow
-to        TO   to
-only      RB   only
+He        PRON  he
+reckons   VERB  reckon
+the       DET   the
+current   ADJ   current
+accounts  NOUN  account
+deficit   NOUN   deficit
+will      AUX   will
+narrow    VERB   narrow
+to        PART   to
+only      ADV   only
 #         #    #
-1.8       CD   1.8
-millions  CD   million
-in        IN   in
-September NNP  september
-.         .    O]]>
+1.8       NUM   1.8
+millions  NOUN   million
+in        ADP   in
+September PROPN  september
+.         PUNCT   O]]>
 		</screen>
 				The Universal Dependencies Treebank and the CoNLL 2009 datasets
 				distribute training data for many languages.
@@ -267,11 +267,11 @@ Arguments description:
 		</screen>
 					Its now assumed that the english lemmatizer model should be trained
 					from a file called
-					'en-lemmatizer.train' which is encoded as UTF-8. The following command will train the
-					lemmatizer and write the model to en-lemmatizer.bin:
+					'en-custom-lemmatizer.train' which is encoded as UTF-8. The following command will train the
+					lemmatizer and write the model to en-custom-lemmatizer.bin:
 					<screen>
 		<![CDATA[
-$ opennlp LemmatizerTrainerME -model en-lemmatizer.bin -params PerceptronTrainerParams.txt -lang en -data en-lemmatizer.train -encoding UTF-8]]>
+$ opennlp LemmatizerTrainerME -model en-custom-lemmatizer.bin -params PerceptronTrainerParams.txt -lang en -data en-custom-lemmatizer.train -encoding UTF-8]]>
 		</screen>
 				</para>
 			</section>
@@ -294,7 +294,7 @@ $ opennlp LemmatizerTrainerME -model en-lemmatizer.bin -params PerceptronTrainer
 InputStreamFactory inputStreamFactory = null;
     try {
       inputStreamFactory = new MarkableFileInputStreamFactory(
-          new File(en-lemmatizer.train));
+          new File(en-custom-lemmatizer.train));
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
@@ -345,7 +345,7 @@ InputStreamFactory inputStreamFactory = null;
 					The following command shows how the tool can be run:
 					<screen>
 				<![CDATA[
-$ opennlp LemmatizerEvaluator -model en-lemmatizer.bin -data en-lemmatizer.test -encoding utf-8]]>
+$ opennlp LemmatizerEvaluator -model en-custom-lemmatizer.bin -data en-custom-lemmatizer.test -encoding utf-8]]>
 			 </screen>
 					This will display the resulting accuracy score, e.g.:
 					<screen>

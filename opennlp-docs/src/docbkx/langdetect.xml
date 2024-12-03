@@ -147,7 +147,7 @@ lav     Egija Tri-Active procedūru īpaši iesaka izmantot siltākajos gadalaik
 		<section id="tools.langdetect.training.tool">
 			<title>Training Tool</title>
 			<para>
-				The following command will train the language detector and write the model to langdetect.bin:
+				The following command will train the language detector and write the model to langdetect-custom.bin:
 				<screen>
 					<![CDATA[
 $ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] \
@@ -214,7 +214,7 @@ params.put(TrainingParameters.CUTOFF_PARAM, 0);
 LanguageDetectorFactory factory = new LanguageDetectorFactory();
 
 LanguageDetectorModel model = LanguageDetectorME.train(sampleStream, params, factory);
-model.serialize(new File("langdetect.bin"));]]>
+model.serialize(new File("langdetect-custom.bin"));]]>
 	</programlisting>
 		</para>
 		</section>

@@ -41,7 +41,7 @@ under the License.
 		Download the English maxent pos model and start the POS Tagger Tool with this command:
 		<screen>
 			<![CDATA[
-$ opennlp POSTagger en-pos-maxent.bin]]>
+$ opennlp POSTagger opennlp-en-ud-ewt-pos-1.2-2.5.0.bin]]>
 		 </screen>
 		The POS Tagger now reads a tokenized sentence per line from stdin.
 		Copy these two sentences to the console:
@@ -53,9 +53,9 @@ Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .]]>
 		 The POS Tagger will now echo the sentences with pos tags to the console:
 		<screen>
 			<![CDATA[
-Pierre_NNP Vinken_NNP ,_, 61_CD years_NNS old_JJ ,_, will_MD join_VB the_DT board_NN as_IN
-    a_DT nonexecutive_JJ director_NN Nov._NNP 29_CD ._.
-Mr._NNP Vinken_NNP is_VBZ chairman_NN of_IN Elsevier_NNP N.V._NNP ,_, the_DT Dutch_NNP publishing_VBG group_NN]]>
+Pierre_PROPN Vinken_PROPN ,_PUNCT 61_NUM years_NOUN old_ADJ ,_PUNCT will_AUX join_VERB the_DET board_NOUN as_ADP
+		a_DET nonexecutive_ADJ director_NOUN Nov._PROPN 29_NUM ._PUNCT
+Mr._PROPN Vinken_PROPN is_AUX chairman_NOUN of_ADP Elsevier_ADJ N.V._PROPN ,_PUNCT the_DET Dutch_PROPN publishing_VERB group_NOUN .]]>
 		 </screen>
 		 The tag set used by the English pos model is the <ulink url="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">Penn Treebank tag set</ulink>.
 		</para>
@@ -69,7 +69,7 @@ Mr._NNP Vinken_NNP is_VBZ chairman_NN of_IN Elsevier_NNP N.V._NNP ,_, the_DT Dut
 			In the sample below it is loaded from disk.
 			<programlisting language="java">
 				<![CDATA[
-try (InputStream modelIn = new FileInputStream("en-pos-maxent.bin"){
+try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-pos-1.2-2.5.0.bin"){
   POSModel model = new POSModel(modelIn);
 }]]>
 			</programlisting>
@@ -125,8 +125,8 @@ Sequence[] topSequences = tagger.topKSequences(sent);]]>
 			The native POS Tagger training material looks like this:
 			<screen>
 		  <![CDATA[
-About_IN 10_CD Euro_NNP ,_, I_PRP reckon_VBP ._.
-That_DT sounds_VBZ good_JJ ._.]]>
+About_ADV 10_NUM Euro_PROPN ,_PUNCT I_PRON reckon._PUNCT
+That_PRON sounds_VERB good_ADJ ._PUNCT]]>
 			</screen>
 			Each sentence must be in one line. The token/tag pairs are combined with "_".
 			The token/tag pairs are whitespace separated. The data format does not
@@ -180,8 +180,8 @@ Arguments description:
 		    The following command illustrates how an English part-of-speech model can be trained:
 		    <screen>
 		  <![CDATA[
-$ opennlp POSTaggerTrainer -type maxent -model en-pos-maxent.bin \
-                           -lang en -data en-pos.train -encoding UTF-8]]>
+$ opennlp POSTaggerTrainer -type maxent -model en-custom-pos-maxent.bin \
+                           -lang en -data en-custom-pos.train -encoding UTF-8]]>
 		    </screen>
 		</para>
 		</section>
@@ -207,7 +207,8 @@ $ opennlp POSTaggerTrainer -type maxent -model en-pos-maxent.bin \
 POSModel model = null;
 
 try {
-  ObjectStream<String> lineStream = new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-pos.train")), StandardCharsets.UTF_8);
+  ObjectStream<String> lineStream = new PlainTextByLineStream(
+  	new MarkableFileInputStreamFactory(new File("en-custom-pos-maxent.bin")), StandardCharsets.UTF_8);
 
   ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
 
