@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
-package opennlp.tools.namefind;
+package opennlp.tools.chunker;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 
 /**
- * A thread-safe version of {@link NameFinderME}. Using it is completely transparent.
+ * A thread-safe version of the {@link ChunkerME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
  *
  * @implNote
@@ -33,48 +34,58 @@ import opennlp.tools.util.Span;
  * </p>
  * The user is responsible for clearing the {@link ThreadLocal}.
  *
- * @see NameFinderME
- * @see TokenNameFinder
+ * @see Chunker
+ * @see ChunkerME
  */
 @ThreadSafe
-public class ThreadSafeNameFinderME implements TokenNameFinder, AutoCloseable {
+public class ThreadSafeChunkerME implements Chunker, AutoCloseable {
 
-  private final TokenNameFinderModel model;
+  private final ChunkerModel model;
 
-  private final ThreadLocal<NameFinderME> threadLocal = new ThreadLocal<>();
+  private final ThreadLocal<ChunkerME> threadLocal = new ThreadLocal<>();
 
   /**
-   * Initializes a {@link ThreadSafeNameFinderME} with the specified {@code model}.
+   * Initializes a {@link ThreadSafeChunkerME} with the specified {@code model}.
    *
-   * @param model A valid {@link TokenNameFinderModel}.
+   * @param model A valid {@link ChunkerModel}.
    */
-  public ThreadSafeNameFinderME(TokenNameFinderModel model) {
+  public ThreadSafeChunkerME(ChunkerModel model) {
     super();
     this.model = model;
   }
 
-  // If a thread-local version exists, return it. Otherwise, create, then return.
-  private NameFinderME getNameFinder() {
-    NameFinderME nf = threadLocal.get();
-    if (nf == null) {
-      nf = new NameFinderME(model);
-      threadLocal.set(nf);
+  private ChunkerME getChunker() {
+    ChunkerME c = threadLocal.get();
+    if (c == null) {
+      c = new ChunkerME(model);
+      threadLocal.set(c);
     }
-    return nf;
+    return c;
   }
 
   @Override
-  public Span[] find(String[] tokens) {
-    return getNameFinder().find(tokens);
+  public String[] chunk(String[] toks, String[] tags) {
+    return getChunker().chunk(toks, tags);
   }
 
   @Override
-  public void clearAdaptiveData() {
-    getNameFinder().clearAdaptiveData();
+  public Span[] chunkAsSpans(String[] toks, String[] tags) {
+    return getChunker().chunkAsSpans(toks, tags);
+  }
+
+  @Override
+  public Sequence[] topKSequences(String[] sentence, String[] tags) {
+    return getChunker().topKSequences(sentence, tags);
+  }
+
+  @Override
+  public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore) {
+    return getChunker().topKSequences(sentence, tags, minSequenceScore);
   }
 
   @Override
   public void close() {
     threadLocal.remove();
   }
+
 }
