@@ -30,6 +30,8 @@ import opennlp.tools.ml.ArrayMath;
  */
 public abstract class AbstractModel implements MaxentModel {
 
+  private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.0000");
+
   /** Mapping between predicates/contexts and an integer representing them. */
   protected Map<String, Context> pmap;
   /** The names of the outcomes. */
@@ -119,11 +121,10 @@ public abstract class AbstractModel implements MaxentModel {
           "must not have been produced by this model.";
     }
     else {
-      DecimalFormat df =  new DecimalFormat("0.0000");
       StringBuilder sb = new StringBuilder(ocs.length * 2);
-      sb.append(outcomeNames[0]).append("[").append(df.format(ocs[0])).append("]");
+      sb.append(outcomeNames[0]).append("[").append(DECIMAL_FORMAT.format(ocs[0])).append("]");
       for (int i = 1; i < ocs.length; i++) {
-        sb.append("  ").append(outcomeNames[i]).append("[").append(df.format(ocs[i])).append("]");
+        sb.append("  ").append(outcomeNames[i]).append("[").append(DECIMAL_FORMAT.format(ocs[i])).append("]");
       }
       return sb.toString();
     }
