@@ -55,12 +55,12 @@ public class ThreadSafeLemmatizerME implements Lemmatizer, AutoCloseable {
   }
 
   private LemmatizerME getLemmatizer() {
-    LemmatizerME tagger = threadLocal.get();
-    if (tagger == null) {
-      tagger = new LemmatizerME(model);
-      threadLocal.set(tagger);
+    LemmatizerME l = threadLocal.get();
+    if (l == null) {
+      l = new LemmatizerME(model);
+      threadLocal.set(l);
     }
-    return tagger;
+    return l;
   }
 
   @Override
