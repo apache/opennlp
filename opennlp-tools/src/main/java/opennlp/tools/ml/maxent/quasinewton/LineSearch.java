@@ -20,17 +20,25 @@ package opennlp.tools.ml.maxent.quasinewton;
 import opennlp.tools.ml.ArrayMath;
 
 /**
- * Class that performs line search to find minimum.
+ * Performs line search to find a minimum.
+ *
+ * @see <a href="https://link.springer.com/book/10.1007/978-0-387-40065-5">
+ *   Nocedal & Wright 2006, Numerical Optimization</a>, p. 37)
  */
 public class LineSearch {
   private static final double C = 0.0001;
   private static final double RHO = 0.5; // decrease of step size (must be from 0 to 1)
 
   /**
-   * Conducts a backtracking line search (see Nocedal &amp; Wright 2006, Numerical Optimization, p. 37).
+   * Conducts a backtracking line search.
+   *
+   * @param function  The {@link Function} to apply.
+   * @param direction The {@code double[]} representing the direction to search into.
+   * @param lsr       The {@link LineSearchResult} to transport results in.
+   * @param initialStepSize The initial step size to apply. Must be greater than {@code 0}.
    */
-  public static void doLineSearch(Function function,
-      double[] direction, LineSearchResult lsr, double initialStepSize) {
+  public static void doLineSearch(Function function, double[] direction,
+                                  LineSearchResult lsr, double initialStepSize) {
     double stepSize      = initialStepSize;
     int currFctEvalCount = lsr.getFctEvalCount();
     double[] x           = lsr.getNextPoint();
@@ -79,6 +87,12 @@ public class LineSearch {
   /**
    * Conducts a constrained line search (see section 3.2 in the paper "Scalable Training
    * of L1-Regularized Log-Linear Models", Andrew et al. 2007)
+   *
+   * @param function  The {@link Function} to apply.
+   * @param direction The {@code double[]} representing the direction to search into.
+   * @param lsr       The {@link LineSearchResult} to transport results in.
+   * @param l1Cost    The L1-regularization costs. Must be equal or greater than {@code 0}.
+   * @param initialStepSize The initial step size to apply. Must be greater than {@code 0}.
    */
   public static void doConstrainedLineSearch(Function function,
       double[] direction, LineSearchResult lsr, double l1Cost, double initialStepSize) {
@@ -146,7 +160,8 @@ public class LineSearch {
   // ------------------------------------------------------------------------------------- //
 
   /**
-   * Represents a LineSearch result.
+   * Represents a {@link LineSearch} result encapsulating the relevant data
+   * at a point in time during computation.
    */
   public static class LineSearchResult {
 
@@ -162,72 +177,46 @@ public class LineSearch {
     private double[] signVector;
 
     /**
-     * Constructor
+     * Initializes a {@link LineSearchResult} object with the specified parameters.
      */
-    public LineSearchResult(
-        double stepSize,
-        double valueAtCurr,
-        double valueAtNext,
-        double[] gradAtCurr,
-        double[] gradAtNext,
-        double[] currPoint,
-        double[] nextPoint,
-        int fctEvalCount)
+    public LineSearchResult(double stepSize, double valueAtCurr, double valueAtNext,
+                            double[] gradAtCurr, double[] gradAtNext, double[] currPoint,
+                            double[] nextPoint, int fctEvalCount)
     {
       setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
           currPoint, nextPoint, fctEvalCount);
     }
 
     /**
-     * Constructor with sign vector
+     * Initializes a {@link LineSearchResult} object with the specified parameters.
      */
-    public LineSearchResult(
-        double stepSize,
-        double valueAtCurr,
-        double valueAtNext,
-        double[] gradAtCurr,
-        double[] gradAtNext,
-        double[] pseudoGradAtNext,
-        double[] currPoint,
-        double[] nextPoint,
-        double[] signVector,
-        int fctEvalCount)
+    public LineSearchResult(double stepSize, double valueAtCurr, double valueAtNext,
+                            double[] gradAtCurr, double[] gradAtNext, double[] pseudoGradAtNext,
+                            double[] currPoint, double[] nextPoint, double[] signVector,
+                            int fctEvalCount)
     {
       setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
           pseudoGradAtNext, currPoint, nextPoint, signVector, fctEvalCount);
     }
 
     /**
-     * Update line search elements
+     * Updates line search elements.
      */
-    public void setAll(
-        double stepSize,
-        double valueAtCurr,
-        double valueAtNext,
-        double[] gradAtCurr,
-        double[] gradAtNext,
-        double[] currPoint,
-        double[] nextPoint,
-        int fctEvalCount)
+    public void setAll(double stepSize, double valueAtCurr, double valueAtNext,
+                       double[] gradAtCurr, double[] gradAtNext, double[] currPoint,
+                       double[] nextPoint, int fctEvalCount)
     {
       setAll(stepSize, valueAtCurr, valueAtNext, gradAtCurr, gradAtNext,
           null, currPoint, nextPoint, null, fctEvalCount);
     }
 
     /**
-     * Update line search elements
+     * Updates line search elements.
      */
-    public void setAll(
-        double stepSize,
-        double valueAtCurr,
-        double valueAtNext,
-        double[] gradAtCurr,
-        double[] gradAtNext,
-        double[] pseudoGradAtNext,
-        double[] currPoint,
-        double[] nextPoint,
-        double[] signVector,
-        int fctEvalCount)
+    public void setAll(double stepSize, double valueAtCurr, double valueAtNext,
+                       double[] gradAtCurr, double[] gradAtNext, double[] pseudoGradAtNext,
+                       double[] currPoint, double[] nextPoint, double[] signVector,
+                       int fctEvalCount)
     {
       this.stepSize         = stepSize;
       this.valueAtCurr      = valueAtCurr;
@@ -326,35 +315,50 @@ public class LineSearch {
     }
 
     /**
-     * Initial linear search object.
+     * Initial linear search object for L1-regularization.
+     *
+     * @param valueAtX        The value at {@code x}.
+     * @param gradAtX         The gradient at {@code x}.
+     * @param x               The input {@code double[]} vector.
+     *
+     * @return The {@link LineSearchResult} holding the results.
      */
-    public static LineSearchResult getInitialObject(
-        double valueAtX,
-        double[] gradAtX,
-        double[] x)
-    {
+    public static LineSearchResult getInitialObject(double valueAtX, double[] gradAtX,
+                                                    double[] x) {
       return getInitialObject(valueAtX, gradAtX, null, x, null, 0);
     }
 
     /**
      * Initial linear search object for L1-regularization.
+     *
+     * @param valueAtX        The value at {@code x}.
+     * @param gradAtX         The gradient at {@code x}.
+     * @param pseudoGradAtX   The pseudo-gradient at {@code x}.
+     * @param x               The input {@code double[]} vector.
+     *
+     * @return The {@link LineSearchResult} holding the results.
      */
-    public static LineSearchResult getInitialObjectForL1(
-        double valueAtX,
-        double[] gradAtX,
-        double[] pseudoGradAtX,
-        double[] x)
-    {
+    public static LineSearchResult getInitialObjectForL1(double valueAtX, double[] gradAtX,
+                                                         double[] pseudoGradAtX, double[] x) {
       return getInitialObject(valueAtX, gradAtX, pseudoGradAtX, x, new double[x.length], 0);
     }
 
-    public static LineSearchResult getInitialObject(
-        double valueAtX,
-        double[] gradAtX,
-        double[] pseudoGradAtX,
-        double[] x,
-        double[] signX,
-        int fctEvalCount) {
+    /**
+     * Initial linear search object for L1-regularization.
+     *
+     * @param valueAtX        The value at {@code x}.
+     * @param gradAtX         The gradient at {@code x}.
+     * @param pseudoGradAtX   The pseudo-gradient at {@code x}.
+     * @param x               The input {@code double[]} vector.
+     * @param signX           The sign {@code double[]} vector for {@code x}.
+     * @param fctEvalCount    The number of function evaluations.
+     *                        Must be equal to or greater than {@code 0}.
+     *
+     * @return The {@link LineSearchResult} holding the results.
+     */
+    public static LineSearchResult getInitialObject(double valueAtX, double[] gradAtX,
+                                                    double[] pseudoGradAtX, double[] x,
+                                                    double[] signX, int fctEvalCount) {
       return new LineSearchResult(0.0, 0.0, valueAtX, new double[x.length], gradAtX,
           pseudoGradAtX, new double[x.length], x, signX, fctEvalCount);
     }

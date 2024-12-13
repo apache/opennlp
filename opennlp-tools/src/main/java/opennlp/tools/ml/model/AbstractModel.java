@@ -86,8 +86,7 @@ public abstract class AbstractModel implements MaxentModel {
    * Return the name of the outcome corresponding to the highest likelihood
    * in the parameter ocs.
    *
-   * @param ocs A double[] as returned by the eval(String[] context)
-   *            method.
+   * @param ocs A {@code double[]} as returned by the {@link #eval(String[]) method}.
    * @return    The name of the most likely outcome.
    */
   @Override
@@ -131,7 +130,7 @@ public abstract class AbstractModel implements MaxentModel {
 
   /**
    * @param i An outcome id.
-   * @return  Retrieves the name of the outcome associated with that id.
+   * @return  Retrieves the name of the outcome associated with {@code id}.
    */
   @Override
   public final String getOutcome(int i) {
@@ -159,11 +158,11 @@ public abstract class AbstractModel implements MaxentModel {
   }
 
   /**
-   * Provides the fundamental data structures which encode the maxent model
-   * information. Note: This method will usually only be needed by
-   * {@link opennlp.tools.ml.maxent.io.GISModelWriter GIS model writers}.
+   * Provides the fundamental data structures which encode the {@link MaxentModel}
+   * information.
+   *
    * <p>
-   * The following values are held in the Object array which is returned by this method:
+   * The following values are held in the {@code Object[]} which is returned by this method:
    * <ul>
    * <li>index 0: {@link Context} array containing the model parameters.</li>
    * <li>index 1: {@link Map} containing the mapping of model predicates
@@ -174,6 +173,9 @@ public abstract class AbstractModel implements MaxentModel {
    * </ul>
    *
    * @return An {@link Object} array with the values as described above.
+   * 
+   * @implNote : This method will usually only be needed by
+   * {@link opennlp.tools.ml.maxent.io.GISModelWriter GIS model writers}.
    */
   public final Object[] getDataStructures() {
     Object[] data = new Object[3];

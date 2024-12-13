@@ -68,9 +68,7 @@ public class QNMinimizerTest {
   }
 
   /**
-   * <a href="https://en.wikipedia.org/wiki/Rosenbrock_function">Rosenbrock function</a>:
-   * <p>
-   * {@code f(x,y) = (1-x)^2 + 100*(y-x^2)^2}
+   * For {@code f(x,y) = (1-x)^2 + 100*(y-x^2)^2}, <br/>
    * {@code f(x,y)} is non-convex and has global minimum at {@code (x,y) = (1,1)} where {@code f(x,y) = 0}.
    * <p>
    * with
@@ -78,6 +76,9 @@ public class QNMinimizerTest {
    *   <li>{@code f_x = -2*(1-x) - 400*(y-x^2)*x}</li>
    *   <li>{@code f_y = 200*(y-x^2)}</li>
    * </ul>
+   *
+   * @see <a href="https://doi.org/10.1093/comjnl/3.3.175">An automatic method for finding the greatest
+   * or least value of a function.</a> by H. H. Rosenbrock, in: The Computer Journal, 3(3):175–184, 1960
    */
   public static class Rosenbrock implements Function {
 

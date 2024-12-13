@@ -24,8 +24,9 @@ import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
 
 /**
- * Implementation of L-BFGS which supports L1-, L2-regularization
- * and Elastic Net for solving convex optimization problems.
+ * Implementation of the <a href="https://users.umiacs.umd.edu/~hal/docs/daume04cg-bfgs">
+ * Limited memory Broyden-Fletcher-Goldfarb-Shanno algorithm</a> (L-BFGS) which
+ * supports L1-, L2-regularization and Elastic Net for solving convex optimization problems.
  *
  * <p>
  * Usage example:
@@ -55,6 +56,10 @@ import opennlp.tools.ml.maxent.quasinewton.LineSearch.LineSearchResult;
  *  double[] x = minimizer.minimize(f);
  *  double min = f.valueAt(x);
  * </pre></blockquote>
+ *
+ * @see <a href="https://link.springer.com/chapter/10.1007/978-0-387-40065-5_6">
+ *   Quasi-Newton Methods</a> in: <a href="https://link.springer.com/book/10.1007/978-0-387-40065-5">
+ *     Nocedal J, Wright SJ. Numerical optimization. 2nd ed. New York: Springer; 2006</a>.
  */
 public class QNMinimizer {
 
@@ -66,25 +71,25 @@ public class QNMinimizer {
   // Relative gradient norm tolerance
   public static final double REL_GRAD_NORM_TOL = 1e-4;
 
-  // Initial step size
+  /** The initial step size: {@code 1.0}. */
   public static final double INITIAL_STEP_SIZE = 1.0;
 
-  // Minimum step size
+  /** The minimum step size: {@code 1e-10}. */
   public static final double MIN_STEP_SIZE = 1e-10;
 
-  // Default L1-cost
+  /** The default L1-cost value is {@code 0.0d}. */
   public static final double L1COST_DEFAULT = 0;
 
-  // Default L2-cost
+  /** The default L2-cost value is {@code 0.0d}. */
   public static final double L2COST_DEFAULT = 0;
 
-  // Default number of iterations
+  /** By default the number of iterations is {@code 100}. */
   public static final int NUM_ITERATIONS_DEFAULT = 100;
 
-  // Default number of Hessian updates to store
+  /** The default number of Hessian updates to store is {@code 15}. */
   public static final int M_DEFAULT = 15;
 
-  // Default maximum number of function evaluations
+  /** The default maximum number of function evaluations is {@code 30,000}. */
   public static final int MAX_FCT_EVAL_DEFAULT = 30000;
 
   // L1-regularization cost
@@ -113,7 +118,8 @@ public class QNMinimizer {
   private Evaluator evaluator;
 
   /**
-   * Initializes a {@link QNMinimizer} with default parameters.
+   * Initializes a {@link QNMinimizer} with default parameters
+   * (see: {@link #L1COST_DEFAULT} and {@link #L2COST_DEFAULT}).
    */
   public QNMinimizer() {
     this(L1COST_DEFAULT, L2COST_DEFAULT);
@@ -122,19 +128,23 @@ public class QNMinimizer {
   /**
    * Initializes a {@link QNMinimizer}.
    *
-   * @param l1Cost The L1-regularization cost.
-   * @param l2Cost The L2-regularization cost.
+   * @param l1Cost The L1-regularization cost. Must be equal to or greater than {@code 0}.
+   * @param l2Cost The L2-regularization cost. Must be equal to or greater than {@code 0}.
+   *               
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public QNMinimizer(double l1Cost, double l2Cost) {
     this(l1Cost, l2Cost, NUM_ITERATIONS_DEFAULT);
   }
 
   /**
-   * Initializes a {@link QNMinimizer}.
+   * Initializes a {@link QNMinimizer} with L1 and L2 parameters.
    *
-   * @param l1Cost The L1-regularization cost.
-   * @param l2Cost The L2-regularization cost.
-   * @param iterations The maximum number of iterations.
+   * @param l1Cost The L1-regularization cost. Must be equal to or greater than {@code 0}.
+   * @param l2Cost The L2-regularization cost. Must be equal to or greater than {@code 0}.
+   * @param iterations The maximum number of iterations. Must be greater than {@code 0}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public QNMinimizer(double l1Cost, double l2Cost, int iterations) {
     this(l1Cost, l2Cost, iterations, M_DEFAULT, MAX_FCT_EVAL_DEFAULT);
@@ -143,11 +153,13 @@ public class QNMinimizer {
   /**
    * Initializes a {@link QNMinimizer}.
    * 
-   * @param l1Cost The L1-regularization cost.
-   * @param l2Cost The L2-regularization cost.
-   * @param iterations The maximum number of iterations.
-   * @param m The number of Hessian updates to store.
-   * @param maxFctEval The maximum number of function evaluations.
+   * @param l1Cost The L1-regularization cost. Must be equal to or greater than {@code 0}.
+   * @param l2Cost The L2-regularization cost. Must be equal to or greater than {@code 0}.
+   * @param iterations The maximum number of iterations. Must be greater than {@code 0}.
+   * @param m The number of Hessian updates to store. Must be greater than {@code 0}.
+   * @param maxFctEval The maximum number of function evaluations. Must be greater than {@code 0}.
+   *
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public QNMinimizer(double l1Cost, double l2Cost, int iterations,
       int m, int maxFctEval)
@@ -308,12 +320,14 @@ public class QNMinimizer {
   }
 
   /**
-   * Pseudo-gradient for L1-regularization (see equation 4 in the paper
-   * "Scalable Training of L1-Regularized Log-Linear Models", Andrew et al. 2007)
+   * Conducts pseudo-gradient for L1-regularization.
    *
-   * @param x current point
-   * @param g gradient at x
-   * @param pg pseudo-gradient at x which is to be computed
+   * @implNote See equation 4 in <a href="https://doi.org/10.1145/1273496.1273501">
+   *   "Scalable Training of L1-Regularized Log-Linear Models"</a>, by Andrew and Gao, 2007)
+   *
+   * @param x The current point
+   * @param g The gradient at {@code x}.
+   * @param pg The pseudo-gradient at {@code x} which is to be computed.
    */
   private void computePseudoGrad(double[] x, double[] g, double[] pg) {
     for (int i = 0; i < dimension; i++) {
@@ -340,7 +354,9 @@ public class QNMinimizer {
   }
 
   /**
-   * L-BFGS two-loop recursion (see Nocedal & Wright 2006, Numerical Optimization, p. 178)
+   * L-BFGS two-loop recursion, see
+   * <a href="https://link.springer.com/book/10.1007/978-0-387-40065-5">
+   *   Nocedal & Wright 2006, Numerical Optimization</a>, p. 178)
    */
   private void computeDirection(double[] direction) {
 
@@ -519,7 +535,7 @@ public class QNMinimizer {
   }
 
   /**
-   * Evaluate quality of training parameters. For example,
+   * Evaluate the quality of training parameters. For example,
    * it can be used to report model's training accuracy when
    * we train a Maximum Entropy classifier.
    */
