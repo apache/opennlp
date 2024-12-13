@@ -25,6 +25,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.maxent.quasinewton.QNMinimizer.Evaluator;
@@ -34,10 +35,13 @@ import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * A Maxent model {@link opennlp.tools.commons.Trainer} using L-BFGS algorithm.
+ * A Maxent model {@link Trainer trainer} using the
+ * <a href="https://users.umiacs.umd.edu/~hal/docs/daume04cg-bfgs">L-BFGS</a> algorithm.
  *
- * @see QNModel
  * @see AbstractEventTrainer
+ * @see QNMinimizer
+ * @see QNModel
+ * @see Trainer
  */
 public class QNTrainer extends AbstractEventTrainer {
 
@@ -49,17 +53,25 @@ public class QNTrainer extends AbstractEventTrainer {
   public static final int THREADS_DEFAULT  = 1;
 
   public static final String L1COST_PARAM   = "L1Cost";
+
+  /** The default L1-cost value is {@code 0.1d}. */
   public static final double L1COST_DEFAULT = 0.1;
 
   public static final String L2COST_PARAM   = "L2Cost";
+
+  /** The default L2-cost value is {@code 0.1d}. */
   public static final double L2COST_DEFAULT = 0.1;
 
   // Number of Hessian updates to store
   public static final String M_PARAM = "NumOfUpdates";
+  
+  /** The default number of Hessian updates to store is {@code 15}. */
   public static final int M_DEFAULT  = 15;
 
   // Maximum number of function evaluations
   public static final String MAX_FCT_EVAL_PARAM = "MaxFctEval";
+  
+  /** The default maximum number of function evaluations is {@code 30,000}. */
   public static final int MAX_FCT_EVAL_DEFAULT  = 30000;
 
   // Number of threads
@@ -77,8 +89,8 @@ public class QNTrainer extends AbstractEventTrainer {
 
   /**
    * Initializes a {@link QNTrainer}.
-   * <p>
-   * <b>Note:</b><br>
+   * 
+   * @implNote 
    * The resulting instance does not print progress messages about training to STDOUT.
    */
   public QNTrainer() {
@@ -86,7 +98,7 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   /**
-   * Initializes a {@link QNTrainer}.
+   * Initializes a {@link QNTrainer} with the specified {@code parameters}.
    *
    * @param parameters The {@link TrainingParameters} to use.
    */
@@ -95,16 +107,16 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   /**
-   * Initializes a {@link QNTrainer}.
+   * Initializes a {@link QNTrainer} with the specified parameter {@code m}.
    *
    * @param m The number of hessian updates to store.
    */
-  public QNTrainer(int m ) {
+  public QNTrainer(int m) {
     this(m, MAX_FCT_EVAL_DEFAULT);
   }
 
   /**
-   * Initializes a {@link QNTrainer}.
+   * Initializes a {@link QNTrainer} with the specified parameters.
    *
    * @param m The number of hessian updates to store.
    */
@@ -133,17 +145,17 @@ public class QNTrainer extends AbstractEventTrainer {
 
     String algorithmName = getAlgorithm();
     if (algorithmName != null && !(MAXENT_QN_VALUE.equals(algorithmName))) {
-      throw new IllegalArgumentException("algorithmName must be MAXENT_QN");
+      throw new IllegalArgumentException("algorithmName must be " + MAXENT_QN_VALUE);
     }
 
     // Number of Hessian updates to remember
-    if (m < 0) {
+    if (m <= 0) {
       throw new IllegalArgumentException(
           "Number of Hessian updates to remember must be >= 0");
     }
 
     // Maximum number of function evaluations
-    if (maxFctEval < 0) {
+    if (maxFctEval <= 0) {
       throw new IllegalArgumentException(
           "Maximum number of function evaluations must be >= 0");
     }
@@ -175,7 +187,7 @@ public class QNTrainer extends AbstractEventTrainer {
   }
 
   /**
-   * Trains a model using the QN algorithm.
+   * Trains a {@link QNModel model} using the QN algorithm.
    *
    * @param iterations The number of QN iterations to perform.
    * @param indexer    The {@link DataIndexer} used to compress events in memory.
@@ -227,6 +239,8 @@ public class QNTrainer extends AbstractEventTrainer {
 
   /**
    * For measuring model's training accuracy.
+   *
+   * @param indexer A valid {@link DataIndexer} instance.
    */
   private record ModelEvaluator(DataIndexer indexer) implements Evaluator {
 

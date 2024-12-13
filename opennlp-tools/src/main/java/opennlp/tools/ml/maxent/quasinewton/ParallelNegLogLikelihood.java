@@ -33,7 +33,10 @@ import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.DataIndexer;
 
 /**
- * Evaluate negative log-likelihood and its gradient in parallel
+ * Evaluates {@link NegLogLikelihood negative log-likelihood} and
+ * its gradient in parallel.
+ *
+ * @see Function
  */
 public class ParallelNegLogLikelihood extends NegLogLikelihood {
 
@@ -67,7 +70,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
   }
 
   /**
-   * Computes the negative log-likelihood.
+   * Computes the function value for {@code x}.
    *
    * @param x The input.
    * @return Returns the computed negative log-likelihood.
@@ -92,7 +95,7 @@ public class ParallelNegLogLikelihood extends NegLogLikelihood {
   }
 
   /**
-   * Computes the gradient.
+   * Computes the gradient for {@code x}.
    *
    * @param x The input.
    * @return Returns the computed gradient.

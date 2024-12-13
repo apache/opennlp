@@ -20,17 +20,22 @@ package opennlp.tools.ml.maxent.quasinewton;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
+import opennlp.tools.ml.model.MaxentModel;
 
 /**
- * A maximum entropy model which has been trained using the Quasi Newton (QN) algorithm.
+ * A {@link MaxentModel maximum entropy model} which has been trained via the
+ * <a href="https://users.umiacs.umd.edu/~hal/docs/daume04cg-bfgs">L-BFGS</a> algorithm ,
+ * which belongs to the group of Quasi Newton (QN) algorithms.
  *
  * @see AbstractModel
+ * @see MaxentModel
+ * @see QNTrainer
  */
 public class QNModel extends AbstractModel {
 
   /**
-   * Initializes a {@link QNModel} with the specified parameters, outcome names, and
-   * predicate/feature labels.
+   * Initializes a {@link QNModel} with the specified parameters,
+   * predicate/feature labels, and outcome names.
    *
    * @param params The {@link Context parameters} of the model.
    * @param predLabels The names of the predicates used in this model.

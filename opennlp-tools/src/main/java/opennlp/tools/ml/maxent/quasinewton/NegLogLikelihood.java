@@ -24,7 +24,9 @@ import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.OnePassRealValueDataIndexer;
 
 /**
- * Evaluate negative log-likelihood and its gradient from {@link DataIndexer}.
+ * Evaluates negative log-likelihood and its gradient from {@link DataIndexer}.
+ *
+ * @see Function
  */
 public class NegLogLikelihood implements Function {
 

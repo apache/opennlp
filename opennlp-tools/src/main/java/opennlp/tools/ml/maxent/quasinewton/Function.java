@@ -22,9 +22,30 @@ package opennlp.tools.ml.maxent.quasinewton;
  */
 public interface Function {
 
+  /**
+   * @return Retrieves the dimension value.
+   */
   int getDimension();
 
+  /**
+   * Computes the function value for {@code x}.
+   *
+   * @param x The input vector.
+   * @return Returns the computed value for {@code x}.
+   *
+   * @apiNote The parameter {@code x} should be validated and if inconsistencies are encountered
+   * an appropriate exception should be raised, e.g. {@link IllegalArgumentException}.
+   */
   double valueAt(double[] x);
 
+  /**
+   * Computes the gradient for {@code x}.
+   *
+   * @param x The input vector.
+   * @return Returns the computed gradient for {@code x}.
+   *
+   * @apiNote The parameter {@code x} should be validated and if inconsistencies are encountered
+   * an appropriate exception should be raised, e.g. {@link IllegalArgumentException}.
+   */
   double[] gradientAt(double[] x);
 }
