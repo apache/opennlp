@@ -25,32 +25,32 @@
 PRG="$0"
 
 while [ -h "$PRG" ] ; do
-  ls=`ls -ld "$PRG"`
-  link=`expr "$ls" : '.*-> \(.*\)$'`
+  ls=$(ls -ld "$PRG")
+  link=$(expr "$ls" : '.*-> \(.*\)$')
   if expr "$link" : '/.*' > /dev/null; then
     PRG="$link"
   else
-    PRG="`dirname "$PRG"`/$link"
+    PRG="$(dirname "$PRG")/$link"
   fi
 done
 
-saveddir=`pwd`
+saveddir=$(pwd)
 
-OPENNLP_HOME=`dirname "$PRG"`/..
+OPENNLP_HOME=$(dirname "$PRG")/..
 
 # make it fully qualified
-OPENNLP_HOME=`cd "$OPENNLP_HOME" && pwd`
+OPENNLP_HOME=$(cd "$OPENNLP_HOME" && pwd)
 
-cd "$saveddir"
+cd "$saveddir" || exit
 
 if [ -z "$JAVACMD" ] ; then
   if [ -n "$JAVA_HOME"  ] ; then
     JAVACMD="$JAVA_HOME/bin/java"
   else
-    JAVACMD="`which java`"
+    JAVACMD="$(which java)"
   fi
 fi
 
-CLASSPATH=$(echo $OPENNLP_HOME/lib/*.jar | tr ' ' ':')
+CLASSPATH=$(echo "$OPENNLP_HOME"/lib/*.jar | tr ' ' ':')
 
-$JAVACMD -Xmx1024m -Dlog4j.configurationFile="$OPENNLP_HOME/conf/log4j2.xml" -cp "$CLASSPATH" opennlp.morfologik.cmdline.CLI $@
+$JAVACMD -Xmx1024m -Dlog4j.configurationFile="$OPENNLP_HOME/conf/log4j2.xml" -cp "$CLASSPATH" opennlp.morfologik.cmdline.CLI "$@"
