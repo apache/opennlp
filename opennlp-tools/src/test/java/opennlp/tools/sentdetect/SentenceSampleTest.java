@@ -83,7 +83,7 @@ public class SentenceSampleTest {
     Assertions.assertNotSame(createGoldSample(), createGoldSample());
     Assertions.assertEquals(createGoldSample(), createGoldSample());
     Assertions.assertNotEquals(createPredSample(), createGoldSample());
-    Assertions.assertNotEquals(createPredSample(), new Object());
+    Assertions.assertNotEquals(new Object(), createPredSample());
   }
 
   public static SentenceSample createGoldSample() {

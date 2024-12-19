@@ -291,7 +291,7 @@ public class NameSampleTest {
     Assertions.assertNotSame(createGoldSample(), createGoldSample());
     Assertions.assertEquals(createGoldSample(), createGoldSample());
     Assertions.assertNotEquals(createGoldSample(), createPredSample());
-    Assertions.assertNotEquals(createPredSample(), new Object());
+    Assertions.assertNotEquals(new Object(), createPredSample());
   }
 
   public static NameSample createGoldSample() {

@@ -68,7 +68,7 @@ public class LanguageDetectorEvaluatorTest {
     Assertions.assertEquals(2, incorrectCount.get());
 
     Assertions.assertEquals(3, evaluator.getDocumentCount());
-    Assertions.assertEquals(evaluator.getAccuracy(), 0.01, 0.33);
+    Assertions.assertEquals(0.01, evaluator.getAccuracy(), 0.33);
 
     String report = outputStream.toString(StandardCharsets.UTF_8);
 

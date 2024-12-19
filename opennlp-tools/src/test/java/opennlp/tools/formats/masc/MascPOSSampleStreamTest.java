@@ -73,9 +73,9 @@ public class MascPOSSampleStreamTest extends AbstractMascSampleStreamTest {
       stream.close();
       POSSample s = stream.read();
     } catch (IOException e) {
-      Assertions.assertEquals(e.getMessage(),
-          "You are reading an empty document stream. " +
-              "Did you close it?");
+      Assertions.assertEquals("You are reading an empty document stream. " +
+          "Did you close it?",
+              e.getMessage());
     }
   }
 

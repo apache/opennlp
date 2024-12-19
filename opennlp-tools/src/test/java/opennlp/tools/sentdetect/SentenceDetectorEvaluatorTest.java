@@ -52,7 +52,7 @@ public class SentenceDetectorEvaluatorTest {
 
     eval.evaluateSample(SentenceSampleTest.createPredSample());
 
-    Assertions.assertEquals(eval.getFMeasure().getFMeasure(), -1.0, .1d);
+    Assertions.assertEquals(-1.0, eval.getFMeasure().getFMeasure(), .1d);
 
     Assertions.assertNotSame(0, stream.toString().length());
   }

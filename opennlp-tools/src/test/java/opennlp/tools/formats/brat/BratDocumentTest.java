@@ -75,17 +75,17 @@ public class BratDocumentTest extends AbstractBratTest {
     BratDocument doc = BratDocument.parseDocument(config, "opennlp-1193", txtIn, annIn);
 
     SpanAnnotation t1 = (SpanAnnotation) doc.getAnnotation("T1");
-    Assertions.assertEquals(t1.getSpans()[0].getStart(), 0);
-    Assertions.assertEquals(t1.getSpans()[0].getEnd(), 7);
-    Assertions.assertEquals(t1.getSpans()[1].getStart(), 8);
-    Assertions.assertEquals(t1.getSpans()[1].getEnd(), 15);
-    Assertions.assertEquals(t1.getSpans()[2].getStart(), 17);
-    Assertions.assertEquals(t1.getSpans()[2].getEnd(), 24);
+    Assertions.assertEquals(0, t1.getSpans()[0].getStart());
+    Assertions.assertEquals(7, t1.getSpans()[0].getEnd());
+    Assertions.assertEquals(8, t1.getSpans()[1].getStart());
+    Assertions.assertEquals(15, t1.getSpans()[1].getEnd());
+    Assertions.assertEquals(17, t1.getSpans()[2].getStart());
+    Assertions.assertEquals(24, t1.getSpans()[2].getEnd());
 
     SpanAnnotation t2 = (SpanAnnotation) doc.getAnnotation("T2");
-    Assertions.assertEquals(t2.getSpans()[0].getStart(), 26);
-    Assertions.assertEquals(t2.getSpans()[0].getEnd(), 33);
-    Assertions.assertEquals(t2.getSpans()[1].getStart(), 40);
-    Assertions.assertEquals(t2.getSpans()[1].getEnd(), 47);
+    Assertions.assertEquals(26, t2.getSpans()[0].getStart());
+    Assertions.assertEquals(33, t2.getSpans()[0].getEnd());
+    Assertions.assertEquals(40, t2.getSpans()[1].getStart());
+    Assertions.assertEquals(47, t2.getSpans()[1].getEnd());
   }
 }

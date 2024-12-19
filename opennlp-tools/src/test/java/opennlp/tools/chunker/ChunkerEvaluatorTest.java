@@ -71,7 +71,7 @@ public class ChunkerEvaluatorTest {
     Assertions.assertEquals(0.8d, fm.getPrecisionScore(), DELTA);
     Assertions.assertEquals(0.875d, fm.getRecallScore(), DELTA);
 
-    Assertions.assertNotSame(stream.toString().length(), 0);
+    Assertions.assertNotSame(0, stream.toString().length());
   }
 
   @Test
@@ -101,7 +101,7 @@ public class ChunkerEvaluatorTest {
     Assertions.assertEquals(1d, fm.getPrecisionScore(), DELTA);
     Assertions.assertEquals(1d, fm.getRecallScore(), DELTA);
 
-    Assertions.assertEquals(stream.toString().length(), 0);
+    Assertions.assertEquals(0, stream.toString().length());
   }
 
 }

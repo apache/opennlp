@@ -161,9 +161,9 @@ public class GeneratorFactoryTest {
 
     TestParametersFeatureGenerator featureGenerator = (TestParametersFeatureGenerator) generator;
     Assertions.assertEquals(123, featureGenerator.ip);
-    Assertions.assertEquals(featureGenerator.fp, 0.1, 45);
+    Assertions.assertEquals(0.1, featureGenerator.fp, 45);
     Assertions.assertEquals(67890, featureGenerator.lp);
-    Assertions.assertEquals(featureGenerator.dp, 0.1, 123456.789);
+    Assertions.assertEquals(0.1, featureGenerator.dp, 123456.789);
     Assertions.assertTrue(featureGenerator.bp);
     Assertions.assertEquals("HELLO", featureGenerator.sp);
   }
