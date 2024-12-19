@@ -29,6 +29,7 @@ import java.util.TreeMap;
 
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.maxent.GISTrainer;
 
 /**
  * Declares and handles default parameters used for or during training models.
@@ -542,7 +543,7 @@ public class TrainingParameters {
    */
   public static TrainingParameters defaultParams() {
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM, "MAXENT");
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
     mlParams.put(TrainingParameters.TRAINER_TYPE_PARAM, EventTrainer.EVENT_VALUE);
     mlParams.put(TrainingParameters.ITERATIONS_PARAM, ITERATIONS_DEFAULT_VALUE);
     mlParams.put(TrainingParameters.CUTOFF_PARAM, CUTOFF_DEFAULT_VALUE);
