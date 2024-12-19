@@ -97,14 +97,11 @@ public class ConlluWordLine {
    * @throws IllegalStateException Thrown if a non-supported {@link ConlluTagset} was specified.
    */
   public String getPosTag(ConlluTagset tagset) {
-    switch (tagset) {
-      case U:
-        return uPosTag;
-      case X:
-        return xPosTag;
-      default:
-        throw new IllegalStateException("Unexpected tagset value: " + tagset);
-    }
+    return switch (tagset) {
+      case U -> uPosTag;
+      case X -> xPosTag;
+      default -> throw new IllegalStateException("Unexpected tagset value: " + tagset);
+    };
   }
 
   /**

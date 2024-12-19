@@ -119,18 +119,11 @@ public class PorterStemmer implements Stemmer {
   /* cons(i) is true <=> b[i] is a consonant. */
 
   private boolean cons(int i) {
-    switch (b[i]) {
-      case 'a':
-      case 'e':
-      case 'i':
-      case 'o':
-      case 'u':
-        return false;
-      case 'y':
-        return (i == k0) || !cons(i - 1);
-      default:
-        return true;
-    }
+    return switch (b[i]) {
+      case 'a', 'e', 'i', 'o', 'u' -> false;
+      case 'y' -> (i == k0) || !cons(i - 1);
+      default -> true;
+    };
   }
 
   /* m() measures the number of consonant sequences between k0 and j. if c is

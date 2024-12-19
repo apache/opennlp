@@ -53,24 +53,14 @@ public class DataIndexerFactory {
       reportMap = new HashMap<>();
     }
 
-    DataIndexer indexer;
-    switch (indexerParam) {
-      case AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE:
-        indexer = new OnePassDataIndexer();
-        break;
-
-      case AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE:
-        indexer = new TwoPassDataIndexer();
-        break;
-
-      case AbstractEventTrainer.DATA_INDEXER_ONE_PASS_REAL_VALUE:
-        indexer = new OnePassRealValueDataIndexer();
-        break;
-
-      default:
+    DataIndexer indexer = switch (indexerParam) {
+      case AbstractEventTrainer.DATA_INDEXER_ONE_PASS_VALUE -> new OnePassDataIndexer();
+      case AbstractEventTrainer.DATA_INDEXER_TWO_PASS_VALUE -> new TwoPassDataIndexer();
+      case AbstractEventTrainer.DATA_INDEXER_ONE_PASS_REAL_VALUE -> new OnePassRealValueDataIndexer();
+      default ->
         // if the user passes in a class name for the indexer, try to instantiate the class.
-        indexer = ExtensionLoader.instantiateExtension(DataIndexer.class, indexerParam);
-    }
+              ExtensionLoader.instantiateExtension(DataIndexer.class, indexerParam);
+    };
 
     indexer.init(parameters, reportMap);
 
