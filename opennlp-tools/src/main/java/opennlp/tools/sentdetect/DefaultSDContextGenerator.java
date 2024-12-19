@@ -83,7 +83,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
       return "<CR>";
     }
 
-    return new String(new char[]{c});
+    return String.valueOf(c);
   }
 
   @Override
@@ -232,15 +232,15 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   /**
    * Finds the index of the nearest space before a specified index which is not itself preceded by a space.
    *
-   * @param sb   The string buffer which contains the text being examined.
+   * @param sb   The {@link CharSequence} which contains the text being examined.
    * @param seek The index to begin searching from.
    * @return The index which contains the nearest space.
    */
   private static int previousSpaceIndex(CharSequence sb, int seek) {
-    seek--;
-    while (seek > 0 && !StringUtil.isWhitespace(sb.charAt(seek))) {
+    do {
       seek--;
-    }
+    } while (seek > 0 && !StringUtil.isWhitespace(sb.charAt(seek)));
+
     if (seek > 0 && StringUtil.isWhitespace(sb.charAt(seek))) {
       while (seek > 0 && StringUtil.isWhitespace(sb.charAt(seek - 1)))
         seek--;
@@ -252,7 +252,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
   /**
    * Finds the index of the nearest space after a specified index.
    *
-   * @param sb The string buffer which contains the text being examined.
+   * @param sb The {@link CharSequence} which contains the text being examined.
    * @param seek The index to begin searching from.
    * @param lastIndex The highest index of the StringBuffer sb.
    * @return The index which contains the nearest space.

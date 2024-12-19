@@ -156,12 +156,9 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
         sentence.setText(text);
         sentence.setMetadata(meta);
         // now we look for the root node
-
-        // skip lines starting with ###
-        line = reader.readLine();
-        while (line != null && line.startsWith("###")) {
+        do {
           line = reader.readLine();
-        }
+        } while (line != null && line.startsWith("###")); // skip lines starting with ###
 
         // got the root. Add it to the stack
         Stack<Node> nodeStack = new Stack<>();
