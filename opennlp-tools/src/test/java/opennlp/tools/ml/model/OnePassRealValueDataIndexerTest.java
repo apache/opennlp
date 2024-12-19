@@ -100,11 +100,11 @@ public class OnePassRealValueDataIndexerTest {
     Assertions.assertEquals(3, indexer.getValues().length);
     final float delta = 0.001F;
     Assertions.assertArrayEquals(
-        indexer.getValues()[0], new float[] {0.1F, 0.2F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F}, delta);
+        new float[] {0.1F, 0.2F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F}, indexer.getValues()[0], delta);
     Assertions.assertArrayEquals(
-        indexer.getValues()[1], new float[] {0.1F, 0.2F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F}, delta);
+        new float[] {0.1F, 0.2F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F}, indexer.getValues()[1], delta);
     Assertions.assertArrayEquals(
-        indexer.getValues()[2], new float[] {0.1F, 0.2F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F}, delta);
+        new float[] {0.1F, 0.2F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F, 0.1F}, indexer.getValues()[2], delta);
     Assertions.assertEquals(5, indexer.getNumEvents());
     Assertions.assertArrayEquals(new int[] {0, 1, 2}, indexer.getOutcomeList());
     Assertions.assertArrayEquals(new int[] {3, 1, 1}, indexer.getNumTimesEventsSeen());

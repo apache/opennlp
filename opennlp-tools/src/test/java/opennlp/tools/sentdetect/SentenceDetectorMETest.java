@@ -57,50 +57,50 @@ public class SentenceDetectorMETest extends AbstractSentenceDetectorTest {
     // Tests sentence detector with sentDetect method
     String sampleSentences1 = "This is a test. There are many tests, this is the second.";
     String[] sents = sentDetect.sentDetect(sampleSentences1);
-    Assertions.assertEquals(sents.length, 2);
-    Assertions.assertEquals(sents[0], "This is a test.");
-    Assertions.assertEquals(sents[1], "There are many tests, this is the second.");
+    Assertions.assertEquals(2, sents.length);
+    Assertions.assertEquals("This is a test.", sents[0]);
+    Assertions.assertEquals("There are many tests, this is the second.", sents[1]);
     double[] probs = sentDetect.getSentenceProbabilities();
-    Assertions.assertEquals(probs.length, 2);
+    Assertions.assertEquals(2, probs.length);
 
     String sampleSentences2 = "This is a test. There are many tests, this is the second";
     sents = sentDetect.sentDetect(sampleSentences2);
-    Assertions.assertEquals(sents.length, 2);
+    Assertions.assertEquals(2, sents.length);
     probs = sentDetect.getSentenceProbabilities();
-    Assertions.assertEquals(probs.length, 2);
-    Assertions.assertEquals(sents[0], "This is a test.");
-    Assertions.assertEquals(sents[1], "There are many tests, this is the second");
+    Assertions.assertEquals(2, probs.length);
+    Assertions.assertEquals("This is a test.", sents[0]);
+    Assertions.assertEquals("There are many tests, this is the second", sents[1]);
 
     String sampleSentences3 = "This is a \"test\". He said \"There are many tests, this is the second.\"";
     sents = sentDetect.sentDetect(sampleSentences3);
-    Assertions.assertEquals(sents.length, 2);
+    Assertions.assertEquals(2, sents.length);
     probs = sentDetect.getSentenceProbabilities();
-    Assertions.assertEquals(probs.length, 2);
-    Assertions.assertEquals(sents[0], "This is a \"test\".");
-    Assertions.assertEquals(sents[1], "He said \"There are many tests, this is the second.\"");
+    Assertions.assertEquals(2, probs.length);
+    Assertions.assertEquals("This is a \"test\".", sents[0]);
+    Assertions.assertEquals("He said \"There are many tests, this is the second.\"", sents[1]);
 
     String sampleSentences4 = "This is a \"test\". I said \"This is a test.\"  Any questions?";
     sents = sentDetect.sentDetect(sampleSentences4);
-    Assertions.assertEquals(sents.length, 3);
+    Assertions.assertEquals(3, sents.length);
     probs = sentDetect.getSentenceProbabilities();
-    Assertions.assertEquals(probs.length, 3);
-    Assertions.assertEquals(sents[0], "This is a \"test\".");
-    Assertions.assertEquals(sents[1], "I said \"This is a test.\"");
-    Assertions.assertEquals(sents[2], "Any questions?");
+    Assertions.assertEquals(3, probs.length);
+    Assertions.assertEquals("This is a \"test\".", sents[0]);
+    Assertions.assertEquals("I said \"This is a test.\"", sents[1]);
+    Assertions.assertEquals("Any questions?", sents[2]);
 
     String sampleSentences5 = "This is a one sentence test space at the end.    ";
     sents = sentDetect.sentDetect(sampleSentences5);
     Assertions.assertEquals(1, sentDetect.getSentenceProbabilities().length);
-    Assertions.assertEquals(sents[0], "This is a one sentence test space at the end.");
+    Assertions.assertEquals("This is a one sentence test space at the end.", sents[0]);
 
     String sampleSentences6 = "This is a one sentences test with tab at the end.            ";
     sents = sentDetect.sentDetect(sampleSentences6);
-    Assertions.assertEquals(sents[0], "This is a one sentences test with tab at the end.");
+    Assertions.assertEquals("This is a one sentences test with tab at the end.", sents[0]);
 
     String sampleSentences7 = "This is a test.    With spaces between the two sentences.";
     sents = sentDetect.sentDetect(sampleSentences7);
-    Assertions.assertEquals(sents[0], "This is a test.");
-    Assertions.assertEquals(sents[1], "With spaces between the two sentences.");
+    Assertions.assertEquals("This is a test.", sents[0]);
+    Assertions.assertEquals("With spaces between the two sentences.", sents[1]);
 
     String sampleSentences9 = "";
     sents = sentDetect.sentDetect(sampleSentences9);
@@ -112,23 +112,23 @@ public class SentenceDetectorMETest extends AbstractSentenceDetectorTest {
 
     String sampleSentences11 = "This is test sentence without a dot at the end and spaces          ";
     sents = sentDetect.sentDetect(sampleSentences11);
-    Assertions.assertEquals(sents[0], "This is test sentence without a dot at the end and spaces");
+    Assertions.assertEquals("This is test sentence without a dot at the end and spaces", sents[0]);
     probs = sentDetect.getSentenceProbabilities();
     Assertions.assertEquals(1, probs.length);
 
     String sampleSentence12 = "    This is a test.";
     sents = sentDetect.sentDetect(sampleSentence12);
-    Assertions.assertEquals(sents[0], "This is a test.");
+    Assertions.assertEquals("This is a test.", sents[0]);
 
     String sampleSentence13 = " This is a test";
     sents = sentDetect.sentDetect(sampleSentence13);
-    Assertions.assertEquals(sents[0], "This is a test");
+    Assertions.assertEquals("This is a test", sents[0]);
 
     // Test that sentPosDetect also works
     Span[] pos = sentDetect.sentPosDetect(sampleSentences2);
-    Assertions.assertEquals(pos.length, 2);
+    Assertions.assertEquals(2, pos.length);
     probs = sentDetect.getSentenceProbabilities();
-    Assertions.assertEquals(probs.length, 2);
+    Assertions.assertEquals(2, probs.length);
     Assertions.assertEquals(new Span(0, 15), pos[0]);
     Assertions.assertEquals(new Span(16, 56), pos[1]);
 
@@ -145,11 +145,11 @@ public class SentenceDetectorMETest extends AbstractSentenceDetectorTest {
     String sampleSentences1 = "This is a test for Mr. Miller. " +
             "His wife, Ms. Susan Miller, is also part of this test.";
     String[] sents = sentDetect.sentDetect(sampleSentences1);
-    Assertions.assertEquals(sents.length, 2);
-    Assertions.assertEquals(sents[0], "This is a test for Mr. Miller.");
-    Assertions.assertEquals(sents[1], "His wife, Ms. Susan Miller, is also part of this test.");
+    Assertions.assertEquals(2, sents.length);
+    Assertions.assertEquals("This is a test for Mr. Miller.", sents[0]);
+    Assertions.assertEquals("His wife, Ms. Susan Miller, is also part of this test.", sents[1]);
     double[] probs = sentDetect.getSentenceProbabilities();
-    Assertions.assertEquals(probs.length, 2);
+    Assertions.assertEquals(2, probs.length);
   }
 
   @Test

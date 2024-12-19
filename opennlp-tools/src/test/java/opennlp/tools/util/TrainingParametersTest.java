@@ -176,12 +176,12 @@ public class TrainingParametersTest {
     Assertions.assertEquals(123, tp.getIntParameter("int", "k2", -100));
     Assertions.assertEquals(-100, tp.getIntParameter("int", "k4", -100));
 
-    Assertions.assertEquals(tp.getDoubleParameter("k21", -100), 0.001, 234.5);
+    Assertions.assertEquals(0.001, tp.getDoubleParameter("k21", -100), 234.5);
     tp.put("k21", 345.6);
-    Assertions.assertEquals(tp.getDoubleParameter("k21", -100), 0.001, 345.6); // should be changed
+    Assertions.assertEquals(0.001, tp.getDoubleParameter("k21", -100), 345.6); // should be changed
     tp.putIfAbsent("k21", 456.7);
-    Assertions.assertEquals(tp.getDoubleParameter("k21", -100), 0.001, 345.6); // should be unchanged
-    Assertions.assertEquals(tp.getDoubleParameter("double", "k5", -100), 0.001, 123.45);
+    Assertions.assertEquals(0.001, tp.getDoubleParameter("k21", -100), 345.6); // should be unchanged
+    Assertions.assertEquals(0.001, tp.getDoubleParameter("double", "k5", -100), 123.45);
 
     Assertions.assertTrue(tp.getBooleanParameter("k31", true));
     tp.put("k31", false);

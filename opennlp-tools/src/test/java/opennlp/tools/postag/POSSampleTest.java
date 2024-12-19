@@ -41,7 +41,7 @@ public class POSSampleTest {
     Assertions.assertNotSame(createGoldSample(), createGoldSample());
     Assertions.assertEquals(createGoldSample(), createGoldSample());
     Assertions.assertNotEquals(createPredSample(), createGoldSample());
-    Assertions.assertNotEquals(createPredSample(), new Object());
+    Assertions.assertNotEquals(new Object(), createPredSample());
   }
 
   public static POSSample createGoldSample() throws InvalidFormatException {
@@ -102,8 +102,8 @@ public class POSSampleTest {
 
     POSSample sample = POSSample.parse(sentence);
 
-    Assertions.assertEquals(sample.getSentence().length, 0);
-    Assertions.assertEquals(sample.getTags().length, 0);
+    Assertions.assertEquals(0, sample.getSentence().length);
+    Assertions.assertEquals(0, sample.getTags().length);
   }
 
   /**
@@ -113,7 +113,7 @@ public class POSSampleTest {
   void testParseEmtpyToken() throws InvalidFormatException {
     String sentence = "the_DT _NNS";
     POSSample sample = POSSample.parse(sentence);
-    Assertions.assertEquals(sample.getSentence()[1], "");
+    Assertions.assertEquals("", sample.getSentence()[1]);
   }
 
   /**
@@ -123,7 +123,7 @@ public class POSSampleTest {
   void testParseEmtpyTag() throws InvalidFormatException {
     String sentence = "the_DT stories_";
     POSSample sample = POSSample.parse(sentence);
-    Assertions.assertEquals(sample.getTags()[1], "");
+    Assertions.assertEquals("", sample.getTags()[1]);
   }
 
   /**
