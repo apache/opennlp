@@ -65,20 +65,13 @@ public class TokenSampleStream implements Iterator<TokenSample> {
     for (int ti = 0; ti < tokens.length; ti++) {
       String token = tokens[ti];
       String lastToken = ti - 1 >= 0 ? tokens[ti - 1] : "";
-      switch (token) {
-        case "-LRB-":
-          token = "(";
-          break;
-        case "-LCB-":
-          token = "{";
-          break;
-        case "-RRB-":
-          token = ")";
-          break;
-        case "-RCB-":
-          token = "}";
-          break;
-      }
+      token = switch (token) {
+        case "-LRB-" -> "(";
+        case "-LCB-" -> "{";
+        case "-RRB-" -> ")";
+        case "-RCB-" -> "}";
+        default -> token;
+      };
       if (sb.length() != 0) {
         if (!alphaNumeric.matcher(token).find() || token.startsWith("'") || token.equalsIgnoreCase("n't")) {
           if ((token.equals("``") || token.equals("--") || token.equals("$") ||

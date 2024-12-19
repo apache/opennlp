@@ -89,22 +89,13 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
     String type = beginTag.substring(2);
 
-    switch (type) {
-      case "PER":
-        type = "person";
-        break;
-      case "LOC":
-        type = "location";
-        break;
-      case "GPE":
-        type = "gpe";
-        break;
-      case "ORG":
-        type = "organization";
-        break;
-      default:
-        throw new InvalidFormatException("Unknown type: " + type);
-    }
+    type = switch (type) {
+      case "PER" -> "person";
+      case "LOC" -> "location";
+      case "GPE" -> "gpe";
+      case "ORG" -> "organization";
+      default -> throw new InvalidFormatException("Unknown type: " + type);
+    };
 
     return new Span(begin, end, type);
   }
