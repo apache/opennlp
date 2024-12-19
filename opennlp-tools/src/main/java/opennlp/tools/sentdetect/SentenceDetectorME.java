@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
@@ -223,10 +224,7 @@ public class SentenceDetectorME implements SentenceDetector {
       }
     }
 
-    int[] starts = new int[positions.size()];
-    for (int i = 0; i < starts.length; i++) {
-      starts[i] = positions.get(i);
-    }
+    int[] starts = ArrayMath.toIntArray(positions);
 
     // string does not contain sentence end positions
     if (starts.length == 0) {
@@ -303,11 +301,7 @@ public class SentenceDetectorME implements SentenceDetector {
    *     If not applicable, an empty array is returned.
    */
   public double[] getSentenceProbabilities() {
-    double[] sentProbArray = new double[sentProbs.size()];
-    for (int i = 0; i < sentProbArray.length; i++) {
-      sentProbArray[i] = sentProbs.get(i);
-    }
-    return sentProbArray;
+    return ArrayMath.toDoubleArray(sentProbs);
   }
 
   /**

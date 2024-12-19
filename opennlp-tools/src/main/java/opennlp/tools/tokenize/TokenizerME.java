@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
@@ -156,11 +157,7 @@ public class TokenizerME extends AbstractTokenizer {
    *         If not applicable an empty array is returned.
    */
   public double[] getTokenProbabilities() {
-    double[] tokProbArray = new double[tokProbs.size()];
-    for (int i = 0; i < tokProbArray.length; i++) {
-      tokProbArray[i] = tokProbs.get(i);
-    }
-    return tokProbArray;
+    return ArrayMath.toDoubleArray(tokProbs);
   }
 
   /**
