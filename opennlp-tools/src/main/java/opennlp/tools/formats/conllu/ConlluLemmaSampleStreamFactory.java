@@ -56,18 +56,11 @@ public class ConlluLemmaSampleStreamFactory<P> extends AbstractSampleStreamFacto
   public ObjectStream<LemmaSample> create(String[] args) {
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
-    ConlluTagset tagset;
-
-    switch (params.getTagset()) {
-      case "u":
-        tagset = ConlluTagset.U;
-        break;
-      case  "x":
-        tagset = ConlluTagset.X;
-        break;
-      default:
-        throw new TerminateToolException(-1, "Unknown tagset parameter: " + params.getTagset());
-    }
+    ConlluTagset tagset = switch (params.getTagset()) {
+      case "u" -> ConlluTagset.U;
+      case "x" -> ConlluTagset.X;
+      default -> throw new TerminateToolException(-1, "Unknown tagset parameter: " + params.getTagset());
+    };
 
     InputStreamFactory inFactory =
         CmdLineUtil.createInputStreamFactory(params.getData());
