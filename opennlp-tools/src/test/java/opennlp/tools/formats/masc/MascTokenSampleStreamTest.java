@@ -86,9 +86,9 @@ public class MascTokenSampleStreamTest extends AbstractMascSampleStreamTest {
       stream.close();
       TokenSample s = stream.read();
     } catch (IOException e) {
-      Assertions.assertEquals(e.getMessage(),
-          "You are reading an empty document stream. " +
-              "Did you close it?");
+      Assertions.assertEquals("You are reading an empty document stream. " +
+          "Did you close it?",
+              e.getMessage());
     }
   }
 

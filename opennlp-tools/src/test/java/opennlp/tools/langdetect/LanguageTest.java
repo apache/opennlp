@@ -95,6 +95,6 @@ public class LanguageTest {
 
     Assertions.assertEquals(langA6, langA5);
 
-    Assertions.assertNotEquals(langA.getLang(), "something else");
+    Assertions.assertNotEquals("something else", langA.getLang());
   }
 }

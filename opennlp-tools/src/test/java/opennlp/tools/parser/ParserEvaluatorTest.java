@@ -76,9 +76,9 @@ public class ParserEvaluatorTest {
     Assertions.assertNotNull(measure);
 
     // Expected output:  Precision: 0.42857142857142855, Recall: 0.375, F-Measure: 0.39999999999999997
-    Assertions.assertEquals(measure.getPrecisionScore(), 0.42857142857142855d, 0d);
-    Assertions.assertEquals(measure.getRecallScore(), 0.375d, 0d);
-    Assertions.assertEquals(measure.getFMeasure(), 0.39999999999999997d, 0d);
+    Assertions.assertEquals(0.42857142857142855d, measure.getPrecisionScore(), 0d);
+    Assertions.assertEquals(0.375d, measure.getRecallScore(), 0d);
+    Assertions.assertEquals(0.39999999999999997d, measure.getFMeasure(), 0d);
   }
 
 }

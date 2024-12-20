@@ -28,44 +28,44 @@ public class SnowballStemmerTest {
   @Test
   void testArabic() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.ARABIC);
-    Assertions.assertEquals(stemmer.stem("أأباءاهم"), "اباء");
-    Assertions.assertEquals(stemmer.stem("استفتياكما"), "استفتي");
-    Assertions.assertEquals(stemmer.stem("استنتاجاتهما"), "استنتاجا");
+    Assertions.assertEquals("اباء", stemmer.stem("أأباءاهم"));
+    Assertions.assertEquals("استفتي", stemmer.stem("استفتياكما"));
+    Assertions.assertEquals("استنتاجا", stemmer.stem("استنتاجاتهما"));
   }
 
   @Test
   void testDanish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.DANISH);
-    Assertions.assertEquals(stemmer.stem("aabenbaringen"), "aabenbaring");
-    Assertions.assertEquals(stemmer.stem("skuebrødsbordene"), "skuebrødsbord");
-    Assertions.assertEquals(stemmer.stem("skrøbeligheder"), "skrøb");
+    Assertions.assertEquals("aabenbaring", stemmer.stem("aabenbaringen"));
+    Assertions.assertEquals("skuebrødsbord", stemmer.stem("skuebrødsbordene"));
+    Assertions.assertEquals("skrøb", stemmer.stem("skrøbeligheder"));
   }
 
   @Test
   void testDutch() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.DUTCH);
-    Assertions.assertEquals(stemmer.stem("vliegtuigtransport"), "vliegtuigtransport");
-    Assertions.assertEquals(stemmer.stem("sterlabcertificaat"), "sterlabcertificat");
-    Assertions.assertEquals(stemmer.stem("vollegrondsgroenteteelt"),
-        "vollegrondsgroenteteelt");
+    Assertions.assertEquals("vliegtuigtransport", stemmer.stem("vliegtuigtransport"));
+    Assertions.assertEquals("sterlabcertificat", stemmer.stem("sterlabcertificaat"));
+    Assertions.assertEquals("vollegrondsgroenteteelt",
+            stemmer.stem("vollegrondsgroenteteelt"));
 
   }
 
   @Test
   void testCatalan() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.CATALAN);
-    Assertions.assertEquals(stemmer.stem("importantíssimes"), "important");
-    Assertions.assertEquals(stemmer.stem("besar"), "bes");
-    Assertions.assertEquals(stemmer.stem("accidentalment"), "accidental");
+    Assertions.assertEquals("important", stemmer.stem("importantíssimes"));
+    Assertions.assertEquals("bes", stemmer.stem("besar"));
+    Assertions.assertEquals("accidental", stemmer.stem("accidentalment"));
 
   }
 
   @Test
   void testEnglish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.ENGLISH);
-    Assertions.assertEquals(stemmer.stem("accompanying"), "accompani");
-    Assertions.assertEquals(stemmer.stem("malediction"), "maledict");
-    Assertions.assertEquals(stemmer.stem("softeners"), "soften");
+    Assertions.assertEquals("accompani", stemmer.stem("accompanying"));
+    Assertions.assertEquals("maledict", stemmer.stem("malediction"));
+    Assertions.assertEquals("soften", stemmer.stem("softeners"));
 
   }
 
@@ -78,115 +78,115 @@ public class SnowballStemmerTest {
   @Test
   void testFinnish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.FINNISH);
-    Assertions.assertEquals(stemmer.stem("esiintymispaikasta"), "esiintymispaik");
-    Assertions.assertEquals(stemmer.stem("esiintyviätaiteilijaystäviään"),
-        "esiintyviätaiteilijaystäviä");
-    Assertions.assertEquals(stemmer.stem("hellbergiä"), "hellberg");
+    Assertions.assertEquals("esiintymispaik", stemmer.stem("esiintymispaikasta"));
+    Assertions.assertEquals("esiintyviätaiteilijaystäviä",
+            stemmer.stem("esiintyviätaiteilijaystäviään"));
+    Assertions.assertEquals("hellberg", stemmer.stem("hellbergiä"));
 
   }
 
   @Test
   void testFrench() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.FRENCH);
-    Assertions.assertEquals(stemmer.stem("accomplissaient"), "accompl");
-    Assertions.assertEquals(stemmer.stem("examinateurs"), "examin");
-    Assertions.assertEquals(stemmer.stem("prévoyant"), "prévoi");
+    Assertions.assertEquals("accompl", stemmer.stem("accomplissaient"));
+    Assertions.assertEquals("examin", stemmer.stem("examinateurs"));
+    Assertions.assertEquals("prévoi", stemmer.stem("prévoyant"));
   }
 
   @Test
   void testGerman() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.GERMAN);
-    Assertions.assertEquals(stemmer.stem("buchbindergesellen"), "buchbindergesell");
-    Assertions.assertEquals(stemmer.stem("mindere"), "mind");
-    Assertions.assertEquals(stemmer.stem("mitverursacht"), "mitverursacht");
+    Assertions.assertEquals("buchbindergesell", stemmer.stem("buchbindergesellen"));
+    Assertions.assertEquals("mind", stemmer.stem("mindere"));
+    Assertions.assertEquals("mitverursacht", stemmer.stem("mitverursacht"));
 
   }
 
   @Test
   void testGreek() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.GREEK);
-    Assertions.assertEquals(stemmer.stem("επιστροφή"), "επιστροφ");
-    Assertions.assertEquals(stemmer.stem("Αμερικανών"), "αμερικαν");
-    Assertions.assertEquals(stemmer.stem("στρατιωτών"), "στρατιωτ");
+    Assertions.assertEquals("επιστροφ", stemmer.stem("επιστροφή"));
+    Assertions.assertEquals("αμερικαν", stemmer.stem("Αμερικανών"));
+    Assertions.assertEquals("στρατιωτ", stemmer.stem("στρατιωτών"));
 
   }
 
   @Test
   void testHungarian() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.HUNGARIAN);
-    Assertions.assertEquals(stemmer.stem("abbahagynám"), "abbahagyna");
-    Assertions.assertEquals(stemmer.stem("konstrukciójából"), "konstrukció");
-    Assertions.assertEquals(stemmer.stem("lopta"), "lopt");
+    Assertions.assertEquals("abbahagyna", stemmer.stem("abbahagynám"));
+    Assertions.assertEquals("konstrukció", stemmer.stem("konstrukciójából"));
+    Assertions.assertEquals("lopt", stemmer.stem("lopta"));
 
   }
 
   @Test
   void testIrish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.IRISH);
-    Assertions.assertEquals(stemmer.stem("bhfeidhm"), "feidhm");
-    Assertions.assertEquals(stemmer.stem("feirmeoireacht"), "feirmeoir");
-    Assertions.assertEquals(stemmer.stem("monarcacht"), "monarc");
+    Assertions.assertEquals("feidhm", stemmer.stem("bhfeidhm"));
+    Assertions.assertEquals("feirmeoir", stemmer.stem("feirmeoireacht"));
+    Assertions.assertEquals("monarc", stemmer.stem("monarcacht"));
 
   }
 
   @Test
   void testItalian() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.ITALIAN);
-    Assertions.assertEquals(stemmer.stem("abbattimento"), "abbatt");
-    Assertions.assertEquals(stemmer.stem("dancer"), "dancer");
-    Assertions.assertEquals(stemmer.stem("dance"), "danc");
+    Assertions.assertEquals("abbatt", stemmer.stem("abbattimento"));
+    Assertions.assertEquals("dancer", stemmer.stem("dancer"));
+    Assertions.assertEquals("danc", stemmer.stem("dance"));
 
   }
 
   @Test
   void testIndonesian() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.INDONESIAN);
-    Assertions.assertEquals(stemmer.stem("peledakan"), "ledak");
-    Assertions.assertEquals(stemmer.stem("pelajaran"), "ajar");
-    Assertions.assertEquals(stemmer.stem("perbaikan"), "baik");
+    Assertions.assertEquals("ledak", stemmer.stem("peledakan"));
+    Assertions.assertEquals("ajar", stemmer.stem("pelajaran"));
+    Assertions.assertEquals("baik", stemmer.stem("perbaikan"));
 
   }
 
   @Test
   void testPortuguese() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.PORTUGUESE);
-    Assertions.assertEquals(stemmer.stem("aborrecimentos"), "aborrec");
-    Assertions.assertEquals(stemmer.stem("aché"), "aché");
-    Assertions.assertEquals(stemmer.stem("ache"), "ache");
+    Assertions.assertEquals("aborrec", stemmer.stem("aborrecimentos"));
+    Assertions.assertEquals("aché", stemmer.stem("aché"));
+    Assertions.assertEquals("ache", stemmer.stem("ache"));
 
   }
 
   @Test
   void testRomanian() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.ROMANIAN);
-    Assertions.assertEquals(stemmer.stem("absurdităţilor"), "absurd");
-    Assertions.assertEquals(stemmer.stem("laşi"), "laș");
-    Assertions.assertEquals(stemmer.stem("saracilor"), "sarac");
+    Assertions.assertEquals("absurd", stemmer.stem("absurdităţilor"));
+    Assertions.assertEquals("laș", stemmer.stem("laşi"));
+    Assertions.assertEquals("sarac", stemmer.stem("saracilor"));
   }
 
   @Test
   void testSpanish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.SPANISH);
-    Assertions.assertEquals(stemmer.stem("besó"), "bes");
-    Assertions.assertEquals(stemmer.stem("importantísimas"), "importantisim");
-    Assertions.assertEquals(stemmer.stem("incidental"), "incidental");
+    Assertions.assertEquals("bes", stemmer.stem("besó"));
+    Assertions.assertEquals("importantisim", stemmer.stem("importantísimas"));
+    Assertions.assertEquals("incidental", stemmer.stem("incidental"));
   }
 
   @Test
   void testSwedish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.SWEDISH);
-    Assertions.assertEquals(stemmer.stem("aftonringningen"), "aftonringning");
-    Assertions.assertEquals(stemmer.stem("andedrag"), "andedrag");
-    Assertions.assertEquals(stemmer.stem("andedrägt"), "andedräg");
+    Assertions.assertEquals("aftonringning", stemmer.stem("aftonringningen"));
+    Assertions.assertEquals("andedrag", stemmer.stem("andedrag"));
+    Assertions.assertEquals("andedräg", stemmer.stem("andedrägt"));
 
   }
 
   @Test
   void testTurkish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.TURKISH);
-    Assertions.assertEquals(stemmer.stem("ab'yle"), "ab'yle");
-    Assertions.assertEquals(stemmer.stem("kaçmamaktadır"), "kaçmamak");
-    Assertions.assertEquals(stemmer.stem("sarayı'nı"), "sarayı'nı");
+    Assertions.assertEquals("ab'yle", stemmer.stem("ab'yle"));
+    Assertions.assertEquals("kaçmamak", stemmer.stem("kaçmamaktadır"));
+    Assertions.assertEquals("sarayı'nı", stemmer.stem("sarayı'nı"));
   }
 
   @Test
