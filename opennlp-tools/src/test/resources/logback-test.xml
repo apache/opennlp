@@ -23,11 +23,15 @@
 
     <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %class{36}.%method:%line - %msg%n</pattern>
+            <pattern>%date{HH:mm:ss.SSS} [%thread] %-4level %class{36}.%method:%line - %msg%n</pattern>
         </encoder>
     </appender>
 
     <logger name="opennlp" level="off"/>
+
+    <logger name="opennlp.tools.cmdline.namefind" level="off"/>
+    
+    <logger name="opennlp.tools.cmdline.CmdLineUtil" level="off"/>
 
     <root level="off">
         <appender-ref ref="consoleAppender" />

@@ -19,19 +19,22 @@ package opennlp.tools.cmdline;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import nl.altindag.log.LogCaptor;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
 import opennlp.tools.namefind.NameFinderME;
@@ -44,75 +47,80 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class TokenNameFinderToolTest {
 
-  @Test
-  //TODO OPENNLP-1447
-  @Disabled(value = "OPENNLP-1447: These kind of tests won't work anymore. " +
-          "We need to find a way to redirect log output (i.e. implement " +
-          "a custom log adapter and plug it in, if we want to do such tests.")
-  void run() throws IOException {
+  /*
+   * Programmatic change to debug log to ensure that we can see log messages to
+   * confirm no duplicate download is happening
+   */
+  @BeforeAll
+  public static void prepare() {
+    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    Logger logger = context.getLogger("opennlp.tools.cmdline.namefind");
+    logger.setLevel(Level.INFO);
+  }
 
-    File model1 = trainModel();
-
-    String[] args = new String[] {model1.getAbsolutePath()};
-
-    final String in = "It is Stefanie Schmidt.\n\nNothing in this sentence.";
-    InputStream stream = new ByteArrayInputStream(in.getBytes(StandardCharsets.UTF_8));
-
-    System.setIn(stream);
-
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    PrintStream ps = new PrintStream(baos);
-    System.setOut(ps);
-
-    TokenNameFinderTool tool = new TokenNameFinderTool();
-    tool.run(args);
-
-    final String content = baos.toString(StandardCharsets.UTF_8);
-    Assertions.assertTrue(content.contains("It is <START:person> Stefanie Schmidt. <END>"));
-
-    Assertions.assertTrue(model1.delete());
+  /*
+   * Programmatic restore the default log level (= OFF) after the test
+   */
+  @AfterAll
+  public static void cleanup() {
+    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    Logger logger = context.getLogger("opennlp.tools.cmdline.namefind");
+    logger.setLevel(Level.OFF);
   }
 
   @Test
-  void invalidModel() {
+  void run() throws IOException {
+    try (LogCaptor logCaptor = LogCaptor.forClass(TokenNameFinderTool.class)) {
+      File model1 = trainModel();
+      String[] args = new String[] {model1.getAbsolutePath()};
 
-    Assertions.assertThrows(TerminateToolException.class, () -> {
+      final String in = "It is Stefanie Schmidt.\n";
+      InputStream stream = new ByteArrayInputStream(in.getBytes(StandardCharsets.UTF_8));
 
-      String[] args = new String[] {"invalidmodel.bin"};
+      System.setIn(stream);
 
       TokenNameFinderTool tool = new TokenNameFinderTool();
       tool.run(args);
 
-    });
-
-
+      assertEquals(1, logCaptor.getInfoLogs().size());
+      final String content = logCaptor.getInfoLogs().get(0);
+      logCaptor.clearLogs();
+      assertEquals("It is <START:person> Stefanie Schmidt. <END>", content);
+      assertTrue(model1.delete());
+    }
   }
 
   @Test
-  //TODO OPENNLP-1447
-  @Disabled(value = "OPENNLP-1447: These kind of tests won't work anymore. " +
-          "We need to find a way to redirect log output (i.e. implement " +
-          "a custom log adapter and plug it in, if we want to do such tests.")
+  void invalidModel() {
+    assertThrows(TerminateToolException.class, () -> {
+      String[] args = new String[] {"invalidmodel.bin"};
+      TokenNameFinderTool tool = new TokenNameFinderTool();
+      tool.run(args);
+
+    });
+  }
+
+  @Test
   void usage() {
+    try (LogCaptor logCaptor = LogCaptor.forClass(TokenNameFinderTool.class)) {
+      String[] args = new String[] {};
 
-    String[] args = new String[] {};
+      TokenNameFinderTool tool = new TokenNameFinderTool();
+      tool.run(args);
 
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    PrintStream ps = new PrintStream(baos);
-    System.setOut(ps);
-
-    TokenNameFinderTool tool = new TokenNameFinderTool();
-    tool.run(args);
-
-    final String content = baos.toString(StandardCharsets.UTF_8);
-    Assertions.assertEquals(tool.getHelp(), content.trim());
-
+      assertEquals(1, logCaptor.getInfoLogs().size());
+      final String content = logCaptor.getInfoLogs().get(0);
+      assertEquals(tool.getHelp(), content.trim());
+    }
   }
 
   private File trainModel() throws IOException {
-
     ObjectStream<String> lineStream =
         new PlainTextByLineStream(new MockInputStreamFactory(
             new File("opennlp/tools/namefind/AnnotatedSentencesWithTypes.txt")),
@@ -123,7 +131,6 @@ public class TokenNameFinderToolTest {
     params.put(TrainingParameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel model;
-
     TokenNameFinderFactory nameFinderFactory = new TokenNameFinderFactory();
 
     try (ObjectStream<NameSample> sampleStream = new NameSampleDataStream(lineStream)) {
@@ -132,12 +139,10 @@ public class TokenNameFinderToolTest {
     }
 
     File modelFile = Files.createTempFile("model", ".bin").toFile();
-
     try (OutputStream modelOut =
              new BufferedOutputStream(new FileOutputStream(modelFile))) {
       model.serialize(modelOut);
     }
-
     return modelFile;
   }
 
