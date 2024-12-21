@@ -69,7 +69,7 @@ class DocumentSplitterStream extends FilterObjectStream<String, String> {
       }
     }
 
-    if (docs.size() > 0) {
+    if (!docs.isEmpty()) {
       return docs.remove(0);
     }
     else {

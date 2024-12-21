@@ -26,38 +26,61 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringUtil;
 
 /**
- * SAX style SGML parser.
- * <p>
- * Note:<br>
- * The implementation is very limited, but good enough to
- * parse the MUC corpora. Its must very likely be extended/improved/fixed to parse
- * a different SGML corpora.
+ * A SAX style <a href="https://www.w3.org/TR/WD-html40-970708/intro/sgmltut.html">SGML</a> parser.
+ * 
+ * @implNote The implementation is very limited, but good enough to parse the
+ * <a href="https://catalog.ldc.upenn.edu/LDC2003T13">MUC corpora</a>.
+ * Its must very likely be extended/improved/fixed to parse a different SGML corpora.
  */
 public class SgmlParser {
 
+  private static final char SYMBOL_CLOSE = '>';
+  private static final char SYMBOL_OPEN = '<';
+  private static final char SYMBOL_SLASH = '/';
+  private static final char SYMBOL_EQUALS = '=';
+  private static final char SYMBOL_QUOT = '"';
+
+  /**
+   * Defines methods to handle content produced by a {@link SgmlParser}.
+   * A concrete implementation interprets the document specific details.
+   */
   public static abstract class ContentHandler {
 
-    public void startElement(String name, Map<String, String> attributes) throws InvalidFormatException {
-    }
+    /**
+     * Handles a SGML start element.
+     *
+     * @param name The name of the element's start tag.
+     * @param attributes The attributes supplied with the start tag. It may be empty.
+     * @throws InvalidFormatException Thrown if parameters were invalid.
+     */
+    public abstract void startElement(String name, Map<String, String> attributes)
+            throws InvalidFormatException;
 
-    public void characters(CharSequence chars) throws InvalidFormatException{
-    }
+    /**
+     * Handles a set of characters between SGML start and end tag.
+     * 
+     * @param chars The characters to process.
+     * @throws InvalidFormatException Thrown if parameters were invalid.
+     */
+    public abstract void characters(CharSequence chars)
+            throws InvalidFormatException;
 
-    public void endElement(String name) throws InvalidFormatException {
-    }
+    /**
+     * Handles a SGML end element.
+     * @param name The name of the element's end tag.
+     */
+    public abstract void endElement(String name);
   }
 
   private static String extractTagName(CharSequence tagChars) throws InvalidFormatException {
 
     int fromOffset = 1;
-
-    if (tagChars.length() > 1 && tagChars.charAt(1) == '/') {
+    if (tagChars.length() > 1 && tagChars.charAt(1) == SYMBOL_SLASH) {
       fromOffset = 2;
     }
 
     for (int ci = 1; ci < tagChars.length(); ci++) {
-
-      if (tagChars.charAt(ci) == '>' || StringUtil.isWhitespace(tagChars.charAt(ci))) {
+      if (tagChars.charAt(ci) == SYMBOL_CLOSE || StringUtil.isWhitespace(tagChars.charAt(ci))) {
         return tagChars.subSequence(fromOffset, ci).toString();
       }
     }
@@ -90,7 +113,8 @@ public class SgmlParser {
         extractKey = true;
       }
       // Equals sign indicated end of key name
-      else if (extractKey && ('=' == tagChars.charAt(i) || StringUtil.isWhitespace(tagChars.charAt(i)))) {
+      else if (extractKey && (SYMBOL_EQUALS == tagChars.charAt(i) ||
+              StringUtil.isWhitespace(tagChars.charAt(i)))) {
         extractKey = false;
       }
       // Inside key name, extract all chars
@@ -98,7 +122,7 @@ public class SgmlParser {
         key.append(tagChars.charAt(i));
       }
       // " Indicates begin or end of value chars
-      else if ('"' == tagChars.charAt(i)) {
+      else if (SYMBOL_QUOT == tagChars.charAt(i)) {
 
         if (extractValue) {
           attributes.put(key.toString(), value.toString());
@@ -107,7 +131,6 @@ public class SgmlParser {
           key.setLength(0);
           value.setLength(0);
         }
-
         extractValue = !extractValue;
       }
       // Inside value, extract all chars
@@ -119,6 +142,17 @@ public class SgmlParser {
     return attributes;
   }
 
+  /**
+   * Parses an SGML document available via the input in {@link Reader}.
+   * The specified {@link ContentHandler} is responsible of how to interpret the document
+   * specific details.
+   *
+   * @param in      A {@link Reader} that provides the data of the SGML document.
+   * @param handler The {@link ContentHandler} to interpret the document with.
+   *                
+   * @throws IOException Thrown if IO errors occurred.
+   * @throws InvalidFormatException Thrown if parameters were invalid.
+   */
   public void parse(Reader in, ContentHandler handler) throws IOException {
 
     StringBuilder buffer = new StringBuilder();
@@ -130,45 +164,37 @@ public class SgmlParser {
     int c;
     while ((c = in.read()) != -1) {
 
-      if ('<' == c) {
+      if (SYMBOL_OPEN == c) {
         if (isInsideTag) {
           throw new InvalidFormatException("Did not expect < char!");
         }
-
-        if (buffer.toString().trim().length() > 0) {
+        if (!buffer.toString().trim().isEmpty()) {
           handler.characters(buffer.toString().trim());
         }
-
         buffer.setLength(0);
-
         isInsideTag = true;
         isStartTag = true;
       }
-
       buffer.appendCodePoint(c);
 
-      if ('/' == c && lastChar == '<') {
+      if (SYMBOL_SLASH == c && lastChar == SYMBOL_OPEN) {
         isStartTag = false;
       }
 
-      if ('>' == c) {
+      if (SYMBOL_CLOSE == c) {
 
         if (!isInsideTag) {
           throw new InvalidFormatException("Did not expect > char!");
         }
-
         if (isStartTag) {
           handler.startElement(extractTagName(buffer), getAttributes(buffer));
         }
         else {
           handler.endElement(extractTagName(buffer));
         }
-
         buffer.setLength(0);
-
         isInsideTag = false;
       }
-
       lastChar = c;
     }
 
