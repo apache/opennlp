@@ -18,32 +18,39 @@
 package opennlp.tools.cmdline.tokenizer;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import nl.altindag.log.LogCaptor;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import opennlp.tools.AbstractTempDirTest;
+import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.InvalidFormatException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Tests for the {@link TokenizerTrainerTool} class.
  */
 public class TokenizerTrainerToolTest extends AbstractTempDirTest {
-
-  private TokenizerTrainerTool tokenizerTrainerTool;
 
   private final String sampleSuccessData =
       "Pierre Vinken<SPLIT>, 61 years old<SPLIT>, will join the board as a nonexecutive " +
@@ -54,10 +61,31 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
 
   private final String sampleFailureData = "It is Fail Test Case.\n\nNothing in this sentence.";
 
+  /*
+   * Programmatic change to debug log to ensure that we can see log messages to
+   * confirm no duplicate download is happening
+   */
+  @BeforeAll
+  public static void prepare() {
+    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    Logger logger = context.getLogger("opennlp.tools.cmdline.CmdLineUtil");
+    logger.setLevel(Level.INFO);
+  }
+
+  /*
+   * Programmatic restore the default log level (= OFF) after the test
+   */
+  @AfterAll
+  public static void cleanup() {
+    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    Logger logger = context.getLogger("opennlp.tools.cmdline.CmdLineUtil");
+    logger.setLevel(Level.OFF);
+  }
+
   @Test
   public void testGetShortDescription() {
-    tokenizerTrainerTool = new TokenizerTrainerTool();
-    Assertions.assertEquals("Trainer for the learnable tokenizer",
+    TokenizerTrainerTool tokenizerTrainerTool = new TokenizerTrainerTool();
+    assertEquals("Trainer for the learnable tokenizer",
             tokenizerTrainerTool.getShortDescription());
   }
 
@@ -65,44 +93,38 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
   public void testLoadDictHappyCase() throws IOException {
     File dictFile = new File("lang/ga/abb_GA.xml");
     Dictionary dict = TokenizerTrainerTool.loadDict(dictFile);
-    Assertions.assertNotNull(dict);
+    assertNotNull(dict);
   }
 
   @Test
   public void testLoadDictFailCase() {
-    Assertions.assertThrows(InvalidFormatException.class , () ->
+    assertThrows(InvalidFormatException.class , () ->
             TokenizerTrainerTool.loadDict(prepareDataFile("")));
   }
 
-  //TODO OPENNLP-1447
-  @Disabled(value = "OPENNLP-1447: These kind of tests won't work anymore. " +
-          "We need to find a way to redirect log output (i.e. implement " +
-          "a custom log adapter and plug it in, if we want to do such tests.")
+  @Test
   public void testTestRunHappyCase() throws IOException {
-    File model = tempDir.resolve("model-en.bin").toFile();
-
-    String[] args =
-        new String[] { "-model" , model.getAbsolutePath() , "-alphaNumOpt" , "false" , "-lang" , "en" ,
-            "-data" , String.valueOf(prepareDataFile(sampleSuccessData)) , "-encoding" , "UTF-8" };
-
-    InputStream stream = new ByteArrayInputStream(sampleSuccessData.getBytes(StandardCharsets.UTF_8));
-    System.setIn(stream);
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    PrintStream ps = new PrintStream(baos);
-    System.setOut(ps);
-
-    tokenizerTrainerTool = new TokenizerTrainerTool();
-    tokenizerTrainerTool.run(StreamFactoryRegistry.DEFAULT_FORMAT , args);
-
-    final String content = baos.toString(StandardCharsets.UTF_8);
-    Assertions.assertTrue(content.contains("Number of Event Tokens: 171"));
-    Assertions.assertTrue(model.delete());
+    try (LogCaptor logCaptor = LogCaptor.forClass(CmdLineUtil.class)) {
+      File model = tempDir.resolve("model-en.bin").toFile();
+  
+      String[] args =
+          new String[] { "-model" , model.getAbsolutePath() , "-alphaNumOpt" , "false" , "-lang" , "en" ,
+              "-data" , String.valueOf(prepareDataFile(sampleSuccessData)) , "-encoding" , "UTF-8" };
+  
+      InputStream stream = new ByteArrayInputStream(sampleSuccessData.getBytes(StandardCharsets.UTF_8));
+      System.setIn(stream);
+  
+      TokenizerTrainerTool trainerTool = new TokenizerTrainerTool();
+      trainerTool.run(StreamFactoryRegistry.DEFAULT_FORMAT , args);
+  
+      assertEquals(3, logCaptor.getInfoLogs().size());
+      final String content = logCaptor.getInfoLogs().get(2);
+      assertTrue(content.startsWith("Wrote tokenizer model to path:"));
+      assertTrue(model.delete());
+    }
   }
 
-  //TODO OPENNLP-1447
-  @Disabled(value = "OPENNLP-1447: These kind of tests won't work anymore. " +
-          "We need to find a way to redirect log output (i.e. implement " +
-          "a custom log adapter and plug it in, if we want to do such tests.")
+  @Test
   public void testTestRunExceptionCase() throws IOException {
     File model = tempDir.resolve("model-en.bin").toFile();
     model.deleteOnExit();
@@ -111,17 +133,10 @@ public class TokenizerTrainerToolTest extends AbstractTempDirTest {
         new String[] { "-model" , model.getAbsolutePath() , "-alphaNumOpt" , "false" , "-lang" , "en" ,
             "-data" , String.valueOf(prepareDataFile(sampleFailureData)) , "-encoding" , "UTF-8" };
 
-    InputStream stream = new ByteArrayInputStream(sampleFailureData.getBytes(StandardCharsets.UTF_8));
-    System.setIn(stream);
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    PrintStream ps = new PrintStream(baos);
-    System.setOut(ps);
-
-    Assertions.assertThrows(TerminateToolException.class , () -> {
-      tokenizerTrainerTool = new TokenizerTrainerTool();
-      tokenizerTrainerTool.run(StreamFactoryRegistry.DEFAULT_FORMAT , args);
+    assertThrows(TerminateToolException.class , () -> {
+      TokenizerTrainerTool trainerTool = new TokenizerTrainerTool();
+      trainerTool.run(StreamFactoryRegistry.DEFAULT_FORMAT , args);
     });
-
   }
 
   // This is guaranteed to be deleted after the test finishes.
