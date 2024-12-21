@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,9 +35,21 @@ public class SgmlParserTest extends AbstractFormatTest {
     try (Reader in = new InputStreamReader(getResourceStream("muc/parsertest1.sgml"),
             StandardCharsets.UTF_8)) {
       SgmlParser parser = new SgmlParser();
-      parser.parse(in, new SgmlParser.ContentHandler() {
-      });
+      parser.parse(in, new DummyContentHandler());
     }
   }
 
+  private static class DummyContentHandler extends SgmlParser.ContentHandler {
+    @Override
+    public void startElement(String name, Map<String, String> attributes) {
+    }
+
+    @Override
+    public void characters(CharSequence chars) {
+    }
+
+    @Override
+    public void endElement(String name) {
+    }
+  }
 }
