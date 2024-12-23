@@ -21,6 +21,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import opennlp.tools.cmdline.AbstractTrainerTool;
 import opennlp.tools.cmdline.CmdLineUtil;
@@ -33,6 +34,7 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.tokenize.TokenizerFactory;
 import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -53,9 +55,15 @@ public final class TokenizerTrainerTool
 
   static Dictionary loadDict(File f) throws IOException {
     Dictionary dict = null;
-    if (f != null) {
+    if (f != null && f.exists()) {
       CmdLineUtil.checkInputFile("abb dict", f);
-      dict = new Dictionary(new BufferedInputStream(new FileInputStream(f)));
+      try (InputStream in = new BufferedInputStream(new FileInputStream(f))) {
+        if (in.available() == 0) {
+          throw new InvalidFormatException("Encountered an empty dictionary file?!");
+        } else {
+          dict = new Dictionary(in);
+        }
+      }
     }
     return dict;
   }
