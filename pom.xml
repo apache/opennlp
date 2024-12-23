@@ -187,7 +187,9 @@
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.8.12</jacoco.maven.plugin>
-		<maven.failsafe.plugin>3.5.1</maven.failsafe.plugin>
+		<maven.assembly.plugin>3.7.1</maven.assembly.plugin>
+		<maven.failsafe.plugin>3.5.2</maven.failsafe.plugin>
+		<maven.javadoc.plugin>3.11.2</maven.javadoc.plugin>
 		<forbiddenapis.plugin>3.8</forbiddenapis.plugin>
 	</properties>
 
@@ -208,13 +210,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>3.2.0</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.felix</groupId>
-					<artifactId>maven-bundle-plugin</artifactId>
-					<version>5.1.4</version>
+					<version>${maven.assembly.plugin}</version>
 				</plugin>
 
 				<plugin>
@@ -382,7 +378,7 @@
 
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>${maven.javadoc.plugin}</version>
 				<configuration>
 					<doclint>none</doclint>
 					<source>${java.version}</source>
