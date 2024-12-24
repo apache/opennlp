@@ -24,6 +24,10 @@ import java.util.List;
  */
 public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  private static final String BROWNCLUSTER = "browncluster";
+  private static final String FEATURE_NEXT_BROWNCLUSTER_BASE = BROWNCLUSTER + ",n" + BROWNCLUSTER + "=";
+  private static final String FEATURE_PREV_BROWNCLUSTER_BASE = "p" + BROWNCLUSTER + "," + BROWNCLUSTER + "=";
+
   private final BrownCluster brownCluster;
 
   /**
@@ -38,20 +42,18 @@ public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 
-    List<String> wordClasses = BrownTokenClasses.getWordClasses(tokens[index], brownCluster);
+    List<String> wc = BrownTokenClasses.getWordClasses(tokens[index], brownCluster);
     if (index > 0) {
-      List<String> prevWordClasses = BrownTokenClasses.getWordClasses(tokens[index - 1], brownCluster);
-      for (int i = 0; i < wordClasses.size() && i < prevWordClasses.size(); i++) {
-        features.add("p" + "browncluster" + "," + "browncluster" + "="
-            + prevWordClasses.get(i) + "," + wordClasses.get(i));
+      List<String> prevWC = BrownTokenClasses.getWordClasses(tokens[index - 1], brownCluster);
+      for (int i = 0; i < wc.size() && i < prevWC.size(); i++) {
+        features.add(FEATURE_PREV_BROWNCLUSTER_BASE + prevWC.get(i) + "," + wc.get(i));
       }
     }
 
     if (index + 1 < tokens.length) {
       List<String> nextWordClasses = BrownTokenClasses.getWordClasses(tokens[index + 1], brownCluster);
-      for (int i = 0; i < wordClasses.size() && i < nextWordClasses.size(); i++) {
-        features.add("browncluster" + "," + "n" + "browncluster" + "="
-            + wordClasses.get(i) + "," + nextWordClasses.get(i));
+      for (int i = 0; i < wc.size() && i < nextWordClasses.size(); i++) {
+        features.add(FEATURE_NEXT_BROWNCLUSTER_BASE + wc.get(i) + "," + nextWordClasses.get(i));
       }
     }
   }
