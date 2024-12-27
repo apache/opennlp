@@ -58,4 +58,4 @@ if [ -n "$JAVA_HEAP" ] ; then
   HEAP="-Xmx$JAVA_HEAP"
 fi
 
-$JAVACMD "$HEAP" -Dlog4j.configurationFile="$OPENNLP_HOME/conf/log4j2.xml" -cp "$CLASSPATH" opennlp.tools.cmdline.CLI "$@"
+$JAVACMD $HEAP -Dlog4j.configurationFile="$OPENNLP_HOME/conf/log4j2.xml" -cp "$CLASSPATH" opennlp.tools.cmdline.CLI "$@"
