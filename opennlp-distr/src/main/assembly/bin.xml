@@ -115,35 +115,35 @@
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-tools/target/apidocs</directory>
+      <directory>../opennlp-tools/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-tools</outputDirectory>
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-tools-models/target/apidocs</directory>
+      <directory>../opennlp-tools-models/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-tools-models</outputDirectory>
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-dl/target/apidocs</directory>
+      <directory>../opennlp-dl/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-dl</outputDirectory>
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-morfologik-addon/target/apidocs</directory>
+      <directory>../opennlp-morfologik-addon/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-morfologik-addon</outputDirectory>
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-uima/target/apidocs</directory>
+      <directory>../opennlp-uima/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-uima</outputDirectory>
