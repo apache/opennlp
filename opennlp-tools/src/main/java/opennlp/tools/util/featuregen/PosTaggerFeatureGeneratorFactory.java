@@ -19,6 +19,12 @@ package opennlp.tools.util.featuregen;
 
 import opennlp.tools.util.InvalidFormatException;
 
+/**
+ * A {@link GeneratorFactory} that produces {@link PosTaggerFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
+ * @see PosTaggerFeatureGenerator
+ */
 public class PosTaggerFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 

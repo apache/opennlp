@@ -34,8 +34,7 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.SerializableArtifact;
 
 /**
- *
- * Class to load a Brown cluster document: word\tword_class\tprob
+ * Class to load a Brown cluster document in the format: {@code word\tword_class\tprob}.
  * <p>
  * Originally available at: <a href="http://metaoptimize.com/projects/wordreprs/">
  * http://metaoptimize.com/projects/wordreprs/</a>.
@@ -69,8 +68,8 @@ public class BrownCluster implements SerializableArtifact {
   /**
    * Instatiates a {@link BrownCluster} and its related token to cluster map
    * via an {@link InputStream}.
-   * <p>
-   * <b>Note:</b>
+   * 
+   * @implNote
    * Only tokens with frequency bigger than {@code 5} will be added.
    * 
    * @param in A valid, open {@link InputStream} to read from.
@@ -101,7 +100,7 @@ public class BrownCluster implements SerializableArtifact {
    * Check if a token is in the Brown:paths, token map.
    * 
    * @param string the token to look-up
-   * @return the brown class if such token is in the brown cluster map
+   * @return the brown class if such token is in the brown cluster map.
    */
   public String lookupToken(String string) {
     return tokenToClusterMap.get(string);

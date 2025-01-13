@@ -36,10 +36,12 @@ public class PreviousMapFeatureGenerator implements AdaptiveFeatureGenerator {
 
   /**
    * Generates previous decision features for the token based on contents of the previous map.
+   * 
+   * @param tokens The tokens of the sentence or other text unit which has been processed.
+   * @param outcomes The outcomes associated with the specified tokens.
    */
   @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
-
     for (int i = 0; i < tokens.length; i++) {
       previousMap.put(tokens[i], outcomes[i]);
     }

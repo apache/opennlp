@@ -19,18 +19,35 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+/**
+ * A feature generator implementation that generates prefix-based features.
+ *
+ * @see AdaptiveFeatureGenerator
+ */
 public class PrefixFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final String PREFIX = "pre=";
 
+  /**
+   * The default upper boundary prefix length value is {@code 4}.
+   */
   static final int DEFAULT_MAX_LENGTH = 4;
   
   private final int prefixLength;
-  
+
+  /**
+   * Intializes a default {@link PrefixFeatureGenerator}.
+   * The prefixLength length is set to the value of {@link #DEFAULT_MAX_LENGTH}.
+   */
   public PrefixFeatureGenerator() {
     prefixLength = DEFAULT_MAX_LENGTH;
   }
-  
+
+  /**
+   * Intializes a {@link PrefixFeatureGenerator} with the specified {@code prefixLength}.
+   *
+   * @param prefixLength The upper boundary prefix length to use.
+   */
   public PrefixFeatureGenerator(int prefixLength) {
     this.prefixLength = prefixLength;
   }

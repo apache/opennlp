@@ -19,6 +19,12 @@ package opennlp.tools.util.featuregen;
 
 import opennlp.tools.util.InvalidFormatException;
 
+/**
+ * A {@link GeneratorFactory} that produces {@link DocumentBeginFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
+ * @see DocumentBeginFeatureGenerator
+ */
 public class DocumentBeginFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 

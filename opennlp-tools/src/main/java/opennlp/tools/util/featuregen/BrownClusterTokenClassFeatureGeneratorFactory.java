@@ -24,7 +24,10 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
- * Generates Brown clustering features for token classes.
+ * A {@link GeneratorFactory} that produces {@link BrownTokenClassFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
+ * @see BrownTokenClassFeatureGenerator
  */
 public class BrownClusterTokenClassFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {

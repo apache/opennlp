@@ -24,9 +24,11 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
- * Defines a word cluster generator factory; it reads an element containing
+ * Defines a word cluster {@link GeneratorFactory}; it reads an element containing
  * 'w2vwordcluster' as a tag name. These clusters are typically produced by
  * word2vec or clark pos induction systems.
+ *
+ * @see WordClusterFeatureGenerator
  */
 public class WordClusterFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {

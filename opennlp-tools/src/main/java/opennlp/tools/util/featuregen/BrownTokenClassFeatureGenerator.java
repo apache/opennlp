@@ -21,8 +21,13 @@ import java.util.List;
 
 /**
  * Generates {@link BrownCluster} features for current token and token class.
+ *
+ * @see AdaptiveFeatureGenerator
+ * @see BrownCluster
  */
 public class BrownTokenClassFeatureGenerator implements AdaptiveFeatureGenerator {
+
+  private static final String PREFIX = "c,browncluster=";
 
   private final BrownCluster brownLexicon;
 
@@ -44,7 +49,7 @@ public class BrownTokenClassFeatureGenerator implements AdaptiveFeatureGenerator
     List<String> wordClasses = BrownTokenClasses.getWordClasses(tokens[index], brownLexicon);
 
     for (String wordClass : wordClasses) {
-      features.add("c," + "browncluster" + "=" + wordShape + "," + wordClass);
+      features.add(PREFIX + wordShape + "," + wordClass);
     }
   }
 

@@ -24,8 +24,8 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.namefind.DictionaryNameFinder;
 
 /**
- * The {@link DictionaryFeatureGenerator} uses the {@link DictionaryNameFinder}
- * to generated features for detected names based on the {@link InSpanGenerator}.
+ * The {@link DictionaryFeatureGenerator} uses a {@link DictionaryNameFinder}
+ * to generate features for detected names based on the {@link InSpanGenerator}.
  *
  * @see Dictionary
  * @see DictionaryNameFinder
@@ -35,16 +35,27 @@ public class DictionaryFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private InSpanGenerator isg;
 
+  /**
+   * Initializes a {@link DictionaryFeatureGenerator} with the specified {@link Dictionary}.
+   *
+   * @param dict The {@link Dictionary} to use. Must not be {@code null}.
+   */
   public DictionaryFeatureGenerator(Dictionary dict) {
-    this("",dict);
+    this("", dict);
   }
 
+  /**
+   * Initializes a {@link DictionaryFeatureGenerator} with the specified parameters.
+   *
+   * @param prefix The prefix to set. Must not be {@code null} but may be empty.
+   * @param dict The {@link Dictionary} to use. Must not be {@code null}.
+   */
   public DictionaryFeatureGenerator(String prefix, Dictionary dict) {
-    setDictionary(prefix,dict);
+    setDictionary(prefix, dict);
   }
 
   public void setDictionary(Dictionary dict) {
-    setDictionary("",dict);
+    setDictionary("", dict);
   }
 
   public void setDictionary(String name, Dictionary dict) {

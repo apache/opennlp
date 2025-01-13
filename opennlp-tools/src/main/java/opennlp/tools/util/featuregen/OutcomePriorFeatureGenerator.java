@@ -21,6 +21,8 @@ import java.util.List;
 
 /**
  * The definition feature maps the underlying distribution of outcomes.
+ *
+ * @see AdaptiveFeatureGenerator
  */
 public class OutcomePriorFeatureGenerator implements AdaptiveFeatureGenerator {
 

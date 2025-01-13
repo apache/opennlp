@@ -19,6 +19,11 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+/**
+ * This feature generator creates document begin features.
+ *
+ * @see AdaptiveFeatureGenerator
+ */
 public class DocumentBeginFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private String[] firstSentence;

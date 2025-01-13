@@ -21,6 +21,9 @@ package opennlp.tools.util.featuregen;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
+ * A {@link GeneratorFactory} that produces {@link CachedFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
  * @see CachedFeatureGenerator
  */
 public class CachedFeatureGeneratorFactory

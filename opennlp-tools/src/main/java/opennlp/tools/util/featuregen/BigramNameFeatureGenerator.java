@@ -19,6 +19,11 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+/**
+ * Adds bigram features based on tokens and token classes.
+ *
+ * @see AdaptiveFeatureGenerator
+ */
 public class BigramNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
   @Override

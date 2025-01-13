@@ -22,6 +22,7 @@ import java.util.List;
 /**
  * Adds trigram features based on tokens and token classes.
  *
+ * @see AdaptiveFeatureGenerator
  */
 public class TrigramNameFeatureGenerator implements AdaptiveFeatureGenerator {
 

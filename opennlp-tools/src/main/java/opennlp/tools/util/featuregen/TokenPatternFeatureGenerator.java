@@ -28,6 +28,9 @@ import opennlp.tools.util.StringUtil;
 /**
  * Partitions tokens into sub-tokens based on character classes and generates
  * class features for each of the sub-tokens and combinations of those sub-tokens.
+ *
+ * @see AdaptiveFeatureGenerator
+ * @see Tokenizer
  */
 public class TokenPatternFeatureGenerator implements AdaptiveFeatureGenerator {
 

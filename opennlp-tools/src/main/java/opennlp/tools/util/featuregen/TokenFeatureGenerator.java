@@ -23,7 +23,9 @@ import java.util.List;
 import opennlp.tools.util.StringUtil;
 
 /**
- * Generates a feature which contains the token itself.
+ * Generates a feature which contains a token itself.
+ *
+ * @see AdaptiveFeatureGenerator
  */
 public class TokenFeatureGenerator implements AdaptiveFeatureGenerator {
 
@@ -33,7 +35,7 @@ public class TokenFeatureGenerator implements AdaptiveFeatureGenerator {
   /**
    * Initializes a {@link TokenFeatureGenerator}.
    *
-   * @param lowercase Whether to use lower-casing or not.
+   * @param lowercase Whether or not to use lower-casing.
    */
   public TokenFeatureGenerator(boolean lowercase) {
     this.lowercase = lowercase;

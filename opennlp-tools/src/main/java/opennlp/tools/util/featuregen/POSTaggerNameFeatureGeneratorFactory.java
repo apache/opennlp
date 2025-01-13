@@ -26,6 +26,9 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.POSModelSerializer;
 
 /**
+ * A {@link GeneratorFactory} that produces {@link POSTaggerNameFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
  * @see POSTaggerNameFeatureGenerator
  */
 public class POSTaggerNameFeatureGeneratorFactory

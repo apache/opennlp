@@ -23,7 +23,9 @@ import opennlp.tools.util.StringUtil;
 
 
 /**
- * Generates features for the class of the token.
+ * Generates features for the class of a token.
+ *
+ * @see AdaptiveFeatureGenerator
  */
 public class TokenClassFeatureGenerator implements AdaptiveFeatureGenerator {
 
@@ -32,10 +34,20 @@ public class TokenClassFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private final boolean generateWordAndClassFeature;
 
+  /**
+   * Initalizes a {@link TokenClassFeatureGenerator} which won't generate
+   * the {@code w&c} feature per token.
+   */
   public TokenClassFeatureGenerator() {
     this(false);
   }
 
+  /**
+   * Initalizes a {@link TokenClassFeatureGenerator}.
+   *
+   * @param generateWordAndClassFeature If {@code true} the {@code w&c} feature will be
+   *                                    generated per token, {@code false} otherwise.
+   */
   public TokenClassFeatureGenerator(boolean generateWordAndClassFeature) {
     this.generateWordAndClassFeature = generateWordAndClassFeature;
   }

@@ -21,6 +21,9 @@ import java.util.List;
 
 /**
  * Generates Brown cluster features for token bigrams.
+ *
+ * @see AdaptiveFeatureGenerator
+ * @see BrownCluster
  */
 public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
 
@@ -31,8 +34,10 @@ public class BrownBigramFeatureGenerator implements AdaptiveFeatureGenerator {
   private final BrownCluster brownCluster;
 
   /**
-   * Creates a new Brown Cluster bigram feature generator.
-   * @param brownCluster A {@link BrownCluster}.
+   * Initializes a {@link BrownBigramFeatureGenerator} generator via a specified
+   * {@link BrownCluster}.
+   * 
+   * @param brownCluster The token {@link BrownCluster dictionary} to use.
    */
   public BrownBigramFeatureGenerator(BrownCluster brownCluster) {
     this.brownCluster = brownCluster;
