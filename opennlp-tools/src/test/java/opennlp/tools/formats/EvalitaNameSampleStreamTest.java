@@ -18,14 +18,23 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.formats.EvalitaNameSampleStream.LANGUAGE;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Note:
@@ -33,39 +42,78 @@ import opennlp.tools.util.Span;
  */
 public class EvalitaNameSampleStreamTest extends AbstractSampleStreamTest {
 
-  @Test
-  void testParsingItalianSample() throws IOException {
+  private static final String SAMPLE_01 = "evalita-ner-it-01.sample";
+  private static final String SAMPLE_02 = "evalita-ner-it-02.sample";
+  private static final String SAMPLE_03 = "evalita-ner-it-03.sample";
+  private static final String SAMPLE_BROKEN = "evalita-ner-it-broken.sample";
+  private static final String SAMPLE_INCORRECT = "evalita-ner-it-incorrect.sample";
 
-    try (ObjectStream<NameSample> sampleStream = openData()) {
-      NameSample personName = sampleStream.read();
-      Assertions.assertNotNull(personName);
+  @ParameterizedTest
+  @MethodSource(value = "provideData")
+  void testReadItalianDifferentEntityTypes(String file, int nerType, int expectedSentLength,
+                                  int expectedStart, int expectedEnd) throws IOException {
 
-      Assertions.assertEquals(11, personName.getSentence().length);
-      Assertions.assertEquals(1, personName.getNames().length);
-      Assertions.assertTrue(personName.isClearAdaptiveDataSet());
+    try (ObjectStream<NameSample> sampleStream = openData(file, nerType)) {
+      NameSample ne = sampleStream.read();
+      assertNotNull(ne);
 
-      Span nameSpan = personName.getNames()[0];
-      Assertions.assertEquals(8, nameSpan.getStart());
-      Assertions.assertEquals(10, nameSpan.getEnd());
-      Assertions.assertTrue(personName.isClearAdaptiveDataSet());
+      assertEquals(expectedSentLength, ne.getSentence().length);
+      assertEquals(1, ne.getNames().length);
+      assertTrue(ne.isClearAdaptiveDataSet());
 
-      Assertions.assertEquals(0, sampleStream.read().getNames().length);
+      Span nameSpan = ne.getNames()[0];
+      assertEquals(expectedStart, nameSpan.getStart());
+      assertEquals(expectedEnd, nameSpan.getEnd());
+      assertTrue(ne.isClearAdaptiveDataSet());
 
-      Assertions.assertNull(sampleStream.read());
+      if (SAMPLE_01.equals(file)) { // this file has an extra sentence
+        assertEquals(0, sampleStream.read().getNames().length);
+      }
+      assertNull(sampleStream.read());
     }
+  }
+
+  @Test
+  void testReadWithIncorrectInput() {
+    assertThrows(IOException.class, () -> {
+      try (ObjectStream<NameSample> sampleStream = openData(
+              SAMPLE_INCORRECT, EvalitaNameSampleStream.GENERATE_PERSON_ENTITIES)) {
+        sampleStream.read();
+      }
+    });
+  }
+
+  @Test
+  void testReadWithBrokenDocument() {
+    assertThrows(IOException.class, () -> {
+      try (ObjectStream<NameSample> sampleStream = openData(
+              SAMPLE_BROKEN, EvalitaNameSampleStream.GENERATE_PERSON_ENTITIES)) {
+        sampleStream.read();
+      }
+    });
   }
 
   @Test
   void testReset() throws IOException {
-    try (ObjectStream<NameSample> sampleStream = openData()) {
+    try (ObjectStream<NameSample> sampleStream = openData(SAMPLE_01,
+            EvalitaNameSampleStream.GENERATE_PERSON_ENTITIES)) {
       NameSample sample = sampleStream.read();
       sampleStream.reset();
-      Assertions.assertEquals(sample, sampleStream.read());
+      assertEquals(sample, sampleStream.read());
     }
   }
 
-  private ObjectStream<NameSample> openData() throws IOException {
-    return new EvalitaNameSampleStream(LANGUAGE.IT, getFactory("evalita-ner-it.sample"),
-            EvalitaNameSampleStream.GENERATE_PERSON_ENTITIES);
+  // Note: This needs to be public as JUnit 5 requires it like this.
+  public static Stream<Arguments> provideData() {
+    return Stream.of(
+      Arguments.of(SAMPLE_01, EvalitaNameSampleStream.GENERATE_PERSON_ENTITIES, 11, 8, 10),
+      Arguments.of(SAMPLE_02, EvalitaNameSampleStream.GENERATE_PERSON_ENTITIES, 27, 11, 13),
+      Arguments.of(SAMPLE_02, EvalitaNameSampleStream.GENERATE_ORGANIZATION_ENTITIES, 27, 10, 11),
+      Arguments.of(SAMPLE_03, EvalitaNameSampleStream.GENERATE_GPE_ENTITIES, 20, 18, 19)
+    );
+  }
+
+  private ObjectStream<NameSample> openData(String fileName, int nerType) throws IOException {
+    return new EvalitaNameSampleStream(LANGUAGE.IT, getFactory(fileName), nerType);
   }
 }

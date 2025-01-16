@@ -32,24 +32,24 @@ import opennlp.tools.util.ObjectStream;
  * Do not use this class, internal use only!
  */
 @Internal
-public class ADTokenSampleStreamFactory<P> extends
-    DetokenizerSampleStreamFactory<TokenSample, P> {
+public class ADTokenSampleStreamFactory extends
+    DetokenizerSampleStreamFactory<TokenSample, ADTokenSampleStreamFactory.Parameters> {
 
-  interface Parameters extends ADNameSampleStreamFactory.Parameters, DetokenizerParameter {
+  public interface Parameters extends ADNameSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class, "ad",
-        new ADTokenSampleStreamFactory<>(Parameters.class));
+        new ADTokenSampleStreamFactory(Parameters.class));
   }
 
-  protected ADTokenSampleStreamFactory(Class<P> params) {
+  protected ADTokenSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<TokenSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     ObjectStream<NameSample> samples = StreamFactoryRegistry.getFactory(
         NameSample.class, "ad").create(

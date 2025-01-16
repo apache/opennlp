@@ -19,6 +19,7 @@ package opennlp.tools.formats.convert;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.params.DetokenizerParameter;
 import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
@@ -34,17 +35,25 @@ import opennlp.tools.util.ObjectStream;
  */
 @Internal
 public class ParseToPOSSampleStreamFactory
-        extends LanguageSampleStreamFactory<POSSample, ParseSampleStreamFactory.Parameters> {
+        extends LanguageSampleStreamFactory<POSSample, ParseToPOSSampleStreamFactory.Parameters> {
 
+  public interface Parameters extends ParseSampleStreamFactory.Parameters, DetokenizerParameter {
+  }
+  
   private ParseToPOSSampleStreamFactory() {
-    super(ParseSampleStreamFactory.Parameters.class);
+    super(ParseToPOSSampleStreamFactory.Parameters.class);
+  }
+
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(POSSample.class,
+            "parse", new ParseToPOSSampleStreamFactory());
   }
 
   @Override
   public ObjectStream<POSSample> create(String[] args) {
 
     ParseSampleStreamFactory.Parameters params =
-        ArgumentParser.parse(args, ParseSampleStreamFactory.Parameters.class);
+            validateBasicFormatParameters(args, ParseSampleStreamFactory.Parameters.class);
 
     ObjectStream<Parse> parseSampleStream = StreamFactoryRegistry.getFactory(Parse.class,
         StreamFactoryRegistry.DEFAULT_FORMAT).create(
@@ -53,8 +62,4 @@ public class ParseToPOSSampleStreamFactory
     return new ParseToPOSSampleStream(parseSampleStream);
   }
 
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(POSSample.class,
-        "parse", new ParseToPOSSampleStreamFactory());
-  }
 }

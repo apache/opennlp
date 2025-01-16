@@ -19,7 +19,6 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
-import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -37,9 +36,10 @@ import opennlp.tools.util.ObjectStream;
  * @see Conll02NameSampleStream
  */
 @Internal
-public class Conll02NameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
+public class Conll02NameSampleStreamFactory extends
+        LanguageSampleStreamFactory<NameSample, Conll02NameSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "spa|nld")
     String getLang();
 
@@ -49,17 +49,17 @@ public class Conll02NameSampleStreamFactory<P> extends LanguageSampleStreamFacto
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        "conll02", new Conll02NameSampleStreamFactory<>(Parameters.class));
+        "conll02", new Conll02NameSampleStreamFactory(Parameters.class));
   }
 
-  protected Conll02NameSampleStreamFactory(Class<P> params) {
+  protected Conll02NameSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
 
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     LANGUAGE lang;
     if ("nl".equals(params.getLang()) || "nld".equals(params.getLang())) {
@@ -92,7 +92,6 @@ public class Conll02NameSampleStreamFactory<P> extends LanguageSampleStreamFacto
       typesToGenerate = typesToGenerate |
           Conll02NameSampleStream.GENERATE_MISC_ENTITIES;
     }
-
 
     try {
       return new Conll02NameSampleStream(lang,

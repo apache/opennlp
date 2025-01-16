@@ -43,7 +43,7 @@ public class ADParagraphStreamTest extends AbstractADSampleStreamTest<SentenceSa
     int count = 0;
 
     ADSentenceStream.Sentence paragraph = stream.read();
-    paragraph.getRoot();
+    paragraph.root();
     while (paragraph != null) {
       count++;
       paragraph = stream.read();

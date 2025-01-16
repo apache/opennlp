@@ -19,39 +19,40 @@ package opennlp.tools.formats.irishsentencebank;
 
 import java.io.IOException;
 
-import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.DetokenizerSampleStreamFactory;
 import opennlp.tools.tokenize.TokenSample;
 import opennlp.tools.util.ObjectStream;
 
 /**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see TokenSample
  * @see IrishSentenceBankTokenSampleStream
  */
-public class IrishSentenceBankTokenSampleStreamFactory<P>
-        extends DetokenizerSampleStreamFactory<TokenSample, P> {
+@Internal
+public class IrishSentenceBankTokenSampleStreamFactory extends
+    DetokenizerSampleStreamFactory<TokenSample, IrishSentenceBankTokenSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
-        "irishsentencebank", new IrishSentenceBankTokenSampleStreamFactory<>(
+        "irishsentencebank", new IrishSentenceBankTokenSampleStreamFactory(
         IrishSentenceBankTokenSampleStreamFactory.Parameters.class));
   }
 
-  protected IrishSentenceBankTokenSampleStreamFactory(Class<P> params) {
+  protected IrishSentenceBankTokenSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<TokenSample> create(String[] args) {
-
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     IrishSentenceBankDocument isbDoc = null;
     try {

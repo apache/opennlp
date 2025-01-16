@@ -32,6 +32,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -40,6 +41,13 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.XmlUtil;
 
 public class NKJPSegmentationDocument {
+
+  private static final String XML_ID = "xml:id";
+  private static final String SEG = "seg";
+  private static final String CHOICE = "choice";
+  private static final String NKJP_PAREN = "nkjp:paren";
+  private static final String NKJP_REJECTED = "nkjp:rejected";
+  private static final String NKJP_NPS = "nkjp:nps";
 
   public static class Pointer {
     final String doc;
@@ -62,8 +70,7 @@ public class NKJPSegmentationDocument {
 
     @Override
     public String toString() {
-      return doc + "#string-range(" + id + "," + offset
-          + "," + length + ")";
+      return doc + "#string-range(" + id + "," + offset + "," + length + ")";
     }
   }
 
@@ -103,8 +110,8 @@ public class NKJPSegmentationDocument {
         Node sentnode = nl.item(i);
 
         String sentid = null;
-        if (sentnode.getAttributes().getNamedItem("xml:id") != null) {
-          sentid = sentnode.getAttributes().getNamedItem("xml:id").getTextContent();
+        if (sentnode.getAttributes().getNamedItem(XML_ID) != null) {
+          sentid = sentnode.getAttributes().getNamedItem(XML_ID).getTextContent();
         }
 
         Map<String, Pointer> segments = new LinkedHashMap<>();
@@ -112,18 +119,17 @@ public class NKJPSegmentationDocument {
 
         for (int j = 0; j < segnl.getLength(); j++) {
           Node n = segnl.item(j);
-          if (n.getNodeName().equals("seg")) {
+          if (n.getNodeName().equals(SEG)) {
             String segid = xmlID(n);
             Pointer pointer = fromSeg(n);
             segments.put(segid, pointer);
-          } else if (n.getNodeName().equals("choice")) {
-
+          } else if (n.getNodeName().equals(CHOICE)) {
             NodeList choices = n.getChildNodes();
-
             for (int k = 0; k < choices.getLength(); k++) {
-              if (choices.item(k).getNodeName().equals("nkjp:paren")) {
-                if (!checkRejectedParen(choices.item(k))) {
-                  NodeList paren_segs = (NodeList) SEG_NODES_ONLY.evaluate(choices.item(k),
+              Node choice = choices.item(k);
+              if (choice.getNodeName().equals(NKJP_PAREN)) {
+                if (!checkRejectedParen(choice)) {
+                  NodeList paren_segs = (NodeList) SEG_NODES_ONLY.evaluate(choice,
                       XPathConstants.NODESET);
 
                   for (int l = 0; l < paren_segs.getLength(); l++) {
@@ -132,17 +138,16 @@ public class NKJPSegmentationDocument {
                     segments.put(segid, pointer);
                   }
                 }
-              } else if (choices.item(k).getNodeName().equals("seg")) {
-                if (!checkRejected(choices.item(k))) {
-                  String segid = xmlID(choices.item(k));
-                  Pointer pointer = fromSeg(choices.item(k));
+              } else if (choice.getNodeName().equals(SEG)) {
+                if (!checkRejected(choice)) {
+                  String segid = xmlID(choice);
+                  Pointer pointer = fromSeg(choice);
                   segments.put(segid, pointer);
                 }
               }
             }
           }
         }
-
         sentences.put(sentid, segments);
       }
 
@@ -154,14 +159,14 @@ public class NKJPSegmentationDocument {
   }
 
   static boolean checkRejected(Node n) {
-    if (n.getAttributes() == null) {
+    NamedNodeMap attrs = n.getAttributes();
+    if (attrs == null) {
       return false;
     }
-    if (n.getAttributes().getNamedItem("nkjp:rejected") == null) {
+    if (attrs.getNamedItem(NKJP_REJECTED) == null) {
       return false;
     }
-    String rejected = n.getAttributes().getNamedItem("nkjp:rejected").getTextContent();
-    return rejected.equals("true");
+    return attrs.getNamedItem(NKJP_REJECTED).getTextContent().equals("true");
   }
 
   static boolean checkRejectedParen(Node n) {
@@ -170,7 +175,7 @@ public class NKJPSegmentationDocument {
     } else {
       for (int i = 0; i < n.getChildNodes().getLength(); i++) {
         Node m = n.getChildNodes().item(i);
-        if (m.getNodeName().equals("seg")) {
+        if (m.getNodeName().equals(SEG)) {
           if (!checkRejected(m)) {
             return false;
           }
@@ -181,13 +186,14 @@ public class NKJPSegmentationDocument {
   }
 
   static String xmlID(Node n) throws IOException {
-    if (n.getAttributes() == null || n.getAttributes().getLength() < 1) {
+    NamedNodeMap attr = n.getAttributes();
+    if (attr == null || attr.getLength() < 1) {
       throw new IOException("Missing required attributes");
     }
 
     String id = null;
-    if (n.getAttributes().getNamedItem("xml:id") != null) {
-      id = n.getAttributes().getNamedItem("xml:id").getTextContent();
+    if (attr.getNamedItem(XML_ID) != null) {
+      id = attr.getNamedItem(XML_ID).getTextContent();
     }
 
     if (id == null) {
@@ -207,8 +213,8 @@ public class NKJPSegmentationDocument {
       ptr = n.getAttributes().getNamedItem("corresp").getTextContent();
     }
     String spacing = "";
-    if (n.getAttributes().getNamedItem("nkjp:nps") != null) {
-      spacing = n.getAttributes().getNamedItem("nkjp:nps").getTextContent();
+    if (n.getAttributes().getNamedItem(NKJP_NPS) != null) {
+      spacing = n.getAttributes().getNamedItem(NKJP_NPS).getTextContent();
     }
 
     if (ptr == null) {

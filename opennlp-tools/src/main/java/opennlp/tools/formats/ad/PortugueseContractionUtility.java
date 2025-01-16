@@ -40,6 +40,7 @@ import opennlp.tools.util.StringUtil;
 public class PortugueseContractionUtility {
 
   protected static final Map<String, String> CONTRACTIONS;
+  private static final String SYMBOL_PLUS = "+";
 
   static {
     Map<String, String> elems = new HashMap<>();
@@ -162,7 +163,7 @@ public class PortugueseContractionUtility {
    * @return The merged contraction.
    */
   public static String toContraction(String left, String right) {
-    String key = left + "+" + right;
+    String key = left + SYMBOL_PLUS + right;
     if (CONTRACTIONS.containsKey(key)) {
       return CONTRACTIONS.get(key);
     } else {
@@ -171,7 +172,7 @@ public class PortugueseContractionUtility {
       for (int i = 0; i < parts.length - 1; i++) {
         sb.append(parts[i]).append(" ");
       }
-      key = parts[parts.length - 1] + "+" + right;
+      key = parts[parts.length - 1] + SYMBOL_PLUS + right;
       if (CONTRACTIONS.containsKey(key)) {
         sb.append(CONTRACTIONS.get(key));
         return sb.toString();
@@ -180,7 +181,7 @@ public class PortugueseContractionUtility {
       if (right.contains("_")) {
         parts = right.split("_");
 
-        key = left + "+" + parts[0];
+        key = left + SYMBOL_PLUS + parts[0];
         if (CONTRACTIONS.containsKey(key)) {
           sb.append(CONTRACTIONS.get(key)).append(" ");
 
@@ -194,7 +195,7 @@ public class PortugueseContractionUtility {
       }
 
       String leftLower = StringUtil.toLowerCase(parts[parts.length - 1]);
-      key = leftLower + "+" + right;
+      key = leftLower + SYMBOL_PLUS + right;
       if (CONTRACTIONS.containsKey(key)) {
         String r = CONTRACTIONS.get(key);
         String firstChar = r.substring(0, 1);

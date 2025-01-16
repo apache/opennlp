@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +29,10 @@ import opennlp.tools.namefind.NameSample;
 import opennlp.tools.sentdetect.NewlineSentenceDetector;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BratNameSampleStreamTest extends AbstractBratTest {
 
@@ -49,19 +52,19 @@ public class BratNameSampleStreamTest extends AbstractBratTest {
       sample = stream.read();
     }
 
-    Assertions.assertEquals(8, count);
+    assertEquals(8, count);
   }
 
   @Test
   void readOverlapFail() {
-    Assertions.assertThrows(RuntimeException.class, () -> {
-      BratNameSampleStream stream = createNameSampleWith("overlapping",
+    assertThrows(RuntimeException.class, () -> {
+      BratNameSampleStream stream = createNameSampleWith("-overlapping",
           null);
 
       NameSample sample = stream.read();
       while (sample != null) {
         sample = stream.read();
-        Assertions.assertNotNull(sample);
+        assertNotNull(sample);
       }
     });
 
@@ -69,7 +72,7 @@ public class BratNameSampleStreamTest extends AbstractBratTest {
 
   @Test
   void emptySample() {
-    Assertions.assertThrows(IllegalArgumentException.class, () -> createNameSampleWith("overlapping",
+    assertThrows(IllegalArgumentException.class, () -> createNameSampleWith("overlapping",
         Collections.emptySet()));
   }
 
@@ -84,7 +87,7 @@ public class BratNameSampleStreamTest extends AbstractBratTest {
       sample = stream.read();
     }
 
-    Assertions.assertEquals(8, count);
+    assertEquals(8, count);
   }
 
   private BratNameSampleStream createNameSampleWith(String nameContainsFilter,

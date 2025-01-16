@@ -17,50 +17,34 @@
 
 package opennlp.tools.formats;
 
-import java.io.IOException;
-
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.sentdetect.SentenceSampleStream;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 
 /**
  * Factory producing OpenNLP {@link SentenceSampleStream}s.
  */
-public class SentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
+public class SentenceSampleStreamFactory extends
+        AbstractSampleStreamFactory<SentenceSample, SentenceSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        StreamFactoryRegistry.DEFAULT_FORMAT, new SentenceSampleStreamFactory<>(Parameters.class));
+        StreamFactoryRegistry.DEFAULT_FORMAT, new SentenceSampleStreamFactory(Parameters.class));
   }
 
-  protected SentenceSampleStreamFactory(Class<P> params) {
+  protected SentenceSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
-    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-
-    ObjectStream<String> lineStream = null;
-    try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
-    } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
-    }
-
+    ObjectStream<String> lineStream = readData(args, Parameters.class);
     return new SentenceSampleStream(lineStream);
   }
 }

@@ -19,7 +19,6 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
-import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -30,46 +29,46 @@ import opennlp.tools.util.ObjectStream;
 /**
  * @see BioNLP2004NameSampleStream
  */
-public class BioNLP2004NameSampleStreamFactory<P> extends AbstractSampleStreamFactory<NameSample, P> {
+public class BioNLP2004NameSampleStreamFactory extends
+        AbstractSampleStreamFactory<NameSample, BioNLP2004NameSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "DNA,protein,cell_type,cell_line,RNA")
     String getTypes();
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        "bionlp2004", new BioNLP2004NameSampleStreamFactory<>(Parameters.class));
+        "bionlp2004", new BioNLP2004NameSampleStreamFactory(Parameters.class));
   }
 
-  protected BioNLP2004NameSampleStreamFactory(Class<P> params) {
+  protected BioNLP2004NameSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
-
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     int typesToGenerate = 0;
-
-    if (params.getTypes().contains("DNA")) {
+    String types = params.getTypes();
+    if (types.contains("DNA")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_DNA_ENTITIES;
     }
-    else if (params.getTypes().contains("protein")) {
+    if (types.contains("protein")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_PROTEIN_ENTITIES;
     }
-    else if (params.getTypes().contains("cell_type")) {
+    if (types.contains("cell_type")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_CELLTYPE_ENTITIES;
     }
-    else if (params.getTypes().contains("cell_line")) {
+    if (types.contains("cell_line")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_CELLLINE_ENTITIES;
     }
-    else if (params.getTypes().contains("RNA")) {
+    if (types.contains("RNA")) {
       typesToGenerate = typesToGenerate |
           BioNLP2004NameSampleStream.GENERATE_RNA_ENTITIES;
     }
@@ -77,8 +76,9 @@ public class BioNLP2004NameSampleStreamFactory<P> extends AbstractSampleStreamFa
     try {
       return new BioNLP2004NameSampleStream(
           CmdLineUtil.createInputStreamFactory(params.getData()), typesToGenerate);
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
+    } catch (IOException ex) {
+      CmdLineUtil.handleCreateObjectStreamError(ex);
     }
+    return null;
   }
 }

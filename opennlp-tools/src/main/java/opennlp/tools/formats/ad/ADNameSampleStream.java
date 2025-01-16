@@ -206,7 +206,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
         textID = currentTextID;
       }
 
-      Node root = paragraph.getRoot();
+      Node root = paragraph.root();
       List<String> sentence = new ArrayList<>();
       List<Span> names = new ArrayList<>();
       process(root, sentence, names);
@@ -438,7 +438,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
 
   private int getTextID(Sentence paragraph) {
     
-    final String meta = paragraph.getMetadata();
+    final String meta = paragraph.metadata();
     Type corpusType;
     Pattern metaPattern;
     int textIdMeta2 = -1;

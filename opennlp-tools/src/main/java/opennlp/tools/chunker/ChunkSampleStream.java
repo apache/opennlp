@@ -31,8 +31,8 @@ import opennlp.tools.util.ObjectStream;
  * Parses the conll 2000 shared task shallow parser training data.
  * <p>
  * Data format is specified on the conll page:<br>
- * <a href="http://www.cnts.ua.ac.be/conll2000/chunking/">
- * http://www.cnts.ua.ac.be/conll2000/chunking/</a>
+ * <a href="https://www.cnts.ua.ac.be/conll2000/chunking/">
+ * https://www.cnts.ua.ac.be/conll2000/chunking/</a>
  */
 public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
 
@@ -57,7 +57,7 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
     for (String line = samples.read(); line != null && !line.isEmpty(); line = samples.read()) {
       String[] parts = line.split(" ");
       if (parts.length != 3) {
-        logger.error("Skipping corrupt line: {}", line);
+        logger.warn("Skipping corrupt line: {}", line);
       }
       else {
         toks.add(parts[0]);
@@ -66,11 +66,11 @@ public class ChunkSampleStream extends FilterObjectStream<String, ChunkSample> {
       }
     }
 
-    if (toks.size() > 0) {
+    if (!toks.isEmpty()) {
       return new ChunkSample(toks.toArray(new String[0]),
           tags.toArray(new String[0]), preds.toArray(new String[0]));
+    } else {
+      return null;
     }
-
-    return null;
   }
 }

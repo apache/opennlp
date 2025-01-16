@@ -32,7 +32,7 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
 /**
- * Parser for the Italian NER training files of the Evalita 2007 and 2009 NER  shared tasks.
+ * Parser for the Italian NER training files of the Evalita 2007 and 2009 NER shared tasks.
  * <p>
  * The data does not contain article boundaries,
  * adaptive data will be cleared for every sentence.
@@ -46,18 +46,27 @@ import opennlp.tools.util.StringUtil;
  * 2. The Entity  type tag: PER  (for Person), ORG  (for Organization),
  *    GPE (for Geo-Political Entity), or LOC (for Location).
  * <p>
- * Each file  consists of four  columns separated by a  blank, containing
- * respectively the token, the Elsnet PoS-tag, the Adige news story to
- * which the token belongs, and the Named Entity tag.
+ * Each file consists of four columns separated by a blank, containing respectively the token, the
+ * <a href="https://www.evalita.it/wp-content/uploads/2021/11/elsnet-tagset-IT.pdf">Elsnet</a>
+ * PoS-tag, the Adige news story to which the token belongs, and the Named Entity tag.
  * <p>
  * Data can be found on this
- * <a href="http://www.evalita.it">web site</a>.
+ * <a href="https://www.evalita.it">web site</a>.
  * <p>
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
 @Internal
 public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
+
+  public static final String DOCSTART = "-DOCSTART-";
+  private static final String CODEC_TAG_O = "O";
+  private static final String CODEC_TAG_B = "B-";
+  private static final String CODEC_TAG_I = "I-";
+  private static final String ENT_TYPE_PER = "PER"; // Person
+  private static final String ENT_TYPE_LOC = "LOC"; // Location
+  private static final String ENT_TYPE_GPE = "GPE"; // Geo-Political Entity
+  private static final String ENT_TYPE_ORG = "ORG"; // Organization
 
   public enum LANGUAGE {
     IT
@@ -67,8 +76,6 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
   public static final int GENERATE_ORGANIZATION_ENTITIES = 0x01 << 1;
   public static final int GENERATE_LOCATION_ENTITIES = 0x01 << 2;
   public static final int GENERATE_GPE_ENTITIES = 0x01 << 3;
-
-  public static final String DOCSTART = "-DOCSTART-";
 
   private final LANGUAGE lang;
   private final ObjectStream<String> lineStream;
@@ -82,7 +89,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
   }
 
   public EvalitaNameSampleStream(LANGUAGE lang, InputStreamFactory in, int types) throws IOException {
-    this(lang, new PlainTextByLineStream(in, StandardCharsets.UTF_8),types);
+    this(lang, new PlainTextByLineStream(in, StandardCharsets.UTF_8), types);
   }
 
   private static Span extract(int begin, int end, String beginTag) throws InvalidFormatException {
@@ -90,16 +97,15 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
     String type = beginTag.substring(2);
 
     type = switch (type) {
-      case "PER" -> "person";
-      case "LOC" -> "location";
-      case "GPE" -> "gpe";
-      case "ORG" -> "organization";
+      case ENT_TYPE_PER -> "person";
+      case ENT_TYPE_LOC -> "location";
+      case ENT_TYPE_GPE -> "gpe";
+      case ENT_TYPE_ORG -> "organization";
       default -> throw new InvalidFormatException("Unknown type: " + type);
     };
 
     return new Span(begin, end, type);
   }
-
 
   @Override
   public NameSample read() throws IOException {
@@ -110,7 +116,6 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
     boolean isClearAdaptiveData = false;
 
     // Empty line indicates end of sentence
-
     String line;
     while ((line = lineStream.read()) != null && !StringUtil.isEmpty(line)) {
 
@@ -140,7 +145,7 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
     if (LANGUAGE.IT.equals(lang))
       isClearAdaptiveData = true;
 
-    if (sentence.size() > 0) {
+    if (!sentence.isEmpty()) {
 
       // convert name tags into spans
       List<Span> names = new ArrayList<>();
@@ -151,33 +156,31 @@ public class EvalitaNameSampleStream implements ObjectStream<NameSample> {
 
         String tag = tags.get(i);
 
-        if (tag.endsWith("PER") && (types & GENERATE_PERSON_ENTITIES) == 0)
-          tag = "O";
+        if (tag.endsWith(ENT_TYPE_PER) && (types & GENERATE_PERSON_ENTITIES) == 0)
+          tag = CODEC_TAG_O;
 
-        if (tag.endsWith("ORG") && (types & GENERATE_ORGANIZATION_ENTITIES) == 0)
-          tag = "O";
+        if (tag.endsWith(ENT_TYPE_ORG) && (types & GENERATE_ORGANIZATION_ENTITIES) == 0)
+          tag = CODEC_TAG_O;
 
-        if (tag.endsWith("LOC") && (types & GENERATE_LOCATION_ENTITIES) == 0)
-          tag = "O";
+        if (tag.endsWith(ENT_TYPE_LOC) && (types & GENERATE_LOCATION_ENTITIES) == 0)
+          tag = CODEC_TAG_O;
 
-        if (tag.endsWith("GPE") && (types & GENERATE_GPE_ENTITIES) == 0)
-          tag = "O";
+        if (tag.endsWith(ENT_TYPE_GPE) && (types & GENERATE_GPE_ENTITIES) == 0)
+          tag = CODEC_TAG_O;
 
-        if (tag.startsWith("B-")) {
+        if (tag.startsWith(CODEC_TAG_B)) {
 
           if (beginIndex != -1) {
             names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
-            beginIndex = -1;
-            endIndex = -1;
           }
 
           beginIndex = i;
           endIndex = i + 1;
         }
-        else if (tag.startsWith("I-")) {
+        else if (tag.startsWith(CODEC_TAG_I)) {
           endIndex++;
         }
-        else if (tag.equals("O")) {
+        else if (tag.equals(CODEC_TAG_O)) {
           if (beginIndex != -1) {
             names.add(extract(beginIndex, endIndex, tags.get(beginIndex)));
             beginIndex = -1;

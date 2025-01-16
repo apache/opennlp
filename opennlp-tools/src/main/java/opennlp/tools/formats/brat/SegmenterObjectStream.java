@@ -35,6 +35,7 @@ public abstract class SegmenterObjectStream<S, T> extends FilterObjectStream<S, 
 
   protected abstract List<T> read(S sample) throws IOException;
 
+  @Override
   public final T read() throws IOException {
 
     if (sampleIt.hasNext()) {

@@ -24,33 +24,40 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import opennlp.tools.commons.Sample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * A specialization of {@link ObjectStream} that shuffles samples.
+ * @param <T> The template parameter which represents
+ *            the {@link Sample} type.
+ */
 class SampleShuffleStream<T> implements ObjectStream<T> {
 
   private final List<T> bufferedSamples = new ArrayList<>();
 
   private Iterator<T> sampleIt;
 
+  /**
+   * Initializes a {@link SampleShuffleStream} with the specified parameters.
+   *
+   * @param samples       The {@link ObjectStream} to process.
+   * @throws IOException Thrown if IO errors occurred during skip operation.
+   */
   SampleShuffleStream(ObjectStream<T> samples) throws IOException {
-
     T sample;
     while ((sample = samples.read()) != null) {
       bufferedSamples.add(sample);
     }
-
     Collections.shuffle(bufferedSamples, new Random(23));
-
     reset();
   }
 
   @Override
   public T read() throws IOException {
-
     if (sampleIt.hasNext()) {
       return sampleIt.next();
     }
-
     return null;
   }
 

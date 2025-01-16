@@ -31,10 +31,8 @@ class MucElementNames {
 
   static {
     CONTENT_ELEMENTS = Set.of(
-            MucElementNames.HEADLINE_ELEMENT,
-            MucElementNames.DATELINE_ELEMENT,
-            MucElementNames.DD_ELEMENT,
-            MucElementNames.SENTENCE_ELEMENT);
+            MucElementNames.HEADLINE_ELEMENT, MucElementNames.DATELINE_ELEMENT,
+            MucElementNames.DD_ELEMENT, MucElementNames.SENTENCE_ELEMENT);
   }
 
   private MucElementNames() {

@@ -22,23 +22,42 @@ import java.nio.charset.StandardCharsets;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see OntoNotesNameSampleStream
+ */
+@Internal
 public class OntoNotesNameSampleStreamFactory extends
     AbstractSampleStreamFactory<NameSample, OntoNotesFormatParameters> {
 
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(NameSample.class,
+            "ontonotes", new OntoNotesNameSampleStreamFactory());
+  }
+  
   public OntoNotesNameSampleStreamFactory() {
     super(OntoNotesFormatParameters.class);
   }
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
-
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
     OntoNotesFormatParameters params = ArgumentParser.parse(args, OntoNotesFormatParameters.class);
+    final File ontoDir = new File(params.getOntoNotesDir());
+    if (!ontoDir.isDirectory() || !ontoDir.exists()) {
+      throw new TerminateToolException(-1, "The specified OntoNotes directory is not valid!");
+    }
 
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
         params.getOntoNotesDir()),
@@ -54,8 +73,4 @@ public class OntoNotesNameSampleStreamFactory extends
         new FileToStringSampleStream(documentStream, StandardCharsets.UTF_8));
   }
 
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(NameSample.class,
-        "ontonotes", new OntoNotesNameSampleStreamFactory());
-  }
 }

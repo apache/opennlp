@@ -17,6 +17,7 @@
 
 package opennlp.tools.formats.ad;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public abstract class AbstractADSampleStreamTest<T extends Sample> extends Abstr
 
   @BeforeEach
   void setup() throws IOException {
-    in = new ResourceAsStreamFactory(AbstractADSampleStreamTest.class, FORMATS_BASE_DIR + "ad.sample");
+    in = new ResourceAsStreamFactory(AbstractADSampleStreamTest.class,
+            FORMATS_BASE_DIR + "ad" + File.separator + "ad.sample");
   }
 }

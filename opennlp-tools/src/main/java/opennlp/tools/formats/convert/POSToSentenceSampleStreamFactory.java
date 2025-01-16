@@ -34,23 +34,24 @@ import opennlp.tools.util.ObjectStream;
  * @see POSToSentenceSampleStream
  */
 @Internal
-public class POSToSentenceSampleStreamFactory<P> extends DetokenizerSampleStreamFactory<SentenceSample, P> {
+public class POSToSentenceSampleStreamFactory extends
+        DetokenizerSampleStreamFactory<SentenceSample, POSToSentenceSampleStreamFactory.Parameters> {
 
-  interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
+  public interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "pos", new POSToSentenceSampleStreamFactory<>(Parameters.class));
+        "pos", new POSToSentenceSampleStreamFactory(Parameters.class));
   }
 
-  protected POSToSentenceSampleStreamFactory(Class<P> params) {
+  protected POSToSentenceSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     ObjectStream<POSSample> posSampleStream = StreamFactoryRegistry.getFactory(POSSample.class,
         StreamFactoryRegistry.DEFAULT_FORMAT).create(

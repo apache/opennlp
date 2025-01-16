@@ -18,6 +18,7 @@
 package opennlp.tools.formats.masc;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,8 +35,9 @@ import opennlp.tools.util.Span;
 
 public class MascSentence extends Span {
 
-  private static final Logger logger = LoggerFactory.getLogger(MascSentence.class);
+  @Serial
   private static final long serialVersionUID = 6295507533472650848L;
+  private static final Logger logger = LoggerFactory.getLogger(MascSentence.class);
 
   /**
    * A helper class to extract the extract a quark from the corpus file even if it is beyond the

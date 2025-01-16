@@ -34,23 +34,24 @@ import opennlp.tools.util.ObjectStream;
  * @see NameToSentenceSampleStream
  */
 @Internal
-public class NameToSentenceSampleStreamFactory<P> extends DetokenizerSampleStreamFactory<SentenceSample, P> {
+public class NameToSentenceSampleStreamFactory extends
+        DetokenizerSampleStreamFactory<SentenceSample, NameToSentenceSampleStreamFactory.Parameters> {
 
   interface Parameters extends NameSampleDataStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "namefinder", new NameToSentenceSampleStreamFactory<>(Parameters.class));
+        "namefinder", new NameToSentenceSampleStreamFactory(Parameters.class));
   }
 
-  protected NameToSentenceSampleStreamFactory(Class<P> params) {
+  protected NameToSentenceSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     ObjectStream<NameSample> nameSampleStream = StreamFactoryRegistry.getFactory(
         NameSample.class, StreamFactoryRegistry.DEFAULT_FORMAT).create(

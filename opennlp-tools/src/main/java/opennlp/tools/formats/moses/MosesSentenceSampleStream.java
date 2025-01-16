@@ -27,6 +27,13 @@ import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
+/**
+ * Moses is a statistical machine translation system that allows you
+ * to automatically train translation models for any language pair.
+ * <p>
+ * Details are found on the <a href="https://www2.statmt.org/moses/">
+ *   official website</a>.
+ */
 public class MosesSentenceSampleStream extends FilterObjectStream<String, SentenceSample> {
 
   /**
@@ -58,9 +65,8 @@ public class MosesSentenceSampleStream extends FilterObjectStream<String, Senten
       sentencesString.append(' ');
     }
 
-    if (sentenceSpans.size() > 0) {
-      return new SentenceSample(sentencesString.toString(),
-          sentenceSpans.toArray(new Span[0]));
+    if (!sentenceSpans.isEmpty()) {
+      return new SentenceSample(sentencesString.toString(), sentenceSpans.toArray(new Span[0]));
     }
 
     return null;

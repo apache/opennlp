@@ -28,8 +28,8 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
 
 public class NKJPSentenceSampleStream implements ObjectStream<SentenceSample> {
-  private final NKJPSegmentationDocument segments;
 
+  private final NKJPSegmentationDocument segments;
   private final NKJPTextDocument text;
 
   private Iterator<Map.Entry<String, Map<String, NKJPSegmentationDocument.Pointer>>> segmentIt;
@@ -89,7 +89,7 @@ public class NKJPSentenceSampleStream implements ObjectStream<SentenceSample> {
     }
 
     // end of stream is reached, indicate that with null return value
-    if (sentenceSpans.size() == 0) {
+    if (sentenceSpans.isEmpty()) {
       return null;
     }
 

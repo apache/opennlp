@@ -199,8 +199,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     @Override
     BratAnnotation parse(Span[] tokens, CharSequence line) throws IOException {
 
-      
-      Span noteSpan = new Span( tokens[START_VALUE_OFFSET].getStart(), 
+      Span noteSpan = new Span( tokens[START_VALUE_OFFSET].getStart(),
           tokens[tokens.length - 1].getEnd() );      
 
       return new AnnotatorNoteAnnotation(tokens[ID_OFFSET].getCoveredText(line).toString(), 
@@ -208,6 +207,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
           noteSpan.getCoveredText(line).toString());
     }
   }
+
   private final AnnotationConfiguration config;
   private final BufferedReader reader;
   private final String id;
@@ -219,10 +219,9 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
   }
 
+  @Override
   public BratAnnotation read() throws IOException {
-
     String line = reader.readLine();
-
     if (line != null) {
       Span[] tokens = WhitespaceTokenizer.INSTANCE.tokenizePos(line);
 
@@ -259,7 +258,7 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
             }
             break;
           default:
-          // Skip it, do that for everything unsupported (e.g. "*" id)
+            // Skip it, do that for everything unsupported (e.g. "*" id)
             return read();
         }
 
@@ -275,10 +274,12 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
     return null;
   }
 
+  @Override
   public void reset() throws IOException, UnsupportedOperationException {
     reader.reset();
   }
 
+  @Override
   public void close() throws IOException {
     reader.close();
   }

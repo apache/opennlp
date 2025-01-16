@@ -24,29 +24,49 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.util.ObjectStream;
 
-public class MascNamedEntitySampleStreamFactory<P> extends AbstractSampleStreamFactory<NameSample, P> {
-  public static final String MASC_FORMAT = "masc";
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see NameSample
+ * @see MascPOSSampleStream
+ */
+@Internal
+public class MascNamedEntitySampleStreamFactory extends
+        AbstractSampleStreamFactory<NameSample, MascNamedEntitySampleStreamFactory.Parameters>
+        implements Masc {
 
-  protected MascNamedEntitySampleStreamFactory(Class<P> params) {
+  public interface Parameters extends BasicFormatParams {
+
+    @ArgumentParser.ParameterDescription(valueName = "recurrentSearch",
+            description = "search through files recursively")
+    Boolean getRecurrentSearch();
+
+    @ArgumentParser.ParameterDescription(valueName = "fileFilterString",
+            description = "only include files which contain a given string in their name")
+    String getFileFilter();
+
+  }
+
+  protected MascNamedEntitySampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(NameSample.class,
-        MASC_FORMAT,
-        new MascNamedEntitySampleStreamFactory<>(
-            MascNamedEntitySampleStreamFactory.Parameters.class));
+    StreamFactoryRegistry.registerFactory(NameSample.class, MASC_FORMAT,
+            new MascNamedEntitySampleStreamFactory(MascNamedEntitySampleStreamFactory.Parameters.class));
   }
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
-    MascNamedEntitySampleStreamFactory.Parameters params =
-        ArgumentParser.parse(args, MascNamedEntitySampleStreamFactory.Parameters.class);
-
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains(params.getFileFilter());
 
@@ -57,17 +77,4 @@ public class MascNamedEntitySampleStreamFactory<P> extends AbstractSampleStreamF
     }
     return null;
   }
-
-  interface Parameters extends BasicFormatParams {
-
-    @ArgumentParser.ParameterDescription(valueName = "recurrentSearch",
-        description = "search through files recursively")
-    boolean getRecurrentSearch();
-
-    @ArgumentParser.ParameterDescription(valueName = "fileFilterString",
-        description = "only include files which contain a given string in their name")
-    String getFileFilter();
-
-  }
-
 }

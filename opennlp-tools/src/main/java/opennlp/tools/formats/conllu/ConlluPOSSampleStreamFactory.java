@@ -32,13 +32,17 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see POSSample
+ * @see ConlluPOSSampleStream
  */
 @Internal
-public class ConlluPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
+public class ConlluPOSSampleStreamFactory extends
+        AbstractSampleStreamFactory<POSSample, ConlluPOSSampleStreamFactory.Parameters> {
 
   public static final String CONLLU_FORMAT = "conllu";
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "tagset",
         description = "u|x u for unified tags and x for language-specific part-of-speech tags")
     @ArgumentParser.OptionalParameter(defaultValue = "u")
@@ -47,15 +51,16 @@ public class ConlluPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
-        CONLLU_FORMAT, new ConlluPOSSampleStreamFactory<>(Parameters.class));
+        CONLLU_FORMAT, new ConlluPOSSampleStreamFactory(Parameters.class));
   }
 
-  protected ConlluPOSSampleStreamFactory(Class<P> params) {
+  protected ConlluPOSSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
+  @Override
   public ObjectStream<POSSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     ConlluTagset tagset = switch (params.getTagset()) {
       case "u" -> ConlluTagset.U;
@@ -69,7 +74,6 @@ public class ConlluPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory
     try {
       return new ConlluPOSSampleStream(new ConlluStream(inFactory), tagset);
     } catch (IOException e) {
-      // That will throw an exception
       CmdLineUtil.handleCreateObjectStreamError(e);
     }
     return null;

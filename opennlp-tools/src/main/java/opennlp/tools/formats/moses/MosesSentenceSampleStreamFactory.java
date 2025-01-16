@@ -17,49 +17,40 @@
 
 package opennlp.tools.formats.moses;
 
-import java.io.IOException;
-
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Factory producing OpenNLP {@link MosesSentenceSampleStream} objects.
+ * <p>
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see SentenceSample
+ * @see MosesSentenceSampleStream
  */
-public class MosesSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
+@Internal
+public class MosesSentenceSampleStreamFactory extends
+        AbstractSampleStreamFactory<SentenceSample, MosesSentenceSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "moses", new MosesSentenceSampleStreamFactory<>(Parameters.class));
+        "moses", new MosesSentenceSampleStreamFactory(Parameters.class));
   }
 
-  protected MosesSentenceSampleStreamFactory(Class<P> params) {
+  protected MosesSentenceSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
-    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-
-    ObjectStream<String> lineStream = null;
-    try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
-    } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
-    }
-
+    ObjectStream<String> lineStream = readData(args, Parameters.class);
     return new MosesSentenceSampleStream(lineStream);
   }
 }

@@ -29,25 +29,29 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b>
  * Do not use this class, internal use only!
+ *
+ * @see TokenSample
+ * @see POSToTokenSampleStream
  */
 @Internal
-public class ConllXTokenSampleStreamFactory<P> extends DetokenizerSampleStreamFactory<TokenSample, P> {
+public class ConllXTokenSampleStreamFactory extends
+        DetokenizerSampleStreamFactory<TokenSample, ConllXTokenSampleStreamFactory.Parameters> {
 
-  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
+  public interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
-        ConllXPOSSampleStreamFactory.CONLLX_FORMAT, new ConllXTokenSampleStreamFactory<>(Parameters.class));
+        ConllXPOSSampleStreamFactory.CONLLX_FORMAT, new ConllXTokenSampleStreamFactory(Parameters.class));
   }
 
-  protected ConllXTokenSampleStreamFactory(Class<P> params) {
+  protected ConllXTokenSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<TokenSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     ObjectStream<POSSample> samples = StreamFactoryRegistry.getFactory(POSSample.class,
         ConllXPOSSampleStreamFactory.CONLLX_FORMAT).create(

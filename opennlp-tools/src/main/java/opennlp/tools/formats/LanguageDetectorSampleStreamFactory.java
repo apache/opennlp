@@ -17,51 +17,34 @@
 
 package opennlp.tools.formats;
 
-import java.io.IOException;
-
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
-import opennlp.tools.doccat.DocumentSampleStream;
 import opennlp.tools.langdetect.LanguageDetectorSampleStream;
 import opennlp.tools.langdetect.LanguageSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
- * Factory producing OpenNLP {@link DocumentSampleStream}s.
+ * Factory producing OpenNLP {@link LanguageDetectorSampleStream lang detector sample streams}.
  */
-public class LanguageDetectorSampleStreamFactory<P>
-    extends AbstractSampleStreamFactory<LanguageSample, P> {
+public class LanguageDetectorSampleStreamFactory extends
+        AbstractSampleStreamFactory<LanguageSample, LanguageDetectorSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LanguageSample.class,
             StreamFactoryRegistry.DEFAULT_FORMAT,
-            new LanguageDetectorSampleStreamFactory<>(Parameters.class));
+            new LanguageDetectorSampleStreamFactory(Parameters.class));
   }
 
-  protected LanguageDetectorSampleStreamFactory(Class<P> params) {
+  protected LanguageDetectorSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<LanguageSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
-    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-    ObjectStream<String> lineStream = null;
-    try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
-    } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
-    }
-
+    ObjectStream<String> lineStream = readData(args, Parameters.class);
     return new LanguageDetectorSampleStream(lineStream);
   }
 }

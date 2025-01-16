@@ -30,15 +30,16 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b>
- * Do not use this class, internal use only!
+ * <b>Note:</b> Do not use this class, internal use only!
  *
+ * @see SentenceSample
  * @see ConlluSentenceSampleStream
  */
 @Internal
-public class ConlluSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
+public class ConlluSentenceSampleStreamFactory extends
+        AbstractSampleStreamFactory<SentenceSample, ConlluSentenceSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "sentencesPerSample",
         description = "number of sentences per sample")
     String getSentencesPerSample();
@@ -47,16 +48,16 @@ public class ConlluSentenceSampleStreamFactory<P> extends AbstractSampleStreamFa
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
-        new ConlluSentenceSampleStreamFactory<>(ConlluSentenceSampleStreamFactory.Parameters.class));
+        new ConlluSentenceSampleStreamFactory(ConlluSentenceSampleStreamFactory.Parameters.class));
   }
 
-  protected ConlluSentenceSampleStreamFactory(Class<P> params) {
+  protected ConlluSentenceSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     InputStreamFactory inFactory =
         CmdLineUtil.createInputStreamFactory(params.getData());
@@ -65,7 +66,6 @@ public class ConlluSentenceSampleStreamFactory<P> extends AbstractSampleStreamFa
       return new ConlluSentenceSampleStream(new ConlluStream(inFactory),
           Integer.parseInt(params.getSentencesPerSample()));
     } catch (IOException e) {
-      // That will throw an exception
       CmdLineUtil.handleCreateObjectStreamError(e);
     }
     return null;

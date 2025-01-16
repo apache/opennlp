@@ -19,7 +19,6 @@ package opennlp.tools.formats.conllu;
 
 import java.io.IOException;
 
-import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
@@ -30,30 +29,31 @@ import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b>
- * Do not use this class, internal use only!
+ * <b>Note:</b> Do not use this class, internal use only!
  *
+ * @see TokenSample
  * @see ConlluTokenSampleStream
  */
 @Internal
-public class ConlluTokenSampleStreamFactory<P> extends AbstractSampleStreamFactory<TokenSample, P> {
+public class ConlluTokenSampleStreamFactory extends
+        AbstractSampleStreamFactory<TokenSample, ConlluTokenSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
-        new ConlluTokenSampleStreamFactory<>(ConlluTokenSampleStreamFactory.Parameters.class));
+        new ConlluTokenSampleStreamFactory(ConlluTokenSampleStreamFactory.Parameters.class));
   }
 
-  protected ConlluTokenSampleStreamFactory(Class<P> params) {
+  protected ConlluTokenSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<TokenSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     InputStreamFactory inFactory =
         CmdLineUtil.createInputStreamFactory(params.getData());
@@ -61,7 +61,6 @@ public class ConlluTokenSampleStreamFactory<P> extends AbstractSampleStreamFacto
     try {
       return new ConlluTokenSampleStream(new ConlluStream(inFactory));
     } catch (IOException e) {
-      // That will throw an exception
       CmdLineUtil.handleCreateObjectStreamError(e);
     }
     return null;

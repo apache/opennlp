@@ -45,24 +45,23 @@ import opennlp.tools.util.StringUtil;
  * <p>
  * Data can be found on this
  * <a href="http://www.geniaproject.org/shared-tasks/bionlp-jnlpba-shared-task-2004">website</a>,
- * or in
- * <a href="https://github.com/spyysalo/jnlpba">this repository</a>.
+ * or in this
+ * <a href="https://github.com/spyysalo/jnlpba">GitHub repository</a>.
  * <p>
- * The BioNLP/NLPBA 2004 data were originally published here:
- * <p>
- * <a href="http://www-tsujii.is.s.u-tokyo.ac.jp/GENIA/ERtask/report.html">
- *   http://www-tsujii.is.s.u-tokyo.ac.jp/GENIA/ERtask/report.html</a>,
+ * The BioNLP/NLPBA 2004 data were originally published
+ * <a href="http://www-tsujii.is.s.u-tokyo.ac.jp/GENIA/ERtask/report.html">here</a>,
  * <p>
  * yet this page was gone when last checked in December 2022.
- * <p>
- * It looks like this repo contains a copy of the data located on the original page: 
- * The BioNLP 2004 seems to be related to http://www.geniaproject.org/shared-tasks/bionlp-jnlpba-shared-task-2004
  * <p>
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
 @Internal
 public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
+
+  private static final String CODEC_TAG_O = "O";
+  private static final String CODEC_TAG_B = "B-";
+  private static final String CODEC_TAG_I = "I-";
 
   public static final int GENERATE_DNA_ENTITIES = 0x01;
   public static final int GENERATE_PROTEIN_ENTITIES = 0x01 << 1;
@@ -96,7 +95,6 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
     boolean isClearAdaptiveData = false;
 
     // Empty line indicates end of sentence
-
     String line;
     while ((line = lineStream.read()) != null && !StringUtil.isEmpty(line.trim())) {
 
@@ -121,7 +119,7 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
       }
     }
 
-    if (sentence.size() > 0) {
+    if (!sentence.isEmpty()) {
 
       // convert name tags into spans
       List<Span> names = new ArrayList<>();
@@ -133,34 +131,32 @@ public class BioNLP2004NameSampleStream implements ObjectStream<NameSample> {
         String tag = tags.get(i);
 
         if (tag.endsWith("DNA") && (types & GENERATE_DNA_ENTITIES) == 0)
-          tag = "O";
+          tag = CODEC_TAG_O;
 
         if (tag.endsWith("protein") && (types & GENERATE_PROTEIN_ENTITIES) == 0)
-          tag = "O";
+          tag = CODEC_TAG_O;
 
         if (tag.endsWith("cell_type") && (types & GENERATE_CELLTYPE_ENTITIES) == 0)
-          tag = "O";
+          tag = CODEC_TAG_O;
 
         if (tag.endsWith("cell_line") && (types & GENERATE_CELLTYPE_ENTITIES) == 0)
-          tag = "O";
+          tag = CODEC_TAG_O;
         if (tag.endsWith("RNA") && (types & GENERATE_RNA_ENTITIES) == 0)
-          tag = "O";
+          tag = CODEC_TAG_O;
 
-        if (tag.startsWith("B-")) {
+        if (tag.startsWith(CODEC_TAG_B)) {
 
           if (beginIndex != -1) {
             names.add(new Span(beginIndex, endIndex, tags.get(beginIndex).substring(2)));
-            beginIndex = -1;
-            endIndex = -1;
           }
 
           beginIndex = i;
           endIndex = i + 1;
         }
-        else if (tag.startsWith("I-")) {
+        else if (tag.startsWith(CODEC_TAG_I)) {
           endIndex++;
         }
-        else if (tag.equals("O")) {
+        else if (tag.equals(CODEC_TAG_O)) {
           if (beginIndex != -1) {
             names.add(new Span(beginIndex, endIndex, tags.get(beginIndex).substring(2)));
             beginIndex = -1;

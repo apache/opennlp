@@ -17,49 +17,33 @@
 
 package opennlp.tools.formats;
 
-import java.io.IOException;
-
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParseSampleStream;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Factory producing OpenNLP {@link ParseSampleStream}s.
  */
-public class ParseSampleStreamFactory<P> extends AbstractSampleStreamFactory<Parse, P> {
+public class ParseSampleStreamFactory extends
+        AbstractSampleStreamFactory<Parse, ParseSampleStreamFactory.Parameters> {
 
   public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(Parse.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new ParseSampleStreamFactory<>(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new ParseSampleStreamFactory(Parameters.class));
   }
 
-  protected ParseSampleStreamFactory(Class<P> params) {
+  protected ParseSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<Parse> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
-    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-
-    ObjectStream<String> lineStream = null;
-    try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
-    } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
-    }
-
+    ObjectStream<String> lineStream = readData(args, Parameters.class);
     return new ParseSampleStream(lineStream);
   }
 }

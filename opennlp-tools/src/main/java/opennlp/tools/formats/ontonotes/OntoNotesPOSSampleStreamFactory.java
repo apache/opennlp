@@ -18,12 +18,19 @@
 package opennlp.tools.formats.ontonotes;
 
 import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.convert.ParseToPOSSampleStream;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see ParseToPOSSampleStream
+ */
+@Internal
 public class OntoNotesPOSSampleStreamFactory
         extends AbstractSampleStreamFactory<POSSample, OntoNotesFormatParameters> {
 
@@ -34,14 +41,18 @@ public class OntoNotesPOSSampleStreamFactory
     super(OntoNotesFormatParameters.class);
   }
 
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(POSSample.class, "ontonotes",
+            new OntoNotesPOSSampleStreamFactory());
+  }
+
   @Override
   public ObjectStream<POSSample> create(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
     ObjectStream<Parse> parseSampleStream = parseSampleStreamFactory.create(args);
     return new ParseToPOSSampleStream(parseSampleStream);
   }
 
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(POSSample.class, "ontonotes",
-        new OntoNotesPOSSampleStreamFactory());
-  }
 }
