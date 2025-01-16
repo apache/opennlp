@@ -26,6 +26,8 @@ import opennlp.tools.util.StringUtil;
 /**
  * The {@link CharacterNgramFeatureGenerator} uses character ngrams to
  * generate features about each token.
+ *
+ * @see AdaptiveFeatureGenerator
  */
 public class CharacterNgramFeatureGenerator implements AdaptiveFeatureGenerator {
 
@@ -35,7 +37,7 @@ public class CharacterNgramFeatureGenerator implements AdaptiveFeatureGenerator 
   private final int maxLength;
 
   /**
-   * Initializes a {@link CharacterNgramFeatureGenerator}.
+   * Initializes a {@link CharacterNgramFeatureGenerator} with the specified parameters.
    *
    * @param minLength The minimum length to use. Must not be negative.
    * @param maxLength The maximum length to use. Must not be negative.
@@ -46,8 +48,8 @@ public class CharacterNgramFeatureGenerator implements AdaptiveFeatureGenerator 
   }
 
   /**
-   * Initializes a {@link CharacterNgramFeatureGenerator} with
-   * min length of {@code 2} and max length of {@code 5} for ngrams.
+   * Initializes a {@link CharacterNgramFeatureGenerator} with default values for ngrams.
+   * The minimal length is set to {@code 2} and maximum length to a value of {@code 5}.
    */
   public CharacterNgramFeatureGenerator() {
     this(2, 5);

@@ -26,8 +26,15 @@ import opennlp.tools.util.Span;
 /**
  * Generates features if the tokens are recognized by the provided
  * {@link TokenNameFinder}.
+ *
+ * @see AdaptiveFeatureGenerator
+ * @see TokenNameFinder
+ * @see Span
  */
 public class InSpanGenerator implements AdaptiveFeatureGenerator {
+
+  private static final String W_DIC = ":w=dic";
+  private static final String W_DIC_IS = W_DIC + "=";
 
   private final String prefix;
 
@@ -64,8 +71,8 @@ public class InSpanGenerator implements AdaptiveFeatureGenerator {
     for (Span currentName : currentNames) {
       if (currentName.contains(index)) {
         // found a span for the current token
-        features.add(prefix + ":w=dic");
-        features.add(prefix + ":w=dic=" + tokens[index]);
+        features.add(prefix + W_DIC);
+        features.add(prefix + W_DIC_IS + tokens[index]);
 
         // TODO: consider generation start and continuation features
 

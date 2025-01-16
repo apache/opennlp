@@ -19,18 +19,35 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+/**
+ * A feature generator implementation that generates suffix-based features.
+ *
+ * @see AdaptiveFeatureGenerator
+ */
 public class SuffixFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final String PREFIX = "suf=";
 
+  /**
+   * The default upper boundary suffix length value is {@code 4}.
+   */
   static final int DEFAULT_MAX_LENGTH = 4;
     
   private final int suffixLength;
-  
+
+  /**
+   * Intializes a {@link SuffixFeatureGenerator}.
+   * The suffix length is set to the value of {@link #DEFAULT_MAX_LENGTH}.
+   */
   public SuffixFeatureGenerator() {
     suffixLength = DEFAULT_MAX_LENGTH;
   }
-  
+
+  /**
+   * Intializes a {@link SuffixFeatureGenerator} with the specified {@code suffixLength}.
+   *
+   * @param suffixLength The upper boundary suffix length to use.
+   */
   public SuffixFeatureGenerator(int suffixLength) {
     this.suffixLength = suffixLength;
   }

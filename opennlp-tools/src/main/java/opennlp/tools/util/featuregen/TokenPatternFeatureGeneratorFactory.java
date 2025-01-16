@@ -20,6 +20,9 @@ package opennlp.tools.util.featuregen;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
+ * A {@link GeneratorFactory} instantiates {@link TokenPatternFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
  * @see TokenPatternFeatureGenerator
  */
 public class TokenPatternFeatureGeneratorFactory

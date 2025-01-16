@@ -24,6 +24,8 @@ import java.util.Map;
 /**
  * This {@link AdaptiveFeatureGenerator} generates features indicating the
  * outcome associated with two previously occurring words.
+ *
+ * @see AdaptiveFeatureGenerator
  */
 public class PreviousTwoMapFeatureGenerator implements AdaptiveFeatureGenerator {
 

@@ -19,6 +19,12 @@ package opennlp.tools.util.featuregen;
 
 import opennlp.tools.util.InvalidFormatException;
 
+/**
+ * A {@link GeneratorFactory} that produces {@link BigramNameFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
+ * @see BigramNameFeatureGenerator
+ */
 public class BigramNameFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 

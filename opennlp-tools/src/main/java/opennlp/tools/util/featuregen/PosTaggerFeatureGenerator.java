@@ -19,6 +19,11 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+/**
+ * A POS tagging driven feature generator. Adds words and pos tags of the surrounding context.
+ *
+ * @see AdaptiveFeatureGenerator
+ */
 public class PosTaggerFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final String SB = "S=begin";

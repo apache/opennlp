@@ -25,6 +25,7 @@ import opennlp.tools.util.StringUtil;
  * An {@link AdaptiveFeatureGenerator} implementation of a word cluster feature generator.
  * It is based on a pre-defined {@link WordClusterDictionary}.
  *
+ * @see AdaptiveFeatureGenerator
  * @see WordClusterDictionary
  */
 public class WordClusterFeatureGenerator implements AdaptiveFeatureGenerator {

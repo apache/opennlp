@@ -21,6 +21,8 @@ import java.util.List;
 
 /**
  * This feature generator creates sentence begin and end features.
+ *
+ * @see AdaptiveFeatureGenerator
  */
 public class SentenceFeatureGenerator implements AdaptiveFeatureGenerator {
 

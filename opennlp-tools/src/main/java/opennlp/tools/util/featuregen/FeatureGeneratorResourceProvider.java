@@ -18,14 +18,16 @@
 
 package opennlp.tools.util.featuregen;
 
+import opennlp.tools.commons.Internal;
+
 /**
  * The {@link FeatureGeneratorResourceProvider} provides access to the resources
  * available in the model. Inside the model resources are identified by a name.
- * <p>
- * <b>Note:</b><br>
- * This class is not be intended to be implemented by users.<br>
+ *
+ * @apiNote This interface is not intended to be implemented by users.<br>
  * All implementing classes must be thread safe.
  */
+@Internal
 public interface FeatureGeneratorResourceProvider {
 
   /**

@@ -28,6 +28,9 @@ import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.DictionarySerializer;
 
 /**
+ * A {@link GeneratorFactory} that produces {@link DictionaryFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
  * @see DictionaryFeatureGenerator
  */
 public class DictionaryFeatureGeneratorFactory

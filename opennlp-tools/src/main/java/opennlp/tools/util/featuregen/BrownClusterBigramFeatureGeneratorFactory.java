@@ -24,7 +24,10 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
- * Generates Brown clustering features for token bigrams.
+ * A {@link GeneratorFactory} that produces {@link BrownBigramFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
+ * @see BrownBigramFeatureGenerator
  */
 public class BrownClusterBigramFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {

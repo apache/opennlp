@@ -27,7 +27,11 @@ import opennlp.tools.postag.POSTagger;
 import opennlp.tools.postag.POSTaggerME;
 
 /**
- * Adds the token POS Tag as feature. Requires a POS Tag model.
+ * Adds the token POS tag as feature. Requires a {@link POSTagger} at runtime.
+ *
+ * @see AdaptiveFeatureGenerator
+ * @see POSTagger
+ * @see POSModel
  */
 public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
@@ -37,24 +41,24 @@ public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
   private String[] cachedTags;
 
   /**
-   * Initializes a new instance.
+   * Initializes a {@link POSTaggerNameFeatureGenerator} with the specified {@link POSTagger}.
    *
-   * @param aPosTagger a POSTagger implementation.
+   * @param aPosTagger A POSTagger instance to be used.
    */
   public POSTaggerNameFeatureGenerator(POSTagger aPosTagger) {
     this.posTagger = aPosTagger;
   }
 
   /**
-   * Initializes a new instance.
+   * Initializes a {@link POSTaggerNameFeatureGenerator} with the specified {@link POSModel}.
    *
-   * @param aPosModel a POSTagger model.
+   * @param aPosModel A {@link POSModel} to be used for the internal {@link POSTagger}.
    */
   public POSTaggerNameFeatureGenerator(POSModel aPosModel) {
     this.posTagger = new POSTaggerME(aPosModel, POSTagFormatMapper.guessFormat(aPosModel));
   }
 
-
+  @Override
   public void createFeatures(List<String> feats, String[] toks, int index, String[] preds) {
     if (!Arrays.equals(this.cachedTokens, toks)) {
       this.cachedTokens = toks;

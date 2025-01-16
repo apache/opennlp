@@ -20,12 +20,13 @@ package opennlp.tools.util.featuregen;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
- * @see DefinitionFeatureGeneratorFactory
+ * A {@link GeneratorFactory} that produces {@link OutcomePriorFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
+ * @see OutcomePriorFeatureGenerator
  */
 public class DefinitionFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
-
-  private static final String ELEMENT_NAME = "definition";
 
   public DefinitionFeatureGeneratorFactory() {
     super();

@@ -24,6 +24,9 @@ import java.util.Map;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
+ * A {@link GeneratorFactory} that produces {@link AggregatedFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
  * @see AggregatedFeatureGenerator
  */
 public class AggregatedFeatureGeneratorFactory

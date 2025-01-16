@@ -19,6 +19,12 @@ package opennlp.tools.util.featuregen;
 
 import opennlp.tools.util.InvalidFormatException;
 
+/**
+ * A {@link GeneratorFactory} that produces {@link TrigramNameFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
+ * @see TrigramNameFeatureGenerator
+ */
 public class TrigramNameFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 

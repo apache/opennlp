@@ -20,6 +20,9 @@ package opennlp.tools.util.featuregen;
 import opennlp.tools.util.InvalidFormatException;
 
 /**
+ * A {@link GeneratorFactory} that produces {@link CharacterNgramFeatureGenerator} instances
+ * when {@link #create()} is called.
+ *
  * @see CharacterNgramFeatureGenerator
  */
 public class CharacterNgramFeatureGeneratorFactory

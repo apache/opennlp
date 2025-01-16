@@ -35,9 +35,9 @@ public class BrownTokenClasses {
    * It provides a list containing the pathLengths for a token if found
    * in the Map:token,BrownClass.
    *
-   * @param token the token to be looked up in the brown clustering map
-   * @param brownLexicon the Brown clustering map
-   * @return the list of the paths for a token
+   * @param token The token to be looked up in the brown clustering map
+   * @param brownLexicon The {@link BrownCluster} clustering map
+   * @return A list of the paths for a token.
    */
   public static List<String> getWordClasses(String token, BrownCluster brownLexicon) {
     if (brownLexicon.lookupToken(token) == null) {

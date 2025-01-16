@@ -25,16 +25,17 @@ import java.util.Objects;
 
 /**
  * The {@link AggregatedFeatureGenerator} aggregates a set of
- * {@link AdaptiveFeatureGenerator}s and calls them to generate the features.
+ * {@link AdaptiveFeatureGenerator feature generators} and calls them
+ * to generate the features.
  */
 public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private Collection<AdaptiveFeatureGenerator> generators;
 
   /**
-   * Initializes the current instance.
+   * Initializes an {@link AggregatedFeatureGenerator} via specified {@code generators}.
    *
-   * @param generators array of generators, null values are not permitted
+   * @param generators A collection of generators, {@code null} values are not permitted.
    */
   public AggregatedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
 
@@ -49,17 +50,21 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
     this.generators = Collections.unmodifiableCollection(this.generators);
   }
 
+  /**
+   * Initializes an {@link AggregatedFeatureGenerator} via specified {@code generators}.
+   *
+   * @param generators A collection of generators, {@code null} values are not permitted.
+   */
   public AggregatedFeatureGenerator(Collection<AdaptiveFeatureGenerator> generators) {
     this(generators.toArray(new AdaptiveFeatureGenerator[0]));
   }
 
   /**
    * Calls the {@link AdaptiveFeatureGenerator#clearAdaptiveData()} method
-   * on all aggregated {@link AdaptiveFeatureGenerator}s.
+   * on all aggregated {@link AdaptiveFeatureGenerator feature generators}.
    */
   @Override
   public void clearAdaptiveData() {
-
     for (AdaptiveFeatureGenerator generator : generators) {
       generator.clearAdaptiveData();
     }
@@ -67,7 +72,7 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   /**
    * Calls the {@link AdaptiveFeatureGenerator#createFeatures(List, String[], int, String[])}
-   * method on all aggregated {@link AdaptiveFeatureGenerator}s.
+   * method on all aggregated {@link AdaptiveFeatureGenerator feature generators}.
    */
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
@@ -80,10 +85,9 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   /**
    * Calls the {@link AdaptiveFeatureGenerator#updateAdaptiveData(String[], String[])}
-   * method on all aggregated {@link AdaptiveFeatureGenerator}s.
+   * method on all aggregated {@link AdaptiveFeatureGenerator feature generators}.
    */
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
-
     for (AdaptiveFeatureGenerator generator : generators) {
       generator.updateAdaptiveData(tokens, outcomes);
     }
@@ -91,9 +95,9 @@ public class AggregatedFeatureGenerator implements AdaptiveFeatureGenerator {
 
   /**
    * Retrieves a {@link Collections} of all aggregated
-   * {@link AdaptiveFeatureGenerator}s.
+   * {@link AdaptiveFeatureGenerator feature generators}.
    *
-   * @return all aggregated generators
+   * @return All aggregated generators in use.
    */
   public Collection<AdaptiveFeatureGenerator> getGenerators() {
     return generators;

@@ -293,7 +293,7 @@ public class GeneratorFactory {
   }
 
   /**
-   * Provides a list with all the elements in the xml feature descriptor.
+   * Provides a {@link List} with all the elements in the xml feature descriptor.
    *
    * @param xmlDescriptorIn the xml feature descriptor
    * @return a list containing all elements
@@ -516,8 +516,9 @@ public class GeneratorFactory {
     }
 
     /**
-     * @return {@code null} if the subclass uses {@link #resourceManager} to instantiate
-     * @throws InvalidFormatException
+     * @return {@code null} if the subclass uses {@link #resourceManager} to instantiate.
+     * 
+     * @throws InvalidFormatException Thrown if the format is incorrect.
      */
     public abstract AdaptiveFeatureGenerator create() throws InvalidFormatException;
   }

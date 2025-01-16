@@ -25,6 +25,8 @@ import opennlp.tools.util.Cache;
 
 /**
  * Caches features of the aggregated {@link AdaptiveFeatureGenerator generators}.
+ *
+ * @see Cache
  */
 public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
