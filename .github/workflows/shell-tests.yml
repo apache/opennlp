@@ -1,0 +1,179 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Shell Tests CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test-unix-shell-ubuntu:
+    name: Test on Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Note: bats-core/bats-action@3.0.0 is not allowed to be used (needs an INFRA issue)
+      - name: Install Bats (Testing Framework)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build with Maven
+        run: mvn -V clean install --no-transfer-progress -Pci -DskipTests=true
+
+      - name: Find and Extract OpenNLP Distribution
+        run: |
+          # Find the first non-src .tar.gz file in the target directory
+          TAR_FILE=$(find opennlp-distr/target -maxdepth 1 -type f -name "*.tar.gz" ! -name "*-src*.tar.gz" | head -n 1)
+          
+          # Ensure we found a file
+          if [ -z "$TAR_FILE" ]; then
+            echo "Error: No matching tar.gz file found in opennlp-distr/target"
+            exit 1
+          fi
+
+          # Extract the tar.gz file
+          tar -xzf "$TAR_FILE" -C $HOME
+
+          # Get the directory name of the extracted content
+          EXTRACTED_DIR=$(tar -tf "$TAR_FILE" | head -n 1 | cut -f1 -d"/")
+
+          # Set OPENNLP_HOME dynamically
+          echo "OPENNLP_HOME=$HOME/$EXTRACTED_DIR" >> $GITHUB_ENV
+          echo "$HOME/$EXTRACTED_DIR/bin" >> $GITHUB_PATH
+
+      - name: Verify Extraction
+        run: |
+          echo "OPENNLP_HOME: $OPENNLP_HOME"
+          ls -l $OPENNLP_HOME/bin
+
+      - name: Run Bats Tests
+        run: |
+          bats ./opennlp-distr/src/test/sh
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+          OPENNLP_HOME: ${{ env.OPENNLP_HOME }}
+
+  test-unix-shell-macos:
+    name: Test on macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Bats (Testing Framework)
+        run: |
+          brew update
+          brew install bats-core
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build with Maven
+        run: mvn -V clean install --no-transfer-progress -Pci -DskipTests=true
+
+      - name: Find and Extract OpenNLP Distribution
+        run: |
+          TAR_FILE=$(find opennlp-distr/target -maxdepth 1 -type f -name "*.tar.gz" ! -name "*-src*.tar.gz" | head -n 1)
+          if [ -z "$TAR_FILE" ]; then
+            echo "Error: No matching tar.gz file found in opennlp-distr/target"
+            exit 1
+          fi
+          tar -xzf "$TAR_FILE" -C $HOME
+          EXTRACTED_DIR=$(tar -tf "$TAR_FILE" | head -n 1 | cut -f1 -d"/")
+          echo "OPENNLP_HOME=$HOME/$EXTRACTED_DIR" >> $GITHUB_ENV
+          echo "$HOME/$EXTRACTED_DIR/bin" >> $GITHUB_PATH
+
+      - name: Verify Extraction
+        run: |
+          echo "OPENNLP_HOME: $OPENNLP_HOME"
+          ls -l $OPENNLP_HOME/bin
+
+      - name: Run Bats Tests
+        run: |
+          bats ./opennlp-distr/src/test/sh
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+          OPENNLP_HOME: ${{ env.OPENNLP_HOME }}
+
+  test-windows-shell:
+    name: Test on Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser
+          Import-Module Pester
+        shell: pwsh
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build with Maven
+        run: mvn -V clean install --no-transfer-progress -Pci -DskipTests=true
+
+      - name: Run Pester Tests # (one step to avoid environment issues on Windows)
+        run: |
+          # Find the first non-src .tar.gz file in the target directory
+          $TAR_FILE = Get-ChildItem -Path opennlp-distr/target -Filter "*.tar.gz" | Where-Object { $_.Name -notlike "*-src*" } | Select-Object -First 1
+          
+          # Ensure we found a file
+          if (-not $TAR_FILE) {
+            Write-Error "Error: No matching tar.gz file found in opennlp-distr/target"
+            exit 1
+          }
+          
+          # Extract the tar.gz file to the current directory
+          $Destination = "$(pwd)"
+          tar -xzf $TAR_FILE.FullName -C $Destination
+          
+          # Get the directory name of the extracted content (excluding the tar path)
+          $EXTRACTED_DIR = (tar -tf $TAR_FILE.FullName | Select-Object -First 1).Split('/')[0]
+          
+          # Set OPENNLP_HOME dynamically in the environment
+          $OPENNLP_HOME_PATH = "$Destination\$EXTRACTED_DIR"
+          Write-Host "OPENNLP_HOME=$OPENNLP_HOME_PATH"  # Debugging
+            
+          # Ensure OPENNLP_HOME is recognized in the current session
+          $env:OPENNLP_HOME = $OPENNLP_HOME_PATH
+          $env:PATH = "$env:OPENNLP_HOME\bin;$env:PATH"
+          
+          Invoke-Pester -Script "./opennlp-distr/src/test/ps/test_opennlp.Tests.ps1" -Output Detailed
+        shell: pwsh
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
