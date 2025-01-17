@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URL;
+import javax.net.ssl.HttpsURLConnection;
 
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
@@ -51,14 +53,32 @@ public @interface EnabledWhenCDNAvailable {
         final EnabledWhenCDNAvailable annotation = optional.get();
         final String host = annotation.hostname();
         try (Socket socket = new Socket()) {
-          socket.connect(new InetSocketAddress(host, 80), TIMEOUT_MS);
-          return ConditionEvaluationResult.enabled("Resource (CDN) reachable.");
+          // First, try to establish a socket connection to ensure the host is reachable
+          socket.connect(new InetSocketAddress(host, 443), TIMEOUT_MS);
+
+          // Then, try to check the HTTP status by making an HTTPS request
+          final URL url = new URL("https://" + host);
+          final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+          connection.setConnectTimeout(TIMEOUT_MS);
+          connection.setReadTimeout(TIMEOUT_MS);
+          int statusCode = connection.getResponseCode();
+
+          // If the HTTP status code indicates success (2xx range), return enabled
+          if (statusCode >= 200 && statusCode < 300) {
+            return ConditionEvaluationResult.enabled(
+                "Resource (CDN) reachable with status code: " + statusCode);
+          } else {
+            return ConditionEvaluationResult.disabled(
+                "Resource (CDN) reachable, but HTTP status code: " + statusCode);
+
+          }
         } catch (IOException e) {
-          // Unreachable, unresolvable or timeout
-          return ConditionEvaluationResult.disabled("Resource (CDN) unreachable.");
+          return ConditionEvaluationResult.disabled(
+              "Resource (CDN) unreachable.");
         }
       }
-      return ConditionEvaluationResult.enabled("Nothing annotated with DisabledWhenOffline.");
+      return ConditionEvaluationResult.enabled(
+          "Nothing annotated with EnabledWhenCDNAvailable.");
     }
   }
 
