@@ -17,49 +17,33 @@
 
 package opennlp.tools.formats;
 
-import java.io.IOException;
-
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.lemmatizer.LemmaSample;
 import opennlp.tools.lemmatizer.LemmaSampleStream;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Factory producing OpenNLP {@link LemmaSampleStream}s.
  */
-public class LemmatizerSampleStreamFactory<P> extends AbstractSampleStreamFactory<LemmaSample, P> {
+public class LemmatizerSampleStreamFactory extends
+        AbstractSampleStreamFactory<LemmaSample, LemmatizerSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LemmaSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new LemmatizerSampleStreamFactory<>(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new LemmatizerSampleStreamFactory(Parameters.class));
   }
 
-  protected LemmatizerSampleStreamFactory(Class<P> params) {
+  protected LemmatizerSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<LemmaSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
-    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-    ObjectStream<String> lineStream = null;
-    try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
-
-    } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
-    }
-
+    ObjectStream<String> lineStream = readData(args, Parameters.class);
     return new LemmaSampleStream(lineStream);
   }
 }

@@ -51,38 +51,8 @@ import opennlp.tools.util.ObjectStream;
 @Internal
 public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStream.Sentence> {
 
-  public static class Sentence {
-
-    private String text;
-    private Node root;
-    private String metadata;
-
+  public record Sentence (String text, Node root, String metadata) {
     public static final String META_LABEL_FINAL = "final";
-
-    public String getText() {
-      return text;
-    }
-
-    public void setText(String text) {
-      this.text = text;
-    }
-
-    public Node getRoot() {
-      return root;
-    }
-
-    public void setRoot(Node root) {
-      this.root = root;
-    }
-
-    public void setMetadata(String metadata) {
-      this.metadata = metadata;
-    }
-
-    public String getMetadata() {
-      return metadata;
-    }
-
   }
 
   /**
@@ -116,7 +86,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
      * @return A {@link Sentence} instance parsed from {@code sentenceString}.
      */
     public Sentence parse(String sentenceString, int para, boolean isTitle, boolean isBox) {
-      Sentence sentence = new Sentence();
+      Sentence sentence;
       Node root = new Node();
       try (BufferedReader reader = new BufferedReader(new StringReader(sentenceString))) {
         // first line is <s ...>
@@ -153,8 +123,7 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
             meta = line.substring(0, start) + " p=" + para + titleTag + boxTag + metaFromSource;
           }
         }
-        sentence.setText(text);
-        sentence.setMetadata(meta);
+        sentence = new Sentence(text, root, meta);
         // now we look for the root node
         do {
           line = reader.readLine();
@@ -232,10 +201,9 @@ public class ADSentenceStream extends FilterObjectStream<String, ADSentenceStrea
 
       } catch (Exception e) {
         logger.warn("Caught exception for the given sentence: '{}'", sentenceString, e);
-        return sentence;
+        return null;
       }
       // second line should be SOURCE
-      sentence.setRoot(root);
       return sentence;
     }
 

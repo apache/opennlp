@@ -29,29 +29,31 @@ import opennlp.tools.util.ObjectStream;
 /**
  * <b>Note:</b>
  * Do not use this class, internal use only!
+ *
+ * @see SentenceSample
+ * @see POSToSentenceSampleStream
  */
 @Internal
-public class ConllXSentenceSampleStreamFactory<P> extends
-    DetokenizerSampleStreamFactory<SentenceSample, P> {
+public class ConllXSentenceSampleStreamFactory extends
+    DetokenizerSampleStreamFactory<SentenceSample, ConllXSentenceSampleStreamFactory.Parameters> {
 
-  interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
+  public interface Parameters extends ConllXPOSSampleStreamFactory.Parameters, DetokenizerParameter {
     // TODO: make chunk size configurable
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class,
         ConllXPOSSampleStreamFactory.CONLLX_FORMAT,
-        new ConllXSentenceSampleStreamFactory<>(Parameters.class));
+        new ConllXSentenceSampleStreamFactory(Parameters.class));
   }
 
-  protected ConllXSentenceSampleStreamFactory(Class<P> params) {
+  protected ConllXSentenceSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
     ObjectStream<POSSample> posSampleStream = StreamFactoryRegistry.getFactory(POSSample.class,
         ConllXPOSSampleStreamFactory.CONLLX_FORMAT).create(
         ArgumentParser.filter(args, ConllXPOSSampleStreamFactory.Parameters.class));

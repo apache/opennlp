@@ -28,7 +28,7 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * A stream filter which reads a sentence per line which contains
+ * A {@link FilterObjectStream stream filter} which reads a sentence per line that contains
  * words and tags in {@code word_tag} format and outputs a {@link POSSample} objects.
  */
 public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
@@ -45,14 +45,14 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
   }
 
   /**
-   * Parses the next sentence and return the next {@link POSSample} object.
+   * Reads the next tokens and parses it into the next {@link POSSample} object.
    * <p>
    * If an error occurs an empty {@link POSSample} object is returned
    * and a warning message is logged. Usually it does not matter if one
    * or many sentences are ignored.
    *
    * @return A valid {@link POSSample} or {@code null} if the
-   *         {@link ObjectStream sentence stream} is exhausted.
+   *         {@link ObjectStream stream} is exhausted.
    *
    * @throws IOException Thrown if IO errors occurred during read.
    */
@@ -66,17 +66,13 @@ public class WordTagSampleStream extends FilterObjectStream<String, POSSample> {
       try {
         sample = POSSample.parse(sentence);
       } catch (InvalidFormatException e) {
-        // TODO: An exception in error case should be thrown.
         logger.warn("Error during parsing, ignoring sentence: {}", sentence, e);
-
         sample = new POSSample(new String[]{}, new String[]{});
       }
-
       return sample;
     }
     else {
-      // sentences stream is exhausted
-      return null;
+      return null; // sentences stream is exhausted
     }
   }
 }

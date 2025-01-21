@@ -19,7 +19,6 @@ package opennlp.tools.formats;
 
 import java.io.IOException;
 
-import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -32,9 +31,10 @@ import opennlp.tools.util.ObjectStream;
 /**
  * @see Conll03NameSampleStream
  */
-public class Conll03NameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
+public class Conll03NameSampleStreamFactory extends
+        LanguageSampleStreamFactory<NameSample, Conll03NameSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
     @ParameterDescription(valueName = "eng|deu")
     String getLang();
 
@@ -44,17 +44,17 @@ public class Conll03NameSampleStreamFactory<P> extends LanguageSampleStreamFacto
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        "conll03", new Conll03NameSampleStreamFactory<>(Parameters.class));
+        "conll03", new Conll03NameSampleStreamFactory(Parameters.class));
   }
 
-  protected Conll03NameSampleStreamFactory(Class<P> params) {
+  protected Conll03NameSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
 
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     // TODO: support the other languages with this CoNLL.
     LANGUAGE lang;

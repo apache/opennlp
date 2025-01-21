@@ -38,49 +38,49 @@ import opennlp.tools.util.ObjectStream;
  * @see LeipzigLanguageSampleStream
  */
 @Internal
-public class LeipzigLanguageSampleStreamFactory<P>
-    extends AbstractSampleStreamFactory<LanguageSample, P> {
+public class LeipzigLanguageSampleStreamFactory extends
+        AbstractSampleStreamFactory<LanguageSample, LeipzigLanguageSampleStreamFactory.Parameters> {
 
-  interface Parameters extends EncodingParameter {
+  public interface Parameters extends EncodingParameter {
     @ParameterDescription(valueName = "sentencesDir",
         description = "dir with Leipzig sentences to be used")
     File getSentencesDir();
 
     @ParameterDescription(valueName = "sentencesPerSample",
         description = "number of sentences per sample")
-    String getSentencesPerSample();
+    Integer getSentencesPerSample();
 
     @ParameterDescription(valueName = "samplesPerLanguage",
         description = "number of samples per language")
-    String getSamplesPerLanguage();
+    Integer getSamplesPerLanguage();
 
     @ParameterDescription(valueName = "samplesToSkip",
         description = "number of samples to skip before returning")
     @OptionalParameter(defaultValue = "0")
-    String getSamplesToSkip();
+    Integer getSamplesToSkip();
   }
 
-  protected LeipzigLanguageSampleStreamFactory(Class<P> params) {
+  protected LeipzigLanguageSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LanguageSample.class,
-        "leipzig", new LeipzigLanguageSampleStreamFactory<>(Parameters.class));
+        "leipzig", new LeipzigLanguageSampleStreamFactory(Parameters.class));
   }
 
   @Override
   public ObjectStream<LanguageSample> create(String[] args) {
-
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-    File sentencesFileDir = params.getSentencesDir();
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
+    Parameters p = ArgumentParser.parse(args, Parameters.class);
+    File sentencesFileDir = p.getSentencesDir();
 
     try {
-      return new SampleSkipStream<>(new SampleShuffleStream<>(
-          new LeipzigLanguageSampleStream(sentencesFileDir,
-          Integer.parseInt(params.getSentencesPerSample()),
-          Integer.parseInt(params.getSamplesPerLanguage()) + Integer.parseInt(params.getSamplesToSkip()))),
-          Integer.parseInt(params.getSamplesToSkip()));
+      return new SampleSkipStream<>(new SampleShuffleStream<>(new LeipzigLanguageSampleStream(
+              sentencesFileDir, p.getSentencesPerSample(),
+              p.getSamplesPerLanguage() + p.getSamplesToSkip())), p.getSamplesToSkip());
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while opening sample data.", e);
     }

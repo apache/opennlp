@@ -43,10 +43,10 @@ public class ADTokenSampleStreamTest extends AbstractADSampleStreamTest<TokenSam
   void setup() throws IOException {
     super.setup();
     
-    ADTokenSampleStreamFactory<ADTokenSampleStreamFactory.Parameters> factory =
-            new ADTokenSampleStreamFactory<>(ADTokenSampleStreamFactory.Parameters.class);
+    ADTokenSampleStreamFactory factory =
+            new ADTokenSampleStreamFactory(ADTokenSampleStreamFactory.Parameters.class);
 
-    File data = new File(getResource("ad.sample").getFile());
+    File data = new File(getResourceWithoutPrefix("opennlp/tools/formats/ad/ad.sample").getFile());
     Assertions.assertNotNull(data);
     File dict = new File(getResourceWithoutPrefix("opennlp/tools/tokenize/latin-detokenizer.xml").getFile());
     Assertions.assertNotNull(dict);

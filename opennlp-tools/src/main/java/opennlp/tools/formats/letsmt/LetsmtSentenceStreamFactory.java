@@ -25,6 +25,7 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.tokenize.DetokenizationDictionary;
@@ -33,11 +34,16 @@ import opennlp.tools.tokenize.DictionaryDetokenizer;
 import opennlp.tools.util.ObjectStream;
 
 /**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see SentenceSample
  * @see LetsmtSentenceStream
  */
-public class LetsmtSentenceStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
+@Internal
+public class LetsmtSentenceStreamFactory extends
+        AbstractSampleStreamFactory<SentenceSample, LetsmtSentenceStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "dictionary",
         description = "specifies the file with detokenizer dictionary.")
     @ArgumentParser.OptionalParameter
@@ -45,21 +51,17 @@ public class LetsmtSentenceStreamFactory<P> extends AbstractSampleStreamFactory<
   }
 
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "letsmt", new LetsmtSentenceStreamFactory<>(
-        LetsmtSentenceStreamFactory.Parameters.class));
+    StreamFactoryRegistry.registerFactory(SentenceSample.class, "letsmt",
+            new LetsmtSentenceStreamFactory(LetsmtSentenceStreamFactory.Parameters.class));
   }
 
-  protected LetsmtSentenceStreamFactory(Class<P> params) {
+  protected LetsmtSentenceStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     LetsmtDocument letsmtDoc = null;
     try {

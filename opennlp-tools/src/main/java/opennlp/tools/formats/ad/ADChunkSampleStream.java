@@ -104,14 +104,14 @@ public class ADChunkSampleStream implements ObjectStream<ChunkSample> {
         index++;
         // skip this one
       } else {
-        Node root = paragraph.getRoot();
+        Node root = paragraph.root();
         List<String> sentence = new ArrayList<>();
         List<String> tags = new ArrayList<>();
         List<String> target = new ArrayList<>();
 
         processRoot(root, sentence, tags, target);
 
-        if (sentence.size() > 0) {
+        if (!sentence.isEmpty()) {
           index++;
           return new ChunkSample(sentence, tags, target);
         }

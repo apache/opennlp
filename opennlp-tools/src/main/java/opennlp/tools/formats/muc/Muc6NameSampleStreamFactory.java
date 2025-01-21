@@ -23,20 +23,32 @@ import java.nio.charset.StandardCharsets;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.cmdline.tokenizer.TokenizerModelLoader;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.namefind.NameSample;
+import opennlp.tools.tokenize.ThreadSafeTokenizerME;
 import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringUtil;
 
+/**
+ * @see NameSample
+ * @see MucNameSampleStream
+ */
+@Internal
 public class Muc6NameSampleStreamFactory
         extends AbstractSampleStreamFactory<NameSample, Muc6NameSampleStreamFactory.Parameters> {
+
+  public interface Parameters extends BasicFormatParams {
+    @ParameterDescription(valueName = "modelFile")
+    File getTokenizerModel();
+  }
 
   protected Muc6NameSampleStreamFactory() {
     super(Parameters.class);
@@ -49,11 +61,16 @@ public class Muc6NameSampleStreamFactory
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
-
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
     Parameters params = ArgumentParser.parse(args, Parameters.class);
+    if (!params.getData().isDirectory() || !params.getData().exists()) {
+      throw new TerminateToolException(-1, "The specified data directory is not valid!");
+    }
 
     TokenizerModel tokenizerModel = new TokenizerModelLoader().load(params.getTokenizerModel());
-    Tokenizer tokenizer = new TokenizerME(tokenizerModel);
+    Tokenizer tokenizer = new ThreadSafeTokenizerME(tokenizerModel);
 
     ObjectStream<String> mucDocStream = new FileToStringSampleStream(
         new DirectorySampleStream(params.getData(),
@@ -61,10 +78,5 @@ public class Muc6NameSampleStreamFactory
         StandardCharsets.UTF_8);
 
     return new MucNameSampleStream(tokenizer, mucDocStream);
-  }
-
-  interface Parameters extends BasicFormatParams {
-    @ParameterDescription(valueName = "modelFile")
-    File getTokenizerModel();
   }
 }

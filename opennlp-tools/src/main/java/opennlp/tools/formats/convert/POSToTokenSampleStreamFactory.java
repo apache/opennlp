@@ -34,23 +34,24 @@ import opennlp.tools.util.ObjectStream;
  * @see POSToTokenSampleStream
  */
 @Internal
-public class POSToTokenSampleStreamFactory<P> extends DetokenizerSampleStreamFactory<TokenSample, P> {
+public class POSToTokenSampleStreamFactory extends
+        DetokenizerSampleStreamFactory<TokenSample, POSToTokenSampleStreamFactory.Parameters> {
 
-  interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
+  public interface Parameters extends WordTagSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(TokenSample.class,
-        "pos", new POSToTokenSampleStreamFactory<>(Parameters.class));
+        "pos", new POSToTokenSampleStreamFactory(Parameters.class));
   }
 
-  protected POSToTokenSampleStreamFactory(Class<P> params) {
+  protected POSToTokenSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<TokenSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     ObjectStream<POSSample> posSampleStream = StreamFactoryRegistry.getFactory(POSSample.class,
         StreamFactoryRegistry.DEFAULT_FORMAT).create(

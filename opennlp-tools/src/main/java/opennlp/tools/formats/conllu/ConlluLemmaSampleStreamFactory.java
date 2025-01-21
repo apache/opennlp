@@ -32,11 +32,15 @@ import opennlp.tools.util.ObjectStream;
 
 /**
  * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see LemmaSample
+ * @see ConlluLemmaSampleStream
  */
 @Internal
-public class ConlluLemmaSampleStreamFactory<P> extends AbstractSampleStreamFactory<LemmaSample, P> {
+public class ConlluLemmaSampleStreamFactory extends
+        AbstractSampleStreamFactory<LemmaSample, ConlluLemmaSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "tagset",
         description = "u|x u for unified tags and x for language-specific part-of-speech tags")
     @ArgumentParser.OptionalParameter(defaultValue = "u")
@@ -46,15 +50,15 @@ public class ConlluLemmaSampleStreamFactory<P> extends AbstractSampleStreamFacto
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(LemmaSample.class,
         ConlluPOSSampleStreamFactory.CONLLU_FORMAT,
-        new ConlluLemmaSampleStreamFactory<>(Parameters.class));
+        new ConlluLemmaSampleStreamFactory(Parameters.class));
   }
 
-  protected ConlluLemmaSampleStreamFactory(Class<P> params) {
+  protected ConlluLemmaSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   public ObjectStream<LemmaSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     ConlluTagset tagset = switch (params.getTagset()) {
       case "u" -> ConlluTagset.U;
@@ -68,7 +72,6 @@ public class ConlluLemmaSampleStreamFactory<P> extends AbstractSampleStreamFacto
     try {
       return new ConlluLemmaSampleStream(new ConlluStream(inFactory), tagset);
     } catch (IOException e) {
-      // That will throw an exception
       CmdLineUtil.handleCreateObjectStreamError(e);
     }
     return null;

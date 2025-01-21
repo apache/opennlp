@@ -19,13 +19,26 @@ package opennlp.tools.formats.leipzig;
 
 import java.io.IOException;
 
+import opennlp.tools.commons.Sample;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * A specialization of {@link ObjectStream} that skips a number of samples.
+ * @param <T> The template parameter which represents
+ *            the {@link Sample} type.
+ */
 class SampleSkipStream<T> implements ObjectStream<T> {
 
   private final ObjectStream<T> samples;
   private final int samplesToSkip;
 
+  /**
+   * Initializes a {@link SampleSkipStream} with the specified parameters.
+   *
+   * @param samples       The {@link ObjectStream} to process.
+   * @param samplesToSkip The number of samples to skip. Must be greater than {@code 0}.
+   * @throws IOException Thrown if IO errors occurred during skip operation.
+   */
   SampleSkipStream(ObjectStream<T> samples, int samplesToSkip) throws IOException {
     this.samples = samples;
     this.samplesToSkip = samplesToSkip;
@@ -46,7 +59,6 @@ class SampleSkipStream<T> implements ObjectStream<T> {
 
   private void skipSamples() throws IOException {
     int i = 0;
-
     while (i < samplesToSkip && (samples.read()) != null) {
       i++;
     }

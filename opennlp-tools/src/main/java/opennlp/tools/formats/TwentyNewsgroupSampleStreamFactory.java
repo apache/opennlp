@@ -26,35 +26,55 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EncodingParameter;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.SimpleTokenizer;
+import opennlp.tools.tokenize.ThreadSafeTokenizerME;
 import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 
-public class TwentyNewsgroupSampleStreamFactory<P> extends AbstractSampleStreamFactory<DocumentSample,P> {
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see TwentyNewsgroupSampleStream
+ */
+public class TwentyNewsgroupSampleStreamFactory extends
+        AbstractSampleStreamFactory<DocumentSample, TwentyNewsgroupSampleStreamFactory.Parameters> {
+
+  public interface Parameters extends EncodingParameter {
+    @ArgumentParser.ParameterDescription(valueName = "dataDir",
+            description = "dir containing the 20newsgroup folders")
+    File getDataDir();
+
+    @ArgumentParser.ParameterDescription(valueName = "modelFile")
+    @ArgumentParser.OptionalParameter
+    File getTokenizerModel();
+
+    @ArgumentParser.ParameterDescription(valueName = "name")
+    @ArgumentParser.OptionalParameter
+    String getRuleBasedTokenizer();
+  }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(DocumentSample.class,
         "20newsgroup",
-        new TwentyNewsgroupSampleStreamFactory<>(TwentyNewsgroupSampleStreamFactory.Parameters.class));
+        new TwentyNewsgroupSampleStreamFactory(TwentyNewsgroupSampleStreamFactory.Parameters.class));
   }
 
-  protected TwentyNewsgroupSampleStreamFactory(Class<P> params) {
+  protected TwentyNewsgroupSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<DocumentSample> create(String[] args) {
-
-    TwentyNewsgroupSampleStreamFactory.Parameters params =
-        ArgumentParser.parse(args, TwentyNewsgroupSampleStreamFactory.Parameters.class);
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
-
     if (params.getTokenizerModel() != null) {
       try {
-        tokenizer = new TokenizerME(new TokenizerModel(params.getTokenizerModel()));
+        tokenizer = new ThreadSafeTokenizerME(new TokenizerModel(params.getTokenizerModel()));
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Failed to load tokenizer model!", e);
       }
@@ -74,24 +94,10 @@ public class TwentyNewsgroupSampleStreamFactory<P> extends AbstractSampleStreamF
     }
 
     try {
-      return new TwentyNewsgroupSampleStream(
-          tokenizer, params.getDataDir().toPath());
+      return new TwentyNewsgroupSampleStream(tokenizer, params.getDataDir().toPath());
     } catch (IOException e) {
       throw new TerminateToolException(-1, "IO error while opening sample data: " + e.getMessage(), e);
     }
   }
 
-  interface Parameters extends EncodingParameter {
-    @ArgumentParser.ParameterDescription(valueName = "dataDir",
-        description = "dir containing the 20newsgroup folders")
-    File getDataDir();
-
-    @ArgumentParser.ParameterDescription(valueName = "modelFile")
-    @ArgumentParser.OptionalParameter
-    File getTokenizerModel();
-
-    @ArgumentParser.ParameterDescription(valueName = "name")
-    @ArgumentParser.OptionalParameter
-    String getRuleBasedTokenizer();
-  }
 }

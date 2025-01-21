@@ -17,50 +17,35 @@
 
 package opennlp.tools.formats;
 
-import java.io.IOException;
-
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Factory producing OpenNLP {@link NameSampleDataStream}s.
  */
-public class NameSampleDataStreamFactory<P> extends AbstractSampleStreamFactory<NameSample, P> {
+@Internal
+public class NameSampleDataStreamFactory extends
+        AbstractSampleStreamFactory<NameSample, NameSampleDataStreamFactory.Parameters> {
 
   public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new NameSampleDataStreamFactory<>(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new NameSampleDataStreamFactory(Parameters.class));
   }
 
-  protected NameSampleDataStreamFactory(Class<P> params) {
+  protected NameSampleDataStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
-
-    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-
-    ObjectStream<String> lineStream = null;
-    try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
-    } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
-    }
-
+    ObjectStream<String> lineStream = readData(args, Parameters.class);
     return new NameSampleDataStream(lineStream);
   }
 }

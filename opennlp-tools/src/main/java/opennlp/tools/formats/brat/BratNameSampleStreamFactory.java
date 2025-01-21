@@ -41,10 +41,15 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see BratNameSampleStream
+ */
 public class BratNameSampleStreamFactory
         extends AbstractSampleStreamFactory<NameSample, BratNameSampleStreamFactory.Parameters> {
 
-  interface Parameters {
+  public interface Parameters {
     @ParameterDescription(valueName = "bratDataDir", description = "location of brat data dir")
     File getBratDataDir();
 
@@ -76,37 +81,40 @@ public class BratNameSampleStreamFactory
     super(Parameters.class);
   }
 
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(NameSample.class, "brat",
+            new BratNameSampleStreamFactory());
+  }
+
   /**
-   * Checks that non of the passed values are null.
+   * Checks that non of the passed values are {@code null}.
    *
-   * @param objects
-   * @return true or false
+   * @param objects The objects to check for {@code null}.
+   * @return {@code true} if at least one object is {@code null}, {@code false} otherwise.
    */
   private boolean notNull(Object... objects) {
-
     for (Object obj : objects) {
       if (obj == null)
         return false;
     }
-
     return true;
   }
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
-
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
     Parameters params = ArgumentParser.parse(args, Parameters.class);
 
     if (notNull(params.getRuleBasedTokenizer(), params.getTokenizerModel())) {
       throw new TerminateToolException(-1, "Either use rule based or statistical tokenizer!");
     }
 
-    // TODO: Provide the file name to the annotation.conf file and implement the parser ...
     AnnotationConfiguration annConfig;
     try {
       annConfig = AnnotationConfiguration.parse(params.getAnnotationConfig());
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new TerminateToolException(1, "Failed to parse annotation.conf file!");
     }
 
@@ -121,37 +129,30 @@ public class BratNameSampleStreamFactory
     }
 
     SentenceDetector sentDetector;
-
     if (params.getSentenceDetectorModel() != null) {
       try {
         sentDetector = new SentenceDetectorME(new SentenceModel(params.getSentenceDetectorModel()));
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Failed to load sentence detector model!", e);
       }
-    }
-    else {
+    } else {
       sentDetector = new NewlineSentenceDetector();
     }
 
     Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
-
     if (params.getTokenizerModel() != null) {
       try {
         tokenizer = new TokenizerME(new TokenizerModel(params.getTokenizerModel()));
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Failed to load tokenizer model!", e);
       }
-    }
-    else if (params.getRuleBasedTokenizer() != null) {
+    } else if (params.getRuleBasedTokenizer() != null) {
       String tokenizerName = params.getRuleBasedTokenizer();
-
       if ("simple".equals(tokenizerName)) {
         tokenizer = SimpleTokenizer.INSTANCE;
-      }
-      else if ("whitespace".equals(tokenizerName)) {
+      } else if ("whitespace".equals(tokenizerName)) {
         tokenizer = WhitespaceTokenizer.INSTANCE;
-      }
-      else {
+      } else {
         throw new TerminateToolException(-1, "Unknown tokenizer: " + tokenizerName);
       }
     }
@@ -167,8 +168,4 @@ public class BratNameSampleStreamFactory
     return new BratNameSampleStream(sentDetector, tokenizer, samples, nameTypes);
   }
 
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(NameSample.class, "brat",
-        new BratNameSampleStreamFactory());
-  }
 }

@@ -24,13 +24,22 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
-public class NKJPSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see SentenceSample
+ * @see NKJPSentenceSampleStream
+ */
+@Internal
+public class NKJPSentenceSampleStreamFactory extends
+        AbstractSampleStreamFactory<SentenceSample, NKJPSentenceSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
     @ArgumentParser.ParameterDescription(valueName = "text",
         description = "file containing NKJP text")
     File getTextFile();
@@ -38,20 +47,16 @@ public class NKJPSentenceSampleStreamFactory<P> extends AbstractSampleStreamFact
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class, "nkjp",
-            new NKJPSentenceSampleStreamFactory<>(NKJPSentenceSampleStreamFactory.Parameters.class));
+            new NKJPSentenceSampleStreamFactory(NKJPSentenceSampleStreamFactory.Parameters.class));
   }
 
-  protected NKJPSentenceSampleStreamFactory(Class<P> params) {
+  protected NKJPSentenceSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
-
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
     CmdLineUtil.checkInputFile("Text", params.getTextFile());
 
     NKJPSegmentationDocument segDoc = null;

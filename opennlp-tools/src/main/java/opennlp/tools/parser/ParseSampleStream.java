@@ -22,6 +22,10 @@ import java.io.IOException;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * @see Parse
+ * @see FilterObjectStream
+ */
 public class ParseSampleStream extends FilterObjectStream<String, Parse> {
 
   /**

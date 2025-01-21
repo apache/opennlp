@@ -17,10 +17,13 @@
 
 package opennlp.tools.formats.masc;
 
+import java.io.Serial;
+
 import opennlp.tools.util.Span;
 
 public class MascWord extends Span {
 
+  @Serial
   private static final long serialVersionUID = 2133473549058189775L;
   private final int id;
 

@@ -28,9 +28,9 @@ import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * <b>Note:</b>
- * Do not use this class, internal use only!
+ * <b>Note:</b> Do not use this class, internal use only!
  *
+ * @see Parse
  * @see ConstitParseSampleStream
  */
 @Internal
@@ -45,18 +45,19 @@ public class ConstitParseSampleStreamFactory
     super(Parameters.class);
   }
 
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(Parse.class, "frenchtreebank",
+            new ConstitParseSampleStreamFactory());
+  }
+  
   @Override
   public ObjectStream<Parse> create(String[] args) {
-
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
     Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-
     return new ConstitParseSampleStream(new FileToByteArraySampleStream(
         new DirectorySampleStream(params.getData(), null, false)));
   }
 
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(Parse.class, "frenchtreebank",
-        new ConstitParseSampleStreamFactory());
-  }
 }

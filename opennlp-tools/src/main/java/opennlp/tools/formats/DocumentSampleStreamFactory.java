@@ -17,48 +17,33 @@
 
 package opennlp.tools.formats;
 
-import java.io.IOException;
-
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.doccat.DocumentSampleStream;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * Factory producing OpenNLP {@link DocumentSampleStream}s.
  */
-public class DocumentSampleStreamFactory<P> extends AbstractSampleStreamFactory<DocumentSample, P> {
+public class DocumentSampleStreamFactory extends
+        AbstractSampleStreamFactory<DocumentSample, DocumentSampleStreamFactory.Parameters> {
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(DocumentSample.class,
-            StreamFactoryRegistry.DEFAULT_FORMAT, new DocumentSampleStreamFactory<>(Parameters.class));
+            StreamFactoryRegistry.DEFAULT_FORMAT, new DocumentSampleStreamFactory(Parameters.class));
   }
 
-  protected DocumentSampleStreamFactory(Class<P> params) {
+  protected DocumentSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<DocumentSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
-    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-    ObjectStream<String> lineStream = null;
-    try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
-    } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
-    }
-
+    ObjectStream<String> lineStream = readData(args, Parameters.class);
     return new DocumentSampleStream(lineStream);
   }
 }

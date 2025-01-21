@@ -84,7 +84,7 @@ public class ADPOSSampleStream implements ObjectStream<POSSample> {
   public POSSample read() throws IOException {
     Sentence paragraph;
     if ((paragraph = this.adSentenceStream.read()) != null) {
-      Node root = paragraph.getRoot();
+      Node root = paragraph.root();
       List<String> sentence = new ArrayList<>();
       List<String> tags = new ArrayList<>();
       process(root, sentence, tags);

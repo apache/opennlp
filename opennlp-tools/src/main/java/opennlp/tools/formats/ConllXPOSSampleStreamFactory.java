@@ -18,13 +18,10 @@
 package opennlp.tools.formats;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
-import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
-import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.commons.Internal;
 import opennlp.tools.postag.POSSample;
@@ -35,40 +32,35 @@ import opennlp.tools.util.ObjectStream;
  * <b>Note:</b>
  * Do not use this class, internal use only!
  *
+ * @see POSSample
  * @see ConllXPOSSampleStream
  */
 @Internal
-public class ConllXPOSSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
+public class ConllXPOSSampleStreamFactory extends
+        AbstractSampleStreamFactory<POSSample, ConllXPOSSampleStreamFactory.Parameters> {
 
   public static final String CONLLX_FORMAT = "conllx";
 
-  interface Parameters extends BasicFormatParams {
+  public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
-        CONLLX_FORMAT, new ConllXPOSSampleStreamFactory<>(Parameters.class));
+        CONLLX_FORMAT, new ConllXPOSSampleStreamFactory(Parameters.class));
   }
 
-  protected ConllXPOSSampleStreamFactory(Class<P> params) {
+  protected ConllXPOSSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<POSSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    InputStreamFactory inFactory =
-        CmdLineUtil.createInputStreamFactory(params.getData());
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     try {
+      InputStreamFactory inFactory = CmdLineUtil.createInputStreamFactory(params.getData());
       return new ConllXPOSSampleStream(inFactory, StandardCharsets.UTF_8);
-    } catch (UnsupportedEncodingException e) {
-      // this shouldn't happen
-      throw new TerminateToolException(-1, "UTF-8 encoding is not supported: " + e.getMessage(), e);
-    }
-    catch (IOException e) {
-      // That will throw an exception
+    } catch (IOException e) {
       CmdLineUtil.handleCreateObjectStreamError(e);
       return null;
     }

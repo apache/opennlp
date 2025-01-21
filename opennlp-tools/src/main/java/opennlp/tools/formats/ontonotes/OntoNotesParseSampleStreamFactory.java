@@ -22,12 +22,20 @@ import java.nio.charset.StandardCharsets;
 
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see OntoNotesParseSampleStream
+ */
+@Internal
 public class OntoNotesParseSampleStreamFactory
         extends AbstractSampleStreamFactory<Parse, OntoNotesFormatParameters> {
 
@@ -35,10 +43,21 @@ public class OntoNotesParseSampleStreamFactory
     super(OntoNotesFormatParameters.class);
   }
 
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(Parse.class, "ontonotes",
+            new OntoNotesParseSampleStreamFactory());
+  }
+
   @Override
   public ObjectStream<Parse> create(String[] args) {
-
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
     OntoNotesFormatParameters params = ArgumentParser.parse(args, OntoNotesFormatParameters.class);
+    final File ontoDir = new File(params.getOntoNotesDir());
+    if (!ontoDir.isDirectory() || !ontoDir.exists()) {
+      throw new TerminateToolException(-1, "The specified OntoNotes directory is not valid!");
+    }
 
     ObjectStream<File> documentStream = new DirectorySampleStream(new File(
         params.getOntoNotesDir()),
@@ -53,13 +72,8 @@ public class OntoNotesParseSampleStreamFactory
     // We need file to line here ... and that is probably best doen with the plain text stream
     // lets copy it over here, refactor it, and then at some point we replace the current version
     // with the refactored version
-
-    return new OntoNotesParseSampleStream(new DocumentToLineStream(new FileToStringSampleStream(
-        documentStream, StandardCharsets.UTF_8)));
+    return new OntoNotesParseSampleStream(new DocumentToLineStream(
+        new FileToStringSampleStream(documentStream, StandardCharsets.UTF_8)));
   }
 
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(Parse.class, "ontonotes",
-        new OntoNotesParseSampleStreamFactory());
-  }
 }

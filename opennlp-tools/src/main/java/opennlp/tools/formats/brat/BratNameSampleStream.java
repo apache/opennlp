@@ -38,44 +38,41 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
   private final BratDocumentParser parser;
 
   /**
-   * Creates a new {@link BratNameSampleStream}.
-   * @param sentDetector a {@link SentenceDetector} instance
-   * @param tokenizer a {@link Tokenizer} instance
-   * @param samples a {@link BratDocument} {@link ObjectStream}
+   * Initializes a new {@link BratNameSampleStream} with the specified parameters
+   * based on a straem of {@link BratDocument documents}.
+   *
+   * @param sentDetector A valid {@link SentenceDetector} instance.
+   * @param tokenizer A valid {@link Tokenizer} instance.
+   * @param samples The {@link BratDocument} {@link ObjectStream} to process.
    */
   public BratNameSampleStream(SentenceDetector sentDetector,
                               Tokenizer tokenizer, ObjectStream<BratDocument> samples) {
-    super(samples);
-
-    this.parser = new BratDocumentParser(sentDetector, tokenizer, null);
+    this(sentDetector, tokenizer, samples, null);
   }
 
   /**
-   * Creates a new {@link BratNameSampleStream}.
-   * @param sentModel a {@link SentenceModel} model
-   * @param tokenModel a {@link TokenizerModel} model
-   * @param samples a {@link BratDocument} {@link ObjectStream}
+   * Initializes a new {@link BratNameSampleStream} with the specified (model) parameters.
+   *
+   * @param sentModel A valid {@link SentenceModel sentence detection model}.
+   * @param tokenModel A valid {@link TokenizerModel tokenizer model}.
+   * @param samples The {@link BratDocument} {@link ObjectStream} to process.
    */
   public BratNameSampleStream(SentenceModel sentModel, TokenizerModel tokenModel,
                               ObjectStream<BratDocument> samples) {
-    super(samples);
-
-    // TODO: We can pass in custom validators here ...
-    this.parser = new BratDocumentParser(new SentenceDetectorME(sentModel),
-        new TokenizerME(tokenModel), null);
+    this(new SentenceDetectorME(sentModel), new TokenizerME(tokenModel), samples, null);
   }
 
   /**
    * Creates a new {@link BratNameSampleStream}.
-   * @param sentDetector a {@link SentenceDetector} instance
-   * @param tokenizer a {@link Tokenizer} instance
-   * @param samples a {@link BratDocument} {@link ObjectStream}
-   * @param nameTypes the name types to use or null if all name types
+   * @param sentDetector A valid {@link SentenceDetector} instance.
+   * @param tokenizer A valid {@link Tokenizer} instance.
+   * @param samples The {@link BratDocument} {@link ObjectStream} to process.
+   *                
+   * @param nameTypes the name types to use or {@code null} if all name types.
    */
   public BratNameSampleStream(SentenceDetector sentDetector,
       Tokenizer tokenizer, ObjectStream<BratDocument> samples, Set<String> nameTypes) {
     super(samples);
-
     this.parser = new BratDocumentParser(sentDetector, tokenizer, nameTypes);
   }
 
@@ -84,13 +81,12 @@ public class BratNameSampleStream extends SegmenterObjectStream<BratDocument, Na
    * @param sentModel a {@link SentenceModel} model
    * @param tokenModel a {@link TokenizerModel} model
    * @param samples a {@link BratDocument} {@link ObjectStream}
-   * @param nameTypes the name types to use or null if all name types
+   * @param nameTypes the name types to use or {@code null} if all name types
    */
   public BratNameSampleStream(SentenceModel sentModel, TokenizerModel tokenModel,
       ObjectStream<BratDocument> samples, Set<String> nameTypes) {
     super(samples);
-
-    // TODO: We can pass in custom validators here ...
+    // Hint: We can pass in custom validators here ...
     this.parser = new BratDocumentParser(new SentenceDetectorME(sentModel),
         new TokenizerME(tokenModel), nameTypes);
   }

@@ -17,6 +17,8 @@
 
 package opennlp.tools.formats.masc;
 
+import java.io.Serial;
+
 import opennlp.tools.util.Span;
 
 /**
@@ -24,6 +26,7 @@ import opennlp.tools.util.Span;
  */
 public class MascToken extends Span {
 
+  @Serial
   private static final long serialVersionUID = -780646706788037041L;
   private final String pos;
   private final String base;

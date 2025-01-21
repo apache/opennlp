@@ -34,7 +34,6 @@ class ConstitDocumentHandler extends DefaultHandler {
 
   private static final String SENT_ELEMENT_NAME = "SENT";
   private static final String WORD_ELEMENT_NAME = "w";
-
   private static final String SENT_TYPE_NAME = "S";
 
   private final List<Parse> parses;
@@ -139,7 +138,7 @@ class ConstitDocumentHandler extends DefaultHandler {
       if (WORD_ELEMENT_NAME.equals(qName)) {
         String token = tokenBuffer.toString().trim();
 
-        if (token.length() > 0) {
+        if (!token.isEmpty()) {
           cons.add(new Constituent(AbstractBottomUpParser.TOK_NODE,
               new Span(offset, offset + token.length())));
 

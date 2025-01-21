@@ -21,12 +21,14 @@ import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.ObjectStream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class BratAnnotationStreamTest extends AbstractBratTest {
@@ -49,7 +51,7 @@ public class BratAnnotationStreamTest extends AbstractBratTest {
     AnnotationConfiguration annConfig = new AnnotationConfiguration(typeToClassMap);
     ObjectStream<BratAnnotation> annStream = creatBratAnnotationStream(annConfig,
         "brat/voa-with-entities.ann");
-    Assertions.assertNotNull(annStream);
+    assertNotNull(annStream);
 
     validateBratAnnotationStream(annStream, 5, 10, 3, 0, 2, 0);
   }
@@ -62,7 +64,7 @@ public class BratAnnotationStreamTest extends AbstractBratTest {
     AnnotationConfiguration annConfig = new AnnotationConfiguration(typeToClassMap);
     ObjectStream<BratAnnotation> annStream = creatBratAnnotationStream(annConfig,
         "brat/voa-with-relations.ann");
-    Assertions.assertNotNull(annStream);
+    assertNotNull(annStream);
 
     validateBratAnnotationStream(annStream, 5, 10, 3, 0, 0, 7);
   }
@@ -87,16 +89,16 @@ public class BratAnnotationStreamTest extends AbstractBratTest {
 
     BratAnnotation ann;
     while ((ann = annStream.read()) != null) {
-      Assertions.assertNotNull(ann);
+      assertNotNull(ann);
       String type = ann.getType();
-      Assertions.assertNotNull(type);
+      assertNotNull(type);
 
       String coveredText = null;
       RelationAnnotation rAnnotation = null;
       AnnotatorNoteAnnotation aAnnotation = null;
       if (ann instanceof SpanAnnotation sAnnotation) {
         coveredText = sAnnotation.getCoveredText();
-        Assertions.assertNotNull(coveredText);
+        assertNotNull(coveredText);
       } else if (ann instanceof RelationAnnotation) {
         rAnnotation = (RelationAnnotation) ann;
       } else if (ann instanceof AnnotatorNoteAnnotation) {
@@ -122,26 +124,27 @@ public class BratAnnotationStreamTest extends AbstractBratTest {
           break;
         } case BRAT_TYPE_RELATED: {
           relations++;
-          Assertions.assertNotNull(rAnnotation);
+          assertNotNull(rAnnotation);
           break;
         } case BRAT_TYPE_ANNOTATION: {
           annotations++;
-          Assertions.assertNotNull(aAnnotation);
+          assertNotNull(aAnnotation);
           break;
         } default: {
           fail("Found an unsupported BRAT type!");
         }
       }
     }
-    Assertions.assertEquals(expectDates, dates);
-    Assertions.assertEquals(expectPersons, persons);
-    Assertions.assertEquals(expectLocations, locations);
-    Assertions.assertEquals(expectAnnotations, annotations);
-    Assertions.assertEquals(expectOrganizations, organizations);
-    Assertions.assertEquals(expectRelations, relations);
+    assertEquals(expectDates, dates);
+    assertEquals(expectPersons, persons);
+    assertEquals(expectLocations, locations);
+    assertEquals(expectAnnotations, annotations);
+    assertEquals(expectOrganizations, organizations);
+    assertEquals(expectOrganizations, organizations);
+    assertEquals(expectRelations, relations);
 
-    Assertions.assertArrayEquals(VOA_DATES, annotatedDates.toArray());
-    Assertions.assertArrayEquals(VOA_PERSONS, annotatedPersons.toArray());
-    Assertions.assertArrayEquals(VOA_LOCATIONS, annotatedLocations.toArray());
+    assertArrayEquals(VOA_DATES, annotatedDates.toArray());
+    assertArrayEquals(VOA_PERSONS, annotatedPersons.toArray());
+    assertArrayEquals(VOA_LOCATIONS, annotatedLocations.toArray());
   }
 }

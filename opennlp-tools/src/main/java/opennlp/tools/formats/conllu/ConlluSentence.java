@@ -44,9 +44,7 @@ public class ConlluSentence {
   public ConlluSentence(List<ConlluWordLine> wordLines, String sentenceIdComment, String textComment,
                         boolean newDocument, String documentId, boolean newParagraph, String paragraphId,
                         Map<Locale, String> textLang, String translit) {
-    this.wordLines = wordLines;
-    this.sentenceIdComment = sentenceIdComment;
-    this.textComment = textComment;
+    this(wordLines, sentenceIdComment, textComment);
     this.newDocument = newDocument;
     this.documentId = documentId;
     this.newParagraph = newParagraph;

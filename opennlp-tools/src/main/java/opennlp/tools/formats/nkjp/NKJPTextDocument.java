@@ -43,14 +43,14 @@ import opennlp.tools.util.XmlUtil;
  * The National corpus of Polish (NKJP) format.
  * <p>
  * Information about the format are found on this
- * <a href="http://nkjp.pl/index.php?page=0%26lang=1">web site</a>.
+ * <a href="https://nkjp.pl/index.php?page=0%26lang=1">web site</a>.
  * <p>
  * A 1-million word corpus can be found on this
- * <a href="http://nkjp.pl/index.php?page=14%26lang=1">
+ * <a href="https://nkjp.pl/index.php?page=14%26lang=1">
  *   web site</a>.
  * <p>
  * The NKJP schema can be found
- * <a href="http://nlp.ipipan.waw.pl/TEI4NKJP/">here</a>.
+ * <a href="https://nlp.ipipan.waw.pl/TEI4NKJP/">here</a>.
  */
 public class NKJPTextDocument {
 

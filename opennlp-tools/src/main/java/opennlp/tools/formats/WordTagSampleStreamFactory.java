@@ -17,52 +17,37 @@
 
 package opennlp.tools.formats;
 
-import java.io.IOException;
-
-import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.commons.Internal;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.postag.WordTagSampleStream;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * <b>Note:</b>
  * Do not use this class, internal use only!
  */
 @Internal
-public class WordTagSampleStreamFactory<P> extends AbstractSampleStreamFactory<POSSample, P> {
+public class WordTagSampleStreamFactory extends
+        AbstractSampleStreamFactory<POSSample, WordTagSampleStreamFactory.Parameters> {
 
   public interface Parameters extends BasicFormatParams {
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(POSSample.class,
-        StreamFactoryRegistry.DEFAULT_FORMAT, new WordTagSampleStreamFactory<>(Parameters.class));
+        StreamFactoryRegistry.DEFAULT_FORMAT, new WordTagSampleStreamFactory(Parameters.class));
   }
 
-  protected WordTagSampleStreamFactory(Class<P> params) {
+  protected WordTagSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<POSSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
-
-    CmdLineUtil.checkInputFile("Data", params.getData());
-    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-
-    ObjectStream<String> lineStream = null;
-    try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
-    } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
-    }
-
+    ObjectStream<String> lineStream = readData(args, Parameters.class);
     return new WordTagSampleStream(lineStream);
   }
+
 }

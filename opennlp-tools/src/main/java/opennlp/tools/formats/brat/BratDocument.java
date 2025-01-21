@@ -100,25 +100,22 @@ public class BratDocument {
   public static BratDocument parseDocument(AnnotationConfiguration config, String id,
       InputStream txtIn, InputStream annIn) throws IOException {
 
-    Reader txtReader = new InputStreamReader(txtIn, StandardCharsets.UTF_8);
+    try (Reader txtReader = new InputStreamReader(txtIn, StandardCharsets.UTF_8);
+         ObjectStream<BratAnnotation> annStream = new BratAnnotationStream(config, id, annIn)) {
 
-    StringBuilder text = new StringBuilder();
-
-    char[] cbuf = new char[1024];
-
-    int len;
-    while ((len = txtReader.read(cbuf)) > 0) {
-      text.append(cbuf, 0, len);
+      StringBuilder text = new StringBuilder();
+      char[] cbuf = new char[1024];
+      int len;
+      while ((len = txtReader.read(cbuf)) > 0) {
+        text.append(cbuf, 0, len);
+      }
+      Collection<BratAnnotation> annotations = new ArrayList<>();
+      BratAnnotation ann;
+      while ((ann = annStream.read()) != null) {
+        annotations.add(ann);
+      }
+      return new BratDocument(config, id, text.toString(), annotations);
     }
-
-    Collection<BratAnnotation> annotations = new ArrayList<>();
-    ObjectStream<BratAnnotation> annStream = new BratAnnotationStream(config, id, annIn);
-    BratAnnotation ann;
-    while ((ann = annStream.read()) != null) {
-      annotations.add(ann);
-    }
-    annStream.close();
-
-    return new BratDocument(config, id, text.toString(), annotations);
   }
+  
 }

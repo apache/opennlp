@@ -19,8 +19,7 @@ package opennlp.tools.formats;
 
 import opennlp.tools.util.InputStreamFactory;
 
-
-public abstract class AbstractSampleStreamTest extends AbstractFormatTest {
+abstract class AbstractSampleStreamTest extends AbstractFormatTest {
 
   protected InputStreamFactory getFactory(String resource) {
     return new ResourceAsStreamFactory(AbstractSampleStreamTest.class, FORMATS_BASE_DIR + resource);

@@ -28,6 +28,15 @@ import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.ObjectStream;
 
+/**
+ * An {@link ObjectStream} implementation for the Twenty Newsgroups text corpus.
+ * <p>
+ * The document collection was created and donated by: <i>Tom Mitchell,
+ * School of Computer Science, Carnegie Mellon University</i>.
+ * <p>
+ * Details and the data can be found via this DOI:
+ * <a href="https://dx.doi.org/10.24432/C5C323">10.24432/C5C323</a>.
+ */
 public class TwentyNewsgroupSampleStream implements ObjectStream<DocumentSample> {
 
   private final Tokenizer tokenizer;

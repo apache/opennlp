@@ -99,9 +99,9 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     do {
       do {
         if (!isTitle || isIncludeTitles) {
-          if (hasPunctuation(sent.getText())) {
+          if (hasPunctuation(sent.text())) {
             int start = document.length();
-            document.append(sent.getText());
+            document.append(sent.text());
             sentences.add(new Span(start, document.length()));
             document.append(" ");
           }
@@ -116,7 +116,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
     while (isSameText);
 
     String doc;
-    if (document.length() > 0) {
+    if (!document.isEmpty()) {
       doc = document.substring(0, document.length() - 1);
     } else {
       doc = document.toString();
@@ -127,7 +127,7 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
 
   private boolean hasPunctuation(String text) {
     text = text.trim();
-    if (text.length() > 0) {
+    if (!text.isEmpty()) {
       char lastChar = text.charAt(text.length() - 1);
       return Arrays.binarySearch(ptEosCharacters, lastChar) >= 0;
     }
@@ -135,13 +135,12 @@ public class ADSentenceSampleStream implements ObjectStream<SentenceSample> {
   }
 
   // there are some different types of metadata depending on the corpus.
-  // TODO Merge this patterns
-  private static final Pattern META_1 = Pattern
-      .compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
+  // TODO Merge these patterns
+  private static final Pattern META_1 = Pattern.compile("^(?:[a-zA-Z\\-]*(\\d+)).*?p=(\\d+).*");
 
   private void updateMeta() {
     if (this.sent != null) {
-      String meta = this.sent.getMetadata();
+      String meta = this.sent.metadata();
       Matcher m = META_1.matcher(meta);
       int currentText;
       int currentPara;

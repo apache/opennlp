@@ -32,19 +32,24 @@ import opennlp.tools.util.ObjectStream;
  * Do not use this class, internal use only!
  */
 @Internal
-public class ParseToSentenceSampleStreamFactory extends DetokenizerSampleStreamFactory
-        <SentenceSample, ParseToSentenceSampleStreamFactory.Parameters> {
+public class ParseToSentenceSampleStreamFactory extends
+        DetokenizerSampleStreamFactory<SentenceSample, ParseToSentenceSampleStreamFactory.Parameters> {
 
-  interface Parameters extends ParseSampleStreamFactory.Parameters, DetokenizerParameter {
+  public interface Parameters extends ParseSampleStreamFactory.Parameters, DetokenizerParameter {
   }
 
   private ParseToSentenceSampleStreamFactory() {
     super(Parameters.class);
   }
 
+  public static void registerFactory() {
+    StreamFactoryRegistry.registerFactory(SentenceSample.class,
+            "parse", new ParseToSentenceSampleStreamFactory());
+  }
+
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
 
     ObjectStream<Parse> parseSampleStream = StreamFactoryRegistry.getFactory(Parse.class,
         StreamFactoryRegistry.DEFAULT_FORMAT).create(
@@ -54,8 +59,5 @@ public class ParseToSentenceSampleStreamFactory extends DetokenizerSampleStreamF
         new ParseToPOSSampleStream(parseSampleStream), 30);
   }
 
-  public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(SentenceSample.class,
-        "parse", new ParseToSentenceSampleStreamFactory());
-  }
+
 }

@@ -40,7 +40,6 @@ import org.xml.sax.SAXException;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.XmlUtil;
 
-
 public class MascDocument {
 
   private static final Logger logger = LoggerFactory.getLogger(MascDocument.class);

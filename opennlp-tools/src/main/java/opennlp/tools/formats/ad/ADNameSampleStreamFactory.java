@@ -17,21 +17,16 @@
 
 package opennlp.tools.formats.ad;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 
-import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.ArgumentParser.OptionalParameter;
 import opennlp.tools.cmdline.ArgumentParser.ParameterDescription;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.LanguageSampleStreamFactory;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
 
 /**
  * A Factory to create a Arvores Deitadas NameSampleDataStream from the command line
@@ -41,17 +36,15 @@ import opennlp.tools.util.PlainTextByLineStream;
  * Do not use this class, internal use only!
  */
 @Internal
-public class ADNameSampleStreamFactory<P> extends LanguageSampleStreamFactory<NameSample, P> {
+public class ADNameSampleStreamFactory extends
+        LanguageSampleStreamFactory<NameSample, ADNameSampleStreamFactory.Parameters> {
 
-  interface Parameters {
+  public interface Parameters extends BasicFormatParams {
     //all have to be repeated, because encoding is not optional,
     //according to the check if (encoding == null) { below (now removed)
     @ParameterDescription(valueName = "charsetName",
         description = "encoding for reading and writing text, if absent the system default is used.")
     Charset getEncoding();
-
-    @ParameterDescription(valueName = "sampleData", description = "data to be used, usually a file name.")
-    File getData();
 
     @ParameterDescription(valueName = "split",
         description = "if true all hyphenated tokens will be separated (default true)")
@@ -64,27 +57,18 @@ public class ADNameSampleStreamFactory<P> extends LanguageSampleStreamFactory<Na
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(NameSample.class,
-        "ad", new ADNameSampleStreamFactory<>(Parameters.class));
+        "ad", new ADNameSampleStreamFactory(Parameters.class));
   }
 
-  protected ADNameSampleStreamFactory(Class<P> params) {
+  protected ADNameSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   @Override
   public ObjectStream<NameSample> create(String[] args) {
-
-    Parameters params = ArgumentParser.parse(args, Parameters.class);
+    Parameters params = validateBasicFormatParameters(args, Parameters.class);
     language = params.getLang();
-
-    InputStreamFactory sampleDataIn = CmdLineUtil.createInputStreamFactory(params.getData());
-    ObjectStream<String> lineStream = null;
-    try {
-      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
-    } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
-    }
-
+    ObjectStream<String> lineStream = readData(args, Parameters.class);
     return new ADNameSampleStream(lineStream, params.getSplitHyphenatedTokens());
   }
 }

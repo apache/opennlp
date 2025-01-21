@@ -24,28 +24,52 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
+import opennlp.tools.commons.Internal;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.sentdetect.SentenceSample;
 import opennlp.tools.util.ObjectStream;
 
-public class MascSentenceSampleStreamFactory<P> extends AbstractSampleStreamFactory<SentenceSample, P> {
+/**
+ * <b>Note:</b> Do not use this class, internal use only!
+ *
+ * @see SentenceSample
+ * @see MascSentenceSampleStream
+ */
+@Internal
+public class MascSentenceSampleStreamFactory extends
+        AbstractSampleStreamFactory<SentenceSample, MascSentenceSampleStreamFactory.Parameters>
+        implements Masc {
 
-  public static final String MASC_FORMAT = "masc";
+  public interface Parameters extends BasicFormatParams {
+    @ArgumentParser.ParameterDescription(valueName = "sentencesPerSample",
+            description = "number of sentences per sample")
+    String getSentencesPerSample();
 
-  protected MascSentenceSampleStreamFactory(Class<P> params) {
+    @ArgumentParser.ParameterDescription(valueName = "recurrentSearch",
+            description = "search through files recursively")
+    Boolean getRecurrentSearch();
+
+    @ArgumentParser.ParameterDescription(valueName = "fileFilterString",
+            description = "only include files which contain a given string in their name")
+    String getFileFilter();
+
+  }
+
+  protected MascSentenceSampleStreamFactory(Class<Parameters> params) {
     super(params);
   }
 
   public static void registerFactory() {
     StreamFactoryRegistry.registerFactory(SentenceSample.class, MASC_FORMAT,
-        new MascSentenceSampleStreamFactory<>(MascSentenceSampleStreamFactory.Parameters.class));
+        new MascSentenceSampleStreamFactory(Parameters.class));
   }
 
   @Override
   public ObjectStream<SentenceSample> create(String[] args) {
-    MascSentenceSampleStreamFactory.Parameters params =
-        ArgumentParser.parse(args, MascSentenceSampleStreamFactory.Parameters.class);
-
+    if (args == null) {
+      throw new IllegalArgumentException("Passed args must not be null!");
+    }
+    Parameters params = ArgumentParser.parse(args, Parameters.class);
     try {
       FileFilter fileFilter = pathname -> pathname.getName().contains(params.getFileFilter());
 
@@ -57,21 +81,6 @@ public class MascSentenceSampleStreamFactory<P> extends AbstractSampleStreamFact
       CmdLineUtil.handleCreateObjectStreamError(e);
     }
     return null;
-  }
-
-  interface Parameters extends BasicFormatParams {
-    @ArgumentParser.ParameterDescription(valueName = "sentencesPerSample",
-        description = "number of sentences per sample")
-    String getSentencesPerSample();
-
-    @ArgumentParser.ParameterDescription(valueName = "recurrentSearch",
-        description = "search through files recursively")
-    boolean getRecurrentSearch();
-
-    @ArgumentParser.ParameterDescription(valueName = "fileFilterString",
-        description = "only include files which contain a given string in their name")
-    String getFileFilter();
-
   }
 
 }

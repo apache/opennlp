@@ -35,10 +35,18 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringUtil;
 
 /**
- * Name Sample Stream parser for the OntoNotes 4.0 corpus.
+ * Name Sample Stream parser for the OntoNotes 4.0 named entity files.
  */
 public class OntoNotesNameSampleStream extends FilterObjectStream<String, NameSample> {
 
+  private static final String TAG_DOC_OPEN = "<DOC";
+  private static final String TAG_DOC_CLOSE = "</DOC>";
+  private static final String TAG_ENAMEX_OPEN = "<ENAMEX";
+  private static final String TAG_ENAMEX_CLOSE = "</ENAMEX>";
+  private static final String TYPE = "TYPE=\"";
+  private static final String SYMBOL_CLOSE = ">";
+  private static final String SYMBOL_OPEN = "<";
+  
   private final Map<String, String> tokenConversionMap;
 
   private final List<NameSample> nameSamples = new LinkedList<>();
@@ -69,21 +77,18 @@ public class OntoNotesNameSampleStream extends FilterObjectStream<String, NameSa
 
     StringBuilder convertedToken = new StringBuilder(token);
 
-    int startTagEndIndex = convertedToken.indexOf(">");
-
+    int startTagEndIndex = convertedToken.indexOf(SYMBOL_CLOSE);
     if (token.contains("=\"") && startTagEndIndex != -1) {
       convertedToken.delete(0, startTagEndIndex + 1);
     }
 
-    int endTagBeginIndex = convertedToken.indexOf("<");
-    int endTagEndIndex = convertedToken.indexOf(">");
-
+    int endTagBeginIndex = convertedToken.indexOf(SYMBOL_OPEN);
+    int endTagEndIndex = convertedToken.indexOf(SYMBOL_CLOSE);
     if (endTagBeginIndex != -1 && endTagEndIndex != -1) {
       convertedToken.delete(endTagBeginIndex, endTagEndIndex + 1);
     }
 
     String cleanedToken = convertedToken.toString();
-
     if (tokenConversionMap.get(cleanedToken) != null) {
       cleanedToken = tokenConversionMap.get(cleanedToken);
     }
@@ -96,74 +101,64 @@ public class OntoNotesNameSampleStream extends FilterObjectStream<String, NameSa
 
     if (nameSamples.isEmpty()) {
       String doc = samples.read();
-
       if (doc != null) {
-        BufferedReader docIn = new BufferedReader(new StringReader(doc));
-
         boolean clearAdaptiveData = true;
-
         String line;
-        while ((line = docIn.readLine()) != null) {
+        try (BufferedReader docIn = new BufferedReader(new StringReader(doc))) {
+          while ((line = docIn.readLine()) != null) {
 
-          if (line.startsWith("<DOC")) {
-            continue;
-          }
-
-          if (line.equals("</DOC>")) {
-            break;
-          }
-
-          String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(line);
-
-          List<Span> entities = new LinkedList<>();
-          List<String> cleanedTokens = new ArrayList<>(tokens.length);
-
-          int tokenIndex = 0;
-          int entityBeginIndex = -1;
-          String entityType = null;
-          boolean insideStartEnmaxTag = false;
-          for (String token : tokens) {
-
-            // Split here, next part of tag is in new token
-            if (token.startsWith("<ENAMEX")) {
-              insideStartEnmaxTag = true;
+            if (line.startsWith(TAG_DOC_OPEN)) {
               continue;
             }
+            if (line.equals(TAG_DOC_CLOSE)) {
+              break;
+            }
 
-            if (insideStartEnmaxTag) {
+            String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(line);
+            List<Span> entities = new LinkedList<>();
+            List<String> cleanedTokens = new ArrayList<>(tokens.length);
 
-              String typeBegin = "TYPE=\"";
+            int tokenIndex = 0;
+            int entityBeginIndex = -1;
+            String entityType = null;
+            boolean insideStartEnmaxTag = false;
+            for (String token : tokens) {
 
-              if (token.startsWith(typeBegin)) {
-
-                int typeEnd = token.indexOf("\"", typeBegin.length());
-
-                entityType = StringUtil.toLowerCase(token.substring(typeBegin.length(), typeEnd));
-              }
-
-              if (token.contains(">")) {
-                entityBeginIndex = tokenIndex;
-                insideStartEnmaxTag = false;
-              } else {
+              // Split here, next part of tag is in new token
+              if (token.startsWith(TAG_ENAMEX_OPEN)) {
+                insideStartEnmaxTag = true;
                 continue;
               }
+
+              if (insideStartEnmaxTag) {
+                String typeBegin = TYPE;
+                if (token.startsWith(typeBegin)) {
+                  int typeEnd = token.indexOf("\"", typeBegin.length());
+                  entityType = StringUtil.toLowerCase(token.substring(typeBegin.length(), typeEnd));
+                }
+
+                if (token.contains(SYMBOL_CLOSE)) {
+                  entityBeginIndex = tokenIndex;
+                  insideStartEnmaxTag = false;
+                } else {
+                  continue;
+                }
+              }
+
+              if (token.endsWith(TAG_ENAMEX_CLOSE)) {
+                entities.add(new Span(entityBeginIndex, tokenIndex + 1, entityType));
+                entityBeginIndex = -1;
+              }
+
+              cleanedTokens.add(convertToken(token));
+              tokenIndex++;
             }
 
-            if (token.endsWith("</ENAMEX>")) {
-              entities.add(new Span(entityBeginIndex, tokenIndex + 1,
-                  entityType));
-              entityBeginIndex = -1;
-            }
+            nameSamples.add(new NameSample(cleanedTokens.toArray(new String[0]),
+                    entities.toArray(new Span[0]), clearAdaptiveData));
 
-            cleanedTokens.add(convertToken(token));
-            tokenIndex++;
+            clearAdaptiveData = false;
           }
-
-          nameSamples.add(new NameSample(cleanedTokens
-              .toArray(new String[0]), entities
-              .toArray(new Span[0]), clearAdaptiveData));
-
-          clearAdaptiveData = false;
         }
       }
     }
