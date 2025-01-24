@@ -114,6 +114,10 @@ After cloning the repository go into the destination directory and run:
 mvn install
 ```
 
+### Additional Developement Information
+
+- [Building and Integrating Snowball Stemmer for OpenNLP](dev/Snowball-Stemmer.md)
+
 ## Contributing
 
 The Apache OpenNLP project is developed by volunteers and is always looking for new contributors to work on all parts of the project. Every contribution is welcome and needed to make it better. A contribution can be anything from a small documentation typo fix to a new component.
