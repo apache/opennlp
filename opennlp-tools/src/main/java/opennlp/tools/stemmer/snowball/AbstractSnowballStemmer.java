@@ -32,6 +32,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package opennlp.tools.stemmer.snowball;
 
+/**
+ * Parent class of all snowball stemmers, which must implement <code>stem</code>
+ */
 abstract class AbstractSnowballStemmer extends SnowballProgram {
   public abstract boolean stem();
+
+  static final long serialVersionUID = 2016072500L;
 }

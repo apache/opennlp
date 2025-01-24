@@ -32,68 +32,103 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package opennlp.tools.stemmer.snowball;
 
-import java.lang.reflect.InvocationTargetException;
+import java.io.Serializable;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Arrays;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-class SnowballProgram {
-
-  private static final Logger logger = LoggerFactory.getLogger(SnowballProgram.class);
-  // current string
-  protected StringBuilder current;
-  protected int cursor;
-  protected int limit;
-  protected int limit_backward;
-  protected int bra;
-  protected int ket;
+/**
+ * Base class for a snowball stemmer
+ */
+public class SnowballProgram implements Serializable {
 
   protected SnowballProgram() {
-    current = new StringBuilder();
-    init();
+    setCurrent("");
   }
 
-  public SnowballProgram(SnowballProgram other) {
-    current = other.current;
-    cursor = other.cursor;
-    limit = other.limit;
-    limit_backward = other.limit_backward;
-    bra = other.bra;
-    ket = other.ket;
-  }
+  static final long serialVersionUID = 2016072500L;
 
-  private void init() {
-    cursor = 0;
-    limit = current.length();
-    limit_backward = 0;
-    bra = cursor;
-    ket = limit;
+  /**
+   * Set the current string.
+   */
+  public void setCurrent(String value) {
+    setCurrent(value.toCharArray(), value.length());
   }
 
   /**
    * Get the current string.
    */
   public String getCurrent() {
-    return current.toString();
+    return new String(current, 0, length);
   }
 
   /**
    * Set the current string.
+   *
+   * @param text   character array containing input
+   * @param length valid length of text.
    */
-  public void setCurrent(String value) {
-    // Make a new StringBuilder.  If we reuse the old one, and a user of
-    // the library keeps a reference to the buffer returned (for example,
-    // by converting it to a String in a way which doesn't force a copy),
-    // the buffer size will not decrease, and we will risk wasting a large
-    // amount of memory.
-    // Thanks to Wolfram Esser for spotting this problem.
-    current = new StringBuilder(value);
-    init();
+  public void setCurrent(char[] text, int length) {
+    current = text;
+    cursor = 0;
+    this.length = limit = length;
+    limit_backward = 0;
+    bra = cursor;
+    ket = limit;
+  }
+
+  /**
+   * Get the current buffer containing the stem.
+   * <p>
+   * NOTE: this may be a reference to a different character array than the
+   * one originally provided with setCurrent, in the exceptional case that
+   * stemming produced a longer intermediate or result string.
+   * </p>
+   * <p>
+   * It is necessary to use {@link #getCurrentBufferLength()} to determine
+   * the valid length of the returned buffer. For example, many words are
+   * stemmed simply by subtracting from the length to remove suffixes.
+   * </p>
+   *
+   * @see #getCurrentBufferLength()
+   */
+  public char[] getCurrentBuffer() {
+    return current;
+  }
+
+  /**
+   * Get the valid length of the character array in
+   * {@link #getCurrentBuffer()}.
+   *
+   * @return valid length of the array.
+   */
+  public int getCurrentBufferLength() {
+    return length;
+  }
+
+  // current string
+  private char[] current;
+
+  protected int cursor;
+  protected int length;
+  protected int limit;
+  protected int limit_backward;
+  protected int bra;
+  protected int ket;
+
+  public SnowballProgram(SnowballProgram other) {
+    current = other.current;
+    cursor = other.cursor;
+    length = other.length;
+    limit = other.limit;
+    limit_backward = other.limit_backward;
+    bra = other.bra;
+    ket = other.ket;
   }
 
   protected void copy_from(SnowballProgram other) {
     current = other.current;
     cursor = other.cursor;
+    length = other.length;
     limit = other.limit;
     limit_backward = other.limit_backward;
     bra = other.bra;
@@ -104,7 +139,7 @@ class SnowballProgram {
     if (cursor >= limit) {
       return false;
     }
-    char ch = current.charAt(cursor);
+    char ch = current[cursor];
     if (ch > max || ch < min) {
       return false;
     }
@@ -120,7 +155,7 @@ class SnowballProgram {
     if (cursor <= limit_backward) {
       return false;
     }
-    char ch = current.charAt(cursor - 1);
+    char ch = current[cursor - 1];
     if (ch > max || ch < min) {
       return false;
     }
@@ -136,7 +171,7 @@ class SnowballProgram {
     if (cursor >= limit) {
       return false;
     }
-    char ch = current.charAt(cursor);
+    char ch = current[cursor];
     if (ch > max || ch < min) {
       cursor++;
       return true;
@@ -153,7 +188,7 @@ class SnowballProgram {
     if (cursor <= limit_backward) {
       return false;
     }
-    char ch = current.charAt(cursor - 1);
+    char ch = current[cursor - 1];
     if (ch > max || ch < min) {
       cursor--;
       return true;
@@ -172,7 +207,7 @@ class SnowballProgram {
     }
     int i;
     for (i = 0; i != s.length(); i++) {
-      if (current.charAt(cursor + i) != s.charAt(i)) {
+      if (current[cursor + i] != s.charAt(i)) {
         return false;
       }
     }
@@ -186,7 +221,7 @@ class SnowballProgram {
     }
     int i;
     for (i = 0; i != s.length(); i++) {
-      if (current.charAt(cursor - s.length() + i) != s.charAt(i)) {
+      if (current[cursor - s.length() + i] != s.charAt(i)) {
         return false;
       }
     }
@@ -194,7 +229,7 @@ class SnowballProgram {
     return true;
   }
 
-  protected int find_among(Among v[]) {
+  protected int find_among(Among[] v) {
     int i = 0;
     int j = v.length;
 
@@ -217,7 +252,7 @@ class SnowballProgram {
           diff = -1;
           break;
         }
-        diff = current.charAt(c + common) - w.s[i2];
+        diff = current[c + common] - w.s[i2];
         if (diff != 0) {
           break;
         }
@@ -255,13 +290,13 @@ class SnowballProgram {
         if (w.method == null) {
           return w.result;
         }
-        boolean res;
+        boolean res = false;
         try {
-          Object resobj = w.method.invoke(this);
-          res = resobj.toString().equals("true");
-        } catch (InvocationTargetException | IllegalAccessException e) {
-          res = false;
-          logger.warn(e.getLocalizedMessage(), e);
+          res = (boolean) w.method.invokeExact(this);
+        } catch (Error | RuntimeException e) {
+          throw e;
+        } catch (Throwable e) {
+          throw new UndeclaredThrowableException(e);
         }
         cursor = c + w.s.length;
         if (res) {
@@ -276,7 +311,7 @@ class SnowballProgram {
   }
 
   // find_among_b is for backwards processing. Same comments apply
-  protected int find_among_b(Among v[]) {
+  protected int find_among_b(Among[] v) {
     int i = 0;
     int j = v.length;
 
@@ -299,7 +334,7 @@ class SnowballProgram {
           diff = -1;
           break;
         }
-        diff = current.charAt(c - 1 - common) - w.s[i2];
+        diff = current[c - 1 - common] - w.s[i2];
         if (diff != 0) {
           break;
         }
@@ -333,13 +368,13 @@ class SnowballProgram {
           return w.result;
         }
 
-        boolean res;
+        boolean res = false;
         try {
-          Object resobj = w.method.invoke(this);
-          res = resobj.toString().equals("true");
-        } catch (InvocationTargetException | IllegalAccessException e) {
-          res = false;
-          logger.warn("Triggered by {}. Exception: {}", current, e.getLocalizedMessage(), e);
+          res = (boolean) w.method.invokeExact(this);
+        } catch (Error | RuntimeException e) {
+          throw e;
+        } catch (Throwable e) {
+          throw new UndeclaredThrowableException(e);
         }
         cursor = c - w.s.length;
         if (res) {
@@ -356,9 +391,27 @@ class SnowballProgram {
   /* to replace chars between c_bra and c_ket in current by the
    * chars in s.
    */
-  protected int replace_s(int c_bra, int c_ket, String s) {
-    int adjustment = s.length() - (c_ket - c_bra);
-    current.replace(c_bra, c_ket, s);
+  protected int replace_s(int c_bra, int c_ket, CharSequence s) {
+    final int adjustment = s.length() - (c_ket - c_bra);
+    final int newLength = length + adjustment;
+    //resize if necessary
+    if (newLength > current.length) {
+      current = Arrays.copyOf(current, newLength);
+    }
+    // if the substring being replaced is longer or shorter than the
+    // replacement, need to shift things around
+    if (adjustment != 0 && c_ket < length) {
+      System.arraycopy(current, c_ket, current, c_bra + s.length(),
+          length - c_ket);
+    }
+    // insert the replacement text
+    // Note, faster is s.getChars(0, s.length(), current, c_bra);
+    // but would have to duplicate this method for both String and StringBuilder
+    for (int i = 0; i < s.length(); i++) {
+      current[c_bra + i] = s.charAt(i);
+    }
+
+    length += adjustment;
     limit += adjustment;
     if (cursor >= c_ket) {
       cursor += adjustment;
@@ -369,34 +422,22 @@ class SnowballProgram {
   }
 
   protected void slice_check() {
-    if (bra < 0 ||
-        bra > ket ||
-        ket > limit ||
-        limit > current.length())   // this line could be removed
-    {
-      logger.error("faulty slice operation");
-	/*
-	    fprintf(stderr, "faulty slice operation:\n");
-	    debug(z, -1, 0);
-	    exit(1);
-	    */
-    }
-  }
-
-  protected void slice_from(String s) {
-    slice_check();
-    replace_s(bra, ket, s);
+    assert bra >= 0 : "bra=" + bra;
+    assert bra <= ket : "bra=" + bra + ",ket=" + ket;
+    assert limit <= length : "limit=" + limit + ",length=" + length;
+    assert ket <= limit : "ket=" + ket + ",limit=" + limit;
   }
 
   protected void slice_from(CharSequence s) {
-    slice_from(s.toString());
+    slice_check();
+    replace_s(bra, ket, s);
   }
 
   protected void slice_del() {
     slice_from("");
   }
 
-  protected void insert(int c_bra, int c_ket, String s) {
+  protected void insert(int c_bra, int c_ket, CharSequence s) {
     int adjustment = replace_s(c_bra, c_ket, s);
     if (c_bra <= bra) {
       bra += adjustment;
@@ -406,14 +447,39 @@ class SnowballProgram {
     }
   }
 
-  protected void insert(int c_bra, int c_ket, CharSequence s) {
-    insert(c_bra, c_ket, s.toString());
-  }
-
   /* Copy the slice into the supplied StringBuilder */
   protected void slice_to(StringBuilder s) {
     slice_check();
-    s.replace(0, s.length(), current.substring(bra, ket));
+    int len = ket - bra;
+    s.setLength(0);
+    s.append(current, bra, len);
   }
 
+  protected void assign_to(StringBuilder s) {
+    s.setLength(0);
+    s.append(current, 0, limit);
+  }
+
+/*
+extern void debug(struct SN_env * z, int number, int line_count)
+{   int i;
+    int limit = SIZE(z->p);
+    //if (number >= 0) printf("%3d (line %4d): '", number, line_count);
+    if (number >= 0) printf("%3d (line %4d): [%d]'", number, line_count,limit);
+    for (i = 0; i <= limit; i++)
+    {   if (z->lb == i) printf("{");
+        if (z->bra == i) printf("[");
+        if (z->c == i) printf("|");
+        if (z->ket == i) printf("]");
+        if (z->l == i) printf("}");
+        if (i < limit)
+        {   int ch = z->p[i];
+            if (ch == 0) ch = '#';
+            printf("%c", ch);
+        }
+    }
+    printf("'\n");
 }
+*/
+
+};
