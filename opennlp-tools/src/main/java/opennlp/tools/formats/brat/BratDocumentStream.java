@@ -23,6 +23,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +32,9 @@ import java.util.Stack;
 import opennlp.tools.util.ObjectStream;
 
 public class BratDocumentStream implements ObjectStream<BratDocument> {
+
+  private static final String SUFFIX_ANN = ".ann";
+  private static final String SUFFIX_TXT = ".txt";
 
   private final AnnotationConfiguration config;
   private List<String> documentIds = new LinkedList<>();
@@ -45,7 +49,7 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
    *     to find training data files.
    * @param fileFilter  a custom file filter to filter out certain files or null to accept all files
    *
-   * @throws IOException if reading from the brat directory fails in anyway
+   * @throws IOException if reading from the brat directory fails in any way.
    */
   public BratDocumentStream(AnnotationConfiguration config, File bratCorpusDirectory,
       boolean searchRecursive, FileFilter fileFilter) throws IOException {
@@ -54,24 +58,20 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
       throw new IOException("Input corpus directory must be a directory " +
           "according to File.isDirectory()!");
     }
-
     this.config = config;
 
     Stack<File> directoryStack = new Stack<>();
     directoryStack.add(bratCorpusDirectory);
-
     while (!directoryStack.isEmpty()) {
-      for (File file : directoryStack.pop().listFiles(fileFilter)) {
-
+      final File[] files = directoryStack.pop().listFiles(fileFilter);
+      Arrays.sort(files);
+      for (File file : files) {
         if (file.isFile()) {
           String annFilePath = file.getAbsolutePath();
-          if (annFilePath.endsWith(".ann")) {
-
+          if (annFilePath.endsWith(SUFFIX_ANN)) {
             // cutoff last 4 chars ...
             String documentId = annFilePath.substring(0, annFilePath.length() - 4);
-
-            File txtFile = new File(documentId + ".txt");
-
+            File txtFile = new File(documentId + SUFFIX_TXT);
             if (txtFile.exists() && txtFile.isFile()) {
               documentIds.add(documentId);
             }
@@ -82,24 +82,19 @@ public class BratDocumentStream implements ObjectStream<BratDocument> {
         }
       }
     }
-
     reset();
   }
 
   @Override
   public BratDocument read() throws IOException {
-
     BratDocument doc = null;
-
     if (documentIdIterator.hasNext()) {
       String id = documentIdIterator.next();
-
-      try (InputStream txtIn = new BufferedInputStream(new FileInputStream(id + ".txt"));
-          InputStream annIn = new BufferedInputStream(new FileInputStream(id + ".ann"))) {
+      try (InputStream txtIn = new BufferedInputStream(new FileInputStream(id + SUFFIX_TXT));
+           InputStream annIn = new BufferedInputStream(new FileInputStream(id + SUFFIX_ANN))) {
         doc = BratDocument.parseDocument(config, id, txtIn, annIn);
       }
     }
-
     return doc;
   }
 
