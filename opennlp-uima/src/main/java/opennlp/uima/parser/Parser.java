@@ -145,6 +145,7 @@ public class Parser extends CasAnnotator_ImplBase {
   /**
    * Performs parsing on the given {@link CAS} object.
    */
+  @Override
   public void process(CAS cas) {
     FSIndex<AnnotationFS> sentences = cas.getAnnotationIndex(mSentenceType);
 

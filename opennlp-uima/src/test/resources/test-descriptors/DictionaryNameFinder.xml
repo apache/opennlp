@@ -25,7 +25,7 @@
     <annotatorImplementationName>opennlp.uima.namefind.DictionaryNameFinder</annotatorImplementationName>
     <analysisEngineMetaData>
         <name>Dictionary Name Finder</name>
-        <version>1.5.2-incubating</version>
+        <version>${project.version}</version>
         <vendor>Apache Software Foundation</vendor>
         <configurationParameters>
 
@@ -108,7 +108,7 @@
                 <name>NameFinderDictionary</name>
                 <description/>
                 <fileResourceSpecifier>
-                    <fileUrl>file:src/test/resources/dictionary.dic</fileUrl>
+                    <fileUrl>file:dictionary.dic</fileUrl>
                 </fileResourceSpecifier>
                 <implementationName>opennlp.uima.dictionary.DictionaryResourceImpl</implementationName>
             </externalResource>

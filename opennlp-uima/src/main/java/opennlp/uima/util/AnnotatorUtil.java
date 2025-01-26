@@ -33,7 +33,7 @@ import org.apache.uima.util.Logger;
 import opennlp.tools.dictionary.Dictionary;
 
 /**
- * This is a utility class for Annotators.
+ * Provides utility methods for Annotators.
  */
 public final class AnnotatorUtil {
 
@@ -48,10 +48,14 @@ public final class AnnotatorUtil {
    * @param name The name of the type to retrieve.
    *
    * @return The {@link Type} for the {@code name}.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Type} could be found.
    */
   public static Type getType(TypeSystem typeSystem, String name)
       throws AnalysisEngineProcessException {
+    if (typeSystem == null) {
+      throw new IllegalArgumentException("Parameter 'typeSystem' must not be null");
+    }
     Type type = typeSystem.getType(name);
 
     if (type == null) {
@@ -82,7 +86,6 @@ public final class AnnotatorUtil {
     }
   }
 
-
   /**
    * Retrieves a {@link Feature} for a specified type and {@code featureName},
    * otherwise an exception is thrown.
@@ -91,13 +94,16 @@ public final class AnnotatorUtil {
    * @param featureName The name of the feature to retrieve.
    *
    * @return The {@link Feature} if found.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Feature} did match.
    */
   public static Feature getRequiredFeature(Type type, String featureName)
       throws AnalysisEngineProcessException {
+    if (type == null) {
+      throw new IllegalArgumentException("Parameter 'type' must not be null");
+    }
 
     Feature feature = type.getFeatureByBaseName(featureName);
-
     if (feature == null) {
       throw new OpenNlpAnnotatorProcessException(
           ExceptionMessages.FEATURE_NOT_FOUND, new Object[] {type.getName(), featureName});
@@ -114,16 +120,13 @@ public final class AnnotatorUtil {
    * @param rangeType   The expected range type.
    *                    
    * @return The {@link Feature} if found.
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    * @throws OpenNlpAnnotatorProcessException Thrown if no {@link Feature} did match.
    */
-  public static Feature getRequiredFeature(Type type, String featureName,
-                                           String rangeType)
+  public static Feature getRequiredFeature(Type type, String featureName, String rangeType)
       throws AnalysisEngineProcessException {
-
     Feature feature = getRequiredFeature(type, featureName);
-
     checkFeatureType(feature, rangeType);
-
     return feature;
   }
 
@@ -142,13 +145,11 @@ public final class AnnotatorUtil {
       throws AnalysisEngineProcessException {
 
     String featureName;
-
     try {
       featureName = getRequiredStringParameter(context, featureNameParameter);
     } catch (ResourceInitializationException e) {
       throw new OpenNlpAnnotatorProcessException(e);
     }
-
     return getRequiredFeature(type, featureName);
   }
 
@@ -174,7 +175,6 @@ public final class AnnotatorUtil {
     } catch (ResourceInitializationException e) {
       throw new OpenNlpAnnotatorProcessException(e);
     }
-
     return getRequiredFeature(type, featureName, rangeTypeName);
   }
 
@@ -193,13 +193,11 @@ public final class AnnotatorUtil {
       throws AnalysisEngineProcessException {
 
     String typeName;
-
     try {
       typeName = getRequiredStringParameter(context, parameter);
     } catch (ResourceInitializationException e) {
       throw new OpenNlpAnnotatorProcessException(e);
     }
-
     return getType(typeSystem, typeName);
   }
 
@@ -216,9 +214,7 @@ public final class AnnotatorUtil {
       throws ResourceInitializationException {
 
     String value = getOptionalStringParameter(context, parameter);
-
     checkForNull(value, parameter);
-
     return value;
   }
 
@@ -236,9 +232,7 @@ public final class AnnotatorUtil {
       throws ResourceInitializationException {
 
     Integer value = getOptionalIntegerParameter(context, parameter);
-
     checkForNull(value, parameter);
-
     return value;
   }
 
@@ -256,9 +250,7 @@ public final class AnnotatorUtil {
       throws ResourceInitializationException {
 
     Float value = getOptionalFloatParameter(context, parameter);
-
     checkForNull(value, parameter);
-
     return value;
   }
 
@@ -276,9 +268,7 @@ public final class AnnotatorUtil {
       throws ResourceInitializationException {
 
     Boolean value = getOptionalBooleanParameter(context, parameter);
-
     checkForNull(value, parameter);
-
     return value;
   }
 
@@ -509,18 +499,15 @@ public final class AnnotatorUtil {
    * @param parameter The name of the parameter to retrieve.
    *
    * @return The {@link Object parameter} or {@code null} if not set.
-   * @throws ResourceInitializationException Thrown if the parameter type was not of the expected type.
    */
   private static Object getOptionalParameter(UimaContext context,
-                                             String parameter)
-      throws ResourceInitializationException {
+                                             String parameter) {
 
     Object value = context.getConfigParameterValue(parameter);
-
     Logger logger = context.getLogger();
 
-    if (logger.isLoggable(Level.INFO)) {
-      logger.log(Level.INFO, parameter + " = " +
+    if (logger.isLoggable(Level.DEBUG)) {
+      logger.log(Level.DEBUG, parameter + " = " +
           (value != null ? value.toString() : "not set"));
     }
 
@@ -557,8 +544,7 @@ public final class AnnotatorUtil {
    * @return A valid, open {@link InputStream}.
    * @throws ResourceInitializationException Thrown if the resource could not be found.
    */
-  public static InputStream getOptionalResourceAsStream(UimaContext context,
-                                                        String name)
+  public static InputStream getOptionalResourceAsStream(UimaContext context, String name)
       throws ResourceInitializationException {
 
     final InputStream inResource;
@@ -581,30 +567,20 @@ public final class AnnotatorUtil {
    * @return A valid {@link Dictionary} or {@code null} if IO errors occurred.
    * @throws ResourceInitializationException Thrown if the resource could not be found.
    */
-  public static Dictionary createOptionalDictionary(UimaContext context,
-                                                    String dictionaryParameter)
+  public static Dictionary createOptionalDictionary(UimaContext context, String dictionaryParameter)
       throws ResourceInitializationException {
 
-    String dictionaryName = AnnotatorUtil.getOptionalStringParameter(context,
-        dictionaryParameter);
+    String dictionaryName = AnnotatorUtil.getOptionalStringParameter(context, dictionaryParameter);
 
     Dictionary dictionary = null;
-
     if (dictionaryName != null) {
-
       Logger logger = context.getLogger();
-
-      try (InputStream dictIn = AnnotatorUtil.getOptionalResourceAsStream(context,
-              dictionaryName)) {
-
+      try (InputStream dictIn = AnnotatorUtil.getOptionalResourceAsStream(context, dictionaryName)) {
         if (dictIn == null) {
-          String message = "The dictionary file " + dictionaryName
-              + " does not exist!";
-
+          String message = "The dictionary file " + dictionaryName + " does not exist!";
           if (logger.isLoggable(Level.WARNING)) {
             logger.log(Level.WARNING, message);
           }
-
           return null;
         }
 

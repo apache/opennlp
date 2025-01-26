@@ -50,6 +50,7 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
 
   private Type mTokenType;
 
+  @Override
   public void initialize(UimaContext context)
       throws ResourceInitializationException {
 
@@ -59,8 +60,8 @@ abstract class AbstractDocumentCategorizer extends CasAnnotator_ImplBase {
 
     Logger mLogger = context.getLogger();
 
-    if (mLogger.isLoggable(Level.INFO)) {
-      mLogger.log(Level.INFO, "Initializing the OpenNLP Categorizer.");
+    if (mLogger.isLoggable(Level.DEBUG)) {
+      mLogger.log(Level.DEBUG, "Initializing the OpenNLP Categorizer.");
     }
 
     DoccatModel model;

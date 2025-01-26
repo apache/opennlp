@@ -109,8 +109,8 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
     Logger mLogger = context.getLogger();
 
-    if (mLogger.isLoggable(Level.INFO)) {
-      mLogger.log(Level.INFO, "Initializing the OpenNLP Chunker annotator.");
+    if (mLogger.isLoggable(Level.DEBUG)) {
+      mLogger.log(Level.DEBUG, "Initializing the OpenNLP Chunker annotator.");
     }
 
     ChunkerModel model;
@@ -172,8 +172,7 @@ public final class Chunker extends CasAnnotator_ImplBase {
 
     String[] tokens = new String[tokenAnnotationIndex.size()];
     String[] pos = new String[tokenAnnotationIndex.size()];
-    AnnotationFS[] tokenAnnotations = new AnnotationFS[tokenAnnotationIndex
-        .size()];
+    AnnotationFS[] tokenAnnotations = new AnnotationFS[tokenAnnotationIndex.size()];
 
     int index = 0;
 

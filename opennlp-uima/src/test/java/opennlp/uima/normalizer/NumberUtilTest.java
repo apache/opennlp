@@ -38,7 +38,6 @@ class NumberUtilTest {
     Assertions.assertFalse(NumberUtil.isLanguageSupported(INVALID_LANGUAGE_CODE));
   }
 
-
   @Test
   void parse_long() throws ParseException {
     String numberStr = "  1 2 3 4 5 6 7 8 9 1 0      ";
@@ -59,8 +58,8 @@ class NumberUtilTest {
   void parse_double_with_exception() throws ParseException {
     String numberStr = "     12   3456.78   910      ";
     Double doubleValue = 123456.78910;
-    IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class , () -> {
-      Number result = NumberUtil.parse(numberStr , INVALID_LANGUAGE_CODE);
+    Assertions.assertThrows(IllegalArgumentException.class , () -> {
+      NumberUtil.parse(numberStr , INVALID_LANGUAGE_CODE);
     } , "java.lang.IllegalArgumentException: Language INVALID is not supported!");
   }
 

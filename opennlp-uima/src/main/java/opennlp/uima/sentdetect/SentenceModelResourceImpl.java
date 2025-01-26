@@ -26,6 +26,7 @@ import opennlp.uima.util.AbstractModelResource;
 public class SentenceModelResourceImpl extends AbstractModelResource<SentenceModel>
     implements SentenceModelResource {
 
+  @Override
   public SentenceModel getModel() {
     return model;
   }

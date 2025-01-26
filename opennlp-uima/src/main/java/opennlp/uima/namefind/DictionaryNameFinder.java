@@ -18,9 +18,9 @@
 package opennlp.uima.namefind;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.uima.cas.CAS;
+import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.resource.ResourceAccessException;
 import org.apache.uima.resource.ResourceInitializationException;
 
@@ -66,10 +66,8 @@ public class DictionaryNameFinder extends AbstractNameFinder {
         String modelName = AnnotatorUtil.getRequiredStringParameter(context,
             UimaUtil.DICTIONARY_PARAMETER);
 
-        InputStream inModel = AnnotatorUtil.getResourceAsStream(context,
-            modelName);
-
-        nameFinderDictionary = new Dictionary(inModel);
+        nameFinderDictionary = new Dictionary(
+                AnnotatorUtil.getResourceAsStream(context, modelName));
 
       } catch (IOException ie) {
         throw new ResourceInitializationException(
@@ -77,11 +75,20 @@ public class DictionaryNameFinder extends AbstractNameFinder {
             ExceptionMessages.IO_ERROR_DICTIONARY_READING,
             new Object[] {ie.getMessage()});
       }
-
     }
 
     mNameFinder = new opennlp.tools.namefind.DictionaryNameFinder(
         nameFinderDictionary);
+  }
+
+  @Override
+  protected void postProcessAnnotations(Span[] detectedNames, AnnotationFS[] nameAnnotations) {
+    // nothing to do
+  }
+
+  @Override
+  protected void documentDone(CAS cas) {
+    // nothing to do
   }
 
   @Override

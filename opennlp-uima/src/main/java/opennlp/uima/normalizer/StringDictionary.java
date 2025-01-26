@@ -43,6 +43,7 @@ public class StringDictionary {
    * @throws IOException Thrown if IO errors occurred.
    */
   public StringDictionary(InputStream in) throws IOException {
+    this();
     DictionaryEntryPersistor.create(in, entry -> {
       String valueString = entry.attributes().getValue("value");
       put(entry.tokens(), valueString);

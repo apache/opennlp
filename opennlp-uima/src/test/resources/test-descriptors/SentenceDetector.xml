@@ -26,7 +26,7 @@
   <annotatorImplementationName>opennlp.uima.sentdetect.SentenceDetector</annotatorImplementationName>
   <analysisEngineMetaData>
     <name>Sentence Detector</name>
-    <version>1.5.2-incubating</version>
+    <version>${project.version}</version>
     <vendor>Apache Software Foundation</vendor>
     <configurationParameters>
       <configurationParameter>
@@ -41,14 +41,25 @@
         <multiValued>false</multiValued>
         <mandatory>false</mandatory>
       </configurationParameter>
+      <configurationParameter>
+        <name>opennlp.uima.ProbabilityFeature</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>false</mandatory>
+      </configurationParameter>
     </configurationParameters>
-
     <configurationParameterSettings>
 
       <nameValuePair>
         <name>opennlp.uima.SentenceType</name>
         <value>
           <string>opennlp.uima.Sentence</string>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>opennlp.uima.ProbabilityFeature</name>
+        <value>
+          <string>prob</string>
         </value>
       </nameValuePair>
     </configurationParameterSettings>
@@ -82,7 +93,7 @@
       <externalResource>
         <name>SentenceModel</name>
         <fileResourceSpecifier>
-          <fileUrl>file:test-models/en-sent.bin</fileUrl>
+          <fileUrl>file:opennlp-en-ud-ewt-sentence-1.2-2.5.0.bin</fileUrl>
         </fileResourceSpecifier>
         <implementationName>opennlp.uima.sentdetect.SentenceModelResourceImpl</implementationName>
       </externalResource>

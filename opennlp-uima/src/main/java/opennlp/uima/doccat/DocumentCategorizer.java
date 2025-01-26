@@ -36,7 +36,7 @@ public class DocumentCategorizer extends AbstractDocumentCategorizer {
 
   private Feature mCategoryFeature;
 
-
+  @Override
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
 
@@ -55,7 +55,7 @@ public class DocumentCategorizer extends AbstractDocumentCategorizer {
 
     AnnotationFS categoryAnnotation;
 
-    if (categoryIndex.size() > 0) {
+    if (!categoryIndex.isEmpty()) {
       categoryAnnotation = categoryIndex.iterator().next();
     } else {
       categoryAnnotation = tcas.createAnnotation(mCategoryType, 0,

@@ -113,8 +113,7 @@ public final class NameFinder extends AbstractNameFinder {
    * Note: Do all initialization in this method, do not use the constructor.
    */
   @Override
-  public void initialize()
-      throws ResourceInitializationException {
+  public void initialize() throws ResourceInitializationException {
 
     super.initialize();
 
@@ -136,13 +135,12 @@ public final class NameFinder extends AbstractNameFinder {
    * Initializes the type system.
    */
   @Override
-  public void typeSystemInit(TypeSystem typeSystem)
-      throws AnalysisEngineProcessException {
+  public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
 
     super.typeSystemInit(typeSystem);
 
     probabilityFeature = AnnotatorUtil.getOptionalFeatureParameter(context, mNameType,
-        UimaUtil.PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
+            UimaUtil.PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
 
     documentConfidenceType = AnnotatorUtil.getOptionalTypeParameter(context, typeSystem,
         "opennlp.uima.DocumentConfidenceType");
@@ -160,7 +158,6 @@ public final class NameFinder extends AbstractNameFinder {
     Span[] names = mNameFinder.find(tokens);
 
     double[] probs = mNameFinder.probs();
-
     for (double prob : probs) {
       documentConfidence.add(prob);
     }

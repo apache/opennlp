@@ -52,4 +52,10 @@ public final class WhitespaceTokenizer extends AbstractTokenizer {
     return opennlp.tools.tokenize.WhitespaceTokenizer.INSTANCE.
         tokenizePos(sentence.getCoveredText());
   }
+  
+  @Override
+  protected void postProcessAnnotations(Span[] detectedNames, AnnotationFS[] nameAnnotations) {
+    // nothing to do
+  }
+
 }

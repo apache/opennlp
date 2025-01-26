@@ -25,7 +25,7 @@
 	<annotatorImplementationName>opennlp.uima.postag.POSTagger</annotatorImplementationName>
 	<analysisEngineMetaData>
 		<name>POS Tagger</name>
-		<version>1.5.2-incubating</version>
+		<version>${project.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>
 
@@ -49,6 +49,13 @@
 				<multiValued>false</multiValued>
 				<mandatory>true</mandatory>
 			</configurationParameter>
+
+			<configurationParameter>
+				<name>opennlp.uima.ProbabilityFeature</name>
+				<type>String</type>
+				<multiValued>false</multiValued>
+				<mandatory>false</mandatory>
+			</configurationParameter>
 		</configurationParameters>
 		<configurationParameterSettings>
 
@@ -70,6 +77,13 @@
 				<name>opennlp.uima.POSFeature</name>
 				<value>
 					<string>pos</string>
+				</value>
+			</nameValuePair>
+
+			<nameValuePair>
+				<name>opennlp.uima.ProbabilityFeature</name>
+				<value>
+					<string>prob</string>
 				</value>
 			</nameValuePair>
 		</configurationParameterSettings>
@@ -103,7 +117,7 @@
       <externalResource>
         <name>PosModel</name>
         <fileResourceSpecifier>
-          <fileUrl>file:test-models/en-pos-maxent.bin</fileUrl>
+          <fileUrl>file:opennlp-en-ud-ewt-pos-1.2-2.5.0.bin</fileUrl>
         </fileResourceSpecifier>
         <implementationName>opennlp.uima.postag.POSModelResourceImpl</implementationName>
       </externalResource>

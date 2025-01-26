@@ -39,11 +39,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.StringList;
+import opennlp.uima.AbstractTest;
 import opennlp.uima.util.CasUtil;
 
-public class DictionaryResourceTest {
-
-  private static final String PATHNAME = "src/test/resources/test-descriptors/";
+public class DictionaryResourceTest extends AbstractTest {
 
   private static AnalysisEngine AE;
 
@@ -59,7 +58,7 @@ public class DictionaryResourceTest {
 
   private static AnalysisEngine produceAE(String descName)
       throws IOException, InvalidXMLException, ResourceInitializationException {
-    File descFile = new File(PATHNAME + descName);
+    File descFile = new File(PATH_DESCRIPTORS + "/" + descName);
     XMLInputSource in = new XMLInputSource(descFile);
     ResourceSpecifier specifier = UIMAFramework.getXMLParser()
         .parseResourceSpecifier(in);

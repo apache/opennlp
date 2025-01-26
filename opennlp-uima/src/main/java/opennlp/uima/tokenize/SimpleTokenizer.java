@@ -57,4 +57,9 @@ public final class SimpleTokenizer extends AbstractTokenizer {
   protected Span[] tokenize(CAS cas, AnnotationFS sentence) {
     return tokenizer.tokenizePos(sentence.getCoveredText());
   }
+
+  @Override
+  protected void postProcessAnnotations(Span[] detectedNames, AnnotationFS[] nameAnnotations) {
+    // nothing to do
+  }
 }

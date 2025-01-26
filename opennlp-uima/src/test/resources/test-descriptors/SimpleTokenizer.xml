@@ -22,79 +22,47 @@
 <analysisEngineDescription xmlns="http://uima.apache.org/resourceSpecifier">
 	<frameworkImplementation>org.apache.uima.java</frameworkImplementation>
 	<primitive>true</primitive>
-	<annotatorImplementationName>opennlp.uima.namefind.NameFinder</annotatorImplementationName>
+	<annotatorImplementationName>opennlp.uima.tokenize.SimpleTokenizer</annotatorImplementationName>
 	<analysisEngineMetaData>
-		<name>Person Name Finder</name>
+		<name>Tokenizer</name>
 		<version>${project.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 		<configurationParameters>
-
 			<configurationParameter>
 				<name>opennlp.uima.SentenceType</name>
 				<type>String</type>
 				<multiValued>false</multiValued>
 				<mandatory>true</mandatory>
 			</configurationParameter>
-
+			
 			<configurationParameter>
 				<name>opennlp.uima.TokenType</name>
 				<type>String</type>
 				<multiValued>false</multiValued>
 				<mandatory>true</mandatory>
 			</configurationParameter>
-
-			<configurationParameter>
-				<name>opennlp.uima.NameType</name>
-				<type>String</type>
-				<multiValued>false</multiValued>
-				<mandatory>true</mandatory>
-			</configurationParameter>
-
-			<configurationParameter>
-				<name>opennlp.uima.ProbabilityFeature</name>
-				<type>String</type>
-				<multiValued>false</multiValued>
-				<mandatory>false</mandatory>
-			</configurationParameter>
 		</configurationParameters>
-
 		<configurationParameterSettings>
-
-			<nameValuePair>
-				<name>opennlp.uima.SentenceType</name>
-				<value>
-					<string>uima.tcas.DocumentAnnotation</string>
-				</value>
-			</nameValuePair>
-
 			<nameValuePair>
 				<name>opennlp.uima.TokenType</name>
 				<value>
 					<string>opennlp.uima.Token</string>
 				</value>
 			</nameValuePair>
-
 			<nameValuePair>
-				<name>opennlp.uima.NameType</name>
+				<name>opennlp.uima.SentenceType</name>
 				<value>
-					<string>opennlp.uima.Person</string>
-				</value>
-			</nameValuePair>
-
-			<nameValuePair>
-				<name>opennlp.uima.ProbabilityFeature</name>
-				<value>
-					<string>prob</string>
+					<string>uima.tcas.DocumentAnnotation</string>
 				</value>
 			</nameValuePair>
 		</configurationParameterSettings>
-
+		
 		<typeSystemDescription>
 			<imports>
 				<import location="TypeSystem.xml" />
 			</imports>
 		</typeSystemDescription>
-
+		
 		<capabilities>
 			<capability>
 				<inputs />
@@ -104,30 +72,12 @@
 				</languagesSupported>
 			</capability>
 		</capabilities>
+		<operationalProperties>
+			<modifiesCas>true</modifiesCas>
+			<multipleDeploymentAllowed>true</multipleDeploymentAllowed>
+		</operationalProperties>
 	</analysisEngineMetaData>
 
-	<externalResourceDependencies>
-		<externalResourceDependency>
-			<key>opennlp.uima.ModelName</key>
-			<interfaceName>opennlp.uima.namefind.TokenNameFinderModelResource</interfaceName>
-		</externalResourceDependency>
-	</externalResourceDependencies>
+  <resourceManagerConfiguration/>
 	
-	<resourceManagerConfiguration>
-    <externalResources>
-      <externalResource>
-        <name>PersonModel</name>
-        <fileResourceSpecifier>
-          <fileUrl>file:en-ner-person.bin</fileUrl>
-        </fileResourceSpecifier>
-        <implementationName>opennlp.uima.namefind.TokenNameFinderModelResourceImpl</implementationName>
-      </externalResource>
-    </externalResources>
-    <externalResourceBindings>
-      <externalResourceBinding>
-        <key>opennlp.uima.ModelName</key>
-        <resourceName>PersonModel</resourceName>
-      </externalResourceBinding>
-    </externalResourceBindings>
-  </resourceManagerConfiguration>
 </analysisEngineDescription>

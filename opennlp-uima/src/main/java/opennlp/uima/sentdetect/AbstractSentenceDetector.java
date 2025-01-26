@@ -57,8 +57,8 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
 
     logger = context.getLogger();
 
-    if (logger.isLoggable(Level.INFO)) {
-      logger.log(Level.INFO, "Initializing the OpenNLP Sentence annotator.");
+    if (logger.isLoggable(Level.DEBUG)) {
+      logger.log(Level.DEBUG, "Initializing the OpenNLP Sentence annotator.");
     }
 
     isRemoveExistingAnnotations = AnnotatorUtil.getOptionalBooleanParameter(
