@@ -191,6 +191,8 @@
 		<maven.failsafe.plugin>3.5.2</maven.failsafe.plugin>
 		<maven.javadoc.plugin>3.11.2</maven.javadoc.plugin>
 		<forbiddenapis.plugin>3.8</forbiddenapis.plugin>
+		<license-maven-plugin.version>2.5.0</license-maven-plugin.version>
+
 	</properties>
 
 	<build>
@@ -453,6 +455,121 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>${license-maven-plugin.version}</version>
+				<configuration>
+					<useMissingFile>true</useMissingFile>
+					<failOnMissing>true</failOnMissing>
+					<includeTransitiveDependencies>true</includeTransitiveDependencies>
+					<fileTemplate>/org/codehaus/mojo/license/third-party-file-groupByMultiLicense.ftl
+					</fileTemplate>
+					<excludedScopes>system,test</excludedScopes>
+					<excludedGroups>${project.groupId}</excludedGroups>
+					<licenseMerges>
+						<licenseMerge>
+							Apache License, Version 2.0 |
+							Apache License, version 2.0 |
+							Apache License Version 2 |
+							Apache License Version 2.0 |
+							Apache License version 2.0 |
+							Apache 2 |
+							Apache 2.0 |
+							Apache-2.0 |
+							Apache 2.0 License |
+							Apache License, 2.0 |
+							Apache License 2 |
+							Apache License 2.0 |
+							Apache Public License 2.0 |
+							Apache Software License - Version 2.0 |
+							Apache v2 |
+							ASL, version 2 |
+							The Apache License, Version 2.0 |
+							The Apache Software License, Version 2.0
+						</licenseMerge>
+						<licenseMerge>
+							Apache License |
+							Apache Software Licenses
+						</licenseMerge>
+						<licenseMerge>
+							BSD License |
+							BSD license |
+							BSD licence |
+							BSD |
+							The BSD License
+						</licenseMerge>
+						<licenseMerge>
+							BSD 2-Clause License |
+							BSD 2-Clause license |
+						</licenseMerge>
+						<licenseMerge>
+							BSD 3-Clause License |
+							BSD 3-Clause |
+							BSD 3-clause |
+							BSD-3-Clause |
+							The BSD 3-Clause License |
+							New BSD License |
+							New BSD license
+						</licenseMerge>
+						<licenseMerge>
+							Common Development and Distribution License (CDDL) v1.0 |
+							COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0 |
+							CDDL 1.0
+						</licenseMerge>
+						<licenseMerge>
+							Common Development and Distribution License (CDDL) v1.1 |
+							COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1 |
+							CDDL 1.1 |
+							Common Development and Distribution License (CDDL), Version 1.1
+						</licenseMerge>
+						<licenseMerge>
+							Common Development and Distribution License |
+							<!-- Multilicense, choosing CDDL -->
+							CDDL+GPL |
+							CDDL+GPL License |
+							CDDL + GPLv2 with classpath exception
+						</licenseMerge>
+						<licenseMerge>
+							Eclipse Public License, Version 1.0 |
+							Eclipse Public License 1.0 |
+							Eclipse Public License - v 1.0
+						</licenseMerge>
+						<licenseMerge>
+							Eclipse Public License, Version 2.0 |
+							EPL-2.0 |
+							EPL 2.0
+						</licenseMerge>
+						<licenseMerge>
+							Eclipse Distribution License, Version 1.0 |
+							Eclipse Distribution License - v 1.0 |
+							EDL 1.0
+						</licenseMerge>
+						<licenseMerge>
+							MIT License |
+							The MIT License |
+							MIT license |
+							MIT X11 License |
+							MIT
+						</licenseMerge>
+						<licenseMerge>
+							The GNU General Public License (GPL), Version 2, With Classpath Exception |
+							GPL2 w/ CPE
+						</licenseMerge>
+						<licenseMerge>
+							GNU Lesser General Public License (LGPL), Version 2.1 |
+							LGPL, version 2.1 |
+							GNU Lesser General Public License Version 2.1 |
+							GNU Lesser General Public License, version 2.1
+						</licenseMerge>
+						<licenseMerge>
+							Common Public License Version 1.0 |
+							Common Public License - v 1.0
+						</licenseMerge>
+					</licenseMerges>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

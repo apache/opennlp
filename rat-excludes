@@ -17,6 +17,7 @@
    under the License.
 -->
 
+src/license/NOTICE.template
 src/test/resources/opennlp/tools/*/*.txt
 src/test/resources/opennlp/tools/*/*.sample
 src/test/resources/opennlp/tools/*/*.txt

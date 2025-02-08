@@ -1,5 +1,5 @@
 Apache OpenNLP
-Copyright 2021-2024 The Apache Software Foundation
+Copyright 2021-2025 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -14,8 +14,8 @@ http://snowball.tartarus.org/
 
 ============================================================================
 
-Wordpiece tokenizer
-https://github.com/robrua/easy-bert
+The Wordpiece tokenizer in opennlp-tools/main/java/opennlp/tools/tokenize
+is taken from https://github.com/robrua/easy-bert license under
 
 The MIT License (MIT)
 
@@ -41,55 +41,31 @@ SOFTWARE.
 
 ============================================================================
 
-ONNX Runtime
+List of third-party dependencies grouped by their license type.
 
-MIT License
 
-Copyright (c) Microsoft Corporation
+    Apache License, Version 2.0
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+        * Apache Log4j API (org.apache.logging.log4j:log4j-api:2.24.3 - https://logging.apache.org/log4j/2.x/log4j/log4j-api/)
+        * Apache Log4j Core (org.apache.logging.log4j:log4j-core:2.24.3 - https://logging.apache.org/log4j/2.x/log4j/log4j-core/)
+        * Apache UIMA Base: uimaj-core (org.apache.uima:uimaj-core:3.6.0 - https://uima.apache.org)
+        * HPPC Collections (com.carrotsearch:hppc:0.7.2 - http://labs.carrotsearch.com/hppc.html/hppc)
+        * jcommander (com.beust:jcommander:1.78 - https://jcommander.org)
+        * SLF4J 2 Provider for Log4j API (org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3 - https://logging.apache.org/log4j/2.x/log4j/log4j-slf4j2-impl/)
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+    BSD License
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+        * Morfologik Command Line Tools (org.carrot2:morfologik-tools:2.1.9 - http://morfologik.blogspot.com/morfologik-tools/)
+        * Morfologik FSA (Builder) (org.carrot2:morfologik-fsa-builders:2.1.9 - http://morfologik.blogspot.com/morfologik-fsa-builders/)
+        * Morfologik FSA (Traversal) (org.carrot2:morfologik-fsa:2.1.9 - http://morfologik.blogspot.com/morfologik-fsa/)
+        * Morfologik Stemming APIs (org.carrot2:morfologik-stemming:2.1.9 - http://morfologik.blogspot.com/morfologik-stemming/)
 
-============================================================================
+    MIT License
 
-SLF4J API
-https://github.com/qos-ch/slf4j
+        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime_gpu:1.20.0 - https://microsoft.github.io/onnxruntime/)
+        * onnx-runtime (com.microsoft.onnxruntime:onnxruntime:1.20.0 - https://microsoft.github.io/onnxruntime/)
+        * SLF4J API Module (org.slf4j:slf4j-api:2.0.16 - http://www.slf4j.org)
 
-MIT License
+    The MIT License (MIT)
 
-Copyright (c) 2004-2022 QOS.ch Sarl (Switzerland)
-All rights reserved.
-
-Permission is hereby granted, free  of charge, to any person obtaining
-a  copy  of this  software  and  associated  documentation files  (the
-"Software"), to  deal in  the Software without  restriction, including
-without limitation  the rights to  use, copy, modify,  merge, publish,
-distribute,  sublicense, and/or sell  copies of  the Software,  and to
-permit persons to whom the Software  is furnished to do so, subject to
-the following conditions:
-
-The  above  copyright  notice  and  this permission  notice  shall  be
-included in all copies or substantial portions of the Software.
-
-THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
-EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
-MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+        * ClassGraph (io.github.classgraph:classgraph:4.8.179 - https://github.com/classgraph/classgraph)
