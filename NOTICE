@@ -15,7 +15,7 @@ http://snowball.tartarus.org/
 ============================================================================
 
 The Wordpiece tokenizer in opennlp-tools/main/java/opennlp/tools/tokenize
-is taken from https://github.com/robrua/easy-bert license under
+is taken from https://github.com/robrua/easy-bert licensed under
 
 The MIT License (MIT)
 
@@ -40,7 +40,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ============================================================================
-
 List of third-party dependencies grouped by their license type.
 
 
