@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-public class CasUtil {
+public final class CasUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(CasUtil.class);
 

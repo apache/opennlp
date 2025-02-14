@@ -42,10 +42,8 @@ public abstract class AbstractModelResource<T> implements SharedResourceObject {
     try {
       model = loadModel(resource.getInputStream());
     } catch (IOException e) {
-      throw new ResourceInitializationException(
-          ExceptionMessages.MESSAGE_CATALOG,
-          ExceptionMessages.IO_ERROR_MODEL_READING, new Object[] {
-              e.getMessage()}, e);
+      throw new ResourceInitializationException(ExceptionMessages.MESSAGE_CATALOG,
+              ExceptionMessages.IO_ERROR_MODEL_READING, new Object[] {e.getMessage()}, e);
     }
   }
 }

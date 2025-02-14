@@ -25,7 +25,7 @@
 	<annotatorImplementationName>opennlp.uima.namefind.NameFinder</annotatorImplementationName>
 	<analysisEngineMetaData>
 		<name>Time Name Finder</name>
-		<version>1.5.2-incubating</version>
+		<version>${project.version}</version>
 		<vendor>Apache Software Foundation</vendor>
 
 		<configurationParameters>
@@ -105,7 +105,7 @@
       <externalResource>
         <name>TimeModel</name>
         <fileResourceSpecifier>
-          <fileUrl>file:test-models/en-ner-time.bin</fileUrl>
+          <fileUrl>file:en-ner-time.bin</fileUrl>
         </fileResourceSpecifier>
         <implementationName>opennlp.uima.namefind.TokenNameFinderModelResourceImpl</implementationName>
       </externalResource>

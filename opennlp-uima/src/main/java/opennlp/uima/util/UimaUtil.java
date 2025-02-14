@@ -27,7 +27,7 @@ import org.apache.uima.cas.Type;
 import org.apache.uima.cas.text.AnnotationFS;
 
 /**
- * This is a util class for uima operations.
+ * Defines constants and provides utility methods for uima operations.
  */
 public final class UimaUtil {
 
@@ -88,13 +88,21 @@ public final class UimaUtil {
    *
    * @param cas The {@link CAS} to use.
    * @param containerAnnotation The {@link AnnotationFS} of the container.
-   * @param removeAnnotationType The {@link Type type} to remove annotations for.
+   * @param type The {@link Type type} to remove annotations for.
+   *
+   * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public static void removeAnnotations(CAS cas,
-      AnnotationFS containerAnnotation, Type removeAnnotationType) {
+      AnnotationFS containerAnnotation, Type type) {
 
-    FSIndex<AnnotationFS> allRemoveAnnotations = cas
-        .getAnnotationIndex(removeAnnotationType);
+    if (cas == null) {
+      throw new IllegalArgumentException("Parameter 'cas' must not be null");
+    }
+    if (type == null) {
+      throw new IllegalArgumentException("Parameter 'type' must not be null");
+    }
+
+    FSIndex<AnnotationFS> allRemoveAnnotations = cas.getAnnotationIndex(type);
 
     ContainingConstraint containingConstraint = new ContainingConstraint(
         containerAnnotation);

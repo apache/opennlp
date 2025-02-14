@@ -24,8 +24,7 @@ import org.apache.uima.cas.text.AnnotationFS;
 /**
  * Checks two {@link AnnotationFS annotations} for equality.
  */
-public class AnnotationComparator implements Comparator<AnnotationFS>
-{
+public class AnnotationComparator implements Comparator<AnnotationFS> {
 
   /**
    * Compares the start indexes of the annotations.
@@ -35,6 +34,7 @@ public class AnnotationComparator implements Comparator<AnnotationFS>
    *
    * @return 0 if equals,  &lt; 0 if before and &gt; 0 if after
    */
+  @Override
   public int compare(AnnotationFS a, AnnotationFS b) {
     return a.getBegin() - b.getBegin();
   }

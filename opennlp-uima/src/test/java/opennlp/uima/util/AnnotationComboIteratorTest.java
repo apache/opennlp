@@ -58,11 +58,9 @@ public class AnnotationComboIteratorTest {
     List<List<String>> tokensBySentence = new ArrayList<>();
 
     for (AnnotationIteratorPair annotationIteratorPair : comboIterator) {
-
       final List<String> tokens = new ArrayList<>();
 
-      for (AnnotationFS tokenAnnotation : annotationIteratorPair
-          .getSubIterator()) {
+      for (AnnotationFS tokenAnnotation : annotationIteratorPair.getSubIterator()) {
         tokens.add(tokenAnnotation.getCoveredText());
       }
 

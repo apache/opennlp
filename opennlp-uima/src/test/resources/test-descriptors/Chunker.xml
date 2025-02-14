@@ -25,7 +25,8 @@
   <annotatorImplementationName>opennlp.uima.chunker.Chunker</annotatorImplementationName>
   <analysisEngineMetaData>
     <name>Chunker</name>
-    <version>1.5.2-incubating</version>
+    <description/>
+    <version>${project.version}</version>
     <vendor>Apache Software Foundation</vendor>
     <configurationParameters>
 
@@ -131,7 +132,7 @@
       <externalResource>
         <name>ChunkerModel</name>
         <fileResourceSpecifier>
-          <fileUrl>file:test-models/en-chunker.bin</fileUrl>
+          <fileUrl>file:en-chunker.bin</fileUrl>
         </fileResourceSpecifier>
         <implementationName>opennlp.uima.chunker.ChunkerModelResourceImpl</implementationName>
       </externalResource>

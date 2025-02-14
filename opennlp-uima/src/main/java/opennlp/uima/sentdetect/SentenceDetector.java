@@ -76,6 +76,7 @@ public final class SentenceDetector extends AbstractSentenceDetector {
    * <p>
    * Note: Do all initialization in this method, do not use the constructor.
    */
+  @Override
   public void initialize(UimaContext context)
       throws ResourceInitializationException {
 
@@ -98,14 +99,14 @@ public final class SentenceDetector extends AbstractSentenceDetector {
   /**
    * Initializes the type system.
    */
+  @Override
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
 
     super.typeSystemInit(typeSystem);
 
     probabilityFeature = AnnotatorUtil.getOptionalFeatureParameter(context,
-        sentenceType, UimaUtil.PROBABILITY_FEATURE_PARAMETER,
-        CAS.TYPE_NAME_DOUBLE);
+        sentenceType, UimaUtil.PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
   }
 
   @Override
@@ -128,6 +129,7 @@ public final class SentenceDetector extends AbstractSentenceDetector {
   /**
    * Releases allocated resources.
    */
+  @Override
   public void destroy() {
     // dereference model to allow garbage collection
     sentenceDetector = null;

@@ -20,19 +20,26 @@
 -->
 
 <typeSystemDescription xmlns="http://uima.apache.org/resourceSpecifier">
-	<name>OpenNLP TypeSystem</name>
+	<name>Apache OpenNLP TypeSystem</name>
 	<description>
 		This is the default OpenNLP type system. All the sample
 		descriptors reference the types in this type system. To replace it against
 		a custom type system change the mapping in the descriptors to the
 		custom types and reference the custom type system.
 	</description>
-	<version>1.5.2-incubating</version>
+	<version>${project.version}</version>
 	<vendor>Apache Software Foundation</vendor>
 	<types>
 		<typeDescription>
 			<name>opennlp.uima.Sentence</name>
 			<supertypeName>uima.tcas.Annotation</supertypeName>
+			<features>
+				<featureDescription>
+					<name>prob</name>
+					<description>Probability</description>
+					<rangeTypeName>uima.cas.Double</rangeTypeName>
+				</featureDescription>
+			</features>
 		</typeDescription>
 
 		<typeDescription>
@@ -44,6 +51,11 @@
 					<name>pos</name>
 					<description>Part of speech</description>
 					<rangeTypeName>uima.cas.String</rangeTypeName>
+				</featureDescription>
+				<featureDescription>
+					<name>prob</name>
+					<description>Probability</description>
+					<rangeTypeName>uima.cas.Double</rangeTypeName>
 				</featureDescription>
 			</features>
 		</typeDescription>
@@ -63,6 +75,13 @@
 		<typeDescription>
 			<name>opennlp.uima.Person</name>
 			<supertypeName>uima.tcas.Annotation</supertypeName>
+			<features>
+				<featureDescription>
+					<name>prob</name>
+					<description>Probability</description>
+					<rangeTypeName>uima.cas.Double</rangeTypeName>
+				</featureDescription>
+			</features>
 		</typeDescription>
 
 		<typeDescription>
@@ -93,6 +112,28 @@
 		<typeDescription>
 			<name>opennlp.uima.Percentage</name>
 			<supertypeName>uima.tcas.Annotation</supertypeName>
+		</typeDescription>
+
+		<typeDescription>
+			<name>opennlp.uima.Parse</name>
+			<supertypeName>uima.tcas.Annotation</supertypeName>
+			<features>
+				<featureDescription>
+					<name>parseType</name>
+					<description>Type of the parse node</description>
+					<rangeTypeName>uima.cas.String</rangeTypeName>
+				</featureDescription>
+				<featureDescription>
+					<name>children</name>
+					<description>Leaf nodes</description>
+					<rangeTypeName>uima.cas.FSArray</rangeTypeName>
+				</featureDescription>
+				<featureDescription>
+					<name>prob</name>
+					<description>Leaf nodes</description>
+					<rangeTypeName>uima.cas.Double</rangeTypeName>
+				</featureDescription>
+			</features>
 		</typeDescription>
 	</types>
 </typeSystemDescription>

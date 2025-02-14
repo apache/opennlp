@@ -17,6 +17,7 @@
 
 package opennlp.uima.util;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -33,7 +34,7 @@ import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
 
 /**
- * This class contains util methods for the maxent library.
+ * Provides utility methods for OpenNLP's maxent library.
  */
 final public class OpennlpUtil {
   
@@ -49,8 +50,13 @@ final public class OpennlpUtil {
    * @param modelFile The {@link File} to serialize into.
    * @throws IOException Thrown if IO errors occurred.
    */
-  public static void serialize(BaseModel model, File modelFile)
-      throws IOException {
+  public static void serialize(BaseModel model, File modelFile) throws IOException {
+    if (model == null) {
+      throw new IllegalArgumentException("Parameter 'model' must not be null");
+    }
+    if (modelFile == null) {
+      throw new IllegalArgumentException("Parameter 'modelFile' must not be null");
+    }
     try (OutputStream fileOut = new FileOutputStream(modelFile);
         OutputStream modelOut = new BufferedOutputStream(fileOut)) {
       model.serialize(modelOut);
@@ -80,34 +86,36 @@ final public class OpennlpUtil {
   }
 
   /**
-   * Loads data from a given {@link File}.
+   * Loads data from the specified training parameters {@link File file}.
    *
-   * @param inFileValue The name of the {@link File} to read bytes from.
+   * @param trainingFilePath The path to the {@link File} to load the training parameters from.
    * @param isSequenceTrainingAllowed Whether the {@link TrainerFactory.TrainerType#SEQUENCE_TRAINER}
    *                                  method is allowed or not.
    * @return The {@link TrainingParameters} that have been read.
    *
-   * @throws ResourceInitializationException Thrown if IO errors occurred or the {@code inFileValue}
+   * @throws ResourceInitializationException Thrown if IO errors occurred or the {@code trainingFilePath}
    *                                         does not reference a valid training parameters file.
    */
-  public static TrainingParameters loadTrainingParams(String inFileValue,
+  public static TrainingParameters loadTrainingParams(String trainingFilePath,
       boolean isSequenceTrainingAllowed) throws ResourceInitializationException {
 
     TrainingParameters params;
-    if (inFileValue != null) {
-      try (InputStream paramsIn = new FileInputStream(inFileValue)) {
+    if (trainingFilePath != null) {
+      try (InputStream paramsIn = new BufferedInputStream(new FileInputStream(trainingFilePath))) {
         params = new opennlp.tools.util.TrainingParameters(paramsIn);
       } catch (IOException e) {
         throw new ResourceInitializationException(e);
       }
 
       if (!TrainerFactory.isValid(params)) {
-        throw new ResourceInitializationException(new Exception("Training parameters file is invalid!"));
+        throw new ResourceInitializationException(
+                new RuntimeException("Training parameters file is invalid!"));
       }
 
       TrainerFactory.TrainerType trainerType = TrainerFactory.getTrainerType(params);
       if (!isSequenceTrainingAllowed && TrainerFactory.TrainerType.SEQUENCE_TRAINER.equals(trainerType)) {
-        throw new ResourceInitializationException(new Exception("Sequence training is not supported!"));
+        throw new ResourceInitializationException(
+                new RuntimeException("Sequence training is not supported!"));
       }
     }
     else {

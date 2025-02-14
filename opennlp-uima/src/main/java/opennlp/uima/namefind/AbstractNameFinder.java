@@ -77,8 +77,8 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
 
     mLogger = context.getLogger();
 
-    if (mLogger.isLoggable(Level.INFO)) {
-      mLogger.log(Level.INFO, "Initializing the " + name + ".");
+    if (mLogger.isLoggable(Level.DEBUG)) {
+      mLogger.log(Level.DEBUG, "Initializing the " + name + ".");
     }
 
     isRemoveExistingAnnotations = AnnotatorUtil.getOptionalBooleanParameter(
@@ -133,21 +133,19 @@ abstract class AbstractNameFinder extends CasAnnotator_ImplBase {
       mNameTypeMapping = Collections.unmodifiableMap(nameTypeMap);
     }
 
-    if (mNameType == null && mNameTypeMapping.size() == 0) {
+    if (mNameType == null && mNameTypeMapping.isEmpty()) {
       throw new AnalysisEngineProcessException(
           new Exception("No name type or valid name type mapping configured!"));
     }
   }
 
-  protected void postProcessAnnotations(Span[] detectedNames,
-      AnnotationFS[] nameAnnotations) {
-  }
+  protected abstract void postProcessAnnotations(Span[] detectedNames,
+      AnnotationFS[] nameAnnotations);
 
   /**
    * Called if the current document is completely processed.
    */
-  protected void documentDone(CAS cas) {
-  }
+  protected abstract void documentDone(CAS cas);
 
   protected abstract Span[] find(CAS cas, String[] tokens);
 

@@ -91,9 +91,8 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
         UimaUtil.TOKEN_TYPE_PARAMETER);
   }
 
-  protected void postProcessAnnotations(Span[] tokens,
-                                        AnnotationFS[] tokenAnnotations) {
-  }
+  protected abstract void postProcessAnnotations(Span[] tokens,
+                                        AnnotationFS[] tokenAnnotations);
 
   protected abstract Span[] tokenize(CAS cas, AnnotationFS sentence);
 
@@ -116,8 +115,7 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
       AnnotationFS[] tokenAnnotations = new AnnotationFS[tokenSpans.length];
 
       for (int i = 0; i < tokenSpans.length; i++) {
-        tokenAnnotations[i] = cas
-            .createAnnotation(tokenType,
+        tokenAnnotations[i] = cas.createAnnotation(tokenType,
                 sentenceOffset + tokenSpans[i].getStart(), sentenceOffset
                     + tokenSpans[i].getEnd());
 

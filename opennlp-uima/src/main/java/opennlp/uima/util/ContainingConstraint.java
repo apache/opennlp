@@ -17,6 +17,7 @@
 
 package opennlp.uima.util;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -28,6 +29,7 @@ import org.apache.uima.cas.text.AnnotationFS;
  * Checks if an {@link AnnotationFS} is contained by the given AnnotationFS.
  */
 public final class ContainingConstraint implements FSMatchConstraint {
+  @Serial
   private static final long serialVersionUID = 8393109549729168545L;
 
   private final Collection<AnnotationFS> mContainingAnnotations = new LinkedList<>();

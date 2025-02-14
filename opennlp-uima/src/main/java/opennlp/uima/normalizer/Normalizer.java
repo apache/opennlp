@@ -43,7 +43,7 @@ import opennlp.uima.util.UimaUtil;
 
 /**
  * The Normalizer tries the structure annotations. The structured value
- * is than assigned to a field of the annotation.
+ * is then assigned to a field of the annotation.
  * <p>
  * The process depends on the
  * <p>
@@ -108,6 +108,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
    *
    * @implNote Do all initialization in this method, do not use the constructor.
    */
+  @Override
   public void initialize(UimaContext context) throws ResourceInitializationException {
 
     super.initialize(context);
@@ -116,8 +117,8 @@ public class Normalizer extends CasAnnotator_ImplBase {
 
     mLogger = context.getLogger();
 
-    if (mLogger.isLoggable(Level.INFO)) {
-      mLogger.log(Level.INFO, "Initializing the OpenNLP Normalizer annotator.");
+    if (mLogger.isLoggable(Level.DEBUG)) {
+      mLogger.log(Level.DEBUG, "Initializing the OpenNLP Normalizer annotator.");
     }
 
     try {
@@ -141,6 +142,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
    * Initializes the type system.
    * @param typeSystem type system to initialize
    */
+  @Override
   public void typeSystemInit(TypeSystem typeSystem)
       throws AnalysisEngineProcessException {
 
@@ -165,6 +167,7 @@ public class Normalizer extends CasAnnotator_ImplBase {
     }
   }
 
+  @Override
   public void process(CAS tcas) {
 
     FSIndex<AnnotationFS> sentenceIndex = tcas.getAnnotationIndex(mNameType);
@@ -203,8 +206,8 @@ public class Normalizer extends CasAnnotator_ImplBase {
         try {
           number = NumberUtil.parse(text, language);
         } catch (ParseException e) {
-          if (mLogger.isLoggable(Level.INFO)) {
-            mLogger.log(Level.INFO, "Invalid number format: " + text);
+          if (mLogger.isLoggable(Level.WARN)) {
+            mLogger.log(Level.WARN, "Invalid number format: " + text);
           }
           continue;
         }
