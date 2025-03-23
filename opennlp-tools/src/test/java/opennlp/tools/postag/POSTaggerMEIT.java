@@ -19,15 +19,18 @@ package opennlp.tools.postag;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import opennlp.tools.tokenize.ThreadSafeTokenizerME;
 import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.TokenizerME;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,19 +38,34 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class POSTaggerMEIT {
 
+  private static final String CATALAN = "ca";
+  private static final String ENGLISH = "en";
+  private static final String GERMAN = "de";
+  private static final String POLISH = "pl";
+  private static final String PORTUGUESE = "pt";
+
+  private static final Map<String, Tokenizer> TOKENIZERS = new HashMap<>();
+  private static final Map<String, POSTagger> TAGGERS = new HashMap<>();
+
   private static final boolean debug = false;
+
+  @BeforeAll
+  public static void initResources() throws IOException {
+    List<String> langs = List.of(CATALAN, ENGLISH, GERMAN, POLISH, PORTUGUESE);
+    for (String langCode: langs) {
+      TOKENIZERS.put(langCode, new ThreadSafeTokenizerME(langCode));
+      TAGGERS.put(langCode, new ThreadSafePOSTaggerME(langCode));
+    }
+  }
 
   @ParameterizedTest(name = "Verify \"{0}\" sample")
   @MethodSource(value = "provideData")
-  void testPOSTagger(String langCode, String input, String[] expectedTags) throws IOException {
+  void testPOSTagger(String langCode, int allowedDelta, String input, String[] expectedTags) {
 
-    Tokenizer tokenizer = new TokenizerME(langCode);
-    POSTagger tagger = new POSTaggerME(langCode);
-
-    String[] tokens = tokenizer.tokenize(input);
+    final String[] tokens = TOKENIZERS.get(langCode).tokenize(input);
     assertNotNull(tokens);
     assertEquals(expectedTags.length, tokens.length);
-    String[] tags = tagger.tag(tokens);
+    final String[] tags = TAGGERS.get(langCode).tag(tokens);
     assertNotNull(tags);
     assertEquals(expectedTags.length, tags.length);
     StringBuilder fullyTagged = new StringBuilder();
@@ -71,24 +89,23 @@ public class POSTaggerMEIT {
       if (debug) {
         System.out.println(sb);
       }
-      // assertEquals(expectedTags[i], tags[i]);
     }
-    assertTrue(incorrectTagsPositions.size() <= 1);
+    assertTrue(incorrectTagsPositions.size() <= allowedDelta);
   }
 
   private static Stream<Arguments> provideData() {
     return Stream.of(
       // see: Dev Manual
-      Arguments.of("en",
+      Arguments.of(ENGLISH, 0,
         "Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .",
           new String[]{"PROPN", "PROPN", "AUX", "NOUN", "ADP", "ADJ", "PROPN", "PUNCT", "DET", "PROPN",
             "VERB", "NOUN", "PUNCT"}),
       // see: 'de-ud-train-sample.conllu'
-      Arguments.of("de",
+      Arguments.of(GERMAN, 0,
         "Fachlich kompetent, sehr gute Beratung und ein freundliches Team .",
-          new String[]{"ADV", "ADJ", "PUNCT", "ADV", "ADJ", "NOUN", "CCONJ", "DET", "ADJ", "NOUN", "PUNCT"}),
+          new String[]{"ADJ", "ADJ", "PUNCT", "ADV", "ADJ", "NOUN", "CCONJ", "DET", "ADJ", "NOUN", "PUNCT"}),
       // see: 'pt-br-ud-sample.conllu'
-      Arguments.of("pt",
+      Arguments.of(PORTUGUESE, 1,
         "Numa reunião entre representantes da Secretaria da Criança do DF ea juíza da Vara de Execuções de " +
         "Medidas Socioeducativas, Lavínia Tupi Vieira Fonseca, ficou acordado que dos 25 internos, " +
         "12 serão internados na Unidade de Planaltina e os outros 13 devem retornar para a Unidade do " +
@@ -100,9 +117,29 @@ public class POSTaggerMEIT {
             "PUNCT", "NUM", "AUX", "VERB", "ADP+DET", "PROPN", "ADP", "PROPN", "CCONJ", "DET", "DET", "NUM",
             "AUX", "VERB", "ADP", "DET", "PROPN", "ADP+DET", "PROPN", "ADP+DET", "PROPN", "PUNCT", "ADJ",
             "PROPN", "PUNCT"}),
-      // see: @kinow
-      Arguments.of("ca",
-      "Un gran embossament d'aire fred es comença a despenjar cap al centre d'Europa.",
+      // via @alsmolarczyk, original by Lem, Stanisław (1961/2022):
+      // Solaris, Wydawnictwo Literackie, Kraków, S. 81.
+      Arguments.of(POLISH, 1,
+        "Zerwałem się ze stosu zwiniętych spadochronów i pobiegłem prosto do radiostacji .",
+          new String[]{"VERB+AUX", "PART", "ADP", "NOUN", "ADJ", "NOUN", "CCONJ", "VERB+AUX", "ADV", "ADP",
+            "NOUN", "PUNCT"}),
+      // via @alsmolarczyk, original by Tokarczuk, Olga (2009/2021):
+      // Prowadź swój pług przez kości umarłych, Wydawnictwo Literackie, Kraków, S. 43-44.
+      Arguments.of(POLISH, 0,
+        "Więzienie nie tkwi na zewnątrz, ale jest w środku każdego z nas .",
+          new String[]{"NOUN", "PART", "VERB", "ADP", "ADV", "PUNCT", "CCONJ", "VERB", "ADP", "NOUN",
+            "DET", "ADP", "PRON", "PUNCT"}),
+      // via @alsmolarczyk, original by Zalega, Dariusz (2019):
+      // Śląsk zbuntowany, Wydawnictwo Czarne, Wołowiec, S. 96.
+      Arguments.of(POLISH, 0,
+        "Działacze stosowali też różne formy nacisku na polski konsulat , żeby zaopiekował się " +
+        "bezrobotnymi z Polski albo dał im choćby na bezpłatny bilet do kraju .",
+          new String[]{"NOUN", "VERB", "PART", "ADJ", "NOUN", "NOUN", "ADP", "ADJ", "NOUN", "PUNCT", "SCONJ", 
+            "VERB", "PRON", "ADJ", "ADP", "PROPN", "CCONJ", "VERB", "PRON", "PART", "ADP", "ADJ", "NOUN", 
+            "ADP", "NOUN", "PUNCT"}),
+      // via: @kinow
+      Arguments.of(CATALAN, 1,
+        "Un gran embossament d'aire fred es comença a despenjar cap al centre d'Europa.",
           // OpenNLP, different at: idx pos 2, 3, 5, and 13(+14) -> however, only pos 5 is "wrong" (ref)
           new String[]{"DET", "ADJ", "NOUN", "ADP", "NOUN", "ADJ", "PRON", "VERB", "ADP", "VERB", "NOUN",
               "ADP+DET", "NOUN", "ADP", "PROPN", "PUNCT"})
@@ -115,7 +152,6 @@ public class POSTaggerMEIT {
         // "NOUN", "PROPN", "PROPN", "PUNCT"
         // ok! ,  ok! ,  ??? ,  ???   ,  ok!  ,  ok! ,  ok!  ,  ok!  ,  ok! ,  ok!  ,  ok!  ,  ok!  +  ok! ,
         // ok!  ,  ???   ,  ok!   ,  ok!
-
     );
   }
 }
