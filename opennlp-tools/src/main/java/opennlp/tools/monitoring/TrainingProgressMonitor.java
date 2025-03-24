@@ -1,5 +1,7 @@
 package opennlp.tools.monitoring;
 
+/** Monitors training progress of an {@link opennlp.tools.ml.model.AbstractModel} */
+
 public interface TrainingProgressMonitor {
 
     void finishedIteration(int iteration, int numberCorrectEvents, int totalEvents);

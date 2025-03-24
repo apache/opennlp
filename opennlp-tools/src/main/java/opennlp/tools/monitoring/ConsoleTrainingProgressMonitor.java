@@ -10,7 +10,7 @@ import java.util.Objects;
 import static opennlp.tools.monitoring.StopCriteria.TRAINING_FINISHED_DEFAULT_MSG;
 
 /**
- * Publishes Training progress to console.
+ * Publishes ML model's Training progress to console.
  */
 public class ConsoleTrainingProgressMonitor implements TrainingProgressMonitor {
 
