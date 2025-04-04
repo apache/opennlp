@@ -28,6 +28,9 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.MutableContext;
+import opennlp.tools.monitoring.ConsoleTrainingProgressMonitor;
+import opennlp.tools.monitoring.PrevNIterationAccuracyLessThanTolerance;
+import opennlp.tools.monitoring.TrainingProgressMonitor;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -257,7 +260,9 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
     logger.info("Computing model parameters...");
 
-    MutableContext[] finalParameters = findParameters(iterations, useAverage);
+
+    //@TODO : Ideally an instance of TrainingProgressMonitor will be introduced via Trainer Factory.
+    MutableContext[] finalParameters = findParameters(iterations, useAverage, new ConsoleTrainingProgressMonitor());
 
     logger.info("...done.");
 
@@ -265,7 +270,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     return new PerceptronModel(finalParameters, predLabels, outcomeLabels);
   }
 
-  private MutableContext[] findParameters(int iterations, boolean useAverage) {
+  private MutableContext[] findParameters(int iterations, boolean useAverage, TrainingProgressMonitor progMon) {
 
     logger.info("Performing {} iterations.", iterations);
 
@@ -299,6 +304,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     double prevAccuracy1 = 0.0;
     double prevAccuracy2 = 0.0;
     double prevAccuracy3 = 0.0;
+    var stopCriteria = new PrevNIterationAccuracyLessThanTolerance(tolerance);
 
     // A counter for the denominator for averaging.
     int numTimesSummed = 0;
@@ -352,7 +358,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       // Calculate the training accuracy and display.
       double trainingAccuracy = (double) numCorrect / numEvents;
       if (i < 10 || (i % 10) == 0)
-        logger.info("{}: ({}/{}) {}", i, numCorrect, numEvents, trainingAccuracy);
+        progMon.finishedIteration(i, numCorrect, numEvents);
 
       // TODO: Make averaging configurable !!!
 
@@ -370,10 +376,10 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       // If the tolerance is greater than the difference between the
       // current training accuracy and all of the previous three
       // training accuracies, stop training.
-      if (StrictMath.abs(prevAccuracy1 - trainingAccuracy) < tolerance
-          && StrictMath.abs(prevAccuracy2 - trainingAccuracy) < tolerance
-          && StrictMath.abs(prevAccuracy3 - trainingAccuracy) < tolerance) {
-        logger.warn("Stopping: change in training set accuracy less than {}", tolerance);
+      if (stopCriteria.test(prevAccuracy1 - trainingAccuracy,
+          prevAccuracy2 - trainingAccuracy,
+          prevAccuracy3 - trainingAccuracy)) {
+        progMon.finishedTraining(iterations, numCorrect, numEvents, stopCriteria);
         break;
       }
 
@@ -383,6 +389,14 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       prevAccuracy3 = trainingAccuracy;
     }
 
+    /*At this point, all iterations have completed successfully. StopCriteria is not of use now.
+     * @Todo Instead of using null StopCriteria, we can define a default implementation of StopCriteria,
+     * which stops when the expected number of iterations are exhausted.
+     */
+    if (!progMon.isTrainingFinished()) {
+      progMon.finishedTraining(iterations, -1, numEvents, null);
+    }
+    progMon.display();
     // Output the final training stats.
     trainingStats(evalParams);
 
