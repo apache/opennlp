@@ -114,7 +114,7 @@ After cloning the repository go into the destination directory and run:
 mvn install
 ```
 
-### Additional Developement Information
+### Additional Development Information
 
 - [Building and Integrating Snowball Stemmer for OpenNLP](dev/Snowball-Stemmer.md)
 
