@@ -15,35 +15,20 @@
  * limitations under the License.
  */
 
-package opennlp.tools.ml;
+package opennlp.tools.monitoring;
 
-import java.util.Map;
+import java.util.function.Predicate;
 
-import opennlp.tools.ml.model.DataIndexer;
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingConfiguration;
-import opennlp.tools.util.TrainingParameters;
+/**
+ * Stop-criteria for a {@link opennlp.tools.ml.model.AbstractModel} training .
+ */
+public interface StopCriteria extends Predicate<Double> {
 
-public class MockEventTrainer implements EventTrainer {
+  String FINISHED = "Training Finished after completing %s Iterations successfully.";
 
-  public MaxentModel train(ObjectStream<Event> events) {
-    return null;
-  }
-
-  @Override
-  public MaxentModel train(DataIndexer indexer) {
-    return null;
-  }
-
-  @Override
-  public void init(TrainingParameters trainingParams, Map<String, String> reportMap) {
-  }
-
-  @Override
-  public void init(TrainingParameters trainParams, Map<String, String> reportMap,
-                   TrainingConfiguration config) {
-  }
+  /**
+   * @return - A detailed message when the stop-criteria is satisfied during model training.
+   */
+  String getMessageIfSatisfied();
 
 }

@@ -28,6 +28,12 @@ import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.EvalParameters;
 import opennlp.tools.ml.model.MutableContext;
+import opennlp.tools.monitoring.DefaultTrainingProgressMonitor;
+import opennlp.tools.monitoring.IterDeltaAccuracyUnderTolerance;
+import opennlp.tools.monitoring.StopCriteria;
+import opennlp.tools.monitoring.TrainingMeasure;
+import opennlp.tools.monitoring.TrainingProgressMonitor;
+import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -293,6 +299,10 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       }
     }
 
+    //Get the Training Progress Monitor and the StopCriteria.
+    TrainingProgressMonitor progressMonitor = getTrainingProgressMonitor(trainingConfiguration);
+    StopCriteria stopCriteria = getStopCriteria(trainingConfiguration);
+
     // Keep track of the previous three accuracies. The difference of
     // the mean of these and the current training set accuracy is used
     // with tolerance to decide whether to stop.
@@ -349,10 +359,12 @@ public class PerceptronTrainer extends AbstractEventTrainer {
         }
       }
 
-      // Calculate the training accuracy and display.
+      // Calculate the training accuracy.
       double trainingAccuracy = (double) numCorrect / numEvents;
-      if (i < 10 || (i % 10) == 0)
-        logger.info("{}: ({}/{}) {}", i, numCorrect, numEvents, trainingAccuracy);
+      if (i < 10 || (i % 10) == 0) {
+        progressMonitor.finishedIteration(i, numCorrect, numEvents,
+            TrainingMeasure.ACCURACY, trainingAccuracy);
+      }
 
       // TODO: Make averaging configurable !!!
 
@@ -370,10 +382,10 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       // If the tolerance is greater than the difference between the
       // current training accuracy and all of the previous three
       // training accuracies, stop training.
-      if (StrictMath.abs(prevAccuracy1 - trainingAccuracy) < tolerance
-          && StrictMath.abs(prevAccuracy2 - trainingAccuracy) < tolerance
-          && StrictMath.abs(prevAccuracy3 - trainingAccuracy) < tolerance) {
-        logger.warn("Stopping: change in training set accuracy less than {}", tolerance);
+      if (stopCriteria.test(prevAccuracy1 - trainingAccuracy)
+          && stopCriteria.test(prevAccuracy2 - trainingAccuracy)
+          && stopCriteria.test(prevAccuracy3 - trainingAccuracy)) {
+        progressMonitor.finishedTraining(iterations, stopCriteria);
         break;
       }
 
@@ -382,6 +394,12 @@ public class PerceptronTrainer extends AbstractEventTrainer {
       prevAccuracy2 = prevAccuracy3;
       prevAccuracy3 = trainingAccuracy;
     }
+
+    //At this point, all iterations have finished successfully.
+    if (!progressMonitor.isTrainingFinished()) {
+      progressMonitor.finishedTraining(iterations, null);
+    }
+    progressMonitor.displayAndClear();
 
     // Output the final training stats.
     trainingStats(evalParams);
@@ -430,6 +448,27 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   private static boolean isPerfectSquare(int n) {
     int root = (int) StrictMath.sqrt(n);
     return root * root == n;
+  }
+
+  /**
+   * Get the {@link StopCriteria} associated with this Trainer.
+   * @param trainingConfig - If {@link TrainingConfiguration} is null or
+   *        {@link TrainingConfiguration#stopCriteria()} is null then return a default {@link StopCriteria}.
+   */
+  private StopCriteria getStopCriteria(TrainingConfiguration trainingConfig) {
+    return trainingConfig != null && trainingConfig.stopCriteria() != null
+        ? trainingConfig.stopCriteria() : new IterDeltaAccuracyUnderTolerance(trainingParameters);
+  }
+
+  /**
+   * Get the {@link TrainingProgressMonitor} associated with this Trainer.
+   * @param trainingConfig - If {@link TrainingConfiguration} is null or
+   *        {@link TrainingConfiguration#progMon()}is null then
+   *        return the default {@link TrainingProgressMonitor}.
+   */
+  private TrainingProgressMonitor getTrainingProgressMonitor(TrainingConfiguration trainingConfig) {
+    return trainingConfig != null && trainingConfig.progMon() != null ? trainingConfig.progMon() :
+        new DefaultTrainingProgressMonitor();
   }
 
 }

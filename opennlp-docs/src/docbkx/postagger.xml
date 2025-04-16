@@ -237,11 +237,114 @@ try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(model
 		</para>
 		<para>
 		The dictionary is defined in a xml format and can be created and stored with the POSDictionary class.
-		Please for now checkout the javadoc and source code of that class.
+		Below is an example to train a custom model using a tag dictionary.
 		</para>
-		<para>Note: The format should be documented and sample code should show how to use the dictionary.
-			  Any contributions are very welcome. If you want to contribute please contact us on the mailing list
-			  or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-287">OPENNLP-287</ulink>.
+		<para>
+		Sample POS Training material (file : en-custom-pos.train)
+			<screen>
+				<![CDATA[
+It_PRON is_OTHER spring_PROPN season_NOUN. The_DET flowers_NOUN are_OTHER red_ADJ and_CCONJ yellow_ADJ ._PUNCT
+Red_NOUN is_OTHER my_DET favourite_ADJ colour_NOUN ._PUNCT]]>
+			</screen>
+		</para>
+		<para>
+		Sample Tag Dictionary (file : dictionary.xml)
+			<programlisting language="xml">
+				<![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+ <dictionary case_sensitive="false">
+  <entry tags="PRON">
+    <token>It</token>
+  </entry>
+  <entry tags="OTHER">
+    <token>is</token>
+  </entry>
+  <entry tags="PROPN">
+    <token>Spring</token>
+  </entry>
+  <entry tags="NOUN">
+    <token>season</token>
+  </entry>
+  <entry tags="DET">
+    <token>the</token>
+  </entry>
+  <entry tags="NOUN">
+    <token>flowers</token>
+  </entry>
+  <entry tags="OTHER">
+    <token>are</token>
+  </entry>
+  <entry tags="NOUN">
+    <token>red</token>
+  </entry>
+  <entry tags="CCONJ">
+    <token>and</token>
+  </entry>
+  <entry tags="NOUN">
+    <token>yellow</token>
+  </entry>
+  <entry tags="PRON">
+    <token>my</token>
+  </entry>
+  <entry tags="ADJ">
+    <token>favourite</token>
+  </entry>
+  <entry tags="NOUN">
+    <token>colour</token>
+  </entry>
+  <entry tags="PUNCT">
+    <token>.</token>
+  </entry>
+</dictionary>]]>
+			</programlisting>
+		</para>
+		<para>Sample code to train a model using above tag dictionary
+			<programlisting language="java">
+			<![CDATA[
+POSModel model = null;
+	try {
+		ObjectStream<String> lineStream = new PlainTextByLineStream(
+				new MarkableFileInputStreamFactory(new File("en-custom-pos.train")), StandardCharsets.UTF_8);
+
+		ObjectStream<POSSample> sampleStream = new WordTagSampleStream(lineStream);
+
+		TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
+		params.put(TrainingParameters.CUTOFF_PARAM, 0);
+
+		POSTaggerFactory factory = new POSTaggerFactory();
+		TagDictionary dict = factory.createTagDictionary(new File("dictionary.xml"));
+		factory.setTagDictionary(dict);
+
+		model = POSTaggerME.train("eng", sampleStream, params, factory);
+
+		OutputStream modelOut = new BufferedOutputStream(new FileOutputStream("en-custom-pos-maxent.bin"));
+		model.serialize(modelOut);
+
+	} catch (IOException e) {
+		e.printStackTrace();
+	}]]>
+			</programlisting>
+		</para>
+		<para>
+		The custom model is then used to tag a sequence.
+		<programlisting language="java">
+			<![CDATA[
+String[] sent = new String[]{"Spring", "is", "my", "favourite", "season", "."};
+String[] tags = tagger.tag(sent);
+Arrays.stream(tags).forEach(k -> System.out.print(k + " "));]]>
+		</programlisting>
+		</para>
+		<para>
+			<literallayout>
+				Input
+				    Sentence:	Spring is my favourite season.
+
+				Output
+				    POS Tags using the custom model (en-custom-pos-maxent.bin): PROPN OTHER PRON ADJ NOUN PUNCT
+
+				Output with the default model
+				    POS Tags using the default model (opennlp-en-ud-ewt-pos-1.2-2.5.0.bin):	NOUN AUX PRON ADJ NOUN PUNCT
+			</literallayout>
 		</para>
 		</section>
 		</section>

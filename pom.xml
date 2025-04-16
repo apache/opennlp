@@ -25,13 +25,13 @@
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>33</version>
+		<version>34</version>
 		<relativePath />
 	</parent>
 
 	<groupId>org.apache.opennlp</groupId>
 	<artifactId>opennlp</artifactId>
-	<version>2.5.4-SNAPSHOT</version>
+	<version>2.5.5-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Apache OpenNLP Reactor</name>
@@ -40,7 +40,7 @@
 		<connection>scm:git:https://github.com/apache/opennlp.git</connection>
 		<developerConnection>scm:git:git@github.com:apache/opennlp.git</developerConnection>
 		<url>https://github.com/apache/opennlp.git</url>
-		<tag>opennlp-2.5.3</tag>
+		<tag>opennlp-2.5.4</tag>
 	</scm>
 
 	<repositories>
@@ -178,24 +178,25 @@
 		<opennlp.models.version>1.2.0</opennlp.models.version>
 
 		<!-- Dependency versions -->
-		<junit.version>5.12.0</junit.version>
+		<junit.version>5.12.1</junit.version>
 		<junit5-system-exit.version>2.0.2</junit5-system-exit.version>
+		<assertj-core.version>3.27.3</assertj-core.version>
 		<uimaj.version>3.6.0</uimaj.version>
 		<morfologik.version>2.1.9</morfologik.version>
 		<onnxruntime.version>1.21.0</onnxruntime.version>
 		<slf4j.version>2.0.17</slf4j.version>
 		<log4j2.version>2.24.3</log4j2.version>
-		<logcaptor.version>2.10.1</logcaptor.version>
+		<logcaptor.version>2.10.2</logcaptor.version>
 		<classgraph.version>4.8.179</classgraph.version>
 		<jmh.version>1.37</jmh.version>
 
 		<!-- Plugin versions -->
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
-		<jacoco.maven.plugin>0.8.12</jacoco.maven.plugin>
+		<jacoco.maven.plugin>0.8.13</jacoco.maven.plugin>
 		<maven.assembly.plugin>3.7.1</maven.assembly.plugin>
-		<maven.failsafe.plugin>3.5.2</maven.failsafe.plugin>
+		<maven.failsafe.plugin>3.5.3</maven.failsafe.plugin>
 		<maven.javadoc.plugin>3.11.2</maven.javadoc.plugin>
-		<forbiddenapis.plugin>3.8</forbiddenapis.plugin>
+		<forbiddenapis.plugin>3.9</forbiddenapis.plugin>
 		<license-maven-plugin.version>2.5.0</license-maven-plugin.version>
 	</properties>
 

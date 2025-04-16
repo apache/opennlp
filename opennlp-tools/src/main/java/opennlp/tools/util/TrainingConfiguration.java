@@ -15,35 +15,14 @@
  * limitations under the License.
  */
 
-package opennlp.tools.ml;
+package opennlp.tools.util;
 
-import java.util.Map;
+import opennlp.tools.monitoring.StopCriteria;
+import opennlp.tools.monitoring.TrainingProgressMonitor;
 
-import opennlp.tools.ml.model.DataIndexer;
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.TrainingConfiguration;
-import opennlp.tools.util.TrainingParameters;
-
-public class MockEventTrainer implements EventTrainer {
-
-  public MaxentModel train(ObjectStream<Event> events) {
-    return null;
-  }
-
-  @Override
-  public MaxentModel train(DataIndexer indexer) {
-    return null;
-  }
-
-  @Override
-  public void init(TrainingParameters trainingParams, Map<String, String> reportMap) {
-  }
-
-  @Override
-  public void init(TrainingParameters trainParams, Map<String, String> reportMap,
-                   TrainingConfiguration config) {
-  }
-
-}
+/**
+ * Training Configuration used in {@link opennlp.tools.ml.model.AbstractModel} training.
+ * @param progMon {@link TrainingProgressMonitor} used to monitor the training progress.
+ * @param stopCriteria {@link StopCriteria} used to stop training if the criteria is met.
+ */
+public record TrainingConfiguration(TrainingProgressMonitor progMon, StopCriteria stopCriteria) {}
