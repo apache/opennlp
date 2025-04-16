@@ -19,6 +19,7 @@ package opennlp.tools.commons;
 
 import java.util.Map;
 
+import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -34,5 +35,15 @@ public interface Trainer {
    * @param reportMap The {@link Map} instance used as report map.
    */
   void init(TrainingParameters trainParams, Map<String, String> reportMap);
+
+  /**
+   * Conducts the initialization of a {@link Trainer} via
+   * {@link TrainingParameters}, {@link Map report map} and {@link TrainingConfiguration}
+   *
+   * @param trainParams The {@link TrainingParameters} to use.
+   * @param reportMap The {@link Map} instance used as report map.
+   * @param config The {@link TrainingConfiguration} to use.
+   */
+  void init(TrainingParameters trainParams, Map<String, String> reportMap, TrainingConfiguration config);
 
 }

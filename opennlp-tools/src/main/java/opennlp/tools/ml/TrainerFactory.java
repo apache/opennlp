@@ -26,6 +26,8 @@ import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.ml.perceptron.PerceptronTrainer;
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
+import opennlp.tools.monitoring.DefaultTrainingProgressMonitor;
+import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.ext.ExtensionNotLoadedException;
@@ -181,6 +183,22 @@ public class TrainerFactory {
   }
 
   /**
+   * Works like {@link TrainerFactory#getEventTrainer(TrainingParameters, Map, TrainingConfiguration)}
+   * except that the {@link TrainingConfiguration} is initialized with {@link DefaultTrainingProgressMonitor}
+   * and a null {@link opennlp.tools.monitoring.StopCriteria}.
+   * If not provided, the actual {@link opennlp.tools.monitoring.StopCriteria}
+   * will be decided by the {@link EventTrainer} implementation.
+   *
+   */
+  public static EventTrainer getEventTrainer(
+          TrainingParameters trainParams, Map<String, String> reportMap) {
+
+    TrainingConfiguration trainingConfiguration
+        = new TrainingConfiguration(new DefaultTrainingProgressMonitor(), null);
+    return  getEventTrainer(trainParams, reportMap, trainingConfiguration);
+  }
+
+  /**
    * Retrieves an {@link EventTrainer} that fits the given parameters.
    *
    * @param trainParams The {@link TrainingParameters} to check for the trainer type.
@@ -189,11 +207,14 @@ public class TrainerFactory {
    *                    {@link GISTrainer#MAXENT_VALUE} will be used.
    * @param reportMap A {@link Map} that shall be used during initialization of
    *                  the {@link EventTrainer}.
+   * @param config The {@link TrainingConfiguration} to be used. This determines  the type of
+   *                    {@link opennlp.tools.monitoring.TrainingProgressMonitor}
+   *                    and the {@link opennlp.tools.monitoring.StopCriteria} to be used.
    *
    * @return A valid {@link EventTrainer} for the configured {@code trainParams}.
    */
   public static EventTrainer getEventTrainer(
-          TrainingParameters trainParams, Map<String, String> reportMap) {
+      TrainingParameters trainParams, Map<String, String> reportMap, TrainingConfiguration config) {
 
     // if the trainerType is not defined -- use the GISTrainer.
     String trainerType = trainParams.getStringParameter(
@@ -205,7 +226,7 @@ public class TrainerFactory {
     } else {
       trainer = ExtensionLoader.instantiateExtension(EventTrainer.class, trainerType);
     }
-    trainer.init(trainParams, reportMap);
+    trainer.init(trainParams, reportMap, config);
     return trainer;
   }
 
