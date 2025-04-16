@@ -1,8 +1,8 @@
 # How to contribute to Apache OpenNLP
 
-Thank you for your intention in contribute to the Apache OpenNLP project. As an open-source community, we greatly appreciate external contributions to our project.
+Thank you for your intention to contribute to the Apache OpenNLP project. As an open-source community, we highly appreciate external contributions to our project.
 
-To make the smooth a for the project *committers* (those who review and accept changes) and *contributors* (those who propose new changes via pull requests), there are a few rules to follow.
+To make the process smooth for the project *committers* (those who review and accept changes) and *contributors* (those who propose new changes via pull requests), there are a few rules to follow.
 
 ## Contribution Guidelines
 
