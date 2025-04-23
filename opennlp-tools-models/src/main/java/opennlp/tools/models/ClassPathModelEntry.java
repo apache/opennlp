@@ -20,7 +20,7 @@ import java.net.URI;
 import java.util.Optional;
 
 /**
- * Encapsulates a classpath entry that is associated with an {@link URI model URI}
+ * Encapsulates a classpath entry that is associated with a {@link URI model URI}
  * and optional {@code properties}.
  * 
  * @param model A valid {@link URI} associated with the model's location.
