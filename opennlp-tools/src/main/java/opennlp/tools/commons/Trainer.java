@@ -41,8 +41,8 @@ public interface Trainer {
    * {@link TrainingParameters}, {@link Map report map} and {@link TrainingConfiguration}
    *
    * @param trainParams The {@link TrainingParameters} to use.
-   * @param reportMap The {@link Map} instance used as report map.
-   * @param config The {@link TrainingConfiguration} to use.
+   * @param reportMap   The {@link Map} instance used as report map.
+   * @param config      The {@link TrainingConfiguration} to use. If null, suitable defaults will be used.
    */
   void init(TrainingParameters trainParams, Map<String, String> reportMap, TrainingConfiguration config);
 
