@@ -58,11 +58,7 @@ public abstract class AbstractTrainer implements Trainer {
   }
 
   /**
-   * Initializes a {@link AbstractTrainer} using following parameters.
-   *
-   * @param trainParams The {@link TrainingParameters} to use.
-   * @param reportMap The {@link Map} instance used as report map.
-   * @param config The {@link TrainingConfiguration} to use.
+   * {@inheritDoc}
    */
   @Override
   public void init(TrainingParameters trainParams, Map<String, String> reportMap,
@@ -125,7 +121,7 @@ public abstract class AbstractTrainer implements Trainer {
   }
 
   /**
-   * Retrieves the {@link TrainingConfiguration} associated with a {@link AbstractTrainer}.
+   * Retrieves the {@link TrainingConfiguration} associated with an {@link AbstractTrainer}.
    * @return {@link TrainingConfiguration}
    */
   public TrainingConfiguration getTrainingConfiguration() {

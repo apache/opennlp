@@ -64,12 +64,11 @@ public class TrainerFactory {
    * {@link TrainingParameters#ALGORITHM_PARAM} value.
    *
    * @param trainParams - A mapping of {@link TrainingParameters training parameters}.
-   *
    * @return The {@link TrainerType} or {@code null} if the type couldn't be determined.
    */
   public static TrainerType getTrainerType(TrainingParameters trainParams) {
 
-    String algorithmValue = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM,null);
+    String algorithmValue = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM, null);
 
     // Check if it is defaulting to the MAXENT trainer
     if (algorithmValue == null) {
@@ -82,11 +81,9 @@ public class TrainerFactory {
 
       if (EventTrainer.class.isAssignableFrom(trainerClass)) {
         return TrainerType.EVENT_MODEL_TRAINER;
-      }
-      else if (EventModelSequenceTrainer.class.isAssignableFrom(trainerClass)) {
+      } else if (EventModelSequenceTrainer.class.isAssignableFrom(trainerClass)) {
         return TrainerType.EVENT_MODEL_SEQUENCE_TRAINER;
-      }
-      else if (SequenceTrainer.class.isAssignableFrom(trainerClass)) {
+      } else if (SequenceTrainer.class.isAssignableFrom(trainerClass)) {
         return TrainerType.SEQUENCE_TRAINER;
       }
     }
@@ -96,24 +93,21 @@ public class TrainerFactory {
     try {
       ExtensionLoader.instantiateExtension(EventTrainer.class, algorithmValue);
       return TrainerType.EVENT_MODEL_TRAINER;
-    }
-    catch (ExtensionNotLoadedException ignored) {
+    } catch (ExtensionNotLoadedException ignored) {
       // this is ignored
     }
 
     try {
       ExtensionLoader.instantiateExtension(EventModelSequenceTrainer.class, algorithmValue);
       return TrainerType.EVENT_MODEL_SEQUENCE_TRAINER;
-    }
-    catch (ExtensionNotLoadedException ignored) {
+    } catch (ExtensionNotLoadedException ignored) {
       // this is ignored
     }
 
     try {
       ExtensionLoader.instantiateExtension(SequenceTrainer.class, algorithmValue);
       return TrainerType.SEQUENCE_TRAINER;
-    }
-    catch (ExtensionNotLoadedException ignored) {
+    } catch (ExtensionNotLoadedException ignored) {
       // this is ignored
     }
 
@@ -126,15 +120,14 @@ public class TrainerFactory {
    * @param trainParams The {@link TrainingParameters} to check for the trainer type.
    *                    Note: The entry {@link TrainingParameters#ALGORITHM_PARAM} is used
    *                    to determine the type.
-   * @param reportMap A {@link Map} that shall be used during initialization of
-   *                  the {@link SequenceTrainer}.
-   *                  
+   * @param reportMap   A {@link Map} that shall be used during initialization of
+   *                    the {@link SequenceTrainer}.
    * @return A valid {@link SequenceTrainer} for the configured {@code trainParams}.
    * @throws IllegalArgumentException Thrown if the trainer type could not be determined.
    */
   public static SequenceTrainer getSequenceModelTrainer(
-          TrainingParameters trainParams, Map<String, String> reportMap) {
-    String trainerType = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM,null);
+      TrainingParameters trainParams, Map<String, String> reportMap) {
+    String trainerType = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM, null);
 
     if (trainerType != null) {
       final SequenceTrainer trainer;
@@ -145,8 +138,7 @@ public class TrainerFactory {
       }
       trainer.init(trainParams, reportMap);
       return trainer;
-    }
-    else {
+    } else {
       throw new IllegalArgumentException("Trainer type couldn't be determined!");
     }
   }
@@ -157,15 +149,14 @@ public class TrainerFactory {
    * @param trainParams The {@link TrainingParameters} to check for the trainer type.
    *                    Note: The entry {@link TrainingParameters#ALGORITHM_PARAM} is used
    *                    to determine the type.
-   * @param reportMap A {@link Map} that shall be used during initialization of
-   *                  the {@link EventModelSequenceTrainer}.
-   *
+   * @param reportMap   A {@link Map} that shall be used during initialization of
+   *                    the {@link EventModelSequenceTrainer}.
    * @return A valid {@link EventModelSequenceTrainer} for the configured {@code trainParams}.
    * @throws IllegalArgumentException Thrown if the trainer type could not be determined.
    */
   public static <T> EventModelSequenceTrainer<T> getEventModelSequenceTrainer(
-          TrainingParameters trainParams, Map<String, String> reportMap) {
-    String trainerType = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM,null);
+      TrainingParameters trainParams, Map<String, String> reportMap) {
+    String trainerType = trainParams.getStringParameter(TrainingParameters.ALGORITHM_PARAM, null);
 
     if (trainerType != null) {
       final EventModelSequenceTrainer<T> trainer;
@@ -176,26 +167,21 @@ public class TrainerFactory {
       }
       trainer.init(trainParams, reportMap);
       return trainer;
-    }
-    else {
+    } else {
       throw new IllegalArgumentException("Trainer type couldn't be determined!");
     }
   }
 
   /**
-   * Works like {@link TrainerFactory#getEventTrainer(TrainingParameters, Map, TrainingConfiguration)}
-   * except that the {@link TrainingConfiguration} is initialized with {@link DefaultTrainingProgressMonitor}
-   * and a null {@link opennlp.tools.monitoring.StopCriteria}.
-   * If not provided, the actual {@link opennlp.tools.monitoring.StopCriteria}
-   * will be decided by the {@link EventTrainer} implementation.
-   *
+   * Works just like {@link TrainerFactory#getEventTrainer(TrainingParameters, Map, TrainingConfiguration)}
+   * except that {@link TrainingConfiguration} is initialized with default values.
    */
   public static EventTrainer getEventTrainer(
-          TrainingParameters trainParams, Map<String, String> reportMap) {
+      TrainingParameters trainParams, Map<String, String> reportMap) {
 
     TrainingConfiguration trainingConfiguration
         = new TrainingConfiguration(new DefaultTrainingProgressMonitor(), null);
-    return  getEventTrainer(trainParams, reportMap, trainingConfiguration);
+    return getEventTrainer(trainParams, reportMap, trainingConfiguration);
   }
 
   /**
@@ -205,12 +191,9 @@ public class TrainerFactory {
    *                    Note: The entry {@link TrainingParameters#ALGORITHM_PARAM} is used
    *                    to determine the type. If the type is not defined, the
    *                    {@link GISTrainer#MAXENT_VALUE} will be used.
-   * @param reportMap A {@link Map} that shall be used during initialization of
-   *                  the {@link EventTrainer}.
-   * @param config The {@link TrainingConfiguration} to be used. This determines  the type of
-   *                    {@link opennlp.tools.monitoring.TrainingProgressMonitor}
-   *                    and the {@link opennlp.tools.monitoring.StopCriteria} to be used.
-   *
+   * @param reportMap   A {@link Map} that shall be used during initialization of
+   *                    the {@link EventTrainer}.
+   * @param config      The {@link TrainingConfiguration} to be used.
    * @return A valid {@link EventTrainer} for the configured {@code trainParams}.
    */
   public static EventTrainer getEventTrainer(
@@ -253,8 +236,7 @@ public class TrainerFactory {
           TrainingParameters.CUTOFF_DEFAULT_VALUE);
       trainParams.getIntParameter(TrainingParameters.ITERATIONS_PARAM,
           TrainingParameters.ITERATIONS_DEFAULT_VALUE);
-    }
-    catch (NumberFormatException e) {
+    } catch (NumberFormatException e) {
       return false;
     }
 

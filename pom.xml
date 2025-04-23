@@ -180,7 +180,6 @@
 		<!-- Dependency versions -->
 		<junit.version>5.12.1</junit.version>
 		<junit5-system-exit.version>2.0.2</junit5-system-exit.version>
-		<assertj-core.version>3.27.3</assertj-core.version>
 		<uimaj.version>3.6.0</uimaj.version>
 		<morfologik.version>2.1.9</morfologik.version>
 		<onnxruntime.version>1.21.0</onnxruntime.version>

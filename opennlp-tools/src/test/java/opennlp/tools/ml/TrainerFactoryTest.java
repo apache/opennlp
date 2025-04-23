@@ -29,6 +29,7 @@ import opennlp.tools.monitoring.LogLikelihoodThresholdBreached;
 import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TrainerFactoryTest {
@@ -90,8 +91,11 @@ public class TrainerFactoryTest {
     TrainingConfiguration config = new TrainingConfiguration(new DefaultTrainingProgressMonitor(),
         new LogLikelihoodThresholdBreached(mlParams));
 
-    AbstractTrainer trainer = (AbstractTrainer)TrainerFactory.getEventTrainer(mlParams, null, config);
-    assertTrue(trainer.getTrainingConfiguration().progMon() instanceof  DefaultTrainingProgressMonitor);
-    assertTrue(trainer.getTrainingConfiguration().stopCriteria() instanceof  LogLikelihoodThresholdBreached);
+    AbstractTrainer trainer = (AbstractTrainer) TrainerFactory.getEventTrainer(mlParams, null, config);
+
+    assertAll(() -> assertTrue(trainer.getTrainingConfiguration().progMon() instanceof
+            DefaultTrainingProgressMonitor),
+        () -> assertTrue(trainer.getTrainingConfiguration().stopCriteria() instanceof
+            LogLikelihoodThresholdBreached));
   }
 }

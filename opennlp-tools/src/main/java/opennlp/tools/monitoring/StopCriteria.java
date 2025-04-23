@@ -19,15 +19,21 @@ package opennlp.tools.monitoring;
 
 import java.util.function.Predicate;
 
+import opennlp.tools.ml.model.AbstractModel;
+
+
 /**
- * Stop-criteria for a {@link opennlp.tools.ml.model.AbstractModel} training .
+ * Stop criteria for model training. If the predicate is met, then the training is aborted.
+ *
+ * @see Predicate
+ * @see AbstractModel
  */
-public interface StopCriteria extends Predicate<Double> {
+public interface StopCriteria<T extends Number> extends Predicate<T> {
 
   String FINISHED = "Training Finished after completing %s Iterations successfully.";
 
   /**
-   * @return - A detailed message when the stop-criteria is satisfied during model training.
+   * @return A detailed message captured upon hitting the {@link StopCriteria} during model training.
    */
   String getMessageIfSatisfied();
 

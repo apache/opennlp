@@ -40,7 +40,7 @@ class LogLikelihoodThresholdBreachedTest {
         new TrainingParameters(Map.of(LOG_LIKELIHOOD_THRESHOLD_PARAM,5.)));
   }
 
-  @ParameterizedTest()
+  @ParameterizedTest
   @CsvSource({"0.01,true", "-0.01,true", "6.0,false", "-6.0,true"})
   void testCriteria(double val, String expectedVal) {
     assertEquals(Boolean.parseBoolean(expectedVal), stopCriteria.test(val));

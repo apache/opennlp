@@ -38,7 +38,7 @@ class IterDeltaAccuracyUnderToleranceTest {
         .00002)));
   }
 
-  @ParameterizedTest()
+  @ParameterizedTest
   @CsvSource( {"0.01,false", "-0.01,false", "0.00001,true", "-0.00001,true"})
   void testCriteria(double val, String expectedVal) {
     assertEquals(Boolean.parseBoolean(expectedVal), stopCriteria.test(val));

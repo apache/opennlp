@@ -17,12 +17,13 @@
 
 package opennlp.tools.util;
 
+import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.monitoring.StopCriteria;
 import opennlp.tools.monitoring.TrainingProgressMonitor;
 
 /**
- * Training Configuration used in {@link opennlp.tools.ml.model.AbstractModel} training.
+ * Configuration used for {@link AbstractModel} training.
  * @param progMon {@link TrainingProgressMonitor} used to monitor the training progress.
- * @param stopCriteria {@link StopCriteria} used to stop training if the criteria is met.
+ * @param stopCriteria {@link StopCriteria} used to abort training when the criteria is met.
  */
 public record TrainingConfiguration(TrainingProgressMonitor progMon, StopCriteria stopCriteria) {}

@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
@@ -399,7 +400,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
     if (!progressMonitor.isTrainingFinished()) {
       progressMonitor.finishedTraining(iterations, null);
     }
-    progressMonitor.displayAndClear();
+    progressMonitor.display(true);
 
     // Output the final training stats.
     trainingStats(evalParams);
@@ -451,9 +452,12 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   }
 
   /**
-   * Get the {@link StopCriteria} associated with this Trainer.
-   * @param trainingConfig - If {@link TrainingConfiguration} is null or
-   *        {@link TrainingConfiguration#stopCriteria()} is null then return a default {@link StopCriteria}.
+   * Get the {@link StopCriteria} associated with this {@link Trainer}.
+   *
+   * @param trainingConfig {@link TrainingConfiguration}
+   * @return {@link StopCriteria}. If {@link TrainingConfiguration} is {@code null} or
+   * {@link TrainingConfiguration#stopCriteria()} is {@code null},
+   * then return the default {@link StopCriteria}.
    */
   private StopCriteria getStopCriteria(TrainingConfiguration trainingConfig) {
     return trainingConfig != null && trainingConfig.stopCriteria() != null
@@ -461,10 +465,12 @@ public class PerceptronTrainer extends AbstractEventTrainer {
   }
 
   /**
-   * Get the {@link TrainingProgressMonitor} associated with this Trainer.
-   * @param trainingConfig - If {@link TrainingConfiguration} is null or
-   *        {@link TrainingConfiguration#progMon()}is null then
-   *        return the default {@link TrainingProgressMonitor}.
+   * Get the {@link TrainingProgressMonitor} associated with this {@link Trainer}.
+   *
+   * @param trainingConfig {@link TrainingConfiguration}.
+   * @return {@link TrainingProgressMonitor}. If {@link TrainingConfiguration} is {@code null} or
+   * {@link TrainingConfiguration#progMon()} is {@code null},
+   * then return the default {@link TrainingProgressMonitor}.
    */
   private TrainingProgressMonitor getTrainingProgressMonitor(TrainingConfiguration trainingConfig) {
     return trainingConfig != null && trainingConfig.progMon() != null ? trainingConfig.progMon() :

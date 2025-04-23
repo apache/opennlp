@@ -24,7 +24,7 @@ import opennlp.tools.util.TrainingParameters;
  * A {@link StopCriteria} implementation to identify whether the absolute
  * difference between the training accuracy of current and previous iteration is under the defined tolerance.
  */
-public class IterDeltaAccuracyUnderTolerance implements StopCriteria {
+public class IterDeltaAccuracyUnderTolerance implements StopCriteria<Double> {
 
   public static final String STOP = "Stopping: change in training set accuracy less than {%s}";
   private final TrainingParameters trainingParameters;

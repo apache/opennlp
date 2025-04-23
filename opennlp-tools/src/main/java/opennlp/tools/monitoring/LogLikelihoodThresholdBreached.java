@@ -26,7 +26,7 @@ import static opennlp.tools.ml.maxent.GISTrainer.LOG_LIKELIHOOD_THRESHOLD_PARAM;
  * A {@link StopCriteria} implementation to identify whether the
  * difference between the log likelihood of current and previous iteration is under the defined threshold.
  */
-public class LogLikelihoodThresholdBreached implements StopCriteria {
+public class LogLikelihoodThresholdBreached implements StopCriteria<Double> {
 
   public static String STOP = "Stopping: Difference between log likelihood of current" +
       " and previous iteration is less than threshold %s .";

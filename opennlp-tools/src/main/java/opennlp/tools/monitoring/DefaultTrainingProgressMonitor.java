@@ -28,15 +28,15 @@ import org.slf4j.LoggerFactory;
 import static opennlp.tools.monitoring.StopCriteria.FINISHED;
 
 /**
- * An implementation of {@link TrainingProgressMonitor} which publishes model training progress to the chosen
- * logging destination.
+ * The default implementation of {@link TrainingProgressMonitor}.
+ * This publishes model training progress to the chosen logging destination.
  */
 public class DefaultTrainingProgressMonitor implements TrainingProgressMonitor {
 
   private static final Logger logger = LoggerFactory.getLogger(DefaultTrainingProgressMonitor.class);
 
   /**
-   * Keeps a track whether training was already finished because StopCriteria was met.
+   * Keeps a track of whether training was already finished.
    */
   private volatile boolean isTrainingFinished;
 
@@ -59,6 +59,9 @@ public class DefaultTrainingProgressMonitor implements TrainingProgressMonitor {
         measure.getMeasureName(), measureValue));
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public synchronized void finishedTraining(int iterations, StopCriteria stopCriteria) {
     if (!Objects.isNull(stopCriteria)) {
@@ -73,11 +76,16 @@ public class DefaultTrainingProgressMonitor implements TrainingProgressMonitor {
    * {@inheritDoc}
    */
   @Override
-  public synchronized void displayAndClear() {
+  public synchronized void display(boolean clear) {
     progress.stream().forEach(logger::info);
-    progress.clear();
+    if (clear) {
+      progress.clear();
+    }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public boolean isTrainingFinished() {
     return isTrainingFinished;

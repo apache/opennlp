@@ -17,8 +17,10 @@
 
 package opennlp.tools.monitoring;
 
+import opennlp.tools.ml.model.AbstractModel;
+
 /**
- * An interface to capture Training Progress of a {@link opennlp.tools.ml.model.AbstractModel}.
+ * An interface to capture training progress of an {@link AbstractModel}.
  */
 
 public interface TrainingProgressMonitor {
@@ -29,30 +31,33 @@ public interface TrainingProgressMonitor {
    * @param iteration           The completed iteration number.
    * @param numberCorrectEvents Number of correctly predicted events in this iteration.
    * @param totalEvents         Total count of events processed in this iteration.
-   * @param measure             Measure used to quantify training success.
+   * @param measure             {@link TrainingMeasure}.
    * @param measureValue        measure value corresponding to the applicable {@link TrainingMeasure}.
    */
   void finishedIteration(int iteration, int numberCorrectEvents, int totalEvents,
                          TrainingMeasure measure, double measureValue);
 
   /**
-   * Captures the Training completion progress.
+   * Captures the training completion progress.
    *
-   * @param iterations   Total number of iterations configured for training.
-   * @param stopCriteria Exit criteria for training.
+   * @param iterations   Total number of iterations configured for the training.
+   * @param stopCriteria {@link StopCriteria} for the training.
    */
   void finishedTraining(int iterations, StopCriteria stopCriteria);
 
   /**
-   * Checks whether the training has finished.   *
-   * @return A boolean value to identify whether the training has finished.
+   * Checks whether the training has finished.
+   *
+   * @return {@code true} if the training has finished, {@code false} if the training is not yet completed.
    */
   boolean isTrainingFinished();
 
   /**
-   * Display the Training progress and clear the underlying data structure
-   * used to store the training progress events. Callers of this method can invoke it periodically
-   * during training progress to avoid storing too much progress related data.
+   * Displays the training progress and optionally clears the recorded progress (to save memory).
+   * Callers of this method can invoke it periodically
+   * during training, to avoid holding too much progress related data in memory.
+   *
+   * @param clear Set to true to clear the recorded progress.
    */
-  void displayAndClear();
+  void display(boolean clear);
 }
