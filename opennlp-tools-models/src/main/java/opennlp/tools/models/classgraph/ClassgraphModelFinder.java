@@ -28,13 +28,20 @@ import opennlp.tools.models.AbstractClassPathModelFinder;
 import opennlp.tools.models.ClassPathModelFinder;
 
 /**
- * Enables the detection of OpenNLP models in the classpath via classgraph.
- * By default, this class will search for JAR files starting with "opennlp-models-*".
- * This wildcard pattern can be adjusted by using the alternative constructor of this class.
+ * Enables the detection of OpenNLP models in the classpath via
+ * <a href="https://github.com/classgraph/classgraph">Classgraph</a>.
+ * <p>
+ * By default, this implementation will search for JAR files starting with "opennlp-models-*".
+ * This search mask can be adjusted by using the one argument
+ * {@link ClassgraphModelFinder#ClassgraphModelFinder(String) constructor}. Wildcard search is supported
+ * by using asterisk symbol.
  *
- * @implNote This implementation relies on the <a href="https://github.com/classgraph/classgraph">Classgraph</a> library.
- * When using this class, you have to take care of <i>Classgraph</i> being in the classpath
- * of your application, as it is declared as an optional dependency for <i>opennlp-tools-models</i>.
+ * @implNote {@link ClassgraphModelFinder} relies on the <a href="https://github.com/classgraph/classgraph">
+ *   Classgraph</a> library. For this reason, you have to take care of <i>Classgraph</i> being present
+ *   in the classpath of your application, as - by default - it is declared as {@code optional} dependency of
+ *   <i>opennlp-tools-models</i>.
+ *
+ * @see ClassPathModelFinder
  */
 public class ClassgraphModelFinder extends AbstractClassPathModelFinder implements ClassPathModelFinder {
 
@@ -46,7 +53,7 @@ public class ClassgraphModelFinder extends AbstractClassPathModelFinder implemen
   }
 
   /**
-   * @param modelJarPrefix The leafnames of the jars that should be canned (e.g. "opennlp.jar").
+   * @param modelJarPrefix The leafnames of the jars that should be scanned (e.g. "opennlp.jar").
    *                       May contain a wildcard glob ("opennlp-*.jar"). It must not be {@code null}.
    */
   public ClassgraphModelFinder(String modelJarPrefix) {
@@ -64,11 +71,12 @@ public class ClassgraphModelFinder extends AbstractClassPathModelFinder implemen
   }
 
   /**
-   * Attempts to obtain {@link URI URIs} from the classpath.
+   * Attempts to obtain {@link URI URIs} from the classpath for the specified {@code wildcardPattern}
+   * and {@code context}.
    * 
    * @param wildcardPattern The pattern to use for scanning. Must not be {@code null}.
    * @param context         An object holding context information. It might be {@code null}.
-   * @return A list of matching classpath {@link URI URIs}. It may be empty if nothing is found.
+   * @return A list of matching classpath {@link URI URIs} which  may be empty if nothing is found.
    */
   @Override
   protected List<URI> getMatchingURIs(String wildcardPattern, Object context) {

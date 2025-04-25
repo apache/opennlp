@@ -22,7 +22,11 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * Responsible for loading OpenNLP models from the classpath.
+ * Responsible for loading OpenNLP models from the classpath via {@link ClassPathModelEntry entries}.
+ * If models could be loaded successfully, those are provided as {@link ClassPathModel model references}.
+ *
+ * @see ClassPathModel
+ * @see ClassPathModelEntry
  */
 public class ClassPathModelLoader {
 
@@ -30,6 +34,8 @@ public class ClassPathModelLoader {
    * Loads a {@link ClassPathModel} from a {@link ClassPathModelEntry}
    *
    * @param entry A valid {@link ClassPathModelEntry}, it must not be {@code null}.
+   *              Moreover, it is validated that the {@link ClassPathModelEntry#model() binary data}
+   *              and {@link ClassPathModelEntry#properties() meta-data} are not {@code null}.
    * @return A {@link ClassPathModel} containing the model resources.
    * @throws IOException thrown if something went wrong during reading resources from the classpath.
    */
