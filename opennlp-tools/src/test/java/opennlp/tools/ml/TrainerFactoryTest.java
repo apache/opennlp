@@ -24,7 +24,13 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
+import opennlp.tools.monitoring.DefaultTrainingProgressMonitor;
+import opennlp.tools.monitoring.LogLikelihoodThresholdBreached;
+import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
+
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TrainerFactoryTest {
 
@@ -78,4 +84,18 @@ public class TrainerFactoryTest {
     Assertions.assertNotEquals(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER, trainerType);
   }
 
+  @Test
+  void testGetEventTrainerConfiguration() {
+    mlParams.put(TrainingParameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+
+    TrainingConfiguration config = new TrainingConfiguration(new DefaultTrainingProgressMonitor(),
+        new LogLikelihoodThresholdBreached(mlParams));
+
+    AbstractTrainer trainer = (AbstractTrainer) TrainerFactory.getEventTrainer(mlParams, null, config);
+
+    assertAll(() -> assertTrue(trainer.getTrainingConfiguration().progMon() instanceof
+            DefaultTrainingProgressMonitor),
+        () -> assertTrue(trainer.getTrainingConfiguration().stopCriteria() instanceof
+            LogLikelihoodThresholdBreached));
+  }
 }

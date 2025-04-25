@@ -15,30 +15,26 @@
  * limitations under the License.
  */
 
-package opennlp.tools.ml;
+package opennlp.tools.monitoring;
 
-import java.util.Map;
+import java.util.function.Predicate;
 
 import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.SequenceStream;
-import opennlp.tools.util.TrainingConfiguration;
-import opennlp.tools.util.TrainingParameters;
 
-public class MockSequenceTrainer implements EventModelSequenceTrainer<Event> {
 
-  @Override
-  public AbstractModel train(SequenceStream<Event> events) {
-    return null;
-  }
+/**
+ * Stop criteria for model training. If the predicate is met, then the training is aborted.
+ *
+ * @see Predicate
+ * @see AbstractModel
+ */
+public interface StopCriteria<T extends Number> extends Predicate<T> {
 
-  @Override
-  public void init(TrainingParameters trainParams, Map<String, String> reportMap) {
-  }
+  String FINISHED = "Training Finished after completing %s Iterations successfully.";
 
-  @Override
-  public void init(TrainingParameters trainParams, Map<String, String> reportMap,
-                   TrainingConfiguration config) {
-  }
+  /**
+   * @return A detailed message captured upon hitting the {@link StopCriteria} during model training.
+   */
+  String getMessageIfSatisfied();
 
 }

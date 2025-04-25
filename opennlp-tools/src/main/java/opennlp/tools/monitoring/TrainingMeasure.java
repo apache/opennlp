@@ -15,30 +15,22 @@
  * limitations under the License.
  */
 
-package opennlp.tools.ml;
+package opennlp.tools.monitoring;
 
-import java.util.Map;
+/**
+ * Enumeration of Training measures.
+ */
+public enum TrainingMeasure {
+  ACCURACY("Training Accuracy"),
+  LOG_LIKELIHOOD("Log Likelihood");
 
-import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.SequenceStream;
-import opennlp.tools.util.TrainingConfiguration;
-import opennlp.tools.util.TrainingParameters;
+  private String measureName;
 
-public class MockSequenceTrainer implements EventModelSequenceTrainer<Event> {
-
-  @Override
-  public AbstractModel train(SequenceStream<Event> events) {
-    return null;
+  TrainingMeasure(String measureName) {
+    this.measureName = measureName;
   }
 
-  @Override
-  public void init(TrainingParameters trainParams, Map<String, String> reportMap) {
+  public String getMeasureName() {
+    return measureName;
   }
-
-  @Override
-  public void init(TrainingParameters trainParams, Map<String, String> reportMap,
-                   TrainingConfiguration config) {
-  }
-
 }

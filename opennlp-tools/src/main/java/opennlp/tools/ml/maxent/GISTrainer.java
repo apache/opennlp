@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.DataIndexer;
@@ -40,7 +41,13 @@ import opennlp.tools.ml.model.MutableContext;
 import opennlp.tools.ml.model.OnePassDataIndexer;
 import opennlp.tools.ml.model.Prior;
 import opennlp.tools.ml.model.UniformPrior;
+import opennlp.tools.monitoring.DefaultTrainingProgressMonitor;
+import opennlp.tools.monitoring.LogLikelihoodThresholdBreached;
+import opennlp.tools.monitoring.StopCriteria;
+import opennlp.tools.monitoring.TrainingMeasure;
+import opennlp.tools.monitoring.TrainingProgressMonitor;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
 
 /**
@@ -497,6 +504,11 @@ public class GISTrainer extends AbstractEventTrainer {
         new ExecutorCompletionService<>(executor);
     double prevLL = 0.0;
     double currLL;
+
+    //Get the Training Progress Monitor and the StopCriteria.
+    TrainingProgressMonitor progressMonitor = getTrainingProgressMonitor(trainingConfiguration);
+    StopCriteria stopCriteria = getStopCriteria(trainingConfiguration);
+
     logger.info("Performing {} iterations.", iterations);
     for (int i = 1; i <= iterations; i++) {
       currLL = nextIteration(correctionConstant, completionService, i);
@@ -505,12 +517,19 @@ public class GISTrainer extends AbstractEventTrainer {
           logger.warn("Model Diverging: loglikelihood decreased");
           break;
         }
-        if (currLL - prevLL < llThreshold) {
+        if (stopCriteria.test(currLL - prevLL)) {
+          progressMonitor.finishedTraining(iterations, stopCriteria);
           break;
         }
       }
       prevLL = currLL;
     }
+
+    //At this point, all iterations have finished successfully.
+    if (!progressMonitor.isTrainingFinished()) {
+      progressMonitor.finishedTraining(iterations, null);
+    }
+    progressMonitor.display(true);
 
     // kill a bunch of these big objects now that we don't need them
     observedExpects = null;
@@ -628,8 +647,8 @@ public class GISTrainer extends AbstractEventTrainer {
       }
     }
 
-    logger.info("{} - loglikelihood={}\t{}",
-        iteration, loglikelihood, ((double) numCorrect / numEvents));
+    getTrainingProgressMonitor(trainingConfiguration).
+        finishedIteration(iteration, numCorrect, numEvents, TrainingMeasure.LOG_LIKELIHOOD, loglikelihood);
 
     return loglikelihood;
   }
@@ -709,4 +728,31 @@ public class GISTrainer extends AbstractEventTrainer {
       return loglikelihood;
     }
   }
+
+  /**
+   * Get the {@link StopCriteria} associated with this {@link Trainer}.
+   *
+   * @param trainingConfig {@link TrainingConfiguration}
+   * @return {@link StopCriteria}. If {@link TrainingConfiguration} is {@code null} or
+   * {@link TrainingConfiguration#stopCriteria()} is {@code null},
+   * then return the default {@link StopCriteria}.
+   */
+  private StopCriteria getStopCriteria(TrainingConfiguration trainingConfig) {
+    return trainingConfig != null && trainingConfig.stopCriteria() != null
+        ? trainingConfig.stopCriteria() : new LogLikelihoodThresholdBreached(trainingParameters);
+  }
+
+  /**
+   * Get the {@link TrainingProgressMonitor} associated with this {@link Trainer}.
+   *
+   * @param trainingConfig {@link TrainingConfiguration}.
+   * @return {@link TrainingProgressMonitor}. If {@link TrainingConfiguration} is {@code null} or
+   * {@link TrainingConfiguration#progMon()} is {@code null},
+   * then return the default {@link TrainingProgressMonitor}.
+   */
+  private TrainingProgressMonitor getTrainingProgressMonitor(TrainingConfiguration trainingConfig) {
+    return trainingConfig != null && trainingConfig.progMon() != null ?
+        trainingConfig.progMon() : new DefaultTrainingProgressMonitor();
+  }
+
 }

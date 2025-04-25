@@ -15,30 +15,15 @@
  * limitations under the License.
  */
 
-package opennlp.tools.ml;
-
-import java.util.Map;
+package opennlp.tools.util;
 
 import opennlp.tools.ml.model.AbstractModel;
-import opennlp.tools.ml.model.Event;
-import opennlp.tools.ml.model.SequenceStream;
-import opennlp.tools.util.TrainingConfiguration;
-import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.monitoring.StopCriteria;
+import opennlp.tools.monitoring.TrainingProgressMonitor;
 
-public class MockSequenceTrainer implements EventModelSequenceTrainer<Event> {
-
-  @Override
-  public AbstractModel train(SequenceStream<Event> events) {
-    return null;
-  }
-
-  @Override
-  public void init(TrainingParameters trainParams, Map<String, String> reportMap) {
-  }
-
-  @Override
-  public void init(TrainingParameters trainParams, Map<String, String> reportMap,
-                   TrainingConfiguration config) {
-  }
-
-}
+/**
+ * Configuration used for {@link AbstractModel} training.
+ * @param progMon {@link TrainingProgressMonitor} used to monitor the training progress.
+ * @param stopCriteria {@link StopCriteria} used to abort training when the criteria is met.
+ */
+public record TrainingConfiguration(TrainingProgressMonitor progMon, StopCriteria stopCriteria) {}
