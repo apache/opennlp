@@ -20,6 +20,7 @@ package opennlp.tools.postag;
 import java.io.IOException;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.Sequence;
 
@@ -68,7 +69,7 @@ public class ThreadSafePOSTaggerME implements POSTagger, AutoCloseable {
    * @throws IOException Thrown if the model could not be downloaded or saved.
    */
   public ThreadSafePOSTaggerME(String language, POSTagFormat format) throws IOException {
-    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.POS, POSModel.class), format);
+    this(DownloadUtil.downloadModel(language, ModelType.POS, POSModel.class), format);
   }
 
   /**

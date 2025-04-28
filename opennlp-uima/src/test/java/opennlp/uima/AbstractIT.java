@@ -41,6 +41,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.models.ModelType;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
@@ -57,9 +58,9 @@ abstract class AbstractIT extends AbstractUimaTest {
   @BeforeAll
   public static void initEnv() throws IOException {
     // ensure referenced UD models are present in download home
-    DownloadUtil.downloadModel("en", DownloadUtil.ModelType.TOKENIZER, TokenizerModel.class);
-    DownloadUtil.downloadModel("en", DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
-    DownloadUtil.downloadModel("en", DownloadUtil.ModelType.POS, POSModel.class);
+    DownloadUtil.downloadModel("en", ModelType.TOKENIZER, TokenizerModel.class);
+    DownloadUtil.downloadModel("en", ModelType.SENTENCE_DETECTOR, SentenceModel.class);
+    DownloadUtil.downloadModel("en", ModelType.POS, POSModel.class);
 
     // ensure referenced classic model files are present in download home
     for (String modelName: List.of("en-ner-organization", "en-ner-location", "en-ner-person",
