@@ -30,6 +30,7 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Sequence;
@@ -63,7 +64,7 @@ public class ChunkerME implements Chunker {
    * @throws IOException Thrown if the model cannot be downloaded or saved.
    */
   public ChunkerME(String language) throws IOException {
-    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.CHUNKER, ChunkerModel.class));
+    this(DownloadUtil.downloadModel(language, ModelType.CHUNKER, ChunkerModel.class));
   }
 
   /**

@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.EnabledWhenCDNAvailable;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.sentdetect.SentenceModel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,7 +62,7 @@ public class DownloadUtilDownloadTwiceTest {
   @Test
   public void testDownloadModelTwice() throws IOException {
     String lang = "de";
-    DownloadUtil.ModelType type = DownloadUtil.ModelType.SENTENCE_DETECTOR;
+    ModelType type = ModelType.SENTENCE_DETECTOR;
     
     try (LogCaptor logCaptor = LogCaptor.forClass(DownloadUtil.class)) {
       boolean alreadyDownloaded = DownloadUtil.existsModel(lang, type);

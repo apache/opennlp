@@ -31,6 +31,7 @@ import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.AbstractSampleStreamFactoryTest;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.DownloadUtil;
@@ -70,7 +71,7 @@ public class Muc6NameSampleStreamFactoryTest extends
     Muc6NameSampleStreamFactory.registerFactory();
     try {
       // ensure, the model is available locally for later test purposes
-      DownloadUtil.downloadModel("en", DownloadUtil.ModelType.TOKENIZER, TokenizerModel.class);
+      DownloadUtil.downloadModel("en", ModelType.TOKENIZER, TokenizerModel.class);
     } catch (IOException e) {
       fail(e.getLocalizedMessage());
     }

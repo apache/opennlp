@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.Span;
 
@@ -56,7 +57,7 @@ public class ThreadSafeSentenceDetectorME implements SentenceDetector, AutoClose
    * @throws IOException Thrown if the model could not be downloaded or saved.
    */
   public ThreadSafeSentenceDetectorME(String language) throws IOException {
-    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class));
+    this(DownloadUtil.downloadModel(language, ModelType.SENTENCE_DETECTOR, SentenceModel.class));
   }
 
   /**

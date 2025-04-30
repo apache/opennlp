@@ -78,6 +78,18 @@
         </dependency>
         <dependency>
             <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-models-tokenizer-en</artifactId>
+            <version>${opennlp.models.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
+            <artifactId>opennlp-models-pos-en</artifactId>
+            <version>${opennlp.models.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.opennlp</groupId>
             <artifactId>opennlp-models-langdetect</artifactId>
             <version>${opennlp.models.version}</version>
             <scope>test</scope>

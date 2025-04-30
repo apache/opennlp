@@ -29,6 +29,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import opennlp.tools.AbstractModelLoaderTest;
 import opennlp.tools.EnabledWhenCDNAvailable;
 import opennlp.tools.lemmatizer.LemmatizerModel;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.util.DownloadUtil;
 
 @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
@@ -41,7 +42,7 @@ public class LemmatizerModelLoaderIT extends AbstractModelLoaderTest {
   public static void initResources() {
     SUPPORTED_LANG_CODES.forEach(lang -> {
       try {
-        DownloadUtil.downloadModel(lang, DownloadUtil.ModelType.LEMMATIZER, LemmatizerModel.class);
+        DownloadUtil.downloadModel(lang, ModelType.LEMMATIZER, LemmatizerModel.class);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

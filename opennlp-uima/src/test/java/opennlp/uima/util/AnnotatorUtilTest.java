@@ -38,6 +38,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.EnabledWhenCDNAvailable;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.uima.AbstractUimaTest;
@@ -62,7 +63,7 @@ class AnnotatorUtilTest extends AbstractUimaTest {
   @BeforeAll
   public static void initEnv() throws IOException {
     // ensure referenced UD models are present in download home
-    DownloadUtil.downloadModel("en", DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
+    DownloadUtil.downloadModel("en", ModelType.SENTENCE_DETECTOR, SentenceModel.class);
   }
 
   @BeforeEach
