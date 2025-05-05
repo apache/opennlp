@@ -1,0 +1,10 @@
+There are different approaches to getting machines to learn
+These include using basic decision trees to clustering to layers of artificial neural networks
+It depends upon what task you are trying to accomplish and the type and amount of data that you have available
+This dynamic sees itself played out in applications as varying as medical diagnostics or self-driving cars
+One of the most common mistakes among machine learning beginners is testing training data successfully and having the illusion of success
+Domingo and others emphasize the importance of keeping some of the data set separate when testing models
+And only using that reserved data to test a chosen model followed by learning on the whole data set
+When a learning algorithm is not working often the quicker path to success is to feed the machine more data
+The availability of which is by now well-known as a primary driver of progress in machine and deep learning algorithms in recent years
+However, this can lead to issues with scalability in which we have more data but time to learn that data remains an issue

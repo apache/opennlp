@@ -1,7 +1,7 @@
 The word2vec software of Tomas Mikolov and colleagues has gained a lot of traction lately and provides state-of-the-art word embeddings
 The learning models behind the software are described in two research papers
 We found the description of the models in these papers to be somewhat cryptic and hard to follow
-While the motivations and presentation may be obvious to the neural-networks language-mofdeling crowd we had to struggle quite a bit to figure out the rationale behind the equations
+While the motivations and presentation may be obvious to the neural-networks language-modeling crowd we had to struggle quite a bit to figure out the rationale behind the equations
 This note is an attempt to explain the negative sampling equation in Distributed Representations of Words and Phrases and their Compositionality by Tomas Mikolov Ilya Sutskever Kai Chen Greg Corrado and Jeffrey Dean
 The departure point of the paper is the skip-gram model
 In this model we are given a corpus of words w and their contexts c

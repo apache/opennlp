@@ -21,42 +21,32 @@ import java.util.List;
 import java.util.Map;
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.TestInstance;
 
+import opennlp.tools.AbstractLoggerTest;
 import opennlp.tools.util.TrainingParameters;
 
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class DefaultTrainingProgressMonitorTest {
-
-  private static final String LOGGER_NAME = "opennlp";
-  private static final Logger logger = (Logger) LoggerFactory.getLogger(LOGGER_NAME);
-  private static final Level originalLogLevel  = logger != null ? logger.getLevel() : Level.OFF;
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class DefaultTrainingProgressMonitorTest extends AbstractLoggerTest {
 
   private TrainingProgressMonitor progressMonitor;
-  private final ListAppender<ILoggingEvent> appender = new ListAppender<>();
-
 
   @BeforeAll
-  static void beforeAll() {
-    logger.setLevel(Level.INFO);
+  protected void beforeAll() {
+    setUp("opennlp", Level.INFO);
   }
 
   @BeforeEach
-  public void setup() {
+  protected void beforeEach() {
     progressMonitor = new DefaultTrainingProgressMonitor();
     appender.list.clear();
-    logger.addAppender(appender);
-    appender.start();
   }
 
   @Test
@@ -67,11 +57,10 @@ class DefaultTrainingProgressMonitorTest {
 
     //Assert that two logging events are captured for two iterations.
     List<String> actual = appender.list.stream().map(ILoggingEvent::getMessage).
-        collect(toList());
+        toList();
     List<String> expected = List.of("1: (19830/20801) Training Accuracy : 0.953319551944618",
         "2: (19852/20801) Training Accuracy : 0.9543771934041633");
     assertArrayEquals(expected.toArray(), actual.toArray());
-
   }
 
   @Test
@@ -83,7 +72,7 @@ class DefaultTrainingProgressMonitorTest {
 
     //Assert that the logs captured the training completion message with StopCriteria satisfied.
     List<String> actual = appender.list.stream().map(ILoggingEvent::getMessage).
-            collect(toList());
+            toList();
     List<String> expected = List.of("Stopping: change in training set accuracy less than {2.0E-5}");
     assertArrayEquals(expected.toArray(), actual.toArray());
   }
@@ -95,7 +84,7 @@ class DefaultTrainingProgressMonitorTest {
 
     //Assert that the logs captured the training completion message when all iterations are exhausted.
     List<String> actual = appender.list.stream().map(ILoggingEvent::getMessage).
-            collect(toList());
+            toList();
     List<String> expected = List.of("Training Finished after completing 150 Iterations successfully.");
     assertArrayEquals(expected.toArray(), actual.toArray());
   }
@@ -121,8 +110,4 @@ class DefaultTrainingProgressMonitorTest {
     assertEquals(2, appender.list.size());
   }
 
-  @AfterAll
-  static void afterAll() {
-    logger.setLevel(originalLogLevel);
-  }
 }
