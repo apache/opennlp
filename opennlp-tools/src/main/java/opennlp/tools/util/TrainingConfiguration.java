@@ -26,4 +26,4 @@ import opennlp.tools.monitoring.TrainingProgressMonitor;
  * @param progMon {@link TrainingProgressMonitor} used to monitor the training progress.
  * @param stopCriteria {@link StopCriteria} used to abort training when the criteria is met.
  */
-public record TrainingConfiguration(TrainingProgressMonitor progMon, StopCriteria stopCriteria) {}
+public record TrainingConfiguration(TrainingProgressMonitor progMon, StopCriteria<Double> stopCriteria) {}

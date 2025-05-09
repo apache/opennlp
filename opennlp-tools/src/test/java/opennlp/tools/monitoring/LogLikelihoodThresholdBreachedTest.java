@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LogLikelihoodThresholdBreachedTest {
 
-  private StopCriteria stopCriteria;
+  private StopCriteria<Double> stopCriteria;
 
   @BeforeEach
   public void setup() {

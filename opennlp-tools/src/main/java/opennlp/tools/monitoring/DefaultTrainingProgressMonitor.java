@@ -63,7 +63,7 @@ public class DefaultTrainingProgressMonitor implements TrainingProgressMonitor {
    * {@inheritDoc}
    */
   @Override
-  public synchronized void finishedTraining(int iterations, StopCriteria stopCriteria) {
+  public synchronized void finishedTraining(int iterations, StopCriteria<?> stopCriteria) {
     if (!Objects.isNull(stopCriteria)) {
       progress.add(stopCriteria.getMessageIfSatisfied());
     } else {
