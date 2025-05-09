@@ -76,8 +76,8 @@ class DefaultTrainingProgressMonitorTest {
 
   @Test
   void testFinishedTrainingWithStopCriteria() {
-    StopCriteria stopCriteria = new IterDeltaAccuracyUnderTolerance(new TrainingParameters(Map.of("Tolerance",
-        .00002)));
+    StopCriteria<Double> stopCriteria = new IterDeltaAccuracyUnderTolerance(
+            new TrainingParameters(Map.of("Tolerance", .00002)));
     progressMonitor.finishedTraining(150, stopCriteria);
     progressMonitor.display(true);
 

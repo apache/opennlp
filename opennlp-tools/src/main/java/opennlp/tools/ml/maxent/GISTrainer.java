@@ -507,7 +507,7 @@ public class GISTrainer extends AbstractEventTrainer {
 
     //Get the Training Progress Monitor and the StopCriteria.
     TrainingProgressMonitor progressMonitor = getTrainingProgressMonitor(trainingConfiguration);
-    StopCriteria stopCriteria = getStopCriteria(trainingConfiguration);
+    StopCriteria<Double> stopCriteria = getStopCriteria(trainingConfiguration);
 
     logger.info("Performing {} iterations.", iterations);
     for (int i = 1; i <= iterations; i++) {
@@ -737,7 +737,7 @@ public class GISTrainer extends AbstractEventTrainer {
    * {@link TrainingConfiguration#stopCriteria()} is {@code null},
    * then return the default {@link StopCriteria}.
    */
-  private StopCriteria getStopCriteria(TrainingConfiguration trainingConfig) {
+  private StopCriteria<Double> getStopCriteria(TrainingConfiguration trainingConfig) {
     return trainingConfig != null && trainingConfig.stopCriteria() != null
         ? trainingConfig.stopCriteria() : new LogLikelihoodThresholdBreached(trainingParameters);
   }

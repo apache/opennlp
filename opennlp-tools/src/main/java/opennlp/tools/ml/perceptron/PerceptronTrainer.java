@@ -302,7 +302,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
 
     //Get the Training Progress Monitor and the StopCriteria.
     TrainingProgressMonitor progressMonitor = getTrainingProgressMonitor(trainingConfiguration);
-    StopCriteria stopCriteria = getStopCriteria(trainingConfiguration);
+    StopCriteria<Double> stopCriteria = getStopCriteria(trainingConfiguration);
 
     // Keep track of the previous three accuracies. The difference of
     // the mean of these and the current training set accuracy is used
@@ -459,7 +459,7 @@ public class PerceptronTrainer extends AbstractEventTrainer {
    * {@link TrainingConfiguration#stopCriteria()} is {@code null},
    * then return the default {@link StopCriteria}.
    */
-  private StopCriteria getStopCriteria(TrainingConfiguration trainingConfig) {
+  private StopCriteria<Double> getStopCriteria(TrainingConfiguration trainingConfig) {
     return trainingConfig != null && trainingConfig.stopCriteria() != null
         ? trainingConfig.stopCriteria() : new IterDeltaAccuracyUnderTolerance(trainingParameters);
   }
