@@ -36,7 +36,6 @@ import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -50,7 +49,6 @@ import opennlp.tools.ngram.NGramGenerator;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.StringList;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NGramLanguageModelToolTest extends AbstractLoggerTest {
 
   private static final int NGRAM_MIN_LENGTH = 1;
