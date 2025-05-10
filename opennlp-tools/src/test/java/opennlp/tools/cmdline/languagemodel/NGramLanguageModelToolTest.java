@@ -98,7 +98,7 @@ class NGramLanguageModelToolTest extends AbstractLoggerTest {
       //assert the expected and actual values of predicted next token for equality.
       for (String[] item : providedAndPredictedTokens) {
         assertions.add(() -> Assertions.assertTrue(actual.stream()
-            .filter(l -> l.contains(Arrays.asList(item[0].split(" ")).toString()))
+            .filter(l -> l.contains(String.join(", ", item[0].split(" "))))
             .findFirst().orElseThrow(AssertionError::new).contains(item[1])));
       }
 
