@@ -21,40 +21,38 @@ import java.util.Objects;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
-import org.junit.jupiter.api.AfterAll;
 import org.slf4j.LoggerFactory;
 
 /**
- * An abstract class to configure a {@link Logger} instance with a test {@link ListAppender}
- * to help with unit-testing.
+ * An abstract class to configure the {@link Logger} instance to help with unit-testing.
  */
 public abstract class AbstractLoggerTest {
 
-  private Logger logger;
-  private Level originalLogLevel;
-  protected ListAppender<ILoggingEvent> appender;
+  public static final String LOGGER_OPENNLP = "opennlp";
 
-  public void setUp(String loggerName, Level logLevel) {
-    logger = (Logger) LoggerFactory.getLogger(loggerName);
+  /**
+   * Prepare the logging resource.
+   * @param loggerName {Name of the {@link Logger}}
+   */
+  public static void prepare(String loggerName) {
+    getLogger(loggerName).setLevel(Level.INFO);
+  }
+
+
+  /*
+   * Restores the logging resource to its default config.
+   */
+  public static void restore(String loggerName) {
+    getLogger(loggerName).setLevel(Level.OFF);
+  }
+
+  private static Logger getLogger(String loggerName) {
+    Logger logger = (Logger) LoggerFactory.getLogger(loggerName);
     if (Objects.isNull(logger)) {
       throw new IllegalArgumentException("A logger instance couldn't be created for the given logger "
           + loggerName);
     }
-    originalLogLevel = logger.getLevel();
-    appender = new ListAppender<>();
-    logger.setLevel(logLevel);
-    logger.addAppender(appender);
-    appender.start();
-  }
-
-  /**
-   * Restores {@link Logger} configuration after all tests are complete.
-   */
-  @AfterAll
-  protected void afterAll() {
-    logger.setLevel(originalLogLevel);
-    appender.stop();
+    return logger;
   }
 }
+

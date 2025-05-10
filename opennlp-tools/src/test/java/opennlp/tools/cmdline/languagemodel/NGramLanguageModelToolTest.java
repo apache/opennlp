@@ -32,12 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
+import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
@@ -46,6 +44,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.AbstractLoggerTest;
+import opennlp.tools.cmdline.PerformanceMonitor;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.ngram.NGramGenerator;
 import opennlp.tools.ngram.NGramModel;
@@ -60,53 +59,55 @@ class NGramLanguageModelToolTest extends AbstractLoggerTest {
   @TempDir
   private static File testDir;
 
-  private final InputStream sysInputStream = System.in;
+  private static final InputStream sysInputStream = System.in;
 
   @BeforeAll
-  protected void beforeAll() {
-    setUp("opennlp", Level.INFO);
-  }
-
-  @BeforeEach
-  protected void beforeEach() {
-    appender.list.clear();
+  public static void prepare() {
+    prepare(LOGGER_OPENNLP);
   }
 
   @ParameterizedTest
   @MethodSource("provideNgramDictionaryXML")
   void testRunTool(String dataFileName, String[][] providedAndPredictedTokens) {
-    //Get test input-file.
-    File inputData = new File(testDir, String.format(dataFileName));
 
-    //Configure input stream to provide user-input.
-    StringBuilder userInput = new StringBuilder();
-    for (String[] item : providedAndPredictedTokens) {
-      userInput.append(item[0]).append("\n");
+    try (LogCaptor logCaptorNglmTool = LogCaptor.forClass(NGramLanguageModelTool.class);
+         LogCaptor logCaptorPerfMon = LogCaptor.forClass(PerformanceMonitor.class)) {
+
+      //Get test input-file.
+      File inputData = new File(testDir, String.format(dataFileName));
+
+      //Configure input stream to provide user-input.
+      StringBuilder userInput = new StringBuilder();
+      for (String[] item : providedAndPredictedTokens) {
+        userInput.append(item[0]).append("\n");
+      }
+      System.setIn(new ByteArrayInputStream(userInput.toString().getBytes()));
+
+      //Invoke the tool.
+      NGramLanguageModelTool nGramLMTool = new NGramLanguageModelTool();
+      nGramLMTool.run(new String[] {inputData.getPath()});
+
+      //Collect any LogStream Events generated via the tool.
+      List<String> actual = new LinkedList<>();
+      actual.addAll(logCaptorNglmTool.getInfoLogs());
+      actual.addAll(logCaptorPerfMon.getInfoLogs());
+
+
+      List<Executable> assertions = new LinkedList<>();
+
+      //assert the expected and actual values of predicted next token for equality.
+      for (String[] item : providedAndPredictedTokens) {
+        assertions.add(() -> Assertions.assertTrue(actual.stream()
+            .filter(l -> l.contains(Arrays.asList(item[0].split(" ")).toString()))
+            .findFirst().orElseThrow(AssertionError::new).contains(item[1])));
+      }
+
+      //assert completion stats
+      assertions.add(() -> Assertions.assertEquals("Total: " + providedAndPredictedTokens.length + " nglm",
+          actual.stream().filter(l -> l.contains("Total")).findFirst().orElseThrow(AssertionError::new)));
+
+      Assertions.assertAll(assertions);
     }
-    System.setIn(new ByteArrayInputStream(userInput.toString().getBytes()));
-
-    //Invoke the tool.
-    NGramLanguageModelTool nGramLMTool = new NGramLanguageModelTool();
-    nGramLMTool.run(new String[] {inputData.getPath()});
-
-    //Collect any LogStream Events generated via the tool.
-    List<String> actual = appender.list.stream().map(ILoggingEvent::getFormattedMessage).
-        toList();
-
-    List<Executable> assertions = new LinkedList<>();
-
-    //assert the expected and actual values of predicted next token for equality.
-    for (String[] item : providedAndPredictedTokens) {
-      assertions.add(() -> Assertions.assertTrue(actual.stream()
-          .filter(l -> l.contains(Arrays.asList(item[0].split(" ")).toString()))
-          .findFirst().orElseThrow(AssertionError::new).contains(item[1])));
-    }
-
-    //assert performance stats
-    assertions.add(() -> Assertions.assertEquals("Total: " + providedAndPredictedTokens.length + " nglm",
-        actual.stream().filter(l -> l.contains("Total")).findFirst().orElseThrow(AssertionError::new)));
-
-    Assertions.assertAll(assertions);
   }
 
   private static Stream<Arguments> provideNgramDictionaryXML() {
@@ -155,13 +156,11 @@ class NGramLanguageModelToolTest extends AbstractLoggerTest {
   }
 
   /**
-   * {@inheritDoc}
-   * Restores {@link System#in} to its original value.
+   * Restores testing resources to original configuration.
    */
-  @Override
   @AfterAll
-  protected void afterAll() {
-    super.afterAll();
+  public static void afterAll() {
+    restore(LOGGER_OPENNLP);
     System.setIn(sysInputStream);
   }
 }
