@@ -32,7 +32,7 @@ public abstract class AbstractLoggerTest {
 
   /**
    * Prepare the logging resource.
-   * @param loggerName {Name of the {@link Logger}}
+   * @param loggerName Name of the {@link Logger}.
    */
   public static void prepare(String loggerName) {
     getLogger(loggerName).setLevel(Level.INFO);
