@@ -1,0 +1,4 @@
+| Test data file name   | Source                                                            |
+| --------------------- | ----------------------------------------------------------------- |
+| sentences_set_1.txt   | https://emerj.com/what-is-machine-learning/                       |
+| sentences_set_2.txt   | https://www.nasa.gov/history/50-years-ago-apollo-11-preparations/ |
