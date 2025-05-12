@@ -55,4 +55,3 @@ public abstract class AbstractLoggerTest {
     return logger;
   }
 }
-
