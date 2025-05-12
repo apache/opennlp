@@ -38,7 +38,6 @@ public abstract class AbstractLoggerTest {
     getLogger(loggerName).setLevel(Level.INFO);
   }
 
-
   /*
    * Restores the logging resource to its default config.
    */
