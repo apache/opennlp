@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class IterDeltaAccuracyUnderToleranceTest {
 
-  private StopCriteria stopCriteria;
+  private StopCriteria<Double> stopCriteria;
 
   @BeforeEach
   public void setup() {
