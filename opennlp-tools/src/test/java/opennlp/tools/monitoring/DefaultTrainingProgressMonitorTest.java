@@ -59,7 +59,7 @@ class DefaultTrainingProgressMonitorTest extends AbstractLoggerTest {
   @Test
   void testFinishedTrainingWithStopCriteria() {
     try (LogCaptor logCaptor = LogCaptor.forClass(DefaultTrainingProgressMonitor.class)) {
-      StopCriteria stopCriteria = new IterDeltaAccuracyUnderTolerance(
+      StopCriteria<Double> stopCriteria = new IterDeltaAccuracyUnderTolerance(
           new TrainingParameters(Map.of("Tolerance", .00002)));
       progressMonitor.finishedTraining(150, stopCriteria);
       progressMonitor.display(true);
