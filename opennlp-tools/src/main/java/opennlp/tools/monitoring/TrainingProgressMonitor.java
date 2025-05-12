@@ -43,7 +43,7 @@ public interface TrainingProgressMonitor {
    * @param iterations   Total number of iterations configured for the training.
    * @param stopCriteria {@link StopCriteria} for the training.
    */
-  void finishedTraining(int iterations, StopCriteria stopCriteria);
+  void finishedTraining(int iterations, StopCriteria<?> stopCriteria);
 
   /**
    * Checks whether the training has finished.
