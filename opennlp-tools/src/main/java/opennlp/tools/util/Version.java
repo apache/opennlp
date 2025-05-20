@@ -199,4 +199,16 @@ public class Version {
 
     return Version.parse(versionString);
   }
+
+  /**
+   * Checks whether a {@code version} is in between an interval and its boundaries.
+   *
+   * @param version The (major) version number to check.
+   * @param minValue The inclusive value of the lower interval boundary.
+   * @param maxValue The inclusive value of the upper interval boundary.
+   * @return {@code true} if the value is in between the boundary, {@code false} otherwise.
+   */
+  public static boolean between(int version, int minValue, int maxValue) {
+    return (version >= minValue && version <= maxValue);
+  }
 }
