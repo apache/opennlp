@@ -38,16 +38,44 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.EnabledWhenCDNAvailable;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.namefind.TokenNameFinderTrainerTool;
+import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.POSTaggerMETest;
+import opennlp.tools.postag.POSSample;
+import opennlp.tools.postag.POSTaggerFactory;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.postag.WordTagSampleStream;
 import opennlp.tools.util.FileUtil;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.Parameters;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
 
 public class TokenNameFinderModelTest extends AbstractNameFinderTest {
+
+  private static ObjectStream<POSSample> createSampleStream() throws IOException {
+    InputStreamFactory in = new ResourceAsStreamFactory(TokenNameFinderModelTest.class,
+            "/opennlp/tools/postag/AnnotatedSentences.txt"); //PENN FORMAT
+
+    return new WordTagSampleStream(new PlainTextByLineStream(in, StandardCharsets.UTF_8));
+  }
+
+  /**
+   * Trains a POSModel from the annotated test data.
+   *
+   * @return {@link POSModel}
+   */
+  static POSModel trainPennFormatPOSModel(ModelType type) throws IOException {
+    TrainingParameters params = new TrainingParameters();
+    params.put(Parameters.ALGORITHM_PARAM, type.toString());
+    params.put(Parameters.ITERATIONS_PARAM, 100);
+    params.put(Parameters.CUTOFF_PARAM, 5);
+
+    return POSTaggerME.train("eng", createSampleStream(), params,
+            new POSTaggerFactory());
+  }
 
   @Test
   void testNERWithPOSModel() throws IOException {
@@ -56,7 +84,7 @@ public class TokenNameFinderModelTest extends AbstractNameFinderTest {
     Path resourcesFolder = Files.createTempDirectory("resources").toAbsolutePath();
 
     // save a POS model there
-    POSModel posModel = POSTaggerMETest.trainPennFormatPOSModel(ModelType.MAXENT);
+    POSModel posModel = trainPennFormatPOSModel(ModelType.MAXENT);
     Assertions.assertNotNull(posModel);
 
     File posModelFile = new File(resourcesFolder.toFile(), "pos-model.bin");
@@ -90,8 +118,8 @@ public class TokenNameFinderModelTest extends AbstractNameFinderTest {
                       new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
 
       TrainingParameters params = new TrainingParameters();
-      params.put(TrainingParameters.ITERATIONS_PARAM, 70);
-      params.put(TrainingParameters.CUTOFF_PARAM, 1);
+      params.put(Parameters.ITERATIONS_PARAM, 70);
+      params.put(Parameters.CUTOFF_PARAM, 1);
 
       TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
               params, TokenNameFinderFactory.create(null,
@@ -165,8 +193,8 @@ public class TokenNameFinderModelTest extends AbstractNameFinderTest {
             new File("opennlp/tools/namefind/voa1.train")), StandardCharsets.UTF_8));
 
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, 70);
-    params.put(TrainingParameters.CUTOFF_PARAM, 1);
+    params.put(Parameters.ITERATIONS_PARAM, 70);
+    params.put(Parameters.CUTOFF_PARAM, 1);
 
     TokenNameFinderModel nameFinderModel = NameFinderME.train("en", null, sampleStream,
         params, TokenNameFinderFactory.create(null,

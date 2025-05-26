@@ -19,13 +19,11 @@ package opennlp.tools.util.wordvector;
 
 import java.io.InputStream;
 
-import opennlp.tools.formats.AbstractFormatTest;
-
 public class AbstractWordVectorTest {
 
   protected static final String FORMATS_BASE_DIR = "/opennlp/tools/util/wordvector/";
 
   protected InputStream getResourceStream(String resource) {
-    return AbstractFormatTest.class.getResourceAsStream(FORMATS_BASE_DIR + resource);
+    return AbstractWordVectorTest.class.getResourceAsStream(FORMATS_BASE_DIR + resource);
   }
 }

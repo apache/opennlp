@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.    
+-->
+
+<dictionary case_sensitive="false">
+<entry>
+<token>tel.</token>
+</entry>
+<entry>
+<token>Mr.</token>
+</entry>
+<entry>
+<token>Mrs.</token>
+</entry>
+<entry>
+<token>.i.</token>
+</entry>
+<entry>
+<token>Uacht.</token>
+</entry>
+<entry>
+<token>m.sh.</token>
+</entry>
+<entry>
+<token>lch.</token>
+</entry>
+<entry>
+<token>lgh.</token>
+</entry>
+<entry>
+<token>Dr.</token>
+</entry>
+<entry>
+<token>uimh.</token>
+</entry>
+<entry>
+<token>Co.</token>
+</entry>
+<entry>
+<token>gCo.</token>
+</entry>
+<entry>
+<token>tUacht.</token>
+</entry>
+<entry>
+<token>Uas.</token>
+</entry>
+<entry>
+<token>tUas.</token>
+</entry>
+<entry>
+<token>Msc.</token>
+</entry>
+<entry>
+<token>Ms.</token>
+</entry>
+<entry>
+<token>Sr.</token>
+</entry>
+<entry>
+<token>Jr.</token>
+</entry>
+<entry>
+<token>Bros.</token>
+</entry>
+<entry>
+<token>fig.</token>
+</entry>
+<entry>
+<token>Jan.</token>
+</entry>
+<entry>
+<token>Feb.</token>
+</entry>
+<entry>
+<token>Mar.</token>
+</entry>
+<entry>
+<token>Apr.</token>
+</entry>
+<entry>
+<token>Jun.</token>
+</entry>
+<entry>
+<token>Jul.</token>
+</entry>
+<entry>
+<token>Aug.</token>
+</entry>
+<entry>
+<token>Sep.</token>
+</entry>
+<entry>
+<token>Sept.</token>
+</entry>
+<entry>
+<token>Oct.</token>
+</entry>
+<entry>
+<token>Nov.</token>
+</entry>
+<entry>
+<token>Dec.</token>
+</entry>
+<entry>
+<token>Ean.</token>
+</entry>
+<entry>
+<token>Fea.</token>
+</entry>
+<entry>
+<token>Már.</token>
+</entry>
+<entry>
+<token>Aib.</token>
+</entry>
+<entry>
+<token>Bea.</token>
+</entry>
+<entry>
+<token>Mei.</token>
+</entry>
+<entry>
+<token>Iúl.</token>
+</entry>
+<entry>
+<token>Lún.</token>
+</entry>
+<entry>
+<token>M.Fr.</token>
+</entry>
+<entry>
+<token>D.Fr.</token>
+</entry>
+<entry>
+<token>Sam.</token>
+</entry>
+<entry>
+<token>Nol.</token>
+</entry>
+<entry>
+<token>Ltd.</token>
+</entry>
+<entry>
+<token>Teo.</token>
+</entry>
+</dictionary>

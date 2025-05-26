@@ -17,19 +17,36 @@
 
 package opennlp.tools.namefind;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 
-import opennlp.tools.AbstractModelLoaderTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.MockInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.Parameters;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 
-abstract class AbstractNameFinderTest extends AbstractModelLoaderTest {
+abstract class AbstractNameFinderTest {
+
+  private static final Logger logger = LoggerFactory.getLogger(AbstractNameFinderTest.class);
+
+  protected static final Path OPENNLP_DIR = Paths.get(System.getProperty("OPENNLP_DOWNLOAD_HOME",
+          System.getProperty("user.home"))).resolve(".opennlp");
+
+  private static final String BASE_URL_MODELS_V15 = "https://opennlp.sourceforge.net/models-1.5/";
 
   protected static boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
     SequenceClassificationModel model = nameFinderModel.getNameFinderSequenceModel();
@@ -53,9 +70,9 @@ abstract class AbstractNameFinderTest extends AbstractModelLoaderTest {
    */
   protected static TokenNameFinderModel trainModel(String langCode, String trainingFile) throws IOException {
     TrainingParameters params = new TrainingParameters();
-    params.put(TrainingParameters.ITERATIONS_PARAM, 150);
-    params.put(TrainingParameters.THREADS_PARAM, 4);
-    params.put(TrainingParameters.CUTOFF_PARAM, 3);
+    params.put(Parameters.ITERATIONS_PARAM, 150);
+    params.put(Parameters.THREADS_PARAM, 4);
+    params.put(Parameters.CUTOFF_PARAM, 3);
     return trainModel(langCode, trainingFile, params);
   }
 
@@ -92,5 +109,25 @@ abstract class AbstractNameFinderTest extends AbstractModelLoaderTest {
             new MockInputStreamFactory(new File(trainingFile)), StandardCharsets.UTF_8));
     return NameFinderME.train(langCode, null, sampleStream, params,
             TokenNameFinderFactory.create(null, featGeneratorBytes, Collections.emptyMap(), new BioCodec()));
+  }
+
+  protected static void downloadVersion15Model(String modelName) throws IOException {
+    downloadModel(new URL(BASE_URL_MODELS_V15 + modelName));
+  }
+
+  private static void downloadModel(URL url) throws IOException {
+    if (!Files.isDirectory(OPENNLP_DIR)) {
+      OPENNLP_DIR.toFile().mkdir();
+    }
+    final String filename = url.toString().substring(url.toString().lastIndexOf("/") + 1);
+    final Path localFile = Paths.get(OPENNLP_DIR.toString(), filename);
+
+    if (!Files.exists(localFile)) {
+      logger.debug("Downloading model from {} to {}.", url, localFile);
+      try (final InputStream in = new BufferedInputStream(url.openStream())) {
+        Files.copy(in, localFile, StandardCopyOption.REPLACE_EXISTING);
+      }
+      logger.debug("Download complete.");
+    }
   }
 }

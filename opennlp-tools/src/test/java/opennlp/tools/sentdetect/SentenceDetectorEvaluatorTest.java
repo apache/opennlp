@@ -28,15 +28,23 @@ import opennlp.tools.util.Span;
 
 public class SentenceDetectorEvaluatorTest {
 
+  public static SentenceSample createGoldSample() {
+    return new SentenceSample("1. 2.", new Span(0, 2), new Span(3, 5));
+  }
+
+  public static SentenceSample createPredSample() {
+    return new SentenceSample("1. 2.", new Span(0, 1), new Span(4, 5));
+  }
+
   @Test
   void testPositive() {
     OutputStream stream = new ByteArrayOutputStream();
     SentenceDetectorEvaluationMonitor listener = new SentenceEvaluationErrorListener(stream);
 
-    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(
-        SentenceSampleTest.createGoldSample()), listener);
+    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(
+            new DummySD(createGoldSample()), listener);
 
-    eval.evaluateSample(SentenceSampleTest.createGoldSample());
+    eval.evaluateSample(createGoldSample());
 
     Assertions.assertEquals(1.0, eval.getFMeasure().getFMeasure());
     Assertions.assertEquals(0, stream.toString().length());
@@ -47,19 +55,18 @@ public class SentenceDetectorEvaluatorTest {
     OutputStream stream = new ByteArrayOutputStream();
     SentenceDetectorEvaluationMonitor listener = new SentenceEvaluationErrorListener(stream);
 
-    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(new DummySD(
-        SentenceSampleTest.createGoldSample()), listener);
+    SentenceDetectorEvaluator eval = new SentenceDetectorEvaluator(
+            new DummySD(createGoldSample()), listener);
 
-    eval.evaluateSample(SentenceSampleTest.createPredSample());
+    eval.evaluateSample(createPredSample());
 
     Assertions.assertEquals(-1.0, eval.getFMeasure().getFMeasure(), .1d);
-
     Assertions.assertNotSame(0, stream.toString().length());
   }
 
 
   /**
-   * a dummy sentence detector that always return something expected
+   * A dummy sentence detector that always return something expected
    */
   public static class DummySD implements SentenceDetector {
 

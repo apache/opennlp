@@ -35,6 +35,7 @@ import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
 import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
 import opennlp.tools.ml.perceptron.PerceptronTrainer;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
 
@@ -112,25 +113,25 @@ public abstract class AbstractEvalTest {
 
   public TrainingParameters createPerceptronParams() {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    params.put(TrainingParameters.ALGORITHM_PARAM,
+    params.put(Parameters.ALGORITHM_PARAM,
         PerceptronTrainer.PERCEPTRON_VALUE);
-    params.put(TrainingParameters.CUTOFF_PARAM, 0);
+    params.put(Parameters.CUTOFF_PARAM, 0);
     return params;
   }
 
   public TrainingParameters createMaxentQnParams() {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    params.put(TrainingParameters.ALGORITHM_PARAM,
+    params.put(Parameters.ALGORITHM_PARAM,
         QNTrainer.MAXENT_QN_VALUE);
-    params.put(TrainingParameters.CUTOFF_PARAM, 0);
+    params.put(Parameters.CUTOFF_PARAM, 0);
     return params;
   }
 
   public TrainingParameters createNaiveBayesParams() {
     TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-    params.put(TrainingParameters.ALGORITHM_PARAM,
+    params.put(Parameters.ALGORITHM_PARAM,
         NaiveBayesTrainer.NAIVE_BAYES_VALUE);
-    params.put(TrainingParameters.CUTOFF_PARAM, 5);
+    params.put(Parameters.CUTOFF_PARAM, 5);
     return params;
   }
 
