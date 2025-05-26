@@ -18,6 +18,7 @@
 package opennlp.tools.langdetect;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,13 +26,43 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.cmdline.langdetect.LanguageDetectorEvaluationErrorListener;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.Parameters;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 
 
 public class LanguageDetectorEvaluatorTest {
 
+  static LanguageDetectorModel trainModel() throws Exception {
+    return trainModel(new LanguageDetectorFactory());
+  }
+
+  private static LanguageDetectorModel trainModel(LanguageDetectorFactory factory) throws Exception {
+    LanguageDetectorSampleStream sampleStream = createSampleStream();
+
+    TrainingParameters params = new TrainingParameters();
+    params.put(Parameters.ITERATIONS_PARAM, 100);
+    params.put(Parameters.CUTOFF_PARAM, 5);
+    params.put("DataIndexer", "TwoPass");
+    params.put(Parameters.ALGORITHM_PARAM, "NAIVEBAYES");
+
+    return LanguageDetectorME.train(sampleStream, params, factory);
+  }
+
+  private static LanguageDetectorSampleStream createSampleStream() throws IOException {
+
+    ResourceAsStreamFactory streamFactory = new ResourceAsStreamFactory(
+            LanguageDetectorEvaluatorTest.class, "/opennlp/tools/doccat/DoccatSample.txt");
+
+    PlainTextByLineStream lineStream = new PlainTextByLineStream(streamFactory, StandardCharsets.UTF_8);
+
+    return new LanguageDetectorSampleStream(lineStream);
+  }
+
   @Test
   void processSample() throws Exception {
-    LanguageDetectorModel model = LanguageDetectorMETest.trainModel();
+    LanguageDetectorModel model = trainModel();
     LanguageDetectorME langdetector = new LanguageDetectorME(model);
 
     final AtomicInteger correctCount = new AtomicInteger();

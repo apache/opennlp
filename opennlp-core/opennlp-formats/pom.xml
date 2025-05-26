@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-core</artifactId>
+    <version>3.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>opennlp-formats</artifactId>
+  <packaging>jar</packaging>
+  <name>Apache OpenNLP Core Formats</name>
+
+  <dependencies>
+    <!-- Internal dependencies -->
+    <dependency>
+      <artifactId>opennlp-api</artifactId>
+      <groupId>${project.groupId}</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>opennlp-runtime</artifactId>
+      <groupId>${project.groupId}</groupId>
+    </dependency>
+
+    <!-- External dependencies -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <!-- TEST scoped -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- JUnit5 extension used in CLITest to prevent System.exit(..) calls terminating test runs -->
+    <dependency>
+      <groupId>com.ginsberg</groupId>
+      <artifactId>junit5-system-exit</artifactId>
+      <version>${junit5-system-exit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.hakky54</groupId>
+      <artifactId>logcaptor</artifactId>
+      <version>${logcaptor.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <excludePackageNames>opennlp.tools.cmdline</excludePackageNames>
+        </configuration>
+        <executions>
+          <execution>
+            <id>create-javadoc-jar</id>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-Xmx2048m -DOPENNLP_DOWNLOAD_HOME=${opennlp.download.home} -javaagent:${settings.localRepository}/com/ginsberg/junit5-system-exit/${junit5-system-exit.version}/junit5-system-exit-${junit5-system-exit.version}.jar</argLine>
+          <forkCount>${opennlp.forkCount}</forkCount>
+          <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+          <excludes>
+            <exclude>**/stemmer/*</exclude>
+            <exclude>**/stemmer/snowball/*</exclude>
+            <exclude>**/*IT.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>

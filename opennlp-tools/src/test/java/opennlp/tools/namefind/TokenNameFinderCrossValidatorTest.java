@@ -30,6 +30,7 @@ import opennlp.tools.formats.ResourceAsStreamFactory;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.InsufficientTrainingDataException;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.Parameters;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelType;
@@ -51,10 +52,10 @@ public class TokenNameFinderCrossValidatorTest {
         new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 70);
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, 1);
+    mlParams.put(Parameters.ITERATIONS_PARAM, 70);
+    mlParams.put(Parameters.CUTOFF_PARAM, 1);
 
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM,
+    mlParams.put(Parameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
 
     TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng",
@@ -78,10 +79,10 @@ public class TokenNameFinderCrossValidatorTest {
         new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 70);
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, 1);
+    mlParams.put(Parameters.ITERATIONS_PARAM, 70);
+    mlParams.put(Parameters.CUTOFF_PARAM, 1);
 
-    mlParams.put(TrainingParameters.ALGORITHM_PARAM,
+    mlParams.put(Parameters.ALGORITHM_PARAM,
         ModelType.MAXENT.toString());
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -109,10 +110,10 @@ public class TokenNameFinderCrossValidatorTest {
           new PlainTextByLineStream(in, StandardCharsets.ISO_8859_1));
 
       TrainingParameters mlParams = new TrainingParameters();
-      mlParams.put(TrainingParameters.ITERATIONS_PARAM, 70);
-      mlParams.put(TrainingParameters.CUTOFF_PARAM, 1);
+      mlParams.put(Parameters.ITERATIONS_PARAM, 70);
+      mlParams.put(Parameters.CUTOFF_PARAM, 1);
 
-      mlParams.put(TrainingParameters.ALGORITHM_PARAM,
+      mlParams.put(Parameters.ALGORITHM_PARAM,
           ModelType.MAXENT.toString());
 
       TokenNameFinderCrossValidator cv = new TokenNameFinderCrossValidator("eng",
