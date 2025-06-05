@@ -45,10 +45,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.opennlp</groupId>
-      <artifactId>opennlp-ml</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.opennlp</groupId>
       <artifactId>opennlp-formats</artifactId>
     </dependency>
     <dependency>
@@ -58,6 +54,25 @@
     <dependency>
       <groupId>org.apache.opennlp</groupId>
       <artifactId>opennlp-cli</artifactId>
+    </dependency>
+    <dependency>
+      <artifactId>opennlp-ml-commons</artifactId>
+      <groupId>${project.groupId}</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>opennlp-ml-perceptron</artifactId>
+      <groupId>${project.groupId}</groupId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <artifactId>opennlp-ml-bayes</artifactId>
+      <groupId>${project.groupId}</groupId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <artifactId>opennlp-ml-maxent</artifactId>
+      <groupId>${project.groupId}</groupId>
+      <scope>runtime</scope>
     </dependency>
 
     <!-- External dependencies -->

@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.PrepAttachDataUtil;
-import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.DataIndexer;
 import opennlp.tools.ml.model.Event;
@@ -69,7 +68,8 @@ public class NaiveBayesPrepAttachTest {
     trainParams.put(Parameters.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
     trainParams.put(Parameters.CUTOFF_PARAM, 1);
 
-    EventTrainer<TrainingParameters> trainer = TrainerFactory.getEventTrainer(trainParams, null);
+    EventTrainer<TrainingParameters> trainer = new NaiveBayesTrainer();
+    trainer.init(trainParams, null);
     MaxentModel model = trainer.train(trainingStream);
     Assertions.assertInstanceOf(NaiveBayesModel.class, model);
     PrepAttachDataUtil.testModel(model, 0.7897994553107205);
@@ -81,7 +81,8 @@ public class NaiveBayesPrepAttachTest {
     trainParams.put(Parameters.ALGORITHM_PARAM, NaiveBayesTrainer.NAIVE_BAYES_VALUE);
     trainParams.put(Parameters.CUTOFF_PARAM, 5);
 
-    EventTrainer<TrainingParameters> trainer = TrainerFactory.getEventTrainer(trainParams, null);
+    EventTrainer<TrainingParameters> trainer = new NaiveBayesTrainer();
+    trainer.init(trainParams, null);
     MaxentModel model = trainer.train(trainingStream);
     Assertions.assertInstanceOf(NaiveBayesModel.class, model);
     PrepAttachDataUtil.testModel(model, 0.7945035899975241);
