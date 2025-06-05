@@ -20,6 +20,7 @@ package opennlp.tools.ml.perceptron;
 import java.util.Arrays;
 import java.util.Objects;
 
+import opennlp.tools.ml.AlgorithmType;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
@@ -45,7 +46,7 @@ public class PerceptronModel extends AbstractModel {
    */
   public PerceptronModel(Context[] params, String[] predLabels, String[] outcomeNames) {
     super(params,predLabels,outcomeNames);
-    modelType = ModelType.Perceptron;
+    modelType = AlgorithmType.PERCEPTRON;
   }
 
   /**

@@ -19,13 +19,12 @@ package opennlp.tools.namefind;
 
 import java.io.IOException;
 
-import opennlp.tools.ml.maxent.DataStream;
 import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
  * The {@link NameSampleDataStream} class converts tagged tokens
- * provided by a {@link DataStream} to {@link NameSample} objects.
+ * provided by a DataStream to {@link NameSample} objects.
  * <p>
  * It uses text that is one-sentence per line and tokenized
  * with names identified by: <br/>

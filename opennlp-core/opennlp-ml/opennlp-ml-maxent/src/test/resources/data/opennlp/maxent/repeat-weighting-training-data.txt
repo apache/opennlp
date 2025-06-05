@@ -1,0 +1,20 @@
+A feature1 feature1 feature1 feature1 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature4 feature4
+A feature1 feature1 feature2 feature2 feature2 feature2 feature4 feature4 feature4
+A feature2 feature2 feature2 feature2 feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature4 feature4 feature4 feature4
+A feature1 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature4 feature4 feature4
+A feature1 feature1 feature1 feature1 feature2 feature2 feature2 feature2 feature2 feature4 feature4
+A feature1 feature1 feature1 feature2 feature2 feature2 feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3
+A feature2 feature2 feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature4 feature4
+A feature1 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3
+A feature2 feature2 feature2 feature2 feature2 feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature4 feature4 feature4
+A feature1 feature1 feature1 feature2 feature2 feature2 feature2 feature2 feature2 feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3
+B feature5 feature5 feature5 feature5 feature2 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4
+B feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3
+B feature5 feature5 feature5 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4
+B feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3
+B feature5 feature5 feature5 feature5 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4
+B feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3
+B feature5 feature5 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4
+B feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3
+B feature5 feature5 feature5 feature5 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4 feature4
+B feature2 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature3 feature4 feature4 feature4 feature4

@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
+import opennlp.tools.ml.AlgorithmType;
+
 public interface Parameters {
   
   String ALGORITHM_PARAM = "Algorithm";
@@ -28,6 +30,9 @@ public interface Parameters {
   String ITERATIONS_PARAM = "Iterations";
   String CUTOFF_PARAM = "Cutoff";
   String THREADS_PARAM = "Threads";
+
+  String ALGORITHM_DEFAULT_VALUE = AlgorithmType.MAXENT.getAlgorithmType();
+
   /**
    * The default number of iterations is 100.
    */
