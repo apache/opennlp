@@ -16,9 +16,19 @@
   <dependencies>
     <!-- Internal dependencies -->
     <dependency>
+      <groupId>org.apache.opennlp</groupId>
       <artifactId>opennlp-api</artifactId>
-      <groupId>${project.groupId}</groupId>
-      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-ml-commons</artifactId>
+    </dependency>
+
+    <!-- this is added here as the default ML algorithm is maxent -->
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-ml-maxent</artifactId>
     </dependency>
 
     <!-- External dependencies -->

@@ -29,7 +29,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import opennlp.tools.commons.Internal;
-import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.GenericModelWriter;
 import opennlp.tools.ml.model.MaxentModel;
@@ -152,7 +151,7 @@ public final class ModelUtil {
   @Internal
   public static TrainingParameters createDefaultTrainingParameters() {
     TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(Parameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    mlParams.put(Parameters.ALGORITHM_PARAM, Parameters.ALGORITHM_DEFAULT_VALUE);
     mlParams.put(Parameters.ITERATIONS_PARAM, 100);
     mlParams.put(Parameters.CUTOFF_PARAM, 5);
 

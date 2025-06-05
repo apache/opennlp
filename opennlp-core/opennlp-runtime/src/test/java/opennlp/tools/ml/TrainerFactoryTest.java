@@ -22,10 +22,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.TrainerFactory.TrainerType;
-import opennlp.tools.ml.maxent.GISTrainer;
 import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.monitoring.DefaultTrainingProgressMonitor;
-import opennlp.tools.monitoring.LogLikelihoodThresholdBreached;
+import opennlp.tools.monitoring.StopCriteria;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
@@ -40,7 +39,7 @@ public class TrainerFactoryTest {
   @BeforeEach
   void setup() {
     mlParams = new TrainingParameters();
-    mlParams.put(Parameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    mlParams.put(Parameters.ALGORITHM_PARAM, Parameters.ALGORITHM_DEFAULT_VALUE);
     mlParams.put(Parameters.ITERATIONS_PARAM, 10);
     mlParams.put(Parameters.CUTOFF_PARAM, 5);
   }
@@ -80,23 +79,35 @@ public class TrainerFactoryTest {
 
   @Test
   void testIsSequenceTrainerFalse() {
-    mlParams.put(Parameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    mlParams.put(Parameters.ALGORITHM_PARAM, Parameters.ALGORITHM_DEFAULT_VALUE);
     TrainerType trainerType = TrainerFactory.getTrainerType(mlParams);
     Assertions.assertNotEquals(TrainerType.EVENT_MODEL_SEQUENCE_TRAINER, trainerType);
   }
 
   @Test
   void testGetEventTrainerConfiguration() {
-    mlParams.put(Parameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+    mlParams.put(Parameters.ALGORITHM_PARAM, Parameters.ALGORITHM_DEFAULT_VALUE);
 
     TrainingConfiguration config = new TrainingConfiguration(new DefaultTrainingProgressMonitor(),
-        new LogLikelihoodThresholdBreached(mlParams));
+        new MockStopCriteria());
 
     AbstractTrainer<TrainingParameters> trainer =
             (AbstractTrainer<TrainingParameters>) TrainerFactory.getEventTrainer(mlParams, null, config);
     TrainingConfiguration configuration = trainer.getTrainingConfiguration();
     assertAll(
             () -> assertInstanceOf(DefaultTrainingProgressMonitor.class, configuration.progMon()),
-            () -> assertInstanceOf(LogLikelihoodThresholdBreached.class, configuration.stopCriteria()));
+            () -> assertInstanceOf(MockStopCriteria.class, configuration.stopCriteria()));
+  }
+
+  private static class MockStopCriteria implements StopCriteria<Double> {
+    @Override
+    public String getMessageIfSatisfied() {
+      return "";
+    }
+
+    @Override
+    public boolean test(Double aDouble) {
+      return false;
+    }
   }
 }

@@ -18,14 +18,10 @@
 package opennlp.tools.ml;
 
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.Map;
 
 import opennlp.tools.commons.Trainer;
-import opennlp.tools.ml.maxent.GISTrainer;
-import opennlp.tools.ml.maxent.quasinewton.QNTrainer;
-import opennlp.tools.ml.naivebayes.NaiveBayesTrainer;
-import opennlp.tools.ml.perceptron.PerceptronTrainer;
-import opennlp.tools.ml.perceptron.SimplePerceptronSequenceTrainer;
 import opennlp.tools.monitoring.DefaultTrainingProgressMonitor;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingConfiguration;
@@ -52,12 +48,20 @@ public class TrainerFactory {
    * Initialize the built-in trainers
    */
   static {
-    BUILTIN_TRAINERS = Map.of(
-        GISTrainer.MAXENT_VALUE, GISTrainer.class,
-        QNTrainer.MAXENT_QN_VALUE, QNTrainer.class,
-        PerceptronTrainer.PERCEPTRON_VALUE, PerceptronTrainer.class,
-        SimplePerceptronSequenceTrainer.PERCEPTRON_SEQUENCE_VALUE, SimplePerceptronSequenceTrainer.class,
-        NaiveBayesTrainer.NAIVE_BAYES_VALUE, NaiveBayesTrainer.class);
+    BUILTIN_TRAINERS = new HashMap<>();
+
+    for (AlgorithmType tat : AlgorithmType.values()) {
+      final String clazz = tat.getTrainerClazz();
+      try {
+        final Class<? extends Trainer<TrainingParameters>> c
+            = (Class<? extends Trainer<TrainingParameters>>) Class.forName(clazz);
+        BUILTIN_TRAINERS.put(tat.getAlgorithmType(), c);
+      } catch (ClassNotFoundException ignored) {
+        // Try to load all available trainers.
+        // Ignore the ones that are not available on the classpath.
+      }
+    }
+
   }
 
   /**
@@ -127,7 +131,7 @@ public class TrainerFactory {
    * @throws IllegalArgumentException Thrown if the trainer type could not be determined.
    */
   public static SequenceTrainer<TrainingParameters> getSequenceModelTrainer(
-          TrainingParameters trainParams, Map<String, String> reportMap) {
+      TrainingParameters trainParams, Map<String, String> reportMap) {
     String trainerType = trainParams.getStringParameter(Parameters.ALGORITHM_PARAM, null);
 
     if (trainerType != null) {
@@ -156,7 +160,7 @@ public class TrainerFactory {
    * @throws IllegalArgumentException Thrown if the trainer type could not be determined.
    */
   public static <T> EventModelSequenceTrainer<T, TrainingParameters> getEventModelSequenceTrainer(
-          TrainingParameters trainParams, Map<String, String> reportMap) {
+      TrainingParameters trainParams, Map<String, String> reportMap) {
     String trainerType = trainParams.getStringParameter(Parameters.ALGORITHM_PARAM, null);
 
     if (trainerType != null) {
@@ -178,7 +182,7 @@ public class TrainerFactory {
    * except that {@link TrainingConfiguration} is initialized with default values.
    */
   public static EventTrainer<TrainingParameters> getEventTrainer(
-          TrainingParameters trainParams, Map<String, String> reportMap) {
+      TrainingParameters trainParams, Map<String, String> reportMap) {
 
     TrainingConfiguration trainingConfiguration
         = new TrainingConfiguration(new DefaultTrainingProgressMonitor(), null);
@@ -191,18 +195,18 @@ public class TrainerFactory {
    * @param trainParams The {@link Parameters} to check for the trainer type.
    *                    Note: The entry {@link Parameters#ALGORITHM_PARAM} is used
    *                    to determine the type. If the type is not defined, the
-   *                    {@link GISTrainer#MAXENT_VALUE} will be used.
+   *                    {@link Parameters#ALGORITHM_DEFAULT_VALUE} will be used.
    * @param reportMap   A {@link Map} that shall be used during initialization of
    *                    the {@link EventTrainer}.
    * @param config      The {@link TrainingConfiguration} to be used.
    * @return A valid {@link EventTrainer} for the configured {@code trainParams}.
    */
   public static EventTrainer<TrainingParameters> getEventTrainer(
-          TrainingParameters trainParams, Map<String, String> reportMap, TrainingConfiguration config) {
+      TrainingParameters trainParams, Map<String, String> reportMap, TrainingConfiguration config) {
 
     // if the trainerType is not defined -- use the GISTrainer.
     String trainerType = trainParams.getStringParameter(
-        Parameters.ALGORITHM_PARAM, GISTrainer.MAXENT_VALUE);
+        Parameters.ALGORITHM_PARAM, Parameters.ALGORITHM_DEFAULT_VALUE);
 
     final EventTrainer<TrainingParameters> trainer;
     if (BUILTIN_TRAINERS.containsKey(trainerType)) {
@@ -250,7 +254,7 @@ public class TrainerFactory {
 
   @SuppressWarnings("unchecked")
   private static <P extends Parameters, T extends Trainer<P>> T createBuiltinTrainer(
-          Class<? extends Trainer<P>> trainerClass) {
+      Class<? extends Trainer<P>> trainerClass) {
     Trainer<P> theTrainer = null;
     if (trainerClass != null) {
       try {

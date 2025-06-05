@@ -19,6 +19,7 @@ package opennlp.tools.ml.naivebayes;
 
 import java.util.Map;
 
+import opennlp.tools.ml.AlgorithmType;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.Context;
 import opennlp.tools.ml.model.EvalParameters;
@@ -49,7 +50,7 @@ public class NaiveBayesModel extends AbstractModel {
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
     this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length,
         outcomeTotals, predLabels.length);
-    modelType = ModelType.NaiveBayes;
+    modelType = AlgorithmType.NAIVE_BAYES;
   }
 
   /**
@@ -64,7 +65,7 @@ public class NaiveBayesModel extends AbstractModel {
     outcomeTotals = initOutcomeTotals(outcomeNames, params);
     this.evalParams = new NaiveBayesEvalParameters(params, outcomeNames.length,
         outcomeTotals, predLabels.length);
-    modelType = ModelType.NaiveBayes;
+    modelType = AlgorithmType.NAIVE_BAYES;
   }
 
   protected double[] initOutcomeTotals(String[] outcomeNames, Context[] params) {
