@@ -14,8 +14,6 @@
   <name>Apache OpenNLP Core</name>
 
   <modules>
-    <module>opennlp-dl</module>
-    <module>opennlp-dl-gpu</module>
     <module>opennlp-ml</module>
     <module>opennlp-models</module>
     <module>opennlp-runtime</module>
