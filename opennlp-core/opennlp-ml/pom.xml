@@ -38,6 +38,8 @@
     <module>opennlp-ml-maxent</module>
     <module>opennlp-ml-bayes</module>
     <module>opennlp-ml-perceptron</module>
+    <module>opennlp-dl</module>
+    <module>opennlp-dl-gpu</module>
   </modules>
 
   <dependencies>
