@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.PrepAttachDataUtil;
-import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.AbstractDataIndexer;
 import opennlp.tools.ml.model.AbstractModel;
 import opennlp.tools.ml.model.MaxentModel;
@@ -63,8 +62,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put(Parameters.CUTOFF_PARAM, 1);
     trainParams.put("UseSkippedAveraging", true);
 
-    EventTrainer<TrainingParameters> trainer =
-            TrainerFactory.getEventTrainer(trainParams, null);
+    EventTrainer<TrainingParameters> trainer = new PerceptronTrainer();
+    trainer.init(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
     PrepAttachDataUtil.testModel(model, 0.773706362961129);
   }
@@ -78,8 +77,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put(Parameters.ITERATIONS_PARAM, 500);
     trainParams.put("Tolerance", 0.0001d);
 
-    EventTrainer<TrainingParameters> trainer =
-            TrainerFactory.getEventTrainer(trainParams, null);
+    EventTrainer<TrainingParameters> trainer = new PerceptronTrainer();
+    trainer.init(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
     PrepAttachDataUtil.testModel(model, 0.7677642980935875);
   }
@@ -93,8 +92,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put(Parameters.ITERATIONS_PARAM, 500);
     trainParams.put("StepSizeDecrease", 0.06d);
 
-    EventTrainer<TrainingParameters> trainer =
-            TrainerFactory.getEventTrainer(trainParams, null);
+    EventTrainer<TrainingParameters> trainer = new PerceptronTrainer();
+    trainer.init(trainParams, null);
     MaxentModel model = trainer.train(PrepAttachDataUtil.createTrainingStream());
     PrepAttachDataUtil.testModel(model, 0.7791532557563754);
   }
@@ -107,8 +106,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put(Parameters.CUTOFF_PARAM, 1);
     trainParams.put("UseSkippedAveraging", true);
 
-    EventTrainer<TrainingParameters> trainer =
-            TrainerFactory.getEventTrainer(trainParams, null);
+    EventTrainer<TrainingParameters> trainer = new PerceptronTrainer();
+    trainer.init(trainParams, null);
     AbstractModel model = (AbstractModel) trainer.train(PrepAttachDataUtil.createTrainingStream());
 
     PrepAttachDataUtil.testModel(model, 0.773706362961129);
@@ -132,8 +131,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put(Parameters.CUTOFF_PARAM, 1);
     trainParams.put("UseSkippedAveraging", true);
 
-    EventTrainer<TrainingParameters> trainer =
-            TrainerFactory.getEventTrainer(trainParams, null);
+    EventTrainer<TrainingParameters> trainer = new PerceptronTrainer();
+    trainer.init(trainParams, null);
     AbstractModel modelA = (AbstractModel) trainer.train(PrepAttachDataUtil.createTrainingStream());
     AbstractModel modelB = (AbstractModel) trainer.train(PrepAttachDataUtil.createTrainingStream());
 
@@ -151,8 +150,8 @@ public class PerceptronPrepAttachTest {
     trainParams.put("UseSkippedAveraging", true);
 
     Map<String, String> reportMap = new HashMap<>();
-    EventTrainer<TrainingParameters> trainer =
-            TrainerFactory.getEventTrainer(trainParams, reportMap);
+    EventTrainer<TrainingParameters> trainer = new PerceptronTrainer();
+    trainer.init(trainParams, reportMap);
     trainer.train(PrepAttachDataUtil.createTrainingStream());
     Assertions.assertTrue(
         reportMap.containsKey("Training-Eventhash"), "Report Map does not contain the training event hash");

@@ -1,0 +1,2 @@
+C goodbye
+C goodbye=1.0

@@ -1,0 +1,6 @@
+This folder contains  Prepositional Phrase Attachment Dataset
+from Ratnaparkhi, Reynar, & Roukos,
+"A Maximum Entropy Model for Prepositional Phrase Attachment". ARPA HLT 1994.
+
+The data is licensed under the AL 2.0. Please cite the above paper when the
+data is redistributed.

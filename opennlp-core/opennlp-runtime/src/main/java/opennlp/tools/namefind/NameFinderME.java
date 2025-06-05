@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.ml.AlgorithmType;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
@@ -36,7 +37,6 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
-import opennlp.tools.ml.perceptron.PerceptronTrainer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.Sequence;
@@ -213,7 +213,8 @@ public class NameFinderME implements TokenNameFinder {
                                            ObjectStream<NameSample> samples, TrainingParameters params,
                                            TokenNameFinderFactory factory) throws IOException {
 
-    params.putIfAbsent(Parameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
+    //FIXME OPENNLP-1742
+    params.putIfAbsent(Parameters.ALGORITHM_PARAM, AlgorithmType.PERCEPTRON.getAlgorithmType());
     params.putIfAbsent(Parameters.CUTOFF_PARAM, 0);
     params.putIfAbsent(Parameters.ITERATIONS_PARAM, 300);
 

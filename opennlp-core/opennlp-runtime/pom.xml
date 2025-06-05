@@ -31,6 +31,18 @@
       <artifactId>opennlp-ml-maxent</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-ml-perceptron</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-ml-bayes</artifactId>
+      <optional>true</optional>
+    </dependency>
+
     <!-- External dependencies -->
     <dependency>
       <groupId>org.slf4j</groupId>
