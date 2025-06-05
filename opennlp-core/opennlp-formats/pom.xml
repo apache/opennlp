@@ -31,6 +31,12 @@
     </dependency>
 
     <!-- TEST scoped -->
+    <!-- FIXME: OPENNLP-1742 -->
+    <dependency>
+      <artifactId>opennlp-ml-perceptron</artifactId>
+      <groupId>${project.groupId}</groupId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>

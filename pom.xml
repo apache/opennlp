@@ -138,12 +138,6 @@
 			</dependency>
 			
 			<dependency>
-				<artifactId>opennlp-ml</artifactId>
-				<groupId>${project.groupId}</groupId>
-				<version>${project.version}</version>
-			</dependency>
-
-			<dependency>
 				<artifactId>opennlp-ml-commons</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
@@ -151,6 +145,18 @@
 
 			<dependency>
 				<artifactId>opennlp-ml-maxent</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-ml-perceptron</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<artifactId>opennlp-ml-bayes</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
 			</dependency>
