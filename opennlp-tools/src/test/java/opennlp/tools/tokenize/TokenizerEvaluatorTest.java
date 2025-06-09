@@ -28,18 +28,27 @@ import opennlp.tools.util.Span;
 
 public class TokenizerEvaluatorTest {
 
+  static TokenSample createGoldSample() {
+    return new TokenSample("A test.", new Span[] {
+        new Span(0, 1), new Span(2, 6)});
+  }
+
+  static TokenSample createPredSample() {
+    return new TokenSample("A test.", new Span[] {
+        new Span(0, 3), new Span(2, 6)});
+  }
+
   @Test
   void testPositive() {
     OutputStream stream = new ByteArrayOutputStream();
     TokenizerEvaluationMonitor listener = new TokenEvaluationErrorListener(stream);
 
-    TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-            TokenSampleTest.createGoldSample()), listener);
+    TokenizerEvaluator eval = new TokenizerEvaluator(
+            new DummyTokenizer(createGoldSample()), listener);
 
-    eval.evaluateSample(TokenSampleTest.createGoldSample());
+    eval.evaluateSample(createGoldSample());
 
     Assertions.assertEquals(1.0, eval.getFMeasure().getFMeasure(), 0.0);
-
     Assertions.assertEquals(0, stream.toString().length());
   }
 
@@ -49,13 +58,12 @@ public class TokenizerEvaluatorTest {
     TokenizerEvaluationMonitor listener = new TokenEvaluationErrorListener(
         stream);
 
-    TokenizerEvaluator eval = new TokenizerEvaluator(new DummyTokenizer(
-            TokenSampleTest.createGoldSample()), listener);
+    TokenizerEvaluator eval = new TokenizerEvaluator(
+            new DummyTokenizer(createGoldSample()), listener);
 
-    eval.evaluateSample(TokenSampleTest.createPredSample());
+    eval.evaluateSample(createPredSample());
 
     Assertions.assertEquals(.5d, eval.getFMeasure().getFMeasure(), .1d);
-
     Assertions.assertNotSame(0, stream.toString().length());
   }
 
@@ -70,10 +78,12 @@ public class TokenizerEvaluatorTest {
       this.sample = sample;
     }
 
+    @Override
     public String[] tokenize(String s) {
       return null;
     }
 
+    @Override
     public Span[] tokenizePos(String s) {
       return this.sample.getTokenSpans();
     }

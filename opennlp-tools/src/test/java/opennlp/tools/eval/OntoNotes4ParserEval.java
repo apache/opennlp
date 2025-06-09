@@ -36,7 +36,6 @@ import opennlp.tools.parser.HeadRules;
 import opennlp.tools.parser.Parse;
 import opennlp.tools.parser.ParserCrossValidator;
 import opennlp.tools.parser.ParserType;
-import opennlp.tools.parser.lang.en.HeadRulesTest;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.ModelUtil;
@@ -78,8 +77,8 @@ public class OntoNotes4ParserEval extends AbstractEvalTest {
   void evalEnglishMaxent() throws IOException {
 
     HeadRules headRules;
-    try (InputStream headRulesIn =
-             HeadRulesTest.class.getResourceAsStream("/opennlp/tools/parser/en_head_rules")) {
+    try (InputStream headRulesIn = OntoNotes4ParserEval.class.
+            getResourceAsStream("/opennlp/tools/parser/en_head_rules")) {
       headRules = new opennlp.tools.parser.lang.en.HeadRules(
           new InputStreamReader(headRulesIn, StandardCharsets.UTF_8));
     }

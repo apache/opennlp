@@ -24,20 +24,31 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.cmdline.tokenizer.DetokenEvaluationErrorListener;
+import opennlp.tools.util.Span;
 
 public class DetokenizerEvaluatorTest {
+
+  static TokenSample createGoldSample() {
+    return new TokenSample("A test.", new Span[] {
+        new Span(0, 1), new Span(2, 6)});
+  }
+
+  static TokenSample createPredSilverSample() {
+    return new TokenSample("A t st.", new Span[] {
+        new Span(0, 1), new Span(2, 6)});
+  }
+
   @Test
   void testPositive() {
     OutputStream stream = new ByteArrayOutputStream();
     DetokenEvaluationErrorListener listener = new DetokenEvaluationErrorListener(stream);
 
-    DetokenizerEvaluator eval = new DetokenizerEvaluator(new DummyDetokenizer(
-            TokenSampleTest.createGoldSample()), listener);
+    DetokenizerEvaluator eval = new DetokenizerEvaluator(
+            new DummyDetokenizer(createGoldSample()), listener);
 
-    eval.evaluateSample(TokenSampleTest.createGoldSample());
+    eval.evaluateSample(createGoldSample());
 
     Assertions.assertEquals(1.0, eval.getFMeasure().getFMeasure(), 0.0);
-
     Assertions.assertEquals(0, stream.toString().length());
   }
 
@@ -48,12 +59,11 @@ public class DetokenizerEvaluatorTest {
         stream);
 
     DetokenizerEvaluator eval = new DetokenizerEvaluator(new DummyDetokenizer(
-            TokenSampleTest.createGoldSample()), listener);
+            createGoldSample()), listener);
 
-    eval.evaluateSample(TokenSampleTest.createPredSilverSample());
+    eval.evaluateSample(createPredSilverSample());
 
     Assertions.assertEquals(-1.0d, eval.getFMeasure().getFMeasure(), .1d);
-
     Assertions.assertNotSame(0, stream.toString().length());
   }
 
@@ -68,10 +78,12 @@ public class DetokenizerEvaluatorTest {
       this.sample = sample;
     }
 
+    @Override
     public DetokenizationOperation[] detokenize(String[] tokens) {
       return null;
     }
 
+    @Override
     public String detokenize(String[] tokens, String splitMarker) {
       return this.sample.getText();
     }

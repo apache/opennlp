@@ -50,13 +50,13 @@ public class TrainingParametersTest {
     Assertions.assertEquals(4, tr.getObjectSettings().size());
     Assertions.assertEquals("MAXENT", tr.algorithm());
     Assertions.assertEquals(EventTrainer.EVENT_VALUE,
-        tr.getStringParameter(TrainingParameters.TRAINER_TYPE_PARAM,
+        tr.getStringParameter(Parameters.TRAINER_TYPE_PARAM,
             "v11"));  // use different defaults
     Assertions.assertEquals(100,
-        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM,
+        tr.getIntParameter(Parameters.ITERATIONS_PARAM,
             200));  // use different defaults
     Assertions.assertEquals(5,
-        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM,
+        tr.getIntParameter(Parameters.CUTOFF_PARAM,
             200));  // use different defaults
   }
 
@@ -69,11 +69,11 @@ public class TrainingParametersTest {
 
     Assertions.assertEquals("MAXENT" , tr.algorithm());
     Assertions.assertEquals(50 ,
-        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
-            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+        tr.getIntParameter(Parameters.ITERATIONS_PARAM ,
+            Parameters.ITERATIONS_DEFAULT_VALUE));
     Assertions.assertEquals(10 ,
-        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
-            TrainingParameters.CUTOFF_DEFAULT_VALUE));
+        tr.getIntParameter(Parameters.CUTOFF_PARAM ,
+            Parameters.CUTOFF_DEFAULT_VALUE));
   }
 
   @Test
@@ -85,11 +85,11 @@ public class TrainingParametersTest {
 
     Assertions.assertEquals("MAXENT" , tr.algorithm());
     Assertions.assertEquals(100 ,
-        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
-            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+        tr.getIntParameter(Parameters.ITERATIONS_PARAM ,
+            Parameters.ITERATIONS_DEFAULT_VALUE));
     Assertions.assertEquals(5 ,
-        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
-            TrainingParameters.CUTOFF_DEFAULT_VALUE));
+        tr.getIntParameter(Parameters.CUTOFF_PARAM ,
+            Parameters.CUTOFF_DEFAULT_VALUE));
   }
 
   @Test
@@ -101,11 +101,11 @@ public class TrainingParametersTest {
 
     Assertions.assertEquals("MAXENT" , tr.algorithm());
     Assertions.assertEquals(50 ,
-        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
-            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+        tr.getIntParameter(Parameters.ITERATIONS_PARAM ,
+            Parameters.ITERATIONS_DEFAULT_VALUE));
     Assertions.assertEquals(5 ,
-        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
-            TrainingParameters.CUTOFF_DEFAULT_VALUE));
+        tr.getIntParameter(Parameters.CUTOFF_PARAM ,
+            Parameters.CUTOFF_DEFAULT_VALUE));
   }
 
   @Test
@@ -117,11 +117,11 @@ public class TrainingParametersTest {
 
     Assertions.assertEquals("MAXENT" , tr.algorithm());
     Assertions.assertEquals(100 ,
-        tr.getIntParameter(TrainingParameters.ITERATIONS_PARAM ,
-            TrainingParameters.ITERATIONS_DEFAULT_VALUE));
+        tr.getIntParameter(Parameters.ITERATIONS_PARAM ,
+            Parameters.ITERATIONS_DEFAULT_VALUE));
     Assertions.assertEquals(10 ,
-        tr.getIntParameter(TrainingParameters.CUTOFF_PARAM ,
-            TrainingParameters.CUTOFF_DEFAULT_VALUE));
+        tr.getIntParameter(Parameters.CUTOFF_PARAM ,
+            Parameters.CUTOFF_DEFAULT_VALUE));
   }
 
   @Test

@@ -38,17 +38,50 @@
 
   <!--  Versions will automatically be updated by the release plugin -->
   <dependencies>
+    <!-- OpenNLP API -->
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-api</artifactId>
+    </dependency>
+    <!-- OpenNLP Core -->
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-models</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-formats</artifactId>
+    </dependency>
+    <!-- OpenNLP ML -->
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-ml-commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-ml-maxent</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-ml-perceptron</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-ml-bayes</artifactId>
+    </dependency>
+    <!-- OpenNLP Toolkit -->
     <dependency>
       <groupId>org.apache.opennlp</groupId>
       <artifactId>opennlp-tools</artifactId>
     </dependency>
+    <!-- OpenNLP Extensions -->
     <dependency>
       <groupId>org.apache.opennlp</groupId>
-      <artifactId>opennlp-tools-models</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.opennlp</groupId>
-      <artifactId>opennlp-morfologik-addon</artifactId>
+      <artifactId>opennlp-morfologik</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.opennlp</groupId>

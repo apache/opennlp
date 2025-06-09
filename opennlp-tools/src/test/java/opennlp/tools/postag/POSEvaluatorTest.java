@@ -31,15 +31,27 @@ import opennlp.tools.util.Sequence;
 
 public class POSEvaluatorTest {
 
+  static POSSample createGoldSample() throws InvalidFormatException {
+    String sentence = "the_DT stories_NNS about_IN well-heeled_JJ "
+            + "communities_NNS and_CC developers_NNS";
+    return POSSample.parse(sentence);
+  }
+
+  static POSSample createPredSample() throws InvalidFormatException {
+    String sentence = "the_DT stories_NNS about_NNS well-heeled_JJ "
+            + "communities_NNS and_CC developers_CC";
+    return POSSample.parse(sentence);
+  }
+
   @Test
   void testPositive() throws InvalidFormatException {
     OutputStream stream = new ByteArrayOutputStream();
     POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
 
-    POSEvaluator eval = new POSEvaluator(new DummyPOSTagger(
-            POSSampleTest.createGoldSample()), listener);
+    POSEvaluator eval = new POSEvaluator(
+            new DummyPOSTagger(createGoldSample()), listener);
 
-    eval.evaluateSample(POSSampleTest.createGoldSample());
+    eval.evaluateSample(createGoldSample());
     Assertions.assertEquals(1.0, eval.getWordAccuracy(), 0.0);
     Assertions.assertEquals(0, stream.toString().length());
   }
@@ -50,9 +62,9 @@ public class POSEvaluatorTest {
     POSTaggerEvaluationMonitor listener = new POSEvaluationErrorListener(stream);
 
     POSEvaluator eval = new POSEvaluator(
-            new DummyPOSTagger(POSSampleTest.createGoldSample()), listener);
+            new DummyPOSTagger(createGoldSample()), listener);
 
-    eval.evaluateSample(POSSampleTest.createPredSample());
+    eval.evaluateSample(createPredSample());
     Assertions.assertEquals(.7, eval.getWordAccuracy(), .1d);
     Assertions.assertNotSame(0, stream.toString().length());
   }
@@ -69,6 +81,7 @@ public class POSEvaluatorTest {
       return Arrays.asList(sample.getTags());
     }
 
+    @Override
     public String[] tag(String[] sentence) {
       return sample.getTags();
     }
@@ -81,14 +94,17 @@ public class POSEvaluatorTest {
       return null;
     }
 
+    @Override
     public Sequence[] topKSequences(String[] sentence) {
       return null;
     }
 
+    @Override
     public String[] tag(String[] sentence, Object[] additionalContext) {
       return tag(sentence);
     }
 
+    @Override
     public Sequence[] topKSequences(String[] sentence, Object[] additionalContext) {
       return topKSequences(sentence);
     }
