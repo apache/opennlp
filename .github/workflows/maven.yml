@@ -34,7 +34,7 @@ jobs:
         java: [ 17, 21 ]
         experimental: [false]
         include:
-          - java: 24-ea
+          - java: 25-ea
             os: ubuntu-latest
             experimental: true
 
@@ -49,11 +49,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Set up JDK ${{ matrix.java }}
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
       with:
         distribution: temurin
         java-version: ${{ matrix.java }}
     - name: Build with Maven
-      run: mvn -V clean test install --no-transfer-progress -Pjacoco -Pci
+      run: mvn -V clean test install --show-version --batch-mode --no-transfer-progress -Pjacoco -Pci
     - name: Jacoco
       run: mvn jacoco:report
