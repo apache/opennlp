@@ -28,6 +28,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.AbstractModelLoaderTest;
 import opennlp.tools.EnabledWhenCDNAvailable;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.DownloadUtil;
 
@@ -41,7 +42,7 @@ public class SentenceModelLoaderIT extends AbstractModelLoaderTest {
   public static void initResources() {
     SUPPORTED_LANG_CODES.forEach(lang -> {
       try {
-        DownloadUtil.downloadModel(lang, DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
+        DownloadUtil.downloadModel(lang, ModelType.SENTENCE_DETECTOR, SentenceModel.class);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

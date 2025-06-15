@@ -26,14 +26,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public abstract class AbstractClassPathFinderTest extends AbstractClassPathModelTest {
 
-
   @Test
   public void testFindOpenNLPModels() {
     final ClassPathModelFinder finder = getModelFinder();
 
     final Set<ClassPathModelEntry> models = finder.findModels(false);
     assertNotNull(models);
-    assertEquals(2, models.size());
+    assertEquals(4, models.size());
 
     for (ClassPathModelEntry entry : models) {
       assertNotNull(entry.model());

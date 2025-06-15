@@ -30,6 +30,7 @@ import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Span;
@@ -120,7 +121,7 @@ public class TokenizerME extends AbstractTokenizer {
    * @throws IOException Thrown if the model cannot be downloaded or saved.
    */
   public TokenizerME(String language) throws IOException {
-    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.TOKENIZER,
+    this(DownloadUtil.downloadModel(language, ModelType.TOKENIZER,
             TokenizerModel.class));
   }
 

@@ -30,6 +30,7 @@ import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.EnabledWhenCDNAvailable;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.TrainingParameters;
@@ -53,7 +54,7 @@ public class OpennlpUtilTest extends AbstractTest {
   @BeforeAll
   public static void initEnv() throws IOException {
     sentModel = DownloadUtil.downloadModel(
-            "en", DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
+            "en", ModelType.SENTENCE_DETECTOR, SentenceModel.class);
   }
 
   @Test

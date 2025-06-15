@@ -78,7 +78,7 @@ under the License.
 
             <programlisting language="java">
                 <![CDATA[
-final ClassgraphModelFinder finder = new ClassgraphModelFinder(); // or use new SimpleClassPathModelFinder()
+final ClassgraphModelFinder finder = new ClassgraphModelFinder(); // or use: new SimpleClassPathModelFinder()
 final ClassPathModelLoader loader = new ClassPathModelLoader();
 final Set<ClassPathModelEntry> models = finder.findModels(false);
 for(ClassPathModelEntry entry : models) {
@@ -86,10 +86,10 @@ for(ClassPathModelEntry entry : models) {
    final ClassPathModel model = loader.load(entry);
 
    if(model != null) {
-                System.out.println(model.getModelName());
-                System.out.println(model.getModelSHA256());
-                System.out.println(model.getModelVersion());
-                System.out.println(model.getModeLanguage());
+      System.out.println(model.getModelName());
+      System.out.println(model.getModelSHA256());
+      System.out.println(model.getModelVersion());
+      System.out.println(model.getModelLanguage());
       // do something with the model by consuming the byte array
    }
 }]]>
@@ -120,12 +120,12 @@ model.language=${model.language}
             Make sure to replace the values accordingly and configure your build tool to include the binary model and the <emphasis>model.properties</emphasis>
             in the resulting JAR file.
 
-            To load such a custom model, you may need to adjust the pattern for classpath scanning. For example, if you name your model "custom-opennlp-model",
+            To load such a custom model, you may need to adjust the pattern for classpath scanning. For example, if you name the model "custom-opennlp-model",
             you need the following code to successfully find and load it:
 
             <programlisting language="java">
                 <![CDATA[
-final ClassgraphModelFinder finder = new ClassgraphModelFinder("custom-opennlp-model.jar"); // or use new SimpleClassPathModelFinder("custom-opennlp-model.jar")
+final ClassgraphModelFinder finder = new ClassgraphModelFinder("custom-opennlp-model.jar"); // or use: new SimpleClassPathModelFinder("custom-opennlp-model.jar")
 final ClassPathModelLoader loader = new ClassPathModelLoader();
 final Set<ClassPathModelEntry> models = finder.findModels(false);
 for(ClassPathModelEntry entry : models) {
@@ -133,10 +133,10 @@ for(ClassPathModelEntry entry : models) {
    final ClassPathModel model = loader.load(entry);
 
    if(model != null) {
-                System.out.println(model.getModelName());
-                System.out.println(model.getModelSHA256());
-                System.out.println(model.getModelVersion());
-                System.out.println(model.getModeLanguage());
+      System.out.println(model.getModelName());
+      System.out.println(model.getModelSHA256());
+      System.out.println(model.getModelVersion());
+      System.out.println(model.getModelLanguage());
       // do something with the model by consuming the byte array
    }
 }]]>

@@ -24,9 +24,15 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Enables the detection of OpenNLP models in the classpath. By default, this class will search
- * for JAR files starting with "opennlp-models-*". This wildcard pattern can be adjusted by
- * using the alternative constructor of this class.
+ * A base implementation of a {@link ClassPathModelFinder} for the detection of
+ * OpenNLP models in the classpath. By default, {@link AbstractClassPathModelFinder} will scan for
+ * JAR files starting with "opennlp-models-*".
+ * <p>
+ * This search mask can be adjusted by using the one argument
+ * {@link AbstractClassPathModelFinder#AbstractClassPathModelFinder(String) constructor}.
+ * Wildcard search is supported by using asterisk symbol.
+ *
+ * @see ClassPathModelFinder
  */
 public abstract class AbstractClassPathModelFinder implements ClassPathModelFinder {
 
@@ -76,8 +82,7 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
   }
 
   /**
-   * @apiNote 
-   * Subclasses can implement this method to provide additional context to
+   * @apiNote Subclasses can implement this method to provide additional context to
    * {@link AbstractClassPathModelFinder#getMatchingURIs(String, Object)}.
    *
    * @return A context information object. May be {@code null}.

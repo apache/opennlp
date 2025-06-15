@@ -238,42 +238,43 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     int MODEL_BUFFER_SIZE_LIMIT = Integer.MAX_VALUE;
     in.mark(MODEL_BUFFER_SIZE_LIMIT);
 
-    final ZipInputStream zip = new ZipInputStream(in);
+    try (final ZipInputStream zip = new ZipInputStream(in)) {
 
-    // The model package can contain artifacts which are serialized with 3rd party
-    // serializers which are configured in the manifest file. To be able to load
-    // the model the manifest must be read first, and afterwards all the artifacts
-    // can be de-serialized.
+      // The model package can contain artifacts which are serialized with 3rd party
+      // serializers which are configured in the manifest file. To be able to load
+      // the model the manifest must be read first, and afterwards all the artifacts
+      // can be de-serialized.
 
-    // The ordering of artifacts in a zip package is not guaranteed. The stream is first
-    // read until the manifest appears, reseted, and read again to load all artifacts.
+      // The ordering of artifacts in a zip package is not guaranteed. The stream is first
+      // read until the manifest appears, reset, and read again to load all artifacts.
 
-    boolean isSearchingForManifest = true;
+      boolean isSearchingForManifest = true;
 
-    ZipEntry entry;
-    while ((entry = zip.getNextEntry()) != null && isSearchingForManifest) {
+      ZipEntry entry;
+      while ((entry = zip.getNextEntry()) != null && isSearchingForManifest) {
 
-      if ("manifest.properties".equals(entry.getName())) {
-        // TODO: Probably better to use the serializer here directly!
-        ArtifactSerializer<?> factory = artifactSerializers.get("properties");
-        artifactMap.put(entry.getName(), factory.create(zip));
-        isSearchingForManifest = false;
+        if ("manifest.properties".equals(entry.getName())) {
+          // TODO: Probably better to use the serializer here directly!
+          ArtifactSerializer<?> factory = artifactSerializers.get("properties");
+          artifactMap.put(entry.getName(), factory.create(zip));
+          isSearchingForManifest = false;
+        }
+
+        zip.closeEntry();
       }
 
-      zip.closeEntry();
+      initializeFactory();
+
+      loadArtifactSerializers();
+
+      // The Input Stream should always be reset-able because if markSupport returns
+      // false it is wrapped before hand into an Buffered InputStream
+      in.reset();
+
+      finishLoadingArtifacts(in);
+
+      checkArtifactMap();
     }
-
-    initializeFactory();
-
-    loadArtifactSerializers();
-
-    // The Input Stream should always be reset-able because if markSupport returns
-    // false it is wrapped before hand into an Buffered InputStream
-    in.reset();
-
-    finishLoadingArtifacts(in);
-
-    checkArtifactMap();
   }
 
   private void initializeFactory() throws InvalidFormatException {
@@ -459,7 +460,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
       // Version check is only performed if current version is not the dev/debug version
       if (!Version.currentVersion().equals(Version.DEV_VERSION)) {
         // Support OpenNLP 1.x models.
-        if (version.getMajor() != 1 && version.getMajor() != 2) {
+        if (!Version.between(version.getMajor(), 1, 3)) {
           throw new InvalidFormatException("Model version " + version + " is not supported by this ("
               + Version.currentVersion() + ") version of OpenNLP!");
         }

@@ -71,10 +71,10 @@ Currently, the library has different packages:
 * `opennlp-tools` : The core toolkit.
 * `opennlp-tools-models` : A set of classes to load [OpenNLP models](https://github.com/apache/opennlp-models) from the classpath.
 * `opennlp-uima` : A set of [Apache UIMA](https://uima.apache.org) annotators.
-* `opennlp-morfologik-addon` : An addon for Morfologik
-* `opennlp-dl` : OpenNLP interface implementations for ONNX models using the `onnxruntime` dependency.
+* `opennlp-morfologik-addon` : An addon for _Morfologik_.
+* `opennlp-dl` : OpenNLP interface implementations for [ONNX](https://onnx.ai) models using the `onnxruntime` dependency.
 * `opennlp-dl-gpu` : Replaces `onnxruntime` with the `onnxruntime_gpu` dependency to support GPU acceleration.
-* `opennlp-sandbox`: Other projects in progress are found in the [sandbox](https://github.com/apache/opennlp-sandbox)
+* `opennlp-sandbox`: Other projects in progress reside in the [sandbox](https://github.com/apache/opennlp-sandbox).           
 
 ## Getting Started
 
@@ -104,6 +104,28 @@ compile group: "org.apache.opennlp", name: "opennlp-tools", version: "${opennlp.
 
 For more details please check our [documentation](http://opennlp.apache.org/docs/)
 
+## Branches and Merging Strategy
+
+To support ongoing development and stable maintenance of Apache OpenNLP, the project follows a dual-branch model:
+
+### Branch overview
+
+- **`main`**: Development branch for version **3.0** and beyond. All feature development and 3.x releases occur here.
+- **`opennlp-2.x`**: Maintains the stable **2.x** release line. This branch will receive selective updates and patch releases.
+
+### Workflow summary
+
+- Feature development
+  - New features targeting versions 3.0+ are developed on feature branches _off_ `main` and merged _into_ `main`.
+- Bug fixes and dependency updates
+  - Relevant fixes or dependency updates from `main` may be cherry-picked into `opennlp-2.x` as needed.
+- Releases
+  - **3.x** releases are made from the `main` branch.
+  - **2.x** releases are made from the `opennlp-2.x` branch.
+- Release tags
+  - Release tags are applied directly to the appropriate version branch (`main` for 3.x or `opennlp-2.x` for 2.x). 
+  - The presence of a version branch does not affect the tagging or visibility of releases.
+
 ## Building OpenNLP
 
 At least JDK 17 and Maven 3.3.9 are required to build the library.
@@ -114,12 +136,14 @@ After cloning the repository go into the destination directory and run:
 mvn install
 ```
 
-### Additional Developement Information
+### Additional Development Information
 
-- [Building and Integrating Snowball Stemmer for OpenNLP](dev/Snowball-Stemmer.md)
+- Building and integrating [Snowball Stemmer](dev/Snowball-Stemmer.md) for OpenNLP.
 
 ## Contributing
 
-The Apache OpenNLP project is developed by volunteers and is always looking for new contributors to work on all parts of the project. Every contribution is welcome and needed to make it better. A contribution can be anything from a small documentation typo fix to a new component.
+The Apache OpenNLP project is developed by volunteers and is always looking for new contributors to work on all parts of the project. 
+Every contribution is welcome and needed to make it better. 
+A contribution can be anything from a small documentation typo fix to a new component.
 
 If you would like to get involved please follow the instructions [here](https://github.com/apache/opennlp/blob/main/.github/CONTRIBUTING.md)

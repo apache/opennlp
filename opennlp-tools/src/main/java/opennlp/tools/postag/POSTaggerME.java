@@ -39,6 +39,7 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.ngram.NGramModel;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.ObjectStream;
@@ -115,7 +116,7 @@ public class POSTaggerME implements POSTagger {
    * @throws IOException Thrown if the model could not be downloaded or saved.
    */
   public POSTaggerME(String language, POSTagFormat format) throws IOException {
-    this(DownloadUtil.downloadModel(language, DownloadUtil.ModelType.POS, POSModel.class), format);
+    this(DownloadUtil.downloadModel(language, ModelType.POS, POSModel.class), format);
   }
 
   /**

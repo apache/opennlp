@@ -22,12 +22,14 @@ import java.util.Map;
 
 import opennlp.tools.commons.Trainer;
 import opennlp.tools.ml.maxent.GISTrainer;
+import opennlp.tools.util.TrainingConfiguration;
 import opennlp.tools.util.TrainingParameters;
 
 public abstract class AbstractTrainer implements Trainer {
 
   protected TrainingParameters trainingParameters;
   protected Map<String,String> reportMap;
+  protected TrainingConfiguration trainingConfiguration;
 
   public AbstractTrainer() {
   }
@@ -53,6 +55,16 @@ public abstract class AbstractTrainer implements Trainer {
     this.trainingParameters = trainParams;
     if (reportMap == null) reportMap = new HashMap<>();
     this.reportMap = reportMap;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void init(TrainingParameters trainParams, Map<String, String> reportMap,
+                   TrainingConfiguration config) {
+    init(trainParams, reportMap);
+    this.trainingConfiguration = config;
   }
 
   /**
@@ -106,6 +118,14 @@ public abstract class AbstractTrainer implements Trainer {
    */
   protected void addToReport(String key, String value) {
     reportMap.put(key, value);
+  }
+
+  /**
+   * Retrieves the {@link TrainingConfiguration} associated with an {@link AbstractTrainer}.
+   * @return {@link TrainingConfiguration}
+   */
+  public TrainingConfiguration getTrainingConfiguration() {
+    return trainingConfiguration;
   }
 
 }

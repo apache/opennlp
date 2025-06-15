@@ -18,16 +18,22 @@ package opennlp.tools.models;
 
 import java.util.Set;
 
+/**
+ * Describes a scanner which detects OpenNLP specific model files in an applications's classpath.
+ * If compatible models are present at runtime, each discovered element is made available
+ * as {@link ClassPathModelEntry}.
+ */
 public interface ClassPathModelFinder {
 
   String OPENNLP_MODEL_JAR_PREFIX = "opennlp-models-*.jar";
 
   /**
-   * Finds OpenNLP models within the classpath.
+   * Finds OpenNLP models available within an applications's classpath.
    *
    * @param reloadCache {@code true}, if the internal cache should explicitly be reloaded,
    *                    {@code false} otherwise.
-   * @return A Set of {@link ClassPathModelEntry model entries}. It might be empty if none were found.
+   * @return A {@link Set} of {@link ClassPathModelEntry model entries}.
+   *         It might be empty, if none were found.
    */
   Set<ClassPathModelEntry> findModels(boolean reloadCache);
 }

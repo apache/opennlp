@@ -29,6 +29,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.EnabledWhenCDNAvailable;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 
@@ -48,7 +49,7 @@ public class DownloadUtilTest {
   @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
   public void testDownloadModelByLanguage(String lang) throws IOException {
     SentenceModel model = DownloadUtil.downloadModel(lang,
-        DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
+        ModelType.SENTENCE_DETECTOR, SentenceModel.class);
     assertNotNull(model);
     assertEquals(lang, model.getLanguage());
     assertTrue(model.isLoadedFromSerialized());
@@ -68,7 +69,7 @@ public class DownloadUtilTest {
   @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
   public void testExistsModel() throws IOException {
     final String lang = "en";
-    final DownloadUtil.ModelType type = DownloadUtil.ModelType.SENTENCE_DETECTOR;
+    final ModelType type = ModelType.SENTENCE_DETECTOR;
     // Prepare
     SentenceModel model = DownloadUtil.downloadModel(lang, type, SentenceModel.class);
     assertNotNull(model);
@@ -82,7 +83,7 @@ public class DownloadUtilTest {
   @ValueSource(strings = {"xy", "\t", "\n"})
   @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
   public void testExistsModelInvalid(String input) throws IOException {
-    assertFalse(DownloadUtil.existsModel(input, DownloadUtil.ModelType.SENTENCE_DETECTOR));
+    assertFalse(DownloadUtil.existsModel(input, ModelType.SENTENCE_DETECTOR));
   }
 
   @ParameterizedTest(name = "Detect invalid input: \"{0}\"")
@@ -90,10 +91,10 @@ public class DownloadUtilTest {
   @ValueSource(strings = {" ", "\t", "\n"})
   public void testDownloadModelInvalid(String input) {
     assertThrows(IOException.class, () -> DownloadUtil.downloadModel(input,
-            DownloadUtil.ModelType.SENTENCE_DETECTOR, SentenceModel.class), "Invalid model");
+            ModelType.SENTENCE_DETECTOR, SentenceModel.class), "Invalid model");
   }
 
-  private static final DownloadUtil.ModelType MT_TOKENIZER = DownloadUtil.ModelType.TOKENIZER;
+  private static final ModelType MT_TOKENIZER = ModelType.TOKENIZER;
 
   // Note: This needs to be public as JUnit 5 requires it like this.
   public static Stream<Arguments> provideURLs() {

@@ -18,6 +18,24 @@ package opennlp.tools.models;
 
 import java.util.Properties;
 
+/**
+ * A record that holds the binary representation of an OpenNLP model and related properties.
+ *
+ * @param properties  The common and specific properties of a model.
+ * @param model       The binary form of a model read from the classpath.
+ *
+ * @implNote To convert a model back to its object form, the {@code model bytes} can be read
+ *           via a {@link java.io.ByteArrayInputStream}:
+ *           <pre>{@code
+ *           try (InputStream baos = new ByteArrayInputStream(model)) {
+ *             SentenceModel sModel = new SentenceModel(baos);
+ *           }
+ *           }</pre>
+ *           as long as you make sure the model matches its type by using
+ *           its name or other, more specific properties.
+ *           
+ * @see opennlp.tools.util.model.BaseModel
+ */
 public record ClassPathModel(Properties properties, byte[] model) {
 
   /**

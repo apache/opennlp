@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.commons.Internal;
+import opennlp.tools.models.ModelType;
 import opennlp.tools.util.model.BaseModel;
 
 /**
@@ -53,25 +54,6 @@ import opennlp.tools.util.model.BaseModel;
 public class DownloadUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(DownloadUtil.class);
-
-  /**
-   * The type of model.
-   */
-  public enum ModelType {
-    LEMMATIZER("lemma"),
-    TOKENIZER("token"),
-    SENTENCE_DETECTOR("sent"),
-    POS("pos-perceptron"),
-    NAME_FINDER("ner"),
-    CHUNKER("chunker"),
-    PARSER("parser-chunking");
-
-    private final String name;
-
-    ModelType(String name) {
-      this.name = name;
-    }
-  }
 
   private static final String BASE_URL =
       System.getProperty("OPENNLP_DOWNLOAD_BASE_URL", "https://dlcdn.apache.org/opennlp/");
@@ -86,7 +68,7 @@ public class DownloadUtil {
    * for a particular {@code language}.
    *
    * @param language  The ISO language code of the requested model.
-   * @param modelType The {@link DownloadUtil.ModelType type} of model.
+   * @param modelType The {@link ModelType type} of model.
    * @return {@code true} if a model exists locally, {@code false} otherwise.
    * @throws IOException Thrown if IO errors occurred or the computed hash sum
    * of an associated, local model file was incorrect.
@@ -117,10 +99,10 @@ public class DownloadUtil {
   }
 
   /**
-   * Triggers a download for the specified {@link DownloadUtil.ModelType}.
+   * Triggers a download for the specified {@link ModelType}.
    *
    * @param language  The ISO language code of the requested model.
-   * @param modelType The {@link DownloadUtil.ModelType type} of model.
+   * @param modelType The {@link ModelType type} of model.
    * @param type      The class of the resulting model.
    * @param <T>       The generic type which is a subclass of {@link BaseModel}.
    * @return A model instance of type {@link T}.
@@ -136,7 +118,7 @@ public class DownloadUtil {
       }
     }
 
-    throw new IOException("There is no model available: " + language + " " + modelType.name);
+    throw new IOException("There is no model available: " + language + " " + modelType.getName());
   }
 
   /**

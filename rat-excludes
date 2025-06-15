@@ -47,6 +47,8 @@ src/test/resources/opennlp/tools/formats/brat/voa-with-relations.txt
 src/test/resources/opennlp/tools/languagemodel/sentences.txt
 src/test/resources/opennlp/tools/lemmatizer/trial.old.tsv
 src/test/resources/opennlp/tools/lemmatizer/output.txt
+src/test/resources/opennlp/tools/cmdline/languagemodel/sentences_set_1.txt
+src/test/resources/opennlp/tools/cmdline/languagemodel/sentences_set_2.txt
 
 <!-- head rule files, format does not allow AL header -->
 lang/en/parser/en-head_rules

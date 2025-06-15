@@ -151,10 +151,8 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
   private List<URI> getURIsFromJar(URL fileUrl, boolean isWindows) throws IOException {
     final List<URI> uris = new ArrayList<>();
     final URL jarUrl = new URL(JAR + ":" +
-        (isWindows
-            ? fileUrl.toString().replace("\\", "/")
-            : fileUrl.toString())
-        + "!/");
+        (isWindows ? fileUrl.toString().replace("\\", "/")
+            : fileUrl.toString()) + "!/");
     final JarURLConnection jarConnection = (JarURLConnection) jarUrl.openConnection();
     try (JarFile jarFile = jarConnection.getJarFile()) {
       final Enumeration<JarEntry> entries = jarFile.entries();
