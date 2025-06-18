@@ -24,7 +24,7 @@ import opennlp.tools.util.FilterObjectStream;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Class for converting Strings through Data Stream to SentimentSample using
+ * Class for converting Strings through Data Stream to {@link SentimentSample} using
  * tokenised text.
  */
 public class SentimentSampleStream

@@ -20,8 +20,8 @@ package opennlp.tools.formats;
 import java.io.IOException;
 
 import opennlp.tools.cmdline.ArgumentParser;
-import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
+import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.sentiment.SentimentSample;
 import opennlp.tools.sentiment.SentimentSampleStream;
@@ -47,28 +47,25 @@ public class SentimentSampleStreamFactory<P> extends AbstractSampleStreamFactory
   }
 
   /**
-   * Creates a sentiment sample stream factory
+   * Creates a sentiment sample stream.
    *
    * @param args
    *          the necessary arguments
-   * @return SentimentSample stream (factory)
+   * @return A {@link SentimentSample} stream.
    */
   @Override
   public ObjectStream<SentimentSample> create(String[] args) {
-    BasicFormatParams params = ArgumentParser.parse(args,
-        BasicFormatParams.class);
+    BasicFormatParams params = ArgumentParser.parse(args, BasicFormatParams.class);
 
-    CmdLineUtil.checkInputFile("Data", params.getData());
-    InputStreamFactory sampleDataIn = CmdLineUtil
-        .createInputStreamFactory(params.getData());
-    ObjectStream<String> lineStream = null;
+    FormatUtil.checkInputFile("Data", params.getData());
+    ObjectStream<String> lineStream;
     try {
-      lineStream = new PlainTextByLineStream(sampleDataIn,
-          params.getEncoding());
+      InputStreamFactory sampleDataIn = FormatUtil.createInputStreamFactory(params.getData());
+      lineStream = new PlainTextByLineStream(sampleDataIn, params.getEncoding());
     } catch (IOException ex) {
-      CmdLineUtil.handleCreateObjectStreamError(ex);
+      throw new TerminateToolException(-1,
+              "IO Error while creating an Input Stream: " + ex.getMessage(), ex);
     }
-
     return new SentimentSampleStream(lineStream);
   }
 
@@ -76,8 +73,7 @@ public class SentimentSampleStreamFactory<P> extends AbstractSampleStreamFactory
    * Registers a SentimentSample stream factory
    */
   public static void registerFactory() {
-    StreamFactoryRegistry.registerFactory(SentimentSample.class,
-        StreamFactoryRegistry.DEFAULT_FORMAT,
+    StreamFactoryRegistry.registerFactory(SentimentSample.class, StreamFactoryRegistry.DEFAULT_FORMAT,
         new SentimentSampleStreamFactory<>(BasicFormatParams.class));
   }
 

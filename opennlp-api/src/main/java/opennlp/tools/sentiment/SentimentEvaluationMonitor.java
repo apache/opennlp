@@ -20,9 +20,10 @@ package opennlp.tools.sentiment;
 import opennlp.tools.util.eval.EvaluationMonitor;
 
 /**
- * Evaluation Monitor to be used by the evaluator
+ * An sentiment specific {@link EvaluationMonitor} to be used by the evaluator.
+ *
+ * @see SentimentSample
  */
-public interface SentimentEvaluationMonitor
-    extends EvaluationMonitor<SentimentSample> {
+public interface SentimentEvaluationMonitor extends EvaluationMonitor<SentimentSample> {
 
 }

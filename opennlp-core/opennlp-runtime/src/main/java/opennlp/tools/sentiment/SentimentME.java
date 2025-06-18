@@ -38,13 +38,13 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 
 /**
- * Class for creating a maximum-entropy-based Sentiment Analysis model.
+ * A {@link SentimentDetector} implementation for creating and using
+ * maximum-entropy-based Sentiment Analysis models.
+ *
+ * @see SentimentModel
  */
-public class SentimentME {
+public class SentimentME implements SentimentDetector {
 
-  public static final String OTHER = "other";
-  public static final String START = "start";
-  public static final String CONTINUE = "cont";
   public static final int DEFAULT_BEAM_SIZE = 3;
 
   private static final String[][] EMPTY = new String[0][0];
@@ -55,31 +55,32 @@ public class SentimentME {
       new AdditionalContextFeatureGenerator();
 
   private Sequence bestSequence;
-  protected SequenceClassificationModel model;
   private SequenceValidator<String> sequenceValidator;
+  private final SequenceClassificationModel model;
   private final SentimentFactory factory;
   private final MaxentModel maxentModel;
   private final SequenceCodec<String> seqCodec = new BioCodec();
   private AdaptiveFeatureGenerator[] featureGenerators;
 
   /**
-   * Constructor, initialises
+   * Instantiates a {@link SentimentME} with the specified model.
    *
-   * @param sentModel
-   *          sentiment analysis model
+   * @param sentModel The {@link SentimentModel sentiment analysis model} to use.
+   *                  It must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if parameters are invalid.
    */
   public SentimentME(SentimentModel sentModel) {
-
+    if (sentModel == null) {
+      throw new IllegalArgumentException("SentimentModel must not be null!");
+    }
     this.model = sentModel.getSentimentModel();
     maxentModel = sentModel.getMaxentModel();
-
     factory = sentModel.getFactory();
-
     contextGenerator = factory.createContextGenerator();
   }
 
   /**
-   * Trains a Sentiment Analysis model.
+   * Trains a {@link SentimentModel Sentiment Analysis model}.
    *
    * @param languageCode
    *          the code for the language of the text, e.g. "en"
@@ -89,41 +90,31 @@ public class SentimentME {
    *          parameters for training
    * @param factory
    *          a Sentiment Analysis factory
-   * @return a Sentiment Analysis model
+   * @return A valid {@link SentimentModel}.
    */
-  public static SentimentModel train(String languageCode,
-      ObjectStream<SentimentSample> samples, TrainingParameters trainParams,
-      SentimentFactory factory) throws IOException {
+  public static SentimentModel train(String languageCode, ObjectStream<SentimentSample> samples,
+                                     TrainingParameters trainParams, SentimentFactory factory)
+          throws IOException {
 
     Map<String, String> entries = new HashMap<>();
     MaxentModel sentimentModel;
 
     ObjectStream<Event> eventStream = new SentimentEventStream(samples, factory.createContextGenerator());
 
-    EventTrainer trainer = TrainerFactory.getEventTrainer(trainParams, entries);
+    EventTrainer<TrainingParameters> trainer = TrainerFactory.getEventTrainer(trainParams, entries);
     sentimentModel = trainer.train(eventStream);
 
-    Map<String, String> manifestInfoEntries = new HashMap<>();
-
-    return new SentimentModel(languageCode, sentimentModel, manifestInfoEntries, factory);
-
+    return new SentimentModel(languageCode, sentimentModel, new HashMap<>(), factory);
   }
-
-  /**
-   * Makes a sentiment prediction
-   *
-   * @param sentence
-   *          the text to be analysed for its sentiment
-   * @return the predicted sentiment
-   */
+  
+  @Override
   public String predict(String sentence) {
     String[] tokens = factory.getTokenizer().tokenize(sentence);
-
     return predict(tokens);
   }
 
+  @Override
   public String predict(String[] tokens) {
-
     double[] prob = probabilities(tokens);
     return getBestSentiment(prob);
   }
@@ -198,32 +189,12 @@ public class SentimentME {
     return spans;
   }
 
-  /**
-   * Generates sentiment tags for the given sequence, typically a sentence,
-   * returning token spans for any identified sentiments.
-   *
-   * @param tokens
-   *          an array of the tokens or words of the sequence, typically a
-   *          sentence
-   * @return an array of spans for each of the names identified.
-   */
+  @Override
   public Span[] find(String[] tokens) {
     return find(tokens, EMPTY);
   }
 
-  /**
-   * Generates sentiment tags for the given sequence, typically a sentence,
-   * returning token spans for any identified sentiments.
-   *
-   * @param tokens
-   *          an array of the tokens or words of the sequence, typically a
-   *          sentence.
-   * @param additionalContext
-   *          features which are based on context outside of the sentence but
-   *          which should also be used.
-   *
-   * @return an array of spans for each of the names identified.
-   */
+  @Override
   public Span[] find(String[] tokens, String[][] additionalContext) {
 
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
@@ -233,7 +204,7 @@ public class SentimentME {
 
     List<String> c = bestSequence.getOutcomes();
 
-    contextGenerator.updateAdaptiveData(tokens, c.toArray(new String[c.size()]));
+    contextGenerator.updateAdaptiveData(tokens, c.toArray(new String[0]));
     Span[] spans = seqCodec.decode(c);
     spans = setProbs(spans);
     return spans;
