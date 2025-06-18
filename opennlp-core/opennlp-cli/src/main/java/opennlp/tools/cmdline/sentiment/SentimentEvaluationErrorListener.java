@@ -53,8 +53,7 @@ public class SentimentEvaluationErrorListener
    *          the sentiment sampple prediction
    */
   @Override
-  public void misclassified(SentimentSample reference,
-      SentimentSample prediction) {
+  public void misclassified(SentimentSample reference, SentimentSample prediction) {
     printError(new String[] { reference.getSentiment() },
         new String[] { prediction.getSentiment() }, reference, prediction,
         reference.getSentence());
