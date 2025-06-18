@@ -26,7 +26,7 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 public class SentimentContextGenerator
     implements BeamSearchContextGenerator<String> {
 
-  private AdaptiveFeatureGenerator[] featureGenerators;
+  private final AdaptiveFeatureGenerator[] featureGenerators;
 
   public SentimentContextGenerator() {
     this(new AdaptiveFeatureGenerator[0]);
@@ -49,7 +49,7 @@ public class SentimentContextGenerator
   }
 
   /**
-   * Returns the context
+   * Returns the context.
    *
    * @param index
    *          the index of the context

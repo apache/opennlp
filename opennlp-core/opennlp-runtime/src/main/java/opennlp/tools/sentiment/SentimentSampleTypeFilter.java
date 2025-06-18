@@ -30,6 +30,7 @@ import opennlp.tools.util.ObjectStream;
  * Class for creating a type filter.
  *
  * @see FilterObjectStream
+ * @see SentimentSample
  */
 public class SentimentSampleTypeFilter
     extends FilterObjectStream<SentimentSample, SentimentSample> {

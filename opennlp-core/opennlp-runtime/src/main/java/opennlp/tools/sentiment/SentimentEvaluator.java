@@ -30,7 +30,10 @@ public class SentimentEvaluator extends Evaluator<SentimentSample> {
   private final SentimentME sentiment;
 
   /**
-   * Constructor
+   * Instantiates a {@link SentimentEvaluator} with the specified parameters.
+   *
+   * @param sentiment The {@link SentimentME} to use.
+   * @param listeners One or more {@link SentimentEvaluationMonitor monitors} to assign.
    */
   public SentimentEvaluator(SentimentME sentiment, SentimentEvaluationMonitor... listeners) {
     super(listeners);

@@ -17,12 +17,18 @@
 
 package opennlp.tools.sentiment;
 
+import java.io.Serial;
 import java.util.List;
+
+import opennlp.tools.commons.Sample;
 
 /**
  * Class for holding text used for sentiment analysis.
  */
-public class SentimentSample {
+public class SentimentSample implements Sample {
+
+  @Serial
+  private static final long serialVersionUID = 2477213313738337539L;
 
   private final String sentiment;
   private final List<String> sentence;
