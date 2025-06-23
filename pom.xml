@@ -196,7 +196,7 @@
 		<maven.failsafe.plugin>3.5.3</maven.failsafe.plugin>
 		<maven.javadoc.plugin>3.11.2</maven.javadoc.plugin>
 		<forbiddenapis.plugin>3.9</forbiddenapis.plugin>
-		<license-maven-plugin.version>2.5.0</license-maven-plugin.version>
+		<license-maven-plugin.version>2.6.0</license-maven-plugin.version>
 	</properties>
 
 	<build>
