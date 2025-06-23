@@ -184,7 +184,7 @@
 		<morfologik.version>2.1.9</morfologik.version>
 		<onnxruntime.version>1.22.0</onnxruntime.version>
 		<slf4j.version>2.0.17</slf4j.version>
-		<log4j2.version>2.24.3</log4j2.version>
+		<log4j2.version>2.25.0</log4j2.version>
 		<logcaptor.version>2.11.0</logcaptor.version>
 		<classgraph.version>4.8.179</classgraph.version>
 		<jmh.version>1.37</jmh.version>
