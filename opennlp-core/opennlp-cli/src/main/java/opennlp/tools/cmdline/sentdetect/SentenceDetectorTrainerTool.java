@@ -92,7 +92,7 @@ public final class SentenceDetectorTrainerTool
     try {
       Dictionary dict = loadDict(params.getAbbDict());
       SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
-          params.getFactory(), params.getLang(), true, dict, eos);
+          params.getFactory(), params.getLang(), params.getUseTokenEnd(), dict, eos);
       model = SentenceDetectorME.train(params.getLang(), sampleStream,
           sdFactory, mlParams);
     } catch (IOException e) {
