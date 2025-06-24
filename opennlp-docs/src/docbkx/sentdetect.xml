@@ -142,7 +142,10 @@ Arguments description:
         -data sampleData
                 data to be used, usually a file name.
         -encoding charsetName
-                encoding for reading and writing text, if absent the system default is used.]]>
+                encoding for reading and writing text, if absent the system default is used.
+        -useTokenEnd boolean flag
+                set to false when the next sentence in the test dataset doesn't start with a blank space post completion of
+                the previous sentence. If absent, it is defaulted to true.]]>
 	</screen>
 		To train an English sentence detector use the following command:
         <screen>
