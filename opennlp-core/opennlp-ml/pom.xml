@@ -31,7 +31,7 @@
 
   <artifactId>opennlp-ml</artifactId>
   <packaging>pom</packaging>
-  <name>Apache OpenNLP Machine Learning</name>
+  <name>Apache OpenNLP :: Core :: ML</name>
 
   <modules>
     <module>opennlp-ml-commons</module>

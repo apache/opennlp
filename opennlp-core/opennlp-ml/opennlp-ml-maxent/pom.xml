@@ -30,7 +30,7 @@
 
     <artifactId>opennlp-ml-maxent</artifactId>
     <packaging>jar</packaging>
-    <name>Apache OpenNLP Maximum Entropy</name>
+    <name>Apache OpenNLP :: Core :: ML :: Maximum Entropy</name>
 
     <dependencies>
         <!-- Internal dependencies -->

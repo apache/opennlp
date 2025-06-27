@@ -30,7 +30,7 @@
 
     <artifactId>opennlp-ml-perceptron</artifactId>
     <packaging>jar</packaging>
-    <name>Apache OpenNLP Perceptron</name>
+    <name>Apache OpenNLP :: Core :: ML :: Perceptron</name>
 
     <dependencies>
         <!-- Internal dependencies -->

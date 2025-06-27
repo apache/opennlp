@@ -34,7 +34,7 @@
 	<version>3.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Apache OpenNLP Reactor</name>
+	<name>Apache OpenNLP</name>
 
 	<scm>
 		<connection>scm:git:https://github.com/apache/opennlp.git</connection>

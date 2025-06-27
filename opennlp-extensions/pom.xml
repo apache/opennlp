@@ -32,7 +32,7 @@
 
   <artifactId>opennlp-extensions</artifactId>
   <packaging>pom</packaging>
-  <name>Apache OpenNLP Extensions</name>
+  <name>Apache OpenNLP :: Extensions</name>
 
   <properties>
     <uimaj.version>3.6.0</uimaj.version>
