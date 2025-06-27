@@ -30,7 +30,7 @@
 
   <artifactId>opennlp-distr</artifactId>
   <packaging>pom</packaging>
-  <name>Apache OpenNLP Distribution</name>
+  <name>Apache OpenNLP :: Distribution</name>
 
   <properties>
     <opennlp.version>${project.version}</opennlp.version>

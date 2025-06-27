@@ -11,7 +11,7 @@
 
   <artifactId>opennlp-core</artifactId>
   <packaging>pom</packaging>
-  <name>Apache OpenNLP Core</name>
+  <name>Apache OpenNLP :: Core</name>
 
   <modules>
     <module>opennlp-ml</module>

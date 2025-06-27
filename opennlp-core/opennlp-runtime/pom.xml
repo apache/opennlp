@@ -11,7 +11,7 @@
 
   <artifactId>opennlp-runtime</artifactId>
   <packaging>jar</packaging>
-  <name>Apache OpenNLP Core Runtime</name>
+  <name>Apache OpenNLP :: Core :: Runtime</name>
 
   <dependencies>
     <!-- Internal dependencies -->
