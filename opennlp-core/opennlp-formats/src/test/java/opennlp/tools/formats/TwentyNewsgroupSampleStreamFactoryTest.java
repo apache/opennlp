@@ -49,7 +49,7 @@ public class TwentyNewsgroupSampleStreamFactoryTest extends
 
   private static final Path OPENNLP_DIR = Paths.get(System.getProperty("OPENNLP_DOWNLOAD_HOME",
           System.getProperty("user.home"))).resolve(".opennlp");
-  private static final String TOKENIZER_MODEL_NAME = "opennlp-en-ud-ewt-tokens-1.2-2.5.0.bin";
+  private static final String TOKENIZER_MODEL_NAME = "opennlp-en-ud-ewt-tokens-1.3-2.5.4.bin";
 
   // SUT
   private TwentyNewsgroupSampleStreamFactory factory;

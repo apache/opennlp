@@ -41,7 +41,7 @@ under the License.
 		Download the English maxent pos model and start the POS Tagger Tool with this command:
 		<screen>
 			<![CDATA[
-$ opennlp POSTagger opennlp-en-ud-ewt-pos-1.2-2.5.0.bin]]>
+$ opennlp POSTagger opennlp-en-ud-ewt-pos-1.3-2.5.4.bin]]>
 		 </screen>
 		The POS Tagger now reads a tokenized sentence per line from stdin.
 		Copy these two sentences to the console:
@@ -69,7 +69,7 @@ Mr._PROPN Vinken_PROPN is_AUX chairman_NOUN of_ADP Elsevier_ADJ N.V._PROPN ,_PUN
 			In the sample below it is loaded from disk.
 			<programlisting language="java">
 				<![CDATA[
-try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-pos-1.2-2.5.0.bin"){
+try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-pos-1.3-2.5.4.bin"){
   POSModel model = new POSModel(modelIn);
 }]]>
 			</programlisting>
@@ -343,7 +343,7 @@ Arrays.stream(tags).forEach(k -> System.out.print(k + " "));]]>
 				    POS Tags using the custom model (en-custom-pos-maxent.bin): PROPN OTHER PRON ADJ NOUN PUNCT
 
 				Output with the default model
-				    POS Tags using the default model (opennlp-en-ud-ewt-pos-1.2-2.5.0.bin):	NOUN AUX PRON ADJ NOUN PUNCT
+				    POS Tags using the default model (opennlp-en-ud-ewt-pos-1.3-2.5.4.bin):	NOUN AUX PRON ADJ NOUN PUNCT
 			</literallayout>
 		</para>
 		</section>

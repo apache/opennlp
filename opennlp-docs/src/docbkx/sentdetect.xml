@@ -63,13 +63,13 @@ Rudolph Agnew, 55 years old and former chairman of Consolidated Gold Fields PLC,
 		Download the english sentence detector model and start the Sentence Detector Tool with this command:
         <screen>
         <![CDATA[
-$ opennlp SentenceDetector opennlp-en-ud-ewt-sentence-1.2-2.5.0.bin]]>
+$ opennlp SentenceDetector opennlp-en-ud-ewt-sentence-1.3-2.5.4.bin]]>
 		</screen>
 		Just copy the sample text from above to the console. The Sentence Detector will read it and echo one sentence per line to the console.
 		Usually the input is read from a file and the output is redirected to another file. This can be achieved with the following command.
 		<screen>
 				<![CDATA[
-$ opennlp SentenceDetector opennlp-en-ud-ewt-sentence-1.2-2.5.0.bin < input.txt > output.txt]]>
+$ opennlp SentenceDetector opennlp-en-ud-ewt-sentence-1.3-2.5.4.bin < input.txt > output.txt]]>
 		</screen>
 		For the english sentence model from the website the input text should not be tokenized.
 		</para>
@@ -81,7 +81,7 @@ $ opennlp SentenceDetector opennlp-en-ud-ewt-sentence-1.2-2.5.0.bin < input.txt 
 		To instantiate the Sentence Detector the sentence model must be loaded first.
 		<programlisting language="java">
 				<![CDATA[
-try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-sentence-1.2-2.5.0.bin")) {
+try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-sentence-1.3-2.5.4.bin")) {
   SentenceModel model = new SentenceModel(modelIn);
 }]]>
 		</programlisting>

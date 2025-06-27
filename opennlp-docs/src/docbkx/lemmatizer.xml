@@ -41,7 +41,7 @@
 			<para>
 				<screen>
 		   <![CDATA[
-$ opennlp LemmatizerME opennlp-en-ud-ewt-lemmas-1.2-2.5.0.bin < sentences]]>
+$ opennlp LemmatizerME opennlp-en-ud-ewt-lemmas-1.3-2.5.4.bin < sentences]]>
 		  </screen>
 				The Lemmatizer now reads a pos tagged sentence(s) per line from
 				standard input. For example, you can copy this sentence to the
@@ -89,7 +89,7 @@ signed	VERB	sign
 				<programlisting language="java">
 		<![CDATA[
 LemmatizerModel model = null;
-try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-lemmas-1.2-2.5.0.bin"))) {
+try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-lemmas-1.3-2.5.4.bin"))) {
   model = new LemmatizerModel(modelIn);
 }
 ]]>

@@ -97,7 +97,7 @@ $ opennlp SimpleTokenizer]]>
 			our website.
 			<screen>
 			<![CDATA[
-$ opennlp TokenizerME opennlp-en-ud-ewt-tokens-1.2-2.5.0.bin]]>
+$ opennlp TokenizerME opennlp-en-ud-ewt-tokens-1.3-2.5.4.bin]]>
 		    </screen>
 			To test the tokenizer copy the sample from above to the console. The
 			whitespace separated tokens will be written back to the
@@ -107,7 +107,7 @@ $ opennlp TokenizerME opennlp-en-ud-ewt-tokens-1.2-2.5.0.bin]]>
 			Usually the input is read from a file and written to a file.
 			<screen>
 			<![CDATA[
-$ opennlp TokenizerME opennlp-en-ud-ewt-tokens-1.2-2.5.0.bin < article.txt > article-tokenized.txt]]>
+$ opennlp TokenizerME opennlp-en-ud-ewt-tokens-1.3-2.5.4.bin < article.txt > article-tokenized.txt]]>
 		    </screen>
 			It can be done in the same way for the Simple Tokenizer.
 		</para>
@@ -151,7 +151,7 @@ London share prices were bolstered largely by continued gains on Wall Street and
 			can be loaded.
 			<programlisting language="java">
 			<![CDATA[
-try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-tokens-1.2-2.5.0.bin")) {
+try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-tokens-1.3-2.5.4.bin")) {
   TokenizerModel model = new TokenizerModel(modelIn);
 }]]>
 		 </programlisting>
