@@ -56,7 +56,7 @@ public class POSModelLoaderIT extends AbstractModelLoaderTest {
 
   @ParameterizedTest(name = "Verify \"{0}\" POS model loading")
   @ValueSource(strings = {"en-ud-ewt", "fr-ud-gsd", "de-ud-gsd", "it-ud-vit", "nl-ud-alpino",
-      "bg-ud-btb", "ca-ud-ancora", "cs-ud-pdt", "da-ud-ddt", "el-ud-gdt", "es-ud-gsd", "et-ud-edt",
+      "bg-ud-btb", "ca-ud-ancora", "cs-ud-pdtc", "da-ud-ddt", "el-ud-gdt", "es-ud-gsd", "et-ud-edt",
       "eu-ud-bdt", "fi-ud-tdt", "hr-ud-set", "hy-ud-bsut", "is-ud-icepahc", "ka-ud-glc", "kk-ud-ktb",
       "ko-ud-kaist", "lv-ud-lvtb", "no-ud-bokmaal", "pl-ud-pdb", "pt-ud-gsd", "ro-ud-rrt", "ru-ud-gsd",
       "sr-ud-set", "sk-ud-snk", "sl-ud-ssj", "sv-ud-talbanken", "tr-ud-boun", "uk-ud-iu"})

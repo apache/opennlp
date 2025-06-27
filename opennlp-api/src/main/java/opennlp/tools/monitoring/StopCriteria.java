@@ -26,7 +26,7 @@ import java.util.function.Predicate;
  */
 public interface StopCriteria<T extends Number> extends Predicate<T> {
 
-  String FINISHED = "Training Finished after completing %s Iterations successfully.";
+  String FINISHED = "Training finished after completing %s iterations successfully.";
 
   /**
    * @return A detailed message captured upon hitting the {@link StopCriteria} during model training.
