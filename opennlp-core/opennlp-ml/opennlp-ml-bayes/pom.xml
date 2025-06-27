@@ -30,7 +30,7 @@
 
     <artifactId>opennlp-ml-bayes</artifactId>
     <packaging>jar</packaging>
-    <name>Apache OpenNLP Naive Bayes</name>
+    <name>Apache OpenNLP :: Core :: ML :: Naive Bayes</name>
 
     <dependencies>
         <!-- Internal dependencies -->

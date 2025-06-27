@@ -31,7 +31,7 @@
 
   <artifactId>opennlp-models</artifactId>
   <packaging>jar</packaging>
-  <name>Apache OpenNLP Core Models</name>
+  <name>Apache OpenNLP :: Core :: Models</name>
 
   <dependencies>
     <!-- Internal dependencies -->

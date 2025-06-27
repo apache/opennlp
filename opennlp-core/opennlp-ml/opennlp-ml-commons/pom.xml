@@ -30,7 +30,7 @@
 
     <artifactId>opennlp-ml-commons</artifactId>
     <packaging>jar</packaging>
-    <name>Apache OpenNLP ML Commons</name>
+    <name>Apache OpenNLP :: Core :: ML :: Commons</name>
 
     <dependencies>
         <!-- Internal dependencies -->

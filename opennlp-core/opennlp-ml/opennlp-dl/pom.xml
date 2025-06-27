@@ -31,7 +31,7 @@
 
   <artifactId>opennlp-dl</artifactId>
   <packaging>jar</packaging>
-  <name>Apache OpenNLP Deep Learning</name>
+  <name>Apache OpenNLP :: Core :: ML :: Deep Learning</name>
 
   <dependencies>
     <!-- Internal dependencies -->

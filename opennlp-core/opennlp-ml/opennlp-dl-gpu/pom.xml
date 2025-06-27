@@ -31,7 +31,7 @@
 
   <artifactId>opennlp-dl-gpu</artifactId>
   <packaging>jar</packaging>
-  <name>Apache OpenNLP Deep Learning (GPU)</name>
+  <name>Apache OpenNLP :: Core :: ML :: Deep Learning (GPU)</name>
 
   <dependencies>
     <!-- Internal dependencies -->

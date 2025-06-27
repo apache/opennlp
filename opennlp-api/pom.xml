@@ -31,7 +31,7 @@
 
   <artifactId>opennlp-api</artifactId>
   <packaging>jar</packaging>
-  <name>Apache OpenNLP API</name>
+  <name>Apache OpenNLP :: API</name>
 
   <dependencies>
     <!-- External dependencies -->
