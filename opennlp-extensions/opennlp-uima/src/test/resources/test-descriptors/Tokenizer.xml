@@ -110,7 +110,7 @@
       <externalResource>
 				<name>TokenModel</name>
 				<fileResourceSpecifier>
-					<fileUrl>file:opennlp-en-ud-ewt-tokens-1.2-2.5.0.bin</fileUrl>
+					<fileUrl>file:opennlp-en-ud-ewt-tokens-1.3-2.5.4.bin</fileUrl>
 				</fileResourceSpecifier>
 				<implementationName>opennlp.uima.tokenize.TokenizerModelResourceImpl</implementationName>
 			</externalResource>

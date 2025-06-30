@@ -84,7 +84,7 @@ public class DownloadParserTest {
   private static final String MODEL_SENT = "sentence-";
   private static final String MODEL_TOK = "tokens-";
   private static final String MODEL_POS = "pos-";
-  private static final String VER = "1.2-2.5.0";
+  private static final String VER = "1.3-2.5.4";
   private static final String BIN = ".bin";
 
   // Note: This needs to be public as JUnit 5 requires it like this.
@@ -116,9 +116,9 @@ public class DownloadParserTest {
         ModelType.TOKENIZER, OPENNLP + "bg-ud-btb-" + MODEL_TOK + VER + BIN,
         ModelType.POS, OPENNLP + "bg-ud-btb-" + MODEL_POS + VER + BIN)),
       Arguments.of("cs", Map.of(
-        ModelType.SENTENCE_DETECTOR, OPENNLP + "cs-ud-pdt-" + MODEL_SENT + VER + BIN,
-        ModelType.TOKENIZER, OPENNLP + "cs-ud-pdt-" + MODEL_TOK + VER + BIN,
-        ModelType.POS, OPENNLP + "cs-ud-pdt-" + MODEL_POS + VER + BIN)),
+        ModelType.SENTENCE_DETECTOR, OPENNLP + "cs-ud-pdtc-" + MODEL_SENT + VER + BIN,
+        ModelType.TOKENIZER, OPENNLP + "cs-ud-pdtc-" + MODEL_TOK + VER + BIN,
+        ModelType.POS, OPENNLP + "cs-ud-pdtc-" + MODEL_POS + VER + BIN)),
       Arguments.of("da", Map.of(
         ModelType.SENTENCE_DETECTOR, OPENNLP + "da-ud-ddt-" + MODEL_SENT + VER + BIN,
         ModelType.TOKENIZER, OPENNLP + "da-ud-ddt-" + MODEL_TOK + VER + BIN,

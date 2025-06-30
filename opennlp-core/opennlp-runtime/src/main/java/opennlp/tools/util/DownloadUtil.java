@@ -58,7 +58,7 @@ public class DownloadUtil {
   private static final String BASE_URL =
       System.getProperty("OPENNLP_DOWNLOAD_BASE_URL", "https://dlcdn.apache.org/opennlp/");
   private static final String MODEL_URI_PATH =
-      System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.2/");
+      System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.3/");
   private static final String OPENNLP_DOWNLOAD_HOME = "OPENNLP_DOWNLOAD_HOME";
 
   private static Map<String, Map<ModelType, String>> availableModels;
