@@ -21,7 +21,7 @@ name: Publish snapshot artifacts
 on:
   push:
     branches:
-      - main
+      - opennlp-2.x
 
 jobs:
   publish:
