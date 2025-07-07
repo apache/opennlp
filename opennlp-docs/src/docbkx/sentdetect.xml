@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
-]>
+				"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+				]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -28,99 +28,99 @@ under the License.
 	<section id="tools.sentdetect.detection">
 		<title>Sentence Detection</title>
 		<para>
-		The OpenNLP Sentence Detector can detect that a punctuation character 
-		marks the end of a sentence or not. In this sense a sentence is defined 
-		as the longest white space trimmed character sequence between two punctuation
-		marks. The first and last sentence make an exception to this rule. The first 
-		non whitespace character is assumed to be the start of a sentence, and the
-		last non whitespace character is assumed to be a sentence end.
-		The sample text below should be segmented into its sentences.
-		<screen>
+			The OpenNLP Sentence Detector can detect that a punctuation character
+			marks the end of a sentence or not. In this sense a sentence is defined
+			as the longest white space trimmed character sequence between two punctuation
+			marks. The first and last sentence make an exception to this rule. The first
+			non whitespace character is assumed to be the start of a sentence, and the
+			last non whitespace character is assumed to be a sentence end.
+			The sample text below should be segmented into its sentences.
+			<screen>
 				<![CDATA[
 Pierre Vinken, 61 years old, will join the board as a nonexecutive director Nov. 29. Mr. Vinken is
 chairman of Elsevier N.V., the Dutch publishing group. Rudolph Agnew, 55 years
 old and former chairman of Consolidated Gold Fields PLC, was named a director of this
 British industrial conglomerate.]]>
-		</screen>
-		After detecting the sentence boundaries each sentence is written in its own line.
-		<screen>
+			</screen>
+			After detecting the sentence boundaries each sentence is written in its own line.
+			<screen>
 				<![CDATA[
 Pierre Vinken, 61 years old, will join the board as a nonexecutive director Nov. 29.
 Mr. Vinken is chairman of Elsevier N.V., the Dutch publishing group.
 Rudolph Agnew, 55 years old and former chairman of Consolidated Gold Fields PLC,
     was named a director of this British industrial conglomerate.]]>
-		</screen>
-		Usually Sentence Detection is done before the text is tokenized and that's the way the pre-trained models on the website are trained,
-		but it is also possible to perform tokenization first and let the Sentence Detector process the already tokenized text.
-		The OpenNLP Sentence Detector cannot identify sentence boundaries based on the contents of the sentence. A prominent example is the first sentence in an article where the title is mistakenly identified to be the first part of the first sentence.
-		Most components in OpenNLP expect input which is segmented into sentences.
+			</screen>
+			Usually Sentence Detection is done before the text is tokenized and that's the way the pre-trained models on the website are trained,
+			but it is also possible to perform tokenization first and let the Sentence Detector process the already tokenized text.
+			The OpenNLP Sentence Detector cannot identify sentence boundaries based on the contents of the sentence. A prominent example is the first sentence in an article where the title is mistakenly identified to be the first part of the first sentence.
+			Most components in OpenNLP expect input which is segmented into sentences.
 		</para>
-		
+
 		<section id="tools.sentdetect.detection.cmdline">
-		<title>Sentence Detection Tool</title>
-		<para>
-		The easiest way to try out the Sentence Detector is the command line tool. The tool is only intended for demonstration and testing.
-		Download the english sentence detector model and start the Sentence Detector Tool with this command:
-        <screen>
-        <![CDATA[
+			<title>Sentence Detection Tool</title>
+			<para>
+				The easiest way to try out the Sentence Detector is the command line tool. The tool is only intended for demonstration and testing.
+				Download the english sentence detector model and start the Sentence Detector Tool with this command:
+				<screen>
+					<![CDATA[
 $ opennlp SentenceDetector opennlp-en-ud-ewt-sentence-1.2-2.5.0.bin]]>
-		</screen>
-		Just copy the sample text from above to the console. The Sentence Detector will read it and echo one sentence per line to the console.
-		Usually the input is read from a file and the output is redirected to another file. This can be achieved with the following command.
-		<screen>
-				<![CDATA[
+				</screen>
+				Just copy the sample text from above to the console. The Sentence Detector will read it and echo one sentence per line to the console.
+				Usually the input is read from a file and the output is redirected to another file. This can be achieved with the following command.
+				<screen>
+					<![CDATA[
 $ opennlp SentenceDetector opennlp-en-ud-ewt-sentence-1.2-2.5.0.bin < input.txt > output.txt]]>
-		</screen>
-		For the english sentence model from the website the input text should not be tokenized.
-		</para>
+				</screen>
+				For the english sentence model from the website the input text should not be tokenized.
+			</para>
 		</section>
 		<section id="tools.sentdetect.detection.api">
-		<title>Sentence Detection API</title>
-		<para>
-		The Sentence Detector can be easily integrated into an application via its API.
-		To instantiate the Sentence Detector the sentence model must be loaded first.
-		<programlisting language="java">
-				<![CDATA[
+			<title>Sentence Detection API</title>
+			<para>
+				The Sentence Detector can be easily integrated into an application via its API.
+				To instantiate the Sentence Detector the sentence model must be loaded first.
+				<programlisting language="java">
+					<![CDATA[
 try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-sentence-1.2-2.5.0.bin")) {
   SentenceModel model = new SentenceModel(modelIn);
 }]]>
-		</programlisting>
-		After the model is loaded the SentenceDetectorME can be instantiated.
-		<programlisting language="java">
-				<![CDATA[
-SentenceDetectorME sentenceDetector = new SentenceDetectorME(model);]]>
-		</programlisting>
-		The Sentence Detector can output an array of Strings, where each String is one sentence.
+				</programlisting>
+				After the model is loaded the SentenceDetectorME can be instantiated.
 				<programlisting language="java">
-				<![CDATA[
+					<![CDATA[
+SentenceDetectorME sentenceDetector = new SentenceDetectorME(model);]]>
+				</programlisting>
+				The Sentence Detector can output an array of Strings, where each String is one sentence.
+				<programlisting language="java">
+					<![CDATA[
 String[] sentences = sentenceDetector.sentDetect("  First sentence. Second sentence. ");]]>
-		</programlisting>
-		The result array now contains two entries. The first String is "First sentence." and the
-        second String is "Second sentence." The whitespace before, between and after the input String is removed.
-		The API also offers a method which simply returns the span of the sentence in the input string.
-		<programlisting language="java">
-				<![CDATA[
+				</programlisting>
+				The result array now contains two entries. The first String is "First sentence." and the
+				second String is "Second sentence." The whitespace before, between and after the input String is removed.
+				The API also offers a method which simply returns the span of the sentence in the input string.
+				<programlisting language="java">
+					<![CDATA[
 Span[] sentences = sentenceDetector.sentPosDetect("  First sentence. Second sentence. ");]]>
-		</programlisting>
-		The result array again contains two entries. The first span beings at index 2 and ends at
-            17. The second span begins at 18 and ends at 34. The utility method Span.getCoveredText can be used to create a substring which only covers the chars in the span.
-		</para>
+				</programlisting>
+				The result array again contains two entries. The first span beings at index 2 and ends at
+				17. The second span begins at 18 and ends at 34. The utility method Span.getCoveredText can be used to create a substring which only covers the chars in the span.
+			</para>
 		</section>
 	</section>
 	<section id="tools.sentdetect.training">
 		<title>Sentence Detector Training</title>
 		<para/>
 		<section id="tools.sentdetect.training.tool">
-		<title>Training Tool</title>
-		<para>
-		OpenNLP has a command line tool which is used to train the models available from the model
-		download page on various corpora. The data must be converted to the OpenNLP Sentence Detector
-		training format. Which is one sentence per line. An empty line indicates a document boundary.
-		In case the document boundary is unknown, it's recommended to have an empty line every few ten
-		sentences. Exactly like the output in the sample above.
-		Usage of the tool:
-		<screen>
-				<![CDATA[
+			<title>Training Tool</title>
+			<para>
+				OpenNLP has a command line tool which is used to train the models available from the model
+				download page on various corpora. The data must be converted to the OpenNLP Sentence Detector
+				training format. Which is one sentence per line. An empty line indicates a document boundary.
+				In case the document boundary is unknown, it's recommended to have an empty line every few ten
+				sentences. Exactly like the output in the sample above.
+				Usage of the tool:
+				<screen>
+					<![CDATA[
 $ opennlp SentenceDetectorTrainer
 Usage: opennlp SentenceDetectorTrainer[.namefinder|.conllx|.pos] [-abbDict path] \
                [-params paramsFile] [-iterations num] [-cutoff num] -model modelFile \
@@ -142,17 +142,20 @@ Arguments description:
         -data sampleData
                 data to be used, usually a file name.
         -encoding charsetName
-                encoding for reading and writing text, if absent the system default is used.]]>
-	</screen>
-		To train an English sentence detector use the following command:
-        <screen>
-				<![CDATA[
+                encoding for reading and writing text, if absent the system default is used.
+        -useTokenEnd boolean flag
+                set to false when the next sentence in the test dataset doesn't start with a blank space post completion of
+                the previous sentence. If absent, it is defaulted to true.]]>
+				</screen>
+				To train an English sentence detector use the following command:
+				<screen>
+					<![CDATA[
 $ opennlp SentenceDetectorTrainer -model en-custom-sent.bin -lang en -data en-custom-sent.train -encoding UTF-8
                         ]]>
-        </screen>
-            It should produce the following output:
-            <screen>
-                <![CDATA[
+				</screen>
+				It should produce the following output:
+				<screen>
+					<![CDATA[
 Indexing events using cutoff of 5
 
 	Computing event counts...  done. 4883 events
@@ -184,28 +187,28 @@ Performing 100 iterations.
 Wrote sentence detector model.
 Path: en-custom-sent.bin
 ]]>
-		</screen>
-		</para>
+				</screen>
+			</para>
 		</section>
 		<section id="tools.sentdetect.training.api">
-		<title>Training API</title>
-		<para>
-		The Sentence Detector also offers an API to train a new sentence detection model.
-		Basically three steps are necessary to train it:
-		<itemizedlist>
-				<listitem>
-					<para>The application must open a sample data stream</para>
-				</listitem>
-				<listitem>
-					<para>Call the SentenceDetectorME.train method</para>
-				</listitem>
-				<listitem>
-					<para>Save the SentenceModel to a file or directly use it</para>
-				</listitem>
-			</itemizedlist>
-			The following sample code illustrates these steps:
-					<programlisting language="java">
-				<![CDATA[
+			<title>Training API</title>
+			<para>
+				The Sentence Detector also offers an API to train a new sentence detection model.
+				Basically three steps are necessary to train it:
+				<itemizedlist>
+					<listitem>
+						<para>The application must open a sample data stream</para>
+					</listitem>
+					<listitem>
+						<para>Call the SentenceDetectorME.train method</para>
+					</listitem>
+					<listitem>
+						<para>Save the SentenceModel to a file or directly use it</para>
+					</listitem>
+				</itemizedlist>
+				The following sample code illustrates these steps:
+				<programlisting language="java">
+					<![CDATA[
 
 ObjectStream<String> lineStream =
   new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-custom-sent.train")), StandardCharsets.UTF_8);
@@ -220,8 +223,8 @@ try (ObjectStream<SentenceSample> sampleStream = new SentenceSampleStream(lineSt
 try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {
   model.serialize(modelOut);
 }]]>
-		</programlisting>
-		</para>
+				</programlisting>
+			</para>
 		</section>
 	</section>
 	<section id="tools.sentdetect.eval">
@@ -231,9 +234,9 @@ try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(model
 		<section id="tools.sentdetect.eval.tool">
 			<title>Evaluation Tool</title>
 			<para>
-                The command shows how the evaluator tool can be run:
-                <screen>
-				<![CDATA[
+				The command shows how the evaluator tool can be run:
+				<screen>
+					<![CDATA[
 $ opennlp SentenceDetectorEvaluator -model en-custom-sent.bin -data en-custom-sent.eval -encoding UTF-8
 
 Loading model ... done
@@ -242,8 +245,8 @@ Evaluating ... done
 Precision: 0.9465737514518002
 Recall: 0.9095982142857143
 F-Measure: 0.9277177006260672]]>
-                </screen>
-                The en-custom-sent.eval file has the same format as the training data.
+				</screen>
+				The en-custom-sent.eval file has the same format as the training data.
 			</para>
 		</section>
 	</section>

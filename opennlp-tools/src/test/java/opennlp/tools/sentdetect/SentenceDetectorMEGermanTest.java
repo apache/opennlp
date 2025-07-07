@@ -20,11 +20,15 @@ package opennlp.tools.sentdetect;
 import java.io.IOException;
 import java.util.Locale;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.dictionary.Dictionary;
+
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for the {@link SentenceDetectorME} class.
@@ -42,22 +46,32 @@ import opennlp.tools.dictionary.Dictionary;
 public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
 
   private static final char[] EOS_CHARS = {'.', '?', '!'};
-  
-  private static SentenceModel sentdetectModel;
+  private static Dictionary abbreviationDict;
+  private SentenceModel sentdetectModel;
 
   @BeforeAll
-  public static void prepareResources() throws IOException {
-    Dictionary abbreviationDict = loadAbbDictionary(Locale.GERMAN);
-    SentenceDetectorFactory factory = new SentenceDetectorFactory(
-            "deu", true, abbreviationDict, EOS_CHARS);
-    sentdetectModel = train(factory, Locale.GERMAN);
-    Assertions.assertNotNull(sentdetectModel);
-    Assertions.assertEquals("deu", sentdetectModel.getLanguage());
+  static void loadResources() throws IOException {
+    abbreviationDict = loadAbbDictionary(Locale.GERMAN);
+  }
+
+  private void prepareResources(boolean useTokenEnd) {
+    try {
+      SentenceDetectorFactory factory = new SentenceDetectorFactory(
+              "deu", useTokenEnd, abbreviationDict, EOS_CHARS);
+      sentdetectModel = train(factory, Locale.GERMAN);
+
+      assertAll(() -> assertNotNull(sentdetectModel),
+              () -> assertEquals("deu", sentdetectModel.getLanguage()));
+    } catch (IOException ex) {
+      fail("Couldn't train the SentenceModel using test data. Exception: " + ex.getMessage());
+    }
   }
 
   // Example taken from 'Sentences_DE.txt'
   @Test
   void testSentDetectWithInlineAbbreviationsEx1() {
+    prepareResources(true);
+
     final String sent1 = "Ein Traum, zu dessen Bildung eine besonders starke Verdichtung beigetragen, " +
             "wird für diese Untersuchung das günstigste Material sein.";
     // Here we have two abbreviations "S. = Seite" and "ff. = folgende (Plural)"
@@ -66,40 +80,65 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
     String sampleSentences = sent1 + " " + sent2;
     String[] sents = sentDetect.sentDetect(sampleSentences);
-    Assertions.assertEquals(2, sents.length);
-    Assertions.assertEquals(sent1, sents[0]);
-    Assertions.assertEquals(sent2, sents[1]);
     double[] probs = sentDetect.getSentenceProbabilities();
-    Assertions.assertEquals(2, probs.length);
+
+    assertAll(() -> assertEquals(2, sents.length),
+            () -> assertEquals(sent1, sents[0]),
+            () -> assertEquals(sent2, sents[1]),
+            () -> assertEquals(2, probs.length));
   }
 
   // Reduced example taken from 'Sentences_DE.txt'
   @Test
   void testSentDetectWithInlineAbbreviationsEx2() {
+    prepareResources(true);
+
     // Here we have three abbreviations: "S. = Seite", "vgl. = vergleiche", and "f. = folgende (Singular)"
     final String sent1 = "Die farbige Tafel, die ich aufschlage, " +
             "geht (vgl. die Analyse S. 185 f.) auf ein neues Thema ein.";
 
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
     String[] sents = sentDetect.sentDetect(sent1);
-    Assertions.assertEquals(1, sents.length);
-    Assertions.assertEquals(sent1, sents[0]);
     double[] probs = sentDetect.getSentenceProbabilities();
-    Assertions.assertEquals(1, probs.length);
+
+    assertAll(() -> assertEquals(1, sents.length),
+            () -> assertEquals(sent1, sents[0]),
+            () -> assertEquals(1, probs.length));
   }
 
   // Modified example deduced from 'Sentences_DE.txt'
   @Test
   void testSentDetectWithInlineAbbreviationsEx3() {
+    prepareResources(true);
+
     // Here we have two abbreviations "z. B. = zum Beispiel" and "S. = Seite"
     final String sent1 = "Die farbige Tafel, die ich aufschlage, " +
             "geht (z. B. die Analyse S. 185) auf ein neues Thema ein.";
 
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
     String[] sents = sentDetect.sentDetect(sent1);
-    Assertions.assertEquals(1, sents.length);
-    Assertions.assertEquals(sent1, sents[0]);
     double[] probs = sentDetect.getSentenceProbabilities();
-    Assertions.assertEquals(1, probs.length);
+
+    assertAll(() -> assertEquals(1, sents.length),
+            () -> assertEquals(sent1, sents[0]),
+            () -> assertEquals(1, probs.length));
+  }
+
+  @Test
+  void testSentDetectWithUseTokenEndFalse() {
+    prepareResources(false);
+
+    final String sent1 = "Träume sind eine Verbindung von Gedanken.";
+    final String sent2 = "Verschiedene Gedanken sind während der Traumformation aktiv.";
+
+    SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
+    //There is no blank space before start of the second sentence.
+    String[] sents = sentDetect.sentDetect(sent1 + sent2);
+    double[] probs = sentDetect.getSentenceProbabilities();
+
+    assertAll(() -> assertEquals(2, sents.length),
+            () -> assertEquals(sent1, sents[0]),
+            () -> assertEquals(sent2, sents[1]),
+            () -> assertEquals(2, probs.length));
   }
 }
