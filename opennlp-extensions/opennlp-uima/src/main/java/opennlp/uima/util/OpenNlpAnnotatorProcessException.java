@@ -19,8 +19,7 @@ package opennlp.uima.util;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 
-public class OpenNlpAnnotatorProcessException extends
-    AnalysisEngineProcessException {
+public class OpenNlpAnnotatorProcessException extends AnalysisEngineProcessException {
 
   private static final long serialVersionUID = 0;
 
@@ -28,8 +27,7 @@ public class OpenNlpAnnotatorProcessException extends
     super(ExceptionMessages.MESSAGE_CATALOG, messageKey, arguments);
   }
 
-  public OpenNlpAnnotatorProcessException(String messageKey,
-      Object[] arguments, Throwable t) {
+  public OpenNlpAnnotatorProcessException(String messageKey, Object[] arguments, Throwable t) {
     super(ExceptionMessages.MESSAGE_CATALOG, messageKey, arguments, t);
   }
 

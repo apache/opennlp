@@ -23,6 +23,9 @@ import java.io.InputStream;
 import opennlp.tools.parser.ParserModel;
 import opennlp.uima.util.AbstractModelResource;
 
+/**
+ * A default implementation of {@link ParserModelResource}.
+ */
 public class ParserModelResourceImpl extends AbstractModelResource<ParserModel> implements
     ParserModelResource {
 

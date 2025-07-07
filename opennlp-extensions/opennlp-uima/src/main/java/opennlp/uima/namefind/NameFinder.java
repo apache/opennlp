@@ -36,27 +36,38 @@ import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
 
 /**
- * OpenNLP Name annotator.
+ * An OpenNLP-based Name annotator.
  * <p>
- * Mandatory parameters
+ * Mandatory parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.NameType</td> <td>The full name of the name type</td></tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.ModelName}</td>
+ *  <td>The name of the model file</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.SentenceType}</td>
+ *  <td>The full name of the sentence type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.TokenType}</td>
+ *  <td>The full name of the token type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.NameType}</td>
+ *  <td>The full name of the name type</td>
+ * </tr>
  * </table>
  * <p>
- * Optional parameters
+ * Optional parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double
+ * <tr><td>String</td> <td>{@code opennlp.uima.ProbabilityFeature}</td> <td>The name of the double
  * probability feature (not set by default)</td></tr>
- * <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.DocumentConfidenceType</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.DocumentConfidenceType</td></tr>
+ * <tr><td>Integer</td> <td>{@code opennlp.uima.BeamSize}</td></tr>
+ * <tr><td>String</td> <td>{@code opennlp.uima.DocumentConfidenceType}</td></tr>
  * </table>
  */
 public final class NameFinder extends AbstractNameFinder {
@@ -114,7 +125,6 @@ public final class NameFinder extends AbstractNameFinder {
    */
   @Override
   public void initialize() throws ResourceInitializationException {
-
     super.initialize();
 
     TokenNameFinderModel model;
@@ -132,11 +142,10 @@ public final class NameFinder extends AbstractNameFinder {
   }
 
   /**
-   * Initializes the type system.
+   * Initializes the {@link TypeSystem type system}.
    */
   @Override
   public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
-
     super.typeSystemInit(typeSystem);
 
     probabilityFeature = AnnotatorUtil.getOptionalFeatureParameter(context, mNameType,

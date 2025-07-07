@@ -70,8 +70,7 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
   }
 
   @Override
-  public void typeSystemInit(TypeSystem typeSystem)
-      throws AnalysisEngineProcessException {
+  public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
     super.typeSystemInit(typeSystem);
 
     containerType = AnnotatorUtil.getOptionalTypeParameter(context, typeSystem,
@@ -93,11 +92,9 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
   @Override
   public void process(CAS cas) throws AnalysisEngineProcessException {
 
-    FSIndex<AnnotationFS> containerAnnotations = cas
-        .getAnnotationIndex(containerType);
+    FSIndex<AnnotationFS> containerAnnotations = cas.getAnnotationIndex(containerType);
 
     for (AnnotationFS containerAnnotation : containerAnnotations) {
-
       String text = containerAnnotation.getCoveredText();
 
       if (isRemoveExistingAnnotations) {
@@ -105,7 +102,6 @@ public abstract class AbstractSentenceDetector extends CasAnnotator_ImplBase {
       }
 
       Span[] sentPositions = detectSentences(text);
-
       AnnotationFS[] sentences = new AnnotationFS[sentPositions.length];
 
       for (int i = 0; i < sentPositions.length; i++) {

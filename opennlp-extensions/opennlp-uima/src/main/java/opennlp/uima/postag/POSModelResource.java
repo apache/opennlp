@@ -19,6 +19,11 @@ package opennlp.uima.postag;
 
 import opennlp.tools.postag.POSModel;
 
+/**
+ * A resource encapsulating an OpenNLP {@link POSModel} which can be shared between
+ * <i>analysis engines</i> and loaded via the UIMA resource model.
+ */
 public interface POSModelResource {
+  
   POSModel getModel();
 }

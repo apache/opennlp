@@ -19,6 +19,10 @@ package opennlp.uima.chunker;
 
 import opennlp.tools.chunker.ChunkerModel;
 
+/**
+ * A resource encapsulating an OpenNLP {@link ChunkerModel} which can be shared between
+ * <i>analysis engines</i> and loaded via the UIMA resource model.
+ */
 public interface ChunkerModelResource {
 
   ChunkerModel getModel();
