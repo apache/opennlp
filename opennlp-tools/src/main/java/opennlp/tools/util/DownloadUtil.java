@@ -56,9 +56,9 @@ public class DownloadUtil {
   private static final Logger logger = LoggerFactory.getLogger(DownloadUtil.class);
 
   private static final String BASE_URL =
-      System.getProperty("OPENNLP_DOWNLOAD_BASE_URL", "https://dlcdn.apache.org/opennlp/");
+          System.getProperty("OPENNLP_DOWNLOAD_BASE_URL", "https://dlcdn.apache.org/opennlp/");
   private static final String MODEL_URI_PATH =
-      System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.2/");
+          System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.3/");
   private static final String OPENNLP_DOWNLOAD_HOME = "OPENNLP_DOWNLOAD_HOME";
 
   private static Map<String, Map<ModelType, String>> availableModels;
@@ -202,7 +202,7 @@ public class DownloadUtil {
     final String actualChecksum = calculateSHA512(downloadedModel);
     if (!actualChecksum.equalsIgnoreCase(expectedChecksum)) {
       throw new IOException("SHA512 checksum validation failed for " + downloadedModel.getFileName() +
-          ". Expected: " + expectedChecksum + ", but got: " + actualChecksum);
+              ". Expected: " + expectedChecksum + ", but got: " + actualChecksum);
     }
   }
 
@@ -353,7 +353,7 @@ public class DownloadUtil {
     private String fetchPageIndex() {
       final StringBuilder html = new StringBuilder();
       try (BufferedReader br = new BufferedReader(
-          new InputStreamReader(indexUrl.openStream(), StandardCharsets.UTF_8))) {
+              new InputStreamReader(indexUrl.openStream(), StandardCharsets.UTF_8))) {
         String line;
         while ((line = br.readLine()) != null) {
           html.append(line);

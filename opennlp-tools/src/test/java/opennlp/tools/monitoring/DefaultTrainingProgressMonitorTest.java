@@ -79,7 +79,7 @@ class DefaultTrainingProgressMonitorTest extends AbstractLoggerTest {
 
       //Assert that the logs captured the training completion message when all iterations are exhausted.
       List<String> actual = logCaptor.getInfoLogs();
-      List<String> expected = List.of("Training Finished after completing 150 Iterations successfully.");
+      List<String> expected = List.of("Training finished after completing 150 iterations successfully.");
       assertArrayEquals(expected.toArray(), actual.toArray());
     }
   }

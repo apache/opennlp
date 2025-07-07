@@ -82,7 +82,7 @@ public class OpennlpUtilTest extends AbstractTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"opennlp-en-ud-ewt-sentence-1.2-2.5.0.bin"})
+  @ValueSource(strings = {"opennlp-en-ud-ewt-sentence-1.3-2.5.4.bin"})
   void testLoadBytes(String file) {
     try {
       byte[] data = OpennlpUtil.loadBytes(OPENNLP_DIR.resolve(file).toFile());
