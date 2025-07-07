@@ -16,13 +16,13 @@
 name: Java CI
 
 on:
-  # Run CI on Pushes to "main"" or on pull requests targeting "main".
+  # Run CI on Pushes to "opennlp-2.x"" or on pull requests targeting "opennlp-2.x".
   push:
     branches:
-      - main
+      - opennlp-2.x
   pull_request:
     branches:
-      - main
+      - opennlp-2.x
 
 jobs:
   build:

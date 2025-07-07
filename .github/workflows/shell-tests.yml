@@ -18,7 +18,7 @@ name: Shell Tests CI
 on:
   push:
     branches:
-      - main
+      - opennlp-2.x
   pull_request:
 
 jobs:
