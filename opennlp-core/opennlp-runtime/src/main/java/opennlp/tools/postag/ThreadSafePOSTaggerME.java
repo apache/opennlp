@@ -20,6 +20,7 @@ package opennlp.tools.postag;
 import java.io.IOException;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.models.ModelType;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.Sequence;
@@ -27,21 +28,23 @@ import opennlp.tools.util.Sequence;
 /**
  * A thread-safe version of the {@link POSTaggerME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
- *
- * @implNote
+ * <p>
+ * <b>Note:</b><br/>
  * This implementation uses a {@link ThreadLocal}. Although the implementation is
  * lightweight because the model is not duplicated, if you have many long-running threads,
  * you may run into memory problems.
  * <p>
  * Be careful when using this in a Jakarta EE application, for example.
  * </p>
- * The user is responsible for clearing the {@link ThreadLocal}.
+ * The user is responsible for clearing the {@link ThreadLocal}
+ * via calling {@link #close()}.
  *
  * @see POSTagger
  * @see POSTaggerME
+ * @see Probabilistic
  */
 @ThreadSafe
-public class ThreadSafePOSTaggerME implements POSTagger, AutoCloseable {
+public class ThreadSafePOSTaggerME implements POSTagger, Probabilistic, AutoCloseable {
 
   private final POSModel model;
 
@@ -120,6 +123,11 @@ public class ThreadSafePOSTaggerME implements POSTagger, AutoCloseable {
   @Override
   public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
     return getTagger().topKSequences(sentence, additionaContext);
+  }
+
+  @Override
+  public double[] probs() {
+    return getTagger().probs();
   }
 
   @Override

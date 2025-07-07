@@ -28,6 +28,7 @@ import java.util.Set;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
@@ -46,7 +47,7 @@ import opennlp.tools.util.TrainingParameters;
  * A maximum entropy model is used to evaluate end-of-sentence characters in a
  * string to determine if they signify the end of a sentence.
  */
-public class SentenceDetectorME implements SentenceDetector {
+public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
   /**
    * Constant indicates a sentence split.
@@ -294,15 +295,31 @@ public class SentenceDetectorME implements SentenceDetector {
   }
 
   /**
-   * Returns the probabilities associated with the most recent
-   * calls to {@link SentenceDetectorME#sentDetect(CharSequence)}.
+   * {@inheritDoc}
+   *
+   * The sequence was determined based on the previous call to
+   * {@link #sentDetect(CharSequence)}.
+   *
+   * @return An array with the same number of probabilities as tokens were sent to
+   *         {@link #sentDetect(CharSequence)} when it was last called.
+   *         If not applicable, an empty array is returned.
+   */
+  @Override
+  public double[] probs() {
+    return ArrayMath.toDoubleArray(sentProbs);
+  }
+
+  /**
    *
    * @return The probability for each sentence returned for the most recent
-   *     call to {@link SentenceDetectorME#sentDetect(CharSequence)}.
+   *     call to {@link #sentDetect(CharSequence)}.
    *     If not applicable, an empty array is returned.
+   *     
+   * @deprecated Use {@link #probs()} instead.
    */
+  @Deprecated(forRemoval = true, since = "2.5.5")
   public double[] getSentenceProbabilities() {
-    return ArrayMath.toDoubleArray(sentProbs);
+    return probs();
   }
 
   /**

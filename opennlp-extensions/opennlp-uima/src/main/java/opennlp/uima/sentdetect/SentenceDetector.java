@@ -118,7 +118,7 @@ public final class SentenceDetector extends AbstractSentenceDetector {
   protected void postProcessAnnotations(AnnotationFS[] sentences) {
 
     if (probabilityFeature != null) {
-      double[] sentenceProbabilities = sentenceDetector.getSentenceProbabilities();
+      double[] sentenceProbabilities = sentenceDetector.probs();
 
       for (int i = 0; i < sentences.length; i++) {
         sentences[i].setDoubleValue(probabilityFeature, sentenceProbabilities[i]);

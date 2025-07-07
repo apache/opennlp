@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.models.ModelType;
 import opennlp.tools.util.DownloadUtil;
 import opennlp.tools.util.Span;
@@ -28,21 +29,23 @@ import opennlp.tools.util.Span;
 /**
  * A thread-safe version of {@link SentenceDetectorME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
- *
- * @implNote
+ * <p>
+ * <b>Note:</b><br/>
  * This implementation uses a {@link ThreadLocal}. Although the implementation is
  * lightweight because the model is not duplicated, if you have many long-running threads,
  * you may run into memory problems.
  * <p>
  * Be careful when using this in a Jakarta EE application, for example.
  * </p>
- * The user is responsible for clearing the {@link ThreadLocal}.
+ * The user is responsible for clearing the {@link ThreadLocal}
+ * via calling {@link #close()}.
  *
+ * @see Probabilistic
  * @see SentenceDetector
  * @see SentenceDetectorME
  */
 @ThreadSafe
-public class ThreadSafeSentenceDetectorME implements SentenceDetector, AutoCloseable {
+public class ThreadSafeSentenceDetectorME implements SentenceDetector, Probabilistic, AutoCloseable {
 
   private final SentenceModel model;
   private final Dictionary abbDict;
@@ -90,10 +93,6 @@ public class ThreadSafeSentenceDetectorME implements SentenceDetector, AutoClose
     return sd;
   }
 
-  public double[] getSentenceProbabilities() {
-    return getSD().getSentenceProbabilities();
-  }
-
   @Override
   public String[] sentDetect(CharSequence s) {
     return getSD().sentDetect(s);
@@ -102,6 +101,19 @@ public class ThreadSafeSentenceDetectorME implements SentenceDetector, AutoClose
   @Override
   public Span[] sentPosDetect(CharSequence s) {
     return getSD().sentPosDetect(s);
+  }
+
+  /**
+   * @deprecated Use {@link #probs()} instead.
+   */
+  @Deprecated
+  public double[] getSentenceProbabilities() {
+    return probs();
+  }
+  
+  @Override
+  public double[] probs() {
+    return getSD().probs();
   }
 
   @Override

@@ -20,25 +20,27 @@ package opennlp.tools.lemmatizer;
 import java.util.List;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.ml.Probabilistic;
 
 /**
  * A thread-safe version of the {@link LemmatizerME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
- *
- * @implNote
+ * <p>
+ * <b>Note:</b><br/>
  * This implementation uses a {@link ThreadLocal}. Although the implementation is
  * lightweight because the model is not duplicated, if you have many long-running threads,
  * you may run into memory problems.
  * <p>
  * Be careful when using this in a Jakarta EE application, for example.
  * </p>
- * The user is responsible for clearing the {@link ThreadLocal}.
+ * The user is responsible for clearing the {@link ThreadLocal}
+ * via calling {@link #close()}.
  *
  * @see Lemmatizer
  * @see LemmatizerME
  */
 @ThreadSafe
-public class ThreadSafeLemmatizerME implements Lemmatizer, AutoCloseable {
+public class ThreadSafeLemmatizerME implements Lemmatizer, Probabilistic, AutoCloseable {
 
   private final LemmatizerModel model;
 
@@ -71,6 +73,11 @@ public class ThreadSafeLemmatizerME implements Lemmatizer, AutoCloseable {
   @Override
   public List<List<String>> lemmatize(List<String> toks, List<String> tags) {
     return getLemmatizer().lemmatize(toks, tags);
+  }
+
+  @Override
+  public double[] probs() {
+    return getLemmatizer().probs();
   }
 
   @Override
