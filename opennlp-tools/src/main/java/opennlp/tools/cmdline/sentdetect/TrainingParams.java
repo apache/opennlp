@@ -44,4 +44,9 @@ interface TrainingParams extends BasicTrainingParams {
       description = "A sub-class of SentenceDetectorFactory where to get implementation and resources.")
   @OptionalParameter
   String getFactory();
+
+  @ParameterDescription(valueName = "useTokenEnd",
+      description = "A boolean parameter to detect the start index of the next sentence in the test data.")
+  @OptionalParameter(defaultValue = "true")
+  Boolean getUseTokenEnd();
 }

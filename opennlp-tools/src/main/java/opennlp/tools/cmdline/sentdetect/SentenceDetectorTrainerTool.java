@@ -38,7 +38,7 @@ import opennlp.tools.sentdetect.SentenceSampleStream;
 import opennlp.tools.util.model.ModelUtil;
 
 public final class SentenceDetectorTrainerTool
-    extends AbstractTrainerTool<SentenceSample, TrainerToolParams> {
+        extends AbstractTrainerTool<SentenceSample, TrainerToolParams> {
 
   interface TrainerToolParams extends TrainingParams, TrainingToolParams {
   }
@@ -83,7 +83,7 @@ public final class SentenceDetectorTrainerTool
     char[] eos = null;
     if (params.getEosChars() != null) {
       String eosString = SentenceSampleStream.replaceNewLineEscapeTags(
-          params.getEosChars());
+              params.getEosChars());
       eos = eosString.toCharArray();
     }
 
@@ -92,9 +92,9 @@ public final class SentenceDetectorTrainerTool
     try {
       Dictionary dict = loadDict(params.getAbbDict());
       SentenceDetectorFactory sdFactory = SentenceDetectorFactory.create(
-          params.getFactory(), params.getLang(), true, dict, eos);
+              params.getFactory(), params.getLang(), params.getUseTokenEnd(), dict, eos);
       model = SentenceDetectorME.train(params.getLang(), sampleStream,
-          sdFactory, mlParams);
+              sdFactory, mlParams);
     } catch (IOException e) {
       throw createTerminationIOException(e);
     }
