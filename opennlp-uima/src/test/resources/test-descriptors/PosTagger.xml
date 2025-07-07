@@ -93,7 +93,7 @@
 				<import location="TypeSystem.xml" />
 			</imports>
 		</typeSystemDescription>
-		
+
 		<capabilities>
 			<capability>
 				<inputs />
@@ -104,29 +104,29 @@
 			</capability>
 		</capabilities>
 	</analysisEngineMetaData>
-	
+
 	<externalResourceDependencies>
 		<externalResourceDependency>
 			<key>opennlp.uima.ModelName</key>
 			<interfaceName>opennlp.uima.postag.POSModelResource</interfaceName>
 		</externalResourceDependency>
 	</externalResourceDependencies>
-	
+
 	<resourceManagerConfiguration>
-    <externalResources>
-      <externalResource>
-        <name>PosModel</name>
-        <fileResourceSpecifier>
-          <fileUrl>file:opennlp-en-ud-ewt-pos-1.2-2.5.0.bin</fileUrl>
-        </fileResourceSpecifier>
-        <implementationName>opennlp.uima.postag.POSModelResourceImpl</implementationName>
-      </externalResource>
-    </externalResources>
-    <externalResourceBindings>
-      <externalResourceBinding>
-        <key>opennlp.uima.ModelName</key>
-        <resourceName>PosModel</resourceName>
-      </externalResourceBinding>
-    </externalResourceBindings>
-  </resourceManagerConfiguration>
+		<externalResources>
+			<externalResource>
+				<name>PosModel</name>
+				<fileResourceSpecifier>
+					<fileUrl>file:opennlp-en-ud-ewt-pos-1.3-2.5.4.bin</fileUrl>
+				</fileResourceSpecifier>
+				<implementationName>opennlp.uima.postag.POSModelResourceImpl</implementationName>
+			</externalResource>
+		</externalResources>
+		<externalResourceBindings>
+			<externalResourceBinding>
+				<key>opennlp.uima.ModelName</key>
+				<resourceName>PosModel</resourceName>
+			</externalResourceBinding>
+		</externalResourceBindings>
+	</resourceManagerConfiguration>
 </analysisEngineDescription>
