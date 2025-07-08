@@ -23,6 +23,9 @@ import java.io.InputStream;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.uima.util.AbstractModelResource;
 
+/**
+ * A default implementation of {@link DictionaryResource}.
+ */
 public class DictionaryResourceImpl extends AbstractModelResource<Dictionary>
     implements DictionaryResource {
 

@@ -47,24 +47,39 @@ import opennlp.uima.util.ContainingConstraint;
 import opennlp.uima.util.UimaUtil;
 
 /**
- * Abstract base class for OpenNLP Parser annotators.
+ * Base class for OpenNLP-based Parser annotators.
  * <p>
- * Mandatory parameters
+ * Mandatory parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.ParseType</td> <td>The full name of the parse type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.TypeFeature</td> <td>The name of the type feature</td></tr>
+ * <tr><td>String</td>
+ *   <td>{@code opennlp.uima.ModelName}</td>
+ *   <td>The name of the model file</td>
+ * </tr>
+ * <tr>
+ *  <td>String</td> <td>{@code opennlp.uima.SentenceType}</td>
+ *  <td>The full name of the sentence type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.TokenType}</td>
+ *  <td>The full name of the token type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.ParseType}</td>
+ *  <td>The full name of the parse type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.TypeFeature}</td>
+ *  <td>The name of the type feature</td>
+ * </tr>
  * </table>
  * <p>
- * Optional parameters
+ * Optional parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>Integer</td> <td>opennlp.uima.BeamSize</td></tr>
+ * <tr><td>Integer</td> <td>{@code opennlp.uima.BeamSize}</td></tr>
  * </table>
  */
 public class Parser extends CasAnnotator_ImplBase {
@@ -90,6 +105,7 @@ public class Parser extends CasAnnotator_ImplBase {
   /**
    * Initializes the current instance with the given context.
    */
+  @Override
   public void initialize(UimaContext context)
       throws ResourceInitializationException {
 
@@ -118,10 +134,10 @@ public class Parser extends CasAnnotator_ImplBase {
   }
 
   /**
-   * Initializes the type system.
+   * Initializes the {@link TypeSystem type system}.
    */
-  public void typeSystemInit(TypeSystem typeSystem)
-      throws AnalysisEngineProcessException {
+  @Override
+  public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
 
     mSentenceType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,
         UimaUtil.SENTENCE_TYPE_PARAMETER);
@@ -229,7 +245,7 @@ public class Parser extends CasAnnotator_ImplBase {
   /**
    * Releases allocated resources.
    */
-
+  @Override
   public void destroy() {
     mParser = null;
   }

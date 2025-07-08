@@ -23,6 +23,9 @@ import java.io.InputStream;
 import opennlp.tools.doccat.DoccatModel;
 import opennlp.uima.util.AbstractModelResource;
 
+/**
+ * A default implementation of {@link DoccatModelResource}.
+ */
 public class DoccatModelResourceImpl extends AbstractModelResource<DoccatModel>
     implements DoccatModelResource {
 

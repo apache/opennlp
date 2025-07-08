@@ -92,8 +92,7 @@ public final class UimaUtil {
    *
    * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
-  public static void removeAnnotations(CAS cas,
-      AnnotationFS containerAnnotation, Type type) {
+  public static void removeAnnotations(CAS cas, AnnotationFS containerAnnotation, Type type) {
 
     if (cas == null) {
       throw new IllegalArgumentException("Parameter 'cas' must not be null");
@@ -104,8 +103,7 @@ public final class UimaUtil {
 
     FSIndex<AnnotationFS> allRemoveAnnotations = cas.getAnnotationIndex(type);
 
-    ContainingConstraint containingConstraint = new ContainingConstraint(
-        containerAnnotation);
+    ContainingConstraint containingConstraint = new ContainingConstraint(containerAnnotation);
 
     Iterator<AnnotationFS> containingTokens = cas.createFilteredIterator(
         allRemoveAnnotations.iterator(), containingConstraint);

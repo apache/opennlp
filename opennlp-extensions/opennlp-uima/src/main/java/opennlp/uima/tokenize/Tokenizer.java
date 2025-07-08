@@ -33,23 +33,34 @@ import opennlp.uima.util.AnnotatorUtil;
 import opennlp.uima.util.UimaUtil;
 
 /**
- * OpenNLP Tokenizer annotator.
+ * An OpenNLP-based Tokenizer annotator.
  * <p>
- * Mandatory parameters
+ * Mandatory parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>String</td> <td>opennlp.uima.ModelName</td> <td>The name of the model file</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.ModelName}</td>
+ *  <td>The name of the model file</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.SentenceType}</td>
+ *  <td>The full name of the sentence type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.TokenType}</td>
+ *  <td>The full name of the token type</td>
+ * </tr>
  * </table>
  * <p>
- * Optional parameters
+ * Optional parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>String</td> <td>opennlp.uima.ProbabilityFeature</td> <td>The name of the double
- * probability feature (not set by default)</td></tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.ProbabilityFeature}</td>
+ *  <td>The name of the double probability feature (not set by default)</td>
+ * </tr>
  * </table>
  *
  * @see TokenizerME
@@ -101,16 +112,13 @@ public final class Tokenizer extends AbstractTokenizer {
   }
 
   /**
-   * Initializes the type system.
+   * Initializes the {@link TypeSystem type system}.
    */
   @Override
-  public void typeSystemInit(TypeSystem typeSystem)
-      throws AnalysisEngineProcessException {
-
+  public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
     super.typeSystemInit(typeSystem);
 
-    probabilityFeature = AnnotatorUtil
-        .getOptionalFeatureParameter(context, tokenType,
+    probabilityFeature = AnnotatorUtil.getOptionalFeatureParameter(context, tokenType,
             UimaUtil.PROBABILITY_FEATURE_PARAMETER, CAS.TYPE_NAME_DOUBLE);
   }
 

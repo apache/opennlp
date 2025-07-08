@@ -24,14 +24,20 @@ import org.apache.uima.cas.text.AnnotationFS;
 import opennlp.tools.util.Span;
 
 /**
- * OpenNLP Simple Tokenizer annotator.
+ * An OpenNLP-based Simple Tokenizer annotator.
  * <p>
- * Mandatory parameters
+ * Mandatory parameters:
  * <table border=1>
  * <caption></caption>
  * <tr><th>Type</th> <th>Name</th> <th>Description</th></tr>
- * <tr><td>String</td> <td>opennlp.uima.SentenceType</td> <td>The full name of the sentence type</td></tr>
- * <tr><td>String</td> <td>opennlp.uima.TokenType</td> <td>The full name of the token type</td></tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.SentenceType}</td>
+ *  <td>The full name of the sentence type</td>
+ * </tr>
+ * <tr><td>String</td>
+ *  <td>{@code opennlp.uima.TokenType}</td>
+ *  <td>The full name of the token type</td>
+ * </tr>
  * </table>
  */
 public final class SimpleTokenizer extends AbstractTokenizer {

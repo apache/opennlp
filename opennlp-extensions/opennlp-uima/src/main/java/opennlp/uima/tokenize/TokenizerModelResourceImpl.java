@@ -23,9 +23,13 @@ import java.io.InputStream;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.uima.util.AbstractModelResource;
 
-public class TokenizerModelResourceImpl extends
-    AbstractModelResource<TokenizerModel> implements TokenizerModelResource {
+/**
+ * A default implementation of {@link TokenizerModelResource}.
+ */
+public class TokenizerModelResourceImpl extends AbstractModelResource<TokenizerModel>
+    implements TokenizerModelResource {
 
+  @Override
   public TokenizerModel getModel() {
     return model;
   }

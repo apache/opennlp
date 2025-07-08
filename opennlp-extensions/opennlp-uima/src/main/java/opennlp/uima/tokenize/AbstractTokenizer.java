@@ -58,9 +58,7 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
   }
 
   @Override
-  public void initialize(UimaContext context)
-      throws ResourceInitializationException {
-
+  public void initialize(UimaContext context) throws ResourceInitializationException {
     super.initialize(context);
 
     this.context = context;
@@ -80,8 +78,7 @@ public abstract class AbstractTokenizer extends CasAnnotator_ImplBase {
   }
 
   @Override
-  public void typeSystemInit(TypeSystem typeSystem)
-      throws AnalysisEngineProcessException {
+  public void typeSystemInit(TypeSystem typeSystem) throws AnalysisEngineProcessException {
     super.typeSystemInit(typeSystem);
 
     sentenceType = AnnotatorUtil.getRequiredTypeParameter(context, typeSystem,

@@ -23,9 +23,13 @@ import java.io.InputStream;
 import opennlp.tools.postag.POSModel;
 import opennlp.uima.util.AbstractModelResource;
 
+/**
+ * A default implementation of {@link POSModelResource}.
+ */
 public class POSModelResourceImpl extends AbstractModelResource<POSModel>
     implements POSModelResource {
 
+  @Override
   public POSModel getModel() {
     return model;
   }
