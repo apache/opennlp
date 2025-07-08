@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import opennlp.tools.util.jvm.StringInterners;
 
@@ -30,9 +31,11 @@ import opennlp.tools.util.jvm.StringInterners;
 public class StringList implements Iterable<String> {
 
   private final String[] tokens;
-
   private final boolean caseSensitive;
 
+  // It is safe to use caching of the hashCode for this class
+  private transient Integer hashCode = null; // initial value is uncomputed
+  
   /**
    * Initializes a {@link StringList} instance. By default, this instance is case-sensitive.
    * <p>
@@ -53,7 +56,7 @@ public class StringList implements Iterable<String> {
    *
    * @param tokens The string parts of the new {@link StringList}.
    *               Must not be an empty tokens array or {@code null}.
-   *               
+   *
    * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public StringList(String... tokens) {
@@ -73,7 +76,6 @@ public class StringList implements Iterable<String> {
    * @throws IllegalArgumentException Thrown if parameters were invalid.
    */
   public StringList(boolean isCaseSensitive, String... tokens) {
-
     Objects.requireNonNull(tokens, "tokens must not be null");
 
     if (tokens.length == 0) {
@@ -81,7 +83,6 @@ public class StringList implements Iterable<String> {
     }
 
     this.tokens = new String[tokens.length];
-
     for (int i = 0; i < tokens.length; i++) {
       this.tokens[i] = StringInterners.intern(tokens[i]);
     }
@@ -161,8 +162,11 @@ public class StringList implements Iterable<String> {
 
   @Override
   public int hashCode() {
-    // if lookup is too slow optimize this
-    return StringUtil.toLowerCase(toString()).hashCode();
+    if (hashCode == null) {
+      // compute once and cache to safe CPU cycles during use
+      this.hashCode = StringUtil.toLowerCase(String.join(",", tokens)).hashCode();
+    }
+    return hashCode;
   }
 
   @Override
@@ -184,21 +188,7 @@ public class StringList implements Iterable<String> {
    */
   @Override
   public String toString() {
-    StringBuilder string = new StringBuilder();
-
-    string.append('[');
-
-    for (int i = 0; i < size(); i++) {
-      string.append(getToken(i));
-
-      if (i < size() - 1) {
-        string.append(',');
-      }
-    }
-
-    string.append(']');
-
-    return string.toString();
+    return Arrays.stream(tokens).collect(Collectors.joining(",", "[", "]"));
   }
 
   /**
