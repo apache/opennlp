@@ -339,7 +339,7 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<configuration>
-						<argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off</argLine>
+						<argLine>-Xmx2048m -Dorg.slf4j.simpleLogger.defaultLogLevel=off -Dopennlp.model.v15.base.url="${opennlp.model.v15.base.url}"</argLine>
 						<forkCount>${opennlp.forkCount}</forkCount>
 						<failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
 						<excludes>
@@ -364,7 +364,7 @@
 						</execution>
 					</executions>
 					<configuration>
-						<argLine>-DOPENNLP_DOWNLOAD_HOME=${opennlp.download.home}</argLine>
+						<argLine>-DOPENNLP_DOWNLOAD_HOME=${opennlp.download.home} -Dopennlp.model.v15.base.url="${opennlp.model.v15.base.url}"</argLine>
 						<excludes>
 							<exclude>**/*Test.java</exclude>
 						</excludes>
@@ -667,6 +667,7 @@
 			<id>ci</id>
 			<properties>
 				<opennlp.download.home>${project.build.directory}</opennlp.download.home>
+				<opennlp.model.v15.base.url>https://nightlies.apache.org/opennlp/models-1.5/</opennlp.model.v15.base.url>
 			</properties>
 		</profile>
 

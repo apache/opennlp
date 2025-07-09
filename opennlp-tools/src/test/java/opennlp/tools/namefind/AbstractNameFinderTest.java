@@ -46,7 +46,7 @@ abstract class AbstractNameFinderTest {
   protected static final Path OPENNLP_DIR = Paths.get(System.getProperty("OPENNLP_DOWNLOAD_HOME",
           System.getProperty("user.home"))).resolve(".opennlp");
 
-  private static final String BASE_URL_MODELS_V15 = "https://opennlp.sourceforge.net/models-1.5/";
+  private static final String BASE_URL_MODELS_V15 = System.getProperty("opennlp.model.v15.base.url", "https://opennlp.sourceforge.net/models-1.5/");
 
   protected static boolean hasOtherAsOutcome(TokenNameFinderModel nameFinderModel) {
     SequenceClassificationModel model = nameFinderModel.getNameFinderSequenceModel();
