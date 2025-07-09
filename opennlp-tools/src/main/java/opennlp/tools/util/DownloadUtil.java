@@ -273,6 +273,8 @@ public class DownloadUtil {
             addModel("nl", link, result);
           } else if (link.contains("fr-ud")) { // French
             addModel("fr", link, result);
+          } else if (link.contains("af-ud")) { // Afrikaans
+            addModel("af", link, result);
           } else if (link.contains("bg-ud")) { // Bulgarian
             addModel("bg", link, result);
           } else if (link.contains("ca-ud")) { // Catalan
@@ -291,12 +293,18 @@ public class DownloadUtil {
             addModel("et", link, result);
           } else if (link.contains("eu-ud")) { // Basque
             addModel("eu", link, result);
+          } else if (link.contains("fa-ud")) { // Persian
+            addModel("fa", link, result);
           } else if (link.contains("fi-ud")) { // Finnish
             addModel("fi", link, result);
+          } else if (link.contains("ga-ud")) { // Irish
+            addModel("ga", link, result);
           } else if (link.contains("hy-ud")) { // Armenian
             addModel("hy", link, result);
           } else if (link.contains("is-ud")) { // Icelandic
             addModel("is", link, result);
+          } else if (link.contains("id-ud")) { // Indonesian
+            addModel("id", link, result);
           } else if (link.contains("ka-ud")) { // Georgian
             addModel("ka", link, result);
           } else if (link.contains("kk-ud")) { // Kazakh
