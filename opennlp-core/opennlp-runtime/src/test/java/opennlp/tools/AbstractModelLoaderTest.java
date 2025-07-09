@@ -38,13 +38,13 @@ public abstract class AbstractModelLoaderTest {
   private static final String BASE_URL_MODELS_V183 = System.getProperty("opennlp.model.v183.base.url", "https://dlcdn.apache.org/opennlp/models/langdetect/1.8.3/");
   protected static final Path OPENNLP_DIR = Paths.get(System.getProperty("OPENNLP_DOWNLOAD_HOME",
           System.getProperty("user.home"))).resolve(".opennlp");
-  protected static final String VER = "1.2-2.5.0";
+  protected static final String VER = "1.3-2.5.4";
   protected static final String BIN = ".bin";
   protected static List<String> SUPPORTED_LANG_CODES = List.of(
-          "en", "fr", "de", "it", "nl", "bg", "ca", "cs", "da", "el",
-          "es", "et", "eu", "fi", "hr", "hy", "is", "ka", "kk", "ko",
-          "lv", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv",
-          "tr", "uk");
+          "af", "en", "fr", "de", "it", "nl", "bg", "ca", "cs", "da", "el",
+          "es", "et", "eu", "fa", "fi", "ga", "hr", "hy", "id", "is", "ka",
+          "kk", "ko", "lv", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr",
+          "sv", "tr", "uk");
 
   protected static void downloadVersion15Model(String modelName) throws IOException {
     downloadModel(new URL(BASE_URL_MODELS_V15 + modelName));

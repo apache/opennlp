@@ -47,7 +47,7 @@ public class DownloadParserTest {
     Map<String, Map<ModelType, String>> result = downloadParser.getAvailableModels();
 
     assertNotNull(result);
-    assertEquals(32, result.size());
+    assertEquals(36, result.size());
 
     final Map<ModelType, String> availableModels = result.get(language);
     assertNotNull(availableModels);
