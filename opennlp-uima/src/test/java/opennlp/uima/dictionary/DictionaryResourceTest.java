@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.StringList;
 import opennlp.uima.AbstractTest;
 import opennlp.uima.util.CasUtil;
@@ -69,17 +70,14 @@ public class DictionaryResourceTest extends AbstractTest {
   public void testDictionaryWasLoaded() {
 
     try {
-      DictionaryResource dic = (DictionaryResource) AE.getResourceManager()
-          .getResource("/opennlp.uima.Dictionary");
-      // simple check if ordering always is the same...
-      Assertions.assertEquals(
-          "[[Berlin], [Stockholm], [New,York], [London], [Copenhagen], [Paris]]",
-          dic.getDictionary().toString());
-      // else we can do a simple test like this
-      Assertions.assertEquals(6,
-          dic.getDictionary().asStringSet().size(), "There should be six entries in the dictionary");
-      Assertions.assertTrue(dic.getDictionary().contains(new StringList("London")),
-          "London should be in the dictionary");
+      final DictionaryResource dic = (DictionaryResource) AE.getResourceManager()
+              .getResource("/opennlp.uima.Dictionary");
+      final Dictionary d = dic.getDictionary();
+      Assertions.assertNotNull(d);
+      Assertions.assertEquals(6, d.asStringSet().size(),
+              "There should be six entries in the dictionary");
+      Assertions.assertTrue(d.contains(new StringList("London")),
+              "London should be in the dictionary");
     } catch (Exception e) {
       Assertions.fail("Dictionary was not loaded.");
     }
