@@ -37,13 +37,13 @@ public class SentenceDetectorMEIT {
     Assertions.assertEquals(2, sents.length);
     Assertions.assertEquals("This is a test.", sents[0]);
     Assertions.assertEquals("There are many tests, this is the second.", sents[1]);
-    double[] probs = sentDetect.getSentenceProbabilities();
+    double[] probs = sentDetect.probs();
     Assertions.assertEquals(2, probs.length);
 
     String sampleSentences2 = "This is a test. There are many tests, this is the second";
     sents = sentDetect.sentDetect(sampleSentences2);
     Assertions.assertEquals(2, sents.length);
-    probs = sentDetect.getSentenceProbabilities();
+    probs = sentDetect.probs();
     Assertions.assertEquals(2, probs.length);
     Assertions.assertEquals("This is a test.", sents[0]);
     Assertions.assertEquals("There are many tests, this is the second", sents[1]);
@@ -51,7 +51,7 @@ public class SentenceDetectorMEIT {
     String sampleSentences3 = "This is a \"test\". He said \"There are many tests, this is the second.\"";
     sents = sentDetect.sentDetect(sampleSentences3);
     Assertions.assertEquals(2, sents.length);
-    probs = sentDetect.getSentenceProbabilities();
+    probs = sentDetect.probs();
     Assertions.assertEquals(2, probs.length);
     Assertions.assertEquals("This is a \"test\".", sents[0]);
     Assertions.assertEquals("He said \"There are many tests, this is the second.\"", sents[1]);
@@ -59,7 +59,7 @@ public class SentenceDetectorMEIT {
     String sampleSentences4 = "This is a \"test\". I said \"This is a test.\"  Any questions?";
     sents = sentDetect.sentDetect(sampleSentences4);
     Assertions.assertEquals(3, sents.length);
-    probs = sentDetect.getSentenceProbabilities();
+    probs = sentDetect.probs();
     Assertions.assertEquals(3, probs.length);
     Assertions.assertEquals("This is a \"test\".", sents[0]);
     Assertions.assertEquals("I said \"This is a test.\"", sents[1]);
@@ -67,7 +67,7 @@ public class SentenceDetectorMEIT {
 
     String sampleSentences5 = "This is a one sentence test space at the end.    ";
     sents = sentDetect.sentDetect(sampleSentences5);
-    Assertions.assertEquals(1, sentDetect.getSentenceProbabilities().length);
+    Assertions.assertEquals(1, sentDetect.probs().length);
     Assertions.assertEquals("This is a one sentence test space at the end.", sents[0]);
 
     String sampleSentences6 = "This is a one sentences test with tab at the end.            ";
@@ -90,7 +90,7 @@ public class SentenceDetectorMEIT {
     String sampleSentences11 = "This is test sentence without a dot at the end and spaces          ";
     sents = sentDetect.sentDetect(sampleSentences11);
     Assertions.assertEquals("This is test sentence without a dot at the end and spaces", sents[0]);
-    probs = sentDetect.getSentenceProbabilities();
+    probs = sentDetect.probs();
     Assertions.assertEquals(1, probs.length);
 
     String sampleSentence12 = "    This is a test.";
@@ -104,7 +104,7 @@ public class SentenceDetectorMEIT {
     // Test that sentPosDetect also works
     Span[] pos = sentDetect.sentPosDetect(sampleSentences2);
     Assertions.assertEquals(2, pos.length);
-    probs = sentDetect.getSentenceProbabilities();
+    probs = sentDetect.probs();
     Assertions.assertEquals(2, probs.length);
     Assertions.assertEquals(new Span(0, 15), pos[0]);
     Assertions.assertEquals(new Span(16, 56), pos[1]);

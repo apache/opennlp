@@ -33,6 +33,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
@@ -59,8 +60,9 @@ import opennlp.tools.util.featuregen.StringPattern;
  * @see POSModel
  * @see POSTagFormat
  * @see POSTagger
+ * @see Probabilistic
  */
-public class POSTaggerME implements POSTagger {
+public class POSTaggerME implements POSTagger, Probabilistic {
 
   private static final Logger logger = LoggerFactory.getLogger(POSTaggerME.class);
 
@@ -245,8 +247,14 @@ public class POSTaggerME implements POSTagger {
   }
 
   /**
-   * @return An array with the probabilities for each tag of the last tagged sentence.
+   * {@inheritDoc}
+   * 
+   * The sequence was determined based on the previous call to {@link #tag(String[])}.
+   *
+   * @return An array with the same number of probabilities as tokens were sent
+   *         to {@link #tag(String[])} when it was last called.
    */
+  @Override
   public double[] probs() {
     return bestSequence.getProbs();
   }
@@ -324,7 +332,7 @@ public class POSTaggerME implements POSTagger {
       SequenceTrainer<TrainingParameters> trainer = TrainerFactory.getSequenceModelTrainer(
           mlParams, manifestInfoEntries);
 
-      // TODO: This will probably cause issue, since the feature generator uses the outcomes array
+      // TODO: This will probably cause issues, since the feature generator uses the outcomes array
 
       POSSampleSequenceStream ss = new POSSampleSequenceStream(samples, contextGenerator);
       seqPosModel = trainer.train(ss);
@@ -340,7 +348,7 @@ public class POSTaggerME implements POSTagger {
   }
 
   /**
-   * Constructs a {@link Dictionary nGram dictionary} from an {@link ObjectStream} of samples.
+   * Constructs an {@link Dictionary nGram dictionary} from an {@link ObjectStream} of samples.
    *
    * @param samples The {@link ObjectStream} to process.
    * @param cutoff  A non-negative cut-off value.
@@ -379,8 +387,7 @@ public class POSTaggerME implements POSTagger {
     logger.info("Expanding POS Dictionary ...");
     long start = System.nanoTime();
 
-    // the data structure will store the word, the tag, and the number of
-    // occurrences
+    // the data structure will store the word, the tag, and the number of occurrences
     Map<String, Map<String, AtomicInteger>> newEntries = new HashMap<>();
     POSSample sample;
     while ((sample = samples.read()) != null) {
@@ -421,8 +428,8 @@ public class POSTaggerME implements POSTagger {
       }
     }
 
-    // now we check if the word + tag pairs have enough occurrences, if yes we
-    // add it to the dictionary
+    // now we check if the word + tag pairs have enough occurrences,
+    // if yes we add it to the dictionary
     for (Entry<String, Map<String, AtomicInteger>> wordEntry : newEntries
         .entrySet()) {
       List<String> tagsForWord = new ArrayList<>();

@@ -18,26 +18,28 @@
 package opennlp.tools.namefind;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.util.Span;
 
 /**
  * A thread-safe version of {@link NameFinderME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
- *
- * @implNote
+ * <p>
+ * <b>Note:</b><br/>
  * This implementation uses a {@link ThreadLocal}. Although the implementation is
  * lightweight because the model is not duplicated, if you have many long-running threads,
  * you may run into memory problems.
  * <p>
  * Be careful when using this in a Jakarta EE application, for example.
  * </p>
- * The user is responsible for clearing the {@link ThreadLocal}.
+ * The user is responsible for clearing the {@link ThreadLocal} via calling {@link #close()}.
  *
  * @see NameFinderME
+ * @see Probabilistic
  * @see TokenNameFinder
  */
 @ThreadSafe
-public class ThreadSafeNameFinderME implements TokenNameFinder, AutoCloseable {
+public class ThreadSafeNameFinderME implements TokenNameFinder, Probabilistic, AutoCloseable {
 
   private final TokenNameFinderModel model;
 
@@ -66,6 +68,11 @@ public class ThreadSafeNameFinderME implements TokenNameFinder, AutoCloseable {
   @Override
   public Span[] find(String[] tokens) {
     return getNameFinder().find(tokens);
+  }
+
+  @Override
+  public double[] probs() {
+    return getNameFinder().probs();
   }
 
   @Override

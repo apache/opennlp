@@ -22,15 +22,16 @@ import opennlp.tools.commons.ThreadSafe;
 /**
  * A thread-safe version of the {@link LanguageDetectorME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
- *
- * @implNote
+ * <p>
+ * <b>Note:</b><br/>
  * This implementation uses a {@link ThreadLocal}. Although the implementation is
  * lightweight because the model is not duplicated, if you have many long-running threads,
  * you may run into memory problems.
  * <p>
  * Be careful when using this in a Jakarta EE application, for example.
  * </p>
- * The user is responsible for clearing the {@link ThreadLocal}.
+ * The user is responsible for clearing the {@link ThreadLocal}
+ * via calling {@link #close()}.
  *
  * @see LanguageDetector
  * @see LanguageDetectorME

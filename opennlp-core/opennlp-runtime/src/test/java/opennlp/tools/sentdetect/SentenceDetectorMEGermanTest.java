@@ -80,7 +80,7 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
     String sampleSentences = sent1 + " " + sent2;
     String[] sents = sentDetect.sentDetect(sampleSentences);
-    double[] probs = sentDetect.getSentenceProbabilities();
+    double[] probs = sentDetect.probs();
 
     assertAll(() -> assertEquals(2, sents.length),
         () -> assertEquals(sent1, sents[0]),
@@ -99,7 +99,7 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
 
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
     String[] sents = sentDetect.sentDetect(sent1);
-    double[] probs = sentDetect.getSentenceProbabilities();
+    double[] probs = sentDetect.probs();
 
     assertAll(() -> assertEquals(1, sents.length),
         () -> assertEquals(sent1, sents[0]),
@@ -117,7 +117,7 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
 
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
     String[] sents = sentDetect.sentDetect(sent1);
-    double[] probs = sentDetect.getSentenceProbabilities();
+    double[] probs = sentDetect.probs();
 
     assertAll(() -> assertEquals(1, sents.length),
         () -> assertEquals(sent1, sents[0]),
@@ -134,7 +134,7 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
     //There is no blank space before start of the second sentence.
     String[] sents = sentDetect.sentDetect(sent1 + sent2);
-    double[] probs = sentDetect.getSentenceProbabilities();
+    double[] probs = sentDetect.probs();
 
     assertAll(() -> assertEquals(2, sents.length),
         () -> assertEquals(sent1, sents[0]),
