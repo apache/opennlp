@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
@@ -69,11 +70,13 @@ import opennlp.tools.util.TrainingParameters;
  * <br>
  * String tokens[] = tokenizer.tokenize("A sentence to be tokenized.");
  * </code>
+ *
  * @see Tokenizer
  * @see TokenizerModel
  * @see TokenSample
+ * @see Probabilistic
  */
-public class TokenizerME extends AbstractTokenizer {
+public class TokenizerME extends AbstractTokenizer implements Probabilistic {
 
   /**
    * Constant indicates a token split.
@@ -153,12 +156,29 @@ public class TokenizerME extends AbstractTokenizer {
   }
 
   /**
-   * @return the probabilities associated with the most recent calls to
-   *         {@link TokenizerME#tokenize(String)} or {@link TokenizerME#tokenizePos(String)}.
+   * {@inheritDoc}
+   *
+   *  The sequence was determined based on the previous call to {@link #tokenizePos(String)}.
+   *
+   * @return An array with the same number of probabilities as tokens were sent to
+   *         the computational method when {@link #tokenizePos(String)} was last called.
    *         If not applicable an empty array is returned.
    */
-  public double[] getTokenProbabilities() {
+  @Override
+  public double[] probs() {
     return ArrayMath.toDoubleArray(tokProbs);
+  }
+
+  /**
+   * @return the probabilities associated with the most recent calls to
+   *         {@link #tokenizePos(String)}.
+   *         If not applicable an empty array is returned.
+   *
+   * @deprecated Use {@link #probs()} instead.
+   */
+  @Deprecated(forRemoval = true, since = "2.5.5")
+  public double[] getTokenProbabilities() {
+    return probs();
   }
 
   /**

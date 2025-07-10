@@ -68,7 +68,7 @@ public class SentenceDetectorMEDutchTest extends AbstractSentenceDetectorTest {
     Assertions.assertEquals(2, sents.length);
     Assertions.assertEquals(sent1, sents[0]);
     Assertions.assertEquals(sent2, sents[1]);
-    double[] probs = sentDetect.getSentenceProbabilities();
+    double[] probs = sentDetect.probs();
     Assertions.assertEquals(2, probs.length);
   }
 
@@ -87,7 +87,7 @@ public class SentenceDetectorMEDutchTest extends AbstractSentenceDetectorTest {
     String[] sents = sentDetect.sentDetect(sent1);
     Assertions.assertEquals(1, sents.length);
     Assertions.assertEquals(sent1, sents[0]);
-    double[] probs = sentDetect.getSentenceProbabilities();
+    double[] probs = sentDetect.probs();
     Assertions.assertEquals(1, probs.length);
   }
 
@@ -106,7 +106,7 @@ public class SentenceDetectorMEDutchTest extends AbstractSentenceDetectorTest {
     String[] sents = sentDetect.sentDetect(sent1);
     Assertions.assertEquals(1, sents.length);
     Assertions.assertEquals(sent1, sents[0]);
-    double[] probs = sentDetect.getSentenceProbabilities();
+    double[] probs = sentDetect.probs();
     Assertions.assertEquals(1, probs.length);
   }
 }

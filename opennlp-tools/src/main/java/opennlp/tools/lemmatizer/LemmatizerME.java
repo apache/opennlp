@@ -27,6 +27,7 @@ import java.util.Map;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
@@ -50,8 +51,10 @@ import opennlp.tools.util.TrainingParameters;
  * Towards a Machine-Learning Architecture for Lexical Functional Grammar Parsing.
  * </a> PhD dissertation, Dublin City University
  *
+ * @see Lemmatizer
+ * @see Probabilistic
  */
-public class LemmatizerME implements Lemmatizer {
+public class LemmatizerME implements Lemmatizer, Probabilistic {
 
   public static final int LEMMA_NUMBER = 29;
   public static final int DEFAULT_BEAM_SIZE = 3;
@@ -100,8 +103,7 @@ public class LemmatizerME implements Lemmatizer {
   }
 
   @Override
-  public List<List<String>> lemmatize(List<String> toks,
-      List<String> tags) {
+  public List<List<String>> lemmatize(List<String> toks, List<String> tags) {
     String[] tokens = toks.toArray(new String[0]);
     String[] posTags = tags.toArray(new String[0]);
     String[][] allLemmas = predictLemmas(LEMMA_NUMBER, tokens, posTags);
@@ -225,13 +227,15 @@ public class LemmatizerME implements Lemmatizer {
   }
 
   /**
-   * Returns an array with the probabilities of the last decoded sequence.
+   * {@inheritDoc}
+   *
    * The sequence was determined based on the previous call to
    * {@link #lemmatize(String[], String[])}.
    *
    * @return An array with the same number of probabilities as tokens were sent to
    *         {@link #lemmatize(String[], String[])} when it was last called.
    */
+  @Override
   public double[] probs() {
     return bestSequence.getProbs();
   }

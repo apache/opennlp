@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
@@ -48,8 +49,11 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
  * A maximum-entropy-based {@link TokenNameFinder name finder} implementation.
+ *
+ * @see Probabilistic
+ * @see TokenNameFinder
  */
-public class NameFinderME implements TokenNameFinder {
+public class NameFinderME implements TokenNameFinder, Probabilistic {
 
   private static final String[][] EMPTY = new String[0][0];
   public static final int DEFAULT_BEAM_SIZE = 3;
@@ -135,12 +139,14 @@ public class NameFinderME implements TokenNameFinder {
   }
 
   /**
-   * Retrieves the probabilities of the last decoded sequence. The
-   * sequence was determined based on the previous call to {@link #find(String[])}.
+   * {@inheritDoc}
+   *
+   * The sequence was determined based on the previous call to {@link #find(String[])}.
    *
    * @return An array with the same number of probabilities as tokens were sent
    *         to {@link #find(String[])} when it was last called.
    */
+  @Override
   public double[] probs() {
     return bestSequence.getProbs();
   }

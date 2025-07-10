@@ -18,27 +18,30 @@
 package opennlp.tools.chunker;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 
 /**
  * A thread-safe version of the {@link ChunkerME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
- *
- * @implNote
+ * <p>
+ * <b>Note:</b><br/>
  * This implementation uses a {@link ThreadLocal}. Although the implementation is
  * lightweight because the model is not duplicated, if you have many long-running threads,
  * you may run into memory problems.
  * <p>
  * Be careful when using this in a Jakarta EE application, for example.
  * </p>
- * The user is responsible for clearing the {@link ThreadLocal}.
+ * The user is responsible for clearing the {@link ThreadLocal}
+ * via calling {@link #close()}.
  *
  * @see Chunker
  * @see ChunkerME
+ * @see Probabilistic
  */
 @ThreadSafe
-public class ThreadSafeChunkerME implements Chunker, AutoCloseable {
+public class ThreadSafeChunkerME implements Chunker, Probabilistic, AutoCloseable {
 
   private final ChunkerModel model;
 
@@ -88,4 +91,8 @@ public class ThreadSafeChunkerME implements Chunker, AutoCloseable {
     threadLocal.remove();
   }
 
+  @Override
+  public double[] probs() {
+    return getChunker().probs();
+  }
 }

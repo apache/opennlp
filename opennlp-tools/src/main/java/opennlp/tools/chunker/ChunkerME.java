@@ -24,6 +24,7 @@ import java.util.Map;
 
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
@@ -40,10 +41,13 @@ import opennlp.tools.util.TokenTag;
 import opennlp.tools.util.TrainingParameters;
 
 /**
- * The class represents a maximum-entropy-based {@link Chunker}. This chunker can be used to
+ * The class represents a maximum-entropy-based {@link Chunker}. A chunker can be used to
  * find flat structures based on sequence inputs such as noun phrases or named entities.
+ *
+ * @see Chunker
+ * @see Probabilistic
  */
-public class ChunkerME implements Chunker {
+public class ChunkerME implements Chunker, Probabilistic {
 
   public static final int DEFAULT_BEAM_SIZE = 10;
 
@@ -128,12 +132,13 @@ public class ChunkerME implements Chunker {
   }
 
   /**
-   * Returns an array with the probabilities of the last decoded sequence. The
-   * sequence was determined based on the previous call to {@link #chunk(String[], String[])}.
+   * {@inheritDoc}
+   * The sequence was determined based on the previous call to {@link #chunk(String[], String[])}.
    *
    * @return An array with the same number of probabilities as tokens when
    *         {@link ChunkerME#chunk(String[], String[])} was last called.
    */
+  @Override
   public double[] probs() {
     return bestSequence.getProbs();
   }

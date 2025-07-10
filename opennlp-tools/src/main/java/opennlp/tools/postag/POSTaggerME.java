@@ -33,6 +33,7 @@ import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
+import opennlp.tools.ml.Probabilistic;
 import opennlp.tools.ml.SequenceTrainer;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.ml.TrainerFactory.TrainerType;
@@ -59,8 +60,9 @@ import opennlp.tools.util.featuregen.StringPattern;
  * @see POSModel
  * @see POSTagFormat
  * @see POSTagger
+ * @see Probabilistic
  */
-public class POSTaggerME implements POSTagger {
+public class POSTaggerME implements POSTagger, Probabilistic {
 
   private static final Logger logger = LoggerFactory.getLogger(POSTaggerME.class);
 
@@ -245,8 +247,14 @@ public class POSTaggerME implements POSTagger {
   }
 
   /**
-   * @return An array with the probabilities for each tag of the last tagged sentence.
+   * {@inheritDoc}
+   *
+   * The sequence was determined based on the previous call to {@link #tag(String[])}.
+   *
+   * @return An array with the same number of probabilities as tokens were sent
+   *         to {@link #tag(String[])} when it was last called.
    */
+  @Override
   public double[] probs() {
     return bestSequence.getProbs();
   }
