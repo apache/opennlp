@@ -85,17 +85,14 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     this.seqCodec = seqCodec;
   }
 
-  /*
-   * Loads the default feature generator bytes via classpath resources.
+  /**
+   * Loads the feature generator bytes via input classpath resource.
+   * @param resource An {@link InputStream} linked to a classpath resource.
+   * @return bytes representation of the input resource.
    */
-  private static byte[] loadDefaultFeatureGeneratorBytes() {
+  public static byte[] loadDefaultFeatureGeneratorBytes(InputStream resource) {
 
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-    InputStream resource = TokenNameFinderFactory.class.getResourceAsStream(
-            "/opennlp/tools/namefind/ner-default-features.xml");
-    if (resource == null) {
-      throw new IllegalStateException("Classpath must contain 'ner-default-features.xml' file!");
-    }
     
     try (InputStream in = new BufferedInputStream(resource)) {
       byte[] buf = new byte[1024];
@@ -245,7 +242,13 @@ public class TokenNameFinderFactory extends BaseToolFactory {
     }
 
     if (featureGeneratorBytes == null) {
-      featureGeneratorBytes = loadDefaultFeatureGeneratorBytes();
+      //Load the default feature generator bytes.
+      InputStream resource = getClass().getResourceAsStream(
+          "/opennlp/tools/namefind/ner-default-features.xml");
+      if (resource == null) {
+        throw new IllegalStateException("Classpath must contain 'ner-default-features.xml' file!");
+      }
+      featureGeneratorBytes = loadDefaultFeatureGeneratorBytes(resource);
     }
 
     try (InputStream descriptorIn = new ByteArrayInputStream(featureGeneratorBytes)) {

@@ -18,9 +18,14 @@
 package opennlp.tools.namefind;
 
 import java.io.File;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.MockInputStreamFactory;
@@ -320,6 +325,59 @@ public class NameFinderMETest extends AbstractNameFinderTest {
     assertEquals(new Span(7, 15, "organization"), names2[1]);
     assertEquals("person", names2[0].getType());
     assertEquals("organization", names2[1].getType());
+  }
+
+  @Test
+  @DisplayName("Tests Token Name Finder with additional brown cluster features provided")
+  void testNameFinderWithBrownClusters() throws Exception {
+
+    String encoding = "ISO-8859-1";
+
+    ObjectStream<NameSample> sampleStream =
+        new NameSampleDataStream(
+            new PlainTextByLineStream(new MockInputStreamFactory(
+                new File("opennlp/tools/namefind/AnnotatedSentences.txt")), encoding));
+
+    TrainingParameters params = new TrainingParameters();
+    params.put(Parameters.ITERATIONS_PARAM, 70);
+    params.put(Parameters.CUTOFF_PARAM, 1);
+
+    //Get the brown cluster bit-strings
+    Map<String, Object> resources = new HashMap<>();
+    resources.put("brownCluster", getResourcAsStream("/opennlp/tools/namefind/sample-brown-cluster.txt"));
+
+    //Load the custom feature generator bytes
+    byte[] customFeatureGenBytes = TokenNameFinderFactory.loadDefaultFeatureGeneratorBytes(
+        getResourcAsStream("/opennlp/tools/namefind/ner-custom-features_with_brown_clusters.xml"));
+
+    TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
+        params, TokenNameFinderFactory.create(null, customFeatureGenBytes, resources, new BioCodec()));
+
+    TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
+
+    // now test if it can detect the sample sentences
+    String[] sentence = {"Diana",
+        "appreciated",
+        "the",
+        "hint",
+        "and",
+        "enjoyed",
+        "a",
+        "delicious",
+        "traditional",
+        "meal."};
+
+    Span[] names = nameFinder.find(sentence);
+
+    assertEquals(1, names.length);
+  }
+
+  private InputStream getResourcAsStream(String name) {
+    InputStream in = getClass().getResourceAsStream(name);
+    if (Objects.isNull(in)) {
+      throw new IllegalStateException("Classpath must contain \'" + name + "\' file!");
+    }
+    return  in;
   }
 
 }

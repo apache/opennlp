@@ -68,14 +68,12 @@ public class BrownCluster implements SerializableArtifact {
   /**
    * Instatiates a {@link BrownCluster} and its related token to cluster map
    * via an {@link InputStream}.
-   * 
-   * @implNote
-   * Only tokens with frequency bigger than {@code 5} will be added.
-   * 
+   *
    * @param in A valid, open {@link InputStream} to read from.
+   * @param minFrequency Only tokens with frequency higher than minFrequency will be added
    * @throws IOException Thrown if errors occurred reading from {@link InputStream in}.
    */
-  public BrownCluster(InputStream in) throws IOException {
+  public BrownCluster(InputStream in, long minFrequency) throws IOException {
 
     try (BufferedReader breader = new BufferedReader(
             new InputStreamReader(in, StandardCharsets.UTF_8))) {
@@ -85,7 +83,7 @@ public class BrownCluster implements SerializableArtifact {
         String[] lineArray = tabPattern.split(line);
         if (lineArray.length == 3) {
           int freq = Integer.parseInt(lineArray[2]);
-          if (freq > 5 ) {
+          if (freq >= minFrequency ) {
             tokenToClusterMap.put(lineArray[1], lineArray[0]);
           }
         }
@@ -94,6 +92,13 @@ public class BrownCluster implements SerializableArtifact {
         }
       }
     }
+  }
+
+  /**
+   * Similar to {@link BrownCluster#BrownCluster(InputStream in, long minFrequency)} with minFrquency as 5.
+   */
+  public BrownCluster(InputStream in) throws IOException {
+    this(in, 5L);
   }
 
   /**
