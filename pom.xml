@@ -177,6 +177,9 @@
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
 		<opennlp.models.version>1.3.0</opennlp.models.version>
 
+		<!-- Old OpenNLP models are hosted on Sourceforge. Set a default. -->
+		<opennlp.model.v15.base.url>https://opennlp.sourceforge.net/models-1.5/</opennlp.model.v15.base.url>
+
 		<!-- Dependency versions -->
 		<junit.version>5.13.3</junit.version>
 		<junit5-system-exit.version>2.0.2</junit5-system-exit.version>
