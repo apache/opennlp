@@ -34,6 +34,7 @@ import opennlp.tools.util.Parameters;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.featuregen.BrownCluster;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -344,7 +345,7 @@ public class NameFinderMETest extends AbstractNameFinderTest {
 
     //Get the brown cluster bit-strings
     Map<String, Object> resources = new HashMap<>();
-    resources.put("brownCluster", getResourcAsStream("/opennlp/tools/namefind/sample-brown-cluster.txt"));
+    resources.put("brownCluster", new BrownCluster(getResourcAsStream("/opennlp/tools/namefind/sample-brown-cluster.txt"), 1L));
 
     //Load the custom feature generator bytes
     byte[] customFeatureGenBytes = TokenNameFinderFactory.loadDefaultFeatureGeneratorBytes(
