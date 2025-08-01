@@ -22,12 +22,15 @@ import java.util.Locale;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.dictionary.Dictionary;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -49,6 +52,9 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
   private static Dictionary abbreviationDict;
   private SentenceModel sentdetectModel;
 
+  // SUT
+  private SentenceDetectorME sentenceDetector;
+
   @BeforeAll
   static void loadResources() throws IOException {
     abbreviationDict = loadAbbDictionary(Locale.GERMAN);
@@ -60,8 +66,11 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
           "deu", useTokenEnd, abbreviationDict, EOS_CHARS);
       sentdetectModel = train(factory, Locale.GERMAN);
 
-      assertAll(() -> assertNotNull(sentdetectModel),
-          () -> assertEquals("deu", sentdetectModel.getLanguage()));
+      assertAll(
+          () -> assertNotNull(sentdetectModel),
+          () -> assertEquals("deu", sentdetectModel.getLanguage())
+      );
+      sentenceDetector = new SentenceDetectorME(sentdetectModel);
     } catch (IOException ex) {
       fail("Couldn't train the SentenceModel using test data. Exception: " + ex.getMessage());
     }
@@ -77,12 +86,12 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
     // Here we have two abbreviations "S. = Seite" and "ff. = folgende (Plural)"
     final String sent2 = "Ich wähle den auf S. 183 ff. mitgeteilten Traum von der botanischen Monographie.";
 
-    SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
     String sampleSentences = sent1 + " " + sent2;
-    String[] sents = sentDetect.sentDetect(sampleSentences);
-    double[] probs = sentDetect.probs();
+    String[] sents = sentenceDetector.sentDetect(sampleSentences);
+    double[] probs = sentenceDetector.probs();
 
-    assertAll(() -> assertEquals(2, sents.length),
+    assertAll(
+        () -> assertEquals(2, sents.length),
         () -> assertEquals(sent1, sents[0]),
         () -> assertEquals(sent2, sents[1]),
         () -> assertEquals(2, probs.length));
@@ -97,11 +106,11 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
     final String sent1 = "Die farbige Tafel, die ich aufschlage, " +
         "geht (vgl. die Analyse S. 185 f.) auf ein neues Thema ein.";
 
-    SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
-    String[] sents = sentDetect.sentDetect(sent1);
-    double[] probs = sentDetect.probs();
+    String[] sents = sentenceDetector.sentDetect(sent1);
+    double[] probs = sentenceDetector.probs();
 
-    assertAll(() -> assertEquals(1, sents.length),
+    assertAll(
+        () -> assertEquals(1, sents.length),
         () -> assertEquals(sent1, sents[0]),
         () -> assertEquals(1, probs.length));
   }
@@ -115,11 +124,11 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
     final String sent1 = "Die farbige Tafel, die ich aufschlage, " +
         "geht (z. B. die Analyse S. 185) auf ein neues Thema ein.";
 
-    SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
-    String[] sents = sentDetect.sentDetect(sent1);
-    double[] probs = sentDetect.probs();
+    String[] sents = sentenceDetector.sentDetect(sent1);
+    double[] probs = sentenceDetector.probs();
 
-    assertAll(() -> assertEquals(1, sents.length),
+    assertAll(
+        () -> assertEquals(1, sents.length),
         () -> assertEquals(sent1, sents[0]),
         () -> assertEquals(1, probs.length));
   }
@@ -131,14 +140,41 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
     final String sent1 = "Träume sind eine Verbindung von Gedanken.";
     final String sent2 = "Verschiedene Gedanken sind während der Traumformation aktiv.";
 
-    SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
     //There is no blank space before start of the second sentence.
-    String[] sents = sentDetect.sentDetect(sent1 + sent2);
-    double[] probs = sentDetect.probs();
+    String[] sents = sentenceDetector.sentDetect(sent1 + sent2);
+    double[] probs = sentenceDetector.probs();
 
-    assertAll(() -> assertEquals(2, sents.length),
+    assertAll(
+        () -> assertEquals(2, sents.length),
         () -> assertEquals(sent1, sents[0]),
         () -> assertEquals(sent2, sents[1]),
         () -> assertEquals(2, probs.length));
+  }
+
+  /*
+   * A reproducer and test for OPENNLP-1767.
+   * It checks that sentence detection with common abbreviations works correctly,
+   * that is, tokens such as "lt.", "f.", "S." (page), "ca.", or "ugs." do not cause
+   * mis-matches when it accidentally overlaps at the end of a sentence.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "Die Frage wurde gestellt. Sie wurde beantwortet.",
+      "Der Auto stand schief. Wer hat es dort geparkt?",
+      "Es lag am DBMS. Die Performance muss verbessert werden.",
+      "Siehe Buch S. 17f. Dort ist es zu finden.",
+      "Sie trank einen Mocca. Er schmeckte ihr!",
+      "Der Anker hängt zu Beginn des Bugs. Es ist vertaut.",
+      "Das Verfahren testet auf HIV. Es ist präzise."
+  })
+  void testSentDetectWithOverlappingAbbreviationAtSentenceEnd(String input) {
+    prepareResources(true);
+    String[] sents = sentenceDetector.sentDetect(input);
+    assertAll(
+        () -> assertNotNull(sents),
+        () -> assertEquals(2, sents.length),
+        () -> assertTrue(Character.isUpperCase(sents[0].charAt(0))),
+        () -> assertTrue(Character.isUpperCase(sents[1].charAt(0)))
+    );
   }
 }

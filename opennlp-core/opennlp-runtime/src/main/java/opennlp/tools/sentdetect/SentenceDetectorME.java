@@ -340,15 +340,35 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
       return true;
 
     for (StringList abb : abbDict) {
-      String token = abb.getToken(0);
+      final String token = abb.getToken(0);
+      final int tokenPosition = s.toString().indexOf(token, fromIndex);
+      if (tokenPosition == -1) {
+        continue; // skip fast
+      }
+      final char prevChar = s.charAt(tokenPosition - 1);
       int tokenLength = token.length();
-      int tokenPosition = s.toString().indexOf(token, fromIndex);
-      if (tokenPosition + tokenLength < candidateIndex || tokenPosition > candidateIndex)
-        continue;
+      if (tokenPosition + tokenLength < candidateIndex || tokenPosition > candidateIndex ||
+        /*
+         * Note:
+         * Skip abbreviation candidate if regular characters exist directly before it,
+         * That is, any letter or digit except: a whitespace, an apostrophe, or an opening round bracket.
+         * This prevents mismatches from overlaps close to an actual sentence end.
+         */
+          !(Character.isWhitespace(prevChar) || isApostrophe(prevChar) || prevChar == '(')) {
 
-      return false;
+        continue;
+      }
+      return false; // in case of a valid abbreviation: the (sentence) break is not accepted
     }
-    return true;
+    return true; // no abbreviation(s) at given positions: valid sentence boundary
+  }
+
+  /**
+   * @param c The character to check.
+   * @return {@code true} if the character represents an apostrophe, {@code false} otherwise.
+   */
+  private static boolean isApostrophe(char c) {
+    return c == '\'' || c == '`' || c == '´';
   }
 
   /**
