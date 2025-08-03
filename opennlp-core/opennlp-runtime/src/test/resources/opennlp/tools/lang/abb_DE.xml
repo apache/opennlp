@@ -21,13 +21,25 @@
 
 <dictionary case_sensitive="false">
   <entry>
-    <token>S.</token>
+    <token>ca.</token>
   </entry>
   <entry>
     <token>f.</token>
   </entry>
   <entry>
     <token>ff.</token>
+  </entry>
+  <entry>
+    <token>lt.</token>
+  </entry>
+  <entry>
+    <token>S.</token>
+  </entry>
+  <entry>
+    <token>V.</token>
+  </entry>
+  <entry>
+    <token>ugs.</token>
   </entry>
   <entry>
     <token>z. B.</token>
