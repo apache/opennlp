@@ -22,6 +22,7 @@ updates:
       interval: weekly
       time: '04:00'
     open-pull-requests-limit: 10
+    target-branch: "main"
     ignore:
       - dependency-name: "com.puppycrawl.tools:*"
         update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
@@ -32,3 +33,27 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    target-branch: "main"
+
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: weekly
+      time: '04:00'
+    open-pull-requests-limit: 10
+    target-branch: "opennlp-2.x"
+    commit-message:
+      prefix: "[2.x]"
+    ignore:
+      - dependency-name: "com.puppycrawl.tools:*"
+        update-types: [ "version-update:semver-minor", "version-update:semver-patch" ]
+      - dependency-name: "io.github.classgraph:*"
+        update-types: [ "version-update:semver-minor" ]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    target-branch: "opennlp-2.x"
+    commit-message:
+      prefix: "[2.x]"
