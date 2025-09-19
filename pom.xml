@@ -196,7 +196,7 @@
 		<coveralls.maven.plugin>4.3.0</coveralls.maven.plugin>
 		<jacoco.maven.plugin>0.8.13</jacoco.maven.plugin>
 		<maven.assembly.plugin>3.7.1</maven.assembly.plugin>
-		<maven.failsafe.plugin>3.5.3</maven.failsafe.plugin>
+		<maven.failsafe.plugin>3.5.4</maven.failsafe.plugin>
 		<maven.javadoc.plugin>3.11.3</maven.javadoc.plugin>
 		<forbiddenapis.plugin>3.9</forbiddenapis.plugin>
 		<license-maven-plugin.version>2.6.0</license-maven-plugin.version>
