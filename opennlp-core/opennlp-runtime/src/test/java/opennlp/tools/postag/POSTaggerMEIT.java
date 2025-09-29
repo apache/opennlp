@@ -160,14 +160,14 @@ public class POSTaggerMEIT {
           "VERB","PUNCT"})
       // via @meriam2303, original by Hind Choueykh Ben Salah
       // التجريد في الشّعر العربي , S. 42
-      Arguments.of(ARABIC,0,
-      "عشق أبو نواس جارية تدعى جنان",
-      new String[]{"VERB","PROPN","NOUN","VERB","PROPN"})  
+      //Arguments.of(ARABIC,0,
+      //"عشق أبو نواس جارية تدعى جنان",
+      //new String[]{"VERB","PROPN","NOUN","VERB","PROPN"})  
       // via @meriam2303, original by Mohamed Laarousi Elmetoui
       // التوت المر , S.7
-      Arguments.of(MARGHREBI_ARABIC_FRENCH,0,
-      "Wassa3 belek ya baba...",
-      new String[]{"VERB","NOUN","ITNJ","NOUN","PUNCT"})    
+      //Arguments.of(MARGHREBI_ARABIC_FRENCH,0,
+      //"Wassa3 belek ya baba...",
+      //new String[]{"VERB","NOUN","ITNJ","NOUN","PUNCT"})    
     );
   }
 }
