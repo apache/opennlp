@@ -183,7 +183,7 @@
 		<!-- Dependency versions -->
 		<junit.version>5.13.4</junit.version>
 		<junit5-system-exit.version>2.0.2</junit5-system-exit.version>
-		<uimaj.version>3.6.0</uimaj.version>
+		<uimaj.version>3.6.1</uimaj.version>
 		<morfologik.version>2.1.9</morfologik.version>
 		<onnxruntime.version>1.23.0</onnxruntime.version>
 		<slf4j.version>2.0.17</slf4j.version>
