@@ -35,7 +35,7 @@
   <name>Apache OpenNLP :: Extensions</name>
 
   <properties>
-    <uimaj.version>3.6.0</uimaj.version>
+    <uimaj.version>3.6.1</uimaj.version>
     <morfologik.version>2.1.9</morfologik.version>
   </properties>
 

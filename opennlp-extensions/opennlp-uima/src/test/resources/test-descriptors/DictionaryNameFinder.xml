@@ -108,7 +108,7 @@
                 <name>NameFinderDictionary</name>
                 <description/>
                 <fileResourceSpecifier>
-                    <fileUrl>file:dictionary.dic</fileUrl>
+                    <fileUrl>dictionary.dic</fileUrl>
                 </fileResourceSpecifier>
                 <implementationName>opennlp.uima.dictionary.DictionaryResourceImpl</implementationName>
             </externalResource>
