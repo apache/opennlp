@@ -60,13 +60,19 @@ public abstract class AbstractUimaTest extends AbstractTest {
     for (ExternalResourceDescription modelDesc : resources) {
       ResourceSpecifier resourceSpec = modelDesc.getResourceSpecifier();
       String genericValue = resourceSpec.getAttributeValue(FILE_URL).toString();
-      String modelName = genericValue.split(":")[1]; // always right of 'file:' -> idx 1
+      final boolean isDictionary = genericValue.endsWith(".dic");
+      String resourceName;
+      if (genericValue != null && !isDictionary) {
+        resourceName = genericValue.split(":")[1]; // always right of 'file:' -> idx 1
+      } else {
+        resourceName = genericValue;
+      }
       try {
-        if ("dictionary.dic".equals(modelName)) {
-          URL fileURL = Paths.get(TARGET_DIR, modelName).toUri().toURL();
+        if (isDictionary) {
+          URL fileURL = Paths.get(TARGET_DIR, resourceName).toUri().toURL();
           resourceSpec.setAttributeValue(FILE_URL, fileURL.toExternalForm());
         } else {
-          URL modelURL = OPENNLP_DIR.resolve(modelName).toUri().toURL();
+          URL modelURL = OPENNLP_DIR.resolve(resourceName).toUri().toURL();
           resourceSpec.setAttributeValue(FILE_URL, modelURL.toExternalForm());
         }
       } catch (MalformedURLException e) {

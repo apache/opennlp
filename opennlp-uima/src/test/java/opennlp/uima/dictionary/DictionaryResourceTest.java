@@ -43,6 +43,8 @@ import opennlp.tools.util.StringList;
 import opennlp.uima.AbstractTest;
 import opennlp.uima.util.CasUtil;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class DictionaryResourceTest extends AbstractTest {
 
   private static AnalysisEngine AE;
@@ -54,15 +56,17 @@ public class DictionaryResourceTest extends AbstractTest {
 
   @AfterAll
   public static void afterClass() {
-    AE.destroy(); // is this necessary?
+    if (AE != null) {
+      AE.destroy(); // is this necessary?
+    }
   }
 
   private static AnalysisEngine produceAE(String descName)
       throws IOException, InvalidXMLException, ResourceInitializationException {
     File descFile = new File(PATH_DESCRIPTORS + "/" + descName);
     XMLInputSource in = new XMLInputSource(descFile);
-    ResourceSpecifier specifier = UIMAFramework.getXMLParser()
-        .parseResourceSpecifier(in);
+    ResourceSpecifier specifier = UIMAFramework.getXMLParser().parseResourceSpecifier(in);
+    assertNotNull(specifier);
     return UIMAFramework.produceAnalysisEngine(specifier);
   }
 
@@ -73,7 +77,7 @@ public class DictionaryResourceTest extends AbstractTest {
       final DictionaryResource dic = (DictionaryResource) AE.getResourceManager()
               .getResource("/opennlp.uima.Dictionary");
       final Dictionary d = dic.getDictionary();
-      Assertions.assertNotNull(d);
+      assertNotNull(d);
       Assertions.assertEquals(6, d.asStringSet().size(),
               "There should be six entries in the dictionary");
       Assertions.assertTrue(d.contains(new StringList("London")),
