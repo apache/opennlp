@@ -52,7 +52,7 @@ public class POSTaggerMEIT {
 
   @BeforeAll
   public static void initResources() throws IOException {
-    List<String> langs = List.of(CATALAN, ENGLISH, GERMAN, POLISH, PORTUGUESE);
+    final List<String> langs = List.of(CATALAN, ENGLISH, FRENCH, GERMAN, POLISH, PORTUGUESE);
     for (String langCode: langs) {
       TOKENIZERS.put(langCode, new ThreadSafeTokenizerME(langCode));
       TAGGERS.put(langCode, new ThreadSafePOSTaggerME(langCode));
