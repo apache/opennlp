@@ -152,6 +152,24 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
   }
 
   /*
+    * A reproducer and test for OPENNLP-1781.
+   */
+  @Test
+  void testSentDetectWithAbbreviationsAtSentenceStart() {
+    prepareResources(true);
+
+    final String sent1 = "S. Träume sind eine Verbindung von Gedanken.";
+
+    final String[] sents = sentenceDetector.sentDetect(sent1);
+    final double[] probs = sentenceDetector.probs();
+
+    assertAll(
+        () -> assertEquals(1, sents.length),
+        () -> assertEquals(sent1, sents[0]),
+        () -> assertEquals(1, probs.length));
+  }
+
+  /*
    * A reproducer and test for OPENNLP-1767.
    * It checks that sentence detection with common abbreviations works correctly,
    * that is, tokens such as "lt.", "f.", "S." (page), "ca.", or "ugs." do not cause
@@ -163,6 +181,7 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
       "Der Auto stand schief. Wer hat es dort geparkt?",
       "Es lag am DBMS. Die Performance muss verbessert werden.",
       "Siehe Buch S. 17f. Dort ist es zu finden.",
+      "S. Buch S. 17f. Dort ist es zu finden.", // OPENNLP-1781
       "Sie trank einen Mocca. Er schmeckte ihr!",
       "Der Anker hängt zu Beginn des Bugs. Es ist vertaut.",
       "Das Verfahren testet auf HIV. Es ist präzise."
