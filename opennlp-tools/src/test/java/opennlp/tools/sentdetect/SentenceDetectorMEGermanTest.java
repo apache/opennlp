@@ -181,6 +181,7 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
       "Der Auto stand schief. Wer hat es dort geparkt?",
       "Es lag am DBMS. Die Performance muss verbessert werden.",
       "Siehe Buch S. 17f. Dort ist es zu finden.",
+      "S. Buch S. 17f. Dort ist es zu finden.", // OPENNLP-1781
       "Sie trank einen Mocca. Er schmeckte ihr!",
       "Der Anker hängt zu Beginn des Bugs. Es ist vertaut.",
       "Das Verfahren testet auf HIV. Es ist präzise."
