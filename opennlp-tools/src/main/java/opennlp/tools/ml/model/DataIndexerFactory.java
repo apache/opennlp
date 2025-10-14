@@ -59,7 +59,7 @@ public class DataIndexerFactory {
       case AbstractEventTrainer.DATA_INDEXER_ONE_PASS_REAL_VALUE -> new OnePassRealValueDataIndexer();
       default ->
         // if the user passes in a class name for the indexer, try to instantiate the class.
-              ExtensionLoader.instantiateExtension(DataIndexer.class, indexerParam);
+          ExtensionLoader.instantiateExtension(DataIndexer.class, indexerParam);
     };
 
     indexer.init(parameters, reportMap);

@@ -62,12 +62,12 @@ public class SentenceDetectorMEPolishTest extends AbstractSentenceDetectorTest {
   @ParameterizedTest
   @ValueSource(strings = {
       "Freud zauważył, że w normalnych warunkach silne pobudzenie emocjonalne wymaga " +
-      "odpowiedniego rozładowania w formie działania (np. uraza ze strony jakiejś osoby wymaga " +
-      "odwetu) lub opracowania intelektualnego.",
+          "odpowiedniego rozładowania w formie działania (np. uraza ze strony jakiejś osoby wymaga " +
+          "odwetu) lub opracowania intelektualnego.",
       "Z tego pierwszego badania można odnieść wrażenie, że elementy \"botaniczny\" i \"monografia\" " +
-      "znalazły się w treści snu, ponieważ mogą mieć najszerszy kontakt z większością myśli sennych, " +
-      "tj. reprezentują punkty węzłowe, w których spotyka się wiele myśli sennych, ponieważ są one " +
-      "niejednoznaczne w odniesieniu do interpretacji snów."
+          "znalazły się w treści snu, ponieważ mogą mieć najszerszy kontakt z większością myśli sennych, " +
+          "tj. reprezentują punkty węzłowe, w których spotyka się wiele myśli sennych, ponieważ są one " +
+          "niejednoznaczne w odniesieniu do interpretacji snów."
   })
   void testSentDetectWithInlineAbbreviationsResultsInOneSentence(String input) {
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
