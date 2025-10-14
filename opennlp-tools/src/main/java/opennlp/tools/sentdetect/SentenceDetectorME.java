@@ -345,7 +345,8 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
       if (tokenPosition == -1) {
         continue; // skip fast
       }
-      final char prevChar = s.charAt(tokenPosition - 1);
+
+      final char prevChar = s.charAt(tokenPosition == 0 ? tokenPosition : tokenPosition - 1);
       int tokenLength = token.length();
       if (tokenPosition + tokenLength < candidateIndex || tokenPosition > candidateIndex ||
         /*
