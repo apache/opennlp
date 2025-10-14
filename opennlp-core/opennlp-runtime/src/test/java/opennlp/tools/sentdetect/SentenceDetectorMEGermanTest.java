@@ -152,6 +152,24 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
   }
 
   /*
+    * A reproducer and test for OPENNLP-1781.
+   */
+  @Test
+  void testSentDetectWithAbbreviationsAtSentenceStart() {
+    prepareResources(true);
+
+    final String sent1 = "S. Träume sind eine Verbindung von Gedanken.";
+
+    final String[] sents = sentenceDetector.sentDetect(sent1);
+    final double[] probs = sentenceDetector.probs();
+
+    assertAll(
+        () -> assertEquals(1, sents.length),
+        () -> assertEquals(sent1, sents[0]),
+        () -> assertEquals(1, probs.length));
+  }
+
+  /*
    * A reproducer and test for OPENNLP-1767.
    * It checks that sentence detection with common abbreviations works correctly,
    * that is, tokens such as "lt.", "f.", "S." (page), "ca.", or "ugs." do not cause
