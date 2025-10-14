@@ -69,7 +69,7 @@ public final class ContainingConstraint implements FSMatchConstraint {
 
   private boolean isContaining(AnnotationFS annotation, AnnotationFS containing) {
     return (containing.getBegin() <= annotation.getBegin())
-      && (containing.getEnd() >= annotation.getEnd());
+        && (containing.getEnd() >= annotation.getEnd());
   }
 
 }

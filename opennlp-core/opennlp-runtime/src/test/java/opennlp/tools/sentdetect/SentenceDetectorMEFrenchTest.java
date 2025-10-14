@@ -60,10 +60,10 @@ public class SentenceDetectorMEFrenchTest extends AbstractSentenceDetectorTest {
   @ValueSource(strings = {
       "Je choisis le rêve de la monographie botanique communiqué à la p. 205.",
       "Devant la surabondance des idées incidentes que l’analyse apporte à propos de chacun des " +
-      "éléments du contenu de rêve, un doute principiel s’éveillera chez plus d’un lecteur: peut-on " +
-      "donc compter au nombre des pensées de rêve tout ce qui, après coup, vous vient à l’idée dans " +
-      "l’analyse, c.-à-d. peut-on supposer que toutes ces pensées ont déjà été actives pendant l’état " +
-      "de sommeil et ont coopéré à la formation du rêve?"
+          "éléments du contenu de rêve, un doute principiel s’éveillera chez plus d’un lecteur: peut-on " +
+          "donc compter au nombre des pensées de rêve tout ce qui, après coup, vous vient à l’idée dans " +
+          "l’analyse, c.-à-d. peut-on supposer que toutes ces pensées ont déjà été actives pendant l’état " +
+          "de sommeil et ont coopéré à la formation du rêve?"
   })
   void testSentDetectWithInlineAbbreviationsResultsInOneSentence(String input) {
     SentenceDetectorME sentDetect = new SentenceDetectorME(sentdetectModel);
