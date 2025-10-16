@@ -161,16 +161,23 @@ public class Version {
     int versionEnd;
     if (indexFirstDash == -1) {
       versionEnd = version.length();
-    }
-    else {
+    } else {
       versionEnd = indexFirstDash;
     }
 
-    boolean snapshot = version.endsWith(SNAPSHOT_MARKER);
+    String revision = version.substring(indexSecondDot + 1, versionEnd);
+    final int indexPatchVersionDot = revision.indexOf('.');
+    if (indexPatchVersionDot != -1) {
+      // A rare extra patch version is present (e.g., 2.5.6.1), which OpenNLP normally doesn't use.
+      // Since it’s equivalent to the latest revision, we ignore it here.
+      revision = revision.substring(0, indexPatchVersionDot);
+    }
+
+    final boolean snapshot = version.endsWith(SNAPSHOT_MARKER);
 
     return new Version(Integer.parseInt(version.substring(0, indexFirstDot)),
         Integer.parseInt(version.substring(indexFirstDot + 1, indexSecondDot)),
-        Integer.parseInt(version.substring(indexSecondDot + 1, versionEnd)), snapshot);
+        Integer.parseInt(revision), snapshot);
   }
 
   /**
