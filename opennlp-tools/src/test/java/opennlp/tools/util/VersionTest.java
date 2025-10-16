@@ -45,6 +45,14 @@ public class VersionTest {
   }
 
   @Test
+  void testParseProjectVersionWithRarePatchVersion() {
+    // A rare extra patch version is present (e.g., 2.5.6.1), which OpenNLP normally doesn't use.
+    // Since it’s equivalent to the latest revision, it should be equal to 2.5.6
+    Assertions.assertEquals(new Version(2, 5, 6, false),
+        Version.parse("2.5.6.1"));
+  }
+
+  @Test
   void testParseInvalidVersion() {
     try {
       Version.parse("1.5.");
