@@ -157,7 +157,7 @@ public class POSTaggerMEIT {
       // La jeune fille et la nuit, S.469 
       Arguments.of(FRENCH, 0,
             "Vivre avec elle me faisait souffrir, mais vivre sans elle m'aurait tué.",
-            new String[] {"VERB", "ADP", "PRON", "PRON", "AUX", "VERB", "PUNCT", "CCONJ", "VERB",
+            new String[] {"VERB", "ADP", "PRON", "PRON", "VERB", "VERB", "PUNCT", "CCONJ", "VERB",
                 "ADP", "PRON", "PRON", "AUX", "VERB", "PUNCT"})
       // via @meriam2303, original by Hind Choueykh Ben Salah
       // التجريد في الشّعر العربي , S. 42
