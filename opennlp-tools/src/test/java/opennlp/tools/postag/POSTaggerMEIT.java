@@ -43,6 +43,7 @@ public class POSTaggerMEIT {
   private static final String GERMAN = "de";
   private static final String POLISH = "pl";
   private static final String PORTUGUESE = "pt";
+  private static final String FRENCH = "fr";
 
   private static final Map<String, Tokenizer> TOKENIZERS = new HashMap<>();
   private static final Map<String, POSTagger> TAGGERS = new HashMap<>();
@@ -51,7 +52,7 @@ public class POSTaggerMEIT {
 
   @BeforeAll
   public static void initResources() throws IOException {
-    List<String> langs = List.of(CATALAN, ENGLISH, GERMAN, POLISH, PORTUGUESE);
+    final List<String> langs = List.of(CATALAN, ENGLISH, FRENCH, GERMAN, POLISH, PORTUGUESE);
     for (String langCode: langs) {
       TOKENIZERS.put(langCode, new ThreadSafeTokenizerME(langCode));
       TAGGERS.put(langCode, new ThreadSafePOSTaggerME(langCode));
@@ -142,7 +143,7 @@ public class POSTaggerMEIT {
         "Un gran embossament d'aire fred es comença a despenjar cap al centre d'Europa.",
           // OpenNLP, different at: idx pos 2, 3, 5, and 13(+14) -> however, only pos 5 is "wrong" (ref)
           new String[]{"DET", "ADJ", "NOUN", "ADP", "NOUN", "ADJ", "PRON", "VERB", "ADP", "VERB", "NOUN",
-              "ADP+DET", "NOUN", "ADP", "PROPN", "PUNCT"})
+              "ADP+DET", "NOUN", "ADP", "PROPN", "PUNCT"}),
       // REFERENCE ("gold"):
       // "DET", "ADJ", "NOUN", "ADP", "NOUN", "ADJ", "PRON", "VERB", "ADP", "VERB", "NOUN", "ADP+DET",
         // "NOUN", "ADP", "PROPN", "PUNCT"})
@@ -152,6 +153,22 @@ public class POSTaggerMEIT {
         // "NOUN", "PROPN", "PROPN", "PUNCT"
         // ok! ,  ok! ,  ??? ,  ???   ,  ok!  ,  ok! ,  ok!  ,  ok!  ,  ok! ,  ok!  ,  ok!  ,  ok!  +  ok! ,
         // ok!  ,  ???   ,  ok!   ,  ok!
+      // via: @meriam2303 , original by Guillaume Musso:
+      // La jeune fille et la nuit, S.469 
+      Arguments.of(FRENCH, 0,
+            "Vivre avec elle me faisait souffrir, mais vivre sans elle m'aurait tué.",
+            new String[] {"VERB", "ADP", "PRON", "PRON", "VERB", "VERB", "PUNCT", "CCONJ", "VERB",
+                "ADP", "PRON", "PRON", "AUX", "VERB", "PUNCT"})
+      // via @meriam2303, original by Hind Choueykh Ben Salah
+      // التجريد في الشّعر العربي , S. 42
+      //Arguments.of(ARABIC,0,
+      //"عشق أبو نواس جارية تدعى جنان",
+      //new String[]{"VERB","PROPN","NOUN","VERB","PROPN"})  
+      // via @meriam2303, original by Mohamed Laarousi Elmetoui
+      // التوت المر , S.7
+      //Arguments.of(MARGHREBI_ARABIC_FRENCH,0,
+      //"Wassa3 belek ya baba...",
+      //new String[]{"VERB","NOUN","ITNJ","NOUN","PUNCT"})    
     );
   }
 }
