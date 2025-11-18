@@ -24,9 +24,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 public class XmlUtil {
+
+  private static final Logger logger = LoggerFactory.getLogger(XmlUtil.class);
 
   /**
    * Create a new {@link DocumentBuilder} which processes XML securely.
@@ -38,7 +42,14 @@ public class XmlUtil {
   public static DocumentBuilder createDocumentBuilder() {
     try {
       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-      documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+      try {
+        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+      } catch (ParserConfigurationException e) {
+        /// {@link XMLConstants.FEATURE_SECURE_PROCESSING} is not supported on Android.
+        /// See {@link DocumentBuilderFactory#setFeature}
+        logger.warn("Failed to enable XMLConstants.FEATURE_SECURE_PROCESSING, it's unsupported on" +
+                " this platform.", e);
+      }
       return documentBuilderFactory.newDocumentBuilder();
     } catch (ParserConfigurationException e) {
       throw new IllegalStateException(e);
