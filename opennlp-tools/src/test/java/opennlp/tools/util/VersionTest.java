@@ -37,6 +37,14 @@ public class VersionTest {
   }
 
   @Test
+  void testParseSuffixedVersion() {
+    Assertions.assertEquals(new Version(1, 5, 4, false),
+        Version.parse("1.5.4.foobar-007"));
+    Assertions.assertEquals(new Version(1, 5, 4, false),
+        Version.parse("1.5.4.foobar"));
+  }
+
+  @Test
   void testParseSnapshot() {
     Assertions.assertEquals(new Version(1, 5, 2, true),
         Version.parse("1.5.2-incubating-SNAPSHOT"));
