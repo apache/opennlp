@@ -156,11 +156,14 @@ public class Version {
       throw new NumberFormatException("Invalid version format '" + version + "', expected two dots!");
     }
 
+    int indexThirdDot = version.indexOf('.', indexSecondDot + 1);
     int indexFirstDash = version.indexOf('-');
 
     int versionEnd;
-    if (indexFirstDash == -1) {
+    if (indexFirstDash == -1 && indexThirdDot == -1) {
       versionEnd = version.length();
+    } else if (indexThirdDot != -1) {
+      versionEnd = indexThirdDot;
     } else {
       versionEnd = indexFirstDash;
     }
