@@ -45,12 +45,12 @@ List of third-party dependencies grouped by their license type.
 
     Apache License, Version 2.0
 
-        * Apache Log4j API (org.apache.logging.log4j:log4j-api:2.25.2 - https://logging.apache.org/log4j/2.x/)
-        * Apache Log4j Core (org.apache.logging.log4j:log4j-core:2.25.2 - https://logging.apache.org/log4j/2.x/)
+        * Apache Log4j API (org.apache.logging.log4j:log4j-api:2.25.3 - https://logging.apache.org/log4j/2.x/)
+        * Apache Log4j Core (org.apache.logging.log4j:log4j-core:2.25.3 - https://logging.apache.org/log4j/2.x/)
         * Apache UIMA Base: uimaj-core (org.apache.uima:uimaj-core:3.6.1 - https://uima.apache.org)
         * HPPC Collections (com.carrotsearch:hppc:0.7.2 - http://labs.carrotsearch.com/hppc.html/hppc)
         * jcommander (com.beust:jcommander:1.78 - https://jcommander.org)
-        * SLF4J 2 Provider for Log4j API (org.apache.logging.log4j:log4j-slf4j2-impl:2.25.2 - https://logging.apache.org/log4j/2.x/)
+        * SLF4J 2 Provider for Log4j API (org.apache.logging.log4j:log4j-slf4j2-impl:2.25.3 - https://logging.apache.org/log4j/2.x/)
 
     BSD License
 
