@@ -95,6 +95,25 @@ for(ClassPathModelEntry entry : models) {
 }]]>
             </programlisting>
 
+          Moreover, certain OpenNLP models can be obtained via a
+          <emphasis>ClassPathModelProvider</emphasis>, such as OpenNLP's
+          built-in <emphasis>DefaultClassPathModelProvider</emphasis> class.
+          It allows direct use of models available under a certain locale, given
+          that those are present in the classpath and can be loaded.
+
+          <programlisting language="java">
+            <![CDATA[
+final ClassPathModelProvider provider = new DefaultClassPathModelProvider(finder, loader);
+// Here: SentenceModel, other model types accordingly
+final SentenceModel sm = provider.load("en", opennlp.tools.models.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
+if(sm != null) {
+  // do something with the (sentence) model
+}]]>
+          </programlisting>
+
+          In the above example, the finder and loader objects can be created or re-used as shown in the
+          previous code example.
+
         </para>
 	</section>
 
