@@ -126,7 +126,7 @@ GMDecrease Major acquisitions that have a lower gross margin than the existing n
 GMIncrease The upward movement of gross margin resulted from amounts pursuant to adjustments \
            to obligations towards dealers .]]>
 			</screen>
-			Note: The line breaks marked with a backslash are just inserted for formatting purposes and must not be
+			<emphasis role="strong">Note</emphasis>: The line breaks marked with a backslash are just inserted for formatting purposes and must not be
 			included in the training data.
 		</para>
 		<section id="tools.doccat.training.tool">

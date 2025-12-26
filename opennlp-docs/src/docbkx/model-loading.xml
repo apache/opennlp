@@ -96,6 +96,39 @@ for(ClassPathModelEntry entry : models) {
             </programlisting>
 
         </para>
+        <para>
+          Moreover, certain OpenNLP models can be obtained via a
+          <emphasis>ClassPathModelProvider</emphasis>, such as OpenNLP's
+          built-in <emphasis>DefaultClassPathModelProvider</emphasis> class.
+          It allows direct use of models available under a certain locale, given
+          that those are present in the classpath and can be loaded.
+
+          <programlisting language="java">
+            <![CDATA[
+final ClassPathModelProvider provider = new DefaultClassPathModelProvider(finder, loader);
+// Here: SentenceModel, other model types accordingly
+final SentenceModel sm = provider.load("en", opennlp.tools.models.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
+if(sm != null) {
+  // do something with the (sentence) model
+}]]>
+          </programlisting>
+
+          In the above example, the finder and loader objects can be created or re-used as shown in the
+          previous code example.
+        </para>
+        <para>
+          <emphasis role="strong">Note</emphasis>:
+          When running on Java 17+, the JVM argument
+          
+          <screen>--add-opens java.base/jdk.internal.loader=ALL-UNNAMED</screen>
+
+          may be required. Without this parameter, OpenNLP uses the JVM bootstrap classpath to locate models
+          rather than the UCP class loader.
+
+          For more advanced or non-standard class loading scenarios, using ClassGraph and implementing a
+          custom provider may cover additional cases beyond the default UCP class loader or
+          JVM bootstrap class path behavior.
+        </para>
 	</section>
 
 
@@ -106,7 +139,7 @@ for(ClassPathModelEntry entry : models) {
             we recommend that you have a look at our setup in the <ulink url="https://github.com/apache/opennlp-models">OpenNLP Models
             repository</ulink>. We recommend to bundle one model per JAR file.
 
-            Make sure you add a <emphasis>model.properties</emphasis> file with the following content
+            Make sure you add a <emphasis>model.properties</emphasis> file with the following content:
 
        <programlisting language="java">
                 <![CDATA[

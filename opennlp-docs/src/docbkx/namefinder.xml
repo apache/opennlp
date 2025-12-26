@@ -506,7 +506,7 @@ Precision: 0.8005071889818507
 Recall: 0.7450581122145297
 F-Measure: 0.7717879983140168]]>
          </screen>
-			 Note: The command line interface does not support cross evaluation in the current version.
+			 <emphasis role="strong">Note</emphasis>: The command line interface does not support cross evaluation in the current version.
 		</para>
 		</section>
 		<section id="tools.namefind.eval.api">
