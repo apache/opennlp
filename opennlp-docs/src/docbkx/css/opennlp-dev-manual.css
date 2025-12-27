@@ -40,7 +40,20 @@ div.book {
     margin: 0 auto;
     font-family: var(--font-family);
     padding: 1rem;
-    background-color: white;
+}
+
+div.cover {
+    text-align: center;
+    page-break-after: always;
+    padding: 0;
+    margin: 0;
+}
+
+div.cover img {
+    height: 100%;
+    max-width: 100%;
+    padding: 10px;
+    margin: 0;
 }
 
 div.toc > dl, div.list-of-tables > dl {
@@ -53,12 +66,53 @@ a {
     text-decoration: none;
 }
 
-h1, h2, h3, h4, div.toc {
+/* font plan- serif text, sans headers */
+h1, h2, h3, h4, h5, h6, div.toc {
     color: var(--red-color);
+    hyphens: none !important;
+    -moz-hyphens: none !important;
+    -webkit-hyphens: none !important;
+    adobe-hyphenate: none !important;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    text-indent: 0;
+    text-align: left;
+}
+
+h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p {
+    text-indent: 0;
+}
+
+p {
+    font-family: var(--font-family);
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+    hyphenate-after: 3;
+    hyphenate-before: 3;
+    hyphenate-lines: 2;
+    -webkit-hyphenate-after: 3;
+    -webkit-hyphenate-before: 3;
+    -webkit-hyphenate-lines: 2;
+    line-height: 1.5em;
+    margin: 0;
+    text-align: justify;
+    orphans: 2;
+    widows: 2;
+}
+p.first-para, p.first-para-chapter, p.note-p-first {
+    text-indent: 0;
+}
+p.first-para-chapter::first-line {
+    /* handle run-in */
+    font-variant: small-caps;
+}
+p.no-indent {
+    text-indent: 0;
 }
 
 div.legalnotice {
-    max-width: 450px;
+    max-width: 660px;
 }
 
 pre {
@@ -74,7 +128,9 @@ pre.programlisting, pre.screen, pre.literallayout {
     background-color: #EEE;
     font-family: var(--code-font-family);
     white-space: pre;
-    padding: 0 1rem;
+    padding-top: 1rem;
+    padding-left: 1rem;
+    padding-bottom: 0;
 }
 
 /*

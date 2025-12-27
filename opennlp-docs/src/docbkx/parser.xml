@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://docbook.org/xml/5.0.1/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -31,9 +31,13 @@ under the License.
 			A parser returns a parse tree from a sentence according to a phrase structure grammar. A parse tree specifies
 		the internal structure of a sentence. For example, the following image represents a parse tree for 
 		the sentence 'The cellphone was broken in two days':</para>
-		
-		<imagedata fileref="images/parsetree1.png" scalefit="1"/>
-		
+
+		<inlinemediaobject>
+			<imageobject role="fo">
+				<imagedata fileref="images/parsetree1.png" scalefit="1"/>
+			</imageobject>
+		</inlinemediaobject>
+
 		<para>
 			A parse tree can be used to determine the role of subtrees or constituents in the sentence. For example, it is possible to
 		know that 'The cellphone' is the subject of the sentence and the verb (action) is 'was broken.'			

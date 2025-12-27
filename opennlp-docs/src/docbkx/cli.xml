@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://docbook.org/xml/5.0.1/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -84,8 +84,18 @@ Arguments description:
 </screen> 
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>leipzig</entry>
@@ -113,8 +123,8 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp DoccatEvaluator[.leipzig] -model model [-misclassified true|false] [-reportOutputFile 
-        outputFile] -data sampleData [-encoding charsetName] 
+Usage: opennlp DoccatEvaluator[.leipzig] -model model [-misclassified true|false] [-reportOutputFile
+        outputFile] -data sampleData [-encoding charsetName]
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -128,11 +138,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>leipzig</entry>
@@ -160,9 +179,9 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp DoccatCrossValidator[.leipzig] [-misclassified true|false] [-folds num] [-factory factoryName] 
-        [-featureGenerators fg] [-tokenizer tokenizer] [-params paramsFile] -lang language [-reportOutputFile 
-        outputFile] -data sampleData [-encoding charsetName] 
+Usage: opennlp DoccatCrossValidator[.leipzig] [-misclassified true|false] [-folds num] [-factory factoryName]
+        [-featureGenerators fg] [-tokenizer tokenizer] [-params paramsFile] -lang language [-reportOutputFile
+        outputFile] -data sampleData [-encoding charsetName]
 Arguments description:
 	-misclassified true|false
 		if true will print false negatives and false positives.
@@ -186,11 +205,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>leipzig</entry>
@@ -221,11 +249,20 @@ Arguments description:
 Usage: opennlp DoccatConverter help|leipzig [help|options...]
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>leipzig</entry>
@@ -262,7 +299,7 @@ Usage: opennlp DoccatConverter help|leipzig [help|options...]
 Usage: opennlp LanguageDetector model < documents
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 <section id='tools.cli.langdetect.LanguageDetectorTrainer'>
@@ -273,8 +310,8 @@ Usage: opennlp LanguageDetector model < documents
 
 <screen>
 <![CDATA[
-Usage: opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] [-factory factoryName] 
-        -data sampleData [-encoding charsetName] 
+Usage: opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] [-factory factoryName]
+        -data sampleData [-encoding charsetName]
 Arguments description:
 	-model modelFile
 		output model file.
@@ -288,11 +325,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>leipzig</entry>
@@ -335,11 +381,20 @@ Arguments description:
 Usage: opennlp LanguageDetectorConverter help|leipzig [help|options...]
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>leipzig</entry>
@@ -379,9 +434,9 @@ Usage: opennlp LanguageDetectorConverter help|leipzig [help|options...]
 
 <screen>
 <![CDATA[
-Usage: opennlp LanguageDetectorCrossValidator[.leipzig] [-misclassified true|false] [-folds num] [-factory 
-        factoryName] [-params paramsFile] [-reportOutputFile outputFile] -data sampleData [-encoding 
-        charsetName] 
+Usage: opennlp LanguageDetectorCrossValidator[.leipzig] [-misclassified true|false] [-folds num] [-factory
+        factoryName] [-params paramsFile] [-reportOutputFile outputFile] -data sampleData [-encoding
+        charsetName]
 Arguments description:
 	-misclassified true|false
 		if true will print false negatives and false positives.
@@ -399,11 +454,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>leipzig</entry>
@@ -443,8 +507,8 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp LanguageDetectorEvaluator[.leipzig] -model model [-misclassified true|false] 
-        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
+Usage: opennlp LanguageDetectorEvaluator[.leipzig] -model model [-misclassified true|false]
+        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName]
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -458,11 +522,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>leipzig</entry>
@@ -519,7 +592,7 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 </section>
@@ -539,7 +612,7 @@ Arguments description:
 Usage: opennlp SimpleTokenizer < sentences
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 <section id='tools.cli.tokenizer.TokenizerME'>
@@ -553,7 +626,7 @@ Usage: opennlp SimpleTokenizer < sentences
 Usage: opennlp TokenizerME model < sentences
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 <section id='tools.cli.tokenizer.TokenizerTrainer'>
@@ -564,9 +637,9 @@ Usage: opennlp TokenizerME model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerTrainer[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.conllu] [-factory 
-        factoryName] [-abbDict path] [-alphaNumOpt isAlphaNumOpt] [-params paramsFile] -lang language -model 
-        modelFile -data sampleData [-encoding charsetName] 
+Usage: opennlp TokenizerTrainer[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.conllu] [-factory
+        factoryName] [-abbDict path] [-alphaNumOpt isAlphaNumOpt] [-params paramsFile] -lang language -model
+        modelFile -data sampleData [-encoding charsetName]
 Arguments description:
 	-factory factoryName
 		A sub-class of TokenizerFactory where to get implementation and resources.
@@ -586,11 +659,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>irishsentencebank</entry>
@@ -738,8 +820,8 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerMEEvaluator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.conllu] -model 
-        model [-misclassified true|false] -data sampleData [-encoding charsetName] 
+Usage: opennlp TokenizerMEEvaluator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.conllu] -model
+        model [-misclassified true|false] -data sampleData [-encoding charsetName]
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -751,11 +833,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>irishsentencebank</entry>
@@ -903,9 +994,9 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerCrossValidator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.conllu] 
-        [-misclassified true|false] [-folds num] [-factory factoryName] [-abbDict path] [-alphaNumOpt 
-        isAlphaNumOpt] [-params paramsFile] -lang language -data sampleData [-encoding charsetName] 
+Usage: opennlp TokenizerCrossValidator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.conllu]
+        [-misclassified true|false] [-folds num] [-factory factoryName] [-abbDict path] [-alphaNumOpt
+        isAlphaNumOpt] [-params paramsFile] -lang language -data sampleData [-encoding charsetName]
 Arguments description:
 	-misclassified true|false
 		if true will print false negatives and false positives.
@@ -927,11 +1018,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>irishsentencebank</entry>
@@ -1079,14 +1179,23 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenizerConverter help|irishsentencebank|ad|pos|conllx|namefinder|parse|conllu 
-        [help|options...] 
+Usage: opennlp TokenizerConverter help|irishsentencebank|ad|pos|conllx|namefinder|parse|conllu
+        [help|options...]
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>irishsentencebank</entry>
@@ -1237,7 +1346,7 @@ Usage: opennlp TokenizerConverter help|irishsentencebank|ad|pos|conllx|namefinde
 Usage: opennlp DictionaryDetokenizer detokenizerDictionary
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 </section>
@@ -1257,7 +1366,7 @@ Usage: opennlp DictionaryDetokenizer detokenizerDictionary
 Usage: opennlp SentenceDetector model < sentences
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 <section id='tools.cli.sentdetect.SentenceDetectorTrainer'>
@@ -1268,10 +1377,10 @@ Usage: opennlp SentenceDetector model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp 
-        SentenceDetectorTrainer[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.moses|.conllu|.letsmt] 
-        [-factory factoryName] [-eosChars string] [-abbDict path] [-params paramsFile] -lang language -model 
-        modelFile -data sampleData [-encoding charsetName] 
+Usage: opennlp
+        SentenceDetectorTrainer[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.moses|.conllu|.letsmt]
+        [-factory factoryName] [-eosChars string] [-abbDict path] [-params paramsFile] -lang language -model
+        modelFile -data sampleData [-encoding charsetName]
 Arguments description:
 	-factory factoryName
 		A sub-class of SentenceDetectorFactory where to get implementation and resources.
@@ -1291,11 +1400,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>irishsentencebank</entry>
@@ -1475,9 +1593,9 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp 
-        SentenceDetectorEvaluator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.moses|.conllu|.letsmt] 
-        -model model [-misclassified true|false] -data sampleData [-encoding charsetName] 
+Usage: opennlp
+        SentenceDetectorEvaluator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.moses|.conllu|.letsmt]
+        -model model [-misclassified true|false] -data sampleData [-encoding charsetName]
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -1489,11 +1607,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>irishsentencebank</entry>
@@ -1673,10 +1800,10 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp 
-        SentenceDetectorCrossValidator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.moses|.conllu|.letsmt] 
-        [-factory factoryName] [-eosChars string] [-abbDict path] [-params paramsFile] -lang language 
-        [-misclassified true|false] [-folds num] -data sampleData [-encoding charsetName] 
+Usage: opennlp
+        SentenceDetectorCrossValidator[.irishsentencebank|.ad|.pos|.conllx|.namefinder|.parse|.moses|.conllu|.letsmt]
+        [-factory factoryName] [-eosChars string] [-abbDict path] [-params paramsFile] -lang language
+        [-misclassified true|false] [-folds num] -data sampleData [-encoding charsetName]
 Arguments description:
 	-factory factoryName
 		A sub-class of SentenceDetectorFactory where to get implementation and resources.
@@ -1698,11 +1825,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>irishsentencebank</entry>
@@ -1882,14 +2018,23 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp SentenceDetectorConverter 
-        help|irishsentencebank|ad|pos|conllx|namefinder|parse|moses|conllu|letsmt [help|options...] 
+Usage: opennlp SentenceDetectorConverter
+        help|irishsentencebank|ad|pos|conllx|namefinder|parse|moses|conllu|letsmt [help|options...]
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='1' valign='middle'>irishsentencebank</entry>
@@ -2078,7 +2223,7 @@ Usage: opennlp SentenceDetectorConverter
 Usage: opennlp TokenNameFinder model1 model2 ... modelN < sentences
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 <section id='tools.cli.namefind.TokenNameFinderTrainer'>
@@ -2089,10 +2234,10 @@ Usage: opennlp TokenNameFinder model1 model2 ... modelN < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenNameFinderTrainer[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat] 
-        [-factory factoryName] [-resources resourcesDir] [-type modelType] [-featuregen featuregenFile] 
-        [-nameTypes types] [-sequenceCodec codec] [-params paramsFile] -lang language -model modelFile -data 
-        sampleData [-encoding charsetName] 
+Usage: opennlp TokenNameFinderTrainer[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat]
+        [-factory factoryName] [-resources resourcesDir] [-type modelType] [-featuregen featuregenFile]
+        [-nameTypes types] [-sequenceCodec codec] [-params paramsFile] -lang language -model modelFile -data
+        sampleData [-encoding charsetName]
 Arguments description:
 	-factory factoryName
 		A sub-class of TokenNameFinderFactory
@@ -2118,11 +2263,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
@@ -2319,9 +2473,9 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenNameFinderEvaluator[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat] 
-        [-nameTypes types] -model model [-misclassified true|false] [-detailedF true|false] 
-        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
+Usage: opennlp TokenNameFinderEvaluator[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat]
+        [-nameTypes types] -model model [-misclassified true|false] [-detailedF true|false]
+        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName]
 Arguments description:
 	-nameTypes types
 		name types to use for evaluation
@@ -2339,11 +2493,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
@@ -2540,12 +2703,12 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp 
-        TokenNameFinderCrossValidator[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat] 
-        [-factory factoryName] [-resources resourcesDir] [-type modelType] [-featuregen featuregenFile] 
-        [-nameTypes types] [-sequenceCodec codec] [-params paramsFile] -lang language [-misclassified 
-        true|false] [-folds num] [-detailedF true|false] [-reportOutputFile outputFile] -data sampleData 
-        [-encoding charsetName] 
+Usage: opennlp
+        TokenNameFinderCrossValidator[.evalita|.ad|.conll03|.bionlp2004|.conll02|.muc6|.ontonotes|.brat]
+        [-factory factoryName] [-resources resourcesDir] [-type modelType] [-featuregen featuregenFile]
+        [-nameTypes types] [-sequenceCodec codec] [-params paramsFile] -lang language [-misclassified
+        true|false] [-folds num] [-detailedF true|false] [-reportOutputFile outputFile] -data sampleData
+        [-encoding charsetName]
 Arguments description:
 	-factory factoryName
 		A sub-class of TokenNameFinderFactory
@@ -2577,11 +2740,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
@@ -2778,14 +2950,23 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll02|muc6|ontonotes|brat 
-        [help|options...] 
+Usage: opennlp TokenNameFinderConverter help|evalita|ad|conll03|bionlp2004|conll02|muc6|ontonotes|brat
+        [help|options...]
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='3' valign='middle'>evalita</entry>
@@ -2991,7 +3172,7 @@ Arguments description:
 	-dict dict
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 </section>
@@ -3011,7 +3192,7 @@ Arguments description:
 Usage: opennlp POSTagger model < sentences
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 <section id='tools.cli.postag.POSTaggerTrainer'>
@@ -3022,9 +3203,9 @@ Usage: opennlp POSTagger model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp POSTaggerTrainer[.ad|.conllx|.parse|.ontonotes|.conllu] [-factory factoryName] [-resources 
-        resourcesDir] [-tagDictCutoff tagDictCutoff] [-featuregen featuregenFile] [-dict dictionaryPath] 
-        [-params paramsFile] -lang language -model modelFile -data sampleData [-encoding charsetName] 
+Usage: opennlp POSTaggerTrainer[.ad|.conllx|.parse|.ontonotes|.conllu] [-factory factoryName] [-resources
+        resourcesDir] [-tagDictCutoff tagDictCutoff] [-featuregen featuregenFile] [-dict dictionaryPath]
+        [-params paramsFile] -lang language -model modelFile -data sampleData [-encoding charsetName]
 Arguments description:
 	-factory factoryName
 		A sub-class of POSTaggerFactory where to get implementation and resources.
@@ -3048,11 +3229,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='4' valign='middle'>ad</entry>
@@ -3150,8 +3340,8 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp POSTaggerEvaluator[.ad|.conllx|.parse|.ontonotes|.conllu] -model model [-misclassified 
-        true|false] [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
+Usage: opennlp POSTaggerEvaluator[.ad|.conllx|.parse|.ontonotes|.conllu] -model model [-misclassified
+        true|false] [-reportOutputFile outputFile] -data sampleData [-encoding charsetName]
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -3165,11 +3355,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='4' valign='middle'>ad</entry>
@@ -3267,10 +3466,10 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp POSTaggerCrossValidator[.ad|.conllx|.parse|.ontonotes|.conllu] [-misclassified true|false] 
-        [-folds num] [-factory factoryName] [-resources resourcesDir] [-tagDictCutoff tagDictCutoff] 
-        [-featuregen featuregenFile] [-dict dictionaryPath] [-params paramsFile] -lang language 
-        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName] 
+Usage: opennlp POSTaggerCrossValidator[.ad|.conllx|.parse|.ontonotes|.conllu] [-misclassified true|false]
+        [-folds num] [-factory factoryName] [-resources resourcesDir] [-tagDictCutoff tagDictCutoff]
+        [-featuregen featuregenFile] [-dict dictionaryPath] [-params paramsFile] -lang language
+        [-reportOutputFile outputFile] -data sampleData [-encoding charsetName]
 Arguments description:
 	-misclassified true|false
 		if true will print false negatives and false positives.
@@ -3298,11 +3497,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='4' valign='middle'>ad</entry>
@@ -3403,11 +3611,20 @@ Arguments description:
 Usage: opennlp POSTaggerConverter help|ad|conllx|parse|ontonotes|conllu [help|options...]
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='4' valign='middle'>ad</entry>
@@ -3514,7 +3731,7 @@ Usage: opennlp POSTaggerConverter help|ad|conllx|parse|ontonotes|conllu [help|op
 Usage: opennlp LemmatizerME model < sentences
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 <section id='tools.cli.lemmatizer.LemmatizerTrainerME'>
@@ -3525,8 +3742,8 @@ Usage: opennlp LemmatizerME model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp LemmatizerTrainerME[.conllu] [-factory factoryName] [-params paramsFile] -lang language -model 
-        modelFile -data sampleData [-encoding charsetName] 
+Usage: opennlp LemmatizerTrainerME[.conllu] [-factory factoryName] [-params paramsFile] -lang language -model
+        modelFile -data sampleData [-encoding charsetName]
 Arguments description:
 	-factory factoryName
 		A sub-class of LemmatizerFactory where to get implementation and resources.
@@ -3542,11 +3759,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='2' valign='middle'>conllu</entry>
@@ -3580,8 +3806,8 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp LemmatizerEvaluator[.conllu] -model model [-misclassified true|false] [-reportOutputFile 
-        outputFile] -data sampleData [-encoding charsetName] 
+Usage: opennlp LemmatizerEvaluator[.conllu] -model model [-misclassified true|false] [-reportOutputFile
+        outputFile] -data sampleData [-encoding charsetName]
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -3595,11 +3821,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='2' valign='middle'>conllu</entry>
@@ -3642,7 +3877,7 @@ Arguments description:
 Usage: opennlp ChunkerME model < sentences
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 <section id='tools.cli.chunker.ChunkerTrainerME'>
@@ -3653,8 +3888,8 @@ Usage: opennlp ChunkerME model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp ChunkerTrainerME[.ad] [-factory factoryName] [-params paramsFile] -lang language -model 
-        modelFile -data sampleData [-encoding charsetName] 
+Usage: opennlp ChunkerTrainerME[.ad] [-factory factoryName] [-params paramsFile] -lang language -model
+        modelFile -data sampleData [-encoding charsetName]
 Arguments description:
 	-factory factoryName
 		A sub-class of ChunkerFactory where to get implementation and resources.
@@ -3670,11 +3905,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='4' valign='middle'>ad</entry>
@@ -3720,8 +3964,8 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp ChunkerEvaluator[.ad] -model model [-misclassified true|false] [-detailedF true|false] -data 
-        sampleData [-encoding charsetName] 
+Usage: opennlp ChunkerEvaluator[.ad] -model model [-misclassified true|false] [-detailedF true|false] -data
+        sampleData [-encoding charsetName]
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -3735,11 +3979,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='4' valign='middle'>ad</entry>
@@ -3785,9 +4038,9 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp ChunkerCrossValidator[.ad] [-factory factoryName] [-params paramsFile] -lang language 
-        [-misclassified true|false] [-folds num] [-detailedF true|false] -data sampleData [-encoding 
-        charsetName] 
+Usage: opennlp ChunkerCrossValidator[.ad] [-factory factoryName] [-params paramsFile] -lang language
+        [-misclassified true|false] [-folds num] [-detailedF true|false] -data sampleData [-encoding
+        charsetName]
 Arguments description:
 	-factory factoryName
 		A sub-class of ChunkerFactory where to get implementation and resources.
@@ -3807,11 +4060,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='4' valign='middle'>ad</entry>
@@ -3860,11 +4122,20 @@ Arguments description:
 Usage: opennlp ChunkerConverter help|ad [help|options...]
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='4' valign='middle'>ad</entry>
@@ -3916,14 +4187,14 @@ Usage: opennlp ChunkerConverter help|ad [help|options...]
 
 <screen>
 <![CDATA[
-Usage: opennlp Parser [-bs n -ap n -k n -tk tok_model] model < sentences 
+Usage: opennlp Parser [-bs n -ap n -k n -tk tok_model] model < sentences
 -bs n: Use a beam size of n.
 -ap f: Advance outcomes in with at least f% of the probability mass.
 -k n: Show the top n parses.  This will also display their log-probabilities.
 -tk tok_model: Use the specified tokenizer model to tokenize the sentences. Defaults to a WhitespaceTokenizer.
 
 ]]>
-</screen> 
+</screen>
 </section>
 
 <section id='tools.cli.parser.ParserTrainer'>
@@ -3934,9 +4205,9 @@ Usage: opennlp Parser [-bs n -ap n -k n -tk tok_model] model < sentences
 
 <screen>
 <![CDATA[
-Usage: opennlp ParserTrainer[.ontonotes|.frenchtreebank] [-headRulesSerializerImpl className] -headRules 
-        headRulesFile [-parserType CHUNKING|TREEINSERT] [-fun true|false] [-params paramsFile] -lang language 
-        -model modelFile [-encoding charsetName] -data sampleData 
+Usage: opennlp ParserTrainer[.ontonotes|.frenchtreebank] [-headRulesSerializerImpl className] -headRules
+        headRulesFile [-parserType CHUNKING|TREEINSERT] [-fun true|false] [-params paramsFile] -lang language
+        -model modelFile [-encoding charsetName] -data sampleData
 Arguments description:
 	-headRulesSerializerImpl className
 		head rules artifact serializer class name
@@ -3958,11 +4229,20 @@ Arguments description:
 		data to be used, usually a file name.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='0' valign='middle'>ontonotes</entry>
@@ -3997,8 +4277,8 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp ParserEvaluator[.ontonotes|.frenchtreebank] -model model [-misclassified true|false] -data 
-        sampleData [-encoding charsetName] 
+Usage: opennlp ParserEvaluator[.ontonotes|.frenchtreebank] -model model [-misclassified true|false] -data
+        sampleData [-encoding charsetName]
 Arguments description:
 	-model model
 		the model file to be evaluated.
@@ -4010,11 +4290,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='0' valign='middle'>ontonotes</entry>
@@ -4052,11 +4341,20 @@ Arguments description:
 Usage: opennlp ParserConverter help|ontonotes|frenchtreebank [help|options...]
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='0' valign='middle'>ontonotes</entry>
@@ -4091,8 +4389,8 @@ Usage: opennlp ParserConverter help|ontonotes|frenchtreebank [help|options...]
 
 <screen>
 <![CDATA[
-Usage: opennlp BuildModelUpdater[.ontonotes|.frenchtreebank] -model modelFile [-params paramsFile] -lang 
-        language -data sampleData [-encoding charsetName] 
+Usage: opennlp BuildModelUpdater[.ontonotes|.frenchtreebank] -model modelFile [-params paramsFile] -lang
+        language -data sampleData [-encoding charsetName]
 Arguments description:
 	-model modelFile
 		output model file.
@@ -4106,11 +4404,20 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead>
+  <row>
+    <entry>Format</entry>
+    <entry>Argument</entry>
+    <entry>Value</entry>
+    <entry>Optional</entry>
+    <entry>Description</entry>
+  </row>
+</thead>
 <tbody>
 <row>
 <entry morerows='0' valign='middle'>ontonotes</entry>
@@ -4145,8 +4452,8 @@ Arguments description:
 
 <screen>
 <![CDATA[
-Usage: opennlp CheckModelUpdater[.ontonotes|.frenchtreebank] -model modelFile [-params paramsFile] -lang 
-        language -data sampleData [-encoding charsetName] 
+Usage: opennlp CheckModelUpdater[.ontonotes|.frenchtreebank] -model modelFile [-params paramsFile] -lang
+        language -data sampleData [-encoding charsetName]
 Arguments description:
 	-model modelFile
 		output model file.
@@ -4160,11 +4467,17 @@ Arguments description:
 		encoding for reading and writing text, if absent the system default is used.
 
 ]]>
-</screen> 
+</screen>
 <para>The supported formats and arguments are:</para>
 
-<informaltable frame='all'><tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<thead><row><entry>Format</entry><entry>Argument</entry><entry>Value</entry><entry>Optional</entry><entry>Description</entry></row></thead>
+<informaltable frame='all'>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<thead><row>
+  <entry>Format</entry>
+  <entry>Argument</entry>
+  <entry>Value</entry>
+  <entry>Optional</entry>
+  <entry>Description</entry></row></thead>
 <tbody>
 <row>
 <entry morerows='0' valign='middle'>ontonotes</entry>
