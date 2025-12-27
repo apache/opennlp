@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -21,16 +21,15 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<chapter id="tools.langdetect">
+<chapter xml:id="tools.langdetect" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Language Detector</title>
-	<section id="tools.langdetect.classifying">
+	<section xml:id="tools.langdetect.classifying">
 		<title>Classifying</title>
 		<para>
-		The OpenNLP Language Detector classifies a document in ISO-639-3 languages according to the model capabilities.
-		A model can be trained with Maxent, Perceptron or Naive Bayes algorithms. By default, normalizes a text and
+			The OpenNLP Language Detector classifies a document in ISO-639-3 languages according to the model capabilities.
+			A model can be trained with Maxent, Perceptron or Naive Bayes algorithms. By default, normalizes a text and
 			the context generator extracts n-grams of size 1, 2 and 3. The n-gram sizes, the normalization and the
 			context generator can be customized by extending the LanguageDetectorFactory.
-
 		</para>
 		<para>
 			The default normalizers are:
@@ -73,20 +72,19 @@ under the License.
 		</para>
 	</section>
 	
-	<section id="tools.langdetect.classifying.cmdline">
+	<section xml:id="tools.langdetect.classifying.cmdline">
 		<title>Language Detector Tool</title>
 		<para>
 		The easiest way to try out the language detector is the command line tool. The tool is only
 		intended for demonstration and testing. The following command shows how to use the language detector tool.
 		  <screen>
-			<![CDATA[
-$ bin/opennlp LanguageDetector model]]>
+<![CDATA[$ bin/opennlp LanguageDetector model]]>
 		 </screen>
 		 The input is read from standard input and output is written to standard output, unless they are redirected
 		 or piped.
 		</para>
  	 </section>
-  	<section id="tools.langdetect.classifying.api">
+  	<section xml:id="tools.langdetect.classifying.api">
 		<title>Language Detector API</title>
 		<para>
 			To perform classification you will need a machine learning model -
@@ -95,15 +93,13 @@ $ bin/opennlp LanguageDetector model]]>
 		<para>
 			First you need to grab the bytes from the serialized model on an InputStream - 
 			we'll leave it you to do that, since you were the one who serialized it to begin with. Now for the easy part:
-						<programlisting language="java">
-				<![CDATA[
-InputStream is = ...
+			<programlisting language="java">
+<![CDATA[InputStream is = ...
 LanguageDetectorModel m = new LanguageDetectorModel(is);]]>
-				</programlisting>
-				With the LanguageDetectorModel in hand we are just about there:
-						<programlisting language="java">
-				<![CDATA[
-String inputText = ...
+			</programlisting>
+			With the LanguageDetectorModel in hand we are just about there:
+			<programlisting language="java">
+<![CDATA[String inputText = ...
 LanguageDetector myCategorizer = new LanguageDetectorME(m);
 
 // Get the most probable language
@@ -113,13 +109,14 @@ System.out.println("Best language confidence: " + bestLanguage.getConfidence());
 
 // Get an array with the most probable languages
 Language[] languages = myCategorizer.predictLanguages(null);]]>
-				</programlisting>
+			</programlisting>
 
 			Note that the both the API or the CLI will consider the complete text to choose the most probable languages.
 			To handle mixed language one can analyze smaller chunks of text to find language regions.
 		</para>
 	</section>
-	<section id="tools.langdetect.training">
+
+	<section xml:id="tools.langdetect.training">
 		<title>Training</title>
 		<para>
 			The Language Detector can be trained on annotated training material. The data
@@ -128,8 +125,7 @@ Language[] languages = myCategorizer.predictLanguages(null);]]>
 			available.
 			The following sample shows the sample from above in the required format.
 			<screen>
-				<![CDATA[
-spa     A la fecha tres calles bonaerenses recuerdan su nombre (en Ituzaingó, Merlo y Campana). A la fecha, unas 50 \
+<![CDATA[spa     A la fecha tres calles bonaerenses recuerdan su nombre (en Ituzaingó, Merlo y Campana). A la fecha, unas 50 \
 		naves y 20 aviones se han perdido en esa área particular del océano Atlántico.
 deu     Alle Jahre wieder: Millionen Spanier haben am Dienstag die Auslosung in der größten Lotterie der Welt verfolgt.\
  		Alle Jahre wieder: So gelingt der stressfreie Geschenke-Umtausch Artikel per E-Mail empfehlen So gelingt der \
@@ -141,30 +137,37 @@ lav     Egija Tri-Active procedūru īpaši iesaka izmantot siltākajos gadalaik
 		nedēļu laika Ekonomikas ministrijai, Finanšu ministrijai un Labklājības ministrijai, lai ar vienotu \
 		pozīciju atgrieztos pie jautājuma izskatīšanas.]]>
 			</screen>
-			<emphasis role="strong">Note</emphasis>: The line breaks marked with a backslash are just inserted for formatting purposes and must not be
-			included in the training data.
+			<note>
+				<para>
+					The line breaks marked with a backslash are just inserted for formatting purposes and must not be
+					included in the training data.
+				</para>
+			</note>
 		</para>
-		<section id="tools.langdetect.training.tool">
+		<section xml:id="tools.langdetect.training.tool">
 			<title>Training Tool</title>
 			<para>
 				The following command will train the language detector and write the model to langdetect-custom.bin:
 				<screen>
-					<![CDATA[
-$ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] \
+<![CDATA[$ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] \
   [-factory factoryName] -data sampleData [-encoding charsetName]]]>
 				</screen>
-				<emphasis role="strong">Note</emphasis>: To customize the language detector, extend the class opennlp.tools.langdetect.LanguageDetectorFactory
-				add it to the classpath and pass it in the -factory argument.
+				<tip>
+					<para>
+						To customize the language detector, extend the class opennlp.tools.langdetect.LanguageDetectorFactory
+						add it to the classpath and pass it in the -factory argument.
+					</para>
+				</tip>
 			</para>
 		</section>
-		<section id="tools.langdetect.training.leipzig">
+		<section xml:id="tools.langdetect.training.leipzig">
 			<title>Training with Leipzig</title>
 			<para>
 				The Leipzig Corpora collection presents corpora in different languages. The corpora are a collection
 				of individual sentences collected from the web and newspapers. The Corpora are available as plain text
 				and as MySQL database tables. The OpenNLP integration can only use the plain text version.
 				The	individual plain text packages can be downloaded here:
-				<ulink url="https://wortschatz.uni-leipzig.de/en/download">https://wortschatz.uni-leipzig.de/en/download</ulink>
+				<link xlink:href="https://wortschatz.uni-leipzig.de/en/download"/>
 			</para>
 			<para>
 				This corpora is specially good to train Language Detector and a converter is provided. First, you need to
@@ -173,8 +176,7 @@ $ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params params
 				the following command shows how to train a model.
 
 				<screen>
-					<![CDATA[
-$ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFile] [-factory factoryName] \
+<![CDATA[$ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFile] [-factory factoryName] \
 	-sentencesDir sentencesDir -sentencesPerSample sentencesPerSample -samplesPerLanguage samplesPerLanguage \
 	[-encoding charsetName]]]>
 				</screen>
@@ -186,36 +188,32 @@ $ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFi
 				and limiting to 10000 documents per language. Then, it shuffles the result and select the first
 				100000 lines as train corpus and the last 20000 as evaluation corpus:
 				<screen>
-					<![CDATA[
-$ bin/opennlp LanguageDetectorConverter leipzig -sentencesDir leipzig-train/ -sentencesPerSample 5 -samplesPerLanguage 10000 > leipzig.txt
+<![CDATA[$ bin/opennlp LanguageDetectorConverter leipzig -sentencesDir leipzig-train/ -sentencesPerSample 5 -samplesPerLanguage 10000 > leipzig.txt
 $ perl -MList::Util=shuffle -e 'print shuffle(<STDIN>);' < leipzig.txt > leipzig_shuf.txt
 $ head -100000 < leipzig_shuf.txt > leipzig.train
 $ tail -20000 < leipzig_shuf.txt > leipzig.eval]]>
 				</screen>
-		</para>
+			</para>
 		</section>
-		<section id="tools.langdetect.training.api">
+		<section xml:id="tools.langdetect.training.api">
 		<title>Training API</title>
 		<para>
 		The following example shows how to train a model from API.
 		<programlisting language="java">
-						<![CDATA[
-InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("corpus.txt"));
+<![CDATA[InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("corpus.txt"));
 
-ObjectStream<String> lineStream =
-  new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
+ObjectStream<String> lineStream = new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
 ObjectStream<LanguageSample> sampleStream = new LanguageDetectorSampleStream(lineStream);
 
 TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-params.put(TrainingParameters.ALGORITHM_PARAM,
-  PerceptronTrainer.PERCEPTRON_VALUE);
+params.put(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
 params.put(TrainingParameters.CUTOFF_PARAM, 0);
 
 LanguageDetectorFactory factory = new LanguageDetectorFactory();
 
 LanguageDetectorModel model = LanguageDetectorME.train(sampleStream, params, factory);
 model.serialize(new File("langdetect-custom.bin"));]]>
-	</programlisting>
+		</programlisting>
 		</para>
 		</section>
 	</section>

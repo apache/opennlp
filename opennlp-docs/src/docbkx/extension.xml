@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -21,7 +21,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<chapter id="tools.extension">
+<chapter xml:id="tools.extension">
 <title>Extending OpenNLP</title>
 <para>
 In OpenNLP extension can be used to add new functionality and to
@@ -30,7 +30,7 @@ a factory class which can be implemented to customize the creation
 of it. And some components allow to add new feature generators.
 </para>
 
-<section id="tools.extension.writing">
+<section xml:id="tools.extension.writing">
 	<title>Writing an extension</title>
 	<para>
 	In many places it is possible to pass in an extension class name to customize

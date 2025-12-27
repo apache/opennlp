@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -21,55 +21,55 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<chapter id="tools.coref">
-<title>Coreference Resolution</title>
-<para>
-The OpenNLP Coreference Resolution system links multiple mentions of an
-entity in a document together.
-The OpenNLP implementation is currently limited to noun phrase mentions,
-other mention types cannot be resolved.
-</para>
+<chapter xml:id="tools.coref" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Coreference Resolution</title>
+  <para>
+  The OpenNLP Coreference Resolution system links multiple mentions of an
+  entity in a document together.
+  The OpenNLP implementation is currently limited to noun phrase mentions,
+  other mention types cannot be resolved.
+  </para>
 
-<para>
-TODO: Write more documentation about the coref component. Any contributions
-are very welcome. If you want to contribute please contact us on the mailing list
-or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-48">OPENNLP-48</ulink>.
-</para>
-<!--
-<section id="tools.coref.implementation">
-	<title>Implementation</title>
-	<para>The following section gives an overview of the implementation.
-	The process is divided in two steps. First mention which can be linked
-	are identified and in a second step a set of specialized resolvers links them together.
-	</para>
+  <para>
+  TODO: Write more documentation about the coref component. Any contributions
+  are very welcome. If you want to contribute please contact us on the mailing list
+  or comment on the jira issue <link xlink:href="https://issues.apache.org/jira/browse/OPENNLP-48">OPENNLP-48</link>.
+  </para>
+  <!--
+  <section xml:id="tools.coref.implementation">
+    <title>Implementation</title>
+    <para>The following section gives an overview of the implementation.
+    The process is divided in two steps. First mention which can be linked
+    are identified and in a second step a set of specialized resolvers links them together.
+    </para>
 
-	<section id="tools.coref.implementation.mention_finding">
-	<title>Mention Finding</title>
-	<para>
-	</para>
-	</section>
+    <section xml:id="tools.coref.implementation.mention_finding">
+    <title>Mention Finding</title>
+    <para>
+    </para>
+    </section>
 
-	<section id="tools.coref.implementation.linking">
-	<title>Linking</title>
-	<para>
-Resolvers and linking:
-The implementation has a dedicated model for different mention
-categories.
-These are:
-Common Nouns
-Definite Nouns
-Plural Nouns
-Plural Pronouns
-Proper Nouns
-Singular Pronouns
-Speech Pronouns
+    <section xml:id="tools.coref.implementation.linking">
+    <title>Linking</title>
+    <para>
+    Resolvers and linking:
+    The implementation has a dedicated model for different mention
+    categories.
+    These are:
+    Common Nouns
+    Definite Nouns
+    Plural Nouns
+    Plural Pronouns
+    Proper Nouns
+    Singular Pronouns
+    Speech Pronouns
 
-- speak about 7 seven different models ...
-- explain non referential thing
-- speak about number, gender and similarity
-- Speak about mention finding
-	
-	</para>
-	</section>  
-</section> --> 
+  - speak about 7 seven different models ...
+  - explain non referential thing
+  - speak about number, gender and similarity
+  - Speak about mention finding
+
+    </para>
+    </section>
+  </section> -->
 </chapter>
