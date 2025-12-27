@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-        "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+        "https://docbook.org/xml/5.0.1/dtd/docbook.dtd"[
         ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -23,6 +23,9 @@ under the License.
 
 <chapter id="tools.model">
     <title>Classpath Loading of OpenNLP Models</title>
+
+  <section id="tools.model.background">
+    <title>Background</title>
     <para>
         Since version 2.4.0, OpenNLP supports the ability to load pre-trained OpenNLP models from the classpath.
         It relies on either a simple implementation using the application's classpath or on the
@@ -31,11 +34,11 @@ under the License.
         Our pre-trained models are bundled from the <ulink url="https://github.com/apache/opennlp-models">OpenNLP Models
         repository</ulink>.
 
-        This section describes
+        This chapter describes
 
         <itemizedlist>
             <listitem>
-                <para>how to load and use a pre-trained OpenNLP model from the classpath.</para>
+                <para>how to load and use a pre-trained OpenNLP model available in the classpath.</para>
             </listitem>
             <listitem>
                 <para>how to bundle a custom OpenNLP model to be loadable as a JAR file from the classpath.</para>
@@ -43,58 +46,51 @@ under the License.
         </itemizedlist>
 
     </para>
+  </section>
 
 	<section id="tools.model.load">
-		<title>Loading a pre-trained OpenNLP model from the classpath</title>
+		<title>Loading a pre-trained model</title>
         <para>
             First, you need to add the following dependency to your classpath:
 
             <programlisting language="xml">
-                <![CDATA[
-<dependency>
+<![CDATA[<dependency>
   <groupId>org.apache.opennlp</groupId>
   <artifactId>opennlp-tools-models</artifactId>
   <version>CURRENT_OPENNLP_VERSION</version>
-</dependency>
-]]>
+</dependency>]]>
             </programlisting>
 
             by using our pre-trained models or by building custom models as described later in this section.
             If you need advanced classpath scanning capabilities, you can also add the classgraph library to your classpath.
 
             <programlisting language="xml">
-                <![CDATA[
-<dependency>
+<![CDATA[<dependency>
     <groupId>io.github.classgraph</groupId>
     <artifactId>classgraph</artifactId>
     <version>CURRENT_CLASSGRAPH_VERSION</version>
-</dependency>
-]]>
+</dependency>]]>
             </programlisting>
 
             Make sure you replace the placeholders with the appropriate version values.
-
             Next, you can search for such a model and load it from the classpath:
 
             <programlisting language="java">
-                <![CDATA[
-final ClassgraphModelFinder finder = new ClassgraphModelFinder(); // or use: new SimpleClassPathModelFinder()
+<![CDATA[final ClassgraphModelFinder finder = new ClassgraphModelFinder(); // or use: new SimpleClassPathModelFinder()
 final ClassPathModelLoader loader = new ClassPathModelLoader();
 final Set<ClassPathModelEntry> models = finder.findModels(false);
 for(ClassPathModelEntry entry : models) {
 
-   final ClassPathModel model = loader.load(entry);
-
-   if(model != null) {
-      System.out.println(model.getModelName());
-      System.out.println(model.getModelSHA256());
-      System.out.println(model.getModelVersion());
-      System.out.println(model.getModelLanguage());
-      // do something with the model by consuming the byte array
-   }
+     final ClassPathModel model = loader.load(entry);
+     if(model != null) {
+          System.out.println(model.getModelName());
+          System.out.println(model.getModelSHA256());
+          System.out.println(model.getModelVersion());
+          System.out.println(model.getModelLanguage());
+          // do something with the model by consuming the byte array
+     }
 }]]>
             </programlisting>
-
         </para>
         <para>
           Moreover, certain OpenNLP models can be obtained via a
@@ -104,36 +100,32 @@ for(ClassPathModelEntry entry : models) {
           that those are present in the classpath and can be loaded.
 
           <programlisting language="java">
-            <![CDATA[
-final ClassPathModelProvider provider = new DefaultClassPathModelProvider(finder, loader);
+<![CDATA[final ClassPathModelProvider provider = new DefaultClassPathModelProvider(finder, loader);
 // Here: SentenceModel, other model types accordingly
 final SentenceModel sm = provider.load("en", opennlp.tools.models.ModelType.SENTENCE_DETECTOR, SentenceModel.class);
 if(sm != null) {
-  // do something with the (sentence) model
+    // do something with the (sentence) model
 }]]>
           </programlisting>
 
-          In the above example, the finder and loader objects can be created or re-used as shown in the
-          previous code example.
+          In this example, the finder and loader objects can be created or re-used as shown in the previous code example.
+          <emphasis role="strong">Note</emphasis>: When running on Java 17+, the JVM argument
         </para>
         <para>
-          <emphasis role="strong">Note</emphasis>:
-          When running on Java 17+, the JVM argument
-          
-          <screen>--add-opens java.base/jdk.internal.loader=ALL-UNNAMED</screen>
+          <screen>
+<![CDATA[--add-opens java.base/jdk.internal.loader=ALL-UNNAMED]]>
+          </screen>
 
           may be required. Without this parameter, OpenNLP uses the JVM bootstrap classpath to locate models
           rather than the UCP class loader.
-
           For more advanced or non-standard class loading scenarios, using ClassGraph and implementing a
           custom provider may cover additional cases beyond the default UCP class loader or
           JVM bootstrap class path behavior.
         </para>
 	</section>
 
-
 	<section id="tools.model.bundle">
-		<title>Bundling a custom trained OpenNLP model for the classpath</title>
+		<title>Bundling a self-trained model</title>
 		<para>
             If you intend to provide your own custom trained OpenNLP models as JAR files for classpath discovery,
             we recommend that you have a look at our setup in the <ulink url="https://github.com/apache/opennlp-models">OpenNLP Models
@@ -142,12 +134,10 @@ if(sm != null) {
             Make sure you add a <emphasis>model.properties</emphasis> file with the following content:
 
        <programlisting language="java">
-                <![CDATA[
-model.name=${model.name}
+<![CDATA[model.name=${model.name}
 model.version=${model.version}
 model.sha256=${model.sha256}
-model.language=${model.language}
-]]>
+model.language=${model.language}]]>
             </programlisting>
 
             Make sure to replace the values accordingly and configure your build tool to include the binary model and the <emphasis>model.properties</emphasis>
@@ -157,21 +147,18 @@ model.language=${model.language}
             you need the following code to successfully find and load it:
 
             <programlisting language="java">
-                <![CDATA[
-final ClassgraphModelFinder finder = new ClassgraphModelFinder("custom-opennlp-model.jar"); // or use: new SimpleClassPathModelFinder("custom-opennlp-model.jar")
+<![CDATA[final ClassgraphModelFinder finder = new ClassgraphModelFinder("custom-opennlp-model.jar"); // or use: new SimpleClassPathModelFinder("custom-opennlp-model.jar")
 final ClassPathModelLoader loader = new ClassPathModelLoader();
 final Set<ClassPathModelEntry> models = finder.findModels(false);
 for(ClassPathModelEntry entry : models) {
-
-   final ClassPathModel model = loader.load(entry);
-
-   if(model != null) {
+    final ClassPathModel model = loader.load(entry);
+    if(model != null) {
       System.out.println(model.getModelName());
       System.out.println(model.getModelSHA256());
       System.out.println(model.getModelVersion());
       System.out.println(model.getModelLanguage());
       // do something with the model by consuming the byte array
-   }
+    }
 }]]>
             </programlisting>
 
