@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://docbook.org/xml/5.0.1/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -79,8 +79,7 @@ under the License.
 		The easiest way to try out the language detector is the command line tool. The tool is only
 		intended for demonstration and testing. The following command shows how to use the language detector tool.
 		  <screen>
-			<![CDATA[
-$ bin/opennlp LanguageDetector model]]>
+<![CDATA[$ bin/opennlp LanguageDetector model]]>
 		 </screen>
 		 The input is read from standard input and output is written to standard output, unless they are redirected
 		 or piped.
@@ -96,14 +95,12 @@ $ bin/opennlp LanguageDetector model]]>
 			First you need to grab the bytes from the serialized model on an InputStream - 
 			we'll leave it you to do that, since you were the one who serialized it to begin with. Now for the easy part:
 						<programlisting language="java">
-				<![CDATA[
-InputStream is = ...
+<![CDATA[InputStream is = ...
 LanguageDetectorModel m = new LanguageDetectorModel(is);]]>
 				</programlisting>
 				With the LanguageDetectorModel in hand we are just about there:
 						<programlisting language="java">
-				<![CDATA[
-String inputText = ...
+<![CDATA[String inputText = ...
 LanguageDetector myCategorizer = new LanguageDetectorME(m);
 
 // Get the most probable language
@@ -128,8 +125,7 @@ Language[] languages = myCategorizer.predictLanguages(null);]]>
 			available.
 			The following sample shows the sample from above in the required format.
 			<screen>
-				<![CDATA[
-spa     A la fecha tres calles bonaerenses recuerdan su nombre (en Ituzaingó, Merlo y Campana). A la fecha, unas 50 \
+<![CDATA[spa     A la fecha tres calles bonaerenses recuerdan su nombre (en Ituzaingó, Merlo y Campana). A la fecha, unas 50 \
 		naves y 20 aviones se han perdido en esa área particular del océano Atlántico.
 deu     Alle Jahre wieder: Millionen Spanier haben am Dienstag die Auslosung in der größten Lotterie der Welt verfolgt.\
  		Alle Jahre wieder: So gelingt der stressfreie Geschenke-Umtausch Artikel per E-Mail empfehlen So gelingt der \
@@ -149,8 +145,7 @@ lav     Egija Tri-Active procedūru īpaši iesaka izmantot siltākajos gadalaik
 			<para>
 				The following command will train the language detector and write the model to langdetect-custom.bin:
 				<screen>
-					<![CDATA[
-$ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] \
+<![CDATA[$ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] \
   [-factory factoryName] -data sampleData [-encoding charsetName]]]>
 				</screen>
 				Note: To customize the language detector, extend the class opennlp.tools.langdetect.LanguageDetectorFactory
@@ -173,8 +168,7 @@ $ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params params
 				the following command shows how to train a model.
 
 				<screen>
-					<![CDATA[
-$ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFile] [-factory factoryName] \
+<![CDATA[$ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFile] [-factory factoryName] \
 	-sentencesDir sentencesDir -sentencesPerSample sentencesPerSample -samplesPerLanguage samplesPerLanguage \
 	[-encoding charsetName]]]>
 				</screen>
@@ -186,8 +180,7 @@ $ bin/opennlp LanguageDetectorTrainer.leipzig -model modelFile [-params paramsFi
 				and limiting to 10000 documents per language. Then, it shuffles the result and select the first
 				100000 lines as train corpus and the last 20000 as evaluation corpus:
 				<screen>
-					<![CDATA[
-$ bin/opennlp LanguageDetectorConverter leipzig -sentencesDir leipzig-train/ -sentencesPerSample 5 -samplesPerLanguage 10000 > leipzig.txt
+<![CDATA[$ bin/opennlp LanguageDetectorConverter leipzig -sentencesDir leipzig-train/ -sentencesPerSample 5 -samplesPerLanguage 10000 > leipzig.txt
 $ perl -MList::Util=shuffle -e 'print shuffle(<STDIN>);' < leipzig.txt > leipzig_shuf.txt
 $ head -100000 < leipzig_shuf.txt > leipzig.train
 $ tail -20000 < leipzig_shuf.txt > leipzig.eval]]>
@@ -199,16 +192,13 @@ $ tail -20000 < leipzig_shuf.txt > leipzig.eval]]>
 		<para>
 		The following example shows how to train a model from API.
 		<programlisting language="java">
-						<![CDATA[
-InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("corpus.txt"));
+<![CDATA[InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("corpus.txt"));
 
-ObjectStream<String> lineStream =
-  new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
+ObjectStream<String> lineStream = new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
 ObjectStream<LanguageSample> sampleStream = new LanguageDetectorSampleStream(lineStream);
 
 TrainingParameters params = ModelUtil.createDefaultTrainingParameters();
-params.put(TrainingParameters.ALGORITHM_PARAM,
-  PerceptronTrainer.PERCEPTRON_VALUE);
+params.put(TrainingParameters.ALGORITHM_PARAM, PerceptronTrainer.PERCEPTRON_VALUE);
 params.put(TrainingParameters.CUTOFF_PARAM, 0);
 
 LanguageDetectorFactory factory = new LanguageDetectorFactory();
