@@ -200,7 +200,7 @@ $ opennlp ParserTrainer -model en-parser-chunking.bin -parserType CHUNKING \
 		tool replaces the tagger model inside the parser model with a new one. 
 		</para>
 		<para>
-		Note: The original parser model will be overwritten with the new parser model which
+		<emphasis role="strong">Note</emphasis>: The original parser model will be overwritten with the new parser model which
 		contains the replaced tagger model.
         <screen>
 		<![CDATA[
