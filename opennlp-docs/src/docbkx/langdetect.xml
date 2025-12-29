@@ -141,7 +141,7 @@ lav     Egija Tri-Active procedūru īpaši iesaka izmantot siltākajos gadalaik
 		nedēļu laika Ekonomikas ministrijai, Finanšu ministrijai un Labklājības ministrijai, lai ar vienotu \
 		pozīciju atgrieztos pie jautājuma izskatīšanas.]]>
 			</screen>
-			Note: The line breaks marked with a backslash are just inserted for formatting purposes and must not be
+			<emphasis role="strong">Note</emphasis>: The line breaks marked with a backslash are just inserted for formatting purposes and must not be
 			included in the training data.
 		</para>
 		<section id="tools.langdetect.training.tool">
@@ -153,7 +153,7 @@ lav     Egija Tri-Active procedūru īpaši iesaka izmantot siltākajos gadalaik
 $ bin/opennlp LanguageDetectorTrainer[.leipzig] -model modelFile [-params paramsFile] \
   [-factory factoryName] -data sampleData [-encoding charsetName]]]>
 				</screen>
-				Note: To customize the language detector, extend the class opennlp.tools.langdetect.LanguageDetectorFactory
+				<emphasis role="strong">Note</emphasis>: To customize the language detector, extend the class opennlp.tools.langdetect.LanguageDetectorFactory
 				add it to the classpath and pass it in the -factory argument.
 			</para>
 		</section>
