@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://docbook.org/xml/5.0.1/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -43,14 +43,12 @@ under the License.
 		</para>
 		<para>
         <screen>
-				<![CDATA[
-$ opennlp ChunkerME en-chunker.bin]]>
+<![CDATA[$ opennlp ChunkerME en-chunker.bin]]>
 		</screen>
 		The Chunker now reads a pos tagged sentence per line from stdin.
 		Copy these two sentences to the console: 
 		<screen>
-				<![CDATA[
-Rockwell_NNP International_NNP Corp._NNP 's_POS Tulsa_NNP unit_NN said_VBD it_PRP signed_VBD 
+<![CDATA[Rockwell_NNP International_NNP Corp._NNP 's_POS Tulsa_NNP unit_NN said_VBD it_PRP signed_VBD 
     a_DT tentative_JJ agreement_NN extending_VBG its_PRP$ contract_NN with_IN Boeing_NNP Co._NNP
     to_TO provide_VB structural_JJ parts_NNS for_IN Boeing_NNP 's_POS 747_CD jetliners_NNS ._.
 Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_VB 200_CD
@@ -58,8 +56,7 @@ Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_V
 		</screen>
 		The Chunker will now echo the sentences grouped tokens to the console:
 				<screen>
-				<![CDATA[
-[NP Rockwell_NNP International_NNP Corp._NNP ] [NP 's_POS Tulsa_NNP unit_NN ] [VP said_VBD ]
+<![CDATA[[NP Rockwell_NNP International_NNP Corp._NNP ] [NP 's_POS Tulsa_NNP unit_NN ] [VP said_VBD ]
     [NP it_PRP ] [VP signed_VBD ] [NP a_DT tentative_JJ agreement_NN ] [VP extending_VBG ]
     [NP its_PRP$ contract_NN ] [PP with_IN ] [NP Boeing_NNP Co._NNP ] [VP to_TO provide_VB ]
     [NP structural_JJ parts_NNS ] [PP for_IN ] [NP Boeing_NNP ] [NP 's_POS 747_CD jetliners_NNS ] ._.
@@ -73,12 +70,11 @@ Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_V
 		<section id="tools.parser.chunking.api">
 		<title>Chunking API</title>
 		<para>
-		    The Chunker can be embedded into an application via its API.
+			The Chunker can be embedded into an application via its API.
 			First the chunker model must be loaded into memory from disk or another source.
 			In the sample below it is loaded from disk.
 			<programlisting language="java">
-				<![CDATA[
-InputStream modelIn = null;
+<![CDATA[InputStream modelIn = null;
 ChunkerModel model = null;
 
 try (modelIn = new FileInputStream("en-chunker.bin")){
@@ -87,8 +83,7 @@ try (modelIn = new FileInputStream("en-chunker.bin")){
 			</programlisting>
 			After the model is loaded a Chunker can be instantiated.
 			<programlisting language="java">
-				<![CDATA[
-ChunkerME chunker = new ChunkerME(model);]]>
+<![CDATA[ChunkerME chunker = new ChunkerME(model);]]>
 			</programlisting>
 			The Chunker instance is now ready to tag data. It expects a tokenized sentence
 			as input, which is represented as a String array, each String object in the array
@@ -97,8 +92,7 @@ ChunkerME chunker = new ChunkerME(model);]]>
 	   <para>
 	   The following code shows how to determine the most likely chunk tag sequence for a sentence.
 	   	<programlisting language="java">
-		  <![CDATA[
-String[] sent = new String[] { "Rockwell", "International", "Corp.", "'s",
+<![CDATA[String[] sent = new String[] { "Rockwell", "International", "Corp.", "'s",
     "Tulsa", "unit", "said", "it", "signed", "a", "tentative", "agreement",
     "extending", "its", "contract", "with", "Boeing", "Co.", "to",
     "provide", "structural", "parts", "for", "Boeing", "'s", "747",
@@ -116,8 +110,7 @@ String[] tag = chunker.chunk(sent, pos);]]>
 			The confidence scores for the returned tags can be easily retrieved from
 			a ChunkerME with the following method call:
 				   	<programlisting language="java">
-		  <![CDATA[
-double[] probs = chunker.probs();]]>
+<![CDATA[double[] probs = chunker.probs();]]>
 			</programlisting>
 			The call to probs is stateful and will always return the probabilities of the last
 			tagged sentence. The probs method should only be called when the tag method
@@ -129,8 +122,7 @@ double[] probs = chunker.probs();]]>
 			The topKSequences method is capable of returning the top sequences.
 			It can be called in a similar way as chunk.
 			<programlisting language="java">
-		  <![CDATA[
-Sequence[] topSequences = chunk.topKSequences(sent, pos);]]>
+<![CDATA[Sequence[] topSequences = chunk.topKSequences(sent, pos);]]>
 			</programlisting>	
 			Each Sequence object contains one sequence. The sequence can be retrieved
 			via Sequence.getOutcomes() which returns a tags array 
@@ -163,8 +155,7 @@ Sequence[] topSequences = chunk.topKSequences(sent, pos);]]>
 		<para>
 		Sample sentence of the training data: 
 		<screen>
-				<![CDATA[
-He        PRP  B-NP
+<![CDATA[He        PRP  B-NP
 reckons   VBZ  B-VP
 the       DT   B-NP
 current   JJ   I-NP
@@ -192,8 +183,7 @@ September NNP  B-NP
 		<para>
 		    Usage of the tool:
             <screen>
-				<![CDATA[
-$ opennlp ChunkerTrainerME
+<![CDATA[$ opennlp ChunkerTrainerME
 Usage: opennlp ChunkerTrainerME[.ad] [-params paramsFile] [-iterations num] [-cutoff num] \
                -model modelFile -lang language -data sampleData [-encoding charsetName]
 
@@ -217,8 +207,7 @@ Arguments description:
 		en-chunker.train which is encoded as UTF-8. The following command will train the
 		name finder and write the model to en-chunker.bin: 
 		<screen>
-		<![CDATA[
-$ opennlp ChunkerTrainerME -model en-chunker.bin -lang en -data en-chunker.train -encoding UTF-8]]>
+<![CDATA[$ opennlp ChunkerTrainerME -model en-chunker.bin -lang en -data en-chunker.train -encoding UTF-8]]>
 		</screen>
 		Additionally its possible to specify the number of iterations, the cutoff and to overwrite
 		all types in the training data with a single type.
@@ -230,19 +219,17 @@ $ opennlp ChunkerTrainerME -model en-chunker.bin -lang en -data en-chunker.train
                 The Chunker offers an API to train a new chunker model. The following sample code
                 illustrates how to do it:
                 <programlisting language="java">
-                    <![CDATA[
+<![CDATA[
 ObjectStream<String> lineStream =
     new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-chunker.train")), StandardCharsets.UTF_8);
 
 ChunkerModel model;
-
 try(ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(lineStream)) {
-  model = ChunkerME.train("eng", sampleStream,
-       TrainingParameters.defaultParams(), new ChunkerFactory());
+  	model = ChunkerME.train("eng", sampleStream, TrainingParameters.defaultParams(), new ChunkerFactory());
 }
 
 try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {
-  model.serialize(modelOut);
+  	model.serialize(modelOut);
 }]]>
                 </programlisting>
             </para>
@@ -260,29 +247,25 @@ try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(model
 		<para>
 		    The following command shows how the tool can be run:
             <screen>
-				<![CDATA[
-$ opennlp ChunkerEvaluator
+<![CDATA[$ opennlp ChunkerEvaluator
 Usage: opennlp ChunkerEvaluator[.ad] -model model [-misclassified true|false] \
                [-detailedF true|false] -lang language -data sampleData [-encoding charsetName]]]>
 		</screen>
 		A sample of the command considering you have a data sample named en-chunker.eval
 		and you trained a model called en-chunker.bin:
             <screen>
-				<![CDATA[
-$ opennlp ChunkerEvaluator -model en-chunker.bin -data en-chunker.eval -encoding UTF-8]]>
+<![CDATA[$ opennlp ChunkerEvaluator -model en-chunker.bin -data en-chunker.eval -encoding UTF-8]]>
 		</screen>
 		and here is a sample output:  
 		<screen>
-		<![CDATA[
-Precision: 0.9255923572240226
+<![CDATA[Precision: 0.9255923572240226
 Recall: 0.9220610430991112
 F-Measure: 0.9238233255623465]]>
 		</screen>
 		You can also use the tool to perform 10-fold cross validation of the Chunker.
 The following command shows how the tool can be run:
         <screen>
-				<![CDATA[
-$ opennlp ChunkerCrossValidator
+<![CDATA[$ opennlp ChunkerCrossValidator
 Usage: opennlp ChunkerCrossValidator[.ad] [-params paramsFile] [-iterations num] [-cutoff num] \
                [-misclassified true|false] [-folds num] [-detailedF true|false] \
                -lang language -data sampleData [-encoding charsetName]
@@ -309,8 +292,7 @@ Arguments description:
 		</screen>
 		It is not necessary to pass a model. The tool will automatically split the data to train and evaluate:
         <screen>
-            <![CDATA[
-$ opennlp ChunkerCrossValidator -lang pt -data en-chunker.cross -encoding UTF-8]]>
+<![CDATA[$ opennlp ChunkerCrossValidator -lang pt -data en-chunker.cross -encoding UTF-8]]>
 		</screen>
 		</para>
 		</section>

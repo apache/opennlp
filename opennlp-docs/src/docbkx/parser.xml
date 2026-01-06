@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://docbook.org/xml/5.0.1/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -31,11 +31,15 @@ under the License.
 			A parser returns a parse tree from a sentence according to a phrase structure grammar. A parse tree specifies
 		the internal structure of a sentence. For example, the following image represents a parse tree for 
 		the sentence 'The cellphone was broken in two days':</para>
-		
-		<imagedata fileref="images/parsetree1.png" scalefit="1"/>
-		
+
+		<inlinemediaobject>
+			<imageobject role="fo">
+				<imagedata fileref="images/parsetree1.png" scalefit="1"/>
+			</imageobject>
+		</inlinemediaobject>
+
 		<para>
-			A parse tree can be used to determine the role of subtrees or constituents in the sentence. For example, it is possible to
+		A parse tree can be used to determine the role of subtrees or constituents in the sentence. For example, it is possible to
 		know that 'The cellphone' is the subject of the sentence and the verb (action) is 'was broken.'			
 		</para>
 		
@@ -47,24 +51,20 @@ under the License.
 		Download the English chunking parser model from the website and start the Parse
 		Tool with the following command.
 				<screen>
-				<![CDATA[
-$ opennlp Parser en-parser-chunking.bin]]>
+<![CDATA[$ opennlp Parser en-parser-chunking.bin]]>
 		</screen>
 		Loading the big parser model can take several seconds, be patient.
 		Copy this sample sentence to the console.
 		<screen>
-				<![CDATA[
-The cellphone was broken in two days .]]>
+<![CDATA[The cellphone was broken in two days .]]>
 		</screen>
 		The parser should now print the following to the console.
 				<screen>
-				<![CDATA[
-(TOP (S (NP (DT The) (NN cellphone)) (VP (VBD was) (VP (VBN broken) (PP (IN in) (NP (CD two) (NNS days))))) (. .)))]]>
+<![CDATA[(TOP (S (NP (DT The) (NN cellphone)) (VP (VBD was) (VP (VBN broken) (PP (IN in) (NP (CD two) (NNS days))))) (. .)))]]>
 		</screen>
 		With the following command the input can be read from a file and be written to an output file.
 				<screen>
-				<![CDATA[
-$ opennlp Parser en-parser-chunking.bin < article-tokenized.txt > article-parsed.txt.]]>
+<![CDATA[$ opennlp Parser en-parser-chunking.bin < article-tokenized.txt > article-parsed.txt.]]>
 		</screen>
 		The article-tokenized.txt file must contain one sentence per line which is
 		tokenized with the English tokenizer model from our website.
@@ -77,22 +77,18 @@ $ opennlp Parser en-parser-chunking.bin < article-tokenized.txt > article-parsed
 			The Parser can be easily integrated into an application via its API.
 			To instantiate a Parser the parser model must be loaded first.
 			<programlisting language="java">
-				<![CDATA[
-InputStream modelIn = new FileInputStream("en-parser-chunking.bin");
+<![CDATA[InputStream modelIn = new FileInputStream("en-parser-chunking.bin");
 try {
-  ParserModel model = new ParserModel(modelIn);
-}
-catch (IOException e) {
-  e.printStackTrace();
-}
-finally {
-  if (modelIn != null) {
-    try {
-      modelIn.close();
+  	ParserModel model = new ParserModel(modelIn);
+} catch (IOException e) {
+  	e.printStackTrace();
+} finally {
+  	if (modelIn != null) {
+  		  try {
+  			    modelIn.close();
     }
     catch (IOException e) {
     }
-  }
 }]]>
 		</programlisting>
 		Unlike the other components to instantiate the Parser a factory method
@@ -102,15 +98,13 @@ finally {
 		The factory method will read a type parameter from the model and create
 		an instance of the corresponding parser implementation.
 		<programlisting language="java">
-				<![CDATA[
-Parser parser = ParserFactory.create(model);]]>
+<![CDATA[Parser parser = ParserFactory.create(model);]]>
 		</programlisting>
 		Right now the tree insert parser is still experimental and there is no pre-trained model for it.
 		The parser expect a whitespace tokenized sentence. A utility method from the command
 		line tool can parse the sentence String. The following code shows how the parser can be called.
 				<programlisting language="java">
-				<![CDATA[
-String sentence = "The quick brown fox jumps over the lazy dog .";
+<![CDATA[String sentence = "The quick brown fox jumps over the lazy dog .";
 Parse[] topParses = ParserTool.parseLine(sentence, parser, 1);]]>
 		</programlisting>
 		
@@ -134,8 +128,7 @@ Parse[] topParses = ParserTool.parseLine(sentence, parser, 1);]]>
 		In the first case the training data must be available in the OpenNLP format. Which is
 		the Penn Treebank format, but with the limitation of a sentence per line.
 		<programlisting>
-				<![CDATA[
-(TOP (S (NP-SBJ (DT Some) )(VP (VBP say) (NP (NNP November) ))(. .) ))
+<![CDATA[(TOP (S (NP-SBJ (DT Some) )(VP (VBP say) (NP (NNP November) ))(. .) ))
 (TOP (S (NP-SBJ (PRP I) )(VP (VBP say) (NP (CD 1992) ))(. .) ('' '') ))]]>
 		</programlisting>
 		Penn Treebank annotation guidelines can be found on the
@@ -155,44 +148,41 @@ Parse[] topParses = ParserTool.parseLine(sentence, parser, 1);]]>
 		To train the parser a head rules file is also needed. (TODO: Add documentation about the head rules file)
 		Usage of the tool:
             <screen>
-				<![CDATA[
-$ opennlp ParserTrainer
+<![CDATA[$ opennlp ParserTrainer
 Usage: opennlp ParserTrainer -headRules headRulesFile [-parserType CHUNKING|TREEINSERT] \
                              [-params paramsFile] [-iterations num] [-cutoff num] \
                              -model modelFile -lang language -data sampleData \
                              [-encoding charsetName]
 
 Arguments description:
-	-headRules headRulesFile
-		head rules file.
-	-parserType CHUNKING|TREEINSERT
-		one of CHUNKING or TREEINSERT, default is CHUNKING.
-	-params paramsFile
-		training parameters file.
-	-iterations num
-		number of training iterations, ignored if -params is used.
-	-cutoff num
-		minimal number of times a feature must be seen, ignored if -params is used.
-	-model modelFile
-		output model file.
-	-format formatName
-		data format, might have its own parameters.
-	-encoding charsetName
-		encoding for reading and writing text, if absent the system default is used.
-	-lang language
-		language which is being processed.
-	-data sampleData
-		data to be used, usually a file name.
-	-encoding charsetName
-		encoding for reading and writing text, if absent the system default is used.]]>
+		-headRules headRulesFile
+				head rules file.
+		-parserType CHUNKING|TREEINSERT
+				one of CHUNKING or TREEINSERT, default is CHUNKING.
+		-params paramsFile
+				training parameters file.
+		-iterations num
+				number of training iterations, ignored if -params is used.
+		-cutoff num
+				minimal number of times a feature must be seen, ignored if -params is used.
+		-model modelFile
+				output model file.
+		-format formatName
+				data format, might have its own parameters.
+		-encoding charsetName
+				encoding for reading and writing text, if absent the system default is used.
+		-lang language
+				language which is being processed.
+		-data sampleData
+				data to be used, usually a file name.
+		-encoding charsetName
+				encoding for reading and writing text, if absent the system default is used.]]>
         </screen>
 		The model on the website was trained with the following command:
 		<screen>
-		<![CDATA[
-$ opennlp ParserTrainer -model en-parser-chunking.bin -parserType CHUNKING \
+<![CDATA[$ opennlp ParserTrainer -model en-parser-chunking.bin -parserType CHUNKING \
                         -headRules head_rules \
-                        -lang en -data train.all -encoding ISO-8859-1
-    ]]>
+                        -lang en -data train.all -encoding ISO-8859-1]]>
 		</screen>
 		Its also possible to specify the cutoff and the number of iterations, these parameters
 		are used for all trained models. The -parserType parameter is an optional parameter,
@@ -203,8 +193,7 @@ $ opennlp ParserTrainer -model en-parser-chunking.bin -parserType CHUNKING \
 		<emphasis role="strong">Note</emphasis>: The original parser model will be overwritten with the new parser model which
 		contains the replaced tagger model.
         <screen>
-		<![CDATA[
-$ opennlp TaggerModelReplacer en-parser-chunking.bin en-pos-maxent.bin]]>
+<![CDATA[$ opennlp TaggerModelReplacer en-parser-chunking.bin en-pos-maxent.bin]]>
 		</screen>
 		Additionally there are tools to just retrain the build or the check model.
 		</para>
@@ -231,76 +220,62 @@ $ opennlp TaggerModelReplacer en-parser-chunking.bin en-pos-maxent.bin]]>
 		</itemizedlist>
 		The following code snippet shows how to instantiate the HeadRules:
 		<programlisting language="java">
-				<![CDATA[
-static HeadRules createHeadRules(TrainerToolParams params) throws IOException {
-
+<![CDATA[static HeadRules createHeadRules(TrainerToolParams params) throws IOException {
     ArtifactSerializer headRulesSerializer = null;
-
     if (params.getHeadRulesSerializerImpl() != null) {
-      headRulesSerializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class,
+      	headRulesSerializer = ExtensionLoader.instantiateExtension(ArtifactSerializer.class,
               params.getHeadRulesSerializerImpl());
-    }
-    else {
+    } else {
       if ("eng".equals(params.getLang())) {
-        headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
-      }
-      else if ("es".equals(params.getLang())) {
-        headRulesSerializer = new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules.HeadRulesSerializer();
-      }
-      else {
-        // default for now, this case should probably cause an error ...
-        headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+        	headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
+      } else if ("es".equals(params.getLang())) {
+        	headRulesSerializer = new opennlp.tools.parser.lang.es.AncoraSpanishHeadRules.HeadRulesSerializer();
+      } else {
+        	// default for now, this case should probably cause an error ...
+        	headRulesSerializer = new opennlp.tools.parser.lang.en.HeadRules.HeadRulesSerializer();
       }
     }
 
     Object headRulesObject = headRulesSerializer.create(new FileInputStream(params.getHeadRules()));
-
     if (headRulesObject instanceof HeadRules) {
-      return (HeadRules) headRulesObject;
-    }
-    else {
-      throw new TerminateToolException(-1, "HeadRules Artifact Serializer must create an object of type HeadRules!");
+      	return (HeadRules) headRulesObject;
+    } else {
+      	throw new TerminateToolException(-1, "HeadRules Artifact Serializer must create an object of type HeadRules!");
     }
 }]]>
 	</programlisting>
 		The following code illustrates the three other steps, namely, opening the data, training
 	the model and saving the ParserModel into an output file.
 		<programlisting language="java">
-				<![CDATA[
-ParserModel model = null;
+<![CDATA[ParserModel model = null;
 File modelOutFile = params.getModel();
 CmdLineUtil.checkOutputFile("parser model", modelOutFile);
 
 try {
-  HeadRules rules = createHeadRules(params);
-  InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("parsing.train"));
-  ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
-  ObjectStream<Parse> sampleStream = new ParseSample(stringStream);
-
-  ParserType type = parseParserType(params.getParserType());
-  if (ParserType.CHUNKING.equals(type)) {
-    model = opennlp.tools.parser.chunking.Parser.train(
-            params.getLang(), sampleStream, rules,
-            mlParams);
-  } else if (ParserType.TREEINSERT.equals(type)) {
-    model = opennlp.tools.parser.treeinsert.Parser.train(params.getLang(), sampleStream, rules,
-            mlParams);
-    }
-  }
-  catch (IOException e) {
-      throw new TerminateToolException(-1, "IO error while reading training data or indexing data: "
-          + e.getMessage(), e);
-  }
-  finally {
-      try {
-        sampleStream.close();
-      }
-      catch (IOException e) {
-        // sorry that this can fail
-      }
-  }
-  CmdLineUtil.writeModel("parser", modelOutFile, model);
-]]>
+		HeadRules rules = createHeadRules(params);
+		InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("parsing.train"));
+		ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
+		ObjectStream<Parse> sampleStream = new ParseSample(stringStream);
+		ParserType type = parseParserType(params.getParserType());
+		if (ParserType.CHUNKING.equals(type)) {
+			model = opennlp.tools.parser.chunking.Parser.train(
+							params.getLang(), sampleStream, rules,
+							mlParams);
+		} else if (ParserType.TREEINSERT.equals(type)) {
+			model = opennlp.tools.parser.treeinsert.Parser.train(params.getLang(), sampleStream, rules,
+							mlParams);
+			}
+		} catch (IOException e) {
+				throw new TerminateToolException(-1, "IO error while reading training data or indexing data: " + e.getMessage(), e);
+		} finally {
+				try {
+					sampleStream.close();
+				}
+				catch (IOException e) {
+					// sorry that this can fail
+				}
+		}
+		CmdLineUtil.writeModel("parser", modelOutFile, model);]]>
 	</programlisting>
 		</para>
 		</section>
@@ -317,8 +292,7 @@ try {
 			<para>
 				The following command shows how the tool can be run:
 				<screen>
-				<![CDATA[
-$ opennlp ParserEvaluator
+<![CDATA[$ opennlp ParserEvaluator
 Usage: opennlp ParserEvaluator[.ontonotes|frenchtreebank] [-misclassified true|false] -model model \
                -data sampleData [-encoding charsetName]]]>
 		</screen>
@@ -326,13 +300,11 @@ Usage: opennlp ParserEvaluator[.ontonotes|frenchtreebank] [-misclassified true|f
 				en-parser-chunking.eval,
 				and you trained a model called en-parser-chunking.bin:
 				<screen>
-				<![CDATA[
-$ opennlp ParserEvaluator -model en-parser-chunking.bin -data en-parser-chunking.eval -encoding UTF-8]]>
+<![CDATA[$ opennlp ParserEvaluator -model en-parser-chunking.bin -data en-parser-chunking.eval -encoding UTF-8]]>
 		</screen>
 				and here is a sample output:
 				<screen>
-		<![CDATA[
-Precision: 0.9009744742967609
+<![CDATA[Precision: 0.9009744742967609
 Recall: 0.8962012400910446
 F-Measure: 0.8985815184245214]]>
 		</screen>
@@ -359,21 +331,18 @@ F-Measure: 0.8985815184245214]]>
 		In the first case the model must be loaded and a Parse ObjectStream must be created (see code samples above),
 		assuming these two objects exist the following code shows how to perform the evaluation:
 			<programlisting language="java">
-			  <![CDATA[
-Parser parser = ParserFactory.create(model);
+<![CDATA[Parser parser = ParserFactory.create(model);
 ParserEvaluator evaluator = new ParserEvaluator(parser);
 evaluator.evaluate(sampleStream);
 
 FMeasure result = evaluator.getFMeasure();
-
 System.out.println(result.toString());]]>
 			</programlisting>
 			In the cross validation case all the training arguments must be
 			provided (see the Training API section above).
 			To perform cross validation the ObjectStream must be resettable.
 			<programlisting language="java">
-				<![CDATA[
-InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("parsing.train"));
+<![CDATA[InputStreamFactory inputStreamFactory = new MarkableFileInputStreamFactory(new File("parsing.train"));
 ObjectStream<String> stringStream = new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
 ObjectStream<Parse> sampleStream = new ParseSample(stringStream);
 ParserCrossValidator evaluator = new ParserCrossValidator("eng", trainParameters, headRules, \
@@ -381,7 +350,6 @@ parserType, listeners.toArray(new ParserEvaluationMonitor[listeners.size()])));
 evaluator.evaluate(sampleStream, 10);
 
 FMeasure result = evaluator.getFMeasure();
-
 System.out.println(result.toString());]]>
 			</programlisting>
 		</para>

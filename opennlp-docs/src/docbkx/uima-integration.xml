@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://docbook.org/xml/5.0.1/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -44,8 +44,7 @@ under the License.
 			and build it as shown below. Note the models will be downloaded
 			from the old SourceForge repository and are not licensed under the AL 2.0.
 			<screen>
-			<![CDATA[
-$ ant -f createPear.xml 
+<![CDATA[$ ant -f createPear.xml
 Buildfile: createPear.xml
 
 createPear:

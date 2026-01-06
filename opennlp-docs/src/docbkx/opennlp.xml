@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://docbook.org/xml/5.0.1/dtd/docbook.dtd">
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -20,7 +20,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<book lang="en">
+<book lang="en" xmlns="http://docbook.org/ns/docbook" version="5.0">
 	<bookinfo>
 		<releaseinfo>
 			Version <?eval ${project.version}?>
@@ -31,14 +31,28 @@ under the License.
 		<subtitle>
 			<inlinemediaobject>
 				<imageobject role="fo">
-					<imagedata fileref="./images/opennlp-logo.png" />
+					<imagedata fileref="images/opennlp-logo.png" />
 				</imageobject>
 			</inlinemediaobject>
 		</subtitle>
 
+		<cover>
+			<para role="tagline">Development Manual for Apache OpenNLP</para>
+			<mediaobject>
+				<imageobject role="fo">
+					<imagedata fileref="images/opennlp-logo.png">
+						<info>
+							<othercredit>
+								<orgname>The Apache Software Foundation</orgname>
+							</othercredit>
+						</info>
+					</imagedata>
+				</imageobject>
+			</mediaobject>
+		</cover>
+
 		<authorgroup>
-			<corpauthor>Written and maintained by the Apache OpenNLP Development
-				Community</corpauthor>
+			<corpauthor>Written and maintained by the Apache OpenNLP Development Community</corpauthor>
 		</authorgroup>
 
 		<legalnotice>
@@ -55,7 +69,7 @@ under the License.
 
 					<blockquote>
 						<para>
-							<ulink url="http://www.apache.org/licenses/LICENSE-2.0" />
+							<ulink url="https://www.apache.org/licenses/LICENSE-2.0" />
 						</para>
 					</blockquote>
 
