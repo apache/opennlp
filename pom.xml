@@ -234,7 +234,7 @@
 		<onnxruntime.version>1.23.2</onnxruntime.version>
 		<slf4j.version>2.0.17</slf4j.version>
 		<log4j2.version>2.25.3</log4j2.version>
-		<logcaptor.version>2.12.1</logcaptor.version>
+		<logcaptor.version>2.12.2</logcaptor.version>
 		<classgraph.version>4.8.184</classgraph.version>
 		<jmh.version>1.37</jmh.version>
 
