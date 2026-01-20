@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -21,13 +21,13 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<chapter id="org.apache.opennlp.uima">
+<chapter xml:id="org.apache.opennlp.uima" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>UIMA Integration</title>
 <para>
 	The UIMA Integration wraps the OpenNLP components in UIMA Analysis Engines which can 
 	be used to automatically annotate text and train new OpenNLP models from annotated text.
 </para>
-	<section id="org.apache.opennlp.running-pear-sample">
+	<section xml:id="org.apache.opennlp.running-pear-sample">
 		<title>Running the pear sample in CVD</title>
 		<para>
 			The Cas Visual Debugger is shipped as part of the UIMA distribution and is a tool which can run
@@ -44,8 +44,7 @@ under the License.
 			and build it as shown below. Note the models will be downloaded
 			from the old SourceForge repository and are not licensed under the AL 2.0.
 			<screen>
-			<![CDATA[
-$ ant -f createPear.xml 
+<![CDATA[$ ant -f createPear.xml
 Buildfile: createPear.xml
 
 createPear:
@@ -92,7 +91,7 @@ Total time: 3 minutes 20 seconds]]>
 			must be written in English.
 		</para>
 	</section>
-	<section id="org.apache.opennlp.further-help">
+	<section xml:id="org.apache.opennlp.further-help">
 		<title>Further Help</title>
 		<para>
 			For more information about how to use the integration please consult the javadoc of the individual
@@ -100,8 +99,8 @@ Total time: 3 minutes 20 seconds]]>
 		</para>
 		<para>
 			TODO: Extend this documentation with information about the individual components.
-			If you want to contribute please contact us on the mailing list
-			or comment on the jira issue <ulink url="https://issues.apache.org/jira/browse/OPENNLP-49">OPENNLP-49</ulink>.
+			If you want to contribute please contact us on the mailing list or comment on the jira issue
+			<link xlink:href="https://issues.apache.org/jira/browse/OPENNLP-49">OPENNLP-49</link>.
 		</para>
 	</section>
 </chapter>

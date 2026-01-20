@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd">
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -19,9 +19,11 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-
-<book lang="en">
-	<bookinfo>
+<book version="5.0" xml:lang="en"
+			xmlns="http://docbook.org/ns/docbook"
+			xmlns:xi="http://www.w3.org/2001/XInclude"
+			xmlns:xlink="http://www.w3.org/1999/xlink">
+	<info>
 		<releaseinfo>
 			Version <?eval ${project.version}?>
 		</releaseinfo>
@@ -31,31 +33,27 @@ under the License.
 		<subtitle>
 			<inlinemediaobject>
 				<imageobject role="fo">
-					<imagedata fileref="./images/opennlp-logo.png" />
+					<imagedata fileref="images/opennlp-logo.png" />
 				</imageobject>
 			</inlinemediaobject>
 		</subtitle>
 
 		<authorgroup>
-			<corpauthor>Written and maintained by the Apache OpenNLP Development
-				Community</corpauthor>
+			<corpauthor>Written and maintained by the Apache OpenNLP Development Community</corpauthor>
 		</authorgroup>
 
 		<legalnotice>
 			<formalpara>
 				<title>License and Disclaimer</title>
 				<para>
-					The ASF licenses this documentation
-					to you under the Apache License,
-					Version 2.0 (the
-					"License"); you may not use this documentation
-					except in compliance
-					with the License. You may obtain a copy of the
+					The ASF licenses this documentation to you under the Apache License,
+					Version 2.0 (the "License"); you may not use this documentation
+					except in compliance with the License. You may obtain a copy of the
 					License at
 
 					<blockquote>
 						<para>
-							<ulink url="http://www.apache.org/licenses/LICENSE-2.0" />
+							<link xlink:href="https://www.apache.org/licenses/LICENSE-2.0" />
 						</para>
 					</blockquote>
 
@@ -70,16 +68,31 @@ under the License.
 			</formalpara>
 		</legalnotice>
 
+		<cover>
+			<para role="tagline">Development Manual for Apache OpenNLP</para>
+			<mediaobject>
+				<imageobject role="fo">
+					<imagedata fileref="images/opennlp-cover.png">
+						<info>
+							<othercredit>
+								<orgname>The Apache Software Foundation</orgname>
+							</othercredit>
+						</info>
+					</imagedata>
+				</imageobject>
+			</mediaobject>
+		</cover>
+
 		<copyright>
 			<year>2011</year>
-			<year>2025</year>
+			<year>2026</year>
 			<holder>The Apache Software Foundation</holder>
 		</copyright>
 
 		<!-- pubdate><?eval ${project.properties.buildMonth}?>
 			, <?eval ${project.properties.buildYear}?>
 		</pubdate -->
-	</bookinfo>
+	</info>
 
 	<title>Apache OpenNLP Developer Documentation</title>
 	<toc/>

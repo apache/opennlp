@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -21,9 +21,9 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<chapter id="tools.postagger">
+<chapter xml:id="tools.postagger" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Part-of-Speech Tagger</title>
-	<section id="tools.postagger.tagging">
+	<section xml:id="tools.postagger.tagging">
 		<title>Tagging</title>
 		<para>
 		The Part of Speech Tagger marks tokens with their corresponding word type
@@ -33,50 +33,48 @@ under the License.
 		To limit the possible tags for a token a tag dictionary can be used which increases
 		the tagging and runtime performance of the tagger.
 		</para>
-			<section id="tools.postagger.tagging.cmdline">
+			<section xml:id="tools.postagger.tagging.cmdline">
 		<title>POS Tagger Tool</title>
 		<para>
 		The easiest way to try out the POS Tagger is the command line tool. The tool is
 		only intended for demonstration and testing.
 		Download the English maxent pos model and start the POS Tagger Tool with this command:
 		<screen>
-			<![CDATA[
-$ opennlp POSTagger opennlp-en-ud-ewt-pos-1.3-2.5.4.bin]]>
+<![CDATA[$ opennlp POSTagger opennlp-en-ud-ewt-pos-1.3-2.5.4.bin]]>
 		 </screen>
 		The POS Tagger now reads a tokenized sentence per line from stdin.
 		Copy these two sentences to the console:
 		<screen>
-			<![CDATA[
-Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .
+<![CDATA[Pierre Vinken , 61 years old , will join the board as a nonexecutive director Nov. 29 .
 Mr. Vinken is chairman of Elsevier N.V. , the Dutch publishing group .]]>
 		 </screen>
 		 The POS Tagger will now echo the sentences with pos tags to the console:
 		<screen>
-			<![CDATA[
-Pierre_PROPN Vinken_PROPN ,_PUNCT 61_NUM years_NOUN old_ADJ ,_PUNCT will_AUX join_VERB the_DET board_NOUN as_ADP
+<![CDATA[Pierre_PROPN Vinken_PROPN ,_PUNCT 61_NUM years_NOUN old_ADJ ,_PUNCT will_AUX join_VERB the_DET board_NOUN as_ADP
 		a_DET nonexecutive_ADJ director_NOUN Nov._PROPN 29_NUM ._PUNCT
 Mr._PROPN Vinken_PROPN is_AUX chairman_NOUN of_ADP Elsevier_ADJ N.V._PROPN ,_PUNCT the_DET Dutch_PROPN publishing_VERB group_NOUN .]]>
 		 </screen>
-		 The tag set used by the English pos model is the <ulink url="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">Penn Treebank tag set</ulink>.
+		 The tag set used by the English pos model is the
+			<link xlink:href="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">
+				Penn Treebank tag set
+			</link>.
 		</para>
       </section>
       
-		<section id="tools.postagger.tagging.api">
+		<section xml:id="tools.postagger.tagging.api">
 		<title>POS Tagger API</title>
 		<para>
 		    The POS Tagger can be embedded into an application via its API.
 			First the pos model must be loaded into memory from disk or another source.
 			In the sample below it is loaded from disk.
 			<programlisting language="java">
-				<![CDATA[
-try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-pos-1.3-2.5.4.bin"){
+<![CDATA[try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-pos-1.3-2.5.4.bin"){
   POSModel model = new POSModel(modelIn);
 }]]>
 			</programlisting>
 			After the model is loaded the POSTaggerME can be instantiated.
 			<programlisting language="java">
-				<![CDATA[
-POSTaggerME tagger = new POSTaggerME(model);]]>
+<![CDATA[POSTaggerME tagger = new POSTaggerME(model);]]>
 			</programlisting>
 			The POS Tagger instance is now ready to tag data. It expects a tokenized sentence
 			as input, which is represented as a String array, each String object in the array
@@ -85,8 +83,7 @@ POSTaggerME tagger = new POSTaggerME(model);]]>
 	   <para>
 	   The following code shows how to determine the most likely pos tag sequence for a sentence.
 	   	<programlisting language="java">
-		  <![CDATA[
-String[] sent = new String[]{"Most", "large", "cities", "in", "the", "US", "had",
+<![CDATA[String[] sent = new String[]{"Most", "large", "cities", "in", "the", "US", "had",
                              "morning", "and", "afternoon", "newspapers", "."};		  
 String[] tags = tagger.tag(sent);]]>
 			</programlisting>
@@ -95,8 +92,7 @@ String[] tags = tagger.tag(sent);]]>
 			The confidence scores for the returned tags can be easily retrieved from
 			a POSTaggerME with the following method call:
 				   	<programlisting language="java">
-		  <![CDATA[
-double[] probs = tagger.probs();]]>
+<![CDATA[double[] probs = tagger.probs();]]>
 			</programlisting>
 			The call to probs is stateful and will always return the probabilities of the last
 			tagged sentence. The probs method should only be called when the tag method
@@ -108,8 +104,7 @@ double[] probs = tagger.probs();]]>
 			The topKSequences method is capable of returning the top sequences.
 			It can be called in a similar way as tag.
 			<programlisting language="java">
-		  <![CDATA[
-Sequence[] topSequences = tagger.topKSequences(sent);]]>
+<![CDATA[Sequence[] topSequences = tagger.topKSequences(sent);]]>
 			</programlisting>	
 			Each Sequence object contains one sequence. The sequence can be retrieved
 			via Sequence.getOutcomes() which returns a tags array 
@@ -117,15 +112,14 @@ Sequence[] topSequences = tagger.topKSequences(sent);]]>
 	  		 </para>
 	</section>
 	</section>
-		<section id="tools.postagger.training">
+		<section xml:id="tools.postagger.training">
 		<title>Training</title>
 		<para>
 			The POS Tagger can be trained on annotated training material. The training material
 			is a collection of tokenized sentences where each token has the assigned part-of-speech tag.
 			The native POS Tagger training material looks like this:
 			<screen>
-		  <![CDATA[
-About_ADV 10_NUM Euro_PROPN ,_PUNCT I_PRON reckon._PUNCT
+<![CDATA[About_ADV 10_NUM Euro_PROPN ,_PUNCT I_PRON reckon._PUNCT
 That_PRON sounds_VERB good_ADJ ._PUNCT]]>
 			</screen>
 			Each sentence must be in one line. The token/tag pairs are combined with "_".
@@ -137,7 +131,7 @@ That_PRON sounds_VERB good_ADJ ._PUNCT]]>
 		or via a training API.
 		</para>
 		
-		<section id="tools.postagger.training.tool">
+		<section xml:id="tools.postagger.training.tool">
 		<title>Training Tool</title>
 		<para>
 			OpenNLP has a command line tool which is used to train the models available from the model
@@ -146,8 +140,7 @@ That_PRON sounds_VERB good_ADJ ._PUNCT]]>
 		<para>
 		    Usage of the tool:
             <screen>
-				<![CDATA[
-$ opennlp POSTaggerTrainer
+<![CDATA[$ opennlp POSTaggerTrainer
 Usage: opennlp POSTaggerTrainer[.conllx] [-type maxent|perceptron|perceptron_sequence] \
                [-dict dictionaryPath] [-ngram cutoff] [-params paramsFile] [-iterations num] \
                [-cutoff num] -model modelFile -lang language -data sampleData \
@@ -179,13 +172,12 @@ Arguments description:
 		<para>
 		    The following command illustrates how an English part-of-speech model can be trained:
 		    <screen>
-		  <![CDATA[
-$ opennlp POSTaggerTrainer -type maxent -model en-custom-pos-maxent.bin \
+<![CDATA[$ opennlp POSTaggerTrainer -type maxent -model en-custom-pos-maxent.bin \
                            -lang en -data en-custom-pos.train -encoding UTF-8]]>
 		    </screen>
 		</para>
 		</section>
-		<section id="tools.postagger.training.api">
+		<section xml:id="tools.postagger.training.api">
 		<title>Training API</title>
 		<para>
 		The Part-of-Speech Tagger training API supports the training of a new pos model.
@@ -203,8 +195,7 @@ $ opennlp POSTaggerTrainer -type maxent -model en-custom-pos-maxent.bin \
 		</itemizedlist>
 		The following code illustrates that:
 		<programlisting language="java">
-				<![CDATA[
-POSModel model = null;
+<![CDATA[POSModel model = null;
 
 try {
   ObjectStream<String> lineStream = new PlainTextByLineStream(
@@ -221,14 +212,13 @@ try {
 	the model. The trained model must still be saved into an OutputStream, in
 	the sample below it is written into a file.
 	<programlisting language="java">
-				<![CDATA[
-try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))){
+<![CDATA[try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))){
   model.serialize(modelOut);
 }]]>
 		</programlisting>
 		</para>
 		</section>
-		<section id="tools.postagger.training.tagdict">
+		<section xml:id="tools.postagger.training.tagdict">
 		<title>Tag Dictionary</title>
 		<para>
 		The tag dictionary is a word dictionary which specifies which tags a specific token can have. Using a tag
@@ -242,16 +232,14 @@ try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(model
 		<para>
 		Sample POS Training material (file : en-custom-pos.train)
 			<screen>
-				<![CDATA[
-It_PRON is_OTHER spring_PROPN season_NOUN. The_DET flowers_NOUN are_OTHER red_ADJ and_CCONJ yellow_ADJ ._PUNCT
+<![CDATA[It_PRON is_OTHER spring_PROPN season_NOUN. The_DET flowers_NOUN are_OTHER red_ADJ and_CCONJ yellow_ADJ ._PUNCT
 Red_NOUN is_OTHER my_DET favourite_ADJ colour_NOUN ._PUNCT]]>
 			</screen>
 		</para>
 		<para>
 		Sample Tag Dictionary (file : dictionary.xml)
 			<programlisting language="xml">
-				<![CDATA[
-<?xml version="1.0" encoding="UTF-8"?>
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
  <dictionary case_sensitive="false">
   <entry tags="PRON">
     <token>It</token>
@@ -300,8 +288,7 @@ Red_NOUN is_OTHER my_DET favourite_ADJ colour_NOUN ._PUNCT]]>
 		</para>
 		<para>Sample code to train a model using above tag dictionary
 			<programlisting language="java">
-			<![CDATA[
-POSModel model = null;
+<![CDATA[POSModel model = null;
 	try {
 		ObjectStream<String> lineStream = new PlainTextByLineStream(
 				new MarkableFileInputStreamFactory(new File("en-custom-pos.train")), StandardCharsets.UTF_8);
@@ -328,8 +315,7 @@ POSModel model = null;
 		<para>
 		The custom model is then used to tag a sequence.
 		<programlisting language="java">
-			<![CDATA[
-String[] sent = new String[]{"Spring", "is", "my", "favourite", "season", "."};
+<![CDATA[String[] sent = new String[]{"Spring", "is", "my", "favourite", "season", "."};
 String[] tags = tagger.tag(sent);
 Arrays.stream(tags).forEach(k -> System.out.print(k + " "));]]>
 		</programlisting>
@@ -340,34 +326,34 @@ Arrays.stream(tags).forEach(k -> System.out.print(k + " "));]]>
 				    Sentence:	Spring is my favourite season.
 
 				Output
-				    POS Tags using the custom model (en-custom-pos-maxent.bin): PROPN OTHER PRON ADJ NOUN PUNCT
+				    POS Tags using the custom model (en-custom-pos-maxent.bin): \
+							PROPN OTHER PRON ADJ NOUN PUNCT
 
 				Output with the default model
-				    POS Tags using the default model (opennlp-en-ud-ewt-pos-1.3-2.5.4.bin):	NOUN AUX PRON ADJ NOUN PUNCT
+				    POS Tags using the default model (opennlp-en-ud-ewt-pos-1.3-2.5.4.bin):	\
+							NOUN AUX PRON ADJ NOUN PUNCT
 			</literallayout>
 		</para>
 		</section>
 		</section>
 		
-		<section id="tools.postagger.eval">
+		<section xml:id="tools.postagger.eval">
 		<title>Evaluation</title>
 		<para>
 		The built-in evaluation can measure the accuracy of the pos tagger.
 		The accuracy can be measured on a test data set or via cross validation.
 		</para>
-		<section id="tools.postagger.eval.tool">
+		<section xml:id="tools.postagger.eval.tool">
 		<title>Evaluation Tool</title>
 		<para>
 		There is a command line tool to evaluate a given model on a test data set.
 		The following command shows how the tool can be run:
 		<screen>
-				<![CDATA[
-$ opennlp POSTaggerEvaluator -model pt.postagger.bin -data pt.postagger.test -encoding utf-8]]>
+<![CDATA[$ opennlp POSTaggerEvaluator -model pt.postagger.bin -data pt.postagger.test -encoding utf-8]]>
 			 </screen>
 			 This will display the resulting accuracy score, e.g.:
 			 <screen>
-				<![CDATA[
-Loading model ... done
+<![CDATA[Loading model ... done
 Evaluating ... done
 
 Accuracy: 0.9659110277825124]]>
@@ -377,13 +363,11 @@ Accuracy: 0.9659110277825124]]>
             There is a command line tool for cross-validation of the test data set.
             The following command shows how the tool can be run:
             <screen>
-                    <![CDATA[
-$ opennlp POSTaggerCrossValidator -lang pt -data pt.postagger.test -encoding utf-8]]>
+<![CDATA[$ opennlp POSTaggerCrossValidator -lang pt -data pt.postagger.test -encoding utf-8]]>
                  </screen>
                  This will display the resulting accuracy score, e.g.:
                  <screen>
-                    <![CDATA[
-Accuracy: 0.9659110277825124]]>
+<![CDATA[Accuracy: 0.9659110277825124]]>
                  </screen>
             </para>
 

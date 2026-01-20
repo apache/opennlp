@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd"[
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
 ]>
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -21,24 +21,22 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<chapter id="tools.doccat">
+<chapter xml:id="tools.doccat">
 <title>Document Categorizer</title>
-	<section id="tools.doccat.classifying">
+	<section xml:id="tools.doccat.classifying">
 		<title>Classifying</title>
 		<para>
 		The OpenNLP Document Categorizer can classify text into pre-defined categories. 
 		It is based on maximum entropy framework. For someone interested in Gross Margin,
 		the sample text given below could be classified as GMDecrease
-        <screen>
-			<![CDATA[
-Major acquisitions that have a lower gross margin than the existing network
+		<screen>
+<![CDATA[Major acquisitions that have a lower gross margin than the existing network
 also had a negative impact on the overall gross margin, but it should improve
 following the implementation of its integration strategies.]]>
-		 </screen>
+		</screen>
 and the text below could be classified as GMIncrease
-        <screen>
-			<![CDATA[
-The upward movement of gross margin resulted from amounts pursuant to 
+		<screen>
+<![CDATA[The upward movement of gross margin resulted from amounts pursuant to
 adjustments to obligations towards dealers.]]>
 		 </screen>
 		 To be able to classify a text, the document categorizer needs a model. 
@@ -46,7 +44,7 @@ adjustments to obligations towards dealers.]]>
 		 and hence there is no pre-built model for document categorizer under OpenNLP project.
 		</para>		
 	
-	<section id="tools.doccat.classifying.cmdline">
+	<section xml:id="tools.doccat.classifying.cmdline">
 		<title>Document Categorizer Tool</title>
 		<para>
 			Note that ONNX model support is not available through the command line tool. The models that can be trained
@@ -57,14 +55,14 @@ adjustments to obligations towards dealers.]]>
 		The easiest way to try out the document categorizer is the command line tool. The tool is only
 		intended for demonstration and testing. The following command shows how to use the document categorizer tool.
 		  <screen>
-			<![CDATA[
-$ opennlp Doccat model]]>
+<![CDATA[$ opennlp Doccat model]]>
 		 </screen>
 		 The input is read from standard input and output is written to standard output, unless they are redirected
 		 or piped. As with most components in OpenNLP, document categorizer expects input which is segmented into sentences.
 		</para>
  	 </section>
-  	<section id="tools.doccat.classifying.api">
+
+  	<section xml:id="tools.doccat.classifying.api">
 		<title>Document Categorizer API</title>
 		<para>
 			To perform classification you will need a maxent model -
@@ -73,30 +71,27 @@ $ opennlp Doccat model]]>
 		</para>
 		<para>
 			Using an OpenNLP model, first you need to grab the bytes from the serialized model on an InputStream:
-						<programlisting language="java">
-				<![CDATA[
-InputStream is = ...
+			<programlisting language="java">
+<![CDATA[InputStream is = ...
 DoccatModel m = new DoccatModel(is);]]>
-				</programlisting>
-				With the DoccatModel in hand we are just about there:
-						<programlisting language="java">
-				<![CDATA[
-String inputText = ...
+			</programlisting>
+			With the DoccatModel in hand we are just about there:
+			<programlisting language="java">
+<![CDATA[String inputText = ...
 String[] textTokens = inputText.split(" "); // split by whitespace
 DocumentCategorizerME myCategorizer = new DocumentCategorizerME(m);
 double[] outcomes = myCategorizer.categorize(textTokens);
 String category = myCategorizer.getBestCategory(outcomes);]]>
-				</programlisting>
+			</programlisting>
 		</para>
-		<section id="tools.namefind.api.onnx">
+		<section xml:id="tools.doccat.api.onnx">
 			<title>Using an ONNX Model</title>
 			<para>
 				Using an ONNX model is similar, except we will utilize the <code>DocumentCategorizerDL</code> class instead.
 				You must provide the path to the model file and the vocabulary file to the document categorizer.
 				(There is no need to load the model as an InputStream as in the previous example.)
 				<programlisting language="java">
-					<![CDATA[
-File model = new File("/path/to/model.onnx");
+<![CDATA[File model = new File("/path/to/model.onnx");
 File vocab = new File("/path/to/vocab.txt");
 Map<Integer, String> categories = new HashMap<>();
 String[] inputText = new String[]{"My input text is great."};
@@ -108,39 +103,41 @@ String category = myCategorizer.getBestCategory(outcomes);]]>
 			</para>
 		</section>
 	</section>
+
 	</section>
-	<section id="tools.doccat.training">
+	<section xml:id="tools.doccat.training">
 	<title>Training</title>
 		<para>
 			The Document Categorizer can be trained on annotated training material. The data
 			can be in OpenNLP Document Categorizer training format. This is one document per line,
-			containing category and text separated by a whitespace. Other formats can also be
-            available.
+			containing category and text separated by a whitespace. Other formats can also be available.
 			The following sample shows the sample from above in the required format. Here GMDecrease and GMIncrease
 			are the categories.
 			<screen>
-			<![CDATA[
-GMDecrease Major acquisitions that have a lower gross margin than the existing network also \ 
-           had a negative impact on the overall gross margin, but it should improve following \ 
-           the implementation of its integration strategies .
+<![CDATA[MDecrease Major acquisitions that have a lower gross margin than the existing network also \
+	 had a negative impact on the overall gross margin, but it should improve following \
+	 the implementation of its integration strategies .
 GMIncrease The upward movement of gross margin resulted from amounts pursuant to adjustments \
-           to obligations towards dealers .]]>
+	 to obligations towards dealers .]]>
 			</screen>
-			<emphasis role="strong">Note</emphasis>: The line breaks marked with a backslash are just inserted for formatting purposes and must not be
-			included in the training data.
+			<note>
+				<para>
+				The line breaks marked with a backslash are just inserted for formatting purposes and must not be
+				included in the training data.
+				</para>
+			</note>
 		</para>
-		<section id="tools.doccat.training.tool">
+	<section xml:id="tools.doccat.training.tool">
 		<title>Training Tool</title>
 		<para>
-		The following command will train the document categorizer and write the model to en-doccat.bin:		
-		  <screen>
-			<![CDATA[			
-$ opennlp DoccatTrainer -model en-doccat.bin -lang en -data en-doccat.train -encoding UTF-8]]>
-		 </screen>
-		Additionally it is possible to specify the number of iterations, and the cutoff.
+			The following command will train the document categorizer and write the model to en-doccat.bin:
+			<screen>
+<![CDATA[$ opennlp DoccatTrainer -model en-doccat.bin -lang en -data en-doccat.train -encoding UTF-8]]>
+			</screen>
+			Additionally it is possible to specify the number of iterations, and the cutoff.
 		</para>
-		</section>
-				<section id="tools.doccat.training.api">
+	</section>
+	<section xml:id="tools.doccat.training.api">
 		<title>Training API</title>
 		<para>
 		So, naturally you will need some access to many pre-classified events to train your model.
@@ -150,8 +147,7 @@ $ opennlp DoccatTrainer -model en-doccat.bin -lang en -data en-doccat.train -enc
 		your training data was contained in a text file, where the format is as described above.
 		Then you might want to write something like this to create a collection of DocumentSamples:
 		<programlisting language="java">
-						<![CDATA[
-DoccatModel model = null;
+<![CDATA[DoccatModel model = null;
 try {
   ObjectStream<String> lineStream =
 		new PlainTextByLineStream(new MarkableFileInputStreamFactory(new File("en-sentiment.train")), StandardCharsets.UTF_8);
@@ -162,21 +158,18 @@ try {
       TrainingParameters.defaultParams(), new DoccatFactory());
 } catch (IOException e) {
   e.printStackTrace();
-}
-]]>
-	</programlisting>
-	Now might be a good time to cruise over to Hulu or something, because this could take a while if you've got a large training set.
-	You may see a lot of output as well. Once you're done, you can pretty quickly step to classification directly,
-	but first we'll cover serialization. Feel free to skim.
+}]]>
+		</programlisting>
+		Now might be a good time to cruise over to Hulu or something, because this could take a while if you've got a large training set.
+		You may see a lot of output as well. Once you're done, you can pretty quickly step to classification directly,
+		but first we'll cover serialization. Feel free to skim.
 		</para>
 		<para>
 		<programlisting language="java">
-						<![CDATA[
-try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {
+<![CDATA[try (OutputStream modelOut = new BufferedOutputStream(new FileOutputStream(modelFile))) {
   model.serialize(modelOut);
-}
-]]>
-</programlisting>
+}]]>
+		</programlisting>
 		</para>
 		</section>
 	</section>
