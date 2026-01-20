@@ -115,6 +115,26 @@
     </fileSet>
 
     <fileSet>
+      <directory>../opennlp-docs/target/docbkx/pdf</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <includes>
+        <include>*.pdf</include>
+      </includes>
+      <outputDirectory>docs</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-docs/target/docbkx</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <includes>
+        <include>*.epub</include>
+      </includes>
+      <outputDirectory>docs</outputDirectory>
+    </fileSet>
+
+    <fileSet>
       <directory>../opennlp-tools/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
