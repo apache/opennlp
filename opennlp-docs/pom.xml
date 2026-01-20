@@ -83,7 +83,7 @@
 						<artifactId>docbkx-maven-plugin</artifactId>
 						<executions>
 							<execution>
-								<id>dev-manual-pdf</id>
+								<id>doc-manual-pdf</id>
 								<goals>
 									<goal>generate-pdf</goal>
 								</goals>
@@ -113,7 +113,7 @@
 						<artifactId>docbkx-maven-plugin</artifactId>
 						<executions>
 							<execution>
-								<id>dev-manual-epub</id>
+								<id>doc-manual-epub</id>
 								<goals>
 									<goal>generate-epub3</goal>
 								</goals>
