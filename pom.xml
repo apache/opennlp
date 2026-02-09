@@ -231,7 +231,7 @@
 		<!-- Dependency versions -->
 		<junit.version>6.0.2</junit.version>
 		<junit5-system-exit.version>2.0.2</junit5-system-exit.version>
-		<onnxruntime.version>1.23.2</onnxruntime.version>
+		<onnxruntime.version>1.24.1</onnxruntime.version>
 		<slf4j.version>2.0.17</slf4j.version>
 		<log4j2.version>2.25.3</log4j2.version>
 		<logcaptor.version>2.12.2</logcaptor.version>
