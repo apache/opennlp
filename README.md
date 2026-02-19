@@ -66,43 +66,74 @@ Please, also check the [![Stack Overflow](https://img.shields.io/badge/-Stack%20
 
 ## Overview
 
-Currently, the library has different packages:
+Currently, the library has different modules:
 
-* `opennlp-tools` : The core toolkit.
-* `opennlp-tools-models` : A set of classes to load [OpenNLP models](https://github.com/apache/opennlp-models) from the classpath.
-* `opennlp-uima` : A set of [Apache UIMA](https://uima.apache.org) annotators.
-* `opennlp-morfologik-addon` : An addon for _Morfologik_.
-* `opennlp-dl` : OpenNLP interface implementations for [ONNX](https://onnx.ai) models using the `onnxruntime` dependency.
+* `opennlp-api` : The public API defining core Apache OpenNLP interfaces and abstractions.
+* `opennlp-runtime` : The core classes shared across Apache OpenNLP components.
+* `opennlp-ml-commons` : Common utilities and shared functionality for ML implementations.
+* `opennlp-ml-maxent` : Maximum Entropy (MaxEnt) machine learning implementation.
+* `opennlp-ml-bayes` : Naive Bayes machine learning implementation.
+* `opennlp-ml-perceptron` : Perceptron-based machine learning implementation.
+* `opennlp-dl` : Apache OpenNLP adapter for [ONNX](https://onnx.ai) models using the `onnxruntime` dependency.
 * `opennlp-dl-gpu` : Replaces `onnxruntime` with the `onnxruntime_gpu` dependency to support GPU acceleration.
-* `opennlp-sandbox`: Other projects in progress reside in the [sandbox](https://github.com/apache/opennlp-sandbox).           
+* `opennlp-models` : Classes for working with Apache OpenNLP model artifacts.
+* `opennlp-formats` : Support for reading and writing various NLP training and data formats.
+* `opennlp-cli` : The command-line tools for training, evaluating, and running models.
+* `opennlp-tools` : The full end-user toolkit with all core components and utilities in its executable form.
+* `opennlp-morfologik` : Extension module providing Morfologik-based dictionary and stemming support.
+* `opennlp-uima` : Extension module providing a set of [Apache UIMA](https://uima.apache.org) annotators.
+* `opennlp-sandbox` : Other projects in progress reside in the [sandbox](https://github.com/apache/opennlp-sandbox).
+      
 
 ## Getting Started
 
-You can import the core toolkit directly from Maven, SBT or Gradle:
+You can import the core toolkit directly from Maven or Gradle:
 
 #### Maven
 
 ```
 <dependency>
     <groupId>org.apache.opennlp</groupId>
-    <artifactId>opennlp-tools</artifactId>
+    <artifactId>opennlp-runtime</artifactId>
+    <version>${opennlp.version}</version>
+</dependency>
+<!-- if model support is needed -->
+<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-models</artifactId>
     <version>${opennlp.version}</version>
 </dependency>
 ```
 
-#### SBT
-
-```
-libraryDependencies += "org.apache.opennlp" % "opennlp-tools" % "${opennlp.version}"
-```
+Note: `opennlp-runtime` ships with the MaxEnt ML implementation by default. If you need other ML implementations, please add the corresponding dependencies as well.
 
 #### Gradle
 
 ```
-compile group: "org.apache.opennlp", name: "opennlp-tools", version: "${opennlp.version}"
+compile group: "org.apache.opennlp", name: "opennlp-runtime", version: "${opennlp.version}"
+compile group: "org.apache.opennlp", name: "opennlp-models", version: "${opennlp.version}"
 ```
 
-For more details please check our [documentation](http://opennlp.apache.org/docs/)
+For more details please check our [documentation](https://opennlp.apache.org/docs/)
+
+## Migrating from 2.x to 3.x
+
+The 3.x release line of Apache OpenNLP introduces **no** known breaking changes but modularizes the project for better usage as a library and to support future extensibility.
+The core API remains stable and compatible with 2.x, but the project structure has been reorganized into multiple modules.
+
+That means, that you can continue to use the previous `opennlp-tools` artifact as a dependency. However, we strongly recommend to switch to the new modular structure 
+and import only the components you need, which will result in a smaller dependency footprint.
+
+Only `opennlp-runtime` needs to be added as a dependency, and you can add additional modules (e.g. `opennlp-ml-maxent`, `opennlp-models`, etc.) as required by your project.
+For users of the traditional CLI toolkit, nothing changes with the 3.x release line. CLI usage remains stable as described in the [project's dev manual](https://opennlp.apache.org/docs/).
+
+### Head's up
+
+The Apache OpenNLP team is planning to change the package namespace from `opennlp` to `org.apache.opennlp` in a future release (potentially 4.x). 
+This change will be made to align with standard Java package naming conventions and to avoid potential conflicts with other libraries.
+
+In addition, the Apache OpenNLP team is considering the raise of the minimal Java version to JDK 21+ in a future release (potentially 4.x) 
+to take advantage of the latest language features and improvements.
 
 ## Branches and Merging Strategy
 
