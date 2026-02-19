@@ -55,6 +55,12 @@
       <artifactId>opennlp-uima</artifactId>
     </dependency>
 
+    <!-- OpenNLP Docs - Ensure that "docs" are build before distribution -->
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-docs</artifactId>
+    </dependency>
+
     <!-- ship the dist with a logging impl for cli users -->
     <dependency>
       <groupId>org.slf4j</groupId>
