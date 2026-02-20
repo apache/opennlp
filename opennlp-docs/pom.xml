@@ -130,11 +130,10 @@
 							<preProcess>
 								<copy todir="${project.build.directory}/docbkx/epub3/images">
 									<fileset dir="src/docbkx/images/">
-										<include name="*.png"/>
+										<include name="*.png" />
 									</fileset>
 								</copy>
-								<copy todir="${project.build.directory}/docbkx/epub3/css"
-											file="src/docbkx/css/opennlp-dev-manual.css"/>
+								<copy todir="${project.build.directory}/docbkx/epub3/css" file="src/docbkx/css/opennlp-dev-manual.css" />
 							</preProcess>
 						</configuration>
 					</plugin>
