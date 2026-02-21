@@ -35,6 +35,7 @@ import opennlp.tools.formats.LemmatizerSampleStreamFactory;
 import opennlp.tools.formats.NameSampleDataStreamFactory;
 import opennlp.tools.formats.ParseSampleStreamFactory;
 import opennlp.tools.formats.SentenceSampleStreamFactory;
+import opennlp.tools.formats.SentimentSampleStreamFactory;
 import opennlp.tools.formats.TokenSampleStreamFactory;
 import opennlp.tools.formats.TwentyNewsgroupSampleStreamFactory;
 import opennlp.tools.formats.WordTagSampleStreamFactory;
@@ -140,6 +141,8 @@ public final class StreamFactoryRegistry {
     MascPOSSampleStreamFactory.registerFactory();
     MascSentenceSampleStreamFactory.registerFactory();
     MascTokenSampleStreamFactory.registerFactory();
+
+    SentimentSampleStreamFactory.registerFactory();
   }
 
   public static final String DEFAULT_FORMAT = "opennlp";
