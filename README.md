@@ -19,7 +19,7 @@ Welcome to Apache OpenNLP!
 ===========
 
 [![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/apache/opennlp/main/LICENSE)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.opennlp/opennlp)
+[![Maven Central](https://img.shields.io/maven-central/v/org.apache.opennlp/opennlp)](https://img.shields.io/maven-central/v/org.apache.opennlp/opennlp)
 [![Documentation Status](https://img.shields.io/:docs-latest-green.svg)](http://opennlp.apache.org/docs/index.html)
 [![Build Status](https://github.com/apache/opennlp/workflows/Java%20CI/badge.svg)](https://github.com/apache/opennlp/actions)
 [![Contributors](https://img.shields.io/github/contributors/apache/opennlp)](https://github.com/apache/opennlp/graphs/contributors)
