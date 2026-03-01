@@ -55,7 +55,7 @@ under the License.
         <programlisting language="xml">
 <![CDATA[<dependency>
   <groupId>org.apache.opennlp</groupId>
-  <artifactId>opennlp-tools-models</artifactId>
+  <artifactId>opennlp-models</artifactId>
   <version>CURRENT_OPENNLP_VERSION</version>
 </dependency>]]>
         </programlisting>
