@@ -30,6 +30,7 @@ import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
 import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
 import opennlp.tools.formats.DocumentSampleStreamFactory;
 import opennlp.tools.formats.EvalitaNameSampleStreamFactory;
+import opennlp.tools.formats.GermEval2014NameSampleStreamFactory;
 import opennlp.tools.formats.LanguageDetectorSampleStreamFactory;
 import opennlp.tools.formats.LemmatizerSampleStreamFactory;
 import opennlp.tools.formats.NameSampleDataStreamFactory;
@@ -107,6 +108,7 @@ public final class StreamFactoryRegistry {
     Conll02NameSampleStreamFactory.registerFactory();
     Conll03NameSampleStreamFactory.registerFactory();
     EvalitaNameSampleStreamFactory.registerFactory();
+    GermEval2014NameSampleStreamFactory.registerFactory();
     ConllXPOSSampleStreamFactory.registerFactory();
     ConllXSentenceSampleStreamFactory.registerFactory();
     ConllXTokenSampleStreamFactory.registerFactory();
