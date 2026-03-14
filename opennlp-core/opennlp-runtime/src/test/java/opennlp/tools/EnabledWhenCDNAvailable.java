@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
 
@@ -57,7 +59,7 @@ public @interface EnabledWhenCDNAvailable {
           socket.connect(new InetSocketAddress(host, 443), TIMEOUT_MS);
 
           // Then, try to check the HTTP status by making an HTTPS request
-          final URL url = new URL("https://" + host);
+          final URL url = new URI("https://" + host).toURL();
           final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
           connection.setConnectTimeout(TIMEOUT_MS);
           connection.setReadTimeout(TIMEOUT_MS);
@@ -72,6 +74,9 @@ public @interface EnabledWhenCDNAvailable {
                 "Resource (CDN) reachable, but HTTP status code: " + statusCode);
 
           }
+        } catch (URISyntaxException e) {
+          return ConditionEvaluationResult.disabled(
+              "Resource (CDN) identifier has an invalid form.");
         } catch (IOException e) {
           return ConditionEvaluationResult.disabled(
               "Resource (CDN) unreachable.");

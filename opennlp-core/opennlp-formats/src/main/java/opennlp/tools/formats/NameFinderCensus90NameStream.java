@@ -58,7 +58,7 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
    *                    input file to be attached to this class.
    */
   public NameFinderCensus90NameStream(ObjectStream<String> lineStream) {
-    this.locale = new Locale("en");   // locale is English
+    this.locale = Locale.of("en");   // locale is English
     this.encoding = Charset.defaultCharset();
     // todo how do we find the encoding for an already open ObjectStream() ?
     this.lineStream = lineStream;
@@ -76,7 +76,7 @@ public class NameFinderCensus90NameStream implements ObjectStream<StringList> {
    */
   public NameFinderCensus90NameStream(InputStreamFactory in, Charset encoding)
       throws IOException {
-    this.locale = new Locale("en"); // locale is English
+    this.locale = Locale.of("en"); // locale is English
     this.encoding = encoding;
     this.lineStream = new PlainTextByLineStream(in, this.encoding);
   }

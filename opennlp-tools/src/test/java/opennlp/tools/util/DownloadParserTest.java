@@ -18,6 +18,8 @@
 package opennlp.tools.util;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -32,6 +34,7 @@ import opennlp.tools.models.ModelType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DownloadParserTest {
 
@@ -44,20 +47,23 @@ public class DownloadParserTest {
 
     final DownloadUtil.DownloadParser downloadParser = new DownloadUtil.DownloadParser(baseUrl);
 
-    Map<String, Map<ModelType, String>> result = downloadParser.getAvailableModels();
+    try {
+      Map<String, Map<ModelType, URL>> result = downloadParser.getAvailableModels();
+      assertNotNull(result);
+      assertEquals(36, result.size());
 
-    assertNotNull(result);
-    assertEquals(36, result.size());
+      final Map<ModelType, URL> availableModels = result.get(language);
+      assertNotNull(availableModels);
 
-    final Map<ModelType, String> availableModels = result.get(language);
-    assertNotNull(availableModels);
+      for (Map.Entry<ModelType, String> e : expectedModels.entrySet()) {
+        final URL url = availableModels.get(e.getKey());
+        final String expectedUrl = baseUrl + "/" + e.getValue();
 
-    for (Map.Entry<ModelType, String> e : expectedModels.entrySet()) {
-      final String url = availableModels.get(e.getKey());
-      final String expectedUrl = baseUrl + "/" + e.getValue();
-
-      assertNotNull(url, "A model for the given model type is expected");
-      assertEquals(expectedUrl, url);
+        assertNotNull(url, "A model for the given model type is expected");
+        assertEquals(expectedUrl, url.toExternalForm());
+      }
+    } catch (URISyntaxException | MalformedURLException e) {
+      fail(e);
     }
   }
 
@@ -68,12 +74,16 @@ public class DownloadParserTest {
   }
 
   @Test
-  void testInvalidUrl() throws MalformedURLException {
-    final DownloadUtil.DownloadParser downloadParser =
-        new DownloadUtil.DownloadParser(new URL("file:/this/does/not/exist"));
-    Map<String, Map<ModelType, String>> result = downloadParser.getAvailableModels();
-    assertNotNull(result);
-    assertEquals(0, result.size());
+  void testInvalidUrl() {
+    try {
+      final DownloadUtil.DownloadParser downloadParser =
+          new DownloadUtil.DownloadParser(new URI("file:/this/does/not/exist").toURL());
+      Map<String, Map<ModelType, URL>> result = downloadParser.getAvailableModels();
+      assertNotNull(result);
+      assertEquals(0, result.size());
+    } catch (URISyntaxException | MalformedURLException e) {
+      fail(e);
+    }
   }
 
   private URL fromClasspath(String file) {
