@@ -21,6 +21,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -112,7 +114,15 @@ abstract class AbstractNameFinderTest {
   }
 
   protected static void downloadVersion15Model(String modelName) throws IOException {
-    downloadModel(new URL(BASE_URL_MODELS_V15 + modelName));
+    downloadModel(toModelURL(BASE_URL_MODELS_V15 + modelName));
+  }
+
+  private static URL toModelURL(String location) throws IOException {
+    try {
+      return new URI(location).toURL();
+    } catch (URISyntaxException e) {
+      throw new IOException(e);
+    }
   }
 
   private static void downloadModel(URL url) throws IOException {

@@ -42,10 +42,10 @@ import opennlp.tools.util.TrainingParameters;
  */
 public class TokenizerFactoryTest {
 
-  private static final Locale LOCALE_DUTCH = new Locale("nl");
-  private static final Locale LOCALE_POLISH = new Locale("pl");
-  private static final Locale LOCALE_PORTUGUESE = new Locale("pt");
-  private static final Locale LOCALE_SPANISH = new Locale("es");
+  private static final Locale LOCALE_DUTCH = Locale.of("nl");
+  private static final Locale LOCALE_POLISH = Locale.of("pl");
+  private static final Locale LOCALE_PORTUGUESE = Locale.of("pt");
+  private static final Locale LOCALE_SPANISH = Locale.of("es");
 
   private static ObjectStream<TokenSample> createSampleStream() throws IOException {
     InputStreamFactory in = new ResourceAsStreamFactory(

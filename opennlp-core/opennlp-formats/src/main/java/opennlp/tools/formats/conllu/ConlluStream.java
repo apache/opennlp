@@ -240,7 +240,7 @@ public class ConlluStream implements ObjectStream<ConlluSentence> {
       throw new InvalidFormatException(e);
     }
     if (!lang.isEmpty()) {
-      textLang.put(new Locale(lang), secondPart);
+      textLang.put(Locale.of(lang), secondPart);
     }
     else {
       throw new InvalidFormatException(String.format("Locale language code is invalid: %s", lang));

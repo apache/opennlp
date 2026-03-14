@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -61,7 +63,7 @@ public class DownloadUtil {
       System.getProperty("OPENNLP_DOWNLOAD_MODEL_PATH", "models/ud-models-1.3/");
   private static final String OPENNLP_DOWNLOAD_HOME = "OPENNLP_DOWNLOAD_HOME";
 
-  private static Map<String, Map<ModelType, String>> availableModels;
+  private static Map<String, Map<ModelType, URL>> availableModels;
 
   /**
    * Checks if a model of the specified {@code modelType} has been downloaded already
@@ -71,22 +73,23 @@ public class DownloadUtil {
    * @param modelType The {@link ModelType type} of model.
    * @return {@code true} if a model exists locally, {@code false} otherwise.
    * @throws IOException Thrown if IO errors occurred or the computed hash sum
-   * of an associated, local model file was incorrect.
+   *                     of an associated, local model file was incorrect.
    */
   static boolean existsModel(String language, ModelType modelType) throws IOException {
-    Map<ModelType, String> modelsByLanguage = getAvailableModels().get(language);
+    Map<ModelType, URL> modelsByLanguage = getAvailableModels().get(language);
     if (modelsByLanguage == null) {
       return false;
     } else {
-      final String url = modelsByLanguage.get(modelType);
+      final URL url = modelsByLanguage.get(modelType);
       if (url != null) {
         final Path homeDirectory = getDownloadHome();
-        final String filename = url.substring(url.lastIndexOf("/") + 1);
+        final String extUrl = url.toExternalForm();
+        final String filename = extUrl.substring(extUrl.lastIndexOf("/") + 1);
         final Path localFile = homeDirectory.resolve(filename);
         boolean exists;
         if (Files.exists(localFile)) {
           // if this does not throw the requested model is valid!
-          validateModel(new URL(url + ".sha512"), localFile);
+          validateModel(url + ".sha512", localFile);
           exists = true;
         } else {
           exists = false;
@@ -112,9 +115,9 @@ public class DownloadUtil {
                                                       Class<T> type) throws IOException {
 
     if (getAvailableModels().containsKey(language)) {
-      final String url = getAvailableModels().get(language).get(modelType);
+      final URL url = getAvailableModels().get(language).get(modelType);
       if (url != null) {
-        return downloadModel(new URL(url), type);
+        return downloadModel(url, type);
       }
     }
 
@@ -156,7 +159,7 @@ public class DownloadUtil {
       try (final InputStream in = url.openStream()) {
         Files.copy(in, localFile, StandardCopyOption.REPLACE_EXISTING);
       }
-      validateModel(new URL(url + ".sha512"), localFile);
+      validateModel(url + ".sha512", localFile);
       logger.debug("Download complete.");
     } else {
       logger.debug("Model file '{}' already exists. Skipping download.", filename);
@@ -169,11 +172,12 @@ public class DownloadUtil {
     }
   }
 
-  public static Map<String, Map<ModelType, String>> getAvailableModels() {
+  public static Map<String, Map<ModelType, URL>> getAvailableModels() {
     if (availableModels == null) {
       try {
-        availableModels = new DownloadParser(new URL(BASE_URL + MODEL_URI_PATH)).getAvailableModels();
-      } catch (MalformedURLException e) {
+        DownloadParser p = new DownloadParser(new URI(BASE_URL + MODEL_URI_PATH).toURL());
+        availableModels = p.getAvailableModels();
+      } catch (MalformedURLException | URISyntaxException e) {
         throw new RuntimeException(e);
       }
     }
@@ -187,15 +191,21 @@ public class DownloadUtil {
    * @param downloadedModel the model file to check
    * @throws IOException thrown if the checksum could not be computed
    */
-  private static void validateModel(URL sha512, Path downloadedModel) throws IOException {
-    // Download SHA512 checksum file
+  private static void validateModel(String sha512, Path downloadedModel) throws IOException {
     String expectedChecksum;
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(sha512.openStream()))) {
-      expectedChecksum = reader.readLine();
+    try {
+      // Download SHA512 checksum file
+      final URL hashSum = new URI(sha512).toURL();
+      try (BufferedReader reader = new BufferedReader(new InputStreamReader(hashSum.openStream()))) {
+        expectedChecksum = reader.readLine();
 
-      if (expectedChecksum != null) {
-        expectedChecksum = expectedChecksum.split("\\s")[0].trim();
+        if (expectedChecksum != null) {
+          expectedChecksum = expectedChecksum.split("\\s")[0].trim();
+        }
       }
+    } catch (URISyntaxException use) {
+      throw new IOException("Expected SHA512 checksum could not be retrieved for " +
+          downloadedModel.getFileName(), use);
     }
 
     // Validate SHA512 checksum
@@ -248,7 +258,8 @@ public class DownloadUtil {
       this.indexUrl = indexUrl;
     }
 
-    Map<String, Map<ModelType, String>> getAvailableModels() {
+    Map<String, Map<ModelType, URL>> getAvailableModels()
+        throws MalformedURLException, URISyntaxException {
       final Matcher matcher = LINK_PATTERN.matcher(fetchPageIndex());
 
       final List<String> links = new ArrayList<>();
@@ -259,8 +270,9 @@ public class DownloadUtil {
       return toMap(links);
     }
 
-    private Map<String, Map<ModelType, String>> toMap(List<String> links) {
-      final Map<String, Map<ModelType, String>> result = new HashMap<>();
+    private Map<String, Map<ModelType, URL>> toMap(List<String> links)
+        throws MalformedURLException, URISyntaxException {
+      final Map<String, Map<ModelType, URL>> result = new HashMap<>();
       for (String link : links) {
         if (link.endsWith(".bin")) {
           if (link.contains("de-ud")) { // German
@@ -341,10 +353,11 @@ public class DownloadUtil {
       return result;
     }
 
-    private void addModel(String locale, String link, Map<String, Map<ModelType, String>> result) {
-      final Map<ModelType, String> models = result.getOrDefault(locale, new HashMap<>());
-      final String url = (indexUrl.toString().endsWith("/") ? indexUrl : indexUrl + "/") + link;
-
+    private void addModel(String locale, String link, Map<String, Map<ModelType, URL>> result)
+        throws URISyntaxException, MalformedURLException {
+      final Map<ModelType, URL> models = result.getOrDefault(locale, new HashMap<>());
+      final String combined = (indexUrl.toString().endsWith("/") ? indexUrl : indexUrl + "/") + link;
+      final URL url = new URI(combined).toURL();
       if (link.contains("sentence")) {
         models.put(ModelType.SENTENCE_DETECTOR, url);
       } else if (link.contains("tokens")) {

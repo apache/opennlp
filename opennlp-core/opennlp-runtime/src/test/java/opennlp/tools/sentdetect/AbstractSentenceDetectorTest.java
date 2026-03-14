@@ -30,10 +30,10 @@ import opennlp.tools.util.TrainingParameters;
 
 public abstract class AbstractSentenceDetectorTest {
 
-  protected static final Locale LOCALE_DUTCH = new Locale("nl");
-  protected static final Locale LOCALE_POLISH = new Locale("pl");
-  protected static final Locale LOCALE_PORTUGUESE = new Locale("pt");
-  protected static final Locale LOCALE_SPANISH = new Locale("es");
+  protected static final Locale LOCALE_DUTCH = Locale.of("nl");
+  protected static final Locale LOCALE_POLISH = Locale.of("pl");
+  protected static final Locale LOCALE_PORTUGUESE = Locale.of("pt");
+  protected static final Locale LOCALE_SPANISH = Locale.of("es");
 
   static ObjectStream<SentenceSample> createSampleStream(Locale loc) throws IOException {
     final String trainingResource;
