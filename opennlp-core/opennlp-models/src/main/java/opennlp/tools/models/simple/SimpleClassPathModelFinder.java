@@ -148,20 +148,28 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     return pattern.matcher(url.getFile()).matches();
   }
 
+  private static URL toURL(String location) throws IOException {
+    try {
+      return new URI(location).toURL();
+    } catch (URISyntaxException e) {
+      throw new IOException(e);
+    }
+  }
+
   private List<URI> getURIsFromJar(URL fileUrl, boolean isWindows) throws IOException {
     final List<URI> uris = new ArrayList<>();
-    final URL jarUrl = new URL(JAR + ":" +
+    final String location = JAR + ":" +
         (isWindows ? fileUrl.toString().replace("\\", "/")
-            : fileUrl.toString()) + "!/");
+            : fileUrl.toString()) + "!/";
+    final URL jarUrl = toURL(location);
     final JarURLConnection jarConnection = (JarURLConnection) jarUrl.openConnection();
     try (JarFile jarFile = jarConnection.getJarFile()) {
       final Enumeration<JarEntry> entries = jarFile.entries();
       while (entries.hasMoreElements()) {
         final JarEntry entry = entries.nextElement();
         if (!entry.isDirectory()) {
-          final URL entryUrl = new URL(jarUrl + entry.getName());
           try {
-            uris.add(entryUrl.toURI());
+            uris.add(new URI(jarUrl + entry.getName()));
           } catch (URISyntaxException ignored) {
             //if we cannot convert to URI here, we ignore that entry.
           }
@@ -211,8 +219,8 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     final List<URL> jarUrls = new ArrayList<>();
     for (String classPath: matches) {
       try {
-        jarUrls.add(new URL(FILE_PREFIX, "", classPath));
-      } catch (MalformedURLException ignored) {
+        jarUrls.add(new URI(FILE_PREFIX, "", classPath, null).toURL());
+      } catch (MalformedURLException | URISyntaxException ignored) {
         //if we cannot parse a URL from the system property, just ignore it...
         //we couldn't load it anyway
       }

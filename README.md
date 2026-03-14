@@ -132,7 +132,7 @@ For users of the traditional CLI toolkit, nothing changes with the 3.x release l
 The Apache OpenNLP team is planning to change the package namespace from `opennlp` to `org.apache.opennlp` in a future release (potentially 4.x). 
 This change will be made to align with standard Java package naming conventions and to avoid potential conflicts with other libraries.
 
-In addition, the Apache OpenNLP team is considering the raise of the minimal Java version to JDK 21+ in a future release (potentially 4.x) 
+In addition, the Apache OpenNLP team raised the minimal Java version to JDK 21+ for the 3.0.0 release 
 to take advantage of the latest language features and improvements.
 
 ## Branches and Merging Strategy
@@ -141,8 +141,10 @@ To support ongoing development and stable maintenance of Apache OpenNLP, the pro
 
 ### Branch overview
 
-- **`main`**: Development branch for version **3.0** and beyond. All feature development and 3.x releases occur here.
-- **`opennlp-2.x`**: Maintains the stable **2.x** release line. This branch will receive selective updates and patch releases.
+- **`main`**: Development branch for version **3.0** and beyond. 
+              All feature development and 3.x releases occur here. Minimum Java level: 21.
+- **`opennlp-2.x`**: Maintains the stable **2.x** release line. 
+              This branch will receive selective updates and patch releases. Minimum Java level: 17.
 
 ### Workflow summary
 
@@ -159,7 +161,7 @@ To support ongoing development and stable maintenance of Apache OpenNLP, the pro
 
 ## Building OpenNLP
 
-At least JDK 17 and Maven 3.3.9 are required to build the library.
+For the main branch, at least JDK 21 and Maven 3.9.x are required to build the library.
 
 After cloning the repository go into the destination directory and run:
 

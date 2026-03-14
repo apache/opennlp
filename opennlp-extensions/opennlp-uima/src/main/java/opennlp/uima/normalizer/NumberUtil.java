@@ -36,7 +36,7 @@ public final class NumberUtil {
    * @return true if the language is supported
    */
   public static boolean isLanguageSupported(String languageCode) {
-    Locale locale = new Locale(languageCode);
+    Locale locale = Locale.of(languageCode);
 
     Locale[] possibleLocales = NumberFormat.getAvailableLocales();
 
@@ -70,7 +70,7 @@ public final class NumberUtil {
       throw new IllegalArgumentException("Language " + languageCode + " is not supported!");
     }
 
-    Locale locale = new Locale(languageCode);
+    Locale locale = Locale.of(languageCode);
     NumberFormat numberFormat = NumberFormat.getInstance(locale);
     number = WHITESPACE_PATTERN.matcher(number).replaceAll("");
     return numberFormat.parse(number);

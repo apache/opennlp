@@ -83,8 +83,8 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
       Assertions.assertEquals(3, sent3.getWordLines().size());
       Assertions.assertTrue(sent3.isNewParagraph());
       Map<Object, Object> textLang3 = new HashMap<>();
-      textLang3.put(new Locale("fr"), "Voilà ce qui nous est parvenu par la tradition orale.");
-      textLang3.put(new Locale("en"), "This is what is heard.");
+      textLang3.put(Locale.of("fr"), "Voilà ce qui nous est parvenu par la tradition orale.");
+      textLang3.put(Locale.of("en"), "This is what is heard.");
       Assertions.assertEquals(Optional.of(textLang3)
           , sent3.getTextLang());
 
@@ -99,7 +99,7 @@ public class ConlluStreamTest extends AbstractConlluSampleStreamTest<SentenceSam
       Assertions.assertTrue(sent4.isNewParagraph());
       Assertions.assertEquals(Optional.of("mf920901-001"), sent4.getDocumentId());
       Assertions.assertEquals(Optional.of("mf920901-001-p1"), sent4.getParagraphId());
-      Assertions.assertEquals(Optional.of(Collections.singletonMap(new Locale("en"),
+      Assertions.assertEquals(Optional.of(Collections.singletonMap(Locale.of("en"),
               "Slovak constitution: pros and cons"))
           , sent4.getTextLang());
 
