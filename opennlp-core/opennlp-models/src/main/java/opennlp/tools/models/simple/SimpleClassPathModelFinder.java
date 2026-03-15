@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,7 +69,6 @@ import opennlp.tools.models.ClassPathModelFinder;
 public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder implements ClassPathModelFinder {
 
   private static final Logger logger = LoggerFactory.getLogger(SimpleClassPathModelFinder.class);
-  private static final String FILE_PREFIX = "file";
   private static final Pattern CLASSPATH_SEPARATOR_PATTERN_WINDOWS = Pattern.compile(";");
   private static final Pattern CLASSPATH_SEPARATOR_PATTERN_UNIX = Pattern.compile(":");
   // ; for Windows, : for Linux/OSX
@@ -219,8 +219,8 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     final List<URL> jarUrls = new ArrayList<>();
     for (String classPath: matches) {
       try {
-        jarUrls.add(new URI(FILE_PREFIX, "", classPath, null).toURL());
-      } catch (MalformedURLException | URISyntaxException ignored) {
+        jarUrls.add(Path.of(classPath).toUri().toURL());
+      } catch (MalformedURLException ignored) {
         //if we cannot parse a URL from the system property, just ignore it...
         //we couldn't load it anyway
       }
