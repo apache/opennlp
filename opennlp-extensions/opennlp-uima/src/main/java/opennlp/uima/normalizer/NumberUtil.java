@@ -36,21 +36,19 @@ public final class NumberUtil {
    * @return true if the language is supported
    */
   public static boolean isLanguageSupported(String languageCode) {
-    Locale locale = Locale.of(languageCode);
+    Locale locale = Locale.forLanguageTag(languageCode);
 
-    Locale[] possibleLocales = NumberFormat.getAvailableLocales();
+    if (locale.getLanguage().isEmpty()) {
+      return false;
+    }
 
-    boolean isLocaleSupported = false;
-
-    for (Locale possibleLocale : possibleLocales) {
-      // search if locale is contained
+    for (Locale possibleLocale : NumberFormat.getAvailableLocales()) {
       if (possibleLocale.equals(locale)) {
-        isLocaleSupported = true;
-        break;
+        return true;
       }
     }
 
-    return isLocaleSupported;
+    return false;
   }
 
   /**
@@ -58,7 +56,7 @@ public final class NumberUtil {
    *
    * @param number The suspected number to parse.
    * @param languageCode A ISO conform language code, e.g. "en", "pt"
-   *                     
+   *
    * @return The parsed {@link Number}.
    * @throws ParseException Thrown if errors occurred during parsing.
    * @throws IllegalArgumentException Thrown if the {@code languageCode} is not supported.
@@ -66,11 +64,12 @@ public final class NumberUtil {
   public static Number parse(String number, String languageCode)
       throws ParseException {
 
-    if (!isLanguageSupported(languageCode)) {
+    Locale locale = Locale.forLanguageTag(languageCode);
+
+    if (locale.getLanguage().isEmpty() || !isLanguageSupported(languageCode)) {
       throw new IllegalArgumentException("Language " + languageCode + " is not supported!");
     }
 
-    Locale locale = Locale.of(languageCode);
     NumberFormat numberFormat = NumberFormat.getInstance(locale);
     number = WHITESPACE_PATTERN.matcher(number).replaceAll("");
     return numberFormat.parse(number);
