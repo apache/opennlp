@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter xml:id="tools.project.structure" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Project Structure</title>
+
+    <section xml:id="tools.project.structure.overview">
+        <title>Overview</title>
+        <para>
+            Starting with version 3.0, Apache OpenNLP has been reorganized from a single monolithic
+            <code>opennlp-tools</code> artifact into a set of fine-grained modules. This modularization
+            allows users to depend only on the components they actually need, resulting in a smaller
+            dependency footprint. At the same time, the public API remains stable and fully compatible
+            with previous 2.x releases.
+        </para>
+        <para>
+            The following sections describe each module, its purpose, and when to include it as a dependency.
+        </para>
+    </section>
+
+    <section xml:id="tools.project.structure.api">
+        <title>API Module</title>
+        <para>
+            The <code>opennlp-api</code> module defines the public interfaces and abstractions
+            that form the contract between OpenNLP and its users. It contains the core interfaces
+            such as <code>Tokenizer</code>, <code>SentenceDetector</code>, <code>POSTagger</code>,
+            <code>TokenNameFinder</code>, <code>Chunker</code>, <code>Parser</code>,
+            <code>LanguageDetector</code>, <code>Lemmatizer</code>, and <code>DocumentCategorizer</code>.
+        </para>
+        <para>
+            This module also provides shared base classes such as <code>BaseModel</code>,
+            the <code>ObjectStream</code> abstraction for data processing, the command-line
+            argument parsing framework, and common utility types. It is a transitive dependency
+            of <code>opennlp-runtime</code> and typically does not need to be declared explicitly.
+        </para>
+
+        <programlisting language="xml">
+<![CDATA[<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-api</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>]]>
+        </programlisting>
+    </section>
+
+    <section xml:id="tools.project.structure.runtime">
+        <title>Runtime Module</title>
+        <para>
+            The <code>opennlp-runtime</code> module is the primary dependency for most users. It
+            contains the core NLP tool implementations including sentence detection, tokenization,
+            part-of-speech tagging, named entity recognition, chunking, parsing, language detection,
+            lemmatization, and document categorization.
+        </para>
+        <para>
+            By default, <code>opennlp-runtime</code> ships with the Maximum Entropy machine
+            learning implementation. If you need other ML algorithms, add the corresponding
+            ML module as described below.
+        </para>
+
+        <programlisting language="xml">
+<![CDATA[<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-runtime</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>]]>
+        </programlisting>
+    </section>
+
+    <section xml:id="tools.project.structure.ml">
+        <title>Machine Learning Modules</title>
+        <para>
+            The machine learning implementations have been separated into individual modules so that
+            applications can include only the algorithms they use. Each module provides a specific
+            ML algorithm and is loaded at runtime via the <code>ExtensionLoader</code> service
+            discovery mechanism.
+        </para>
+
+        <itemizedlist>
+            <listitem>
+                <para>
+                    <code>opennlp-ml-commons</code> — Shared ML utilities and base classes used
+                    by all ML algorithm modules. This is a transitive dependency of each ML module
+                    and does not need to be declared explicitly.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <code>opennlp-ml-maxent</code> — Maximum Entropy classifier. This is the default
+                    algorithm and is included transitively via <code>opennlp-runtime</code>.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <code>opennlp-ml-perceptron</code> — Perceptron-based learning algorithm.
+                    Add this dependency if your models use the Perceptron or Perceptron Sequence trainer.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <code>opennlp-ml-bayes</code> — Naive Bayes classifier.
+                    Add this dependency if your models use the Naive Bayes trainer.
+                </para>
+            </listitem>
+        </itemizedlist>
+
+        <para>
+            For example, to use the Perceptron trainer alongside the default Maximum Entropy, add:
+        </para>
+
+        <programlisting language="xml">
+<![CDATA[<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-ml-perceptron</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>]]>
+        </programlisting>
+    </section>
+
+    <section xml:id="tools.project.structure.models">
+        <title>Models Module</title>
+        <para>
+            The <code>opennlp-models</code> module provides classpath-based model discovery and
+            loading. It enables applications to bundle pre-trained OpenNLP models as JAR files and
+            load them at runtime without explicit file path references.
+            See <xref linkend="tools.model"/> for details on classpath model loading.
+        </para>
+
+        <programlisting language="xml">
+<![CDATA[<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-models</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>]]>
+        </programlisting>
+    </section>
+
+    <section xml:id="tools.project.structure.formats">
+        <title>Formats Module</title>
+        <para>
+            The <code>opennlp-formats</code> module supports reading and writing various NLP
+            training and evaluation data formats, including CoNLL, BioNLP, BRAT, AD (Floresta),
+            Leipzig, and others. Include this module if you need to train models from data in
+            non-native OpenNLP formats.
+        </para>
+
+        <programlisting language="xml">
+<![CDATA[<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-formats</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>]]>
+        </programlisting>
+    </section>
+
+    <section xml:id="tools.project.structure.dl">
+        <title>Deep Learning Modules</title>
+        <para>
+            OpenNLP provides optional support for ONNX-based neural models via two modules:
+        </para>
+
+        <itemizedlist>
+            <listitem>
+                <para>
+                    <code>opennlp-dl</code> — Integrates the ONNX Runtime for CPU-based inference.
+                    This module enables the use of models trained by external frameworks such as
+                    PyTorch or TensorFlow, exported in the ONNX format.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <code>opennlp-dl-gpu</code> — Replaces the CPU ONNX Runtime with the
+                    GPU-accelerated variant for systems with supported GPU hardware.
+                    Use this module instead of <code>opennlp-dl</code> when GPU acceleration
+                    is available and desired.
+                </para>
+            </listitem>
+        </itemizedlist>
+
+        <programlisting language="xml">
+<![CDATA[<!-- CPU variant -->
+<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-dl</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>
+
+<!-- OR GPU variant (do not include both) -->
+<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-dl-gpu</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>]]>
+        </programlisting>
+    </section>
+
+    <section xml:id="tools.project.structure.cli">
+        <title>CLI Module</title>
+        <para>
+            The <code>opennlp-cli</code> module provides the command-line tools for training,
+            evaluating, and running OpenNLP models from a terminal. It is included in the binary
+            distribution and not typically needed as a library dependency.
+            See <xref linkend="tools.cli"/> for details on available CLI commands.
+        </para>
+    </section>
+
+    <section xml:id="tools.project.structure.tools">
+        <title>Tools Module (Aggregated Jar)</title>
+        <para>
+            The <code>opennlp-tools</code> module is an aggregated artifact that bundles
+            all core modules (<code>opennlp-api</code>, <code>opennlp-runtime</code>,
+            all ML modules, <code>opennlp-models</code>, <code>opennlp-formats</code>,
+            and <code>opennlp-cli</code>) into a single JAR. It is provided for backwards
+            compatibility with 2.x and for the binary distribution.
+        </para>
+        <para>
+            For new projects, we recommend depending on <code>opennlp-runtime</code>
+            plus only the specific additional modules you need, rather than pulling in
+            the full <code>opennlp-tools</code> artifact.
+        </para>
+    </section>
+
+    <section xml:id="tools.project.structure.extensions">
+        <title>Extension Modules</title>
+        <para>
+            OpenNLP provides optional extension modules for integration with external frameworks:
+        </para>
+
+        <itemizedlist>
+            <listitem>
+                <para>
+                    <code>opennlp-morfologik</code> — Integrates the
+                    <link xlink:href="https://github.com/morfologik">Morfologik</link>
+                    library for dictionary-based stemming and lemmatization.
+                    See <xref linkend="tools.morfologik"/> for usage details.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    <code>opennlp-uima</code> — Provides a set of
+                    <link xlink:href="https://uima.apache.org">Apache UIMA</link>
+                    annotators that wrap OpenNLP components for use in UIMA pipelines.
+                    See <xref linkend="tools.uima"/> for integration details.
+                </para>
+            </listitem>
+        </itemizedlist>
+    </section>
+
+    <section xml:id="tools.project.structure.migration">
+        <title>Migrating from 2.x to 3.x</title>
+        <para>
+            The 3.x release introduces no known breaking API changes. Existing code using the
+            <code>opennlp-tools</code> artifact will continue to work without modification.
+            However, we strongly recommend migrating to the modular dependency structure for a
+            smaller footprint.
+        </para>
+        <para>
+            A minimal migration replaces:
+        </para>
+
+        <programlisting language="xml">
+<![CDATA[<!-- 2.x: single monolithic dependency -->
+<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-tools</artifactId>
+    <version>2.x.y</version>
+</dependency>]]>
+        </programlisting>
+
+        <para>
+            with:
+        </para>
+
+        <programlisting language="xml">
+<![CDATA[<!-- 3.x: modular dependencies — add only what you need -->
+<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-runtime</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>
+<!-- Add opennlp-models, opennlp-ml-perceptron, opennlp-dl, etc. as needed -->]]>
+        </programlisting>
+
+        <note>
+            <para>
+                The <code>opennlp-runtime</code> module includes the Maximum Entropy ML
+                implementation by default. If your models were trained with the Perceptron
+                or Naive Bayes algorithm, add the corresponding <code>opennlp-ml-perceptron</code>
+                or <code>opennlp-ml-bayes</code> dependency.
+            </para>
+        </note>
+    </section>
+
+</chapter>
