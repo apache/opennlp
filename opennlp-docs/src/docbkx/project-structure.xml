@@ -139,7 +139,7 @@ under the License.
     <section xml:id="tools.project.structure.models">
         <title>Models Module</title>
         <para>
-            The <code>opennlp-models</code> module provides classpath-based model discovery and
+            The <code>opennlp-model-resolver</code> module provides classpath-based model discovery and
             loading. It enables applications to bundle pre-trained OpenNLP models as JAR files and
             load them at runtime without explicit file path references.
             See <xref linkend="tools.model"/> for details on classpath model loading.
@@ -148,7 +148,7 @@ under the License.
         <programlisting language="xml">
 <![CDATA[<dependency>
     <groupId>org.apache.opennlp</groupId>
-    <artifactId>opennlp-models</artifactId>
+    <artifactId>opennlp-model-resolver</artifactId>
     <version>CURRENT_OPENNLP_VERSION</version>
 </dependency>]]>
         </programlisting>
@@ -228,7 +228,7 @@ under the License.
         <para>
             The <code>opennlp-tools</code> module is an aggregated artifact that bundles
             all core modules (<code>opennlp-api</code>, <code>opennlp-runtime</code>,
-            all ML modules, <code>opennlp-models</code>, <code>opennlp-formats</code>,
+            all ML modules, <code>opennlp-model-resolver</code>, <code>opennlp-formats</code>,
             and <code>opennlp-cli</code>) into a single JAR. It is provided for backwards
             compatibility with 2.x and for the binary distribution.
         </para>
@@ -297,7 +297,7 @@ under the License.
     <artifactId>opennlp-runtime</artifactId>
     <version>CURRENT_OPENNLP_VERSION</version>
 </dependency>
-<!-- Add opennlp-models, opennlp-ml-perceptron, opennlp-dl, etc. as needed -->]]>
+<!-- Add opennlp-model-resolver, opennlp-ml-perceptron, opennlp-dl, etc. as needed -->]]>
         </programlisting>
 
         <note>

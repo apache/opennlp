@@ -46,7 +46,7 @@
     <!-- OpenNLP Core -->
     <dependency>
       <groupId>org.apache.opennlp</groupId>
-      <artifactId>opennlp-models</artifactId>
+      <artifactId>opennlp-model-resolver</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.opennlp</groupId>
