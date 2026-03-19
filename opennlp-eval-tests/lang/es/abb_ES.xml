@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+-->
+
+<dictionary case_sensitive="false">
+  <entry>
+    <token>a.C.</token>
+  </entry>
+  <entry>
+    <token>a. de C.</token>
+  </entry>
+  <entry>
+    <token>a.J.C.</token>
+  </entry>
+  <entry>
+    <token>a. de J.C.</token>
+  </entry>
+  <entry>
+    <token>a. m.</token>
+  </entry>
+  <entry>
+    <token>apdo.</token>
+  </entry>
+  <entry>
+    <token>apdo.</token>
+  </entry>
+  <entry>
+    <token>aprox.</token>
+  </entry>
+  <entry>
+    <token>Av.</token>
+  </entry>
+  <entry>
+    <token>Avda.</token>
+  </entry>
+  <entry>
+    <token>Bs. As.</token>
+  </entry>
+  <entry>
+    <token>c.c.</token>
+  </entry>
+  <entry>
+    <token>cap.</token>
+  </entry>
+  <entry>
+    <token>D.</token>
+  </entry>
+  <entry>
+    <token>Da.</token>
+  </entry>
+  <entry>
+    <token>Dña.</token>
+  </entry>
+  <entry>
+    <token>d.C.</token>
+  </entry>
+  <entry>
+    <token>d. de C.</token>
+  </entry>
+  <entry>
+    <token>d.J.C.</token>
+  </entry>
+  <entry>
+    <token>d. de J.C</token>
+  </entry>
+  <entry>
+    <token>dna.</token>
+  </entry>
+  <entry>
+    <token>EE. UU.</token>
+  </entry>
+  <entry>
+    <token>etc.</token>
+  </entry>
+  <entry>
+    <token>f.c.</token>
+  </entry>
+  <entry>
+    <token>F.C.</token>
+  </entry>
+  <entry>
+    <token>FF. AA.</token>
+  </entry>
+  <entry>
+    <token>Dr.</token>
+  </entry>
+  <entry>
+    <token>Dra.</token>
+  </entry>
+  <entry>
+    <token>Gob.</token>
+  </entry>
+  <entry>
+    <token>Lic.</token>
+  </entry>
+  <entry>
+    <token>Ing.</token>
+  </entry>
+  <entry>
+    <token>Pdte.</token>
+  </entry>
+  <entry>
+    <token>Pdta.</token>
+  </entry>
+  <entry>
+    <token>p.</token>
+  </entry>
+  <entry>
+    <token>pág.</token>
+  </entry>
+  <entry>
+    <token>n.°</token>
+  </entry>
+  <entry>
+    <token>no.</token>
+  </entry>
+  <entry>
+    <token>núm.</token>
+  </entry>
+  <entry>
+    <token>p.ej.</token>
+  </entry>
+  <entry>
+    <token>p. m.</token>
+  </entry>
+  <entry>
+    <token>Prof.</token>
+  </entry>
+  <entry>
+    <token>Profa.</token>
+  </entry>
+  <entry>
+    <token>q.e.p.d.</token>
+  </entry>
+  <entry>
+    <token>S.A.</token>
+  </entry>
+  <entry>
+    <token>S.L.</token>
+  </entry>
+  <entry>
+    <token>Sr.</token>
+  </entry>
+  <entry>
+    <token>Sra.</token>
+  </entry>
+  <entry>
+    <token>Srta.</token>
+  </entry>
+  <entry>
+    <token>Ud.</token>
+  </entry>
+  <entry>
+    <token>Vd.</token>
+  </entry>
+  <entry>
+    <token>Uds.</token>
+  </entry>
+  <entry>
+    <token>Vds.</token>
+  </entry>
+  <entry>
+    <token>vol.</token>
+  </entry>
+  <entry>
+    <token>v.</token>
+  </entry>
+  <entry>
+    <token>lu.</token>
+  </entry>
+  <entry>
+    <token>ma.</token>
+  </entry>
+  <entry>
+    <token>mi.</token>
+  </entry>
+  <entry>
+    <token>ju.</token>
+  </entry>
+  <entry>
+    <token>vi.</token>
+  </entry>
+  <entry>
+    <token>sá.</token>
+  </entry>
+  <entry>
+    <token>do.</token>
+  </entry>
+  <entry>
+    <token>en.</token>
+  </entry>
+  <entry>
+    <token>febr.</token>
+  </entry>
+  <entry>
+    <token>mzo.</token>
+  </entry>
+  <entry>
+    <token>abr.</token>
+  </entry>
+  <entry>
+    <token>my.</token>
+  </entry>
+  <entry>
+    <token>jun.</token>
+  </entry>
+  <entry>
+    <token>jul.</token>
+  </entry>
+  <entry>
+    <token>ag.</token>
+  </entry>
+  <entry>
+    <token>agt.</token>
+  </entry>
+  <entry>
+    <token>set.</token>
+  </entry>
+  <entry>
+    <token>sept.</token>
+  </entry>
+  <entry>
+    <token>oct.</token>
+  </entry>
+  <entry>
+    <token>nov.</token>
+  </entry>
+  <entry>
+    <token>novbre.</token>
+  </entry>
+  <entry>
+    <token>dic.</token>
+  </entry>
+  <entry>
+    <token>dicbre.</token>
+  </entry>
+</dictionary>
