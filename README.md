@@ -76,7 +76,7 @@ Currently, the library has different modules:
 * `opennlp-ml-perceptron` : Perceptron-based machine learning implementation.
 * `opennlp-dl` : Apache OpenNLP adapter for [ONNX](https://onnx.ai) models using the `onnxruntime` dependency.
 * `opennlp-dl-gpu` : Replaces `onnxruntime` with the `onnxruntime_gpu` dependency to support GPU acceleration.
-* `opennlp-models` : Classes for working with Apache OpenNLP model artifacts.
+* `opennlp-model-resolver` : Classes for discovering and loading Apache OpenNLP models from the classpath.
 * `opennlp-formats` : Support for reading and writing various NLP training and data formats.
 * `opennlp-cli` : The command-line tools for training, evaluating, and running models.
 * `opennlp-tools` : The full end-user toolkit with all core components and utilities in its executable form.
@@ -100,7 +100,7 @@ You can import the core toolkit directly from Maven or Gradle:
 <!-- if model support is needed -->
 <dependency>
     <groupId>org.apache.opennlp</groupId>
-    <artifactId>opennlp-models</artifactId>
+    <artifactId>opennlp-model-resolver</artifactId>
     <version>${opennlp.version}</version>
 </dependency>
 ```
@@ -111,7 +111,7 @@ Note: `opennlp-runtime` ships with the MaxEnt ML implementation by default. If y
 
 ```
 compile group: "org.apache.opennlp", name: "opennlp-runtime", version: "${opennlp.version}"
-compile group: "org.apache.opennlp", name: "opennlp-models", version: "${opennlp.version}"
+compile group: "org.apache.opennlp", name: "opennlp-model-resolver", version: "${opennlp.version}"
 ```
 
 For more details please check our [documentation](https://opennlp.apache.org/docs/)
@@ -124,7 +124,7 @@ The core API remains stable and compatible with 2.x, but the project structure h
 That means, that you can continue to use the previous `opennlp-tools` artifact as a dependency. However, we strongly recommend to switch to the new modular structure 
 and import only the components you need, which will result in a smaller dependency footprint.
 
-Only `opennlp-runtime` needs to be added as a dependency, and you can add additional modules (e.g. `opennlp-ml-maxent`, `opennlp-models`, etc.) as required by your project.
+Only `opennlp-runtime` needs to be added as a dependency, and you can add additional modules (e.g. `opennlp-ml-maxent`, `opennlp-model-resolver`, etc.) as required by your project.
 For users of the traditional CLI toolkit, nothing changes with the 3.x release line. CLI usage remains stable as described in the [project's dev manual](https://opennlp.apache.org/docs/).
 
 ### Head's up

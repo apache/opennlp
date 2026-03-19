@@ -13,7 +13,7 @@
 
   <modules>
     <module>opennlp-ml</module>
-    <module>opennlp-models</module>
+    <module>opennlp-model-resolver</module>
     <module>opennlp-runtime</module>
     <module>opennlp-cli</module>
     <module>opennlp-formats</module>

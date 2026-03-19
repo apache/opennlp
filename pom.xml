@@ -162,7 +162,7 @@
 			</dependency>
 
 			<dependency>
-				<artifactId>opennlp-models</artifactId>
+				<artifactId>opennlp-model-resolver</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
 			</dependency>
