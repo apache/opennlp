@@ -22,9 +22,9 @@ import java.io.File;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.dl.AbstractDLTest;
+import opennlp.tools.eval.AbstractEvalTest;
 
-public class SentenceVectorsDLEval extends AbstractDLTest {
+public class SentenceVectorsDLEval extends AbstractEvalTest {
 
   @Test
   public void generateVectorsTest() throws Exception {

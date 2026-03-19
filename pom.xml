@@ -685,45 +685,16 @@
 			<properties>
 				<opennlp.forkCount>0.5C</opennlp.forkCount>
 			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<argLine>-Xmx4g</argLine>
-							<includes>
-								<include>**/*Test.java</include>
-								<include>**/*Eval.java</include>
-							</includes>
-							<excludedGroups>opennlp.tools.HighMemoryUsage</excludedGroups>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
+			<modules>
+				<module>opennlp-eval-tests</module>
+			</modules>
 		</profile>
 
 		<profile>
 			<id>high-memory-tests</id>
-			<properties>
-				<opennlp.forkCount>1</opennlp.forkCount>
-			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<argLine>-Xmx20g</argLine>
-							<includes>
-								<include>**/*Test.java</include>
-								<include>**/*Eval.java</include>
-							</includes>
-							<groups>opennlp.tools.HighMemoryUsage</groups>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
+			<modules>
+				<module>opennlp-eval-tests</module>
+			</modules>
 		</profile>
 	</profiles>
 

@@ -31,11 +31,11 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import opennlp.dl.AbstractDLTest;
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
+import opennlp.tools.eval.AbstractEvalTest;
 
-public class DocumentCategorizerDLEval extends AbstractDLTest {
+public class DocumentCategorizerDLEval extends AbstractEvalTest {
 
   private static final Logger logger = LoggerFactory.getLogger(DocumentCategorizerDLEval.class);
 
