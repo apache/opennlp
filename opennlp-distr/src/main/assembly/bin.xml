@@ -135,6 +135,76 @@
     </fileSet>
 
     <fileSet>
+      <directory>../opennlp-api/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-api</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-cli/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-cli</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-formats/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-formats</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-ml/opennlp-dl/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-dl</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-ml/opennlp-ml-bayes/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-ml-bayes</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-ml/opennlp-ml-commons/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-ml-commons</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-ml/opennlp-ml-maxent/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-ml-maxent</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-ml/opennlp-ml-perceptron/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-ml-perceptron</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-model-resolver/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-model-resolver</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-runtime/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-runtime</outputDirectory>
+    </fileSet>
+
+    <fileSet>
       <directory>../opennlp-tools/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
@@ -142,35 +212,21 @@
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-tools-models/target/reports/apidocs</directory>
+      <directory>../opennlp-extensions/opennlp-morfologik/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
-      <outputDirectory>docs/apidocs/opennlp-tools-models</outputDirectory>
+      <outputDirectory>docs/apidocs/opennlp-morfologik</outputDirectory>
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-dl/target/reports/apidocs</directory>
-      <fileMode>644</fileMode>
-      <directoryMode>755</directoryMode>
-      <outputDirectory>docs/apidocs/opennlp-dl</outputDirectory>
-    </fileSet>
-
-    <fileSet>
-      <directory>../opennlp-morfologik-addon/target/reports/apidocs</directory>
-      <fileMode>644</fileMode>
-      <directoryMode>755</directoryMode>
-      <outputDirectory>docs/apidocs/opennlp-morfologik-addon</outputDirectory>
-    </fileSet>
-
-    <fileSet>
-      <directory>../opennlp-uima/target/reports/apidocs</directory>
+      <directory>../opennlp-extensions/opennlp-uima/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-uima</outputDirectory>
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-uima/descriptors</directory>
+      <directory>../opennlp-extensions/opennlp-uima/descriptors</directory>
       <filtered>true</filtered>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
