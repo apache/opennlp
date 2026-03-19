@@ -19,6 +19,8 @@ package opennlp.tools.sentiment;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,16 +51,47 @@ public class SentimentEvaluatorTest {
   }
 
   @Test
-  void testEvaluateSample() {
+  void testEvaluateSampleCorrectPrediction() {
     SentimentME me = new SentimentME(model);
-    SentimentEvaluator evaluator = new SentimentEvaluator(me);
+
+    List<SentimentSample> references = new ArrayList<>();
+    List<SentimentSample> predictions = new ArrayList<>();
+    SentimentEvaluationMonitor monitor = new SentimentEvaluationMonitor() {
+      @Override
+      public void correctlyClassified(SentimentSample reference, SentimentSample prediction) {
+        references.add(reference);
+        predictions.add(prediction);
+      }
+
+      @Override
+      public void misclassified(SentimentSample reference, SentimentSample prediction) {
+        references.add(reference);
+        predictions.add(prediction);
+      }
+    };
+
+    SentimentEvaluator evaluator = new SentimentEvaluator(me, monitor);
 
     SentimentSample sample = new SentimentSample("positive",
         new String[] {"I", "love", "this", "great", "product"});
 
     evaluator.evaluateSample(sample);
 
+    Assertions.assertEquals(1, references.size());
+    Assertions.assertEquals(1, predictions.size());
+
+    // Verify the reference sample is the original
+    Assertions.assertEquals("positive", references.get(0).getSentiment());
+    Assertions.assertArrayEquals(sample.getSentence(), references.get(0).getSentence());
+
+    // Verify the predicted sample has a valid sentiment and the same sentence
+    SentimentSample predicted = predictions.get(0);
+    Assertions.assertNotNull(predicted.getSentiment());
+    Assertions.assertArrayEquals(sample.getSentence(), predicted.getSentence());
+
     Assertions.assertNotNull(evaluator.getFMeasure());
+    Assertions.assertTrue(evaluator.getFMeasure().getRecallScore() >= 0);
+    Assertions.assertTrue(evaluator.getFMeasure().getPrecisionScore() >= 0);
   }
 
   @Test
@@ -74,13 +107,76 @@ public class SentimentEvaluatorTest {
   @Test
   void testEvaluateMultipleSamples() {
     SentimentME me = new SentimentME(model);
-    SentimentEvaluator evaluator = new SentimentEvaluator(me);
 
-    evaluator.evaluateSample(new SentimentSample("positive",
-        new String[] {"wonderful", "amazing", "great"}));
-    evaluator.evaluateSample(new SentimentSample("negative",
-        new String[] {"terrible", "horrible", "awful"}));
+    List<SentimentSample> predictions = new ArrayList<>();
+    SentimentEvaluationMonitor monitor = new SentimentEvaluationMonitor() {
+      @Override
+      public void correctlyClassified(SentimentSample reference, SentimentSample prediction) {
+        predictions.add(prediction);
+      }
+
+      @Override
+      public void misclassified(SentimentSample reference, SentimentSample prediction) {
+        predictions.add(prediction);
+      }
+    };
+
+    SentimentEvaluator evaluator = new SentimentEvaluator(me, monitor);
+
+    SentimentSample posSample = new SentimentSample("positive",
+        new String[] {"wonderful", "amazing", "great"});
+    SentimentSample negSample = new SentimentSample("negative",
+        new String[] {"terrible", "horrible", "awful"});
+
+    evaluator.evaluateSample(posSample);
+    evaluator.evaluateSample(negSample);
+
+    Assertions.assertEquals(2, predictions.size());
+
+    // Each predicted sample should have a valid sentiment and the original sentence
+    Assertions.assertNotNull(predictions.get(0).getSentiment());
+    Assertions.assertArrayEquals(posSample.getSentence(), predictions.get(0).getSentence());
+
+    Assertions.assertNotNull(predictions.get(1).getSentiment());
+    Assertions.assertArrayEquals(negSample.getSentence(), predictions.get(1).getSentence());
 
     Assertions.assertNotNull(evaluator.getFMeasure());
+    Assertions.assertTrue(evaluator.getFMeasure().getRecallScore() >= 0);
+    Assertions.assertTrue(evaluator.getFMeasure().getPrecisionScore() >= 0);
+  }
+
+  @Test
+  void testProcessSampleReturnsPrediction() {
+    SentimentME me = new SentimentME(model);
+    SentimentEvaluator evaluator = new SentimentEvaluator(me);
+
+    SentimentSample reference = new SentimentSample("positive",
+        new String[] {"I", "love", "this", "great", "product"});
+
+    SentimentSample result = evaluator.processSample(reference);
+
+    Assertions.assertNotNull(result);
+    // The returned sample should contain the model's prediction as sentiment
+    Assertions.assertNotNull(result.getSentiment());
+    Assertions.assertTrue("positive".equals(result.getSentiment())
+        || "negative".equals(result.getSentiment()));
+    // The sentence should be preserved from the reference
+    Assertions.assertArrayEquals(reference.getSentence(), result.getSentence());
+  }
+
+  @Test
+  void testProcessSampleUpdatesScores() {
+    SentimentME me = new SentimentME(model);
+    SentimentEvaluator evaluator = new SentimentEvaluator(me);
+
+    // FMeasure should have no data initially
+    Assertions.assertTrue(evaluator.getFMeasure().getFMeasure() <= 0);
+
+    evaluator.processSample(new SentimentSample("positive",
+        new String[] {"wonderful", "amazing", "great"}));
+
+    // After processing, FMeasure should have been updated
+    Assertions.assertTrue(evaluator.getFMeasure().getRecallScore() >= 0);
+    Assertions.assertTrue(evaluator.getFMeasure().getPrecisionScore() >= 0);
   }
 }

@@ -21,7 +21,13 @@ import opennlp.tools.util.eval.Evaluator;
 import opennlp.tools.util.eval.FMeasure;
 
 /**
- * Class for performing evaluation on the Sentiment Analysis Parser.
+ * The {@link SentimentEvaluator} measures the performance of
+ * the given {@link SentimentME} with the provided reference
+ * {@link SentimentSample}s.
+ *
+ * @see Evaluator
+ * @see SentimentME
+ * @see SentimentSample
  */
 public class SentimentEvaluator extends Evaluator<SentimentSample> {
 
@@ -30,10 +36,10 @@ public class SentimentEvaluator extends Evaluator<SentimentSample> {
   private final SentimentME sentiment;
 
   /**
-   * Instantiates a {@link SentimentEvaluator} with the specified parameters.
+   * Initializes the current instance.
    *
-   * @param sentiment The {@link SentimentME} to use.
-   * @param listeners One or more {@link SentimentEvaluationMonitor monitors} to assign.
+   * @param sentiment The {@link SentimentME} to be used for predicting sentiment.
+   * @param listeners The {@link SentimentEvaluationMonitor evaluation sample listeners}.
    */
   public SentimentEvaluator(SentimentME sentiment, SentimentEvaluationMonitor... listeners) {
     super(listeners);
@@ -41,11 +47,7 @@ public class SentimentEvaluator extends Evaluator<SentimentSample> {
   }
 
   /**
-   * Returns the short description of the tool.
-   *
-   * @param reference
-   *          the reference to the SentimentSample to be processed
-   * @return the processed {@link SentimentSample samples}.
+   * {@inheritDoc}
    */
   @Override
   protected SentimentSample processSample(SentimentSample reference) {
@@ -57,9 +59,6 @@ public class SentimentEvaluator extends Evaluator<SentimentSample> {
     return new SentimentSample(prediction, reference.getSentence());
   }
 
-  /**
-   * @return Retrieves the {@link FMeasure}.
-   */
   public FMeasure getFMeasure() {
     return fmeasure;
   }
