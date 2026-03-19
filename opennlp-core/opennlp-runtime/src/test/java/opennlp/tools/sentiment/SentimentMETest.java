@@ -26,6 +26,7 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.formats.ResourceAsStreamFactory;
@@ -39,6 +40,9 @@ import opennlp.tools.util.TrainingParameters;
 public class SentimentMETest {
 
   private static SentimentModel model;
+
+  // SUT
+  private SentimentME sentiment;
 
   @BeforeAll
   static void trainModel() throws IOException {
@@ -54,24 +58,27 @@ public class SentimentMETest {
     Assertions.assertNotNull(model);
   }
 
+  @BeforeEach
+  void setup() {
+    sentiment = new SentimentME(model);
+  }
+
   @Test
   void testPredictWithTokens() {
-    SentimentME sentiment = new SentimentME(model);
+
     String prediction = sentiment.predict(new String[] {"I", "love", "this", "product"});
     Assertions.assertNotNull(prediction);
-    Assertions.assertTrue("positive".equals(prediction) || "negative".equals(prediction));
+    Assertions.assertEquals("positive", prediction);
   }
 
   @Test
   void testPredictWithString() {
-    SentimentME sentiment = new SentimentME(model);
     String prediction = sentiment.predict("I love this product");
     Assertions.assertNotNull(prediction);
   }
 
   @Test
   void testProbabilities() {
-    SentimentME sentiment = new SentimentME(model);
     double[] probs = sentiment.probabilities(new String[] {"great", "amazing", "wonderful"});
     Assertions.assertNotNull(probs);
     Assertions.assertTrue(probs.length > 0);
@@ -86,7 +93,6 @@ public class SentimentMETest {
 
   @Test
   void testGetBestSentiment() {
-    SentimentME sentiment = new SentimentME(model);
     double[] probs = sentiment.probabilities(new String[] {"terrible", "awful", "bad"});
     String best = sentiment.getBestSentiment(probs);
     Assertions.assertNotNull(best);
@@ -94,21 +100,23 @@ public class SentimentMETest {
 
   @Test
   void testModelSerialization() throws IOException {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    model.serialize(out);
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+      model.serialize(out);
 
-    byte[] bytes = out.toByteArray();
-    Assertions.assertTrue(bytes.length > 0);
+      byte[] bytes = out.toByteArray();
+      Assertions.assertTrue(bytes.length > 0);
 
-    SentimentModel deserialized = new SentimentModel(new ByteArrayInputStream(bytes));
-    Assertions.assertNotNull(deserialized);
-    Assertions.assertEquals("eng", deserialized.getLanguage());
-    Assertions.assertNotNull(deserialized.getMaxentModel());
-    Assertions.assertNotNull(deserialized.getFactory());
+      final SentimentModel deserialized = new SentimentModel(new ByteArrayInputStream(bytes));
+      Assertions.assertNotNull(deserialized);
+      Assertions.assertEquals("eng", deserialized.getLanguage());
+      Assertions.assertNotNull(deserialized.getMaxentModel());
+      Assertions.assertNotNull(deserialized.getFactory());
 
-    SentimentME me = new SentimentME(deserialized);
-    String prediction = me.predict(new String[] {"love", "great", "happy"});
-    Assertions.assertNotNull(prediction);
+      SentimentME me = new SentimentME(deserialized);
+      String prediction = me.predict(new String[] {"love", "great", "happy"});
+      Assertions.assertNotNull(prediction);
+      Assertions.assertEquals("positive", prediction);
+    }
   }
 
   @Test
@@ -134,14 +142,12 @@ public class SentimentMETest {
 
   @Test
   void testPredictPositiveSentence() {
-    SentimentME sentiment = new SentimentME(model);
     String prediction = sentiment.predict("I love this wonderful amazing great product");
     Assertions.assertEquals("positive", prediction);
   }
 
   @Test
   void testPredictReturnsValidLabel() {
-    SentimentME sentiment = new SentimentME(model);
     String prediction = sentiment.predict("I hate this terrible awful horrible product");
     Assertions.assertTrue("positive".equals(prediction) || "negative".equals(prediction),
         "Prediction should be a valid sentiment label but was: " + prediction);
@@ -155,7 +161,7 @@ public class SentimentMETest {
     model.serialize(tempFile);
     Assertions.assertTrue(tempFile.length() > 0);
 
-    SentimentModel deserialized = new SentimentModel(tempFile);
+    final SentimentModel deserialized = new SentimentModel(tempFile);
     Assertions.assertNotNull(deserialized);
     Assertions.assertEquals("eng", deserialized.getLanguage());
     Assertions.assertNotNull(deserialized.getMaxentModel());
@@ -193,11 +199,12 @@ public class SentimentMETest {
 
   @Test
   void testModelIsLoadedFromSerialized() throws IOException {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    model.serialize(out);
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+      model.serialize(out);
 
-    SentimentModel deserialized = new SentimentModel(
-        new ByteArrayInputStream(out.toByteArray()));
-    Assertions.assertTrue(deserialized.isLoadedFromSerialized());
+      final SentimentModel deserialized = new SentimentModel(
+          new ByteArrayInputStream(out.toByteArray()));
+      Assertions.assertTrue(deserialized.isLoadedFromSerialized());
+    }
   }
 }

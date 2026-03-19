@@ -87,8 +87,7 @@ public class SentimentSampleTest {
 
     Assertions.assertEquals(a, b);
     Assertions.assertNotEquals(a, c);
-    Assertions.assertNotEquals(a, null);
-    Assertions.assertNotEquals(a, "string");
+    Assertions.assertNotEquals(null, a);
   }
 
   @Test

@@ -81,17 +81,17 @@ public class SentimentEvaluatorTest {
     Assertions.assertEquals(1, predictions.size());
 
     // Verify the reference sample is the original
-    Assertions.assertEquals("positive", references.get(0).getSentiment());
-    Assertions.assertArrayEquals(sample.getSentence(), references.get(0).getSentence());
+    Assertions.assertEquals("positive", references.getFirst().getSentiment());
+    Assertions.assertArrayEquals(sample.getSentence(), references.getFirst().getSentence());
 
     // Verify the predicted sample has a valid sentiment and the same sentence
-    SentimentSample predicted = predictions.get(0);
+    SentimentSample predicted = predictions.getFirst();
     Assertions.assertNotNull(predicted.getSentiment());
     Assertions.assertArrayEquals(sample.getSentence(), predicted.getSentence());
 
     Assertions.assertNotNull(evaluator.getFMeasure());
-    Assertions.assertTrue(evaluator.getFMeasure().getRecallScore() >= 0);
-    Assertions.assertTrue(evaluator.getFMeasure().getPrecisionScore() >= 0);
+    Assertions.assertTrue(evaluator.getFMeasure().getRecallScore() > 0);
+    Assertions.assertTrue(evaluator.getFMeasure().getPrecisionScore() > 0);
   }
 
   @Test
@@ -101,7 +101,7 @@ public class SentimentEvaluatorTest {
 
     Assertions.assertNotNull(evaluator.getFMeasure());
     // FMeasure with no data should be -1 or 0
-    Assertions.assertTrue(evaluator.getFMeasure().getFMeasure() <= 0);
+    Assertions.assertEquals(-1.0, evaluator.getFMeasure().getFMeasure());
   }
 
   @Test
@@ -141,8 +141,8 @@ public class SentimentEvaluatorTest {
     Assertions.assertArrayEquals(negSample.getSentence(), predictions.get(1).getSentence());
 
     Assertions.assertNotNull(evaluator.getFMeasure());
-    Assertions.assertTrue(evaluator.getFMeasure().getRecallScore() >= 0);
-    Assertions.assertTrue(evaluator.getFMeasure().getPrecisionScore() >= 0);
+    Assertions.assertTrue(evaluator.getFMeasure().getRecallScore() > 0);
+    Assertions.assertTrue(evaluator.getFMeasure().getPrecisionScore() > 0);
   }
 
   @Test
@@ -170,13 +170,13 @@ public class SentimentEvaluatorTest {
     SentimentEvaluator evaluator = new SentimentEvaluator(me);
 
     // FMeasure should have no data initially
-    Assertions.assertTrue(evaluator.getFMeasure().getFMeasure() <= 0);
+    Assertions.assertEquals(-1.0, evaluator.getFMeasure().getFMeasure());
 
     evaluator.processSample(new SentimentSample("positive",
         new String[] {"wonderful", "amazing", "great"}));
 
     // After processing, FMeasure should have been updated
-    Assertions.assertTrue(evaluator.getFMeasure().getRecallScore() >= 0);
-    Assertions.assertTrue(evaluator.getFMeasure().getPrecisionScore() >= 0);
+    Assertions.assertTrue(evaluator.getFMeasure().getRecallScore() > 0);
+    Assertions.assertTrue(evaluator.getFMeasure().getPrecisionScore() > 0);
   }
 }

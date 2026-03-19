@@ -70,8 +70,7 @@ public class SentimentSampleTypeFilterTest {
     SentimentSample neg = new SentimentSample("negative", new String[] {"bad"});
 
     SentimentSampleTypeFilter filter = new SentimentSampleTypeFilter(
-        new String[] {"positive"},
-        ObjectStreamUtils.createObjectStream(neg));
+        new String[] {"positive"}, ObjectStreamUtils.createObjectStream(neg));
 
     Assertions.assertNull(filter.read());
   }
@@ -79,8 +78,7 @@ public class SentimentSampleTypeFilterTest {
   @Test
   void testEmptyStreamReturnsNull() throws IOException {
     SentimentSampleTypeFilter filter = new SentimentSampleTypeFilter(
-        new String[] {"positive"},
-        ObjectStreamUtils.createObjectStream());
+        new String[] {"positive"}, ObjectStreamUtils.createObjectStream());
 
     Assertions.assertNull(filter.read());
   }
