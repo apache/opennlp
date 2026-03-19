@@ -59,12 +59,18 @@ public class SentimentSampleTypeFilter
   }
 
   /**
-   * @return Reads and returns the {@link SentimentSample}.
+   * @return Reads and returns the next {@link SentimentSample} whose sentiment
+   *         matches the configured types, or {@code null} if the stream is exhausted.
    */
   @Override
   public SentimentSample read() throws IOException {
-    return samples.read();
-
+    SentimentSample sample;
+    while ((sample = samples.read()) != null) {
+      if (types.contains(sample.getSentiment())) {
+        return sample;
+      }
+    }
+    return null;
   }
 
 }

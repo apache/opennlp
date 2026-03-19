@@ -17,8 +17,6 @@
 
 package opennlp.tools.sentiment;
 
-import opennlp.tools.util.Span;
-
 public interface SentimentDetector {
 
   /**
@@ -36,30 +34,4 @@ public interface SentimentDetector {
    * @return The predicted sentiment.
    */
   String predict(String[] tokens);
-
-  /**
-   * Generates sentiment tags for the given sequence, typically a sentence,
-   * returning token spans for any identified sentiments.
-   *
-   * @param tokens
-   *          an array of the tokens or words of the sequence, typically a
-   *          sentence
-   * @return an array of spans for each of the names identified.
-   */
-  Span[] find(String[] tokens);
-
-  /**
-   * Generates sentiment tags for the given sequence, typically a sentence,
-   * returning token spans for any identified sentiments.
-   *
-   * @param tokens
-   *          an array of the tokens or words of the sequence, typically a
-   *          sentence.
-   * @param additionalContext
-   *          features which are based on context outside of the sentence but
-   *          which should also be used.
-   *
-   * @return an array of spans for each of the names identified.
-   */
-  Span[] find(String[] tokens, String[][] additionalContext);
 }

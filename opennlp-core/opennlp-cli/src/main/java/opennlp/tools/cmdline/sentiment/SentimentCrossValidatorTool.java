@@ -83,7 +83,6 @@ public class SentimentCrossValidatorTool
     if (params.getMisclassified()) {
       listeners.add(new SentimentEvaluationErrorListener());
     }
-    SentimentDetailedFMeasureListener detailedFListener = null;
     SentimentFactory sentimentFactory = new SentimentFactory();
 
     SentimentCrossValidator validator;
@@ -107,12 +106,7 @@ public class SentimentCrossValidatorTool
     System.out.println("done");
 
     System.out.println();
-
-    if (detailedFListener == null) {
-      System.out.println(validator.getFMeasure());
-    } else {
-      System.out.println(detailedFListener.toString());
-    }
+    System.out.println(validator.getFMeasure());
   }
 
 }

@@ -31,13 +31,13 @@ import opennlp.tools.util.ObjectStreamUtils;
 public class SentimentSampleTypeFilterTest {
 
   @Test
-  void testReadPassesThrough() throws IOException {
-    SentimentSample sample = new SentimentSample("positive",
-        new String[] {"I", "love", "this"});
+  void testFilterMatchingType() throws IOException {
+    SentimentSample pos = new SentimentSample("positive", new String[] {"great"});
+    SentimentSample neg = new SentimentSample("negative", new String[] {"bad"});
 
     SentimentSampleTypeFilter filter = new SentimentSampleTypeFilter(
         new String[] {"positive"},
-        ObjectStreamUtils.createObjectStream(sample));
+        ObjectStreamUtils.createObjectStream(pos, neg));
 
     SentimentSample result = filter.read();
     Assertions.assertNotNull(result);
@@ -47,17 +47,33 @@ public class SentimentSampleTypeFilterTest {
   }
 
   @Test
-  void testConstructorWithSet() throws IOException {
-    SentimentSample sample = new SentimentSample("negative",
-        new String[] {"bad", "product"});
+  void testFilterMultipleTypes() throws IOException {
+    SentimentSample pos = new SentimentSample("positive", new String[] {"great"});
+    SentimentSample neu = new SentimentSample("neutral", new String[] {"ok"});
+    SentimentSample neg = new SentimentSample("negative", new String[] {"bad"});
 
     SentimentSampleTypeFilter filter = new SentimentSampleTypeFilter(
-        Set.of("negative"),
-        ObjectStreamUtils.createObjectStream(sample));
+        Set.of("positive", "negative"),
+        ObjectStreamUtils.createObjectStream(pos, neu, neg));
 
-    SentimentSample result = filter.read();
-    Assertions.assertNotNull(result);
-    Assertions.assertEquals("negative", result.getSentiment());
+    SentimentSample first = filter.read();
+    Assertions.assertEquals("positive", first.getSentiment());
+
+    SentimentSample second = filter.read();
+    Assertions.assertEquals("negative", second.getSentiment());
+
+    Assertions.assertNull(filter.read());
+  }
+
+  @Test
+  void testFilterNoMatch() throws IOException {
+    SentimentSample neg = new SentimentSample("negative", new String[] {"bad"});
+
+    SentimentSampleTypeFilter filter = new SentimentSampleTypeFilter(
+        new String[] {"positive"},
+        ObjectStreamUtils.createObjectStream(neg));
+
+    Assertions.assertNull(filter.read());
   }
 
   @Test

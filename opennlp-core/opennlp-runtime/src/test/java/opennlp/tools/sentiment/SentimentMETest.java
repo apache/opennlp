@@ -131,7 +131,17 @@ public class SentimentMETest {
   }
 
   @Test
-  void testModelSentimentModel() {
-    Assertions.assertNotNull(model.getSentimentModel());
+  void testPredictPositiveSentence() {
+    SentimentME sentiment = new SentimentME(model);
+    String prediction = sentiment.predict("I love this wonderful amazing great product");
+    Assertions.assertEquals("positive", prediction);
+  }
+
+  @Test
+  void testPredictReturnsValidLabel() {
+    SentimentME sentiment = new SentimentME(model);
+    String prediction = sentiment.predict("I hate this terrible awful horrible product");
+    Assertions.assertTrue("positive".equals(prediction) || "negative".equals(prediction),
+        "Prediction should be a valid sentiment label but was: " + prediction);
   }
 }

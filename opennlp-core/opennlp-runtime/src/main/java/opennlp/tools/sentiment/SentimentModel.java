@@ -22,11 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
-import java.util.Properties;
 
-import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.model.MaxentModel;
-import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.model.BaseModel;
 
 /**
@@ -90,24 +87,6 @@ public class SentimentModel extends BaseModel {
    */
   public SentimentModel(InputStream modelIn) throws IOException {
     super(COMPONENT_NAME, modelIn);
-  }
-
-  /**
-   * @return Retrieves the {@link SequenceClassificationModel} model.
-   */
-  @Deprecated
-  public SequenceClassificationModel getSentimentModel() {
-    Properties manifest = (Properties) artifactMap.get(MANIFEST_ENTRY);
-
-    String beamSizeString = manifest.getProperty(BeamSearch.BEAM_SIZE_PARAMETER);
-
-    int beamSize = SentimentME.DEFAULT_BEAM_SIZE;
-    if (beamSizeString != null) {
-      beamSize = Integer.parseInt(beamSizeString);
-    }
-
-    return new BeamSearch(beamSize,
-        (MaxentModel) artifactMap.get(SENTIMENT_MODEL_ENTRY_NAME));
   }
 
   /**

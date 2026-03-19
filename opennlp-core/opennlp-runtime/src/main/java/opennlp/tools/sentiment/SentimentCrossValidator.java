@@ -204,18 +204,14 @@ public class SentimentCrossValidator {
     CrossValidationPartitioner<DocumentSample> partitioner = new CrossValidationPartitioner<>(
         new SentimentToDocumentSampleStream(samples), nFolds);
 
-    SentimentModel model = null;
-
     while (partitioner.hasNext()) {
 
       CrossValidationPartitioner.TrainingSampleStream<DocumentSample> trainingSampleStream = partitioner
           .next();
 
-      if (factory != null) {
-        model = SentimentME.train(languageCode,
-            new DocumentToSentimentSampleStream(trainingSampleStream), params,
-            factory);
-      }
+      SentimentModel model = SentimentME.train(languageCode,
+          new DocumentToSentimentSampleStream(trainingSampleStream), params,
+          factory);
 
       // do testing
       SentimentEvaluator evaluator = new SentimentEvaluator(

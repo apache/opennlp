@@ -19,6 +19,7 @@ package opennlp.tools.sentiment;
 
 import java.io.Serial;
 import java.util.List;
+import java.util.Objects;
 
 import opennlp.tools.commons.Sample;
 
@@ -33,7 +34,6 @@ public class SentimentSample implements Sample {
   private final String sentiment;
   private final List<String> sentence;
   private final boolean isClearAdaptiveData;
-  private final String id = null;
 
   /**
    * Instantiates a {@link SentimentSample} object.
@@ -75,15 +75,34 @@ public class SentimentSample implements Sample {
     return sentence.toArray(new String[0]);
   }
 
-  public String getId() {
-    return id;
-  }
-
   /**
    * @return Returns the value of isClearAdaptiveData, {@code true} or {@code false}.
    */
   public boolean isClearAdaptiveDataSet() {
     return isClearAdaptiveData;
+  }
+
+  @Override
+  public String toString() {
+    return sentiment + " " + String.join(" ", sentence);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+    SentimentSample that = (SentimentSample) obj;
+    return Objects.equals(sentiment, that.sentiment)
+        && Objects.equals(sentence, that.sentence);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(sentiment, sentence);
   }
 
 }

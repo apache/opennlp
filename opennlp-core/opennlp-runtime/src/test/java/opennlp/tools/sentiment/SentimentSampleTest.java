@@ -58,12 +58,6 @@ public class SentimentSampleTest {
   }
 
   @Test
-  void testGetIdReturnsNull() {
-    SentimentSample sample = new SentimentSample("positive", new String[] {"test"});
-    Assertions.assertNull(sample.getId());
-  }
-
-  @Test
   void testSentenceIsDefensiveCopy() {
     String[] original = {"a", "b", "c"};
     SentimentSample sample = new SentimentSample("positive", original);
@@ -76,5 +70,31 @@ public class SentimentSampleTest {
   void testEmptySentence() {
     SentimentSample sample = new SentimentSample("neutral", new String[] {});
     Assertions.assertEquals(0, sample.getSentence().length);
+  }
+
+  @Test
+  void testToString() {
+    SentimentSample sample = new SentimentSample("positive",
+        new String[] {"I", "love", "this"});
+    Assertions.assertEquals("positive I love this", sample.toString());
+  }
+
+  @Test
+  void testEquals() {
+    SentimentSample a = new SentimentSample("positive", new String[] {"a", "b"});
+    SentimentSample b = new SentimentSample("positive", new String[] {"a", "b"});
+    SentimentSample c = new SentimentSample("negative", new String[] {"a", "b"});
+
+    Assertions.assertEquals(a, b);
+    Assertions.assertNotEquals(a, c);
+    Assertions.assertNotEquals(a, null);
+    Assertions.assertNotEquals(a, "string");
+  }
+
+  @Test
+  void testHashCode() {
+    SentimentSample a = new SentimentSample("positive", new String[] {"a", "b"});
+    SentimentSample b = new SentimentSample("positive", new String[] {"a", "b"});
+    Assertions.assertEquals(a.hashCode(), b.hashCode());
   }
 }

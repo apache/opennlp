@@ -38,6 +38,6 @@ public class SentimentDetailedFMeasureListener
    */
   @Override
   protected Span[] asSpanArray(SentimentSample sample) {
-    return null;
+    return new Span[] { new Span(0, 0, sample.getSentiment()) };
   }
 }

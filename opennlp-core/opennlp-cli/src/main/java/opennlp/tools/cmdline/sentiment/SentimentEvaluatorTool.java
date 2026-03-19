@@ -89,8 +89,6 @@ public class SentimentEvaluatorTool
     if (params.getMisclassified()) {
       listeners.add(new SentimentEvaluationErrorListener());
     }
-    SentimentDetailedFMeasureListener detailedFListener = null;
-
     if (params.getNameTypes() != null) {
       String[] nameTypes = params.getNameTypes().split(",");
       sampleStream = new SentimentSampleTypeFilter(nameTypes, sampleStream);
@@ -142,12 +140,7 @@ public class SentimentEvaluatorTool
     monitor.stopAndPrintFinalResult();
 
     System.out.println();
-
-    if (detailedFListener == null) {
-      System.out.println(evaluator.getFMeasure());
-    } else {
-      System.out.println(detailedFListener.toString());
-    }
+    System.out.println(evaluator.getFMeasure());
   }
 
 }
