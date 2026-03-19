@@ -28,7 +28,8 @@ under the License.
         <para>
         The Apache OpenNLP library is a machine learning based toolkit for the processing of natural language text.
         It supports the most common NLP tasks, such as tokenization, sentence segmentation,
-        part-of-speech tagging, named entity extraction, chunking, parsing, and coreference resolution.
+        part-of-speech tagging, named entity extraction, chunking, parsing, coreference resolution,
+        and sentiment analysis.
         These tasks are usually required to build more advanced text processing services.
         OpenNLP also includes maximum entropy and perceptron based machine learning.
         </para>
@@ -45,8 +46,8 @@ under the License.
         <para>The Apache OpenNLP library contains several components, enabling one to build
             a full natural language processing pipeline. These components
             include: sentence detector, tokenizer,
-            name finder, document categorizer, part-of-speech tagger, chunker, parser,
-            coreference resolution. Components contain parts which enable one to execute the
+            name finder, document categorizer, sentiment analyzer, part-of-speech tagger,
+            chunker, parser, coreference resolution. Components contain parts which enable one to execute the
             respective natural language processing task, to train a model and often also to evaluate a
             model. Each of these facilities is accessible via its application program
             interface (API). In addition, a command line interface (CLI) is provided for convenience

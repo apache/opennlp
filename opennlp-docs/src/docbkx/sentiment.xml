@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter xml:id="tools.sentiment" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Sentiment Analysis</title>
+
+    <section xml:id="tools.sentiment.classifying">
+        <title>Classifying</title>
+        <para>
+            The OpenNLP Sentiment Analyzer can classify text into sentiment categories such as
+            "positive" or "negative". It is based on the maximum entropy framework.
+            For example, the text below could be classified as <emphasis>positive</emphasis>:
+            <screen>
+<![CDATA[I love this product it is absolutely wonderful and amazing]]>
+            </screen>
+            and the text below could be classified as <emphasis>negative</emphasis>:
+            <screen>
+<![CDATA[Terrible experience the worst customer service I have ever had]]>
+            </screen>
+            To be able to classify text, the sentiment analyzer needs a model. The sentiment
+            categories are requirements-specific and defined by the training data. There are no
+            pre-built models for sentiment analysis under the OpenNLP project.
+        </para>
+
+        <section xml:id="tools.sentiment.classifying.cmdline">
+            <title>Sentiment Analysis Tool</title>
+            <para>
+                The easiest way to try out the sentiment analyzer is the command line tool.
+                The tool is only intended for demonstration and testing. The following command
+                shows how to use the sentiment analysis tool:
+                <screen>
+<![CDATA[$ opennlp Sentiment model]]>
+                </screen>
+                The input is read from standard input and the predicted sentiment is written
+                to standard output.
+            </para>
+        </section>
+
+        <section xml:id="tools.sentiment.classifying.api">
+            <title>Sentiment Analysis API</title>
+            <para>
+                To perform sentiment classification you will need a model encapsulated in the
+                <code>SentimentModel</code> class. First, load the model from an
+                <code>InputStream</code>:
+                <programlisting language="java">
+<![CDATA[InputStream is = ...
+SentimentModel model = new SentimentModel(is);]]>
+                </programlisting>
+                With the <code>SentimentModel</code> in hand, create a
+                <code>SentimentME</code> instance and predict sentiments:
+                <programlisting language="java">
+<![CDATA[SentimentME sentiment = new SentimentME(model);
+
+// Predict from a raw sentence string (tokenized internally)
+String result = sentiment.predict("I love this product");
+
+// Or predict from pre-tokenized input
+String[] tokens = new String[]{"I", "love", "this", "product"};
+String result2 = sentiment.predict(tokens);
+
+// Access the probability distribution over sentiment categories
+double[] probabilities = sentiment.probabilities(tokens);
+String bestSentiment = sentiment.getBestSentiment(probabilities);]]>
+                </programlisting>
+            </para>
+        </section>
+    </section>
+
+    <section xml:id="tools.sentiment.training">
+        <title>Training</title>
+        <para>
+            The Sentiment Analyzer can be trained on annotated training material. The data
+            format is one sample per line, containing the sentiment category followed by the
+            text tokens, all separated by whitespace. The following sample shows the required format:
+            <screen>
+<![CDATA[positive I love this movie it is absolutely wonderful and amazing
+positive This product is great and I am very happy with it
+negative I hate this product it broke after one day of use
+negative Terrible experience the worst customer service I have ever had]]>
+            </screen>
+        </para>
+
+        <section xml:id="tools.sentiment.training.tool">
+            <title>Training Tool</title>
+            <para>
+                The following command will train the sentiment analyzer and write the model
+                to <code>en-sentiment.bin</code>:
+                <screen>
+<![CDATA[$ opennlp SentimentTrainer -model en-sentiment.bin -lang en -data en-sentiment.train -encoding UTF-8]]>
+                </screen>
+            </para>
+        </section>
+
+        <section xml:id="tools.sentiment.training.api">
+            <title>Training API</title>
+            <para>
+                To train a sentiment model programmatically, prepare an
+                <code>ObjectStream</code> of <code>SentimentSample</code> objects and
+                call the <code>SentimentME.train()</code> method:
+                <programlisting language="java">
+<![CDATA[SentimentModel model;
+
+InputStreamFactory dataIn = new MarkableFileInputStreamFactory(
+    new File("en-sentiment.train"));
+
+ObjectStream<String> lineStream =
+    new PlainTextByLineStream(dataIn, StandardCharsets.UTF_8);
+ObjectStream<SentimentSample> sampleStream =
+    new SentimentSampleStream(lineStream);
+
+model = SentimentME.train("eng", sampleStream,
+    TrainingParameters.defaultParams(), new SentimentFactory());]]>
+                </programlisting>
+                Once trained, the model can be serialized for later use:
+                <programlisting language="java">
+<![CDATA[try (OutputStream modelOut = new BufferedOutputStream(
+    new FileOutputStream("en-sentiment.bin"))) {
+  model.serialize(modelOut);
+}]]>
+                </programlisting>
+            </para>
+        </section>
+    </section>
+
+    <section xml:id="tools.sentiment.evaluation">
+        <title>Evaluation</title>
+
+        <section xml:id="tools.sentiment.evaluation.tool">
+            <title>Evaluation Tool</title>
+            <para>
+                The sentiment analyzer can be evaluated against test data using the command line tool:
+                <screen>
+<![CDATA[$ opennlp SentimentEvaluator -model en-sentiment.bin -data en-sentiment.test -encoding UTF-8]]>
+                </screen>
+                This will output precision, recall, and F-measure statistics.
+            </para>
+        </section>
+
+        <section xml:id="tools.sentiment.evaluation.crossvalidation">
+            <title>Cross Validation</title>
+            <para>
+                K-fold cross validation can be performed to evaluate the model without a
+                separate test set:
+                <screen>
+<![CDATA[$ opennlp SentimentCrossValidator -lang en -data en-sentiment.train -encoding UTF-8 -folds 10]]>
+                </screen>
+            </para>
+        </section>
+
+        <section xml:id="tools.sentiment.evaluation.api">
+            <title>Evaluation API</title>
+            <para>
+                The evaluation API allows programmatic evaluation against a set of
+                <code>SentimentSample</code> references:
+                <programlisting language="java">
+<![CDATA[SentimentME sentiment = new SentimentME(model);
+SentimentEvaluator evaluator = new SentimentEvaluator(sentiment);
+evaluator.evaluate(testSampleStream);
+
+System.out.println(evaluator.getFMeasure());]]>
+                </programlisting>
+            </para>
+        </section>
+    </section>
+
+</chapter>
