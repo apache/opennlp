@@ -23,7 +23,7 @@ import opennlp.tools.ml.ArrayMath;
  * Performs line search to find a minimum.
  *
  * @see <a href="https://link.springer.com/book/10.1007/978-0-387-40065-5">
- *   Nocedal & Wright 2006, Numerical Optimization</a>, p. 37)
+ *   Nocedal &amp; Wright 2006, Numerical Optimization</a>, p. 37)
  */
 public class LineSearch {
   private static final double C = 0.0001;
