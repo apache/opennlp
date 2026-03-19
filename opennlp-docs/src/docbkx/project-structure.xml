@@ -121,6 +121,16 @@ under the License.
                     Add this dependency if your models use the Naive Bayes trainer.
                 </para>
             </listitem>
+            <listitem>
+                <para>
+                    <code>opennlp-ml-libsvm</code> — Support Vector Machine (SVM) based text classification
+                    via <link xlink:href="https://github.com/rzo1/zlibsvm">zlibsvm</link>. This module provides
+                    <code>DocumentCategorizerSVM</code>, an SVM-based implementation of the
+                    <code>DocumentCategorizer</code> interface with configurable term weighting
+                    (binary, TF, TF-IDF, log-normalized TF), feature selection (information gain,
+                    chi-square, term frequency, document frequency), and feature scaling.
+                </para>
+            </listitem>
         </itemizedlist>
 
         <para>

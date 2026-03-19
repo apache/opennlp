@@ -37,6 +37,9 @@ import opennlp.tools.cmdline.dictionary.DictionaryBuilderTool;
 import opennlp.tools.cmdline.doccat.DoccatConverterTool;
 import opennlp.tools.cmdline.doccat.DoccatCrossValidatorTool;
 import opennlp.tools.cmdline.doccat.DoccatEvaluatorTool;
+import opennlp.tools.cmdline.doccat.DoccatSVMEvaluatorTool;
+import opennlp.tools.cmdline.doccat.DoccatSVMTool;
+import opennlp.tools.cmdline.doccat.DoccatSVMTrainerTool;
 import opennlp.tools.cmdline.doccat.DoccatTool;
 import opennlp.tools.cmdline.doccat.DoccatTrainerTool;
 import opennlp.tools.cmdline.entitylinker.EntityLinkerTool;
@@ -99,6 +102,11 @@ public final class CLI {
     tools.add(new DoccatEvaluatorTool());
     tools.add(new DoccatCrossValidatorTool());
     tools.add(new DoccatConverterTool());
+
+    // Document Categorizer (SVM)
+    tools.add(new DoccatSVMTool());
+    tools.add(new DoccatSVMTrainerTool());
+    tools.add(new DoccatSVMEvaluatorTool());
 
     // Language Detector
     tools.add(new LanguageDetectorTool());

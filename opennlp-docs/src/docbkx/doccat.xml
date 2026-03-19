@@ -26,8 +26,10 @@ under the License.
 	<section xml:id="tools.doccat.classifying">
 		<title>Classifying</title>
 		<para>
-		The OpenNLP Document Categorizer can classify text into pre-defined categories. 
-		It is based on maximum entropy framework. For someone interested in Gross Margin,
+		The OpenNLP Document Categorizer can classify text into pre-defined categories.
+		It supports multiple classification backends: Maximum Entropy (default), Support Vector
+		Machines (SVM) via the <code>opennlp-ml-libsvm</code> module, and ONNX-based deep
+		learning models via the <code>opennlp-dl</code> module. For someone interested in Gross Margin,
 		the sample text given below could be classified as GMDecrease
 		<screen>
 <![CDATA[Major acquisitions that have a lower gross margin than the existing network
@@ -84,6 +86,74 @@ double[] outcomes = myCategorizer.categorize(textTokens);
 String category = myCategorizer.getBestCategory(outcomes);]]>
 			</programlisting>
 		</para>
+		<section xml:id="tools.doccat.api.svm">
+			<title>Using an SVM Model</title>
+			<para>
+				OpenNLP provides SVM-based document categorization through the
+				<code>DocumentCategorizerSVM</code> class in the <code>opennlp-ml-libsvm</code>
+				module. This implementation uses the
+				<link xmlns:xlink="http://www.w3.org/1999/xlink"
+					xlink:href="https://github.com/rzo1/zlibsvm">zlibsvm</link> library,
+				an object-oriented Java binding for LIBSVM.
+			</para>
+			<para>
+				SVM text classification supports configurable term weighting strategies
+				(binary, TF, TF-IDF, log-normalized TF), feature selection strategies
+				(information gain, chi-square, term frequency, document frequency),
+				feature scaling, and all SVM parameters (kernel type, cost, gamma, etc.).
+			</para>
+			<para>
+				To use SVM-based categorization, first add the dependency:
+				<programlisting language="xml">
+<![CDATA[<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-ml-libsvm</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>]]>
+				</programlisting>
+			</para>
+			<para>
+				Training an SVM model from <code>DocumentSample</code> data:
+				<programlisting language="java">
+<![CDATA[// Configure the SVM categorizer
+SvmDoccatConfiguration config = new SvmDoccatConfiguration.Builder()
+    .setSvmConfiguration(new SvmConfigurationImpl.Builder()
+        .setKernelType(KernelType.LINEAR)
+        .setProbability(true)
+        .build())
+    .setTermWeightingStrategy(TermWeightingStrategy.TF_IDF)
+    .setFeatureSelectionStrategy(FeatureSelectionStrategy.INFORMATION_GAIN)
+    .setMaxFeatures(1000)
+    .setScaleFeatures(true)
+    .setScaleRange(0.0, 1.0)
+    .build();
+
+// Train from a DocumentSample stream with a bag-of-words feature generator
+FeatureGenerator featureGenerator = new BagOfWordsFeatureGenerator();
+SvmDoccatModel model = DocumentCategorizerSVM.train("eng", sampleStream, config, featureGenerator);
+
+// Serialize the model
+try (OutputStream out = new FileOutputStream("doccat-svm.bin")) {
+    model.serialize(out);
+}]]>
+				</programlisting>
+			</para>
+			<para>
+				Classifying text with the trained model:
+				<programlisting language="java">
+<![CDATA[// Load the model
+SvmDoccatModel model;
+try (InputStream in = new FileInputStream("doccat-svm.bin")) {
+    model = SvmDoccatModel.deserialize(in);
+}
+
+// Classify
+DocumentCategorizer categorizer = new DocumentCategorizerSVM(model, new BagOfWordsFeatureGenerator());
+double[] outcomes = categorizer.categorize(new String[]{"tokens", "of", "text"});
+String bestCategory = categorizer.getBestCategory(outcomes);]]>
+				</programlisting>
+			</para>
+		</section>
 		<section xml:id="tools.doccat.api.onnx">
 			<title>Using an ONNX Model</title>
 			<para>
@@ -172,5 +242,46 @@ try {
 		</programlisting>
 		</para>
 		</section>
+	<section xml:id="tools.doccat.training.svm">
+		<title>Training an SVM Model</title>
+		<para>
+			The SVM-based document categorizer uses the same <code>DocumentSample</code> training
+			format as the Maximum Entropy categorizer. Training is done through the
+			<code>DocumentCategorizerSVM.train()</code> method with a
+			<code>SvmDoccatConfiguration</code> that controls the SVM parameters, term
+			weighting, feature selection, and feature scaling.
+		</para>
+		<para>
+			A typical SVM text classification pipeline uses a LINEAR kernel with
+			binary or TF-IDF term weighting and information gain or chi-square feature
+			selection:
+			<programlisting language="java">
+<![CDATA[SvmDoccatConfiguration config = new SvmDoccatConfiguration.Builder()
+    .setSvmConfiguration(new SvmConfigurationImpl.Builder()
+        .setKernelType(KernelType.LINEAR)
+        .setProbability(true)
+        .build())
+    .setTermWeightingStrategy(TermWeightingStrategy.TF_IDF)
+    .setFeatureSelectionStrategy(FeatureSelectionStrategy.INFORMATION_GAIN)
+    .setMaxFeatures(1000)
+    .setScaleFeatures(true)
+    .build();
+
+SvmDoccatModel model = DocumentCategorizerSVM.train("eng", sampleStream, config,
+    new BagOfWordsFeatureGenerator());]]>
+			</programlisting>
+		</para>
+		<para>
+			The resulting <code>SvmDoccatModel</code> can be serialized and deserialized
+			using Java serialization:
+			<programlisting language="java">
+<![CDATA[// Save
+model.serialize(new FileOutputStream("svm-doccat.bin"));
+
+// Load
+SvmDoccatModel loaded = SvmDoccatModel.deserialize(new FileInputStream("svm-doccat.bin"));]]>
+			</programlisting>
+		</para>
+	</section>
 	</section>
 </chapter>
