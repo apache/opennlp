@@ -102,30 +102,5 @@
     </plugins>
   </build>
 
-  <profiles>
-    <profile>
-      <id>eval-tests</id>
-      <properties>
-        <opennlp.forkCount>0.5C</opennlp.forkCount>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>-Xmx4g</argLine>
-              <includes>
-                <include>**/*Test.java</include>
-                <include>**/*Eval.java</include>
-              </includes>
-              <dependenciesToScan>
-                <dependency>org.apache.opennlp:opennlp-dl</dependency>
-              </dependenciesToScan>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+
 </project>

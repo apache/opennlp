@@ -28,12 +28,12 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import opennlp.dl.AbstractDLTest;
+import opennlp.tools.eval.AbstractEvalTest;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.util.Span;
 
-public class NameFinderDLEval extends AbstractDLTest {
+public class NameFinderDLEval extends AbstractEvalTest {
 
   private static final Logger logger = LoggerFactory.getLogger(NameFinderDLEval.class);
   private final SentenceDetector sentenceDetector;
