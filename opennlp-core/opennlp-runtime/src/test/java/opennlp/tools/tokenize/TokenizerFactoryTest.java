@@ -210,8 +210,8 @@ public class TokenizerFactoryTest {
 
     Assertions.assertEquals(expectedNumTokens, tokens.length);
     String[] sentSplit = sentence
-            .replaceAll("'", " '")
-            .replaceAll(",", " ,")
+            .replace("'", " '")
+            .replace(",", " ,")
             .split(" ");
     for (int i = 0; i < sentSplit.length; i++) {
       String sElement = sentSplit[i];
