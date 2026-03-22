@@ -24,83 +24,671 @@ under the License.
 <chapter xml:id="org.apache.opennlp.uima" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>UIMA Integration</title>
 <para>
-	The UIMA Integration wraps the OpenNLP components in UIMA Analysis Engines which can 
-	be used to automatically annotate text and train new OpenNLP models from annotated text.
+	The UIMA Integration module wraps the OpenNLP components as UIMA Analysis Engines.
+	These annotators can be used in any UIMA pipeline to automatically annotate text with
+	sentences, tokens, named entities, part-of-speech tags, chunks, and parse trees.
+	The module is located in the <literal>opennlp-uima</literal> artifact.
 </para>
-	<section xml:id="org.apache.opennlp.running-pear-sample">
-		<title>Running the pear sample in CVD</title>
+
+	<section xml:id="org.apache.opennlp.uima.dependency">
+		<title>Adding the Dependency</title>
 		<para>
-			The Cas Visual Debugger is shipped as part of the UIMA distribution and is a tool which can run
-			the OpenNLP UIMA Annotators and display their analysis results. The source distribution comes with a script
-			which can create a sample UIMA application. Which includes the sentence detector, tokenizer,
-			pos tagger, chunker and name finders for English. This sample application is packaged in the
-			pear format and must be installed with the pear installer before it can be run by CVD.
-			Please consult the UIMA documentation for further information about the pear installer.
+			To use the OpenNLP UIMA annotators, add the following dependency to your project:
+			<screen>
+<![CDATA[<dependency>
+  <groupId>org.apache.opennlp</groupId>
+  <artifactId>opennlp-uima</artifactId>
+  <version>${opennlp.version}</version>
+</dependency>]]>
+		 </screen>
+			This module depends on Apache UIMA and the OpenNLP runtime. The UIMA framework
+			dependency is included transitively.
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.type-system">
+		<title>Type System</title>
+		<para>
+			The module ships with a default type system defined in
+			<literal>TypeSystem.xml</literal> inside the descriptors directory.
+			This type system defines the following annotation types:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para><literal>opennlp.uima.Sentence</literal> - Sentence boundary annotations</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.Token</literal> - Token annotations with a <literal>pos</literal> feature for part-of-speech tags</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.Chunk</literal> - Chunk annotations with a <literal>chunkType</literal> feature (e.g. NP, VP)</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.Person</literal>, <literal>opennlp.uima.Organization</literal>,
+				<literal>opennlp.uima.Location</literal> - Named entity types</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.Date</literal>, <literal>opennlp.uima.Time</literal>,
+				<literal>opennlp.uima.Money</literal>, <literal>opennlp.uima.Percentage</literal>
+				 - Additional named entity types</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.Parse</literal> - Parse tree node annotations with
+				<literal>parseType</literal>, <literal>children</literal>, and <literal>prob</literal> features</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			The default type system can be replaced with a custom type system. To do so,
+			update the type references in the analysis engine descriptors to point to your
+			custom types and import your custom type system instead of <literal>TypeSystem.xml</literal>.
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.descriptor-structure">
+		<title>Descriptor Structure</title>
+		<para>
+			Each OpenNLP UIMA annotator is configured through a UIMA analysis engine descriptor XML file.
+			A descriptor specifies:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>The annotator implementation class</para>
+			</listitem>
+			<listitem>
+				<para>Configuration parameters (e.g. which type system types to use)</para>
+			</listitem>
+			<listitem>
+				<para>An external resource dependency for the OpenNLP model file</para>
+			</listitem>
+			<listitem>
+				<para>A reference to the type system</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			Models are loaded through the UIMA external resource mechanism. Each ML-based annotator
+			declares a dependency on a model resource with the key <literal>opennlp.uima.ModelName</literal>.
+			The model file is bound to this key through the resource manager configuration.
+			For example, to configure the sentence detector model:
+			<screen>
+<![CDATA[<externalResourceDependencies>
+  <externalResourceDependency>
+    <key>opennlp.uima.ModelName</key>
+    <interfaceName>opennlp.uima.sentdetect.SentenceModelResource</interfaceName>
+  </externalResourceDependency>
+</externalResourceDependencies>
+
+<resourceManagerConfiguration>
+  <externalResources>
+    <externalResource>
+      <name>SentenceModel</name>
+      <fileResourceSpecifier>
+        <fileUrl>file:en-sent.bin</fileUrl>
+      </fileResourceSpecifier>
+      <implementationName>opennlp.uima.sentdetect.SentenceModelResourceImpl</implementationName>
+    </externalResource>
+  </externalResources>
+  <externalResourceBindings>
+    <externalResourceBinding>
+      <key>opennlp.uima.ModelName</key>
+      <resourceName>SentenceModel</resourceName>
+    </externalResourceBinding>
+  </externalResourceBindings>
+</resourceManagerConfiguration>]]>
+		 </screen>
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.sentence-detector">
+		<title>Sentence Detector</title>
+		<para>
+			The <literal>opennlp.uima.sentdetect.SentenceDetector</literal> annotator detects
+			sentence boundaries and creates sentence annotations in the CAS.
 		</para>
 		<para>
-			The OpenNLP UIMA pear file must be build manually.
-			First download the source distribution, unzip it and go to the apache-opennlp/opennlp folder.
-			Type "mvn install" to build everything. Now build the pear file, go to apache-opennlp/opennlp-uima
-			and build it as shown below. Note the models will be downloaded
-			from the old SourceForge repository and are not licensed under the AL 2.0.
+			<emphasis role="bold">Configuration Parameters:</emphasis>
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The full name of the sentence annotation type.
+				Default: <literal>opennlp.uima.Sentence</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.ContainerType</literal> (optional) - If set, sentence detection
+				is restricted to within annotations of this type. Useful for detecting sentences only inside
+				specific regions of a document (e.g. paragraphs).</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.ProbabilityFeature</literal> (optional) - Feature name for
+				storing the detection confidence score on each sentence annotation.</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			<emphasis role="bold">Model Resource Interface:</emphasis>
+			<literal>opennlp.uima.sentdetect.SentenceModelResource</literal>
+		</para>
+		<para>
+			<emphasis role="bold">Example Descriptor:</emphasis> See <literal>descriptors/SentenceDetector.xml</literal>
+			in the opennlp-uima module.
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.tokenizer">
+		<title>Tokenizer</title>
+		<para>
+			Three tokenizer implementations are available as UIMA annotators. All tokenizers
+			require sentence annotations to already be present in the CAS.
+		</para>
+
+		<section xml:id="org.apache.opennlp.uima.tokenizer.learnable">
+			<title>Learnable Tokenizer</title>
+			<para>
+				The <literal>opennlp.uima.tokenize.Tokenizer</literal> annotator uses a maximum entropy
+				model to identify token boundaries.
+			</para>
+			<para>
+				<emphasis role="bold">Configuration Parameters:</emphasis>
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The sentence annotation type.
+					Default: <literal>opennlp.uima.Sentence</literal></para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.TokenType</literal> (mandatory) - The token annotation type.
+					Default: <literal>opennlp.uima.Token</literal></para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.tokenizer.IsAlphaNumericOptimization</literal> (optional) -
+					If set, enables an optimization that treats purely alphanumeric sequences as single tokens
+					without consulting the model.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.ProbabilityFeature</literal> (optional) - Feature name for
+					storing token probability scores.</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+				<emphasis role="bold">Model Resource Interface:</emphasis>
+				<literal>opennlp.uima.tokenize.TokenizerModelResource</literal>
+			</para>
+		</section>
+
+		<section xml:id="org.apache.opennlp.uima.tokenizer.simple">
+			<title>Simple Tokenizer</title>
+			<para>
+				The <literal>opennlp.uima.tokenize.SimpleTokenizer</literal> annotator is a rule-based
+				tokenizer that splits text by character class boundaries. It requires no model.
+			</para>
+			<para>
+				<emphasis role="bold">Configuration Parameters:</emphasis>
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The sentence annotation type.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.TokenType</literal> (mandatory) - The token annotation type.</para>
+				</listitem>
+			</itemizedlist>
+		</section>
+
+		<section xml:id="org.apache.opennlp.uima.tokenizer.whitespace">
+			<title>Whitespace Tokenizer</title>
+			<para>
+				The <literal>opennlp.uima.tokenize.WhitespaceTokenizer</literal> annotator splits text
+				at whitespace boundaries. It requires no model.
+			</para>
+			<para>
+				<emphasis role="bold">Configuration Parameters:</emphasis>
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The sentence annotation type.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.TokenType</literal> (mandatory) - The token annotation type.</para>
+				</listitem>
+			</itemizedlist>
+		</section>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.name-finder">
+		<title>Name Finder</title>
+		<para>
+			Two named entity recognition annotators are provided: a machine learning-based
+			annotator and a dictionary-based annotator. Both require sentence and token
+			annotations to already be present in the CAS.
+		</para>
+
+		<section xml:id="org.apache.opennlp.uima.name-finder.learnable">
+			<title>Learnable Name Finder</title>
+			<para>
+				The <literal>opennlp.uima.namefind.NameFinder</literal> annotator uses a maximum entropy
+				model to detect named entities such as person names, organizations, and locations.
+			</para>
+			<para>
+				<emphasis role="bold">Configuration Parameters:</emphasis>
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The sentence annotation type.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.TokenType</literal> (mandatory) - The token annotation type.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.NameType</literal> (mandatory) - The annotation type for detected
+					entities (e.g. <literal>opennlp.uima.Person</literal>).</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.ProbabilityFeature</literal> (optional) - Feature name for
+					storing entity probability scores.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.BeamSize</literal> (optional) - Beam size for the beam search.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.DocumentConfidenceType</literal> (optional) - Annotation type
+					for storing document-level confidence information.</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+				<emphasis role="bold">Model Resource Interface:</emphasis>
+				<literal>opennlp.uima.namefind.TokenNameFinderModelResource</literal>
+			</para>
+			<para>
+				To detect multiple entity types, configure one Name Finder annotator per entity type,
+				each with its own model. The provided descriptors include pre-configured
+				annotators for person, organization, location, date, time, money, and percentage entities.
+			</para>
+		</section>
+
+		<section xml:id="org.apache.opennlp.uima.name-finder.dictionary">
+			<title>Dictionary Name Finder</title>
+			<para>
+				The <literal>opennlp.uima.namefind.DictionaryNameFinder</literal> annotator performs
+				dictionary-based named entity recognition. It matches token sequences against entries
+				in an OpenNLP dictionary file. No machine learning model is required.
+			</para>
+			<para>
+				<emphasis role="bold">Configuration Parameters:</emphasis>
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The sentence annotation type.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.TokenType</literal> (mandatory) - The token annotation type.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.NameType</literal> (mandatory) - The annotation type for detected entities.</para>
+				</listitem>
+				<listitem>
+					<para><literal>opennlp.uima.Dictionary</literal> (mandatory) - External resource key for the
+					OpenNLP dictionary file to use for matching.</para>
+				</listitem>
+			</itemizedlist>
+		</section>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.pos-tagger">
+		<title>POS Tagger</title>
+		<para>
+			The <literal>opennlp.uima.postag.POSTagger</literal> annotator assigns part-of-speech tags
+			to tokens. It requires sentence and token annotations to already be present in the CAS.
+		</para>
+		<para>
+			<emphasis role="bold">Configuration Parameters:</emphasis>
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The sentence annotation type.
+				Default: <literal>opennlp.uima.Sentence</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.TokenType</literal> (mandatory) - The token annotation type.
+				Default: <literal>opennlp.uima.Token</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.POSFeature</literal> (mandatory) - The feature name on the token type
+				where the POS tag will be stored. Default: <literal>pos</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.ProbabilityFeature</literal> (optional) - Feature name for
+				storing tagging probability scores.</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.BeamSize</literal> (optional) - Beam size for the beam search.</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.DictionaryName</literal> (optional) - External resource key for a
+				tag dictionary that constrains possible tags for known words.</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			<emphasis role="bold">Model Resource Interface:</emphasis>
+			<literal>opennlp.uima.postag.POSModelResource</literal>
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.chunker">
+		<title>Chunker</title>
+		<para>
+			The <literal>opennlp.uima.chunker.Chunker</literal> annotator identifies non-recursive
+			syntactic phrases (chunks) such as noun phrases (NP) and verb phrases (VP).
+			It requires sentence and token annotations with POS tags to already be present in the CAS.
+		</para>
+		<para>
+			<emphasis role="bold">Configuration Parameters:</emphasis>
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The sentence annotation type.
+				Default: <literal>opennlp.uima.Sentence</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.TokenType</literal> (mandatory) - The token annotation type.
+				Default: <literal>opennlp.uima.Token</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.POSFeature</literal> (mandatory) - The feature name for reading
+				POS tags from tokens. Default: <literal>pos</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.ChunkType</literal> (mandatory) - The annotation type for chunk annotations.
+				Default: <literal>opennlp.uima.Chunk</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.ChunkTagFeature</literal> (mandatory) - The feature name on the chunk
+				type where the chunk tag (e.g. NP, VP) will be stored. Default: <literal>chunkType</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.BeamSize</literal> (optional) - Beam size for the beam search.</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			<emphasis role="bold">Model Resource Interface:</emphasis>
+			<literal>opennlp.uima.chunker.ChunkerModelResource</literal>
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.parser">
+		<title>Parser</title>
+		<para>
+			The <literal>opennlp.uima.parser.Parser</literal> annotator performs full syntactic
+			parsing and creates a hierarchical parse tree structure in the CAS. It requires
+			sentence and token annotations to already be present in the CAS.
+		</para>
+		<para>
+			<emphasis role="bold">Configuration Parameters:</emphasis>
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The sentence annotation type.
+				Default: <literal>opennlp.uima.Sentence</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.TokenType</literal> (mandatory) - The token annotation type.
+				Default: <literal>opennlp.uima.Token</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.ParseType</literal> (mandatory) - The annotation type for parse tree nodes.
+				Default: <literal>opennlp.uima.Parse</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.TypeFeature</literal> (mandatory) - The feature name for storing the
+				parse node type (e.g. S, NP, VP). Default: <literal>parseType</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.ChildrenFeature</literal> (mandatory) - The feature name for storing
+				references to child parse nodes. Default: <literal>children</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.ProbabilityFeature</literal> (optional) - Feature name for storing
+				parse probability scores. Default: <literal>prob</literal></para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.BeamSize</literal> (optional) - Beam size for the beam search.</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			<emphasis role="bold">Model Resource Interface:</emphasis>
+			<literal>opennlp.uima.parser.ParserModelResource</literal>
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.document-categorizer">
+		<title>Document Categorizer</title>
+		<para>
+			The <literal>opennlp.uima.doccat.DocumentCategorizer</literal> annotator classifies
+			document text into categories using a trained document categorization model.
+		</para>
+		<para>
+			<emphasis role="bold">Configuration Parameters:</emphasis>
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para><literal>opennlp.uima.doccat.CategoryType</literal> (mandatory) - The annotation type
+				for the category result.</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.doccat.CategoryFeature</literal> (mandatory) - The feature name on
+				the category type where the classification result is stored.</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			<emphasis role="bold">Model Resource Interface:</emphasis>
+			<literal>opennlp.uima.doccat.DoccatModelResource</literal>
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.language-detector">
+		<title>Language Detector</title>
+		<para>
+			The <literal>opennlp.uima.doccat.LanguageDetector</literal> annotator identifies
+			the language of the document text and sets the CAS document language accordingly.
+		</para>
+		<para>
+			<emphasis role="bold">Configuration Parameters:</emphasis>
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para><literal>opennlp.uima.SentenceType</literal> (mandatory) - The sentence annotation type.
+				Default: <literal>opennlp.uima.Sentence</literal></para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			<emphasis role="bold">Model Resource Interface:</emphasis>
+			<literal>opennlp.uima.doccat.DoccatModelResource</literal>
+		</para>
+		<para>
+			<emphasis role="bold">Example Descriptor:</emphasis> See <literal>descriptors/LanguageDetector.xml</literal>
+			in the opennlp-uima module.
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.normalizer">
+		<title>Normalizer</title>
+		<para>
+			The <literal>opennlp.uima.normalizer.Normalizer</literal> annotator extracts structured
+			data from named entity annotations. It can convert the covered text of a named entity
+			into typed values (e.g. parsing a money amount into a numeric value) and optionally
+			look up normalized forms in a dictionary.
+		</para>
+		<para>
+			<emphasis role="bold">Configuration Parameters:</emphasis>
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para><literal>opennlp.uima.NameType</literal> (mandatory) - The named entity annotation type
+				to normalize.</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.normalizer.StructureFeature</literal> (mandatory) - The feature name
+				where the normalized value is stored.</para>
+			</listitem>
+			<listitem>
+				<para><literal>opennlp.uima.Dictionary</literal> (optional) - External resource key for a
+				dictionary used to look up normalized forms.</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			The normalizer supports the following target feature types:
+			<literal>String</literal>, <literal>Byte</literal>, <literal>Short</literal>,
+			<literal>Integer</literal>, <literal>Long</literal>, <literal>Float</literal>,
+			and <literal>Double</literal>. Number parsing is locale-aware and uses the CAS
+			document language.
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.uima.aggregate-pipeline">
+		<title>Building an Aggregate Pipeline</title>
+		<para>
+			The annotators are designed to be composed into an aggregate analysis engine
+			where each annotator builds on the annotations produced by earlier ones.
+			The standard processing order is:
+		</para>
+		<itemizedlist>
+			<listitem><para>Sentence Detector (produces sentence annotations)</para></listitem>
+			<listitem><para>Tokenizer (produces token annotations within sentences)</para></listitem>
+			<listitem><para>Name Finders (produce entity annotations from tokens)</para></listitem>
+			<listitem><para>POS Tagger (adds POS tags to tokens)</para></listitem>
+			<listitem><para>Chunker (produces chunk annotations from POS-tagged tokens)</para></listitem>
+			<listitem><para>Parser (produces parse tree from tokens within sentences)</para></listitem>
+		</itemizedlist>
+		<para>
+			The module includes a pre-configured aggregate descriptor
+			<literal>descriptors/OpenNlpTextAnalyzer.xml</literal> that chains sentence detection,
+			tokenization, multiple name finders (person, organization, location, date, time, money,
+			percentage), POS tagging, chunking, and parsing in the correct order.
+		</para>
+		<para>
+			This aggregate descriptor demonstrates how to bind models for all annotators in one place
+			using the resource manager configuration. Each annotator's model key follows the pattern
+			<literal>AnnotatorKey/opennlp.uima.ModelName</literal>, for example:
 			<screen>
-<![CDATA[$ ant -f createPear.xml
-Buildfile: createPear.xml
-
-createPear:
-     [echo] ##### Creating OpenNlpTextAnalyzer pear #####
-     [copy] Copying 13 files to OpenNlpTextAnalyzer/desc
-     [copy] Copying 1 file to OpenNlpTextAnalyzer/metadata
-     [copy] Copying 1 file to OpenNlpTextAnalyzer/lib
-     [copy] Copying 3 files to OpenNlpTextAnalyzer/lib
-    [mkdir] Created dir: OpenNlpTextAnalyzer/models
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-token.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-token.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-sent.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-sent.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-date.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-ner-date.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-location.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-ner-location.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-money.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-ner-money.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-organization.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-ner-organization.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-percentage.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-ner-percentage.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-person.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-ner-person.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-ner-time.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-ner-time.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-pos-maxent.bin
-      [get] Getting: https://opennlp.sourceforge.net/models-1.5/en-chunker.bin
-      [get] To: OpenNlpTextAnalyzer/models/en-chunker.bin
-      [zip] Building zip: OpenNlpTextAnalyzer.pear
-
-BUILD SUCCESSFUL
-Total time: 3 minutes 20 seconds]]>
+<![CDATA[<externalResourceBinding>
+  <key>SentenceDetector/opennlp.uima.ModelName</key>
+  <resourceName>SentenceModel</resourceName>
+</externalResourceBinding>
+<externalResourceBinding>
+  <key>Tokenizer/opennlp.uima.ModelName</key>
+  <resourceName>TokenModel</resourceName>
+</externalResourceBinding>]]>
 		 </screen>
 		</para>
 		<para>
-			After the pear is installed start the Cas Visual Debugger shipped with the UIMA framework.
-			And click on Tools -> Load AE. Then select the opennlp.uima.OpenNlpTextAnalyzer_pear.xml
-			file in the file dialog. Now enter some text and start the analysis engine with
-			"Run -> Run OpenNLPTextAnalyzer". Afterwards the results will be displayed.
-			You should see sentences, tokens, chunks, pos tags and maybe some names. Remember the input text
-			must be written in English.
+			Below is a complete example showing how to create and run an aggregate pipeline
+			programmatically using the UIMA framework APIs:
+			<screen>
+<![CDATA[// Load the aggregate analysis engine descriptor
+XMLInputSource in = new XMLInputSource("descriptors/OpenNlpTextAnalyzer.xml");
+ResourceSpecifier specifier = UIMAFramework.getXMLParser()
+    .parseResourceSpecifier(in);
+
+// Create the analysis engine
+AnalysisEngine ae = UIMAFramework.produceAnalysisEngine(specifier);
+
+// Create a CAS and set the document text
+CAS cas = ae.newCAS();
+cas.setDocumentText("Pierre Vinken, 61 years old, will join the board "
+    + "as a nonexecutive director Nov. 29. Mr. Vinken is chairman "
+    + "of Elsevier N.V., the Dutch publishing group.");
+cas.setDocumentLanguage("en");
+
+// Run the pipeline
+ae.process(cas);
+
+// Iterate over detected sentences
+Type sentenceType = cas.getTypeSystem().getType("opennlp.uima.Sentence");
+for (AnnotationFS sentence : cas.getAnnotationIndex(sentenceType)) {
+  System.out.println("Sentence: " + sentence.getCoveredText());
+}
+
+// Iterate over detected tokens
+Type tokenType = cas.getTypeSystem().getType("opennlp.uima.Token");
+Feature posFeature = tokenType.getFeatureByBaseName("pos");
+for (AnnotationFS token : cas.getAnnotationIndex(tokenType)) {
+  System.out.println("Token: " + token.getCoveredText()
+      + " POS: " + token.getStringValue(posFeature));
+}
+
+// Iterate over detected person names
+Type personType = cas.getTypeSystem().getType("opennlp.uima.Person");
+for (AnnotationFS person : cas.getAnnotationIndex(personType)) {
+  System.out.println("Person: " + person.getCoveredText());
+}
+
+// Clean up
+cas.release();
+ae.destroy();]]>
+		 </screen>
 		</para>
 	</section>
-	<section xml:id="org.apache.opennlp.further-help">
-		<title>Further Help</title>
+
+	<section xml:id="org.apache.opennlp.uima.custom-types">
+		<title>Using Custom Type Systems</title>
 		<para>
-			For more information about how to use the integration please consult the javadoc of the individual
-			Analysis Engines and checkout the included xml descriptors.
+			The default type system can be replaced with your own custom types. This is useful when
+			integrating OpenNLP annotators into an existing UIMA pipeline that already defines
+			its own type system.
 		</para>
 		<para>
-			TODO: Extend this documentation with information about the individual components.
-			If you want to contribute please contact us on the mailing list or comment on the jira issue
-			<link xlink:href="https://issues.apache.org/jira/browse/OPENNLP-49">OPENNLP-49</link>.
+			To use custom types:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>Create your own type system descriptor with the annotation types you need.</para>
+			</listitem>
+			<listitem>
+				<para>Update the annotator descriptor to import your custom type system instead of
+				<literal>TypeSystem.xml</literal>.</para>
+			</listitem>
+			<listitem>
+				<para>Set the configuration parameters (e.g. <literal>opennlp.uima.SentenceType</literal>,
+				<literal>opennlp.uima.TokenType</literal>) to reference your custom type names.</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			For example, if your type system defines sentences as <literal>my.types.Sentence</literal>
+			and tokens as <literal>my.types.Token</literal>, update the descriptor:
+			<screen>
+<![CDATA[<configurationParameterSettings>
+  <nameValuePair>
+    <name>opennlp.uima.SentenceType</name>
+    <value>
+      <string>my.types.Sentence</string>
+    </value>
+  </nameValuePair>
+  <nameValuePair>
+    <name>opennlp.uima.TokenType</name>
+    <value>
+      <string>my.types.Token</string>
+    </value>
+  </nameValuePair>
+</configurationParameterSettings>]]>
+		 </screen>
+		</para>
+	</section>
+
+	<section xml:id="org.apache.opennlp.running-pear-sample">
+		<title>Running the PEAR Sample in CVD</title>
+		<para>
+			The CAS Visual Debugger (CVD) is shipped as part of the UIMA distribution and is a tool
+			which can run the OpenNLP UIMA Annotators and display their analysis results. The source
+			distribution comes with a script which can create a sample UIMA application. This includes
+			the sentence detector, tokenizer, POS tagger, chunker, and name finders for English. This
+			sample application is packaged in the PEAR format and must be installed with the PEAR
+			installer before it can be run by CVD. Please consult the UIMA documentation for further
+			information about the PEAR installer.
+		</para>
+		<para>
+			After the PEAR is installed, start the CAS Visual Debugger shipped with the UIMA framework
+			and click on Tools -> Load AE. Then select the
+			<literal>opennlp.uima.OpenNlpTextAnalyzer_pear.xml</literal> file in the file dialog.
+			Now enter some text and start the analysis engine with "Run -> Run OpenNLPTextAnalyzer".
+			Afterwards the results will be displayed. You should see sentences, tokens, chunks, POS
+			tags, and possibly some named entities. Remember the input text must be written in English.
 		</para>
 	</section>
 </chapter>
