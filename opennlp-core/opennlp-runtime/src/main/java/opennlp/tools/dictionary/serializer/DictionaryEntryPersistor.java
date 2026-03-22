@@ -226,7 +226,7 @@ public class DictionaryEntryPersistor {
   public static boolean create(InputStream in, EntryInserter inserter)
       throws IOException {
 
-    DictionaryContenthandler profileContentHandler = new DictionaryContenthandler(inserter);
+    DictionaryContenthandler handler = new DictionaryContenthandler(inserter);
 
     XMLReader xmlReader;
     try {
@@ -235,14 +235,14 @@ public class DictionaryEntryPersistor {
       // There is a compatibility problem here: JAXP default is false while SAX 2 default is true!
       // OpenNLP requires it activated!
       xmlReader.setFeature(SAX_FEATURE_NAMESPACES, true);
-      xmlReader.setContentHandler(profileContentHandler);
+      xmlReader.setContentHandler(handler);
       xmlReader.parse(new InputSource(new UncloseableInputStream(in)));
     }
     catch (ParserConfigurationException | SAXException e) {
       throw new InvalidFormatException("The profile data stream has " +
           "an invalid format!", e);
     }
-    return profileContentHandler.mIsCaseSensitiveDictionary;
+    return handler.mIsCaseSensitiveDictionary;
   }
 
   /**

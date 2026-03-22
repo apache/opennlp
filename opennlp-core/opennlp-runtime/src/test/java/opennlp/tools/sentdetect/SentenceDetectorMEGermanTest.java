@@ -152,10 +152,10 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
   }
 
   /*
-    * A reproducer and test for OPENNLP-1781.
+   * A reproducer and test for OPENNLP-1781.
    */
   @Test
-  void testSentDetectWithAbbreviationsAtSentenceStart() {
+  void testSentDetectWithSingleLetterAbbreviationsAtSentenceStart() {
     prepareResources(true);
 
     final String sent1 = "S. Träume sind eine Verbindung von Gedanken.";
@@ -167,6 +167,27 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
         () -> assertEquals(1, sents.length),
         () -> assertEquals(sent1, sents[0]),
         () -> assertEquals(1, probs.length));
+  }
+
+  /*
+   * A reproducer and test for OPENNLP-1809.
+   */
+  @Test
+  void testSentDetectWithMultiLetterAbbreviationsAtSentenceStart() {
+    prepareResources(true);
+
+    final String sent1 = "Bek. Problem: Schlafmangel.";
+    final String sent2 = "Über die letzten Tage hinweg war sie zunehmend müde.";
+
+    String sampleSentences = sent1 + " " + sent2;
+    String[] sents = sentenceDetector.sentDetect(sampleSentences);
+    double[] probs = sentenceDetector.probs();
+
+    assertAll(
+        () -> assertEquals(2, sents.length),
+        () -> assertEquals(sent1, sents[0]),
+        () -> assertEquals(sent2, sents[1]),
+        () -> assertEquals(2, probs.length));
   }
 
   /*
