@@ -26,10 +26,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import opennlp.tools.commons.Internal;
 import opennlp.tools.ml.TrainerFactory;
 import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.LanguageCodeValidator;
 import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.TrainingParameters;
 import opennlp.tools.util.model.BaseModel;
@@ -278,12 +275,10 @@ public final class CmdLineUtil {
   }
 
   public static void checkLanguageCode(String code) {
-    List<String> languageCodes = new ArrayList<>(Arrays.asList(Locale.getISOLanguages()));
-    languageCodes.add("x-unspecified");
-
-    if (!languageCodes.contains(code)) {
-      throw new TerminateToolException(1, "Unknown language code " + code + ", " +
-          "must be an ISO 639 code!");
+    if (!LanguageCodeValidator.isValid(code)) {
+      throw new TerminateToolException(1,
+          "Unknown language code " + code
+              + ", must be an ISO 639 code!");
     }
   }
 

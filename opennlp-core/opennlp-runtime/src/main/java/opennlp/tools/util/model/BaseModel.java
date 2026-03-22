@@ -43,6 +43,7 @@ import java.util.zip.ZipOutputStream;
 
 import opennlp.tools.util.BaseToolFactory;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.LanguageCodeValidator;
 import opennlp.tools.util.Version;
 import opennlp.tools.util.ext.ExtensionLoader;
 
@@ -108,6 +109,7 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     this(componentName, false);
 
     Objects.requireNonNull(languageCode, "languageCode must not be null");
+    LanguageCodeValidator.validateLanguageCode(languageCode);
 
     createBaseArtifactSerializers(artifactSerializers);
 
