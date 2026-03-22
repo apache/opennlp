@@ -190,6 +190,19 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
         () -> assertEquals(2, probs.length));
   }
 
+  // Edge case: The same abbreviation appears twice in a single sentence segment.
+  @Test
+  void testSentDetectWithDuplicateAbbreviationInSameSegment() {
+    prepareResources(true);
+    final String sent1 = "Lt. Vertrag und lt. Bescheid gelten andere Bedingungen.";
+    String[] sents = sentenceDetector.sentDetect(sent1);
+    double[] probs = sentenceDetector.probs();
+    assertAll(
+        () -> assertEquals(1, sents.length),
+        () -> assertEquals(sent1, sents[0]),
+        () -> assertEquals(1, probs.length));
+  }
+
   /*
    * A reproducer and test for OPENNLP-1767.
    * It checks that sentence detection with common abbreviations works correctly,
