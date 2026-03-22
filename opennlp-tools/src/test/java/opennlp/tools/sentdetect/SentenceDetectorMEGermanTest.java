@@ -203,6 +203,26 @@ public class SentenceDetectorMEGermanTest extends AbstractSentenceDetectorTest {
         () -> assertEquals(1, probs.length));
   }
 
+  /**
+   * Edge case: Multi-letter abbreviation at the start of a non-first sentence
+   * with {@code useTokenEnd = false} (no space between sentences).
+   */
+  @Test
+  void testSentDetectWithMultiLetterAbbreviationAtNonFirstSentenceStart() {
+    prepareResources(false);
+    final String sent1 = "Träume sind eine Verbindung von Gedanken.";
+    final String sent2 = "Bek. Problem: Schlafmangel.";
+    // No space between sentences (useTokenEnd=false supports this)
+    String sampleSentences = sent1 + sent2;
+    String[] sents = sentenceDetector.sentDetect(sampleSentences);
+    double[] probs = sentenceDetector.probs();
+    assertAll(
+        () -> assertEquals(2, sents.length),
+        () -> assertEquals(sent1, sents[0]),
+        () -> assertEquals(sent2, sents[1]),
+        () -> assertEquals(2, probs.length));
+  }
+
   /*
    * A reproducer and test for OPENNLP-1767.
    * It checks that sentence detection with common abbreviations works correctly,

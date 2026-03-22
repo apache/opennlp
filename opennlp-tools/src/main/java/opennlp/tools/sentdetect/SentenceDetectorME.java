@@ -204,7 +204,13 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
       // skip over the leading parts of non-token final delimiters
       int fws = getFirstWS(s,cint + 1);
       if (i + 1 < end && enders.get(i + 1) < fws) {
-        continue;
+        // Do not skip if the character right after the delimiter is uppercase,
+        // as this likely indicates the start of a new sentence (e.g., "Gedanken.Bek.")
+        // rather than a multi-period abbreviation (e.g., "z.B.").
+        int nextCharIdx = cint + 1;
+        if (nextCharIdx >= s.length() || !Character.isUpperCase(s.charAt(nextCharIdx))) {
+          continue;
+        }
       }
       if (positions.size() > 0 && cint < positions.get(positions.size() - 1)) continue;
 
@@ -351,11 +357,11 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
         if (tokenStartPos > candidateIndex) {
           break; // past candidate position, no point searching further
         }
-        if (tokenStartPos == 0
+        if (tokenStartPos == fromIndex
             && searchText.substring(tokenStartPos, candidateIndex + 1).equals(abbToken)) {
-          return false; // full abbreviation match at sentence start -> no acceptable break
+          return false; // full abbreviation match at segment start -> no acceptable break
         }
-        final char prevChar = s.charAt(tokenStartPos == 0 ? tokenStartPos : tokenStartPos - 1);
+        final char prevChar = s.charAt(tokenStartPos == fromIndex ? tokenStartPos : tokenStartPos - 1);
         if (tokenStartPos + tokenLength >= candidateIndex
           /*
            * Note:
