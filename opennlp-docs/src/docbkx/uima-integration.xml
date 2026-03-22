@@ -64,12 +64,10 @@ under the License.
 				<para><literal>opennlp.uima.Chunk</literal> - Chunk annotations with a <literal>chunkType</literal> feature (e.g. NP, VP)</para>
 			</listitem>
 			<listitem>
-				<para><literal>opennlp.uima.Person</literal>, <literal>opennlp.uima.Organization</literal>,
-				<literal>opennlp.uima.Location</literal> - Named entity types</para>
+				<para><literal>opennlp.uima.Person | Organization | Location</literal> - Named entity types</para>
 			</listitem>
 			<listitem>
-				<para><literal>opennlp.uima.Date</literal>, <literal>opennlp.uima.Time</literal>,
-				<literal>opennlp.uima.Money</literal>, <literal>opennlp.uima.Percentage</literal>
+				<para><literal>opennlp.uima.Date | Time | Money | Percentage</literal>
 				 - Additional named entity types</para>
 			</listitem>
 			<listitem>
@@ -88,7 +86,7 @@ under the License.
 		<title>Descriptor Structure</title>
 		<para>
 			Each OpenNLP UIMA annotator is configured through a UIMA analysis engine descriptor XML file.
-			A descriptor specifies:
+			It specifies:
 		</para>
 		<itemizedlist>
 			<listitem>
