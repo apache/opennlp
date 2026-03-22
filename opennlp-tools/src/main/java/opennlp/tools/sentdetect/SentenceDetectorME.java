@@ -339,27 +339,31 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     if (abbDict == null)
       return true;
 
+    final String text = s.toString();
     for (StringList abb : abbDict) {
-      final String token = abb.getToken(0);
-      final int tokenPosition = s.toString().indexOf(token, fromIndex);
-      if (tokenPosition == -1) {
-        continue; // skip fast
+      final String abbToken = abb.getToken(0);
+      final int tokenStartPos = text.indexOf(abbToken, fromIndex);
+      if (tokenStartPos == -1) {
+        continue; // skip fast when abb is not present in text
       }
+      if (tokenStartPos == 0 && text.substring(tokenStartPos, candidateIndex + 1).equals(abbToken)) {
+        return false; // full abbreviation match at sentence start -> no acceptable break
+      } else {
+        final int tokenLength = abbToken.length();
+        final char prevChar = s.charAt(tokenStartPos == 0 ? tokenStartPos : tokenStartPos - 1);
+        if (tokenStartPos + tokenLength < candidateIndex || tokenStartPos > candidateIndex ||
+          /*
+           * Note:
+           * Skip abbreviation candidate if regular characters exist directly before it,
+           * That is, any letter or digit except: a whitespace, an apostrophe, or an opening round bracket.
+           * This prevents mismatches from overlaps close to an actual sentence end.
+           */
+            !(Character.isWhitespace(prevChar) || isApostrophe(prevChar) || prevChar == '(')) {
 
-      final char prevChar = s.charAt(tokenPosition == 0 ? tokenPosition : tokenPosition - 1);
-      int tokenLength = token.length();
-      if (tokenPosition + tokenLength < candidateIndex || tokenPosition > candidateIndex ||
-        /*
-         * Note:
-         * Skip abbreviation candidate if regular characters exist directly before it,
-         * That is, any letter or digit except: a whitespace, an apostrophe, or an opening round bracket.
-         * This prevents mismatches from overlaps close to an actual sentence end.
-         */
-          !(Character.isWhitespace(prevChar) || isApostrophe(prevChar) || prevChar == '(')) {
-
-        continue;
+          continue;
+        }
+        return false; // in case of a valid abbreviation: the (sentence) break is not accepted
       }
-      return false; // in case of a valid abbreviation: the (sentence) break is not accepted
     }
     return true; // no abbreviation(s) at given positions: valid sentence boundary
   }
