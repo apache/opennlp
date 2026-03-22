@@ -1,5 +1,5 @@
 Apache OpenNLP
-Copyright 2021-2025 The Apache Software Foundation
+Copyright 2021-2026 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -62,8 +62,12 @@ List of third-party dependencies grouped by their license type.
         * HPPC Collections (com.carrotsearch:hppc:0.7.2 - http://labs.carrotsearch.com/hppc.html/hppc)
         * jcommander (com.beust:jcommander:1.78 - https://jcommander.org)
         * SLF4J 2 Provider for Log4j API (org.apache.logging.log4j:log4j-slf4j2-impl:2.25.3 - https://logging.apache.org/log4j/2.x/)
-        * zlibsvm API (de.hs-heilbronn.mi:zlibsvm-api:2.1.2 - https://github.com/rzo1/zlibsvm)
-        * zlibsvm Core (de.hs-heilbronn.mi:zlibsvm-core:2.1.2 - https://github.com/rzo1/zlibsvm)
+        * zlibsvm-api (de.hs-heilbronn.mi:zlibsvm-api:2.1.2 - https://github.com/rzo1/zlibsvm/zlibsvm-api)
+        * zlibsvm-core (de.hs-heilbronn.mi:zlibsvm-core:2.1.2 - https://github.com/rzo1/zlibsvm/zlibsvm-core)
+
+    BSD 3-Clause License
+
+        * libsvm (tw.edu.ntu.csie:libsvm:3.35 - https://github.com/cjlin1/libsvm)
 
     BSD License
 
