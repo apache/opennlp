@@ -1,5 +1,5 @@
 Apache OpenNLP
-Copyright 2021-2025 The Apache Software Foundation
+Copyright 2021-2026 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -38,5 +38,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+============================================================================
+
+The SVM-based document categorizer in opennlp-ml-libsvm uses zlibsvm
+(https://github.com/rzo1/zlibsvm), an object-oriented Java binding for
+LIBSVM (https://www.csie.ntu.edu.tw/~cjlin/libsvm/).
+
+zlibsvm is licensed under the Apache License, Version 2.0.
+LIBSVM is licensed under the BSD 3-Clause License.
+
+Copyright (c) 2000-2023 Chih-Chung Chang and Chih-Jen Lin
 
 ============================================================================

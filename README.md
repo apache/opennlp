@@ -39,7 +39,7 @@ The goal of the OpenNLP project is to be a mature toolkit for the above mentione
 An additional goal is to provide a large number of pre-built models for a variety of languages, as
 well as the annotated text resources that those models are derived from.
 
-Presently, OpenNLP includes common classifiers such as Maximum Entropy, Perceptron and Naive Bayes.
+Presently, OpenNLP includes common classifiers such as Maximum Entropy, Perceptron, Naive Bayes and Support Vector Machines (SVM).
 
 OpenNLP can be used both programmatically through its Java API or from a terminal through its CLI. 
 OpenNLP API can be easily plugged into distributed streaming data pipelines like Apache Flink, Apache NiFi, Apache Spark.
@@ -74,6 +74,7 @@ Currently, the library has different modules:
 * `opennlp-ml-maxent` : Maximum Entropy (MaxEnt) machine learning implementation.
 * `opennlp-ml-bayes` : Naive Bayes machine learning implementation.
 * `opennlp-ml-perceptron` : Perceptron-based machine learning implementation.
+* `opennlp-ml-libsvm` : Support Vector Machine (SVM) based text classification via [zlibsvm](https://github.com/rzo1/zlibsvm).
 * `opennlp-dl` : Apache OpenNLP adapter for [ONNX](https://onnx.ai) models using the `onnxruntime` dependency.
 * `opennlp-dl-gpu` : Replaces `onnxruntime` with the `onnxruntime_gpu` dependency to support GPU acceleration.
 * `opennlp-model-resolver` : Classes for discovering and loading Apache OpenNLP models from the classpath.
