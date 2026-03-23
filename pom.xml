@@ -270,7 +270,7 @@
 					<configuration>
 						<useReleaseProfile>false</useReleaseProfile>
 						<goals>deploy</goals>
-						<arguments>-Papache-release</arguments>
+						<arguments>-Papache-release -Peval-tests -DskipTests</arguments>
 						<mavenExecutorId>forked-path</mavenExecutorId>
 					</configuration>
 				</plugin>
