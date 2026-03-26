@@ -24,7 +24,7 @@
   <parent>
 	<groupId>org.apache.opennlp</groupId>
 	<artifactId>opennlp</artifactId>
-	<version>2.5.8-SNAPSHOT</version>
+	<version>2.5.8</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -130,11 +130,10 @@
 							<preProcess>
 								<copy todir="${project.build.directory}/docbkx/epub3/images">
 									<fileset dir="src/docbkx/images/">
-										<include name="*.png"/>
+										<include name="*.png" />
 									</fileset>
 								</copy>
-								<copy todir="${project.build.directory}/docbkx/epub3/css"
-											file="src/docbkx/css/opennlp-dev-manual.css"/>
+								<copy todir="${project.build.directory}/docbkx/epub3/css" file="src/docbkx/css/opennlp-dev-manual.css" />
 							</preProcess>
 						</configuration>
 					</plugin>
