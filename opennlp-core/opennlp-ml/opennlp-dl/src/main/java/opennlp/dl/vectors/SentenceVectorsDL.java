@@ -32,7 +32,7 @@ import ai.onnxruntime.OrtSession;
 import opennlp.dl.AbstractDL;
 import opennlp.dl.Tokens;
 import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.WordpieceTokenizer;
+
 
 /**
  * Facilitates the generation of sentence vectors using
@@ -55,7 +55,7 @@ public class SentenceVectorsDL extends AbstractDL {
     env = OrtEnvironment.getEnvironment();
     session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
     vocab = loadVocab(new File(vocabulary.getPath()));
-    tokenizer = new WordpieceTokenizer(vocab.keySet());
+    tokenizer = createTokenizer(vocab);
 
   }
 
