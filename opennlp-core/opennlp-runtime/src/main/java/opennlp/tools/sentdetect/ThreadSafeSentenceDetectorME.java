@@ -43,7 +43,12 @@ import opennlp.tools.util.Span;
  * @see Probabilistic
  * @see SentenceDetector
  * @see SentenceDetectorME
+ *
+ * @deprecated As of OPENNLP-1816,
+ *     {@link SentenceDetectorME} is itself thread-safe.
+ *     Use it directly instead.
  */
+@Deprecated(since = "3.0.0")
 @ThreadSafe
 public class ThreadSafeSentenceDetectorME implements SentenceDetector, Probabilistic, AutoCloseable {
 

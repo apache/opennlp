@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
 import opennlp.tools.util.BeamSearchContextGenerator;
@@ -34,11 +35,15 @@ import opennlp.tools.util.SequenceValidator;
  * <p>
  * This is based on the description in Ratnaparkhi (1998),
  * PhD diss, Univ. of Pennsylvania.
+ * <p>
+ * This implementation is thread-safe. The contexts cache and probability buffer
+ * are maintained per-thread via {@link ThreadLocal}.
  *
  * @see Sequence
  * @see SequenceValidator
  * @see BeamSearchContextGenerator
  */
+@ThreadSafe
 public class BeamSearch implements SequenceClassificationModel {
 
   public static final String BEAM_SIZE_PARAMETER = "BeamSize";
@@ -48,9 +53,21 @@ public class BeamSearch implements SequenceClassificationModel {
   protected final int size;
   protected final MaxentModel model;
 
-  private final double[] probs;
-  private Cache<String[], double[]> contextsCache;
   private static final int zeroLog = -100000;
+
+  private final int cacheSize;
+
+  private final ThreadLocal<CacheState> threadState;
+
+  private static final class CacheState {
+    private final double[] probs;
+    private final Cache<String[], double[]> cache;
+
+    CacheState(int numOutcomes, int cacheSize) {
+      this.probs = new double[numOutcomes];
+      this.cache = cacheSize > 0 ? new Cache<>(cacheSize) : null;
+    }
+  }
 
   /**
    * Initializes a {@link BeamSearch} instance.
@@ -63,43 +80,30 @@ public class BeamSearch implements SequenceClassificationModel {
   }
 
   /**
-   * Initializes a {@link BeamSearch} instance.
+   * Initializes a {@link BeamSearch} instance with an optional per-thread contexts cache.
    *
    * @param size The size of the beam (k).
    * @param model The {@link MaxentModel} for assigning probabilities to the sequence outcomes.
-   * @param cacheSize The capacity of the {@link Cache} to use.
+   * @param cacheSize The capacity of the per-thread contexts cache. Use {@code 0} to disable caching.
    */
   public BeamSearch(int size, MaxentModel model, int cacheSize) {
 
     this.size = size;
     this.model = model;
-
-    if (cacheSize > 0) {
-      contextsCache = new Cache<>(cacheSize);
-    }
-
-    this.probs = new double[model.getNumOutcomes()];
+    this.cacheSize = cacheSize;
+    this.threadState = ThreadLocal.withInitial(
+        () -> new CacheState(model.getNumOutcomes(), cacheSize));
   }
 
   /**
-   * Computes the best sequence of outcomes based on the {@link MaxentModel}.
-   *
-   * @param numSequences The number of sequences.
-   * @param sequence The input {@link T} sequence.
-   * @param additionalContext An {@link Object[]} of additional context.
-   *     This is passed to the context generator blindly with the
-   *     assumption that the context are appropriate.
-   * @param minSequenceScore The minimum sequence score to use.
-   * @param cg The {@link BeamSearchContextGenerator context generator} to use.
-   * @param validator The {@link SequenceValidator} to validate sequences.
-   *
-   * @return The top ranked {@link Sequence} of outcomes or {@code null}
-   *         if no sequence could be found.
+   * {@inheritDoc}
    */
   @Override
   public <T> Sequence[] bestSequences(int numSequences, T[] sequence,
       Object[] additionalContext, double minSequenceScore,
       BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
+
+    CacheState state = threadState.get();
 
     Queue<Sequence> prev = new PriorityQueue<>(size);
     Queue<Sequence> next = new PriorityQueue<>(size);
@@ -119,10 +123,10 @@ public class BeamSearch implements SequenceClassificationModel {
         String[] outcomes = tmpOutcomes.toArray(new String[0]);
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
         double[] scores;
-        if (contextsCache != null) {
-          scores = contextsCache.computeIfAbsent(contexts, c -> model.eval(c, probs));
+        if (state.cache != null) {
+          scores = state.cache.computeIfAbsent(contexts, c -> model.eval(c, state.probs));
         } else {
-          scores = model.eval(contexts, probs);
+          scores = model.eval(contexts, state.probs);
         }
 
         double[] temp_scores = new double[scores.length];
@@ -130,7 +134,7 @@ public class BeamSearch implements SequenceClassificationModel {
 
         Arrays.sort(temp_scores);
 
-        double min = temp_scores[StrictMath.max(0,scores.length - size)];
+        double min = temp_scores[StrictMath.max(0, scores.length - size)];
 
         for (int p = 0; p < scores.length; p++) {
           if (scores[p] >= min) {
@@ -175,18 +179,7 @@ public class BeamSearch implements SequenceClassificationModel {
   }
 
   /**
-   * Computes the best sequence of outcomes based on the {@link MaxentModel}.
-   *
-   * @param numSequences The number of sequences.
-   * @param sequence The input {@link T} sequence.
-   * @param additionalContext An {@link Object[]} of additional context.
-   *     This is passed to the context generator blindly with the
-   *     assumption that the context are appropriate.
-   * @param cg The {@link BeamSearchContextGenerator context generator} to use.
-   * @param validator The {@link SequenceValidator} to validate sequences.
-   *
-   * @return The top ranked {@link Sequence} of outcomes or {@code null}
-   *         if no sequence could be found.
+   * {@inheritDoc}
    */
   @Override
   public <T> Sequence[] bestSequences(int numSequences, T[] sequence,
@@ -195,17 +188,7 @@ public class BeamSearch implements SequenceClassificationModel {
   }
 
   /**
-   * Computes the best sequence of outcomes based on the {@link MaxentModel}.
-   *
-   * @param sequence The input {@link T} sequence.
-   * @param additionalContext An {@link Object[]} of additional context.
-   *     This is passed to the context generator blindly with the
-   *     assumption that the context are appropriate.
-   * @param cg The {@link BeamSearchContextGenerator context generator} to use.
-   * @param validator The {@link SequenceValidator} to validate sequences.
-   *
-   * @return The top ranked {@link Sequence} of outcomes or {@code null}
-   *         if no sequence could be found.
+   * {@inheritDoc}
    */
   @Override
   public <T> Sequence bestSequence(T[] sequence, Object[] additionalContext,

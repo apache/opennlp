@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.Probabilistic;
@@ -47,11 +48,12 @@ import opennlp.tools.util.TrainingParameters;
  * @see Chunker
  * @see Probabilistic
  */
+@ThreadSafe
 public class ChunkerME implements Chunker, Probabilistic {
 
   public static final int DEFAULT_BEAM_SIZE = 10;
 
-  private Sequence bestSequence;
+  private volatile Sequence bestSequence;
 
   /**
    * The model used to assign chunk tags to a sequence of tokens.
@@ -93,8 +95,13 @@ public class ChunkerME implements Chunker, Probabilistic {
   @Override
   public String[] chunk(String[] toks, String[] tags) {
     TokenTag[] tuples = TokenTag.create(toks, tags);
-    bestSequence = model.bestSequence(tuples, new Object[] {}, contextGenerator, sequenceValidator);
-    List<String> c = bestSequence.getOutcomes();
+    Sequence seq = model.bestSequence(tuples,
+        new Object[] {}, contextGenerator, sequenceValidator);
+    this.bestSequence = seq;
+    if (seq == null) {
+      return new String[toks.length];
+    }
+    List<String> c = seq.getOutcomes();
     return c.toArray(new String[0]);
   }
 

@@ -31,16 +31,6 @@ import opennlp.tools.util.StringUtil;
  */
 public class DefaultSDContextGenerator implements SDContextGenerator {
 
-  /**
-   * String buffer for generating features.
-   */
-  protected final StringBuffer buf;
-
-  /**
-   * List for holding features as they are generated.
-   */
-  protected final List<String> collectFeats;
-
   private final Set<String> inducedAbbreviations;
 
   private final Set<Character> eosCharacters;
@@ -70,8 +60,6 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
     for (char eosChar: eosCharacters) {
       this.eosCharacters.add(eosChar);
     }
-    buf = new StringBuffer();
-    collectFeats = new ArrayList<>();
   }
 
   private static String escapeChar(Character c) {
@@ -88,6 +76,7 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
 
   @Override
   public String[] getContext(CharSequence sb, int position) {
+    List<String> collectFeats = new ArrayList<>();
 
     /*
      * String preceding the eos character in the eos token.
@@ -152,24 +141,25 @@ public class DefaultSDContextGenerator implements SDContextGenerator {
       next = String.valueOf(sb.subSequence(suffixEnd + 1, nextEnd)).trim();
     }
 
-    collectFeatures(prefix,suffix,previous,next, sb.charAt(position));
+    StringBuilder buf = new StringBuilder();
+    collectFeatures(collectFeats, buf, prefix, suffix, previous, next, sb.charAt(position));
 
-    String[] context = new String[collectFeats.size()];
-    context = collectFeats.toArray(context);
-    collectFeats.clear();
-    return context;
+    return collectFeats.toArray(new String[0]);
   }
   
   /**
    * Determines some features for the sentence detector and adds them to list features.
    *
+   * @param collectFeats The list to collect features into.
+   * @param buf A reusable string builder for feature construction.
    * @param prefix String preceding the {@code eosChar} in the eos token.
    * @param suffix String following the {@code eosChar} in the eos token.
    * @param previous Space delimited token preceding token containing {@code eosChar}.
    * @param next Space delimited token following token containing {@code eosChar}.
-   * @param eosChar the EOS character been analyzed.
+   * @param eosChar The EOS character being analyzed.
    */
-  protected void collectFeatures(String prefix, String suffix, String previous,
+  protected void collectFeatures(List<String> collectFeats, StringBuilder buf,
+      String prefix, String suffix, String previous,
       String next, Character eosChar) {
     buf.append("x=");
     buf.append(prefix);

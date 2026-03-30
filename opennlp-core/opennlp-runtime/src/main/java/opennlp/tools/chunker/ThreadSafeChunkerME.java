@@ -39,7 +39,11 @@ import opennlp.tools.util.Span;
  * @see Chunker
  * @see ChunkerME
  * @see Probabilistic
+ *
+ * @deprecated As of OPENNLP-1816, {@link ChunkerME} is
+ *     itself thread-safe. Use it directly instead.
  */
+@Deprecated(since = "3.0.0")
 @ThreadSafe
 public class ThreadSafeChunkerME implements Chunker, Probabilistic, AutoCloseable {
 

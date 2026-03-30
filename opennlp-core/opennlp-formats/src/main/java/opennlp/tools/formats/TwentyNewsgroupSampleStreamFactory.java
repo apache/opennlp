@@ -26,8 +26,8 @@ import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.cmdline.params.EncodingParameter;
 import opennlp.tools.doccat.DocumentSample;
 import opennlp.tools.tokenize.SimpleTokenizer;
-import opennlp.tools.tokenize.ThreadSafeTokenizerME;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
@@ -74,7 +74,7 @@ public class TwentyNewsgroupSampleStreamFactory extends
     Tokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
     if (params.getTokenizerModel() != null) {
       try {
-        tokenizer = new ThreadSafeTokenizerME(new TokenizerModel(params.getTokenizerModel()));
+        tokenizer = new TokenizerME(new TokenizerModel(params.getTokenizerModel()));
       } catch (IOException e) {
         throw new TerminateToolException(-1, "Failed to load tokenizer model!", e);
       }

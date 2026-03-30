@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.EventTrainer;
@@ -76,6 +77,7 @@ import opennlp.tools.util.TrainingParameters;
  * @see TokenSample
  * @see Probabilistic
  */
+@ThreadSafe
 public class TokenizerME extends AbstractTokenizer implements Probabilistic {
 
   /**
@@ -108,10 +110,11 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
   /*
    * List of probabilities for each token returned from a call to
    * <code>tokenize</code> or <code>tokenizePos</code>.
+   * Volatile for safe publication after concurrent tokenizePos() calls.
    */
-  private final List<Double> tokProbs;
+  private volatile List<Double> tokProbs;
 
-  private final List<Span> newTokens;
+  private volatile List<Span> newTokens;
 
   /*
    * The {@link Dictionary abbreviation dictionary} if available (may be {@code null}).
@@ -152,7 +155,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
 
     newTokens = new ArrayList<>();
-    tokProbs = new ArrayList<>(50);
+    tokProbs = new ArrayList<>();
   }
 
   /**
@@ -193,17 +196,17 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
     WhitespaceTokenizer whitespaceTokenizer = WhitespaceTokenizer.INSTANCE;
     whitespaceTokenizer.setKeepNewLines(keepNewLines);
     Span[] tokens = whitespaceTokenizer.tokenizePos(d);
-    newTokens.clear();
-    tokProbs.clear();
+    List<Span> localTokens = new ArrayList<>();
+    List<Double> localProbs = new ArrayList<>(50);
     for (Span s : tokens) {
       String tok = d.substring(s.getStart(), s.getEnd());
       // Can't tokenize single characters
       if (tok.length() < 2) {
-        newTokens.add(s);
-        tokProbs.add(1d);
+        localTokens.add(s);
+        localProbs.add(1d);
       } else if (useAlphaNumericOptimization() && alphanumeric.matcher(tok).matches()) {
-        newTokens.add(s);
-        tokProbs.add(1d);
+        localTokens.add(s);
+        localProbs.add(1d);
       } else {
         int start = s.getStart();
         int end = s.getEnd();
@@ -216,28 +219,32 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
           tokenProb *= probs[model.getIndex(best)];
           if (best.equals(TokenizerME.SPLIT)) {
             if (isAcceptableAbbreviation(tok)) {
-              newTokens.add(new Span(start, end));
-              tokProbs.add(tokenProb);
+              localTokens.add(new Span(start, end));
+              localProbs.add(tokenProb);
               long numberOfDots = tok.codePoints().filter(ch -> ch == '.').count();
               j = j + (int) numberOfDots; // To compensate for abbreviation dot(s)
               start = j + 1;
             } else {
-              newTokens.add(new Span(start, j));
-              tokProbs.add(tokenProb);
+              localTokens.add(new Span(start, j));
+              localProbs.add(tokenProb);
               start = j;
             }
             tokenProb = 1.0;
           }
         }
         if (start < end) {
-          newTokens.add(new Span(start, end));
-          tokProbs.add(tokenProb);
+          localTokens.add(new Span(start, end));
+          localProbs.add(tokenProb);
         }
       }
     }
 
-    Span[] spans = new Span[newTokens.size()];
-    newTokens.toArray(spans);
+    // Publish for backward-compatible probs() access (last-writer-wins under concurrency)
+    this.newTokens = localTokens;
+    this.tokProbs = localProbs;
+
+    Span[] spans = new Span[localTokens.size()];
+    localTokens.toArray(spans);
     return spans;
   }
 

@@ -43,7 +43,11 @@ import opennlp.tools.util.Span;
  * @see Probabilistic
  * @see Tokenizer
  * @see TokenizerME
+ *
+ * @deprecated As of OPENNLP-1816, {@link TokenizerME} is
+ *     itself thread-safe. Use it directly instead.
  */
+@Deprecated(since = "3.0.0")
 @ThreadSafe
 public class ThreadSafeTokenizerME implements Tokenizer, Probabilistic, AutoCloseable {
 

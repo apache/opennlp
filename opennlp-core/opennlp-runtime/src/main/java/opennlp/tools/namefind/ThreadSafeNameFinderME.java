@@ -37,7 +37,11 @@ import opennlp.tools.util.Span;
  * @see NameFinderME
  * @see Probabilistic
  * @see TokenNameFinder
+ *
+ * @deprecated As of OPENNLP-1816, {@link NameFinderME} is
+ *     itself thread-safe. Use it directly instead.
  */
+@Deprecated(since = "3.0.0")
 @ThreadSafe
 public class ThreadSafeNameFinderME implements TokenNameFinder, Probabilistic, AutoCloseable {
 

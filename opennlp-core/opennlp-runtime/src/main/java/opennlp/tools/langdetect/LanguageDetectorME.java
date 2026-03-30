@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -59,6 +60,7 @@ import opennlp.tools.util.TrainingParameters;
  * for the inspiration for many of the design components of this detector.
  *
  */
+@ThreadSafe
 public class LanguageDetectorME implements LanguageDetector {
 
   protected final LanguageDetectorModel model;

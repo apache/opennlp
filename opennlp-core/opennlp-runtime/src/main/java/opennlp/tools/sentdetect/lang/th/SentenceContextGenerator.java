@@ -17,6 +17,8 @@
 
 package opennlp.tools.sentdetect.lang.th;
 
+import java.util.List;
+
 import opennlp.tools.sentdetect.DefaultSDContextGenerator;
 
 /**
@@ -31,7 +33,8 @@ public class SentenceContextGenerator extends DefaultSDContextGenerator {
   }
 
   @Override
-  protected void collectFeatures(String prefix, String suffix, String previous, String next,
+  protected void collectFeatures(List<String> collectFeats, StringBuilder buf,
+                                 String prefix, String suffix, String previous, String next,
                                  Character eosChar) {
     buf.append("p=");
     buf.append(prefix);

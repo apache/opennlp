@@ -35,7 +35,12 @@ import opennlp.tools.commons.ThreadSafe;
  *
  * @see LanguageDetector
  * @see LanguageDetectorME
+ *
+ * @deprecated As of OPENNLP-1816,
+ *     {@link LanguageDetectorME} is itself thread-safe.
+ *     Use it directly instead.
  */
+@Deprecated(since = "3.0.0")
 @ThreadSafe
 public class ThreadSafeLanguageDetectorME implements LanguageDetector, AutoCloseable {
 
