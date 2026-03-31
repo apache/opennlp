@@ -64,8 +64,8 @@ jobs:
           signoff: true
           branch: regenerate_notice_file_after_dep_upgrade_2.x
           delete-branch: true
-          title: "Regenerated NOTICE file after dependency changes"
+          title: "[2.x] Regenerated NOTICE file after dependency changes"
           body: |
-            Found some uncommited changes (from NOTICE regeneration) after running build on OpenNLP
+            Found some uncommited changes (from NOTICE regeneration) after running build on OpenNLP 2.x
           labels: |
             dependency
