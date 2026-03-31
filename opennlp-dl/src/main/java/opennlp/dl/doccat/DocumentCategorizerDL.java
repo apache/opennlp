@@ -45,7 +45,7 @@ import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
 import opennlp.dl.doccat.scoring.ClassificationScoringStrategy;
 import opennlp.tools.doccat.DocumentCategorizer;
-import opennlp.tools.tokenize.WordpieceTokenizer;
+
 
 /**
  * An implementation of {@link DocumentCategorizer} that performs document classification
@@ -90,7 +90,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     this.session = env.createSession(model.getPath(), sessionOptions);
     this.vocab = loadVocab(vocabulary);
-    this.tokenizer = new WordpieceTokenizer(vocab.keySet());
+    this.tokenizer = createTokenizer(vocab);
     this.categories = categories;
     this.classificationScoringStrategy = classificationScoringStrategy;
     this.inferenceOptions = inferenceOptions;
@@ -125,7 +125,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     this.session = env.createSession(model.getPath(), sessionOptions);
     this.vocab = loadVocab(vocabulary);
-    this.tokenizer = new WordpieceTokenizer(vocab.keySet());
+    this.tokenizer = createTokenizer(vocab);
     this.categories = readCategoriesFromFile(config);
     this.classificationScoringStrategy = classificationScoringStrategy;
     this.inferenceOptions = inferenceOptions;
@@ -158,11 +158,22 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
               LongBuffer.wrap(t.types()), new long[] {1, t.types().length}));
         }
 
-        // The outputs from the model.
-        final float[][] v = (float[][]) session.run(inputs).get(0).getValue();
+        // The outputs from the model. Some models return a 2D array (e.g. BERT),
+        // while others return a 1D array (e.g. RoBERTa).
+        final Object output = session.run(inputs).get(0).getValue();
+
+        final float[] rawScores;
+        if (output instanceof float[][] v) {
+          rawScores = v[0];
+        } else if (output instanceof float[] v) {
+          rawScores = v;
+        } else {
+          throw new IllegalStateException(
+              "Unexpected model output type: " + output.getClass().getName());
+        }
 
         // Keep track of all scores.
-        final double[] categoryScoresForTokens = softmax(v[0]);
+        final double[] categoryScoresForTokens = softmax(rawScores);
         scores.add(categoryScoresForTokens);
 
       }

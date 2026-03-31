@@ -39,7 +39,6 @@ import opennlp.dl.SpanEnd;
 import opennlp.dl.Tokens;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.sentdetect.SentenceDetector;
-import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 
 /**
@@ -104,7 +103,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
     this.session = env.createSession(model.getPath(), sessionOptions);
     this.ids2Labels = ids2Labels;
     this.vocab = loadVocab(vocabulary);
-    this.tokenizer = new WordpieceTokenizer(vocab.keySet());
+    this.tokenizer = createTokenizer(vocab);
     this.inferenceOptions = inferenceOptions;
     this.sentenceDetector = sentenceDetector;
 
