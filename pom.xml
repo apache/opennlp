@@ -248,7 +248,7 @@
 		<log4j2.version>2.25.4</log4j2.version>
 		<logcaptor.version>2.12.6</logcaptor.version>
 		<classgraph.version>4.8.184</classgraph.version>
-		<zlibsvm.version>2.1.2</zlibsvm.version>
+		<zlibsvm.version>3.0.0</zlibsvm.version>
 		<jmh.version>1.37</jmh.version>
 
 		<!-- Plugin versions -->

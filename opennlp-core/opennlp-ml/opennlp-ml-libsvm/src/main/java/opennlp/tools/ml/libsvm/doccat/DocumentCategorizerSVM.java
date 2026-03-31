@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -314,10 +315,15 @@ public class DocumentCategorizerSVM implements DocumentCategorizer {
     }
 
     // --- Train SVM ---
-    SvmTrainer trainer = new SvmTrainerImpl(config.getSvmConfiguration(), "opennlp-doccat-svm");
-    SvmModel svmModel = trainer.train(svmDocuments);
+    final SvmTrainer trainer = new SvmTrainerImpl(config.getSvmConfiguration(), "opennlp-doccat-svm");
+    final Optional<SvmModel> svmModel = trainer.train(svmDocuments);
 
-    return new SvmDoccatModel(svmModel, featureVocabulary, indexToCategory, categoryToIndex,
+    final SvmModel trainedModel = svmModel.orElseThrow(() ->
+        new RuntimeException("Training with Cross-Validation=True "
+            + "does not result in a valid model."));
+
+    return new SvmDoccatModel(trainedModel, featureVocabulary,
+        indexToCategory, categoryToIndex,
         idfValues, featureMin, featureMax, config, lang);
   }
 
