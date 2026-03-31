@@ -45,12 +45,27 @@ import opennlp.tools.util.Span;
  */
 public class WordpieceTokenizer implements Tokenizer {
 
-  private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("\\p{Punct}+");
-  private static final String CLASSIFICATION_TOKEN = "[CLS]";
-  private static final String SEPARATOR_TOKEN = "[SEP]";
-  private static final String UNKNOWN_TOKEN = "[UNK]";
+  /** BERT classification token: {@code [CLS]}. */
+  public static final String BERT_CLS_TOKEN = "[CLS]";
+  /** BERT separator token: {@code [SEP]}. */
+  public static final String BERT_SEP_TOKEN = "[SEP]";
+  /** BERT unknown token: {@code [UNK]}. */
+  public static final String BERT_UNK_TOKEN = "[UNK]";
+
+  /** RoBERTa classification token: {@code <s>}. */
+  public static final String ROBERTA_CLS_TOKEN = "<s>";
+  /** RoBERTa separator token. */
+  public static final String ROBERTA_SEP_TOKEN = "</s>";
+  /** RoBERTa unknown token. */
+  public static final String ROBERTA_UNK_TOKEN = "<unk>";
+
+  private static final Pattern PUNCTUATION_PATTERN =
+      Pattern.compile("\\p{Punct}+");
 
   private final Set<String> vocabulary;
+  private final String classificationToken;
+  private final String separatorToken;
+  private final String unknownToken;
   private int maxTokenLength = 50;
 
   /**
@@ -60,7 +75,7 @@ public class WordpieceTokenizer implements Tokenizer {
    * @param vocabulary  A set of tokens considered the vocabulary.
    */
   public WordpieceTokenizer(Set<String> vocabulary) {
-    this.vocabulary = vocabulary;
+    this(vocabulary, BERT_CLS_TOKEN, BERT_SEP_TOKEN, BERT_UNK_TOKEN);
   }
 
   /**
@@ -75,6 +90,29 @@ public class WordpieceTokenizer implements Tokenizer {
     this.maxTokenLength = maxTokenLength;
   }
 
+  /**
+   * Initializes a {@link WordpieceTokenizer} with a
+   * {@code vocabulary} and custom special tokens.
+   * This allows support for models like RoBERTa that
+   * use different special tokens instead of the BERT
+   * defaults.
+   *
+   * @param vocabulary          The vocabulary.
+   * @param classificationToken The CLS token.
+   * @param separatorToken      The SEP token.
+   * @param unknownToken        The UNK token.
+   */
+  public WordpieceTokenizer(
+      final Set<String> vocabulary,
+      final String classificationToken,
+      final String separatorToken,
+      final String unknownToken) {
+    this.vocabulary = vocabulary;
+    this.classificationToken = classificationToken;
+    this.separatorToken = separatorToken;
+    this.unknownToken = unknownToken;
+  }
+
   @Override
   public Span[] tokenizePos(final String text) {
     // TODO: Implement this.
@@ -85,7 +123,7 @@ public class WordpieceTokenizer implements Tokenizer {
   public String[] tokenize(final String text) {
 
     final List<String> tokens = new LinkedList<>();
-    tokens.add(CLASSIFICATION_TOKEN);
+    tokens.add(classificationToken);
 
     // Put spaces around punctuation.
     final String spacedPunctuation = PUNCTUATION_PATTERN.matcher(text).replaceAll(" $0 ");
@@ -146,7 +184,7 @@ public class WordpieceTokenizer implements Tokenizer {
           // If the word can't be represented by vocabulary pieces replace
           // it with a specified "unknown" token.
           if (!found) {
-            tokens.add(UNKNOWN_TOKEN);
+            tokens.add(unknownToken);
             break;
           }
 
@@ -157,14 +195,14 @@ public class WordpieceTokenizer implements Tokenizer {
 
       } else {
 
-        // If the token's length is greater than the max length just add [UNK] instead.
-        tokens.add(UNKNOWN_TOKEN);
+        // If the token's length is greater than the max length just add unknown token instead.
+        tokens.add(unknownToken);
 
       }
 
     }
 
-    tokens.add(SEPARATOR_TOKEN);
+    tokens.add(separatorToken);
 
     return tokens.toArray(new String[0]);
 
