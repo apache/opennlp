@@ -62,7 +62,7 @@ jobs:
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           signoff: true
-          branch: regenerate_notice_file_after_dep_upgrade
+          branch: regenerate_notice_file_after_dep_upgrade_2.x
           delete-branch: true
           title: "Regenerated NOTICE file after dependency changes"
           body: |
