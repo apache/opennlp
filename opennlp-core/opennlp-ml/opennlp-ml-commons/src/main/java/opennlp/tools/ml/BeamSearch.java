@@ -124,7 +124,12 @@ public class BeamSearch implements SequenceClassificationModel {
         String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
         double[] scores;
         if (state.cache != null) {
-          scores = state.cache.computeIfAbsent(contexts, c -> model.eval(c, state.probs));
+          scores = state.cache.computeIfAbsent(contexts, c -> {
+            double[] res = model.eval(c, state.probs);
+            double[] copy = new double[res.length];
+            System.arraycopy(res, 0, copy, 0, res.length);
+            return copy;
+          });
         } else {
           scores = model.eval(contexts, state.probs);
         }

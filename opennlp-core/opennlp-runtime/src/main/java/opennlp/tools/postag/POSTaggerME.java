@@ -93,7 +93,7 @@ public class POSTaggerME implements POSTagger, Probabilistic {
    */
   protected final int size;
 
-  private volatile Sequence bestSequence;
+  private final ThreadLocal<Sequence> bestSequence = new ThreadLocal<>();
 
   private final SequenceClassificationModel model;
 
@@ -214,7 +214,7 @@ public class POSTaggerME implements POSTagger, Probabilistic {
   @Override
   public String[] tag(String[] sentence, Object[] additionalContext) {
     Sequence seq = model.bestSequence(sentence, additionalContext, cg, sequenceValidator);
-    this.bestSequence = seq; // volatile write for backward-compatible probs() access
+    this.bestSequence.set(seq);
     if (seq == null) {
       return new String[sentence.length];
     }
@@ -272,7 +272,10 @@ public class POSTaggerME implements POSTagger, Probabilistic {
    * @param probs An array to put the probabilities into.
    */
   public void probs(double[] probs) {
-    bestSequence.getProbs(probs);
+    Sequence seq = bestSequence.get();
+    if (seq != null) {
+      seq.getProbs(probs);
+    }
   }
 
   /**
@@ -285,7 +288,8 @@ public class POSTaggerME implements POSTagger, Probabilistic {
    */
   @Override
   public double[] probs() {
-    return bestSequence.getProbs();
+    Sequence seq = bestSequence.get();
+    return seq != null ? seq.getProbs() : null;
   }
 
   public String[] getOrderedTags(List<String> words, List<String> tags, int index) {

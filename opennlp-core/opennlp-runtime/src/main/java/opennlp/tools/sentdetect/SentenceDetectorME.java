@@ -81,9 +81,9 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
   /**
    * The list of probabilities associated with each decision.
-   * Volatile for safe publication after concurrent sentPosDetect() calls.
+   * Isolates probabilities per-thread for safe concurrent access.
    */
-  private volatile List<Double> sentProbs = new ArrayList<>();
+  private final ThreadLocal<List<Double>> sentProbs = ThreadLocal.withInitial(ArrayList::new);
 
   /**
    * The {@link Dictionary abbreviation dictionary} if available (may be {@code null}).
@@ -255,11 +255,11 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
       if (end - start > 0) {
         localProbs.add(1d);
-        this.sentProbs = localProbs;
+        this.sentProbs.set(localProbs);
         return new Span[] {new Span(start, end)};
       }
       else {
-        this.sentProbs = localProbs;
+        this.sentProbs.set(localProbs);
         return new Span[0];
       }
     }
@@ -306,8 +306,8 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
     }
 
-    // Publish for backward-compatible probs() access (last-writer-wins under concurrency)
-    this.sentProbs = localProbs;
+    // Publish for backward-compatible probs() access
+    this.sentProbs.set(localProbs);
 
     return spans;
   }
@@ -324,7 +324,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    */
   @Override
   public double[] probs() {
-    return ArrayMath.toDoubleArray(sentProbs);
+    return ArrayMath.toDoubleArray(sentProbs.get());
   }
 
   /**

@@ -74,7 +74,7 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   protected final SequenceClassificationModel model;
 
   protected final NameContextGenerator contextGenerator;
-  private volatile Sequence bestSequence;
+  private final ThreadLocal<Sequence> bestSequence = new ThreadLocal<>();
 
   private final AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
           new AdditionalContextFeatureGenerator();
@@ -119,7 +119,7 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
     Sequence seq = model.bestSequence(tokens,
         additionalContext, contextGenerator, sequenceValidator);
-    this.bestSequence = seq;
+    this.bestSequence.set(seq);
     if (seq == null) {
       return new Span[0];
     }
@@ -146,7 +146,10 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
    * @param probs An array with the probabilities of the last decoded sequence.
    */
   public void probs(double[] probs) {
-    bestSequence.getProbs(probs);
+    Sequence seq = bestSequence.get();
+    if (seq != null) {
+      seq.getProbs(probs);
+    }
   }
 
   /**
@@ -159,7 +162,8 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
    */
   @Override
   public double[] probs() {
-    return bestSequence.getProbs();
+    Sequence seq = bestSequence.get();
+    return seq != null ? seq.getProbs() : null;
   }
 
   /**
@@ -194,7 +198,11 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   public double[] probs(Span[] spans) {
 
     double[] sprobs = new double[spans.length];
-    double[] probs = bestSequence.getProbs();
+    Sequence seq = bestSequence.get();
+    if (seq == null) {
+      return sprobs;
+    }
+    double[] probs = seq.getProbs();
 
     for (int si = 0; si < spans.length; si++) {
 

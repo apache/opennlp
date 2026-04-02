@@ -64,7 +64,7 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
   public static final int LEMMA_NUMBER = 29;
   public static final int DEFAULT_BEAM_SIZE = 3;
   protected final int beamSize;
-  private volatile Sequence bestSequence;
+  private final ThreadLocal<Sequence> bestSequence = new ThreadLocal<>();
 
   private final SequenceClassificationModel model;
 
@@ -129,7 +129,10 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    */
   public String[] predictSES(String[] toks, String[] tags) {
     Sequence seq = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
-    this.bestSequence = seq; // volatile write for backward-compatible probs() access
+    this.bestSequence.set(seq);
+    if (seq == null) {
+      return new String[toks.length];
+    }
     List<String> ses = seq.getOutcomes();
     return ses.toArray(new String[0]);
   }
@@ -229,7 +232,10 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    * @param probs An array used to hold the probabilities of the last decoded sequence.
    */
   public void probs(double[] probs) {
-    bestSequence.getProbs(probs);
+    Sequence seq = bestSequence.get();
+    if (seq != null) {
+      seq.getProbs(probs);
+    }
   }
 
   /**
@@ -243,7 +249,8 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    */
   @Override
   public double[] probs() {
-    return bestSequence.getProbs();
+    Sequence seq = bestSequence.get();
+    return seq != null ? seq.getProbs() : null;
   }
 
   /**

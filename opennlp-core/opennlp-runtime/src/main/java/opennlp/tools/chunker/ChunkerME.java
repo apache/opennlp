@@ -56,7 +56,7 @@ public class ChunkerME implements Chunker, Probabilistic {
 
   public static final int DEFAULT_BEAM_SIZE = 10;
 
-  private volatile Sequence bestSequence;
+  private final ThreadLocal<Sequence> bestSequence = new ThreadLocal<>();
 
   /**
    * The model used to assign chunk tags to a sequence of tokens.
@@ -100,7 +100,7 @@ public class ChunkerME implements Chunker, Probabilistic {
     TokenTag[] tuples = TokenTag.create(toks, tags);
     Sequence seq = model.bestSequence(tuples,
         new Object[] {}, contextGenerator, sequenceValidator);
-    this.bestSequence = seq;
+    this.bestSequence.set(seq);
     if (seq == null) {
       return new String[toks.length];
     }
@@ -138,19 +138,24 @@ public class ChunkerME implements Chunker, Probabilistic {
    * @param probs An array used to hold the probabilities of the last decoded sequence.
    */
   public void probs(double[] probs) {
-    bestSequence.getProbs(probs);
+    Sequence seq = bestSequence.get();
+    if (seq != null) {
+      seq.getProbs(probs);
+    }
   }
 
   /**
    * {@inheritDoc}
+   * 
    * The sequence was determined based on the previous call to {@link #chunk(String[], String[])}.
    *
-   * @return An array with the same number of probabilities as tokens when
-   *         {@link ChunkerME#chunk(String[], String[])} was last called.
+   * @return An array with the same number of probabilities as tokens were sent
+   *         to {@link #chunk(String[], String[])} when it was last called.
    */
   @Override
   public double[] probs() {
-    return bestSequence.getProbs();
+    Sequence seq = bestSequence.get();
+    return seq != null ? seq.getProbs() : null;
   }
 
   /**
