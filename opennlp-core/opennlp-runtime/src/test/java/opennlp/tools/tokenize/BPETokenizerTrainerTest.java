@@ -24,8 +24,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.tokenize.BPETokenizer.SymbolPair;
-
 /**
  * Tests for the {@link BPETokenizerTrainer} class.
  * <p>
