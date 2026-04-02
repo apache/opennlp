@@ -38,6 +38,10 @@ import opennlp.tools.util.SequenceValidator;
  * <p>
  * This implementation is thread-safe. The contexts cache and probability buffer
  * are maintained per-thread via {@link ThreadLocal}.
+ * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * {@link ThreadLocal} state may pin the classloader. Ensure instances do not outlive
+ * the application's lifecycle, or call {@link ThreadLocal#remove()} on pooled threads.
  *
  * @see Sequence
  * @see SequenceValidator
@@ -102,7 +106,7 @@ public class BeamSearch implements SequenceClassificationModel {
 
     final CacheState state = threadState.get();
 
-    final Queue<Sequence> prev = new PriorityQueue<>(size);
+    Queue<Sequence> prev = new PriorityQueue<>(size);
     Queue<Sequence> next = new PriorityQueue<>(size);
     Queue<Sequence> tmp;
     prev.add(new Sequence());

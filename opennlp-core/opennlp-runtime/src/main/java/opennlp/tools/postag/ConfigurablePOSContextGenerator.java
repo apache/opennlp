@@ -31,6 +31,10 @@ import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
  * <p>
  * The per-sentence context cache is maintained per-thread via {@link ThreadLocal},
  * making this class safe for concurrent use.
+ * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * {@link ThreadLocal} state may pin the classloader. Ensure instances do not outlive
+ * the application's lifecycle, or call {@link ThreadLocal#remove()} on pooled threads.
  *
  * @see POSTagger
  * @see POSTaggerME

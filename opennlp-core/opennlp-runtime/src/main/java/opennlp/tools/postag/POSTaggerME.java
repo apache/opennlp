@@ -60,6 +60,10 @@ import opennlp.tools.util.featuregen.StringPattern;
  * <p>
  * A POS tagger instance is thread-safe. One instance
  * can be shared across multiple threads to save memory.
+ * <p>
+ * <b>Note:</b> Thread safety is achieved via {@link ThreadLocal} state in the underlying
+ * components. In container environments with classloader isolation (e.g. Jakarta EE),
+ * ensure instances do not outlive the application's lifecycle.
  *
  * @see POSModel
  * @see POSTagFormat

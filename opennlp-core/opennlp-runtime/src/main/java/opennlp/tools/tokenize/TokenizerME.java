@@ -54,6 +54,10 @@ import opennlp.tools.util.TrainingParameters;
  * A tokenizer instance is thread-safe. One tokenizer
  * can be shared across multiple threads to save memory.
  * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * ensure instances do not outlive the application's lifecycle, as underlying components
+ * use {@link ThreadLocal} state that may pin the classloader.
+ * <p>
  * To train a new model, the {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} method
  * can be used.
  * <p>

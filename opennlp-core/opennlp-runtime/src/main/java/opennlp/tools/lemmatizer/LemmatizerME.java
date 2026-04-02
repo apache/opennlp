@@ -50,6 +50,10 @@ import opennlp.tools.util.TrainingParameters;
  * A lemmatizer instance is thread-safe. One instance
  * can be shared across multiple threads to save memory.
  * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * ensure instances do not outlive the application's lifecycle, as underlying components
+ * use {@link ThreadLocal} state that may pin the classloader.
+ * <p>
  * Based on Grzegorz Chrupała. 2008.
  * <a href="http://grzegorz.chrupala.me/papers/phd-single.pdf">
  * Towards a Machine-Learning Architecture for Lexical Functional Grammar Parsing.
@@ -130,6 +134,9 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
   public String[] predictSES(String[] toks, String[] tags) {
     Sequence seq = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
     this.bestSequence = seq; // volatile write for backward-compatible probs() access
+    if (seq == null) {
+      return new String[toks.length];
+    }
     List<String> ses = seq.getOutcomes();
     return ses.toArray(new String[0]);
   }

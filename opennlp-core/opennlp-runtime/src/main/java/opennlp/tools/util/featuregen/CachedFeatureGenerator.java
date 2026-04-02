@@ -30,6 +30,10 @@ import opennlp.tools.util.Cache;
  * The cache is maintained per-thread via {@link ThreadLocal}, making this class safe for
  * concurrent use from multiple threads. Each thread gets its own independent cache that is
  * cleared when a new sentence (token array) is encountered.
+ * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * {@link ThreadLocal} state may pin the classloader. Ensure instances do not outlive
+ * the application's lifecycle, or call {@link ThreadLocal#remove()} on pooled threads.
  *
  * @see Cache
  */
@@ -40,7 +44,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
    * System property to disable the feature cache globally.
    * Set to {@code "true"} to bypass caching (useful for benchmarking).
    */
-  public static final String DISABLE_CACHE_PROPERTY = "opennlp.cache.disabled";
+  public static final String DISABLE_CACHE_PROPERTY = "opennlp.featuregen.cache.disabled";
 
   private final AdaptiveFeatureGenerator generator;
   private final boolean cacheEnabled;

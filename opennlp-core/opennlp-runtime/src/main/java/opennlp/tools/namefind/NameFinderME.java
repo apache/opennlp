@@ -54,6 +54,10 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
  * <p>
  * A name finder instance is thread-safe. One instance
  * can be shared across multiple threads to save memory.
+ * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * ensure instances do not outlive the application's lifecycle, as underlying components
+ * use {@link ThreadLocal} state that may pin the classloader.
  *
  * @see Probabilistic
  * @see TokenNameFinder
