@@ -24,16 +24,15 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.ThreadSafePOSTaggerME;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.sentdetect.ThreadSafeSentenceDetectorME;
-import opennlp.tools.tokenize.ThreadSafeTokenizerME;
+import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span;
 
 /**
  * Test the reentrant tools implementations are really thread safe by running concurrently.
- * Replace the thread-safe versions with the non-safe versions to see this test case fail.
  *
  * @see ThreadSafe
  */
@@ -50,40 +49,39 @@ public class MultiThreadedToolsEval extends AbstractEvalTest {
     TokenizerModel tModel = new TokenizerModel(tModelFile);
     POSModel pModel = new POSModel(pModelFile);
 
-    try (ThreadSafeSentenceDetectorME sentencer = new ThreadSafeSentenceDetectorME(sModel);
-         ThreadSafeTokenizerME tokenizer = new ThreadSafeTokenizerME(tModel);
-         ThreadSafePOSTaggerME tagger = new ThreadSafePOSTaggerME(pModel)) {
+    SentenceDetectorME sentencer = new SentenceDetectorME(sModel);
+    TokenizerME tokenizer = new TokenizerME(tModel);
+    POSTaggerME tagger = new POSTaggerME(pModel);
 
-      final String text = "All human beings are born free and equal in dignity and rights. They " +
-              "are endowed with reason and conscience and should act towards one another in a " +
-              "spirit of brotherhood.";
+    final String text = "All human beings are born free and equal in dignity and rights. They " +
+            "are endowed with reason and conscience and should act towards one another in a " +
+            "spirit of brotherhood.";
 
-      // Run numThreads threads, each processing the sample text numRunsPerThread times.
-      final int numThreads = 8;
-      final int numRunsPerThread = 1000;
-      Thread[] threads = new Thread[numThreads];
+    // Run numThreads threads, each processing the sample text numRunsPerThread times.
+    final int numThreads = 8;
+    final int numRunsPerThread = 1000;
+    Thread[] threads = new Thread[numThreads];
 
-      for (int i = 0; i < 8; i++) {
-        threads[i] = new Thread(() -> {
-          for (int j = 0; j < numRunsPerThread; j++) {
-            Span[] sentences = sentencer.sentPosDetect(text);
-            for (Span span : sentences) {
-              String sentence = text.substring(span.getStart(), span.getEnd());
-              Span[] tokens = tokenizer.tokenizePos(sentence);
-              String[] tokenStrings = new String[tokens.length];
-              for (int k = 0; k < tokens.length; k++) {
-                tokenStrings[k] = sentence.substring(tokens[k].getStart(),
-                        tokens[k].getEnd());
-              }
-              String[] tags = tagger.tag(tokenStrings);
+    for (int i = 0; i < 8; i++) {
+      threads[i] = new Thread(() -> {
+        for (int j = 0; j < numRunsPerThread; j++) {
+          Span[] sentences = sentencer.sentPosDetect(text);
+          for (Span span : sentences) {
+            String sentence = text.substring(span.getStart(), span.getEnd());
+            Span[] tokens = tokenizer.tokenizePos(sentence);
+            String[] tokenStrings = new String[tokens.length];
+            for (int k = 0; k < tokens.length; k++) {
+              tokenStrings[k] = sentence.substring(tokens[k].getStart(),
+                      tokens[k].getEnd());
             }
+            String[] tags = tagger.tag(tokenStrings);
           }
-        });
-        threads[i].start();
-      }
-      for (Thread t : threads) {
-        t.join();
-      }
+        }
+      });
+      threads[i].start();
+    }
+    for (Thread t : threads) {
+      t.join();
     }
   }
 

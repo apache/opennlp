@@ -57,6 +57,9 @@ import opennlp.tools.util.featuregen.StringPattern;
  * <p>
  * Tries to predict whether words are nouns, verbs, or any other {@link POSTagFormat POS tags}
  * depending on their surrounding context.
+ * <p>
+ * A POS tagger instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
  *
  * @see POSModel
  * @see POSTagFormat

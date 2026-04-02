@@ -51,6 +51,9 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
  * A maximum-entropy-based {@link TokenNameFinder name finder} implementation.
+ * <p>
+ * A name finder instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
  *
  * @see Probabilistic
  * @see TokenNameFinder

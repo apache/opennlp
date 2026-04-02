@@ -35,7 +35,9 @@ import opennlp.tools.util.TrainingParameters;
 
 /**
  * Implements a learnable {@link LanguageDetector}.
- *
+ * <p>
+ * A language detector instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
  * <p>
  * This will process the entire string when called with
  * {@link #predictLanguage(CharSequence)} or

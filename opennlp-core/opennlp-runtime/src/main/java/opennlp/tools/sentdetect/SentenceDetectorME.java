@@ -47,6 +47,9 @@ import opennlp.tools.util.TrainingParameters;
  * <p>
  * A maximum entropy model is used to evaluate end-of-sentence characters in a
  * string to determine if they signify the end of a sentence.
+ * <p>
+ * A sentence detector instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
  */
 @ThreadSafe
 public class SentenceDetectorME implements SentenceDetector, Probabilistic {

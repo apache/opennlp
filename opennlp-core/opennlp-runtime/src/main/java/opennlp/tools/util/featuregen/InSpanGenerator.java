@@ -40,9 +40,12 @@ public class InSpanGenerator implements AdaptiveFeatureGenerator {
 
   private final TokenNameFinder finder;
 
-  private String[] currentSentence;
+  private final ThreadLocal<CacheState> threadState = ThreadLocal.withInitial(CacheState::new);
 
-  private Span[] currentNames;
+  private static final class CacheState {
+    private String[] currentSentence;
+    private Span[] currentNames;
+  }
 
   /**
    * Initializes a {@link InSpanGenerator} instance.
@@ -62,13 +65,14 @@ public class InSpanGenerator implements AdaptiveFeatureGenerator {
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] preds) {
     // cache results for sentence
-    if (currentSentence != tokens) {
-      currentSentence = tokens;
-      currentNames = finder.find(tokens);
+    CacheState state = threadState.get();
+    if (state.currentSentence != tokens) {
+      state.currentSentence = tokens;
+      state.currentNames = finder.find(tokens);
     }
 
     // iterate over names and check if a span is contained
-    for (Span currentName : currentNames) {
+    for (Span currentName : state.currentNames) {
       if (currentName.contains(index)) {
         // found a span for the current token
         features.add(prefix + W_DIC);

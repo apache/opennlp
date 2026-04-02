@@ -44,6 +44,9 @@ import opennlp.tools.util.TrainingParameters;
 /**
  * The class represents a maximum-entropy-based {@link Chunker}. A chunker can be used to
  * find flat structures based on sequence inputs such as noun phrases or named entities.
+ * <p>
+ * A chunker instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
  *
  * @see Chunker
  * @see Probabilistic

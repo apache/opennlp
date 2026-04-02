@@ -51,9 +51,8 @@ import opennlp.tools.util.TrainingParameters;
  * The {@link TokenizerModel} class encapsulates that model and provides
  * methods to create it from the binary representation.
  * <p>
- * A tokenizer instance is not thread-safe. For each thread, one tokenizer
- * must be instantiated which can share one {@link TokenizerModel} instance
- * to safe memory.
+ * A tokenizer instance is thread-safe. One tokenizer
+ * can be shared across multiple threads to save memory.
  * <p>
  * To train a new model, the {@link #train(ObjectStream, TokenizerFactory, TrainingParameters)} method
  * can be used.

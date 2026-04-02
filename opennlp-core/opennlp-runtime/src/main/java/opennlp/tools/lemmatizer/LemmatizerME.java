@@ -47,6 +47,9 @@ import opennlp.tools.util.TrainingParameters;
  * Tries to predict the induced permutation class for each word depending on
  * its surrounding context.
  * <p>
+ * A lemmatizer instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
+ * <p>
  * Based on Grzegorz Chrupała. 2008.
  * <a href="http://grzegorz.chrupala.me/papers/phd-single.pdf">
  * Towards a Machine-Learning Architecture for Lexical Functional Grammar Parsing.

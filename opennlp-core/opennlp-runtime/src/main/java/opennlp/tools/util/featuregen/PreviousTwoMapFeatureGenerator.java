@@ -29,13 +29,14 @@ import java.util.Map;
  */
 public class PreviousTwoMapFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private final Map<String, String> previousMap = new HashMap<>();
+  private final ThreadLocal<Map<String, String>> threadState = ThreadLocal.withInitial(HashMap::new);
 
   /**
    * Generates previous decision features for the token based on contents of the previous map.
    */
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
+    Map<String, String> previousMap = threadState.get();
     if (index > 0) {
       features.add("ppd=" + previousMap.get(tokens[index]) + "," +
           previousMap.get(tokens[index - 1]));
@@ -44,6 +45,7 @@ public class PreviousTwoMapFeatureGenerator implements AdaptiveFeatureGenerator 
 
   @Override
   public void updateAdaptiveData(String[] tokens, String[] outcomes) {
+    Map<String, String> previousMap = threadState.get();
     for (int i = 0; i < tokens.length; i++) {
       previousMap.put(tokens[i], outcomes[i]);
     }
@@ -51,6 +53,6 @@ public class PreviousTwoMapFeatureGenerator implements AdaptiveFeatureGenerator 
   
   @Override
   public void clearAdaptiveData() {
-    previousMap.clear();
+    threadState.get().clear();
   }
 }
