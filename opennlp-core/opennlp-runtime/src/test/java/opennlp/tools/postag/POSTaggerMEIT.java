@@ -29,8 +29,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import opennlp.tools.tokenize.ThreadSafeTokenizerME;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.TokenizerME;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -54,8 +54,8 @@ public class POSTaggerMEIT {
   public static void initResources() throws IOException {
     final List<String> langs = List.of(CATALAN, ENGLISH, FRENCH, GERMAN, POLISH, PORTUGUESE);
     for (String langCode: langs) {
-      TOKENIZERS.put(langCode, new ThreadSafeTokenizerME(langCode));
-      TAGGERS.put(langCode, new ThreadSafePOSTaggerME(langCode));
+      TOKENIZERS.put(langCode, new TokenizerME(langCode));
+      TAGGERS.put(langCode, new POSTaggerME(langCode));
     }
   }
 

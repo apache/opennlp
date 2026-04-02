@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.ArrayMath;
 import opennlp.tools.ml.EventTrainer;
@@ -46,7 +47,15 @@ import opennlp.tools.util.TrainingParameters;
  * <p>
  * A maximum entropy model is used to evaluate end-of-sentence characters in a
  * string to determine if they signify the end of a sentence.
+ * <p>
+ * A sentence detector instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
+ * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * ensure instances do not outlive the application's lifecycle, as underlying components
+ * use {@link ThreadLocal} state that may pin the classloader.
  */
+@ThreadSafe
 public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
   /**
@@ -76,8 +85,9 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
   /**
    * The list of probabilities associated with each decision.
+   * Volatile for safe publication after concurrent sentPosDetect() calls.
    */
-  private final List<Double> sentProbs = new ArrayList<>();
+  private volatile List<Double> sentProbs = new ArrayList<>();
 
   /**
    * The {@link Dictionary abbreviation dictionary} if available (may be {@code null}).
@@ -195,7 +205,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    */
   @Override
   public Span[] sentPosDetect(CharSequence s) {
-    sentProbs.clear();
+    List<Double> localProbs = new ArrayList<>();
     List<Integer> enders = scanner.getPositions(s);
     List<Integer> positions = new ArrayList<>(enders.size());
 
@@ -225,7 +235,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
           else {
             positions.add(getFirstNonWS(s, cint + 1));
           }
-          sentProbs.add(probs[model.getIndex(bestOutcome)]);
+          localProbs.add(probs[model.getIndex(bestOutcome)]);
         }
 
         index = cint + 1;
@@ -248,11 +258,14 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
         end--;
 
       if (end - start > 0) {
-        sentProbs.add(1d);
+        localProbs.add(1d);
+        this.sentProbs = localProbs;
         return new Span[] {new Span(start, end)};
       }
-      else
+      else {
+        this.sentProbs = localProbs;
         return new Span[0];
+      }
     }
 
     // Convert the sentence end indexes to spans
@@ -277,7 +290,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
         spans[si] = span;
       }
       else {
-        sentProbs.remove(si);
+        localProbs.remove(si);
       }
     }
 
@@ -285,17 +298,20 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
       Span span = new Span(starts[starts.length - 1], s.length()).trim(s);
       if (span.length() > 0) {
         spans[spans.length - 1] = span;
-        sentProbs.add(1d);
+        localProbs.add(1d);
       }
     }
     /*
      * set the prob for each span
      */
     for (int i = 0; i < spans.length; i++) {
-      double prob = sentProbs.get(i);
+      double prob = localProbs.get(i);
       spans[i] = new Span(spans[i], prob);
 
     }
+
+    // Publish for backward-compatible probs() access (last-writer-wins under concurrency)
+    this.sentProbs = localProbs;
 
     return spans;
   }

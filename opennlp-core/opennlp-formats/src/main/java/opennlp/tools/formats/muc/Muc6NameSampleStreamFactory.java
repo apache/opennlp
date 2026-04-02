@@ -31,8 +31,8 @@ import opennlp.tools.formats.AbstractSampleStreamFactory;
 import opennlp.tools.formats.DirectorySampleStream;
 import opennlp.tools.formats.convert.FileToStringSampleStream;
 import opennlp.tools.namefind.NameSample;
-import opennlp.tools.tokenize.ThreadSafeTokenizerME;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.StringUtil;
@@ -70,7 +70,7 @@ public class Muc6NameSampleStreamFactory
     }
     try {
       TokenizerModel tokenizerModel = new TokenizerModel(params.getTokenizerModel());
-      Tokenizer tokenizer = new ThreadSafeTokenizerME(tokenizerModel);
+      Tokenizer tokenizer = new TokenizerME(tokenizerModel);
 
       ObjectStream<String> mucDocStream = new FileToStringSampleStream(
           new DirectorySampleStream(params.getData(),

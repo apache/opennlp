@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
@@ -46,6 +47,13 @@ import opennlp.tools.util.TrainingParameters;
  * Tries to predict the induced permutation class for each word depending on
  * its surrounding context.
  * <p>
+ * A lemmatizer instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
+ * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * ensure instances do not outlive the application's lifecycle, as underlying components
+ * use {@link ThreadLocal} state that may pin the classloader.
+ * <p>
  * Based on Grzegorz Chrupała. 2008.
  * <a href="http://grzegorz.chrupala.me/papers/phd-single.pdf">
  * Towards a Machine-Learning Architecture for Lexical Functional Grammar Parsing.
@@ -54,12 +62,13 @@ import opennlp.tools.util.TrainingParameters;
  * @see Lemmatizer
  * @see Probabilistic
  */
+@ThreadSafe
 public class LemmatizerME implements Lemmatizer, Probabilistic {
 
   public static final int LEMMA_NUMBER = 29;
   public static final int DEFAULT_BEAM_SIZE = 3;
   protected final int beamSize;
-  private Sequence bestSequence;
+  private volatile Sequence bestSequence;
 
   private final SequenceClassificationModel model;
 
@@ -123,8 +132,12 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    * @return An array of possible lemma classes for each token in {@code toks}.
    */
   public String[] predictSES(String[] toks, String[] tags) {
-    bestSequence = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
-    List<String> ses = bestSequence.getOutcomes();
+    Sequence seq = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
+    this.bestSequence = seq; // volatile write for backward-compatible probs() access
+    if (seq == null) {
+      return new String[toks.length];
+    }
+    List<String> ses = seq.getOutcomes();
     return ses.toArray(new String[0]);
   }
 

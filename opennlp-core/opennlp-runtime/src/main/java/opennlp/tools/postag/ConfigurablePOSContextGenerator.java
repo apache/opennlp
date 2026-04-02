@@ -21,23 +21,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.Cache;
 import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 
 /**
  * A configurable {@link POSContextGenerator context generator} for a {@link POSTagger}.
  * This implementation makes use of {@link AdaptiveFeatureGenerator}.
+ * <p>
+ * The per-sentence context cache is maintained per-thread via {@link ThreadLocal},
+ * making this class safe for concurrent use.
+ * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * {@link ThreadLocal} state may pin the classloader. Ensure instances do not outlive
+ * the application's lifecycle, or call {@link ThreadLocal#remove()} on pooled threads.
  *
  * @see POSTagger
  * @see POSTaggerME
  * @see DefaultPOSContextGenerator
  */
+@ThreadSafe
 public class ConfigurablePOSContextGenerator implements POSContextGenerator {
 
-  private Cache<String, String[]> contextsCache;
-  private Object wordsKey;
-
   private final AdaptiveFeatureGenerator featureGenerator;
+  private final int cacheSize;
+
+  private final ThreadLocal<CacheState> threadState;
+
+  private static final class CacheState {
+    private Object wordsKey;
+    private final Cache<String, String[]> cache;
+
+    CacheState(int size) {
+      this.cache = new Cache<>(size);
+    }
+  }
 
   /**
    * Initializes a {@link ConfigurablePOSContextGenerator} instance.
@@ -50,31 +68,24 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
   }
 
   /**
-   * Initializes a {@link ConfigurablePOSContextGenerator} instance.
+   * Initializes a {@link ConfigurablePOSContextGenerator} instance with an optional
+   * per-thread context cache.
    *
-   * @param cacheSize The size of the {@link Cache} to set.
-   *                  Must be greater than {@code 0} to have an effect.
+   * @param cacheSize The size of the per-thread context cache.
+   *                  Use {@code 0} to disable caching.
    * @param featureGenerator The {@link AdaptiveFeatureGenerator} to be used.
    */
   public ConfigurablePOSContextGenerator(int cacheSize, AdaptiveFeatureGenerator featureGenerator) {
-    this.featureGenerator = Objects.requireNonNull(featureGenerator, "featureGenerator must not be null");
-
-    if (cacheSize > 0) {
-      contextsCache = new Cache<>(cacheSize);
-    }
+    this.featureGenerator = Objects.requireNonNull(featureGenerator,
+        "featureGenerator must not be null");
+    this.cacheSize = cacheSize;
+    this.threadState = cacheSize > 0
+        ? ThreadLocal.withInitial(() -> new CacheState(cacheSize))
+        : null;
   }
 
   /**
-   * Returns the context for making a postag decision at the specified token {@code index}
-   * given the specified {@code tokens} and previous {@code tags}.
-   *
-   * @param index The index of the token for which the context is provided.
-   * @param tokens The tokens representing a sentence.
-   * @param tags The tags assigned to the previous words in the sentence.
-   * @param additionalContext The context for additional information.
-   *
-   * @return The context for making a postag decision at the specified token {@code index}
-   *     given the specified {@code tokens} and previous {@code tags}.
+   * {@inheritDoc}
    */
   @Override
   public String[] getContext(int index, String[] tokens, String[] tags,
@@ -91,28 +102,28 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
       }
     }
 
-    String cacheKey = index + tagprev + tagprevprev;
-    if (contextsCache != null) {
-      if (wordsKey == tokens) {
-        String[] cachedContexts = contextsCache.get(cacheKey);
+    if (threadState != null) {
+      CacheState state = threadState.get();
+      String cacheKey = index + tagprev + tagprevprev;
+      if (state.wordsKey == tokens) {
+        String[] cachedContexts = state.cache.get(cacheKey);
         if (cachedContexts != null) {
           return cachedContexts;
         }
+      } else {
+        state.cache.clear();
+        state.wordsKey = tokens;
       }
-      else {
-        contextsCache.clear();
-        wordsKey = tokens;
-      }
+
+      List<String> e = new ArrayList<>();
+      featureGenerator.createFeatures(e, tokens, index, tags);
+      String[] contexts = e.toArray(new String[0]);
+      state.cache.put(cacheKey, contexts);
+      return contexts;
     }
 
     List<String> e = new ArrayList<>();
-
     featureGenerator.createFeatures(e, tokens, index, tags);
-
-    String[] contexts = e.toArray(new String[0]);
-    if (contextsCache != null) {
-      contextsCache.put(cacheKey, contexts);
-    }
-    return contexts;
+    return e.toArray(new String[0]);
   }
 }

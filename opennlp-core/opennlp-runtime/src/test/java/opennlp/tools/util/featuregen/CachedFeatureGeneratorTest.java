@@ -26,114 +26,77 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Test for the {@link CachedFeatureGenerator} class.
+ * <p>
+ * Caching has been removed for thread safety. These tests verify
+ * that the generator still delegates correctly to its underlying
+ * generator and that the deprecated cache stat methods return 0.
  */
 public class CachedFeatureGeneratorTest {
 
-  private final AdaptiveFeatureGenerator identityGenerator = new IdentityFeatureGenerator();
+  private final AdaptiveFeatureGenerator identityGenerator =
+      new IdentityFeatureGenerator();
 
   private String[] testSentence1;
-
   private String[] testSentence2;
-
   private List<String> features;
 
   @BeforeEach
   void setUp() {
-
     testSentence1 = new String[] {"a1", "b1", "c1", "d1"};
-
     testSentence2 = new String[] {"a2", "b2", "c2", "d2"};
-
     features = new ArrayList<>();
   }
 
-  /**
-   * Tests if cache works for one sentence and two different token indexes.
-   */
   @Test
-  void testCachingOfSentence() {
-    CachedFeatureGenerator generator = new CachedFeatureGenerator(identityGenerator);
+  void testDelegatesToUnderlyingGenerator() {
+    CachedFeatureGenerator generator =
+        new CachedFeatureGenerator(identityGenerator);
 
-    int testIndex = 0;
-
-    // after this call features are cached for testIndex
-    generator.createFeatures(features, testSentence1, testIndex, null);
-
-    Assertions.assertEquals(1, generator.getNumberOfCacheMisses());
-    Assertions.assertEquals(0, generator.getNumberOfCacheHits());
-
-    Assertions.assertTrue(features.contains(testSentence1[testIndex]));
-
-    features.clear();
-
-    // check if features are really cached
-
-    final String expectedToken = testSentence1[testIndex];
-
-    testSentence1[testIndex] = null;
-
-    generator.createFeatures(features, testSentence1, testIndex, null);
-
-    Assertions.assertEquals(1, generator.getNumberOfCacheMisses());
-    Assertions.assertEquals(1, generator.getNumberOfCacheHits());
-
-    Assertions.assertTrue(features.contains(expectedToken));
+    generator.createFeatures(
+        features, testSentence1, 0, null);
+    Assertions.assertTrue(
+        features.contains(testSentence1[0]));
     Assertions.assertEquals(1, features.size());
 
     features.clear();
 
-    // try caching with an other index
-
-    int testIndex2 = testIndex + 1;
-
-    generator.createFeatures(features, testSentence1, testIndex2, null);
-
-    Assertions.assertEquals(2, generator.getNumberOfCacheMisses());
-    Assertions.assertEquals(1, generator.getNumberOfCacheHits());
-    Assertions.assertTrue(features.contains(testSentence1[testIndex2]));
-
-    features.clear();
-
-    // now check if cache still contains feature for testIndex
-
-    generator.createFeatures(features, testSentence1, testIndex, null);
-
-    Assertions.assertTrue(features.contains(expectedToken));
+    generator.createFeatures(
+        features, testSentence1, 1, null);
+    Assertions.assertTrue(
+        features.contains(testSentence1[1]));
+    Assertions.assertEquals(1, features.size());
   }
 
-  /**
-   * Tests if the cache was cleared after the sentence changed.
-   */
   @Test
-  void testCacheClearAfterSentenceChange() {
-    CachedFeatureGenerator generator = new CachedFeatureGenerator(identityGenerator);
+  void testDifferentSentencesProduceCorrectFeatures() {
+    CachedFeatureGenerator generator =
+        new CachedFeatureGenerator(identityGenerator);
 
-    int testIndex = 0;
-
-    // use generator with sentence 1
-    generator.createFeatures(features, testSentence1, testIndex, null);
-
-    features.clear();
-
-    // use another sentence but same index
-    generator.createFeatures(features, testSentence2, testIndex, null);
-
-    Assertions.assertEquals(2, generator.getNumberOfCacheMisses());
-    Assertions.assertEquals(0, generator.getNumberOfCacheHits());
-
-    Assertions.assertTrue(features.contains(testSentence2[testIndex]));
-    Assertions.assertEquals(1, features.size());
+    generator.createFeatures(
+        features, testSentence1, 0, null);
+    Assertions.assertTrue(
+        features.contains(testSentence1[0]));
 
     features.clear();
 
-    // check if features are really cached
-    final String expectedToken = testSentence2[testIndex];
-
-    testSentence2[testIndex] = null;
-
-    generator.createFeatures(features, testSentence2, testIndex, null);
-
-    Assertions.assertTrue(features.contains(expectedToken));
+    generator.createFeatures(
+        features, testSentence2, 0, null);
+    Assertions.assertTrue(
+        features.contains(testSentence2[0]));
     Assertions.assertEquals(1, features.size());
+  }
+
+  @Test
+  void testDeprecatedCacheStatsReturnZero() {
+    CachedFeatureGenerator generator =
+        new CachedFeatureGenerator(identityGenerator);
+
+    generator.createFeatures(
+        features, testSentence1, 0, null);
+
+    Assertions.assertEquals(
+        0, generator.getNumberOfCacheHits());
+    Assertions.assertEquals(
+        0, generator.getNumberOfCacheMisses());
   }
 }

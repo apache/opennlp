@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
@@ -56,12 +57,20 @@ import opennlp.tools.util.featuregen.StringPattern;
  * <p>
  * Tries to predict whether words are nouns, verbs, or any other {@link POSTagFormat POS tags}
  * depending on their surrounding context.
+ * <p>
+ * A POS tagger instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
+ * <p>
+ * <b>Note:</b> Thread safety is achieved via {@link ThreadLocal} state in the underlying
+ * components. In container environments with classloader isolation (e.g. Jakarta EE),
+ * ensure instances do not outlive the application's lifecycle.
  *
  * @see POSModel
  * @see POSTagFormat
  * @see POSTagger
  * @see Probabilistic
  */
+@ThreadSafe
 public class POSTaggerME implements POSTagger, Probabilistic {
 
   private static final Logger logger = LoggerFactory.getLogger(POSTaggerME.class);
@@ -88,7 +97,7 @@ public class POSTaggerME implements POSTagger, Probabilistic {
    */
   protected final int size;
 
-  private Sequence bestSequence;
+  private volatile Sequence bestSequence;
 
   private final SequenceClassificationModel model;
 
@@ -131,18 +140,35 @@ public class POSTaggerME implements POSTagger, Probabilistic {
   }
 
   /**
-   * Initializes a {@link POSTaggerME} with the provided {@link POSModel model}.
+   * Initializes a {@link POSTaggerME} with the provided
+   * {@link POSModel model}.
    *
    * @param model  A valid {@link POSModel}.
    * @param format A valid {@link POSTagFormat}.
    */
   public POSTaggerME(POSModel model, POSTagFormat format) {
+    this(model, format, -1);
+  }
+
+  /**
+   * Initializes a {@link POSTaggerME} with the provided
+   * {@link POSModel model} and explicit cache configuration.
+   *
+   * @param model  A valid {@link POSModel}.
+   * @param format A valid {@link POSTagFormat}.
+   * @param contextCacheSize Size of the per-thread context
+   *        generator cache. Use {@code 0} to disable caching,
+   *        or {@code -1} to use the default (beam size).
+   */
+  public POSTaggerME(POSModel model, POSTagFormat format,
+      int contextCacheSize) {
     this.posTagFormat = format;
     POSTaggerFactory factory = model.getFactory();
 
     int beamSize = POSTaggerME.DEFAULT_BEAM_SIZE;
 
-    String beamSizeString = model.getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER);
+    String beamSizeString = model.getManifestProperty(
+        BeamSearch.BEAM_SIZE_PARAMETER);
 
     if (beamSizeString != null) {
       beamSize = Integer.parseInt(beamSizeString);
@@ -150,7 +176,9 @@ public class POSTaggerME implements POSTagger, Probabilistic {
 
     modelPackage = model;
 
-    cg = factory.getPOSContextGenerator(beamSize);
+    int cacheSize = contextCacheSize >= 0
+        ? contextCacheSize : beamSize;
+    cg = factory.getPOSContextGenerator(cacheSize);
     tagDictionary = factory.getTagDictionary();
     size = beamSize;
 
@@ -159,13 +187,14 @@ public class POSTaggerME implements POSTagger, Probabilistic {
     if (model.getPosSequenceModel() != null) {
       this.model = model.getPosSequenceModel();
     } else {
-      this.model = new BeamSearch(beamSize, model.getArtifact(POSModel.POS_MODEL_ENTRY_NAME), 0);
+      this.model = new BeamSearch(beamSize,
+              model.getArtifact(POSModel.POS_MODEL_ENTRY_NAME), 0);
     }
 
-    this.posTagFormatMapper = (format == POSTagFormat.CUSTOM)
+    this.posTagFormatMapper =
+        (format == POSTagFormat.CUSTOM)
         ? new POSTagFormatMapper.NoOp()
         : new POSTagFormatMapper(getAllPosTags());
-
   }
 
   /**
@@ -188,8 +217,12 @@ public class POSTaggerME implements POSTagger, Probabilistic {
    */
   @Override
   public String[] tag(String[] sentence, Object[] additionalContext) {
-    bestSequence = model.bestSequence(sentence, additionalContext, cg, sequenceValidator);
-    final List<String> t = bestSequence.getOutcomes();
+    Sequence seq = model.bestSequence(sentence, additionalContext, cg, sequenceValidator);
+    this.bestSequence = seq; // volatile write for backward-compatible probs() access
+    if (seq == null) {
+      return new String[sentence.length];
+    }
+    final List<String> t = seq.getOutcomes();
     return convertTags(t);
   }
 

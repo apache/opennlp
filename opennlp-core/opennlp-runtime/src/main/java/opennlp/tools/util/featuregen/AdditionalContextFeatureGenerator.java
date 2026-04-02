@@ -28,11 +28,12 @@ public class AdditionalContextFeatureGenerator implements AdaptiveFeatureGenerat
 
   private static final String PREFIX = "ne=";
 
-  private String[][] additionalContext;
+  private final ThreadLocal<String[][]> threadState = new ThreadLocal<>();
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
 
+    String[][] additionalContext = threadState.get();
     if (additionalContext != null && additionalContext.length != 0) {
       String[] context = additionalContext[index];
 
@@ -43,6 +44,6 @@ public class AdditionalContextFeatureGenerator implements AdaptiveFeatureGenerat
   }
 
   public void setCurrentContext(String[][] context) {
-    additionalContext = context;
+    threadState.set(context);
   }
 }

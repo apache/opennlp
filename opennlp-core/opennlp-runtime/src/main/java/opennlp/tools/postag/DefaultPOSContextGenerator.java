@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import opennlp.tools.dictionary.Dictionary;
-import opennlp.tools.util.Cache;
 import opennlp.tools.util.StringList;
 
 /**
@@ -42,9 +41,6 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
   private static final Pattern hasCap = Pattern.compile("[A-Z]");
   private static final Pattern hasNum = Pattern.compile("[0-9]");
 
-  private Cache<String, String[]> contextsCache;
-  private Object wordsKey;
-
   private final Dictionary dict;
 
   /**
@@ -60,16 +56,14 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
   /**
    * Initializes a {@link DefaultPOSContextGenerator} instance.
    *
-   * @param cacheSize The size of the {@link Cache} to set.
-   *                  Must be greater than {@code 0} to have an effect.
+   * @param cacheSize Ignored. The per-call cache has been removed for thread safety.
    * @param dict The {@link Dictionary} to be used.
+   *
+   * @deprecated Use {@link #DefaultPOSContextGenerator(Dictionary)} instead.
    */
+  @Deprecated(since = "3.0.0")
   public DefaultPOSContextGenerator(int cacheSize, Dictionary dict) {
     this.dict = dict;
-
-    if (cacheSize > 0) {
-      contextsCache = new Cache<>(cacheSize);
-    }
   }
 
   protected static String[] getPrefixes(String lex) {
@@ -150,19 +144,6 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
     else {
       prev = SB; // Sentence Beginning
     }
-    String cacheKey = index + tagprev + tagprevprev;
-    if (contextsCache != null) {
-      if (wordsKey == tokens) {
-        String[] cachedContexts = contextsCache.get(cacheKey);
-        if (cachedContexts != null) {
-          return cachedContexts;
-        }
-      }
-      else {
-        contextsCache.clear();
-        wordsKey = tokens;
-      }
-    }
     List<String> e = new ArrayList<>();
     e.add("default");
     // add the word itself
@@ -212,11 +193,7 @@ public class DefaultPOSContextGenerator implements POSContextGenerator {
         e.add("nn=" + nextnext);
       }
     }
-    String[] contexts = e.toArray(new String[0]);
-    if (contextsCache != null) {
-      contextsCache.put(cacheKey,contexts);
-    }
-    return contexts;
+    return e.toArray(new String[0]);
   }
 
 }

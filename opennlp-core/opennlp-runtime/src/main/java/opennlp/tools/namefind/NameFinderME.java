@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.AlgorithmType;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
@@ -50,10 +51,18 @@ import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
  * A maximum-entropy-based {@link TokenNameFinder name finder} implementation.
+ * <p>
+ * A name finder instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
+ * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * ensure instances do not outlive the application's lifecycle, as underlying components
+ * use {@link ThreadLocal} state that may pin the classloader.
  *
  * @see Probabilistic
  * @see TokenNameFinder
  */
+@ThreadSafe
 public class NameFinderME implements TokenNameFinder, Probabilistic {
 
   private static final String[][] EMPTY = new String[0][0];
@@ -69,7 +78,7 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   protected final SequenceClassificationModel model;
 
   protected final NameContextGenerator contextGenerator;
-  private Sequence bestSequence;
+  private volatile Sequence bestSequence;
 
   private final AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
           new AdditionalContextFeatureGenerator();
@@ -112,9 +121,14 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   public Span[] find(String[] tokens, String[][] additionalContext) {
 
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
-    bestSequence = model.bestSequence(tokens, additionalContext, contextGenerator, sequenceValidator);
+    Sequence seq = model.bestSequence(tokens,
+        additionalContext, contextGenerator, sequenceValidator);
+    this.bestSequence = seq;
+    if (seq == null) {
+      return new Span[0];
+    }
 
-    List<String> c = bestSequence.getOutcomes();
+    List<String> c = seq.getOutcomes();
 
     contextGenerator.updateAdaptiveData(tokens, c.toArray(new String[0]));
     Span[] spans = seqCodec.decode(c);

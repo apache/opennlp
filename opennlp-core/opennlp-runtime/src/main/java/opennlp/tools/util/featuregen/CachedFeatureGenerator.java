@@ -21,62 +21,90 @@ package opennlp.tools.util.featuregen;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.Cache;
 
 /**
  * Caches features of the aggregated {@link AdaptiveFeatureGenerator generators}.
+ * <p>
+ * The cache is maintained per-thread via {@link ThreadLocal}, making this class safe for
+ * concurrent use from multiple threads. Each thread gets its own independent cache that is
+ * cleared when a new sentence (token array) is encountered.
+ * <p>
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
+ * {@link ThreadLocal} state may pin the classloader. Ensure instances do not outlive
+ * the application's lifecycle, or call {@link ThreadLocal#remove()} on pooled threads.
  *
  * @see Cache
  */
+@ThreadSafe
 public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  /**
+   * System property to disable the feature cache globally.
+   * Set to {@code "true"} to bypass caching (useful for benchmarking).
+   */
+  public static final String DISABLE_CACHE_PROPERTY = "opennlp.featuregen.cache.disabled";
+
   private final AdaptiveFeatureGenerator generator;
+  private final boolean cacheEnabled;
 
-  private String[] prevTokens;
+  private final ThreadLocal<CacheState> threadState =
+      ThreadLocal.withInitial(() -> new CacheState(new Cache<>(100)));
 
-  private final Cache<Integer, List<String>> contextsCache;
+  private static final class CacheState {
+    private String[] prevTokens;
+    private final Cache<Integer, List<String>> cache;
 
-  private long numberOfCacheHits;
-  private long numberOfCacheMisses;
+    CacheState(Cache<Integer, List<String>> cache) {
+      this.cache = cache;
+    }
+  }
 
+  /**
+   * @deprecated Use {@link #CachedFeatureGenerator(AdaptiveFeatureGenerator)} instead.
+   */
   @Deprecated
   public CachedFeatureGenerator(AdaptiveFeatureGenerator... generators) {
     this.generator = new AggregatedFeatureGenerator(generators);
-    contextsCache = new Cache<>(100);
+    this.cacheEnabled = !Boolean.getBoolean(DISABLE_CACHE_PROPERTY);
   }
 
   public CachedFeatureGenerator(AdaptiveFeatureGenerator generator) {
     this.generator = generator;
-    contextsCache = new Cache<>(100);
+    this.cacheEnabled = !Boolean.getBoolean(DISABLE_CACHE_PROPERTY);
   }
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 
+    if (!cacheEnabled) {
+      generator.createFeatures(features, tokens, index, previousOutcomes);
+      return;
+    }
+
+    CacheState state = threadState.get();
     List<String> cacheFeatures;
 
-    if (tokens == prevTokens) {
-      cacheFeatures = contextsCache.get(index);
+    if (tokens == state.prevTokens) {
+      cacheFeatures = state.cache.get(index);
 
       if (cacheFeatures != null) {
-        numberOfCacheHits++;
         features.addAll(cacheFeatures);
         return;
       }
 
     } else {
-      contextsCache.clear();
-      prevTokens = tokens;
+      state.cache.clear();
+      state.prevTokens = tokens;
     }
 
     cacheFeatures = new ArrayList<>();
 
-    numberOfCacheMisses++;
-
     generator.createFeatures(cacheFeatures, tokens, index, previousOutcomes);
 
-    contextsCache.put(index, cacheFeatures);
+    state.cache.put(index, cacheFeatures);
     features.addAll(cacheFeatures);
   }
 
@@ -91,24 +119,21 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
   }
 
   /**
-   * @return Retrieves the number of times a cache hit occurred.
+   * @return Retrieves the number of cache hits for the current thread.
+   * @deprecated Cache statistics are no longer tracked.
    */
+  @Deprecated(since = "3.0.0")
   public long getNumberOfCacheHits() {
-    return numberOfCacheHits;
+    return 0;
   }
 
   /**
-   * @return Retrieves the number of times a cache miss occurred.
+   * @return Retrieves the number of cache misses for the current thread.
+   * @deprecated Cache statistics are no longer tracked.
    */
+  @Deprecated(since = "3.0.0")
   public long getNumberOfCacheMisses() {
-    return numberOfCacheMisses;
-  }
-
-  @Override
-  public String toString() {
-    return super.toString() + ": hits=" + numberOfCacheHits
-        + " misses=" + numberOfCacheMisses + " hit%" + (numberOfCacheHits > 0 ?
-        (double) numberOfCacheHits / (numberOfCacheMisses + numberOfCacheHits) : 0);
+    return 0;
   }
 
   public AdaptiveFeatureGenerator getCachedFeatureGenerator() {

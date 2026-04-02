@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.ml.AbstractEventTrainer;
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -34,7 +35,9 @@ import opennlp.tools.util.TrainingParameters;
 
 /**
  * Implements a learnable {@link LanguageDetector}.
- *
+ * <p>
+ * A language detector instance is thread-safe. One instance
+ * can be shared across multiple threads to save memory.
  * <p>
  * This will process the entire string when called with
  * {@link #predictLanguage(CharSequence)} or
@@ -59,6 +62,7 @@ import opennlp.tools.util.TrainingParameters;
  * for the inspiration for many of the design components of this detector.
  *
  */
+@ThreadSafe
 public class LanguageDetectorME implements LanguageDetector {
 
   protected final LanguageDetectorModel model;

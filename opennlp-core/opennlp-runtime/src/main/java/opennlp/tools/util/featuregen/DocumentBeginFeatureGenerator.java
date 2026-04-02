@@ -26,14 +26,16 @@ import java.util.List;
  */
 public class DocumentBeginFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private String[] firstSentence;
+  private final ThreadLocal<String[]> threadState = new ThreadLocal<>();
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
       String[] previousOutcomes) {
 
+    String[] firstSentence = threadState.get();
     if (firstSentence == null) {
       firstSentence = tokens;
+      threadState.set(tokens);
     }
 
     if (firstSentence == tokens && index == 0) {
@@ -43,6 +45,6 @@ public class DocumentBeginFeatureGenerator implements AdaptiveFeatureGenerator {
 
   @Override
   public void clearAdaptiveData() {
-    firstSentence = null;
+    threadState.remove();
   }
 }
