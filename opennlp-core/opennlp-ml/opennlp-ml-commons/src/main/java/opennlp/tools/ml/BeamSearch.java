@@ -50,10 +50,10 @@ public class BeamSearch implements SequenceClassificationModel {
 
   private static final Object[] EMPTY_ADDITIONAL_CONTEXT = new Object[0];
 
-  protected final int size;
-  protected final MaxentModel model;
+  private final int size;
+  private final MaxentModel model;
 
-  private static final int zeroLog = -100000;
+  private static final int ZERO_LOG = -100000;
 
   private final int cacheSize;
 
@@ -95,34 +95,32 @@ public class BeamSearch implements SequenceClassificationModel {
         () -> new CacheState(model.getNumOutcomes(), cacheSize));
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public <T> Sequence[] bestSequences(int numSequences, T[] sequence,
-      Object[] additionalContext, double minSequenceScore,
-      BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
+  public <T> Sequence[] bestSequences(final int numSequences, final T[] sequence,
+      final Object[] additionalContext, final double minSequenceScore,
+      final BeamSearchContextGenerator<T> cg, final SequenceValidator<T> validator) {
 
-    CacheState state = threadState.get();
+    final CacheState state = threadState.get();
 
-    Queue<Sequence> prev = new PriorityQueue<>(size);
+    final Queue<Sequence> prev = new PriorityQueue<>(size);
     Queue<Sequence> next = new PriorityQueue<>(size);
     Queue<Sequence> tmp;
     prev.add(new Sequence());
 
-    if (additionalContext == null) {
-      additionalContext = EMPTY_ADDITIONAL_CONTEXT;
+    Object[] context = additionalContext;
+    if (context == null) {
+      context = EMPTY_ADDITIONAL_CONTEXT;
     }
 
     for (int i = 0; i < sequence.length; i++) {
-      int sz = StrictMath.min(size, prev.size());
+      final int sz = StrictMath.min(size, prev.size());
 
       for (int sc = 0; prev.size() > 0 && sc < sz; sc++) {
-        Sequence top = prev.remove();
-        List<String> tmpOutcomes = top.getOutcomes();
-        String[] outcomes = tmpOutcomes.toArray(new String[0]);
-        String[] contexts = cg.getContext(i, sequence, outcomes, additionalContext);
-        double[] scores;
+        final Sequence top = prev.remove();
+        final List<String> tmpOutcomes = top.getOutcomes();
+        final String[] outcomes = tmpOutcomes.toArray(new String[0]);
+        final String[] contexts = cg.getContext(i, sequence, outcomes, context);
+        final double[] scores;
         if (state.cache != null) {
           scores = state.cache.computeIfAbsent(contexts, c -> {
             double[] res = model.eval(c, state.probs);
@@ -134,18 +132,18 @@ public class BeamSearch implements SequenceClassificationModel {
           scores = model.eval(contexts, state.probs);
         }
 
-        double[] temp_scores = new double[scores.length];
-        System.arraycopy(scores, 0, temp_scores, 0, scores.length);
+        final double[] tempScores = new double[scores.length];
+        System.arraycopy(scores, 0, tempScores, 0, scores.length);
 
-        Arrays.sort(temp_scores);
+        Arrays.sort(tempScores);
 
-        double min = temp_scores[StrictMath.max(0, scores.length - size)];
+        final double min = tempScores[StrictMath.max(0, scores.length - size)];
 
         for (int p = 0; p < scores.length; p++) {
           if (scores[p] >= min) {
-            String out = model.getOutcome(p);
+            final String out = model.getOutcome(p);
             if (validator.validSequence(i, sequence, outcomes, out)) {
-              Sequence ns = new Sequence(top, out, scores[p]);
+              final Sequence ns = new Sequence(top, out, scores[p]);
               if (ns.getScore() > minSequenceScore) {
                 next.add(ns);
               }
@@ -153,11 +151,11 @@ public class BeamSearch implements SequenceClassificationModel {
           }
         }
 
-        if (next.size() == 0) { //if no advanced sequences, advance all valid
+        if (next.isEmpty()) { // if no advanced sequences, advance all valid
           for (int p = 0; p < scores.length; p++) {
-            String out = model.getOutcome(p);
+            final String out = model.getOutcome(p);
             if (validator.validSequence(i, sequence, outcomes, out)) {
-              Sequence ns = new Sequence(top, out, scores[p]);
+              final Sequence ns = new Sequence(top, out, scores[p]);
               if (ns.getScore() > minSequenceScore) {
                 next.add(ns);
               }
@@ -173,8 +171,8 @@ public class BeamSearch implements SequenceClassificationModel {
       next = tmp;
     }
 
-    int numSeq = StrictMath.min(numSequences, prev.size());
-    Sequence[] topSequences = new Sequence[numSeq];
+    final int numSeq = StrictMath.min(numSequences, prev.size());
+    final Sequence[] topSequences = new Sequence[numSeq];
 
     for (int seqIndex = 0; seqIndex < numSeq; seqIndex++) {
       topSequences[seqIndex] = prev.remove();
@@ -187,23 +185,25 @@ public class BeamSearch implements SequenceClassificationModel {
    * {@inheritDoc}
    */
   @Override
-  public <T> Sequence[] bestSequences(int numSequences, T[] sequence,
-      Object[] additionalContext, BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
-    return bestSequences(numSequences, sequence, additionalContext, zeroLog, cg, validator);
+  public <T> Sequence[] bestSequences(final int numSequences, final T[] sequence,
+      final Object[] additionalContext, final BeamSearchContextGenerator<T> cg,
+      final SequenceValidator<T> validator) {
+    return bestSequences(numSequences, sequence, additionalContext, ZERO_LOG, cg, validator);
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public <T> Sequence bestSequence(T[] sequence, Object[] additionalContext,
-      BeamSearchContextGenerator<T> cg, SequenceValidator<T> validator) {
-    Sequence[] sequences = bestSequences(1, sequence, additionalContext, cg, validator);
+  public <T> Sequence bestSequence(final T[] sequence, final Object[] additionalContext,
+      final BeamSearchContextGenerator<T> cg, final SequenceValidator<T> validator) {
+    final Sequence[] sequences = bestSequences(1, sequence, additionalContext, cg, validator);
 
-    if (sequences.length > 0)
+    if (sequences.length > 0) {
       return sequences[0];
-    else
+    } else {
       return null;
+    }
   }
 
   @Override

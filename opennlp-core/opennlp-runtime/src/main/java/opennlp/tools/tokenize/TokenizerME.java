@@ -106,15 +106,14 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    */
   private final boolean useAlphaNumericOptimization;
 
-  /**
+  /*
    * List of probabilities for each token returned from a call to
    * <code>tokenize</code> or <code>tokenizePos</code>.
-   * Isolates probabilities per-thread for safe concurrent access.
+   * Volatile for safe publication after concurrent tokenizePos() calls.
    */
-  private final ThreadLocal<List<Double>> tokProbs = ThreadLocal.withInitial(ArrayList::new);
+  private volatile List<Double> tokProbs;
 
-  private final ThreadLocal<List<Span>> newTokens = ThreadLocal.withInitial(ArrayList::new);
-
+  private volatile List<Span> newTokens;
 
   /*
    * The {@link Dictionary abbreviation dictionary} if available (may be {@code null}).
@@ -153,6 +152,9 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
     this.cg = factory.getContextGenerator();
     this.alphanumeric = factory.getAlphaNumericPattern();
     this.useAlphaNumericOptimization = factory.isUseAlphaNumericOptimization();
+
+    newTokens = new ArrayList<>();
+    tokProbs = new ArrayList<>();
   }
 
   /**
@@ -166,7 +168,7 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
    */
   @Override
   public double[] probs() {
-    return ArrayMath.toDoubleArray(tokProbs.get());
+    return ArrayMath.toDoubleArray(tokProbs);
   }
 
   /**
@@ -236,9 +238,9 @@ public class TokenizerME extends AbstractTokenizer implements Probabilistic {
       }
     }
 
-    // Publish for backward-compatible probs() access
-    this.newTokens.set(localTokens);
-    this.tokProbs.set(localProbs);
+    // Publish for backward-compatible probs() access (last-writer-wins under concurrency)
+    this.newTokens = localTokens;
+    this.tokProbs = localProbs;
 
     Span[] spans = new Span[localTokens.size()];
     localTokens.toArray(spans);
