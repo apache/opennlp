@@ -26,7 +26,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,20 +37,26 @@ import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
- * A {@link BaseToolFactory} for BPE tokenization that manages the BPE merge rules artifact
- * and its serialization within a {@link BPEModel}.
+ * A {@link BaseToolFactory} for BPE tokenization that manages
+ * the BPE merge rules artifact and its serialization within a
+ * {@link BPEModel}.
  * <p>
  * This factory is responsible for:
  * <ul>
- *   <li>Providing the {@link BPEMergesSerializer} that reads and writes BPE merge rules
- *       as a text-based artifact ({@code bpe.merges}) inside the model ZIP package.</li>
- *   <li>Supplying the merge rules to the {@link BPEModel} via {@link #createArtifactMap()}.</li>
- *   <li>Validating that a loaded model contains valid merge rules.</li>
+ *   <li>Providing the {@link BPEMergesSerializer} that reads
+ *       and writes BPE merge rules as a text-based artifact
+ *       ({@code bpe.merges}) inside the model ZIP package.
+ *   </li>
+ *   <li>Supplying the merge rules to the {@link BPEModel}
+ *       via {@link #createArtifactMap()}.</li>
+ *   <li>Validating that a loaded model contains valid merge
+ *       rules.</li>
  * </ul>
  * <p>
- * This class is typically not used directly. It is instantiated internally by
- * {@link BPETokenizerTrainer} during training and by {@link BPEModel} during
- * model loading.
+ * This class is typically not used directly. It is
+ * instantiated internally by {@link BPETokenizerTrainer}
+ * during training and by {@link BPEModel} during model
+ * loading.
  *
  * @see BPEModel
  * @see BPETokenizer
@@ -58,32 +64,44 @@ import opennlp.tools.util.model.ArtifactSerializer;
  */
 public class BPETokenizerFactory extends BaseToolFactory {
 
+  /** The artifact entry name for BPE merge rules. */
   static final String MERGES_ENTRY_NAME = "bpe.merges";
 
+  /** The ISO language code. */
   private String languageCode;
+  /** The ordered list of BPE merge operations. */
   private List<SymbolPair> merges;
 
   /**
-   * Creates a {@link BPETokenizerFactory}. Required empty constructor for model loading.
+   * Creates a {@link BPETokenizerFactory}.
+   * Required empty constructor for model loading.
    */
   public BPETokenizerFactory() {
   }
 
   /**
-   * Creates a {@link BPETokenizerFactory} with the specified parameters.
+   * Creates a {@link BPETokenizerFactory} with the given
+   * parameters.
    *
-   * @param languageCode The ISO language code. Must not be {@code null}.
-   * @param merges       The ordered list of BPE merge operations. Must not be {@code null}.
+   * @param langCode The ISO language code.
+   *                 Must not be {@code null}.
+   * @param mergeOps The ordered list of BPE merge operations.
+   *                 Must not be {@code null}.
    */
-  public BPETokenizerFactory(String languageCode, List<SymbolPair> merges) {
-    this.languageCode = Objects.requireNonNull(languageCode, "languageCode must not be null");
-    this.merges = Objects.requireNonNull(merges, "merges must not be null");
+  public BPETokenizerFactory(final String langCode,
+                              final List<SymbolPair> mergeOps) {
+    this.languageCode = Objects.requireNonNull(
+        langCode, "languageCode must not be null");
+    this.merges = Objects.requireNonNull(
+        mergeOps, "merges must not be null");
   }
 
   /** {@inheritDoc} */
   @Override
-  public Map<String, ArtifactSerializer<?>> createArtifactSerializersMap() {
-    Map<String, ArtifactSerializer<?>> serializers = super.createArtifactSerializersMap();
+  public Map<String, ArtifactSerializer<?>>
+      createArtifactSerializersMap() {
+    Map<String, ArtifactSerializer<?>> serializers =
+        super.createArtifactSerializersMap();
     serializers.put("merges", new BPEMergesSerializer());
     return serializers;
   }
@@ -108,9 +126,11 @@ public class BPETokenizerFactory extends BaseToolFactory {
   /** {@inheritDoc} */
   @Override
   public void validateArtifactMap() throws InvalidFormatException {
-    Object mergesArtifact = this.artifactProvider.getArtifact(MERGES_ENTRY_NAME);
+    Object mergesArtifact =
+        this.artifactProvider.getArtifact(MERGES_ENTRY_NAME);
     if (!(mergesArtifact instanceof List<?>)) {
-      throw new InvalidFormatException("Missing or invalid BPE merges artifact!");
+      throw new InvalidFormatException(
+          "Missing or invalid BPE merges artifact!");
     }
   }
 
@@ -131,7 +151,8 @@ public class BPETokenizerFactory extends BaseToolFactory {
     if (merges != null) {
       return merges;
     }
-    return (List<SymbolPair>) this.artifactProvider.getArtifact(MERGES_ENTRY_NAME);
+    return (List<SymbolPair>)
+        this.artifactProvider.getArtifact(MERGES_ENTRY_NAME);
   }
 
   /**
@@ -140,10 +161,12 @@ public class BPETokenizerFactory extends BaseToolFactory {
    * Serializes merge rules as a text file with one merge pair per line,
    * in the format: {@code left right}.
    */
-  static class BPEMergesSerializer implements ArtifactSerializer<List<SymbolPair>> {
+  static class BPEMergesSerializer
+      implements ArtifactSerializer<List<SymbolPair>> {
 
     @Override
-    public List<SymbolPair> create(InputStream in) throws IOException {
+    public List<SymbolPair> create(final InputStream in)
+        throws IOException {
       final List<SymbolPair> merges = new ArrayList<>();
       final BufferedReader reader = new BufferedReader(
           new InputStreamReader(in, StandardCharsets.UTF_8));
@@ -155,15 +178,21 @@ public class BPETokenizerFactory extends BaseToolFactory {
         }
         final int space = line.indexOf(' ');
         if (space < 0) {
-          throw new IOException("Invalid BPE merge line (expected 'left right'): " + line);
+          throw new IOException(
+              "Invalid BPE merge line (expected "
+              + "'left right'): " + line);
         }
-        merges.add(new SymbolPair(line.substring(0, space), line.substring(space + 1)));
+        merges.add(new SymbolPair(
+            line.substring(0, space),
+            line.substring(space + 1)));
       }
       return merges;
     }
 
     @Override
-    public void serialize(List<SymbolPair> artifact, OutputStream out) throws IOException {
+    public void serialize(final List<SymbolPair> artifact,
+                          final OutputStream out)
+        throws IOException {
       final BufferedWriter writer = new BufferedWriter(
           new OutputStreamWriter(out, StandardCharsets.UTF_8));
       for (final SymbolPair merge : artifact) {

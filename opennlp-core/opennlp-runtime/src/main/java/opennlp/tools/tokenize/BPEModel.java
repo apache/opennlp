@@ -62,68 +62,75 @@ import opennlp.tools.util.model.BaseModel;
 public final class BPEModel extends BaseModel {
 
   private static final long serialVersionUID = 1L;
+  /** The component name for this model type. */
   private static final String COMPONENT_NAME = "BPETokenizer";
 
   /**
    * Creates a {@link BPEModel} from trained merge rules.
    *
-   * @param merges             The ordered list of BPE merge operations.
-   * @param manifestInfoEntries Additional information kept in the manifest.
-   * @param factory            The {@link BPETokenizerFactory} to use.
+   * @param merges             The ordered list of merge operations.
+   * @param manifestInfoEntries Additional manifest info.
+   * @param factory            The {@link BPETokenizerFactory}.
    */
-  public BPEModel(List<SymbolPair> merges, Map<String, String> manifestInfoEntries,
-                  BPETokenizerFactory factory) {
-    super(COMPONENT_NAME, factory.getLanguageCode(), manifestInfoEntries, factory);
+  public BPEModel(final List<SymbolPair> merges,
+                  final Map<String, String> manifestInfoEntries,
+                  final BPETokenizerFactory factory) {
+    super(COMPONENT_NAME,
+        factory.getLanguageCode(),
+        manifestInfoEntries, factory);
     checkArtifactMap();
   }
 
   /**
    * Initializes a {@link BPEModel} from an {@link InputStream}.
    *
-   * @param in The {@link InputStream} used for loading the model.
-   * @throws IOException Thrown if IO errors occurred during initialization.
+   * @param in The {@link InputStream} for loading the model.
+   * @throws IOException Thrown if IO errors occurred.
    */
-  public BPEModel(InputStream in) throws IOException {
+  public BPEModel(final InputStream in) throws IOException {
     super(COMPONENT_NAME, in);
   }
 
   /**
    * Initializes a {@link BPEModel} from a {@link File}.
    *
-   * @param modelFile The {@link File} used for loading the model.
-   * @throws IOException Thrown if IO errors occurred during initialization.
+   * @param modelFile The {@link File} for loading the model.
+   * @throws IOException Thrown if IO errors occurred.
    */
-  public BPEModel(File modelFile) throws IOException {
+  public BPEModel(final File modelFile) throws IOException {
     super(COMPONENT_NAME, modelFile);
   }
 
   /**
    * Initializes a {@link BPEModel} from a {@link Path}.
    *
-   * @param modelPath The {@link Path} used for loading the model.
-   * @throws IOException Thrown if IO errors occurred during initialization.
+   * @param modelPath The {@link Path} for loading the model.
+   * @throws IOException Thrown if IO errors occurred.
    */
-  public BPEModel(Path modelPath) throws IOException {
+  public BPEModel(final Path modelPath) throws IOException {
     super(COMPONENT_NAME, modelPath);
   }
 
   /**
    * Initializes a {@link BPEModel} from a {@link URL}.
    *
-   * @param modelURL The {@link URL} used for loading the model.
-   * @throws IOException Thrown if IO errors occurred during initialization.
+   * @param modelURL The {@link URL} for loading the model.
+   * @throws IOException Thrown if IO errors occurred.
    */
-  public BPEModel(URL modelURL) throws IOException {
+  public BPEModel(final URL modelURL) throws IOException {
     super(COMPONENT_NAME, modelURL);
   }
 
   @Override
-  protected void validateArtifactMap() throws InvalidFormatException {
+  protected void validateArtifactMap()
+      throws InvalidFormatException {
     super.validateArtifactMap();
 
-    Object mergesArtifact = artifactMap.get(BPETokenizerFactory.MERGES_ENTRY_NAME);
+    Object mergesArtifact =
+        artifactMap.get(BPETokenizerFactory.MERGES_ENTRY_NAME);
     if (!(mergesArtifact instanceof List<?>)) {
-      throw new InvalidFormatException("BPE model is incomplete: missing merge rules!");
+      throw new InvalidFormatException(
+          "BPE model is incomplete: missing merge rules!");
     }
   }
 

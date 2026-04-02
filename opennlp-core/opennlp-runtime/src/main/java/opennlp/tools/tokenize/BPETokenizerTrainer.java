@@ -26,21 +26,30 @@ import java.util.Objects;
 import opennlp.tools.tokenize.BPETokenizer.SymbolPair;
 
 /**
- * Learns BPE merge operations from a training corpus and produces a {@link BPEModel}.
+ * Learns BPE merge operations from a training corpus and
+ * produces a {@link BPEModel}.
  * <p>
- * Implements the BPE learning algorithm from Sennrich et al. (2016):
+ * Implements the BPE learning algorithm from
+ * Sennrich et al. (2016):
  * <ol>
- *   <li>Build a vocabulary of character-level symbol sequences from the corpus,
- *       where each word is split into individual characters with an end-of-word marker.</li>
- *   <li>Count all adjacent symbol pairs across the vocabulary, weighted by word frequency.</li>
- *   <li>Merge the most frequent pair into a single new symbol.</li>
- *   <li>Repeat until the desired number of merges ({@code numMerges}) is reached.</li>
+ *   <li>Build a vocabulary of character-level symbol
+ *       sequences from the corpus, where each word is split
+ *       into individual characters with an end-of-word
+ *       marker.</li>
+ *   <li>Count all adjacent symbol pairs across the
+ *       vocabulary, weighted by word frequency.</li>
+ *   <li>Merge the most frequent pair into a single new
+ *       symbol.</li>
+ *   <li>Repeat until the desired number of merges
+ *       ({@code numMerges}) is reached.</li>
  * </ol>
  * <p>
- * The number of merges controls the granularity of the resulting vocabulary:
- * fewer merges produce finer-grained (more character-level) tokens, while more
- * merges produce coarser (more word-level) tokens. A typical value ranges from
- * a few thousand to tens of thousands, depending on the corpus size and language.
+ * The number of merges controls the granularity of the
+ * resulting vocabulary: fewer merges produce finer-grained
+ * (more character-level) tokens, while more merges produce
+ * coarser (more word-level) tokens. A typical value ranges
+ * from a few thousand to tens of thousands, depending on
+ * the corpus size and language.
  * <p>
  * <b>Usage:</b>
  * <pre>{@code
@@ -64,7 +73,8 @@ import opennlp.tools.tokenize.BPETokenizer.SymbolPair;
  * <ul>
  *   <li>Sennrich, R., Haddow, B., &amp; Birch, A. (2016).
  *       Neural Machine Translation of Rare Words with Subword Units.
- *       <a href="https://arxiv.org/abs/1508.07909">https://arxiv.org/abs/1508.07909</a>
+ *       <a href="https://arxiv.org/abs/1508.07909">
+ *       https://arxiv.org/abs/1508.07909</a>
  *   </li>
  * </ul>
  *
@@ -80,15 +90,23 @@ public final class BPETokenizerTrainer {
   }
 
   /**
-   * Learns BPE merge operations from a training corpus and returns a {@link BPEModel}.
+   * Learns BPE merge operations from a training corpus
+   * and returns a {@link BPEModel}.
    *
-   * @param corpus       An iterable of text strings (e.g., sentences or documents).
+   * @param corpus       An iterable of text strings
+   *                     (e.g., sentences or documents).
    *                     Must not be {@code null}.
-   * @param numMerges    The number of merge operations to learn. Must be positive.
-   * @param languageCode The ISO language code (e.g., "en", "de"). Must not be {@code null}.
-   * @return A trained {@link BPEModel} containing the learned merge operations.
-   * @throws IllegalArgumentException if {@code numMerges} is not positive.
-   * @throws NullPointerException     if {@code corpus} or {@code languageCode} is {@code null}.
+   * @param numMerges    The number of merge operations
+   *                     to learn. Must be positive.
+   * @param languageCode The ISO language code
+   *                     (e.g., "en", "de").
+   *                     Must not be {@code null}.
+   * @return A trained {@link BPEModel} containing the
+   *         learned merge operations.
+   * @throws IllegalArgumentException if {@code numMerges}
+   *         is not positive.
+   * @throws NullPointerException if {@code corpus} or
+   *         {@code languageCode} is {@code null}.
    */
   public BPEModel train(final Iterable<String> corpus,
                          final int numMerges,
@@ -96,16 +114,20 @@ public final class BPETokenizerTrainer {
     Objects.requireNonNull(corpus, "corpus must not be null");
     Objects.requireNonNull(languageCode, "languageCode must not be null");
     if (numMerges <= 0) {
-      throw new IllegalArgumentException("numMerges must be positive, got: " + numMerges);
+      throw new IllegalArgumentException(
+          "numMerges must be positive, got: " + numMerges);
     }
 
     final List<SymbolPair> merges = learnMerges(corpus, numMerges);
-    final BPETokenizerFactory factory = new BPETokenizerFactory(languageCode, merges);
+    final BPETokenizerFactory factory =
+        new BPETokenizerFactory(languageCode, merges);
 
     return new BPEModel(merges, new HashMap<>(), factory);
   }
 
-  private List<SymbolPair> learnMerges(final Iterable<String> corpus, final int numMerges) {
+  private List<SymbolPair> learnMerges(
+      final Iterable<String> corpus,
+      final int numMerges) {
     // Step 1: Build word frequency map from corpus
     final Map<String, Integer> wordFreqs = new HashMap<>();
     for (final String line : corpus) {
@@ -132,7 +154,8 @@ public final class BPETokenizerTrainer {
         final List<String> symbols = entry.getKey();
         final int freq = entry.getValue();
         for (int i = 0; i < symbols.size() - 1; i++) {
-          final SymbolPair pair = new SymbolPair(symbols.get(i), symbols.get(i + 1));
+          final SymbolPair pair = new SymbolPair(
+              symbols.get(i), symbols.get(i + 1));
           pairCounts.merge(pair, freq, Integer::sum);
         }
       }
@@ -182,7 +205,9 @@ public final class BPETokenizerTrainer {
     return symbols;
   }
 
-  private List<String> applyMerge(final List<String> symbols, final SymbolPair pair) {
+  private List<String> applyMerge(
+      final List<String> symbols,
+      final SymbolPair pair) {
     final List<String> result = new ArrayList<>();
     int i = 0;
     while (i < symbols.size()) {

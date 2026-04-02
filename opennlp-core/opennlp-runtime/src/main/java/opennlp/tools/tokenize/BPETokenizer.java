@@ -58,7 +58,8 @@ import opennlp.tools.util.Span;
  * <ul>
  *   <li>Sennrich, R., Haddow, B., &amp; Birch, A. (2016).
  *       Neural Machine Translation of Rare Words with Subword Units.
- *       <a href="https://arxiv.org/abs/1508.07909">https://arxiv.org/abs/1508.07909</a>
+ *       <a href="https://arxiv.org/abs/1508.07909">
+ *       https://arxiv.org/abs/1508.07909</a>
  *   </li>
  * </ul>
  *
@@ -78,15 +79,17 @@ public class BPETokenizer implements Tokenizer {
    */
   public static final String END_OF_WORD = "</w>";
 
+  /** Maps each merge pair to its priority rank. */
   private final LinkedHashMap<SymbolPair, Integer> mergeRanks;
 
   /**
-   * Initializes a {@link BPETokenizer} from a trained {@link BPEModel}.
+   * Initializes a {@link BPETokenizer} from a trained
+   * {@link BPEModel}.
    *
-   * @param model The trained BPE model containing merge rules. Must not be {@code null}.
+   * @param model The trained BPE model. Must not be {@code null}.
    * @throws NullPointerException if {@code model} is {@code null}.
    */
-  public BPETokenizer(BPEModel model) {
+  public BPETokenizer(final BPEModel model) {
     Objects.requireNonNull(model, "model must not be null");
     final List<SymbolPair> merges = model.getMerges();
     this.mergeRanks = new LinkedHashMap<>();
@@ -205,7 +208,8 @@ public class BPETokenizer implements Tokenizer {
       SymbolPair bestPair = null;
 
       for (int i = 0; i < current.size() - 1; i++) {
-        final SymbolPair pair = new SymbolPair(current.get(i), current.get(i + 1));
+        final SymbolPair pair = new SymbolPair(
+            current.get(i), current.get(i + 1));
         final Integer rank = mergeRanks.get(pair);
         if (rank != null && rank < bestRank) {
           bestRank = rank;
