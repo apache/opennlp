@@ -20,7 +20,6 @@ package opennlp.tools.tokenize;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
 
 import opennlp.tools.util.Span;
 
@@ -87,10 +86,12 @@ public class BPETokenizer implements Tokenizer {
    * {@link BPEModel}.
    *
    * @param model The trained BPE model. Must not be {@code null}.
-   * @throws NullPointerException if {@code model} is {@code null}.
+   * @throws IllegalArgumentException if {@code model} is {@code null}.
    */
   public BPETokenizer(final BPEModel model) {
-    Objects.requireNonNull(model, "model must not be null");
+    if (model == null) {
+      throw new IllegalArgumentException("model must not be null");
+    }
     final List<SymbolPair> merges = model.getMerges();
     this.mergeRanks = new LinkedHashMap<>();
     for (int i = 0; i < merges.size(); i++) {
@@ -175,6 +176,14 @@ public class BPETokenizer implements Tokenizer {
     return symbols;
   }
 
+  /**
+   * Encodes a single word into BPE subword tokens by splitting it into
+   * character-level symbols, applying learned merge operations, and stripping
+   * the {@link #END_OF_WORD} markers from the resulting tokens.
+   *
+   * @param word The word to encode. Must not be {@code null}.
+   * @return A list of subword token strings whose concatenation equals the original word.
+   */
   private List<String> encodeToBPE(final String word) {
     if (word.isEmpty()) {
       return List.of();
@@ -196,6 +205,15 @@ public class BPETokenizer implements Tokenizer {
     return result;
   }
 
+  /**
+   * Iteratively applies learned BPE merge operations to a list of symbols.
+   * In each iteration, the highest-priority (lowest-rank) adjacent pair is merged
+   * into a single symbol. The process continues until no more applicable merges
+   * remain or the symbol list is reduced to a single element.
+   *
+   * @param symbols The mutable list of symbols to merge. Must not be {@code null}.
+   * @return The list of symbols after all applicable merges have been applied.
+   */
   private List<String> applyMerges(final List<String> symbols) {
     if (symbols.size() <= 1) {
       return symbols;
@@ -253,10 +271,15 @@ public class BPETokenizer implements Tokenizer {
      *
      * @param left  The left symbol. Must not be {@code null}.
      * @param right The right symbol. Must not be {@code null}.
+     * @throws IllegalArgumentException if {@code left} or {@code right} is {@code null}.
      */
     public SymbolPair {
-      Objects.requireNonNull(left, "left must not be null");
-      Objects.requireNonNull(right, "right must not be null");
+      if (left == null) {
+        throw new IllegalArgumentException("left must not be null");
+      }
+      if (right == null) {
+        throw new IllegalArgumentException("right must not be null");
+      }
     }
 
     @Override

@@ -28,7 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import opennlp.tools.tokenize.BPETokenizer.SymbolPair;
 import opennlp.tools.util.BaseToolFactory;
@@ -86,13 +85,21 @@ public class BPETokenizerFactory extends BaseToolFactory {
    *                 Must not be {@code null}.
    * @param mergeOps The ordered list of BPE merge operations.
    *                 Must not be {@code null}.
+   * @throws IllegalArgumentException if {@code langCode} or
+   *         {@code mergeOps} is {@code null}.
    */
   public BPETokenizerFactory(final String langCode,
                               final List<SymbolPair> mergeOps) {
-    this.languageCode = Objects.requireNonNull(
-        langCode, "languageCode must not be null");
-    this.merges = Objects.requireNonNull(
-        mergeOps, "merges must not be null");
+    if (langCode == null) {
+      throw new IllegalArgumentException(
+          "languageCode must not be null");
+    }
+    if (mergeOps == null) {
+      throw new IllegalArgumentException(
+          "merges must not be null");
+    }
+    this.languageCode = langCode;
+    this.merges = mergeOps;
   }
 
   /** {@inheritDoc} */
@@ -141,20 +148,6 @@ public class BPETokenizerFactory extends BaseToolFactory {
   }
 
   /**
-   * Retrieves the BPE merge rules from the loaded model artifacts.
-   *
-   * @return The ordered list of {@link SymbolPair} merge operations.
-   */
-  @SuppressWarnings("unchecked")
-  public List<SymbolPair> getMerges() {
-    if (merges != null) {
-      return merges;
-    }
-    return (List<SymbolPair>)
-        this.artifactProvider.getArtifact(MERGES_ENTRY_NAME);
-  }
-
-  /**
    * An {@link ArtifactSerializer} for BPE merge rules.
    * <p>
    * Serializes merge rules as a text file with one merge pair per line,
@@ -177,7 +170,7 @@ public class BPETokenizerFactory extends BaseToolFactory {
         }
         final int space = line.indexOf(' ');
         if (space < 0) {
-          throw new IOException(
+          throw new InvalidFormatException(
               "Invalid BPE merge line (expected "
               + "'left right'): " + line);
         }
@@ -188,6 +181,14 @@ public class BPETokenizerFactory extends BaseToolFactory {
       return merges;
     }
 
+    /**
+     * Serializes the merge rules to the given {@link OutputStream}.
+     * <p>
+     * <b>Note:</b> This method wraps the provided {@link OutputStream}
+     * in a {@link BufferedWriter} and flushes it upon completion,
+     * but does <em>not</em> close the underlying stream. The caller
+     * is responsible for closing {@code out}.
+     */
     @Override
     public void serialize(final List<SymbolPair> artifact,
                           final OutputStream out)

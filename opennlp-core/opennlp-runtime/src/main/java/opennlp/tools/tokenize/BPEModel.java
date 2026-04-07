@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -147,9 +148,11 @@ public final class BPEModel extends BaseModel {
   }
 
   /**
-   * @return The ordered list of BPE merge operations stored in this model.
+   * @return An unmodifiable, ordered list of BPE merge operations stored in this model.
    */
+  @SuppressWarnings("unchecked")
   public List<SymbolPair> getMerges() {
-    return getFactory().getMerges();
+    return Collections.unmodifiableList(
+        (List<SymbolPair>) artifactMap.get(BPETokenizerFactory.MERGES_ENTRY_NAME));
   }
 }

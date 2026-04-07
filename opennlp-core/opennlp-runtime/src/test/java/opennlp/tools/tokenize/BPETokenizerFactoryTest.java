@@ -53,8 +53,8 @@ public class BPETokenizerFactoryTest {
     final BPETokenizerFactory factory = model.getFactory();
 
     Assertions.assertNotNull(factory);
-    Assertions.assertNotNull(factory.getMerges());
-    Assertions.assertFalse(factory.getMerges().isEmpty());
+    Assertions.assertNotNull(model.getMerges());
+    Assertions.assertFalse(model.getMerges().isEmpty());
   }
 
   /**
@@ -83,8 +83,8 @@ public class BPETokenizerFactoryTest {
     final BPETokenizerFactory factory = restored.getFactory();
 
     Assertions.assertNotNull(factory);
-    Assertions.assertNotNull(factory.getMerges());
-    Assertions.assertEquals(original.getMerges().size(), factory.getMerges().size());
+    Assertions.assertNotNull(restored.getMerges());
+    Assertions.assertEquals(original.getMerges().size(), restored.getMerges().size());
   }
 
   /**
@@ -94,13 +94,13 @@ public class BPETokenizerFactoryTest {
   @Test
   void testMergesConsistentAfterRoundtrip() throws IOException {
     final BPEModel original = new BPETokenizerTrainer().train(CORPUS, 5, "en");
-    final List<SymbolPair> originalMerges = original.getFactory().getMerges();
+    final List<SymbolPair> originalMerges = original.getMerges();
 
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     original.serialize(out);
 
     final BPEModel restored = new BPEModel(new ByteArrayInputStream(out.toByteArray()));
-    final List<SymbolPair> restoredMerges = restored.getFactory().getMerges();
+    final List<SymbolPair> restoredMerges = restored.getMerges();
 
     Assertions.assertEquals(originalMerges, restoredMerges);
   }
@@ -146,13 +146,13 @@ public class BPETokenizerFactoryTest {
    */
   @Test
   void testNullLanguageCodeThrows() {
-    Assertions.assertThrows(NullPointerException.class,
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> new BPETokenizerFactory(null, List.of()));
   }
 
   @Test
   void testNullMergesThrows() {
-    Assertions.assertThrows(NullPointerException.class,
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> new BPETokenizerFactory("en", null));
   }
 }

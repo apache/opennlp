@@ -21,9 +21,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import opennlp.tools.commons.Trainer;
 import opennlp.tools.tokenize.BPETokenizer.SymbolPair;
+import opennlp.tools.util.Parameters;
+import opennlp.tools.util.TrainingConfiguration;
 
 /**
  * Learns BPE merge operations from a training corpus and
@@ -81,12 +83,33 @@ import opennlp.tools.tokenize.BPETokenizer.SymbolPair;
  * @see BPETokenizer
  * @see BPEModel
  */
-public final class BPETokenizerTrainer {
+public final class BPETokenizerTrainer implements Trainer<Parameters> {
+
+  private Parameters trainingParameters;
+  private Map<String, String> reportMap;
+  private TrainingConfiguration trainingConfiguration;
 
   /**
    * Creates a new {@link BPETokenizerTrainer}.
    */
   public BPETokenizerTrainer() {
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void init(final Parameters trainParams,
+                   final Map<String, String> reportMap) {
+    this.trainingParameters = trainParams;
+    this.reportMap = reportMap;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void init(final Parameters trainParams,
+                   final Map<String, String> reportMap,
+                   final TrainingConfiguration config) {
+    init(trainParams, reportMap);
+    this.trainingConfiguration = config;
   }
 
   /**
@@ -104,15 +127,20 @@ public final class BPETokenizerTrainer {
    * @return A trained {@link BPEModel} containing the
    *         learned merge operations.
    * @throws IllegalArgumentException if {@code numMerges}
-   *         is not positive.
-   * @throws NullPointerException if {@code corpus} or
+   *         is not positive, or if {@code corpus} or
    *         {@code languageCode} is {@code null}.
    */
   public BPEModel train(final Iterable<String> corpus,
                          final int numMerges,
                          final String languageCode) {
-    Objects.requireNonNull(corpus, "corpus must not be null");
-    Objects.requireNonNull(languageCode, "languageCode must not be null");
+    if (corpus == null) {
+      throw new IllegalArgumentException(
+          "corpus must not be null");
+    }
+    if (languageCode == null) {
+      throw new IllegalArgumentException(
+          "languageCode must not be null");
+    }
     if (numMerges <= 0) {
       throw new IllegalArgumentException(
           "numMerges must be positive, got: " + numMerges);
@@ -125,6 +153,24 @@ public final class BPETokenizerTrainer {
     return new BPEModel(merges, new HashMap<>(), factory);
   }
 
+  /**
+   * Learns BPE merge operations from the given corpus.
+   * <p>
+   * The algorithm proceeds as follows:
+   * <ol>
+   *   <li>Builds a word frequency map from the corpus using whitespace tokenization.</li>
+   *   <li>Converts each word into a character-level symbol sequence with an
+   *       end-of-word marker on the final character.</li>
+   *   <li>Iteratively counts all adjacent symbol pairs (weighted by word frequency),
+   *       selects the most frequent pair, records it as a merge operation, and applies
+   *       the merge to all vocabulary entries.</li>
+   *   <li>Stops after {@code numMerges} iterations or when no further pairs exist.</li>
+   * </ol>
+   *
+   * @param corpus    The training corpus, where each element is a text string.
+   * @param numMerges The maximum number of merge operations to learn.
+   * @return An ordered list of learned {@link SymbolPair} merge operations.
+   */
   private List<SymbolPair> learnMerges(
       final Iterable<String> corpus,
       final int numMerges) {
@@ -205,6 +251,15 @@ public final class BPETokenizerTrainer {
     return symbols;
   }
 
+  /**
+   * Applies a single merge operation to a symbol sequence.
+   * Scans the list for adjacent symbols matching the given pair and replaces
+   * each occurrence with a single concatenated symbol.
+   *
+   * @param symbols The current symbol sequence for a word.
+   * @param pair    The {@link SymbolPair} to merge.
+   * @return A new list with all occurrences of the pair merged.
+   */
   private List<String> applyMerge(
       final List<String> symbols,
       final SymbolPair pair) {

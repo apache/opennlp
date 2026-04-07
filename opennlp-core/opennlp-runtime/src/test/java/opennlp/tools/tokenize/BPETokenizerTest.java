@@ -194,21 +194,21 @@ public class BPETokenizerTest {
   }
 
   /**
-   * Tests that a null model throws NullPointerException.
+   * Tests that a null model throws IllegalArgumentException.
    */
   @Test
   void testNullModelThrows() {
-    Assertions.assertThrows(NullPointerException.class, () -> new BPETokenizer(null));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new BPETokenizer(null));
   }
 
   @Test
   void testSymbolPairNullLeftThrows() {
-    Assertions.assertThrows(NullPointerException.class, () -> new SymbolPair(null, "b"));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new SymbolPair(null, "b"));
   }
 
   @Test
   void testSymbolPairNullRightThrows() {
-    Assertions.assertThrows(NullPointerException.class, () -> new SymbolPair("a", null));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> new SymbolPair("a", null));
   }
 
   @Test

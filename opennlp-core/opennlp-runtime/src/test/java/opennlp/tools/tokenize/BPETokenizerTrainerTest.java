@@ -164,13 +164,13 @@ public class BPETokenizerTrainerTest {
 
   @Test
   void testNullCorpusThrows() {
-    Assertions.assertThrows(NullPointerException.class,
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> trainer.train(null, 10, "en"));
   }
 
   @Test
   void testNullLanguageThrows() {
-    Assertions.assertThrows(NullPointerException.class,
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> trainer.train(List.of("hello"), 10, null));
   }
 

@@ -20,63 +20,116 @@ package opennlp.tools.tokenize;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import opennlp.tools.util.Span;
 
 /**
- * Integration tests for the BPE tokenization pipeline.
+ * Abstract base class for realistic BPE tokenization integration tests.
  * <p>
- * This test trains a BPE tokenizer from a realistic English corpus,
- * serializes and deserializes the model, then verifies tokenization
- * behavior end-to-end. Mirrors the structure of {@link TokenizerMETest}.
+ * Subclasses provide language-specific training corpora and test inputs.
+ * This class contains all common test methods that exercise the BPE pipeline
+ * end-to-end: training, tokenization, serialization, and consistency checks.
  *
  * @see BPETokenizer
  * @see BPETokenizerTrainer
  * @see BPEModel
  */
-public class BPETokenizerRealisticTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+abstract class AbstractBPETokenizerRealisticTest {
+
+  private BPEModel trainedModel;
+
+  // --- Abstract methods for language-specific data ---
 
   /**
-   * A small but realistic training corpus for BPE.
+   * Returns a realistic training corpus for the target language.
    */
-  private static final List<String> TRAINING_CORPUS = List.of(
-      "Last September I tried to find out the address of an old school friend",
-      "whom I had not seen for 15 years",
-      "I just knew his name Alan McKennedy and I had heard the rumour",
-      "that he had moved to Scotland the country of his ancestors",
-      "So I called Julie a friend who is still in contact with him",
-      "She told me that he lived in Edinburgh Worcesterstreet 12",
-      "I wrote him a letter right away and he answered soon",
-      "sounding very happy and delighted",
-      "Last year I wanted to write a letter to my grandaunt",
-      "Her 86th birthday was on October 6 and I no longer wanted",
-      "to be hesitant to get in touch with her",
-      "I did not know her face to face and so it was not easy",
-      "for me to find out her address",
-      "As she had two apartments in different countries",
-      "I decided to write to both",
-      "The first was in Paris in Rue de Grandes Illusions 5",
-      "But Marie Clara as my aunt is called preferred her apartment in Berlin",
-      "She lived there in beautiful Kaiserstrasse 13 particularly in summer",
-      "Hi my name is Michael Graf how much is a taxi",
-      "from Ostbahnhof to Hauptbahnhof",
-      "About 10 Euro I reckon",
-      "That sounds good",
-      "So please call a driver to Leonardstrasse 112 near the Ostbahnhof",
-      "I would like to be at Silberhornstrasse 12 as soon as possible",
-      "Thank you very much"
-  );
+  abstract List<String> getTrainingCorpus();
 
-  private static BPEModel trainedModel;
+  /**
+   * Returns the ISO language code (e.g., "en", "de", "fr").
+   */
+  abstract String getLanguageCode();
+
+  /**
+   * Returns the number of BPE merges to use during training. Default is 100.
+   */
+  int getNumMerges() {
+    return 100;
+  }
+
+  /**
+   * Returns a simple sentence whose words all appear in the training corpus.
+   */
+  abstract String getSimpleSentence();
+
+  /**
+   * Returns the expected words for {@link #getSimpleSentence()}.
+   */
+  abstract String[] getSimpleSentenceExpectedWords();
+
+  /**
+   * Returns a list of words expected to be single tokens after training.
+   */
+  abstract List<String> getFrequentWords();
+
+  /**
+   * Returns a word not seen in the training corpus.
+   */
+  abstract String getUnseenWord();
+
+  /**
+   * Returns a sentence for span coverage testing.
+   */
+  abstract String getSpanTestSentence();
+
+  /**
+   * Returns the expected words for {@link #getSpanTestSentence()}.
+   */
+  abstract String[] getSpanTestExpectedWords();
+
+  /**
+   * Returns a multi-word sentence for general tokenization testing.
+   */
+  abstract String getMultiWordSentence();
+
+  /**
+   * Returns a sentence for serialization roundtrip testing.
+   */
+  abstract String getSerializationTestSentence();
+
+  /**
+   * Returns a sentence for consistency testing between tokenize() and tokenizePos().
+   */
+  abstract String getConsistencyTestSentence();
+
+  /**
+   * Returns a sentence containing punctuation for testing.
+   */
+  abstract String getPunctuationTestSentence();
+
+  /**
+   * Returns the expected words (whitespace-delimited, punctuation attached)
+   * for {@link #getPunctuationTestSentence()}.
+   */
+  abstract String[] getExpectedPunctuationWords();
+
+  /**
+   * Returns a sentence for testing that more merges produce coarser tokens.
+   */
+  abstract String getCoarseTokenizationSentence();
 
   @BeforeAll
-  static void setUpClass() {
-    trainedModel = new BPETokenizerTrainer().train(TRAINING_CORPUS, 100, "en");
+  void setUpClass() {
+    trainedModel = new BPETokenizerTrainer().train(
+        getTrainingCorpus(), getNumMerges(), getLanguageCode());
   }
 
   /**
@@ -86,49 +139,45 @@ public class BPETokenizerRealisticTest {
   @Test
   void testTokenizerSimpleModel() {
     final BPETokenizer tokenizer = new BPETokenizer(trainedModel);
-    final String text = "I wrote a letter";
+    final String text = getSimpleSentence();
 
     final String[] tokens = tokenizer.tokenize(text);
     final Span[] spans = tokenizer.tokenizePos(text);
 
-    // All four words are common in training corpus — assert exact reconstruction
     final String[] words = reconstructWords(tokens, spans, text);
-    Assertions.assertArrayEquals(new String[] {"I", "wrote", "a", "letter"}, words);
+    Assertions.assertArrayEquals(getSimpleSentenceExpectedWords(), words);
   }
 
   /**
-   * Tests tokenization of a sentence with words seen during training.
-   * Frequent words should be tokenized into fewer subword pieces.
+   * Tests tokenization of frequent words seen during training.
+   * Frequent words should be tokenized into single tokens.
    */
   @Test
   void testFrequentWordsTokenizeEfficiently() {
     final BPETokenizer tokenizer = new BPETokenizer(trainedModel);
 
-    // "the" and "in" appear very frequently in the training corpus
-    final String[] theTokens = tokenizer.tokenize("the");
-    final String[] inTokens = tokenizer.tokenize("in");
-
-    // With 100 merges on this corpus, these common words should be single tokens
-    Assertions.assertEquals(1, theTokens.length, "Expected 'the' as single token");
-    Assertions.assertEquals("the", theTokens[0]);
-    Assertions.assertEquals(1, inTokens.length, "Expected 'in' as single token");
-    Assertions.assertEquals("in", inTokens[0]);
+    for (final String word : getFrequentWords()) {
+      final String[] tokens = tokenizer.tokenize(word);
+      Assertions.assertEquals(1, tokens.length,
+          "Expected '" + word + "' as single token");
+      Assertions.assertEquals(word, tokens[0]);
+    }
   }
 
   /**
-   * Tests tokenization of unseen words — they should be split into subword pieces
+   * Tests tokenization of unseen words -- they should be split into subword pieces
    * but concatenation must still reconstruct the original.
    */
   @Test
   void testUnseenWordsTokenization() {
     final BPETokenizer tokenizer = new BPETokenizer(trainedModel);
+    final String unseen = getUnseenWord();
 
-    final String[] tokens = tokenizer.tokenize("unbelievable");
+    final String[] tokens = tokenizer.tokenize(unseen);
 
-    // An unseen word will be split into multiple subword pieces
     Assertions.assertTrue(tokens.length > 1,
-        "Unseen word 'unbelievable' should be split into multiple subword tokens");
-    Assertions.assertEquals("unbelievable", String.join("", tokens),
+        "Unseen word '" + unseen + "' should be split into multiple subword tokens");
+    Assertions.assertEquals(unseen, String.join("", tokens),
         "Concatenation of subword tokens must reconstruct the original word");
   }
 
@@ -139,7 +188,7 @@ public class BPETokenizerRealisticTest {
   @Test
   void testTokenizePosSpanCoverage() {
     final BPETokenizer tokenizer = new BPETokenizer(trainedModel);
-    final String text = "She lived in Edinburgh";
+    final String text = getSpanTestSentence();
     final String[] tokens = tokenizer.tokenize(text);
     final Span[] spans = tokenizer.tokenizePos(text);
 
@@ -164,17 +213,16 @@ public class BPETokenizerRealisticTest {
 
     // Verify reconstructed words match expected
     final String[] words = reconstructWords(tokens, spans, text);
-    Assertions.assertArrayEquals(new String[] {"She", "lived", "in", "Edinburgh"}, words);
+    Assertions.assertArrayEquals(getSpanTestExpectedWords(), words);
   }
 
   /**
-   * Tests that the BPE tokenizer handles multi-word input correctly,
-   * similar to {@link TokenizerMETest#testTokenizer()}.
+   * Tests that the BPE tokenizer handles multi-word input correctly.
    */
   @Test
   void testTokenizer() {
     final BPETokenizer tokenizer = new BPETokenizer(trainedModel);
-    final String sentence = "I had not seen him for years";
+    final String sentence = getMultiWordSentence();
     final String[] tokens = tokenizer.tokenize(sentence);
 
     // Each word produces at least one token
@@ -189,26 +237,25 @@ public class BPETokenizerRealisticTest {
 
   /**
    * Tests the full pipeline: train, serialize, deserialize, tokenize.
-   * Similar to {@link TokenizerModelTest#testTokenizerModelSerialization()}.
    */
   @Test
   void testTrainSerializeDeserializeTokenize() throws IOException {
     // Serialize
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    trainedModel.serialize(out);
-    out.close();
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+      trainedModel.serialize(out);
 
-    // Deserialize
-    final BPEModel loaded = new BPEModel(new ByteArrayInputStream(out.toByteArray()));
+      // Deserialize
+      final BPEModel loaded = new BPEModel(new ByteArrayInputStream(out.toByteArray()));
 
-    // Tokenize with both original and deserialized model — results should match
-    final BPETokenizer original = new BPETokenizer(trainedModel);
-    final BPETokenizer restored = new BPETokenizer(loaded);
+      // Tokenize with both original and deserialized model -- results should match
+      final BPETokenizer original = new BPETokenizer(trainedModel);
+      final BPETokenizer restored = new BPETokenizer(loaded);
 
-    final String sentence = "I wrote him a letter right away";
-    Assertions.assertArrayEquals(
-        original.tokenize(sentence),
-        restored.tokenize(sentence));
+      final String sentence = getSerializationTestSentence();
+      Assertions.assertArrayEquals(
+          original.tokenize(sentence),
+          restored.tokenize(sentence));
+    }
   }
 
   /**
@@ -218,7 +265,7 @@ public class BPETokenizerRealisticTest {
   @Test
   void testTokenizeAndTokenizePosConsistency() {
     final BPETokenizer tokenizer = new BPETokenizer(trainedModel);
-    final String text = "She told me that he lived in Edinburgh";
+    final String text = getConsistencyTestSentence();
 
     final String[] tokens = tokenizer.tokenize(text);
     final Span[] spans = tokenizer.tokenizePos(text);
@@ -232,49 +279,22 @@ public class BPETokenizerRealisticTest {
   }
 
   /**
-   * Tests tokenization with a model trained on a German corpus.
-   * Frequent German words should be fully merged and reconstructed correctly.
-   */
-  @Test
-  void testTrainWithDifferentLanguage() {
-    final List<String> germanCorpus = List.of(
-        "Ich wähle den auf Seite 183 mitgeteilten Traum",
-        "von der botanischen Monographie",
-        "Der Traum von der botanischen Monographie",
-        "Ich wähle den Traum von der botanischen Monographie"
-    );
-
-    final BPEModel model = new BPETokenizerTrainer().train(germanCorpus, 50, "de");
-    Assertions.assertEquals("de", model.getLanguage());
-
-    final BPETokenizer tokenizer = new BPETokenizer(model);
-    final String text = "der botanischen Monographie";
-    final String[] tokens = tokenizer.tokenize(text);
-    final Span[] spans = tokenizer.tokenizePos(text);
-
-    // Assert words are reconstructed correctly
-    final String[] words = reconstructWords(tokens, spans, text);
-    Assertions.assertArrayEquals(new String[] {"der", "botanischen", "Monographie"}, words);
-  }
-
-  /**
    * Tests that the BPE tokenizer handles punctuation mixed with words.
-   * BPE treats punctuation as characters — they stay attached to the word
+   * BPE treats punctuation as characters -- they stay attached to the word
    * since BPE splits on whitespace first.
    */
   @Test
   void testPunctuationHandling() {
     final BPETokenizer tokenizer = new BPETokenizer(trainedModel);
-    final String text = "Hello, world!";
+    final String text = getPunctuationTestSentence();
+    final String[] expectedWords = getExpectedPunctuationWords();
 
     final String[] tokens = tokenizer.tokenize(text);
     final Span[] spans = tokenizer.tokenizePos(text);
 
-    // "Hello," and "world!" are separate whitespace tokens, each may be subword-split
     final String[] words = reconstructWords(tokens, spans, text);
-    Assertions.assertEquals(2, words.length);
-    Assertions.assertEquals("Hello,", words[0]);
-    Assertions.assertEquals("world!", words[1]);
+    Assertions.assertEquals(expectedWords.length, words.length);
+    Assertions.assertArrayEquals(expectedWords, words);
   }
 
   /**
@@ -283,14 +303,16 @@ public class BPETokenizerRealisticTest {
    */
   @Test
   void testMoreMergesProducesCoarserTokens() {
-    final BPEModel fewMerges = new BPETokenizerTrainer().train(TRAINING_CORPUS, 5, "en");
-    final BPEModel manyMerges = new BPETokenizerTrainer().train(TRAINING_CORPUS, 100, "en");
+    final List<String> corpus = getTrainingCorpus();
+    final String lang = getLanguageCode();
+
+    final BPEModel fewMerges = new BPETokenizerTrainer().train(corpus, 5, lang);
+    final BPEModel manyMerges = new BPETokenizerTrainer().train(corpus, 100, lang);
 
     final BPETokenizer fewTokenizer = new BPETokenizer(fewMerges);
     final BPETokenizer manyTokenizer = new BPETokenizer(manyMerges);
 
-    // With more merges, the same text should produce fewer or equal tokens
-    final String text = "I wanted to write a letter to my grandaunt";
+    final String text = getCoarseTokenizationSentence();
     final int fewCount = fewTokenizer.tokenize(text).length;
     final int manyCount = manyTokenizer.tokenize(text).length;
 
@@ -302,14 +324,14 @@ public class BPETokenizerRealisticTest {
   /**
    * Reconstructs whitespace-separated words from subword tokens using span positions.
    */
-  private String[] reconstructWords(String[] tokens, Span[] spans, String text) {
-    final java.util.List<String> words = new java.util.ArrayList<>();
+  String[] reconstructWords(String[] tokens, Span[] spans, String text) {
+    final List<String> words = new ArrayList<>();
     final StringBuilder currentWord = new StringBuilder();
     int lastWordEnd = -1;
 
     for (final Span span : spans) {
       if (lastWordEnd >= 0 && span.getStart() > lastWordEnd) {
-        // Gap between spans means a whitespace boundary — new word
+        // Gap between spans means a whitespace boundary -- new word
         words.add(currentWord.toString());
         currentWord.setLength(0);
       }
