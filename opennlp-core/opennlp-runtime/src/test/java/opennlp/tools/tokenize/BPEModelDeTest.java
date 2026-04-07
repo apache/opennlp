@@ -28,12 +28,12 @@ import java.util.List;
 public class BPEModelDeTest extends AbstractBPEModelTest {
 
   private static final List<String> CORPUS = List.of(
-      "Der schnelle braune Fuchs springt ueber den faulen Hund, "
+      "Der schnelle braune Fuchs springt über den faulen Hund, "
           + "der gerade schlief; er hat ihn nicht kommen sehen",
-      "Natuerliche Sprachverarbeitung ist faszinierend: "
+      "Natürliche Sprachverarbeitung ist faszinierend: "
           + "sie verbindet Linguistik, Informatik und Statistik",
-      "Nachdem der Regen aufgehoert hatte, kam die Sonne heraus; "
-          + "die Kinder spielten draussen und die Voegel sangen laut"
+      "Nachdem der Regen aufgehört hatte, kam die Sonne heraus; "
+          + "die Kinder spielten draußen und die Vögel sangen laut"
   );
 
   @Override

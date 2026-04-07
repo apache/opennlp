@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ public final class BPEModel extends BaseModel {
    * Creates a {@link BPEModel} from trained merge rules.
    *
    * @param merges             The ordered list of merge operations.
+   *                           Must not be {@code null}.
    * @param manifestInfoEntries Additional manifest info.
    * @param factory            The {@link BPETokenizerFactory}.
    */
@@ -79,6 +81,8 @@ public final class BPEModel extends BaseModel {
     super(COMPONENT_NAME,
         factory.getLanguageCode(),
         manifestInfoEntries, factory);
+    artifactMap.put(BPETokenizerFactory.MERGES_ENTRY_NAME,
+        new ArrayList<>(merges));
     checkArtifactMap();
   }
 

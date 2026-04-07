@@ -24,31 +24,52 @@ import java.util.List;
  *
  * @see AbstractBPETokenizerRealisticTest
  */
-public class BPETokenizerRealisticEsTest extends AbstractBPETokenizerRealisticTest {
+public class BPETokenizerRealisticEsTest
+    extends AbstractBPETokenizerRealisticTest {
 
   @Override
   List<String> getTrainingCorpus() {
     return List.of(
-        "Ayer fui al mercado para comprar frutas y verduras frescas",
-        "El mercado estaba lleno de gente y los precios eran buenos",
-        "Las manzanas y las naranjas estaban muy frescas y baratas",
-        "Volvi a casa y prepare una comida muy buena para todos",
-        "La comida estaba deliciosa y toda la familia estaba contenta",
-        "Despues de la comida hicimos un paseo por el parque grande",
-        "El parque estaba muy bonito con los arboles en flor",
-        "Los ninos jugaban en el jardin y los pajaros cantaban",
-        "Por la noche vimos una pelicula muy buena en la television",
-        "La pelicula era muy interesante y nos gusto mucho a todos",
-        "Mi amigo Carlos vive en una casa grande en Madrid",
-        "El trabaja en una empresa de tecnologia desde hace cinco anos",
-        "Su esposa Maria es profesora en la universidad central",
-        "Tienen dos hijos que van a una escuela cerca de la casa",
-        "Los fines de semana les gusta hacer excursiones por el campo",
-        "Madrid es una ciudad muy bonita con una historia muy rica",
-        "La cocina espanola es conocida en todo el mundo por su calidad",
-        "Los museos de Madrid atraen a millones de visitantes cada ano",
-        "El Prado es el museo mas visitado de toda la ciudad",
-        "La vida en Espana es muy agradable y el clima es muy bueno"
+        "Ayer fui al mercado para comprar frutas y"
+            + " verduras frescas",
+        "El mercado estaba lleno de gente y los precios"
+            + " eran buenos",
+        "Las manzanas y las naranjas estaban muy frescas"
+            + " y baratas",
+        "Volví a casa y preparé una comida muy buena"
+            + " para todos",
+        "La comida estaba deliciosa y toda la familia"
+            + " estaba contenta",
+        "Después de la comida hicimos un paseo por el"
+            + " parque grande",
+        "El parque estaba muy bonito con los árboles"
+            + " en flor",
+        "Los niños jugaban en el jardín y los pájaros"
+            + " cantaban",
+        "Por la noche vimos una película muy buena"
+            + " en la televisión",
+        "La película era muy interesante y nos gustó"
+            + " mucho a todos",
+        "Mi amigo Carlos vive en una casa grande"
+            + " en Madrid",
+        "Él trabaja en una empresa de tecnología"
+            + " desde hace cinco años",
+        "Su esposa María es profesora en la universidad"
+            + " central",
+        "Tienen dos hijos que van a una escuela cerca"
+            + " de la casa",
+        "Los fines de semana les gusta hacer excursiones"
+            + " por el campo",
+        "Madrid es una ciudad muy bonita con una"
+            + " historia muy rica",
+        "La cocina española es conocida en todo el"
+            + " mundo por su calidad",
+        "Los museos de Madrid atraen a millones de"
+            + " visitantes cada año",
+        "El Prado es el museo más visitado de toda"
+            + " la ciudad",
+        "La vida en España es muy agradable y el clima"
+            + " es muy bueno"
     );
   }
 
@@ -64,7 +85,9 @@ public class BPETokenizerRealisticEsTest extends AbstractBPETokenizerRealisticTe
 
   @Override
   String[] getSimpleSentenceExpectedWords() {
-    return new String[] {"La", "comida", "estaba", "deliciosa"};
+    return new String[] {
+        "La", "comida", "estaba", "deliciosa"
+    };
   }
 
   @Override
@@ -79,27 +102,32 @@ public class BPETokenizerRealisticEsTest extends AbstractBPETokenizerRealisticTe
 
   @Override
   String getSpanTestSentence() {
-    return "Los ninos jugaban en el jardin";
+    return "Los niños jugaban en el jardín";
   }
 
   @Override
   String[] getSpanTestExpectedWords() {
-    return new String[] {"Los", "ninos", "jugaban", "en", "el", "jardin"};
+    return new String[] {
+        "Los", "niños", "jugaban", "en", "el", "jardín"
+    };
   }
 
   @Override
   String getMultiWordSentence() {
-    return "El parque estaba muy bonito con los arboles en flor";
+    return "El parque estaba muy bonito con los árboles"
+        + " en flor";
   }
 
   @Override
   String getSerializationTestSentence() {
-    return "Ayer fui al mercado para comprar frutas y verduras";
+    return "Ayer fui al mercado para comprar frutas"
+        + " y verduras";
   }
 
   @Override
   String getConsistencyTestSentence() {
-    return "Mi amigo Carlos vive en una casa grande en Madrid";
+    return "Mi amigo Carlos vive en una casa grande"
+        + " en Madrid";
   }
 
   @Override
@@ -114,6 +142,7 @@ public class BPETokenizerRealisticEsTest extends AbstractBPETokenizerRealisticTe
 
   @Override
   String getCoarseTokenizationSentence() {
-    return "La cocina espanola es conocida en todo el mundo";
+    return "La cocina española es conocida en todo"
+        + " el mundo";
   }
 }

@@ -30,24 +30,24 @@ public class BPETokenizerRealisticDeTest extends AbstractBPETokenizerRealisticTe
   List<String> getTrainingCorpus() {
     return List.of(
         "Ich habe gestern einen alten Schulfreund in der Stadt getroffen",
-        "Er hat mir von seiner neuen Arbeit in Berlin erzaehlt",
+        "Er hat mir von seiner neuen Arbeit in Berlin erzählt",
         "Die Arbeit ist sehr interessant und er ist sehr zufrieden",
         "Wir haben zusammen in einem kleinen Restaurant zu Mittag gegessen",
         "Das Essen war ausgezeichnet und die Bedienung sehr freundlich",
         "Nach dem Essen sind wir durch den Park spazieren gegangen",
-        "Der Park war sehr schoen und die Baeume hatten bunte Blaetter",
+        "Der Park war sehr schön und die Bäume hatten bunte Blätter",
         "Am Abend haben wir uns einen Film im Kino angesehen",
         "Der Film war spannend und hat uns beiden sehr gut gefallen",
         "Danach sind wir noch in eine Bar gegangen und haben geredet",
-        "Er hat mir von seiner Reise nach Italien erzaehlt",
+        "Er hat mir von seiner Reise nach Italien erzählt",
         "Die Reise war wunderbar und er hat viele Fotos gemacht",
-        "Ich habe ihm von meiner Arbeit an die Monographie erzaehlt",
+        "Ich habe ihm von meiner Arbeit an die Monographie erzählt",
         "Die Monographie behandelt die Geschichte der botanischen Forschung",
         "Er fand das Thema sehr interessant und wollte mehr erfahren",
-        "Wir haben uns verabredet naechste Woche wieder zu treffen",
-        "Ich freue mich schon sehr auf unser naechstes Treffen",
-        "Die Stadt ist im Herbst besonders schoen mit den bunten Blaettern",
-        "Mein Freund wohnt jetzt in der Naehe vom Hauptbahnhof",
+        "Wir haben uns verabredet nächste Woche wieder zu treffen",
+        "Ich freue mich schon sehr auf unser nächstes Treffen",
+        "Die Stadt ist im Herbst besonders schön mit den bunten Blättern",
+        "Mein Freund wohnt jetzt in der Nähe vom Hauptbahnhof",
         "Er nimmt jeden Tag die Bahn zur Arbeit in die Innenstadt"
     );
   }
@@ -89,7 +89,7 @@ public class BPETokenizerRealisticDeTest extends AbstractBPETokenizerRealisticTe
 
   @Override
   String getMultiWordSentence() {
-    return "Er hat mir von seiner Reise erzaehlt";
+    return "Er hat mir von seiner Reise erzählt";
   }
 
   @Override
@@ -99,7 +99,7 @@ public class BPETokenizerRealisticDeTest extends AbstractBPETokenizerRealisticTe
 
   @Override
   String getConsistencyTestSentence() {
-    return "Der Park war sehr schoen und die Baeume hatten bunte Blaetter";
+    return "Der Park war sehr schön und die Bäume hatten bunte Blätter";
   }
 
   @Override
@@ -114,6 +114,6 @@ public class BPETokenizerRealisticDeTest extends AbstractBPETokenizerRealisticTe
 
   @Override
   String getCoarseTokenizationSentence() {
-    return "Ich habe ihm von meiner Arbeit an die Monographie erzaehlt";
+    return "Ich habe ihm von meiner Arbeit an die Monographie erzählt";
   }
 }

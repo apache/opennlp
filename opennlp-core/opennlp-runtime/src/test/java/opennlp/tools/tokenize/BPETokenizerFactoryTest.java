@@ -62,8 +62,7 @@ public class BPETokenizerFactoryTest {
    */
   @Test
   void testFactoryLanguageCode() {
-    final List<SymbolPair> merges = List.of(new SymbolPair("a", "b"));
-    final BPETokenizerFactory factory = new BPETokenizerFactory("de", merges);
+    final BPETokenizerFactory factory = new BPETokenizerFactory("de");
 
     Assertions.assertEquals("de", factory.getLanguageCode());
   }
@@ -110,23 +109,21 @@ public class BPETokenizerFactoryTest {
    */
   @Test
   void testArtifactSerializersMapContainsMergesSerializer() {
-    final BPETokenizerFactory factory = new BPETokenizerFactory("en", List.of());
+    final BPETokenizerFactory factory = new BPETokenizerFactory("en");
 
     Assertions.assertTrue(factory.createArtifactSerializersMap().containsKey("merges"));
   }
 
   /**
-   * Tests that the factory creates an artifact map containing the merges entry.
+   * Tests that the model artifact map contains the merges entry.
    */
   @Test
   void testArtifactMapContainsMergesEntry() {
-    final List<SymbolPair> merges = List.of(
-        new SymbolPair("a", "b"),
-        new SymbolPair("ab", "c" + BPETokenizer.END_OF_WORD)
-    );
-    final BPETokenizerFactory factory = new BPETokenizerFactory("en", merges);
+    final BPEModel model =
+        new BPETokenizerTrainer().train(CORPUS, 5, "en");
 
-    Assertions.assertTrue(factory.createArtifactMap().containsKey(BPETokenizerFactory.MERGES_ENTRY_NAME));
+    Assertions.assertNotNull(model.getMerges());
+    Assertions.assertFalse(model.getMerges().isEmpty());
   }
 
   /**
@@ -147,12 +144,6 @@ public class BPETokenizerFactoryTest {
   @Test
   void testNullLanguageCodeThrows() {
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new BPETokenizerFactory(null, List.of()));
-  }
-
-  @Test
-  void testNullMergesThrows() {
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new BPETokenizerFactory("en", null));
+        () -> new BPETokenizerFactory(null));
   }
 }

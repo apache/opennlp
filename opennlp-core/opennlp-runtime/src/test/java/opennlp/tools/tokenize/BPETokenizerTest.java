@@ -38,7 +38,7 @@ import opennlp.tools.util.Span;
 public class BPETokenizerTest {
 
   private static BPEModel createModel(List<SymbolPair> merges) {
-    final BPETokenizerFactory factory = new BPETokenizerFactory("en", merges);
+    final BPETokenizerFactory factory = new BPETokenizerFactory("en");
     return new BPEModel(merges, new HashMap<>(), factory);
   }
 

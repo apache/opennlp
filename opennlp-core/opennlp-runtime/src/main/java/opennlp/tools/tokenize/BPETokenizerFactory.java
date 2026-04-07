@@ -67,8 +67,6 @@ public class BPETokenizerFactory extends BaseToolFactory {
 
   /** The ISO language code. */
   private String languageCode;
-  /** The ordered list of BPE merge operations. */
-  private List<SymbolPair> merges;
 
   /**
    * Creates a {@link BPETokenizerFactory}.
@@ -79,27 +77,19 @@ public class BPETokenizerFactory extends BaseToolFactory {
 
   /**
    * Creates a {@link BPETokenizerFactory} with the given
-   * parameters.
+   * language code.
    *
    * @param langCode The ISO language code.
    *                 Must not be {@code null}.
-   * @param mergeOps The ordered list of BPE merge operations.
-   *                 Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code langCode} or
-   *         {@code mergeOps} is {@code null}.
+   * @throws IllegalArgumentException if {@code langCode}
+   *         is {@code null}.
    */
-  public BPETokenizerFactory(final String langCode,
-                              final List<SymbolPair> mergeOps) {
+  public BPETokenizerFactory(final String langCode) {
     if (langCode == null) {
       throw new IllegalArgumentException(
           "languageCode must not be null");
     }
-    if (mergeOps == null) {
-      throw new IllegalArgumentException(
-          "merges must not be null");
-    }
     this.languageCode = langCode;
-    this.merges = mergeOps;
   }
 
   /** {@inheritDoc} */
@@ -110,16 +100,6 @@ public class BPETokenizerFactory extends BaseToolFactory {
         super.createArtifactSerializersMap();
     serializers.put("merges", new BPEMergesSerializer());
     return serializers;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Map<String, Object> createArtifactMap() {
-    Map<String, Object> artifactMap = super.createArtifactMap();
-    if (merges != null) {
-      artifactMap.put(MERGES_ENTRY_NAME, new ArrayList<>(merges));
-    }
-    return artifactMap;
   }
 
   /** {@inheritDoc} */

@@ -148,7 +148,7 @@ public final class BPETokenizerTrainer implements Trainer<Parameters> {
 
     final List<SymbolPair> merges = learnMerges(corpus, numMerges);
     final BPETokenizerFactory factory =
-        new BPETokenizerFactory(languageCode, merges);
+        new BPETokenizerFactory(languageCode);
 
     return new BPEModel(merges, new HashMap<>(), factory);
   }
