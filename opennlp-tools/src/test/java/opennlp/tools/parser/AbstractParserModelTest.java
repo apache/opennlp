@@ -20,9 +20,6 @@ package opennlp.tools.parser;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -100,19 +97,8 @@ public abstract class AbstractParserModelTest {
     // fixtures
     final String sent = "Martin is testing.";
     // prepare
-    List<String> tokens = Arrays.asList(WhitespaceTokenizer.INSTANCE.tokenize(sent));
-    String text = String.join(" ", tokens);
-
-    Parse sentP = new Parse(text, new Span(0, text.length()),
-            AbstractBottomUpParser.INC_NODE, 0, null);
-    int start = 0;
-    int i = 0;
-    for (Iterator<String> ti = tokens.iterator(); ti.hasNext(); i++) {
-      String tok = ti.next();
-      sentP.insert(new Parse(text, new Span(start, start + tok.length()),
-              AbstractBottomUpParser.TOK_NODE, 0, i));
-      start += tok.length() + 1;
-    }
+    String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(sent);
+    Parse sentP = Parse.createFromTokens(tokens);
 
     Parser parser = ParserFactory.create(getModel());
     Assertions.assertNotNull(parser);
@@ -159,19 +145,8 @@ public abstract class AbstractParserModelTest {
             "(TOP (S (NP (NNP Eric)) (VP (VBZ is) (NN testing.))))";
 
     // prepare
-    List<String> tokens = Arrays.asList(WhitespaceTokenizer.INSTANCE.tokenize(sent));
-    String text = String.join(" ", tokens);
-
-    Parse sentP = new Parse(text, new Span(0, text.length()),
-            AbstractBottomUpParser.INC_NODE, 0, 0);
-    int start = 0;
-    int i = 0;
-    for (Iterator<String> ti = tokens.iterator(); ti.hasNext(); i++) {
-      String tok = ti.next();
-      sentP.insert(new Parse(text, new Span(start, start + tok.length()),
-              AbstractBottomUpParser.TOK_NODE, 0, i));
-      start += tok.length() + 1;
-    }
+    String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(sent);
+    Parse sentP = Parse.createFromTokens(tokens);
 
     opennlp.tools.parser.Parser parser = ParserFactory.create(getModel());
     Assertions.assertNotNull(parser);

@@ -19,9 +19,6 @@ package opennlp.tools.cmdline.parser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -44,7 +41,6 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.tokenize.WhitespaceTokenizer;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.Span;
 
 public final class ParserTool extends BasicCmdLineTool {
 
@@ -78,17 +74,26 @@ public final class ParserTool extends BasicCmdLineTool {
     line = UNTOKENIZED_PAREN_PATTERN_2.matcher(line).replaceAll("$1 $2");
 
     // tokenize
-    List<String> tokens = Arrays.asList( tokenizer.tokenize(line));
-    String text = String.join(" ", tokens);
+    String[] tokens = tokenizer.tokenize(line);
+    return parseLine(tokens, parser, numParses);
+  }
 
-    Parse p = new Parse(text, new Span(0, text.length()), AbstractBottomUpParser.INC_NODE, 0, 0);
-    int start = 0;
-    int i = 0;
-    for (Iterator<String> ti = tokens.iterator(); ti.hasNext(); i++) {
-      String tok = ti.next();
-      p.insert(new Parse(text, new Span(start, start + tok.length()), AbstractBottomUpParser.TOK_NODE, 0, i));
-      start += tok.length() + 1;
-    }
+  /**
+   * Parses the specified pre-tokenized sentence and returns the requested number of parses
+   * or fewer.
+   * <p>
+   * This is a convenience method for cases where the input has already been tokenized
+   * into individual tokens. It avoids re-tokenizing and the need to manually construct
+   * the whitespace-separated text and compute character offsets.
+   *
+   * @param tokens    The tokens of the sentence to parse.
+   * @param parser    The {@link Parser} to use.
+   * @param numParses The number of parses desired.
+   * @return The specified number of {@link Parse parses} for the given tokens.
+   * @throws IllegalArgumentException if {@code tokens} is {@code null} or empty.
+   */
+  public static Parse[] parseLine(String[] tokens, Parser parser, int numParses) {
+    Parse p = Parse.createFromTokens(tokens);
     Parse[] parses;
     if (numParses == 1) {
       parses = new Parse[]{parser.parse(p)};

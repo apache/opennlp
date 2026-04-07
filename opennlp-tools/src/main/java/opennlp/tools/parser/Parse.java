@@ -804,6 +804,44 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
 
   /**
+   * Creates a {@link Parse} structure from an array of
+   * pre-tokenized strings.
+   * <p>
+   * This is a convenience factory method for cases
+   * where the input sentence is already tokenized
+   * (e.g., as a {@code String[]}). It joins the
+   * tokens with whitespace, computes character offset
+   * {@link Span spans} for each token, and builds the
+   * initial flat parse tree expected by
+   * {@link Parser#parse(Parse)}.
+   *
+   * @param tokens The tokens of the sentence.
+   * @return A flat {@link Parse} structure with token
+   *         nodes ready for a {@link Parser}.
+   * @throws IllegalArgumentException if {@code tokens}
+   *         is {@code null} or empty.
+   */
+  public static Parse createFromTokens(final String[] tokens) {
+    if (tokens == null) {
+      throw new IllegalArgumentException("tokens must not be null");
+    }
+    if (tokens.length == 0) {
+      throw new IllegalArgumentException("tokens must not be empty");
+    }
+    String text = String.join(" ", tokens);
+    final Parse p = new Parse(text,
+        new Span(0, text.length()),
+        Parser.INC_NODE, 0, 0);
+    int start = 0;
+    for (int i = 0; i < tokens.length; i++) {
+      p.insert(new Parse(text, new Span(start, start + tokens[i].length()),
+          Parser.TOK_NODE, 0, i));
+      start += tokens[i].length() + 1;
+    }
+    return p;
+  }
+
+  /**
    * Parses the specified tree-bank style parse string and return a {@link Parse} structure
    * for that string.
    *

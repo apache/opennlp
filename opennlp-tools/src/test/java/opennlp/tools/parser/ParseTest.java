@@ -20,6 +20,8 @@ package opennlp.tools.parser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.util.Span;
+
 /**
  * Tests for the {@link Parse} class.
  */
@@ -126,5 +128,52 @@ public class ParseTest {
     Assertions.assertEquals("PRP$", tags[15].getType());
     Assertions.assertEquals("NN", tags[16].getType());
     Assertions.assertEquals(".", tags[17].getType());
+  }
+
+  @Test
+  void testCreateFromTokens() {
+    String[] tokens = {"The", "cat", "sat", "on", "the", "mat"};
+    Parse p = Parse.createFromTokens(tokens);
+
+    // Verify text is space-joined
+    Assertions.assertEquals("The cat sat on the mat", p.getText());
+
+    // Verify root span covers full text
+    Assertions.assertEquals(new Span(0, 22), p.getSpan());
+
+    // Verify root type is INC
+    Assertions.assertEquals(Parser.INC_NODE, p.getType());
+
+    // Verify token children
+    Parse[] children = p.getChildren();
+    Assertions.assertEquals(tokens.length, children.length);
+
+    int start = 0;
+    for (int i = 0; i < tokens.length; i++) {
+      Assertions.assertEquals(Parser.TOK_NODE, children[i].getType());
+      Assertions.assertEquals(new Span(start, start + tokens[i].length()), children[i].getSpan());
+      Assertions.assertEquals(tokens[i], children[i].getCoveredText());
+      start += tokens[i].length() + 1;
+    }
+  }
+
+  @Test
+  void testCreateFromTokensNullThrows() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> Parse.createFromTokens(null));
+  }
+
+  @Test
+  void testCreateFromTokensEmptyThrows() {
+    Assertions.assertThrows(IllegalArgumentException.class, () -> Parse.createFromTokens(new String[0]));
+  }
+
+  @Test
+  void testCreateFromTokensSingleToken() {
+    String[] tokens = {"Hello"};
+    Parse p = Parse.createFromTokens(tokens);
+
+    Assertions.assertEquals("Hello", p.getText());
+    Assertions.assertEquals(1, p.getChildren().length);
+    Assertions.assertEquals(new Span(0, 5), p.getChildren()[0].getSpan());
   }
 }
