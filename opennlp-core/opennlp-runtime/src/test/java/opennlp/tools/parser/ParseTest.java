@@ -159,7 +159,7 @@ public class ParseTest {
 
   @Test
   void testCreateFromTokensNullThrows() {
-    Assertions.assertThrows(NullPointerException.class, () -> Parse.createFromTokens(null));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> Parse.createFromTokens(null));
   }
 
   @Test

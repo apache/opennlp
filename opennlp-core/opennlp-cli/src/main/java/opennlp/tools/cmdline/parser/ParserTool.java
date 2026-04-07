@@ -90,6 +90,7 @@ public final class ParserTool extends BasicCmdLineTool {
    * @param parser    The {@link Parser} to use.
    * @param numParses The number of parses desired.
    * @return The specified number of {@link Parse parses} for the given tokens.
+   * @throws IllegalArgumentException if {@code tokens} is {@code null} or empty.
    */
   public static Parse[] parseLine(String[] tokens, Parser parser, int numParses) {
     Parse p = Parse.createFromTokens(tokens);

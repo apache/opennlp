@@ -822,12 +822,14 @@ public class Parse implements Cloneable, Comparable<Parse> {
    *         is {@code null} or empty.
    */
   public static Parse createFromTokens(final String[] tokens) {
-    Objects.requireNonNull(tokens, "tokens must not be null");
+    if (tokens == null) {
+      throw new IllegalArgumentException("tokens must not be null");
+    }
     if (tokens.length == 0) {
       throw new IllegalArgumentException("tokens must not be empty");
     }
     String text = String.join(" ", tokens);
-    Parse p = new Parse(text,
+    final Parse p = new Parse(text,
         new Span(0, text.length()),
         Parser.INC_NODE, 0, 0);
     int start = 0;
