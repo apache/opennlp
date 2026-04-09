@@ -81,31 +81,30 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
 
     if (!cacheEnabled) {
       generator.createFeatures(features, tokens, index, previousOutcomes);
-      return;
-    }
+    } else {
+      CacheState state = threadState.get();
+      List<String> cacheFeatures;
 
-    CacheState state = threadState.get();
-    List<String> cacheFeatures;
+      if (tokens == state.prevTokens) {
+        cacheFeatures = state.cache.get(index);
 
-    if (tokens == state.prevTokens) {
-      cacheFeatures = state.cache.get(index);
+        if (cacheFeatures != null) {
+          features.addAll(cacheFeatures);
+          return;
+        }
 
-      if (cacheFeatures != null) {
-        features.addAll(cacheFeatures);
-        return;
+      } else {
+        state.cache.clear();
+        state.prevTokens = tokens;
       }
 
-    } else {
-      state.cache.clear();
-      state.prevTokens = tokens;
+      cacheFeatures = new ArrayList<>();
+
+      generator.createFeatures(cacheFeatures, tokens, index, previousOutcomes);
+
+      state.cache.put(index, cacheFeatures);
+      features.addAll(cacheFeatures);
     }
-
-    cacheFeatures = new ArrayList<>();
-
-    generator.createFeatures(cacheFeatures, tokens, index, previousOutcomes);
-
-    state.cache.put(index, cacheFeatures);
-    features.addAll(cacheFeatures);
   }
 
   @Override
@@ -124,7 +123,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
    */
   @Deprecated(since = "3.0.0")
   public long getNumberOfCacheHits() {
-    return 0;
+    throw new UnsupportedOperationException("Cache statistics are no longer tracked.");
   }
 
   /**
@@ -133,7 +132,7 @@ public class CachedFeatureGenerator implements AdaptiveFeatureGenerator {
    */
   @Deprecated(since = "3.0.0")
   public long getNumberOfCacheMisses() {
-    return 0;
+    throw new UnsupportedOperationException("Cache statistics are no longer tracked.");
   }
 
   public AdaptiveFeatureGenerator getCachedFeatureGenerator() {

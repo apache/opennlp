@@ -27,14 +27,12 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for the {@link CachedFeatureGenerator} class.
  * <p>
- * Caching has been removed for thread safety. These tests verify
- * that the generator still delegates correctly to its underlying
- * generator and that the deprecated cache stat methods return 0.
+ * Verifies delegation to the underlying generator and that deprecated per-thread cache
+ * statistics accessors fail fast (they are no longer supported).
  */
 public class CachedFeatureGeneratorTest {
 
-  private final AdaptiveFeatureGenerator identityGenerator =
-      new IdentityFeatureGenerator();
+  private final AdaptiveFeatureGenerator identityGenerator = new IdentityFeatureGenerator();
 
   private String[] testSentence1;
   private String[] testSentence2;
@@ -87,16 +85,14 @@ public class CachedFeatureGeneratorTest {
   }
 
   @Test
-  void testDeprecatedCacheStatsReturnZero() {
+  void testDeprecatedCacheStatsThrowUnsupportedOperation() {
     CachedFeatureGenerator generator =
         new CachedFeatureGenerator(identityGenerator);
 
     generator.createFeatures(
         features, testSentence1, 0, null);
 
-    Assertions.assertEquals(
-        0, generator.getNumberOfCacheHits());
-    Assertions.assertEquals(
-        0, generator.getNumberOfCacheMisses());
+    Assertions.assertThrows(UnsupportedOperationException.class, generator::getNumberOfCacheHits);
+    Assertions.assertThrows(UnsupportedOperationException.class, generator::getNumberOfCacheMisses);
   }
 }
