@@ -48,7 +48,7 @@ import opennlp.tools.util.SequenceValidator;
  * @see BeamSearchContextGenerator
  */
 @ThreadSafe
-public class BeamSearch implements SequenceClassificationModel {
+public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
 
   public static final String BEAM_SIZE_PARAMETER = "BeamSize";
 
@@ -88,7 +88,9 @@ public class BeamSearch implements SequenceClassificationModel {
    *
    * @param size The size of the beam (k).
    * @param model The {@link MaxentModel} for assigning probabilities to the sequence outcomes.
-   * @param cacheSize The capacity of the per-thread contexts cache. Use {@code 0} to disable caching.
+   * @param cacheSize The capacity of the per-thread contexts cache. Use {@code 0} to disable
+   *     only that cache; per-thread score buffers are still allocated so evaluation stays
+   *     thread-safe (see {@link CacheState}).
    */
   public BeamSearch(int size, MaxentModel model, int cacheSize) {
 
@@ -99,6 +101,9 @@ public class BeamSearch implements SequenceClassificationModel {
         () -> new CacheState(model.getNumOutcomes(), cacheSize));
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public <T> Sequence[] bestSequences(final int numSequences, final T[] sequence,
       final Object[] additionalContext, final double minSequenceScore,
@@ -127,6 +132,7 @@ public class BeamSearch implements SequenceClassificationModel {
         final double[] scores;
         if (state.cache != null) {
           scores = state.cache.computeIfAbsent(contexts, c -> {
+            // eval() writes into state.probs; cache values must be immutable copies for reuse.
             double[] res = model.eval(c, state.probs);
             double[] copy = new double[res.length];
             System.arraycopy(res, 0, copy, 0, res.length);
@@ -218,5 +224,15 @@ public class BeamSearch implements SequenceClassificationModel {
       outcomes[i] = model.getOutcome(i);
     }
     return outcomes;
+  }
+
+  /**
+   * Clears {@link ThreadLocal} state for the current thread (same idea as {@code ThreadSafe*} ME
+   * wrappers). Call when a thread is returned to a pool or the application stops using this
+   * instance on this thread.
+   */
+  @Override
+  public void close() {
+    threadState.remove();
   }
 }
