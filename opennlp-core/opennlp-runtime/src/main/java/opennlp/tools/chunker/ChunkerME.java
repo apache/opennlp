@@ -104,10 +104,10 @@ public class ChunkerME implements Chunker, Probabilistic {
     TokenTag[] tuples = TokenTag.create(toks, tags);
     Sequence seq = model.bestSequence(tuples,
         new Object[] {}, contextGenerator, sequenceValidator);
-    this.bestSequence = seq;
     if (seq == null) {
       return new String[toks.length];
     }
+    this.bestSequence = seq;
     List<String> c = seq.getOutcomes();
     return c.toArray(new String[0]);
   }

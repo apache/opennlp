@@ -133,10 +133,10 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    */
   public String[] predictSES(String[] toks, String[] tags) {
     Sequence seq = model.bestSequence(toks, new Object[] {tags}, contextGenerator, sequenceValidator);
-    this.bestSequence = seq; // volatile write for backward-compatible probs() access
     if (seq == null) {
       return new String[toks.length];
     }
+    this.bestSequence = seq; // volatile write for backward-compatible probs() access
     List<String> ses = seq.getOutcomes();
     return ses.toArray(new String[0]);
   }

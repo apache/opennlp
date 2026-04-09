@@ -123,10 +123,10 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
     additionalContextFeatureGenerator.setCurrentContext(additionalContext);
     Sequence seq = model.bestSequence(tokens,
         additionalContext, contextGenerator, sequenceValidator);
-    this.bestSequence = seq;
     if (seq == null) {
       return new Span[0];
     }
+    this.bestSequence = seq;
 
     List<String> c = seq.getOutcomes();
 

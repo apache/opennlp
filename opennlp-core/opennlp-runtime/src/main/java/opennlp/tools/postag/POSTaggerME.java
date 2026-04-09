@@ -218,10 +218,10 @@ public class POSTaggerME implements POSTagger, Probabilistic {
   @Override
   public String[] tag(String[] sentence, Object[] additionalContext) {
     Sequence seq = model.bestSequence(sentence, additionalContext, cg, sequenceValidator);
-    this.bestSequence = seq; // volatile write for backward-compatible probs() access
     if (seq == null) {
       return new String[sentence.length];
     }
+    this.bestSequence = seq; // volatile write for backward-compatible probs() access
     final List<String> t = seq.getOutcomes();
     return convertTags(t);
   }
