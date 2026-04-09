@@ -19,15 +19,18 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
 
 /**
  * The {@link AdditionalContextFeatureGenerator} generates the context from the passed
  * in additional context.
  */
+@ThreadSafe
 public class AdditionalContextFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private static final String PREFIX = "ne=";
 
+  /** Per-thread additional context (same role as the former mutable instance field). */
   private final ThreadLocal<String[][]> threadState = new ThreadLocal<>();
 
   @Override

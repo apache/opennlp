@@ -19,13 +19,17 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
+
 /**
  * This feature generator creates document begin features.
  *
  * @see AdaptiveFeatureGenerator
  */
+@ThreadSafe
 public class DocumentBeginFeatureGenerator implements AdaptiveFeatureGenerator {
 
+  /** First sentence tokens for the document (same role as the former {@code firstSentence} field). */
   private final ThreadLocal<String[]> threadState = new ThreadLocal<>();
 
   @Override

@@ -21,10 +21,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.ThreadSafe;
+
 /**
  * This {@link AdaptiveFeatureGenerator} generates features indicating the
  * outcome associated with a previously occurring word.
  */
+@ThreadSafe
 public class PreviousMapFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private final ThreadLocal<Map<String, String>> threadState = ThreadLocal.withInitial(HashMap::new);

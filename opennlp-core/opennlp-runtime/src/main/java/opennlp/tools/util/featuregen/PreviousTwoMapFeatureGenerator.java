@@ -21,12 +21,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.ThreadSafe;
+
 /**
  * This {@link AdaptiveFeatureGenerator} generates features indicating the
  * outcome associated with two previously occurring words.
  *
  * @see AdaptiveFeatureGenerator
  */
+@ThreadSafe
 public class PreviousTwoMapFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private final ThreadLocal<Map<String, String>> threadState = ThreadLocal.withInitial(HashMap::new);

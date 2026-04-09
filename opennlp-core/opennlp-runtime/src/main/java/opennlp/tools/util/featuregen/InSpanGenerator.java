@@ -20,6 +20,7 @@ package opennlp.tools.util.featuregen;
 import java.util.List;
 import java.util.Objects;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
 
@@ -31,6 +32,7 @@ import opennlp.tools.util.Span;
  * @see TokenNameFinder
  * @see Span
  */
+@ThreadSafe
 public class InSpanGenerator implements AdaptiveFeatureGenerator {
 
   private static final String W_DIC = ":w=dic";
