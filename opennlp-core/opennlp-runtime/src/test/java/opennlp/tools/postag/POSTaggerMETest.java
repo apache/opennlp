@@ -90,6 +90,13 @@ public class POSTaggerMETest extends AbstractModelLoaderTest {
   }
 
   @Test
+  void contextCacheSizeRejectsValuesBelowNegativeOne() throws IOException {
+    POSModel model = trainPennFormatPOSModel(ModelType.MAXENT);
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new POSTaggerME(model, POSTagFormat.PENN, -2));
+  }
+
+  @Test
   @EnabledWhenCDNAvailable(hostname = "dlcdn.apache.org")
   void testPOSTaggerDefault() throws IOException {
     final String[] expected = {"DET", "NOUN", "VERB", "ADV", "VERB", "ADP", "DET", "NOUN", "PUNCT"};

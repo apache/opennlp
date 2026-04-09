@@ -159,9 +159,15 @@ public class POSTaggerME implements POSTagger, Probabilistic {
    * @param contextCacheSize Size of the per-thread context
    *        generator cache. Use {@code 0} to disable caching,
    *        or {@code -1} to use the default (beam size).
+   *        Values less than {@code -1} are not allowed.
    */
   public POSTaggerME(POSModel model, POSTagFormat format,
       int contextCacheSize) {
+    if (contextCacheSize < -1) {
+      throw new IllegalArgumentException("contextCacheSize must be >= -1: "
+          + "use -1 for the default (beam-sized) cache, or a non-negative value "
+          + "(0 disables caching).");
+    }
     this.posTagFormat = format;
     POSTaggerFactory factory = model.getFactory();
 
