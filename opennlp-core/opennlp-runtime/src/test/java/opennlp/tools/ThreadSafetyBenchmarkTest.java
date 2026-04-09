@@ -92,8 +92,7 @@ import opennlp.tools.util.model.ModelType;
  */
 public class ThreadSafetyBenchmarkTest {
 
-  private static final int THREADS =
-      Math.max(8, Runtime.getRuntime().availableProcessors());
+  private static final int THREADS = Math.max(8, Runtime.getRuntime().availableProcessors());
   private static final int REPS = 200;
 
   private static TokenizerModel tokModel;
