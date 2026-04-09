@@ -105,32 +105,30 @@ public class SentenceDetectorMEBenchmark {
 
   @Benchmark
   @Threads(Threads.MAX)
-  public void newInstancePerCall(
-      ModelState ms, Blackhole bh) {
-    bh.consume(
-        new SentenceDetectorME(ms.model)
-            .sentDetect(INPUT));
+  public void newInstancePerCall(ModelState ms, Blackhole bh) {
+    bh.consume(new SentenceDetectorME(ms.model).sentDetect(INPUT));
   }
 
   @Benchmark
   @Threads(Threads.MAX)
-  public void instancePerThread(
-      PerThreadState pt, Blackhole bh) {
+  public void instancePerThread(PerThreadState pt, Blackhole bh) {
     bh.consume(pt.detector.sentDetect(INPUT));
   }
 
   @Benchmark
   @Threads(Threads.MAX)
-  public void sharedInstance(
-      SharedState st, Blackhole bh) {
+  public void sharedInstance(SharedState st, Blackhole bh) {
     bh.consume(st.detector.sentDetect(INPUT));
   }
 
-  public static void main(String[] args)
-      throws Exception {
+  /**
+   * Quick local iteration only: {@code forks(0)} disables JVM fork isolation
+   * (unlike {@code mvn} with the {@code jmh} profile).
+   * Use the Maven-invoked configuration for publishable numbers.
+   */
+  public static void main(String[] args) throws Exception {
     Options opt = new OptionsBuilder()
-        .include(SentenceDetectorMEBenchmark.class
-            .getSimpleName())
+        .include(SentenceDetectorMEBenchmark.class.getSimpleName())
         .forks(0)
         .warmupIterations(3)
         .measurementIterations(5)

@@ -108,18 +108,15 @@ public class TokenizerMEBenchmark {
 
   @Benchmark
   @Threads(Threads.MAX)
-  public void newInstancePerCall(
-      ModelState ms, Blackhole bh) {
+  public void newInstancePerCall(ModelState ms, Blackhole bh) {
     for (String s : INPUT) {
-      bh.consume(
-          new TokenizerME(ms.model).tokenize(s));
+      bh.consume(new TokenizerME(ms.model).tokenize(s));
     }
   }
 
   @Benchmark
   @Threads(Threads.MAX)
-  public void instancePerThread(
-      PerThreadState pt, Blackhole bh) {
+  public void instancePerThread(PerThreadState pt, Blackhole bh) {
     for (String s : INPUT) {
       bh.consume(pt.tokenizer.tokenize(s));
     }
@@ -127,18 +124,20 @@ public class TokenizerMEBenchmark {
 
   @Benchmark
   @Threads(Threads.MAX)
-  public void sharedInstance(
-      SharedState st, Blackhole bh) {
+  public void sharedInstance(SharedState st, Blackhole bh) {
     for (String s : INPUT) {
       bh.consume(st.tokenizer.tokenize(s));
     }
   }
 
-  public static void main(String[] args)
-      throws Exception {
+  /**
+   * Quick local iteration only: {@code forks(0)} disables JVM fork isolation
+   * (unlike {@code mvn} with the {@code jmh} profile).
+   * Use the Maven-invoked configuration for publishable numbers.
+   */
+  public static void main(String[] args) throws Exception {
     Options opt = new OptionsBuilder()
-        .include(TokenizerMEBenchmark.class
-            .getSimpleName())
+        .include(TokenizerMEBenchmark.class.getSimpleName())
         .forks(0)
         .warmupIterations(3)
         .measurementIterations(5)

@@ -139,19 +139,15 @@ public class POSTaggerMEBenchmark {
 
   @Benchmark
   @Threads(Threads.MAX)
-  public void newInstancePerCall(
-      ModelState ms, Blackhole bh) {
+  public void newInstancePerCall(ModelState ms, Blackhole bh) {
     for (String[] tokens : SENTENCES) {
-      bh.consume(new POSTaggerME(ms.posModel,
-          POSTagFormat.UD, ms.contextCacheSize())
-          .tag(tokens));
+      bh.consume(new POSTaggerME(ms.posModel, POSTagFormat.UD, ms.contextCacheSize()).tag(tokens));
     }
   }
 
   @Benchmark
   @Threads(Threads.MAX)
-  public void instancePerThread(
-      PerThreadTagger pt, Blackhole bh) {
+  public void instancePerThread(PerThreadTagger pt, Blackhole bh) {
     for (String[] tokens : SENTENCES) {
       bh.consume(pt.tagger.tag(tokens));
     }
@@ -159,18 +155,20 @@ public class POSTaggerMEBenchmark {
 
   @Benchmark
   @Threads(Threads.MAX)
-  public void sharedInstance(
-      SharedTagger st, Blackhole bh) {
+  public void sharedInstance(SharedTagger st, Blackhole bh) {
     for (String[] tokens : SENTENCES) {
       bh.consume(st.tagger.tag(tokens));
     }
   }
 
-  public static void main(String[] args)
-      throws Exception {
+  /**
+   * Quick local iteration only: {@code forks(0)} disables JVM fork isolation
+   * (unlike {@code mvn} with the {@code jmh} profile).
+   * Use the Maven-invoked configuration for publishable numbers.
+   */
+  public static void main(String[] args) throws Exception {
     Options opt = new OptionsBuilder()
-        .include(POSTaggerMEBenchmark.class
-            .getSimpleName())
+        .include(POSTaggerMEBenchmark.class.getSimpleName())
         .forks(0)
         .warmupIterations(3)
         .measurementIterations(5)
