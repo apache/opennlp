@@ -173,8 +173,7 @@ public class POSTaggerME implements POSTagger, Probabilistic {
 
     int beamSize = POSTaggerME.DEFAULT_BEAM_SIZE;
 
-    String beamSizeString = model.getManifestProperty(
-        BeamSearch.BEAM_SIZE_PARAMETER);
+    String beamSizeString = model.getManifestProperty(BeamSearch.BEAM_SIZE_PARAMETER);
 
     if (beamSizeString != null) {
       beamSize = Integer.parseInt(beamSizeString);
@@ -182,8 +181,7 @@ public class POSTaggerME implements POSTagger, Probabilistic {
 
     modelPackage = model;
 
-    int cacheSize = contextCacheSize >= 0
-        ? contextCacheSize : beamSize;
+    int cacheSize = contextCacheSize >= 0 ? contextCacheSize : beamSize;
     cg = factory.getPOSContextGenerator(cacheSize);
     tagDictionary = factory.getTagDictionary();
     size = beamSize;
@@ -193,13 +191,10 @@ public class POSTaggerME implements POSTagger, Probabilistic {
     if (model.getPosSequenceModel() != null) {
       this.model = model.getPosSequenceModel();
     } else {
-      this.model = new BeamSearch(beamSize,
-              model.getArtifact(POSModel.POS_MODEL_ENTRY_NAME), 0);
+      this.model = new BeamSearch(beamSize, model.getArtifact(POSModel.POS_MODEL_ENTRY_NAME), 0);
     }
 
-    this.posTagFormatMapper =
-        (format == POSTagFormat.CUSTOM)
-        ? new POSTagFormatMapper.NoOp()
+    this.posTagFormatMapper = (format == POSTagFormat.CUSTOM) ? new POSTagFormatMapper.NoOp()
         : new POSTagFormatMapper(getAllPosTags());
   }
 
