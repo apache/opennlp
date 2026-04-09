@@ -84,6 +84,12 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
         : null;
   }
 
+  private String[] createContextFeatures(int index, String[] tokens, String[] tags) {
+    List<String> feats = new ArrayList<>();
+    featureGenerator.createFeatures(feats, tokens, index, tags);
+    return feats.toArray(new String[0]);
+  }
+
   /**
    * {@inheritDoc}
    */
@@ -115,15 +121,11 @@ public class ConfigurablePOSContextGenerator implements POSContextGenerator {
         state.wordsKey = tokens;
       }
 
-      List<String> e = new ArrayList<>();
-      featureGenerator.createFeatures(e, tokens, index, tags);
-      String[] contexts = e.toArray(new String[0]);
+      String[] contexts = createContextFeatures(index, tokens, tags);
       state.cache.put(cacheKey, contexts);
       return contexts;
+    } else {
+      return createContextFeatures(index, tokens, tags);
     }
-
-    List<String> e = new ArrayList<>();
-    featureGenerator.createFeatures(e, tokens, index, tags);
-    return e.toArray(new String[0]);
   }
 }
