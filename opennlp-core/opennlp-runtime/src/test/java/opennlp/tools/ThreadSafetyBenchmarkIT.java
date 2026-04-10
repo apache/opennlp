@@ -90,7 +90,7 @@ import opennlp.tools.util.model.ModelType;
  * section simultaneously, increasing the probability of surfacing
  * races.
  */
-public class ThreadSafetyBenchmarkTest {
+public class ThreadSafetyBenchmarkIT {
 
   private static final int THREADS = Math.max(8, Runtime.getRuntime().availableProcessors());
   private static final int REPS = 200;
@@ -391,7 +391,7 @@ public class ThreadSafetyBenchmarkTest {
 
   /** Trains a sentence model from bundled {@code Sentences.txt}. */
   private static SentenceModel trainSentenceDetector() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(ThreadSafetyBenchmarkTest.class,
+    InputStreamFactory in = new ResourceAsStreamFactory(ThreadSafetyBenchmarkIT.class,
         "/opennlp/tools/sentdetect/Sentences.txt");
     ObjectStream<SentenceSample> samples = new SentenceSampleStream(
         new PlainTextByLineStream(in, StandardCharsets.UTF_8));
@@ -425,7 +425,7 @@ public class ThreadSafetyBenchmarkTest {
 
   /** Trains a chunker model from bundled {@code test.txt}. */
   private static ChunkerModel trainChunker() throws IOException {
-    InputStreamFactory in = new ResourceAsStreamFactory(ThreadSafetyBenchmarkTest.class,
+    InputStreamFactory in = new ResourceAsStreamFactory(ThreadSafetyBenchmarkIT.class,
         "/opennlp/tools/chunker/test.txt");
     ObjectStream<ChunkSample> samples = new ChunkSampleStream(
         new PlainTextByLineStream(in, StandardCharsets.UTF_8));
@@ -449,7 +449,7 @@ public class ThreadSafetyBenchmarkTest {
 
   /** Trains a language detector from bundled {@code DoccatSample.txt}. */
   private static LanguageDetectorModel trainLangDetect() throws Exception {
-    InputStreamFactory in = new ResourceAsStreamFactory(ThreadSafetyBenchmarkTest.class,
+    InputStreamFactory in = new ResourceAsStreamFactory(ThreadSafetyBenchmarkIT.class,
         "/opennlp/tools/doccat/DoccatSample.txt");
     LanguageDetectorSampleStream samples = new LanguageDetectorSampleStream(
         new PlainTextByLineStream(in, StandardCharsets.UTF_8));

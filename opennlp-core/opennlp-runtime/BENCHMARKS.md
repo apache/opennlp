@@ -65,13 +65,14 @@ cache provides measurable benefit.
 
 ## JUnit Correctness Test
 
-`ThreadSafetyBenchmarkTest` runs with `mvn test`. It verifies that a
-shared ME instance produces identical results to a single-threaded
-baseline for all 7 ME classes under barrier-synchronized concurrent
-access.
+`ThreadSafetyBenchmarkIT` is a Failsafe integration test (`*IT.java`). It
+verifies that a shared ME instance produces identical results to a
+single-threaded baseline for all 7 ME classes under barrier-synchronized
+concurrent access. Run it with `mvn verify` (not `mvn test`, which excludes
+`*IT.java`).
 
 ```bash
-mvn test -pl opennlp-core/opennlp-runtime -am \
+mvn verify -pl opennlp-core/opennlp-runtime -am \
     -Dforbiddenapis.skip=true \
-    -Dtest=ThreadSafetyBenchmarkTest
+    -Dit.test=ThreadSafetyBenchmarkIT
 ```
