@@ -26,15 +26,9 @@ import opennlp.tools.util.Span;
  * A thread-safe version of the {@link ChunkerME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
  * <p>
- * <b>Note:</b><br/>
- * This implementation uses a {@link ThreadLocal}. Although the implementation is
- * lightweight because the model is not duplicated, if you have many long-running threads,
- * you may run into memory problems.
- * <p>
- * Be careful when using this in a Jakarta EE application, for example.
- * </p>
- * The user is responsible for clearing the {@link ThreadLocal}
- * via calling {@link #close()}.
+ * <b>Note:</b> This class is deprecated and now delegates to a single shared
+ * {@link ChunkerME} instance, which is thread-safe as of OPENNLP-1816.
+ * Calling {@link #close()} clears the current thread's thread-local state for compatibility.
  *
  * @see Chunker
  * @see ChunkerME
@@ -47,9 +41,7 @@ import opennlp.tools.util.Span;
 @ThreadSafe
 public class ThreadSafeChunkerME implements Chunker, Probabilistic, AutoCloseable {
 
-  private final ChunkerModel model;
-
-  private final ThreadLocal<ChunkerME> threadLocal = new ThreadLocal<>();
+  private final ChunkerME sharedChunker;
 
   /**
    * Initializes a {@link ThreadSafeChunkerME} with the specified {@code model}.
@@ -58,45 +50,36 @@ public class ThreadSafeChunkerME implements Chunker, Probabilistic, AutoCloseabl
    */
   public ThreadSafeChunkerME(ChunkerModel model) {
     super();
-    this.model = model;
-  }
-
-  private ChunkerME getChunker() {
-    ChunkerME c = threadLocal.get();
-    if (c == null) {
-      c = new ChunkerME(model);
-      threadLocal.set(c);
-    }
-    return c;
+    this.sharedChunker = new ChunkerME(model);
   }
 
   @Override
   public String[] chunk(String[] toks, String[] tags) {
-    return getChunker().chunk(toks, tags);
+    return sharedChunker.chunk(toks, tags);
   }
 
   @Override
   public Span[] chunkAsSpans(String[] toks, String[] tags) {
-    return getChunker().chunkAsSpans(toks, tags);
+    return sharedChunker.chunkAsSpans(toks, tags);
   }
 
   @Override
   public Sequence[] topKSequences(String[] sentence, String[] tags) {
-    return getChunker().topKSequences(sentence, tags);
+    return sharedChunker.topKSequences(sentence, tags);
   }
 
   @Override
   public Sequence[] topKSequences(String[] sentence, String[] tags, double minSequenceScore) {
-    return getChunker().topKSequences(sentence, tags, minSequenceScore);
+    return sharedChunker.topKSequences(sentence, tags, minSequenceScore);
   }
 
   @Override
   public void close() {
-    threadLocal.remove();
+    sharedChunker.clearThreadLocalState();
   }
 
   @Override
   public double[] probs() {
-    return getChunker().probs();
+    return sharedChunker.probs();
   }
 }

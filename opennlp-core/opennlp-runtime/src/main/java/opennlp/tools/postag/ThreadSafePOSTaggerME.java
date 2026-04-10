@@ -29,15 +29,9 @@ import opennlp.tools.util.Sequence;
  * A thread-safe version of the {@link POSTaggerME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
  * <p>
- * <b>Note:</b><br/>
- * This implementation uses a {@link ThreadLocal}. Although the implementation is
- * lightweight because the model is not duplicated, if you have many long-running threads,
- * you may run into memory problems.
- * <p>
- * Be careful when using this in a Jakarta EE application, for example.
- * </p>
- * The user is responsible for clearing the {@link ThreadLocal}
- * via calling {@link #close()}.
+ * <b>Note:</b> This class is deprecated and now delegates to a single shared
+ * {@link POSTaggerME} instance, which is thread-safe as of OPENNLP-1816.
+ * Calling {@link #close()} clears the current thread's thread-local state for compatibility.
  *
  * @see POSTagger
  * @see POSTaggerME
@@ -50,11 +44,7 @@ import opennlp.tools.util.Sequence;
 @ThreadSafe
 public class ThreadSafePOSTaggerME implements POSTagger, Probabilistic, AutoCloseable {
 
-  private final POSModel model;
-
-  private final POSTagFormat posTagFormat;
-
-  private final ThreadLocal<POSTaggerME> threadLocal = new ThreadLocal<>();
+  private final POSTaggerME sharedTagger;
 
   /**
    * Initializes a {@link ThreadSafePOSTaggerME} by downloading a default model for a given
@@ -96,46 +86,36 @@ public class ThreadSafePOSTaggerME implements POSTagger, Probabilistic, AutoClos
    */
   public ThreadSafePOSTaggerME(POSModel model, POSTagFormat format) {
     super();
-    this.model = model;
-    this.posTagFormat = format;
-  }
-
-  private POSTaggerME getTagger() {
-    POSTaggerME tagger = threadLocal.get();
-    if (tagger == null) {
-      tagger = new POSTaggerME(model, posTagFormat);
-      threadLocal.set(tagger);
-    }
-    return tagger;
+    this.sharedTagger = new POSTaggerME(model, format);
   }
 
   @Override
   public String[] tag(String[] sentence) {
-    return getTagger().tag(sentence);
+    return sharedTagger.tag(sentence);
   }
 
   @Override
   public String[] tag(String[] sentence, Object[] additionaContext) {
-    return getTagger().tag(sentence, additionaContext);
+    return sharedTagger.tag(sentence, additionaContext);
   }
 
   @Override
   public Sequence[] topKSequences(String[] sentence) {
-    return getTagger().topKSequences(sentence);
+    return sharedTagger.topKSequences(sentence);
   }
 
   @Override
   public Sequence[] topKSequences(String[] sentence, Object[] additionaContext) {
-    return getTagger().topKSequences(sentence, additionaContext);
+    return sharedTagger.topKSequences(sentence, additionaContext);
   }
 
   @Override
   public double[] probs() {
-    return getTagger().probs();
+    return sharedTagger.probs();
   }
 
   @Override
   public void close() {
-    threadLocal.remove();
+    sharedTagger.clearThreadLocalState();
   }
 }

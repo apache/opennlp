@@ -46,18 +46,18 @@ import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
 /**
  * A maximum-entropy-based {@link TokenNameFinder name finder} implementation.
  * <p>
- * A name finder instance is thread-safe. One instance
- * can be shared across multiple threads to save memory.
+ * A name finder instance is thread-safe. One instance can be shared across multiple threads to save memory.
  * <p>
- * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
- * ensure instances do not outlive the application's lifecycle, as underlying components
- * use {@link ThreadLocal} state that may pin the classloader.
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE), ensure instances do
+ * not outlive the application's lifecycle, as underlying components use {@link ThreadLocal} state that may
+ * pin the classloader.
  *
  * @see Probabilistic
  * @see TokenNameFinder
@@ -78,15 +78,21 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   protected final SequenceClassificationModel model;
 
   protected final NameContextGenerator contextGenerator;
-  private volatile Sequence bestSequence;
 
-  private final AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
-          new AdditionalContextFeatureGenerator();
+  private final ThreadLocal<NameFinderState> threadState =
+      ThreadLocal.withInitial(NameFinderState::new);
+
+  private static final class NameFinderState {
+    private Sequence bestSequence;
+    private final AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
+        new AdditionalContextFeatureGenerator();
+  }
+
   private final SequenceValidator<String> sequenceValidator;
 
   /**
    * Initializes a {@link NameFinderME} with a {@link TokenNameFinderModel}.
-   * 
+   *
    * @param model The {@link TokenNameFinderModel} to initialize with.
    */
   public NameFinderME(TokenNameFinderModel model) {
@@ -100,7 +106,24 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
 
     // TODO: We should deprecate this. And come up with a better solution!
     contextGenerator.addFeatureGenerator(
-            new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
+            new WindowFeatureGenerator(new AdaptiveFeatureGenerator() {
+              @Override
+              public void createFeatures(List<String> features, String[] tokens, int index,
+                  String[] previousOutcomes) {
+                threadState.get().additionalContextFeatureGenerator.createFeatures(features,
+                    tokens, index, previousOutcomes);
+              }
+
+              @Override
+              public void updateAdaptiveData(String[] tokens, String[] outcomes) {
+                threadState.get().additionalContextFeatureGenerator.updateAdaptiveData(tokens, outcomes);
+              }
+
+              @Override
+              public void clearAdaptiveData() {
+                threadState.get().additionalContextFeatureGenerator.clearAdaptiveData();
+              }
+            }, 8, 8));
   }
 
   @Override
@@ -109,24 +132,23 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   }
 
   /**
-   * Generates name tags for the given sequence, typically a sentence, returning
-   * {@link Span token spans} for any identified names.
+   * Generates name tags for the given sequence, typically a sentence, returning {@link Span token spans}
+   * for any identified names.
    *
    * @param tokens An array of the tokens or words of a sequence, typically a sentence.
-   * @param additionalContext Features which are based on context outside of the
-   *                          sentence but which should also be used.
-   *
+   * @param additionalContext Features based on context outside of the sentence but which should also be used.
    * @return An array of {@link Span token spans} for each of the names identified.
    */
   public Span[] find(String[] tokens, String[][] additionalContext) {
 
-    additionalContextFeatureGenerator.setCurrentContext(additionalContext);
+    NameFinderState state = threadState.get();
+    state.additionalContextFeatureGenerator.setCurrentContext(additionalContext);
     Sequence seq = model.bestSequence(tokens,
         additionalContext, contextGenerator, sequenceValidator);
     if (seq == null) {
       return new Span[0];
     }
-    this.bestSequence = seq;
+    state.bestSequence = seq;
 
     List<String> c = seq.getOutcomes();
 
@@ -150,27 +172,34 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
    * @param probs An array with the probabilities of the last decoded sequence.
    */
   public void probs(double[] probs) {
-    bestSequence.getProbs(probs);
+    Sequence seq = threadState.get().bestSequence;
+    if (seq == null) {
+      throw new IllegalStateException("find() must be called before probs() on each thread.");
+    }
+    seq.getProbs(probs);
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * The sequence was determined based on the previous call to {@link #find(String[])}.
    *
-   * @return An array with the same number of probabilities as tokens were sent
-   *         to {@link #find(String[])} when it was last called.
+   * @return an array with the same number of probabilities as tokens were sent to {@link #find(String[])}
+   *     when it was last called
    */
   @Override
   public double[] probs() {
-    return bestSequence.getProbs();
+    Sequence seq = threadState.get().bestSequence;
+    if (seq == null) {
+      throw new IllegalStateException("find() must be called before probs() on each thread.");
+    }
+    return seq.getProbs();
   }
 
   /**
    * Sets probabilities for the spans.
    *
    * @param spans The {@link Span spans} to set probabilities.
-   *              
    * @return The {@link Span spans} with populated values.
    */
   private Span[] setProbs(Span[] spans) {
@@ -186,19 +215,20 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   }
 
   /**
-   * Retrieves an array of probabilities for each of the specified spans which is
-   * the arithmetic mean of the probabilities for each of the outcomes which
-   * make up the span.
+   * Retrieves an array of probabilities for each of the specified spans which is the arithmetic mean of the
+   * probabilities for each of the outcomes which make up the span.
    *
-   * @param spans The {@link Span spans} of the names for which probabilities
-   *              are requested.
-   *
+   * @param spans The {@link Span spans} of the names for which probabilities are requested.
    * @return An array of probabilities for each of the specified spans.
    */
   public double[] probs(Span[] spans) {
 
     double[] sprobs = new double[spans.length];
-    double[] probs = bestSequence.getProbs();
+    Sequence seq = threadState.get().bestSequence;
+    if (seq == null) {
+      throw new IllegalStateException("find() must be called before probs() on each thread.");
+    }
+    double[] probs = seq.getProbs();
 
     for (int si = 0; si < spans.length; si++) {
 
@@ -217,14 +247,22 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   }
 
   /**
+   * Removes thread-local state to prevent classloader leaks in container environments.
+   * Call when the thread is returned to a pool or the name finder is no longer needed.
+   */
+  public void clearThreadLocalState() {
+    threadState.remove();
+  }
+
+  /**
    * Starts a training of a {@link TokenNameFinderModel} with the given parameters.
    *
    * @param languageCode The ISO conform language code.
    * @param type The type to use.
    * @param samples The {@link ObjectStream} of {@link NameSample} used as input for training.
    * @param params The {@link TrainingParameters} for the context of the training.
-   * @param factory The {@link TokenNameFinderFactory} for creating related objects defined
-   *                via {@code params}.
+   * @param factory The {@link TokenNameFinderFactory} for creating related objects defined via
+   *     {@code params}.
    *
    * @return A valid, trained {@link TokenNameFinderModel} instance.
    * @throws IOException Thrown if IO errors occurred during training.

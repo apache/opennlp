@@ -26,15 +26,9 @@ import opennlp.tools.ml.Probabilistic;
  * A thread-safe version of the {@link LemmatizerME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
  * <p>
- * <b>Note:</b><br/>
- * This implementation uses a {@link ThreadLocal}. Although the implementation is
- * lightweight because the model is not duplicated, if you have many long-running threads,
- * you may run into memory problems.
- * <p>
- * Be careful when using this in a Jakarta EE application, for example.
- * </p>
- * The user is responsible for clearing the {@link ThreadLocal}
- * via calling {@link #close()}.
+ * <b>Note:</b> This class is deprecated and now delegates to a single shared
+ * {@link LemmatizerME} instance, which is thread-safe as of OPENNLP-1816.
+ * Calling {@link #close()} clears the current thread's thread-local state for compatibility.
  *
  * @see Lemmatizer
  * @see LemmatizerME
@@ -46,9 +40,7 @@ import opennlp.tools.ml.Probabilistic;
 @ThreadSafe
 public class ThreadSafeLemmatizerME implements Lemmatizer, Probabilistic, AutoCloseable {
 
-  private final LemmatizerModel model;
-
-  private final ThreadLocal<LemmatizerME> threadLocal = new ThreadLocal<>();
+  private final LemmatizerME sharedLemmatizer;
 
   /**
    * Initializes a {@link ThreadSafeLemmatizerME} with the specified {@code model}.
@@ -57,36 +49,27 @@ public class ThreadSafeLemmatizerME implements Lemmatizer, Probabilistic, AutoCl
    */
   public ThreadSafeLemmatizerME(LemmatizerModel model) {
     super();
-    this.model = model;
-  }
-
-  private LemmatizerME getLemmatizer() {
-    LemmatizerME l = threadLocal.get();
-    if (l == null) {
-      l = new LemmatizerME(model);
-      threadLocal.set(l);
-    }
-    return l;
+    this.sharedLemmatizer = new LemmatizerME(model);
   }
 
   @Override
   public String[] lemmatize(String[] toks, String[] tags) {
-    return getLemmatizer().lemmatize(toks, tags);
+    return sharedLemmatizer.lemmatize(toks, tags);
   }
 
   @Override
   public List<List<String>> lemmatize(List<String> toks, List<String> tags) {
-    return getLemmatizer().lemmatize(toks, tags);
+    return sharedLemmatizer.lemmatize(toks, tags);
   }
 
   @Override
   public double[] probs() {
-    return getLemmatizer().probs();
+    return sharedLemmatizer.probs();
   }
 
   @Override
   public void close() {
-    threadLocal.remove();
+    sharedLemmatizer.clearThreadLocalState();
   }
 
 }

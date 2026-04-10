@@ -45,12 +45,11 @@ import opennlp.tools.util.TrainingParameters;
  * The class represents a maximum-entropy-based {@link Chunker}. A chunker can be used to
  * find flat structures based on sequence inputs such as noun phrases or named entities.
  * <p>
- * A chunker instance is thread-safe. One instance
- * can be shared across multiple threads to save memory.
+ * A chunker instance is thread-safe. One instance can be shared across multiple threads to save memory.
  * <p>
- * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
- * ensure instances do not outlive the application's lifecycle, as underlying components
- * use {@link ThreadLocal} state that may pin the classloader.
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE), ensure instances do
+ * not outlive the application's lifecycle, as underlying components use {@link ThreadLocal} state that may
+ * pin the classloader.
  *
  * @see Chunker
  * @see Probabilistic
@@ -60,7 +59,7 @@ public class ChunkerME implements Chunker, Probabilistic {
 
   public static final int DEFAULT_BEAM_SIZE = 10;
 
-  private volatile Sequence bestSequence;
+  private final ThreadLocal<Sequence> bestSequence = new ThreadLocal<>();
 
   /**
    * The model used to assign chunk tags to a sequence of tokens.
@@ -107,7 +106,7 @@ public class ChunkerME implements Chunker, Probabilistic {
     if (seq == null) {
       return new String[toks.length];
     }
-    this.bestSequence = seq;
+    this.bestSequence.set(seq);
     List<String> c = seq.getOutcomes();
     return c.toArray(new String[0]);
   }
@@ -142,19 +141,35 @@ public class ChunkerME implements Chunker, Probabilistic {
    * @param probs An array used to hold the probabilities of the last decoded sequence.
    */
   public void probs(double[] probs) {
-    bestSequence.getProbs(probs);
+    Sequence seq = bestSequence.get();
+    if (seq == null) {
+      throw new IllegalStateException("chunk() must be called before probs() on each thread.");
+    }
+    seq.getProbs(probs);
   }
 
   /**
    * {@inheritDoc}
    * The sequence was determined based on the previous call to {@link #chunk(String[], String[])}.
    *
-   * @return An array with the same number of probabilities as tokens when
-   *         {@link ChunkerME#chunk(String[], String[])} was last called.
+   * @return an array with the same number of probabilities as tokens when
+   *     {@link #chunk(String[], String[])} was last called
    */
   @Override
   public double[] probs() {
-    return bestSequence.getProbs();
+    Sequence seq = bestSequence.get();
+    if (seq == null) {
+      throw new IllegalStateException("chunk() must be called before probs() on each thread.");
+    }
+    return seq.getProbs();
+  }
+
+  /**
+   * Removes thread-local state to prevent classloader leaks in container environments.
+   * Call when the thread is returned to a pool or the chunker is no longer needed.
+   */
+  public void clearThreadLocalState() {
+    bestSequence.remove();
   }
 
   /**

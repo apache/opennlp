@@ -30,15 +30,9 @@ import opennlp.tools.util.Span;
  * A thread-safe version of {@link TokenizerME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
  * <p>
- * <b>Note:</b><br/>
- * This implementation uses a {@link ThreadLocal}. Although the implementation is
- * lightweight because the model is not duplicated, if you have many long-running threads,
- * you may run into memory problems.
- * <p>
- * Be careful when using this in a Jakarta EE application, for example.
- * </p>
- * The user is responsible for clearing the {@link ThreadLocal}
- * via calling {@link #close()}.
+ * <b>Note:</b> This class is deprecated and now delegates to a single shared
+ * {@link TokenizerME} instance, which is thread-safe as of OPENNLP-1816.
+ * Calling {@link #close()} clears the current thread's thread-local state for compatibility.
  *
  * @see Probabilistic
  * @see Tokenizer
@@ -51,10 +45,7 @@ import opennlp.tools.util.Span;
 @ThreadSafe
 public class ThreadSafeTokenizerME implements Tokenizer, Probabilistic, AutoCloseable {
 
-  private final TokenizerModel model;
-  private final Dictionary abbDict;
-
-  private final ThreadLocal<TokenizerME> threadLocal = new ThreadLocal<>();
+  private final TokenizerME sharedTokenizer;
 
   /**
    * Initializes a {@link ThreadSafeTokenizerME} by downloading a default model
@@ -83,32 +74,22 @@ public class ThreadSafeTokenizerME implements Tokenizer, Probabilistic, AutoClos
    * @param abbDict The {@link Dictionary} to be used. It must fit the language of the {@code model}.
    */
   public ThreadSafeTokenizerME(TokenizerModel model, Dictionary abbDict) {
-    this.model = model;
-    this.abbDict = abbDict;
-  }
-
-  private TokenizerME getTokenizer() {
-    TokenizerME tokenizer = threadLocal.get();
-    if (tokenizer == null) {
-      tokenizer = new TokenizerME(model, abbDict);
-      threadLocal.set(tokenizer);
-    }
-    return tokenizer;
+    this.sharedTokenizer = new TokenizerME(model, abbDict);
   }
 
   @Override
   public String[] tokenize(String s) {
-    return getTokenizer().tokenize(s);
+    return sharedTokenizer.tokenize(s);
   }
 
   @Override
   public Span[] tokenizePos(String s) {
-    return getTokenizer().tokenizePos(s);
+    return sharedTokenizer.tokenizePos(s);
   }
 
   @Override
   public double[] probs() {
-    return getTokenizer().probs();
+    return sharedTokenizer.probs();
   }
 
   /**
@@ -121,6 +102,6 @@ public class ThreadSafeTokenizerME implements Tokenizer, Probabilistic, AutoClos
 
   @Override
   public void close() {
-    threadLocal.remove();
+    sharedTokenizer.clearThreadLocalState();
   }
 }

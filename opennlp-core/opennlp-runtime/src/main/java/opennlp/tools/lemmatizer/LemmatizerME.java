@@ -47,12 +47,11 @@ import opennlp.tools.util.TrainingParameters;
  * Tries to predict the induced permutation class for each word depending on
  * its surrounding context.
  * <p>
- * A lemmatizer instance is thread-safe. One instance
- * can be shared across multiple threads to save memory.
+ * A lemmatizer instance is thread-safe. One instance can be shared across multiple threads to save memory.
  * <p>
- * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
- * ensure instances do not outlive the application's lifecycle, as underlying components
- * use {@link ThreadLocal} state that may pin the classloader.
+ * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE), ensure instances do
+ * not outlive the application's lifecycle, as underlying components use {@link ThreadLocal} state that may
+ * pin the classloader.
  * <p>
  * Based on Grzegorz Chrupała. 2008.
  * <a href="http://grzegorz.chrupala.me/papers/phd-single.pdf">
@@ -68,7 +67,7 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
   public static final int LEMMA_NUMBER = 29;
   public static final int DEFAULT_BEAM_SIZE = 3;
   protected final int beamSize;
-  private volatile Sequence bestSequence;
+  private final ThreadLocal<Sequence> bestSequence = new ThreadLocal<>();
 
   private final SequenceClassificationModel model;
 
@@ -76,8 +75,7 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
   private final SequenceValidator<String> sequenceValidator;
 
   /**
-   * Initializes a {@link LemmatizerME} with the provided
-   * {@link LemmatizerModel model} and a default
+   * Initializes a {@link LemmatizerME} with the provided {@link LemmatizerModel model} and a default
    * {@code beam size} of {@code 3}.
    *
    * @param model The {@link LemmatizerModel} to be used.
@@ -128,7 +126,6 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    *
    * @param toks An array of tokens.
    * @param tags An array of postags.
-   *             
    * @return An array of possible lemma classes for each token in {@code toks}.
    */
   public String[] predictSES(String[] toks, String[] tags) {
@@ -136,18 +133,17 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
     if (seq == null) {
       return new String[toks.length];
     }
-    this.bestSequence = seq; // volatile write for backward-compatible probs() access
+    this.bestSequence.set(seq);
     List<String> ses = seq.getOutcomes();
     return ses.toArray(new String[0]);
   }
 
   /**
    * Predict all possible lemmas (using a default upper bound).
-   * 
+   *
    * @param numLemmas The default number of lemmas
    * @param toks An array of tokens.
    * @param tags An array of postags.
-   *             
    * @return A 2-dimensional array containing all possible lemmas for each token and postag pair.
    */
   public String[][] predictLemmas(int numLemmas, String[] toks, String[] tags) {
@@ -167,7 +163,6 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    *
    * @param toks An array of tokens.
    * @param preds An array of predicted lemma classes.
-   *              
    * @return The array of decoded lemmas.
    */
   public static String[] decodeLemmas(String[] toks, String[] preds) {
@@ -187,7 +182,6 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    *
    * @param toks An array of tokens.
    * @param lemmas An array of lemmas.
-   *               
    * @return The array of lemma classes.
    */
   public static String[] encodeLemmas(String[] toks, String[] lemmas) {
@@ -205,7 +199,6 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
   /**
    * @param sentence An array of tokens.
    * @param tags An array of postags.
-   *             
    * @return Retrieves the top-k {@link Sequence sequences}.
    */
   public Sequence[] topKSequences(String[] sentence, String[] tags) {
@@ -236,21 +229,36 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    * @param probs An array used to hold the probabilities of the last decoded sequence.
    */
   public void probs(double[] probs) {
-    bestSequence.getProbs(probs);
+    Sequence seq = bestSequence.get();
+    if (seq == null) {
+      throw new IllegalStateException("lemmatize() must be called before probs() on each thread.");
+    }
+    seq.getProbs(probs);
   }
 
   /**
    * {@inheritDoc}
-   * 
-   * The sequence was determined based on the previous call to
-   * {@link #lemmatize(String[], String[])}.
    *
-   * @return An array with the same number of probabilities as tokens were sent to
-   *         {@link #lemmatize(String[], String[])} when it was last called.
+   * The sequence was determined based on the previous call to {@link #lemmatize(String[], String[])}.
+   *
+   * @return an array with the same number of probabilities as tokens were sent to
+   *     {@link #lemmatize(String[], String[])} when it was last called
    */
   @Override
   public double[] probs() {
-    return bestSequence.getProbs();
+    Sequence seq = bestSequence.get();
+    if (seq == null) {
+      throw new IllegalStateException("lemmatize() must be called before probs() on each thread.");
+    }
+    return seq.getProbs();
+  }
+
+  /**
+   * Removes thread-local state to prevent classloader leaks in container environments.
+   * Call when the thread is returned to a pool or the lemmatizer is no longer needed.
+   */
+  public void clearThreadLocalState() {
+    bestSequence.remove();
   }
 
   /**
@@ -259,8 +267,7 @@ public class LemmatizerME implements Lemmatizer, Probabilistic {
    * @param languageCode The ISO conform language code.
    * @param samples The {@link ObjectStream} of {@link LemmaSample} used as input for training.
    * @param params The {@link TrainingParameters} for the context of the training.
-   * @param factory The {@link LemmatizerFactory} for creating related objects defined
-   *                via {@code params}.
+   * @param factory The {@link LemmatizerFactory} for creating related objects defined via {@code params}.
    *
    * @return A valid, trained {@link LemmatizerModel} instance.
    * @throws IOException Thrown if IO errors occurred.

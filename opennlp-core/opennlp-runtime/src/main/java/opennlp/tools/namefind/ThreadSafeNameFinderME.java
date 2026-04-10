@@ -25,14 +25,9 @@ import opennlp.tools.util.Span;
  * A thread-safe version of {@link NameFinderME}. Using it is completely transparent.
  * You can use it in a single-threaded context as well, it only incurs a minimal overhead.
  * <p>
- * <b>Note:</b><br/>
- * This implementation uses a {@link ThreadLocal}. Although the implementation is
- * lightweight because the model is not duplicated, if you have many long-running threads,
- * you may run into memory problems.
- * <p>
- * Be careful when using this in a Jakarta EE application, for example.
- * </p>
- * The user is responsible for clearing the {@link ThreadLocal} via calling {@link #close()}.
+ * <b>Note:</b> This class is deprecated and now delegates to a single shared
+ * {@link NameFinderME} instance, which is thread-safe as of OPENNLP-1816.
+ * Calling {@link #close()} clears the current thread's thread-local state for compatibility.
  *
  * @see NameFinderME
  * @see Probabilistic
@@ -45,9 +40,7 @@ import opennlp.tools.util.Span;
 @ThreadSafe
 public class ThreadSafeNameFinderME implements TokenNameFinder, Probabilistic, AutoCloseable {
 
-  private final TokenNameFinderModel model;
-
-  private final ThreadLocal<NameFinderME> threadLocal = new ThreadLocal<>();
+  private final NameFinderME sharedNameFinder;
 
   /**
    * Initializes a {@link ThreadSafeNameFinderME} with the specified {@code model}.
@@ -56,36 +49,26 @@ public class ThreadSafeNameFinderME implements TokenNameFinder, Probabilistic, A
    */
   public ThreadSafeNameFinderME(TokenNameFinderModel model) {
     super();
-    this.model = model;
-  }
-
-  // If a thread-local version exists, return it. Otherwise, create, then return.
-  private NameFinderME getNameFinder() {
-    NameFinderME nf = threadLocal.get();
-    if (nf == null) {
-      nf = new NameFinderME(model);
-      threadLocal.set(nf);
-    }
-    return nf;
+    this.sharedNameFinder = new NameFinderME(model);
   }
 
   @Override
   public Span[] find(String[] tokens) {
-    return getNameFinder().find(tokens);
+    return sharedNameFinder.find(tokens);
   }
 
   @Override
   public double[] probs() {
-    return getNameFinder().probs();
+    return sharedNameFinder.probs();
   }
 
   @Override
   public void clearAdaptiveData() {
-    getNameFinder().clearAdaptiveData();
+    sharedNameFinder.clearAdaptiveData();
   }
 
   @Override
   public void close() {
-    threadLocal.remove();
+    sharedNameFinder.clearThreadLocalState();
   }
 }
