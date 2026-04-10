@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for the {@link CachedFeatureGenerator} class.
  * <p>
- * Verifies delegation to the underlying generator and that deprecated per-thread cache
- * statistics accessors fail fast (they are no longer supported).
+ * Per-token caching was removed for thread safety; tests cover delegation and deprecated statistics
+ * accessors.
  */
 public class CachedFeatureGeneratorTest {
 
@@ -45,6 +45,9 @@ public class CachedFeatureGeneratorTest {
     features = new ArrayList<>();
   }
 
+  /**
+   * Tests that features are produced for two token indexes on the same sentence.
+   */
   @Test
   void testDelegatesToUnderlyingGenerator() {
     CachedFeatureGenerator generator =
@@ -65,6 +68,9 @@ public class CachedFeatureGeneratorTest {
     Assertions.assertEquals(1, features.size());
   }
 
+  /**
+   * Tests that a different sentence still produces correct features at the same index.
+   */
   @Test
   void testDifferentSentencesProduceCorrectFeatures() {
     CachedFeatureGenerator generator =
@@ -84,6 +90,9 @@ public class CachedFeatureGeneratorTest {
     Assertions.assertEquals(1, features.size());
   }
 
+  /**
+   * Tests that deprecated cache hit and miss counters throw {@link UnsupportedOperationException}.
+   */
   @Test
   void testDeprecatedCacheStatsThrowUnsupportedOperation() {
     CachedFeatureGenerator generator =
