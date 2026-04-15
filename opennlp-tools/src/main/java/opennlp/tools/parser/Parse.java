@@ -831,11 +831,11 @@ public class Parse implements Cloneable, Comparable<Parse> {
     String text = String.join(" ", tokens);
     final Parse p = new Parse(text,
         new Span(0, text.length()),
-        Parser.INC_NODE, 0, 0);
+        AbstractBottomUpParser.INC_NODE, 0, 0);
     int start = 0;
     for (int i = 0; i < tokens.length; i++) {
       p.insert(new Parse(text, new Span(start, start + tokens[i].length()),
-          Parser.TOK_NODE, 0, i));
+          AbstractBottomUpParser.TOK_NODE, 0, i));
       start += tokens[i].length() + 1;
     }
     return p;
