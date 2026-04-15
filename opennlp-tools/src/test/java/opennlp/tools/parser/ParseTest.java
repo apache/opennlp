@@ -142,7 +142,7 @@ public class ParseTest {
     Assertions.assertEquals(new Span(0, 22), p.getSpan());
 
     // Verify root type is INC
-    Assertions.assertEquals(Parser.INC_NODE, p.getType());
+    Assertions.assertEquals(AbstractBottomUpParser.INC_NODE, p.getType());
 
     // Verify token children
     Parse[] children = p.getChildren();
@@ -150,7 +150,7 @@ public class ParseTest {
 
     int start = 0;
     for (int i = 0; i < tokens.length; i++) {
-      Assertions.assertEquals(Parser.TOK_NODE, children[i].getType());
+      Assertions.assertEquals(AbstractBottomUpParser.TOK_NODE, children[i].getType());
       Assertions.assertEquals(new Span(start, start + tokens[i].length()), children[i].getSpan());
       Assertions.assertEquals(tokens[i], children[i].getCoveredText());
       start += tokens[i].length() + 1;
