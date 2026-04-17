@@ -39,6 +39,7 @@ import opennlp.tools.ml.TrainerFactory.TrainerType;
 import opennlp.tools.ml.model.Event;
 import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.ml.model.SequenceClassificationModel;
+import opennlp.tools.util.LastResultOwnerOrThreadLocal;
 import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.Sequence;
@@ -46,7 +47,6 @@ import opennlp.tools.util.SequenceCodec;
 import opennlp.tools.util.SequenceValidator;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import opennlp.tools.util.featuregen.AdaptiveFeatureGenerator;
 import opennlp.tools.util.featuregen.AdditionalContextFeatureGenerator;
 import opennlp.tools.util.featuregen.WindowFeatureGenerator;
 
@@ -79,14 +79,23 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
 
   protected final NameContextGenerator contextGenerator;
 
-  private final ThreadLocal<NameFinderState> threadState =
-      ThreadLocal.withInitial(NameFinderState::new);
+  /**
+   * Per-thread {@code bestSequence} for {@link #probs()} / {@link #probs(double[])} access. Uses the
+   * owner-fast-path helper so single-threaded short-lived instances don't allocate a {@link ThreadLocal}
+   * map entry; once a second thread touches the same instance, non-owner threads transition to
+   * {@link ThreadLocal} storage. Same pattern used by {@link opennlp.tools.postag.POSTaggerME} et al.
+   */
+  private final LastResultOwnerOrThreadLocal<Sequence> lastBestSequence =
+      new LastResultOwnerOrThreadLocal<>();
 
-  private static final class NameFinderState {
-    private Sequence bestSequence;
-    private final AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
-        new AdditionalContextFeatureGenerator();
-  }
+  /**
+   * One shared additional-context feature generator per {@code NameFinderME} instance. The generator
+   * itself is {@code @ThreadSafe} and keeps the per-thread additional-context array via its own
+   * {@link ThreadLocal}, so we don't need a per-thread wrapper here (which would have been a redundant
+   * nested {@link ThreadLocal}).
+   */
+  private final AdditionalContextFeatureGenerator additionalContextFeatureGenerator =
+      new AdditionalContextFeatureGenerator();
 
   private final SequenceValidator<String> sequenceValidator;
 
@@ -106,24 +115,7 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
 
     // TODO: We should deprecate this. And come up with a better solution!
     contextGenerator.addFeatureGenerator(
-            new WindowFeatureGenerator(new AdaptiveFeatureGenerator() {
-              @Override
-              public void createFeatures(List<String> features, String[] tokens, int index,
-                  String[] previousOutcomes) {
-                threadState.get().additionalContextFeatureGenerator.createFeatures(features,
-                    tokens, index, previousOutcomes);
-              }
-
-              @Override
-              public void updateAdaptiveData(String[] tokens, String[] outcomes) {
-                threadState.get().additionalContextFeatureGenerator.updateAdaptiveData(tokens, outcomes);
-              }
-
-              @Override
-              public void clearAdaptiveData() {
-                threadState.get().additionalContextFeatureGenerator.clearAdaptiveData();
-              }
-            }, 8, 8));
+        new WindowFeatureGenerator(additionalContextFeatureGenerator, 8, 8));
   }
 
   @Override
@@ -141,14 +133,13 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
    */
   public Span[] find(String[] tokens, String[][] additionalContext) {
 
-    NameFinderState state = threadState.get();
-    state.additionalContextFeatureGenerator.setCurrentContext(additionalContext);
+    additionalContextFeatureGenerator.setCurrentContext(additionalContext);
     Sequence seq = model.bestSequence(tokens,
         additionalContext, contextGenerator, sequenceValidator);
     if (seq == null) {
       return new Span[0];
     }
-    state.bestSequence = seq;
+    lastBestSequence.set(seq);
 
     List<String> c = seq.getOutcomes();
 
@@ -172,7 +163,7 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
    * @param probs An array with the probabilities of the last decoded sequence.
    */
   public void probs(double[] probs) {
-    Sequence seq = threadState.get().bestSequence;
+    Sequence seq = lastBestSequence.get();
     if (seq == null) {
       throw new IllegalStateException("find() must be called before probs() on each thread.");
     }
@@ -189,7 +180,7 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
    */
   @Override
   public double[] probs() {
-    Sequence seq = threadState.get().bestSequence;
+    Sequence seq = lastBestSequence.get();
     if (seq == null) {
       throw new IllegalStateException("find() must be called before probs() on each thread.");
     }
@@ -224,7 +215,7 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   public double[] probs(Span[] spans) {
 
     double[] sprobs = new double[spans.length];
-    Sequence seq = threadState.get().bestSequence;
+    Sequence seq = lastBestSequence.get();
     if (seq == null) {
       throw new IllegalStateException("find() must be called before probs() on each thread.");
     }
@@ -247,11 +238,22 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
   }
 
   /**
-   * Removes thread-local state to prevent classloader leaks in container environments.
-   * Call when the thread is returned to a pool or the name finder is no longer needed.
+   * Releases the calling thread's per-thread state for this {@code NameFinderME} (the last decoded
+   * sequence stashed for {@link #probs()} access, plus the additional-context slot held by
+   * {@link AdditionalContextFeatureGenerator}).
+   *
+   * <p>This is intentionally a per-thread, not a per-instance, operation: a single
+   * {@code NameFinderME} is typically shared across many pool threads, and each one owns an
+   * independent slot. Call this when a worker thread is being returned to a pool, or when the name
+   * finder is being disposed in a container with classloader isolation.</p>
+   *
+   * <p>Note that this does <i>not</i> release per-thread state inside the underlying
+   * {@link opennlp.tools.ml.BeamSearch} cache or other feature generators in the pipeline; those
+   * live for the duration of the owning thread.</p>
    */
   public void clearThreadLocalState() {
-    threadState.remove();
+    lastBestSequence.clearForCurrentThread();
+    additionalContextFeatureGenerator.clearForCurrentThread();
   }
 
   /**

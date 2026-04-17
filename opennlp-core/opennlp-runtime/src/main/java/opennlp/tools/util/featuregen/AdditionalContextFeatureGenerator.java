@@ -49,4 +49,16 @@ public class AdditionalContextFeatureGenerator implements AdaptiveFeatureGenerat
   public void setCurrentContext(String[][] context) {
     threadState.set(context);
   }
+
+  /**
+   * Releases the calling thread's per-thread context slot. Call when a worker thread is being returned
+   * to a pool, or when the enclosing component is being disposed in a container with classloader
+   * isolation, to avoid pinning the thread's context classloader via the {@link ThreadLocal} entry.
+   *
+   * <p>Same lifecycle contract as the {@code clearThreadLocalState()} methods on the ME classes that
+   * embed this generator (currently {@link opennlp.tools.namefind.NameFinderME}).</p>
+   */
+  public void clearForCurrentThread() {
+    threadState.remove();
+  }
 }
