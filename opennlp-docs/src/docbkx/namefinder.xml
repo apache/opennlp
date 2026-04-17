@@ -101,9 +101,14 @@ Mr . <START:person> Vinken <END> is chairman of Elsevier N.V. , the Dutch publis
 			<programlisting language="java">
 <![CDATA[NameFinderME nameFinder = new NameFinderME(model);]]>
 			</programlisting>
-			The initialization is now finished and the Name Finder can be used. The NameFinderME
-			class is not thread safe, it must only be called from one thread. To use multiple threads
-			multiple NameFinderME instances sharing the same model instance can be created.
+			The initialization is now finished and the Name Finder can be used. As of OpenNLP
+			3.0.0 the NameFinderME class is thread safe: a single instance can be shared across
+			multiple threads, which is the recommended deployment pattern because the underlying
+			model is held only once in memory. The legacy ThreadSafeNameFinderME wrapper is
+			retained for backward compatibility and is now deprecated. Note that the per-document
+			adaptive feature generator state is cleared per thread by clearAdaptiveData, so each
+			thread should process its own document stream end-to-end before invoking
+			clearAdaptiveData.
 			The input text should be segmented into documents, sentences and tokens.
 			To perform entity detection an application calls the find method for every sentence in the
 			document. After every document clearAdaptiveData must be called to clear the adaptive data in

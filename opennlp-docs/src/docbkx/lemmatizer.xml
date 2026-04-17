@@ -92,7 +92,10 @@ try (InputStream modelIn = new FileInputStream("opennlp-en-ud-ewt-lemmas-1.3-2.5
 				tokenized sentence
 				as input, which is represented as a String array, each String object
 				in the array
-				is one token, and the POS tags associated with each token.
+				is one token, and the POS tags associated with each token. As of
+				OpenNLP 3.0.0 LemmatizerME is thread safe and a single instance can be
+				shared across threads; the legacy ThreadSafeLemmatizerME wrapper is
+				retained for backward compatibility and is now deprecated.
 			</para>
 			<para>
 				The following code shows how to determine the most likely lemma for

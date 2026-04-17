@@ -110,7 +110,7 @@ if(sm != null) {
       In this example, the finder and loader objects can be created or re-used as shown in the previous code example.
       <note>
         <para>
-          When running on Java 17+, the JVM argument
+          When running on Java 21+ (the minimum supported version since OpenNLP 3.0.0), the JVM argument
           <screen>
 <![CDATA[--add-opens java.base/jdk.internal.loader=ALL-UNNAMED]]>
           </screen>

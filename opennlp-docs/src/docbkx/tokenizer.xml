@@ -150,6 +150,9 @@ London share prices were bolstered largely by continued gains on Wall Street and
 			<programlisting language="java">
 <![CDATA[Tokenizer tokenizer = new TokenizerME(model);]]>
 		 </programlisting>
+			As of OpenNLP 3.0.0 TokenizerME is thread safe and a single instance can be shared
+			across threads; the legacy ThreadSafeTokenizerME wrapper is retained for backward
+			compatibility and is now deprecated.
 			The tokenizer offers two tokenize methods, both expect an input
 			String object which contains the untokenized text. If possible it
 			should be a sentence, but depending on the training of the learnable

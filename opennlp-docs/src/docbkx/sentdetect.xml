@@ -84,6 +84,9 @@ Rudolph Agnew, 55 years old and former chairman of Consolidated Gold Fields PLC,
 		<programlisting language="java">
 <![CDATA[SentenceDetectorME sentenceDetector = new SentenceDetectorME(model);]]>
 		</programlisting>
+		As of OpenNLP 3.0.0 SentenceDetectorME is thread safe and a single instance can be
+		shared across threads; the legacy ThreadSafeSentenceDetectorME wrapper is retained for
+		backward compatibility and is now deprecated.
 		The Sentence Detector can output an array of Strings, where each String is one sentence.
 				<programlisting language="java">
 <![CDATA[String[] sentences = sentenceDetector.sentDetect("  First sentence. Second sentence. ");]]>

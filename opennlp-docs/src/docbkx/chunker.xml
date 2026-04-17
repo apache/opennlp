@@ -90,7 +90,10 @@ try (modelIn = new FileInputStream("en-chunker.bin")){
 			</programlisting>
 			The Chunker instance is now ready to tag data. It expects a tokenized sentence
 			as input, which is represented as a String array, each String object in the array
-			is one token, and the POS tags associated with each token.
+			is one token, and the POS tags associated with each token. As of OpenNLP 3.0.0
+			ChunkerME is thread safe and a single instance can be shared across threads; the
+			legacy ThreadSafeChunkerME wrapper is retained for backward compatibility and is
+			now deprecated.
 	   </para>
 	   <para>
 	   The following code shows how to determine the most likely chunk tag sequence for a sentence.
@@ -116,8 +119,10 @@ String[] tag = chunker.chunk(sent, pos);]]>
 <![CDATA[double[] probs = chunker.probs();]]>
 			</programlisting>
 			The call to probs is stateful and will always return the probabilities of the last
-			tagged sentence. The probs method should only be called when the tag method
-			was called before, otherwise the behavior is undefined.
+			tagged sentence. When the chunker is shared across threads, the "last tagged
+			sentence" is tracked per thread, so each thread must call chunk before calling
+			probs on that same thread. The probs method should only be called when the chunk
+			method was called before on the current thread, otherwise the behavior is undefined.
 			</para>
 			<para>
 			Some applications need to retrieve the n-best chunk tag sequences and not

@@ -78,7 +78,9 @@ Mr._PROPN Vinken_PROPN is_AUX chairman_NOUN of_ADP Elsevier_ADJ N.V._PROPN ,_PUN
 			</programlisting>
 			The POS Tagger instance is now ready to tag data. It expects a tokenized sentence
 			as input, which is represented as a String array, each String object in the array
-			is one token.
+			is one token. As of OpenNLP 3.0.0 POSTaggerME is thread safe and a single instance
+			can be shared across threads; the legacy ThreadSafePOSTaggerME wrapper is retained
+			for backward compatibility and is now deprecated.
 	   </para>
 	   <para>
 	   The following code shows how to determine the most likely pos tag sequence for a sentence.
@@ -95,8 +97,10 @@ String[] tags = tagger.tag(sent);]]>
 <![CDATA[double[] probs = tagger.probs();]]>
 			</programlisting>
 			The call to probs is stateful and will always return the probabilities of the last
-			tagged sentence. The probs method should only be called when the tag method
-			was called before, otherwise the behavior is undefined.
+			tagged sentence. When the tagger is shared across threads, the "last tagged sentence"
+			is tracked per thread, so each thread must call tag before calling probs on that
+			same thread. The probs method should only be called when the tag method was called
+			before on the current thread, otherwise the behavior is undefined.
 			</para>
 			<para>
 			Some applications need to retrieve the n-best pos tag sequences and not

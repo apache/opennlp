@@ -128,6 +128,10 @@ and import only the components you need, which will result in a smaller dependen
 Only `opennlp-runtime` needs to be added as a dependency, and you can add additional modules (e.g. `opennlp-ml-maxent`, `opennlp-model-resolver`, etc.) as required by your project.
 For users of the traditional CLI toolkit, nothing changes with the 3.x release line. CLI usage remains stable as described in the [project's dev manual](https://opennlp.apache.org/docs/).
 
+### Thread safety
+
+Starting with 3.0.0, the core `*ME` classes (`POSTaggerME`, `TokenizerME`, `SentenceDetectorME`, `ChunkerME`, `LemmatizerME`, `NameFinderME`) are thread safe and a single instance can be shared across threads. This eliminates the need to pool or recreate ME instances per thread. The legacy `ThreadSafe*ME` wrappers from 2.x still work but are now deprecated; existing code does not need to change to upgrade.
+
 ### Head's up
 
 The Apache OpenNLP team is planning to change the package namespace from `opennlp` to `org.apache.opennlp` in a future release (potentially 4.x). 
