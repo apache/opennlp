@@ -19,11 +19,29 @@ package opennlp.tools.util.ext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import opennlp.tools.commons.Internal;
 
 /**
  * The {@link ExtensionLoader} is responsible to load extensions to the OpenNLP library.
+ * <p>
+ * Only classes whose fully-qualified name starts with a registered package prefix are
+ * permitted. The default allowed prefix is {@code opennlp.}, which covers all built-in
+ * factories and serializers.
+ * <p>
+ * To allow custom extension classes from other packages, either:
+ * <ul>
+ *   <li>Call {@link #registerAllowedPackage(String)} programmatically before loading
+ *       any model that uses the custom class.</li>
+ *   <li>Set the system property {@code OPENNLP_EXT_ALLOWED_PACKAGES} to a
+ *       comma-separated list of package prefixes at JVM startup, e.g.
+ *       {@code -DOPENNLP_EXT_ALLOWED_PACKAGES=com.acme.nlp.,com.other.}.</li>
+ * </ul>
  * <p>
  * <b>Note:</b>
  * Do not use this class, internal use only!
@@ -31,10 +49,55 @@ import opennlp.tools.commons.Internal;
 @Internal
 public class ExtensionLoader {
 
+  /**
+   * System property name for supplying additional allowed package prefixes.
+   * Value is a comma-separated list, e.g. {@code com.acme.nlp.,com.other.}.
+   */
+  public static final String ALLOWED_PACKAGES_PROPERTY = "OPENNLP_EXT_ALLOWED_PACKAGES";
+
+  /**
+   * Package prefixes whose classes are permitted to be instantiated as extensions.
+   * Seeded from {@code opennlp.} plus any prefixes in {@link #ALLOWED_PACKAGES_PROPERTY}.
+   */
+  private static final Set<String> ALLOWED_PREFIXES = initAllowedPrefixes();
+
+  private static Set<String> initAllowedPrefixes() {
+    Set<String> prefixes = new CopyOnWriteArraySet<>(Collections.singleton("opennlp."));
+    String prop = System.getProperty(ALLOWED_PACKAGES_PROPERTY);
+    if (prop != null && !prop.isBlank()) {
+      Arrays.stream(prop.split(","))
+          .map(String::trim)
+          .filter(s -> !s.isBlank())
+          .map(s -> s.endsWith(".") ? s : s + ".")
+          .forEach(prefixes::add);
+    }
+    return prefixes;
+  }
+
   private ExtensionLoader() {
   }
 
-  // Pass in the type (interface) of the class to load
+  /**
+   * Registers an additional package prefix whose classes are permitted to be
+   * loaded as OpenNLP extensions. Call this once at application startup, before
+   * loading any model that uses a custom factory or serializer from that package.
+   * <p>
+   * The prefix is normalized to end with {@code '.'} to prevent collision attacks
+   * (e.g. registering {@code "com.acme"} cannot be exploited via {@code "com.acmeevil.*"}).
+   *
+   * @param packagePrefix The package prefix to allow, e.g. {@code "com.example.nlp"}.
+   *                      Must not be {@code null} or blank.
+   * @throws IllegalArgumentException if {@code packagePrefix} is null or blank.
+   */
+  public static void registerAllowedPackage(String packagePrefix) {
+    Objects.requireNonNull(packagePrefix, "packagePrefix must not be null");
+    if (packagePrefix.isBlank()) {
+      throw new IllegalArgumentException("packagePrefix must not be blank");
+    }
+    String normalized = packagePrefix.endsWith(".") ? packagePrefix : packagePrefix + ".";
+    ALLOWED_PREFIXES.add(normalized);
+  }
+
   /**
    * Instantiates a user provided extension to OpenNLP.
    * <p>
@@ -51,10 +114,21 @@ public class ExtensionLoader {
    *
    * @return the instance of the extension class
    *
-   * @throws ExtensionNotLoadedException Thrown if the load operation failed.
+   * @throws ExtensionNotLoadedException Thrown if the load operation failed or
+   *         the class is not in an allowed package.
    */
   @SuppressWarnings("unchecked")
   public static <T> T instantiateExtension(Class<T> clazz, String extensionClassName) {
+
+    // Validate BEFORE Class.forName() — static initializers execute during forName(),
+    // so this check must precede the load to prevent gadget-chain RCE via static init.
+    boolean allowed = ALLOWED_PREFIXES.stream().anyMatch(extensionClassName::startsWith);
+    if (!allowed) {
+      throw new ExtensionNotLoadedException(
+          "Class '" + extensionClassName + "' is not in an allowed package. " +
+          "Register the package via ExtensionLoader.registerAllowedPackage() or set " +
+          "the system property " + ALLOWED_PACKAGES_PROPERTY + " at JVM startup.");
+    }
 
     // First try to load extension and instantiate extension from class path
     try {
@@ -97,5 +171,14 @@ public class ExtensionLoader {
     throw new ExtensionNotLoadedException("Unable to find implementation for " +
           clazz.getName() + ", the class or service " + extensionClassName +
           " could not be located!");
+  }
+
+  /**
+   * Resets allowed package prefixes to defaults ({@code opennlp.} plus any
+   * prefixes in {@link #ALLOWED_PACKAGES_PROPERTY}). Package-private — for tests only.
+   */
+  static void resetAllowedPackages() {
+    ALLOWED_PREFIXES.clear();
+    ALLOWED_PREFIXES.addAll(initAllowedPrefixes());
   }
 }
