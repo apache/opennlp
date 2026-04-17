@@ -20,20 +20,34 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.namefind.DictionaryNameFinder;
 
 /**
  * The {@link DictionaryFeatureGenerator} uses a {@link DictionaryNameFinder}
  * to generate features for detected names based on the {@link InSpanGenerator}.
+ * <p>
+ * <b>Thread safety:</b> in normal use the underlying {@link InSpanGenerator} is configured once at
+ * construction time and never replaced, after which {@link #createFeatures} is safe to call from
+ * many threads concurrently (it delegates to a thread-safe {@code InSpanGenerator}). The {@code isg}
+ * field is {@code volatile} to give safe publication for both that one-shot constructor write and
+ * any later {@link #setDictionary(Dictionary) setDictionary} call.
+ * <p>
+ * {@link #setDictionary(Dictionary) setDictionary} replaces the in-flight dictionary; it is intended
+ * for setup time and is <b>not</b> for hot-path use while {@link #createFeatures} is running on
+ * other threads — it does not coordinate with in-flight reads beyond the volatile publish, so a
+ * caller racing dictionary replacement against feature generation may observe either the old or the
+ * new dictionary's features for any given call.
  *
  * @see Dictionary
  * @see DictionaryNameFinder
  * @see InSpanGenerator
  */
+@ThreadSafe
 public class DictionaryFeatureGenerator implements AdaptiveFeatureGenerator {
 
-  private InSpanGenerator isg;
+  private volatile InSpanGenerator isg;
 
   /**
    * Initializes a {@link DictionaryFeatureGenerator} with the specified {@link Dictionary}.
@@ -64,7 +78,8 @@ public class DictionaryFeatureGenerator implements AdaptiveFeatureGenerator {
 
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index, String[] previousOutcomes) {
-    isg.createFeatures(features, tokens, index, previousOutcomes);
+    final InSpanGenerator current = isg;
+    current.createFeatures(features, tokens, index, previousOutcomes);
   }
 
 }
