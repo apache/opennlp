@@ -36,20 +36,31 @@ public class XmlUtil {
    * Create a new {@link DocumentBuilder} which processes XML securely.
    *
    * @return A valid {@link DocumentBuilder} instance.
-   *
    * @throws IllegalStateException Thrown if errors occurred creating the builder.
    */
   public static DocumentBuilder createDocumentBuilder() {
+    final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     try {
-      DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-      try {
-        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-      } catch (ParserConfigurationException e) {
-        /// {@link XMLConstants.FEATURE_SECURE_PROCESSING} is not supported on Android.
-        /// See {@link DocumentBuilderFactory#setFeature}
-        logger.warn("Failed to enable XMLConstants.FEATURE_SECURE_PROCESSING, it's unsupported on" +
-                " this platform.", e);
-      }
+      documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    } catch (ParserConfigurationException e) {
+      /// {@link XMLConstants.FEATURE_SECURE_PROCESSING} is not supported on Android.
+      /// See {@link DocumentBuilderFactory#setFeature}
+      logger.warn("Failed to enable XMLConstants.FEATURE_SECURE_PROCESSING, it's unsupported on" +
+          " this platform.", e);
+    }
+    try {
+      documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+      documentBuilderFactory.setFeature(
+          "http://apache.org/xml/features/disallow-doctype-decl", true);
+      documentBuilderFactory.setFeature(
+          "http://xml.org/sax/features/external-general-entities", false);
+      documentBuilderFactory.setFeature(
+          "http://xml.org/sax/features/external-parameter-entities", false);
+      documentBuilderFactory.setFeature(
+          "http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      documentBuilderFactory.setXIncludeAware(false);
+      documentBuilderFactory.setExpandEntityReferences(false);
       return documentBuilderFactory.newDocumentBuilder();
     } catch (ParserConfigurationException e) {
       throw new IllegalStateException(e);
@@ -60,14 +71,29 @@ public class XmlUtil {
    * Create a new {@link SAXParser} which processes XML securely.
    *
    * @return A valid {@link SAXParser} instance.
-   *
    * @throws IllegalStateException Thrown if errors occurred creating the parser.
    */
   public static SAXParser createSaxParser() {
-    SAXParserFactory spf = SAXParserFactory.newInstance();
+    final SAXParserFactory spf = SAXParserFactory.newInstance();
+    spf.setNamespaceAware(true);
+    spf.setXIncludeAware(false);
     try {
       spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-      return spf.newSAXParser();
+    } catch (ParserConfigurationException | SAXException e) {
+      /// {@link XMLConstants.FEATURE_SECURE_PROCESSING} is not supported on Android.
+      /// See {@link SAXParserFactory#setFeature}
+      logger.warn("Failed to enable XMLConstants.FEATURE_SECURE_PROCESSING, it's unsupported on" +
+          " this platform.", e);
+    }
+    try {
+      spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      final SAXParser parser = spf.newSAXParser();
+      parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+      return parser;
     } catch (ParserConfigurationException | SAXException e) {
       throw new IllegalStateException(e);
     }
