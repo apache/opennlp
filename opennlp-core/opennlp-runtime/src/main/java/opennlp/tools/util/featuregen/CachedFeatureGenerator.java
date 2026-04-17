@@ -31,6 +31,11 @@ import opennlp.tools.util.Cache;
  * concurrent use from multiple threads. Each thread gets its own independent cache that is
  * cleared when a new sentence (token array) is encountered.
  * <p>
+ * <b>Cache key is reference identity, not content.</b> The "is this still the same sentence?" check
+ * uses {@code tokens == state.prevTokens}; passing a freshly allocated {@code String[]} with the same
+ * contents is treated as a new sentence and triggers a cache miss + clear. Reuse the same {@code tokens}
+ * array across calls when you need the cache to hit.
+ * <p>
  * <b>Note:</b> In container environments with classloader isolation (e.g. Jakarta EE),
  * {@link ThreadLocal} state may pin the classloader. Ensure instances do not outlive
  * the application's lifecycle, or call {@link ThreadLocal#remove()} on pooled threads.

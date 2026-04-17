@@ -65,10 +65,12 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
 
   private static final class CacheState {
     private final double[] probs;
+    private final double[] tempScores;
     private final Cache<String[], double[]> cache;
 
     CacheState(int numOutcomes, int cacheSize) {
       this.probs = new double[numOutcomes];
+      this.tempScores = new double[numOutcomes];
       this.cache = cacheSize > 0 ? new Cache<>(cacheSize) : null;
     }
   }
@@ -142,7 +144,9 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
           scores = model.eval(contexts, state.probs);
         }
 
-        final double[] tempScores = new double[scores.length];
+        // tempScores is a per-thread scratch buffer of length numOutcomes; we sort a copy here so
+        // we never mutate `scores` (which may be a cached entry or alias state.probs).
+        final double[] tempScores = state.tempScores;
         System.arraycopy(scores, 0, tempScores, 0, scores.length);
 
         Arrays.sort(tempScores);
@@ -227,9 +231,20 @@ public class BeamSearch implements SequenceClassificationModel, AutoCloseable {
   }
 
   /**
-   * Clears {@link ThreadLocal} state for the current thread (same idea as {@code ThreadSafe*} ME
-   * wrappers). Call when a thread is returned to a pool or the application stops using this
-   * instance on this thread.
+   * Clears {@link ThreadLocal} state for the <b>current</b> thread only. This is intentionally not a
+   * "shut down the {@code BeamSearch} instance" operation: a single {@code BeamSearch} is typically
+   * shared across many pool threads, and each one owns an independent {@link CacheState} entry.
+   *
+   * <p>Typical usage patterns:</p>
+   * <ul>
+   *   <li><b>Worker thread returning to a pool:</b> call {@code close()} (or wrap a single decode call in
+   *       try-with-resources) on each pool thread that has touched the instance.</li>
+   *   <li><b>Application shutdown / classloader unload:</b> {@code close()} on a single thread is
+   *       <i>not</i> sufficient to release every per-thread slot — those die with their owning threads, or
+   *       must be cleared on each thread before the application classloader is released.</li>
+   * </ul>
+   *
+   * <p>Same lifecycle contract as {@code clearThreadLocalState()} on the seven ME classes.</p>
    */
   @Override
   public void close() {
