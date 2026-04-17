@@ -21,6 +21,7 @@ package opennlp.tools.util.featuregen;
 import java.util.Arrays;
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTagFormatMapper;
 import opennlp.tools.postag.POSTagger;
@@ -28,17 +29,31 @@ import opennlp.tools.postag.POSTaggerME;
 
 /**
  * Adds the token POS tag as feature. Requires a {@link POSTagger} at runtime.
+ * <p>
+ * The "is this still the same sentence?" cache (a {@code String[]} of POS tags reused across the
+ * tokens of one sentence) is held per-thread via {@link ThreadLocal}, so a single instance is safe
+ * to share across multiple threads — for example when the enclosing
+ * {@link opennlp.tools.namefind.NameFinderME} is shared. Cache identity uses
+ * {@link Arrays#equals(Object[], Object[])} (content equality), preserving the original
+ * single-threaded semantics.
  *
  * @see AdaptiveFeatureGenerator
  * @see POSTagger
  * @see POSModel
  */
+@ThreadSafe
 public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
   private final POSTagger posTagger;
 
-  private String[] cachedTokens;
-  private String[] cachedTags;
+  private static final class CacheState {
+    private String[] cachedTokens;
+    private String[] cachedTags;
+  }
+
+  /** Per-thread sentence cache; the previous {@code String[] cachedTokens / cachedTags} fields raced
+   *  under concurrent {@code find()} calls when the enclosing {@code NameFinderME} was shared. */
+  private final ThreadLocal<CacheState> threadState = ThreadLocal.withInitial(CacheState::new);
 
   /**
    * Initializes a {@link POSTaggerNameFeatureGenerator} with the specified {@link POSTagger}.
@@ -60,13 +75,13 @@ public class POSTaggerNameFeatureGenerator implements AdaptiveFeatureGenerator {
 
   @Override
   public void createFeatures(List<String> feats, String[] toks, int index, String[] preds) {
-    if (!Arrays.equals(this.cachedTokens, toks)) {
-      this.cachedTokens = toks;
-      this.cachedTags = this.posTagger.tag(toks);
+    CacheState state = threadState.get();
+    if (!Arrays.equals(state.cachedTokens, toks)) {
+      state.cachedTokens = toks;
+      state.cachedTags = posTagger.tag(toks);
     }
 
-    feats.add("pos=" + this.cachedTags[index]);
+    feats.add("pos=" + state.cachedTags[index]);
   }
-
 
 }
