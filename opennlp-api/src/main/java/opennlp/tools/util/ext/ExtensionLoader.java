@@ -50,8 +50,13 @@ import opennlp.tools.commons.Internal;
 public class ExtensionLoader {
 
   /**
-   * System property name for supplying additional allowed package prefixes.
+   * System property for supplying additional allowed package prefixes.
    * Value is a comma-separated list, e.g. {@code com.acme.nlp.,com.other.}.
+   * <p>
+   * This property is read once at class-load time. If it cannot be set via
+   * {@code -D} at JVM startup (e.g. in embedded or test scenarios), call
+   * {@link #registerAllowedPackage(String)} before loading any model that
+   * uses a custom factory or serializer.
    */
   public static final String ALLOWED_PACKAGES_PROPERTY = "OPENNLP_EXT_ALLOWED_PACKAGES";
 
