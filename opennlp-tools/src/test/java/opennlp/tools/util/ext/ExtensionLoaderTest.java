@@ -78,6 +78,24 @@ public class ExtensionLoaderTest {
   }
 
   /**
+   * Allowlist check runs before Class.forName() — even for non-existent classes
+   * the error must be "not in an allowed package", never "could not be located".
+   */
+  @Test
+  void testAllowlistGateRunsBeforeClassForName() {
+    ExtensionNotLoadedException ex = Assertions.assertThrows(
+        ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.instantiateExtension(
+            TestStringGenerator.class,
+            "com.example.DoesNotExistOnClasspath$$Probe"));
+
+    Assertions.assertTrue(ex.getMessage().contains("not in an allowed package"),
+        "allowlist must reject before Class.forName(); got: " + ex.getMessage());
+    Assertions.assertFalse(ex.getMessage().contains("could not be located"),
+        "Class.forName() must not have been reached; got: " + ex.getMessage());
+  }
+
+  /**
    * After registerAllowedPackage(), a class from that package is permitted.
    */
   @Test
