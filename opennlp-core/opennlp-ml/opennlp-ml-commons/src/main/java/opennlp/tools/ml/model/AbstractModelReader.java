@@ -32,10 +32,30 @@ import opennlp.tools.util.InvalidFormatException;
 public abstract class AbstractModelReader {
 
   /**
+   * System property for overriding the maximum number of entries (outcomes, predicates,
+   * outcome patterns, chunk counts) that may be read from a model file or training data.
+   * Set at JVM startup, e.g. {@code -DOPENNLP_MAX_ENTRIES=5000000}.
+   * Falls back to {@code 10_000_000} if absent or invalid.
+   */
+  public static final String MAX_ENTRIES_PROPERTY = "OPENNLP_MAX_ENTRIES";
+
+  /**
    * Upper bound on count fields read from a model file.
    * Prevents OOM on crafted inputs with oversized array size declarations.
+   * Configurable via the {@link #MAX_ENTRIES_PROPERTY} system property.
    */
-  private static final int MAX_ENTRIES = 10_000_000;
+  static final int MAX_ENTRIES = initMaxEntries();
+
+  private static int initMaxEntries() {
+    String prop = System.getProperty(MAX_ENTRIES_PROPERTY, "").trim();
+    if (!prop.isEmpty()) {
+      try {
+        int val = Integer.parseInt(prop);
+        if (val > 0) return val;
+      } catch (NumberFormatException ignored) { }
+    }
+    return 10_000_000;
+  }
 
   /**
    * The number of predicates contained in a model.
