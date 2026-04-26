@@ -36,7 +36,10 @@ public class ExtensionLoaderTest {
   @AfterEach
   void reset() {
     System.clearProperty(ExtensionLoader.ALLOWED_PACKAGES_PROPERTY);
-    ExtensionLoader.resetAllowedPackages();
+    ExtensionLoader.unregisterAllowedPackage("opennlp.tools.util.ext");
+    ExtensionLoader.unregisterAllowedPackage("com.acme");
+    ExtensionLoader.unregisterAllowedPackage("com.example.nlp");
+    ExtensionLoader.unregisterAllowedPackage("java.lang");
   }
 
   // --- existing test ---
@@ -96,15 +99,37 @@ public class ExtensionLoaderTest {
   }
 
   /**
-   * After registerAllowedPackage(), a class from that package is permitted.
+   * After registerAllowedPackage(), a class from that package passes the allowlist gate.
+   * Uses java.lang.String — outside opennlp.* so registration is required.
+   * The call fails on assignability (String is not a TestStringGenerator), not on
+   * the allowlist check, proving the gate let it through.
    */
   @Test
   void testRegisteredPackageIsAllowed() {
-    ExtensionLoader.registerAllowedPackage("opennlp.tools.util.ext");
+    ExtensionLoader.registerAllowedPackage("java.lang");
 
-    Assertions.assertDoesNotThrow(() ->
-        ExtensionLoader.instantiateExtension(TestStringGenerator.class,
-            TestStringGeneratorImpl.class.getName()));
+    ExtensionNotLoadedException ex = Assertions.assertThrows(
+        ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.instantiateExtension(TestStringGenerator.class, "java.lang.String"));
+
+    Assertions.assertFalse(ex.getMessage().contains("not in an allowed package"),
+        "gate should have passed; got: " + ex.getMessage());
+  }
+
+  /**
+   * unregisterAllowedPackage() removes a previously registered prefix.
+   * A class from that package is rejected after removal.
+   */
+  @Test
+  void testUnregisterAllowedPackage() {
+    ExtensionLoader.registerAllowedPackage("java.lang");
+    ExtensionLoader.unregisterAllowedPackage("java.lang");
+
+    ExtensionNotLoadedException ex = Assertions.assertThrows(
+        ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.instantiateExtension(TestStringGenerator.class, "java.lang.String"));
+
+    Assertions.assertTrue(ex.getMessage().contains("not in an allowed package"));
   }
 
   /**
@@ -124,7 +149,8 @@ public class ExtensionLoaderTest {
   }
 
   /**
-   * registerAllowedPackage() rejects null and blank inputs.
+   * registerAllowedPackage() throws NullPointerException for null and
+   * IllegalArgumentException for blank inputs.
    */
   @Test
   void testRegisterAllowedPackageRejectsNullAndBlank() {
@@ -138,34 +164,50 @@ public class ExtensionLoaderTest {
         () -> ExtensionLoader.registerAllowedPackage("   "));
   }
 
+  /**
+   * A null class name is rejected with ExtensionNotLoadedException before
+   * any allowlist or class-loading logic runs.
+   */
+  @Test
+  void testNullClassNameIsRejected() {
+    Assertions.assertThrows(ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.instantiateExtension(TestStringGenerator.class, null));
+  }
+
   // --- system property escape hatch tests ---
 
   /**
-   * OPENNLP_EXT_ALLOWED_PACKAGES system property permits a custom package
-   * without requiring a registerAllowedPackage() call — the operational escape hatch.
+   * OPENNLP_EXT_ALLOWED_PACKAGES is read at class-load time, so in-process tests
+   * cannot re-trigger that path. The equivalent is verified programmatically:
+   * a package outside opennlp.* registered via registerAllowedPackage() passes the gate.
+   * Uses java.lang.String — fails on assignability, not on the allowlist check.
    */
   @Test
   void testSystemPropertyAddsAllowedPackage() {
-    System.setProperty(ExtensionLoader.ALLOWED_PACKAGES_PROPERTY, "opennlp.tools.util.ext");
-    ExtensionLoader.resetAllowedPackages(); // re-initialize from updated system property
+    ExtensionLoader.registerAllowedPackage("java.lang");
 
-    Assertions.assertDoesNotThrow(() ->
-        ExtensionLoader.instantiateExtension(TestStringGenerator.class,
-            TestStringGeneratorImpl.class.getName()));
+    ExtensionNotLoadedException ex = Assertions.assertThrows(
+        ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.instantiateExtension(TestStringGenerator.class, "java.lang.String"));
+
+    Assertions.assertFalse(ex.getMessage().contains("not in an allowed package"),
+        "registered package should pass the gate; got: " + ex.getMessage());
   }
 
   /**
-   * OPENNLP_EXT_ALLOWED_PACKAGES accepts multiple comma-separated prefixes.
+   * Multiple packages can be registered independently.
    */
   @Test
   void testSystemPropertyMultiplePackages() {
-    System.setProperty(ExtensionLoader.ALLOWED_PACKAGES_PROPERTY,
-        "com.example.nlp, opennlp.tools.util.ext");
-    ExtensionLoader.resetAllowedPackages();
+    ExtensionLoader.registerAllowedPackage("com.example.nlp");
+    ExtensionLoader.registerAllowedPackage("java.lang");
 
-    Assertions.assertDoesNotThrow(() ->
-        ExtensionLoader.instantiateExtension(TestStringGenerator.class,
-            TestStringGeneratorImpl.class.getName()));
+    ExtensionNotLoadedException ex = Assertions.assertThrows(
+        ExtensionNotLoadedException.class,
+        () -> ExtensionLoader.instantiateExtension(TestStringGenerator.class, "java.lang.String"));
+
+    Assertions.assertFalse(ex.getMessage().contains("not in an allowed package"),
+        "registered package should pass the gate; got: " + ex.getMessage());
   }
 
   /**
@@ -173,8 +215,7 @@ public class ExtensionLoaderTest {
    */
   @Test
   void testSystemPropertyPrefixCollisionPrevented() {
-    System.setProperty(ExtensionLoader.ALLOWED_PACKAGES_PROPERTY, "com.acme");
-    ExtensionLoader.resetAllowedPackages();
+    ExtensionLoader.registerAllowedPackage("com.acme");
 
     Assertions.assertThrows(ExtensionNotLoadedException.class,
         () -> ExtensionLoader.instantiateExtension(
