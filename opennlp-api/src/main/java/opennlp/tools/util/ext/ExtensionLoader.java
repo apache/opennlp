@@ -68,8 +68,8 @@ public class ExtensionLoader {
 
   private static Set<String> initAllowedPrefixes() {
     Set<String> prefixes = new CopyOnWriteArraySet<>(Collections.singleton("opennlp."));
-    String prop = System.getProperty(ALLOWED_PACKAGES_PROPERTY);
-    if (prop != null && !prop.isBlank()) {
+    String prop = System.getProperty(ALLOWED_PACKAGES_PROPERTY, "");
+    if (!prop.isBlank()) {
       Arrays.stream(prop.split(","))
           .map(String::trim)
           .filter(s -> !s.isBlank())
@@ -92,7 +92,8 @@ public class ExtensionLoader {
    *
    * @param packagePrefix The package prefix to allow, e.g. {@code "com.example.nlp"}.
    *                      Must not be {@code null} or blank.
-   * @throws IllegalArgumentException if {@code packagePrefix} is null or blank.
+   * @throws NullPointerException if {@code packagePrefix} is {@code null}.
+   * @throws IllegalArgumentException if {@code packagePrefix} is blank.
    */
   public static void registerAllowedPackage(String packagePrefix) {
     Objects.requireNonNull(packagePrefix, "packagePrefix must not be null");
@@ -101,6 +102,24 @@ public class ExtensionLoader {
     }
     String normalized = packagePrefix.endsWith(".") ? packagePrefix : packagePrefix + ".";
     ALLOWED_PREFIXES.add(normalized);
+  }
+
+  /**
+   * Removes a previously registered package prefix. Has no effect if the prefix
+   * was not registered. The default {@code opennlp.} prefix can also be removed,
+   * though this is not recommended.
+   * <p>
+   * The prefix is normalized to end with {@code '.'} before removal, matching the
+   * normalization applied in {@link #registerAllowedPackage(String)}.
+   *
+   * @param packagePrefix The package prefix to remove, e.g. {@code "com.example.nlp"}.
+   *                      Must not be {@code null}.
+   * @throws NullPointerException if {@code packagePrefix} is {@code null}.
+   */
+  public static void unregisterAllowedPackage(String packagePrefix) {
+    Objects.requireNonNull(packagePrefix, "packagePrefix must not be null");
+    String normalized = packagePrefix.endsWith(".") ? packagePrefix : packagePrefix + ".";
+    ALLOWED_PREFIXES.remove(normalized);
   }
 
   /**
@@ -125,8 +144,12 @@ public class ExtensionLoader {
   @SuppressWarnings("unchecked")
   public static <T> T instantiateExtension(Class<T> clazz, String extensionClassName) {
 
-    // Validate BEFORE Class.forName() — static initializers execute during forName(),
-    // so this check must precede the load to prevent gadget-chain RCE via static init.
+    if (extensionClassName == null) {
+      throw new ExtensionNotLoadedException("extensionClassName must not be null");
+    }
+
+    // Validate BEFORE Class.forName() — Class.forName() executes static initializers
+    // (CWE-470), which must not run for untrusted class names.
     boolean allowed = ALLOWED_PREFIXES.stream().anyMatch(extensionClassName::startsWith);
     if (!allowed) {
       throw new ExtensionNotLoadedException(
@@ -176,14 +199,5 @@ public class ExtensionLoader {
     throw new ExtensionNotLoadedException("Unable to find implementation for " +
           clazz.getName() + ", the class or service " + extensionClassName +
           " could not be located!");
-  }
-
-  /**
-   * Resets allowed package prefixes to defaults ({@code opennlp.} plus any
-   * prefixes in {@link #ALLOWED_PACKAGES_PROPERTY}). Package-private — for tests only.
-   */
-  static void resetAllowedPackages() {
-    ALLOWED_PREFIXES.clear();
-    ALLOWED_PREFIXES.addAll(initAllowedPrefixes());
   }
 }
