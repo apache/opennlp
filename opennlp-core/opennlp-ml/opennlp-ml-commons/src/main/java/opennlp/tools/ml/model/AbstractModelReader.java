@@ -24,10 +24,18 @@ import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 
+import opennlp.tools.util.InvalidFormatException;
+
 /**
  * An abstract, basic implementation of a model reader.
  */
 public abstract class AbstractModelReader {
+
+  /**
+   * Upper bound on count fields read from a model file.
+   * Prevents OOM on crafted inputs with oversized array size declarations.
+   */
+  private static final int MAX_ENTRIES = 10_000_000;
 
   /**
    * The number of predicates contained in a model.
@@ -131,6 +139,10 @@ public abstract class AbstractModelReader {
    */
   protected String[] getOutcomes() throws IOException {
     int numOutcomes = readInt();
+    if (numOutcomes < 0 || numOutcomes > MAX_ENTRIES) {
+      throw new InvalidFormatException(
+          "Outcome count " + numOutcomes + " exceeds safe limit of " + MAX_ENTRIES);
+    }
     String[] outcomeLabels = new String[numOutcomes];
     for (int i = 0; i < numOutcomes; i++) outcomeLabels[i] = readUTF();
     return outcomeLabels;
@@ -142,6 +154,10 @@ public abstract class AbstractModelReader {
    */
   protected int[][] getOutcomePatterns() throws IOException {
     int numOCTypes = readInt();
+    if (numOCTypes < 0 || numOCTypes > MAX_ENTRIES) {
+      throw new InvalidFormatException(
+          "Outcome pattern count " + numOCTypes + " exceeds safe limit of " + MAX_ENTRIES);
+    }
     int[][] outcomePatterns = new int[numOCTypes][];
     for (int i = 0; i < numOCTypes; i++) {
       StringTokenizer tok = new StringTokenizer(readUTF(), " ");
@@ -160,6 +176,10 @@ public abstract class AbstractModelReader {
    */
   protected String[] getPredicates() throws IOException {
     NUM_PREDS = readInt();
+    if (NUM_PREDS < 0 || NUM_PREDS > MAX_ENTRIES) {
+      throw new InvalidFormatException(
+          "Predicate count " + NUM_PREDS + " exceeds safe limit of " + MAX_ENTRIES);
+    }
     String[] predLabels = new String[NUM_PREDS];
     for (int i = 0; i < NUM_PREDS; i++)
         predLabels[i] = readUTF();
