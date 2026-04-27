@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 
-import opennlp.tools.util.InvalidFormatException;
 
 /**
  * An abstract, basic implementation of a model reader.
@@ -156,11 +155,12 @@ public abstract class AbstractModelReader {
   /**
    * @return Reads and retrieves the {@code outcome labels} from the model.
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if the outcome count is negative or exceeds {@link #MAX_ENTRIES}.
    */
   protected String[] getOutcomes() throws IOException {
     int numOutcomes = readInt();
     if (numOutcomes < 0 || numOutcomes > MAX_ENTRIES) {
-      throw new InvalidFormatException(
+      throw new IllegalArgumentException(
           "Outcome count " + numOutcomes + " exceeds safe limit of " + MAX_ENTRIES);
     }
     String[] outcomeLabels = new String[numOutcomes];
@@ -171,11 +171,12 @@ public abstract class AbstractModelReader {
   /**
    * @return Reads and retrieves the {@code outcome patterns} from the model.
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if the outcome pattern count is negative or exceeds {@link #MAX_ENTRIES}.
    */
   protected int[][] getOutcomePatterns() throws IOException {
     int numOCTypes = readInt();
     if (numOCTypes < 0 || numOCTypes > MAX_ENTRIES) {
-      throw new InvalidFormatException(
+      throw new IllegalArgumentException(
           "Outcome pattern count " + numOCTypes + " exceeds safe limit of " + MAX_ENTRIES);
     }
     int[][] outcomePatterns = new int[numOCTypes][];
@@ -193,11 +194,12 @@ public abstract class AbstractModelReader {
   /**
    * @return Reads and retrieves the {@code predicates} from the model.
    * @throws IOException Thrown if IO errors occurred.
+   * @throws IllegalArgumentException Thrown if the predicate count is negative or exceeds {@link #MAX_ENTRIES}.
    */
   protected String[] getPredicates() throws IOException {
     NUM_PREDS = readInt();
     if (NUM_PREDS < 0 || NUM_PREDS > MAX_ENTRIES) {
-      throw new InvalidFormatException(
+      throw new IllegalArgumentException(
           "Predicate count " + NUM_PREDS + " exceeds safe limit of " + MAX_ENTRIES);
     }
     String[] predLabels = new String[NUM_PREDS];
