@@ -25,11 +25,13 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.util.InvalidFormatException;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * Verifies that crafted model files with oversized count fields are rejected before array
+ * allocation occurs, preventing OOM DoS. See OPENNLP-1821.
+ */
 class AbstractModelReaderOomTest {
 
   /**
@@ -58,32 +60,32 @@ class AbstractModelReaderOomTest {
 
   @Test
   void testGetOutcomes_RejectsMaxValue() throws IOException {
-    assertThrows(InvalidFormatException.class, readerFor(Integer.MAX_VALUE)::outcomes);
+    assertThrows(IllegalArgumentException.class, readerFor(Integer.MAX_VALUE)::outcomes);
   }
 
   @Test
   void testGetOutcomePatterns_RejectsMaxValue() throws IOException {
-    assertThrows(InvalidFormatException.class, readerFor(Integer.MAX_VALUE)::outcomePatterns);
+    assertThrows(IllegalArgumentException.class, readerFor(Integer.MAX_VALUE)::outcomePatterns);
   }
 
   @Test
   void testGetPredicates_RejectsMaxValue() throws IOException {
-    assertThrows(InvalidFormatException.class, readerFor(Integer.MAX_VALUE)::predicates);
+    assertThrows(IllegalArgumentException.class, readerFor(Integer.MAX_VALUE)::predicates);
   }
 
   @Test
   void testGetOutcomes_RejectsNegativeCount() throws IOException {
-    assertThrows(InvalidFormatException.class, readerFor(-1)::outcomes);
+    assertThrows(IllegalArgumentException.class, readerFor(-1)::outcomes);
   }
 
   @Test
   void testGetOutcomePatterns_RejectsNegativeCount() throws IOException {
-    assertThrows(InvalidFormatException.class, readerFor(-1)::outcomePatterns);
+    assertThrows(IllegalArgumentException.class, readerFor(-1)::outcomePatterns);
   }
 
   @Test
   void testGetPredicates_RejectsNegativeCount() throws IOException {
-    assertThrows(InvalidFormatException.class, readerFor(-1)::predicates);
+    assertThrows(IllegalArgumentException.class, readerFor(-1)::predicates);
   }
 
   @Test
