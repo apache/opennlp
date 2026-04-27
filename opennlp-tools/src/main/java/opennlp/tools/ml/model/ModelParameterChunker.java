@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * A helper class that handles Strings with more than 64k (65535 bytes) in length.
  * This is achieved via the signature {@link #SIGNATURE_CHUNKED_PARAMS} at the beginning of
