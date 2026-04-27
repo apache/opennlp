@@ -21,21 +21,37 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<chapter xml:id="tools.extension">
+<chapter xml:id="tools.extension" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Extending OpenNLP</title>
 <para>
-In OpenNLP extension can be used to add new functionality and to
-heavily customize an existing component. Most components define
-a factory class which can be implemented to customize the creation
-of it. And some components allow to add new feature generators.
+OpenNLP extensions allow customization of existing components. Most components define a factory
+class that can be implemented to control their creation. The implementation class must implement
+the required interface and have a public no-argument constructor.
 </para>
 
-<section xml:id="tools.extension.writing">
-	<title>Writing an extension</title>
-	<para>
-	In many places it is possible to pass in an extension class name to customize
-	some aspect of OpenNLP. The implementation class needs to implement the specified
-	interface and should have a public no-argument constructor.
-	</para>
+<section xml:id="tools.extension.allowlist">
+    <title>Extension Class Allowlist</title>
+    <para>
+    Extension classes are loaded by <code>ExtensionLoader</code> via reflection. Only classes
+    whose fully-qualified name starts with a registered package prefix are permitted.
+    The default prefix is <code>opennlp.</code>, covering all built-in factories and serializers.
+    </para>
+    <para>
+    To use a custom class outside <code>opennlp.</code>, register its package before loading
+    any model that references it:
+    </para>
+    <programlisting language="java">
+<![CDATA[ExtensionLoader.registerAllowedPackage("com.example.nlp");]]>
+    </programlisting>
+    <para>
+    Alternatively, set the system property at JVM startup:
+    </para>
+    <screen>
+<![CDATA[-DOPENNLP_EXT_ALLOWED_PACKAGES=com.example.nlp.,com.other.factories.]]>
+    </screen>
+    <para>
+    A registered prefix can be removed with <code>ExtensionLoader.unregisterAllowedPackage(String)</code>.
+    </para>
 </section>
+
 </chapter>
