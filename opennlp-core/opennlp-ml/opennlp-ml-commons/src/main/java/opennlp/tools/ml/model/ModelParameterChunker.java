@@ -29,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import opennlp.tools.util.InvalidFormatException;
 
 /**
  * A helper class that handles Strings with more than 64k (65535 bytes) in length.
@@ -89,10 +88,6 @@ public final class ModelParameterChunker {
     if (data.startsWith(SIGNATURE_CHUNKED_PARAMS)) {
       String chunkElements = data.replace(SIGNATURE_CHUNKED_PARAMS, "");
       int chunkSize = Integer.parseInt(chunkElements);
-      if (chunkSize <= 0 || chunkSize > AbstractModelReader.MAX_ENTRIES) {
-        throw new InvalidFormatException(
-            "Chunk count " + chunkSize + " exceeds safe limit of " + AbstractModelReader.MAX_ENTRIES);
-      }
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < chunkSize; i++) {
         sb.append(dis.readUTF());
