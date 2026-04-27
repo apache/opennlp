@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 
-
 /**
  * An abstract, basic implementation of a model reader.
  */
@@ -51,7 +50,7 @@ public abstract class AbstractModelReader {
       try {
         int val = Integer.parseInt(prop);
         if (val > 0) return val;
-      } catch (NumberFormatException ignored) { }
+      } catch (NumberFormatException ignore) { }
     }
     return 10_000_000;
   }
@@ -155,7 +154,8 @@ public abstract class AbstractModelReader {
   /**
    * @return Reads and retrieves the {@code outcome labels} from the model.
    * @throws IOException Thrown if IO errors occurred.
-   * @throws IllegalArgumentException Thrown if the outcome count is negative or exceeds {@link #MAX_ENTRIES}.
+   * @throws IllegalArgumentException Thrown if the outcome count is negative or
+   *     exceeds {@link #MAX_ENTRIES}.
    */
   protected String[] getOutcomes() throws IOException {
     int numOutcomes = readInt();
@@ -171,7 +171,8 @@ public abstract class AbstractModelReader {
   /**
    * @return Reads and retrieves the {@code outcome patterns} from the model.
    * @throws IOException Thrown if IO errors occurred.
-   * @throws IllegalArgumentException Thrown if the outcome pattern count is negative or exceeds {@link #MAX_ENTRIES}.
+   * @throws IllegalArgumentException Thrown if the outcome pattern count is negative or
+   *     exceeds {@link #MAX_ENTRIES}.
    */
   protected int[][] getOutcomePatterns() throws IOException {
     int numOCTypes = readInt();
@@ -194,7 +195,8 @@ public abstract class AbstractModelReader {
   /**
    * @return Reads and retrieves the {@code predicates} from the model.
    * @throws IOException Thrown if IO errors occurred.
-   * @throws IllegalArgumentException Thrown if the predicate count is negative or exceeds {@link #MAX_ENTRIES}.
+   * @throws IllegalArgumentException Thrown if the predicate count is negative or
+   *     exceeds {@link #MAX_ENTRIES}.
    */
   protected String[] getPredicates() throws IOException {
     NUM_PREDS = readInt();
