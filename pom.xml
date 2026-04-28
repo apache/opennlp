@@ -272,6 +272,7 @@
 						<goals>deploy</goals>
 						<arguments>-Papache-release -Peval-tests -DskipTests</arguments>
 						<mavenExecutorId>forked-path</mavenExecutorId>
+						<preparationProfiles>eval-tests</preparationProfiles>
 					</configuration>
 				</plugin>
 
