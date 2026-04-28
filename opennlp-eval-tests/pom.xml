@@ -33,6 +33,11 @@
   <packaging>jar</packaging>
   <name>Apache OpenNLP :: Eval Tests</name>
 
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <maven.install.skip>true</maven.install.skip>
+  </properties>
+
   <dependencies>
     <!-- Internal dependencies -->
     <dependency>
