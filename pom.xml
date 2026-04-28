@@ -270,9 +270,8 @@
 					<configuration>
 						<useReleaseProfile>false</useReleaseProfile>
 						<goals>deploy</goals>
-						<arguments>-Papache-release -Peval-tests -DskipTests</arguments>
+						<arguments>-Papache-release -DskipTests</arguments>
 						<mavenExecutorId>forked-path</mavenExecutorId>
-						<preparationProfiles>eval-tests</preparationProfiles>
 					</configuration>
 				</plugin>
 
@@ -687,23 +686,6 @@
 				<opennlp.model.v15.base.url>https://nightlies.apache.org/opennlp/models-1.5/</opennlp.model.v15.base.url>
 			</properties>
 		</profile>
-
-		<profile>
-			<id>eval-tests</id>
-			<properties>
-				<opennlp.forkCount>0.5C</opennlp.forkCount>
-			</properties>
-			<modules>
-				<module>opennlp-eval-tests</module>
-			</modules>
-		</profile>
-
-		<profile>
-			<id>high-memory-tests</id>
-			<modules>
-				<module>opennlp-eval-tests</module>
-			</modules>
-		</profile>
 	</profiles>
 
 	<modules>
@@ -713,6 +695,7 @@
 		<module>opennlp-docs</module>
 		<module>opennlp-extensions</module>
 		<module>opennlp-tools</module>
+		<module>opennlp-eval-tests</module>
 	</modules>
 
 </project>
