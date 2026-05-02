@@ -247,6 +247,14 @@ class SvmDoccatModelTest {
         SvmDoccatModel.deserialize(new ByteArrayInputStream(empty), null));
   }
 
+  @Test
+  void testDeserializeRejectsNullStream() {
+    assertThrows(NullPointerException.class, () ->
+        SvmDoccatModel.deserialize(null));
+    assertThrows(NullPointerException.class, () ->
+        SvmDoccatModel.deserialize(null, SvmDoccatModel.DeserializationLimits.DEFAULT));
+  }
+
   private static byte[] serialize(Object obj) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
