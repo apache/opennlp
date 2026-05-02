@@ -243,16 +243,22 @@ class SvmDoccatModelTest {
   @Test
   void testDeserializeRejectsNullLimits() {
     byte[] empty = {};
-    assertThrows(NullPointerException.class, () ->
+    assertThrows(IllegalArgumentException.class, () ->
         SvmDoccatModel.deserialize(new ByteArrayInputStream(empty), null));
   }
 
   @Test
   void testDeserializeRejectsNullStream() {
-    assertThrows(NullPointerException.class, () ->
+    assertThrows(IllegalArgumentException.class, () ->
         SvmDoccatModel.deserialize(null));
-    assertThrows(NullPointerException.class, () ->
+    assertThrows(IllegalArgumentException.class, () ->
         SvmDoccatModel.deserialize(null, SvmDoccatModel.DeserializationLimits.DEFAULT));
+  }
+
+  @Test
+  void testSerializeRejectsNullStream() throws IOException {
+    SvmDoccatModel model = trainSimpleModel();
+    assertThrows(IllegalArgumentException.class, () -> model.serialize(null));
   }
 
   private static byte[] serialize(Object obj) throws IOException {

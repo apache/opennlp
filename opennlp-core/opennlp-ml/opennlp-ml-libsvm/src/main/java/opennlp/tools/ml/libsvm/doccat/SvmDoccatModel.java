@@ -193,8 +193,12 @@ public class SvmDoccatModel implements Serializable {
    *
    * @param out The {@link OutputStream} to write to. Must not be {@code null}.
    * @throws IOException Thrown if IO errors occurred during serialization.
+   * @throws IllegalArgumentException if {@code out} is {@code null}.
    */
   public void serialize(OutputStream out) throws IOException {
+    if (out == null) {
+      throw new IllegalArgumentException("out must not be null");
+    }
     try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
       oos.writeObject(this);
     }
@@ -226,6 +230,7 @@ public class SvmDoccatModel implements Serializable {
    *                     the stream contains a class outside the allow-list or
    *                     exceeds a resource limit.
    * @throws ClassNotFoundException Thrown if required classes are not found.
+   * @throws IllegalArgumentException if {@code in} is {@code null}.
    */
   public static SvmDoccatModel deserialize(InputStream in) throws IOException, ClassNotFoundException {
     return deserialize(in, DeserializationLimits.DEFAULT);
@@ -250,11 +255,17 @@ public class SvmDoccatModel implements Serializable {
    *                     the stream contains a class outside the allow-list or
    *                     exceeds one of the supplied limits.
    * @throws ClassNotFoundException Thrown if required classes are not found.
-   * @throws NullPointerException if {@code limits} is {@code null}.
+   * @throws IllegalArgumentException if {@code in} or {@code limits} is
+   *                                  {@code null}.
    */
   public static SvmDoccatModel deserialize(InputStream in, DeserializationLimits limits)
       throws IOException, ClassNotFoundException {
-    Objects.requireNonNull(limits, "limits must not be null");
+    if (in == null) {
+      throw new IllegalArgumentException("in must not be null");
+    }
+    if (limits == null) {
+      throw new IllegalArgumentException("limits must not be null");
+    }
     try (ObjectInputStream ois = new ObjectInputStream(in)) {
       ois.setObjectInputFilter(buildFilter(limits));
       return (SvmDoccatModel) ois.readObject();
@@ -329,7 +340,12 @@ public class SvmDoccatModel implements Serializable {
       "libsvm.svm_model",
       "libsvm.svm_node",
       "libsvm.svm_parameter",
-      // JDK types used in field declarations
+      // JDK types used in field declarations. Note: ObjectInputStream
+      // invokes the filter for every class descriptor in the inheritance
+      // chain, not only for the runtime class — so the abstract superclasses
+      // java.lang.Number (super of Integer/Double) and java.lang.Enum (super
+      // of every concrete enum value in the graph) must be allow-listed even
+      // though no instance of either appears in the stream.
       "java.lang.String",
       "java.lang.Number",
       "java.lang.Integer",
