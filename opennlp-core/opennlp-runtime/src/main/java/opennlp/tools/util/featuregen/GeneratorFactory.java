@@ -19,8 +19,6 @@ package opennlp.tools.util.featuregen;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -41,6 +39,7 @@ import org.xml.sax.SAXException;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.XmlUtil;
+import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.model.ArtifactSerializer;
 
 /**
@@ -137,18 +136,13 @@ public class GeneratorFactory {
       throw new InvalidFormatException("generator must have class attribute");
     } else {
       try {
-        final Class<?> factoryClass = Class.forName(className);
-        try {
-          final Constructor<?> constructor = factoryClass.getConstructor();
-          final AbstractXmlFeatureGeneratorFactory factory =
-              (AbstractXmlFeatureGeneratorFactory) constructor.newInstance();
-          factory.init(generatorElement, resourceManager);
-          return factory.create();
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                 InvalidFormatException | IllegalAccessException e) {
-          throw new RuntimeException(e);
-        }
-      } catch (ClassNotFoundException e) {
+        final AbstractXmlFeatureGeneratorFactory factory =
+            ExtensionLoader.instantiateExtension(AbstractXmlFeatureGeneratorFactory.class, className);
+        factory.init(generatorElement, resourceManager);
+        return factory.create();
+      } catch (InvalidFormatException e) {
+        throw e;
+      } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
@@ -257,22 +251,15 @@ public class GeneratorFactory {
     final String className = element.getAttribute("class");
     if (!className.isBlank()) {
       try {
-        final Class<?> factoryClass = Class.forName(className);
-        try {
-          final Constructor<?> constructor = factoryClass.getConstructor();
-          final AbstractXmlFeatureGeneratorFactory factory =
-              (AbstractXmlFeatureGeneratorFactory) constructor.newInstance();
-          factory.init(element, null);
-          final Map<String, ArtifactSerializer<?>> map = factory.getArtifactSerializerMapping();
-          if (map != null) {
-            mapping.putAll(map);
-          }
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
-                 | IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvalidFormatException ignored) {
+        final AbstractXmlFeatureGeneratorFactory factory =
+            ExtensionLoader.instantiateExtension(AbstractXmlFeatureGeneratorFactory.class, className);
+        factory.init(element, null);
+        final Map<String, ArtifactSerializer<?>> map = factory.getArtifactSerializerMapping();
+        if (map != null) {
+          mapping.putAll(map);
         }
-      } catch (ClassNotFoundException e) {
+      } catch (InvalidFormatException ignored) {
+      } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
