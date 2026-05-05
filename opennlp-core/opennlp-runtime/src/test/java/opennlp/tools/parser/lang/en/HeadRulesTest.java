@@ -23,12 +23,44 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class HeadRulesTest {
+
+  /**
+   * Positive: a well-formed head rules line with a small tag count loads without error.
+   */
+  @Test
+  void testValidTagCountLoads() throws IOException {
+    // "5 NP 1 NN NNS" — num=5, tags=3 (5-2=3)
+    String rules = "5 NP 1 NN NNS NNP\n";
+    Assertions.assertDoesNotThrow(() -> new HeadRules(new StringReader(rules)));
+  }
+
+  /**
+   * Negative: a head rules line with a huge tag count must throw IOException,
+   * not attempt to allocate Integer.MAX_VALUE bytes.
+   */
+  @Test
+  void testOversizedTagCountThrows() {
+    String rules = "2147483647 NP 1\n";
+    Assertions.assertThrows(IOException.class,
+        () -> new HeadRules(new StringReader(rules)));
+  }
+
+  /**
+   * Negative: a tag count that would produce a negative array size must throw IOException.
+   */
+  @Test
+  void testNegativeTagCountThrows() {
+    String rules = "1 NP 1\n";  // 1 - 2 = -1
+    Assertions.assertThrows(IOException.class,
+        () -> new HeadRules(new StringReader(rules)));
+  }
 
   @Test
   void testSerialization() throws IOException {
