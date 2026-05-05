@@ -196,7 +196,11 @@ public class HeadRules implements opennlp.tools.parser.HeadRules, GapLabeler, Se
       String num = st.nextToken();
       String type = st.nextToken();
       String dir = st.nextToken();
-      String[] tags = new String[Integer.parseInt(num) - 2];
+      int numTags = Integer.parseInt(num) - 2;
+      if (numTags < 0 || numTags > 1_000) {
+        throw new IOException("Invalid tag count in head rules: " + num);
+      }
+      String[] tags = new String[numTags];
       int ti = 0;
       while (st.hasMoreTokens()) {
         tags[ti] = st.nextToken();
