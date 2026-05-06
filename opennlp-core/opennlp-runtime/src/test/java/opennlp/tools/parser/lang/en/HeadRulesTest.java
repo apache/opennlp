@@ -62,6 +62,27 @@ public class HeadRulesTest {
         () -> new HeadRules(new StringReader(rules)));
   }
 
+  /**
+   * Boundary: value just above MAX_TAGS_PER_RULE (1003 → numTags = 1001) must throw IOException.
+   */
+  @Test
+  void testJustAboveLimitThrows() {
+    // 1003 declared; 1003 - 2 = 1001 tags, which exceeds MAX_TAGS_PER_RULE (1000)
+    String rules = "1003 NP 1\n";
+    Assertions.assertThrows(IOException.class,
+        () -> new HeadRules(new StringReader(rules)));
+  }
+
+  /**
+   * Negative: non-numeric token count must throw IOException, not NumberFormatException.
+   */
+  @Test
+  void testNonNumericTagCountThrows() {
+    String rules = "NaN NP 1\n";
+    Assertions.assertThrows(IOException.class,
+        () -> new HeadRules(new StringReader(rules)));
+  }
+
   @Test
   void testSerialization() throws IOException {
     try (InputStream headRulesIn =
