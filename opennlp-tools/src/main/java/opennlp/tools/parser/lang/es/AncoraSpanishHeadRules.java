@@ -62,6 +62,12 @@ import opennlp.tools.util.model.SerializableArtifact;
  */
 public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, SerializableArtifact {
 
+  // POS tagsets are fixed by linguistic convention (Penn Treebank: ~45 tags).
+  // No single head rule will ever list more than a small fraction of the tagset.
+  // 1000 gives 20x headroom over the real-world maximum and is not configurable
+  // because tag counts are a linguistics constraint, not a deployment parameter.
+  private static final int MAX_TAGS_PER_RULE = 1_000;
+
   public static class HeadRulesSerializer implements ArtifactSerializer<AncoraSpanishHeadRules> {
 
     public AncoraSpanishHeadRules create(InputStream in) throws IOException {
@@ -213,7 +219,17 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
       String num = st.nextToken();
       String type = st.nextToken();
       String dir = st.nextToken();
-      String[] tags = new String[Integer.parseInt(num) - 2];
+      int rawCount;
+      try {
+        rawCount = Integer.parseInt(num);
+      } catch (NumberFormatException e) {
+        throw new IOException("Invalid tag count in head rules: " + num, e);
+      }
+      int numTags = rawCount - 2;
+      if (numTags < 0 || numTags > MAX_TAGS_PER_RULE) {
+        throw new IOException("Invalid tag count in head rules: " + num);
+      }
+      String[] tags = new String[numTags];
       int ti = 0;
       while (st.hasMoreTokens()) {
         tags[ti] = st.nextToken();
