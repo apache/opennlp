@@ -19,21 +19,15 @@ package opennlp.tools.models.simple;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Locale;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -129,59 +123,6 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
     }
 
     return cpu;
-  }
-
-  /**
-   * Escapes a {@code wildcard} expressions for usage as a Java regular expression.
-   *
-   * @param wildcard A valid expression. It must not be {@code null}.
-   * @return The escaped regex.
-   */
-  private String asRegex(String wildcard) {
-    return wildcard
-        .replace(".", "\\.")
-        .replace("*", ".*")
-        .replace("?", ".");
-  }
-
-  private boolean matchesPattern(URL url, Pattern pattern) {
-    return pattern.matcher(url.getFile()).matches();
-  }
-
-  private static URL toURL(String location) throws IOException {
-    try {
-      return new URI(location).toURL();
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
-    }
-  }
-
-  private List<URI> getURIsFromJar(URL fileUrl, boolean isWindows) throws IOException {
-    final List<URI> uris = new ArrayList<>();
-    final String location = JAR + ":" +
-        (isWindows ? fileUrl.toString().replace("\\", "/")
-            : fileUrl.toString()) + "!/";
-    final URL jarUrl = toURL(location);
-    final JarURLConnection jarConnection = (JarURLConnection) jarUrl.openConnection();
-    try (JarFile jarFile = jarConnection.getJarFile()) {
-      final Enumeration<JarEntry> entries = jarFile.entries();
-      while (entries.hasMoreElements()) {
-        final JarEntry entry = entries.nextElement();
-        if (!entry.isDirectory()) {
-          try {
-            uris.add(new URI(jarUrl + entry.getName()));
-          } catch (URISyntaxException ignored) {
-            //if we cannot convert to URI here, we ignore that entry.
-          }
-        }
-      }
-    }
-
-    return uris;
-  }
-
-  private boolean isWindows() {
-    return System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT).contains("win");
   }
 
   /**
