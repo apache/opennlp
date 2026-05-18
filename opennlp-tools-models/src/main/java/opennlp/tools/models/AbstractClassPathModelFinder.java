@@ -16,12 +16,22 @@
  */
 package opennlp.tools.models;
 
+import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 /**
  * A base implementation of a {@link ClassPathModelFinder} for the detection of
@@ -124,6 +134,66 @@ public abstract class AbstractClassPathModelFinder implements ClassPathModelFind
 
   protected String getJarModelPrefix() {
     return jarModelPrefix;
+  }
+
+  /**
+   * Escapes a {@code wildcard} expressions for usage as a Java regular expression.
+   *
+   * @param wildcard A valid expression. It must not be {@code null}.
+   * @return The escaped regex.
+   */
+  protected String asRegex(String wildcard) {
+    return wildcard
+        .replace(".", "\\.")
+        .replace("*", ".*")
+        .replace("?", ".");
+  }
+
+  protected boolean matchesPattern(URL url, Pattern pattern) {
+    return pattern.matcher(url.getFile()).matches();
+  }
+
+  /**
+   * Converts a {@code location} in String form to a {@link URL}.
+   *
+   * @param location The resource path and/or reference.
+   * @return The converted {@link URL} form.
+   * @throws IOException Thrown if IO errors occurred during conversion
+   */
+  protected static URL toURL(String location) throws IOException {
+    try {
+      return new URI(location).toURL();
+    } catch (URISyntaxException e) {
+      throw new IOException(e);
+    }
+  }
+
+  protected List<URI> getURIsFromJar(URL fileUrl, boolean isWindows) throws IOException {
+    final List<URI> uris = new ArrayList<>();
+    final String location = JAR + ":" +
+        (isWindows ? fileUrl.toString().replace("\\", "/")
+            : fileUrl.toString()) + "!/";
+    final URL jarUrl = toURL(location);
+    final JarURLConnection jarConnection = (JarURLConnection) jarUrl.openConnection();
+    try (JarFile jarFile = jarConnection.getJarFile()) {
+      final Enumeration<JarEntry> entries = jarFile.entries();
+      while (entries.hasMoreElements()) {
+        final JarEntry entry = entries.nextElement();
+        if (!entry.isDirectory()) {
+          try {
+            uris.add(new URI(jarUrl + entry.getName()));
+          } catch (URISyntaxException ignored) {
+            //if we cannot convert to URI here, we ignore that entry.
+          }
+        }
+      }
+    }
+
+    return uris;
+  }
+
+  protected boolean isWindows() {
+    return System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT).contains("win");
   }
 
 }

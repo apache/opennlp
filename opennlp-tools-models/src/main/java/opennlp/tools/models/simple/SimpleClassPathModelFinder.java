@@ -19,20 +19,15 @@ package opennlp.tools.models.simple;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Locale;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -45,7 +40,7 @@ import opennlp.tools.models.ClassPathModelFinder;
  * Enables the detection of OpenNLP models in the classpath via JDK classes
  * By default, this class will search for JAR files starting with "opennlp-models-*".
  * This wildcard pattern can be adjusted by using the alternative constructor of this class.
- *   
+ *
  * @implNote
  * It is a rather simple implementation of scanning the classpath by trying to obtain {@link URL urls}
  * from the actual classpath via a chain of possible options. It might not work for every use-case
@@ -68,7 +63,6 @@ import opennlp.tools.models.ClassPathModelFinder;
 public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder implements ClassPathModelFinder {
 
   private static final Logger logger = LoggerFactory.getLogger(SimpleClassPathModelFinder.class);
-  private static final String FILE_PREFIX = "file";
   private static final Pattern CLASSPATH_SEPARATOR_PATTERN_WINDOWS = Pattern.compile(";");
   private static final Pattern CLASSPATH_SEPARATOR_PATTERN_UNIX = Pattern.compile(":");
   // ; for Windows, : for Linux/OSX
@@ -132,51 +126,6 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
   }
 
   /**
-   * Escapes a {@code wildcard} expressions for usage as a Java regular expression.
-   *
-   * @param wildcard A valid expression. It must not be {@code null}.
-   * @return The escaped regex.
-   */
-  private String asRegex(String wildcard) {
-    return wildcard
-        .replace(".", "\\.")
-        .replace("*", ".*")
-        .replace("?", ".");
-  }
-
-  private boolean matchesPattern(URL url, Pattern pattern) {
-    return pattern.matcher(url.getFile()).matches();
-  }
-
-  private List<URI> getURIsFromJar(URL fileUrl, boolean isWindows) throws IOException {
-    final List<URI> uris = new ArrayList<>();
-    final URL jarUrl = new URL(JAR + ":" +
-        (isWindows ? fileUrl.toString().replace("\\", "/")
-            : fileUrl.toString()) + "!/");
-    final JarURLConnection jarConnection = (JarURLConnection) jarUrl.openConnection();
-    try (JarFile jarFile = jarConnection.getJarFile()) {
-      final Enumeration<JarEntry> entries = jarFile.entries();
-      while (entries.hasMoreElements()) {
-        final JarEntry entry = entries.nextElement();
-        if (!entry.isDirectory()) {
-          final URL entryUrl = new URL(jarUrl + entry.getName());
-          try {
-            uris.add(entryUrl.toURI());
-          } catch (URISyntaxException ignored) {
-            //if we cannot convert to URI here, we ignore that entry.
-          }
-        }
-      }
-    }
-
-    return uris;
-  }
-
-  private boolean isWindows() {
-    return System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT).contains("win");
-  }
-
-  /**
    * Attempts to obtain {@link URL URLs} from the classpath in the following order:
    * <p>
    * <ol>
@@ -206,12 +155,12 @@ public class SimpleClassPathModelFinder extends AbstractClassPathModelFinder imp
   private List<URL> getClassPathUrlsFromSystemProperty() {
     final String cp = System.getProperty("java.class.path", "");
     final String[] matches = isWindows()
-            ? CLASSPATH_SEPARATOR_PATTERN_WINDOWS.split(cp)
-            : CLASSPATH_SEPARATOR_PATTERN_UNIX.split(cp);
+        ? CLASSPATH_SEPARATOR_PATTERN_WINDOWS.split(cp)
+        : CLASSPATH_SEPARATOR_PATTERN_UNIX.split(cp);
     final List<URL> jarUrls = new ArrayList<>();
     for (String classPath: matches) {
       try {
-        jarUrls.add(new URL(FILE_PREFIX, "", classPath));
+        jarUrls.add(Path.of(classPath).toUri().toURL());
       } catch (MalformedURLException ignored) {
         //if we cannot parse a URL from the system property, just ignore it...
         //we couldn't load it anyway
