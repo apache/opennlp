@@ -77,6 +77,7 @@ import opennlp.tools.cmdline.sentdetect.SentenceDetectorTrainerTool;
 import opennlp.tools.cmdline.sentiment.SentimentCrossValidatorTool;
 import opennlp.tools.cmdline.sentiment.SentimentEvaluatorTool;
 import opennlp.tools.cmdline.sentiment.SentimentTrainerTool;
+import opennlp.tools.cmdline.stopword.StopwordFilterTool;
 import opennlp.tools.cmdline.tokenizer.DictionaryDetokenizerTool;
 import opennlp.tools.cmdline.tokenizer.SimpleTokenizerTool;
 import opennlp.tools.cmdline.tokenizer.TokenizerConverterTool;
@@ -129,6 +130,9 @@ public final class CLI {
     tools.add(new TokenizerCrossValidatorTool());
     tools.add(new TokenizerConverterTool());
     tools.add(new DictionaryDetokenizerTool());
+
+    // Stopword filter
+    tools.add(new StopwordFilterTool());
 
     // Sentence detector
     tools.add(new SentenceDetectorTool());

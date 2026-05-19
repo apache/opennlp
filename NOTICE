@@ -14,6 +14,19 @@ http://snowball.tartarus.org/
 
 ============================================================================
 
+The bundled stopword lists in
+opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/stopword
+are derived from Apache Lucene
+(https://github.com/apache/lucene/tree/main/lucene/analysis/common/src/resources/org/apache/lucene/analysis),
+which in turn distributes them under the BSD license from the Snowball project
+(https://snowballstem.org/license.html). The Bulgarian list (bg.txt) is the
+Lucene per-language Bulgarian stopwords file originally created by Jacques
+Savoy (http://members.unine.ch/jacques.savoy/clef/index.html) and also
+distributed under the BSD license. The original upstream license and
+attribution headers are preserved verbatim at the top of each bundled file.
+
+============================================================================
+
 The Wordpiece tokenizer in opennlp-tools/main/java/opennlp/tools/tokenize
 is taken from https://github.com/robrua/easy-bert licensed under
 

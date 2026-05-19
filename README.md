@@ -30,7 +30,7 @@ The Apache OpenNLP library is a machine learning based toolkit for the processin
 
 This toolkit is written completely in Java and provides support for common NLP tasks, such as tokenization,
  sentence segmentation, part-of-speech tagging, named entity extraction, chunking, parsing,
-  coreference resolution, language detection and more!
+  coreference resolution, language detection, stopword filtering (with bundled lists for 11 languages) and more!
 
 These tasks are usually required to build more advanced text processing services.
 
