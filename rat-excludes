@@ -58,3 +58,4 @@ src/test/resources/*.info
 
 <!-- other licence -->
 src/main/java/opennlp/tools/stemmer/snowball/*.java
+src/main/resources/opennlp/tools/stopword/*.txt
