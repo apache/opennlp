@@ -39,6 +39,7 @@
 
   <modules>
     <module>opennlp-morfologik</module>
+    <module>opennlp-spellcheck</module>
     <module>opennlp-uima</module>
   </modules>
 

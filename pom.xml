@@ -211,6 +211,18 @@
 			</dependency>
 
 			<dependency>
+				<artifactId>opennlp-spellcheck</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-text</artifactId>
+				<version>${commons-text.version}</version>
+			</dependency>
+
+			<dependency>
 				<artifactId>opennlp-uima</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
@@ -248,6 +260,7 @@
 		<log4j2.version>2.26.0</log4j2.version>
 		<logcaptor.version>2.12.6</logcaptor.version>
 		<classgraph.version>4.8.184</classgraph.version>
+		<commons-text.version>1.15.0</commons-text.version>
 		<zlibsvm.version>3.0.0</zlibsvm.version>
 		<jmh.version>1.37</jmh.version>
 

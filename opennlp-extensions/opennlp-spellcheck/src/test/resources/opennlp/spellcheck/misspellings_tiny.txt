@@ -1,0 +1,26 @@
+teh	the
+hte	the
+recieve	receive
+adn	and
+hello	hello
+wrold	world
+worl	world
+quikc	quick
+qwick	quick
+broen	brown
+fxo	fox
+speling	spell
+chcker	checker
+exampel	example
+langauge	language
+becuse	because
+seperate	separate
+definately	definitely
+neccessary	necessary
+occurence	occurrence
+acceptible	acceptable
+calender	calendar
+embarass	embarrass
+thequickbrownfox	the quick brown fox
+helloworld	hello world
+spellchecker	spell checker

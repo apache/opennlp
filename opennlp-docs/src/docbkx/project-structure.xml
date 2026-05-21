@@ -266,6 +266,14 @@ under the License.
             </listitem>
             <listitem>
                 <para>
+                    <code>opennlp-spellcheck</code> — Provides a native, language-agnostic spell
+                    corrector based on the SymSpell (Symmetric Delete) algorithm, including CLI tools,
+                    a pluggable edit distance, and pipeline integration.
+                    See <xref linkend="tools.spellcheck"/> for usage details.
+                </para>
+            </listitem>
+            <listitem>
+                <para>
                     <code>opennlp-uima</code> — Provides a set of
                     <link xlink:href="https://uima.apache.org">Apache UIMA</link>
                     annotators that wrap OpenNLP components for use in UIMA pipelines.

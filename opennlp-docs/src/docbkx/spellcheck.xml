@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter xml:id="tools.spellcheck" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>SpellChecker</title>
+	<section xml:id="tools.spellcheck.overview">
+		<title>Overview</title>
+		<para>
+			The OpenNLP SpellChecker is a native, language-agnostic spelling corrector built on the
+			<emphasis>SymSpell</emphasis> (Symmetric Delete) algorithm. Given a (possibly misspelled) term it
+			proposes corrections drawn from a frequency dictionary, ranked by edit distance and corpus
+			frequency. It can also correct whole phrases, repairing wrongly inserted or omitted spaces
+			(word splits and merges) with the help of a bigram language model.
+		</para>
+		<para>
+			SymSpell is fast because it pre-computes a deletes-only index: for every dictionary term it
+			derives all strings obtained by deleting up to a small number of symbols and maps each such
+			delete back to the originating terms. A query is answered by generating the deletes of the query
+			and intersecting them with the index, which turns the costly fuzzy search into a handful of
+			hash-map lookups. Candidates are then verified with an edit-distance metric. Because only deletes
+			are generated (no insertions, substitutions or transpositions), candidate generation is orders of
+			magnitude cheaper than a naïve search over the whole dictionary.
+		</para>
+		<para>
+			The SpellChecker ships as the optional <code>opennlp-spellcheck</code> extension module (package
+			root <code>opennlp.spellcheck</code>). It is a good fit when you need to:
+			<itemizedlist mark='opencircle'>
+				<listitem>
+					<para>clean up noisy user input (search queries, form fields, OCR output) before
+						tokenization or classification;</para>
+				</listitem>
+				<listitem>
+					<para>normalize a training or evaluation corpus as part of a preprocessing pipeline;</para>
+				</listitem>
+				<listitem>
+					<para>offer interactive "did you mean" suggestions for a single term.</para>
+				</listitem>
+			</itemizedlist>
+			It is <emphasis>not</emphasis> a grammar checker and it does not require a trained statistical
+			model – correction quality is determined entirely by the supplied frequency dictionary.
+		</para>
+		<note>
+			<para>
+				The algorithm and its compound-correction heuristic are an independent Java rewrite of the
+				SymSpell reference implementation by Wolf Garbe (MIT). Attribution is recorded in the project
+				NOTICE file.
+			</para>
+		</note>
+	</section>
+
+	<section xml:id="tools.spellcheck.cmdline">
+		<title>SpellChecker Tools</title>
+		<para>
+			The extension provides two command line tools, dispatched through the
+			<code>bin/spellcheck</code> launcher of the binary distribution: <code>SpellCheckModelBuilder</code>
+			builds a binary model from plain-text frequency dictionaries, and <code>CorrectText</code> corrects
+			text using such a model. Each tool prints its usage when invoked with the <code>help</code>
+			parameter.
+		</para>
+
+		<section xml:id="tools.spellcheck.cmdline.build">
+			<title>Building a Model</title>
+			<para>
+				A model is built from a unigram frequency list and, optionally, a bigram list (see
+				<xref linkend="tools.spellcheck.dictionary"/> for the file format). Usage of the tool:
+				<screen>
+<![CDATA[$ bin/spellcheck SpellCheckModelBuilder help
+Usage: opennlp-spellcheck SpellCheckModelBuilder -unigrams in [-bigrams in] -model out \
+  [-maxEditDistance num] [-countThreshold num] [-distance damerau-osa|levenshtein] \
+  [-corpusWordCount num] -lang lang [-prefixLength num] [-encoding charsetName]
+
+Arguments description:
+	-lang lang
+		The language tag of the model (e.g. en), stored as model.language.
+	-unigrams in
+		The unigram frequency dictionary file (word<TAB>count per line).
+	-bigrams in
+		An optional bigram frequency dictionary file (w1 w2<TAB>count per line).
+	-model out
+		The output file the binary SymSpell model is written to.
+	-maxEditDistance num
+		The largest precomputed dictionary edit distance. (default 2)
+	-prefixLength num
+		Number of leading symbols used for delete generation (must be > maxEditDistance). (default 7)
+	-countThreshold num
+		Minimum corpus count for a term to be indexed. (default 1)
+	-distance damerau-osa|levenshtein
+		The edit-distance metric used for verification. (default damerau-osa)
+	-corpusWordCount num
+		Corpus size N used for compound-correction scoring; 0 (default) derives N from the
+		dictionary's summed counts.
+	-encoding charsetName
+		encoding for reading and writing text, if absent the system default is used.]]>
+				</screen>
+				The following command builds an English model from a unigram and a bigram dictionary, using the
+				default Damerau-OSA edit distance:
+				<screen>
+<![CDATA[$ bin/spellcheck SpellCheckModelBuilder -lang en \
+  -unigrams en-unigrams.txt -bigrams en-bigrams.txt \
+  -model en-spellcheck.bin -encoding UTF-8]]>
+				</screen>
+			</para>
+		</section>
+
+		<section xml:id="tools.spellcheck.cmdline.correct">
+			<title>Correcting Text</title>
+			<para>
+				Once a model has been built (or a packaged model is on the classpath), the
+				<code>CorrectText</code> tool corrects text line by line. Usage of the tool:
+				<screen>
+<![CDATA[$ bin/spellcheck CorrectText help
+Usage: opennlp-spellcheck CorrectText [-model model] [-maxEditDistance num] [-lang lang] \
+  [-suggest true|false] [-verbosity TOP|CLOSEST|ALL] [-compound true|false] \
+  [-inputFile in] [-outputFile out] [-encoding charsetName]
+
+Arguments description:
+	-model model
+		A binary SymSpell model file. Either -model or -lang must be given.
+	-lang lang
+		Resolve a packaged spellcheck model for this language from the classpath.
+		Either -model or -lang must be given.
+	-inputFile in
+		The input text file (read line by line). If absent, standard input is used.
+	-outputFile out
+		The output text file. If absent, standard output is used.
+	-compound true|false
+		Correct each line as a whole phrase, repairing wrong word splits/merges. (default false)
+	-maxEditDistance num
+		The maximum edit distance considered per token. (default 2)
+	-suggest true|false
+		List the suggestions for each token (honoring -verbosity) instead of emitting
+		corrected text. (default false)
+	-verbosity TOP|CLOSEST|ALL
+		How many suggestions to list per token; only used with -suggest true.
+		TOP=best only, CLOSEST=all at the smallest distance, ALL=all within -maxEditDistance.
+		(default TOP)
+	-encoding charsetName
+		encoding for reading and writing text, if absent the system default is used.]]>
+				</screen>
+				By default each line is corrected token by token, reading from standard input and writing to
+				standard output:
+				<screen>
+<![CDATA[$ echo "the qick brwn fox" | bin/spellcheck CorrectText -model en-spellcheck.bin
+the quick brown fox]]>
+				</screen>
+				With <code>-compound true</code> the whole line is corrected as a phrase, additionally repairing
+				wrongly inserted or omitted spaces:
+				<screen>
+<![CDATA[$ echo "thequick brownfox" | bin/spellcheck CorrectText -model en-spellcheck.bin -compound true
+the quick brown fox]]>
+				</screen>
+				With <code>-suggest true</code> the tool lists the candidate suggestions for every token
+				(honoring <code>-verbosity</code>) instead of emitting corrected text:
+				<screen>
+<![CDATA[$ echo "teh qick" | bin/spellcheck CorrectText -model en-spellcheck.bin -suggest true -verbosity CLOSEST
+teh => [the]
+qick => [quick, quack]]]>
+				</screen>
+				Instead of an explicit <code>-model</code> file you can resolve a packaged model from the
+				classpath by language with <code>-lang</code> (see
+				<xref linkend="tools.spellcheck.models"/>):
+				<screen>
+<![CDATA[$ bin/spellcheck CorrectText -lang en -inputFile noisy.txt -outputFile clean.txt -encoding UTF-8]]>
+				</screen>
+			</para>
+		</section>
+	</section>
+
+	<section xml:id="tools.spellcheck.api">
+		<title>SpellChecker API</title>
+		<para>
+			The central abstraction is the <code>SpellChecker</code> interface; its default implementation is
+			the <code>SymSpell</code> engine. The interface exposes two ways to correct input:
+			<programlisting language="java">
+<![CDATA[public interface SpellChecker {
+
+  // Suggestions for a single term, bounded by maxEditDistance.
+  List<SuggestItem> lookup(String term, Verbosity verbosity, int maxEditDistance);
+
+  // Convenience overload: Verbosity.TOP and the configured max edit distance.
+  List<SuggestItem> lookup(String term);
+
+  // Corrects a whole phrase, repairing word splits and merges.
+  List<SuggestItem> lookupCompound(String input, int maxEditDistance);
+}]]>
+			</programlisting>
+			Each suggestion is an immutable <code>SuggestItem</code> record carrying the corrected term, the
+			edit distance to the queried term and the corpus frequency of the suggestion. Its natural ordering
+			sorts the best candidate first (ascending edit distance, then descending frequency), so
+			<code>get(0)</code> is the top suggestion.
+			<programlisting language="java">
+<![CDATA[public record SuggestItem(String term, int editDistance, long frequency)
+    implements Comparable<SuggestItem> { }]]>
+			</programlisting>
+		</para>
+		<para>
+			The <code>Verbosity</code> enum controls how many suggestions a <code>lookup</code> call returns:
+			<itemizedlist mark='opencircle'>
+				<listitem>
+					<para><code>TOP</code> – the single best suggestion (cheapest to compute);</para>
+				</listitem>
+				<listitem>
+					<para><code>CLOSEST</code> – all suggestions sharing the smallest edit distance
+						found;</para>
+				</listitem>
+				<listitem>
+					<para><code>ALL</code> – every suggestion within the requested maximum edit
+						distance.</para>
+				</listitem>
+			</itemizedlist>
+		</para>
+		<para>
+			An engine is created from a <code>SymSpellConfig</code> and populated through
+			<code>add</code> (unigrams) and <code>addBigram</code> (bigrams). In practice the engine is built
+			from a dictionary or loaded from a model (see <xref linkend="tools.spellcheck.dictionary"/>), but
+			it can also be filled programmatically:
+			<programlisting language="java">
+<![CDATA[SymSpellConfig config = SymSpellConfig.builder()
+    .maxDictionaryEditDistance(2)   // largest precomputed edit distance (default 2)
+    .prefixLength(7)                // leading symbols used for deletes (default 7)
+    .countThreshold(1)              // minimum count to index a term (default 1)
+    .editDistance(DamerauOSADistance.INSTANCE) // verification metric (default)
+    .build();
+
+SymSpell symSpell = new SymSpell(config);   // or: new SymSpell() for the defaults
+symSpell.add("quick", 1_000);
+symSpell.add("brown", 800);
+symSpell.addBigram("quick", "brown", 120);]]>
+			</programlisting>
+			Once populated, the engine is safe for concurrent <code>lookup</code> calls. Looking up a single
+			term and reading the best suggestion:
+			<programlisting language="java">
+<![CDATA[List<SuggestItem> suggestions = symSpell.lookup("qick", Verbosity.CLOSEST, 2);
+for (SuggestItem item : suggestions) {
+  System.out.printf("%s (distance=%d, frequency=%d)%n",
+      item.term(), item.editDistance(), item.frequency());
+}]]>
+			</programlisting>
+			Correcting a whole phrase, including wrongly split or merged words, with
+			<code>lookupCompound</code> (which always returns a singleton list holding the best correction):
+			<programlisting language="java">
+<![CDATA[String corrected = symSpell.lookupCompound("thequick brwn fox", 2).get(0).term();
+// -> "the quick brown fox"]]>
+			</programlisting>
+		</para>
+		<section xml:id="tools.spellcheck.api.distance">
+			<title>Choosing an Edit Distance</title>
+			<para>
+				The verification metric is pluggable behind the <code>EditDistance</code> interface and selected
+				through <code>SymSpellConfig</code>. Two implementations are provided:
+				<itemizedlist mark='opencircle'>
+					<listitem>
+						<para>
+							<code>DamerauOSADistance</code> (the <emphasis>default</emphasis>) – an Optimal
+							String Alignment (restricted Damerau-Levenshtein) metric in which a transposition of
+							two adjacent symbols counts as a single edit. It is Unicode-aware, operating on code
+							points, and matches the variant used by the SymSpell reference implementation. Prefer
+							it for natural-language text where transpositions ("teh" → "the") are common
+							typos.
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							<code>LevenshteinDistance</code> – a thin adapter over Apache Commons Text in
+							which only insertions, deletions and substitutions count, so a transposition costs two
+							edits. It operates on UTF-16 <code>char</code> units. Use it when you want plain
+							Levenshtein semantics or to match another system's behavior.
+						</para>
+					</listitem>
+				</itemizedlist>
+				Both expose a shared, stateless <code>INSTANCE</code> and are passed to the builder:
+				<programlisting language="java">
+<![CDATA[SymSpellConfig config = SymSpellConfig.builder()
+    .editDistance(LevenshteinDistance.INSTANCE)
+    .build();]]>
+				</programlisting>
+			</para>
+		</section>
+	</section>
+
+	<section xml:id="tools.spellcheck.dictionary">
+		<title>Dictionary and Model Format</title>
+		<para>
+			A SpellChecker is driven by plain-text frequency dictionaries, loaded into an engine by the
+			<code>FrequencyDictionaryLoader</code>. Two UTF-8 (by default) line-based formats are supported.
+			In both, columns are separated by a single TAB; blank lines, whitespace-only lines and lines
+			starting with <code>#</code> (comments) are skipped.
+		</para>
+		<para>
+			The <emphasis>unigram</emphasis> dictionary lists one <code>word&lt;TAB&gt;count</code> per line,
+			where <code>count</code> is the term's corpus frequency:
+			<screen>
+<![CDATA[the	23135851162
+of	13151942776
+and	12997637966
+quick	1885979
+brown	1019234
+fox	271289]]>
+			</screen>
+			The optional <emphasis>bigram</emphasis> dictionary lists one
+			<code>word1 word2&lt;TAB&gt;count</code> per line (the two words separated by a space, then a TAB
+			and the count). Bigrams improve compound correction:
+			<screen>
+<![CDATA[quick brown	12046
+brown fox	5634
+the quick	98765]]>
+			</screen>
+		</para>
+		<para>
+			A model is the built engine together with its source dictionaries and the metadata needed to
+			identify it. The <code>SymSpellModels</code> facade builds, serializes and deserializes models, and
+			writes the packaged form consumed by the model-resolver. The loaded model exposes a ready-to-query
+			engine via <code>getSymSpell()</code>:
+			<programlisting language="java">
+<![CDATA[InputStreamFactory unigrams = new MarkableFileInputStreamFactory(new File("en-unigrams.txt"));
+InputStreamFactory bigrams = new MarkableFileInputStreamFactory(new File("en-bigrams.txt"));
+
+SymSpellModel model = SymSpellModels.buildModel(
+    "en", SymSpellConfig.defaultConfig(), StandardCharsets.UTF_8, unigrams, bigrams);
+
+// Persist the binary model.
+try (OutputStream out = Files.newOutputStream(Path.of("en-spellcheck.bin"))) {
+  SymSpellModels.serialize(model, out);
+}
+
+// Reload it later and query the engine.
+try (InputStream in = Files.newInputStream(Path.of("en-spellcheck.bin"))) {
+  SymSpellModel loaded = SymSpellModels.deserialize(in);
+  SpellChecker checker = loaded.getSymSpell();
+  List<SuggestItem> suggestions = checker.lookup("qick");
+}]]>
+			</programlisting>
+			Loading just the dictionaries into an existing engine – for example to add domain terms –
+			can be done directly with the loader:
+			<programlisting language="java">
+<![CDATA[SymSpell engine = new SymSpell(SymSpellConfig.defaultConfig());
+FrequencyDictionaryLoader loader = new FrequencyDictionaryLoader(StandardCharsets.UTF_8);
+loader.loadUnigrams(engine, unigrams);
+loader.loadBigrams(engine, bigrams);]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.spellcheck.models">
+		<title>Multi-language Models</title>
+		<para>
+			Production multi-language dictionaries are large and are therefore <emphasis>not</emphasis> bundled
+			in the <code>opennlp-spellcheck</code> jar. Instead, each language ships as a separate Maven
+			artifact named <code>opennlp-models-spellcheck-{lang}</code> (for example
+			<code>opennlp-models-spellcheck-en</code>), packaged as a binary model plus a matching
+			<code>model.properties</code> descriptor (<code>model.language</code>, <code>model.name</code>,
+			<code>model.version</code>, <code>model.sha256</code>).
+		</para>
+		<para>
+			Add the model artifact for the language you need to your classpath:
+			<programlisting language="xml">
+<![CDATA[<dependency>
+    <groupId>org.apache.opennlp</groupId>
+    <artifactId>opennlp-models-spellcheck-en</artifactId>
+    <version>CURRENT_OPENNLP_VERSION</version>
+</dependency>]]>
+			</programlisting>
+			The <code>SymSpellModelResolver</code> then discovers and loads the matching model using the
+			standard OpenNLP model-resolver machinery (see <xref linkend="tools.model"/>). It returns an
+			<code>Optional</code> that is empty when no matching model jar is present:
+			<programlisting language="java">
+<![CDATA[Optional<SymSpellModel> model = new SymSpellModelResolver().resolveByLanguage("en");
+SpellChecker checker = model.orElseThrow().getSymSpell();
+List<SuggestItem> suggestions = checker.lookup("qick");]]>
+			</programlisting>
+			On the command line the same resolution happens when you pass <code>-lang</code> instead of
+			<code>-model</code> to <code>CorrectText</code>.
+		</para>
+	</section>
+
+	<section xml:id="tools.spellcheck.pipeline">
+		<title>Pipeline Integration</title>
+		<para>
+			The SpellChecker integrates into OpenNLP preprocessing through the standard normalizer and stream
+			abstractions, so correction can be slotted into an existing chain without bespoke glue code.
+		</para>
+		<para>
+			<code>SpellCheckingCharSequenceNormalizer</code> implements
+			<code>opennlp.tools.util.normalizer.CharSequenceNormalizer</code> and can be composed with the
+			other normalizers (URL, emoji, shrink, ...) inside an <code>AggregateCharSequenceNormalizer</code>.
+			It works in one of two modes: <code>Mode.PER_TOKEN</code> (the default) corrects each
+			whitespace-delimited token independently and preserves the line's whitespace and punctuation, while
+			<code>Mode.COMPOUND</code> corrects the whole input as a phrase, repairing word splits and merges.
+			It guards against over-correction (skipping short tokens, numbers and URL/email-like tokens, and
+			never changing a word the dictionary already contains) and preserves the original casing pattern of
+			each token.
+			<programlisting language="java">
+<![CDATA[SymSpellModel model = SymSpellModels.deserialize(in);
+
+CharSequenceNormalizer normalizer = SpellCheckingCharSequenceNormalizer.builder(model)
+    .mode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN)
+    .maxEditDistance(2)
+    .build();
+
+CharSequence clean = normalizer.normalize("the qick brwn fox"); // -> "the quick brown fox"]]>
+			</programlisting>
+		</para>
+		<para>
+			For stream-based preprocessing two <code>FilterObjectStream&lt;String, String&gt;</code>
+			implementations wrap an existing <code>ObjectStream&lt;String&gt;</code> and correct each element as
+			it is read:
+			<itemizedlist mark='opencircle'>
+				<listitem>
+					<para>
+						<code>SpellCorrectingObjectStream</code> corrects each line; in compound mode it may split
+						or merge tokens. Use it for free text.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<code>SpellCorrectingTokenStream</code> corrects tokenized data token-by-token and re-joins
+						with the same delimiter. It is <emphasis>token-count preserving</emphasis>, so the corrected
+						element stays aligned with any parallel annotation (tags, spans).
+					</para>
+				</listitem>
+			</itemizedlist>
+			Dropping the corrector into a line-based reading chain:
+			<programlisting language="java">
+<![CDATA[ObjectStream<String> lines =
+    new PlainTextByLineStream(inputStreamFactory, StandardCharsets.UTF_8);
+ObjectStream<String> corrected = new SpellCorrectingObjectStream(lines, model);
+
+String line;
+while ((line = corrected.read()) != null) {
+  // ... consume corrected lines ...
+}]]>
+			</programlisting>
+		</para>
+	</section>
+</chapter>

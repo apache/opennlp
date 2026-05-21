@@ -45,7 +45,7 @@ import opennlp.tools.commons.Internal;
  * The command line argument proxy interface must follow these conventions:<br>
  * - Methods do not define arguments<br>
  * - Method names must start with get<br>
- * - Allowed return types are Integer, Boolean, String, File and Charset.<br>
+ * - Allowed return types are Integer, Long, Boolean, String, File and Charset.<br>
  * <p>
  * <b>Note:</b> Do not use this class, internal use only!
  */
@@ -84,6 +84,25 @@ public class ArgumentParser {
       catch (NumberFormatException e) {
         throw new TerminateToolException(1, String.format(INVALID_ARG, argName, argValue) +
             "Value must be an integer!", e);
+      }
+
+      return value;
+    }
+  }
+
+  private static class LongArgumentFactory implements ArgumentFactory {
+
+    @Override
+    public Object parseArgument(Method method, String argName, String argValue) {
+
+      Object value;
+
+      try {
+        value = Long.parseLong(argValue);
+      }
+      catch (NumberFormatException e) {
+        throw new TerminateToolException(1, String.format(INVALID_ARG, argName, argValue) +
+            "Value must be a long!", e);
       }
 
       return value;
@@ -152,6 +171,7 @@ public class ArgumentParser {
   static {
     Map<Class<?>, ArgumentFactory> factories = new HashMap<>();
     factories.put(Integer.class, new IntegerArgumentFactory());
+    factories.put(Long.class, new LongArgumentFactory());
     factories.put(Boolean.class, new BooleanArgumentFactory());
     factories.put(String.class, new StringArgumentFactory());
     factories.put(File.class, new FileArgumentFactory());

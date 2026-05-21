@@ -50,6 +50,11 @@ src/test/resources/opennlp/tools/lemmatizer/output.txt
 src/test/resources/opennlp/tools/cmdline/languagemodel/sentences_set_1.txt
 src/test/resources/opennlp/tools/cmdline/languagemodel/sentences_set_2.txt
 
+<!-- OPENNLP-1832 spellcheck tiny test fixtures (data files, no AL header possible) -->
+src/test/resources/opennlp/spellcheck/frequency_dictionary_tiny.txt
+src/test/resources/opennlp/spellcheck/frequency_bigramdictionary_tiny.txt
+src/test/resources/opennlp/spellcheck/misspellings_tiny.txt
+
 <!-- head rule files, format does not allow AL header -->
 lang/en/parser/en-head_rules
 lang/es/parser/es-head-rules
