@@ -30,9 +30,13 @@ import opennlp.tools.util.Span;
  * the supplied {@link StopwordFilter}.
  * <p>
  * Both {@link #tokenize(String)} and {@link #tokenizePos(String)} apply the
- * filter: in the latter case the {@link Span Spans} whose covered text is a
- * stopword are dropped while the offsets of the remaining spans are kept
- * intact (they continue to refer to positions in the original input string).
+ * filter using the same greedy longest-match window scan, so single-token
+ * (1-gram) and multi-token (n-gram) stopword entries are dropped identically
+ * across {@link #tokenize(String)}, {@link #tokenizePos(String)} and
+ * {@link StopwordFilterStream}. For {@link #tokenizePos(String)} the
+ * {@link Span Spans} covering a matched entry are dropped while the offsets of
+ * the remaining spans are kept intact (they continue to refer to positions in
+ * the original input string).
  * <p>
  * Instances are immutable and therefore safe for concurrent use provided that
  * both the wrapped {@link Tokenizer} and the {@link StopwordFilter} are
@@ -82,8 +86,13 @@ public final class StopwordFilteringTokenizer implements Tokenizer {
 
   /**
    * Computes token spans with the wrapped {@link Tokenizer} and then drops
-   * any span whose covered text is a stopword according to the
-   * {@link StopwordFilter}. The relative order and the offsets of the
+   * the spans covering any stopword entry according to the
+   * {@link StopwordFilter}. A greedy left-to-right window scan mirrors
+   * {@link StopwordFilter#filter(String[])}: at each position the longest
+   * window of consecutive spans whose covered texts form a registered entry is
+   * removed; otherwise the current span is kept and the scan advances by one.
+   * This way multi-word (n-gram) entries are dropped here exactly as they are
+   * by {@link #tokenize(String)}. The relative order and the offsets of the
    * surviving spans are preserved.
    *
    * @param s The string to be tokenized.
@@ -96,10 +105,25 @@ public final class StopwordFilteringTokenizer implements Tokenizer {
       return spans;
     }
     final List<Span> kept = new ArrayList<>(spans.length);
-    for (final Span span : spans) {
-      final CharSequence covered = span.getCoveredText(s);
-      if (!filter.isStopword(covered)) {
-        kept.add(span);
+    int i = 0;
+    while (i < spans.length) {
+      int matched = 0;
+      // Try the longest possible window first, decreasing down to 1.
+      for (int w = spans.length - i; w >= 1; w--) {
+        final String[] window = new String[w];
+        for (int k = 0; k < w; k++) {
+          window[k] = spans[i + k].getCoveredText(s).toString();
+        }
+        if (filter.isStopword(window)) {
+          matched = w;
+          break;
+        }
+      }
+      if (matched > 0) {
+        i += matched;
+      } else {
+        kept.add(spans[i]);
+        i++;
       }
     }
     return kept.toArray(new Span[0]);

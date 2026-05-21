@@ -5,6 +5,7 @@
 #  - Encoding was converted to UTF-8.
 #  - This notice was added.
 #  - Comments were changed from `|` to `#` so that this list can be parsed by OpenNLP's stopword loader.
+#  - The pronoun/determiner paradigm rows (originally whitespace-separated columns) were expanded to one token per line so that each form is registered as an individual stopword by OpenNLP's loader.
 #
 
 # forms of BE
@@ -40,28 +41,197 @@ emme
 ette
 eivät
 
-#Nom   Gen    Acc    Part   Iness   Elat    Illat  Adess   Ablat   Allat   Ess    Trans
-minä   minun  minut  minua  minussa minusta minuun minulla minulta minulle
-sinä   sinun  sinut  sinua  sinussa sinusta sinuun sinulla sinulta sinulle
-hän    hänen  hänet  häntä  hänessä hänestä häneen hänellä häneltä hänelle
-me     meidän meidät meitä  meissä  meistä  meihin meillä  meiltä  meille
-te     teidän teidät teitä  teissä  teistä  teihin teillä  teiltä  teille
-he     heidän heidät heitä  heissä  heistä  heihin heillä  heiltä  heille
+# Personal pronoun paradigms
+# Nom Gen Acc Part Iness Elat Illat Adess Ablat Allat (Ess Trans where present)
+minä
+minun
+minut
+minua
+minussa
+minusta
+minuun
+minulla
+minulta
+minulle
+sinä
+sinun
+sinut
+sinua
+sinussa
+sinusta
+sinuun
+sinulla
+sinulta
+sinulle
+hän
+hänen
+hänet
+häntä
+hänessä
+hänestä
+häneen
+hänellä
+häneltä
+hänelle
+me
+meidän
+meidät
+meitä
+meissä
+meistä
+meihin
+meillä
+meiltä
+meille
+te
+teidän
+teidät
+teitä
+teissä
+teistä
+teihin
+teillä
+teiltä
+teille
+he
+heidän
+heidät
+heitä
+heissä
+heistä
+heihin
+heillä
+heiltä
+heille
 
-tämä   tämän         tätä   tässä   tästä   tähän  tällä   tältä   tälle   tänä   täksi
-tuo    tuon          tuota  tuossa  tuosta  tuohon tuolla  tuolta  tuolle  tuona  tuoksi
-se     sen           sitä   siinä   siitä   siihen sillä   siltä   sille   sinä   siksi
-nämä   näiden        näitä  näissä  näistä  näihin näillä  näiltä  näille  näinä  näiksi
-nuo    noiden        noita  noissa  noista  noihin noilla  noilta  noille  noina  noiksi
-ne     niiden        niitä  niissä  niistä  niihin niillä  niiltä  niille  niinä  niiksi
+# Demonstrative pronoun paradigms
+tämä
+tämän
+tätä
+tässä
+tästä
+tähän
+tällä
+tältä
+tälle
+tänä
+täksi
+tuo
+tuon
+tuota
+tuossa
+tuosta
+tuohon
+tuolla
+tuolta
+tuolle
+tuona
+tuoksi
+se
+sen
+sitä
+siinä
+siitä
+siihen
+sillä
+siltä
+sille
+sinä
+siksi
+nämä
+näiden
+näitä
+näissä
+näistä
+näihin
+näillä
+näiltä
+näille
+näinä
+näiksi
+nuo
+noiden
+noita
+noissa
+noista
+noihin
+noilla
+noilta
+noille
+noina
+noiksi
+ne
+niiden
+niitä
+niissä
+niistä
+niihin
+niillä
+niiltä
+niille
+niinä
+niiksi
 
-kuka   kenen kenet   ketä   kenessä kenestä keneen kenellä keneltä kenelle kenenä keneksi
-ketkä  keiden ketkä  keitä  keissä  keistä  keihin keillä  keiltä  keille  keinä  keiksi
-mikä   minkä minkä   mitä   missä   mistä   mihin  millä   miltä   mille   minä   miksi
+# Interrogative pronoun paradigms
+kuka
+kenen
+kenet
+ketä
+kenessä
+kenestä
+keneen
+kenellä
+keneltä
+kenelle
+kenenä
+keneksi
+ketkä
+keiden
+keitä
+keissä
+keistä
+keihin
+keillä
+keiltä
+keille
+keinä
+keiksi
+mikä
+minkä
+mitä
+missä
+mistä
+mihin
+millä
+miltä
+mille
+minä
+miksi
 mitkä
 
-joka   jonka         jota   jossa   josta   johon  jolla   jolta   jolle   jona   joksi
-jotka  joiden        joita  joissa  joista  joihin joilla  joilta  joille  joina  joiksi
+# Relative pronoun paradigms
+joka
+jonka
+jota
+jossa
+josta
+johon
+jolla
+jolta
+jolle
+jona
+joksi
+jotka
+joiden
+joita
+joissa
+joista
+joihin
+joilla
+joilta
+joille
+joina
+joiksi
 
 # conjunctions
 
@@ -93,4 +263,3 @@ yli
 kun
 nyt
 itse
-

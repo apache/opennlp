@@ -120,6 +120,49 @@ public class StopwordFilteringTokenizerTest {
   }
 
   @Test
+  void tokenizePosDropsMultiWordEntry() {
+    final StopwordFilter filter = DictionaryStopwordFilter.builder()
+        .add("new", "york")
+        .build();
+    final Tokenizer t = new StopwordFilteringTokenizer(SimpleTokenizer.INSTANCE, filter);
+
+    final String input = "I love New York city";
+    final Span[] spans = t.tokenizePos(input);
+
+    final String[] kept = new String[spans.length];
+    for (int i = 0; i < spans.length; i++) {
+      kept[i] = spans[i].getCoveredText(input).toString();
+    }
+    // "New" and "York" form a registered multi-word entry and are dropped
+    // together, mirroring tokenize() and StopwordFilterStream.
+    Assertions.assertArrayEquals(new String[] {"I", "love", "city"}, kept);
+    Assertions.assertArrayEquals(kept, t.tokenize(input));
+    // Surviving span offsets still refer to positions in the original string.
+    final Span citySpan = spans[spans.length - 1];
+    Assertions.assertEquals("city", input.substring(citySpan.getStart(), citySpan.getEnd()));
+  }
+
+  @Test
+  void tokenizePosRemovesFinnishParadigmFormsFromBundledList() {
+    // End-to-end check tying the fi.txt expansion to the Span-based path:
+    // the expanded pronoun forms (minä, sinä) and the conjunction (ja) must
+    // be dropped by tokenizePos exactly as by tokenize.
+    final StopwordFilter fi = StopwordLists.forLanguage("fi");
+    final Tokenizer t = new StopwordFilteringTokenizer(SimpleTokenizer.INSTANCE, fi);
+
+    final String input = "minä ja sinä koira";
+
+    Assertions.assertArrayEquals(new String[] {"koira"}, t.tokenize(input));
+
+    final Span[] spans = t.tokenizePos(input);
+    Assertions.assertEquals(1, spans.length);
+    Assertions.assertEquals("koira", spans[0].getCoveredText(input).toString());
+    // The surviving span offset still refers to the original input string.
+    Assertions.assertEquals(13, spans[0].getStart());
+    Assertions.assertEquals(18, spans[0].getEnd());
+  }
+
+  @Test
   void nullDelegateThrowsIae() {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new StopwordFilteringTokenizer(null, newFilter()));

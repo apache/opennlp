@@ -119,6 +119,40 @@ public class StopwordListsTest {
     Assertions.assertTrue(en3.isStopword("and"));
   }
 
+  /**
+   * The Finnish pronoun and determiner paradigms ship in the Snowball list as
+   * whitespace-separated columns. OpenNLP's loader treats whitespace on a line
+   * as one multi-word entry, so those rows were expanded to one token per line.
+   * This verifies the individual forms are now registered as 1-gram stopwords
+   * (not only {@code ja}, which already had its own line).
+   */
+  @ParameterizedTest(name = "fi stopword \"{0}\"")
+  @ValueSource(strings = {
+      "minä", "sinä", "hän", "me", "te", "he",  // personal pronouns
+      "minun", "sinun", "hänen",                // genitive forms
+      "tämä", "tuo", "se", "nämä", "nuo", "ne", // demonstratives
+      "kuka", "mikä", "ketkä", "mitkä",         // interrogatives
+      "joka", "jotka"                           // relatives
+  })
+  void testFinnishParadigmFormsAreIndividualStopwords(final String form) {
+    final StopwordFilter fi = StopwordLists.forLanguage("fi");
+    Assertions.assertTrue(fi.isStopword(form),
+        "expected Finnish form '" + form + "' to be recognized as a stopword");
+  }
+
+  @Test
+  void testForLanguageCachesInstancePerNormalizedCode() {
+    final StopwordFilter a = StopwordLists.forLanguage("en");
+    final StopwordFilter b = StopwordLists.forLanguage("en");
+    Assertions.assertSame(a, b,
+        "repeated forLanguage calls should return the cached instance");
+
+    // A three-letter code normalizes to the same key and shares the cached filter.
+    final StopwordFilter c = StopwordLists.forLanguage("eng");
+    Assertions.assertSame(a, c,
+        "three-letter code should resolve to the cached two-letter filter");
+  }
+
   @Test
   void testSupportedLanguagesReturnsElevenCodes() {
     final Set<String> supported = StopwordLists.supportedLanguages();
