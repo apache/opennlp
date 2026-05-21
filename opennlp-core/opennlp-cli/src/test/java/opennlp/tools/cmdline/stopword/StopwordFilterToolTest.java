@@ -19,14 +19,21 @@ package opennlp.tools.cmdline.stopword;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import opennlp.tools.cmdline.TerminateToolException;
 
 public class StopwordFilterToolTest {
 
@@ -82,11 +89,30 @@ public class StopwordFilterToolTest {
   }
 
   @Test
-  void unsupportedLanguageThrows() {
+  void unknownLanguageOrFileThrows() {
     System.setIn(new ByteArrayInputStream(new byte[0]));
 
+    // "xx" is neither a supported bundled code nor an existing file, so the
+    // tool reports a terminate error rather than silently doing nothing.
     StopwordFilterTool tool = new StopwordFilterTool();
-    Assertions.assertThrows(IllegalArgumentException.class,
+    Assertions.assertThrows(TerminateToolException.class,
         () -> tool.run(new String[] {"xx"}));
+  }
+
+  @Test
+  void filtersUsingCustomListFile(@TempDir Path tmp) throws IOException {
+    final Path list = tmp.resolve("custom-stopwords.txt");
+    Files.write(list, List.of("# custom list", "brown", "fox"), StandardCharsets.UTF_8);
+
+    System.setIn(new ByteArrayInputStream(
+        "the quick brown fox".getBytes(StandardCharsets.UTF_8)));
+
+    StopwordFilterTool tool = new StopwordFilterTool();
+    tool.run(new String[] {list.toString()});
+
+    final String out = capturedOut.toString(StandardCharsets.UTF_8).trim();
+    // The custom list drops "brown" and "fox"; "the"/"quick" are kept since
+    // they are not in this list.
+    Assertions.assertEquals("the quick", out);
   }
 }

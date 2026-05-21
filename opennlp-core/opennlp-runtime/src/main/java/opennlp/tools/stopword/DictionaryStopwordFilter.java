@@ -107,10 +107,6 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
     this.backing = copy;
   }
 
-  private DictionaryStopwordFilter(final Dictionary internal, final boolean owned) {
-    this.backing = internal;
-  }
-
   /**
    * @return A new {@link Builder} that assembles a {@link DictionaryStopwordFilter}.
    */
@@ -416,7 +412,7 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
       for (final String[] entry : removeEntries) {
         dict.remove(new StringList(entry));
       }
-      return new DictionaryStopwordFilter(dict, true);
+      return new DictionaryStopwordFilter(dict);
     }
   }
 }

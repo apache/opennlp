@@ -247,12 +247,21 @@ try (ObjectStream<String[]> tokenStream = ...;
 			Stopword filtering is also exposed as a CLI tool. The
 			<code>StopwordFilter</code> command reads whitespace-separated tokens
 			from standard input and writes the non-stopword tokens to standard
-			output. The single argument is the ISO 639-1 code of the bundled list
-			to use.
+			output. The single argument is either the ISO 639-1 code of a bundled
+			list, or a path to a custom stopword list file (same format as the
+			Java API: one entry per line, with <code>#</code> comments and blank
+			lines ignored, loaded case-insensitively).
 			<screen>
 <![CDATA[$ echo "the quick brown fox" | opennlp StopwordFilter en
 quick brown fox]]>
 			</screen>
+			To use a custom list, pass its file path instead of a language code:
+			<screen>
+<![CDATA[$ echo "the quick brown fox" | opennlp StopwordFilter my-stopwords.txt]]>
+			</screen>
+			A bundled language code takes precedence over a file of the same name;
+			to force loading a file whose name happens to be a language code,
+			qualify it with a path, e.g. <code>./en</code>.
 			The tool is intended for quick interactive checks and for use inside
 			shell pipelines, for example chained behind a tokenizer:
 			<screen>
@@ -295,8 +304,9 @@ quick brown fox]]>
 		</para>
 		<para>
 			The bundled lists are derived from the snowball stopword files shipped
-			with Apache Lucene and are redistributed under the terms of the Apache
-			License, Version 2.0.
+			with Apache Lucene and retain their original BSD license; see the
+			<filename>NOTICE</filename> and <filename>LICENSE</filename> files for
+			the attribution and license text.
 		</para>
 	</section>
 
