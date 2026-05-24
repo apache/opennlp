@@ -25,7 +25,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+
+import opennlp.tools.AbstractTempDirTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * End-to-end smoke test: build a model from the tiny fixtures with
  * {@link SpellCheckModelBuilderTool} and correct a line with {@link CorrectTextTool}.
  */
-public class SpellCheckCmdLineToolsTest {
+public class SpellCheckCmdLineToolsTest extends AbstractTempDirTest {
 
   private static final String UNIGRAMS = "/opennlp/spellcheck/frequency_dictionary_tiny.txt";
   private static final String BIGRAMS = "/opennlp/spellcheck/frequency_bigramdictionary_tiny.txt";
@@ -50,10 +51,10 @@ public class SpellCheckCmdLineToolsTest {
   }
 
   @Test
-  void buildModelAndCorrectLineEndToEnd(@TempDir Path dir) throws IOException {
-    final Path unigrams = copyResource(UNIGRAMS, dir, "unigrams.txt");
-    final Path bigrams = copyResource(BIGRAMS, dir, "bigrams.txt");
-    final Path model = dir.resolve("en-spellcheck.bin");
+  void buildModelAndCorrectLineEndToEnd() throws IOException {
+    final Path unigrams = copyResource(UNIGRAMS, tempDir, "unigrams.txt");
+    final Path bigrams = copyResource(BIGRAMS, tempDir, "bigrams.txt");
+    final Path model = tempDir.resolve("en-spellcheck.bin");
 
     // 1. Build the model.
     new SpellCheckModelBuilderTool().run(new String[] {
@@ -67,9 +68,9 @@ public class SpellCheckCmdLineToolsTest {
     assertTrue(Files.size(model) > 0, "model file is empty");
 
     // 2. Per-token correction.
-    final Path input = dir.resolve("input.txt");
+    final Path input = tempDir.resolve("input.txt");
     Files.writeString(input, "quikc broen wrold\n", StandardCharsets.UTF_8);
-    final Path output = dir.resolve("output.txt");
+    final Path output = tempDir.resolve("output.txt");
 
     new CorrectTextTool().run(new String[] {
         "-model", model.toString(),
@@ -83,10 +84,10 @@ public class SpellCheckCmdLineToolsTest {
   }
 
   @Test
-  void compoundModeRepairsRunOnWords(@TempDir Path dir) throws IOException {
-    final Path unigrams = copyResource(UNIGRAMS, dir, "unigrams.txt");
-    final Path bigrams = copyResource(BIGRAMS, dir, "bigrams.txt");
-    final Path model = dir.resolve("en-spellcheck.bin");
+  void compoundModeRepairsRunOnWords() throws IOException {
+    final Path unigrams = copyResource(UNIGRAMS, tempDir, "unigrams.txt");
+    final Path bigrams = copyResource(BIGRAMS, tempDir, "bigrams.txt");
+    final Path model = tempDir.resolve("en-spellcheck.bin");
 
     new SpellCheckModelBuilderTool().run(new String[] {
         "-lang", "en",
@@ -95,9 +96,9 @@ public class SpellCheckCmdLineToolsTest {
         "-model", model.toString()
     });
 
-    final Path input = dir.resolve("input.txt");
+    final Path input = tempDir.resolve("input.txt");
     Files.writeString(input, "helloworld\n", StandardCharsets.UTF_8);
-    final Path output = dir.resolve("output.txt");
+    final Path output = tempDir.resolve("output.txt");
 
     new CorrectTextTool().run(new String[] {
         "-model", model.toString(),
@@ -112,10 +113,10 @@ public class SpellCheckCmdLineToolsTest {
   }
 
   @Test
-  void suggestModeListsCandidatesPerToken(@TempDir Path dir) throws IOException {
-    final Path unigrams = copyResource(UNIGRAMS, dir, "unigrams.txt");
-    final Path bigrams = copyResource(BIGRAMS, dir, "bigrams.txt");
-    final Path model = dir.resolve("en-spellcheck.bin");
+  void suggestModeListsCandidatesPerToken() throws IOException {
+    final Path unigrams = copyResource(UNIGRAMS, tempDir, "unigrams.txt");
+    final Path bigrams = copyResource(BIGRAMS, tempDir, "bigrams.txt");
+    final Path model = tempDir.resolve("en-spellcheck.bin");
 
     new SpellCheckModelBuilderTool().run(new String[] {
         "-lang", "en",
@@ -124,9 +125,9 @@ public class SpellCheckCmdLineToolsTest {
         "-model", model.toString()
     });
 
-    final Path input = dir.resolve("input.txt");
+    final Path input = tempDir.resolve("input.txt");
     Files.writeString(input, "teh\n", StandardCharsets.UTF_8);
-    final Path output = dir.resolve("output.txt");
+    final Path output = tempDir.resolve("output.txt");
 
     new CorrectTextTool().run(new String[] {
         "-model", model.toString(),
