@@ -32,11 +32,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.spellcheck.SuggestItem;
 import opennlp.spellcheck.Verbosity;
 import opennlp.spellcheck.symspell.SymSpellConfig;
+import opennlp.tools.AbstractTempDirTest;
 import opennlp.tools.models.simple.SimpleClassPathModelFinder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,15 +44,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SymSpellModelResolverTest {
+public class SymSpellModelResolverTest extends AbstractTempDirTest {
 
   @Test
-  void resolvesPackagedModelByLanguageFromClasspath(@TempDir Path tmp) throws IOException {
+  void resolvesPackagedModelByLanguageFromClasspath() throws IOException {
     final SymSpellConfig config = SymSpellConfig.builder().maxDictionaryEditDistance(2).build();
     final SymSpellModel model = new SymSpellModel("en", config,
         Map.of("the", 100L, "world", 50L, "quick", 30L), Map.of());
 
-    final Path jar = tmp.resolve("opennlp-models-spellcheck-en-1.0.jar");
+    final Path jar = tempDir.resolve("opennlp-models-spellcheck-en-1.0.jar");
     final byte[] bytes = SymSpellModels.toBytes(model);
     try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(jar))) {
       jos.putNextEntry(new JarEntry("models/spellcheck-symspell-en.bin"));
@@ -87,7 +87,7 @@ public class SymSpellModelResolverTest {
   }
 
   @Test
-  void corruptSha256IsRejected(@TempDir Path tmp) throws IOException {
+  void corruptSha256IsRejected() throws IOException {
     final SymSpellConfig config = SymSpellConfig.builder().maxDictionaryEditDistance(2).build();
     final SymSpellModel model = new SymSpellModel("en", config,
         Map.of("the", 100L, "world", 50L), Map.of());
@@ -97,7 +97,7 @@ public class SymSpellModelResolverTest {
     final Properties props = SymSpellModels.buildProperties(model, bytes);
     props.setProperty(SymSpellModels.PROP_SHA256, "0".repeat(64));
 
-    final Path jar = tmp.resolve("opennlp-models-spellcheck-en-1.0.jar");
+    final Path jar = tempDir.resolve("opennlp-models-spellcheck-en-1.0.jar");
     try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(jar))) {
       jos.putNextEntry(new JarEntry("models/spellcheck-symspell-en.bin"));
       jos.write(bytes);
