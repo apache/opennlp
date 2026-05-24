@@ -1,0 +1,121 @@
+# From https://snowballstem.org/algorithms/dutch/stop.txt
+# This file is distributed under the BSD License.
+# See https://snowballstem.org/license.html
+# Also see https://opensource.org/licenses/bsd-license.html
+#  - Encoding was converted to UTF-8.
+#  - This notice was added.
+#  - Comments were changed from `|` to `#` so that this list can be parsed by OpenNLP's stopword loader.
+#
+
+
+# A Dutch stop word list. Comments begin with vertical bar. Each stop
+# word is at the start of a line.
+
+# This is a ranked list (commonest to rarest) of stopwords derived from
+# a large sample of Dutch text.
+
+# Dutch stop words frequently exhibit homonym clashes. These are indicated
+# clearly below.
+
+de
+en
+van
+ik
+te
+dat
+die
+in
+een
+hij
+het
+niet
+zijn
+is
+was
+op
+aan
+met
+als
+voor
+had
+er
+maar
+om
+hem
+dan
+zou
+of
+wat
+mijn
+men
+dit
+zo
+door
+over
+ze
+zich
+bij
+ook
+tot
+je
+mij
+uit
+der
+daar
+haar
+naar
+heb
+hoe
+heeft
+hebben
+deze
+u
+want
+nog
+zal
+me
+zij
+nu
+ge
+geen
+omdat
+iets
+worden
+toch
+al
+waren
+veel
+meer
+doen
+toen
+moet
+ben
+zonder
+kan
+hun
+dus
+alles
+onder
+ja
+eens
+hier
+wie
+werd
+altijd
+doch
+wordt
+wezen
+kunnen
+ons
+zelf
+tegen
+na
+reeds
+wil
+kon
+niets
+uw
+iemand
+geweest
+andere
+

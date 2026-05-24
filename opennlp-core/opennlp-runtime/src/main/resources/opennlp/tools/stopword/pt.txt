@@ -1,0 +1,253 @@
+# From https://snowballstem.org/algorithms/portuguese/stop.txt
+# This file is distributed under the BSD License.
+# See https://snowballstem.org/license.html
+# Also see https://opensource.org/licenses/bsd-license.html
+#  - Encoding was converted to UTF-8.
+#  - This notice was added.
+#  - Comments were changed from `|` to `#` so that this list can be parsed by OpenNLP's stopword loader.
+#
+
+# A Portuguese stop word list. Comments begin with vertical bar. Each stop
+# word is at the start of a line.
+
+
+# The following is a ranked list (commonest to rarest) of stopwords
+# deriving from a large sample of text.
+
+# Extra words have been added at the end.
+
+de
+a
+o
+que
+e
+do
+da
+em
+um
+para
+# é          from SER
+com
+não
+uma
+os
+no
+se
+na
+por
+mais
+as
+dos
+como
+mas
+# foi        from SER
+ao
+ele
+das
+# tem        from TER
+à
+seu
+sua
+ou
+# ser        from SER
+quando
+muito
+# há         from HAV
+nos
+já
+# está       from EST
+eu
+também
+só
+pelo
+pela
+até
+isso
+ela
+entre
+# era        from SER
+depois
+sem
+mesmo
+aos
+# ter        from TER
+seus
+quem
+nas
+me
+esse
+eles
+# estão      from EST
+você
+# tinha      from TER
+# foram      from SER
+essa
+num
+nem
+suas
+meu
+às
+minha
+# têm        from TER
+numa
+pelos
+elas
+# havia      from HAV
+# seja       from SER
+qual
+# será       from SER
+nós
+# tenho      from TER
+lhe
+deles
+essas
+esses
+pelas
+este
+# fosse      from SER
+dele
+
+# other words. There are many contractions such as naquele = em+aquele,
+# mo = me+o, but they are rare.
+# Indefinite article plural forms are also rare.
+
+tu
+te
+vocês
+vos
+lhes
+meus
+minhas
+teu
+tua
+teus
+tuas
+nosso
+nossa
+nossos
+nossas
+
+dela
+delas
+
+esta
+estes
+estas
+aquele
+aquela
+aqueles
+aquelas
+isto
+aquilo
+
+# forms of estar, to be (not including the infinitive):
+estou
+está
+estamos
+estão
+estive
+esteve
+estivemos
+estiveram
+estava
+estávamos
+estavam
+estivera
+estivéramos
+esteja
+estejamos
+estejam
+estivesse
+estivéssemos
+estivessem
+estiver
+estivermos
+estiverem
+
+# forms of haver, to have (not including the infinitive):
+hei
+há
+havemos
+hão
+houve
+houvemos
+houveram
+houvera
+houvéramos
+haja
+hajamos
+hajam
+houvesse
+houvéssemos
+houvessem
+houver
+houvermos
+houverem
+houverei
+houverá
+houveremos
+houverão
+houveria
+houveríamos
+houveriam
+
+# forms of ser, to be (not including the infinitive):
+sou
+somos
+são
+era
+éramos
+eram
+fui
+foi
+fomos
+foram
+fora
+fôramos
+seja
+sejamos
+sejam
+fosse
+fôssemos
+fossem
+for
+formos
+forem
+serei
+será
+seremos
+serão
+seria
+seríamos
+seriam
+
+# forms of ter, to have (not including the infinitive):
+tenho
+tem
+temos
+tém
+tinha
+tínhamos
+tinham
+tive
+teve
+tivemos
+tiveram
+tivera
+tivéramos
+tenha
+tenhamos
+tenham
+tivesse
+tivéssemos
+tivessem
+tiver
+tivermos
+tiverem
+terei
+terá
+teremos
+terão
+teria
+teríamos
+teriam

@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"https://cdn.docbook.org/schema/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.stopword">
+
+	<title>Stopword Filtering</title>
+
+	<section xml:id="tools.stopword.overview">
+		<title>Overview</title>
+		<para>
+			Stopwords are very common words (such as articles, prepositions, pronouns
+			or conjunctions) that carry little semantic content of their own and are
+			frequently removed prior to downstream processing such as indexing,
+			classification, topic modeling, keyword extraction or similarity
+			computation. Filtering stopwords can reduce noise, lower memory
+			footprint and improve the signal-to-noise ratio of subsequent NLP
+			components.
+		</para>
+		<para>
+			OpenNLP provides a small, dependency-free stopword filtering API in the
+			<code>opennlp.tools.stopword</code> package. The central abstraction is
+			the <code>StopwordFilter</code> interface, with a
+			<code>Dictionary</code>-backed default implementation
+			<code>DictionaryStopwordFilter</code>. Bundled stopword lists are
+			available for eleven languages and can be loaded by ISO 639-1 code via
+			the <code>StopwordLists</code> factory. Users may also load custom lists
+			from any <code>InputStream</code>, mix them with the bundled defaults
+			and add or remove individual entries at runtime.
+		</para>
+		<para>
+			OpenNLP further offers a tokenizer decorator
+			(<code>StopwordFilteringTokenizer</code>) and an
+			<code>ObjectStream</code> adapter (<code>StopwordFilterStream</code>) to
+			plug stopword filtering into existing tokenization or training data
+			pipelines, plus a command-line tool for ad-hoc filtering.
+		</para>
+	</section>
+
+	<section xml:id="tools.stopword.bundled">
+		<title>Loading a bundled list</title>
+		<para>
+			A bundled stopword list can be obtained from the
+			<code>StopwordLists</code> factory by passing the desired ISO 639-1
+			language code. The returned filter is a
+			<code>DictionaryStopwordFilter</code> that is case-insensitive by
+			default.
+			<programlisting language="java">
+<![CDATA[StopwordFilter filter = StopwordLists.forLanguage("en");
+
+boolean isStop = filter.isStopword("the");        // true
+String[] kept  = filter.filter(new String[] {
+    "the", "quick", "brown", "fox"
+});
+// kept => { "quick", "brown", "fox" }]]>
+			</programlisting>
+			The set of supported languages can be queried at runtime:
+			<programlisting language="java">
+<![CDATA[Set<String> supported = StopwordLists.supportedLanguages();]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.stopword.custom">
+		<title>Loading a custom list</title>
+		<para>
+			Custom stopword lists can be loaded from any <code>InputStream</code>
+			via <code>StopwordLists.load</code>. The method takes the input stream,
+			a character set and a flag indicating whether matching should be
+			case-sensitive.
+			<programlisting language="java">
+<![CDATA[try (InputStream in = new FileInputStream("my-stopwords.txt")) {
+  StopwordFilter filter = StopwordLists.load(
+      in, StandardCharsets.UTF_8, false /* case-insensitive */);
+}]]>
+			</programlisting>
+			The expected file format is a plain UTF-8 text file with the following
+			conventions:
+			<itemizedlist>
+				<listitem>
+					<para>One stopword entry per line.</para>
+				</listitem>
+				<listitem>
+					<para>Whitespace on a line separates the tokens of a multi-word
+						entry, i.e. a line containing more than one token defines an
+						n-gram stopword.</para>
+				</listitem>
+				<listitem>
+					<para>Blank lines are ignored.</para>
+				</listitem>
+				<listitem>
+					<para>Lines starting with <code>#</code> are treated as comments
+						and ignored.</para>
+				</listitem>
+			</itemizedlist>
+			A small example file:
+			<programlisting>
+<![CDATA[# my custom English stopwords
+the
+a
+an
+
+# multi-word entries are defined by whitespace
+of the
+in spite of]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.stopword.extending">
+		<title>Extending or overriding defaults</title>
+		<para>
+			A <code>DictionaryStopwordFilter</code> is immutable once constructed.
+			To tailor a bundled list to a specific domain &#8212; for example to add
+			project-specific noise terms or to retain a particular word that would
+			otherwise be filtered &#8212; use the nested
+			<code>DictionaryStopwordFilter.Builder</code>. The builder loads the
+			bundled resource, layers user-supplied <code>add</code> /
+			<code>remove</code> operations on top, and produces a fresh immutable
+			filter from <code>build()</code>.
+			<programlisting language="java">
+<![CDATA[InputStream bundled =
+    StopwordLists.class.getResourceAsStream("/opennlp/tools/stopword/en.txt");
+
+StopwordFilter filter = DictionaryStopwordFilter.builder()
+    .load(bundled, StandardCharsets.UTF_8)
+    .add("foo")            // mark a new word as a stopword
+    .remove("the")         // keep "the" in the output
+    .build();]]>
+			</programlisting>
+			Bulk operations are also available via
+			<code>addAll(Collection&lt;String[]&gt;)</code> and
+			<code>removeAll(Collection&lt;String[]&gt;)</code>, which accept
+			multi-token entries. <code>build()</code> applies all queued additions
+			first, then all queued removals.
+		</para>
+	</section>
+
+	<section xml:id="tools.stopword.multiword">
+		<title>Multi-word stopwords</title>
+		<para>
+			Beyond single tokens, a <code>StopwordFilter</code> can match n-grams.
+			The overloaded <code>isStopword(String...)</code> method accepts a
+			sequence of tokens and returns <code>true</code> if the entire sequence
+			is registered as a multi-word stopword entry.
+			<programlisting language="java">
+<![CDATA[StopwordFilter filter = DictionaryStopwordFilter.builder()
+    .add("of", "the")
+    .add("in", "spite", "of")
+    .build();
+
+filter.isStopword("of", "the");        // true
+filter.isStopword("in", "spite", "of"); // true
+filter.isStopword("of");                // false]]>
+			</programlisting>
+			Multi-word entries are matched as exact, contiguous sequences and are
+			subject to the same case-sensitivity setting as the rest of the
+			dictionary.
+		</para>
+		<para>
+			The <code>filter(String[])</code> method honors both 1-gram and n-gram
+			entries. It performs a greedy, left-to-right window scan: at each
+			position the longest registered window is tried first; if it matches,
+			the entire window is dropped and scanning resumes after it. Otherwise
+			the head token is kept and scanning advances by one. Tokens that are
+			<code>null</code> are kept in place and never participate in a window
+			match.
+			<programlisting language="java">
+<![CDATA[StopwordFilter filter = DictionaryStopwordFilter.builder()
+    .add("the")               // 1-gram
+    .add("of", "the")         // 2-gram
+    .add("in", "spite", "of") // 3-gram
+    .build();
+
+String[] kept = filter.filter(new String[] {
+    "the", "king", "of", "the", "hill",
+    "won", "in", "spite", "of", "rain"
+});
+// kept => { "king", "hill", "won", "rain" }]]>
+			</programlisting>
+			When both a shorter and a longer registered entry could match at the
+			same position, the longer match wins. If the longest window does not
+			match, shorter windows down to length one are tried in turn.
+		</para>
+	</section>
+
+	<section xml:id="tools.stopword.tokenizer">
+		<title>Decorating a Tokenizer</title>
+		<para>
+			Any existing <code>Tokenizer</code> implementation can be wrapped in a
+			<code>StopwordFilteringTokenizer</code> to transparently remove
+			stopwords from its output. The decorator delegates tokenization to the
+			wrapped instance and then runs the resulting token array through the
+			provided <code>StopwordFilter</code>.
+			<programlisting language="java">
+<![CDATA[StopwordFilter filter = StopwordLists.forLanguage("en");
+Tokenizer tokenizer = new StopwordFilteringTokenizer(
+    SimpleTokenizer.INSTANCE, filter);
+
+String[] tokens = tokenizer.tokenize("The quick brown fox jumps over the lazy dog");
+// tokens => { "quick", "brown", "fox", "jumps", "lazy", "dog" }]]>
+			</programlisting>
+			The decorated tokenizer can be used anywhere a <code>Tokenizer</code>
+			is expected, including in downstream OpenNLP pipelines.
+		</para>
+	</section>
+
+	<section xml:id="tools.stopword.stream">
+		<title>Streaming usage</title>
+		<para>
+			For training-data and bulk-processing scenarios that already operate on
+			<code>ObjectStream&lt;String[]&gt;</code> (for example tokenized
+			sentences), the <code>StopwordFilterStream</code> adapter provides a
+			drop-in filter that strips stopwords from each emitted token array.
+			<programlisting language="java">
+<![CDATA[StopwordFilter filter = StopwordLists.forLanguage("en");
+
+try (ObjectStream<String[]> tokenStream = ...;
+     ObjectStream<String[]> filtered = new StopwordFilterStream(tokenStream, filter)) {
+
+  String[] tokens;
+  while ((tokens = filtered.read()) != null) {
+    // tokens no longer contains any stopwords
+  }
+}]]>
+			</programlisting>
+			Empty arrays produced by removing every token of a short sentence are
+			preserved so that the stream's record boundaries remain aligned with
+			the source.
+		</para>
+	</section>
+
+	<section xml:id="tools.stopword.cmdline">
+		<title>Command-line usage</title>
+		<para>
+			Stopword filtering is also exposed as a CLI tool. The
+			<code>StopwordFilter</code> command reads whitespace-separated tokens
+			from standard input and writes the non-stopword tokens to standard
+			output. The single argument is either the ISO 639-1 code of a bundled
+			list, or a path to a custom stopword list file (same format as the
+			Java API: one entry per line, with <code>#</code> comments and blank
+			lines ignored, loaded case-insensitively).
+			<screen>
+<![CDATA[$ echo "the quick brown fox" | opennlp StopwordFilter en
+quick brown fox]]>
+			</screen>
+			To use a custom list, pass its file path instead of a language code:
+			<screen>
+<![CDATA[$ echo "the quick brown fox" | opennlp StopwordFilter my-stopwords.txt]]>
+			</screen>
+			A bundled language code takes precedence over a file of the same name;
+			to force loading a file whose name happens to be a language code,
+			qualify it with a path, e.g. <code>./en</code>.
+			The tool is intended for quick interactive checks and for use inside
+			shell pipelines, for example chained behind a tokenizer:
+			<screen>
+<![CDATA[$ opennlp SimpleTokenizer < article.txt | opennlp StopwordFilter en > filtered.txt]]>
+			</screen>
+		</para>
+	</section>
+
+	<section xml:id="tools.stopword.languages">
+		<title>Bundled languages</title>
+		<para>
+			The following stopword lists are bundled with OpenNLP and can be
+			loaded by their ISO 639-1 code through
+			<code>StopwordLists.forLanguage</code>:
+			<informaltable frame="all">
+				<tgroup cols="2">
+					<colspec colname="code" colwidth="1*"/>
+					<colspec colname="lang" colwidth="3*"/>
+					<thead>
+						<row>
+							<entry>ISO 639-1 code</entry>
+							<entry>Language</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row><entry>bg</entry><entry>Bulgarian</entry></row>
+						<row><entry>da</entry><entry>Danish</entry></row>
+						<row><entry>de</entry><entry>German</entry></row>
+						<row><entry>en</entry><entry>English</entry></row>
+						<row><entry>es</entry><entry>Spanish</entry></row>
+						<row><entry>fi</entry><entry>Finnish</entry></row>
+						<row><entry>fr</entry><entry>French</entry></row>
+						<row><entry>it</entry><entry>Italian</entry></row>
+						<row><entry>nl</entry><entry>Dutch</entry></row>
+						<row><entry>pt</entry><entry>Portuguese</entry></row>
+						<row><entry>ru</entry><entry>Russian</entry></row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+		</para>
+		<para>
+			The bundled lists are derived from the snowball stopword files shipped
+			with Apache Lucene and retain their original BSD license; see the
+			<filename>NOTICE</filename> and <filename>LICENSE</filename> files for
+			the attribution and license text.
+		</para>
+	</section>
+
+	<section xml:id="tools.stopword.threadsafety">
+		<title>Thread-safety</title>
+		<para>
+			<code>DictionaryStopwordFilter</code> is immutable once constructed and
+			is therefore safe to share across threads without external
+			synchronization. A filter returned by
+			<code>StopwordLists.forLanguage(...)</code> or assembled via the
+			<code>Builder</code> can be stored in a static field and accessed
+			concurrently from any number of readers.
+		</para>
+		<para>
+			<code>StopwordFilteringTokenizer</code> and
+			<code>StopwordFilterStream</code> are also stateless decorators with
+			only <code>final</code> fields, so they inherit the thread-safety of the
+			components they wrap. When paired with a
+			<code>DictionaryStopwordFilter</code> and a thread-safe delegate
+			tokenizer (e.g. <code>SimpleTokenizer.INSTANCE</code> or
+			<code>WhitespaceTokenizer.INSTANCE</code>) the resulting pipeline is
+			fully thread-safe.
+		</para>
+	</section>
+</chapter>
