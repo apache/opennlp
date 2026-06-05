@@ -83,6 +83,17 @@ public final class SymSpell implements SpellChecker {
   /** Running sum of every count added (the derived corpus size <i>N</i>). */
   private long totalCorpusCount;
 
+  /**
+   * Creates an engine from the given configuration. The configuration fixes the index
+   * geometry and scoring constants for the engine's lifetime: the maximum dictionary edit
+   * distance, the delete-generation prefix length, the count threshold below which terms
+   * stay unindexed, the verification {@link EditDistance} metric, and the corpus
+   * normalization constant. See {@link SymSpellConfig} for the individual tunables and
+   * their defaults.
+   *
+   * @param config the engine configuration; must not be {@code null}
+   * @throws NullPointerException if {@code config} is {@code null}
+   */
   public SymSpell(SymSpellConfig config) {
     Objects.requireNonNull(config, "config must not be null");
     this.maxDictionaryEditDistance = config.maxDictionaryEditDistance();
@@ -111,6 +122,8 @@ public final class SymSpell implements SpellChecker {
    * @param word  the dictionary term; must not be {@code null}
    * @param count the corpus count to add; must be {@code >= 0}
    * @return {@code true} if the term became (or remained) indexed
+   * @throws NullPointerException     if {@code word} is {@code null}
+   * @throws IllegalArgumentException if {@code count} is negative
    */
   public boolean add(String word, long count) {
     Objects.requireNonNull(word, "word must not be null");
@@ -168,6 +181,8 @@ public final class SymSpell implements SpellChecker {
    * @param w1    the first word; must not be {@code null}
    * @param w2    the second word; must not be {@code null}
    * @param count the corpus count to add; must be {@code >= 0}
+   * @throws NullPointerException     if {@code w1} or {@code w2} is {@code null}
+   * @throws IllegalArgumentException if {@code count} is negative
    */
   public void addBigram(String w1, String w2, long count) {
     Objects.requireNonNull(w1, "w1 must not be null");

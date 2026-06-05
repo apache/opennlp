@@ -43,14 +43,14 @@ public final class DamerauOSADistance implements EditDistance {
   @Override
   public int distance(CharSequence a, CharSequence b, int max) {
     if (a == null || b == null) {
-      throw new NullPointerException("input sequences must not be null");
+      throw new IllegalArgumentException("input sequences must not be null");
     }
     if (max < 0) {
       throw new IllegalArgumentException("max must not be negative: " + max);
     }
 
-    int[] s1 = toCodePoints(a);
-    int[] s2 = toCodePoints(b);
+    int[] s1 = CodePoints.of(a);
+    int[] s2 = CodePoints.of(b);
 
     // Keep the shorter string as the columns to minimise memory.
     if (s1.length > s2.length) {
@@ -101,7 +101,7 @@ public final class DamerauOSADistance implements EditDistance {
       for (int j = 1; j <= len1; j++) {
         final int c1 = s1[offset + j - 1];
         final int cost = (c1 == c2) ? 0 : 1;
-        int value = min3(
+        int value = CodePoints.min3(
             prev[j] + 1,        // deletion
             cur[j - 1] + 1,     // insertion
             prev[j - 1] + cost  // substitution / match
@@ -126,26 +126,5 @@ public final class DamerauOSADistance implements EditDistance {
 
     final int result = prev[len1];
     return result <= max ? result : -1;
-  }
-
-  private static int min3(int x, int y, int z) {
-    return Math.min(x, Math.min(y, z));
-  }
-
-  private static int[] toCodePoints(CharSequence cs) {
-    final int charLen = cs.length();
-    final int[] cps = new int[charLen];
-    int count = 0;
-    for (int i = 0; i < charLen; ) {
-      final int cp = Character.codePointAt(cs, i);
-      cps[count++] = cp;
-      i += Character.charCount(cp);
-    }
-    if (count == charLen) {
-      return cps;
-    }
-    final int[] trimmed = new int[count];
-    System.arraycopy(cps, 0, trimmed, 0, count);
-    return trimmed;
   }
 }

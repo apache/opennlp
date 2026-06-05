@@ -93,6 +93,9 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    *                   {@code null}
    * @param delimiter  the literal token delimiter to split and re-join on; must not be
    *                   {@code null} or empty
+   * @throws NullPointerException     if {@code normalizer} or {@code delimiter} is
+   *                                  {@code null}
+   * @throws IllegalArgumentException if {@code delimiter} is empty
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples,
                                     SpellCheckingCharSequenceNormalizer normalizer,

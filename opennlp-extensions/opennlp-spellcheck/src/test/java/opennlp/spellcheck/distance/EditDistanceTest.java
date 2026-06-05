@@ -169,9 +169,9 @@ public class EditDistanceTest {
 
   @Test
   void nullInputsAreRejected() {
-    assertThrows(NullPointerException.class, () -> damerau.distance(null, "b", 1));
-    assertThrows(NullPointerException.class, () -> damerau.distance("a", null, 1));
-    assertThrows(NullPointerException.class, () -> levenshtein.distance(null, "b", 1));
-    assertThrows(NullPointerException.class, () -> levenshtein.distance("a", null, 1));
+    assertThrows(IllegalArgumentException.class, () -> damerau.distance(null, "b", 1));
+    assertThrows(IllegalArgumentException.class, () -> damerau.distance("a", null, 1));
+    assertThrows(IllegalArgumentException.class, () -> levenshtein.distance(null, "b", 1));
+    assertThrows(IllegalArgumentException.class, () -> levenshtein.distance("a", null, 1));
   }
 }

@@ -29,10 +29,17 @@ public interface EditDistance {
    * Computes the edit distance between {@code a} and {@code b}, giving up early once it
    * is certain the distance exceeds {@code max}.
    *
+   * <p>A {@code max} of {@code 0} is permitted and meaningful: it asks only whether the
+   * two sequences are equal, returning {@code 0} when they are and {@code -1} as soon as
+   * any difference is found. It is the natural lower bound of the contract, not a
+   * degenerate case.</p>
+   *
    * @param a   the first sequence; must not be {@code null}
    * @param b   the second sequence; must not be {@code null}
-   * @param max the maximum acceptable distance; must not be negative
+   * @param max the maximum acceptable distance; must not be negative ({@code >= 0})
    * @return the edit distance, or {@code -1} if it is strictly greater than {@code max}
+   * @throws IllegalArgumentException if {@code a} or {@code b} is {@code null}, or if
+   *     {@code max} is negative
    */
   int distance(CharSequence a, CharSequence b, int max);
 }

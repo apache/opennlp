@@ -34,11 +34,18 @@ public interface SpellChecker {
   /**
    * Looks up suggestions for a single {@code term} within {@code maxEditDistance}.
    *
+   * <p>A blank (empty or whitespace-only) {@code term} is a valid argument: it is looked
+   * up verbatim and, as it matches no dictionary entry, normally yields an empty list
+   * rather than an error.</p>
+   *
    * @param term           the (possibly misspelled) term to correct; must not be {@code null}
-   * @param verbosity      controls how many suggestions are returned
+   * @param verbosity      controls how many suggestions are returned; must not be {@code null}
    * @param maxEditDistance the maximum edit distance to consider; must not be negative and
    *                       must not exceed {@link #maxEditDistance()}
    * @return the matching suggestions in natural order (best first); never {@code null}
+   * @throws NullPointerException     if {@code term} or {@code verbosity} is {@code null}
+   * @throws IllegalArgumentException if {@code maxEditDistance} is negative or exceeds
+   *     {@link #maxEditDistance()}
    */
   List<SuggestItem> lookup(String term, Verbosity verbosity, int maxEditDistance);
 
@@ -53,8 +60,12 @@ public interface SpellChecker {
    * Convenience overload that uses {@link Verbosity#TOP} and the implementation's
    * configured maximum dictionary edit distance.
    *
+   * <p>As with {@link #lookup(String, Verbosity, int)}, a blank {@code term} is looked up
+   * verbatim and normally yields an empty list.</p>
+   *
    * @param term the (possibly misspelled) term to correct; must not be {@code null}
    * @return the matching suggestions in natural order (best first); never {@code null}
+   * @throws NullPointerException if {@code term} is {@code null}
    */
   List<SuggestItem> lookup(String term);
 
@@ -62,9 +73,15 @@ public interface SpellChecker {
    * Corrects a whole input string (a phrase or sentence), supporting word splits and
    * merges, and combining candidates using a bigram language model.
    *
+   * <p>A blank (empty or whitespace-only) {@code input} is a valid argument: it contains
+   * no tokens to correct, so the returned singleton holds a suggestion whose term is the
+   * empty string at edit distance {@code 0}.</p>
+   *
    * @param input           the input phrase to correct; must not be {@code null}
    * @param maxEditDistance the maximum edit distance per token; must not be negative
    * @return a singleton list holding the best correction of the whole input; never {@code null}
+   * @throws NullPointerException     if {@code input} is {@code null}
+   * @throws IllegalArgumentException if {@code maxEditDistance} is negative
    */
   List<SuggestItem> lookupCompound(String input, int maxEditDistance);
 }

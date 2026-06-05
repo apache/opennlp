@@ -42,6 +42,9 @@ import opennlp.spellcheck.distance.EditDistance;
  *       explicitly to pin <i>N</i> (e.g. to the full-corpus total a reference dictionary was
  *       drawn from).</li>
  * </ul>
+ *
+ * @see <a href="https://github.com/wolfgarbe/SymSpell">SymSpell reference implementation
+ *     (Wolf Garbe)</a>
  */
 public final class SymSpellConfig {
 
@@ -119,6 +122,7 @@ public final class SymSpellConfig {
     /**
      * @param value largest precomputed dictionary edit distance; must be {@code >= 0}
      * @return this builder
+     * @throws IllegalArgumentException if {@code value} is negative
      */
     public Builder maxDictionaryEditDistance(int value) {
       if (value < 0) {
@@ -132,6 +136,8 @@ public final class SymSpellConfig {
      * @param value number of leading symbols used for delete generation; must be
      *     {@code >= 1} and {@code > maxDictionaryEditDistance}
      * @return this builder
+     * @throws IllegalArgumentException if {@code value} is {@code < 1} (the cross-check
+     *     against {@code maxDictionaryEditDistance} is enforced by {@link #build()})
      */
     public Builder prefixLength(int value) {
       if (value < 1) {
@@ -144,6 +150,7 @@ public final class SymSpellConfig {
     /**
      * @param value minimum corpus count for a term to be indexed; must be {@code >= 1}
      * @return this builder
+     * @throws IllegalArgumentException if {@code value} is {@code < 1}
      */
     public Builder countThreshold(long value) {
       if (value < 1) {
@@ -170,6 +177,7 @@ public final class SymSpellConfig {
      *              derive <i>N</i> from the loaded dictionary's summed counts; must be
      *              {@code >= 0}
      * @return this builder
+     * @throws IllegalArgumentException if {@code value} is negative
      */
     public Builder corpusWordCount(long value) {
       if (value < 0) {
@@ -179,7 +187,11 @@ public final class SymSpellConfig {
       return this;
     }
 
-    /** @return the immutable configuration. */
+    /**
+     * @return the immutable configuration
+     * @throws IllegalArgumentException if {@code prefixLength} is not strictly greater than
+     *     {@code maxDictionaryEditDistance}
+     */
     public SymSpellConfig build() {
       if (prefixLength <= maxDictionaryEditDistance) {
         throw new IllegalArgumentException(

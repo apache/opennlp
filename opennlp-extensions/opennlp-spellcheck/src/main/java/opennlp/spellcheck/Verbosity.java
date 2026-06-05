@@ -22,6 +22,9 @@ package opennlp.spellcheck;
  * with how much effort they are gathered.
  *
  * <p>The semantics follow the SymSpell reference implementation.</p>
+ *
+ * @see <a href="https://github.com/wolfgarbe/SymSpell">SymSpell reference implementation
+ *     (Wolf Garbe)</a>
  */
 public enum Verbosity {
 
