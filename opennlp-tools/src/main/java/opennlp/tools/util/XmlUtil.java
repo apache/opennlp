@@ -27,6 +27,8 @@ import javax.xml.parsers.SAXParserFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 public class XmlUtil {
 
@@ -49,17 +51,17 @@ public class XmlUtil {
           " this platform.", e);
     }
     try {
-      documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-      documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-      documentBuilderFactory.setFeature(
+      setAttributeIfSupported(documentBuilderFactory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      setAttributeIfSupported(documentBuilderFactory, XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+      setFeatureIfSupported(documentBuilderFactory,
           "http://apache.org/xml/features/disallow-doctype-decl", true);
-      documentBuilderFactory.setFeature(
+      setFeatureIfSupported(documentBuilderFactory,
           "http://xml.org/sax/features/external-general-entities", false);
-      documentBuilderFactory.setFeature(
+      setFeatureIfSupported(documentBuilderFactory,
           "http://xml.org/sax/features/external-parameter-entities", false);
-      documentBuilderFactory.setFeature(
+      setFeatureIfSupported(documentBuilderFactory,
           "http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-      documentBuilderFactory.setXIncludeAware(false);
+      setXIncludeAwareIfSupported(documentBuilderFactory, false);
       documentBuilderFactory.setExpandEntityReferences(false);
       return documentBuilderFactory.newDocumentBuilder();
     } catch (ParserConfigurationException e) {
@@ -76,7 +78,7 @@ public class XmlUtil {
   public static SAXParser createSaxParser() {
     final SAXParserFactory spf = SAXParserFactory.newInstance();
     spf.setNamespaceAware(true);
-    spf.setXIncludeAware(false);
+    setXIncludeAwareIfSupported(spf, false);
     try {
       spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
     } catch (ParserConfigurationException | SAXException e) {
@@ -85,17 +87,74 @@ public class XmlUtil {
       logger.warn("Failed to enable XMLConstants.FEATURE_SECURE_PROCESSING, it's unsupported on" +
           " this platform.", e);
     }
+    setFeatureIfSupported(spf, "http://apache.org/xml/features/disallow-doctype-decl", true);
+    setFeatureIfSupported(spf, "http://xml.org/sax/features/external-general-entities", false);
+    setFeatureIfSupported(spf, "http://xml.org/sax/features/external-parameter-entities", false);
+    setFeatureIfSupported(spf, "http://apache.org/xml/features/nonvalidating/load-external-dtd",
+        false);
     try {
-      spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-      spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
-      spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-      spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
       final SAXParser parser = spf.newSAXParser();
-      parser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-      parser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+      setPropertyIfSupported(parser, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      setPropertyIfSupported(parser, XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
       return parser;
     } catch (ParserConfigurationException | SAXException e) {
       throw new IllegalStateException(e);
+    }
+  }
+
+  private static void setFeatureIfSupported(DocumentBuilderFactory factory, String name,
+                                            boolean value) {
+    try {
+      factory.setFeature(name, value);
+    } catch (ParserConfigurationException e) {
+      logger.warn("Failed to set XML parser feature {}, it's unsupported on this platform.",
+          name, e);
+    }
+  }
+
+  private static void setAttributeIfSupported(DocumentBuilderFactory factory, String name,
+                                             Object value) {
+    try {
+      factory.setAttribute(name, value);
+    } catch (IllegalArgumentException e) {
+      logger.warn("Failed to set XML parser attribute {}, it's unsupported on this platform.",
+          name, e);
+    }
+  }
+
+  private static void setXIncludeAwareIfSupported(DocumentBuilderFactory factory, boolean state) {
+    try {
+      factory.setXIncludeAware(state);
+    } catch (UnsupportedOperationException e) {
+      logger.warn("Failed to set XML parser XInclude awareness, it's unsupported on " +
+          "this platform.", e);
+    }
+  }
+
+  private static void setPropertyIfSupported(SAXParser parser, String name, Object value) {
+    try {
+      parser.setProperty(name, value);
+    } catch (SAXNotRecognizedException | SAXNotSupportedException e) {
+      logger.warn("Failed to set XML parser property {}, it's unsupported on this platform.",
+          name, e);
+    }
+  }
+
+  private static void setFeatureIfSupported(SAXParserFactory factory, String name, boolean value) {
+    try {
+      factory.setFeature(name, value);
+    } catch (ParserConfigurationException | SAXException e) {
+      logger.warn("Failed to set XML parser feature {}, it's unsupported on this platform.",
+          name, e);
+    }
+  }
+
+  private static void setXIncludeAwareIfSupported(SAXParserFactory factory, boolean state) {
+    try {
+      factory.setXIncludeAware(state);
+    } catch (UnsupportedOperationException e) {
+      logger.warn("Failed to set XML parser XInclude awareness, it's unsupported on " +
+          "this platform.", e);
     }
   }
 }
