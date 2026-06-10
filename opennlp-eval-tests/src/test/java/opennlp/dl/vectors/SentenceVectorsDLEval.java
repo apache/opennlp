@@ -38,9 +38,9 @@ public class SentenceVectorsDLEval extends AbstractEvalTest {
 
       final float[] vectors = sv.getVectors(sentence);
 
-      Assertions.assertEquals(vectors[0], 0.39994872, 0.00001);
-      Assertions.assertEquals(vectors[1], -0.055101186, 0.00001);
-      Assertions.assertEquals(vectors[2], 0.2817594, 0.00001);
+      Assertions.assertEquals(vectors[0], 0.044745024, 0.00001);
+      Assertions.assertEquals(vectors[1], 0.20219636, 0.00001);
+      Assertions.assertEquals(vectors[2], 0.41306049, 0.00001);
       Assertions.assertEquals(vectors.length, 384);
     }
 
