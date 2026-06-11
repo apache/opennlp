@@ -51,6 +51,46 @@ public class WordpieceTokenizerTest {
 
   }
 
+  @Test
+  void testPunctuationRunsAreSplitIntoSingleCharacters() {
+
+    final Set<String> vocabulary = getVocabulary();
+    vocabulary.add(".");
+
+    final Tokenizer tokenizer = new WordpieceTokenizer(vocabulary);
+    final String[] tokens = tokenizer.tokenize("the lazy dog...");
+
+    final String[] expected = {"[CLS]", "the", "lazy", "dog", ".", ".", ".", "[SEP]"};
+
+    Assertions.assertArrayEquals(expected, tokens);
+
+  }
+
+  @Test
+  void testPartiallyMatchedWordBecomesSingleUnknownToken() {
+
+    // "brownfox" starts with the vocabulary piece "brown", but the remainder has no
+    // matching piece. The reference BERT implementation replaces the whole word with
+    // the unknown token instead of emitting the matched prefix pieces.
+    final Tokenizer tokenizer = new WordpieceTokenizer(getVocabulary());
+    final String[] tokens = tokenizer.tokenize("the brownfox jumps");
+
+    final String[] expected = {"[CLS]", "the", "[UNK]", "jumps", "[SEP]"};
+
+    Assertions.assertArrayEquals(expected, tokens);
+
+  }
+
+  @Test
+  void testTokenizePosIsUnsupported() {
+
+    final Tokenizer tokenizer = new WordpieceTokenizer(getVocabulary());
+
+    Assertions.assertThrows(UnsupportedOperationException.class,
+        () -> tokenizer.tokenizePos("the lazy dog"));
+
+  }
+
   private Set<String> getVocabulary() {
 
     final Set<String> vocabulary = new HashSet<>();

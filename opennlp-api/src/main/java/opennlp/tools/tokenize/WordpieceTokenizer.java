@@ -20,7 +20,6 @@ package opennlp.tools.tokenize;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import opennlp.tools.util.Span;
 
@@ -30,6 +29,13 @@ import opennlp.tools.util.Span;
  * <p>
  * Adapted under MIT license from
  * <a href="https://github.com/robrua/easy-bert">https://github.com/robrua/easy-bert</a>.
+ * <p>
+ * Note that this tokenizer performs <i>only</i> the wordpiece (subword) stage
+ * of BERT tokenization. It does not normalize the input text: no lower casing,
+ * no accent stripping, no control character removal. Text that does not match
+ * the vocabulary's casing - for uncased models that includes every capitalized
+ * word - is mapped to the unknown token. Use {@link BertTokenizer} for the
+ * full BERT tokenization pipeline.
  * <p>
  * For reference see:
  * <ul>
@@ -42,6 +48,8 @@ import opennlp.tools.util.Span;
  *    https://cran.r-project.org/web/packages/wordpiece/vignettes/basic_usage.html</a>
  *  </li>
  * </ul>
+ *
+ * @see BertTokenizer
  */
 public class WordpieceTokenizer implements Tokenizer {
 
@@ -58,9 +66,6 @@ public class WordpieceTokenizer implements Tokenizer {
   public static final String ROBERTA_SEP_TOKEN = "</s>";
   /** RoBERTa unknown token. */
   public static final String ROBERTA_UNK_TOKEN = "<unk>";
-
-  private static final Pattern PUNCTUATION_PATTERN =
-      Pattern.compile("\\p{Punct}+");
 
   private final Set<String> vocabulary;
   private final String classificationToken;
@@ -113,10 +118,36 @@ public class WordpieceTokenizer implements Tokenizer {
     this.unknownToken = unknownToken;
   }
 
+  /**
+   * Initializes a {@link WordpieceTokenizer} with a {@code vocabulary},
+   * custom special tokens and a custom {@code maxTokenLength}.
+   *
+   * @param vocabulary          The vocabulary.
+   * @param classificationToken The CLS token.
+   * @param separatorToken      The SEP token.
+   * @param unknownToken        The UNK token.
+   * @param maxTokenLength      A non-negative number that is used as maximum token length.
+   */
+  public WordpieceTokenizer(
+      final Set<String> vocabulary,
+      final String classificationToken,
+      final String separatorToken,
+      final String unknownToken,
+      final int maxTokenLength) {
+    this(vocabulary, classificationToken, separatorToken, unknownToken);
+    this.maxTokenLength = maxTokenLength;
+  }
+
+  /**
+   * Not supported: wordpiece tokens (subwords, {@code ##} continuations and
+   * special tokens) have no faithful character spans in the original text.
+   *
+   * @throws UnsupportedOperationException Always.
+   */
   @Override
   public Span[] tokenizePos(final String text) {
-    // TODO: Implement this.
-    return null;
+    throw new UnsupportedOperationException(
+        "Wordpiece tokens cannot be mapped to character spans of the original text");
   }
 
   @Override
@@ -125,8 +156,9 @@ public class WordpieceTokenizer implements Tokenizer {
     final List<String> tokens = new LinkedList<>();
     tokens.add(classificationToken);
 
-    // Put spaces around punctuation.
-    final String spacedPunctuation = PUNCTUATION_PATTERN.matcher(text).replaceAll(" $0 ");
+    // Isolate each punctuation character as its own token, as the reference
+    // BERT tokenization does. Runs of punctuation become individual tokens.
+    final String spacedPunctuation = BertTokenizer.isolatePunctuation(text);
 
     // Split based on whitespace.
     final String[] split = WhitespaceTokenizer.INSTANCE.tokenize(spacedPunctuation);
@@ -134,22 +166,27 @@ public class WordpieceTokenizer implements Tokenizer {
     // For each resulting word, if the word is found in the WordPiece vocabulary, keep it as-is.
     // If not, starting from the beginning, pull off the biggest piece that is in the vocabulary,
     // and prefix "##" to the remaining piece. Repeat until the entire word is represented by
-    // pieces from the vocabulary, if possible.
+    // pieces from the vocabulary. If the word cannot be fully represented, the whole word
+    // becomes a single unknown token, as in the reference BERT implementation.
     for (final String token : split) {
 
       final char[] characters = token.toCharArray();
 
       if (characters.length <= maxTokenLength) {
 
+        // The pieces of this word. Only added to the result if the whole word matches.
+        final List<String> wordPieces = new LinkedList<>();
+
         // To start, the substring is the whole token.
         int start = 0;
         int end;
+        boolean found = true;
 
         // Look at the token from the start.
         while (start < characters.length) {
 
           end = characters.length;
-          boolean found = false;
+          found = false;
 
           // Look at the token from the end until the end is equal to the start.
           while (start < end) {
@@ -165,8 +202,8 @@ public class WordpieceTokenizer implements Tokenizer {
             // See if the substring is in the vocabulary.
             if (vocabulary.contains(substring)) {
 
-              // It is in the vocabulary so add it to the list of tokens.
-              tokens.add(substring);
+              // It is in the vocabulary so add it to the pieces of this word.
+              wordPieces.add(substring);
 
               // Next time we can pick up where we left off.
               start = end;
@@ -181,16 +218,21 @@ public class WordpieceTokenizer implements Tokenizer {
 
           }
 
-          // If the word can't be represented by vocabulary pieces replace
-          // it with a specified "unknown" token.
+          // A part of the word is not representable by vocabulary pieces, so the
+          // whole word is replaced with the unknown token.
           if (!found) {
-            tokens.add(unknownToken);
             break;
           }
 
           // Start the next characters where we just left off.
           start = end;
 
+        }
+
+        if (found) {
+          tokens.addAll(wordPieces);
+        } else {
+          tokens.add(unknownToken);
         }
 
       } else {
