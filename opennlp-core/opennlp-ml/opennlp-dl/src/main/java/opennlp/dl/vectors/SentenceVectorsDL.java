@@ -40,7 +40,14 @@ import opennlp.tools.tokenize.Tokenizer;
  *
  * <p>The model inputs follow the standard single-segment BERT
  * encoding: {@code attention_mask} is {@code 1} for every real
- * token and {@code token_type_ids} is {@code 0} throughout.
+ * token and {@code token_type_ids} is {@code 0} throughout.</p>
+ *
+ * <p><b>Release note (OpenNLP 3.0.0):</b> prior releases sent an
+ * all-zero {@code attention_mask} and all-one {@code token_type_ids},
+ * so the encoder attended to nothing and the output vectors were
+ * incorrect. Output vectors change with the corrected encoding; any
+ * embeddings persisted from the previous behavior are not comparable
+ * with the corrected output and must be re-embedded.</p>
  */
 public class SentenceVectorsDL extends AbstractDL {
 
