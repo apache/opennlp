@@ -37,6 +37,15 @@ import opennlp.tools.util.Span;
  * word - is mapped to the unknown token. Use {@link BertTokenizer} for the
  * full BERT tokenization pipeline.
  * <p>
+ * As of OpenNLP 3.0.0 the behavior matches the reference BERT wordpiece
+ * implementation in three respects that differ from earlier releases:
+ * runs of punctuation (and non-ASCII punctuation) are split into individual
+ * single-character tokens, words that cannot be fully represented by
+ * vocabulary pieces become a single unknown token instead of the matched
+ * prefix pieces followed by the unknown token, and {@link #tokenizePos(String)}
+ * throws {@link UnsupportedOperationException} instead of returning
+ * {@code null}.
+ * <p>
  * For reference see:
  * <ul>
  *  <li>
@@ -92,7 +101,7 @@ public class WordpieceTokenizer implements Tokenizer {
    */
   public WordpieceTokenizer(Set<String> vocabulary, int maxTokenLength) {
     this(vocabulary);
-    this.maxTokenLength = maxTokenLength;
+    this.maxTokenLength = requireNonNegative(maxTokenLength);
   }
 
   /**
@@ -135,7 +144,15 @@ public class WordpieceTokenizer implements Tokenizer {
       final String unknownToken,
       final int maxTokenLength) {
     this(vocabulary, classificationToken, separatorToken, unknownToken);
-    this.maxTokenLength = maxTokenLength;
+    this.maxTokenLength = requireNonNegative(maxTokenLength);
+  }
+
+  private static int requireNonNegative(final int maxTokenLength) {
+    if (maxTokenLength < 0) {
+      throw new IllegalArgumentException(
+          "maxTokenLength must be non-negative: " + maxTokenLength);
+    }
+    return maxTokenLength;
   }
 
   /**
@@ -158,7 +175,7 @@ public class WordpieceTokenizer implements Tokenizer {
 
     // Isolate each punctuation character as its own token, as the reference
     // BERT tokenization does. Runs of punctuation become individual tokens.
-    final String spacedPunctuation = BertTokenizer.isolatePunctuation(text);
+    final String spacedPunctuation = BertNormalization.isolatePunctuation(text);
 
     // Split based on whitespace.
     final String[] split = WhitespaceTokenizer.INSTANCE.tokenize(spacedPunctuation);

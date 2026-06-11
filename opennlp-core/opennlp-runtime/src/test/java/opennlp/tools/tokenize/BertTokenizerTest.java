@@ -110,6 +110,28 @@ public class BertTokenizerTest {
   }
 
   @Test
+  void testRemovesPrivateUseAndUnassignedCharacters() {
+    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
+    // The reference implementation treats all C* categories as control
+    // characters: private use (U+E000, Co) and noncharacters (U+FDD0, Cn)
+    // are removed, joining the surrounding text into one OOV token.
+    final String[] tokens = tokenizer.tokenize("fox\ue000jumps and fox\ufdd0jumps");
+
+    final String[] expected = {"[CLS]", "[UNK]", "[UNK]", "[UNK]", "[SEP]"};
+    Assertions.assertArrayEquals(expected, tokens);
+  }
+
+  @Test
+  void testRejectsNullSpecialTokens() {
+    Assertions.assertThrows(NullPointerException.class,
+        () -> new BertTokenizer(VOCABULARY, true, null, "[SEP]", "[UNK]"));
+    Assertions.assertThrows(NullPointerException.class,
+        () -> new BertTokenizer(VOCABULARY, true, "[CLS]", null, "[UNK]"));
+    Assertions.assertThrows(NullPointerException.class,
+        () -> new BertTokenizer(VOCABULARY, true, "[CLS]", "[SEP]", null));
+  }
+
+  @Test
   void testCasedModeKeepsCaseAndAccents() {
     final Tokenizer tokenizer = new BertTokenizer(
         Set.of("The", "W\u00fcrttemberg", "fox"), false);

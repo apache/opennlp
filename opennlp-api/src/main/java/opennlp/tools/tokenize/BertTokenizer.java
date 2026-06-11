@@ -49,7 +49,9 @@ import opennlp.tools.util.Span;
  * Whether to use the lower casing variant is a property of the model: uncased
  * models (for example {@code bert-base-uncased} and the
  * {@code sentence-transformers} models derived from it) require it, cased
- * models must not use it.
+ * models must not use it. Accent stripping is coupled to lower casing, as in
+ * the reference implementation's default ({@code strip_accents} follows
+ * {@code do_lower_case} unless overridden).
  * <p>
  * For reference see:
  * <ul>
@@ -106,6 +108,9 @@ public class BertTokenizer implements Tokenizer {
   public BertTokenizer(Set<String> vocabulary, boolean lowerCase,
       String classificationToken, String separatorToken, String unknownToken) {
     Objects.requireNonNull(vocabulary, "vocabulary must not be null");
+    Objects.requireNonNull(classificationToken, "classificationToken must not be null");
+    Objects.requireNonNull(separatorToken, "separatorToken must not be null");
+    Objects.requireNonNull(unknownToken, "unknownToken must not be null");
     this.wordpieceTokenizer = new WordpieceTokenizer(vocabulary,
         classificationToken, separatorToken, unknownToken, MAX_WORD_CHARACTERS);
     this.lowerCase = lowerCase;
@@ -150,7 +155,7 @@ public class BertTokenizer implements Tokenizer {
     if (lowerCase) {
       normalized = stripAccents(normalized.toLowerCase(Locale.ROOT));
     }
-    return isolatePunctuation(normalized);
+    return BertNormalization.isolatePunctuation(normalized);
   }
 
   /**
@@ -160,10 +165,10 @@ public class BertTokenizer implements Tokenizer {
   private static String cleanText(String text) {
     final StringBuilder cleaned = new StringBuilder(text.length());
     text.codePoints().forEach(codePoint -> {
-      if (codePoint == 0 || codePoint == 0xFFFD || isControl(codePoint)) {
+      if (codePoint == 0 || codePoint == 0xFFFD || BertNormalization.isControl(codePoint)) {
         return;
       }
-      if (isWhitespace(codePoint)) {
+      if (BertNormalization.isWhitespace(codePoint)) {
         cleaned.append(' ');
       } else {
         cleaned.appendCodePoint(codePoint);
@@ -179,7 +184,7 @@ public class BertTokenizer implements Tokenizer {
   private static String isolateCjkCharacters(String text) {
     final StringBuilder spaced = new StringBuilder(text.length());
     text.codePoints().forEach(codePoint -> {
-      if (isCjk(codePoint)) {
+      if (BertNormalization.isCjk(codePoint)) {
         spaced.append(' ').appendCodePoint(codePoint).append(' ');
       } else {
         spaced.appendCodePoint(codePoint);
@@ -201,79 +206,6 @@ public class BertTokenizer implements Tokenizer {
       }
     });
     return stripped.toString();
-  }
-
-  /**
-   * Surrounds every punctuation character with spaces, so each punctuation
-   * character becomes its own token. Shared with {@link WordpieceTokenizer}.
-   */
-  static String isolatePunctuation(String text) {
-    final StringBuilder spaced = new StringBuilder(text.length());
-    text.codePoints().forEach(codePoint -> {
-      if (isPunctuation(codePoint)) {
-        spaced.append(' ').appendCodePoint(codePoint).append(' ');
-      } else {
-        spaced.appendCodePoint(codePoint);
-      }
-    });
-    return spaced.toString();
-  }
-
-  /**
-   * A control character in the BERT sense: {@code Cc} or {@code Cf}, except
-   * the characters treated as whitespace by {@link #isWhitespace(int)}.
-   */
-  private static boolean isControl(int codePoint) {
-    if (codePoint == '\t' || codePoint == '\n' || codePoint == '\r') {
-      return false;
-    }
-    final int type = Character.getType(codePoint);
-    return type == Character.CONTROL || type == Character.FORMAT;
-  }
-
-  /**
-   * A whitespace character in the BERT sense: space, tab, newline, carriage
-   * return, or Unicode space separators ({@code Zs}).
-   */
-  private static boolean isWhitespace(int codePoint) {
-    if (codePoint == ' ' || codePoint == '\t' || codePoint == '\n' || codePoint == '\r') {
-      return true;
-    }
-    return Character.getType(codePoint) == Character.SPACE_SEPARATOR;
-  }
-
-  /**
-   * A punctuation character in the BERT sense: any non-alphanumeric ASCII
-   * character that is not whitespace, or any Unicode punctuation category.
-   */
-  private static boolean isPunctuation(int codePoint) {
-    if ((codePoint >= 33 && codePoint <= 47) || (codePoint >= 58 && codePoint <= 64)
-        || (codePoint >= 91 && codePoint <= 96) || (codePoint >= 123 && codePoint <= 126)) {
-      return true;
-    }
-    return switch (Character.getType(codePoint)) {
-      case Character.CONNECTOR_PUNCTUATION, Character.DASH_PUNCTUATION,
-           Character.START_PUNCTUATION, Character.END_PUNCTUATION,
-           Character.INITIAL_QUOTE_PUNCTUATION, Character.FINAL_QUOTE_PUNCTUATION,
-           Character.OTHER_PUNCTUATION -> true;
-      default -> false;
-    };
-  }
-
-  /**
-   * A CJK ideograph as defined by the reference BERT implementation: the CJK
-   * Unified Ideographs blocks and their extensions. This intentionally does
-   * not cover Japanese kana or Korean hangul, matching the reference.
-   */
-  private static boolean isCjk(int codePoint) {
-    return (codePoint >= 0x4E00 && codePoint <= 0x9FFF)
-        || (codePoint >= 0x3400 && codePoint <= 0x4DBF)
-        || (codePoint >= 0x20000 && codePoint <= 0x2A6DF)
-        || (codePoint >= 0x2A700 && codePoint <= 0x2B73F)
-        || (codePoint >= 0x2B740 && codePoint <= 0x2B81F)
-        || (codePoint >= 0x2B820 && codePoint <= 0x2CEAF)
-        || (codePoint >= 0xF900 && codePoint <= 0xFAFF)
-        || (codePoint >= 0x2F800 && codePoint <= 0x2FA1F);
   }
 
 }

@@ -82,6 +82,16 @@ public class WordpieceTokenizerTest {
   }
 
   @Test
+  void testRejectsNegativeMaxTokenLength() {
+
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new WordpieceTokenizer(getVocabulary(), -1));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new WordpieceTokenizer(getVocabulary(), "[CLS]", "[SEP]", "[UNK]", -1));
+
+  }
+
+  @Test
   void testTokenizePosIsUnsupported() {
 
     final Tokenizer tokenizer = new WordpieceTokenizer(getVocabulary());
