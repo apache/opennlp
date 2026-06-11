@@ -135,8 +135,10 @@ public class WordpieceTokenizer implements Tokenizer {
       final String unknownToken,
       final int maxTokenLength) {
     this(vocabulary, classificationToken, separatorToken, unknownToken);
+    if (maxTokenLength < 0) {
+      throw new IllegalArgumentException("maxTokenLength must be non-negative");
+    }
     this.maxTokenLength = maxTokenLength;
-  }
 
   /**
    * Not supported: wordpiece tokens (subwords, {@code ##} continuations and
