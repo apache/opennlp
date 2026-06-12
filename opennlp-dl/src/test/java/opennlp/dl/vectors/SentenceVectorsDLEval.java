@@ -38,10 +38,29 @@ public class SentenceVectorsDLEval extends AbstractDLTest {
 
       final float[] vectors = sv.getVectors(sentence);
 
-      Assertions.assertEquals(vectors[0], 0.39994872, 0.00001);
-      Assertions.assertEquals(vectors[1], -0.055101186, 0.00001);
-      Assertions.assertEquals(vectors[2], 0.2817594, 0.00001);
-      Assertions.assertEquals(vectors.length, 384);
+      /*
+       * Expected values are the first three components of last_hidden_state[0][0]
+       * (the [CLS] position) produced by the ONNX export of
+       * https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2 for the
+       * input "[CLS] george washington was president [SEP]" with the corrected
+       * encoding (attention_mask=1, token_type_ids=0; see OPENNLP-1836).
+       *
+       * Reproducible independently of this class with the HuggingFace reference
+       * implementation (Python packages 'tokenizers' and 'onnxruntime'):
+       *
+       *   tok = BertWordPieceTokenizer("vocab.txt", lowercase=True)
+       *   enc = tok.encode(sentence, add_special_tokens=True)
+       *   ids = np.array([enc.ids], dtype=np.int64)
+       *   out = ort.InferenceSession("model.onnx").run(None, {
+       *       "input_ids": ids,
+       *       "attention_mask": np.ones_like(ids),
+       *       "token_type_ids": np.zeros_like(ids)})[0]
+       *   out[0][0][:3]  # -> [0.04474502, 0.20219636, 0.41306049]
+       */
+      Assertions.assertEquals(0.044745024, vectors[0], 0.00001);
+      Assertions.assertEquals(0.20219636, vectors[1], 0.00001);
+      Assertions.assertEquals(0.41306049, vectors[2], 0.00001);
+      Assertions.assertEquals(384, vectors.length);
     }
 
   }
