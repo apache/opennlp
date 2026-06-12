@@ -145,22 +145,30 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
         final Map<String, OnnxTensor> inputs = new HashMap<>();
 
-        inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
-            LongBuffer.wrap(t.ids()), new long[] {1, t.ids().length}));
+        final Object output;
+        try {
+          inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
+              LongBuffer.wrap(t.ids()), new long[] {1, t.ids().length}));
 
-        if (inferenceOptions.isIncludeAttentionMask()) {
-          inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-              LongBuffer.wrap(t.mask()), new long[] {1, t.mask().length}));
+          if (inferenceOptions.isIncludeAttentionMask()) {
+            inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+                LongBuffer.wrap(t.mask()), new long[] {1, t.mask().length}));
+          }
+
+          if (inferenceOptions.isIncludeTokenTypeIds()) {
+            inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+                LongBuffer.wrap(t.types()), new long[] {1, t.types().length}));
+          }
+
+          // The outputs from the model. Some models return a 2D array (e.g. BERT),
+          // while others return a 1D array (e.g. RoBERTa).
+          try (OrtSession.Result result = session.run(inputs)) {
+            // getValue() copies the tensor into Java arrays, so the result can be closed safely.
+            output = result.get(0).getValue();
+          }
+        } finally {
+          inputs.values().forEach(OnnxTensor::close);
         }
-
-        if (inferenceOptions.isIncludeTokenTypeIds()) {
-          inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-              LongBuffer.wrap(t.types()), new long[] {1, t.types().length}));
-        }
-
-        // The outputs from the model. Some models return a 2D array (e.g. BERT),
-        // while others return a 1D array (e.g. RoBERTa).
-        final Object output = session.run(inputs).get(0).getValue();
 
         final float[] rawScores;
         if (output instanceof float[][] v) {
@@ -300,13 +308,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);
 
-      final int[] ids = new int[tokens.length];
-
-      for (int x = 0; x < tokens.length; x++) {
-        ids[x] = vocab.get(tokens[x]);
-      }
-
-      final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
+      final long[] ids = tokenIds(tokens, vocab);
 
       final long[] mask = new long[ids.length];
       Arrays.fill(mask, 1);
@@ -314,11 +316,38 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       final long[] types = new long[ids.length];
       Arrays.fill(types, 0);
 
-      t.add(new Tokens(tokens, lids, mask, types));
+      t.add(new Tokens(tokens, ids, mask, types));
 
     }
 
     return t;
+
+  }
+
+  /**
+   * Maps tokens to their vocabulary ids.
+   *
+   * @param tokens The tokens to map.
+   * @param vocab The vocabulary map.
+   * @return The token ids.
+   *
+   * @throws IllegalArgumentException Thrown if a token is not present in the
+   *     vocabulary.
+   */
+  static long[] tokenIds(final String[] tokens, final Map<String, Integer> vocab) {
+
+    final long[] ids = new long[tokens.length];
+
+    for (int x = 0; x < tokens.length; x++) {
+      final Integer id = vocab.get(tokens[x]);
+      if (id == null) {
+        throw new IllegalArgumentException("Token '" + tokens[x]
+            + "' is not present in the vocabulary; the vocabulary file does not match the model.");
+      }
+      ids[x] = id;
+    }
+
+    return ids;
 
   }
 
