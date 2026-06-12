@@ -39,6 +39,31 @@ of it. And some components allow to add new feature generators.
 	</para>
 </section>
 
+<section id="tools.extension.allowlist">
+	<title>Extension Class Allowlist</title>
+	<para>
+	Extension classes are loaded by <code>ExtensionLoader</code> via reflection. Only classes
+	whose fully-qualified name starts with a registered package prefix are permitted.
+	The default prefix is <code>opennlp.</code>, covering all built-in factories and serializers.
+	</para>
+	<para>
+	To use a custom class outside <code>opennlp.</code>, register its package before loading
+	any model that references it:
+	</para>
+	<programlisting language="java">
+<![CDATA[ExtensionLoader.registerAllowedPackage("com.example.nlp");]]>
+	</programlisting>
+	<para>
+	Alternatively, set the system property at JVM startup:
+	</para>
+	<screen>
+<![CDATA[-DOPENNLP_EXT_ALLOWED_PACKAGES=com.example.nlp.,com.other.factories.]]>
+	</screen>
+	<para>
+	A registered prefix can be removed with <code>ExtensionLoader.unregisterAllowedPackage(String)</code>.
+	</para>
+</section>
+
 <section id="tools.extension.osgi">
 	<title>Running in an OSGi container</title>
 	<para>
