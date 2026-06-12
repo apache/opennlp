@@ -37,11 +37,22 @@ import opennlp.tools.tokenize.Tokenizer;
 /**
  * Facilitates the generation of sentence vectors using
  * a sentence-transformers model converted to ONNX.
+ *
+ * <p>The model inputs follow the standard single-segment BERT
+ * encoding: {@code attention_mask} is {@code 1} for every real
+ * token and {@code token_type_ids} is {@code 0} throughout.</p>
+ *
+ * <p><b>Release note (OpenNLP 3.0.0):</b> prior releases sent an
+ * all-zero {@code attention_mask} and all-one {@code token_type_ids},
+ * so the encoder attended to nothing and the output vectors were
+ * incorrect. Output vectors change with the corrected encoding; any
+ * embeddings persisted from the previous behavior are not comparable
+ * with the corrected output and must be re-embedded.</p>
  */
 public class SentenceVectorsDL extends AbstractDL {
 
   /**
-   * Instantiates a {@link SentenceVectorsDL sentence detector} using ONNX models.
+   * Instantiates a {@link SentenceVectorsDL sentence vector generator} using ONNX models.
    *
    * @param model The file name of a sentence vectors ONNX model.
    * @param vocabulary The file name of the vocabulary file for the model.
@@ -54,7 +65,7 @@ public class SentenceVectorsDL extends AbstractDL {
 
     env = OrtEnvironment.getEnvironment();
     session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
-    vocab = loadVocab(new File(vocabulary.getPath()));
+    vocab = loadVocab(vocabulary);
     tokenizer = createTokenizer(vocab);
 
   }
@@ -63,6 +74,7 @@ public class SentenceVectorsDL extends AbstractDL {
    * Generates vectors given a sentence.
    * 
    * @param sentence The input sentence.
+   * @return The sentence vector.
    *
    * @throws OrtException Thrown if an error occurs during inference.
    */
@@ -72,38 +84,61 @@ public class SentenceVectorsDL extends AbstractDL {
 
     final Map<String, OnnxTensor> inputs = new HashMap<>();
 
-    inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
-        new long[] {1, tokens.ids().length}));
+    try {
+      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
+          new long[] {1, tokens.ids().length}));
 
-    inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-        LongBuffer.wrap(tokens.mask()), new long[] {1, tokens.mask().length}));
+      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+          LongBuffer.wrap(tokens.mask()), new long[] {1, tokens.mask().length}));
 
-    inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-        LongBuffer.wrap(tokens.types()), new long[] {1, tokens.types().length}));
+      inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+          LongBuffer.wrap(tokens.types()), new long[] {1, tokens.types().length}));
 
-    final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
-
-    return v[0][0];
+      try (OrtSession.Result result = session.run(inputs)) {
+        // getValue() copies the tensor into Java arrays, so the result can be closed safely.
+        final float[][][] v = (float[][][]) result.get(0).getValue();
+        return v[0][0];
+      }
+    } finally {
+      inputs.values().forEach(OnnxTensor::close);
+    }
 
   }
 
-  private Tokens tokenize(final String text, Tokenizer tokenizer, Map<String, Integer> vocab) {
+  /**
+   * Encodes text as model inputs: wordpiece token ids, an attention mask of ones,
+   * and single-segment (all zero) token type ids.
+   *
+   * @param text The text to encode.
+   * @param tokenizer The wordpiece tokenizer matching the {@code vocab}.
+   * @param vocab The vocabulary map.
+   * @return The encoded {@link Tokens}.
+   *
+   * @throws IllegalArgumentException Thrown if the tokenizer emits a token that is
+   *     not present in the vocabulary.
+   */
+  static Tokens tokenize(final String text, final Tokenizer tokenizer,
+      final Map<String, Integer> vocab) {
 
     final String[] tokens = tokenizer.tokenize(text);
 
-    final int[] ids = new int[tokens.length];
-    final long[] mask = new long[ids.length];
+    final long[] ids = new long[tokens.length];
 
     for (int x = 0; x < tokens.length; x++) {
-      ids[x] = vocab.get(tokens[x]);
+      final Integer id = vocab.get(tokens[x]);
+      if (id == null) {
+        throw new IllegalArgumentException("Token '" + tokens[x]
+            + "' is not present in the vocabulary; the vocabulary file does not match the model.");
+      }
+      ids[x] = id;
     }
 
-    final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
+    final long[] mask = new long[ids.length];
+    Arrays.fill(mask, 1);
 
     final long[] types = new long[ids.length];
-    Arrays.fill(types, 1);
 
-    return new Tokens(tokens, lids, mask, types);
+    return new Tokens(tokens, ids, mask, types);
 
   }
 
