@@ -73,11 +73,11 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
           .sorted(Collections.reverseOrder()).mapToDouble(Double::doubleValue).toArray();
 
       final double[] expected = new double[]
-          {0.3391093313694,
-              0.2611352801322937,
-              0.24420668184757233,
-              0.11939861625432968,
-              0.03615010157227516};
+          {0.407059907913208,
+              0.3602477014064789,
+              0.14488528668880463,
+              0.07669895142316818,
+              0.011108151637017727};
 
       logger.debug("Actual: {}", Arrays.toString(sortedResult));
       logger.debug("Expected: {}", Arrays.toString(expected));
@@ -114,11 +114,11 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
           .sorted(Collections.reverseOrder()).mapToDouble(Double::doubleValue).toArray();
 
       final double[] expected = new double[]
-          {0.3391093313694,
-              0.2611352801322937,
-              0.24420668184757233,
-              0.11939861625432968,
-              0.03615010157227516};
+          {0.407059907913208,
+              0.3602477014064789,
+              0.14488528668880463,
+              0.07669895142316818,
+              0.011108151637017727};
 
       logger.debug("Actual: {}", Arrays.toString(sortedResult));
       logger.debug("Expected: {}", Arrays.toString(expected));
@@ -154,11 +154,11 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
       logger.debug(Arrays.toString(result));
 
       final double[] expected = new double[]
-          {0.007819971069693565,
-              0.006593209225684404,
-              0.04995147883892059,
-              0.3003573715686798,
-              0.6352779865264893};
+          {0.00752239441499114,
+              0.0074586994014680386,
+              0.05470007658004761,
+              0.3344593346118927,
+              0.5958595275878906};
 
       Assertions.assertArrayEquals(expected, result, 0.000001);
       Assertions.assertEquals(5, result.length);
@@ -191,7 +191,7 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
 
       final double[] result = documentCategorizerDL.categorize(new String[] {"I am angry"});
 
-      final double[] expected = new double[] {0.8851314783096313, 0.11486853659152985};
+      final double[] expected = new double[] {0.9072678089141846, 0.09273219853639603};
 
       Assertions.assertArrayEquals(expected, result, 0.000001);
       Assertions.assertEquals(2, result.length);
@@ -216,11 +216,11 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
 
       final Map<String, Double> result = documentCategorizerDL.scoreMap(new String[] {"I am happy"});
 
-      Assertions.assertEquals(0.6352779865264893, result.get("very good"), 0.000001);
-      Assertions.assertEquals(0.3003573715686798, result.get("good"), 0.000001);
-      Assertions.assertEquals(0.04995147883892059, result.get("neutral"), 0.000001);
-      Assertions.assertEquals(0.006593209225684404, result.get("bad"), 0.000001);
-      Assertions.assertEquals(0.007819971069693565, result.get("very bad"), 0.000001);
+      Assertions.assertEquals(0.5958595275878906, result.get("very good"), 0.000001);
+      Assertions.assertEquals(0.3344593346118927, result.get("good"), 0.000001);
+      Assertions.assertEquals(0.05470007658004761, result.get("neutral"), 0.000001);
+      Assertions.assertEquals(0.0074586994014680386, result.get("bad"), 0.000001);
+      Assertions.assertEquals(0.00752239441499114, result.get("very bad"), 0.000001);
     }
 
   }
@@ -248,23 +248,23 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
 
       // we assume a sorted map here, so lets check in sorted order (lower values first).
       Map.Entry<Double, Set<String>> e = it.next();
-      Assertions.assertEquals(0.006593209225684404, e.getKey(), 0.000001);
+      Assertions.assertEquals(0.0074586994014680386, e.getKey(), 0.000001);
       Assertions.assertEquals(e.getValue().size(), 1);
 
       e = it.next();
-      Assertions.assertEquals(0.007819971069693565, e.getKey(), 0.000001);
+      Assertions.assertEquals(0.00752239441499114, e.getKey(), 0.000001);
       Assertions.assertEquals(e.getValue().size(), 1);
 
       e = it.next();
-      Assertions.assertEquals(0.04995147883892059, e.getKey(), 0.000001);
+      Assertions.assertEquals(0.05470007658004761, e.getKey(), 0.000001);
       Assertions.assertEquals(e.getValue().size(), 1);
 
       e = it.next();
-      Assertions.assertEquals(0.3003573715686798, e.getKey(), 0.000001);
+      Assertions.assertEquals(0.3344593346118927, e.getKey(), 0.000001);
       Assertions.assertEquals(e.getValue().size(), 1);
 
       e = it.next();
-      Assertions.assertEquals(0.6352779865264893, e.getKey(), 0.000001);
+      Assertions.assertEquals(0.5958595275878906, e.getKey(), 0.000001);
       Assertions.assertEquals(e.getValue().size(), 1);
     }
 
