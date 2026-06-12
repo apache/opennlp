@@ -38,10 +38,10 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.XmlUtil;
 import opennlp.tools.util.model.UncloseableInputStream;
 
 /**
@@ -217,7 +217,7 @@ public class DictionaryEntryPersistor {
 
     XMLReader xmlReader;
     try {
-      xmlReader = XMLReaderFactory.createXMLReader();
+      xmlReader = XmlUtil.createSaxParser().getXMLReader();
       xmlReader.setContentHandler(profileContentHandler);
       xmlReader.parse(new InputSource(new UncloseableInputStream(in)));
     }
