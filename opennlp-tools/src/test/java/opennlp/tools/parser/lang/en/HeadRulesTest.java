@@ -35,10 +35,10 @@ public class HeadRulesTest {
    * Positive: a well-formed head rules line with a small tag count loads without error.
    */
   @Test
-  void testValidTagCountLoads() throws IOException {
+  public void testValidTagCountLoads() throws IOException {
     // "5 NP 1 NN NNS" — num=5, tags=3 (5-2=3)
     String rules = "5 NP 1 NN NNS NNP\n";
-    Assertions.assertDoesNotThrow(() -> new HeadRules(new StringReader(rules)));
+    new HeadRules(new StringReader(rules));
   }
 
   /**
@@ -46,9 +46,9 @@ public class HeadRulesTest {
    * not attempt to allocate Integer.MAX_VALUE bytes.
    */
   @Test
-  void testOversizedTagCountThrows() {
+  public void testOversizedTagCountThrows() {
     String rules = "2147483647 NP 1\n";
-    Assertions.assertThrows(IOException.class,
+    Assert.assertThrows(IOException.class,
         () -> new HeadRules(new StringReader(rules)));
   }
 
@@ -56,9 +56,9 @@ public class HeadRulesTest {
    * Negative: a tag count that would produce a negative array size must throw IOException.
    */
   @Test
-  void testNegativeTagCountThrows() {
+  public void testNegativeTagCountThrows() {
     String rules = "1 NP 1\n";  // 1 - 2 = -1
-    Assertions.assertThrows(IOException.class,
+    Assert.assertThrows(IOException.class,
         () -> new HeadRules(new StringReader(rules)));
   }
 
@@ -66,10 +66,10 @@ public class HeadRulesTest {
    * Boundary: value just above MAX_TAGS_PER_RULE (1003 → numTags = 1001) must throw IOException.
    */
   @Test
-  void testJustAboveLimitThrows() {
+  public void testJustAboveLimitThrows() {
     // 1003 declared; 1003 - 2 = 1001 tags, which exceeds MAX_TAGS_PER_RULE (1000)
     String rules = "1003 NP 1\n";
-    Assertions.assertThrows(IOException.class,
+    Assert.assertThrows(IOException.class,
         () -> new HeadRules(new StringReader(rules)));
   }
 
@@ -77,9 +77,9 @@ public class HeadRulesTest {
    * Negative: non-numeric token count must throw IOException, not NumberFormatException.
    */
   @Test
-  void testNonNumericTagCountThrows() {
+  public void testNonNumericTagCountThrows() {
     String rules = "NaN NP 1\n";
-    Assertions.assertThrows(IOException.class,
+    Assert.assertThrows(IOException.class,
         () -> new HeadRules(new StringReader(rules)));
   }
 
