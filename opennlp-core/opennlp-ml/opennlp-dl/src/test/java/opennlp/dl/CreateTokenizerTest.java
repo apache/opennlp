@@ -27,6 +27,7 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreateTokenizerTest {
@@ -83,6 +84,30 @@ public class CreateTokenizerTest {
         WordpieceTokenizer.ROBERTA_CLS_TOKEN, "hello", WordpieceTokenizer.ROBERTA_UNK_TOKEN,
         WordpieceTokenizer.ROBERTA_SEP_TOKEN},
         tokenizer.tokenize("hello missing"));
+  }
+
+  @Test
+  void testFallsBackToBertUnknownToken() {
+    final Map<String, Integer> vocab = robertaVocab();
+    vocab.remove(WordpieceTokenizer.ROBERTA_UNK_TOKEN);
+    vocab.put(WordpieceTokenizer.BERT_UNK_TOKEN, 2);
+
+    final BertTokenizer tokenizer = new TestDL().createTokenizer(vocab, false);
+
+    assertArrayEquals(new String[] {
+        WordpieceTokenizer.ROBERTA_CLS_TOKEN, "hello", WordpieceTokenizer.BERT_UNK_TOKEN,
+        WordpieceTokenizer.ROBERTA_SEP_TOKEN},
+        tokenizer.tokenize("hello missing"));
+  }
+
+  @Test
+  void testRejectsRobertaVocabularyWithoutUnknownToken() {
+    final Map<String, Integer> vocab = robertaVocab();
+    vocab.remove(WordpieceTokenizer.ROBERTA_UNK_TOKEN);
+
+    final TestDL dl = new TestDL();
+    assertThrows(IllegalArgumentException.class, () -> dl.createTokenizer(vocab, false));
+    assertThrows(IllegalArgumentException.class, () -> dl.createTokenizer(vocab));
   }
 
   @Test

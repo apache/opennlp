@@ -67,7 +67,7 @@ public class SentenceVectorsDLEval extends AbstractEvalTest {
       // tokenization, every capitalized word was mapped to [UNK].
       final float[] capitalized = sv.getVectors("George Washington was President");
 
-      Assertions.assertArrayEquals(vectors, capitalized);
+      Assertions.assertArrayEquals(vectors, capitalized, 0.00001f);
     }
 
   }

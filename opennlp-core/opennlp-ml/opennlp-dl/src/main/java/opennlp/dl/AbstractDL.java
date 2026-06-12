@@ -110,15 +110,11 @@ public abstract class AbstractDL implements AutoCloseable {
             WordpieceTokenizer.ROBERTA_CLS_TOKEN)
         && vocab.containsKey(
             WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
-      final String unk = vocab.containsKey(
-          WordpieceTokenizer.ROBERTA_UNK_TOKEN)
-          ? WordpieceTokenizer.ROBERTA_UNK_TOKEN
-          : WordpieceTokenizer.BERT_UNK_TOKEN;
       return new WordpieceTokenizer(
           vocab.keySet(),
           WordpieceTokenizer.ROBERTA_CLS_TOKEN,
           WordpieceTokenizer.ROBERTA_SEP_TOKEN,
-          unk);
+          resolveUnknownToken(vocab));
     }
     return new WordpieceTokenizer(vocab.keySet());
   }
@@ -133,6 +129,8 @@ public abstract class AbstractDL implements AutoCloseable {
    * @param lowerCase {@code true} for uncased models (lower casing and accent
    *     stripping), {@code false} for cased models.
    * @return A configured {@link BertTokenizer}.
+   * @throws IllegalArgumentException Thrown if a RoBERTa-style vocabulary
+   *     contains no supported unknown token.
    */
   protected BertTokenizer createTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
@@ -140,18 +138,38 @@ public abstract class AbstractDL implements AutoCloseable {
             WordpieceTokenizer.ROBERTA_CLS_TOKEN)
         && vocab.containsKey(
             WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
-      final String unk = vocab.containsKey(
-          WordpieceTokenizer.ROBERTA_UNK_TOKEN)
-          ? WordpieceTokenizer.ROBERTA_UNK_TOKEN
-          : WordpieceTokenizer.BERT_UNK_TOKEN;
       return new BertTokenizer(
           vocab.keySet(),
           lowerCase,
           WordpieceTokenizer.ROBERTA_CLS_TOKEN,
           WordpieceTokenizer.ROBERTA_SEP_TOKEN,
-          unk);
+          resolveUnknownToken(vocab));
     }
     return new BertTokenizer(vocab.keySet(), lowerCase);
+  }
+
+  /**
+   * Resolves the unknown token of a RoBERTa-style vocabulary. The RoBERTa
+   * token {@link WordpieceTokenizer#ROBERTA_UNK_TOKEN} is preferred; vocabularies
+   * mixing conventions may instead contain {@link WordpieceTokenizer#BERT_UNK_TOKEN}.
+   * An unknown token that is absent from the vocabulary must never be selected, as
+   * the tokenizer would emit tokens that later fail the token-to-id mapping.
+   *
+   * @param vocab The vocabulary map.
+   * @return The unknown token present in the vocabulary.
+   * @throws IllegalArgumentException Thrown if the vocabulary contains neither
+   *     supported unknown token.
+   */
+  private static String resolveUnknownToken(final Map<String, Integer> vocab) {
+    if (vocab.containsKey(WordpieceTokenizer.ROBERTA_UNK_TOKEN)) {
+      return WordpieceTokenizer.ROBERTA_UNK_TOKEN;
+    }
+    if (vocab.containsKey(WordpieceTokenizer.BERT_UNK_TOKEN)) {
+      return WordpieceTokenizer.BERT_UNK_TOKEN;
+    }
+    throw new IllegalArgumentException(
+        "The vocabulary contains neither '" + WordpieceTokenizer.ROBERTA_UNK_TOKEN
+            + "' nor '" + WordpieceTokenizer.BERT_UNK_TOKEN + "' as an unknown token.");
   }
 
   /**
