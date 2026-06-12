@@ -33,6 +33,7 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
+import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
@@ -120,6 +121,50 @@ public abstract class AbstractDL implements AutoCloseable {
           unk);
     }
     return new WordpieceTokenizer(vocab.keySet());
+  }
+
+  /**
+   * Creates a {@link BertTokenizer} that performs the full BERT tokenization
+   * pipeline: basic tokenization (text normalization) followed by wordpiece.
+   * The special tokens are selected based on the vocabulary: if it contains
+   * RoBERTa-style tokens, those are used, otherwise the BERT defaults.
+   *
+   * @param vocab The vocabulary map.
+   * @param lowerCase {@code true} for uncased models (lower casing and accent
+   *     stripping), {@code false} for cased models.
+   * @return A configured {@link BertTokenizer}.
+   */
+  protected BertTokenizer createTokenizer(
+      final Map<String, Integer> vocab, final boolean lowerCase) {
+    if (vocab.containsKey(
+            WordpieceTokenizer.ROBERTA_CLS_TOKEN)
+        && vocab.containsKey(
+            WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
+      final String unk = vocab.containsKey(
+          WordpieceTokenizer.ROBERTA_UNK_TOKEN)
+          ? WordpieceTokenizer.ROBERTA_UNK_TOKEN
+          : WordpieceTokenizer.BERT_UNK_TOKEN;
+      return new BertTokenizer(
+          vocab.keySet(),
+          lowerCase,
+          WordpieceTokenizer.ROBERTA_CLS_TOKEN,
+          WordpieceTokenizer.ROBERTA_SEP_TOKEN,
+          unk);
+    }
+    return new BertTokenizer(vocab.keySet(), lowerCase);
+  }
+
+  /**
+   * Resolves the effective lower casing behavior from the
+   * given {@link InferenceOptions}.
+   *
+   * @param options The {@link InferenceOptions} to consult.
+   * @param componentDefault The default to apply if the option is not set.
+   * @return The effective lower casing behavior.
+   */
+  protected static boolean resolveLowerCase(
+      final InferenceOptions options, final boolean componentDefault) {
+    return options.getLowerCase() != null ? options.getLowerCase() : componentDefault;
   }
 
   private Map<String, Integer> loadJsonVocab(final String json) {

@@ -44,6 +44,13 @@ import opennlp.tools.util.Span;
 /**
  * An implementation of {@link TokenNameFinder} that uses ONNX models.
  *
+ * <p>Tokenization performs BERT basic tokenization (text normalization)
+ * before wordpiece, see {@link opennlp.tools.tokenize.BertTokenizer}. Input
+ * text is <b>not</b> lower cased by default, because named entity recognition
+ * models are commonly cased: capitalization is a strong signal for entity
+ * boundaries. For uncased models, set
+ * {@link InferenceOptions#setLowerCase(boolean)} to {@code true}.</p>
+ *
  * @see TokenNameFinder
  * @see InferenceOptions
  */
@@ -52,6 +59,9 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   public static final String I_PER = "I-PER";
   public static final String B_PER = "B-PER";
   public static final String SEPARATOR = "[SEP]";
+
+  /** NER models are commonly cased, so lower casing is off by default. */
+  private static final boolean LOWER_CASE_DEFAULT = false;
 
   private static final String CHARS_TO_REPLACE = "##";
 
@@ -103,7 +113,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
     this.session = env.createSession(model.getPath(), sessionOptions);
     this.ids2Labels = ids2Labels;
     this.vocab = loadVocab(vocabulary);
-    this.tokenizer = createTokenizer(vocab);
+    this.tokenizer = createTokenizer(vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
     this.inferenceOptions = inferenceOptions;
     this.sentenceDetector = sentenceDetector;
 

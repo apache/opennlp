@@ -61,6 +61,13 @@ public class SentenceVectorsDLEval extends AbstractEvalTest {
       Assertions.assertEquals(0.20219636, vectors[1], 0.00001);
       Assertions.assertEquals(0.41306049, vectors[2], 0.00001);
       Assertions.assertEquals(384, vectors.length);
+
+      // The uncased model lower cases during tokenization, so a capitalized
+      // variant must produce the same vectors. Prior to BERT basic
+      // tokenization, every capitalized word was mapped to [UNK].
+      final float[] capitalized = sv.getVectors("George Washington was President");
+
+      Assertions.assertArrayEquals(vectors, capitalized);
     }
 
   }
