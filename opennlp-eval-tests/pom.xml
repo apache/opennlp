@@ -138,6 +138,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+              <skip>false</skip>
               <argLine>-Xmx4g</argLine>
               <forkCount>${opennlp.forkCount}</forkCount>
               <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
@@ -158,6 +159,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+              <skip>false</skip>
               <argLine>-Xmx20g</argLine>
               <forkCount>1</forkCount>
               <includes>
