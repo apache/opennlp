@@ -143,7 +143,7 @@
 		<enforcer.plugin.version>3.0.0-M2</enforcer.plugin.version>
 		<glassfish.version>2.48</glassfish.version>
 		<junit.version>4.13.1</junit.version>
-		<morfologik.version>2.1.7</morfologik.version>
+		<morfologik.version>2.1.9</morfologik.version>
 		<osgi.version>4.2.0</osgi.version>
 		<checkstyle.plugin.version>2.17</checkstyle.plugin.version>
 		<opennlp.forkCount>1.0C</opennlp.forkCount>
