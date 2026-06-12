@@ -130,21 +130,30 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
           // The inputs to the ONNX model.
           final Map<String, OnnxTensor> inputs = new HashMap<>();
-          inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
-              new long[] {1, tokens.ids().length}));
 
-          if (inferenceOptions.isIncludeAttentionMask()) {
-            inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-                LongBuffer.wrap(tokens.mask()), new long[] {1, tokens.mask().length}));
+          final float[][][] v;
+          try {
+            inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
+                new long[] {1, tokens.ids().length}));
+
+            if (inferenceOptions.isIncludeAttentionMask()) {
+              inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+                  LongBuffer.wrap(tokens.mask()), new long[] {1, tokens.mask().length}));
+            }
+
+            if (inferenceOptions.isIncludeTokenTypeIds()) {
+              inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+                  LongBuffer.wrap(tokens.types()), new long[] {1, tokens.types().length}));
+            }
+
+            // The outputs from the model.
+            try (OrtSession.Result result = session.run(inputs)) {
+              // getValue() copies the tensor into Java arrays, so the result can be closed safely.
+              v = (float[][][]) result.get(0).getValue();
+            }
+          } finally {
+            inputs.values().forEach(OnnxTensor::close);
           }
-
-          if (inferenceOptions.isIncludeTokenTypeIds()) {
-            inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-                LongBuffer.wrap(tokens.types()), new long[] {1, tokens.types().length}));
-          }
-
-          // The outputs from the model.
-          final float[][][] v = (float[][][]) session.run(inputs).get(0).getValue();
 
           // Find consecutive B-PER and I-PER labels and combine the spans where necessary.
           // There are also B-LOC and I-LOC tags for locations that might be useful at some point.
@@ -376,13 +385,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);
 
-      final int[] ids = new int[tokens.length];
-
-      for (int x = 0; x < tokens.length; x++) {
-        ids[x] = vocab.get(tokens[x]);
-      }
-
-      final long[] lids = Arrays.stream(ids).mapToLong(i -> i).toArray();
+      final long[] ids = tokenIds(tokens, vocab);
 
       final long[] mask = new long[ids.length];
       Arrays.fill(mask, 1);
@@ -390,11 +393,38 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
       final long[] types = new long[ids.length];
       Arrays.fill(types, 0);
 
-      t.add(new Tokens(tokens, lids, mask, types));
+      t.add(new Tokens(tokens, ids, mask, types));
 
     }
 
     return t;
+
+  }
+
+  /**
+   * Maps tokens to their vocabulary ids.
+   *
+   * @param tokens The tokens to map.
+   * @param vocab The vocabulary map.
+   * @return The token ids.
+   *
+   * @throws IllegalArgumentException Thrown if a token is not present in the
+   *     vocabulary.
+   */
+  static long[] tokenIds(final String[] tokens, final Map<String, Integer> vocab) {
+
+    final long[] ids = new long[tokens.length];
+
+    for (int x = 0; x < tokens.length; x++) {
+      final Integer id = vocab.get(tokens[x]);
+      if (id == null) {
+        throw new IllegalArgumentException("Token '" + tokens[x]
+            + "' is not present in the vocabulary; the vocabulary file does not match the model.");
+      }
+      ids[x] = id;
+    }
+
+    return ids;
 
   }
 
