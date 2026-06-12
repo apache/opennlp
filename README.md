@@ -82,6 +82,7 @@ Currently, the library has different modules:
 * `opennlp-cli` : The command-line tools for training, evaluating, and running models.
 * `opennlp-tools` : The full end-user toolkit with all core components and utilities in its executable form.
 * `opennlp-morfologik` : Extension module providing Morfologik-based dictionary and stemming support.
+* `opennlp-spellcheck` : Extension module providing SymSpell-based, language-agnostic spell correction.
 * `opennlp-uima` : Extension module providing a set of [Apache UIMA](https://uima.apache.org) annotators.
 * `opennlp-sandbox` : Other projects in progress reside in the [sandbox](https://github.com/apache/opennlp-sandbox).
       

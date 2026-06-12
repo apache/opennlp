@@ -79,6 +79,35 @@ public class ArgumentParserTest {
     Boolean getAlphaNumOpt();
   }
 
+  interface LongArgument {
+    @ParameterDescription(valueName = "num")
+    @OptionalParameter(defaultValue = "0")
+    Long getCorpusWordCount();
+  }
+
+  @Test
+  void testLongArgumentParsedBeyondIntRange() {
+    final long value = 5_000_000_000L; // > Integer.MAX_VALUE
+    String[] args = ("-corpusWordCount " + value).split(" ");
+    Assertions.assertTrue(ArgumentParser.validateArguments(args, LongArgument.class));
+
+    LongArgument parsed = ArgumentParser.parse(args, LongArgument.class);
+    Assertions.assertEquals(Long.valueOf(value), parsed.getCorpusWordCount());
+  }
+
+  @Test
+  void testLongArgumentDefault() {
+    LongArgument parsed = ArgumentParser.parse(new String[] {}, LongArgument.class);
+    Assertions.assertEquals(Long.valueOf(0L), parsed.getCorpusWordCount());
+  }
+
+  @Test
+  void testLongArgumentRejectsNonNumeric() {
+    String[] args = "-corpusWordCount notALong".split(" ");
+    Assertions.assertThrows(TerminateToolException.class,
+        () -> ArgumentParser.parse(args, LongArgument.class));
+  }
+
 
   @Test
   void testSimpleArguments() {

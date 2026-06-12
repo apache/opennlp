@@ -211,6 +211,12 @@
 			</dependency>
 
 			<dependency>
+				<artifactId>opennlp-spellcheck</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
 				<artifactId>opennlp-uima</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
