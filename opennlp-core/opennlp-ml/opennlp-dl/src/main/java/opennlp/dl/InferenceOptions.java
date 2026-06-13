@@ -25,6 +25,7 @@ public class InferenceOptions {
   private int gpuDeviceId = 0;
   private int documentSplitSize = 250;
   private int splitOverlapSize = 50;
+  private Boolean lowerCase;
 
   public boolean isIncludeAttentionMask() {
     return includeAttentionMask;
@@ -72,6 +73,30 @@ public class InferenceOptions {
 
   public void setSplitOverlapSize(int splitOverlapSize) {
     this.splitOverlapSize = splitOverlapSize;
+  }
+
+  /**
+   * Returns whether tokenization should lower case the input text and strip
+   * accents, as required by uncased models.
+   *
+   * @return {@code Boolean.TRUE} for uncased models, {@code Boolean.FALSE} for
+   *     cased models, or {@code null} if not set, in which case each component
+   *     applies the default that matches its commonly used models.
+   */
+  public Boolean getLowerCase() {
+    return lowerCase;
+  }
+
+  /**
+   * Sets whether tokenization should lower case the input text and strip
+   * accents. Set {@code true} for uncased models and {@code false} for cased
+   * models. If not set, each component applies the default that matches its
+   * commonly used models.
+   *
+   * @param lowerCase Whether to lower case the input text during tokenization.
+   */
+  public void setLowerCase(boolean lowerCase) {
+    this.lowerCase = lowerCase;
   }
 
 }

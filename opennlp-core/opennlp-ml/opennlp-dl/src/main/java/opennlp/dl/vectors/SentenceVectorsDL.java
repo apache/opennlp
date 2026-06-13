@@ -45,14 +45,20 @@ import opennlp.tools.tokenize.Tokenizer;
  * <p><b>Release note (OpenNLP 3.0.0):</b> prior releases sent an
  * all-zero {@code attention_mask} and all-one {@code token_type_ids},
  * so the encoder attended to nothing and the output vectors were
- * incorrect. Output vectors change with the corrected encoding; any
- * embeddings persisted from the previous behavior are not comparable
- * with the corrected output and must be re-embedded.</p>
+ * incorrect. Additionally, tokenization now performs BERT basic
+ * tokenization (lower casing and accent stripping by default, see
+ * {@link opennlp.tools.tokenize.BertTokenizer}) before wordpiece.
+ * Output vectors change with the corrected encoding and tokenization;
+ * any embeddings persisted from the previous behavior are not
+ * comparable with the corrected output and must be re-embedded.</p>
  */
 public class SentenceVectorsDL extends AbstractDL {
 
   /**
-   * Instantiates a {@link SentenceVectorsDL sentence vector generator} using ONNX models.
+   * Instantiates a {@link SentenceVectorsDL sentence vector generator} for an
+   * uncased model. Input text is lower cased and accent stripped during
+   * tokenization, as required by uncased models such as the
+   * sentence-transformers MiniLM family.
    *
    * @param model The file name of a sentence vectors ONNX model.
    * @param vocabulary The file name of the vocabulary file for the model.
@@ -63,10 +69,28 @@ public class SentenceVectorsDL extends AbstractDL {
   public SentenceVectorsDL(final File model, final File vocabulary)
       throws OrtException, IOException {
 
+    this(model, vocabulary, true);
+
+  }
+
+  /**
+   * Instantiates a {@link SentenceVectorsDL sentence vector generator} using ONNX models.
+   *
+   * @param model The file name of a sentence vectors ONNX model.
+   * @param vocabulary The file name of the vocabulary file for the model.
+   * @param lowerCase {@code true} for uncased models (lower casing and accent
+   *     stripping during tokenization), {@code false} for cased models.
+   *
+   * @throws OrtException Thrown if the {@code model} cannot be loaded.
+   * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   */
+  public SentenceVectorsDL(final File model, final File vocabulary, final boolean lowerCase)
+      throws OrtException, IOException {
+
     env = OrtEnvironment.getEnvironment();
     session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
     vocab = loadVocab(vocabulary);
-    tokenizer = createTokenizer(vocab);
+    tokenizer = createTokenizer(vocab, lowerCase);
 
   }
 

@@ -33,6 +33,7 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
+import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
@@ -109,17 +110,79 @@ public abstract class AbstractDL implements AutoCloseable {
             WordpieceTokenizer.ROBERTA_CLS_TOKEN)
         && vocab.containsKey(
             WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
-      final String unk = vocab.containsKey(
-          WordpieceTokenizer.ROBERTA_UNK_TOKEN)
-          ? WordpieceTokenizer.ROBERTA_UNK_TOKEN
-          : WordpieceTokenizer.BERT_UNK_TOKEN;
       return new WordpieceTokenizer(
           vocab.keySet(),
           WordpieceTokenizer.ROBERTA_CLS_TOKEN,
           WordpieceTokenizer.ROBERTA_SEP_TOKEN,
-          unk);
+          resolveUnknownToken(vocab));
     }
     return new WordpieceTokenizer(vocab.keySet());
+  }
+
+  /**
+   * Creates a {@link BertTokenizer} that performs the full BERT tokenization
+   * pipeline: basic tokenization (text normalization) followed by wordpiece.
+   * The special tokens are selected based on the vocabulary: if it contains
+   * RoBERTa-style tokens, those are used, otherwise the BERT defaults.
+   *
+   * @param vocab The vocabulary map.
+   * @param lowerCase {@code true} for uncased models (lower casing and accent
+   *     stripping), {@code false} for cased models.
+   * @return A configured {@link BertTokenizer}.
+   * @throws IllegalArgumentException Thrown if a RoBERTa-style vocabulary
+   *     contains no supported unknown token.
+   */
+  protected BertTokenizer createTokenizer(
+      final Map<String, Integer> vocab, final boolean lowerCase) {
+    if (vocab.containsKey(
+            WordpieceTokenizer.ROBERTA_CLS_TOKEN)
+        && vocab.containsKey(
+            WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
+      return new BertTokenizer(
+          vocab.keySet(),
+          lowerCase,
+          WordpieceTokenizer.ROBERTA_CLS_TOKEN,
+          WordpieceTokenizer.ROBERTA_SEP_TOKEN,
+          resolveUnknownToken(vocab));
+    }
+    return new BertTokenizer(vocab.keySet(), lowerCase);
+  }
+
+  /**
+   * Resolves the unknown token of a RoBERTa-style vocabulary. The RoBERTa
+   * token {@link WordpieceTokenizer#ROBERTA_UNK_TOKEN} is preferred; vocabularies
+   * mixing conventions may instead contain {@link WordpieceTokenizer#BERT_UNK_TOKEN}.
+   * An unknown token that is absent from the vocabulary must never be selected, as
+   * the tokenizer would emit tokens that later fail the token-to-id mapping.
+   *
+   * @param vocab The vocabulary map.
+   * @return The unknown token present in the vocabulary.
+   * @throws IllegalArgumentException Thrown if the vocabulary contains neither
+   *     supported unknown token.
+   */
+  private static String resolveUnknownToken(final Map<String, Integer> vocab) {
+    if (vocab.containsKey(WordpieceTokenizer.ROBERTA_UNK_TOKEN)) {
+      return WordpieceTokenizer.ROBERTA_UNK_TOKEN;
+    }
+    if (vocab.containsKey(WordpieceTokenizer.BERT_UNK_TOKEN)) {
+      return WordpieceTokenizer.BERT_UNK_TOKEN;
+    }
+    throw new IllegalArgumentException(
+        "The vocabulary contains neither '" + WordpieceTokenizer.ROBERTA_UNK_TOKEN
+            + "' nor '" + WordpieceTokenizer.BERT_UNK_TOKEN + "' as an unknown token.");
+  }
+
+  /**
+   * Resolves the effective lower casing behavior from the
+   * given {@link InferenceOptions}.
+   *
+   * @param options The {@link InferenceOptions} to consult.
+   * @param componentDefault The default to apply if the option is not set.
+   * @return The effective lower casing behavior.
+   */
+  protected static boolean resolveLowerCase(
+      final InferenceOptions options, final boolean componentDefault) {
+    return options.getLowerCase() != null ? options.getLowerCase() : componentDefault;
   }
 
   private Map<String, Integer> loadJsonVocab(final String json) {

@@ -51,6 +51,12 @@ import opennlp.tools.doccat.DocumentCategorizer;
  * An implementation of {@link DocumentCategorizer} that performs document classification
  * using ONNX models.
  *
+ * <p>Tokenization performs BERT basic tokenization (text normalization)
+ * before wordpiece, see {@link opennlp.tools.tokenize.BertTokenizer}. Input
+ * text is lower cased and accent stripped by default, matching the uncased
+ * models commonly used for classification. For cased models, set
+ * {@link InferenceOptions#setLowerCase(boolean)} to {@code false}.</p>
+ *
  * @see DocumentCategorizer
  * @see InferenceOptions
  * @see ClassificationScoringStrategy
@@ -58,6 +64,9 @@ import opennlp.tools.doccat.DocumentCategorizer;
 public class DocumentCategorizerDL extends AbstractDL implements DocumentCategorizer {
 
   private static final Logger logger = LoggerFactory.getLogger(DocumentCategorizerDL.class);
+
+  /** Classification models are commonly uncased, so lower casing is the default. */
+  private static final boolean LOWER_CASE_DEFAULT = true;
 
   private final Map<Integer, String> categories;
   private final ClassificationScoringStrategy classificationScoringStrategy;
@@ -90,7 +99,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     this.session = env.createSession(model.getPath(), sessionOptions);
     this.vocab = loadVocab(vocabulary);
-    this.tokenizer = createTokenizer(vocab);
+    this.tokenizer = createTokenizer(vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
     this.categories = categories;
     this.classificationScoringStrategy = classificationScoringStrategy;
     this.inferenceOptions = inferenceOptions;
@@ -125,7 +134,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     this.session = env.createSession(model.getPath(), sessionOptions);
     this.vocab = loadVocab(vocabulary);
-    this.tokenizer = createTokenizer(vocab);
+    this.tokenizer = createTokenizer(vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
     this.categories = readCategoriesFromFile(config);
     this.classificationScoringStrategy = classificationScoringStrategy;
     this.inferenceOptions = inferenceOptions;
