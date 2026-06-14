@@ -92,6 +92,34 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
   }
 
   @Test
+  public void categorizeReturnsSizedArrayOnFailure() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
+    final File vocab = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
+
+    try (final DocumentCategorizerDL documentCategorizerDL =
+             new DocumentCategorizerDL(model, vocab, getCategories(),
+                 new AverageClassificationScoringStrategy(), new InferenceOptions())) {
+
+      // Empty input drives categorize() down its failure path (strings[0] throws) before any
+      // inference; it must return zeros sized to the category count, not an empty array.
+      final double[] scores = documentCategorizerDL.categorize(new String[0]);
+      Assertions.assertEquals(getCategories().size(), scores.length);
+      for (final double score : scores) {
+        Assertions.assertEquals(0.0, score);
+      }
+
+      // The dependent API must stay safe to call on that result rather than indexing past an
+      // empty array.
+      Assertions.assertEquals(getCategories().size(),
+          documentCategorizerDL.scoreMap(new String[0]).size());
+    }
+
+  }
+
+  @Test
   public void categorizeWithAutomaticLabels() throws Exception {
 
     final File model = new File(getOpennlpDataDir(),
