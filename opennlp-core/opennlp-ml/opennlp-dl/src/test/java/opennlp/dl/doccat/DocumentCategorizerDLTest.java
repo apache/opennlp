@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import opennlp.dl.InferenceOptions;
+import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -41,6 +43,47 @@ public class DocumentCategorizerDLTest {
     vocab.put("hello", 3);
     vocab.put("world", 4);
     return vocab;
+  }
+
+  private static Map<Integer, String> categories() {
+    final Map<Integer, String> categories = new HashMap<>();
+    categories.put(0, "negative");
+    categories.put(1, "positive");
+    return categories;
+  }
+
+  private static DocumentCategorizerDL categorizerWithoutSession() {
+    return new DocumentCategorizerDL(null, null, vocab(), categories(),
+        new AverageClassificationScoringStrategy(), new InferenceOptions());
+  }
+
+  @Test
+  void testCategorizeFailsLoudlyWhenInferenceFails() {
+    final IllegalStateException e = assertThrows(IllegalStateException.class, () ->
+        categorizerWithoutSession().categorize(new String[] {"hello world"}));
+
+    assertTrue(e.getMessage().contains("document classification inference"));
+    assertTrue(e.getCause() instanceof RuntimeException);
+  }
+
+  @Test
+  void testScoreMapsFailLoudlyWhenInferenceFails() {
+    final DocumentCategorizerDL categorizer = categorizerWithoutSession();
+
+    assertThrows(IllegalStateException.class, () ->
+        categorizer.scoreMap(new String[] {"hello world"}));
+    assertThrows(IllegalStateException.class, () ->
+        categorizer.sortedScoreMap(new String[] {"hello world"}));
+  }
+
+  @Test
+  void testCategorizeRejectsMalformedInput() {
+    // A caller-side input bug is distinguished from an inference failure: it is rejected up front
+    // with IllegalArgumentException, not wrapped as "document classification inference" failure.
+    final DocumentCategorizerDL categorizer = categorizerWithoutSession();
+
+    assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(null));
+    assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[0]));
   }
 
   @Test
