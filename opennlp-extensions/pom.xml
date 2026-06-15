@@ -34,7 +34,7 @@
 
   <properties>
     <uimaj.version>3.6.1</uimaj.version>
-    <morfologik.version>2.1.9</morfologik.version>
+    <morfologik.version>2.2.0</morfologik.version>
   </properties>
 
   <modules>
