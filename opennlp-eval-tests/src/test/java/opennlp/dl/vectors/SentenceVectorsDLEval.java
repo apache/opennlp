@@ -18,6 +18,12 @@
 package opennlp.dl.vectors;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -68,6 +74,61 @@ public class SentenceVectorsDLEval extends AbstractEvalTest {
       final float[] capitalized = sv.getVectors("George Washington was President");
 
       Assertions.assertArrayEquals(vectors, capitalized, 0.00001f);
+    }
+
+  }
+
+  /**
+   * Verifies that a single {@link SentenceVectorsDL} instance is safe to share across
+   * threads: concurrent {@link SentenceVectorsDL#getVectors(String)} calls on one instance
+   * must all return the same vector as the single-threaded baseline.
+   */
+  @Test
+  public void generateVectorsConcurrentTest() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(), "onnx/sentence-transformers/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/sentence-transformers/vocab.txt");
+
+    final String sentence = "george washington was president";
+
+    final int threads = 8;
+    final int iterationsPerThread = 10;
+
+    try (final SentenceVectorsDL sv = new SentenceVectorsDL(model, vocab)) {
+
+      final float[] baseline = sv.getVectors(sentence);
+
+      final ExecutorService executor = Executors.newFixedThreadPool(threads);
+      try {
+        final CountDownLatch startGate = new CountDownLatch(1);
+        final List<Future<Boolean>> futures = new ArrayList<>();
+
+        for (int t = 0; t < threads; t++) {
+          futures.add(executor.submit(() -> {
+            startGate.await();
+            for (int i = 0; i < iterationsPerThread; i++) {
+              final float[] vectors = sv.getVectors(sentence);
+              if (vectors.length != baseline.length) {
+                return false;
+              }
+              for (int c = 0; c < baseline.length; c++) {
+                if (Math.abs(vectors[c] - baseline[c]) > 0.00001f) {
+                  return false;
+                }
+              }
+            }
+            return true;
+          }));
+        }
+
+        startGate.countDown();
+        for (Future<Boolean> future : futures) {
+          Assertions.assertTrue(future.get(),
+              "a concurrent getVectors() returned a vector inconsistent with the single-threaded case");
+        }
+      } finally {
+        executor.shutdownNow();
+      }
     }
 
   }

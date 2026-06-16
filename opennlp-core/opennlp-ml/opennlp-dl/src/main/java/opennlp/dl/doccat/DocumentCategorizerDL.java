@@ -22,13 +22,13 @@ import java.io.IOException;
 import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -43,6 +43,7 @@ import opennlp.dl.AbstractDL;
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
 import opennlp.dl.doccat.scoring.ClassificationScoringStrategy;
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.doccat.DocumentCategorizer;
 
 
@@ -56,10 +57,21 @@ import opennlp.tools.doccat.DocumentCategorizer;
  * models commonly used for classification. For cased models, set
  * {@link InferenceOptions#setLowerCase(boolean)} to {@code false}.</p>
  *
+ * <p>This class is thread-safe and may be shared across threads, provided the supplied
+ * {@link ClassificationScoringStrategy} is thread-safe (the built-in
+ * {@link opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy} is stateless).
+ * Inference holds no per-call instance state, the relevant {@link InferenceOptions} values
+ * are snapshotted into final fields at construction (so mutating the passed options
+ * afterwards does not affect a shared instance), and the underlying {@link OrtSession}
+ * supports concurrent execution. This thread-safety guarantee applies until
+ * {@link #close()} is called; callers must not race {@code close()} with inference
+ * methods.</p>
+ *
  * @see DocumentCategorizer
  * @see InferenceOptions
  * @see ClassificationScoringStrategy
  */
+@ThreadSafe
 public class DocumentCategorizerDL extends AbstractDL implements DocumentCategorizer {
 
   /** Classification models are commonly uncased, so lower casing is the default. */
@@ -67,19 +79,28 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   private final Map<Integer, String> categories;
   private final ClassificationScoringStrategy classificationScoringStrategy;
-  private final InferenceOptions inferenceOptions;
+  // Inference options are snapshotted into final fields at construction so a shared
+  // instance never reads the caller's mutable InferenceOptions during inference.
+  private final boolean includeAttentionMask;
+  private final boolean includeTokenTypeIds;
+  private final int documentSplitSize;
+  private final int splitOverlapSize;
 
+  /**
+   * Test-only constructor that injects an already-built {@link OrtSession} (or {@code null}),
+   * bypassing model loading so inference paths can be exercised in unit tests.
+   */
   DocumentCategorizerDL(OrtEnvironment env, OrtSession session, Map<String, Integer> vocab,
                         Map<Integer, String> categories,
                         ClassificationScoringStrategy classificationScoringStrategy,
                         InferenceOptions inferenceOptions) {
-    this.env = env;
-    this.session = session;
-    this.vocab = vocab;
-    this.tokenizer = createTokenizer(vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
-    this.categories = categories;
+    super(env, session, vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
+    this.categories = Map.copyOf(categories);
     this.classificationScoringStrategy = classificationScoringStrategy;
-    this.inferenceOptions = inferenceOptions;
+    this.includeAttentionMask = inferenceOptions.isIncludeAttentionMask();
+    this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
+    this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
+    this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
   }
 
   /**
@@ -100,19 +121,17 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
                                InferenceOptions inferenceOptions)
       throws IOException, OrtException {
 
-    this.env = OrtEnvironment.getEnvironment();
+    super(model, vocabulary,
+        sessionOptions(validateConstructorArguments(
+            inferenceOptions, categories, classificationScoringStrategy)),
+        resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
 
-    final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
-    if (inferenceOptions.isGpu()) {
-      sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
-    }
-
-    this.session = env.createSession(model.getPath(), sessionOptions);
-    this.vocab = loadVocab(vocabulary);
-    this.tokenizer = createTokenizer(vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
-    this.categories = categories;
+    this.categories = Map.copyOf(categories);
     this.classificationScoringStrategy = classificationScoringStrategy;
-    this.inferenceOptions = inferenceOptions;
+    this.includeAttentionMask = inferenceOptions.isIncludeAttentionMask();
+    this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
+    this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
+    this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
 
   }
 
@@ -135,20 +154,26 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
                                InferenceOptions inferenceOptions)
       throws IOException, OrtException {
 
-    this.env = OrtEnvironment.getEnvironment();
+    super(model, vocabulary,
+        sessionOptions(validateConstructorArguments(
+            inferenceOptions, config, classificationScoringStrategy)),
+        resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
 
-    final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
-    if (inferenceOptions.isGpu()) {
-      sessionOptions.addCUDA(inferenceOptions.getGpuDeviceId());
-    }
-
-    this.session = env.createSession(model.getPath(), sessionOptions);
-    this.vocab = loadVocab(vocabulary);
-    this.tokenizer = createTokenizer(vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
-    this.categories = readCategoriesFromFile(config);
+    this.categories = Map.copyOf(readCategoriesFromFile(config));
     this.classificationScoringStrategy = classificationScoringStrategy;
-    this.inferenceOptions = inferenceOptions;
+    this.includeAttentionMask = inferenceOptions.isIncludeAttentionMask();
+    this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
+    this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
+    this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
 
+  }
+
+  private static InferenceOptions validateConstructorArguments(
+      final InferenceOptions inferenceOptions, final Object categoriesOrConfig,
+      final ClassificationScoringStrategy classificationScoringStrategy) {
+    Objects.requireNonNull(categoriesOrConfig, "categoriesOrConfig");
+    Objects.requireNonNull(classificationScoringStrategy, "classificationScoringStrategy");
+    return inferenceOptions;
   }
 
   /**
@@ -191,12 +216,12 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
           LongBuffer.wrap(t.ids()), new long[] {1, t.ids().length}));
 
-      if (inferenceOptions.isIncludeAttentionMask()) {
+      if (includeAttentionMask) {
         inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
             LongBuffer.wrap(t.mask()), new long[] {1, t.mask().length}));
       }
 
-      if (inferenceOptions.isIncludeTokenTypeIds()) {
+      if (includeTokenTypeIds) {
         inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
             LongBuffer.wrap(t.types()), new long[] {1, t.types().length}));
       }
@@ -306,21 +331,19 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     final List<Tokens> t = new LinkedList<>();
 
-    // In this article as the paper suggests, we are going to segment the input into smaller text and feed
-    // each of them into BERT, it means for each row, we will split the text in order to have some
-    // smaller text (200 words long each)
+    // Segment long input text into overlapping chunks configured by InferenceOptions before
+    // feeding each chunk into BERT.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-
-    // Split the input text into 200 word chunks with 50 overlapping between chunks.
     final String[] whitespaceTokenized = text.split("\\s+");
 
-    for (final int[] range : chunkRanges(whitespaceTokenized.length,
-        inferenceOptions.getDocumentSplitSize(), inferenceOptions.getSplitOverlapSize())) {
+    for (ChunkRange chunkRange : chunkRanges(
+        whitespaceTokenized.length, documentSplitSize, splitOverlapSize)) {
 
-      // The group is that subsection of the input.
-      final String group =
-          String.join(" ", Arrays.copyOfRange(whitespaceTokenized, range[0], range[1]));
+      // The group is that subsection of string.
+      final String group = String.join(" ",
+          Arrays.copyOfRange(whitespaceTokenized, chunkRange.start(), chunkRange.end()));
 
+      // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);
 
       final long[] ids = tokenIds(tokens, vocab);
@@ -337,32 +360,6 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     return t;
 
-  }
-
-  /**
-   * Computes the {@code [start, end)} word-index ranges the input is split into: chunks of
-   * {@code splitSize} words overlapping by {@code overlapSize}. The loop always advances by
-   * at least one word, so a misconfigured {@code overlapSize >= splitSize} can neither stall
-   * the loop nor produce negative indices.
-   *
-   * @param length The number of whitespace-separated words.
-   * @param splitSize The chunk size in words.
-   * @param overlapSize The overlap between consecutive chunks in words.
-   * @return The ordered list of {@code [start, end)} ranges; empty when {@code length == 0}.
-   */
-  static List<int[]> chunkRanges(final int length, final int splitSize, final int overlapSize) {
-    final List<int[]> ranges = new ArrayList<>();
-    int start = 0;
-    while (start < length) {
-      final int end = Math.min(start + splitSize, length);
-      ranges.add(new int[] {start, end});
-      if (end == length) {
-        break;
-      }
-      // Overlap by overlapSize words, but always move forward by at least one.
-      start = Math.max(end - overlapSize, start + 1);
-    }
-    return ranges;
   }
 
   /**
@@ -410,6 +407,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     final double[] t = new double[input.length];
     double sum = 0.0;
+
     for (int x = 0; x < input.length; x++) {
       final double val = Math.exp(input[x] - max);
       sum += val;
@@ -417,6 +415,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     }
 
     final double[] output = new double[input.length];
+
     for (int x = 0; x < output.length; x++) {
       output[x] = t[x] / sum;
     }

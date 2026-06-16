@@ -25,12 +25,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ai.onnxruntime.OnnxTensor;
-import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
 import opennlp.dl.AbstractDL;
 import opennlp.dl.Tokens;
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.tokenize.Tokenizer;
 
 
@@ -51,7 +51,13 @@ import opennlp.tools.tokenize.Tokenizer;
  * Output vectors change with the corrected encoding and tokenization;
  * any embeddings persisted from the previous behavior are not
  * comparable with the corrected output and must be re-embedded.</p>
+ *
+ * <p>This class is thread-safe and may be shared across threads: {@link #getVectors(String)}
+ * holds no per-call instance state and the underlying {@link OrtSession} supports
+ * concurrent execution. This thread-safety guarantee applies until {@link #close()}
+ * is called; callers must not race {@code close()} with inference methods.</p>
  */
+@ThreadSafe
 public class SentenceVectorsDL extends AbstractDL {
 
   /**
@@ -87,10 +93,7 @@ public class SentenceVectorsDL extends AbstractDL {
   public SentenceVectorsDL(final File model, final File vocabulary, final boolean lowerCase)
       throws OrtException, IOException {
 
-    env = OrtEnvironment.getEnvironment();
-    session = env.createSession(model.getPath(), new OrtSession.SessionOptions());
-    vocab = loadVocab(vocabulary);
-    tokenizer = createTokenizer(vocab, lowerCase);
+    super(model, vocabulary, new OrtSession.SessionOptions(), lowerCase);
 
   }
 

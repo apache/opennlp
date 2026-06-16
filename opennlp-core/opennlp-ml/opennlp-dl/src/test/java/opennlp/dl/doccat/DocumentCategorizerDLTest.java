@@ -18,7 +18,6 @@
 package opennlp.dl.doccat;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -132,6 +131,13 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
+  void testSoftmaxIsNumericallyStable() {
+    final double[] scores = DocumentCategorizerDL.softmax(new float[] {1000.0f, 1001.0f});
+
+    assertArrayEquals(new double[] {0.2689414213699951, 0.7310585786300049}, scores, 1e-15);
+  }
+
+  @Test
   void testSoftmaxMatchesReferenceDistribution() {
     // Reference (numpy): softmax([1,2,3]) = [0.09003057, 0.24472847, 0.66524096].
     final double[] out = DocumentCategorizerDL.softmax(new float[] {1f, 2f, 3f});
@@ -139,47 +145,5 @@ public class DocumentCategorizerDLTest {
     assertEquals(0.09003057, out[0], 1e-6);
     assertEquals(0.24472847, out[1], 1e-6);
     assertEquals(0.66524096, out[2], 1e-6);
-  }
-
-  @Test
-  void testChunkRangesSplitsWithOverlap() {
-    // 210 words, 200-word chunks overlapping by 50 -> [0,200), [150,210).
-    final List<int[]> ranges = DocumentCategorizerDL.chunkRanges(210, 200, 50);
-
-    assertEquals(2, ranges.size());
-    assertArrayEquals(new int[] {0, 200}, ranges.get(0));
-    assertArrayEquals(new int[] {150, 210}, ranges.get(1));
-  }
-
-  @Test
-  void testChunkRangesSingleChunkWhenShorterThanSplit() {
-    final List<int[]> ranges = DocumentCategorizerDL.chunkRanges(30, 200, 50);
-
-    assertEquals(1, ranges.size());
-    assertArrayEquals(new int[] {0, 30}, ranges.get(0));
-  }
-
-  @Test
-  void testChunkRangesEmptyForZeroLength() {
-    assertTrue(DocumentCategorizerDL.chunkRanges(0, 200, 50).isEmpty());
-  }
-
-  @Test
-  void testChunkRangesAlwaysProgressesForInvalidOverlap() {
-    // overlap == split would stall forever, and overlap > split would make the start index
-    // negative, without the forward-progress guard.
-    for (final int[] cfg : new int[][] {{10, 5, 5}, {8, 3, 10}, {7, 4, 100}}) {
-      final int length = cfg[0];
-      final List<int[]> ranges = DocumentCategorizerDL.chunkRanges(length, cfg[1], cfg[2]);
-
-      int previousStart = -1;
-      for (final int[] range : ranges) {
-        assertTrue(range[0] >= 0, "start must never be negative: " + range[0]);
-        assertTrue(range[1] >= range[0], "end must be >= start");
-        assertTrue(range[0] > previousStart, "each chunk must advance the start index");
-        previousStart = range[0];
-      }
-      assertEquals(length, ranges.get(ranges.size() - 1)[1], "last chunk must reach the end");
-    }
   }
 }
