@@ -20,6 +20,7 @@ package opennlp.dl.namefinder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.LongBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,7 +36,6 @@ import ai.onnxruntime.OrtSession;
 
 import opennlp.dl.AbstractDL;
 import opennlp.dl.InferenceOptions;
-import opennlp.dl.SpanEnd;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.namefind.TokenNameFinder;
@@ -67,9 +67,17 @@ import opennlp.tools.util.Span;
 @ThreadSafe
 public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
+  /** Example person labels; retained for reference. Decoding handles any B-/I- type. */
   public static final String I_PER = "I-PER";
   public static final String B_PER = "B-PER";
   public static final String SEPARATOR = "[SEP]";
+  private static final String CLS_TOKEN = "[CLS]";
+
+  /** Prefix used by BIO labels for the first token in an entity span. */
+  private static final String BEGIN_PREFIX = "B-";
+
+  /** Prefix used by BIO labels for continuation tokens in an entity span. */
+  private static final String INSIDE_PREFIX = "I-";
 
   /** NER models are commonly cased, so lower casing is off by default. */
   private static final boolean LOWER_CASE_DEFAULT = false;
@@ -144,160 +152,33 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   @Override
   public Span[] find(String[] input) {
 
-    final List<Span> spans = new LinkedList<>();
+    final List<Span> spans = new ArrayList<>();
 
     // Join the tokens here because they will be tokenized using Wordpiece during inference.
     final String text = String.join(" ", input);
 
-    final String[] sentences = sentenceDetector.sentDetect(text);
+    // sentPosDetect (not sentDetect) so each sentence's offset in the full text is known.
+    final Span[] sentenceSpans = sentenceDetector.sentPosDetect(text);
 
-    for (String sentence : sentences) {
+    for (final Span sentenceSpan : sentenceSpans) {
+
+      // Floor the character cursor at this sentence's start, then thread it forward across the
+      // sentence's chunks so a repeated surface form is located at its next occurrence. Flooring
+      // per sentence keeps an entity from being matched against an identical surface form in an
+      // earlier sentence -- even one that produced no spans, which would otherwise leave the
+      // cursor behind and mis-locate the match.
+      int searchStart = sentenceSpan.getStart();
 
       // The WordPiece tokenized text. This changes the spacing in the text.
-      final List<Tokens> wordpieceTokens = tokenize(sentence);
+      final List<Tokens> wordpieceTokens = tokenize(sentenceSpan.getCoveredText(text).toString());
 
       for (final Tokens tokens : wordpieceTokens) {
-
-        try {
-
-          // The inputs to the ONNX model.
-          final Map<String, OnnxTensor> inputs = new HashMap<>();
-
-          final float[][][] v;
-          try {
-            inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
-                new long[] {1, tokens.ids().length}));
-
-            if (includeAttentionMask) {
-              inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-                  LongBuffer.wrap(tokens.mask()), new long[] {1, tokens.mask().length}));
-            }
-
-            if (includeTokenTypeIds) {
-              inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-                  LongBuffer.wrap(tokens.types()), new long[] {1, tokens.types().length}));
-            }
-
-            // The outputs from the model.
-            try (OrtSession.Result result = session.run(inputs)) {
-              // getValue() copies the tensor into Java arrays, so the result can be closed safely.
-              v = (float[][][]) result.get(0).getValue();
-            }
-          } finally {
-            inputs.values().forEach(OnnxTensor::close);
-          }
-
-          // Find consecutive B-PER and I-PER labels and combine the spans where necessary.
-          // There are also B-LOC and I-LOC tags for locations that might be useful at some point.
-
-          // Keep track of where the last span was so when there are multiple/duplicate
-          // spans we can get the next one instead of the first one each time.
-          int characterStart = 0;
-
-          final String[] toks = tokens.tokens();
-
-          // We are looping over the vector for each word,
-          // finding the index of the array that has the maximum value,
-          // and then finding the token classification that corresponds to that index.
-          for (int x = 0; x < v[0].length; x++) {
-
-            final float[] arr = v[0][x];
-            final int maxIndex = maxIndex(arr);
-            final String label = ids2Labels.get(maxIndex);
-
-            // TODO: Need to make sure this value is between 0 and 1?
-            // Can we do thresholding without it between 0 and 1?
-            final double confidence = arr[maxIndex]; // / 10;
-
-            // Is this is the start of a person entity.
-            if (B_PER.equals(label)) {
-
-              String spanText;
-
-              // Find the end index of the span in the array (where the label is not I-PER).
-              final SpanEnd spanEnd = findSpanEnd(v, x, ids2Labels, toks);
-
-              // If the end is -1 it means this is a single-span token.
-              // If the end is != -1 it means this is a multi-span token.
-              if (spanEnd.index() != -1) {
-
-                final StringBuilder sb = new StringBuilder();
-
-                // We have to concatenate the tokens.
-                // Add each token in the array and separate them with a space.
-                // We'll separate each with a single space because later we'll find the original span
-                // in the text and ignore spacing between individual tokens in findByRegex().
-                int end = spanEnd.index();
-                for (int i = x; i <= end; i++) {
-
-                  // If the next token starts with ##, combine it with this token.
-                  if (toks[i + 1].startsWith(CHARS_TO_REPLACE)) {
-
-                    sb.append(toks[i]).append(toks[i + 1].replace(CHARS_TO_REPLACE, ""));
-
-                    // Append a space unless the next (next) token starts with ##.
-                    if (!toks[i + 2].startsWith(CHARS_TO_REPLACE)) {
-                      sb.append(" ");
-                    }
-
-                    // Skip the next token since we just included it in this iteration.
-                    i++;
-
-                  } else {
-
-                    sb.append(toks[i].replace(CHARS_TO_REPLACE, ""));
-
-                    // Append a space unless the next token is a period.
-                    if (!".".equals(toks[i + 1])) {
-                      sb.append(" ");
-                    }
-
-                  }
-
-                }
-
-                // This is the text of the span. We use the whole original input text and not one
-                // of the splits. This gives us accurate character positions.
-                spanText = findByRegex(text, sb.toString().trim()).trim();
-
-              } else {
-
-                // This is a single-token span so there is nothing else to do except grab the token.
-                spanText = toks[x];
-
-              }
-
-              if (!SEPARATOR.equals(spanText)) {
-
-                spanText = spanText.replace(CHARS_TO_REPLACE, "");
-
-                // This ignores other potential matches in the same sentence
-                // by only taking the first occurrence.
-                characterStart = text.indexOf(spanText, characterStart);
-
-                // TODO: This check should not be needed because the span was found.
-                // If we aren't finding it now it's because there's a whitespace difference.
-                if (characterStart != -1) {
-
-                  final int characterEnd = characterStart + spanText.length();
-
-                  spans.add(new Span(characterStart, characterEnd, spanText, confidence));
-
-                  // OP-1: Only increment characterStart by one.
-                  characterStart++;
-
-                }
-
-              }
-
-            }
-
-          }
-
-        } catch (OrtException ex) {
-          throw new RuntimeException("Error performing namefinder inference: " + ex.getMessage(), ex);
+        final List<Span> decoded =
+            decodeSpans(text, tokens.tokens(), infer(tokens), ids2Labels, searchStart);
+        spans.addAll(decoded);
+        if (!decoded.isEmpty()) {
+          searchStart = decoded.get(decoded.size() - 1).getEnd();
         }
-
       }
 
     }
@@ -306,84 +187,299 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
   }
 
+  /**
+   * Runs the model on one token window and returns the per-token label score rows. A failure
+   * executing the model (an {@link OrtException} or any runtime fault) is surfaced as an
+   * {@link IllegalStateException} (cause preserved); an unexpected output shape is its own loud
+   * failure. This mirrors the fail-loud contract of the sibling {@code DocumentCategorizerDL}.
+   *
+   * @param tokens The tokens for one chunk to run inference on.
+   * @return The {@code [token][label]} score matrix for the chunk.
+   */
+  private float[][] infer(final Tokens tokens) {
+
+    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    final Object output;
+    try {
+      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
+          new long[] {1, tokens.ids().length}));
+
+      if (includeAttentionMask) {
+        inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+            LongBuffer.wrap(tokens.mask()), new long[] {1, tokens.mask().length}));
+      }
+
+      if (includeTokenTypeIds) {
+        inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+            LongBuffer.wrap(tokens.types()), new long[] {1, tokens.types().length}));
+      }
+
+      // getValue() copies the tensor into Java arrays, so the result can be closed safely.
+      try (OrtSession.Result result = session.run(inputs)) {
+        output = result.get(0).getValue();
+      }
+    } catch (OrtException | RuntimeException ex) {
+      throw new IllegalStateException("Unable to perform name finder inference", ex);
+    } finally {
+      inputs.values().forEach(OnnxTensor::close);
+    }
+
+    // The model returns one score row per token, batched: float[batch][token][label]. Any other
+    // shape (or an empty batch) is a model-contract violation, surfaced on its own rather than as
+    // "inference failed".
+    if (output instanceof float[][][] v && v.length > 0) {
+      return v[0];
+    }
+    throw new IllegalStateException("Unexpected model output type: "
+        + (output == null ? "null" : output.getClass().getName()));
+  }
+
   @Override
   public void clearAdaptiveData() {
     // No use in this implementation.
   }
 
-  private SpanEnd findSpanEnd(float[][][] v, int startIndex, Map<Integer, String> id2Labels,
-                              String[] tokens) {
+  /**
+   * Decodes spans beginning the character search at the start of {@code text}. Equivalent to
+   * {@link #decodeSpans(String, String[], float[][], Map, int)} with {@code searchStart == 0}.
+   *
+   * @param text The original text passed to the model.
+   * @param tokens The WordPiece tokens produced for the text.
+   * @param tokenLabelScores The per-token label scores returned by the model.
+   * @param id2Labels The mapping from model output indexes to BIO labels.
+   * @return The decoded spans.
+   */
+  static List<Span> decodeSpans(String text, String[] tokens, float[][] tokenLabelScores,
+                                Map<Integer, String> id2Labels) {
+    return decodeSpans(text, tokens, tokenLabelScores, id2Labels, 0);
+  }
 
-    // -1 means there is no follow-up token, so it is a single-token span.
-    int index = -1;
-    int characterEnd = 0;
+  /**
+   * Converts model token classifications into character spans in the original input text.
+   *
+   * <p>The ONNX model returns one score vector for each WordPiece token. This method applies
+   * BIO decoding, reconstructs WordPiece fragments, and then resolves the reconstructed text
+   * against the original sentence so that {@link Span#getCoveredText(CharSequence)} works with
+   * the caller's input.</p>
+   *
+   * @param text The original text passed to the model.
+   * @param tokens The WordPiece tokens produced for the text.
+   * @param tokenLabelScores The per-token label scores returned by the model.
+   * @param id2Labels The mapping from model output indexes to BIO labels.
+   * @param searchStart The character offset in {@code text} to begin locating spans from. Threading
+   *     a monotonic cursor across the chunks and sentences of a single {@link #find(String[])} call
+   *     keeps a repeated entity surface form from being emitted twice at the same first occurrence.
+   * @return The decoded spans.
+   */
+  static List<Span> decodeSpans(String text, String[] tokens, float[][] tokenLabelScores,
+                                Map<Integer, String> id2Labels, int searchStart) {
 
-    // Starts at the span start in the vector.
-    // Looks at the next token to see if it is an I-PER.
-    // Go until the next token is something other than I-PER.
-    // When the next token is not I-PER, return the previous index.
+    if (tokens.length != tokenLabelScores.length) {
+      throw new IllegalArgumentException("The number of tokens (" + tokens.length
+          + ") must match the number of model output rows (" + tokenLabelScores.length + ").");
+    }
 
-    for (int x = startIndex + 1; x < v[0].length; x++) {
+    final List<Span> spans = new ArrayList<>();
 
-      // Get the next item.
-      final float[] arr = v[0][x];
+    int characterStart = searchStart;
 
-      // See if the next token has an I-PER label.
-      final String nextTokenClassification = id2Labels.get(maxIndex(arr));
-
-      if (!I_PER.equals(nextTokenClassification)) {
-        index = x - 1;
-        break;
+    for (int x = 0; x < tokenLabelScores.length; x++) {
+      final LabelPrediction prediction = predictLabel(tokenLabelScores[x], id2Labels);
+      if (!isBeginLabel(prediction.label())) {
+        continue;
       }
 
+      final String entityType = prediction.label().substring(BEGIN_PREFIX.length());
+      final EntityPrediction entity = findEntityEnd(tokenLabelScores, x, id2Labels,
+          entityType, prediction.probability());
+      final String spanText = buildSpanText(tokens, x, entity.endIndex());
+
+      if (spanText.isBlank()) {
+        x = entity.endIndex();
+        continue;
+      }
+
+      final SpanMatch match = findByRegex(text, spanText, characterStart);
+      if (match.start() != -1) {
+        spans.add(new Span(match.start(), match.end(), entityType, entity.probability()));
+        characterStart = match.end();
+      }
+
+      x = entity.endIndex();
     }
 
-    // Find where the span ends based on the tokens.
-    for (int x = 1; x <= index && x < tokens.length; x++) {
-      characterEnd += tokens[x].length();
-    }
-
-    // Account for the number of spaces (that is the number of tokens).
-    // (One space per token.)
-    characterEnd += index - 1;
-
-    return new SpanEnd(index, characterEnd);
+    return spans;
 
   }
 
-  private int maxIndex(float[] arr) {
+  private static EntityPrediction findEntityEnd(float[][] tokenLabelScores, int startIndex,
+                                                Map<Integer, String> id2Labels,
+                                                String entityType,
+                                                double startProbability) {
+
+    final String insideLabel = INSIDE_PREFIX + entityType;
+    int endIndex = startIndex;
+    double probability = startProbability;
+
+    for (int x = startIndex + 1; x < tokenLabelScores.length; x++) {
+      final LabelPrediction prediction = predictLabel(tokenLabelScores[x], id2Labels);
+      if (!insideLabel.equals(prediction.label())) {
+        break;
+      }
+      endIndex = x;
+      probability = Math.min(probability, prediction.probability());
+    }
+
+    return new EntityPrediction(endIndex, probability);
+
+  }
+
+  private static boolean isBeginLabel(String label) {
+    return label.startsWith(BEGIN_PREFIX) && label.length() > BEGIN_PREFIX.length();
+  }
+
+  private static LabelPrediction predictLabel(float[] scores, Map<Integer, String> id2Labels) {
+
+    final int labelIndex = maxIndex(scores);
+    final String label = id2Labels.get(labelIndex);
+    if (label == null) {
+      throw new IllegalArgumentException("No label is configured for model output index "
+          + labelIndex + ".");
+    }
+
+    return new LabelPrediction(label, labelProbability(scores, labelIndex));
+
+  }
+
+  static double labelProbability(float[] scores, int labelIndex) {
+
+    int positiveInfinityCount = 0;
+    double max = Float.NEGATIVE_INFINITY;
+
+    for (float score : scores) {
+      if (score == Float.POSITIVE_INFINITY) {
+        positiveInfinityCount++;
+      } else if (!Float.isNaN(score) && score > max) {
+        max = score;
+      }
+    }
+
+    if (positiveInfinityCount > 0) {
+      // From decodeSpans, labelIndex is always the argmax, so when any +Inf is present the chosen
+      // score is +Inf and this returns 1/(number of +Inf). The 0d arm covers a direct caller
+      // asking for a non-+Inf label's probability while a +Inf label exists (exercised by tests).
+      return scores[labelIndex] == Float.POSITIVE_INFINITY ? 1d / positiveInfinityCount : 0d;
+    }
+
+    if (max == Float.NEGATIVE_INFINITY) {
+      return 1d / scores.length;
+    }
+
+    double denominator = 0;
+    for (float score : scores) {
+      if (!Float.isNaN(score)) {
+        denominator += Math.exp(score - max);
+      }
+    }
+
+    return Math.exp(scores[labelIndex] - max) / denominator;
+
+  }
+
+  static String buildSpanText(String[] tokens, int startIndex, int endIndex) {
+
+    final StringBuilder span = new StringBuilder();
+    String previousToken = null;
+
+    for (int x = startIndex; x <= endIndex && x < tokens.length; x++) {
+      final String token = tokens[x];
+      if (CLS_TOKEN.equals(token) || SEPARATOR.equals(token)) {
+        continue;
+      }
+
+      final boolean subword = token.startsWith(CHARS_TO_REPLACE);
+      final String surface = subword ? token.substring(CHARS_TO_REPLACE.length()) : token;
+      if (surface.isEmpty()) {
+        continue;
+      }
+
+      if (span.length() > 0 && !subword && shouldInsertSpace(previousToken, surface)) {
+        span.append(' ');
+      }
+      span.append(surface);
+      previousToken = surface;
+    }
+
+    return span.toString();
+
+  }
+
+  private static boolean shouldInsertSpace(String previousToken, String token) {
+    return previousToken != null && !hasNoSpaceBefore(token) && !hasNoSpaceAfter(previousToken);
+  }
+
+  private static boolean hasNoSpaceBefore(String token) {
+    return switch (token) {
+      case ".", ",", ":", ";", "!", "?", ")", "]", "}", "%", "'", "-", "/" -> true;
+      default -> false;
+    };
+  }
+
+  private static boolean hasNoSpaceAfter(String token) {
+    return switch (token) {
+      case "(", "[", "{", "$", "'", "-", "/" -> true;
+      default -> false;
+    };
+  }
+
+  static int maxIndex(float[] arr) {
 
     double max = Float.NEGATIVE_INFINITY;
     int index = -1;
 
     for (int x = 0; x < arr.length; x++) {
-      if (arr[x] > max) {
+      if (!Float.isNaN(arr[x]) && (index == -1 || arr[x] > max)) {
         index = x;
         max = arr[x];
       }
+    }
+
+    if (index == -1) {
+      throw new IllegalArgumentException(
+          "Model output scores must contain at least one non-NaN value.");
     }
 
     return index;
 
   }
 
-  private static String findByRegex(String text, String span) {
+  private static SpanMatch findByRegex(String text, String span, int searchStart) {
 
-    final String regex = span
-        .replaceAll(" ", "\\\\s+")
-        .replaceAll("\\)", "\\\\)")
-        .replaceAll("\\(", "\\\\(");
+    // Reconstructed span text normalizes whitespace, so match flexibly: a space in the span may
+    // map to any run of whitespace OR none in the source (e.g. punctuation/'&' inside "U.S.A",
+    // "AT&T" that wordpiece tokenization split apart). Use \s* rather than \s+ so such entities
+    // are still located instead of being silently dropped.
+    final String regex = Pattern.quote(span).replace(" ", "\\E\\s*\\Q");
 
     final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     final Matcher matcher = pattern.matcher(text);
+    matcher.region(Math.min(Math.max(searchStart, 0), text.length()), text.length());
 
     if (matcher.find()) {
-      return matcher.group(0);
+      return new SpanMatch(matcher.start(), matcher.end());
     }
 
-    // For some reason the regex match wasn't found. Just return the original span.
-    return span;
+    return new SpanMatch(-1, -1);
 
+  }
+
+  private record LabelPrediction(String label, double probability) {
+  }
+
+  private record EntityPrediction(int endIndex, double probability) {
+  }
+
+  private record SpanMatch(int start, int end) {
   }
 
   private List<Tokens> tokenize(final String text) {
