@@ -54,10 +54,10 @@ List of third-party dependencies grouped by their license type.
 
     BSD License
 
-        * Morfologik Command Line Tools (org.carrot2:morfologik-tools:2.1.9 - http://morfologik.blogspot.com/morfologik-tools/)
-        * Morfologik FSA (Builder) (org.carrot2:morfologik-fsa-builders:2.1.9 - http://morfologik.blogspot.com/morfologik-fsa-builders/)
-        * Morfologik FSA (Traversal) (org.carrot2:morfologik-fsa:2.1.9 - http://morfologik.blogspot.com/morfologik-fsa/)
-        * Morfologik Stemming APIs (org.carrot2:morfologik-stemming:2.1.9 - http://morfologik.blogspot.com/morfologik-stemming/)
+        * Morfologik Command Line Tools (org.carrot2:morfologik-tools:2.2.0 - http://morfologik.blogspot.com/morfologik-tools/)
+        * Morfologik FSA (Builder) (org.carrot2:morfologik-fsa-builders:2.2.0 - http://morfologik.blogspot.com/morfologik-fsa-builders/)
+        * Morfologik FSA (Traversal) (org.carrot2:morfologik-fsa:2.2.0 - http://morfologik.blogspot.com/morfologik-fsa/)
+        * Morfologik Stemming APIs (org.carrot2:morfologik-stemming:2.2.0 - http://morfologik.blogspot.com/morfologik-stemming/)
 
     MIT License
 
