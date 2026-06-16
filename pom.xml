@@ -188,7 +188,7 @@
 
 		<!-- Dependency versions -->
 		<junit.version>6.1.0</junit.version>
-		<junit5-system-exit.version>2.0.2</junit5-system-exit.version>
+		<junit5-system-exit.version>2.0.3</junit5-system-exit.version>
 		<uimaj.version>3.6.1</uimaj.version>
 		<morfologik.version>2.2.0</morfologik.version>
 		<onnxruntime.version>1.26.0</onnxruntime.version>
