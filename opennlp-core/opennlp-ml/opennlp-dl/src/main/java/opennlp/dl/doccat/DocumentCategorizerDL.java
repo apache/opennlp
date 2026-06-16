@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,8 +38,6 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import opennlp.dl.AbstractDL;
 import opennlp.dl.InferenceOptions;
@@ -63,14 +62,25 @@ import opennlp.tools.doccat.DocumentCategorizer;
  */
 public class DocumentCategorizerDL extends AbstractDL implements DocumentCategorizer {
 
-  private static final Logger logger = LoggerFactory.getLogger(DocumentCategorizerDL.class);
-
   /** Classification models are commonly uncased, so lower casing is the default. */
   private static final boolean LOWER_CASE_DEFAULT = true;
 
   private final Map<Integer, String> categories;
   private final ClassificationScoringStrategy classificationScoringStrategy;
   private final InferenceOptions inferenceOptions;
+
+  DocumentCategorizerDL(OrtEnvironment env, OrtSession session, Map<String, Integer> vocab,
+                        Map<Integer, String> categories,
+                        ClassificationScoringStrategy classificationScoringStrategy,
+                        InferenceOptions inferenceOptions) {
+    this.env = env;
+    this.session = session;
+    this.vocab = vocab;
+    this.tokenizer = createTokenizer(vocab, resolveLowerCase(inferenceOptions, LOWER_CASE_DEFAULT));
+    this.categories = categories;
+    this.classificationScoringStrategy = classificationScoringStrategy;
+    this.inferenceOptions = inferenceOptions;
+  }
 
   /**
    * Instantiates a {@link DocumentCategorizer document categorizer} using ONNX models.
@@ -141,68 +151,74 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   }
 
+  /**
+   * Categorizes the document, failing loudly rather than returning an invalid distribution:
+   * malformed input is rejected with {@link IllegalArgumentException}, and any failure executing
+   * the model is surfaced as an {@link IllegalStateException} (cause preserved).
+   *
+   * @param strings The document to categorize; {@code strings[0]} is classified.
+   * @return The per-category probabilities.
+   * @throws IllegalArgumentException If {@code strings} is {@code null} or empty.
+   * @throws IllegalStateException    If inference fails or the model returns an unexpected output.
+   */
   @Override
   public double[] categorize(String[] strings) {
 
-    try {
-
-      final List<Tokens> tokens = tokenize(strings[0]);
-
-      final List<double[]> scores = new LinkedList<>();
-
-      for (final Tokens t : tokens) {
-
-        final Map<String, OnnxTensor> inputs = new HashMap<>();
-
-        final Object output;
-        try {
-          inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
-              LongBuffer.wrap(t.ids()), new long[] {1, t.ids().length}));
-
-          if (inferenceOptions.isIncludeAttentionMask()) {
-            inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
-                LongBuffer.wrap(t.mask()), new long[] {1, t.mask().length}));
-          }
-
-          if (inferenceOptions.isIncludeTokenTypeIds()) {
-            inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
-                LongBuffer.wrap(t.types()), new long[] {1, t.types().length}));
-          }
-
-          // The outputs from the model. Some models return a 2D array (e.g. BERT),
-          // while others return a 1D array (e.g. RoBERTa).
-          try (OrtSession.Result result = session.run(inputs)) {
-            // getValue() copies the tensor into Java arrays, so the result can be closed safely.
-            output = result.get(0).getValue();
-          }
-        } finally {
-          inputs.values().forEach(OnnxTensor::close);
-        }
-
-        final float[] rawScores;
-        if (output instanceof float[][] v) {
-          rawScores = v[0];
-        } else if (output instanceof float[] v) {
-          rawScores = v;
-        } else {
-          throw new IllegalStateException(
-              "Unexpected model output type: " + output.getClass().getName());
-        }
-
-        // Keep track of all scores.
-        final double[] categoryScoresForTokens = softmax(rawScores);
-        scores.add(categoryScoresForTokens);
-
-      }
-
-      return classificationScoringStrategy.score(scores);
-
-    } catch (Exception ex) {
-      logger.error("Unload to perform document classification inference", ex);
+    if (strings == null || strings.length == 0) {
+      throw new IllegalArgumentException("strings must contain at least one document to categorize");
     }
 
-    return new double[] {};
+    final List<Tokens> tokens = tokenize(strings[0]);
 
+    final List<double[]> scores = new LinkedList<>();
+    for (final Tokens t : tokens) {
+      scores.add(softmax(infer(t)));
+    }
+
+    return classificationScoringStrategy.score(scores);
+  }
+
+  /**
+   * Runs the model on one token window and returns its raw per-category logits. A failure executing
+   * the model (an {@link OrtException} or any runtime fault) is wrapped as an
+   * {@link IllegalStateException}; an unexpected output shape is its own loud failure.
+   */
+  private float[] infer(final Tokens t) {
+
+    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    final Object output;
+    try {
+      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
+          LongBuffer.wrap(t.ids()), new long[] {1, t.ids().length}));
+
+      if (inferenceOptions.isIncludeAttentionMask()) {
+        inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env,
+            LongBuffer.wrap(t.mask()), new long[] {1, t.mask().length}));
+      }
+
+      if (inferenceOptions.isIncludeTokenTypeIds()) {
+        inputs.put(TOKEN_TYPE_IDS, OnnxTensor.createTensor(env,
+            LongBuffer.wrap(t.types()), new long[] {1, t.types().length}));
+      }
+
+      // getValue() copies the tensor into Java arrays, so the result can be closed safely.
+      try (OrtSession.Result result = session.run(inputs)) {
+        output = result.get(0).getValue();
+      }
+    } catch (OrtException | RuntimeException ex) {
+      throw new IllegalStateException("Unable to perform document classification inference", ex);
+    } finally {
+      inputs.values().forEach(OnnxTensor::close);
+    }
+
+    // Some models return a 2D array (e.g. BERT), others a 1D array (e.g. RoBERTa). A different
+    // shape is a model-contract violation, surfaced on its own rather than as "inference failed".
+    if (output instanceof float[][] v) {
+      return v[0];
+    } else if (output instanceof float[] v) {
+      return v;
+    }
+    throw new IllegalStateException("Unexpected model output type: " + output.getClass().getName());
   }
 
   @Override
@@ -298,23 +314,13 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     // Split the input text into 200 word chunks with 50 overlapping between chunks.
     final String[] whitespaceTokenized = text.split("\\s+");
 
-    for (int start = 0; start < whitespaceTokenized.length;
-         start = start + inferenceOptions.getDocumentSplitSize()) {
+    for (final int[] range : chunkRanges(whitespaceTokenized.length,
+        inferenceOptions.getDocumentSplitSize(), inferenceOptions.getSplitOverlapSize())) {
 
-      // 200 word length chunk
-      // Check the end do don't go past and get a StringIndexOutOfBoundsException
-      int end = start + inferenceOptions.getDocumentSplitSize();
-      if (end > whitespaceTokenized.length) {
-        end = whitespaceTokenized.length;
-      }
+      // The group is that subsection of the input.
+      final String group =
+          String.join(" ", Arrays.copyOfRange(whitespaceTokenized, range[0], range[1]));
 
-      // The group is that subsection of string.
-      final String group = String.join(" ", Arrays.copyOfRange(whitespaceTokenized, start, end));
-
-      // We want to overlap each chunk by 50 words so scoot back 50 words for the next iteration.
-      start = start - inferenceOptions.getSplitOverlapSize();
-
-      // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);
 
       final long[] ids = tokenIds(tokens, vocab);
@@ -331,6 +337,32 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     return t;
 
+  }
+
+  /**
+   * Computes the {@code [start, end)} word-index ranges the input is split into: chunks of
+   * {@code splitSize} words overlapping by {@code overlapSize}. The loop always advances by
+   * at least one word, so a misconfigured {@code overlapSize >= splitSize} can neither stall
+   * the loop nor produce negative indices.
+   *
+   * @param length The number of whitespace-separated words.
+   * @param splitSize The chunk size in words.
+   * @param overlapSize The overlap between consecutive chunks in words.
+   * @return The ordered list of {@code [start, end)} ranges; empty when {@code length == 0}.
+   */
+  static List<int[]> chunkRanges(final int length, final int splitSize, final int overlapSize) {
+    final List<int[]> ranges = new ArrayList<>();
+    int start = 0;
+    while (start < length) {
+      final int end = Math.min(start + splitSize, length);
+      ranges.add(new int[] {start, end});
+      if (end == length) {
+        break;
+      }
+      // Overlap by overlapSize words, but always move forward by at least one.
+      start = Math.max(end - overlapSize, start + 1);
+    }
+    return ranges;
   }
 
   /**
@@ -366,21 +398,27 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    * @param input An array of values.
    * @return The output array.
    */
-  private double[] softmax(final float[] input) {
+  static double[] softmax(final float[] input) {
+
+    // Subtract the maximum before exponentiating (numerically stable softmax): exp() of a
+    // large logit otherwise overflows to +Infinity, yielding NaN scores. Mathematically
+    // identical to the naive form. Results are kept in double precision throughout.
+    double max = Double.NEGATIVE_INFINITY;
+    for (final float value : input) {
+      max = Math.max(max, value);
+    }
 
     final double[] t = new double[input.length];
     double sum = 0.0;
-
     for (int x = 0; x < input.length; x++) {
-      double val = Math.exp(input[x]);
+      final double val = Math.exp(input[x] - max);
       sum += val;
       t[x] = val;
     }
 
     final double[] output = new double[input.length];
-
     for (int x = 0; x < output.length; x++) {
-      output[x] = (float) (t[x] / sum);
+      output[x] = t[x] / sum;
     }
 
     return output;

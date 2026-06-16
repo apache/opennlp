@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.doccat.scoring.AverageClassificationScoringStrategy;
 import opennlp.tools.eval.AbstractEvalTest;
+import opennlp.tools.tokenize.WordpieceTokenizer;
 
 public class DocumentCategorizerDLEval extends AbstractEvalTest {
 
@@ -87,6 +88,27 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
 
       final String category = documentCategorizerDL.getBestCategory(result);
       Assertions.assertEquals("bad", category);
+    }
+
+  }
+
+  @Test
+  public void categorizeFailsLoudlyOnFailure() throws Exception {
+
+    try (final DocumentCategorizerDL documentCategorizerDL =
+             categorizerWithoutSession()) {
+
+      // Empty input drives categorize() down its failure path (strings[0] throws) before any
+      // inference; it must fail loudly rather than return an invalid all-zero distribution.
+      final IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, () ->
+          documentCategorizerDL.categorize(new String[0]));
+      Assertions.assertTrue(e.getMessage().contains("document classification inference"));
+
+      // The dependent API must not mask that inference failure with all-zero scores.
+      Assertions.assertThrows(IllegalStateException.class, () ->
+          documentCategorizerDL.scoreMap(new String[0]));
+      Assertions.assertThrows(IllegalStateException.class, () ->
+          documentCategorizerDL.sortedScoreMap(new String[0]));
     }
 
   }
@@ -307,6 +329,21 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
 
     return categories;
 
+  }
+
+  private DocumentCategorizerDL categorizerWithoutSession() {
+    return new DocumentCategorizerDL(null, null, vocab(), getCategories(),
+        new AverageClassificationScoringStrategy(), new InferenceOptions());
+  }
+
+  private Map<String, Integer> vocab() {
+    final Map<String, Integer> vocab = new HashMap<>();
+    vocab.put(WordpieceTokenizer.BERT_CLS_TOKEN, 0);
+    vocab.put(WordpieceTokenizer.BERT_SEP_TOKEN, 1);
+    vocab.put(WordpieceTokenizer.BERT_UNK_TOKEN, 2);
+    vocab.put("hello", 3);
+    vocab.put("world", 4);
+    return vocab;
   }
 
 }
