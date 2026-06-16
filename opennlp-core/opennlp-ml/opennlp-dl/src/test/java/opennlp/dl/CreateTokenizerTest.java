@@ -32,10 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreateTokenizerTest {
 
-  /** A concrete subclass to access the protected factory methods. */
-  private static class TestDL extends AbstractDL {
-  }
-
   private static Map<String, Integer> bertVocab() {
     final Map<String, Integer> vocab = new HashMap<>();
     vocab.put(WordpieceTokenizer.BERT_CLS_TOKEN, 0);
@@ -57,7 +53,7 @@ public class CreateTokenizerTest {
 
   @Test
   void testCreatesLowerCasingBertTokenizer() {
-    final BertTokenizer tokenizer = new TestDL().createTokenizer(bertVocab(), true);
+    final BertTokenizer tokenizer = AbstractDL.createBertTokenizer(bertVocab(), true);
 
     // Capitalized input must be lower cased before the wordpiece lookup.
     assertArrayEquals(new String[] {
@@ -67,7 +63,7 @@ public class CreateTokenizerTest {
 
   @Test
   void testCreatesCasePreservingBertTokenizer() {
-    final BertTokenizer tokenizer = new TestDL().createTokenizer(bertVocab(), false);
+    final BertTokenizer tokenizer = AbstractDL.createBertTokenizer(bertVocab(), false);
 
     // Without lower casing, capitalized words miss the lowercase-only vocabulary.
     assertArrayEquals(new String[] {
@@ -78,7 +74,7 @@ public class CreateTokenizerTest {
 
   @Test
   void testSelectsRobertaSpecialTokens() {
-    final BertTokenizer tokenizer = new TestDL().createTokenizer(robertaVocab(), false);
+    final BertTokenizer tokenizer = AbstractDL.createBertTokenizer(robertaVocab(), false);
 
     assertArrayEquals(new String[] {
         WordpieceTokenizer.ROBERTA_CLS_TOKEN, "hello", WordpieceTokenizer.ROBERTA_UNK_TOKEN,
@@ -92,7 +88,7 @@ public class CreateTokenizerTest {
     vocab.remove(WordpieceTokenizer.ROBERTA_UNK_TOKEN);
     vocab.put(WordpieceTokenizer.BERT_UNK_TOKEN, 2);
 
-    final BertTokenizer tokenizer = new TestDL().createTokenizer(vocab, false);
+    final BertTokenizer tokenizer = AbstractDL.createBertTokenizer(vocab, false);
 
     assertArrayEquals(new String[] {
         WordpieceTokenizer.ROBERTA_CLS_TOKEN, "hello", WordpieceTokenizer.BERT_UNK_TOKEN,
@@ -105,9 +101,8 @@ public class CreateTokenizerTest {
     final Map<String, Integer> vocab = robertaVocab();
     vocab.remove(WordpieceTokenizer.ROBERTA_UNK_TOKEN);
 
-    final TestDL dl = new TestDL();
-    assertThrows(IllegalArgumentException.class, () -> dl.createTokenizer(vocab, false));
-    assertThrows(IllegalArgumentException.class, () -> dl.createTokenizer(vocab));
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.createBertTokenizer(vocab, false));
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.createWordpieceTokenizer(vocab));
   }
 
   @Test

@@ -29,14 +29,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class LoadVocabTest {
-
-  private final AbstractDL dl = new AbstractDL() {
-    @Override
-    public void close() {
-    }
-  };
 
   private File getResource(String name) throws IOException {
     try (InputStream is = Objects.requireNonNull(
@@ -50,7 +45,7 @@ public class LoadVocabTest {
 
   @Test
   void testLoadPlainTextVocab() throws IOException {
-    final Map<String, Integer> vocab = dl.loadVocab(getResource("vocab-plain.txt"));
+    final Map<String, Integer> vocab = AbstractDL.loadVocabFile(getResource("vocab-plain.txt"));
 
     assertNotNull(vocab);
     assertEquals(6, vocab.size());
@@ -64,7 +59,7 @@ public class LoadVocabTest {
 
   @Test
   void testLoadJsonVocab() throws IOException {
-    final Map<String, Integer> vocab = dl.loadVocab(getResource("vocab.json"));
+    final Map<String, Integer> vocab = AbstractDL.loadVocabFile(getResource("vocab.json"));
 
     assertNotNull(vocab);
     assertEquals(6, vocab.size());
@@ -84,7 +79,7 @@ public class LoadVocabTest {
     Files.writeString(tempFile.toPath(),
         "{\"hello\\\"world\": 0, \"back\\\\slash\": 1}");
 
-    final Map<String, Integer> vocab = dl.loadVocab(tempFile);
+    final Map<String, Integer> vocab = AbstractDL.loadVocabFile(tempFile);
 
     assertNotNull(vocab);
     assertEquals(2, vocab.size());
@@ -93,9 +88,36 @@ public class LoadVocabTest {
   }
 
   @Test
+  void testJsonVocabWithUnicodeEscapedCharacters() throws IOException {
+    final File tempFile = File.createTempFile("vocab-unicode", ".json");
+    tempFile.deleteOnExit();
+
+    Files.writeString(tempFile.toPath(),
+        "{\"\\u0120token\": 0, \"line\\rbreak\": 1, \"form\\ffeed\": 2}");
+
+    final Map<String, Integer> vocab = AbstractDL.loadVocabFile(tempFile);
+
+    assertNotNull(vocab);
+    assertEquals(3, vocab.size());
+    assertEquals(0, vocab.get("Ġtoken"));
+    assertEquals(1, vocab.get("line\rbreak"));
+    assertEquals(2, vocab.get("form\ffeed"));
+  }
+
+  @Test
+  void testJsonVocabRejectsInvalidEscapedCharacters() throws IOException {
+    final File tempFile = File.createTempFile("vocab-invalid-escape", ".json");
+    tempFile.deleteOnExit();
+
+    Files.writeString(tempFile.toPath(), "{\"bad\\xescape\": 0}");
+
+    assertThrows(IllegalArgumentException.class, () -> AbstractDL.loadVocabFile(tempFile));
+  }
+
+  @Test
   void testJsonAndPlainTextVocabProduceSameResult() throws IOException {
-    final Map<String, Integer> plainVocab = dl.loadVocab(getResource("vocab-plain.txt"));
-    final Map<String, Integer> jsonVocab = dl.loadVocab(getResource("vocab.json"));
+    final Map<String, Integer> plainVocab = AbstractDL.loadVocabFile(getResource("vocab-plain.txt"));
+    final Map<String, Integer> jsonVocab = AbstractDL.loadVocabFile(getResource("vocab.json"));
 
     assertEquals(plainVocab, jsonVocab);
   }

@@ -19,8 +19,14 @@ package opennlp.dl.namefinder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import ai.onnxruntime.OrtException;
 import org.junit.jupiter.api.Assertions;
@@ -28,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.dl.InferenceOptions;
 import opennlp.tools.eval.AbstractEvalTest;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.sentdetect.SentenceDetectorME;
@@ -68,6 +75,160 @@ public class NameFinderDLEval extends AbstractEvalTest {
       Assertions.assertEquals(8.251646041870117, spans[0].getProb(), 0.00001);
       Assertions.assertEquals("George Washington",
           spans[0].getCoveredText(String.join(" ", tokens)));
+    }
+
+  }
+
+  /**
+   * Verifies that a single {@link NameFinderDL} instance is safe to share across threads:
+   * many threads call {@link NameFinderDL#find(String[])} concurrently on one instance and
+   * every call must return the same correct result as the single-threaded case. A data
+   * race on the shared inference state would surface here as a wrong span, an exception or
+   * a non-deterministic result.
+   */
+  @Test
+  public void tokenNameFinderConcurrentTest() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+
+    final String[] tokens = new String[]
+        {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
+    final String text = String.join(" ", tokens);
+
+    final int threads = 8;
+    final int iterationsPerThread = 25;
+
+    try (final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels(),
+        sentenceDetector)) {
+
+      final ExecutorService executor = Executors.newFixedThreadPool(threads);
+      try {
+        final CountDownLatch startGate = new CountDownLatch(1);
+        final List<Future<Boolean>> futures = new ArrayList<>();
+
+        for (int t = 0; t < threads; t++) {
+          futures.add(executor.submit(() -> {
+            // Release all threads at once to maximize contention on the shared instance.
+            startGate.await();
+            for (int i = 0; i < iterationsPerThread; i++) {
+              final Span[] spans = nameFinderDL.find(tokens);
+              if (spans.length != 1
+                  || spans[0].getStart() != 0
+                  || spans[0].getEnd() != 17
+                  || !"George Washington".equals(spans[0].getCoveredText(text))) {
+                return false;
+              }
+            }
+            return true;
+          }));
+        }
+
+        startGate.countDown();
+        for (Future<Boolean> future : futures) {
+          Assertions.assertTrue(future.get(),
+              "a concurrent find() returned a result inconsistent with the single-threaded case");
+        }
+      } finally {
+        // Shut down on every path so a failed assertion can never leave the pool running.
+        executor.shutdownNow();
+      }
+    }
+
+  }
+
+  /**
+   * Concurrent test that explicitly pairs {@link NameFinderDL} with {@link SentenceDetectorME}
+   * to validate the documented {@code @ThreadSafe} precondition: {@code NameFinderDL} may be
+   * shared across threads only when the injected {@link SentenceDetector} is itself thread-safe.
+   * {@code SentenceDetectorME} is annotated {@code @ThreadSafe}, satisfying the contract.
+   */
+  @Test
+  public void nameFinderDlConcurrentWithSentenceDetectorMe() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+
+    final String[] tokens = new String[]
+        {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
+
+    // Explicitly construct the detector inside the test to make the precondition visible.
+    final SentenceDetectorME detector = new SentenceDetectorME("en");
+
+    final int threads = 8;
+    final int iterationsPerThread = 25;
+
+    try (final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels(),
+        detector)) {
+
+      final ExecutorService executor = Executors.newFixedThreadPool(threads);
+      try {
+        final CountDownLatch startGate = new CountDownLatch(1);
+        final List<Future<Boolean>> futures = new ArrayList<>();
+
+        for (int t = 0; t < threads; t++) {
+          futures.add(executor.submit(() -> {
+            startGate.await();
+            for (int i = 0; i < iterationsPerThread; i++) {
+              final Span[] spans = nameFinderDL.find(tokens);
+              if (spans.length != 1
+                  || spans[0].getStart() != 0
+                  || spans[0].getEnd() != 17) {
+                return false;
+              }
+            }
+            return true;
+          }));
+        }
+
+        startGate.countDown();
+        for (Future<Boolean> future : futures) {
+          Assertions.assertTrue(future.get(),
+              "concurrent find() with SentenceDetectorME returned inconsistent results");
+        }
+      } finally {
+        executor.shutdownNow();
+      }
+    }
+  }
+
+  /**
+   * Verifies that {@link InferenceOptions} are snapshotted at construction: mutating the
+   * options object after the {@link NameFinderDL} is built must not change its inference,
+   * which is what makes a shared instance safe against callers that hold the same options.
+   */
+  @Test
+  public void tokenNameFinderSnapshotsInferenceOptionsTest() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+
+    final String[] tokens = new String[]
+        {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
+    final String text = String.join(" ", tokens);
+
+    final InferenceOptions options = new InferenceOptions();
+
+    try (final NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, getIds2Labels(),
+        options, sentenceDetector)) {
+
+      final Span[] baseline = nameFinderDL.find(tokens);
+      Assertions.assertEquals(1, baseline.length);
+      Assertions.assertEquals("George Washington", baseline[0].getCoveredText(text));
+
+      // Mutate the options in ways that would change inference if they were read live:
+      // a split size of 1 would chunk the input one word at a time.
+      options.setIncludeAttentionMask(!options.isIncludeAttentionMask());
+      options.setIncludeTokenTypeIds(!options.isIncludeTokenTypeIds());
+      options.setDocumentSplitSize(1);
+      options.setSplitOverlapSize(0);
+
+      final Span[] afterMutation = nameFinderDL.find(tokens);
+      Assertions.assertEquals(1, afterMutation.length,
+          "mutating InferenceOptions after construction must not affect a built instance");
+      Assertions.assertEquals(0, afterMutation[0].getStart());
+      Assertions.assertEquals(17, afterMutation[0].getEnd());
+      Assertions.assertEquals("George Washington", afterMutation[0].getCoveredText(text));
     }
 
   }

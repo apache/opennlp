@@ -18,12 +18,18 @@
 package opennlp.dl.doccat;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -88,6 +94,63 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
 
       final String category = documentCategorizerDL.getBestCategory(result);
       Assertions.assertEquals("bad", category);
+    }
+
+  }
+
+  /**
+   * Verifies that a single {@link DocumentCategorizerDL} instance is safe to share across
+   * threads: concurrent {@link DocumentCategorizerDL#categorize(String[])} calls on one
+   * instance must all return the same scores as the single-threaded baseline.
+   */
+  @Test
+  public void categorizeConcurrentTest() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.onnx");
+    final File vocab = new File(getOpennlpDataDir(),
+        "onnx/doccat/nlptown_bert-base-multilingual-uncased-sentiment.vocab");
+
+    final int threads = 8;
+    final int iterationsPerThread = 10;
+
+    try (final DocumentCategorizerDL documentCategorizerDL =
+             new DocumentCategorizerDL(model, vocab, getCategories(),
+                 new AverageClassificationScoringStrategy(), new InferenceOptions())) {
+
+      final double[] baseline = documentCategorizerDL.categorize(new String[] {text});
+
+      final ExecutorService executor = Executors.newFixedThreadPool(threads);
+      try {
+        final CountDownLatch startGate = new CountDownLatch(1);
+        final List<Future<Boolean>> futures = new ArrayList<>();
+
+        for (int t = 0; t < threads; t++) {
+          futures.add(executor.submit(() -> {
+            startGate.await();
+            for (int i = 0; i < iterationsPerThread; i++) {
+              final double[] result = documentCategorizerDL.categorize(new String[] {text});
+              if (result.length != baseline.length) {
+                return false;
+              }
+              for (int c = 0; c < baseline.length; c++) {
+                if (Math.abs(result[c] - baseline[c]) > 0.000001) {
+                  return false;
+                }
+              }
+            }
+            return true;
+          }));
+        }
+
+        startGate.countDown();
+        for (Future<Boolean> future : futures) {
+          Assertions.assertTrue(future.get(),
+              "a concurrent categorize() returned scores inconsistent with the single-threaded case");
+        }
+      } finally {
+        executor.shutdownNow();
+      }
     }
 
   }
