@@ -128,7 +128,7 @@ public class NameFinderDLTest {
   }
 
   @Test
-  void testDecodeSpansRejectsMissingPredictedLabels() {
+  void testDecodeSpansTreatsMissingPredictedLabelsAsOutside() {
     final String text = "Alice visited.";
     final String[] tokens = {"[CLS]", "Alice", "visited", ".", "[SEP]"};
     final float[][] scores = {
@@ -136,11 +136,9 @@ public class NameFinderDLTest {
     };
     final Map<Integer, String> incompleteLabels = Map.of(0, "O");
 
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-        NameFinderDL.decodeSpans(text, tokens, scores, incompleteLabels));
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, incompleteLabels);
 
-    assertTrue(e.getMessage().contains("1"),
-        "the error message should name the missing label id: " + e.getMessage());
+    assertTrue(spans.isEmpty());
   }
 
   @Test
@@ -185,6 +183,18 @@ public class NameFinderDLTest {
   }
 
   @Test
+  void testDecodeSpansDoesNotMatchBeyondSearchEnd() {
+    final String text = "London was quiet. Later Paris was loud.";
+    final String[] tokens = {"[CLS]", "Paris", "[SEP]"};
+    final float[][] scores = {scoresFor(0), scoresFor(3), scoresFor(0)};
+
+    final List<Span> spans = NameFinderDL.decodeSpans(
+        text, tokens, scores, ID_TO_LABELS, 0, text.indexOf(" Later"));
+
+    assertTrue(spans.isEmpty());
+  }
+
+  @Test
   void testDecodeSpansMatchesSourceCaseInsensitively() {
     // The reconstructed span text may differ in case from the source (e.g. an uncased model);
     // findByRegex matches case-insensitively, so the span is still located at the source offsets.
@@ -202,16 +212,30 @@ public class NameFinderDLTest {
   }
 
   @Test
-  void testMaxIndexSkipsNaNAndPicksLargestFinite() {
-    assertEquals(1, NameFinderDL.maxIndex(new float[] {Float.NaN, 5f, -5f}));
+  void testDecodeSpansSkipsNaNAndPicksLargestFinite() {
+    final String text = "Alice visited.";
+    final String[] tokens = {"[CLS]", "Alice", "visited", ".", "[SEP]"};
+    final float[][] scores = {
+        scoresFor(0), scoresWithNaN(1), scoresFor(0), scoresFor(0), scoresFor(0)
+    };
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertEquals(1, spans.size());
+    assertEquals("Alice", spans.get(0).getCoveredText(text));
   }
 
   @Test
-  void testMaxIndexRejectsAllNaNOrEmptyScores() {
-    assertThrows(IllegalArgumentException.class,
-        () -> NameFinderDL.maxIndex(new float[] {Float.NaN, Float.NaN}));
-    assertThrows(IllegalArgumentException.class,
-        () -> NameFinderDL.maxIndex(new float[0]));
+  void testDecodeSpansRejectsAllNaNOrEmptyScores() {
+    final String text = "Alice visited.";
+    final String[] tokens = {"[CLS]", "Alice", "visited", ".", "[SEP]"};
+
+    assertThrows(IllegalStateException.class, () -> NameFinderDL.decodeSpans(text, tokens,
+        new float[][] {scoresFor(0), new float[] {Float.NaN, Float.NaN}, scoresFor(0),
+            scoresFor(0), scoresFor(0)}, ID_TO_LABELS));
+    assertThrows(IllegalStateException.class, () -> NameFinderDL.decodeSpans(text, tokens,
+        new float[][] {scoresFor(0), new float[0], scoresFor(0), scoresFor(0), scoresFor(0)},
+        ID_TO_LABELS));
   }
 
   @Test
@@ -254,6 +278,12 @@ public class NameFinderDLTest {
       scores[i] = -5;
     }
     scores[labelIndex] = 5;
+    return scores;
+  }
+
+  private static float[] scoresWithNaN(int labelIndex) {
+    final float[] scores = scoresFor(labelIndex);
+    scores[0] = Float.NaN;
     return scores;
   }
 

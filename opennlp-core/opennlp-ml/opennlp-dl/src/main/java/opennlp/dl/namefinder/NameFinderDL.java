@@ -33,6 +33,8 @@ import java.util.regex.Pattern;
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import opennlp.dl.AbstractDL;
 import opennlp.dl.InferenceOptions;
@@ -71,18 +73,27 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   public static final String I_PER = "I-PER";
   public static final String B_PER = "B-PER";
   public static final String SEPARATOR = "[SEP]";
-  private static final String CLS_TOKEN = "[CLS]";
+  public static final String CLS_TOKEN = "[CLS]";
 
   /** Prefix used by BIO labels for the first token in an entity span. */
-  private static final String BEGIN_PREFIX = "B-";
+  public static final String PREFIX_BEGIN = "B-";
 
   /** Prefix used by BIO labels for continuation tokens in an entity span. */
-  private static final String INSIDE_PREFIX = "I-";
+  public static final String PREFIX_INSIDE = "I-";
+
+  /** Tokens that attach directly to the preceding token when span text is reconstructed. */
+  public static final String[] NO_SPACE_BEFORE_TOKENS =
+      {".", ",", ":", ";", "!", "?", ")", "]", "}", "%", "'", "-", "/"};
+
+  /** Tokens after which the following token attaches directly when span text is reconstructed. */
+  public static final String[] NO_SPACE_AFTER_TOKENS =
+      {"(", "[", "{", "$", "'", "-", "/"};
 
   /** NER models are commonly cased, so lower casing is off by default. */
   private static final boolean LOWER_CASE_DEFAULT = false;
 
   private static final String CHARS_TO_REPLACE = "##";
+  private static final Logger logger = LoggerFactory.getLogger(NameFinderDL.class);
 
   private final SentenceDetector sentenceDetector;
   private final Map<Integer, String> ids2Labels;
@@ -149,6 +160,17 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
     return inferenceOptions;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>This method joins the provided tokens with spaces, sentence-splits the joined text,
+   * runs each sentence through the ONNX token-classification model, decodes BIO labels into
+   * {@link Span spans}, and resolves those spans back to character offsets in the joined text.</p>
+   *
+   * @throws IllegalStateException Thrown if inference fails, if the model output shape is not
+   *     the expected {@code float[batch][token][label]} form, or if the model output contains
+   *     no usable label score for a token.
+   */
   @Override
   public Span[] find(String[] input) {
 
@@ -174,7 +196,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
       for (final Tokens tokens : wordpieceTokens) {
         final List<Span> decoded =
-            decodeSpans(text, tokens.tokens(), infer(tokens), ids2Labels, searchStart);
+            decodeSpans(text, tokens.tokens(), infer(tokens), ids2Labels, searchStart,
+                sentenceSpan.getEnd());
         spans.addAll(decoded);
         if (!decoded.isEmpty()) {
           searchStart = decoded.get(decoded.size() - 1).getEnd();
@@ -218,8 +241,12 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
       try (OrtSession.Result result = session.run(inputs)) {
         output = result.get(0).getValue();
       }
-    } catch (OrtException | RuntimeException ex) {
-      throw new IllegalStateException("Unable to perform name finder inference", ex);
+    } catch (OrtException ex) {
+      throw new IllegalStateException(
+          "Unable to perform name finder inference: " + ex.getMessage(), ex);
+    } catch (RuntimeException ex) {
+      throw new IllegalStateException(
+          "Unexpected runtime failure during name finder inference: " + ex.getMessage(), ex);
     } finally {
       inputs.values().forEach(OnnxTensor::close);
     }
@@ -227,7 +254,10 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
     // The model returns one score row per token, batched: float[batch][token][label]. Any other
     // shape (or an empty batch) is a model-contract violation, surfaced on its own rather than as
     // "inference failed".
-    if (output instanceof float[][][] v && v.length > 0) {
+    if (output instanceof float[][][] v) {
+      if (v.length == 0) {
+        throw new IllegalStateException("Model output batch must contain at least one entry.");
+      }
       return v[0];
     }
     throw new IllegalStateException("Unexpected model output type: "
@@ -240,14 +270,14 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   }
 
   /**
-   * Decodes spans beginning the character search at the start of {@code text}. Equivalent to
+   * Decodes {@link Span spans} beginning the character search at the start of {@code text}. Equivalent to
    * {@link #decodeSpans(String, String[], float[][], Map, int)} with {@code searchStart == 0}.
    *
    * @param text The original text passed to the model.
    * @param tokens The WordPiece tokens produced for the text.
    * @param tokenLabelScores The per-token label scores returned by the model.
    * @param id2Labels The mapping from model output indexes to BIO labels.
-   * @return The decoded spans.
+   * @return The decoded {@link Span spans}.
    */
   static List<Span> decodeSpans(String text, String[] tokens, float[][] tokenLabelScores,
                                 Map<Integer, String> id2Labels) {
@@ -255,7 +285,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   }
 
   /**
-   * Converts model token classifications into character spans in the original input text.
+   * Converts model token classifications into character {@link Span spans} in the original input text.
    *
    * <p>The ONNX model returns one score vector for each WordPiece token. This method applies
    * BIO decoding, reconstructs WordPiece fragments, and then resolves the reconstructed text
@@ -269,10 +299,29 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    * @param searchStart The character offset in {@code text} to begin locating spans from. Threading
    *     a monotonic cursor across the chunks and sentences of a single {@link #find(String[])} call
    *     keeps a repeated entity surface form from being emitted twice at the same first occurrence.
-   * @return The decoded spans.
+   * @return The decoded {@link Span spans}.
    */
   static List<Span> decodeSpans(String text, String[] tokens, float[][] tokenLabelScores,
                                 Map<Integer, String> id2Labels, int searchStart) {
+    return decodeSpans(text, tokens, tokenLabelScores, id2Labels, searchStart, text.length());
+  }
+
+  /**
+   * Converts model token classifications into character {@link Span spans} within a bounded
+   * region of the original input text.
+   *
+   * @param text The original text passed to the model.
+   * @param tokens The WordPiece tokens produced for the text.
+   * @param tokenLabelScores The per-token label scores returned by the model.
+   * @param id2Labels The mapping from model output indexes to BIO labels.
+   * @param searchStart The first character offset in {@code text} to search.
+   * @param searchEnd The exclusive upper bound for locating reconstructed spans. During
+   *     {@link #find(String[])}, this is the current sentence end so an entity from one sentence
+   *     cannot be resolved to an identical surface form in a later sentence.
+   * @return The decoded {@link Span spans}.
+   */
+  static List<Span> decodeSpans(String text, String[] tokens, float[][] tokenLabelScores,
+                                Map<Integer, String> id2Labels, int searchStart, int searchEnd) {
 
     if (tokens.length != tokenLabelScores.length) {
       throw new IllegalArgumentException("The number of tokens (" + tokens.length
@@ -289,7 +338,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
         continue;
       }
 
-      final String entityType = prediction.label().substring(BEGIN_PREFIX.length());
+      final String entityType = prediction.label().substring(PREFIX_BEGIN.length());
       final EntityPrediction entity = findEntityEnd(tokenLabelScores, x, id2Labels,
           entityType, prediction.probability());
       final String spanText = buildSpanText(tokens, x, entity.endIndex());
@@ -299,10 +348,13 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
         continue;
       }
 
-      final SpanMatch match = findByRegex(text, spanText, characterStart);
+      final SpanMatch match = findByRegex(text, spanText, characterStart, searchEnd);
       if (match.start() != -1) {
         spans.add(new Span(match.start(), match.end(), entityType, entity.probability()));
         characterStart = match.end();
+      } else {
+        logger.debug("Unable to locate decoded {} span '{}' in source text region [{}, {}).",
+            entityType, spanText, characterStart, searchEnd);
       }
 
       x = entity.endIndex();
@@ -312,12 +364,26 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
   }
 
+  /**
+   * Finds the final token index and confidence for one BIO entity that starts at {@code startIndex}.
+   *
+   * <p>The span continues while subsequent predictions are {@code I-<same type>}. The returned
+   * probability is the minimum token probability across the entity, so a multi-token span reflects
+   * its weakest continuation.</p>
+   *
+   * @param tokenLabelScores The per-token label scores returned by the model.
+   * @param startIndex The token index where the entity begins.
+   * @param id2Labels The mapping from model output indexes to BIO labels.
+   * @param entityType The entity type without its BIO prefix, for example {@code PER}.
+   * @param startProbability The normalized probability of the begin label.
+   * @return The last token index and probability for the entity.
+   */
   private static EntityPrediction findEntityEnd(float[][] tokenLabelScores, int startIndex,
                                                 Map<Integer, String> id2Labels,
                                                 String entityType,
                                                 double startProbability) {
 
-    final String insideLabel = INSIDE_PREFIX + entityType;
+    final String insideLabel = PREFIX_INSIDE + entityType;
     int endIndex = startIndex;
     double probability = startProbability;
 
@@ -334,23 +400,47 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
   }
 
+  /**
+   * Returns whether a label is a well-formed BIO begin label.
+   *
+   * @param label The label to inspect.
+   * @return {@code true} for {@code B-<TYPE>} labels with a non-empty type.
+   */
   private static boolean isBeginLabel(String label) {
-    return label.startsWith(BEGIN_PREFIX) && label.length() > BEGIN_PREFIX.length();
+    return label.startsWith(PREFIX_BEGIN) && label.length() > PREFIX_BEGIN.length();
   }
 
+  /**
+   * Picks the predicted BIO label for one token.
+   *
+   * <p>If the model's argmax index is absent from {@code id2Labels}, the token is treated as
+   * outside ({@code O}). This preserves the previous graceful behavior for partial label maps:
+   * one unmapped output row does not discard the whole {@link #find(String[])} result.</p>
+   *
+   * @param scores The model scores for one token.
+   * @param id2Labels The mapping from model output indexes to BIO labels.
+   * @return The predicted label and its normalized probability.
+   */
   private static LabelPrediction predictLabel(float[] scores, Map<Integer, String> id2Labels) {
 
     final int labelIndex = maxIndex(scores);
     final String label = id2Labels.get(labelIndex);
     if (label == null) {
-      throw new IllegalArgumentException("No label is configured for model output index "
-          + labelIndex + ".");
+      return new LabelPrediction("O", 0d);
     }
 
     return new LabelPrediction(label, labelProbability(scores, labelIndex));
 
   }
 
+  /**
+   * Normalizes model scores into a probability for one label index using a numerically stable
+   * softmax.
+   *
+   * @param scores The raw model scores for one token.
+   * @param labelIndex The label index whose probability should be returned.
+   * @return The normalized probability in {@code [0, 1]}.
+   */
   static double labelProbability(float[] scores, int labelIndex) {
 
     int positiveInfinityCount = 0;
@@ -386,6 +476,18 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
   }
 
+  /**
+   * Reconstructs source-like text from a span of WordPiece tokens.
+   *
+   * <p>Special BERT tokens are skipped, {@code ##} continuations are merged into the preceding
+   * surface form, and simple punctuation spacing is normalized so the result can be located in
+   * the caller's original text.</p>
+   *
+   * @param tokens The WordPiece token sequence.
+   * @param startIndex The first token index to include.
+   * @param endIndex The last token index to include.
+   * @return The reconstructed span text.
+   */
   static String buildSpanText(String[] tokens, int startIndex, int endIndex) {
 
     final StringBuilder span = new StringBuilder();
@@ -419,20 +521,30 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   }
 
   private static boolean hasNoSpaceBefore(String token) {
-    return switch (token) {
-      case ".", ",", ":", ";", "!", "?", ")", "]", "}", "%", "'", "-", "/" -> true;
-      default -> false;
-    };
+    return containsToken(NO_SPACE_BEFORE_TOKENS, token);
   }
 
   private static boolean hasNoSpaceAfter(String token) {
-    return switch (token) {
-      case "(", "[", "{", "$", "'", "-", "/" -> true;
-      default -> false;
-    };
+    return containsToken(NO_SPACE_AFTER_TOKENS, token);
   }
 
-  static int maxIndex(float[] arr) {
+  private static boolean containsToken(String[] tokens, String token) {
+    for (String candidate : tokens) {
+      if (candidate.equals(token)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the index of the largest non-NaN score.
+   *
+   * @param arr The score array to inspect.
+   * @return The index of the maximum non-NaN value.
+   * @throws IllegalStateException Thrown if the model output contains no non-NaN score.
+   */
+  private static int maxIndex(float[] arr) {
 
     double max = Float.NEGATIVE_INFINITY;
     int index = -1;
@@ -445,7 +557,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
     }
 
     if (index == -1) {
-      throw new IllegalArgumentException(
+      throw new IllegalStateException(
           "Model output scores must contain at least one non-NaN value.");
     }
 
@@ -453,7 +565,17 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
   }
 
-  private static SpanMatch findByRegex(String text, String span, int searchStart) {
+  /**
+   * Locates reconstructed span text in a bounded region of the original input text.
+   *
+   * @param text The original text.
+   * @param span The reconstructed span text.
+   * @param searchStart The first character offset to search from.
+   * @param searchEnd The exclusive upper bound of the region to search.
+   * @return The matched character offsets, or {@code (-1, -1)} when the reconstructed text
+   *     cannot be found in the requested region.
+   */
+  private static SpanMatch findByRegex(String text, String span, int searchStart, int searchEnd) {
 
     // Reconstructed span text normalizes whitespace, so match flexibly: a space in the span may
     // map to any run of whitespace OR none in the source (e.g. punctuation/'&' inside "U.S.A",
@@ -463,7 +585,9 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
     final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     final Matcher matcher = pattern.matcher(text);
-    matcher.region(Math.min(Math.max(searchStart, 0), text.length()), text.length());
+    final int regionStart = Math.min(Math.max(searchStart, 0), text.length());
+    final int regionEnd = Math.min(Math.max(searchEnd, regionStart), text.length());
+    matcher.region(regionStart, regionEnd);
 
     if (matcher.find()) {
       return new SpanMatch(matcher.start(), matcher.end());
@@ -479,6 +603,10 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   private record EntityPrediction(int endIndex, double probability) {
   }
 
+  /**
+   * Character offsets for a matched span. {@code (-1, -1)} means the reconstructed entity text
+   * could not be located in the searched source-text region.
+   */
   private record SpanMatch(int start, int end) {
   }
 
