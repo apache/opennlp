@@ -128,7 +128,7 @@ public class NameFinderDLTest {
   }
 
   @Test
-  void testDecodeSpansTreatsMissingPredictedLabelsAsOutside() {
+  void testDecodeSpansRejectsMissingPredictedLabels() {
     final String text = "Alice visited.";
     final String[] tokens = {"[CLS]", "Alice", "visited", ".", "[SEP]"};
     final float[][] scores = {
@@ -136,9 +136,11 @@ public class NameFinderDLTest {
     };
     final Map<Integer, String> incompleteLabels = Map.of(0, "O");
 
-    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, incompleteLabels);
+    final IllegalStateException e = assertThrows(IllegalStateException.class, () ->
+        NameFinderDL.decodeSpans(text, tokens, scores, incompleteLabels));
 
-    assertTrue(spans.isEmpty());
+    assertTrue(e.getMessage().contains("1"),
+        "the error message should name the missing label id: " + e.getMessage());
   }
 
   @Test
@@ -239,6 +241,122 @@ public class NameFinderDLTest {
   }
 
   @Test
+  void testDecodeSpansRejectsTokenScoreCountMismatch() {
+    // Fewer score rows than tokens is a model/tokenizer contract violation; the message must name
+    // both counts so the mismatch is debuggable.
+    final String text = "Alice visited.";
+    final String[] tokens = {"[CLS]", "Alice", "visited", ".", "[SEP]"};
+    final float[][] scores = {scoresFor(0), scoresFor(1)};
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
+        NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS));
+
+    assertTrue(e.getMessage().contains("5") && e.getMessage().contains("2"),
+        "the error message should name both counts: " + e.getMessage());
+  }
+
+  @Test
+  void testDecodeSpansIgnoresInsideLabelWithoutBegin() {
+    // An I-LOC with no preceding B-LOC is not a valid span start and must not emit an entity.
+    final String text = "Visit Paris today";
+    final String[] tokens = {"[CLS]", "Visit", "Paris", "today", "[SEP]"};
+    final float[][] scores = {
+        scoresFor(0), scoresFor(0), scoresFor(4), scoresFor(0), scoresFor(0)
+    };
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertTrue(spans.isEmpty());
+  }
+
+  @Test
+  void testDecodeSpansSeparatesAdjacentEntitiesOfDifferentTypes() {
+    // B-PER directly followed by B-LOC must yield two distinct single-token spans, not one merged
+    // span: findEntityEnd stops at the type change and the outer loop resumes at the next begin.
+    final String text = "Alice Paris";
+    final String[] tokens = {"[CLS]", "Alice", "Paris", "[SEP]"};
+    final float[][] scores = {scoresFor(0), scoresFor(1), scoresFor(3), scoresFor(0)};
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertEquals(2, spans.size());
+    assertEquals("PER", spans.get(0).getType());
+    assertEquals("Alice", spans.get(0).getCoveredText(text));
+    assertEquals("LOC", spans.get(1).getType());
+    assertEquals("Paris", spans.get(1).getCoveredText(text));
+  }
+
+  @Test
+  void testMultiTokenSpanProbabilityIsWeakestTokenProbability() {
+    // The probability of a multi-token entity is the minimum across its tokens, so a confident
+    // begin followed by a weak continuation reports the weak continuation's probability.
+    final String text = "New York";
+    final String[] tokens = {"[CLS]", "New", "York", "[SEP]"};
+    final float[] strongBegin = scoresFor(3);
+    final float[] weakInside = weakScoresFor(4);
+    final float[][] scores = {scoresFor(0), strongBegin, weakInside, scoresFor(0)};
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertEquals(1, spans.size());
+    assertEquals("New York", spans.get(0).getCoveredText(text));
+    assertEquals(NameFinderDL.labelProbability(weakInside, 4), spans.get(0).getProb(), 1e-9);
+    assertTrue(spans.get(0).getProb() < NameFinderDL.labelProbability(strongBegin, 3),
+        "multi-token span should reflect its weakest continuation");
+  }
+
+  @Test
+  void testDecodeSpansEmitsRepeatedEntityAtDistinctOffsets() {
+    // Two identical surface forms within a single call must resolve to distinct, non-overlapping
+    // spans via the internal monotonic cursor rather than both matching the first occurrence.
+    final String text = "Paris and Paris";
+    final String[] tokens = {"[CLS]", "Paris", "and", "Paris", "[SEP]"};
+    final float[][] scores = {
+        scoresFor(0), scoresFor(3), scoresFor(0), scoresFor(3), scoresFor(0)
+    };
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertEquals(2, spans.size());
+    assertEquals(0, spans.get(0).getStart());
+    assertEquals(5, spans.get(0).getEnd());
+    assertEquals(10, spans.get(1).getStart());
+    assertEquals(15, spans.get(1).getEnd());
+  }
+
+  @Test
+  void testDecodeSpansLocatesEntityWithRegexMetacharacters() {
+    // WordPiece splits "C++" into C / + / + tokens, so the reconstructed span text contains regex
+    // metacharacters. Pattern.quote must treat them literally (not as quantifiers) for the entity
+    // to be located in the source.
+    final String text = "Love C++ today";
+    final String[] tokens = {"[CLS]", "Love", "C", "+", "+", "today", "[SEP]"};
+    final float[][] scores = {
+        scoresFor(0), scoresFor(0), scoresFor(5), scoresFor(6), scoresFor(6),
+        scoresFor(0), scoresFor(0)
+    };
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertEquals(1, spans.size());
+    assertEquals("ORG", spans.get(0).getType());
+    assertEquals("C++", spans.get(0).getCoveredText(text));
+  }
+
+  @Test
+  void testDecodeSpansClampsSearchStartBeyondText() {
+    // A searchStart past the end of the text must clamp to an empty region and yield no match
+    // rather than throwing an out-of-bounds error.
+    final String text = "Paris";
+    final String[] tokens = {"[CLS]", "Paris", "[SEP]"};
+    final float[][] scores = {scoresFor(0), scoresFor(3), scoresFor(0)};
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS, 999);
+
+    assertTrue(spans.isEmpty());
+  }
+
+  @Test
   void testLabelProbabilityIsBoundedStableSoftmax() {
     // Reference (numpy): softmax([1,2,3])[2] = 0.66524096.
     final double p = NameFinderDL.labelProbability(new float[] {1f, 2f, 3f}, 2);
@@ -284,6 +402,17 @@ public class NameFinderDLTest {
   private static float[] scoresWithNaN(int labelIndex) {
     final float[] scores = scoresFor(labelIndex);
     scores[0] = Float.NaN;
+    return scores;
+  }
+
+  // Lower-margin scores than scoresFor, so the chosen label's softmax probability is well below 1
+  // and a multi-token span's minimum-probability behavior is observable.
+  private static float[] weakScoresFor(int labelIndex) {
+    final float[] scores = new float[ID_TO_LABELS.size()];
+    for (int i = 0; i < scores.length; i++) {
+      scores[i] = -1;
+    }
+    scores[labelIndex] = 1;
     return scores;
   }
 

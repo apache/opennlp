@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,12 +83,12 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   public static final String PREFIX_INSIDE = "I-";
 
   /** Tokens that attach directly to the preceding token when span text is reconstructed. */
-  public static final String[] NO_SPACE_BEFORE_TOKENS =
-      {".", ",", ":", ";", "!", "?", ")", "]", "}", "%", "'", "-", "/"};
+  public static final Set<String> NO_SPACE_BEFORE_TOKENS =
+      Set.of(".", ",", ":", ";", "!", "?", ")", "]", "}", "%", "'", "-", "/");
 
   /** Tokens after which the following token attaches directly when span text is reconstructed. */
-  public static final String[] NO_SPACE_AFTER_TOKENS =
-      {"(", "[", "{", "$", "'", "-", "/"};
+  public static final Set<String> NO_SPACE_AFTER_TOKENS =
+      Set.of("(", "[", "{", "$", "'", "-", "/");
 
   /** NER models are commonly cased, so lower casing is off by default. */
   private static final boolean LOWER_CASE_DEFAULT = false;
@@ -109,7 +110,9 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    * 
    * @param model The ONNX model file.
    * @param vocabulary The model file's vocabulary file.
-   * @param ids2Labels The mapping of ids to labels.
+   * @param ids2Labels The mapping of model output indices to BIO labels. This must be exhaustive
+   *     over the model's output indices; a token whose predicted index is unmapped raises an
+   *     {@link IllegalStateException} during {@link #find(String[])}.
    * @param sentenceDetector The {@link SentenceDetector} to be used.
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
@@ -127,7 +130,9 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    *
    * @param model The ONNX model file.
    * @param vocabulary The model file's vocabulary file.
-   * @param ids2Labels The mapping of ids to labels.
+   * @param ids2Labels The mapping of model output indices to BIO labels. This must be exhaustive
+   *     over the model's output indices; a token whose predicted index is unmapped raises an
+   *     {@link IllegalStateException} during {@link #find(String[])}.
    * @param inferenceOptions {@link InferenceOptions} to control the inference.
    * @param sentenceDetector The {@link SentenceDetector} to be used.
    *
@@ -168,8 +173,11 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    * {@link Span spans}, and resolves those spans back to character offsets in the joined text.</p>
    *
    * @throws IllegalStateException Thrown if inference fails, if the model output shape is not
-   *     the expected {@code float[batch][token][label]} form, or if the model output contains
-   *     no usable label score for a token.
+   *     the expected {@code float[batch][token][label]} form, if the model output contains
+   *     no usable label score for a token, or if the model's predicted index for a token is not
+   *     present in the configured label map.
+   * @throws IllegalArgumentException Thrown if a token produced for the input is not present in
+   *     the vocabulary, which indicates the vocabulary file does not match the model.
    */
   @Override
   public Span[] find(String[] input) {
@@ -413,20 +421,20 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   /**
    * Picks the predicted BIO label for one token.
    *
-   * <p>If the model's argmax index is absent from {@code id2Labels}, the token is treated as
-   * outside ({@code O}). This preserves the previous graceful behavior for partial label maps:
-   * one unmapped output row does not discard the whole {@link #find(String[])} result.</p>
-   *
    * @param scores The model scores for one token.
    * @param id2Labels The mapping from model output indexes to BIO labels.
    * @return The predicted label and its normalized probability.
+   * @throws IllegalStateException Thrown if the model's argmax index is absent from
+   *     {@code id2Labels}, which means the label map is not exhaustive over the model's output
+   *     indices and the model/label-map pair is misconfigured.
    */
   private static LabelPrediction predictLabel(float[] scores, Map<Integer, String> id2Labels) {
 
     final int labelIndex = maxIndex(scores);
     final String label = id2Labels.get(labelIndex);
     if (label == null) {
-      return new LabelPrediction("O", 0d);
+      throw new IllegalStateException("Model output index " + labelIndex
+          + " has no configured label; ids2Labels must map every model output index.");
     }
 
     return new LabelPrediction(label, labelProbability(scores, labelIndex));
@@ -521,20 +529,11 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   }
 
   private static boolean hasNoSpaceBefore(String token) {
-    return containsToken(NO_SPACE_BEFORE_TOKENS, token);
+    return NO_SPACE_BEFORE_TOKENS.contains(token);
   }
 
   private static boolean hasNoSpaceAfter(String token) {
-    return containsToken(NO_SPACE_AFTER_TOKENS, token);
-  }
-
-  private static boolean containsToken(String[] tokens, String token) {
-    for (String candidate : tokens) {
-      if (candidate.equals(token)) {
-        return true;
-      }
-    }
-    return false;
+    return NO_SPACE_AFTER_TOKENS.contains(token);
   }
 
   /**
