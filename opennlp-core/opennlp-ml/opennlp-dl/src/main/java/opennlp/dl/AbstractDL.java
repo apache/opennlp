@@ -336,6 +336,32 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static final CharClass WHITESPACE = CharClass.whitespace();
 
+  /** Unicode dashes (excluding the mathematical minus signs), used for optional input folding. */
+  protected static final CharClass DASHES = CharClass.dashes();
+
+  /**
+   * Optionally folds Unicode whitespace and/or dashes in the input to their ASCII forms before
+   * inference. Each member code point maps to exactly one ASCII character, so the transform is
+   * offset preserving for Basic Multilingual Plane characters and any spans a model produces still
+   * align with the input.
+   *
+   * @param text The input text.
+   * @param normalizeWhitespace Whether to fold whitespace to ASCII spaces.
+   * @param normalizeDashes Whether to fold dashes to the ASCII hyphen.
+   * @return The optionally normalized text.
+   */
+  protected static String normalizeInput(final String text, final boolean normalizeWhitespace,
+                                         final boolean normalizeDashes) {
+    String result = text;
+    if (normalizeWhitespace) {
+      result = WHITESPACE.normalize(result).toString();
+    }
+    if (normalizeDashes) {
+      result = DASHES.normalize(result).toString();
+    }
+    return result;
+  }
+
   /**
    * Splits {@code text} on Unicode whitespace and groups the resulting tokens into overlapping
    * chunks, each rejoined with single ASCII spaces, ready for WordPiece tokenization. The split

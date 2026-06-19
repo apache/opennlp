@@ -102,6 +102,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   private final boolean includeTokenTypeIds;
   private final int documentSplitSize;
   private final int splitOverlapSize;
+  private final boolean normalizeWhitespace;
+  private final boolean normalizeDashes;
 
   /**
    * Instantiates a {@link TokenNameFinder name finder} using ONNX models.
@@ -151,6 +153,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
     this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
     this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
     this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
+    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
+    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
     this.sentenceDetector = sentenceDetector;
 
   }
@@ -183,7 +187,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
     final List<Span> spans = new ArrayList<>();
 
     // Join the tokens here because they will be tokenized using Wordpiece during inference.
-    final String text = String.join(" ", input);
+    final String text =
+        normalizeInput(String.join(" ", input), normalizeWhitespace, normalizeDashes);
 
     // sentPosDetect (not sentDetect) so each sentence's offset in the full text is known.
     final Span[] sentenceSpans = sentenceDetector.sentPosDetect(text);

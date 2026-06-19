@@ -58,4 +58,25 @@ public class AbstractDLChunkingTest {
   void testEmptyTextYieldsNoChunks() {
     assertEquals(List.of(), AbstractDL.whitespaceChunks("", 100, 0));
   }
+
+  @Test
+  void testNormalizeInputIsOptInAndOffsetPreserving() {
+    final String nbsp = new String(Character.toChars(0x00A0));
+    final String emDash = new String(Character.toChars(0x2014));
+    final String input = "a" + nbsp + "b" + emDash + "c";
+
+    // Off by default: unchanged.
+    assertEquals(input, AbstractDL.normalizeInput(input, false, false));
+
+    // Whitespace only: the no-break space becomes a space, and the length is preserved.
+    final String ws = AbstractDL.normalizeInput(input, true, false);
+    assertEquals("a b" + emDash + "c", ws);
+    assertEquals(input.length(), ws.length());
+
+    // Dashes only: the em dash becomes an ASCII hyphen.
+    assertEquals("a" + nbsp + "b-c", AbstractDL.normalizeInput(input, false, true));
+
+    // Both.
+    assertEquals("a b-c", AbstractDL.normalizeInput(input, true, true));
+  }
 }
