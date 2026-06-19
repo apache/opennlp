@@ -54,6 +54,36 @@ public class AccentFoldCharSequenceNormalizerTest {
   }
 
   @Test
+  void testEveryStrokeAndLigatureLetterMaps() {
+    assertEquals("o", fold(cp(0x00F8)));   // o with stroke
+    assertEquals("O", fold(cp(0x00D8)));   // O with stroke
+    assertEquals("ae", fold(cp(0x00E6)));  // ae
+    assertEquals("AE", fold(cp(0x00C6)));  // AE
+    assertEquals("oe", fold(cp(0x0153)));  // oe
+    assertEquals("OE", fold(cp(0x0152)));  // OE
+    assertEquals("ss", fold(cp(0x00DF)));  // eszett
+    assertEquals("SS", fold(cp(0x1E9E)));  // capital eszett
+    assertEquals("th", fold(cp(0x00FE)));  // thorn
+    assertEquals("TH", fold(cp(0x00DE)));  // capital thorn
+    assertEquals("d", fold(cp(0x00F0)));   // eth
+    assertEquals("D", fold(cp(0x00D0)));   // capital eth
+    assertEquals("d", fold(cp(0x0111)));   // d with stroke
+    assertEquals("D", fold(cp(0x0110)));   // D with stroke
+    assertEquals("l", fold(cp(0x0142)));   // l with stroke
+    assertEquals("L", fold(cp(0x0141)));   // L with stroke
+    assertEquals("h", fold(cp(0x0127)));   // h with stroke
+    assertEquals("H", fold(cp(0x0126)));   // H with stroke
+    assertEquals("i", fold(cp(0x0131)));   // dotless i
+  }
+
+  @Test
+  void testLeadingCombiningMarkWithNoBaseIsKept() {
+    // A combining mark with no preceding base (baseScript == null) must be kept, not dropped.
+    final String input = cp(0x0301) + "x"; // combining acute, then x
+    assertEquals(input, fold(input));
+  }
+
+  @Test
   void testFoldsGreekAndCyrillicAccents() {
     assertEquals(cp(0x03B1), fold(cp(0x03AC))); // Greek alpha with tonos -> alpha
     assertEquals(cp(0x0438), fold(cp(0x0439))); // Cyrillic short i -> i
