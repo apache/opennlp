@@ -17,16 +17,18 @@
 package opennlp.tools.util.normalizer;
 
 import java.util.Locale;
+import java.util.Objects;
 
 /**
- * A {@link CharSequenceNormalizer} that lower cases text for case-insensitive matching, using
- * {@link Locale#ROOT} so the result does not depend on the JVM's default locale.
+ * A {@link CharSequenceNormalizer} that lower cases text for case-insensitive matching. It uses
+ * {@link Locale#ROOT} by default, so the result does not depend on the JVM's default locale.
  *
  * <p>This is the case-folding step of a search / BM25 analysis chain (the counterpart to Lucene's
  * lower-case filter). {@code Locale.ROOT} avoids locale surprises such as the Turkish dotless-i
- * mapping; callers that need language-specific case rules should fold with an explicit locale
- * upstream. Full Unicode case folding (for example German eszett, {@code U+00DF}, to {@code ss})
- * is a distinct, heavier transform and is intentionally out of scope here.</p>
+ * mapping. A specific locale can be supplied through {@link #CaseFoldCharSequenceNormalizer(Locale)}
+ * or {@link #getInstance(Locale)} when a language's case rules are wanted (Turkish being the classic
+ * example). Full Unicode case folding (for example German eszett, {@code U+00DF}, to {@code ss}) is
+ * a distinct, heavier transform and is intentionally out of scope here.</p>
  */
 public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
 
@@ -35,13 +37,40 @@ public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
   private static final CaseFoldCharSequenceNormalizer INSTANCE =
       new CaseFoldCharSequenceNormalizer();
 
-  /** {@return the shared, stateless instance} */
+  /** The locale whose case rules are applied. */
+  private final Locale locale;
+
+  /** Creates a normalizer that lower cases using {@link Locale#ROOT}. */
+  public CaseFoldCharSequenceNormalizer() {
+    this(Locale.ROOT);
+  }
+
+  /**
+   * Creates a normalizer that lower cases using the given locale.
+   *
+   * @param locale The locale whose case rules to apply.
+   */
+  public CaseFoldCharSequenceNormalizer(Locale locale) {
+    this.locale = Objects.requireNonNull(locale, "locale");
+  }
+
+  /** {@return the shared, stateless {@link Locale#ROOT} instance} */
   public static CaseFoldCharSequenceNormalizer getInstance() {
     return INSTANCE;
   }
 
+  /**
+   * {@return a normalizer for the given locale} The shared {@link Locale#ROOT} instance is returned
+   * for {@code Locale.ROOT}.
+   *
+   * @param locale The locale whose case rules to apply.
+   */
+  public static CaseFoldCharSequenceNormalizer getInstance(Locale locale) {
+    return Locale.ROOT.equals(locale) ? INSTANCE : new CaseFoldCharSequenceNormalizer(locale);
+  }
+
   @Override
   public CharSequence normalize(CharSequence text) {
-    return text.toString().toLowerCase(Locale.ROOT);
+    return text.toString().toLowerCase(locale);
   }
 }
