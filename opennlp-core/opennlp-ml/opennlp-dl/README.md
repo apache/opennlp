@@ -8,7 +8,21 @@ Models used in the tests are available in the [opennlp evaluation test data](htt
 
 ## NameFinderDL
 
-Export a Huggingface NER model to ONNX, e.g.:
+`NameFinderDL` runs ONNX token-classification models that use BIO labels. Any
+label in the form `B-<TYPE>` starts an entity and subsequent `I-<TYPE>` labels
+continue that entity. The text after the prefix is reported as the OpenNLP span
+type, for example `B-PER` and `I-PER` produce spans with type `PER`.
+
+The finder uses BERT basic tokenization followed by WordPiece tokenization and
+then maps the reconstructed WordPiece text back to the caller's original input
+so returned spans can be used with `Span#getCoveredText(...)`. Span probabilities
+are normalized from the model logits and are reported in the range `(0, 1]`.
+
+Named entity models are commonly cased, so lower casing is disabled by default.
+Set `InferenceOptions#setLowerCase(true)` only for models trained with uncased
+input.
+
+Export a Hugging Face NER model to ONNX, e.g.:
 
 ```bash
 python -m transformers.onnx --model=dslim/bert-base-NER --feature token-classification exported
