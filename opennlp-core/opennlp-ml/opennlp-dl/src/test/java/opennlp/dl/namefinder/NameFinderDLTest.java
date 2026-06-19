@@ -230,7 +230,7 @@ public class NameFinderDLTest {
   @Test
   void testDecodeSpansMatchesSourceCaseInsensitively() {
     // The reconstructed span text may differ in case from the source (e.g. an uncased model);
-    // findByRegex matches case-insensitively, so the span is still located at the source offsets.
+    // findInSource matches case-insensitively, so the span is still located at the source offsets.
     final String text = "Visit PARIS today";
     final String[] tokens = {"[CLS]", "Visit", "paris", "today", "[SEP]"};
     final float[][] scores = {
