@@ -64,3 +64,9 @@ src/test/resources/*.info
 <!-- other licence -->
 src/main/java/opennlp/tools/stemmer/snowball/*.java
 src/main/resources/opennlp/tools/stopword/*.txt
+
+<!-- OPENNLP-1850 bundled Unicode data files (Unicode License V3, no Apache header possible) -->
+src/main/resources/opennlp/tools/tokenize/uax29/WordBreakProperty.txt
+src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
+src/main/resources/opennlp/tools/util/normalizer/confusables.txt
+src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
