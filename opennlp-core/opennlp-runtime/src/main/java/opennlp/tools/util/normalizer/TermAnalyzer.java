@@ -61,23 +61,11 @@ public final class TermAnalyzer {
     Collections.sort(ordered); // canonical pipeline order (enum declaration order)
     this.chain = List.copyOf(ordered);
     this.finalDimension = ordered.isEmpty() ? Dimension.ORIGINAL : ordered.get(ordered.size() - 1);
-    this.transforms = defaultTransforms();
-    this.transforms.putAll(builder.transforms);
+    // Only the per-analyzer overrides from the builder; the defaults live on Dimension itself.
+    this.transforms = new EnumMap<>(builder.transforms);
     this.stemmer = builder.stemmer;
     this.lemmatizer = builder.lemmatizer;
     this.tokenizer = builder.tokenizer;
-  }
-
-  private static EnumMap<Dimension, CharSequenceNormalizer> defaultTransforms() {
-    final EnumMap<Dimension, CharSequenceNormalizer> map = new EnumMap<>(Dimension.class);
-    map.put(Dimension.NFC, NfcCharSequenceNormalizer.getInstance());
-    map.put(Dimension.NFKC, NfkcCharSequenceNormalizer.getInstance());
-    map.put(Dimension.WHITESPACE, WhitespaceCharSequenceNormalizer.getInstance());
-    map.put(Dimension.DASH, DashCharSequenceNormalizer.getInstance());
-    map.put(Dimension.CASE_FOLD, CaseFoldCharSequenceNormalizer.getInstance());
-    map.put(Dimension.ACCENT_FOLD, AccentFoldCharSequenceNormalizer.getInstance());
-    map.put(Dimension.CONFUSABLE_FOLD, ConfusableSkeletonCharSequenceNormalizer.getInstance());
-    return map;
   }
 
   /**
@@ -160,7 +148,10 @@ public final class TermAnalyzer {
         }
         return lemmatizer.lemmatize(new String[] {input}, new String[] {posTag})[0];
       default:
-        return transforms.get(dimension).normalize(input).toString();
+        // A builder override wins; otherwise the dimension's own default normalizer.
+        final CharSequenceNormalizer normalizer = transforms.containsKey(dimension)
+            ? transforms.get(dimension) : dimension.defaultNormalizer();
+        return normalizer.normalize(input).toString();
     }
   }
 

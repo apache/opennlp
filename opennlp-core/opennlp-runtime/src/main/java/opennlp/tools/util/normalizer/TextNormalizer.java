@@ -49,12 +49,12 @@ public final class TextNormalizer {
 
   /** {@return this builder with NFC canonical composition appended} */
   public TextNormalizer nfc() {
-    return add(NfcCharSequenceNormalizer.getInstance());
+    return add(Dimension.NFC.defaultNormalizer());
   }
 
   /** {@return this builder with NFKC compatibility composition appended} */
   public TextNormalizer nfkc() {
-    return add(NfkcCharSequenceNormalizer.getInstance());
+    return add(Dimension.NFKC.defaultNormalizer());
   }
 
   /** {@return this builder with invisible/bidi control stripping appended} */
@@ -64,7 +64,7 @@ public final class TextNormalizer {
 
   /** {@return this builder with Unicode whitespace collapsing appended} */
   public TextNormalizer whitespace() {
-    return add(WhitespaceCharSequenceNormalizer.getInstance());
+    return add(Dimension.WHITESPACE.defaultNormalizer());
   }
 
   /** {@return this builder with quotation-mark folding appended} */
@@ -74,7 +74,7 @@ public final class TextNormalizer {
 
   /** {@return this builder with dash folding appended} */
   public TextNormalizer dashes() {
-    return add(DashCharSequenceNormalizer.getInstance());
+    return add(Dimension.DASH.defaultNormalizer());
   }
 
   /** {@return this builder with decimal-digit folding appended} */
@@ -94,12 +94,12 @@ public final class TextNormalizer {
 
   /** {@return this builder with case folding appended} */
   public TextNormalizer caseFold() {
-    return add(CaseFoldCharSequenceNormalizer.getInstance());
+    return add(Dimension.CASE_FOLD.defaultNormalizer());
   }
 
   /** {@return this builder with script-gated diacritic folding appended} */
   public TextNormalizer accentFold() {
-    return add(AccentFoldCharSequenceNormalizer.getInstance());
+    return add(Dimension.ACCENT_FOLD.defaultNormalizer());
   }
 
   /**
