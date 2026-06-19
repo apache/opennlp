@@ -331,17 +331,10 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
     final List<Tokens> t = new LinkedList<>();
 
-    // Segment long input text into overlapping chunks configured by InferenceOptions before
-    // feeding each chunk into BERT.
+    // Segment long input text into overlapping chunks (split on Unicode whitespace) configured by
+    // InferenceOptions before feeding each chunk into BERT.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    final String[] whitespaceTokenized = text.split("\\s+");
-
-    for (ChunkRange chunkRange : chunkRanges(
-        whitespaceTokenized.length, documentSplitSize, splitOverlapSize)) {
-
-      // The group is that subsection of string.
-      final String group = String.join(" ",
-          Arrays.copyOfRange(whitespaceTokenized, chunkRange.start(), chunkRange.end()));
+    for (final String group : whitespaceChunks(text, documentSplitSize, splitOverlapSize)) {
 
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);

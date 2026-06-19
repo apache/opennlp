@@ -169,7 +169,7 @@ public class NameFinderDLTest {
   void testDecodeSpansLocatesEntityWithInternalPunctuation() {
     // WordPiece splits "AT&T" into separate AT / & / T tokens, so the reconstructed span text
     // ("AT & T") must still be located in the contiguous source. Regression guard for the
-    // flexible-whitespace (\s*) matching in findByRegex.
+    // flexible-whitespace matching in findInSource (a span space matches zero source whitespace).
     final String text = "Buy AT&T stock";
     final String[] tokens = {"[CLS]", "Buy", "AT", "&", "T", "stock", "[SEP]"};
     final float[][] scores = {
@@ -182,6 +182,37 @@ public class NameFinderDLTest {
     assertEquals(1, spans.size());
     assertEquals("ORG", spans.get(0).getType());
     assertEquals("AT&T", spans.get(0).getCoveredText(text));
+  }
+
+  @Test
+  void testDecodeSpansMatchesEntitySeparatedByNoBreakSpace() {
+    // The source separates "New" and "York" with a no-break space (U+00A0). Java's \s does not
+    // match it, so the previous regex matcher would have dropped this LOC span; the Unicode-aware
+    // cursor matcher locates it and the covered text includes the no-break space.
+    final String nbsp = new String(Character.toChars(0x00A0));
+    final String text = "Visit New" + nbsp + "York today";
+    final String[] tokens = {"[CLS]", "New", "York", "[SEP]"};
+    final float[][] scores = {scoresFor(0), scoresFor(3), scoresFor(4), scoresFor(0)};
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertEquals(1, spans.size());
+    assertEquals("LOC", spans.get(0).getType());
+    assertEquals("New" + nbsp + "York", spans.get(0).getCoveredText(text));
+  }
+
+  @Test
+  void testDecodeSpansMatchesEntitySeparatedByIdeographicSpace() {
+    // Same idea with the CJK ideographic space (U+3000), another character outside Java's \s.
+    final String ideographic = new String(Character.toChars(0x3000));
+    final String text = "from New" + ideographic + "York city";
+    final String[] tokens = {"[CLS]", "New", "York", "[SEP]"};
+    final float[][] scores = {scoresFor(0), scoresFor(3), scoresFor(4), scoresFor(0)};
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertEquals(1, spans.size());
+    assertEquals("New" + ideographic + "York", spans.get(0).getCoveredText(text));
   }
 
   @Test

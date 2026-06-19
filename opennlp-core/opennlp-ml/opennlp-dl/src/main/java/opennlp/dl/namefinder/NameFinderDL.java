@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtException;
@@ -356,7 +354,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
         continue;
       }
 
-      final SpanMatch match = findByRegex(text, spanText, characterStart, searchEnd);
+      final SpanMatch match = findInSource(text, spanText, characterStart, searchEnd);
       if (match.start() != -1) {
         spans.add(new Span(match.start(), match.end(), entityType, entity.probability()));
         characterStart = match.end();
@@ -567,33 +565,80 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   /**
    * Locates reconstructed span text in a bounded region of the original input text.
    *
+   * <p>Matching is a single forward cursor scan, not a regular expression. Each space in the
+   * reconstructed span matches a run of zero or more Unicode whitespace characters in the source
+   * (so an entity whose WordPiece pieces were rejoined with spaces, such as {@code "AT & T"} for
+   * {@code "AT&T"}, is still located), and every other code point matches case-insensitively.
+   * Using a cursor avoids {@link java.util.regex.Pattern}/{@link java.util.regex.Matcher}
+   * allocation and the ReDoS surface of regular expressions, and recognizes Unicode whitespace
+   * that Java's {@code \s} does not.</p>
+   *
    * @param text The original text.
-   * @param span The reconstructed span text.
+   * @param span The reconstructed span text, with sub-tokens separated by single ASCII spaces.
    * @param searchStart The first character offset to search from.
    * @param searchEnd The exclusive upper bound of the region to search.
    * @return The matched character offsets, or {@code (-1, -1)} when the reconstructed text
    *     cannot be found in the requested region.
    */
-  private static SpanMatch findByRegex(String text, String span, int searchStart, int searchEnd) {
+  private static SpanMatch findInSource(String text, String span, int searchStart, int searchEnd) {
 
-    // Reconstructed span text normalizes whitespace, so match flexibly: a space in the span may
-    // map to any run of whitespace OR none in the source (e.g. punctuation/'&' inside "U.S.A",
-    // "AT&T" that wordpiece tokenization split apart). Use \s* rather than \s+ so such entities
-    // are still located instead of being silently dropped.
-    final String regex = Pattern.quote(span).replace(" ", "\\E\\s*\\Q");
-
-    final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-    final Matcher matcher = pattern.matcher(text);
     final int regionStart = Math.min(Math.max(searchStart, 0), text.length());
     final int regionEnd = Math.min(Math.max(searchEnd, regionStart), text.length());
-    matcher.region(regionStart, regionEnd);
 
-    if (matcher.find()) {
-      return new SpanMatch(matcher.start(), matcher.end());
+    int start = regionStart;
+    while (start < regionEnd) {
+      final int end = matchAt(text, span, start, regionEnd);
+      if (end != -1) {
+        return new SpanMatch(start, end);
+      }
+      start += Character.charCount(text.codePointAt(start));
     }
 
     return new SpanMatch(-1, -1);
 
+  }
+
+  /**
+   * Attempts to match {@code span} against {@code text} beginning at {@code start} and bounded by
+   * {@code regionEnd}. A space in {@code span} consumes a run of zero or more Unicode whitespace
+   * code points in the source; every other code point must match case-insensitively.
+   *
+   * @return The exclusive end offset of the match in {@code text}, or {@code -1} if no match
+   *     begins at {@code start}.
+   */
+  private static int matchAt(String text, String span, int start, int regionEnd) {
+
+    int t = start;
+    int s = 0;
+
+    while (s < span.length()) {
+      final int spanCp = span.codePointAt(s);
+      if (spanCp == ' ') {
+        while (t < regionEnd && WHITESPACE.contains(text.codePointAt(t))) {
+          t += Character.charCount(text.codePointAt(t));
+        }
+        s += 1;
+      } else {
+        if (t >= regionEnd) {
+          return -1;
+        }
+        final int textCp = text.codePointAt(t);
+        if (!equalsIgnoreCase(spanCp, textCp)) {
+          return -1;
+        }
+        t += Character.charCount(textCp);
+        s += Character.charCount(spanCp);
+      }
+    }
+
+    return t;
+
+  }
+
+  private static boolean equalsIgnoreCase(int a, int b) {
+    return a == b
+        || Character.toLowerCase(a) == Character.toLowerCase(b)
+        || Character.toUpperCase(a) == Character.toUpperCase(b);
   }
 
   private record LabelPrediction(String label, double probability) {
@@ -613,17 +658,10 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
     final List<Tokens> t = new LinkedList<>();
 
-    // Segment long input text into overlapping chunks configured by InferenceOptions before
-    // feeding each chunk into BERT.
+    // Segment long input text into overlapping chunks (split on Unicode whitespace) configured by
+    // InferenceOptions before feeding each chunk into BERT.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    final String[] whitespaceTokenized = text.split("\\s+");
-
-    for (ChunkRange chunkRange : chunkRanges(
-        whitespaceTokenized.length, documentSplitSize, splitOverlapSize)) {
-
-      // The group is that subsection of string.
-      final String group = String.join(" ",
-          Arrays.copyOfRange(whitespaceTokenized, chunkRange.start(), chunkRange.end()));
+    for (final String group : whitespaceChunks(text, documentSplitSize, splitOverlapSize)) {
 
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);
