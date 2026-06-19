@@ -387,34 +387,15 @@ CharClass wsPlus = CharClass.whitespace().withAdditional(extra);]]>
 		</programlisting>
 	</section>
 
-	<section xml:id="tools.normalizer.analyzer">
-		<title>Offset-preserving analysis for search</title>
-		<para>
-			<code>TextAnalyzer</code> tokenizes text and normalizes each token while keeping every
-			token's source span. This is the building block for BM25-style matching: the normalized
-			term is what you index or query, and the <code>Span</code> ties it back to the original
-			text for highlighting, even when normalization changes a token's length.
-		</para>
-		<programlisting language="java">
-<![CDATA[CharSequenceNormalizer perToken = TextNormalizer.builder().caseFold().accentFold().build();
-TextAnalyzer analyzer = TextAnalyzer.whitespace(perToken);
-
-for (AnalyzedToken token : analyzer.analyze("Café au lait")) {
-  // token.span()       -> character span in the original text
-  // token.original()   -> the raw token, e.g. "Café"
-  // token.normalized() -> the search term, e.g. "cafe"
-}
-
-List<String> terms = analyzer.terms("Café au lait");   // ["cafe", "au", "lait"]]]>
-		</programlisting>
-	</section>
-
 	<section xml:id="tools.normalizer.term">
 		<title>The layered term model</title>
 		<para>
-			Where <code>TextAnalyzer</code> gives each token an original and a single normalized form,
-			<code>TermAnalyzer</code> gives each token a <emphasis>stack</emphasis> of normalization
-			layers. A <code>Term</code> is one token projected through an ordered chain of
+			<code>TermAnalyzer</code> tokenizes text and gives each token a
+			<emphasis>stack</emphasis> of normalization layers while keeping its source span. It is the
+			offset-preserving entry point for matching and BM25-style search: the normalized form is
+			what you index or query, and the span ties every layer back to the original text for
+			highlighting, even when normalization changes a token's length. A <code>Term</code> is one
+			token projected through an ordered chain of
 			<code>Dimension</code>s: original, NFC, NFKC, whitespace, dash, case fold, accent fold,
 			confusable fold, stem, and lemma. The order is fixed because the transforms do not commute
 			(case folding then accent folding differs from the reverse). The original is always kept,
