@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       # Note: bats-core/bats-action@3.0.0 is not allowed to be used (needs an INFRA issue)
       - name: Install Bats (Testing Framework)
@@ -84,7 +84,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Install Bats (Testing Framework)
         run: |
@@ -130,7 +130,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Install Pester
         run: |
