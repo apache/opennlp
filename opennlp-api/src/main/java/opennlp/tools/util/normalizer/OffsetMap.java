@@ -61,9 +61,11 @@ public final class OffsetMap {
   /**
    * Maps an original character offset forward to the normalized text.
    *
-   * <p>Returns the first normalized offset whose source is at or after {@code originalOffset}.
-   * When several original characters collapse to one normalized character, they all map to that
-   * single normalized offset.</p>
+   * <p>Returns the normalized offset of the character that {@code originalOffset} falls within: the
+   * last normalized character whose source offset is at or before {@code originalOffset}. When
+   * several original characters collapse to one normalized character, every offset in that run maps
+   * to that single normalized offset. An offset that precedes the first retained character (for
+   * example inside leading whitespace that was trimmed) maps to {@code 0}.</p>
    *
    * @param originalOffset An offset in {@code [0, originalLength]}.
    * @return The corresponding normalized character offset.
@@ -74,16 +76,19 @@ public final class OffsetMap {
       throw new IndexOutOfBoundsException("original offset " + originalOffset
           + " is outside [0, " + originalLength + "]");
     }
+    // Floor search: the rightmost normalized index whose source offset is <= originalOffset. This
+    // keeps offsets that fall inside a collapsed run mapped to the run's single normalized
+    // character rather than jumping to the following one. Clamped to 0 when nothing qualifies.
     int low = 0;
     int high = normalizedToOriginal.length - 1;
-    int answer = normalizedToOriginal.length - 1;
+    int answer = 0;
     while (low <= high) {
       final int mid = (low + high) >>> 1;
-      if (normalizedToOriginal[mid] >= originalOffset) {
+      if (normalizedToOriginal[mid] <= originalOffset) {
         answer = mid;
-        high = mid - 1;
-      } else {
         low = mid + 1;
+      } else {
+        high = mid - 1;
       }
     }
     return answer;

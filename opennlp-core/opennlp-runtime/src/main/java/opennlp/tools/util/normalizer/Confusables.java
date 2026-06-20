@@ -71,8 +71,22 @@ public final class Confusables {
           final int source = Integer.parseInt(content.substring(0, firstSemicolon).strip(), 16);
           final String target = content.substring(firstSemicolon + 1, secondSemicolon).strip();
           final StringBuilder prototype = new StringBuilder();
-          for (final String codePoint : target.split("\\s+")) {
-            prototype.appendCodePoint(Integer.parseInt(codePoint, 16));
+          // Scan the whitespace-delimited hex tokens by hand to honor the no-regex contract and
+          // avoid compiling a Pattern for every one of the ~10k lines during static init.
+          final int targetLength = target.length();
+          int pos = 0;
+          while (pos < targetLength) {
+            while (pos < targetLength && target.charAt(pos) <= ' ') {
+              pos++;
+            }
+            int end = pos;
+            while (end < targetLength && target.charAt(end) > ' ') {
+              end++;
+            }
+            if (end > pos) {
+              prototype.appendCodePoint(Integer.parseInt(target.substring(pos, end), 16));
+            }
+            pos = end;
           }
           map.put(source, prototype.toString());
         }

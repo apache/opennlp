@@ -51,7 +51,8 @@ public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
    * @param locale The locale whose case rules to apply.
    */
   public CaseFoldCharSequenceNormalizer(Locale locale) {
-    this.locale = Objects.requireNonNull(locale, "locale");
+    this.locale = Objects.requireNonNull(locale,
+        "locale must not be null; call getInstance() for the locale-independent default");
   }
 
   /** {@return the shared, stateless {@link Locale#ROOT} instance} */
@@ -64,8 +65,12 @@ public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
    * for {@code Locale.ROOT}.
    *
    * @param locale The locale whose case rules to apply.
+   * @throws NullPointerException Thrown if {@code locale} is null; call {@link #getInstance()} for
+   *     the locale-independent default.
    */
   public static CaseFoldCharSequenceNormalizer getInstance(Locale locale) {
+    Objects.requireNonNull(locale,
+        "locale must not be null; call getInstance() for the locale-independent default");
     return Locale.ROOT.equals(locale) ? INSTANCE : new CaseFoldCharSequenceNormalizer(locale);
   }
 

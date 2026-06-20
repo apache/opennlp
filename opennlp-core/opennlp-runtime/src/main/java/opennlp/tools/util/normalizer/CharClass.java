@@ -182,6 +182,11 @@ public final class CharClass {
   /**
    * Collapses each maximal run of member code points to a single replacement.
    *
+   * <p>Edges are not trimmed: a leading or trailing run becomes a single replacement, and a string
+   * made up entirely of members collapses to one replacement (for whitespace, a single space, not
+   * the empty string). Use {@link #trim(CharSequence)} to drop edge members, or collapse and then
+   * trim to do both.</p>
+   *
    * @param text The text to collapse.
    * @return The collapsed text.
    */
