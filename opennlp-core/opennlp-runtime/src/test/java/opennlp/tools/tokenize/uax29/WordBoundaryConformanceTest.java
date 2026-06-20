@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class WordBoundaryConformanceTest {
 
   private static final int BOUNDARY = 0x00F7; // division sign
-  private static final int NO_BOUNDARY = 0x00D7; // multiplication sign
 
   @Test
   void testOfficialUnicodeWordBreakConformance() throws IOException {
@@ -45,7 +45,9 @@ public class WordBoundaryConformanceTest {
     int passed = 0;
     final List<String> failures = new ArrayList<>();
 
-    try (InputStream in = WordBoundaryConformanceTest.class.getResourceAsStream("WordBreakTest.txt");
+    try (InputStream in = Objects.requireNonNull(
+             WordBoundaryConformanceTest.class.getResourceAsStream("WordBreakTest.txt"),
+             "Missing test resource: WordBreakTest.txt");
          BufferedReader reader =
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String raw;

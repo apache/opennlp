@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -83,6 +84,7 @@ public final class NormalizationProfiles {
    * @return The profile, or empty if the language has no Snowball stemmer.
    */
   public static Optional<NormalizationProfile> forLanguage(String language) {
+    Objects.requireNonNull(language, "language");
     String code = language.strip().toLowerCase(Locale.ROOT);
     if (code.length() == 2) {
       try {

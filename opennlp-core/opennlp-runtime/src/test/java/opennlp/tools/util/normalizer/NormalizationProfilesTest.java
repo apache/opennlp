@@ -27,6 +27,7 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NormalizationProfilesTest {
@@ -130,5 +131,10 @@ public class NormalizationProfilesTest {
   void testSupportedLanguagesCoverTheSnowballSet() {
     assertEquals(19, NormalizationProfiles.supportedLanguages().size());
     assertTrue(NormalizationProfiles.supportedLanguages().containsAll(List.of("eng", "deu", "fra")));
+  }
+
+  @Test
+  void testForLanguageRejectsNull() {
+    assertThrows(NullPointerException.class, () -> NormalizationProfiles.forLanguage(null));
   }
 }
