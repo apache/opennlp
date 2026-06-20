@@ -94,16 +94,30 @@ SOFTWARE.
 
 ============================================================================
 
-This product bundles a data file from the Unicode Security Mechanisms
-(UTS #39), version 17.0.0, published by Unicode, Inc.
-(https://www.unicode.org/Public/).
+This product bundles data files from the Unicode Character Database (UCD)
+and the Unicode Security Mechanisms, version 17.0.0, published by Unicode,
+Inc. (https://www.unicode.org/Public/).
 
+  * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/tokenize/uax29/WordBreakProperty.txt
+    is the upstream WordBreakProperty-17.0.0.txt, unmodified except for the
+    file name.
+  * opennlp-core/opennlp-runtime/src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
+    is the upstream WordBreakTest-17.0.0.txt, unmodified except for the file
+    name.
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/confusables.txt
-    is the upstream confusables.txt, unmodified.
+    is the upstream confusables.txt from the Unicode Security Mechanisms
+    (UTS #39), unmodified.
+  * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
+    is derived from the upstream emoji-data.txt (Emoji Data for UTS #51,
+    version 17.0): it keeps only the lines that assign the
+    Extended_Pictographic property and is renamed accordingly. It is a
+    filtered subset; the upstream file additionally carries the Emoji,
+    Emoji_Presentation, Emoji_Modifier, Emoji_Modifier_Base, and
+    Emoji_Component properties, which are not retained.
 
 The original Unicode copyright and license header is preserved verbatim at the
-top of the bundled file. It is distributed under the Unicode License V3, the
-full text of which is reproduced in the LICENSE file accompanying this
+top of each bundled file. These files are distributed under the Unicode License
+V3, the full text of which is reproduced in the LICENSE file accompanying this
 distribution.
 
 Copyright (c) 1991-2025 Unicode, Inc. All rights reserved.

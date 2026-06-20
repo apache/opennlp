@@ -371,9 +371,13 @@ The following license applies to the SLF4J API:
     OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
     WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-The following license applies to the bundled Unicode data file in
+The following license applies to the bundled Unicode data files in
+opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/tokenize/uax29
+(WordBreakProperty.txt, ExtendedPictographic.txt),
 opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer
-(confusables.txt):
+(confusables.txt), and
+opennlp-core/opennlp-runtime/src/test/resources/opennlp/tools/tokenize/uax29
+(WordBreakTest.txt):
 
     UNICODE LICENSE V3
 
