@@ -23,7 +23,16 @@
 			The OpenNLP Tokenizers segment an input character sequence into
 			tokens. Tokens are usually
 			words, punctuation, numbers, etc.
-
+		</para>
+		<para>
+			The statistical tokenizers in this chapter assume conventional whitespace-separated training
+			and test data. When input contains Unicode spacing or dash variants (no-break space,
+			ideographic space, en dash, and similar characters from PDFs or the web), use the
+			Unicode-aware preprocessing described in <xref linkend="tools.normalizer"/>. The DL
+			components apply that machinery automatically for document chunking; see
+			<xref linkend="tools.normalizer.dl"/>.
+		</para>
+		<para>
 			<screen>
 <![CDATA[Pierre Vinken, 61 years old, will join the board as a nonexecutive director Nov. 29.
 Mr. Vinken is chairman of Elsevier N.V., the Dutch publishing group.
@@ -439,6 +448,86 @@ Operation[] operations = new Operation[]{
     Operation.RIGHT_LEFT_MATCHING,
     Operation.MOVE_BOTH};
 DetokenizationDictionary dict = new DetokenizationDictionary(tokens, operations);]]>
+				</programlisting>
+			</para>
+		</section>
+	</section>
+
+	<section xml:id="tools.tokenizer.uax29">
+		<title>Unicode Word Segmentation (UAX #29)</title>
+		<para>
+			The package <code>opennlp.tools.tokenize.uax29</code> provides a tokenizer that follows the
+			Unicode Text Segmentation algorithm
+			(<link xlink:href="https://www.unicode.org/reports/tr29/">UAX #29</link>), word boundary
+			rules WB1 through WB999. It is rule based and needs no trained model, it works directly over
+			a <code>CharSequence</code>, and it reports character offsets so the original text is
+			preserved for downstream processing such as the normalization described in
+			<xref linkend="tools.normalizer"/>. The boundary data comes from the bundled Unicode
+			Character Database (currently Unicode 17.0) and the implementation passes the official
+			<code>WordBreakTest</code> conformance suite for that release.
+		</para>
+		<section xml:id="tools.tokenizer.uax29.segmenter">
+			<title>Word Segmenter</title>
+			<para>
+				<code>WordSegmenter</code> finds the word boundaries. It is a single forward cursor pass
+				with constant-time property look-ups and no regular expression. Every segment is
+				reported, including whitespace and punctuation runs, so the segments are contiguous and
+				together cover the whole text.
+				<programlisting language="java">
+<![CDATA[int[] boundaries = WordSegmenter.boundaries("The quick brown fox.");
+List<Span> segments = WordSegmenter.segments("The quick brown fox.");]]>
+				</programlisting>
+				For allocation-free processing of large inputs, stream the segments to a callback instead
+				of collecting them.
+				<programlisting language="java">
+<![CDATA[WordSegmenter.forEachSegment("The quick brown fox.", (start, end) -> {
+  // handle the segment [start, end)
+});]]>
+				</programlisting>
+			</para>
+		</section>
+		<section xml:id="tools.tokenizer.uax29.tokenizer">
+			<title>Word Tokenizer</title>
+			<para>
+				<code>WordTokenizer</code> builds on the segmenter. It keeps the segments that are words
+				(letters, digits, ideographs, kana, Hangul, a Southeast Asian script, or emoji), drops
+				whitespace and punctuation, and classifies each token. It implements the standard
+				<code>Tokenizer</code> interface, so it can be used wherever a tokenizer is expected.
+				<programlisting language="java">
+<![CDATA[Tokenizer tokenizer = new WordTokenizer();
+String[] tokens = tokenizer.tokenize("The quick brown fox.");
+Span[] spans = tokenizer.tokenizePos("The quick brown fox.");]]>
+				</programlisting>
+				The tokens array contains "The", "quick", "brown", and "fox"; the trailing period and the
+				spaces are dropped. The <code>tokenizeTyped</code> method additionally returns the
+				category of each token as a <code>WordType</code>.
+				<programlisting language="java">
+<![CDATA[WordTokenizer wordTokenizer = new WordTokenizer();
+for (WordToken token : wordTokenizer.tokenizeTyped("OpenNLP 3.0")) {
+  System.out.println(token.text("OpenNLP 3.0") + " : " + token.type());
+}
+// OpenNLP : ALPHANUMERIC
+// 3.0     : NUMERIC]]>
+				</programlisting>
+				The categories are <code>ALPHANUMERIC</code>, <code>NUMERIC</code>,
+				<code>IDEOGRAPHIC</code>, <code>HIRAGANA</code>, <code>KATAKANA</code>,
+				<code>HANGUL</code>, <code>SOUTHEAST_ASIAN</code>, and <code>EMOJI</code>.
+			</para>
+			<para>
+				A streaming overload reports each token to a handler with no per-token allocation, which
+				is the fastest option when the tokens are consumed on the fly.
+				<programlisting language="java">
+<![CDATA[WordTokenizer wordTokenizer = new WordTokenizer();
+wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
+  // handle the token [start, end) of the given WordType
+});]]>
+				</programlisting>
+				A token longer than the maximum token length is emitted as consecutive pieces without
+				splitting a surrogate pair. The maximum defaults to
+				<code>WordTokenizer.DEFAULT_MAX_TOKEN_LENGTH</code> and can be set through the
+				constructor.
+				<programlisting language="java">
+<![CDATA[WordTokenizer wordTokenizer = new WordTokenizer(64);]]>
 				</programlisting>
 			</para>
 		</section>

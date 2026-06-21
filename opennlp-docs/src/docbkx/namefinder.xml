@@ -155,13 +155,51 @@ Span[] nameSpans = nameFinder.find(sentence);]]>
 					<programlisting language="java">
 <![CDATA[File model = new File("/path/to/model.onnx");
 File vocab = new File("/path/to/vocab.txt");
-Map<Integer, String> categories = new HashMap<>();
-String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
-NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
-Span[] spans = nameFinderDL.find(tokens);]]>
+// Maps the model's output indices to its BIO labels, e.g. "O", "B-PER", "I-PER".
+Map<Integer, String> ids2Labels = new HashMap<>();
+SentenceDetector sentenceDetector =
+    new SentenceDetectorME(new SentenceModel(new File("/path/to/en-sent.bin")));
+String[] tokens = {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
+NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, ids2Labels, sentenceDetector);
+// findInOriginal returns spans in the original input's coordinates.
+Span[] spans = nameFinderDL.findInOriginal(tokens);]]>
 					</programlisting>
 					For additional examples, refer to the <code>NameFinderDLEval</code> class.
 				</para>
+				<para>
+					Long input text is split into overlapping chunks on the full Unicode
+					<code>White_Space</code> set before WordPiece tokenization, so spacing such as a
+					no-break space or the CJK ideographic space is recognized as a delimiter. After
+					inference, reconstructed entity text is matched back to the caller's original input
+					with a Unicode-aware cursor scan (not a regular expression), so
+					<code>Span#getCoveredText(...)</code> returns the source text even when WordPiece
+					rejoins sub-tokens with spaces or when the source uses non-ASCII whitespace between
+					tokens.
+				</para>
+				<para>
+					Optional preprocessing of the joined input text is available through
+					<code>InferenceOptions</code> and is off by default:
+					<code>setNormalizeWhitespace(true)</code> folds each Unicode whitespace character to
+					an ASCII space, and <code>setNormalizeDashes(true)</code> folds Unicode dashes to the
+					ASCII hyphen-minus. Both transforms are one code point to one character and preserve
+					offsets. Full details, the underlying <code>CharClass</code> engine, and the broader
+					normalization pipeline are documented in <xref linkend="tools.normalizer"/>.
+				</para>
+				<programlisting language="java">
+<![CDATA[File model = new File("/path/to/model.onnx");
+File vocab = new File("/path/to/vocab.txt");
+Map<Integer, String> ids2Labels = new HashMap<>(); // the model's BIO labels
+SentenceDetector sentenceDetector =
+    new SentenceDetectorME(new SentenceModel(new File("/path/to/en-sent.bin")));
+String[] tokens = {"George", "Washington", "was", "president", "."};
+
+InferenceOptions options = new InferenceOptions();
+options.setNormalizeWhitespace(true);
+options.setNormalizeDashes(true);
+NameFinderDL finder = new NameFinderDL(model, vocab, ids2Labels, options, sentenceDetector);
+// findInOriginal maps spans back to the original input even when a fold changes its length.
+Span[] spans = finder.findInOriginal(tokens);]]>
+				</programlisting>
 			</section>
 	</section>
 	</section>
