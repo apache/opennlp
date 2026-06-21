@@ -26,7 +26,7 @@ package opennlp.tools.util.normalizer;
  */
 public class EllipsisCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2298647015583729167L;
 
   private static final EllipsisCharSequenceNormalizer INSTANCE =
       new EllipsisCharSequenceNormalizer();

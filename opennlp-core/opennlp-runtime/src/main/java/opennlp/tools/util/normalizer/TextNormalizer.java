@@ -21,13 +21,12 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A fluent builder that composes the normalization rungs into a single
- * {@link CharSequenceNormalizer}.
+ * Entry point for composing the normalization rungs into a single {@link CharSequenceNormalizer}.
  *
- * <p>The rungs are applied in the order they are added, so the caller controls the chain. A
- * conservative, search-oriented chain is available through {@link #searchDefault()}. Each rung is
- * a shared, stateless normalizer; the built normalizer is an {@link AggregateCharSequenceNormalizer}
- * that applies them in sequence.</p>
+ * <p>Use {@link #builder()} to assemble a chain, or {@link #searchDefault()} for a conservative,
+ * search-oriented chain. The rungs are applied in the order they are added, so the caller controls
+ * the chain. Each rung is a shared, stateless normalizer; the built normalizer is an
+ * {@link AggregateCharSequenceNormalizer} that applies them in sequence.</p>
  *
  * <pre>{@code
  * CharSequenceNormalizer n = TextNormalizer.builder()
@@ -37,84 +36,12 @@ import java.util.Objects;
  */
 public final class TextNormalizer {
 
-  private final List<CharSequenceNormalizer> steps = new ArrayList<>();
-
   private TextNormalizer() {
   }
 
-  /** {@return a new, empty builder} */
-  public static TextNormalizer builder() {
-    return new TextNormalizer();
-  }
-
-  /** {@return this builder with NFC canonical composition appended} */
-  public TextNormalizer nfc() {
-    return add(Dimension.NFC.defaultNormalizer());
-  }
-
-  /** {@return this builder with NFKC compatibility composition appended} */
-  public TextNormalizer nfkc() {
-    return add(Dimension.NFKC.defaultNormalizer());
-  }
-
-  /** {@return this builder with invisible/bidi control stripping appended} */
-  public TextNormalizer stripInvisible() {
-    return add(InvisibleCharSequenceNormalizer.getInstance());
-  }
-
-  /** {@return this builder with Unicode whitespace collapsing appended} */
-  public TextNormalizer whitespace() {
-    return add(Dimension.WHITESPACE.defaultNormalizer());
-  }
-
-  /** {@return this builder with quotation-mark folding appended} */
-  public TextNormalizer quotes() {
-    return add(QuoteCharSequenceNormalizer.getInstance());
-  }
-
-  /** {@return this builder with dash folding appended} */
-  public TextNormalizer dashes() {
-    return add(Dimension.DASH.defaultNormalizer());
-  }
-
-  /** {@return this builder with decimal-digit folding appended} */
-  public TextNormalizer digits() {
-    return add(DigitCharSequenceNormalizer.getInstance());
-  }
-
-  /** {@return this builder with ellipsis expansion appended} */
-  public TextNormalizer ellipsis() {
-    return add(EllipsisCharSequenceNormalizer.getInstance());
-  }
-
-  /** {@return this builder with list-bullet replacement appended} */
-  public TextNormalizer bullets() {
-    return add(BulletCharSequenceNormalizer.getInstance());
-  }
-
-  /** {@return this builder with case folding appended} */
-  public TextNormalizer caseFold() {
-    return add(Dimension.CASE_FOLD.defaultNormalizer());
-  }
-
-  /** {@return this builder with script-gated diacritic folding appended} */
-  public TextNormalizer accentFold() {
-    return add(Dimension.ACCENT_FOLD.defaultNormalizer());
-  }
-
-  /**
-   * Appends a custom normalizer.
-   *
-   * @param custom The normalizer to append.
-   * @return This builder.
-   */
-  public TextNormalizer with(CharSequenceNormalizer custom) {
-    return add(Objects.requireNonNull(custom, "custom"));
-  }
-
-  /** {@return the composed normalizer for the rungs added so far} */
-  public CharSequenceNormalizer build() {
-    return new AggregateCharSequenceNormalizer(steps.toArray(new CharSequenceNormalizer[0]));
+  /** {@return a new, empty {@link Builder}} */
+  public static Builder builder() {
+    return new Builder();
   }
 
   /**
@@ -135,8 +62,90 @@ public final class TextNormalizer {
         .build();
   }
 
-  private TextNormalizer add(CharSequenceNormalizer normalizer) {
-    steps.add(normalizer);
-    return this;
+  /**
+   * A fluent builder that appends normalization rungs in order and composes them into one
+   * {@link CharSequenceNormalizer} via {@link #build()}.
+   */
+  public static final class Builder {
+
+    private final List<CharSequenceNormalizer> steps = new ArrayList<>();
+
+    private Builder() {
+    }
+
+    /** {@return this builder with NFC canonical composition appended} */
+    public Builder nfc() {
+      return add(Dimension.NFC.defaultNormalizer());
+    }
+
+    /** {@return this builder with NFKC compatibility composition appended} */
+    public Builder nfkc() {
+      return add(Dimension.NFKC.defaultNormalizer());
+    }
+
+    /** {@return this builder with invisible/bidi control stripping appended} */
+    public Builder stripInvisible() {
+      return add(InvisibleCharSequenceNormalizer.getInstance());
+    }
+
+    /** {@return this builder with Unicode whitespace collapsing appended} */
+    public Builder whitespace() {
+      return add(Dimension.WHITESPACE.defaultNormalizer());
+    }
+
+    /** {@return this builder with quotation-mark folding appended} */
+    public Builder quotes() {
+      return add(QuoteCharSequenceNormalizer.getInstance());
+    }
+
+    /** {@return this builder with dash folding appended} */
+    public Builder dashes() {
+      return add(Dimension.DASH.defaultNormalizer());
+    }
+
+    /** {@return this builder with decimal-digit folding appended} */
+    public Builder digits() {
+      return add(DigitCharSequenceNormalizer.getInstance());
+    }
+
+    /** {@return this builder with ellipsis expansion appended} */
+    public Builder ellipsis() {
+      return add(EllipsisCharSequenceNormalizer.getInstance());
+    }
+
+    /** {@return this builder with list-bullet replacement appended} */
+    public Builder bullets() {
+      return add(BulletCharSequenceNormalizer.getInstance());
+    }
+
+    /** {@return this builder with case folding appended} */
+    public Builder caseFold() {
+      return add(Dimension.CASE_FOLD.defaultNormalizer());
+    }
+
+    /** {@return this builder with script-gated diacritic folding appended} */
+    public Builder accentFold() {
+      return add(Dimension.ACCENT_FOLD.defaultNormalizer());
+    }
+
+    /**
+     * Appends a custom normalizer.
+     *
+     * @param custom The normalizer to append.
+     * @return This builder.
+     */
+    public Builder with(CharSequenceNormalizer custom) {
+      return add(Objects.requireNonNull(custom, "custom"));
+    }
+
+    /** {@return the composed normalizer for the rungs added so far} */
+    public CharSequenceNormalizer build() {
+      return new AggregateCharSequenceNormalizer(steps.toArray(new CharSequenceNormalizer[0]));
+    }
+
+    private Builder add(CharSequenceNormalizer normalizer) {
+      steps.add(normalizer);
+      return this;
+    }
   }
 }

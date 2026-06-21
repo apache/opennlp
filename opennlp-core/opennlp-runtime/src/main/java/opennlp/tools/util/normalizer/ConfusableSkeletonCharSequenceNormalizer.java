@@ -27,7 +27,7 @@ package opennlp.tools.util.normalizer;
  */
 public class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 3074516628190437751L;
 
   private static final ConfusableSkeletonCharSequenceNormalizer INSTANCE =
       new ConfusableSkeletonCharSequenceNormalizer();

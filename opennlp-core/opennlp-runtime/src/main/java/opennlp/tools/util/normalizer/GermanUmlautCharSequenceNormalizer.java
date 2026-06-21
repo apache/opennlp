@@ -29,7 +29,7 @@ package opennlp.tools.util.normalizer;
  */
 public class GermanUmlautCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 7106934482250176835L;
 
   private static final int SMALL_A_UMLAUT = 0x00E4;
   private static final int SMALL_O_UMLAUT = 0x00F6;

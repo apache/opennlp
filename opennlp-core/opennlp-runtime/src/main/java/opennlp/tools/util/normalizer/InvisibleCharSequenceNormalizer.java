@@ -30,7 +30,7 @@ package opennlp.tools.util.normalizer;
  */
 public class InvisibleCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 4837512098664301927L;
 
   // The replacement is unused: removeAll deletes members rather than substituting them.
   private static final CharClass INVISIBLE = CharClass.of(CodePointSet.of(

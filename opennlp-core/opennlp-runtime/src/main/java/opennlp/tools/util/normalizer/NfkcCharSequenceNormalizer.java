@@ -30,7 +30,7 @@ import java.text.Normalizer;
  */
 public class NfkcCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 8273650194427108359L;
 
   private static final NfkcCharSequenceNormalizer INSTANCE = new NfkcCharSequenceNormalizer();
 

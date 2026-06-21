@@ -41,7 +41,7 @@ import java.util.Set;
  */
 public class AccentFoldCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 7843116209554120071L;
 
   private static final Set<Character.UnicodeScript> DEFAULT_SCRIPTS = Set.of(
       Character.UnicodeScript.LATIN,

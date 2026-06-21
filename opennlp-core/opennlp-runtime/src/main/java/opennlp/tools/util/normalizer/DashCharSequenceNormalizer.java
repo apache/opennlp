@@ -27,7 +27,7 @@ package opennlp.tools.util.normalizer;
  */
 public class DashCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 6620885194730155303L;
 
   private static final CharClass DASHES = CharClass.dashes();
 

@@ -27,7 +27,7 @@ package opennlp.tools.util.normalizer;
  */
 public class WhitespaceCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 6748290315562094783L;
 
   private static final CharClass WHITESPACE = CharClass.whitespace();
 

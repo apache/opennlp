@@ -29,7 +29,7 @@ import java.text.Normalizer;
  */
 public class NfcCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 5960421783304915649L;
 
   private static final NfcCharSequenceNormalizer INSTANCE = new NfcCharSequenceNormalizer();
 

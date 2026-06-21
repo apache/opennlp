@@ -28,7 +28,7 @@ package opennlp.tools.util.normalizer;
  */
 public class DigitCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 8451270936618204413L;
 
   private static final DigitCharSequenceNormalizer INSTANCE = new DigitCharSequenceNormalizer();
 
