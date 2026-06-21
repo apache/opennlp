@@ -39,6 +39,7 @@ import opennlp.dl.AbstractDL;
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.namefind.OffsetMappingNameFinder;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.util.Span;
@@ -68,7 +69,7 @@ import opennlp.tools.util.normalizer.Alignment;
  * @see InferenceOptions
  */
 @ThreadSafe
-public class NameFinderDL extends AbstractDL implements TokenNameFinder {
+public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder {
 
   /** Example person labels; retained for reference. Decoding handles any B-/I- type. */
   public static final String I_PER = "I-PER";
@@ -200,18 +201,16 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    * ({@code String.join(" ", input)}), regardless of any whitespace or dash normalization applied
    * before inference. Spans are mapped back through the normalization {@link Alignment}, so a fold
    * that changes the input length (a supplementary dash shrinking, or an expansion) does not shift
-   * the reported offsets.
-   *
-   * <p>This is declared on {@code NameFinderDL} rather than on {@link TokenNameFinder} because it
-   * returns character offsets into the joined input string, a coordinate system specific to this
-   * ONNX implementation; interface-typed callers that need the offset-correct path must reference
-   * the concrete type.</p>
+   * the reported offsets. This implements {@link OffsetMappingNameFinder}, so an interface-typed
+   * caller can reach the offset-correct path with
+   * {@code finder instanceof OffsetMappingNameFinder}.
    *
    * @param input The tokens to search.
    * @return The detected spans, in original-input character coordinates.
    * @throws IllegalStateException Thrown under the same conditions as {@link #find(String[])}.
    * @throws IllegalArgumentException Thrown under the same conditions as {@link #find(String[])}.
    */
+  @Override
   public Span[] findInOriginal(String[] input) {
     final DecodedSpans decoded = locate(input);
     final Alignment alignment = decoded.aligned().alignment();
