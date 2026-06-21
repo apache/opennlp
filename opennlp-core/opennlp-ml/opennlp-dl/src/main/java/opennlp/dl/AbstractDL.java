@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,9 @@ import ai.onnxruntime.OrtSession;
 import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.normalizer.AlignedText;
+import opennlp.tools.util.normalizer.Alignment;
+import opennlp.tools.util.normalizer.CharClass;
 
 /**
  * Base class for OpenNLP deep-learning classes using ONNX Runtime.
@@ -325,6 +329,98 @@ public abstract class AbstractDL implements AutoCloseable {
       throw new IllegalArgumentException(
           "splitOverlapSize must be smaller than documentSplitSize.");
     }
+  }
+
+  /**
+   * Unicode-aware whitespace. Input is tokenized on the full Unicode {@code White_Space} set
+   * rather than the six ASCII characters Java's {@code \s} recognizes, and the same class is
+   * reused by subclasses that need to match against whitespace in the source text.
+   */
+  protected static final CharClass WHITESPACE = CharClass.whitespace();
+
+  /** Unicode dashes (excluding the mathematical minus signs), used for optional input folding. */
+  protected static final CharClass DASHES = CharClass.dashes();
+
+  /**
+   * Optionally folds Unicode whitespace and/or dashes in the input to their ASCII forms before
+   * inference, returning just the folded text. This is suitable for callers that do not map model
+   * output back to character offsets, such as whole-document classification. When the result must
+   * be mapped back to the original text (for example to report entity spans), use
+   * {@link #normalizeInputAligned(String, boolean, boolean)} instead, which also returns an
+   * {@link Alignment} that stays correct even when a fold changes the string length.
+   *
+   * @param text The input text.
+   * @param normalizeWhitespace Whether to fold whitespace to ASCII spaces.
+   * @param normalizeDashes Whether to fold dashes to the ASCII hyphen.
+   * @return The optionally normalized text.
+   */
+  protected static String normalizeInput(final String text, final boolean normalizeWhitespace,
+                                         final boolean normalizeDashes) {
+    String result = text;
+    if (normalizeWhitespace) {
+      result = WHITESPACE.normalize(result).toString();
+    }
+    if (normalizeDashes) {
+      result = DASHES.normalize(result).toString();
+    }
+    return result;
+  }
+
+  /**
+   * Like {@link #normalizeInput(String, boolean, boolean)} but also produces an {@link Alignment}
+   * from the folded text back to {@code text}, so model output positions map to original character
+   * offsets even when a fold changes the string length (a supplementary dash shrinking, or, for
+   * folds that may be added later, an expansion such as an ellipsis to three dots).
+   *
+   * @param text The input text.
+   * @param normalizeWhitespace Whether to fold whitespace to ASCII spaces.
+   * @param normalizeDashes Whether to fold dashes to the ASCII hyphen.
+   * @return The optionally normalized text paired with its alignment back to {@code text}.
+   */
+  protected static AlignedText normalizeInputAligned(final String text,
+      final boolean normalizeWhitespace, final boolean normalizeDashes) {
+    // Whitespace folding is length-preserving (every Unicode White_Space code point is in the BMP),
+    // so it does not move offsets; only dash folding can change length. The dash stage's alignment
+    // therefore maps the final text straight back to the original.
+    final String afterWhitespace =
+        normalizeWhitespace ? WHITESPACE.normalize(text).toString() : text;
+    if (normalizeDashes) {
+      final AlignedText folded = DASHES.normalizeAligned(afterWhitespace);
+      return new AlignedText(text, folded.normalized(), folded.alignment());
+    }
+    return identityAligned(text, afterWhitespace);
+  }
+
+  // An AlignedText whose alignment is the identity, for the case where no length-changing fold was
+  // applied so the folded text has the same length and offsets as the original.
+  private static AlignedText identityAligned(final String original, final String normalized) {
+    final Alignment alignment =
+        new Alignment.Builder().equal(normalized.length()).build(normalized.length());
+    return new AlignedText(original, normalized, alignment);
+  }
+
+  /**
+   * Splits {@code text} on Unicode whitespace and groups the resulting tokens into overlapping
+   * chunks, each rejoined with single ASCII spaces, ready for WordPiece tokenization. The split
+   * uses the Unicode {@code White_Space} set, so spacing such as a no-break space or the
+   * ideographic space is recognized, and it yields no empty tokens from leading, trailing, or
+   * repeated whitespace.
+   *
+   * @param text The input text.
+   * @param documentSplitSize The maximum number of whitespace tokens per chunk.
+   * @param splitOverlapSize The number of tokens shared between consecutive chunks.
+   * @return The chunk strings, in order.
+   */
+  protected static List<String> whitespaceChunks(final String text, final int documentSplitSize,
+                                                 final int splitOverlapSize) {
+    final String[] whitespaceTokenized = WHITESPACE.split(text);
+    final List<String> groups = new ArrayList<>();
+    for (final ChunkRange chunkRange : chunkRanges(
+        whitespaceTokenized.length, documentSplitSize, splitOverlapSize)) {
+      groups.add(String.join(" ",
+          Arrays.copyOfRange(whitespaceTokenized, chunkRange.start(), chunkRange.end())));
+    }
+    return groups;
   }
 
   /**

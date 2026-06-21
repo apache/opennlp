@@ -85,6 +85,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   private final boolean includeTokenTypeIds;
   private final int documentSplitSize;
   private final int splitOverlapSize;
+  private final boolean normalizeWhitespace;
+  private final boolean normalizeDashes;
 
   /**
    * Test-only constructor that injects an already-built {@link OrtSession} (or {@code null}),
@@ -101,6 +103,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
     this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
     this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
+    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
+    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
   }
 
   /**
@@ -132,6 +136,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
     this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
     this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
+    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
+    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
 
   }
 
@@ -165,6 +171,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
     this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
     this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
+    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
+    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
 
   }
 
@@ -327,21 +335,15 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   }
 
-  private List<Tokens> tokenize(final String text) {
+  private List<Tokens> tokenize(final String input) {
 
+    final String text = normalizeInput(input, normalizeWhitespace, normalizeDashes);
     final List<Tokens> t = new LinkedList<>();
 
-    // Segment long input text into overlapping chunks configured by InferenceOptions before
-    // feeding each chunk into BERT.
+    // Segment long input text into overlapping chunks (split on Unicode whitespace) configured by
+    // InferenceOptions before feeding each chunk into BERT.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    final String[] whitespaceTokenized = text.split("\\s+");
-
-    for (ChunkRange chunkRange : chunkRanges(
-        whitespaceTokenized.length, documentSplitSize, splitOverlapSize)) {
-
-      // The group is that subsection of string.
-      final String group = String.join(" ",
-          Arrays.copyOfRange(whitespaceTokenized, chunkRange.start(), chunkRange.end()));
+    for (final String group : whitespaceChunks(text, documentSplitSize, splitOverlapSize)) {
 
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);
