@@ -161,17 +161,23 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
     try (final DocumentCategorizerDL documentCategorizerDL =
              categorizerWithoutSession()) {
 
-      // Empty input drives categorize() down its failure path (strings[0] throws) before any
-      // inference; it must fail loudly rather than return an invalid all-zero distribution.
-      final IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, () ->
+      // Malformed input is rejected up front with IllegalArgumentException.
+      Assertions.assertThrows(IllegalArgumentException.class, () ->
+          documentCategorizerDL.categorize(null));
+      Assertions.assertThrows(IllegalArgumentException.class, () ->
           documentCategorizerDL.categorize(new String[0]));
+
+      // Valid input with no session must fail loudly rather than return an invalid all-zero
+      // distribution.
+      final IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, () ->
+          documentCategorizerDL.categorize(new String[] {"hello world"}));
       Assertions.assertTrue(e.getMessage().contains("document classification inference"));
 
       // The dependent API must not mask that inference failure with all-zero scores.
       Assertions.assertThrows(IllegalStateException.class, () ->
-          documentCategorizerDL.scoreMap(new String[0]));
+          documentCategorizerDL.scoreMap(new String[] {"hello world"}));
       Assertions.assertThrows(IllegalStateException.class, () ->
-          documentCategorizerDL.sortedScoreMap(new String[0]));
+          documentCategorizerDL.sortedScoreMap(new String[] {"hello world"}));
     }
 
   }

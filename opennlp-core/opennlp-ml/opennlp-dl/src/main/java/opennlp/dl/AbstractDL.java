@@ -424,7 +424,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   @Override
   public void close() throws OrtException {
-    if (closed.compareAndSet(false, true)) {
+    if (closed.compareAndSet(false, true) && session != null) {
       session.close();
     }
   }
