@@ -380,12 +380,19 @@ public final class WordSegmenter {
   // A minimal growable int array, so boundaries() makes one backing allocation instead of one per
   // boundary (an ArrayList<Integer> would box every offset).
   private static final class IntList {
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
     private int[] values = new int[16];
     private int size;
 
     void add(int value) {
       if (size == values.length) {
-        values = Arrays.copyOf(values, values.length * 2);
+        // Overflow-aware 1.5x growth so a very large boundary count never wraps to a negative
+        // capacity (NegativeArraySizeException); it degrades to a clean OutOfMemoryError instead.
+        int newCapacity = values.length + (values.length >> 1);
+        if (newCapacity < 0 || newCapacity > MAX_ARRAY_SIZE) {
+          newCapacity = MAX_ARRAY_SIZE;
+        }
+        values = Arrays.copyOf(values, newCapacity);
       }
       values[size++] = value;
     }

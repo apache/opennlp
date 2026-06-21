@@ -37,6 +37,9 @@ import opennlp.tools.util.Span;
  * carries each token's {@link WordType}, and {@link #tokenize(CharSequence, TokenHandler)} streams
  * tokens with no per-token allocation. Instances are immutable and thread-safe.</p>
  */
+// Implements Tokenizer directly rather than extending AbstractTokenizer: this tokenizer produces
+// its spans from the UAX #29 segmenter in one pass and shares none of AbstractTokenizer's
+// per-character probability/merge machinery, so subclassing it would only add unused state.
 public final class WordTokenizer implements Tokenizer {
 
   /** Receives each word token as a character range and its type, with no allocation. */

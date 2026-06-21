@@ -30,7 +30,7 @@ public enum WordType {
   /** A token made up entirely of digits and numeric connectors. */
   NUMERIC,
 
-  /** A single Han ideograph. */
+  /** A token containing a Han ideograph (one ideograph per token under UAX #29 segmentation). */
   IDEOGRAPHIC,
 
   /** A Hiragana token. */

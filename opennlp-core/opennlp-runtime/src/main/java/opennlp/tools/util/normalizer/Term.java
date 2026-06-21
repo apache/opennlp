@@ -82,6 +82,14 @@ public final class Term {
    * Returns the token at {@code dimension}. Configured dimensions are cached; an unconfigured
    * dimension is computed by applying its transform to {@link #normalized()} and then cached.
    *
+   * <p>Note: an unconfigured dimension is applied on top of {@link #normalized()} (the most
+   * aggressive configured layer), not spliced into canonical pipeline order. Because the transforms
+   * do not commute (see {@link Dimension}), requesting a dimension that ranks <em>earlier</em> than
+   * the configured ones can differ from having configured it. For example, asking for
+   * {@link Dimension#CASE_FOLD} on an analyzer configured only through {@link Dimension#ACCENT_FOLD}
+   * case-folds the already accent-folded text, which is not the same as case-folding first.
+   * Configure the dimension on the analyzer when canonical order matters.</p>
+   *
    * @param dimension The dimension to project to.
    * @return The token at that dimension.
    * @throws IllegalStateException if the dimension needs an engine or tag that was not configured
