@@ -177,6 +177,13 @@ Span[] spans = nameFinderDL.findInOriginal(tokens);]]>
 					tokens.
 				</para>
 				<para>
+					<code>findInOriginal</code> is declared by the <code>OffsetMappingNameFinder</code>
+					capability interface that <code>NameFinderDL</code> implements, so a caller holding a
+					plain <code>TokenNameFinder</code> can detect the offset-mapping capability with a
+					<code>finder instanceof OffsetMappingNameFinder</code> check (no reflection) and fall
+					back to token-index spans otherwise.
+				</para>
+				<para>
 					Optional preprocessing of the joined input text is available through
 					<code>InferenceOptions</code> and is off by default:
 					<code>setNormalizeWhitespace(true)</code> folds each Unicode whitespace character to
