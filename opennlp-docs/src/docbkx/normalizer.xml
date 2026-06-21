@@ -98,6 +98,12 @@
 							trims the edges.</entry>
 					</row>
 					<row>
+						<entry><code>LineBreakPreservingWhitespaceCharSequenceNormalizer</code></entry>
+						<entry>Collapses horizontal whitespace runs to a single ASCII space but keeps a
+							run containing a line break as a single newline, so paragraph structure
+							survives; trims the edges.</entry>
+					</row>
+					<row>
 						<entry><code>DashCharSequenceNormalizer</code></entry>
 						<entry>Maps every Unicode dash to the ASCII hyphen-minus. The mathematical
 							minus signs and the soft hyphen are not affected.</entry>
@@ -203,8 +209,47 @@ String t = search.normalize("﻿“CafÉ”").toString();   // "\"cafe\""]]>
 			<code>with(...)</code>. The <code>TextNormalizer</code> pipeline and the individual
 			<code>CharSequenceNormalizer</code> implementations are not applied automatically by
 			statistical OpenNLP components; callers compose them explicitly when preprocessing text
-			for search or matching. The DL components described in the next section use a narrower,
-			built-in subset of this machinery.
+			for search or matching; to recover original character offsets from the composed result,
+			see <xref linkend="tools.normalizer.aligned"/>. The DL components described in
+			<xref linkend="tools.normalizer.dl"/> use a narrower, built-in subset of this machinery.
+		</para>
+	</section>
+
+	<section xml:id="tools.normalizer.aligned">
+		<title>Offset-aware pipelines</title>
+		<para>
+			<code>build()</code> returns a normalizer that yields only the cleaned text. When you also
+			need to map a match found in the normalized text back to the original (to highlight a search
+			hit in the source, say), build the pipeline with <code>buildAligned()</code> instead. It
+			returns an <code>OffsetAwareNormalizer</code> whose <code>normalizeAligned(text)</code> returns
+			an <code>AlignedText</code>: the normalized string together with an <code>Alignment</code> that
+			maps spans between the two forms, composed across every stage, so a match maps straight back to
+			the source even when a stage collapsed a run or folded a multi-unit character.
+		</para>
+		<programlisting language="java">
+<![CDATA[OffsetAwareNormalizer pipeline = TextNormalizer.builder()
+    .whitespace()      // collapses runs, so it changes length and shifts offsets
+    .dashes()
+    .buildAligned();
+
+String original = "find   the—match";
+AlignedText aligned = pipeline.normalizeAligned(original);
+// aligned.normalized()                ->  "find the-match"
+Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized text
+// hit.getCoveredText(original)         ->  "the—match"   (back to the source, em dash and all)]]>
+		</programlisting>
+		<para>
+			<code>OffsetAwareNormalizer</code> is a capability interface: it extends
+			<code>CharSequenceNormalizer</code> and adds <code>normalizeAligned</code>, so a caller tests
+			for it with a plain <code>instanceof</code>, the same pattern the name finder uses for
+			<code>OffsetMappingNameFinder</code>. Only the cursor-based rungs implement it: whitespace, the
+			line-break-preserving whitespace rung, dashes, and invisible-control stripping. Rungs that
+			delegate to <code>java.text.Normalizer</code> (NFC and NFKC) or to a fold table cannot report
+			their per-character edits, so a chain that contains one is rejected by
+			<code>buildAligned()</code> with an <code>IllegalStateException</code> that names the rung,
+			rather than returning a pipeline that would hand back an offset that does not hold. The
+			per-stage maps and their composition use the <code>Alignment</code> machinery described in
+			<xref linkend="tools.normalizer.charclass"/>.
 		</para>
 	</section>
 
