@@ -165,12 +165,31 @@ String bestCategory = categorizer.getBestCategory(outcomes);]]>
 File vocab = new File("/path/to/vocab.txt");
 Map<Integer, String> categories = new HashMap<>();
 String[] inputText = new String[]{"My input text is great."};
-final DocumentCategorizerDL myCategorizer = new DocumentCategorizerDL(model, vocab, categories);
+final DocumentCategorizerDL myCategorizer = new DocumentCategorizerDL(
+    model, vocab, categories, new AverageClassificationScoringStrategy(), new InferenceOptions());
 double[] outcomes = myCategorizer.categorize(inputText);
 String category = myCategorizer.getBestCategory(outcomes);]]>
 				</programlisting>
 				For additional examples, refer to the <code>DocumentCategorizerDLEval</code> class.
 			</para>
+			<para>
+				Like <code>NameFinderDL</code>, long input is split into overlapping chunks on the full
+				Unicode <code>White_Space</code> set rather than Java's <code>\s</code>, so text copied
+				from PDFs, the web, or multilingual sources tokenizes consistently. Optional
+				preprocessing through <code>InferenceOptions</code> is off by default:
+				<code>setNormalizeWhitespace(true)</code> maps each Unicode whitespace code point to an
+				ASCII space, and <code>setNormalizeDashes(true)</code> maps Unicode dashes to the ASCII
+				hyphen-minus. Both are one-to-one replacements that preserve character offsets. See
+				<xref linkend="tools.normalizer"/> for the shared <code>CharClass</code> engine and the
+				full normalization library.
+			</para>
+			<programlisting language="java">
+<![CDATA[InferenceOptions options = new InferenceOptions();
+options.setNormalizeWhitespace(true);
+options.setNormalizeDashes(true);
+DocumentCategorizerDL categorizer = new DocumentCategorizerDL(
+    model, vocab, categories, new AverageClassificationScoringStrategy(), options);]]>
+			</programlisting>
 		</section>
 	</section>
 
