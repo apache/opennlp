@@ -407,6 +407,48 @@ public class NameFinderDLEval extends AbstractEvalTest {
 
   }
 
+  /**
+   * End-to-end offset safety: with dash normalization enabled and a non-BMP dash before an entity,
+   * the fold shrinks the text by one UTF-16 unit, so the entity sits at a smaller offset in the
+   * normalized text than in the original. {@link NameFinderDL#findInOriginal(String[])} must report
+   * the entity at its true offset in the original input, not the one-unit-shorter normalized offset.
+   */
+  @Test
+  public void findInOriginalMapsSpansAcrossNonBmpDash() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+
+    final InferenceOptions options = new InferenceOptions();
+    options.setNormalizeDashes(true);
+
+    // Yezidi hyphen (U+10EAD): a Unicode Dash code point in the supplementary plane (two UTF-16
+    // units) that folds to a single ASCII hyphen, shifting every following character left by one.
+    final String yezidi = new String(Character.toChars(0x10EAD));
+    final String[] tokens = {yezidi, "George", "Washington", "was", "president",
+        "of", "the", "United", "States", "."};
+    final String original = String.join(" ", tokens);
+
+    try (final NameFinderDL nameFinderDL =
+             new NameFinderDL(model, vocab, getIds2Labels(), options, sentenceDetector)) {
+
+      final Span[] spans = nameFinderDL.findInOriginal(tokens);
+
+      Span person = null;
+      for (final Span span : spans) {
+        if ("PER".equals(span.getType())) {
+          person = span;
+        }
+      }
+      Assertions.assertNotNull(person, "the PER entity should still be detected after the dash");
+      // Mapped back through the alignment, the span covers the entity in the ORIGINAL input (which
+      // still contains the two-unit dash); without the mapping it would be shifted left by one.
+      Assertions.assertEquals("George Washington", person.getCoveredText(original));
+      Assertions.assertEquals(original.indexOf("George Washington"), person.getStart());
+    }
+
+  }
+
   private Map<Integer, String> getIds2Labels() {
 
     final Map<Integer, String> ids2Labels = new HashMap<>();
