@@ -260,4 +260,102 @@ public class CharClassTest {
     assertSpan(1, 3, at.toOriginalSpan(1, 2)); // "-" maps back to the two-char Yezidi hyphen
     assertSpan(3, 4, at.toOriginalSpan(2, 3)); // y
   }
+
+  // --- aligned edge cases (restore + extend the deleted *Mapped coverage) ------------------
+
+  @Test
+  void testCollapseAlignedAcrossMixedUnicodeWhitespaceRun() {
+    final AlignedText at = WS.collapseAligned("a" + NBSP + IDEOGRAPHIC + cp(0x2002) + "b");
+    assertEquals("a b", at.normalized());
+    assertSpan(1, 4, at.toOriginalSpan(1, 2)); // the one space covers the three-char ws run
+    assertSpan(4, 5, at.toOriginalSpan(2, 3)); // b
+  }
+
+  @Test
+  void testCollapseAlignedAcrossTabRun() {
+    final AlignedText at = WS.collapseAligned("a\t\t\t\t\tb");
+    assertEquals("a b", at.normalized());
+    assertSpan(1, 6, at.toOriginalSpan(1, 2)); // five tabs collapse to one space
+    assertSpan(6, 7, at.toOriginalSpan(2, 3));
+  }
+
+  @Test
+  void testCollapseAlignedAcrossNewlineRun() {
+    final AlignedText at = WS.collapseAligned("a\r\n\tb");
+    assertEquals("a b", at.normalized());
+    assertSpan(1, 4, at.toOriginalSpan(1, 2));
+  }
+
+  @Test
+  void testCollapseAlignedEmptySingleAndAllWhitespace() {
+    assertEquals("", WS.collapseAligned("").normalized());
+    assertEquals(0, WS.collapseAligned("").alignment().normalizedLength());
+
+    final AlignedText single = WS.collapseAligned("a");
+    assertEquals("a", single.normalized());
+    assertSpan(0, 1, single.toOriginalSpan(0, 1));
+
+    final AlignedText allWs = WS.collapseAligned("\t\t\t");
+    assertEquals(" ", allWs.normalized()); // all whitespace collapses to one space, not empty
+    assertSpan(0, 3, allWs.toOriginalSpan(0, 1));
+  }
+
+  @Test
+  void testCollapseAlignedKeepsSurrogatePairOffsets() {
+    final AlignedText at = WS.collapseAligned(GRINNING_FACE + "\t\tb");
+    assertEquals(GRINNING_FACE + " b", at.normalized());
+    assertSpan(0, 2, at.toOriginalSpan(0, 2)); // the emoji occupies two original chars
+    assertSpan(2, 4, at.toOriginalSpan(2, 3)); // the collapsed tabs
+    assertSpan(4, 5, at.toOriginalSpan(3, 4)); // b
+  }
+
+  @Test
+  void testNormalizeAlignedIsIdentityWhenNothingMatches() {
+    final AlignedText at = WS.normalizeAligned("abc");
+    assertEquals("abc", at.normalized());
+    for (int i = 0; i < 3; i++) {
+      assertSpan(i, i + 1, at.toOriginalSpan(i, i + 1));
+    }
+  }
+
+  @Test
+  void testNormalizeAlignedPreservesSupplementaryNonMember() {
+    final AlignedText at = WS.normalizeAligned("a" + GRINNING_FACE + "b");
+    assertEquals("a" + GRINNING_FACE + "b", at.normalized());
+    assertSpan(1, 3, at.toOriginalSpan(1, 3)); // the emoji passes through unchanged
+  }
+
+  @Test
+  void testNormalizeAlignedExpandsToSupplementaryReplacement() {
+    // A BMP member replaced by a supplementary code point grows by one char (1 -> 2).
+    final CharClass toPenguin = CharClass.of(CodePointSet.of(' '), 0x1F427);
+    final AlignedText at = toPenguin.normalizeAligned("a b");
+    assertEquals("a" + cp(0x1F427) + "b", at.normalized());
+    assertSpan(0, 1, at.toOriginalSpan(0, 1)); // a
+    assertSpan(1, 2, at.toOriginalSpan(1, 3)); // both penguin halves come from the one space
+    assertSpan(2, 3, at.toOriginalSpan(3, 4)); // b
+  }
+
+  @Test
+  void testRemoveAllAlignedLeadingAndTrailingDeletions() {
+    final AlignedText at = WS.removeAllAligned(" a b ");
+    assertEquals("ab", at.normalized());
+    assertSpan(1, 2, at.toOriginalSpan(0, 1)); // a (leading space deleted)
+    assertSpan(3, 4, at.toOriginalSpan(1, 2)); // b (trailing space deleted, not over-covered)
+  }
+
+  @Test
+  void testTrimAlignedAllWhitespaceIsEmpty() {
+    final AlignedText at = WS.trimAligned("\t\t");
+    assertEquals("", at.normalized());
+    assertEquals(0, at.alignment().normalizedLength());
+    assertEquals(2, at.alignment().originalLength());
+  }
+
+  @Test
+  void testCollapsePreservingAlignedRunWithoutKeepCollapsesToReplacement() {
+    final AlignedText at = WS.collapsePreservingAligned("a \t b", lineBreaks(), '\n');
+    assertEquals("a b", at.normalized()); // no line break in the run -> plain space
+    assertSpan(1, 4, at.toOriginalSpan(1, 2));
+  }
 }

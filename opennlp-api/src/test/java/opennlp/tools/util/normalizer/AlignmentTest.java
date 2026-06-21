@@ -145,4 +145,37 @@ public class AlignmentTest {
     assertEquals(2, a.toOriginalOffset(2)); // start of the collapsed space
     assertEquals(4, a.toOriginalOffset(3)); // end sentinel -> original length
   }
+
+  @Test
+  void testBuilderGrowsBeyondInitialCapacity() {
+    // 20 equal chars force the builder past its initial 16-entry buffers (exercises grow()).
+    final Alignment a = new Alignment.Builder().equal(20).build(20);
+    assertEquals(20, a.normalizedLength());
+    assertEquals(20, a.originalLength());
+    assertSpan(0, 20, a.toOriginalSpan(0, 20));
+    assertSpan(17, 18, a.toOriginalSpan(17, 18));
+  }
+
+  @Test
+  void testAndThenChainsThreeStages() {
+    // "a  b" -> "a b" (collapse) -> "a-b" (space->dash) -> "a_b" (dash->underscore).
+    final Alignment s1 = new Alignment.Builder().equal(1).replace(2, 1).equal(1).build(4);
+    final Alignment s2 = new Alignment.Builder().equal(1).replace(1, 1).equal(1).build(3);
+    final Alignment s3 = new Alignment.Builder().equal(1).replace(1, 1).equal(1).build(3);
+    final Alignment composed = s1.andThen(s2).andThen(s3);
+
+    assertEquals(4, composed.originalLength());
+    assertEquals(3, composed.normalizedLength());
+    assertSpan(0, 1, composed.toOriginalSpan(0, 1)); // a
+    assertSpan(1, 3, composed.toOriginalSpan(1, 2)); // "_" maps all the way back to the "  "
+    assertSpan(3, 4, composed.toOriginalSpan(2, 3)); // b
+  }
+
+  @Test
+  void testToNormalizedSpanAcrossExpansion() {
+    final Alignment a = new Alignment.Builder().equal(1).replace(1, 2).equal(1).build(3); // ß->ss
+    assertSpan(1, 3, a.toNormalizedSpan(1, 2)); // original "ß" -> the two-char "ss"
+    assertSpan(0, 1, a.toNormalizedSpan(0, 1)); // a
+    assertSpan(3, 4, a.toNormalizedSpan(2, 3)); // b
+  }
 }
