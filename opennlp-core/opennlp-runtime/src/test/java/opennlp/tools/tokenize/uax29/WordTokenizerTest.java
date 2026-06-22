@@ -90,6 +90,18 @@ public class WordTokenizerTest {
   }
 
   @Test
+  void testExtendedPictographicSymbolsAreKeptAsEmoji() {
+    // Extended_Pictographic includes symbol-like characters (copyright U+00A9, trademark U+2122,
+    // double exclamation U+203C), which WordType classifies as EMOJI, so the tokenizer keeps them
+    // rather than dropping them as punctuation.
+    final String text = "a " + cp(0x00A9) + " " + cp(0x2122) + " " + cp(0x203C) + " b";
+    final List<WordToken> tokens = TOKENIZER.tokenizeTyped(text);
+    assertEquals(List.of(WordType.ALPHANUMERIC, WordType.EMOJI, WordType.EMOJI,
+            WordType.EMOJI, WordType.ALPHANUMERIC),
+        tokens.stream().map(WordToken::type).toList());
+  }
+
+  @Test
   void testHangulSyllablesStayTogether() {
     final String text = cp(0xAC00) + cp(0xB098); // ga + na
     final List<WordToken> tokens = TOKENIZER.tokenizeTyped(text);

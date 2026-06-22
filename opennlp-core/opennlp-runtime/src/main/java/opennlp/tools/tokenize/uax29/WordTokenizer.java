@@ -26,7 +26,9 @@ import opennlp.tools.util.Span;
  * A word tokenizer built on the Unicode Text Segmentation algorithm (UAX #29). It finds segments
  * with {@link WordSegmenter}, keeps the ones that are words (letters, digits, ideographs, kana,
  * Hangul, Southeast-Asian script, or emoji), drops whitespace and punctuation, and classifies each
- * kept token with a {@link WordType}.
+ * kept token with a {@link WordType}. Emoji here means any {@code Extended_Pictographic} code point,
+ * so symbol-like characters such as the copyright, trademark, and double-exclamation signs are kept
+ * (typed {@link WordType#EMOJI}) rather than dropped as punctuation.
  *
  * <p>A token longer than {@code maxTokenLength} is emitted as consecutive pieces, never splitting a
  * surrogate pair. The tokenizer reports offset {@link Span}s, so the original text and its character
