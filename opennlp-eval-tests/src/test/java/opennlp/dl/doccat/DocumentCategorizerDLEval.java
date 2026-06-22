@@ -239,7 +239,7 @@ public class DocumentCategorizerDLEval extends AbstractEvalTest {
     try (final DocumentCategorizerDL documentCategorizerDL =
              new DocumentCategorizerDL(model, vocab, getCategories(),
                  new AverageClassificationScoringStrategy(),
-                 new InferenceOptions())) {
+                 inferenceOptions)) {
 
       final double[] result = documentCategorizerDL.categorize(new String[] {"I am happy"});
       logger.debug(Arrays.toString(result));
