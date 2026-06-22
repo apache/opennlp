@@ -36,7 +36,7 @@
 					<emphasis role="bold">Standards-sourced.</emphasis> Membership sets come from the
 					Unicode Character Database (for example the <code>White_Space</code> and
 					<code>Dash</code> properties), not from the JVM's locale-dependent or quirky
-					character predicates. The library never relies on
+					character predicates. The normalization engine never relies on
 					<code>Character.isWhitespace</code>, which disagrees with the Unicode standard.
 				</para>
 			</listitem>
@@ -77,8 +77,9 @@
 		<para>
 			Each normalizer implements the existing
 			<code>opennlp.tools.util.normalizer.CharSequenceNormalizer</code> interface
-			(<code>CharSequence normalize(CharSequence)</code>) and is a shared, stateless singleton
-			obtained through <code>getInstance()</code>. They can therefore be combined with the
+			(<code>CharSequence normalize(CharSequence)</code>) and is, by default, a shared stateless instance
+			obtained through <code>getInstance()</code> (case and accent folding also offer
+			configured forms). They can therefore be combined with the
 			existing <code>AggregateCharSequenceNormalizer</code>, or with the
 			<code>TextNormalizer</code> builder described below.
 		</para>
