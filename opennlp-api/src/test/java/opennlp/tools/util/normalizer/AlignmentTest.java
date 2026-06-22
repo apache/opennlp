@@ -189,6 +189,18 @@ public class AlignmentTest {
   }
 
   @Test
+  void testToNormalizedSpanDoesNotOverCoverAcrossDeletions() {
+    // "a  b" -> "ab" : the two interior spaces are deleted. Forward mapping a span that ends inside
+    // the deleted run must stop at the last kept character rather than over-covering into "b".
+    final Alignment a = new Alignment.Builder().equal(1).replace(2, 0).equal(1).build(4);
+    assertEquals(2, a.normalizedLength());
+    assertSpan(0, 1, a.toNormalizedSpan(0, 3)); // "a" plus the two deleted spaces -> just "a"
+    assertSpan(1, 1, a.toNormalizedSpan(1, 3)); // only the deleted spaces -> empty normalized span
+    assertSpan(0, 2, a.toNormalizedSpan(0, 4)); // whole original -> whole normalized
+    assertSpan(1, 2, a.toNormalizedSpan(3, 4)); // "b"
+  }
+
+  @Test
   void testToNormalizedSpanAcrossExpansion() {
     final Alignment a = new Alignment.Builder().equal(1).replace(1, 2).equal(1).build(3); // ß->ss
     assertSpan(1, 3, a.toNormalizedSpan(1, 2)); // original "ß" -> the two-char "ss"

@@ -27,8 +27,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Computes the Unicode confusable <em>skeleton</em> of text, following the algorithm in
- * <a href="https://www.unicode.org/reports/tr39/">UTS #39</a> (Unicode Security Mechanisms). Two
+ * Computes the Unicode confusable <em>skeleton</em> of text, following the skeleton algorithm
+ * defined in <a href="https://www.unicode.org/reports/tr39/">UTS #39</a> (Unicode Security
+ * Mechanisms). Two
  * strings are confusable, for example Latin {@code "paypal"} and a version using Cyrillic
  * lookalikes, exactly when their skeletons are equal.
  *
