@@ -242,10 +242,12 @@ Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized tex
 			<code>OffsetAwareNormalizer</code> is a capability interface: it extends
 			<code>CharSequenceNormalizer</code> and adds <code>normalizeAligned</code>, so a caller tests
 			for it with a plain <code>instanceof</code>, the same pattern the name finder uses for
-			<code>OffsetMappingNameFinder</code>. Only the cursor-based rungs implement it: whitespace, the
-			line-break-preserving whitespace rung, dashes, and invisible-control stripping. Rungs that
-			delegate to <code>java.text.Normalizer</code> (NFC and NFKC) or to a fold table cannot report
-			their per-character edits, so a chain that contains one is rejected by
+			<code>OffsetMappingNameFinder</code>. Every per-code-point fold implements it: whitespace, the
+			line-break-preserving whitespace rung, dashes, invisible-control stripping, quotes, digits,
+			ellipsis, bullets, and the German umlaut transliteration. The folds that route through
+			<code>java.text.Normalizer</code> (NFC, NFKC, accent folding, and confusable folding) or
+			through JDK case mapping (case folding) cannot report their per-character edits, so they do
+			not implement the interface, and a chain that contains one is rejected by
 			<code>buildAligned()</code> with an <code>IllegalStateException</code> that names the rung,
 			rather than returning a pipeline that would hand back an offset that does not hold. The
 			per-stage maps and their composition use the <code>Alignment</code> machinery described in
