@@ -86,6 +86,25 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
+  void testCategorizeRejectsTokenlessContent() {
+    // A non-empty array whose document has no tokens (empty or only whitespace, including Unicode
+    // whitespace) is rejected up front rather than crashing downstream on an empty score list.
+    final DocumentCategorizerDL categorizer = categorizerWithoutSession();
+    final String nbsp = new String(Character.toChars(0x00A0));
+
+    assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[] {""}));
+    assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[] {"   "}));
+    assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[] {nbsp}));
+  }
+
+  @Test
+  void testConstructorRejectsNullInferenceOptions() {
+    assertThrows(NullPointerException.class, () ->
+        new DocumentCategorizerDL(null, null, vocab(), categories(),
+            new AverageClassificationScoringStrategy(), null));
+  }
+
+  @Test
   void testTokenIdsMapsTokensToVocabularyIds() {
     final long[] ids = DocumentCategorizerDL.tokenIds(
         new String[] {WordpieceTokenizer.BERT_CLS_TOKEN, "hello", "world",
