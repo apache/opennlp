@@ -464,7 +464,7 @@ DetokenizationDictionary dict = new DetokenizationDictionary(tokens, operations)
 			preserved for downstream processing such as the normalization described in
 			<xref linkend="tools.normalizer"/>. The boundary data comes from the bundled Unicode
 			Character Database (currently Unicode 17.0) and the implementation passes the official
-			<code>WordBreakTest</code> conformance suite for that release.
+			<code>WordBreakTest.txt</code> conformance suite for that release.
 		</para>
 		<section xml:id="tools.tokenizer.uax29.segmenter">
 			<title>Word Segmenter</title>
