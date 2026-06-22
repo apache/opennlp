@@ -123,6 +123,14 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
+  void testSoftmaxRejectsNaNLogit() {
+    // A NaN logit would otherwise poison the whole distribution into NaN scores; fail loudly instead.
+    final IllegalStateException e = assertThrows(IllegalStateException.class, () ->
+        DocumentCategorizerDL.softmax(new float[] {0f, Float.NaN, 0f}));
+    assertTrue(e.getMessage().contains("NaN"), e.getMessage());
+  }
+
+  @Test
   void testSoftmaxIsUniformForEqualLogitsAndSumsToOne() {
     final double[] out = DocumentCategorizerDL.softmax(new float[] {0f, 0f, 0f});
 

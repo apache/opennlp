@@ -214,7 +214,13 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       scores.add(softmax(infer(t)));
     }
 
-    return classificationScoringStrategy.score(scores);
+    final double[] distribution = classificationScoringStrategy.score(scores);
+    if (distribution.length != categories.size()) {
+      throw new IllegalStateException("the model produced " + distribution.length
+          + " category scores but the categorizer is configured with " + categories.size()
+          + " categories; the model and the category configuration do not match");
+    }
+    return distribution;
   }
 
   /**
@@ -411,6 +417,10 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     // identical to the naive form. Results are kept in double precision throughout.
     double max = Double.NEGATIVE_INFINITY;
     for (final float value : input) {
+      if (Float.isNaN(value)) {
+        throw new IllegalStateException(
+            "the model produced a NaN logit; cannot compute a classification distribution");
+      }
       max = Math.max(max, value);
     }
 
