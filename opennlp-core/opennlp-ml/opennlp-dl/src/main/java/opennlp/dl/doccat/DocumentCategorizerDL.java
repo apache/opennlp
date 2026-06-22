@@ -179,6 +179,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   private static InferenceOptions validateConstructorArguments(
       final InferenceOptions inferenceOptions, final Object categoriesOrConfig,
       final ClassificationScoringStrategy classificationScoringStrategy) {
+    Objects.requireNonNull(inferenceOptions, "inferenceOptions");
     Objects.requireNonNull(categoriesOrConfig, "categoriesOrConfig");
     Objects.requireNonNull(classificationScoringStrategy, "classificationScoringStrategy");
     return inferenceOptions;
@@ -191,7 +192,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    *
    * @param strings The document to categorize; {@code strings[0]} is classified.
    * @return The per-category probabilities.
-   * @throws IllegalArgumentException If {@code strings} is {@code null} or empty.
+   * @throws IllegalArgumentException If {@code strings} is {@code null} or empty, or if
+   *     {@code strings[0]} has no tokens to classify (it is empty or only whitespace).
    * @throws IllegalStateException    If inference fails or the model returns an unexpected output.
    */
   @Override
@@ -202,6 +204,10 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     }
 
     final List<Tokens> tokens = tokenize(strings[0]);
+    if (tokens.isEmpty()) {
+      throw new IllegalArgumentException(
+          "the document to categorize must contain at least one non-whitespace token");
+    }
 
     final List<double[]> scores = new LinkedList<>();
     for (final Tokens t : tokens) {
@@ -251,7 +257,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     } else if (output instanceof float[] v) {
       return v;
     }
-    throw new IllegalStateException("Unexpected model output type: " + output.getClass().getName());
+    throw new IllegalStateException("Unexpected model output type: "
+        + (output == null ? "null" : output.getClass().getName()));
   }
 
   @Override

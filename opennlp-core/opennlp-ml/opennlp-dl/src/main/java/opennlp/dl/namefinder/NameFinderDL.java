@@ -43,6 +43,7 @@ import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.namefind.OffsetMappingNameFinder;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.sentdetect.SentenceDetector;
+import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
@@ -74,6 +75,11 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
 
   public static final String SEPARATOR = "[SEP]";
   public static final String CLS_TOKEN = "[CLS]";
+
+  // Tokenizer-added markers (BERT and RoBERTa) that must never appear in a reconstructed span.
+  private static final Set<String> SPECIAL_TOKENS = Set.of(
+      CLS_TOKEN, SEPARATOR,
+      WordpieceTokenizer.ROBERTA_CLS_TOKEN, WordpieceTokenizer.ROBERTA_SEP_TOKEN);
 
   /** Prefix used by BIO labels for the first token in an entity span. */
   public static final String PREFIX_BEGIN = "B-";
@@ -163,6 +169,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   private static InferenceOptions validateConstructorArguments(
       final InferenceOptions inferenceOptions, final Map<Integer, String> ids2Labels,
       final SentenceDetector sentenceDetector) {
+    Objects.requireNonNull(inferenceOptions, "inferenceOptions");
     Objects.requireNonNull(ids2Labels, "ids2Labels");
     Objects.requireNonNull(sentenceDetector, "sentenceDetector");
     return inferenceOptions;
@@ -576,9 +583,9 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   /**
    * Reconstructs source-like text from a span of WordPiece tokens.
    *
-   * <p>Special BERT tokens are skipped, {@code ##} continuations are merged into the preceding
-   * surface form, and simple punctuation spacing is normalized so the result can be located in
-   * the caller's original text.</p>
+   * <p>Special BERT and RoBERTa tokens are skipped, {@code ##} continuations are merged into the
+   * preceding surface form, and simple punctuation spacing is normalized so the result can be
+   * located in the caller's original text.</p>
    *
    * @param tokens The WordPiece token sequence.
    * @param startIndex The first token index to include.
@@ -592,7 +599,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
 
     for (int x = startIndex; x <= endIndex && x < tokens.length; x++) {
       final String token = tokens[x];
-      if (CLS_TOKEN.equals(token) || SEPARATOR.equals(token)) {
+      if (SPECIAL_TOKENS.contains(token)) {
         continue;
       }
 

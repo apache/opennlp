@@ -477,6 +477,14 @@ public class NameFinderDLTest {
     assertBounded(p);
   }
 
+  @Test
+  void testBuildSpanTextSkipsRobertaSpecialTokens() {
+    // RoBERTa markers (<s>, </s>) must be skipped during span reconstruction, the same way the
+    // BERT [CLS]/[SEP] markers are, so they never leak into a reconstructed entity span.
+    assertEquals("New York",
+        NameFinderDL.buildSpanText(new String[] {"<s>", "New", "York", "</s>"}, 0, 3));
+  }
+
   private static float[] scoresFor(int labelIndex) {
     final float[] scores = new float[ID_TO_LABELS.size()];
     for (int i = 0; i < scores.length; i++) {
