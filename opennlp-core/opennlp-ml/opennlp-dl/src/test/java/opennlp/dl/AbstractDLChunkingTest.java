@@ -26,8 +26,9 @@ import opennlp.tools.util.normalizer.AlignedText;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Model-free tests for {@link AbstractDL#whitespaceChunks(String, int, int)}, the shared
- * tokenize-and-chunk seam used by both {@code NameFinderDL} and {@code DocumentCategorizerDL}.
+ * Model-free tests for {@link AbstractDL#whitespaceChunks(String, int, int)} and
+ * {@link AbstractDL#whitespaceChunkSpans(String, int, int)}, the shared tokenize-and-chunk seam
+ * used by both {@code NameFinderDL} and {@code DocumentCategorizerDL}.
  */
 public class AbstractDLChunkingTest {
 
@@ -110,6 +111,51 @@ public class AbstractDLChunkingTest {
       final Span s = at.toOriginalSpan(i, i + 1);
       assertEquals(i, s.getStart());
       assertEquals(i + 1, s.getEnd());
+    }
+  }
+
+  @Test
+  void testNormalizeInputAlignedComposesWhitespaceAndDash() {
+    // With both folds enabled the alignment is composed across stages, so a span found in the fully
+    // folded text still maps back to the original even though the supplementary dash shrank a unit.
+    final String nbsp = new String(Character.toChars(0x00A0));
+    final String yezidi = new String(Character.toChars(0x10EAD));
+    final String input = "a" + nbsp + "b" + yezidi + "c"; // a(0) nbsp(1) b(2) dash(3,4) c(5)
+    final AlignedText at = AbstractDL.normalizeInputAligned(input, true, true);
+    assertEquals("a b-c", at.normalized()); // a(0) space(1) b(2) hyphen(3) c(4)
+
+    final Span c = at.toOriginalSpan(4, 5); // "c" maps past the two-unit dash
+    assertEquals(5, c.getStart());
+    assertEquals(6, c.getEnd());
+
+    final Span hyphen = at.toOriginalSpan(3, 4); // folded hyphen covers the supplementary dash
+    assertEquals(3, hyphen.getStart());
+    assertEquals(5, hyphen.getEnd());
+
+    final Span space = at.toOriginalSpan(1, 2); // the no-break space, length preserved
+    assertEquals(1, space.getStart());
+    assertEquals(2, space.getEnd());
+  }
+
+  @Test
+  void testWhitespaceChunkSpansCarryCharacterOffsets() {
+    final String text = "a b c d"; // tokens a[0,1) b[2,3) c[4,5) d[6,7)
+    final List<AbstractDL.TextChunk> chunks = AbstractDL.whitespaceChunkSpans(text, 2, 1);
+
+    assertEquals(3, chunks.size());
+    assertEquals("a b", chunks.get(0).text());
+    assertEquals(0, chunks.get(0).start());
+    assertEquals(3, chunks.get(0).end());
+    assertEquals("b c", chunks.get(1).text());
+    assertEquals(2, chunks.get(1).start());
+    assertEquals(5, chunks.get(1).end());
+    assertEquals("c d", chunks.get(2).text());
+    assertEquals(4, chunks.get(2).start());
+    assertEquals(7, chunks.get(2).end());
+
+    // For single-ASCII-space input the reported span covers the chunk's rejoined text exactly.
+    for (final AbstractDL.TextChunk chunk : chunks) {
+      assertEquals(chunk.text(), text.substring(chunk.start(), chunk.end()));
     }
   }
 }

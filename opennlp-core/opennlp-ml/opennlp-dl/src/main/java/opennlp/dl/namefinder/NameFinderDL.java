@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -223,10 +224,11 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   }
 
   // Shared core: normalize the joined input (capturing the alignment back to the original), then
-  // decode spans against the normalized text with a per-sentence, forward-threaded character cursor.
+  // decode each overlapping chunk bounded to its own character region and resolve overlaps. Bounding
+  // per chunk lets a boundary entity that two consecutive chunks both cover surface as overlapping
+  // candidates, which mergeOverlappingSpans collapses to the longer (more complete) span instead of
+  // silently keeping whichever a single forward cursor reached first.
   private DecodedSpans locate(String[] input) {
-
-    final List<Span> spans = new ArrayList<>();
 
     // Join the tokens here because they will be tokenized using Wordpiece during inference.
     final AlignedText normalized =
@@ -236,34 +238,74 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
     // sentPosDetect (not sentDetect) so each sentence's offset in the full text is known.
     final Span[] sentenceSpans = sentenceDetector.sentPosDetect(text);
 
+    final List<Span> candidates = new ArrayList<>();
     for (final Span sentenceSpan : sentenceSpans) {
 
-      // Floor the character cursor at this sentence's start, then thread it forward across the
-      // sentence's chunks so a repeated surface form is located at its next occurrence. Flooring
-      // per sentence keeps an entity from being matched against an identical surface form in an
-      // earlier sentence -- even one that produced no spans, which would otherwise leave the
-      // cursor behind and mis-locate the match.
-      int searchStart = sentenceSpan.getStart();
+      final int sentenceStart = sentenceSpan.getStart();
+      final String sentence = sentenceSpan.getCoveredText(text).toString();
 
-      // The WordPiece tokenized text. This changes the spacing in the text.
-      final List<Tokens> wordpieceTokens = tokenize(sentenceSpan.getCoveredText(text).toString());
-
-      for (final Tokens tokens : wordpieceTokens) {
-        final List<Span> decoded =
-            decodeSpans(text, tokens.tokens(), infer(tokens), ids2Labels, searchStart,
-                sentenceSpan.getEnd());
-        spans.addAll(decoded);
-        if (!decoded.isEmpty()) {
-          searchStart = decoded.get(decoded.size() - 1).getEnd();
-        }
+      // The WordPiece tokenized text, in overlapping chunks. This changes the spacing in the text.
+      for (final ChunkTokens chunk : tokenize(sentence)) {
+        // Decode within the chunk's own character region in the full text. Keeping each chunk's
+        // entities inside the region it was built from locates a repeated surface form in the right
+        // chunk rather than mis-matching it to an earlier occurrence, while still letting two
+        // overlapping chunks both emit a boundary entity for mergeOverlappingSpans to reconcile.
+        final int regionStart = sentenceStart + chunk.start();
+        final int regionEnd = sentenceStart + chunk.end();
+        candidates.addAll(decodeSpans(text, chunk.tokens().tokens(), infer(chunk.tokens()),
+            ids2Labels, regionStart, regionEnd));
       }
 
     }
 
-    return new DecodedSpans(spans, normalized);
+    return new DecodedSpans(mergeOverlappingSpans(candidates), normalized);
   }
 
   private record DecodedSpans(List<Span> spans, AlignedText aligned) {
+  }
+
+  // A chunk's WordPiece tokens paired with the chunk's half-open character span in the full text.
+  private record ChunkTokens(Tokens tokens, int start, int end) {
+  }
+
+  // Ordering for overlap resolution: longest span first, then higher probability. The dominant
+  // detection is kept and any later span overlapping it is dropped.
+  private static final Comparator<Span> BY_LENGTH_THEN_PROBABILITY =
+      Comparator.comparingInt(Span::length).reversed()
+          .thenComparing(Comparator.comparingDouble(Span::getProb).reversed());
+
+  /**
+   * Resolves spans that overlap in character coordinates, as happens when an entity falls in the
+   * shared region of two consecutive overlapping chunks and is decoded by both. The longer span is
+   * kept (the more complete decode) and ties break toward the higher probability; any span that
+   * overlaps an already kept one is dropped. Adjacent but disjoint spans are never merged, so
+   * neighbouring distinct entities and repeated surface forms at different offsets are preserved.
+   * The returned list is in document order.
+   *
+   * @param spans The decoded candidate spans, in the order they were produced.
+   * @return The overlap-free spans, ordered by start offset.
+   */
+  static List<Span> mergeOverlappingSpans(final List<Span> spans) {
+    if (spans.size() < 2) {
+      return spans;
+    }
+    final List<Span> byDominance = new ArrayList<>(spans);
+    byDominance.sort(BY_LENGTH_THEN_PROBABILITY);
+    final List<Span> kept = new ArrayList<>(byDominance.size());
+    for (final Span candidate : byDominance) {
+      boolean overlapsKept = false;
+      for (final Span keptSpan : kept) {
+        if (candidate.intersects(keptSpan)) {
+          overlapsKept = true;
+          break;
+        }
+      }
+      if (!overlapsKept) {
+        kept.add(candidate);
+      }
+    }
+    kept.sort(Comparator.comparingInt(Span::getStart).thenComparingInt(Span::getEnd));
+    return kept;
   }
 
   /**
@@ -704,17 +746,18 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   private record SpanMatch(int start, int end) {
   }
 
-  private List<Tokens> tokenize(final String text) {
+  private List<ChunkTokens> tokenize(final String text) {
 
-    final List<Tokens> t = new LinkedList<>();
+    final List<ChunkTokens> t = new LinkedList<>();
 
     // Segment long input text into overlapping chunks (split on Unicode whitespace) configured by
-    // InferenceOptions before feeding each chunk into BERT.
+    // InferenceOptions before feeding each chunk into BERT, keeping each chunk's character span so
+    // its decoded spans can be bounded to the region the chunk covers.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    for (final String group : whitespaceChunks(text, documentSplitSize, splitOverlapSize)) {
+    for (final TextChunk chunk : whitespaceChunkSpans(text, documentSplitSize, splitOverlapSize)) {
 
       // Now we can tokenize the group and continue.
-      final String[] tokens = tokenizer.tokenize(group);
+      final String[] tokens = tokenizer.tokenize(chunk.text());
 
       final long[] ids = tokenIds(tokens, vocab);
 
@@ -724,7 +767,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
       final long[] types = new long[ids.length];
       Arrays.fill(types, 0);
 
-      t.add(new Tokens(tokens, ids, mask, types));
+      t.add(new ChunkTokens(new Tokens(tokens, ids, mask, types), chunk.start(), chunk.end()));
 
     }
 

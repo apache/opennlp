@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +40,7 @@ import ai.onnxruntime.OrtSession;
 import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
 import opennlp.tools.util.normalizer.CharClass;
@@ -62,6 +62,17 @@ public abstract class AbstractDL implements AutoCloseable {
   private final AtomicBoolean closed = new AtomicBoolean();
 
   protected record ChunkRange(int start, int end) {
+  }
+
+  /**
+   * A rejoined chunk paired with its half-open character span in the text it was split from, so a
+   * chunk's decoded entities can be located within the region the chunk actually covers.
+   *
+   * @param text  The chunk text, the chunk's whitespace tokens rejoined with single ASCII spaces.
+   * @param start The inclusive character offset of the chunk in the source text.
+   * @param end   The exclusive character offset of the chunk in the source text.
+   */
+  protected record TextChunk(String text, int start, int end) {
   }
 
   private static final Pattern JSON_ENTRY_PATTERN =
@@ -379,16 +390,27 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static AlignedText normalizeInputAligned(final String text,
       final boolean normalizeWhitespace, final boolean normalizeDashes) {
-    // Whitespace folding is length-preserving (every Unicode White_Space code point is in the BMP),
-    // so it does not move offsets; only dash folding can change length. The dash stage's alignment
-    // therefore maps the final text straight back to the original.
-    final String afterWhitespace =
-        normalizeWhitespace ? WHITESPACE.normalize(text).toString() : text;
-    if (normalizeDashes) {
-      final AlignedText folded = DASHES.normalizeAligned(afterWhitespace);
-      return new AlignedText(text, folded.normalized(), folded.alignment());
+    // Compose each enabled fold's alignment with the running alignment so the returned mapping is
+    // correct no matter whether a stage changes length. Whitespace folding here is a one-for-one
+    // replacement and so is length-preserving today; only dash folding moves offsets (a
+    // supplementary-plane dash shrinks from two chars to one). Composing through andThen rather
+    // than relying on the whitespace stage staying length-preserving keeps findInOriginal() correct
+    // if that ever changes.
+    AlignedText result = identityAligned(text, text);
+    if (normalizeWhitespace) {
+      result = compose(result, WHITESPACE.normalizeAligned(result.normalized()));
     }
-    return identityAligned(text, afterWhitespace);
+    if (normalizeDashes) {
+      result = compose(result, DASHES.normalizeAligned(result.normalized()));
+    }
+    return result;
+  }
+
+  // Threads a fold stage onto the running alignment: accumulated maps original -> current and next
+  // maps current -> next.normalized(), so the composition maps original -> next.normalized().
+  private static AlignedText compose(final AlignedText accumulated, final AlignedText next) {
+    return new AlignedText(accumulated.original(), next.normalized(),
+        accumulated.alignment().andThen(next.alignment()));
   }
 
   // An AlignedText whose alignment is the identity, for the case where no length-changing fold was
@@ -413,14 +435,42 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static List<String> whitespaceChunks(final String text, final int documentSplitSize,
                                                  final int splitOverlapSize) {
-    final String[] whitespaceTokenized = WHITESPACE.split(text);
-    final List<String> groups = new ArrayList<>();
-    for (final ChunkRange chunkRange : chunkRanges(
-        whitespaceTokenized.length, documentSplitSize, splitOverlapSize)) {
-      groups.add(String.join(" ",
-          Arrays.copyOfRange(whitespaceTokenized, chunkRange.start(), chunkRange.end())));
+    final List<TextChunk> chunks = whitespaceChunkSpans(text, documentSplitSize, splitOverlapSize);
+    final List<String> groups = new ArrayList<>(chunks.size());
+    for (final TextChunk chunk : chunks) {
+      groups.add(chunk.text());
     }
     return groups;
+  }
+
+  /**
+   * Like {@link #whitespaceChunks(String, int, int)} but also carries each chunk's character span
+   * in {@code text}, so a chunk can be decoded bounded to the region it covers and overlapping
+   * chunks yield overlapping candidate spans rather than silently dropping a boundary entity.
+   *
+   * @param text The input text.
+   * @param documentSplitSize The maximum number of whitespace tokens per chunk.
+   * @param splitOverlapSize The number of tokens shared between consecutive chunks.
+   * @return The chunks, in order, each with its character span in {@code text}.
+   */
+  protected static List<TextChunk> whitespaceChunkSpans(final String text,
+      final int documentSplitSize, final int splitOverlapSize) {
+    final List<Span> tokenSpans = WHITESPACE.splitSpans(text);
+    final List<TextChunk> chunks = new ArrayList<>();
+    for (final ChunkRange range : chunkRanges(tokenSpans.size(), documentSplitSize,
+        splitOverlapSize)) {
+      final StringBuilder rejoined = new StringBuilder();
+      for (int i = range.start(); i < range.end(); i++) {
+        if (i > range.start()) {
+          rejoined.append(' ');
+        }
+        rejoined.append(text, tokenSpans.get(i).getStart(), tokenSpans.get(i).getEnd());
+      }
+      final int start = tokenSpans.get(range.start()).getStart();
+      final int end = tokenSpans.get(range.end() - 1).getEnd();
+      chunks.add(new TextChunk(rejoined.toString(), start, end));
+    }
+    return chunks;
   }
 
   /**
