@@ -17,6 +17,7 @@
 
 package opennlp.dl.namefinder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -353,6 +354,61 @@ public class NameFinderDLTest {
     assertEquals(5, spans.get(0).getEnd());
     assertEquals(10, spans.get(1).getStart());
     assertEquals(15, spans.get(1).getEnd());
+  }
+
+  @Test
+  void testMergeOverlappingSpansKeepsLongestAndPreservesDisjoint() {
+    // Containment: the longer span absorbs the shorter overlapping one.
+    final List<Span> contained = NameFinderDL.mergeOverlappingSpans(new ArrayList<>(List.of(
+        new Span(0, 8, "LOC", 0.9), new Span(0, 13, "LOC", 0.8))));
+    assertEquals(1, contained.size());
+    assertEquals(0, contained.get(0).getStart());
+    assertEquals(13, contained.get(0).getEnd());
+
+    // Partial overlap: the longer span wins, the shorter overlapping one is dropped.
+    final List<Span> partial = NameFinderDL.mergeOverlappingSpans(new ArrayList<>(List.of(
+        new Span(0, 5, "LOC", 0.7), new Span(3, 12, "LOC", 0.6))));
+    assertEquals(1, partial.size());
+    assertEquals(3, partial.get(0).getStart());
+    assertEquals(12, partial.get(0).getEnd());
+
+    // Equal length overlap: the higher probability wins the tie.
+    final List<Span> tie = NameFinderDL.mergeOverlappingSpans(new ArrayList<>(List.of(
+        new Span(0, 5, "PER", 0.6), new Span(2, 7, "PER", 0.9))));
+    assertEquals(1, tie.size());
+    assertEquals(2, tie.get(0).getStart());
+    assertEquals(7, tie.get(0).getEnd());
+
+    // Adjacent but disjoint spans are both kept and returned in document order.
+    final List<Span> disjoint = NameFinderDL.mergeOverlappingSpans(new ArrayList<>(List.of(
+        new Span(5, 10, "LOC", 0.9), new Span(0, 5, "PER", 0.9))));
+    assertEquals(2, disjoint.size());
+    assertEquals(0, disjoint.get(0).getStart());
+    assertEquals(5, disjoint.get(1).getStart());
+  }
+
+  @Test
+  void testChunkAssemblyKeepsFullerOverlappingSpan() {
+    // Mirrors how locate() decodes two overlapping chunks bounded to their own character regions.
+    // Chunk 1 covers up to "York" and labels "New York"; the overlapping chunk 2 covers "New York
+    // City" and labels it. Both candidates are produced and mergeOverlappingSpans keeps the fuller
+    // "New York City" rather than dropping it, which is the chunk-boundary case a single forward
+    // cursor mishandled.
+    final String text = "Alice visited New York City."; // "New York" = [14,22), "City" ends at 27
+    final String[] chunk1 = {"[CLS]", "New", "York", "[SEP]"};
+    final float[][] scores1 = {scoresFor(0), scoresFor(3), scoresFor(4), scoresFor(0)};
+    final String[] chunk2 = {"[CLS]", "New", "York", "City", "[SEP]"};
+    final float[][] scores2 =
+        {scoresFor(0), scoresFor(3), scoresFor(4), scoresFor(4), scoresFor(0)};
+
+    final List<Span> candidates = new ArrayList<>();
+    candidates.addAll(NameFinderDL.decodeSpans(text, chunk1, scores1, ID_TO_LABELS, 14, 22));
+    candidates.addAll(NameFinderDL.decodeSpans(text, chunk2, scores2, ID_TO_LABELS, 14, 27));
+    assertEquals(2, candidates.size(), "both chunks emit a candidate for the boundary entity");
+
+    final List<Span> merged = NameFinderDL.mergeOverlappingSpans(candidates);
+    assertEquals(1, merged.size());
+    assertEquals("New York City", merged.get(0).getCoveredText(text));
   }
 
   @Test
