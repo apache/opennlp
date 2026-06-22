@@ -108,6 +108,8 @@ public final class NormalizationProfiles {
    */
   public static Optional<NormalizationProfile> detect(CharSequence text,
       LanguageDetector detector) {
+    Objects.requireNonNull(text, "text");
+    Objects.requireNonNull(detector, "detector");
     return forLanguage(detector.predictLanguage(text).getLang());
   }
 

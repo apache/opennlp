@@ -248,6 +248,7 @@ public final class TermAnalyzer {
      * @return this builder
      */
     public Builder caseFold(Locale locale) {
+      Objects.requireNonNull(locale, "locale");
       return transform(Dimension.CASE_FOLD, CaseFoldCharSequenceNormalizer.getInstance(locale));
     }
 

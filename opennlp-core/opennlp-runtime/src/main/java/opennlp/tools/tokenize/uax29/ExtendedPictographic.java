@@ -45,7 +45,8 @@ public final class ExtendedPictographic {
       }
       load(in);
     } catch (IOException e) {
-      throw new UncheckedIOException("Unable to read Extended_Pictographic data resource", e);
+      throw new UncheckedIOException(
+          "Unable to read Extended_Pictographic data resource " + RESOURCE, e);
     }
   }
 
