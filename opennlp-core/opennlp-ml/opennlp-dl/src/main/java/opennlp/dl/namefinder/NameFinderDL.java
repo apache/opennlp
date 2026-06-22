@@ -72,9 +72,6 @@ import opennlp.tools.util.normalizer.Alignment;
 @ThreadSafe
 public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder {
 
-  /** Example person labels; retained for reference. Decoding handles any B-/I- type. */
-  public static final String I_PER = "I-PER";
-  public static final String B_PER = "B-PER";
   public static final String SEPARATOR = "[SEP]";
   public static final String CLS_TOKEN = "[CLS]";
 
@@ -280,7 +277,9 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    * kept (the more complete decode) and ties break toward the higher probability; any span that
    * overlaps an already kept one is dropped. Adjacent but disjoint spans are never merged, so
    * neighbouring distinct entities and repeated surface forms at different offsets are preserved.
-   * The returned list is in document order.
+   * The returned list is in document order. The choice is length-dominant rather than type-aware:
+   * when two overlapping spans carry different entity types, the longer still wins regardless of
+   * type, which is the intended heuristic for the rare cross-type overlap at a chunk boundary.
    *
    * @param spans The decoded candidate spans, in the order they were produced.
    * @return The overlap-free spans, ordered by start offset.
