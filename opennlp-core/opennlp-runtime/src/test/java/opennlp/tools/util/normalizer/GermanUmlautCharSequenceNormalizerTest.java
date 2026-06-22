@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.text.Normalizer;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -78,5 +80,16 @@ public class GermanUmlautCharSequenceNormalizerTest {
   void testMixedSentence() {
     final String input = "M" + cp(0x00FC) + "ller Stra" + cp(0x00DF) + "e"; // Mueller Strasse
     assertEquals("Mueller Strasse", fold(input));
+  }
+
+  @Test
+  void testDecomposedUmlautPassesThroughUnlessComposedFirst() {
+    // A base letter plus combining diaeresis (U+0308) is not a precomposed umlaut, so the fold
+    // leaves it unchanged. Composing to NFC first yields the precomposed umlaut, which then folds.
+    final String decomposed = "Mu" + cp(0x0308) + "ller"; // u + combining diaeresis
+    assertEquals(decomposed, fold(decomposed));
+
+    final String composed = Normalizer.normalize(decomposed, Normalizer.Form.NFC);
+    assertEquals("Mueller", fold(composed));
   }
 }

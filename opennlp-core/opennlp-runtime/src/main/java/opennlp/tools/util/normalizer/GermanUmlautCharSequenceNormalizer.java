@@ -27,6 +27,10 @@ package opennlp.tools.util.normalizer;
  * wrong. It is an expanding, offset-changing transform, so like the other folds it belongs to the
  * derived matching form rather than to anything offset-preserving. A cursor pass with no regular
  * expression.</p>
+ *
+ * <p>The fold matches the precomposed code points. A base letter followed by a combining diaeresis
+ * (for example {@code a} + U+0308) is not a member and passes through unchanged, so apply NFC
+ * composition first if the input may contain decomposed forms.</p>
  */
 public class GermanUmlautCharSequenceNormalizer implements OffsetAwareNormalizer {
 
