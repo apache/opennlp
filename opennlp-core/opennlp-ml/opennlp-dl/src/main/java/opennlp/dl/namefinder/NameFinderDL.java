@@ -195,6 +195,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    *     present in the configured label map.
    * @throws IllegalArgumentException Thrown if a token produced for the input is not present in
    *     the vocabulary, which indicates the vocabulary file does not match the model.
+   * @throws NullPointerException Thrown if {@code input} is {@code null}.
    */
   @Override
   public Span[] find(String[] input) {
@@ -233,6 +234,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   // candidates, which mergeOverlappingSpans collapses to the longer (more complete) span instead of
   // silently keeping whichever a single forward cursor reached first.
   private DecodedSpans locate(String[] input) {
+
+    Objects.requireNonNull(input, "input");
 
     // Join the tokens here because they will be tokenized using Wordpiece during inference.
     final AlignedText normalized =

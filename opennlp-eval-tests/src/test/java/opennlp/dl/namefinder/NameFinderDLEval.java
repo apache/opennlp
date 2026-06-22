@@ -545,6 +545,19 @@ public class NameFinderDLEval extends AbstractEvalTest {
     }
   }
 
+  @Test
+  public void findRejectsNullInput() throws Exception {
+    // Public entry points fail fast on a null token array rather than deeper inside String.join.
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+
+    try (final NameFinderDL nameFinderDL =
+             new NameFinderDL(model, vocab, getIds2Labels(), sentenceDetector)) {
+      Assertions.assertThrows(NullPointerException.class, () -> nameFinderDL.find(null));
+      Assertions.assertThrows(NullPointerException.class, () -> nameFinderDL.findInOriginal(null));
+    }
+  }
+
   private Map<Integer, String> getIds2Labels() {
 
     final Map<Integer, String> ids2Labels = new HashMap<>();
