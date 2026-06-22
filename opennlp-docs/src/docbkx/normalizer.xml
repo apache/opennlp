@@ -293,7 +293,10 @@ Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized tex
 					<code>CharClass.dashes()</code> set to the ASCII hyphen-minus. Mathematical minus
 					signs and the soft hyphen are not affected unless you extend the set explicitly.
 					This replacement is also one code point to one character for Basic Multilingual
-					Plane dashes.
+					Plane dashes. A dash in the supplementary planes shrinks from two UTF-16 units
+					to one, which shifts later offsets, so with this fold enabled <code>find</code>
+					reports offsets into the normalized text in that case while
+					<code>findInOriginal</code> maps them back to the original input.
 				</para>
 			</listitem>
 		</itemizedlist>
