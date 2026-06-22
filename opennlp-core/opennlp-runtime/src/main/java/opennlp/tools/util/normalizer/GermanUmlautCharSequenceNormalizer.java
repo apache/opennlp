@@ -27,7 +27,7 @@ package opennlp.tools.util.normalizer;
  * derived matching form rather than to anything offset-preserving. A cursor pass with no regular
  * expression.</p>
  */
-public class GermanUmlautCharSequenceNormalizer implements CharSequenceNormalizer {
+public class GermanUmlautCharSequenceNormalizer implements OffsetAwareNormalizer {
 
   private static final long serialVersionUID = 7106934482250176835L;
 
@@ -56,33 +56,46 @@ public class GermanUmlautCharSequenceNormalizer implements CharSequenceNormalize
     final StringBuilder out = new StringBuilder(length + 4);
     for (int i = 0; i < length; i++) {
       final char c = text.charAt(i);
-      switch (c) {
-        case SMALL_A_UMLAUT:
-          out.append("ae");
-          break;
-        case SMALL_O_UMLAUT:
-          out.append("oe");
-          break;
-        case SMALL_U_UMLAUT:
-          out.append("ue");
-          break;
-        case CAPITAL_A_UMLAUT:
-          out.append("Ae");
-          break;
-        case CAPITAL_O_UMLAUT:
-          out.append("Oe");
-          break;
-        case CAPITAL_U_UMLAUT:
-          out.append("Ue");
-          break;
-        case ESZETT:
-          out.append("ss");
-          break;
-        default:
-          out.append(c);
-          break;
+      final String expansion = expansion(c);
+      if (expansion != null) {
+        out.append(expansion);
+      } else {
+        out.append(c);
       }
     }
     return out.toString();
+  }
+
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    final int length = text.length();
+    final StringBuilder out = new StringBuilder(length + 4);
+    final Alignment.Builder alignment = new Alignment.Builder();
+    for (int i = 0; i < length; i++) {
+      final char c = text.charAt(i);
+      final String expansion = expansion(c);
+      if (expansion != null) {
+        out.append(expansion);
+        alignment.replace(1, expansion.length());
+      } else {
+        out.append(c);
+        alignment.equal(1);
+      }
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  // The DIN 5007-2 transliteration for an umlaut or eszett, or null to copy the character through.
+  private static String expansion(char c) {
+    return switch (c) {
+      case SMALL_A_UMLAUT -> "ae";
+      case SMALL_O_UMLAUT -> "oe";
+      case SMALL_U_UMLAUT -> "ue";
+      case CAPITAL_A_UMLAUT -> "Ae";
+      case CAPITAL_O_UMLAUT -> "Oe";
+      case CAPITAL_U_UMLAUT -> "Ue";
+      case ESZETT -> "ss";
+      default -> null;
+    };
   }
 }

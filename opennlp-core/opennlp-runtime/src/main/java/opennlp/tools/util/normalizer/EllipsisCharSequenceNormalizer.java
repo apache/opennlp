@@ -24,7 +24,7 @@ package opennlp.tools.util.normalizer;
  * <p>Scanning is a single O(1)-per-code-point cursor pass with no regular expression. ASCII dot
  * runs are left unchanged.</p>
  */
-public class EllipsisCharSequenceNormalizer implements CharSequenceNormalizer {
+public class EllipsisCharSequenceNormalizer implements OffsetAwareNormalizer {
 
   private static final long serialVersionUID = 2298647015583729167L;
 
@@ -43,18 +43,45 @@ public class EllipsisCharSequenceNormalizer implements CharSequenceNormalizer {
     int i = 0;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
-      final String mapped = switch (codePoint) {
-        case 0x2026 -> "...";  // horizontal ellipsis
-        case 0x2025 -> "..";   // two dot leader
-        default -> null;
-      };
-      if (mapped != null) {
-        out.append(mapped);
+      final String expansion = expansion(codePoint);
+      if (expansion != null) {
+        out.append(expansion);
       } else {
         out.appendCodePoint(codePoint);
       }
       i += Character.charCount(codePoint);
     }
     return out.toString();
+  }
+
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      final int charCount = Character.charCount(codePoint);
+      final String expansion = expansion(codePoint);
+      if (expansion != null) {
+        out.append(expansion);
+        alignment.replace(charCount, expansion.length());
+      } else {
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+      }
+      i += charCount;
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  // The ASCII expansion for an ellipsis or leader code point, or null to copy the code point through.
+  private static String expansion(int codePoint) {
+    return switch (codePoint) {
+      case 0x2026 -> "...";  // horizontal ellipsis
+      case 0x2025 -> "..";   // two dot leader
+      default -> null;
+    };
   }
 }

@@ -37,6 +37,7 @@ public class AlignedNormalizerPipelineTest {
   private static final int ZERO_WIDTH_SPACE = 0x200B;
   private static final int EM_DASH = 0x2014;
   private static final int YEZIDI_HYPHEN = 0x10EAD; // a supplementary (non-BMP) dash
+  private static final int MATH_BOLD_DIGIT_ZERO = 0x1D7CE; // a supplementary decimal digit
 
   private static String cp(int codePoint) {
     return new String(Character.toChars(codePoint));
@@ -54,7 +55,12 @@ public class AlignedNormalizerPipelineTest {
         WhitespaceCharSequenceNormalizer.getInstance(),
         LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance(),
         DashCharSequenceNormalizer.getInstance(),
-        InvisibleCharSequenceNormalizer.getInstance()
+        InvisibleCharSequenceNormalizer.getInstance(),
+        QuoteCharSequenceNormalizer.getInstance(),
+        DigitCharSequenceNormalizer.getInstance(),
+        EllipsisCharSequenceNormalizer.getInstance(),
+        BulletCharSequenceNormalizer.getInstance(),
+        GermanUmlautCharSequenceNormalizer.getInstance()
     };
     final String[] inputs = {
         "",
@@ -62,7 +68,10 @@ public class AlignedNormalizerPipelineTest {
         "  lots   of\tspace  ",
         "\n\n  para   one\n\n\tpara two  \n",
         "a" + cp(ZERO_WIDTH_SPACE) + "b" + cp(YEZIDI_HYPHEN) + "c" + cp(EM_DASH) + "d",
-        cp(ZERO_WIDTH_SPACE) + "  " + cp(ZERO_WIDTH_SPACE)
+        cp(ZERO_WIDTH_SPACE) + "  " + cp(ZERO_WIDTH_SPACE),
+        // quotes, ellipsis, eszett, bullet, fullwidth and supplementary digits in one string
+        cp(0x201C) + "don" + cp(0x2019) + "t " + cp(0x2026) + " Stra" + cp(0x00DF) + "e "
+            + cp(0x2022) + " " + cp(0xFF15) + cp(MATH_BOLD_DIGIT_ZERO)
     };
     for (final OffsetAwareNormalizer rung : rungs) {
       for (final String input : inputs) {
@@ -141,6 +150,18 @@ public class AlignedNormalizerPipelineTest {
     assertTrue(InvisibleCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertFalse(NfcCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertTrue(TextNormalizer.builder().whitespace().dashes().buildAligned()
+        instanceof OffsetAwareNormalizer);
+    // The per-code-point substitution folds are offset-aware too.
+    assertTrue(QuoteCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertTrue(DigitCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertTrue(EllipsisCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertTrue(BulletCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertTrue(GermanUmlautCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    // The folds that route through java.text.Normalizer or JDK case mapping cannot, by design.
+    assertFalse(NfkcCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertFalse(CaseFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertFalse(AccentFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertFalse(ConfusableSkeletonCharSequenceNormalizer.getInstance()
         instanceof OffsetAwareNormalizer);
   }
 
@@ -235,5 +256,66 @@ public class AlignedNormalizerPipelineTest {
     // Mapping the empty match must yield a valid empty span rather than throwing.
     final Span empty = aligned.toOriginalSpan(0, 0);
     assertEquals(empty.getStart(), empty.getEnd());
+  }
+
+  @Test
+  void ellipsisExpansionMapsSpanBackToOriginal() {
+    final String original = "a" + cp(0x2026) + "b";
+    final AlignedText aligned = EllipsisCharSequenceNormalizer.getInstance()
+        .normalizeAligned(original);
+    assertEquals("a...b", aligned.normalized());
+    // The single ellipsis expanded to three dots, so 'b' moved from index 2 to index 4.
+    assertEquals("b", covered(aligned, 4, 5));
+    // The whole expansion, and any sub-span of it, maps back to the one source ellipsis.
+    assertEquals(cp(0x2026), covered(aligned, 1, 4));
+    assertEquals(cp(0x2026), covered(aligned, 2, 3));
+  }
+
+  @Test
+  void germanUmlautExpansionMapsSpanBackToOriginal() {
+    final String original = "Stra" + cp(0x00DF) + "e";   // "Strasse" from the eszett form
+    final AlignedText aligned = GermanUmlautCharSequenceNormalizer.getInstance()
+        .normalizeAligned(original);
+    assertEquals("Strasse", aligned.normalized());
+    // The eszett expanded to "ss", so the trailing 'e' moved from index 5 to index 6.
+    assertEquals("e", covered(aligned, 6, 7));
+    // Both halves of "ss" map back to the single source eszett.
+    assertEquals(cp(0x00DF), covered(aligned, 4, 6));
+    assertEquals(cp(0x00DF), covered(aligned, 5, 6));
+  }
+
+  @Test
+  void digitFoldOfSupplementaryDigitMapsSpanBackToOriginal() {
+    final String original = "a" + cp(MATH_BOLD_DIGIT_ZERO) + "b";
+    final AlignedText aligned = DigitCharSequenceNormalizer.getInstance()
+        .normalizeAligned(original);
+    assertEquals("a0b", aligned.normalized());
+    // The two-unit supplementary digit folded to one ASCII '0', so 'b' moved from 3 to 2.
+    assertEquals("b", covered(aligned, 2, 3));
+    assertEquals(cp(MATH_BOLD_DIGIT_ZERO), covered(aligned, 1, 2));
+  }
+
+  @Test
+  void quoteFoldMapsSpanBackToOriginal() {
+    final String original = cp(0x201C) + "hi" + cp(0x201D);   // curly double quotes
+    final AlignedText aligned = QuoteCharSequenceNormalizer.getInstance()
+        .normalizeAligned(original);
+    assertEquals("\"hi\"", aligned.normalized());
+    assertEquals("hi", covered(aligned, 1, 3));
+    // A one-for-one fold, so the opening quote maps straight back to the curly source quote.
+    assertEquals(cp(0x201C), covered(aligned, 0, 1));
+  }
+
+  @Test
+  void substitutionFoldsComposeInAnAlignedPipeline() {
+    final String original = "say " + cp(0x201C) + "hi" + cp(0x201D) + cp(0x2026);
+    final OffsetAwareNormalizer pipeline = TextNormalizer.builder()
+        .quotes().ellipsis().buildAligned();
+    final AlignedText aligned = pipeline.normalizeAligned(original);
+    assertEquals("say \"hi\"...", aligned.normalized());
+    assertEquals(pipeline.normalize(original).toString(), aligned.normalized());
+    // The expanded "..." maps back across the quote fold to the single source ellipsis.
+    assertEquals(cp(0x2026), covered(aligned, 8, 11));
+    assertEquals("hi", covered(aligned, 5, 7));
   }
 }

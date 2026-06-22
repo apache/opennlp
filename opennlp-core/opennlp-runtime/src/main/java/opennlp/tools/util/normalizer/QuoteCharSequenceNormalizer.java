@@ -25,7 +25,7 @@ package opennlp.tools.util.normalizer;
  * two {@link CharClass} sets, so membership is O(1) and scanning is a single cursor pass with no
  * regular expression. ASCII quotes are left unchanged.</p>
  */
-public class QuoteCharSequenceNormalizer implements CharSequenceNormalizer {
+public class QuoteCharSequenceNormalizer implements OffsetAwareNormalizer {
 
   private static final long serialVersionUID = 3415829076651283471L;
 
@@ -65,5 +65,13 @@ public class QuoteCharSequenceNormalizer implements CharSequenceNormalizer {
   @Override
   public CharSequence normalize(CharSequence text) {
     return DOUBLE.normalize(SINGLE.normalize(text));
+  }
+
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    final AlignedText single = SINGLE.normalizeAligned(text);
+    final AlignedText both = DOUBLE.normalizeAligned(single.normalized());
+    return new AlignedText(text, both.normalized(),
+        single.alignment().andThen(both.alignment()));
   }
 }

@@ -25,7 +25,7 @@ package opennlp.tools.util.normalizer;
  * because it is a letter in Catalan ({@code l..l}) and other orthographies; only characters that
  * are unambiguously list bullets are replaced.</p>
  */
-public class BulletCharSequenceNormalizer implements CharSequenceNormalizer {
+public class BulletCharSequenceNormalizer implements OffsetAwareNormalizer {
 
   private static final long serialVersionUID = 5521093348871625541L;
 
@@ -47,5 +47,10 @@ public class BulletCharSequenceNormalizer implements CharSequenceNormalizer {
   @Override
   public CharSequence normalize(CharSequence text) {
     return BULLETS.normalize(text);
+  }
+
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    return BULLETS.normalizeAligned(text);
   }
 }
