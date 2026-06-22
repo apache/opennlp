@@ -53,6 +53,23 @@ public class GermanUmlautCharSequenceNormalizerTest {
   }
 
   @Test
+  void testCapitalEszett() {
+    // Capital sharp s (U+1E9E) expands to SS, mirroring the lowercase eszett to ss.
+    assertEquals("STRASSE", fold("STRA" + cp(0x1E9E) + "E")); // STRASSE
+  }
+
+  @Test
+  void testCapitalEszettOffsets() {
+    // The capital eszett expands one source character into two, so the aligned fold reports a
+    // 1->2 replacement and a span over the two produced characters maps back to the single source.
+    final AlignedText aligned = FOLD.normalizeAligned("A" + cp(0x1E9E) + "B"); // A<capital eszett>B
+    assertEquals("ASSB", aligned.normalized().toString());
+    final var source = aligned.alignment().toOriginalSpan(1, 3); // the produced "SS"
+    assertEquals(1, source.getStart());
+    assertEquals(2, source.getEnd());
+  }
+
+  @Test
   void testAsciiAndOtherCharactersUnchanged() {
     assertEquals("hello world 123", fold("hello world 123"));
   }

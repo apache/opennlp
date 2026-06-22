@@ -37,6 +37,12 @@ import java.util.Map;
  * {@code NFD(map(NFD(s)))}: decompose, replace each code point with its prototype, and decompose
  * again. This changes length and offsets, so it belongs to the derived, matching-only form rather
  * than to any offset-preserving transform.</p>
+ *
+ * <p>This implements only the skeleton transform and the confusable-detection test built on
+ * skeleton equality. The other mechanisms defined in UTS&#160;#39, such as identifier
+ * restriction levels, mixed-script and whole-script confusable detection, and the bidirectional
+ * skeleton, are out of scope; the skeleton here is a comparison form, not a security-grade
+ * conformance claim for the full report.</p>
  */
 public final class Confusables {
 

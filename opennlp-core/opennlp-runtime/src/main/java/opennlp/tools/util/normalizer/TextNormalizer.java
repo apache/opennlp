@@ -155,15 +155,18 @@ public final class TextNormalizer {
     /**
      * {@return an offset-aware composition of the rungs added so far}
      *
-     * <p>Every rung must be an {@link OffsetAwareNormalizer} (the cursor-based folds: whitespace,
-     * dashes, and invisible-control stripping). The returned normalizer's
+     * <p>Every rung must be an {@link OffsetAwareNormalizer}. Each per-code-point fold is one;
+     * the folds that delegate to {@link java.text.Normalizer} or to JDK case mapping (NFC, NFKC,
+     * accent folding, confusable folding, and case folding) cannot report their per-character edits
+     * and so are rejected here. The returned normalizer's
      * {@link OffsetAwareNormalizer#normalizeAligned(CharSequence)} maps a span found in the fully
      * normalized text back to the original input through every stage, so a match in a normalized
      * document reports its true offsets in the source.</p>
      *
      * @throws IllegalStateException Thrown if any rung cannot report an alignment (for example NFC,
-     *     NFKC, case folding, or accent folding, which delegate to {@link java.text.Normalizer} or
-     *     to a fold table that does not track edits); the message names the offending rung.
+     *     NFKC, accent folding, confusable folding, or case folding, which delegate to
+     *     {@link java.text.Normalizer} or to JDK case mapping); the message names the offending
+     *     rung.
      */
     public OffsetAwareNormalizer buildAligned() {
       final OffsetAwareNormalizer[] aligned = new OffsetAwareNormalizer[steps.size()];
@@ -171,8 +174,10 @@ public final class TextNormalizer {
         final CharSequenceNormalizer step = steps.get(i);
         if (!(step instanceof OffsetAwareNormalizer)) {
           throw new IllegalStateException("rung " + i + " (" + step.getClass().getName()
-              + ") is not offset-aware and cannot be composed into an aligned pipeline; only the "
-              + "cursor-based folds (whitespace, dashes, stripInvisible) report an alignment");
+              + ") is not offset-aware and cannot be composed into an aligned pipeline; the "
+              + "per-code-point folds report an alignment, while folds that delegate to "
+              + "java.text.Normalizer or JDK case mapping (such as NFC, NFKC, accent, confusable, "
+              + "or case folding) do not");
         }
         aligned[i] = (OffsetAwareNormalizer) step;
       }

@@ -144,6 +144,27 @@ public class AlignedNormalizerPipelineTest {
   }
 
   @Test
+  void buildAlignedReportsTheOffendingRungIndexWhenItIsNotFirst() {
+    // A non-alignable rung after several offset-aware ones must still be rejected, and the message
+    // must name its position (rung 2) and type so the failure points at the right fold.
+    final IllegalStateException ex = assertThrows(IllegalStateException.class,
+        () -> TextNormalizer.builder().whitespace().dashes().caseFold().buildAligned());
+    assertTrue(ex.getMessage().contains("rung 2"), ex.getMessage());
+    assertTrue(ex.getMessage().contains("CaseFold"), ex.getMessage());
+  }
+
+  @Test
+  void buildAlignedRejectsEachKindOfNonAlignableRung() {
+    // Every fold that routes through java.text.Normalizer or JDK case mapping is rejected, named.
+    assertThrows(IllegalStateException.class,
+        () -> TextNormalizer.builder().nfkc().buildAligned());
+    assertThrows(IllegalStateException.class,
+        () -> TextNormalizer.builder().accentFold().buildAligned());
+    assertThrows(IllegalStateException.class,
+        () -> TextNormalizer.builder().caseFold().buildAligned());
+  }
+
+  @Test
   void capabilityIsDetectableByInstanceOf() {
     assertTrue(WhitespaceCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertTrue(DashCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);

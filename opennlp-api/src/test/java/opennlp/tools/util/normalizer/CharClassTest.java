@@ -358,4 +358,41 @@ public class CharClassTest {
     assertEquals("a b", at.normalized()); // no line break in the run -> plain space
     assertSpan(1, 4, at.toOriginalSpan(1, 2));
   }
+
+  // Every aligned operation must produce exactly the same string as its plain counterpart; only the
+  // alignment is extra. This pins that contract across a battery of inputs so the two code paths
+  // cannot drift apart.
+  @Test
+  void testAlignedOperationsAgreeWithPlainOutput() {
+    final CodePointSet keep = lineBreaks();
+    final String[] inputs = {
+        "",
+        "abc",
+        "  a b  ",
+        "a" + NBSP + IDEOGRAPHIC + "b",
+        "a\t\t\t\t\tb",
+        "a\r\n\tb",
+        "\n\nabc",
+        "  ",
+        GRINNING_FACE + "\t\tb",
+        "x" + YEZIDI_HYPHEN + YEZIDI_HYPHEN + "y",
+        "well" + EM_DASH + EN_DASH + "known",
+        "5" + MINUS_SIGN + "3",
+    };
+    for (final CharClass charClass : new CharClass[] {WS, DASH}) {
+      for (final String input : inputs) {
+        assertEquals(charClass.normalize(input), charClass.normalizeAligned(input).normalized(),
+            "normalize vs normalizeAligned for [" + input + "]");
+        assertEquals(charClass.collapse(input), charClass.collapseAligned(input).normalized(),
+            "collapse vs collapseAligned for [" + input + "]");
+        assertEquals(charClass.trim(input), charClass.trimAligned(input).normalized(),
+            "trim vs trimAligned for [" + input + "]");
+        assertEquals(charClass.removeAll(input), charClass.removeAllAligned(input).normalized(),
+            "removeAll vs removeAllAligned for [" + input + "]");
+        assertEquals(charClass.collapsePreserving(input, keep, '\n'),
+            charClass.collapsePreservingAligned(input, keep, '\n').normalized(),
+            "collapsePreserving vs collapsePreservingAligned for [" + input + "]");
+      }
+    }
+  }
 }

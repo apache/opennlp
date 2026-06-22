@@ -172,6 +172,23 @@ public class AlignmentTest {
   }
 
   @Test
+  void testAndThenHandlesLeadingInsertionInNextStage() {
+    // Exercises the andThen branch where the next stage's character covers zero middle characters
+    // at offset 0 (a leading insertion: originalEnd == 0). The result must be a zero-width original
+    // span at 0, and the rest of the mapping must stay correct.
+    final Alignment first = new Alignment.Builder().equal(2).build(2);            // "ab" unchanged
+    final Alignment next = new Alignment.Builder().replace(0, 1).equal(2).build(2); // "ab" -> "Xab"
+    final Alignment composed = first.andThen(next);
+
+    assertEquals(2, composed.originalLength());
+    assertEquals(3, composed.normalizedLength());
+    assertSpan(0, 0, composed.toOriginalSpan(0, 1)); // inserted "X" -> zero-width span at original 0
+    assertSpan(0, 1, composed.toOriginalSpan(1, 2)); // "a"
+    assertSpan(1, 2, composed.toOriginalSpan(2, 3)); // "b"
+    assertSpan(0, 2, composed.toOriginalSpan(0, 3)); // whole normalized -> whole original
+  }
+
+  @Test
   void testToNormalizedSpanAcrossExpansion() {
     final Alignment a = new Alignment.Builder().equal(1).replace(1, 2).equal(1).build(3); // ß->ss
     assertSpan(1, 3, a.toNormalizedSpan(1, 2)); // original "ß" -> the two-char "ss"
