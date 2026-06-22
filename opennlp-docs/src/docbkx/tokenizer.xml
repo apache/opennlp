@@ -491,7 +491,9 @@ List<Span> segments = WordSegmenter.segments("The quick brown fox.");]]>
 			<para>
 				<code>WordTokenizer</code> builds on the segmenter. It keeps the segments that are words
 				(letters, digits, ideographs, kana, Hangul, a Southeast Asian script, or emoji), drops
-				whitespace and punctuation, and classifies each token. It implements the standard
+				whitespace and punctuation, and classifies each token. Here emoji means any
+				Extended_Pictographic code point, so symbol-like characters such as the copyright, trademark,
+				and double-exclamation signs are kept rather than dropped. It implements the standard
 				<code>Tokenizer</code> interface, so it can be used wherever a tokenizer is expected.
 				<programlisting language="java">
 <![CDATA[Tokenizer tokenizer = new WordTokenizer();
