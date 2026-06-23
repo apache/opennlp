@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -105,8 +106,8 @@ public final class WordBreakProperty {
 
   private static void assign(int start, int end, byte ordinal, List<int[]> supplementary) {
     final int bmpEnd = Math.min(end, 0xFFFF);
-    for (int codePoint = start; codePoint <= bmpEnd; codePoint++) {
-      BMP[codePoint] = ordinal;
+    if (start <= bmpEnd) {
+      Arrays.fill(BMP, start, bmpEnd + 1, ordinal); // bulk fill the BMP portion of the range
     }
     if (end > 0xFFFF) {
       supplementary.add(new int[] {Math.max(start, 0x10000), end, ordinal});
@@ -132,7 +133,7 @@ public final class WordBreakProperty {
    */
   public static int ordinalOf(int codePoint) {
     if (codePoint >= 0 && codePoint <= 0xFFFF) {
-      return BMP[codePoint];
+      return BMP[codePoint] & 0xFF; // unsigned: ordinals are stored as bytes, guard sign extension
     }
     return ordinalOfSupplementary(codePoint);
   }
@@ -148,7 +149,7 @@ public final class WordBreakProperty {
         } else if (codePoint > SUPPLEMENTARY_END[mid]) {
           low = mid + 1;
         } else {
-          return SUPPLEMENTARY_VALUE[mid];
+          return SUPPLEMENTARY_VALUE[mid] & 0xFF; // unsigned, as in the BMP path
         }
       }
     }

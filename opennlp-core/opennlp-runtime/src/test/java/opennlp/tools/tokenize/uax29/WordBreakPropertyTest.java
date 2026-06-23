@@ -66,9 +66,10 @@ public class WordBreakPropertyTest {
     assertSame(WordBreak.OTHER, WordBreakProperty.of(0x1F600));              // grinning face
   }
 
+  // Assigned punctuation/symbols ('!', '@', em dash) carry no Word_Break property and map to OTHER.
   @ParameterizedTest
   @ValueSource(ints = {0x0021, 0x0040, 0x2014})
-  void testUnassignedCodePointsAreOther(int codePoint) {
+  void testPunctuationAndSymbolsAreOther(int codePoint) {
     assertSame(WordBreak.OTHER, WordBreakProperty.of(codePoint));
   }
 

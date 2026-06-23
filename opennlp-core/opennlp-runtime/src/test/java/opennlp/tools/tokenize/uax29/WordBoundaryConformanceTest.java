@@ -88,8 +88,6 @@ public class WordBoundaryConformanceTest {
     }
 
     final int passRate = total == 0 ? 0 : passed * 100 / total;
-    System.out.println("UAX#29 word-break conformance: " + passed + "/" + total
-        + " (" + passRate + "%)");
     assertTrue(total > 1900, "expected the full conformance suite to load, ran only " + total);
     assertTrue(failures.isEmpty(),
         "UAX#29 word-break conformance: " + passed + "/" + total + " (" + passRate

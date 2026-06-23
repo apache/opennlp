@@ -151,6 +151,10 @@ public final class TermAnalyzer {
         // A builder override wins; otherwise the dimension's own default normalizer.
         final CharSequenceNormalizer normalizer = transforms.containsKey(dimension)
             ? transforms.get(dimension) : dimension.defaultNormalizer();
+        if (normalizer == null) {
+          throw new IllegalStateException("Dimension " + dimension + " has no default normalizer; "
+              + "configure it with builder().transform(" + dimension + ", ...)");
+        }
         return normalizer.normalize(input).toString();
     }
   }
