@@ -155,8 +155,18 @@ Span[] nameSpans = nameFinder.find(sentence);]]>
 					<programlisting language="java">
 <![CDATA[File model = new File("/path/to/model.onnx");
 File vocab = new File("/path/to/vocab.txt");
-// Maps the model's output indices to its BIO labels, e.g. "O", "B-PER", "I-PER".
+// Maps every model output index to its BIO label. This must be exhaustive over the model's
+// output indices; an unmapped predicted index raises IllegalStateException during find().
 Map<Integer, String> ids2Labels = new HashMap<>();
+ids2Labels.put(0, "O");
+ids2Labels.put(1, "B-PER");
+ids2Labels.put(2, "I-PER");
+ids2Labels.put(3, "B-ORG");
+ids2Labels.put(4, "I-ORG");
+ids2Labels.put(5, "B-LOC");
+ids2Labels.put(6, "I-LOC");
+ids2Labels.put(7, "B-MISC");
+ids2Labels.put(8, "I-MISC");
 SentenceDetector sentenceDetector =
     new SentenceDetectorME(new SentenceModel(new File("/path/to/en-sent.bin")));
 String[] tokens = {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
