@@ -41,7 +41,6 @@ import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.namefind.OffsetMappingNameFinder;
-import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
@@ -49,7 +48,7 @@ import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
 
 /**
- * An implementation of {@link TokenNameFinder} that uses ONNX models.
+ * An implementation of {@link opennlp.tools.namefind.TokenNameFinder} that uses ONNX models.
  *
  * <p>Tokenization performs BERT basic tokenization (text normalization)
  * before wordpiece, see {@link opennlp.tools.tokenize.BertTokenizer}. Input
@@ -67,7 +66,7 @@ import opennlp.tools.util.normalizer.Alignment;
  * guarantee applies until {@link #close()} is called; callers must not race
  * {@code close()} with inference methods.</p>
  *
- * @see TokenNameFinder
+ * @see opennlp.tools.namefind.TokenNameFinder
  * @see InferenceOptions
  */
 @ThreadSafe
@@ -113,7 +112,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   private final boolean normalizeDashes;
 
   /**
-   * Instantiates a {@link TokenNameFinder name finder} using ONNX models.
+   * Instantiates a {@link opennlp.tools.namefind.TokenNameFinder name finder} using ONNX models.
    * 
    * @param model The ONNX model file.
    * @param vocabulary The model file's vocabulary file.
@@ -133,7 +132,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   }
 
   /**
-   * Instantiates a {@link TokenNameFinder name finder} using ONNX models.
+   * Instantiates a {@link opennlp.tools.namefind.TokenNameFinder name finder} using ONNX models.
    *
    * @param model The ONNX model file.
    * @param vocabulary The model file's vocabulary file.
