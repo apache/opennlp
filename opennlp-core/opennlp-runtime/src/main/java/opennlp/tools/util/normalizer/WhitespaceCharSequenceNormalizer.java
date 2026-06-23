@@ -25,7 +25,7 @@ package opennlp.tools.util.normalizer;
  * and so on), so spacing copied from the web, PDFs, or non-Latin sources normalizes consistently.
  * It is the Unicode-aware, regex-free counterpart to {@link ShrinkCharSequenceNormalizer}.</p>
  */
-public class WhitespaceCharSequenceNormalizer implements CharSequenceNormalizer {
+public class WhitespaceCharSequenceNormalizer implements OffsetAwareNormalizer {
 
   private static final long serialVersionUID = 6748290315562094783L;
 
@@ -44,4 +44,11 @@ public class WhitespaceCharSequenceNormalizer implements CharSequenceNormalizer 
     return WHITESPACE.trim(WHITESPACE.collapse(text));
   }
 
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    final AlignedText collapsed = WHITESPACE.collapseAligned(text);
+    final AlignedText trimmed = WHITESPACE.trimAligned(collapsed.normalized());
+    return new AlignedText(text, trimmed.normalized(),
+        collapsed.alignment().andThen(trimmed.alignment()));
+  }
 }

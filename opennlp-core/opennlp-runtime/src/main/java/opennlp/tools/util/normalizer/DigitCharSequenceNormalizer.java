@@ -26,7 +26,7 @@ package opennlp.tools.util.normalizer;
  * left unchanged. Scanning is a single O(1)-per-code-point cursor pass with no regular
  * expression.</p>
  */
-public class DigitCharSequenceNormalizer implements CharSequenceNormalizer {
+public class DigitCharSequenceNormalizer implements OffsetAwareNormalizer {
 
   private static final long serialVersionUID = 8451270936618204413L;
 
@@ -55,4 +55,26 @@ public class DigitCharSequenceNormalizer implements CharSequenceNormalizer {
     return out.toString();
   }
 
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      final int charCount = Character.charCount(codePoint);
+      final int value = Character.digit(codePoint, 10);
+      if (value >= 0) {
+        // One code point (one or two UTF-16 units) to a single ASCII digit.
+        out.append((char) ('0' + value));
+        alignment.replace(charCount, 1);
+      } else {
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+      }
+      i += charCount;
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
 }
