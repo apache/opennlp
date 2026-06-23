@@ -36,24 +36,45 @@ public final class ExtendedPictographic {
 
   private static final String RESOURCE = "ExtendedPictographic.txt";
 
-  private static final BitSet MEMBERS = new BitSet();
-
-  static {
-    try (InputStream in = ExtendedPictographic.class.getResourceAsStream(RESOURCE)) {
-      if (in == null) {
-        throw new IllegalStateException("Missing Extended_Pictographic data resource: " + RESOURCE);
-      }
-      load(in);
-    } catch (IOException e) {
-      throw new UncheckedIOException(
-          "Unable to read Extended_Pictographic data resource " + RESOURCE, e);
-    }
-  }
+  // Loaded lazily on first use (see members()) so a missing or unreadable resource surfaces as a
+  // catchable exception at call time rather than an ExceptionInInitializerError that permanently
+  // poisons the class -- a real risk in container, OSGi, shaded, or modular setups.
+  private static volatile BitSet members;
 
   private ExtendedPictographic() {
   }
 
-  private static void load(InputStream in) throws IOException {
+  // Double-checked lazy initialization: load() runs once on first use, and a failure leaves the
+  // field null so a later call retries instead of the class being permanently unusable.
+  private static BitSet members() {
+    BitSet set = members;
+    if (set == null) {
+      synchronized (ExtendedPictographic.class) {
+        set = members;
+        if (set == null) {
+          set = load();
+          members = set;
+        }
+      }
+    }
+    return set;
+  }
+
+  private static BitSet load() {
+    final BitSet set = new BitSet();
+    try (InputStream in = ExtendedPictographic.class.getResourceAsStream(RESOURCE)) {
+      if (in == null) {
+        throw new IllegalStateException("Missing Extended_Pictographic data resource: " + RESOURCE);
+      }
+      parse(in, set);
+    } catch (IOException e) {
+      throw new UncheckedIOException(
+          "Unable to read Extended_Pictographic data resource " + RESOURCE, e);
+    }
+    return set;
+  }
+
+  private static void parse(InputStream in, BitSet set) throws IOException {
     try (BufferedReader reader =
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String line;
@@ -67,11 +88,11 @@ public final class ExtendedPictographic {
         final String codePoints = (semicolon < 0 ? content : content.substring(0, semicolon)).strip();
         final int dots = codePoints.indexOf("..");
         if (dots < 0) {
-          MEMBERS.set(Integer.parseInt(codePoints, 16));
+          set.set(Integer.parseInt(codePoints, 16));
         } else {
           final int start = Integer.parseInt(codePoints.substring(0, dots), 16);
           final int end = Integer.parseInt(codePoints.substring(dots + 2), 16);
-          MEMBERS.set(start, end + 1);
+          set.set(start, end + 1);
         }
       }
     }
@@ -83,6 +104,6 @@ public final class ExtendedPictographic {
    * @param codePoint The code point. Values outside {@code [0, U+10FFFF]} return {@code false}.
    */
   public static boolean is(int codePoint) {
-    return codePoint >= 0 && codePoint <= Character.MAX_CODE_POINT && MEMBERS.get(codePoint);
+    return codePoint >= 0 && codePoint <= Character.MAX_CODE_POINT && members().get(codePoint);
   }
 }

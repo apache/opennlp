@@ -41,40 +41,71 @@ public final class WordBreakProperty {
 
   private static final WordBreak[] VALUES = WordBreak.values();
 
-  // Word_Break value ordinal for each BMP code point; the default 0 is WordBreak.OTHER.
-  private static final byte[] BMP = new byte[0x10000];
+  // Loaded lazily on first use (see data()) so a missing or unreadable resource surfaces as a
+  // catchable exception at call time rather than an ExceptionInInitializerError that permanently
+  // poisons the class -- a real risk in container, OSGi, shaded, or modular setups.
+  private static volatile Data data;
 
-  // Supplementary ranges (above the BMP), sorted by start for binary search.
-  private static final int[] SUPPLEMENTARY_START;
-  private static final int[] SUPPLEMENTARY_END;
-  private static final byte[] SUPPLEMENTARY_VALUE;
+  private WordBreakProperty() {
+  }
 
-  static {
+  // Immutable Word_Break tables: ordinal per BMP code point, plus supplementary ranges sorted by
+  // start for binary search.
+  private static final class Data {
+    final byte[] bmp;
+    final int[] supplementaryStart;
+    final int[] supplementaryEnd;
+    final byte[] supplementaryValue;
+
+    Data(byte[] bmp, int[] start, int[] end, byte[] value) {
+      this.bmp = bmp;
+      this.supplementaryStart = start;
+      this.supplementaryEnd = end;
+      this.supplementaryValue = value;
+    }
+  }
+
+  // Double-checked lazy initialization: load() runs once on first use, and a failure leaves the
+  // field null so a later call retries instead of the class being permanently unusable.
+  private static Data data() {
+    Data d = data;
+    if (d == null) {
+      synchronized (WordBreakProperty.class) {
+        d = data;
+        if (d == null) {
+          d = load();
+          data = d;
+        }
+      }
+    }
+    return d;
+  }
+
+  private static Data load() {
+    final byte[] bmp = new byte[0x10000];
     final List<int[]> supplementary = new ArrayList<>();
     try (InputStream in = WordBreakProperty.class.getResourceAsStream(RESOURCE)) {
       if (in == null) {
         throw new IllegalStateException("Missing Word_Break data resource: " + RESOURCE);
       }
-      load(in, supplementary);
+      parse(in, bmp, supplementary);
     } catch (IOException e) {
       throw new UncheckedIOException("Unable to read Word_Break data resource " + RESOURCE, e);
     }
     supplementary.sort((a, b) -> Integer.compare(a[0], b[0]));
-    SUPPLEMENTARY_START = new int[supplementary.size()];
-    SUPPLEMENTARY_END = new int[supplementary.size()];
-    SUPPLEMENTARY_VALUE = new byte[supplementary.size()];
+    final int[] start = new int[supplementary.size()];
+    final int[] end = new int[supplementary.size()];
+    final byte[] value = new byte[supplementary.size()];
     for (int i = 0; i < supplementary.size(); i++) {
       final int[] range = supplementary.get(i);
-      SUPPLEMENTARY_START[i] = range[0];
-      SUPPLEMENTARY_END[i] = range[1];
-      SUPPLEMENTARY_VALUE[i] = (byte) range[2];
+      start[i] = range[0];
+      end[i] = range[1];
+      value[i] = (byte) range[2];
     }
+    return new Data(bmp, start, end, value);
   }
 
-  private WordBreakProperty() {
-  }
-
-  private static void load(InputStream in, List<int[]> supplementary) throws IOException {
+  private static void parse(InputStream in, byte[] bmp, List<int[]> supplementary) throws IOException {
     try (BufferedReader reader =
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String line;
@@ -99,15 +130,15 @@ public final class WordBreakProperty {
           start = Integer.parseInt(codePoints.substring(0, dots), 16);
           end = Integer.parseInt(codePoints.substring(dots + 2), 16);
         }
-        assign(start, end, ordinal, supplementary);
+        assign(start, end, ordinal, bmp, supplementary);
       }
     }
   }
 
-  private static void assign(int start, int end, byte ordinal, List<int[]> supplementary) {
+  private static void assign(int start, int end, byte ordinal, byte[] bmp, List<int[]> supplementary) {
     final int bmpEnd = Math.min(end, 0xFFFF);
     if (start <= bmpEnd) {
-      Arrays.fill(BMP, start, bmpEnd + 1, ordinal); // bulk fill the BMP portion of the range
+      Arrays.fill(bmp, start, bmpEnd + 1, ordinal); // bulk fill the BMP portion of the range
     }
     if (end > 0xFFFF) {
       supplementary.add(new int[] {Math.max(start, 0x10000), end, ordinal});
@@ -133,23 +164,24 @@ public final class WordBreakProperty {
    */
   public static int ordinalOf(int codePoint) {
     if (codePoint >= 0 && codePoint <= 0xFFFF) {
-      return BMP[codePoint] & 0xFF; // unsigned: ordinals are stored as bytes, guard sign extension
+      return data().bmp[codePoint] & 0xFF; // unsigned byte ordinal
     }
     return ordinalOfSupplementary(codePoint);
   }
 
   private static int ordinalOfSupplementary(int codePoint) {
     if (codePoint > 0xFFFF && codePoint <= Character.MAX_CODE_POINT) {
+      final Data d = data();
       int low = 0;
-      int high = SUPPLEMENTARY_START.length - 1;
+      int high = d.supplementaryStart.length - 1;
       while (low <= high) {
         final int mid = (low + high) >>> 1;
-        if (codePoint < SUPPLEMENTARY_START[mid]) {
+        if (codePoint < d.supplementaryStart[mid]) {
           high = mid - 1;
-        } else if (codePoint > SUPPLEMENTARY_END[mid]) {
+        } else if (codePoint > d.supplementaryEnd[mid]) {
           low = mid + 1;
         } else {
-          return SUPPLEMENTARY_VALUE[mid] & 0xFF; // unsigned, as in the BMP path
+          return d.supplementaryValue[mid] & 0xFF; // unsigned byte ordinal
         }
       }
     }
