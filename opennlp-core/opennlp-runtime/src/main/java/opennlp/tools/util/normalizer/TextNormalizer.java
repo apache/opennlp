@@ -93,6 +93,15 @@ public final class TextNormalizer {
       return add(Dimension.WHITESPACE.defaultNormalizer());
     }
 
+    /**
+     * {@return this builder with whitespace collapsing that preserves line and paragraph breaks
+     * appended} Horizontal runs collapse to a single space, but a run containing a line break
+     * collapses to a single newline, so paragraph structure survives.
+     */
+    public Builder whitespacePreservingLineBreaks() {
+      return add(LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance());
+    }
+
     /** {@return this builder with quotation-mark folding appended} */
     public Builder quotes() {
       return add(QuoteCharSequenceNormalizer.getInstance());
@@ -141,6 +150,38 @@ public final class TextNormalizer {
     /** {@return the composed normalizer for the rungs added so far} */
     public CharSequenceNormalizer build() {
       return new AggregateCharSequenceNormalizer(steps.toArray(new CharSequenceNormalizer[0]));
+    }
+
+    /**
+     * {@return an offset-aware composition of the rungs added so far}
+     *
+     * <p>Every rung must be an {@link OffsetAwareNormalizer}. Each per-code-point fold is one;
+     * the folds that delegate to {@link java.text.Normalizer} or to JDK case mapping (NFC, NFKC,
+     * accent folding, confusable folding, and case folding) cannot report their per-character edits
+     * and so are rejected here. The returned normalizer's
+     * {@link OffsetAwareNormalizer#normalizeAligned(CharSequence)} maps a span found in the fully
+     * normalized text back to the original input through every stage, so a match in a normalized
+     * document reports its true offsets in the source.</p>
+     *
+     * @throws IllegalStateException Thrown if any rung cannot report an alignment (for example NFC,
+     *     NFKC, accent folding, confusable folding, or case folding, which delegate to
+     *     {@link java.text.Normalizer} or to JDK case mapping); the message names the offending
+     *     rung.
+     */
+    public OffsetAwareNormalizer buildAligned() {
+      final OffsetAwareNormalizer[] aligned = new OffsetAwareNormalizer[steps.size()];
+      for (int i = 0; i < steps.size(); i++) {
+        final CharSequenceNormalizer step = steps.get(i);
+        if (!(step instanceof OffsetAwareNormalizer)) {
+          throw new IllegalStateException("rung at 0-based index " + i + " (" + step.getClass().getName()
+              + ") is not offset-aware and cannot be composed into an aligned pipeline; the "
+              + "per-code-point folds report an alignment, while folds that delegate to "
+              + "java.text.Normalizer or JDK case mapping (such as NFC, NFKC, accent, confusable, "
+              + "or case folding) do not");
+        }
+        aligned[i] = (OffsetAwareNormalizer) step;
+      }
+      return new AlignedAggregateCharSequenceNormalizer(aligned);
     }
 
     private Builder add(CharSequenceNormalizer normalizer) {

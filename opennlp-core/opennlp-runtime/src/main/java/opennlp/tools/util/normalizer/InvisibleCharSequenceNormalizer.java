@@ -28,7 +28,7 @@ package opennlp.tools.util.normalizer;
  * sequences; so are variation selectors. Use this only for a matching/search form, not for
  * display.</p>
  */
-public class InvisibleCharSequenceNormalizer implements CharSequenceNormalizer {
+public class InvisibleCharSequenceNormalizer implements OffsetAwareNormalizer {
 
   private static final long serialVersionUID = 4837512098664301927L;
 
@@ -69,4 +69,8 @@ public class InvisibleCharSequenceNormalizer implements CharSequenceNormalizer {
     return INVISIBLE.removeAll(text);
   }
 
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    return INVISIBLE.removeAllAligned(text);
+  }
 }

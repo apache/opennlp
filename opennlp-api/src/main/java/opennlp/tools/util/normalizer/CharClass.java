@@ -301,6 +301,175 @@ public final class CharClass {
   }
 
   /**
+   * Like {@link #normalize(CharSequence)} but also produces the {@link Alignment} back to the
+   * original text.
+   *
+   * @param text The text to normalize.
+   * @return The normalized text and its alignment.
+   */
+  public AlignedText normalizeAligned(CharSequence text) {
+    Objects.requireNonNull(text, "text");
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      final int charCount = Character.charCount(codePoint);
+      if (members.contains(codePoint)) {
+        out.appendCodePoint(replacement);
+        alignment.replace(charCount, Character.charCount(replacement));
+      } else {
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+      }
+      i += charCount;
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  /**
+   * Like {@link #collapse(CharSequence)} but also produces the {@link Alignment} back to the
+   * original text. Each collapsed run maps to the run's whole original extent.
+   *
+   * @param text The text to collapse.
+   * @return The collapsed text and its alignment.
+   */
+  public AlignedText collapseAligned(CharSequence text) {
+    Objects.requireNonNull(text, "text");
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (members.contains(codePoint)) {
+        final int runEnd = skipRun(text, i);
+        out.appendCodePoint(replacement);
+        alignment.replace(runEnd - i, Character.charCount(replacement));
+        i = runEnd;
+      } else {
+        final int charCount = Character.charCount(codePoint);
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+        i += charCount;
+      }
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  /**
+   * Like {@link #collapsePreserving(CharSequence, CodePointSet, int)} but also produces the
+   * {@link Alignment} back to the original text.
+   *
+   * @param text The text to collapse.
+   * @param keep The member code points whose presence in a run preserves structure.
+   * @param keepReplacement The replacement emitted for a run that contains a {@code keep} member.
+   * @return The collapsed text and its alignment.
+   * @throws IllegalArgumentException Thrown if {@code keepReplacement} is not a valid code point.
+   */
+  public AlignedText collapsePreservingAligned(CharSequence text, CodePointSet keep,
+                                               int keepReplacement) {
+    Objects.requireNonNull(text, "text");
+    Objects.requireNonNull(keep, "keep");
+    requireValidCodePoint(keepReplacement);
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (members.contains(codePoint)) {
+        boolean preserve = keep.contains(codePoint);
+        int j = i + Character.charCount(codePoint);
+        while (j < length) {
+          final int next = Character.codePointAt(text, j);
+          if (!members.contains(next)) {
+            break;
+          }
+          preserve |= keep.contains(next);
+          j += Character.charCount(next);
+        }
+        final int emitted = preserve ? keepReplacement : replacement;
+        out.appendCodePoint(emitted);
+        alignment.replace(j - i, Character.charCount(emitted));
+        i = j;
+      } else {
+        final int charCount = Character.charCount(codePoint);
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+        i += charCount;
+      }
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  /**
+   * Like {@link #trim(CharSequence)} but also produces the {@link Alignment} back to the original
+   * text. The trimmed leading and trailing members appear as deletions, so a span never reports
+   * through them.
+   *
+   * @param text The text to trim.
+   * @return The trimmed text and its alignment.
+   */
+  public AlignedText trimAligned(CharSequence text) {
+    Objects.requireNonNull(text, "text");
+    final int length = text.length();
+    int start = 0;
+    while (start < length) {
+      final int codePoint = Character.codePointAt(text, start);
+      if (!members.contains(codePoint)) {
+        break;
+      }
+      start += Character.charCount(codePoint);
+    }
+    int end = length;
+    while (end > start) {
+      final int codePoint = Character.codePointBefore(text, end);
+      if (!members.contains(codePoint)) {
+        break;
+      }
+      end -= Character.charCount(codePoint);
+    }
+    final Alignment.Builder alignment = new Alignment.Builder();
+    if (start > 0) {
+      alignment.replace(start, 0);
+    }
+    alignment.equal(end - start);
+    if (end < length) {
+      alignment.replace(length - end, 0);
+    }
+    return new AlignedText(text, text.subSequence(start, end).toString(), alignment.build(length));
+  }
+
+  /**
+   * Like {@link #removeAll(CharSequence)} but also produces the {@link Alignment} back to the
+   * original text. Every removed member appears as a deletion, so a span never reports through one.
+   *
+   * @param text The text to filter.
+   * @return The filtered text and its alignment.
+   */
+  public AlignedText removeAllAligned(CharSequence text) {
+    Objects.requireNonNull(text, "text");
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      final int charCount = Character.charCount(codePoint);
+      if (members.contains(codePoint)) {
+        alignment.replace(charCount, 0);
+      } else {
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+      }
+      i += charCount;
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  /**
    * Applies a per-code-point substitution: each code point for which {@code substitution} returns a
    * non-null string is replaced by that string, and the rest are copied through. This is the shared,
    * offset-changing cursor pass behind the expanding folds (ellipsis, German umlaut, digit), so each
@@ -327,6 +496,37 @@ public final class CharClass {
       i += Character.charCount(codePoint);
     }
     return out.toString();
+  }
+
+  /**
+   * Like {@link #substitute(CharSequence, IntFunction)} but also produces the {@link Alignment} back
+   * to the original text. Each replaced code point maps to its replacement string as one block.
+   *
+   * @param text         The text to transform.
+   * @param substitution The replacement for a code point, or {@code null} to copy it through.
+   * @return The transformed text and its alignment.
+   */
+  public static AlignedText substituteAligned(CharSequence text, IntFunction<String> substitution) {
+    Objects.requireNonNull(text, "text");
+    Objects.requireNonNull(substitution, "substitution");
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      final int charCount = Character.charCount(codePoint);
+      final String replacement = substitution.apply(codePoint);
+      if (replacement != null) {
+        out.append(replacement);
+        alignment.replace(charCount, replacement.length());
+      } else {
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+      }
+      i += charCount;
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
   }
 
   // Returns the offset just past the maximal run of members starting at runStart.

@@ -26,7 +26,7 @@ package opennlp.tools.util.normalizer;
  * left unchanged. Scanning is a single O(1)-per-code-point cursor pass with no regular
  * expression.</p>
  */
-public class DigitCharSequenceNormalizer implements CharSequenceNormalizer {
+public class DigitCharSequenceNormalizer implements OffsetAwareNormalizer {
 
   private static final long serialVersionUID = 8451270936618204413L;
 
@@ -48,4 +48,8 @@ public class DigitCharSequenceNormalizer implements CharSequenceNormalizer {
     return value >= 0 ? String.valueOf((char) ('0' + value)) : null;
   }
 
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    return CharClass.substituteAligned(text, DigitCharSequenceNormalizer::toAscii);
+  }
 }
