@@ -459,8 +459,8 @@ DetokenizationDictionary dict = new DetokenizationDictionary(tokens, operations)
 			The package <code>opennlp.tools.tokenize.uax29</code> provides a tokenizer that follows the
 			Unicode Text Segmentation algorithm
 			(<link xlink:href="https://www.unicode.org/reports/tr29/">UAX #29</link>), word boundary
-			rules WB1 through WB999. It is rule based and needs no trained model, it works directly over
-			a <code>CharSequence</code>, and it reports character offsets so the original text is
+			rules WB1 through WB999. It is rule-based and needs no trained model. It works directly over
+			a <code>CharSequence</code> and reports character offsets so the original text is
 			preserved for downstream processing such as the normalization described in
 			<xref linkend="tools.normalizer"/>. The boundary data comes from the bundled Unicode
 			Character Database (currently Unicode 17.0) and the implementation passes the official
