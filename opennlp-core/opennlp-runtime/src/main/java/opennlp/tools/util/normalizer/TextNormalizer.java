@@ -173,7 +173,7 @@ public final class TextNormalizer {
       for (int i = 0; i < steps.size(); i++) {
         final CharSequenceNormalizer step = steps.get(i);
         if (!(step instanceof OffsetAwareNormalizer)) {
-          throw new IllegalStateException("rung " + i + " (" + step.getClass().getName()
+          throw new IllegalStateException("rung at 0-based index " + i + " (" + step.getClass().getName()
               + ") is not offset-aware and cannot be composed into an aligned pipeline; the "
               + "per-code-point folds report an alignment, while folds that delegate to "
               + "java.text.Normalizer or JDK case mapping (such as NFC, NFKC, accent, confusable, "

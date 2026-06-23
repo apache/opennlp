@@ -189,6 +189,54 @@ public class AlignmentTest {
   }
 
   @Test
+  void testAndThenHandlesInteriorInsertionInCopiedRegion() {
+    // An insertion in the next stage that is NOT at offset 0 and lands in a one-to-one (copied)
+    // region must still map to a zero-width original span at the insertion point: the andThen branch
+    // where middleStart == middleEnd with middleEnd > 0. Without correct handling this is exactly the
+    // case that would misattribute the inserted character to a neighbouring original character.
+    final Alignment first = new Alignment.Builder().equal(3).build(3);                       // "abc"
+    final Alignment next = new Alignment.Builder().equal(1).replace(0, 1).equal(2).build(3); // "abc"->"aXbc"
+    final Alignment composed = first.andThen(next);
+
+    assertEquals(3, composed.originalLength());
+    assertEquals(4, composed.normalizedLength());
+    assertSpan(0, 1, composed.toOriginalSpan(0, 1)); // "a"
+    assertSpan(1, 1, composed.toOriginalSpan(1, 2)); // inserted "X" -> zero-width span at original 1
+    assertSpan(1, 2, composed.toOriginalSpan(2, 3)); // "b"
+    assertSpan(2, 3, composed.toOriginalSpan(3, 4)); // "c"
+    assertSpan(0, 3, composed.toOriginalSpan(0, 4)); // whole normalized -> whole original
+  }
+
+  @Test
+  void testAndThenInsertionInsideExpansionStaysConsistent() {
+    // The hard case: stage 1 expands "ss" from one original character, then stage 2 inserts a
+    // character BETWEEN the two produced characters. The two halves of an expansion share one atomic
+    // original block ([1, 2)), which has no interior offset, so the inserted character is attributed
+    // to that whole block rather than a zero-width point. That is the only mapping that keeps
+    // originalStart/originalEnd sorted, so BOTH directions still resolve correctly -- a zero-width
+    // mapping here would push originalEnd below its predecessor and corrupt the reverse search.
+    // stage 1: "aXb" -> "assb" (X expands to "ss"); stage 2: "assb" -> "asYsb" (insert Y between).
+    final Alignment expand = new Alignment.Builder().equal(1).replace(1, 2).equal(1).build(3);
+    final Alignment insert = new Alignment.Builder().equal(2).replace(0, 1).equal(2).build(4);
+    final Alignment composed = expand.andThen(insert);
+
+    assertEquals(3, composed.originalLength());
+    assertEquals(5, composed.normalizedLength());
+    assertSpan(0, 1, composed.toOriginalSpan(0, 1)); // "a"
+    assertSpan(1, 2, composed.toOriginalSpan(1, 2)); // first "s" -> the expanded original char
+    assertSpan(1, 2, composed.toOriginalSpan(2, 3)); // inserted char -> attributed to the atomic block
+    assertSpan(1, 2, composed.toOriginalSpan(3, 4)); // second "s" -> the expanded original char
+    assertSpan(2, 3, composed.toOriginalSpan(4, 5)); // "b"
+    assertSpan(0, 3, composed.toOriginalSpan(0, 5)); // whole normalized -> whole original
+
+    // Reverse direction stays correct because the start/end arrays remain sorted: the expanded
+    // original character maps to its full normalized footprint (the two halves plus the insertion).
+    assertSpan(1, 4, composed.toNormalizedSpan(1, 2)); // expanded char -> "sYs"
+    assertSpan(0, 1, composed.toNormalizedSpan(0, 1)); // "a"
+    assertSpan(4, 5, composed.toNormalizedSpan(2, 3)); // "b"
+  }
+
+  @Test
   void testToNormalizedSpanDoesNotOverCoverAcrossDeletions() {
     // "a  b" -> "ab" : the two interior spaces are deleted. Forward mapping a span that ends inside
     // the deleted run must stop at the last kept character rather than over-covering into "b".
