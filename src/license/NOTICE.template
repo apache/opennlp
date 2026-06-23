@@ -93,3 +93,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ============================================================================
+
+This product bundles a data file from the Unicode Security Mechanisms
+(UTS #39), version 17.0.0, published by Unicode, Inc.
+(https://www.unicode.org/Public/).
+
+  * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/confusables.txt
+    is the upstream confusables.txt, unmodified.
+
+The original Unicode copyright and license header is preserved verbatim at the
+top of the bundled file. It is distributed under the Unicode License V3, the
+full text of which is reproduced in the LICENSE file accompanying this
+distribution.
+
+Copyright (c) 1991-2025 Unicode, Inc. All rights reserved.
+
+============================================================================
