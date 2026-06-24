@@ -63,7 +63,9 @@ public final class NormalizationProfiles {
     add(map, "ind", SnowballStemmer.ALGORITHM.INDONESIAN, null);
     add(map, "ita", SnowballStemmer.ALGORITHM.ITALIAN, latin);
     add(map, "nld", SnowballStemmer.ALGORITHM.DUTCH, null);
-    add(map, "nor", SnowballStemmer.ALGORITHM.NORWEGIAN, null);
+    add(map, "nob", SnowballStemmer.ALGORITHM.NORWEGIAN, null); // Bokmal (nb), the dominant standard
+    add(map, "nno", SnowballStemmer.ALGORITHM.NORWEGIAN, null); // Nynorsk (nn)
+    add(map, "nor", SnowballStemmer.ALGORITHM.NORWEGIAN, null); // macrolanguage / 639-1 "no"
     add(map, "por", SnowballStemmer.ALGORITHM.PORTUGUESE, latin);
     add(map, "ron", SnowballStemmer.ALGORITHM.ROMANIAN, null);
     add(map, "rus", SnowballStemmer.ALGORITHM.RUSSIAN, null);
