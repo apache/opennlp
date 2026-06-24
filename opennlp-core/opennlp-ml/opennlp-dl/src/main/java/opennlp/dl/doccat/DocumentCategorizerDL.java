@@ -417,9 +417,13 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     // identical to the naive form. Results are kept in double precision throughout.
     double max = Double.NEGATIVE_INFINITY;
     for (final float value : input) {
-      if (Float.isNaN(value)) {
+      // Reject any non-finite logit, not just NaN: a +Infinity logit makes max == +Inf, so
+      // value - max is Inf - Inf == NaN and the whole distribution silently goes NaN. Subtracting
+      // the maximum already handles merely-large finite logits, so only NaN/Infinity reach here.
+      if (!Float.isFinite(value)) {
         throw new IllegalStateException(
-            "the model produced a NaN logit; cannot compute a classification distribution");
+            "the model produced a non-finite logit (NaN or Infinity); cannot compute a "
+                + "classification distribution");
       }
       max = Math.max(max, value);
     }
