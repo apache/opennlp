@@ -131,6 +131,19 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
+  void testSoftmaxRejectsInfiniteLogit() {
+    // A +Infinity logit (not NaN, so it slips past an isNaN-only guard) poisons the distribution too:
+    // max becomes +Inf, so value - max is Inf - Inf == NaN, every exp() is NaN, and categorize() would
+    // silently return all-NaN scores. It must fail loud like the NaN case. -Infinity is non-finite too.
+    final IllegalStateException pos = assertThrows(IllegalStateException.class, () ->
+        DocumentCategorizerDL.softmax(new float[] {0f, Float.POSITIVE_INFINITY, 0f}));
+    assertTrue(pos.getMessage().contains("non-finite") || pos.getMessage().contains("Infinity"),
+        pos.getMessage());
+    assertThrows(IllegalStateException.class, () ->
+        DocumentCategorizerDL.softmax(new float[] {0f, Float.NEGATIVE_INFINITY, 0f}));
+  }
+
+  @Test
   void testSoftmaxIsUniformForEqualLogitsAndSumsToOne() {
     final double[] out = DocumentCategorizerDL.softmax(new float[] {0f, 0f, 0f});
 
