@@ -19,6 +19,7 @@ package opennlp.tools.util.normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.IntFunction;
 
 import opennlp.tools.util.Span;
 
@@ -292,6 +293,35 @@ public final class CharClass {
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
       if (!members.contains(codePoint)) {
+        out.appendCodePoint(codePoint);
+      }
+      i += Character.charCount(codePoint);
+    }
+    return out.toString();
+  }
+
+  /**
+   * Applies a per-code-point substitution: each code point for which {@code substitution} returns a
+   * non-null string is replaced by that string, and the rest are copied through. This is the shared,
+   * offset-changing cursor pass behind the expanding folds (ellipsis, German umlaut, digit), so each
+   * of them supplies only a mapper rather than re-implementing the loop. No regular expression.
+   *
+   * @param text         The text to transform.
+   * @param substitution The replacement for a code point, or {@code null} to copy it through.
+   * @return The transformed text.
+   */
+  public static String substitute(CharSequence text, IntFunction<String> substitution) {
+    Objects.requireNonNull(text, "text");
+    Objects.requireNonNull(substitution, "substitution");
+    final StringBuilder out = new StringBuilder(text.length());
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      final String replacement = substitution.apply(codePoint);
+      if (replacement != null) {
+        out.append(replacement);
+      } else {
         out.appendCodePoint(codePoint);
       }
       i += Character.charCount(codePoint);

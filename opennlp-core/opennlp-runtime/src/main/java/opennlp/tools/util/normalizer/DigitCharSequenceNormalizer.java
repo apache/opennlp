@@ -39,20 +39,13 @@ public class DigitCharSequenceNormalizer implements CharSequenceNormalizer {
 
   @Override
   public CharSequence normalize(CharSequence text) {
-    final StringBuilder out = new StringBuilder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final int value = Character.digit(codePoint, 10);
-      if (value >= 0) {
-        out.append((char) ('0' + value));
-      } else {
-        out.appendCodePoint(codePoint);
-      }
-      i += Character.charCount(codePoint);
-    }
-    return out.toString();
+    return CharClass.substitute(text, DigitCharSequenceNormalizer::toAscii);
+  }
+
+  // The ASCII digit for a Unicode decimal digit code point, or null to copy the code point through.
+  private static String toAscii(int codePoint) {
+    final int value = Character.digit(codePoint, 10);
+    return value >= 0 ? String.valueOf((char) ('0' + value)) : null;
   }
 
 }

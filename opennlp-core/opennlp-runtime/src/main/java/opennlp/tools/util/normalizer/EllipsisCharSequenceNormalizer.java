@@ -38,20 +38,7 @@ public class EllipsisCharSequenceNormalizer implements CharSequenceNormalizer {
 
   @Override
   public CharSequence normalize(CharSequence text) {
-    final StringBuilder out = new StringBuilder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final String expansion = expansion(codePoint);
-      if (expansion != null) {
-        out.append(expansion);
-      } else {
-        out.appendCodePoint(codePoint);
-      }
-      i += Character.charCount(codePoint);
-    }
-    return out.toString();
+    return CharClass.substitute(text, EllipsisCharSequenceNormalizer::expansion);
   }
 
 

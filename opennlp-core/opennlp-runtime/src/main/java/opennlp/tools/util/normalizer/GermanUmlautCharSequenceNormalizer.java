@@ -58,24 +58,14 @@ public class GermanUmlautCharSequenceNormalizer implements CharSequenceNormalize
 
   @Override
   public CharSequence normalize(CharSequence text) {
-    final int length = text.length();
-    final StringBuilder out = new StringBuilder(length + 4);
-    for (int i = 0; i < length; i++) {
-      final char c = text.charAt(i);
-      final String expansion = expansion(c);
-      if (expansion != null) {
-        out.append(expansion);
-      } else {
-        out.append(c);
-      }
-    }
-    return out.toString();
+    return CharClass.substitute(text, GermanUmlautCharSequenceNormalizer::expansion);
   }
 
-
-  // The DIN 5007-2 transliteration for an umlaut or eszett, or null to copy the character through.
-  private static String expansion(char c) {
-    return switch (c) {
+  // The DIN 5007-2 transliteration for an umlaut or eszett, or null to copy the code point through.
+  // All members are in the BMP, so a code point equals its char; supplementary code points miss every
+  // case and pass through.
+  private static String expansion(int codePoint) {
+    return switch (codePoint) {
       case SMALL_A_UMLAUT -> "ae";
       case SMALL_O_UMLAUT -> "oe";
       case SMALL_U_UMLAUT -> "ue";
