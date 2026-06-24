@@ -76,59 +76,67 @@ public final class Confusables {
   }
 
   private static Map<Integer, String> load() {
-    final Map<Integer, String> map = new HashMap<>(12000);
     try (InputStream in = Confusables.class.getResourceAsStream(RESOURCE)) {
       if (in == null) {
         throw new IllegalStateException("Missing confusables data resource: " + RESOURCE);
       }
-      try (BufferedReader reader =
-               new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-        String line;
-        int lineNumber = 0;
-        while ((line = reader.readLine()) != null) {
-          lineNumber++;
-          final int hash = line.indexOf('#');
-          final String content = (hash < 0 ? line : line.substring(0, hash)).strip();
-          if (content.isEmpty()) {
-            continue;
-          }
-          final int firstSemicolon = content.indexOf(';');
-          final int secondSemicolon = content.indexOf(';', firstSemicolon + 1);
-          if (firstSemicolon < 0 || secondSemicolon < 0) {
-            continue;
-          }
-          try {
-            final int source = Integer.parseInt(content.substring(0, firstSemicolon).strip(), 16);
-            final String target = content.substring(firstSemicolon + 1, secondSemicolon).strip();
-            final StringBuilder prototype = new StringBuilder();
-            // Scan the whitespace-delimited hex tokens by hand to honor the no-regex contract and
-            // avoid compiling a Pattern for every one of the ~10k lines during static init.
-            final int targetLength = target.length();
-            int pos = 0;
-            while (pos < targetLength) {
-              while (pos < targetLength && target.charAt(pos) <= ' ') {
-                pos++;
-              }
-              int end = pos;
-              while (end < targetLength && target.charAt(end) > ' ') {
-                end++;
-              }
-              if (end > pos) {
-                prototype.appendCodePoint(Integer.parseInt(target.substring(pos, end), 16));
-              }
-              pos = end;
-            }
-            map.put(source, prototype.toString());
-          } catch (NumberFormatException e) {
-            // Report the offending line, mirroring CodePointSet.fromFile, instead of letting a
-            // malformed bundled line surface as an opaque ExceptionInInitializerError.
-            throw new IllegalStateException("Malformed confusables data in " + RESOURCE + " at line "
-                + lineNumber + ": " + content, e);
-          }
-        }
-      }
+      return parse(in);
     } catch (IOException e) {
       throw new UncheckedIOException("Unable to read confusables data resource " + RESOURCE, e);
+    }
+  }
+
+  // Package-private so the malformed-data handling can be exercised without the bundled resource.
+  static Map<Integer, String> parse(InputStream in) throws IOException {
+    final Map<Integer, String> map = new HashMap<>(12000);
+    try (BufferedReader reader =
+             new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+      String line;
+      int lineNumber = 0;
+      while ((line = reader.readLine()) != null) {
+        lineNumber++;
+        final int hash = line.indexOf('#');
+        final String content = (hash < 0 ? line : line.substring(0, hash)).strip();
+        if (content.isEmpty()) {
+          continue;
+        }
+        final int firstSemicolon = content.indexOf(';');
+        final int secondSemicolon = content.indexOf(';', firstSemicolon + 1);
+        if (firstSemicolon < 0 || secondSemicolon < 0) {
+          // A present-but-structurally-wrong line (fewer than two ';') is a hard error, like the
+          // malformed-hex path below and the sibling loaders -- never silently dropped.
+          throw new IllegalStateException("Malformed confusables data in " + RESOURCE + " at line "
+              + lineNumber + ": " + content);
+        }
+        try {
+          final int source = Integer.parseInt(content.substring(0, firstSemicolon).strip(), 16);
+          final String target = content.substring(firstSemicolon + 1, secondSemicolon).strip();
+          final StringBuilder prototype = new StringBuilder();
+          // Scan the whitespace-delimited hex tokens by hand to honor the no-regex contract and
+          // avoid compiling a Pattern for every one of the ~10k lines during static init.
+          final int targetLength = target.length();
+          int pos = 0;
+          while (pos < targetLength) {
+            while (pos < targetLength && target.charAt(pos) <= ' ') {
+              pos++;
+            }
+            int end = pos;
+            while (end < targetLength && target.charAt(end) > ' ') {
+              end++;
+            }
+            if (end > pos) {
+              prototype.appendCodePoint(Integer.parseInt(target.substring(pos, end), 16));
+            }
+            pos = end;
+          }
+          map.put(source, prototype.toString());
+        } catch (NumberFormatException e) {
+          // Report the offending line, mirroring CodePointSet.fromFile, instead of letting a
+          // malformed bundled line surface as an opaque ExceptionInInitializerError.
+          throw new IllegalStateException("Malformed confusables data in " + RESOURCE + " at line "
+              + lineNumber + ": " + content, e);
+        }
+      }
     }
     return map;
   }
