@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtException;
@@ -299,21 +300,24 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
     }
     final List<Span> byDominance = new ArrayList<>(spans);
     byDominance.sort(BY_LENGTH_THEN_PROBABILITY);
-    final List<Span> kept = new ArrayList<>(byDominance.size());
+    // Kept spans never overlap each other, so they form a start-sorted partition. A candidate can
+    // only intersect the kept span that starts at or just before it (floor) or the next kept span
+    // that starts within it (ceiling); checking those two is O(log n) instead of scanning every kept
+    // span, making the whole longest-wins pass O(n log n) rather than O(n^2). Keyed by start, the map
+    // also yields the result already in document order.
+    final TreeMap<Integer, Span> kept = new TreeMap<>();
     for (final Span candidate : byDominance) {
-      boolean overlapsKept = false;
-      for (final Span keptSpan : kept) {
-        if (candidate.intersects(keptSpan)) {
-          overlapsKept = true;
-          break;
-        }
+      final Map.Entry<Integer, Span> before = kept.floorEntry(candidate.getStart());
+      if (before != null && before.getValue().getEnd() > candidate.getStart()) {
+        continue;
       }
-      if (!overlapsKept) {
-        kept.add(candidate);
+      final Map.Entry<Integer, Span> after = kept.ceilingEntry(candidate.getStart());
+      if (after != null && after.getKey() < candidate.getEnd()) {
+        continue;
       }
+      kept.put(candidate.getStart(), candidate);
     }
-    kept.sort(Comparator.comparingInt(Span::getStart).thenComparingInt(Span::getEnd));
-    return kept;
+    return new ArrayList<>(kept.values());
   }
 
   /**
