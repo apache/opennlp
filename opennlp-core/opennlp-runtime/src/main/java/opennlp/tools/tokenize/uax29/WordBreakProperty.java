@@ -105,7 +105,8 @@ public final class WordBreakProperty {
     return new Data(bmp, start, end, value);
   }
 
-  private static void parse(InputStream in, byte[] bmp, List<int[]> supplementary) throws IOException {
+  // Package-visible so the malformed-data handling can be exercised without the bundled resource.
+  static void parse(InputStream in, byte[] bmp, List<int[]> supplementary) throws IOException {
     try (BufferedReader reader =
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String line;
@@ -116,6 +117,12 @@ public final class WordBreakProperty {
           continue;
         }
         final int semicolon = content.indexOf(';');
+        if (semicolon < 0) {
+          // A present-but-structurally-wrong line (no ';' to split code points from the value) is a
+          // hard error naming the line, mirroring ExtendedPictographic, not an opaque substring throw.
+          throw new IllegalStateException(
+              "Malformed Word_Break data in " + RESOURCE + " (no ';'): " + content);
+        }
         final String codePoints = content.substring(0, semicolon).strip();
         final String value = content.substring(semicolon + 1).strip();
         final byte ordinal = (byte) WordBreak.fromPropertyName(value).ordinal();

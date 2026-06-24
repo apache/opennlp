@@ -16,12 +16,17 @@
  */
 package opennlp.tools.tokenize.uax29;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class WordBreakPropertyTest {
 
@@ -84,5 +89,16 @@ public class WordBreakPropertyTest {
     assertEquals(WordBreak.ALETTER, WordBreak.fromPropertyName("ALetter"));
     org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
         () -> WordBreak.fromPropertyName("NotAValue"));
+  }
+
+  @Test
+  void parseFailsLoudOnLineMissingSemicolon() {
+    // A non-comment data line with no ';' is malformed; the loader must fail loud naming the line
+    // (like the sibling ExtendedPictographic) rather than throwing an opaque
+    // StringIndexOutOfBoundsException that masks which line is bad.
+    final String data = "0042\n"; // a code point with no Word_Break value -> malformed
+    assertThrows(IllegalStateException.class, () -> WordBreakProperty.parse(
+        new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)),
+        new byte[0x10000], new ArrayList<>()));
   }
 }
