@@ -48,6 +48,20 @@ public class NormalizationProfilesTest {
   }
 
   @Test
+  void testNorwegianWrittenStandardsResolveToTheNorwegianProfile() {
+    // "nb" (Bokmal) and "nn" (Nynorsk) are the standard modern written codes; both convert to the
+    // ISO 639-3 codes "nob"/"nno", which must resolve to Norwegian even though the registry also
+    // keys the "nor" macrolanguage. Without the aliases, forLanguage("nb") returns empty -- and
+    // detect()'s "nob"/"nno" output gets no profile for a language the registry claims to support.
+    assertEquals(SnowballStemmer.ALGORITHM.NORWEGIAN,
+        NormalizationProfiles.forLanguage("nb").orElseThrow().stemmerAlgorithm());
+    assertEquals(SnowballStemmer.ALGORITHM.NORWEGIAN,
+        NormalizationProfiles.forLanguage("nn").orElseThrow().stemmerAlgorithm());
+    assertTrue(NormalizationProfiles.forLanguage("nob").isPresent());
+    assertTrue(NormalizationProfiles.forLanguage("nno").isPresent());
+  }
+
+  @Test
   void testGermanUsesTheGermanSpecificFold() {
     final NormalizationProfile profile = NormalizationProfiles.forLanguage("deu").orElseThrow();
     assertSame(GermanUmlautCharSequenceNormalizer.getInstance(), profile.accentFold());
@@ -129,8 +143,9 @@ public class NormalizationProfilesTest {
 
   @Test
   void testSupportedLanguagesCoverTheSnowballSet() {
-    assertEquals(19, NormalizationProfiles.supportedLanguages().size());
-    assertTrue(NormalizationProfiles.supportedLanguages().containsAll(List.of("eng", "deu", "fra")));
+    assertEquals(21, NormalizationProfiles.supportedLanguages().size());
+    assertTrue(NormalizationProfiles.supportedLanguages()
+        .containsAll(List.of("eng", "deu", "fra", "nor", "nob", "nno")));
   }
 
   @Test
