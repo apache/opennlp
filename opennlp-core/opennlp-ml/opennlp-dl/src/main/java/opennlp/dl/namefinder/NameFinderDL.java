@@ -296,7 +296,9 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    */
   static List<Span> mergeOverlappingSpans(final List<Span> spans) {
     if (spans.size() < 2) {
-      return spans;
+      // Return a fresh list so the caller always owns the result, matching the >= 2 path below
+      // (which returns a new list); the input is never handed back aliased.
+      return new ArrayList<>(spans);
     }
     final List<Span> byDominance = new ArrayList<>(spans);
     byDominance.sort(BY_LENGTH_THEN_PROBABILITY);

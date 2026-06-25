@@ -331,14 +331,14 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static void validateSplitOptions(final int documentSplitSize, final int splitOverlapSize) {
     if (documentSplitSize <= 0) {
-      throw new IllegalArgumentException("documentSplitSize must be greater than zero.");
+      throw new IllegalArgumentException("The documentSplitSize must be greater than zero.");
     }
     if (splitOverlapSize < 0) {
-      throw new IllegalArgumentException("splitOverlapSize must not be negative.");
+      throw new IllegalArgumentException("The splitOverlapSize must not be negative.");
     }
     if (splitOverlapSize >= documentSplitSize) {
       throw new IllegalArgumentException(
-          "splitOverlapSize must be smaller than documentSplitSize.");
+          "The splitOverlapSize must be smaller than documentSplitSize.");
     }
   }
 
@@ -486,7 +486,7 @@ public abstract class AbstractDL implements AutoCloseable {
   protected static List<ChunkRange> chunkRanges(final int tokenCount, final int documentSplitSize,
                                                 final int splitOverlapSize) {
     if (tokenCount < 0) {
-      throw new IllegalArgumentException("tokenCount must not be negative.");
+      throw new IllegalArgumentException("The tokenCount must not be negative.");
     }
     validateSplitOptions(documentSplitSize, splitOverlapSize);
 

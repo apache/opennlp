@@ -186,4 +186,34 @@ public class DocumentCategorizerDLTest {
     assertEquals(0.24472847, out[1], 1e-6);
     assertEquals(0.66524096, out[2], 1e-6);
   }
+
+  @Test
+  void testLogitsFromOutputDispatchesOnModelShape() {
+    // A 2D output (BERT-style) takes row 0; a 1D output (RoBERTa-style) is taken as-is.
+    assertArrayEquals(new float[] {1f, 2f},
+        DocumentCategorizerDL.logitsFromOutput(new float[][] {{1f, 2f}}));
+    assertArrayEquals(new float[] {3f, 4f},
+        DocumentCategorizerDL.logitsFromOutput(new float[] {3f, 4f}));
+  }
+
+  @Test
+  void testLogitsFromOutputFailsLoudlyOnNullAndUnexpectedType() {
+    // A null or otherwise-shaped model output is a contract violation, not an "inference failed".
+    final IllegalStateException onNull = assertThrows(IllegalStateException.class,
+        () -> DocumentCategorizerDL.logitsFromOutput(null));
+    assertTrue(onNull.getMessage().contains("null"), onNull.getMessage());
+    assertThrows(IllegalStateException.class,
+        () -> DocumentCategorizerDL.logitsFromOutput("not a tensor"));
+  }
+
+  @Test
+  void testRequireMatchingCategoryCountFailsLoudlyOnMismatch() {
+    // A distribution whose length differs from the configured category count means the model and
+    // the categorizer configuration do not match; the matching case passes the array through.
+    final double[] ok = {0.5, 0.5};
+    assertArrayEquals(ok, DocumentCategorizerDL.requireMatchingCategoryCount(ok, 2));
+    final IllegalStateException e = assertThrows(IllegalStateException.class,
+        () -> DocumentCategorizerDL.requireMatchingCategoryCount(new double[] {1.0}, 2));
+    assertTrue(e.getMessage().contains("do not match"), e.getMessage());
+  }
 }
