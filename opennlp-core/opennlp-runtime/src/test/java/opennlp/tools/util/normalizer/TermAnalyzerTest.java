@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TermAnalyzerTest {
 
@@ -141,6 +142,28 @@ public class TermAnalyzerTest {
         TermAnalyzer.builder().caseFold().lemmatize(lemmatizer).build();
     final Term term = analyzer.analyze(new String[] {"was"}, new String[] {"VBD"}).get(0);
     assertEquals("be", term.normalized());
+  }
+
+  @Test
+  void testAnalyzeCharSequenceFailsLoudlyWhenLemmaConfigured() {
+    // analyze(CharSequence) has no POS tags, so a configured LEMMA layer cannot be satisfied; it
+    // fails loud rather than silently dropping the layer. Callers needing lemmas use analyze(tokens,
+    // tags).
+    final Lemmatizer lemmatizer = new Lemmatizer() {
+      @Override
+      public String[] lemmatize(String[] tokens, String[] tags) {
+        return tokens.clone();
+      }
+
+      @Override
+      public List<List<String>> lemmatize(List<String> tokens, List<String> tags) {
+        return List.of(tokens);
+      }
+    };
+    final TermAnalyzer analyzer = TermAnalyzer.builder().lemmatize(lemmatizer).build();
+    final IllegalStateException e = assertThrows(IllegalStateException.class,
+        () -> analyzer.analyze("running"));
+    assertTrue(e.getMessage().contains("part-of-speech"), e.getMessage());
   }
 
   @Test
