@@ -13,7 +13,7 @@
 	OF ANY KIND, either express or implied. See the License for the specific 
 	language governing permissions and limitations under the License. -->
 
-<chapter xml:id="tools.tokenizer">
+<chapter xml:id="tools.tokenizer" xmlns:xlink="http://www.w3.org/1999/xlink">
 
 	<title>Tokenizer</title>
 
