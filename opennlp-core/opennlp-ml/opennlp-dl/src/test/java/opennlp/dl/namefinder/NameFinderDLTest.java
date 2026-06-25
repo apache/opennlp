@@ -29,6 +29,7 @@ import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -385,6 +386,17 @@ public class NameFinderDLTest {
     assertEquals(2, disjoint.size());
     assertEquals(0, disjoint.get(0).getStart());
     assertEquals(5, disjoint.get(1).getStart());
+  }
+
+  @Test
+  void testMergeOverlappingSpansReturnsAFreshListForTrivialInput() {
+    // The size < 2 fast path must hand back a new list, not the caller's, so the result is always
+    // owned by the caller -- the same ownership contract as the merging path.
+    final List<Span> single = new ArrayList<>(List.of(new Span(0, 5, "PER", 0.9)));
+    final List<Span> merged = NameFinderDL.mergeOverlappingSpans(single);
+    assertEquals(1, merged.size());
+    assertNotSame(single, merged);
+    assertTrue(NameFinderDL.mergeOverlappingSpans(new ArrayList<Span>()).isEmpty());
   }
 
   @Test

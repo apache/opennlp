@@ -200,13 +200,14 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   public double[] categorize(String[] strings) {
 
     if (strings == null || strings.length == 0) {
-      throw new IllegalArgumentException("strings must contain at least one document to categorize");
+      throw new IllegalArgumentException(
+          "The strings argument must contain at least one document to categorize");
     }
 
     final List<Tokens> tokens = tokenize(strings[0]);
     if (tokens.isEmpty()) {
       throw new IllegalArgumentException(
-          "the document to categorize must contain at least one non-whitespace token");
+          "The document to categorize must contain at least one non-whitespace token");
     }
 
     final List<double[]> scores = new LinkedList<>();
@@ -215,9 +216,14 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     }
 
     final double[] distribution = classificationScoringStrategy.score(scores);
-    if (distribution.length != categories.size()) {
-      throw new IllegalStateException("the model produced " + distribution.length
-          + " category scores but the categorizer is configured with " + categories.size()
+    return requireMatchingCategoryCount(distribution, categories.size());
+  }
+
+  // Package-visible so the model/category-count mismatch guard can be exercised without a live model.
+  static double[] requireMatchingCategoryCount(final double[] distribution, final int expected) {
+    if (distribution.length != expected) {
+      throw new IllegalStateException("The model produced " + distribution.length
+          + " category scores but the categorizer is configured with " + expected
           + " categories; the model and the category configuration do not match");
     }
     return distribution;
@@ -256,6 +262,12 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       inputs.values().forEach(OnnxTensor::close);
     }
 
+    return logitsFromOutput(output);
+  }
+
+  // Package-visible so the output-shape dispatch, including the null and unexpected-type failures,
+  // can be exercised without a live model session.
+  static float[] logitsFromOutput(final Object output) {
     // Some models return a 2D array (e.g. BERT), others a 1D array (e.g. RoBERTa). A different
     // shape is a model-contract violation, surfaced on its own rather than as "inference failed".
     if (output instanceof float[][] v) {
