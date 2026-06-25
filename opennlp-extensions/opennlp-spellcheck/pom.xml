@@ -29,7 +29,7 @@
 
   <artifactId>opennlp-spellcheck</artifactId>
   <packaging>jar</packaging>
-  <name>Apache OpenNLP :: SpellChecker Addon</name>
+  <name>Apache OpenNLP :: Ext :: SpellChecker</name>
 
   <dependencies>
     <dependency>
@@ -42,11 +42,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.opennlp</groupId>
-      <artifactId>opennlp-cli</artifactId>
+      <artifactId>opennlp-model-resolver</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.opennlp</groupId>
-      <artifactId>opennlp-model-resolver</artifactId>
+      <artifactId>opennlp-cli</artifactId>
     </dependency>
 
     <dependency>

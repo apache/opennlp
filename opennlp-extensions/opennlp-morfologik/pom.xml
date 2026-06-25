@@ -29,7 +29,7 @@
 
   <artifactId>opennlp-morfologik</artifactId>
   <packaging>jar</packaging>
-  <name>Apache OpenNLP :: Morfologik Addon</name>
+  <name>Apache OpenNLP :: Ext :: Morfologik Addon</name>
 
   <dependencies>
     <dependency>
