@@ -17,7 +17,7 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * A {@link CharSequenceNormalizer} that collapses runs of Unicode whitespace like
+ * An {@link OffsetAwareNormalizer} that collapses runs of Unicode whitespace like
  * {@link WhitespaceCharSequenceNormalizer}, but keeps line and paragraph structure: any whitespace
  * run that contains a line break collapses to a single newline ({@code U+000A}) instead of a space,
  * and leading and trailing whitespace is trimmed.

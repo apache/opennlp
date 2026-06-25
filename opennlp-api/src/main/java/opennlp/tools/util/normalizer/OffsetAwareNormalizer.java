@@ -33,7 +33,7 @@ package opennlp.tools.util.normalizer;
  * input. An interface-typed caller tests for the capability
  * ({@code normalizer instanceof OffsetAwareNormalizer}) instead of depending on a concrete rung,
  * the same plain {@code instanceof} pattern used by
- * {@link opennlp.tools.namefind.OffsetMappingNameFinder} rather than reflection.</p>
+ * {@code OffsetMappingNameFinder} (in the DL layer) rather than reflection.</p>
  */
 public interface OffsetAwareNormalizer extends CharSequenceNormalizer {
 
