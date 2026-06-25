@@ -87,6 +87,10 @@
       <groupId>org.apache.opennlp</groupId>
       <artifactId>opennlp-uima</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-spellcheck</artifactId>
+    </dependency>
 
     <!-- OpenNLP Docs - Ensure that "docs" are build before distribution -->
     <dependency>
