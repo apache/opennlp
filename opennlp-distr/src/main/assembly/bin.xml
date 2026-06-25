@@ -170,17 +170,17 @@
     </fileSet>
 
     <fileSet>
-      <directory>../opennlp-core/opennlp-ml/opennlp-ml-bayes/target/reports/apidocs</directory>
-      <fileMode>644</fileMode>
-      <directoryMode>755</directoryMode>
-      <outputDirectory>docs/apidocs/opennlp-ml-bayes</outputDirectory>
-    </fileSet>
-
-    <fileSet>
       <directory>../opennlp-core/opennlp-ml/opennlp-ml-commons/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-ml-commons</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-ml/opennlp-ml-bayes/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-ml-bayes</outputDirectory>
     </fileSet>
 
     <fileSet>
@@ -195,6 +195,13 @@
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>
       <outputDirectory>docs/apidocs/opennlp-ml-perceptron</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>../opennlp-core/opennlp-ml/opennlp-ml-libsvm/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-ml-libsvm</outputDirectory>
     </fileSet>
 
     <fileSet>
