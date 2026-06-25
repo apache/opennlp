@@ -16,7 +16,10 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -142,10 +145,24 @@ public class NormalizationProfilesTest {
   }
 
   @Test
-  void testSupportedLanguagesCoverTheSnowballSet() {
-    assertEquals(21, NormalizationProfiles.supportedLanguages().size());
-    assertTrue(NormalizationProfiles.supportedLanguages()
-        .containsAll(List.of("eng", "deu", "fra", "nor", "nob", "nno")));
+  void testSupportedLanguagesCoverEverySnowballLanguage() {
+    // Every Snowball algorithm that names a language has a profile; PORTER is an English-only
+    // algorithm variant, not a language, so it is the sole expected omission. Deriving the
+    // expectation from the enum makes this fail loudly if a future algorithm is added unmapped.
+    final Set<SnowballStemmer.ALGORITHM> covered = NormalizationProfiles.supportedLanguages().stream()
+        .map(code -> NormalizationProfiles.forLanguage(code).orElseThrow().stemmerAlgorithm())
+        .collect(Collectors.toCollection(() -> EnumSet.noneOf(SnowballStemmer.ALGORITHM.class)));
+    assertEquals(EnumSet.complementOf(EnumSet.of(SnowballStemmer.ALGORITHM.PORTER)), covered);
+    // The three Norwegian written codes share the single NORWEGIAN algorithm.
+    assertTrue(NormalizationProfiles.supportedLanguages().containsAll(List.of("nob", "nno", "nor")));
+  }
+
+  @Test
+  void testTwoLetterCodeWithNoIso3FallsBackToRawLookup() {
+    // A two-letter code with no ISO 639-3 mapping makes getISO3Language() throw
+    // MissingResourceException; forLanguage() must catch it and fall through to a raw lookup
+    // (which finds nothing here) rather than propagating the exception.
+    assertTrue(NormalizationProfiles.forLanguage("qq").isEmpty());
   }
 
   @Test

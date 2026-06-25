@@ -31,7 +31,10 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
  * A registry of {@link NormalizationProfile}s by language, with detection-based fallback. This is
  * the language dispatch the design note calls for: pick the profile for a requested language, or
  * detect the language with a {@link LanguageDetector} when it is unspecified. The covered languages
- * are exactly those with a Snowball stemmer.
+ * are the Snowball stemmer algorithms that name a natural language -- every
+ * {@link SnowballStemmer.ALGORITHM} except {@code PORTER}, which is an English-only algorithm
+ * variant rather than a distinct language. Several codes can map to one algorithm (the three
+ * Norwegian written standards all use {@code NORWEGIAN}).
  *
  * <p>Profiles are keyed by ISO 639-3 code (what {@link LanguageDetector} produces);
  * {@link #forLanguage(String)} also accepts ISO 639-1 two-letter codes.</p>
@@ -71,6 +74,10 @@ public final class NormalizationProfiles {
     add(map, "rus", SnowballStemmer.ALGORITHM.RUSSIAN, null);
     add(map, "spa", SnowballStemmer.ALGORITHM.SPANISH, latin);
     add(map, "swe", SnowballStemmer.ALGORITHM.SWEDISH, null);
+    // Turkish diacritics are distinct letters, so there is no accent fold. The search analyzer's
+    // case fold stays locale-generic: the Turkish dotted/dotless-i pair folds by the Unicode default
+    // rather than Turkish rules -- a deliberate search-recall choice, not Turkish-correct casing.
+    add(map, "tur", SnowballStemmer.ALGORITHM.TURKISH, null);
     return Map.copyOf(map);
   }
 
