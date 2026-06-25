@@ -16,10 +16,16 @@
  */
 package opennlp.tools.tokenize.uax29;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.BitSet;
+
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExtendedPictographicTest {
@@ -42,5 +48,15 @@ public class ExtendedPictographicTest {
   @ValueSource(ints = {-1, Integer.MIN_VALUE, Character.MAX_CODE_POINT + 1, Integer.MAX_VALUE})
   void testOutOfRangeIsFalseAndSafe(int codePoint) {
     assertFalse(ExtendedPictographic.is(codePoint));
+  }
+
+  @Test
+  void parseFailsLoudOnMalformedHex() {
+    // A structurally-malformed line (non-hex code points) fails loud naming the line, the same way
+    // the sibling loaders do, rather than surfacing a raw NumberFormatException.
+    final String data = "1F600\n"   // valid
+        + "NOTHEX\n";                // malformed
+    assertThrows(IllegalArgumentException.class, () -> ExtendedPictographic.parse(
+        new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)), new BitSet()));
   }
 }

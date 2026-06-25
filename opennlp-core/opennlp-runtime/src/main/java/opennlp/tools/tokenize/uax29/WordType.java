@@ -76,7 +76,9 @@ public enum WordType {
 
   // Classifies the code points in text over [start, end) as a word token type, or returns null
   // when the range is not a word (pure whitespace, punctuation, or symbols). Emoji win over
-  // scripts, scripts over the generic alphanumeric/numeric split.
+  // scripts, scripts over the generic alphanumeric/numeric split. The script category is taken from
+  // the first script code point in the range; UAX #29 word segments are single-script in practice, so
+  // for an unusual mixed-script run this reports the leading script, not a per-character determination.
   static WordType of(CharSequence text, int start, int end) {
     boolean hasLetter = false;
     boolean hasDigit = false;

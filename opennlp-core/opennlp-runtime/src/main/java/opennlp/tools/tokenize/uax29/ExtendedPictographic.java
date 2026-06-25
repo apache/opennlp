@@ -74,7 +74,8 @@ public final class ExtendedPictographic {
     return set;
   }
 
-  private static void parse(InputStream in, BitSet set) throws IOException {
+  // Package-visible so the malformed-data handling can be exercised without the bundled resource.
+  static void parse(InputStream in, BitSet set) throws IOException {
     try (BufferedReader reader =
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String line;
@@ -84,15 +85,24 @@ public final class ExtendedPictographic {
         if (content.isEmpty()) {
           continue;
         }
+        // Only the code-point column is needed; the property value after ';' is implicit (this is a
+        // filtered single-property file), so a line with no ';' is taken whole -- unlike
+        // WordBreakProperty, whose value column is required.
         final int semicolon = content.indexOf(';');
         final String codePoints = (semicolon < 0 ? content : content.substring(0, semicolon)).strip();
-        final int dots = codePoints.indexOf("..");
-        if (dots < 0) {
-          set.set(Integer.parseInt(codePoints, 16));
-        } else {
-          final int start = Integer.parseInt(codePoints.substring(0, dots), 16);
-          final int end = Integer.parseInt(codePoints.substring(dots + 2), 16);
-          set.set(start, end + 1);
+        try {
+          final int dots = codePoints.indexOf("..");
+          if (dots < 0) {
+            set.set(Integer.parseInt(codePoints, 16));
+          } else {
+            final int start = Integer.parseInt(codePoints.substring(0, dots), 16);
+            final int end = Integer.parseInt(codePoints.substring(dots + 2), 16);
+            set.set(start, end + 1);
+          }
+        } catch (NumberFormatException e) {
+          // Fail loud naming the bad line, the same way the sibling loaders do.
+          throw new IllegalArgumentException(
+              "Malformed Extended_Pictographic data in " + RESOURCE + ": " + content, e);
         }
       }
     }
