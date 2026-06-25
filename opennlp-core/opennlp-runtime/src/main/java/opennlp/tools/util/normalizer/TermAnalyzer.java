@@ -43,7 +43,7 @@ import opennlp.tools.util.Span;
  *
  * <p>An instance is immutable and is thread-safe when its configured transforms are. The built-in
  * character normalizers are stateless, but the Snowball stemmers are not, so an analyzer configured
- * with a {@link Stemmer} (for example through {@link NormalizationProfile#searchAnalyzer()}) should
+ * with a {@link Stemmer} (for example through {@code NormalizationProfile.searchAnalyzer()}) should
  * not be shared across threads when {@link Dimension#STEM} is used. Build one with
  * {@link #builder()}.</p>
  */
@@ -77,8 +77,9 @@ public final class TermAnalyzer {
 
   /**
    * Segments {@code text} with the UAX&#160;#29 word tokenizer and returns one {@link Term} per
-   * word token, in order. The terms carry no part-of-speech tag, so {@link Dimension#LEMMA} is not
-   * available from them.
+   * word token, in order. The terms carry no part-of-speech tag, so {@link Dimension#LEMMA} cannot be
+   * computed from this entry point: if a lemmatizer is configured, this method throws -- use
+   * {@link #analyze(String[], String[])} when lemmas are needed.
    *
    * @param text The text to analyze.
    * @return The terms.
@@ -219,7 +220,7 @@ public final class TermAnalyzer {
      *
      * @return this builder
      */
-    public Builder dashes() {
+    public Builder dash() {
       chain.add(Dimension.DASH);
       return this;
     }
@@ -230,7 +231,7 @@ public final class TermAnalyzer {
      * @param normalizer The dash normalizer to use.
      * @return this builder
      */
-    public Builder dashes(CharSequenceNormalizer normalizer) {
+    public Builder dash(CharSequenceNormalizer normalizer) {
       return transform(Dimension.DASH, normalizer);
     }
 
