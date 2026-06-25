@@ -46,7 +46,7 @@ class ConfusablesLoadTest {
     // which would yield a quietly-incomplete confusable map and wrong confusable() results.
     final String data = "0041 ;\t0042 ;\tMA\n"     // line 1: valid
         + "0043 0044\n";                            // line 2: no ';' -> malformed
-    final IllegalStateException ex = assertThrows(IllegalStateException.class,
+    final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
         () -> Confusables.parse(in(data)));
     assertTrue(ex.getMessage().contains("line 2"), ex.getMessage());
   }
