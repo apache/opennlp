@@ -24,10 +24,10 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
  * language. A profile pairs a language with its Snowball {@link SnowballStemmer.ALGORITHM} and the
  * diacritic fold appropriate for that language (if any).
  *
- * <p>The {@code accentFold} normalizer is the language's diacritic transform for a search form, or
+ * <p>The {@code accentFold} normalizer is the language's diacritic transform for a matching form, or
  * {@code null} when folding is not appropriate. It is the generic
  * {@link AccentFoldCharSequenceNormalizer} for English and the major Romance languages (where
- * accented letters are search variants of their base letter), the German-specific
+ * accented letters are matching variants of their base letter), the German-specific
  * {@link GermanUmlautCharSequenceNormalizer} (a-umlaut to {@code ae}, eszett to {@code ss}, ...) for
  * German, and {@code null} where diacritics mark distinct letters (the Nordic languages and the
  * non-Latin scripts), because folding there is language-wrong. This is a search-recall choice, not a
@@ -50,13 +50,13 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
   }
 
   /**
-   * Returns a search-oriented analyzer for this language: NFC, case folding, the language's
+   * Returns a matching analyzer for this language: NFC, case folding, the language's
    * {@linkplain #accentFold() diacritic fold} when it has one, then stemming. Each call builds an
    * independent analyzer with its own stemmer, so use one per thread when stemming.
    *
    * @return the analyzer.
    */
-  public TermAnalyzer searchAnalyzer() {
+  public TermAnalyzer matchingAnalyzer() {
     final TermAnalyzer.Builder builder = TermAnalyzer.builder().nfc().caseFold();
     if (accentFold != null) {
       builder.transform(Dimension.ACCENT_FOLD, accentFold);

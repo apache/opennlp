@@ -74,9 +74,9 @@ public final class NormalizationProfiles {
     add(map, "rus", SnowballStemmer.ALGORITHM.RUSSIAN, null);
     add(map, "spa", SnowballStemmer.ALGORITHM.SPANISH, latin);
     add(map, "swe", SnowballStemmer.ALGORITHM.SWEDISH, null);
-    // Turkish diacritics are distinct letters, so there is no accent fold. The search analyzer's
+    // Turkish diacritics are distinct letters, so there is no accent fold. The matching analyzer's
     // case fold stays locale-generic: the Turkish dotted/dotless-i pair folds by the Unicode default
-    // rather than Turkish rules -- a deliberate search-recall choice, not Turkish-correct casing.
+    // rather than Turkish rules -- a deliberate recall choice, not Turkish-correct casing.
     add(map, "tur", SnowballStemmer.ALGORITHM.TURKISH, null);
     return Map.copyOf(map);
   }

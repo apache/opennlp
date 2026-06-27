@@ -41,7 +41,7 @@ public class NormalizationProfilesTest {
     assertEquals(SnowballStemmer.ALGORITHM.ENGLISH, profile.stemmerAlgorithm());
     assertSame(AccentFoldCharSequenceNormalizer.getInstance(), profile.accentFold());
     assertEquals(List.of(Dimension.NFC, Dimension.CASE_FOLD, Dimension.ACCENT_FOLD, Dimension.STEM),
-        profile.searchAnalyzer().dimensions());
+        profile.matchingAnalyzer().dimensions());
   }
 
   @Test
@@ -69,7 +69,7 @@ public class NormalizationProfilesTest {
     final NormalizationProfile profile = NormalizationProfiles.forLanguage("deu").orElseThrow();
     assertSame(GermanUmlautCharSequenceNormalizer.getInstance(), profile.accentFold());
     assertEquals(List.of(Dimension.NFC, Dimension.CASE_FOLD, Dimension.ACCENT_FOLD, Dimension.STEM),
-        profile.searchAnalyzer().dimensions());
+        profile.matchingAnalyzer().dimensions());
   }
 
   @Test
@@ -85,7 +85,7 @@ public class NormalizationProfilesTest {
     final NormalizationProfile swedish = NormalizationProfiles.forLanguage("swe").orElseThrow();
     assertNull(swedish.accentFold());
     assertEquals(List.of(Dimension.NFC, Dimension.CASE_FOLD, Dimension.STEM),
-        swedish.searchAnalyzer().dimensions());
+        swedish.matchingAnalyzer().dimensions());
   }
 
   @Test
@@ -95,9 +95,9 @@ public class NormalizationProfilesTest {
   }
 
   @Test
-  void testSearchAnalyzerStemsThroughTheChain() {
+  void testMatchingAnalyzerStemsThroughTheChain() {
     final NormalizationProfile english = NormalizationProfiles.forLanguage("eng").orElseThrow();
-    assertEquals("cat", english.searchAnalyzer().analyze("Cats").get(0).normalized());
+    assertEquals("cat", english.matchingAnalyzer().analyze("Cats").get(0).normalized());
   }
 
   @Test
