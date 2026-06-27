@@ -200,10 +200,10 @@ String term = pipeline.normalize("CAFÉ").toString();   // "cafe"]]>
 			quotes and dashes, case fold, then script-gated accent fold) is available directly:
 		</para>
 		<programlisting language="java">
-<![CDATA[CharSequenceNormalizer search = TextNormalizer.searchDefault();
+<![CDATA[CharSequenceNormalizer chain = TextNormalizer.defaultChain();
 
 // byte order mark stripped, curly quotes folded, case and accent folded
-String t = search.normalize("﻿“CafÉ”").toString();   // "\"cafe\""]]>
+String t = chain.normalize("﻿“CafÉ”").toString();   // "\"cafe\""]]>
 		</programlisting>
 		<para>
 			Any custom <code>CharSequenceNormalizer</code> can be inserted with
@@ -447,7 +447,7 @@ CharClass wsPlus = CharClass.whitespace().withAdditional(extra);]]>
 		<para>
 			<code>TermAnalyzer</code> tokenizes text and gives each token a
 			<emphasis>stack</emphasis> of normalization layers while keeping its source span. It is the
-			offset-preserving entry point for matching and BM25-style search: the normalized form is
+			offset-preserving entry point for matching: the normalized form is
 			what you index or query, and the span ties every layer back to the original text for
 			highlighting, even when normalization changes a token's length. A <code>Term</code> is one
 			token projected through an ordered chain of
@@ -540,11 +540,11 @@ Confusables.skeleton("paypal");              // a matching key, not readable tex
 		</para>
 		<programlisting language="java">
 <![CDATA[NormalizationProfile german = NormalizationProfiles.forLanguage("de").orElseThrow();
-TermAnalyzer analyzer = german.searchAnalyzer();   // NFC, case fold, German fold, German stemmer
-// "Mueller" and "Müller" both reduce to the same search term
+TermAnalyzer analyzer = german.matchingAnalyzer();   // NFC, case fold, German fold, German stemmer
+// "Mueller" and "Müller" both reduce to the same matching term
 
 // detect the language when it is not known
-NormalizationProfiles.detect(text, languageDetector).map(NormalizationProfile::searchAnalyzer);]]>
+NormalizationProfiles.detect(text, languageDetector).map(NormalizationProfile::matchingAnalyzer);]]>
 		</programlisting>
 		<para>
 			The diacritic fold is the generic accent fold for English and the major Romance languages,
