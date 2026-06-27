@@ -23,8 +23,8 @@ import java.util.Objects;
 /**
  * Entry point for composing the normalization rungs into a single {@link CharSequenceNormalizer}.
  *
- * <p>Use {@link #builder()} to assemble a chain, or {@link #searchDefault()} for a conservative,
- * search-oriented chain. The rungs are applied in the order they are added, so the caller controls
+ * <p>Use {@link #builder()} to assemble a chain, or {@link #defaultChain()} for a conservative,
+ * ready-made chain. The rungs are applied in the order they are added, so the caller controls
  * the chain. Each rung is a shared, stateless normalizer; the built normalizer is an
  * {@link AggregateCharSequenceNormalizer} that applies them in sequence.</p>
  *
@@ -45,12 +45,12 @@ public final class TextNormalizer {
   }
 
   /**
-   * {@return a conservative search/matching chain}
+   * {@return a conservative, ready-made normalization chain}
    *
    * <p>The chain strips invisible controls, applies NFC, collapses whitespace, folds quotes and
    * dashes, case folds, and finally applies script-gated diacritic folding.</p>
    */
-  public static CharSequenceNormalizer searchDefault() {
+  public static CharSequenceNormalizer defaultChain() {
     return builder()
         .stripInvisible()
         .nfc()

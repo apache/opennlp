@@ -59,10 +59,10 @@ public class TextNormalizerTest {
   }
 
   @Test
-  void testSearchDefaultCleansMessyInput() {
+  void testDefaultChainCleansMessyInput() {
     // BOM + curly-quoted, mixed-case, accented text -> stripped, ASCII-quoted, folded.
     final String input = cp(0xFEFF) + cp(0x201C) + "Caf" + cp(0x00C9) + cp(0x201D);
-    assertEquals("\"cafe\"", TextNormalizer.searchDefault().normalize(input).toString());
+    assertEquals("\"cafe\"", TextNormalizer.defaultChain().normalize(input).toString());
   }
 
   @Test

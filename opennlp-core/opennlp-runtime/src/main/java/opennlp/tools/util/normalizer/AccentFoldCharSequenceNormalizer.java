@@ -20,7 +20,7 @@ import java.text.Normalizer;
 import java.util.Set;
 
 /**
- * A {@link CharSequenceNormalizer} that folds diacritics for search and matching, the
+ * A {@link CharSequenceNormalizer} that folds diacritics for matching, the
  * multilingual-safe counterpart to a Latin-only ASCII folding filter.
  *
  * <p>Folding decomposes the text (NFD) and drops nonspacing combining marks, but only for base
@@ -33,7 +33,7 @@ import java.util.Set;
  * <p>Many "accented" Latin letters are atomic and do not decompose ({@code o} with stroke, the
  * {@code ae}/{@code oe} ligatures, eszett, thorn, and so on). When {@code foldStrokeLetters} is
  * enabled (the default) these are mapped to an ASCII approximation. Folding is a recall
- * optimization, not a linguistically correct transform, so it is intended for a search/matching
+ * optimization, not a linguistically correct transform, so it is intended for a matching
  * token rather than for display or language-specific analysis.</p>
  *
  * <p>Scanning is a single cursor pass over the decomposed text; no regular expression is used, and
@@ -55,7 +55,7 @@ public class AccentFoldCharSequenceNormalizer implements CharSequenceNormalizer 
   private final boolean foldStrokeLetters;
 
   /**
-   * Creates a folder.
+   * Creates an accent-folding normalizer.
    *
    * @param foldScripts The scripts whose base characters' diacritics are folded; marks on every
    *     other script are preserved.

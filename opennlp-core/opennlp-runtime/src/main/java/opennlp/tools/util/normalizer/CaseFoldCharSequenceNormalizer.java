@@ -23,8 +23,7 @@ import java.util.Objects;
  * A {@link CharSequenceNormalizer} that lower cases text for case-insensitive matching. It uses
  * {@link Locale#ROOT} by default, so the result does not depend on the JVM's default locale.
  *
- * <p>This is the case-folding step of a search / BM25 analysis chain (the counterpart to Lucene's
- * lower-case filter). {@code Locale.ROOT} avoids locale surprises such as the Turkish dotless-i
+ * <p>{@code Locale.ROOT} avoids locale surprises such as the Turkish dotless-i
  * mapping. A specific locale can be supplied through {@link #CaseFoldCharSequenceNormalizer(Locale)}
  * or {@link #getInstance(Locale)} when a language's case rules are wanted (Turkish being the classic
  * example). Full Unicode case folding (for example German eszett, {@code U+00DF}, to {@code ss}) is

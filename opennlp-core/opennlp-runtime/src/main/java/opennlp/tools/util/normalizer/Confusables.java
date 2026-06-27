@@ -88,7 +88,7 @@ public final class Confusables {
 
   // Package-private so the malformed-data handling can be exercised without the bundled resource.
   static Map<Integer, String> parse(InputStream in) throws IOException {
-    final Map<Integer, String> map = new HashMap<>(12000);
+    final Map<Integer, String> map = new HashMap<>();
     try (BufferedReader reader =
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String line;
@@ -131,8 +131,6 @@ public final class Confusables {
           }
           map.put(source, prototype.toString());
         } catch (NumberFormatException e) {
-          // Report the offending line, mirroring CodePointSet.fromFile, instead of letting a
-          // malformed bundled line surface as an opaque ExceptionInInitializerError.
           throw new IllegalArgumentException("Malformed confusables data in " + RESOURCE + " at line "
               + lineNumber + ": " + content, e);
         }
