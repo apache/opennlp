@@ -43,7 +43,7 @@ import opennlp.tools.util.Span;
  *
  * <p>An instance is immutable and is thread-safe when its configured transforms are. The built-in
  * character normalizers are stateless, but the Snowball stemmers are not, so an analyzer configured
- * with a {@link Stemmer} (for example through {@code NormalizationProfile.searchAnalyzer()}) should
+ * with a {@link Stemmer} (for example through {@code NormalizationProfile.matchingAnalyzer()}) should
  * not be shared across threads when {@link Dimension#STEM} is used. Build one with
  * {@link #builder()}.</p>
  */
