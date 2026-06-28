@@ -240,7 +240,7 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
     // Join the tokens here because they will be tokenized using Wordpiece during inference.
     final AlignedText normalized =
         normalizeInputAligned(String.join(" ", input), normalizeWhitespace, normalizeDashes);
-    final String text = normalized.normalized();
+    final String text = normalized.normalizedString();
 
     // sentPosDetect (not sentDetect) so each sentence's offset in the full text is known.
     final Span[] sentenceSpans = sentenceDetector.sentPosDetect(text);
