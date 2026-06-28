@@ -191,7 +191,7 @@ public class AlignedNormalizerPipelineTest {
     final String original = "  the   quick  ";
     final AlignedText aligned = WhitespaceCharSequenceNormalizer.getInstance()
         .normalizeAligned(original);
-    final String normalized = aligned.normalized();
+    final String normalized = aligned.normalizedString();
     assertEquals("the quick", normalized);
     final Span whole = aligned.toOriginalSpan(0, normalized.length());
     assertSame(original, aligned.original());
@@ -254,7 +254,7 @@ public class AlignedNormalizerPipelineTest {
     // 'b' is at original index 4 and normalized index 2; the forward mapping must agree.
     final Span forward = aligned.toNormalizedSpan(4, 5);
     assertEquals(2, forward.getStart());
-    assertEquals("b", aligned.normalized().substring(forward.getStart(), forward.getEnd()));
+    assertEquals("b", aligned.normalizedString().substring(forward.getStart(), forward.getEnd()));
   }
 
   @Test

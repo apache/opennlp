@@ -32,7 +32,20 @@ import opennlp.tools.util.Span;
  * @param normalized The normalized text.
  * @param alignment  The alignment between the normalized and original text.
  */
-public record AlignedText(CharSequence original, String normalized, Alignment alignment) {
+public record AlignedText(CharSequence original, CharSequence normalized, Alignment alignment) {
+
+  /**
+   * Returns the normalized text as a {@code String}.
+   *
+   * <p>This is the materialized result of the normalization. All implementations build the
+   * normalized form via a {@code StringBuilder} and call {@code toString()}, so this is a cheap
+   * conversion that does not allocate a new buffer.</p>
+   *
+   * @return The normalized text as an immutable {@code String}.
+   */
+  public String normalizedString() {
+    return normalized.toString();
+  }
 
   /**
    * Maps a span of the normalized text back to the tightest span of the original text.
