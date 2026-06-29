@@ -7,12 +7,22 @@ github:
   homepage: https://opennlp.apache.org/
   protected_branches:
     # Prevent force pushes to primary branches
+    # `asf-allowlist-check` is the job in .github/workflows/allowlist-check.yml and
+    # must match the job name there; it blocks merges that reference a GitHub Action
+    # not on the ASF allowlist. Branch protection is read from the default branch
+    # (main) only, so both branches are configured here.
     main:
       required_pull_request_reviews:
         dismiss_stale_reviews: false
         require_code_owner_reviews: false
         required_approving_review_count: 1
-    opennlp-2.x:  {}
+      required_status_checks:
+        contexts:
+          - asf-allowlist-check
+    opennlp-2.x:
+      required_status_checks:
+        contexts:
+          - asf-allowlist-check
   autolink_jira:
     - OPENNLP
   custom_subjects:
