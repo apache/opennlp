@@ -50,17 +50,11 @@ public final class Confusables {
   private static final String RESOURCE = "confusables.txt";
 
   // Maps a single confusable code point to its prototype sequence (one or more code points).
-  // Loaded lazily on first use (see prototypes()) so a missing or unreadable resource surfaces as a
-  // catchable exception at call time rather than an ExceptionInInitializerError that permanently
-  // poisons the class -- a real risk in container, OSGi, shaded, or modular setups where the bundled
-  // resource may not be visible to the classloader that loaded this class.
   private static volatile Map<Integer, String> prototypes;
 
   private Confusables() {
   }
 
-  // Double-checked lazy initialization: load() runs once on first use, and a failure leaves the
-  // field null so a later call retries instead of the class being permanently unusable.
   private static Map<Integer, String> prototypes() {
     Map<Integer, String> map = prototypes;
     if (map == null) {
