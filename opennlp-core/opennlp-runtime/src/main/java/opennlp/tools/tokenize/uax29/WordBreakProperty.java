@@ -41,9 +41,6 @@ public final class WordBreakProperty {
 
   private static final WordBreak[] VALUES = WordBreak.values();
 
-  // Loaded lazily on first use (see data()) so a missing or unreadable resource surfaces as a
-  // catchable exception at call time rather than an ExceptionInInitializerError that permanently
-  // poisons the class -- a real risk in container, OSGi, shaded, or modular setups.
   private static volatile Data data;
 
   private WordBreakProperty() {
@@ -65,8 +62,6 @@ public final class WordBreakProperty {
     }
   }
 
-  // Double-checked lazy initialization: load() runs once on first use, and a failure leaves the
-  // field null so a later call retries instead of the class being permanently unusable.
   private static Data data() {
     Data d = data;
     if (d == null) {
