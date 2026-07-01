@@ -288,8 +288,10 @@ public final class TermAnalyzer {
      * Enables {@link Dimension#CASE_FOLD}.
      *
      * @return this builder
+     * @throws IllegalStateException if {@link Dimension#FULL_CASE_FOLD} is already configured.
      */
     public Builder caseFold() {
+      requireNotBothCaseFolds(Dimension.CASE_FOLD);
       chain.add(Dimension.CASE_FOLD);
       return this;
     }
@@ -301,12 +303,41 @@ public final class TermAnalyzer {
      * @param locale The locale whose case rules to apply. Must not be {@code null}.
      * @return this builder
      * @throws IllegalArgumentException if {@code locale} is {@code null}.
+     * @throws IllegalStateException if {@link Dimension#FULL_CASE_FOLD} is already configured.
      */
     public Builder caseFold(Locale locale) {
       if (locale == null) {
         throw new IllegalArgumentException("locale must not be null");
       }
+      requireNotBothCaseFolds(Dimension.CASE_FOLD);
       return transform(Dimension.CASE_FOLD, CaseFoldCharSequenceNormalizer.getInstance(locale));
+    }
+
+    /**
+     * Enables {@link Dimension#FULL_CASE_FOLD}, Unicode full case folding. Unlike {@link #caseFold()}
+     * it also applies the expanding folds (the sharp s to {@code ss}, the Latin ligatures), so use
+     * one or the other rather than both.
+     *
+     * @return this builder
+     * @throws IllegalStateException if {@link Dimension#CASE_FOLD} is already configured.
+     */
+    public Builder fullCaseFold() {
+      requireNotBothCaseFolds(Dimension.FULL_CASE_FOLD);
+      chain.add(Dimension.FULL_CASE_FOLD);
+      return this;
+    }
+
+    // fullCaseFold() already includes case folding plus the expanding folds, so configuring both
+    // CASE_FOLD and FULL_CASE_FOLD is always redundant double-folding rather than a meaningful
+    // configuration; fail loud instead of silently running both in canonical order.
+    private void requireNotBothCaseFolds(Dimension adding) {
+      final Dimension other = adding == Dimension.CASE_FOLD ? Dimension.FULL_CASE_FOLD
+          : Dimension.CASE_FOLD;
+      if (chain.contains(other)) {
+        throw new IllegalStateException("caseFold() and fullCaseFold() must not both be configured; "
+            + "fullCaseFold() already includes case folding plus the expanding folds, use one or "
+            + "the other");
+      }
     }
 
     /**
@@ -358,6 +389,8 @@ public final class TermAnalyzer {
      * @throws IllegalArgumentException if {@code dimension} or {@code normalizer} is {@code null},
      *     or if {@code dimension} is {@link Dimension#ORIGINAL}, {@link Dimension#STEM}, or
      *     {@link Dimension#LEMMA}.
+     * @throws IllegalStateException if {@code dimension} is {@link Dimension#CASE_FOLD} or
+     *     {@link Dimension#FULL_CASE_FOLD} and the other one is already configured.
      */
     public Builder transform(Dimension dimension, CharSequenceNormalizer normalizer) {
       if (dimension == null) {
@@ -370,6 +403,9 @@ public final class TermAnalyzer {
           || dimension == Dimension.LEMMA) {
         throw new IllegalArgumentException(
             "transform(...) only applies to character-level dimensions, not " + dimension);
+      }
+      if (dimension == Dimension.CASE_FOLD || dimension == Dimension.FULL_CASE_FOLD) {
+        requireNotBothCaseFolds(dimension);
       }
       transforms.put(dimension, normalizer);
       chain.add(dimension);

@@ -132,6 +132,17 @@ public final class TextNormalizer {
       return add(Dimension.CASE_FOLD.defaultNormalizer());
     }
 
+    /**
+     * {@return this builder with Unicode full case folding appended}
+     *
+     * <p>Unlike {@link #caseFold()}, which lower cases, this applies the full case foldings of
+     * {@code CaseFolding.txt} including the expanding folds (sharp s to {@code ss}, the ligatures).
+     * It is offset-aware, so it composes into {@link #buildAligned()}.</p>
+     */
+    public Builder fullCaseFold() {
+      return add(Dimension.FULL_CASE_FOLD.defaultNormalizer());
+    }
+
     /** {@return this builder with script-gated diacritic folding appended} */
     public Builder accentFold() {
       return add(Dimension.ACCENT_FOLD.defaultNormalizer());
