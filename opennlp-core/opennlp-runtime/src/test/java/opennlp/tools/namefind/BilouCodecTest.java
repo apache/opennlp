@@ -653,7 +653,7 @@ public class BilouCodecTest {
 
   /**
    * Encode span with null type - four tokens (START + CONTINUE*2 + LAST).
-   * Exercises the inner loop at line 99-105.
+   * Exercises the CONTINUE inner loop.
    */
   @Test
   void testEncodeNullTypeLong() {
@@ -667,7 +667,7 @@ public class BilouCodecTest {
 
   /**
    * areOutcomesCompatible: unit-only outcomes should be compatible.
-   * Exercises the UNIT parsing path at line 161.
+   * Exercises the UNIT parsing path.
    */
   @Test
   void testCompatibilityUnitOnly() {
@@ -686,7 +686,7 @@ public class BilouCodecTest {
 
   /**
    * areOutcomesCompatible: CONTINUE without matching START should fail.
-   * Exercises the cont validation at line 178 (start.contains check).
+   * Exercises the cont validation (start.contains check).
    */
   @Test
   void testCompatibilityContinueWithoutStart() {
@@ -696,7 +696,7 @@ public class BilouCodecTest {
 
   /**
    * areOutcomesCompatible: CONTINUE without matching LAST should fail.
-   * Exercises the cont validation at line 178 (last.contains check).
+   * Exercises the cont validation (last.contains check).
    */
   @Test
   void testCompatibilityContinueWithoutLast() {
@@ -706,7 +706,7 @@ public class BilouCodecTest {
 
   /**
    * areOutcomesCompatible: CONTINUE without matching START or LAST should fail.
-   * Both contains checks at line 178 should return false.
+   * Both contains checks should return false.
    */
   @Test
   void testCompatibilityContinueWithoutStartOrLast() {
@@ -716,7 +716,7 @@ public class BilouCodecTest {
 
   /**
    * areOutcomesCompatible: UNIT + START without matching LAST should fail.
-   * Exercises the start validation at line 173 (last.contains check).
+   * Exercises the start validation (last.contains check).
    */
   @Test
   void testCompatibilityUnitStartNoLast() {
