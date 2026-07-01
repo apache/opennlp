@@ -16,6 +16,8 @@
  */
 package opennlp.tools.tokenize.uax29;
 
+import java.util.BitSet;
+
 /**
  * The category of a {@linkplain WordTokenizer word token}. {@link #ALPHANUMERIC} and
  * {@link #NUMERIC} cover letter and digit words; the remaining categories identify scripts and
@@ -83,6 +85,9 @@ public enum WordType {
     boolean hasLetter = false;
     boolean hasDigit = false;
     WordType script = null;
+    // Resolved once per call rather than once per code point in the loop below, so the volatile read
+    // behind ExtendedPictographic.members() is not repeated for every non-ASCII character of a token.
+    final BitSet pictographs = ExtendedPictographic.members();
     for (int i = start; i < end; ) {
       final int codePoint = Character.codePointAt(text, i);
       i += Character.charCount(codePoint);
@@ -95,7 +100,7 @@ public enum WordType {
         }
         continue;
       }
-      if (ExtendedPictographic.is(codePoint) || isRegionalIndicator(codePoint)) {
+      if (ExtendedPictographic.is(pictographs, codePoint) || isRegionalIndicator(codePoint)) {
         return EMOJI;
       }
       if (codePoint >= LOWEST_SCRIPT_CODE_POINT && script == null) {

@@ -18,6 +18,7 @@ package opennlp.tools.tokenize.uax29;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 import opennlp.tools.util.Span;
@@ -163,8 +164,16 @@ public final class WordSegmenter {
       return;
     }
 
+    // Resolved once for the whole pass rather than once per character: both loaders guard their
+    // table behind a volatile field for lazy, recoverable initialization (see WordBreakProperty.data
+    // and ExtendedPictographic.members), and re-reading a volatile field on every one of a document's
+    // characters is a real, avoidable cost. The two-argument ordinalOf/is overloads below use these
+    // resolved snapshots directly.
+    final WordBreakProperty.Data wbData = WordBreakProperty.data();
+    final BitSet pictographs = ExtendedPictographic.members();
+
     final int firstCp = Character.codePointAt(text, 0);
-    int prev = WordBreakProperty.ordinalOf(firstCp);
+    int prev = WordBreakProperty.ordinalOf(wbData, firstCp);
     boolean prevSpecial = SPECIAL[prev];
     int last = OTHER_ORDINAL;
     int secondLast = OTHER_ORDINAL;
@@ -179,7 +188,7 @@ public final class WordSegmenter {
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
       final int charCount = Character.charCount(codePoint);
-      final int current = WordBreakProperty.ordinalOf(codePoint);
+      final int current = WordBreakProperty.ordinalOf(wbData, codePoint);
 
       // One table read per character. It is the decision for the common case and, as GO_SLOW, the
       // "current is special" flag; combined with the carried prevSpecial it avoids the two SPECIAL
@@ -189,10 +198,11 @@ public final class WordSegmenter {
       final boolean breakHere;
       if (prevSpecial || currentSpecial) {
         breakHere = breakAtSpecial(prev, current, codePoint, last, secondLast,
-            regionalIndicatorRun, text, i + charCount, length);
+            regionalIndicatorRun, text, i + charCount, length, wbData, pictographs);
       } else {
         breakHere = action == CONSULT
-            ? consult(text, i + charCount, length, current, last, secondLast, regionalIndicatorRun)
+            ? consult(text, i + charCount, length, current, last, secondLast, regionalIndicatorRun,
+                wbData)
             : action == BREAK;
       }
 
@@ -217,7 +227,8 @@ public final class WordSegmenter {
   // WB4 (which depend on the immediately preceding code point), then falls back to the transition
   // table for the WB5-WB999 rules.
   private static boolean breakAtSpecial(int prev, int current, int codePoint, int last,
-      int secondLast, int regionalIndicatorRun, CharSequence text, int nextFrom, int length) {
+      int secondLast, int regionalIndicatorRun, CharSequence text, int nextFrom, int length,
+      WordBreakProperty.Data wbData, BitSet pictographs) {
     if (prev == CR_ORDINAL && current == LF_ORDINAL) {
       return false;                                                       // WB3
     }
@@ -227,7 +238,7 @@ public final class WordSegmenter {
     if (current == CR_ORDINAL || current == LF_ORDINAL || current == NEWLINE_ORDINAL) {
       return true;                                                        // WB3b
     }
-    if (prev == ZWJ_ORDINAL && ExtendedPictographic.is(codePoint)) {
+    if (prev == ZWJ_ORDINAL && ExtendedPictographic.is(pictographs, codePoint)) {
       return false;                                                       // WB3c
     }
     if (prev == WSEG_SPACE_ORDINAL && current == WSEG_SPACE_ORDINAL) {
@@ -238,15 +249,15 @@ public final class WordSegmenter {
     }
     final byte action = TRANSITION[last * CLASS_COUNT + current];
     return action == CONSULT
-        ? consult(text, nextFrom, length, current, last, secondLast, regionalIndicatorRun)
+        ? consult(text, nextFrom, length, current, last, secondLast, regionalIndicatorRun, wbData)
         : action == BREAK;
   }
 
   // Resolves a CONSULT cell: a look-ahead (WB6/WB7b/WB12) or parity (WB15/WB16) rule applies, so
   // the next significant value is read (the only place it is needed) and the full cascade is run.
   private static boolean consult(CharSequence text, int nextFrom, int length, int current,
-      int last, int secondLast, int regionalIndicatorRun) {
-    final WordBreak next = nextSignificant(text, nextFrom, length);
+      int last, int secondLast, int regionalIndicatorRun, WordBreakProperty.Data wbData) {
+    final WordBreak next = nextSignificant(text, nextFrom, length, wbData);
     return afterPrefix(CLASSES[current], CLASSES[last], CLASSES[secondLast], next,
         regionalIndicatorRun);
   }
@@ -282,10 +293,11 @@ public final class WordSegmenter {
   }
 
   // The Word_Break value of the next non-ignorable code point at or after "from" (else OTHER).
-  private static WordBreak nextSignificant(CharSequence text, int from, int length) {
+  private static WordBreak nextSignificant(CharSequence text, int from, int length,
+      WordBreakProperty.Data wbData) {
     for (int j = from; j < length; ) {
       final int codePoint = Character.codePointAt(text, j);
-      final WordBreak value = WordBreakProperty.of(codePoint);
+      final WordBreak value = WordBreakProperty.of(wbData, codePoint);
       if (!isIgnorable(value)) {
         return value;
       }

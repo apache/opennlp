@@ -47,8 +47,10 @@ public final class WordBreakProperty {
   }
 
   // Immutable Word_Break tables: ordinal per BMP code point, plus supplementary ranges sorted by
-  // start for binary search.
-  private static final class Data {
+  // start for binary search. Package-visible so a caller that looks up many code points in one pass
+  // (WordSegmenter) can resolve this once and reuse it, instead of paying the volatile read behind
+  // data() on every call.
+  static final class Data {
     final byte[] bmp;
     final int[] supplementaryStart;
     final int[] supplementaryEnd;
@@ -62,7 +64,9 @@ public final class WordBreakProperty {
     }
   }
 
-  private static Data data() {
+  // Package-visible so a per-pass caller can resolve the table once (see the ordinalOf/of overloads
+  // that take a resolved Data) rather than once per code point.
+  static Data data() {
     Data d = data;
     if (d == null) {
       synchronized (WordBreakProperty.class) {
@@ -154,7 +158,13 @@ public final class WordBreakProperty {
    *     {@link WordBreak#OTHER}.
    */
   public static WordBreak of(int codePoint) {
-    return VALUES[ordinalOf(codePoint)];
+    return of(data(), codePoint);
+  }
+
+  // Package-visible overload for a caller that already resolved Data once for a whole pass (see
+  // ordinalOf(Data, int)), so it is not looked up again per code point.
+  static WordBreak of(Data resolved, int codePoint) {
+    return VALUES[ordinalOf(resolved, codePoint)];
   }
 
   /**
@@ -165,15 +175,21 @@ public final class WordBreakProperty {
    *     {@link WordBreak#OTHER}.
    */
   public static int ordinalOf(int codePoint) {
-    if (codePoint >= 0 && codePoint <= 0xFFFF) {
-      return data().bmp[codePoint] & 0xFF; // unsigned byte ordinal
-    }
-    return ordinalOfSupplementary(codePoint);
+    return ordinalOf(data(), codePoint);
   }
 
-  private static int ordinalOfSupplementary(int codePoint) {
+  // Package-visible overload taking an already-resolved Data (see data()), so a caller that looks up
+  // many code points in one pass (WordSegmenter) pays the volatile read behind data() once for the
+  // whole pass rather than once per code point.
+  static int ordinalOf(Data resolved, int codePoint) {
+    if (codePoint >= 0 && codePoint <= 0xFFFF) {
+      return resolved.bmp[codePoint] & 0xFF; // unsigned byte ordinal
+    }
+    return ordinalOfSupplementary(resolved, codePoint);
+  }
+
+  private static int ordinalOfSupplementary(Data d, int codePoint) {
     if (codePoint > 0xFFFF && codePoint <= Character.MAX_CODE_POINT) {
-      final Data d = data();
       int low = 0;
       int high = d.supplementaryStart.length - 1;
       while (low <= high) {

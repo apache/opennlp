@@ -101,4 +101,16 @@ public class WordBreakPropertyTest {
         new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)),
         new byte[0x10000], new ArrayList<>()));
   }
+
+  @ParameterizedTest
+  @ValueSource(ints = {'a', 0x0301, 0x1F1E6, 0x1D400, 0x1F600, -1, Character.MAX_CODE_POINT + 1})
+  void resolvedDataOverloadsMatchTheSingleArgumentForms(int codePoint) {
+    // WordSegmenter resolves data() once per pass and calls the two-argument ordinalOf/of overloads
+    // instead of the single-argument forms, purely to avoid re-reading data()'s volatile field per
+    // code point; the resolved-data path must return exactly what the single-argument path does for
+    // BMP, supplementary, and out-of-range code points alike.
+    final WordBreakProperty.Data resolved = WordBreakProperty.data();
+    assertEquals(WordBreakProperty.ordinalOf(codePoint), WordBreakProperty.ordinalOf(resolved, codePoint));
+    assertSame(WordBreakProperty.of(codePoint), WordBreakProperty.of(resolved, codePoint));
+  }
 }

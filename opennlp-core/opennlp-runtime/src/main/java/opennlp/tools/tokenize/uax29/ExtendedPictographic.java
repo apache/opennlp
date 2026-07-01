@@ -41,7 +41,9 @@ public final class ExtendedPictographic {
   private ExtendedPictographic() {
   }
 
-  private static BitSet members() {
+  // Package-visible so a per-pass caller can resolve the set once (see is(BitSet, int)) rather than
+  // once per code point.
+  static BitSet members() {
     BitSet set = members;
     if (set == null) {
       synchronized (ExtendedPictographic.class) {
@@ -109,6 +111,13 @@ public final class ExtendedPictographic {
    * @param codePoint The code point. Values outside {@code [0, U+10FFFF]} return {@code false}.
    */
   public static boolean is(int codePoint) {
-    return codePoint >= 0 && codePoint <= Character.MAX_CODE_POINT && members().get(codePoint);
+    return is(members(), codePoint);
+  }
+
+  // Package-visible overload taking an already-resolved BitSet, so a caller that tests many code
+  // points in one pass (WordSegmenter, WordType) pays the volatile read behind members() once for the
+  // whole pass rather than once per code point.
+  static boolean is(BitSet resolved, int codePoint) {
+    return codePoint >= 0 && codePoint <= Character.MAX_CODE_POINT && resolved.get(codePoint);
   }
 }

@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -58,5 +59,16 @@ public class ExtendedPictographicTest {
         + "NOTHEX\n";                // malformed
     assertThrows(IllegalArgumentException.class, () -> ExtendedPictographic.parse(
         new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)), new BitSet()));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0x1F600, 'a', 0x1F1E6, -1, Character.MAX_CODE_POINT + 1})
+  void resolvedMembersOverloadMatchesTheSingleArgumentForm(int codePoint) {
+    // WordSegmenter and WordType resolve members() once per pass and call the two-argument is(...)
+    // overload instead of the single-argument form, purely to avoid re-reading members()'s volatile
+    // field per code point; the resolved-set path must agree with the single-argument path, including
+    // for out-of-range code points.
+    final BitSet resolved = ExtendedPictographic.members();
+    assertEquals(ExtendedPictographic.is(codePoint), ExtendedPictographic.is(resolved, codePoint));
   }
 }
