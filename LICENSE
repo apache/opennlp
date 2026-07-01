@@ -375,7 +375,7 @@ The following license applies to the bundled Unicode data files in
 opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/tokenize/uax29
 (WordBreakProperty.txt, ExtendedPictographic.txt),
 opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer
-(confusables.txt), and
+(confusables.txt, CaseFolding.txt), and
 opennlp-core/opennlp-runtime/src/test/resources/opennlp/tools/tokenize/uax29
 (WordBreakTest.txt):
 

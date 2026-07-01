@@ -60,7 +60,8 @@ public class AlignedNormalizerPipelineTest {
         DigitCharSequenceNormalizer.getInstance(),
         EllipsisCharSequenceNormalizer.getInstance(),
         BulletCharSequenceNormalizer.getInstance(),
-        GermanUmlautCharSequenceNormalizer.getInstance()
+        GermanUmlautCharSequenceNormalizer.getInstance(),
+        FullCaseFoldCharSequenceNormalizer.getInstance()
     };
     final String[] inputs = {
         "",
@@ -178,6 +179,7 @@ public class AlignedNormalizerPipelineTest {
     assertTrue(EllipsisCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertTrue(BulletCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertTrue(GermanUmlautCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertTrue(FullCaseFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     // The folds that route through java.text.Normalizer or JDK case mapping cannot, by design.
     assertFalse(NfkcCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertFalse(CaseFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);

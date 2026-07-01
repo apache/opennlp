@@ -69,9 +69,9 @@ public class TextNormalizerTest {
   void testEveryRungIsInvokable() {
     final CharSequenceNormalizer n = TextNormalizer.builder()
         .stripInvisible().nfc().nfkc().whitespace().quotes().dashes().digits().ellipsis().bullets()
-        .caseFold().accentFold().build();
-    // BOM stripped, Arabic-Indic 1 -> 1, case + accent folded.
-    final String input = cp(0xFEFF) + "CAF" + cp(0x00C9) + " " + cp(0x0661);
-    assertEquals("cafe 1", n.normalize(input).toString());
+        .caseFold().fullCaseFold().accentFold().build();
+    // BOM stripped, Arabic-Indic 1 -> 1, case + full case + accent folded (sharp s expands to "ss").
+    final String input = cp(0xFEFF) + "CAF" + cp(0x00C9) + cp(0x00DF) + " " + cp(0x0661);
+    assertEquals("cafess 1", n.normalize(input).toString());
   }
 }
