@@ -710,7 +710,7 @@ public class BilouCodecTest {
    */
   @Test
   void testCompatibilityContinueWithoutStartOrLast() {
-    Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {B_CONTINUE, B_LAST, B_UNIT}),
+    Assertions.assertFalse(codec.areOutcomesCompatible(new String[] {B_CONTINUE, A_UNIT}),
         "CONTINUE without matching START or LAST should be incompatible");
   }
 
