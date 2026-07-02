@@ -42,6 +42,7 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.normalizer.CharClass;
 
 /**
  * A sentence detector for splitting up raw text into sentences.
@@ -185,14 +186,20 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     return sentences;
   }
 
+  // The whitespace definition of the end-of-sentence position mapping: the Unicode White_Space
+  // set (OPENNLP-205). Unlike the previously used StringUtil.isWhitespace, this covers the next
+  // line control (U+0085) and does not treat the U+001C..U+001F information separators as
+  // whitespace.
+  private static final CharClass WHITESPACE = CharClass.whitespace();
+
   private int getFirstWS(CharSequence s, int pos) {
-    while (pos < s.length() && !StringUtil.isWhitespace(s.charAt(pos)))
+    while (pos < s.length() && !WHITESPACE.contains(s.charAt(pos)))
       pos++;
     return pos;
   }
 
   private int getFirstNonWS(CharSequence s, int pos) {
-    while (pos < s.length() && StringUtil.isWhitespace(s.charAt(pos)))
+    while (pos < s.length() && WHITESPACE.contains(s.charAt(pos)))
       pos++;
     return pos;
   }
@@ -244,77 +251,75 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     }
 
     int[] starts = ArrayMath.toIntArray(positions);
-
-    // string does not contain sentence end positions
-    if (starts.length == 0) {
-
-      // remove leading and trailing whitespace
-      int start = 0;
-      int end = s.length();
-
-      while (start < s.length() && StringUtil.isWhitespace(s.charAt(start)))
-        start++;
-
-      while (end > 0 && StringUtil.isWhitespace(s.charAt(end - 1)))
-        end--;
-
-      if (end - start > 0) {
-        localProbs.add(1d);
-        state.sentProbs = localProbs;
-        return new Span[] {new Span(start, end)};
-      }
-      else {
-        state.sentProbs = localProbs;
-        return new Span[0];
-      }
-    }
-
-    // Convert the sentence end indexes to spans
-
-    boolean leftover = starts[starts.length - 1] != s.length();
-    Span[] spans = new Span[leftover ? starts.length + 1 : starts.length];
-
-    for (int si = 0; si < starts.length; si++) {
-      int start;
-
-      if (si == 0) {
-        start = 0;
-      }
-      else {
-        start = starts[si - 1];
-      }
-
-      // A span might contain only white spaces, in this case the length of
-      // the span will be zero after trimming and should be ignored.
-      Span span = new Span(start, starts[si]).trim(s);
-      if (span.length() > 0) {
-        spans[si] = span;
-      }
-      else {
-        localProbs.remove(si);
-      }
-    }
-
-    if (leftover) {
-      Span span = new Span(starts[starts.length - 1], s.length()).trim(s);
-      if (span.length() > 0) {
-        spans[spans.length - 1] = span;
-        localProbs.add(1d);
-      }
-    }
-    /*
-     * set the prob for each span
-     */
-    for (int i = 0; i < spans.length; i++) {
-      double prob = localProbs.get(i);
-      spans[i] = new Span(spans[i], prob);
-
-    }
+    Span[] spans = mapPositionsToSpans(s, starts, localProbs);
 
     // Publish for backward-compatible probs() access (last-writer-wins under concurrency)
     state.sentProbs = localProbs;
 
     return spans;
+  }
+
+  /**
+   * Maps accepted sentence-start positions to trimmed sentence {@link Span}s, the core of the
+   * end-of-sentence position to span mapping (OPENNLP-205). Package-visible so the mapping is
+   * directly testable without a trained model.
+   *
+   * <p>Each span runs from the previous position (or the text start) to the next position, with
+   * Unicode {@code White_Space} trimmed from both edges. A candidate that is whitespace-only is
+   * dropped together with its probability, so {@code probs} and the returned spans always stay
+   * aligned; text after the last position becomes a final span with probability {@code 1.0}.
+   * With no positions at all, the whole text is one trimmed span, or no span when it is
+   * blank.</p>
+   *
+   * @param s      The text the positions refer to.
+   * @param starts The accepted sentence-start positions, ascending.
+   * @param probs  The probability per position; mutated so it mirrors the returned spans.
+   * @return The trimmed spans, with each probability attached, in order.
+   */
+  static Span[] mapPositionsToSpans(CharSequence s, int[] starts, List<Double> probs) {
+    // The string does not contain sentence end positions.
+    if (starts.length == 0) {
+      Span whole = trimmedSpan(s, 0, s.length());
+      if (whole == null) {
+        return new Span[0];
+      }
+      probs.add(1d);
+      return new Span[] {whole};
+    }
+
+    final List<Span> spans = new ArrayList<>(starts.length + 1);
+    final List<Double> keptProbs = new ArrayList<>(starts.length + 1);
+    for (int si = 0; si < starts.length; si++) {
+      // A candidate might contain only whitespace; it is dropped together with its probability,
+      // which keeps the spans and the probabilities aligned by construction.
+      Span span = trimmedSpan(s, si == 0 ? 0 : starts[si - 1], starts[si]);
+      if (span != null) {
+        spans.add(new Span(span, probs.get(si)));
+        keptProbs.add(probs.get(si));
+      }
+    }
+    if (starts[starts.length - 1] != s.length()) {
+      Span span = trimmedSpan(s, starts[starts.length - 1], s.length());
+      if (span != null) {
+        spans.add(new Span(span, 1d));
+        keptProbs.add(1d);
+      }
+    }
+    probs.clear();
+    probs.addAll(keptProbs);
+    return spans.toArray(new Span[0]);
+  }
+
+  // Returns [start, end) with Unicode White_Space trimmed from both edges, or null when nothing
+  // remains.
+  private static Span trimmedSpan(CharSequence s, int start, int end) {
+    while (start < end && WHITESPACE.contains(s.charAt(start))) {
+      start++;
+    }
+    while (end > start && WHITESPACE.contains(s.charAt(end - 1))) {
+      end--;
+    }
+    return end > start ? new Span(start, end) : null;
   }
 
   /**
