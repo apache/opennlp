@@ -198,9 +198,13 @@ Span[] spans = nameFinderDL.findInOriginal(tokens);]]>
 					<code>InferenceOptions</code> and is off by default:
 					<code>setNormalizeWhitespace(true)</code> folds each Unicode whitespace character to
 					an ASCII space, and <code>setNormalizeDashes(true)</code> folds Unicode dashes to the
-					ASCII hyphen-minus. Both transforms are one code point to one character and preserve
-					offsets. Full details, the underlying <code>CharClass</code> engine, and the broader
-					normalization pipeline are documented in <xref linkend="tools.normalizer"/>.
+					ASCII hyphen-minus. Whitespace folding is one code point to one character and
+					preserves offsets, and so is dash folding for Basic Multilingual Plane dashes; a
+					supplementary-plane dash shrinks from two UTF-16 units to one and shifts later
+					offsets, which <code>findInOriginal</code> maps back across (see
+					<xref linkend="tools.normalizer.dl"/>). Full details, the underlying
+					<code>CharClass</code> engine, and the broader normalization pipeline are documented
+					in <xref linkend="tools.normalizer"/>.
 				</para>
 				<programlisting language="java">
 <![CDATA[File model = new File("/path/to/model.onnx");
