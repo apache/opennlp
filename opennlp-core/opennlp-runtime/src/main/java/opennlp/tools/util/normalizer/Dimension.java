@@ -54,6 +54,9 @@ public enum Dimension {
   /** Case folding; lossy and locale sensitive. */
   CASE_FOLD(CaseFoldCharSequenceNormalizer::getInstance),
 
+  /** Unicode full case folding (UTS #21); lossy and expanding (sharp s to ss, the ligatures). */
+  FULL_CASE_FOLD(FullCaseFoldCharSequenceNormalizer::getInstance),
+
   /** Diacritic and accent folding; lossy, script gated, and language-wrong for some languages. */
   ACCENT_FOLD(AccentFoldCharSequenceNormalizer::getInstance),
 

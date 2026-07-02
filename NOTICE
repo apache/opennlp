@@ -107,6 +107,9 @@ Inc. (https://www.unicode.org/Public/).
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/confusables.txt
     is the upstream confusables.txt from the Unicode Security Mechanisms
     (UTS #39), unmodified.
+  * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/CaseFolding.txt
+    is the upstream CaseFolding.txt (version 17.0.0) from the Unicode Character
+    Database (UCD), unmodified.
   * opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
     is derived from the upstream emoji-data.txt (Emoji Data for UTS #51,
     version 17.0): it keeps only the lines that assign the
