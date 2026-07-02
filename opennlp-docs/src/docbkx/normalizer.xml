@@ -164,6 +164,19 @@
 						<entry>Reduces lookalike characters to a confusable skeleton for matching
 							(UTS #39); see below.</entry>
 					</row>
+					<row>
+						<entry><code>EmojiToEmoticonCharSequenceNormalizer</code></entry>
+						<entry>Folds emoji to ASCII emoticons from a bundled project-authored mapping
+							(U+1F642 to <code>:)</code>); an emoji presentation sequence (a pictograph
+							followed by U+FE0F) folds as one unit. Unmapped content passes through.</entry>
+					</row>
+					<row>
+						<entry><code>EmoticonToEmojiCharSequenceNormalizer</code></entry>
+						<entry>Folds an ASCII emoticon that stands alone between whitespace to its
+							pictograph (<code>:-)</code> to U+1F642). An embedded sequence, such as the
+							<code>:/</code> in <code>https://</code>, is left alone. Applied before
+							tokenization, it lets emoticons survive as single emoji tokens.</entry>
+					</row>
 				</tbody>
 			</tgroup>
 		</informaltable>
@@ -245,9 +258,11 @@ Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized tex
 			for it with a plain <code>instanceof</code>, the same pattern the name finder uses for
 			<code>OffsetMappingNameFinder</code>. Every per-code-point fold implements it: whitespace, the
 			line-break-preserving whitespace rung, dashes, invisible-control stripping, quotes, digits,
-			ellipsis, bullets, the German umlaut transliteration, and Unicode full case folding
+			ellipsis, bullets, the German umlaut transliteration, Unicode full case folding
 				(<code>fullCaseFold()</code>, whose expansions come from a bundled table with known lengths, so
-				it reports its edits). The folds that route through
+				it reports its edits), and the emoji/emoticon folds (<code>emojiToEmoticon()</code> and
+				<code>emoticonToEmoji()</code>, backed by the same kind of known-length bundled table). The
+			folds that route through
 			<code>java.text.Normalizer</code> (NFC, NFKC, accent folding, and confusable folding) or
 			through JDK case mapping (the locale-based <code>caseFold()</code>) cannot report their per-character edits, so they do
 			not implement the interface, and a chain that contains one is rejected by
@@ -454,7 +469,7 @@ CharClass wsPlus = CharClass.whitespace().withAdditional(extra);]]>
 			highlighting, even when normalization changes a token's length. A <code>Term</code> is one
 			token projected through an ordered chain of
 			<code>Dimension</code>s: original, NFC, NFKC, whitespace, dash, case fold, full case fold, accent fold,
-			confusable fold, stem, and lemma. The order is fixed because the transforms do not commute
+			emoji fold, confusable fold, stem, and lemma. The order is fixed because the transforms do not commute
 			(case folding then accent folding differs from the reverse). The original is always kept,
 			so aggressive folding stays safe and a match on any layer maps back to the source through
 			the token's <code>Span</code>.
