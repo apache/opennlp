@@ -18,7 +18,6 @@ package opennlp.tools.util.normalizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.IntFunction;
 
 import opennlp.tools.util.Span;
@@ -61,10 +60,11 @@ public final class CharClass {
    * @param replacement The canonical code point used by {@link #normalize(CharSequence)} and
    *     {@link #collapse(CharSequence)}.
    * @return The class.
-   * @throws IllegalArgumentException Thrown if {@code replacement} is not a valid code point.
+   * @throws IllegalArgumentException Thrown if {@code members} is {@code null} or
+   *     {@code replacement} is not a valid code point.
    */
   public static CharClass of(CodePointSet members, int replacement) {
-    Objects.requireNonNull(members, "members");
+    requireNonNullArg(members, "members");
     requireValidCodePoint(replacement);
     return new CharClass(members, replacement);
   }
@@ -88,9 +88,10 @@ public final class CharClass {
    *
    * @param extra The additional member code points.
    * @return A new {@code CharClass}; this instance is unchanged.
+   * @throws IllegalArgumentException Thrown if {@code extra} is {@code null}.
    */
   public CharClass withAdditional(CodePointSet extra) {
-    Objects.requireNonNull(extra, "extra");
+    requireNonNullArg(extra, "extra");
     return new CharClass(members.union(extra), replacement);
   }
 
@@ -120,9 +121,10 @@ public final class CharClass {
    *
    * @param text The text to split.
    * @return The token spans, in order.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public List<Span> splitSpans(CharSequence text) {
-    Objects.requireNonNull(text, "text");
+    requireNonNullArg(text, "text");
     final List<Span> spans = new ArrayList<>();
     final int length = text.length();
     int tokenStart = -1;
@@ -150,6 +152,7 @@ public final class CharClass {
    *
    * @param text The text to split.
    * @return The tokens, in order, with no empty entries.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String[] split(CharSequence text) {
     final List<Span> spans = splitSpans(text);
@@ -166,9 +169,10 @@ public final class CharClass {
    *
    * @param text The text to normalize.
    * @return The normalized text.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String normalize(CharSequence text) {
-    Objects.requireNonNull(text, "text");
+    requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
     int i = 0;
@@ -190,9 +194,10 @@ public final class CharClass {
    *
    * @param text The text to collapse.
    * @return The collapsed text.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String collapse(CharSequence text) {
-    Objects.requireNonNull(text, "text");
+    requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
     int i = 0;
@@ -219,11 +224,12 @@ public final class CharClass {
    * @param keep The member code points whose presence in a run preserves structure.
    * @param keepReplacement The replacement emitted for a run that contains a {@code keep} member.
    * @return The collapsed text.
-   * @throws IllegalArgumentException Thrown if {@code keepReplacement} is not a valid code point.
+   * @throws IllegalArgumentException Thrown if {@code text} or {@code keep} is {@code null}, or
+   *     {@code keepReplacement} is not a valid code point.
    */
   public String collapsePreserving(CharSequence text, CodePointSet keep, int keepReplacement) {
-    Objects.requireNonNull(text, "text");
-    Objects.requireNonNull(keep, "keep");
+    requireNonNullArg(text, "text");
+    requireNonNullArg(keep, "keep");
     requireValidCodePoint(keepReplacement);
     final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
@@ -256,9 +262,10 @@ public final class CharClass {
    *
    * @param text The text to trim.
    * @return The trimmed text.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String trim(CharSequence text) {
-    Objects.requireNonNull(text, "text");
+    requireNonNullArg(text, "text");
     final int length = text.length();
     int start = 0;
     while (start < length) {
@@ -284,9 +291,10 @@ public final class CharClass {
    *
    * @param text The text to filter.
    * @return The text with all members removed.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String removeAll(CharSequence text) {
-    Objects.requireNonNull(text, "text");
+    requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
     int i = 0;
@@ -301,6 +309,180 @@ public final class CharClass {
   }
 
   /**
+   * Like {@link #normalize(CharSequence)} but also produces the {@link Alignment} back to the
+   * original text.
+   *
+   * @param text The text to normalize.
+   * @return The normalized text and its alignment.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
+  public AlignedText normalizeAligned(CharSequence text) {
+    requireNonNullArg(text, "text");
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      final int charCount = Character.charCount(codePoint);
+      if (members.contains(codePoint)) {
+        out.appendCodePoint(replacement);
+        alignment.replace(charCount, Character.charCount(replacement));
+      } else {
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+      }
+      i += charCount;
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  /**
+   * Like {@link #collapse(CharSequence)} but also produces the {@link Alignment} back to the
+   * original text. Each collapsed run maps to the run's whole original extent.
+   *
+   * @param text The text to collapse.
+   * @return The collapsed text and its alignment.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
+  public AlignedText collapseAligned(CharSequence text) {
+    requireNonNullArg(text, "text");
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (members.contains(codePoint)) {
+        final int runEnd = skipRun(text, i);
+        out.appendCodePoint(replacement);
+        alignment.replace(runEnd - i, Character.charCount(replacement));
+        i = runEnd;
+      } else {
+        final int charCount = Character.charCount(codePoint);
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+        i += charCount;
+      }
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  /**
+   * Like {@link #collapsePreserving(CharSequence, CodePointSet, int)} but also produces the
+   * {@link Alignment} back to the original text.
+   *
+   * @param text The text to collapse.
+   * @param keep The member code points whose presence in a run preserves structure.
+   * @param keepReplacement The replacement emitted for a run that contains a {@code keep} member.
+   * @return The collapsed text and its alignment.
+   * @throws IllegalArgumentException Thrown if {@code text} or {@code keep} is {@code null}, or
+   *     {@code keepReplacement} is not a valid code point.
+   */
+  public AlignedText collapsePreservingAligned(CharSequence text, CodePointSet keep,
+                                               int keepReplacement) {
+    requireNonNullArg(text, "text");
+    requireNonNullArg(keep, "keep");
+    requireValidCodePoint(keepReplacement);
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (members.contains(codePoint)) {
+        boolean preserve = keep.contains(codePoint);
+        int j = i + Character.charCount(codePoint);
+        while (j < length) {
+          final int next = Character.codePointAt(text, j);
+          if (!members.contains(next)) {
+            break;
+          }
+          preserve |= keep.contains(next);
+          j += Character.charCount(next);
+        }
+        final int emitted = preserve ? keepReplacement : replacement;
+        out.appendCodePoint(emitted);
+        alignment.replace(j - i, Character.charCount(emitted));
+        i = j;
+      } else {
+        final int charCount = Character.charCount(codePoint);
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+        i += charCount;
+      }
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  /**
+   * Like {@link #trim(CharSequence)} but also produces the {@link Alignment} back to the original
+   * text. The trimmed leading and trailing members appear as deletions, so a span never reports
+   * through them.
+   *
+   * @param text The text to trim.
+   * @return The trimmed text and its alignment.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
+  public AlignedText trimAligned(CharSequence text) {
+    requireNonNullArg(text, "text");
+    final int length = text.length();
+    int start = 0;
+    while (start < length) {
+      final int codePoint = Character.codePointAt(text, start);
+      if (!members.contains(codePoint)) {
+        break;
+      }
+      start += Character.charCount(codePoint);
+    }
+    int end = length;
+    while (end > start) {
+      final int codePoint = Character.codePointBefore(text, end);
+      if (!members.contains(codePoint)) {
+        break;
+      }
+      end -= Character.charCount(codePoint);
+    }
+    final Alignment.Builder alignment = new Alignment.Builder();
+    if (start > 0) {
+      alignment.replace(start, 0);
+    }
+    alignment.equal(end - start);
+    if (end < length) {
+      alignment.replace(length - end, 0);
+    }
+    return new AlignedText(text, text.subSequence(start, end).toString(), alignment.build(length));
+  }
+
+  /**
+   * Like {@link #removeAll(CharSequence)} but also produces the {@link Alignment} back to the
+   * original text. Every removed member appears as a deletion, so a span never reports through one.
+   *
+   * @param text The text to filter.
+   * @return The filtered text and its alignment.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
+  public AlignedText removeAllAligned(CharSequence text) {
+    requireNonNullArg(text, "text");
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      final int charCount = Character.charCount(codePoint);
+      if (members.contains(codePoint)) {
+        alignment.replace(charCount, 0);
+      } else {
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+      }
+      i += charCount;
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  /**
    * Applies a per-code-point substitution: each code point for which {@code substitution} returns a
    * non-null string is replaced by that string, and the rest are copied through. This is the shared,
    * offset-changing cursor pass behind the expanding folds (ellipsis, German umlaut, digit), so each
@@ -309,10 +491,11 @@ public final class CharClass {
    * @param text         The text to transform.
    * @param substitution The replacement for a code point, or {@code null} to copy it through.
    * @return The transformed text.
+   * @throws IllegalArgumentException Thrown if {@code text} or {@code substitution} is {@code null}.
    */
   public static String substitute(CharSequence text, IntFunction<String> substitution) {
-    Objects.requireNonNull(text, "text");
-    Objects.requireNonNull(substitution, "substitution");
+    requireNonNullArg(text, "text");
+    requireNonNullArg(substitution, "substitution");
     final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
     int i = 0;
@@ -327,6 +510,38 @@ public final class CharClass {
       i += Character.charCount(codePoint);
     }
     return out.toString();
+  }
+
+  /**
+   * Like {@link #substitute(CharSequence, IntFunction)} but also produces the {@link Alignment} back
+   * to the original text. Each replaced code point maps to its replacement string as one block.
+   *
+   * @param text         The text to transform.
+   * @param substitution The replacement for a code point, or {@code null} to copy it through.
+   * @return The transformed text and its alignment.
+   * @throws IllegalArgumentException Thrown if {@code text} or {@code substitution} is {@code null}.
+   */
+  public static AlignedText substituteAligned(CharSequence text, IntFunction<String> substitution) {
+    requireNonNullArg(text, "text");
+    requireNonNullArg(substitution, "substitution");
+    final StringBuilder out = new StringBuilder(text.length());
+    final Alignment.Builder alignment = new Alignment.Builder();
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      final int charCount = Character.charCount(codePoint);
+      final String replacement = substitution.apply(codePoint);
+      if (replacement != null) {
+        out.append(replacement);
+        alignment.replace(charCount, replacement.length());
+      } else {
+        out.appendCodePoint(codePoint);
+        alignment.equal(charCount);
+      }
+      i += charCount;
+    }
+    return new AlignedText(text, out.toString(), alignment.build(length));
   }
 
   // Returns the offset just past the maximal run of members starting at runStart.
@@ -347,5 +562,15 @@ public final class CharClass {
     if (codePoint < 0 || codePoint > Character.MAX_CODE_POINT) {
       throw new IllegalArgumentException("Not a Unicode code point: " + codePoint);
     }
+  }
+
+  // Null parameters report IllegalArgumentException rather than requireNonNull's
+  // NullPointerException, so an invalid parameter and an invalid code point surface through the
+  // same exception type.
+  private static <T> T requireNonNullArg(T value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException("The " + name + " must not be null.");
+    }
+    return value;
   }
 }

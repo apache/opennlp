@@ -24,9 +24,9 @@ package opennlp.tools.util.normalizer;
  * <p>Scanning is a single O(1)-per-code-point cursor pass with no regular expression. ASCII dot
  * runs are left unchanged.</p>
  */
-public class EllipsisCharSequenceNormalizer implements CharSequenceNormalizer {
+public class EllipsisCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 2298647015583729167L;
+  private static final long serialVersionUID = 1548454027260005407L;
 
   private static final EllipsisCharSequenceNormalizer INSTANCE =
       new EllipsisCharSequenceNormalizer();
@@ -41,6 +41,10 @@ public class EllipsisCharSequenceNormalizer implements CharSequenceNormalizer {
     return CharClass.substitute(text, EllipsisCharSequenceNormalizer::expansion);
   }
 
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    return CharClass.substituteAligned(text, EllipsisCharSequenceNormalizer::expansion);
+  }
 
   // The ASCII expansion for an ellipsis or leader code point, or null to copy the code point through.
   private static String expansion(int codePoint) {

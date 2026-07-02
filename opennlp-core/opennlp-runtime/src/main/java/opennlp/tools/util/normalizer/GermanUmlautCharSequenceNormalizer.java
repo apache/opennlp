@@ -32,9 +32,9 @@ package opennlp.tools.util.normalizer;
  * (for example {@code a} + U+0308) is not a member and passes through unchanged, so apply NFC
  * composition first if the input may contain decomposed forms.</p>
  */
-public class GermanUmlautCharSequenceNormalizer implements CharSequenceNormalizer {
+public class GermanUmlautCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 7106934482250176835L;
+  private static final long serialVersionUID = 5544134968448734502L;
 
   private static final int SMALL_A_UMLAUT = 0x00E4;
   private static final int SMALL_O_UMLAUT = 0x00F6;
@@ -59,6 +59,11 @@ public class GermanUmlautCharSequenceNormalizer implements CharSequenceNormalize
   @Override
   public CharSequence normalize(CharSequence text) {
     return CharClass.substitute(text, GermanUmlautCharSequenceNormalizer::expansion);
+  }
+
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    return CharClass.substituteAligned(text, GermanUmlautCharSequenceNormalizer::expansion);
   }
 
   // The DIN 5007-2 transliteration for an umlaut or eszett, or null to copy the code point through.

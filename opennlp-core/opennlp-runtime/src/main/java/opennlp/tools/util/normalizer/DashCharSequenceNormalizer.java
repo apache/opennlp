@@ -25,9 +25,9 @@ package opennlp.tools.util.normalizer;
  * regardless of which dash the source used. The mathematical minus signs are left untouched by
  * default, and {@code U+00AD} SOFT HYPHEN (a format character) is not treated as a dash.</p>
  */
-public class DashCharSequenceNormalizer implements CharSequenceNormalizer {
+public class DashCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 6620885194730155303L;
+  private static final long serialVersionUID = -7726422165227709963L;
 
   private static final CharClass DASHES = CharClass.dashes();
 
@@ -43,4 +43,8 @@ public class DashCharSequenceNormalizer implements CharSequenceNormalizer {
     return DASHES.normalize(text);
   }
 
+  @Override
+  public AlignedText normalizeAligned(CharSequence text) {
+    return DASHES.normalizeAligned(text);
+  }
 }
