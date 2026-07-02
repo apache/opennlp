@@ -121,13 +121,13 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
   }
 
   @Test
-  void nextLineControlBetweenSpacedSentences() {
-    // U+0085 NEL is Unicode White_Space. The pre-refactoring mapping did not treat it as
-    // whitespace (StringUtil.isWhitespace misses it), so the second span starts at the NEL
-    // and carries it as leading content instead of starting at the word. The OPENNLP-205
-    // refactoring moves this span start onto the word.
+  void nextLineControlBetweenSpacedSentencesIsTrimmed() {
+    // U+0085 NEL is Unicode White_Space. The pre-refactoring mapping missed it
+    // (StringUtil.isWhitespace does not cover it), so the second span used to start at the NEL
+    // and carry it as leading content; with the mapping on the CharClass Unicode White_Space set
+    // (OPENNLP-205), the span starts at the word.
     String input = "This is a test. \u0085 " + SECOND;
-    assertSpans(tokenEnd, input, new Span(0, 15), new Span(16, 59));
+    assertSpans(tokenEnd, input, new Span(0, 15), new Span(18, 59));
   }
 
   @Test
@@ -137,5 +137,59 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     // split here, so the text stays one span covering both parts.
     String input = "This is a test.\u0085" + SECOND;
     assertSpans(tokenEnd, input, new Span(0, 57));
+  }
+
+  @Test
+  void mapPositionsToSpansHandlesNoPositions() {
+    java.util.List<Double> probs = new java.util.ArrayList<>();
+    Assertions.assertEquals(0,
+        SentenceDetectorME.mapPositionsToSpans("  \t ", new int[0], probs).length);
+    Assertions.assertTrue(probs.isEmpty());
+    Span[] whole = SentenceDetectorME.mapPositionsToSpans("  some text  ", new int[0], probs);
+    Assertions.assertEquals(1, whole.length);
+    Assertions.assertEquals(new Span(2, 11).getStart(), whole[0].getStart());
+    Assertions.assertEquals(new Span(2, 11).getEnd(), whole[0].getEnd());
+    Assertions.assertEquals(java.util.List.of(1d), probs);
+  }
+
+  @Test
+  void mapPositionsToSpansDropsAWhitespaceOnlyCandidateWithItsProbability() {
+    // The whitespace-only-candidate branch is not reachable through sentPosDetect's position
+    // invariants, but the mapping guarantees alignment structurally: the span and its
+    // probability are dropped together. The old implementation removed the probability by index
+    // from a pre-sized array, which could misalign the pairing.
+    java.util.List<Double> probs = new java.util.ArrayList<>(java.util.List.of(0.9d, 0.8d));
+    Span[] spans = SentenceDetectorME.mapPositionsToSpans("ab  cd", new int[] {4, 4}, probs);
+    Assertions.assertEquals(2, spans.length);
+    Assertions.assertEquals(0, spans[0].getStart());
+    Assertions.assertEquals(2, spans[0].getEnd());
+    Assertions.assertEquals(0.9d, spans[0].getProb());
+    Assertions.assertEquals(4, spans[1].getStart());
+    Assertions.assertEquals(6, spans[1].getEnd());
+    Assertions.assertEquals(1d, spans[1].getProb());
+    Assertions.assertEquals(java.util.List.of(0.9d, 1d), probs);
+  }
+
+  @Test
+  void mapPositionsToSpansTrimsTheFullUnicodeWhitespaceSet() {
+    java.util.List<Double> probs = new java.util.ArrayList<>(java.util.List.of(0.7d));
+    Span[] spans = SentenceDetectorME.mapPositionsToSpans(
+        "One.\u0085\u00A0\u2028Two", new int[] {7}, probs);
+    Assertions.assertEquals(2, spans.length);
+    Assertions.assertEquals(0, spans[0].getStart());
+    Assertions.assertEquals(4, spans[0].getEnd());
+    Assertions.assertEquals(7, spans[1].getStart());
+    Assertions.assertEquals(10, spans[1].getEnd());
+  }
+
+  @Test
+  void informationSeparatorsAreContentNotWhitespace() {
+    // Deliberate delta from the old StringUtil-based mapping: the U+001C..U+001F information
+    // separators are not Unicode White_Space, so they are no longer trimmed from span edges.
+    java.util.List<Double> probs = new java.util.ArrayList<>(java.util.List.of(0.7d));
+    Span[] spans = SentenceDetectorME.mapPositionsToSpans("A.\u001C B", new int[] {4}, probs);
+    Assertions.assertEquals(2, spans.length);
+    Assertions.assertEquals(0, spans[0].getStart());
+    Assertions.assertEquals(3, spans[0].getEnd()); // includes the separator control
   }
 }
