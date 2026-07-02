@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -124,6 +123,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if {@code inferenceOptions}, {@code ids2Labels}, or
+   *     the sentence detector is {@code null}.
    */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       SentenceDetector sentenceDetector) throws IOException, OrtException {
@@ -145,6 +146,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if {@code inferenceOptions}, {@code ids2Labels}, or
+   *     the sentence detector is {@code null}.
    */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       InferenceOptions inferenceOptions,
@@ -169,11 +172,12 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   private static InferenceOptions validateConstructorArguments(
       final InferenceOptions inferenceOptions, final Map<Integer, String> ids2Labels,
       final SentenceDetector sentenceDetector) {
-    Objects.requireNonNull(inferenceOptions, "inferenceOptions");
-    Objects.requireNonNull(ids2Labels, "ids2Labels");
-    Objects.requireNonNull(sentenceDetector, "sentenceDetector");
+    requireNonNullArg(inferenceOptions, "inferenceOptions");
+    requireNonNullArg(ids2Labels, "ids2Labels");
+    requireNonNullArg(sentenceDetector, "sentenceDetector");
     return inferenceOptions;
   }
+
 
   /**
    * {@inheritDoc}
@@ -193,9 +197,9 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    *     the expected {@code float[batch][token][label]} form, if the model output contains
    *     no usable label score for a token, or if the model's predicted index for a token is not
    *     present in the configured label map.
-   * @throws IllegalArgumentException Thrown if a token produced for the input is not present in
-   *     the vocabulary, which indicates the vocabulary file does not match the model.
-   * @throws NullPointerException Thrown if {@code input} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code input} is {@code null} or contains a
+   *     {@code null} token, or if a token produced for the input is not present in the
+   *     vocabulary, which indicates the vocabulary file does not match the model.
    */
   @Override
   public Span[] find(String[] input) {
@@ -235,7 +239,13 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   // silently keeping whichever a single forward cursor reached first.
   private DecodedSpans locate(String[] input) {
 
-    Objects.requireNonNull(input, "input");
+    requireNonNullArg(input, "input");
+    for (int i = 0; i < input.length; i++) {
+      if (input[i] == null) {
+        throw new IllegalArgumentException(
+            "The input must not contain null tokens; the token at index " + i + " was null.");
+      }
+    }
 
     // Join the tokens here because they will be tokenized using Wordpiece during inference.
     final AlignedText normalized =

@@ -95,11 +95,13 @@ public class DocumentCategorizerDLTest {
     assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[] {""}));
     assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[] {"   "}));
     assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[] {nbsp}));
+    assertThrows(IllegalArgumentException.class,
+        () -> categorizer.categorize(new String[] {null}));
   }
 
   @Test
   void testConstructorRejectsNullInferenceOptions() {
-    assertThrows(NullPointerException.class, () ->
+    assertThrows(IllegalArgumentException.class, () ->
         new DocumentCategorizerDL(null, null, vocab(), categories(),
             new AverageClassificationScoringStrategy(), null));
   }

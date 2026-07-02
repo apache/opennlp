@@ -532,4 +532,13 @@ public class NameFinderDLTest {
     assertTrue(probability >= 0 && probability <= 1,
         "probability must be within [0, 1]: " + probability);
   }
+
+  @Test
+  void testConstructorRejectsNullArgumentsWithIllegalArgumentException() {
+    // The guards run in the constructor-argument expression, before any model file is touched,
+    // so they are testable without an ONNX session; null parameters report
+    // IllegalArgumentException, matching the engine and tokenizer layers.
+    assertThrows(IllegalArgumentException.class,
+        () -> new NameFinderDL(null, null, null, null));
+  }
 }

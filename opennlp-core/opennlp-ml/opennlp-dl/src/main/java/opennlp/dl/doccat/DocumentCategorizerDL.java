@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -179,11 +178,12 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   private static InferenceOptions validateConstructorArguments(
       final InferenceOptions inferenceOptions, final Object categoriesOrConfig,
       final ClassificationScoringStrategy classificationScoringStrategy) {
-    Objects.requireNonNull(inferenceOptions, "inferenceOptions");
-    Objects.requireNonNull(categoriesOrConfig, "categoriesOrConfig");
-    Objects.requireNonNull(classificationScoringStrategy, "classificationScoringStrategy");
+    requireNonNullArg(inferenceOptions, "inferenceOptions");
+    requireNonNullArg(categoriesOrConfig, "categoriesOrConfig");
+    requireNonNullArg(classificationScoringStrategy, "classificationScoringStrategy");
     return inferenceOptions;
   }
+
 
   /**
    * Categorizes the document, failing loudly rather than returning an invalid distribution:
@@ -202,6 +202,10 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     if (strings == null || strings.length == 0) {
       throw new IllegalArgumentException(
           "The strings argument must contain at least one document to categorize");
+    }
+
+    if (strings[0] == null) {
+      throw new IllegalArgumentException("The document to categorize must not be null");
     }
 
     final List<Tokens> tokens = tokenize(strings[0]);
@@ -434,7 +438,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       // the maximum already handles merely-large finite logits, so only NaN/Infinity reach here.
       if (!Float.isFinite(value)) {
         throw new IllegalStateException(
-            "the model produced a non-finite logit (NaN or Infinity); cannot compute a "
+            "The model produced a non-finite logit (NaN or Infinity); cannot compute a "
                 + "classification distribution");
       }
       max = Math.max(max, value);

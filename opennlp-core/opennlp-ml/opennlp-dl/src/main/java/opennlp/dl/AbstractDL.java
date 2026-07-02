@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -97,9 +96,9 @@ public abstract class AbstractDL implements AutoCloseable {
   protected AbstractDL(final File model, final File vocabulary,
                        final OrtSession.SessionOptions sessionOptions, final boolean lowerCase)
       throws IOException, OrtException {
-    Objects.requireNonNull(model, "model");
-    Objects.requireNonNull(vocabulary, "vocabulary");
-    Objects.requireNonNull(sessionOptions, "sessionOptions");
+    requireNonNullArg(model, "model");
+    requireNonNullArg(vocabulary, "vocabulary");
+    requireNonNullArg(sessionOptions, "sessionOptions");
     this.env = OrtEnvironment.getEnvironment();
     // try-with-resources closes the session options once the session has consumed them.
     try (sessionOptions) {
@@ -151,7 +150,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static OrtSession.SessionOptions sessionOptions(final InferenceOptions inferenceOptions)
       throws OrtException {
-    Objects.requireNonNull(inferenceOptions, "inferenceOptions");
+    requireNonNullArg(inferenceOptions, "inferenceOptions");
     validateSplitOptions(inferenceOptions);
     final OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
     if (inferenceOptions.isGpu()) {
@@ -307,7 +306,7 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static boolean resolveLowerCase(
       final InferenceOptions options, final boolean componentDefault) {
-    Objects.requireNonNull(options, "options");
+    requireNonNullArg(options, "options");
     return options.getLowerCase() != null ? options.getLowerCase() : componentDefault;
   }
 
@@ -318,7 +317,7 @@ public abstract class AbstractDL implements AutoCloseable {
    * @throws IllegalArgumentException Thrown if the split settings cannot make progress.
    */
   protected static void validateSplitOptions(final InferenceOptions options) {
-    Objects.requireNonNull(options, "options");
+    requireNonNullArg(options, "options");
     validateSplitOptions(options.getDocumentSplitSize(), options.getSplitOverlapSize());
   }
 
@@ -575,4 +574,11 @@ public abstract class AbstractDL implements AutoCloseable {
     }
   }
 
+  // Null parameters report IllegalArgumentException rather than requireNonNull's
+  // NullPointerException, matching the parameter contract of the engine and tokenizer layers.
+  protected static void requireNonNullArg(Object value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException("The " + name + " must not be null.");
+    }
+  }
 }

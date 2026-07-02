@@ -553,8 +553,9 @@ public class NameFinderDLEval extends AbstractEvalTest {
 
     try (final NameFinderDL nameFinderDL =
              new NameFinderDL(model, vocab, getIds2Labels(), sentenceDetector)) {
-      Assertions.assertThrows(NullPointerException.class, () -> nameFinderDL.find(null));
-      Assertions.assertThrows(NullPointerException.class, () -> nameFinderDL.findInOriginal(null));
+      Assertions.assertThrows(IllegalArgumentException.class, () -> nameFinderDL.find(null));
+      Assertions.assertThrows(IllegalArgumentException.class,
+          () -> nameFinderDL.findInOriginal(null));
     }
   }
 
