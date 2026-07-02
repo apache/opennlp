@@ -64,3 +64,6 @@ src/test/resources/*.info
 <!-- other licence -->
 src/main/java/opennlp/tools/stemmer/snowball/*.java
 src/main/resources/opennlp/tools/stopword/*.txt
+
+<!-- OPENNLP-1850 bundled Unicode data file (Unicode License V3, no Apache header possible) -->
+src/main/resources/opennlp/tools/util/normalizer/confusables.txt
