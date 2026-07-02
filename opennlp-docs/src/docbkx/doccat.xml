@@ -179,7 +179,10 @@ String category = myCategorizer.getBestCategory(outcomes);]]>
 				preprocessing through <code>InferenceOptions</code> is off by default:
 				<code>setNormalizeWhitespace(true)</code> maps each Unicode whitespace code point to an
 				ASCII space, and <code>setNormalizeDashes(true)</code> maps Unicode dashes to the ASCII
-				hyphen-minus. Both are one-to-one replacements that preserve character offsets. See
+				hyphen-minus. Whitespace folding is a one-to-one replacement that preserves character
+				offsets, and so is dash folding for Basic Multilingual Plane dashes; a
+				supplementary-plane dash shrinks from two UTF-16 units to one and shifts later offsets
+				(see <xref linkend="tools.normalizer.dl"/>). See
 				<xref linkend="tools.normalizer"/> for the shared <code>CharClass</code> engine and the
 				full normalization library.
 			</para>
