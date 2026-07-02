@@ -40,6 +40,10 @@ import ai.onnxruntime.OrtSession;
 import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
+import opennlp.tools.util.Span;
+import opennlp.tools.util.normalizer.AlignedText;
+import opennlp.tools.util.normalizer.Alignment;
+import opennlp.tools.util.normalizer.CharClass;
 
 /**
  * Base class for OpenNLP deep-learning classes using ONNX Runtime.
@@ -58,6 +62,17 @@ public abstract class AbstractDL implements AutoCloseable {
   private final AtomicBoolean closed = new AtomicBoolean();
 
   protected record ChunkRange(int start, int end) {
+  }
+
+  /**
+   * A rejoined chunk paired with its half-open character span in the text it was split from, so a
+   * chunk's decoded entities can be located within the region the chunk actually covers.
+   *
+   * @param text  The chunk text, the chunk's whitespace tokens rejoined with single ASCII spaces.
+   * @param start The inclusive character offset of the chunk in the source text.
+   * @param end   The exclusive character offset of the chunk in the source text.
+   */
+  protected record TextChunk(String text, int start, int end) {
   }
 
   private static final Pattern JSON_ENTRY_PATTERN =
@@ -316,15 +331,146 @@ public abstract class AbstractDL implements AutoCloseable {
    */
   protected static void validateSplitOptions(final int documentSplitSize, final int splitOverlapSize) {
     if (documentSplitSize <= 0) {
-      throw new IllegalArgumentException("documentSplitSize must be greater than zero.");
+      throw new IllegalArgumentException("The documentSplitSize must be greater than zero.");
     }
     if (splitOverlapSize < 0) {
-      throw new IllegalArgumentException("splitOverlapSize must not be negative.");
+      throw new IllegalArgumentException("The splitOverlapSize must not be negative.");
     }
     if (splitOverlapSize >= documentSplitSize) {
       throw new IllegalArgumentException(
-          "splitOverlapSize must be smaller than documentSplitSize.");
+          "The splitOverlapSize must be smaller than documentSplitSize.");
     }
+  }
+
+  /**
+   * Unicode-aware whitespace. Input is tokenized on the full Unicode {@code White_Space} set
+   * rather than the six ASCII characters Java's {@code \s} recognizes, and the same class is
+   * reused by subclasses that need to match against whitespace in the source text.
+   */
+  protected static final CharClass WHITESPACE = CharClass.whitespace();
+
+  /** Unicode dashes (excluding the mathematical minus signs), used for optional input folding. */
+  protected static final CharClass DASHES = CharClass.dashes();
+
+  /**
+   * Optionally folds Unicode whitespace and/or dashes in the input to their ASCII forms before
+   * inference, returning just the folded text. This is suitable for callers that do not map model
+   * output back to character offsets, such as whole-document classification. When the result must
+   * be mapped back to the original text (for example to report entity spans), use
+   * {@link #normalizeInputAligned(String, boolean, boolean)} instead, which also returns an
+   * {@link Alignment} that stays correct even when a fold changes the string length.
+   *
+   * @param text The input text.
+   * @param normalizeWhitespace Whether to fold whitespace to ASCII spaces.
+   * @param normalizeDashes Whether to fold dashes to the ASCII hyphen.
+   * @return The optionally normalized text.
+   */
+  protected static String normalizeInput(final String text, final boolean normalizeWhitespace,
+                                         final boolean normalizeDashes) {
+    String result = text;
+    if (normalizeWhitespace) {
+      result = WHITESPACE.normalize(result).toString();
+    }
+    if (normalizeDashes) {
+      result = DASHES.normalize(result).toString();
+    }
+    return result;
+  }
+
+  /**
+   * Like {@link #normalizeInput(String, boolean, boolean)} but also produces an {@link Alignment}
+   * from the folded text back to {@code text}, so model output positions map to original character
+   * offsets even when a fold changes the string length (a supplementary dash shrinking, or, for
+   * folds that may be added later, an expansion such as an ellipsis to three dots).
+   *
+   * @param text The input text.
+   * @param normalizeWhitespace Whether to fold whitespace to ASCII spaces.
+   * @param normalizeDashes Whether to fold dashes to the ASCII hyphen.
+   * @return The optionally normalized text paired with its alignment back to {@code text}.
+   */
+  protected static AlignedText normalizeInputAligned(final String text,
+      final boolean normalizeWhitespace, final boolean normalizeDashes) {
+    // Compose each enabled fold's alignment with the running alignment so the returned mapping is
+    // correct no matter whether a stage changes length. Whitespace folding here is a one-for-one
+    // replacement and so is length-preserving today; only dash folding moves offsets (a
+    // supplementary-plane dash shrinks from two chars to one). Composing through andThen rather
+    // than relying on the whitespace stage staying length-preserving keeps findInOriginal() correct
+    // if that ever changes.
+    AlignedText result = identityAligned(text, text);
+    if (normalizeWhitespace) {
+      result = compose(result, WHITESPACE.normalizeAligned(result.normalized()));
+    }
+    if (normalizeDashes) {
+      result = compose(result, DASHES.normalizeAligned(result.normalized()));
+    }
+    return result;
+  }
+
+  // Threads a fold stage onto the running alignment: accumulated maps original -> current and next
+  // maps current -> next.normalized(), so the composition maps original -> next.normalized().
+  private static AlignedText compose(final AlignedText accumulated, final AlignedText next) {
+    return new AlignedText(accumulated.original(), next.normalized(),
+        accumulated.alignment().andThen(next.alignment()));
+  }
+
+  // An AlignedText whose alignment is the identity, for the case where no length-changing fold was
+  // applied so the folded text has the same length and offsets as the original.
+  private static AlignedText identityAligned(final String original, final String normalized) {
+    final Alignment alignment =
+        new Alignment.Builder().equal(normalized.length()).build(normalized.length());
+    return new AlignedText(original, normalized, alignment);
+  }
+
+  /**
+   * Splits {@code text} on Unicode whitespace and groups the resulting tokens into overlapping
+   * chunks, each rejoined with single ASCII spaces, ready for WordPiece tokenization. The split
+   * uses the Unicode {@code White_Space} set, so spacing such as a no-break space or the
+   * ideographic space is recognized, and it yields no empty tokens from leading, trailing, or
+   * repeated whitespace.
+   *
+   * @param text The input text.
+   * @param documentSplitSize The maximum number of whitespace tokens per chunk.
+   * @param splitOverlapSize The number of tokens shared between consecutive chunks.
+   * @return The chunk strings, in order.
+   */
+  protected static List<String> whitespaceChunks(final String text, final int documentSplitSize,
+                                                 final int splitOverlapSize) {
+    final List<TextChunk> chunks = whitespaceChunkSpans(text, documentSplitSize, splitOverlapSize);
+    final List<String> groups = new ArrayList<>(chunks.size());
+    for (final TextChunk chunk : chunks) {
+      groups.add(chunk.text());
+    }
+    return groups;
+  }
+
+  /**
+   * Like {@link #whitespaceChunks(String, int, int)} but also carries each chunk's character span
+   * in {@code text}, so a chunk can be decoded bounded to the region it covers and overlapping
+   * chunks yield overlapping candidate spans rather than silently dropping a boundary entity.
+   *
+   * @param text The input text.
+   * @param documentSplitSize The maximum number of whitespace tokens per chunk.
+   * @param splitOverlapSize The number of tokens shared between consecutive chunks.
+   * @return The chunks, in order, each with its character span in {@code text}.
+   */
+  protected static List<TextChunk> whitespaceChunkSpans(final String text,
+      final int documentSplitSize, final int splitOverlapSize) {
+    final List<Span> tokenSpans = WHITESPACE.splitSpans(text);
+    final List<TextChunk> chunks = new ArrayList<>();
+    for (final ChunkRange range : chunkRanges(tokenSpans.size(), documentSplitSize,
+        splitOverlapSize)) {
+      final StringBuilder rejoined = new StringBuilder();
+      for (int i = range.start(); i < range.end(); i++) {
+        if (i > range.start()) {
+          rejoined.append(' ');
+        }
+        rejoined.append(text, tokenSpans.get(i).getStart(), tokenSpans.get(i).getEnd());
+      }
+      final int start = tokenSpans.get(range.start()).getStart();
+      final int end = tokenSpans.get(range.end() - 1).getEnd();
+      chunks.add(new TextChunk(rejoined.toString(), start, end));
+    }
+    return chunks;
   }
 
   /**
@@ -340,7 +486,7 @@ public abstract class AbstractDL implements AutoCloseable {
   protected static List<ChunkRange> chunkRanges(final int tokenCount, final int documentSplitSize,
                                                 final int splitOverlapSize) {
     if (tokenCount < 0) {
-      throw new IllegalArgumentException("tokenCount must not be negative.");
+      throw new IllegalArgumentException("The tokenCount must not be negative.");
     }
     validateSplitOptions(documentSplitSize, splitOverlapSize);
 

@@ -407,6 +407,157 @@ public class NameFinderDLEval extends AbstractEvalTest {
 
   }
 
+  /**
+   * End-to-end offset safety: with dash normalization enabled and a non-BMP dash before an entity,
+   * the fold shrinks the text by one UTF-16 unit, so the entity sits at a smaller offset in the
+   * normalized text than in the original. {@link NameFinderDL#findInOriginal(String[])} must report
+   * the entity at its true offset in the original input, not the one-unit-shorter normalized offset.
+   */
+  @Test
+  public void findInOriginalMapsSpansAcrossNonBmpDash() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+
+    final InferenceOptions options = new InferenceOptions();
+    options.setNormalizeDashes(true);
+
+    // Yezidi hyphen (U+10EAD): a Unicode Dash code point in the supplementary plane (two UTF-16
+    // units) that folds to a single ASCII hyphen, shifting every following character left by one.
+    final String yezidi = new String(Character.toChars(0x10EAD));
+    final String[] tokens = {yezidi, "George", "Washington", "was", "president",
+        "of", "the", "United", "States", "."};
+    final String original = String.join(" ", tokens);
+
+    try (final NameFinderDL nameFinderDL =
+             new NameFinderDL(model, vocab, getIds2Labels(), options, sentenceDetector)) {
+
+      final Span[] spans = nameFinderDL.findInOriginal(tokens);
+
+      Span person = null;
+      for (final Span span : spans) {
+        if ("PER".equals(span.getType())) {
+          person = span;
+        }
+      }
+      Assertions.assertNotNull(person, "the PER entity should still be detected after the dash");
+      // Mapped back through the alignment, the span covers the entity in the ORIGINAL input (which
+      // still contains the two-unit dash); without the mapping it would be shifted left by one.
+      Assertions.assertEquals("George Washington", person.getCoveredText(original));
+      Assertions.assertEquals(original.indexOf("George Washington"), person.getStart());
+    }
+
+  }
+
+  /**
+   * End-to-end chunk-boundary safety with the real model. With a small split size and an overlap,
+   * "United States" straddles a chunk boundary: the first chunk ends at "United" while the
+   * overlapping next chunk sees the full entity. The decoder must keep the complete "United States"
+   * span rather than a truncated copy from whichever chunk decoded first, and the output spans must
+   * not overlap.
+   */
+  @Test
+  public void findKeepsFullEntityAcrossChunkBoundary() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+
+    final InferenceOptions options = new InferenceOptions();
+    // chunk 1 = tokens [0,7) (ends at "United"); chunk 2 = tokens [5,9) ("the United States .").
+    options.setDocumentSplitSize(7);
+    options.setSplitOverlapSize(2);
+
+    final String[] tokens = {"George", "Washington", "was", "president",
+        "of", "the", "United", "States", "."};
+    final String text = String.join(" ", tokens);
+
+    try (final NameFinderDL nameFinderDL =
+             new NameFinderDL(model, vocab, getIds2Labels(), options, sentenceDetector)) {
+
+      final Span[] spans = nameFinderDL.find(tokens);
+
+      boolean fullLocation = false;
+      boolean person = false;
+      for (final Span span : spans) {
+        if ("LOC".equals(span.getType()) && "United States".equals(span.getCoveredText(text))) {
+          fullLocation = true;
+        }
+        if ("PER".equals(span.getType()) && "George Washington".equals(span.getCoveredText(text))) {
+          person = true;
+        }
+      }
+      Assertions.assertTrue(fullLocation,
+          "the full 'United States' entity must survive the chunk boundary, not a truncated copy");
+      Assertions.assertTrue(person, "the PER entity should still be detected");
+
+      assertNoOverlappingSpans(spans, text);
+    }
+
+  }
+
+  /**
+   * End-to-end de-duplication with the real model. With a generous overlap, "United States" sits
+   * entirely within the shared region of two chunks and is decoded by both. The decoder must report
+   * it once, not twice.
+   */
+  @Test
+  public void findDeduplicatesEntityDecodedInBothOverlappingChunks() throws Exception {
+
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+
+    final InferenceOptions options = new InferenceOptions();
+    // chunk 1 = tokens [0,8); chunk 2 = tokens [4,9); "United States" (tokens 6,7) is in both.
+    options.setDocumentSplitSize(8);
+    options.setSplitOverlapSize(4);
+
+    final String[] tokens = {"George", "Washington", "was", "president",
+        "of", "the", "United", "States", "."};
+    final String text = String.join(" ", tokens);
+
+    try (final NameFinderDL nameFinderDL =
+             new NameFinderDL(model, vocab, getIds2Labels(), options, sentenceDetector)) {
+
+      final Span[] spans = nameFinderDL.find(tokens);
+
+      int locations = 0;
+      for (final Span span : spans) {
+        if ("LOC".equals(span.getType()) && "United States".equals(span.getCoveredText(text))) {
+          locations++;
+        }
+      }
+      Assertions.assertEquals(1, locations,
+          "the entity in the chunk overlap must be reported once, not duplicated");
+
+      assertNoOverlappingSpans(spans, text);
+    }
+
+  }
+
+  // Asserts no two spans overlap in character coordinates, the post-merge invariant of locate().
+  private static void assertNoOverlappingSpans(final Span[] spans, final String text) {
+    for (int i = 0; i < spans.length; i++) {
+      for (int j = i + 1; j < spans.length; j++) {
+        Assertions.assertFalse(spans[i].intersects(spans[j]),
+            "spans must not overlap after merge: " + spans[i].getCoveredText(text)
+                + " vs " + spans[j].getCoveredText(text));
+      }
+    }
+  }
+
+  @Test
+  public void findRejectsNullInput() throws Exception {
+    // Public entry points fail fast on a null token array rather than deeper inside String.join.
+    final File model = new File(getOpennlpDataDir(), "onnx/namefinder/model.onnx");
+    final File vocab = new File(getOpennlpDataDir(), "onnx/namefinder/vocab.txt");
+
+    try (final NameFinderDL nameFinderDL =
+             new NameFinderDL(model, vocab, getIds2Labels(), sentenceDetector)) {
+      Assertions.assertThrows(NullPointerException.class, () -> nameFinderDL.find(null));
+      Assertions.assertThrows(NullPointerException.class, () -> nameFinderDL.findInOriginal(null));
+    }
+  }
+
   private Map<Integer, String> getIds2Labels() {
 
     final Map<Integer, String> ids2Labels = new HashMap<>();

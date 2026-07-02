@@ -86,6 +86,25 @@ public class DocumentCategorizerDLTest {
   }
 
   @Test
+  void testCategorizeRejectsTokenlessContent() {
+    // A non-empty array whose document has no tokens (empty or only whitespace, including Unicode
+    // whitespace) is rejected up front rather than crashing downstream on an empty score list.
+    final DocumentCategorizerDL categorizer = categorizerWithoutSession();
+    final String nbsp = new String(Character.toChars(0x00A0));
+
+    assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[] {""}));
+    assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[] {"   "}));
+    assertThrows(IllegalArgumentException.class, () -> categorizer.categorize(new String[] {nbsp}));
+  }
+
+  @Test
+  void testConstructorRejectsNullInferenceOptions() {
+    assertThrows(NullPointerException.class, () ->
+        new DocumentCategorizerDL(null, null, vocab(), categories(),
+            new AverageClassificationScoringStrategy(), null));
+  }
+
+  @Test
   void testTokenIdsMapsTokensToVocabularyIds() {
     final long[] ids = DocumentCategorizerDL.tokenIds(
         new String[] {WordpieceTokenizer.BERT_CLS_TOKEN, "hello", "world",
@@ -101,6 +120,27 @@ public class DocumentCategorizerDLTest {
 
     assertTrue(e.getMessage().contains("missing"),
         "the error message should name the missing token: " + e.getMessage());
+  }
+
+  @Test
+  void testSoftmaxRejectsNaNLogit() {
+    // A NaN logit would otherwise poison the whole distribution into NaN scores; fail loudly instead.
+    final IllegalStateException e = assertThrows(IllegalStateException.class, () ->
+        DocumentCategorizerDL.softmax(new float[] {0f, Float.NaN, 0f}));
+    assertTrue(e.getMessage().contains("NaN"), e.getMessage());
+  }
+
+  @Test
+  void testSoftmaxRejectsInfiniteLogit() {
+    // A +Infinity logit (not NaN, so it slips past an isNaN-only guard) poisons the distribution too:
+    // max becomes +Inf, so value - max is Inf - Inf == NaN, every exp() is NaN, and categorize() would
+    // silently return all-NaN scores. It must fail loud like the NaN case. -Infinity is non-finite too.
+    final IllegalStateException pos = assertThrows(IllegalStateException.class, () ->
+        DocumentCategorizerDL.softmax(new float[] {0f, Float.POSITIVE_INFINITY, 0f}));
+    assertTrue(pos.getMessage().contains("non-finite") || pos.getMessage().contains("Infinity"),
+        pos.getMessage());
+    assertThrows(IllegalStateException.class, () ->
+        DocumentCategorizerDL.softmax(new float[] {0f, Float.NEGATIVE_INFINITY, 0f}));
   }
 
   @Test
@@ -145,5 +185,35 @@ public class DocumentCategorizerDLTest {
     assertEquals(0.09003057, out[0], 1e-6);
     assertEquals(0.24472847, out[1], 1e-6);
     assertEquals(0.66524096, out[2], 1e-6);
+  }
+
+  @Test
+  void testLogitsFromOutputDispatchesOnModelShape() {
+    // A 2D output (BERT-style) takes row 0; a 1D output (RoBERTa-style) is taken as-is.
+    assertArrayEquals(new float[] {1f, 2f},
+        DocumentCategorizerDL.logitsFromOutput(new float[][] {{1f, 2f}}));
+    assertArrayEquals(new float[] {3f, 4f},
+        DocumentCategorizerDL.logitsFromOutput(new float[] {3f, 4f}));
+  }
+
+  @Test
+  void testLogitsFromOutputFailsLoudlyOnNullAndUnexpectedType() {
+    // A null or otherwise-shaped model output is a contract violation, not an "inference failed".
+    final IllegalStateException onNull = assertThrows(IllegalStateException.class,
+        () -> DocumentCategorizerDL.logitsFromOutput(null));
+    assertTrue(onNull.getMessage().contains("null"), onNull.getMessage());
+    assertThrows(IllegalStateException.class,
+        () -> DocumentCategorizerDL.logitsFromOutput("not a tensor"));
+  }
+
+  @Test
+  void testRequireMatchingCategoryCountFailsLoudlyOnMismatch() {
+    // A distribution whose length differs from the configured category count means the model and
+    // the categorizer configuration do not match; the matching case passes the array through.
+    final double[] ok = {0.5, 0.5};
+    assertArrayEquals(ok, DocumentCategorizerDL.requireMatchingCategoryCount(ok, 2));
+    final IllegalStateException e = assertThrows(IllegalStateException.class,
+        () -> DocumentCategorizerDL.requireMatchingCategoryCount(new double[] {1.0}, 2));
+    assertTrue(e.getMessage().contains("do not match"), e.getMessage());
   }
 }

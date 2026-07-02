@@ -22,6 +22,37 @@ Named entity models are commonly cased, so lower casing is disabled by default.
 Set `InferenceOptions#setLowerCase(true)` only for models trained with uncased
 input.
 
+### Unicode text handling
+
+Long input is split into overlapping chunks on the full Unicode `White_Space`
+set (not Java's `\s`), so no-break space, ideographic space, and the other UCD
+whitespace characters are recognized as delimiters. `NameFinderDL` locates
+reconstructed entity text in the original input with a cursor-based matcher that
+treats span spaces as flexible Unicode whitespace and compares other code points
+case-insensitively, so `Span#getCoveredText(...)` works on text from PDFs, the
+web, and multilingual sources.
+
+Optional input folding is off by default and controlled through
+`InferenceOptions`:
+
+```java
+InferenceOptions options = new InferenceOptions();
+options.setNormalizeWhitespace(true);  // each Unicode whitespace -> ASCII space (offset-preserving)
+options.setNormalizeDashes(true);      // Unicode dashes -> hyphen-minus (offset note below)
+NameFinderDL finder = new NameFinderDL(model, vocab, ids2Labels, options, sentenceDetector);
+```
+
+Whitespace folding is length-preserving, so it never moves offsets. Dash folding can shrink a
+non-BMP dash by one UTF-16 unit, but `NameFinderDL.findInOriginal` maps decoded spans back through
+the normalization `Alignment`, so reported spans stay correct in the original input even for
+non-BMP dashes. (`NameFinderDL.find` returns normalized-text offsets, which differ from the
+original only in that non-BMP-dash case.)
+
+The same options apply to `DocumentCategorizerDL`. The underlying
+`CharClass` / `CodePointSet` engine and the broader normalization pipeline live
+in `opennlp.tools.util.normalizer` and are documented in the OpenNLP manual
+chapter *Text Normalization*.
+
 Export a Hugging Face NER model to ONNX, e.g.:
 
 ```bash
@@ -30,11 +61,30 @@ python -m transformers.onnx --model=dslim/bert-base-NER --feature token-classifi
 
 ## DocumentCategorizerDL
 
+Uses the same Unicode whitespace chunking and optional `InferenceOptions`
+normalization as `NameFinderDL` (see above).
+
 Export a Huggingface classification (e.g. sentiment) model to ONNX, e.g.:
 
 ```bash
 python -m transformers.onnx --model=nlptown/bert-base-multilingual-uncased-sentiment --feature sequence-classification exported
 ```
+
+## Behavior changes in this release
+
+Integrators upgrading from an earlier `opennlp-dl` should note these intentional changes (OPENNLP-1850):
+
+- `NameFinderDL.find(...)` reports spans in the coordinates of the joined input it ran inference on,
+  which differ from the original text only when length-changing dash folding is enabled. Use the new
+  `NameFinderDL.findInOriginal(...)` (from `OffsetMappingNameFinder`) for original-text coordinates.
+- Spans that overlap at chunk boundaries are now merged longest-wins; `find(...)` previously returned
+  every decoded span, overlaps included.
+- Chunking splits on the Unicode `White_Space` set rather than `String#split("\\s+")`, and
+  whitespace-only input now yields no spans without running the model.
+- `DocumentCategorizerDL.categorize(...)` now rejects `null`/empty input, and a document with no
+  non-whitespace token, with `IllegalArgumentException` rather than running the model on empty input.
+- The example label constants `NameFinderDL.I_PER` and `NameFinderDL.B_PER` were removed; supply your
+  own label strings (any `B-<TYPE>`/`I-<TYPE>` pair works, as described above).
 
 ## SentenceVectors
 

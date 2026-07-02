@@ -17,6 +17,7 @@
 
 package opennlp.dl.namefinder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -169,7 +171,7 @@ public class NameFinderDLTest {
   void testDecodeSpansLocatesEntityWithInternalPunctuation() {
     // WordPiece splits "AT&T" into separate AT / & / T tokens, so the reconstructed span text
     // ("AT & T") must still be located in the contiguous source. Regression guard for the
-    // flexible-whitespace (\s*) matching in findByRegex.
+    // flexible-whitespace matching in findInSource (a span space matches zero source whitespace).
     final String text = "Buy AT&T stock";
     final String[] tokens = {"[CLS]", "Buy", "AT", "&", "T", "stock", "[SEP]"};
     final float[][] scores = {
@@ -182,6 +184,37 @@ public class NameFinderDLTest {
     assertEquals(1, spans.size());
     assertEquals("ORG", spans.get(0).getType());
     assertEquals("AT&T", spans.get(0).getCoveredText(text));
+  }
+
+  @Test
+  void testDecodeSpansMatchesEntitySeparatedByNoBreakSpace() {
+    // The source separates "New" and "York" with a no-break space (U+00A0). Java's \s does not
+    // match it, so the previous regex matcher would have dropped this LOC span; the Unicode-aware
+    // cursor matcher locates it and the covered text includes the no-break space.
+    final String nbsp = new String(Character.toChars(0x00A0));
+    final String text = "Visit New" + nbsp + "York today";
+    final String[] tokens = {"[CLS]", "New", "York", "[SEP]"};
+    final float[][] scores = {scoresFor(0), scoresFor(3), scoresFor(4), scoresFor(0)};
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertEquals(1, spans.size());
+    assertEquals("LOC", spans.get(0).getType());
+    assertEquals("New" + nbsp + "York", spans.get(0).getCoveredText(text));
+  }
+
+  @Test
+  void testDecodeSpansMatchesEntitySeparatedByIdeographicSpace() {
+    // Same idea with the CJK ideographic space (U+3000), another character outside Java's \s.
+    final String ideographic = new String(Character.toChars(0x3000));
+    final String text = "from New" + ideographic + "York city";
+    final String[] tokens = {"[CLS]", "New", "York", "[SEP]"};
+    final float[][] scores = {scoresFor(0), scoresFor(3), scoresFor(4), scoresFor(0)};
+
+    final List<Span> spans = NameFinderDL.decodeSpans(text, tokens, scores, ID_TO_LABELS);
+
+    assertEquals(1, spans.size());
+    assertEquals("New" + ideographic + "York", spans.get(0).getCoveredText(text));
   }
 
   @Test
@@ -199,7 +232,7 @@ public class NameFinderDLTest {
   @Test
   void testDecodeSpansMatchesSourceCaseInsensitively() {
     // The reconstructed span text may differ in case from the source (e.g. an uncased model);
-    // findByRegex matches case-insensitively, so the span is still located at the source offsets.
+    // findInSource matches case-insensitively, so the span is still located at the source offsets.
     final String text = "Visit PARIS today";
     final String[] tokens = {"[CLS]", "Visit", "paris", "today", "[SEP]"};
     final float[][] scores = {
@@ -325,6 +358,72 @@ public class NameFinderDLTest {
   }
 
   @Test
+  void testMergeOverlappingSpansKeepsLongestAndPreservesDisjoint() {
+    // Containment: the longer span absorbs the shorter overlapping one.
+    final List<Span> contained = NameFinderDL.mergeOverlappingSpans(new ArrayList<>(List.of(
+        new Span(0, 8, "LOC", 0.9), new Span(0, 13, "LOC", 0.8))));
+    assertEquals(1, contained.size());
+    assertEquals(0, contained.get(0).getStart());
+    assertEquals(13, contained.get(0).getEnd());
+
+    // Partial overlap: the longer span wins, the shorter overlapping one is dropped.
+    final List<Span> partial = NameFinderDL.mergeOverlappingSpans(new ArrayList<>(List.of(
+        new Span(0, 5, "LOC", 0.7), new Span(3, 12, "LOC", 0.6))));
+    assertEquals(1, partial.size());
+    assertEquals(3, partial.get(0).getStart());
+    assertEquals(12, partial.get(0).getEnd());
+
+    // Equal length overlap: the higher probability wins the tie.
+    final List<Span> tie = NameFinderDL.mergeOverlappingSpans(new ArrayList<>(List.of(
+        new Span(0, 5, "PER", 0.6), new Span(2, 7, "PER", 0.9))));
+    assertEquals(1, tie.size());
+    assertEquals(2, tie.get(0).getStart());
+    assertEquals(7, tie.get(0).getEnd());
+
+    // Adjacent but disjoint spans are both kept and returned in document order.
+    final List<Span> disjoint = NameFinderDL.mergeOverlappingSpans(new ArrayList<>(List.of(
+        new Span(5, 10, "LOC", 0.9), new Span(0, 5, "PER", 0.9))));
+    assertEquals(2, disjoint.size());
+    assertEquals(0, disjoint.get(0).getStart());
+    assertEquals(5, disjoint.get(1).getStart());
+  }
+
+  @Test
+  void testMergeOverlappingSpansReturnsAFreshListForTrivialInput() {
+    // The size < 2 fast path must hand back a new list, not the caller's, so the result is always
+    // owned by the caller -- the same ownership contract as the merging path.
+    final List<Span> single = new ArrayList<>(List.of(new Span(0, 5, "PER", 0.9)));
+    final List<Span> merged = NameFinderDL.mergeOverlappingSpans(single);
+    assertEquals(1, merged.size());
+    assertNotSame(single, merged);
+    assertTrue(NameFinderDL.mergeOverlappingSpans(new ArrayList<Span>()).isEmpty());
+  }
+
+  @Test
+  void testChunkAssemblyKeepsFullerOverlappingSpan() {
+    // Mirrors how locate() decodes two overlapping chunks bounded to their own character regions.
+    // Chunk 1 covers up to "York" and labels "New York"; the overlapping chunk 2 covers "New York
+    // City" and labels it. Both candidates are produced and mergeOverlappingSpans keeps the fuller
+    // "New York City" rather than dropping it, which is the chunk-boundary case a single forward
+    // cursor mishandled.
+    final String text = "Alice visited New York City."; // "New York" = [14,22), "City" ends at 27
+    final String[] chunk1 = {"[CLS]", "New", "York", "[SEP]"};
+    final float[][] scores1 = {scoresFor(0), scoresFor(3), scoresFor(4), scoresFor(0)};
+    final String[] chunk2 = {"[CLS]", "New", "York", "City", "[SEP]"};
+    final float[][] scores2 =
+        {scoresFor(0), scoresFor(3), scoresFor(4), scoresFor(4), scoresFor(0)};
+
+    final List<Span> candidates = new ArrayList<>();
+    candidates.addAll(NameFinderDL.decodeSpans(text, chunk1, scores1, ID_TO_LABELS, 14, 22));
+    candidates.addAll(NameFinderDL.decodeSpans(text, chunk2, scores2, ID_TO_LABELS, 14, 27));
+    assertEquals(2, candidates.size(), "both chunks emit a candidate for the boundary entity");
+
+    final List<Span> merged = NameFinderDL.mergeOverlappingSpans(candidates);
+    assertEquals(1, merged.size());
+    assertEquals("New York City", merged.get(0).getCoveredText(text));
+  }
+
+  @Test
   void testDecodeSpansLocatesEntityWithRegexMetacharacters() {
     // WordPiece splits "C++" into C / + / + tokens, so the reconstructed span text contains regex
     // metacharacters. Pattern.quote must treat them literally (not as quantifiers) for the entity
@@ -388,6 +487,14 @@ public class NameFinderDLTest {
     final double p = NameFinderDL.labelProbability(new float[] {0f, Float.NaN, 0f}, 0);
     assertEquals(0.5, p, 1e-9);
     assertBounded(p);
+  }
+
+  @Test
+  void testBuildSpanTextSkipsRobertaSpecialTokens() {
+    // RoBERTa markers (<s>, </s>) must be skipped during span reconstruction, the same way the
+    // BERT [CLS]/[SEP] markers are, so they never leak into a reconstructed entity span.
+    assertEquals("New York",
+        NameFinderDL.buildSpanText(new String[] {"<s>", "New", "York", "</s>"}, 0, 3));
   }
 
   private static float[] scoresFor(int labelIndex) {

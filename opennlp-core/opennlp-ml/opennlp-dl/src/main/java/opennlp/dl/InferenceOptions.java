@@ -26,6 +26,8 @@ public class InferenceOptions {
   private int documentSplitSize = 250;
   private int splitOverlapSize = 50;
   private Boolean lowerCase;
+  private boolean normalizeWhitespace;
+  private boolean normalizeDashes;
 
   public boolean isIncludeAttentionMask() {
     return includeAttentionMask;
@@ -73,6 +75,46 @@ public class InferenceOptions {
 
   public void setSplitOverlapSize(int splitOverlapSize) {
     this.splitOverlapSize = splitOverlapSize;
+  }
+
+  /** {@return whether input whitespace is normalized to ASCII spaces before inference} */
+  public boolean isNormalizeWhitespace() {
+    return normalizeWhitespace;
+  }
+
+  /**
+   * Replaces every Unicode whitespace character in the input with an ASCII space before inference.
+   * This is offset preserving (each whitespace code point maps to one space), so any spans a model
+   * produces still align with the input. Off by default.
+   *
+   * <p>This is a one-for-one replacement, not the collapse-and-trim whitespace fold of the runtime
+   * {@code TextNormalizer.whitespace()} rung: runs of whitespace are not merged and leading or
+   * trailing whitespace is not removed, so offsets are preserved.</p>
+   *
+   * @param normalizeWhitespace Whether to normalize whitespace.
+   */
+  public void setNormalizeWhitespace(boolean normalizeWhitespace) {
+    this.normalizeWhitespace = normalizeWhitespace;
+  }
+
+  /** {@return whether input dashes are normalized to the ASCII hyphen before inference} */
+  public boolean isNormalizeDashes() {
+    return normalizeDashes;
+  }
+
+  /**
+   * Replaces Unicode dashes in the input with the ASCII hyphen-minus before inference. This is
+   * offset preserving for the dash characters in the Basic Multilingual Plane (the common case).
+   * The mathematical minus signs are not affected. Off by default.
+   *
+   * <p>A supplementary-plane dash shrinks from two chars to one, which shifts later offsets, so
+   * with this enabled {@code find(...)} reports offsets into the normalized text in that case. Use
+   * {@code NameFinderDL.findInOriginal(...)} for offsets mapped back to the original input.</p>
+   *
+   * @param normalizeDashes Whether to normalize dashes.
+   */
+  public void setNormalizeDashes(boolean normalizeDashes) {
+    this.normalizeDashes = normalizeDashes;
   }
 
   /**
