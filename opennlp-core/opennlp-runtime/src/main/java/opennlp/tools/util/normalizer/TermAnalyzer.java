@@ -38,7 +38,7 @@ import opennlp.tools.util.Span;
  *
  * <p>Segmentation uses the Unicode {@linkplain WordTokenizer UAX&#160;#29 word tokenizer}, so the
  * input does not need to be pre-tokenized. The character-level dimensions ({@link Dimension#NFC}
- * through {@link Dimension#ACCENT_FOLD}) have built-in defaults; {@link Dimension#STEM} and
+ * through {@link Dimension#CONFUSABLE_FOLD}) have built-in defaults; {@link Dimension#STEM} and
  * {@link Dimension#LEMMA} are enabled by supplying a {@link Stemmer} or {@link Lemmatizer}.</p>
  *
  * <p>An instance is immutable and is thread-safe when its configured transforms are. The built-in
@@ -144,10 +144,19 @@ public final class TermAnalyzer {
               "Dimension LEMMA requires a Lemmatizer; configure it with builder().lemmatize(...)");
         }
         if (posTag == null) {
-          throw new IllegalStateException(
-              "Dimension LEMMA requires a part-of-speech tag; use analyze(tokens, tags)");
+          throw new IllegalStateException("Dimension LEMMA requires a part-of-speech tag, but the"
+              + " tag for token '" + input + "' was null; use analyze(tokens, tags) with a"
+              + " non-null tag per token");
         }
-        return lemmatizer.lemmatize(new String[] {input}, new String[] {posTag})[0];
+        final String[] lemmas = lemmatizer.lemmatize(new String[] {input}, new String[] {posTag});
+        if (lemmas == null || lemmas.length == 0 || lemmas[0] == null) {
+          // A contract-violating Lemmatizer must fail loud here: a null cached under LEMMA would
+          // read as "absent" in Term.at's lazy cache and recompute through normalized() forever,
+          // surfacing as a StackOverflowError far from the cause.
+          throw new IllegalStateException(
+              "The Lemmatizer returned no lemma for token '" + input + "'");
+        }
+        return lemmas[0];
       default:
         // A builder override wins; otherwise the dimension's own default normalizer.
         final CharSequenceNormalizer normalizer = transforms.containsKey(dimension)

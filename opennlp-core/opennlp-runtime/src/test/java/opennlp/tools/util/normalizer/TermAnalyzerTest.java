@@ -145,6 +145,31 @@ public class TermAnalyzerTest {
   }
 
   @Test
+  void testLemmatizerReturningNullFailsLoudlyInsteadOfOverflowing() {
+    // A contract-violating Lemmatizer that returns a null lemma must surface as a clear
+    // IllegalStateException. Before this guard the null was cached under LEMMA, read as "absent"
+    // by Term.at's lazy cache, and recomputed through normalized() forever, surfacing as a
+    // StackOverflowError far from the cause.
+    final Lemmatizer broken = new Lemmatizer() {
+      @Override
+      public String[] lemmatize(String[] tokens, String[] tags) {
+        return new String[] {null};
+      }
+
+      @Override
+      public List<List<String>> lemmatize(List<String> tokens, List<String> tags) {
+        return List.of();
+      }
+    };
+    final TermAnalyzer analyzer = TermAnalyzer.builder().lemmatize(broken).build();
+    // Configured dimensions are computed eagerly in the Term constructor, so the guard fires
+    // already during analyze, as close to the misbehaving Lemmatizer as possible.
+    final IllegalStateException e = assertThrows(IllegalStateException.class,
+        () -> analyzer.analyze(new String[] {"was"}, new String[] {"VBD"}));
+    assertTrue(e.getMessage().contains("was"));
+  }
+
+  @Test
   void testAnalyzeCharSequenceFailsLoudlyWhenLemmaConfigured() {
     // analyze(CharSequence) has no POS tags, so a configured LEMMA layer cannot be satisfied; it
     // fails loud rather than silently dropping the layer. Callers needing lemmas use analyze(tokens,
