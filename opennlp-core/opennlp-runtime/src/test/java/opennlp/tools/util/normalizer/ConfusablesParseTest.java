@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ConfusablesLoadTest {
+class ConfusablesParseTest {
 
   private static InputStream in(String data) {
     return new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
