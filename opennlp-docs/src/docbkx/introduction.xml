@@ -303,7 +303,8 @@ Arguments description:
                 and <xref linkend="tools.doccat">Document Categorizer</xref>. This allows models trained by other frameworks
                 such as PyTorch and Tensorflow to be used by OpenNLP. The documentation for
                 each of the OpenNLP components that supports ONNX models describes how to
-                use ONNX models for inference.
+                use ONNX models for inference. DL inference uses Unicode-aware text chunking and
+                optional input normalization; see <xref linkend="tools.normalizer.dl"/>.
             </para>
             <note>
                 <para>

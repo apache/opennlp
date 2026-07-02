@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.normalizer" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<title>Text Normalization</title>
+
+	<section xml:id="tools.normalizer.introduction">
+		<title>Introduction</title>
+		<para>
+			The package <code>opennlp.tools.util.normalizer</code> provides Unicode-aware text
+			normalization for matching, search, and tokenization preprocessing. It cleans up the
+			kinds of inconsistency that real text carries when it is copied from the web, PDFs,
+			office documents, or multilingual sources: spacing that is not an ordinary space, the
+			many dash and quotation variants, decomposed versus precomposed accents, non-ASCII
+			digits, and invisible control characters.
+		</para>
+		<para>
+			The implementation follows three principles:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>
+					<emphasis role="bold">Standards-sourced.</emphasis> Membership sets come from the
+					Unicode Character Database (for example the <code>White_Space</code> and
+					<code>Dash</code> properties), not from the JVM's locale-dependent or quirky
+					character predicates. The normalization engine never relies on
+					<code>Character.isWhitespace</code>, which disagrees with the Unicode standard.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<emphasis role="bold">Cursor-based, no regular expressions.</emphasis> Every
+					operation is a single forward pass over the input that tests membership in O(1)
+					and advances by code point. This avoids the allocation and the catastrophic
+					backtracking (ReDoS) risk of regular expressions, and it correctly recognizes
+					Unicode characters that Java's <code>\s</code> does not.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<emphasis role="bold">Offset-preserving.</emphasis> The original text is always
+					the source of truth. Normalization produces a derived form for matching while the
+					original character offsets are kept, so a search hit can be reported and
+					highlighted against the source even when the normalized form has a different
+					length.
+				</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			Two engines underpin everything: the <code>CharSequenceNormalizer</code> family offers
+			ready-made, composable normalizers, and the <code>CharClass</code> engine is the low-level,
+			configurable building block they are made of. Built on these are three higher-level
+			features documented below: a layered term model that projects a token through a
+			configurable stack of transforms while keeping every intermediate form (see
+			<xref linkend="tools.normalizer.term"/>), per-language profiles that select the transforms
+			appropriate to a language (see <xref linkend="tools.normalizer.language"/>), and confusable
+			folding that reduces lookalike characters for matching (see
+			<xref linkend="tools.normalizer.confusables"/>).
+		</para>
+	</section>
+
+	<section xml:id="tools.normalizer.normalizers">
+		<title>The normalizer family</title>
+		<para>
+			Each normalizer implements the existing
+			<code>opennlp.tools.util.normalizer.CharSequenceNormalizer</code> interface
+			(<code>CharSequence normalize(CharSequence)</code>) and is, by default, a shared stateless instance
+			obtained through <code>getInstance()</code> (case and accent folding also offer
+			configured forms). They can therefore be combined with the
+			existing <code>AggregateCharSequenceNormalizer</code>, or with the
+			<code>TextNormalizer</code> builder described below.
+		</para>
+
+		<informaltable frame="all">
+			<tgroup cols="2">
+				<thead>
+					<row>
+						<entry>Normalizer</entry>
+						<entry>Effect</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><code>WhitespaceCharSequenceNormalizer</code></entry>
+						<entry>Collapses each run of Unicode whitespace to a single ASCII space and
+							trims the edges.</entry>
+					</row>
+					<row>
+						<entry><code>LineBreakPreservingWhitespaceCharSequenceNormalizer</code></entry>
+						<entry>Collapses horizontal whitespace runs to a single ASCII space but keeps a
+							run containing a line break as a single newline, so paragraph structure
+							survives; trims the edges.</entry>
+					</row>
+					<row>
+						<entry><code>DashCharSequenceNormalizer</code></entry>
+						<entry>Maps every Unicode dash to the ASCII hyphen-minus. The mathematical
+							minus signs and the soft hyphen are not affected.</entry>
+					</row>
+					<row>
+						<entry><code>QuoteCharSequenceNormalizer</code></entry>
+						<entry>Folds typographic single quotes and apostrophes to <code>'</code> and
+							double quotes (including guillemets) to <code>"</code>.</entry>
+					</row>
+					<row>
+						<entry><code>DigitCharSequenceNormalizer</code></entry>
+						<entry>Maps Unicode decimal digits (Arabic-Indic, Devanagari, fullwidth, ...)
+							to ASCII <code>0</code>-<code>9</code> by their numeric value.</entry>
+					</row>
+					<row>
+						<entry><code>EllipsisCharSequenceNormalizer</code></entry>
+						<entry>Expands the horizontal ellipsis to <code>...</code> and the two-dot
+							leader to <code>..</code></entry>
+					</row>
+					<row>
+						<entry><code>BulletCharSequenceNormalizer</code></entry>
+						<entry>Replaces unambiguous list bullets with a space; the Catalan middle dot
+							is left alone.</entry>
+					</row>
+					<row>
+						<entry><code>InvisibleCharSequenceNormalizer</code></entry>
+						<entry>Removes invisible format and bidirectional control characters (BOM,
+							zero width space, bidi marks/overrides/isolates, ...). The zero width
+							joiner and non-joiner and variation selectors are kept.</entry>
+					</row>
+					<row>
+						<entry><code>NfcCharSequenceNormalizer</code></entry>
+						<entry>Applies Unicode Normalization Form C (canonical composition); a safe,
+							lossless baseline for matching.</entry>
+					</row>
+					<row>
+						<entry><code>NfkcCharSequenceNormalizer</code></entry>
+						<entry>Applies Unicode Normalization Form KC (compatibility composition);
+							folds fullwidth forms, ligatures, and super/subscripts.</entry>
+					</row>
+					<row>
+						<entry><code>CaseFoldCharSequenceNormalizer</code></entry>
+						<entry>Lower cases for case-insensitive matching, using
+							<code>Locale.ROOT</code>.</entry>
+					</row>
+					<row>
+						<entry><code>AccentFoldCharSequenceNormalizer</code></entry>
+						<entry>Folds diacritics in a script-aware way (see below).</entry>
+					</row>
+					<row>
+						<entry><code>GermanUmlautCharSequenceNormalizer</code></entry>
+						<entry>Transliterates German umlauts and the eszett (a-umlaut to <code>ae</code>,
+							eszett to <code>ss</code>; DIN 5007-2).</entry>
+					</row>
+					<row>
+						<entry><code>ConfusableSkeletonCharSequenceNormalizer</code></entry>
+						<entry>Reduces lookalike characters to a confusable skeleton for matching
+							(UTS #39); see below.</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+		<para>
+			A single normalizer is applied directly:
+		</para>
+		<programlisting language="java">
+<![CDATA[CharSequenceNormalizer ws = WhitespaceCharSequenceNormalizer.getInstance();
+String clean = ws.normalize("a 　b").toString();   // "a b"
+
+String hyphen = DashCharSequenceNormalizer.getInstance()
+    .normalize("state—of–the‐art").toString(); // "state-of-the-art"]]>
+		</programlisting>
+	</section>
+
+	<section xml:id="tools.normalizer.pipeline">
+		<title>Composing a pipeline</title>
+		<para>
+			<code>TextNormalizer</code> is a fluent builder that composes the rungs, in the order
+			they are added, into a single <code>CharSequenceNormalizer</code>:
+		</para>
+		<programlisting language="java">
+<![CDATA[CharSequenceNormalizer pipeline = TextNormalizer.builder()
+    .nfc()
+    .caseFold()
+    .accentFold()
+    .build();
+
+String term = pipeline.normalize("CAFÉ").toString();   // "cafe"]]>
+		</programlisting>
+		<para>
+			A conservative search-oriented chain (strip invisibles, NFC, collapse whitespace, fold
+			quotes and dashes, case fold, then script-gated accent fold) is available directly:
+		</para>
+		<programlisting language="java">
+<![CDATA[CharSequenceNormalizer chain = TextNormalizer.defaultChain();
+
+// byte order mark stripped, curly quotes folded, case and accent folded
+String t = chain.normalize("﻿“CafÉ”").toString();   // "\"cafe\""]]>
+		</programlisting>
+		<para>
+			Any custom <code>CharSequenceNormalizer</code> can be inserted with
+			<code>with(...)</code>. The <code>TextNormalizer</code> pipeline and the individual
+			<code>CharSequenceNormalizer</code> implementations are not applied automatically by
+			statistical OpenNLP components; callers compose them explicitly when preprocessing text
+			for search or matching; to recover original character offsets from the composed result,
+			see <xref linkend="tools.normalizer.aligned"/>. The DL components described in
+			<xref linkend="tools.normalizer.dl"/> use a narrower, built-in subset of this machinery.
+		</para>
+	</section>
+
+	<section xml:id="tools.normalizer.aligned">
+		<title>Offset-aware pipelines</title>
+		<para>
+			<code>build()</code> returns a normalizer that yields only the cleaned text. When you also
+			need to map a match found in the normalized text back to the original (to highlight a search
+			hit in the source, say), build the pipeline with <code>buildAligned()</code> instead. It
+			returns an <code>OffsetAwareNormalizer</code> whose <code>normalizeAligned(text)</code> returns
+			an <code>AlignedText</code>: the normalized string together with an <code>Alignment</code> that
+			maps spans between the two forms, composed across every stage, so a match maps straight back to
+			the source even when a stage collapsed a run or folded a multi-unit character.
+		</para>
+		<programlisting language="java">
+<![CDATA[OffsetAwareNormalizer pipeline = TextNormalizer.builder()
+    .whitespace()      // collapses runs, so it changes length and shifts offsets
+    .dashes()
+    .buildAligned();
+
+String original = "find   the—match";
+AlignedText aligned = pipeline.normalizeAligned(original);
+// aligned.normalized()                ->  "find the-match"
+Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized text
+// hit.getCoveredText(original)         ->  "the—match"   (back to the source, em dash and all)]]>
+		</programlisting>
+		<para>
+			<code>OffsetAwareNormalizer</code> is a capability interface: it extends
+			<code>CharSequenceNormalizer</code> and adds <code>normalizeAligned</code>, so a caller tests
+			for it with a plain <code>instanceof</code>, the same pattern the name finder uses for
+			<code>OffsetMappingNameFinder</code>. Every per-code-point fold implements it: whitespace, the
+			line-break-preserving whitespace rung, dashes, invisible-control stripping, quotes, digits,
+			ellipsis, bullets, and the German umlaut transliteration. The folds that route through
+			<code>java.text.Normalizer</code> (NFC, NFKC, accent folding, and confusable folding) or
+			through JDK case mapping (case folding) cannot report their per-character edits, so they do
+			not implement the interface, and a chain that contains one is rejected by
+			<code>buildAligned()</code> with an <code>IllegalStateException</code> that names the rung,
+			rather than returning a pipeline that would hand back an offset that does not hold. The
+			per-stage maps and their composition use the <code>Alignment</code> machinery described in
+			<xref linkend="tools.normalizer.charclass"/>.
+		</para>
+	</section>
+
+	<section xml:id="tools.normalizer.dl">
+		<title>Use in DL components</title>
+		<para>
+			<code>NameFinderDL</code> and <code>DocumentCategorizerDL</code> share Unicode-aware text
+			handling through <code>AbstractDL</code>. Long inputs are split into overlapping chunks
+			on the full Unicode <code>White_Space</code> set (no-break space, ideographic space, line
+			and paragraph separators, and the other members listed under
+			<xref linkend="tools.normalizer.reference"/>), not on Java's six-character
+			<code>\s</code> subset. Empty tokens from leading, trailing, or repeated whitespace are
+			not produced.
+		</para>
+		<para>
+			<code>NameFinderDL</code> additionally locates reconstructed entity text in the original
+			input with a cursor-based matcher: a space in the reconstructed span matches zero or more
+			Unicode whitespace code points in the source, and every other code point is compared
+			case-insensitively. This replaces the previous regular-expression approach and correctly
+			handles spacing copied from PDFs, the web, or non-Latin sources when resolving
+			<code>Span#getCoveredText(...)</code>.
+		</para>
+		<para>
+			Optional input folding is controlled through <code>InferenceOptions</code> and is
+			<emphasis>off by default</emphasis> so existing models keep their prior inputs unless
+			you opt in:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>
+					<code>setNormalizeWhitespace(true)</code> maps each Unicode whitespace code point
+					to a single ASCII space before inference. The transform is one code point to one
+					space, so character offsets stay aligned with the input.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<code>setNormalizeDashes(true)</code> maps each dash in the default
+					<code>CharClass.dashes()</code> set to the ASCII hyphen-minus. Mathematical minus
+					signs and the soft hyphen are not affected unless you extend the set explicitly.
+					This replacement is also one code point to one character for Basic Multilingual
+					Plane dashes. A dash in the supplementary planes shrinks from two UTF-16 units
+					to one, which shifts later offsets, so with this fold enabled <code>find</code>
+					reports offsets into the normalized text in that case while
+					<code>findInOriginal</code> maps them back to the original input.
+				</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			Run-collapsing normalization (for example <code>WhitespaceCharSequenceNormalizer</code>,
+			which collapses whitespace <emphasis>runs</emphasis> to a single space) is not enabled
+			through these flags because it would shift character offsets. Use the
+			<code>CharSequenceNormalizer</code> pipeline directly when you need that behavior on text
+			that does not require offset-preserving span lookup. See also
+			<xref linkend="tools.namefind.api.onnx"/> and
+			<xref linkend="tools.doccat.api.onnx"/>.
+		</para>
+		<programlisting language="java">
+<![CDATA[InferenceOptions options = new InferenceOptions();
+options.setNormalizeWhitespace(true);   // opt-in: NBSP, ideographic space, ... -> ASCII space
+options.setNormalizeDashes(true);       // opt-in: en dash, em dash, ... -> hyphen-minus
+
+NameFinderDL finder = new NameFinderDL(model, vocab, ids2Labels, options, sentenceDetector);]]>
+		</programlisting>
+	</section>
+
+	<section xml:id="tools.normalizer.accentfold">
+		<title>Diacritic folding and multilingual safety</title>
+		<para>
+			<code>AccentFoldCharSequenceNormalizer</code> folds accents for search, but does so in a
+			script-aware way that a Latin-only folding filter cannot. It decomposes the text, then
+			drops nonspacing combining marks only for base characters whose script is configured for
+			folding (Latin, Greek, and Cyrillic by default). Combining marks on other scripts are
+			left untouched, because there they are essential orthography rather than decoration:
+			dropping an Indic vowel sign or virama, an Arabic harakat, a Hebrew point, or a Thai
+			vowel would change the word.
+		</para>
+		<programlisting language="java">
+<![CDATA[CharSequenceNormalizer fold = AccentFoldCharSequenceNormalizer.getInstance();
+
+fold.normalize("café");                 // "cafe"   (Latin accent folded)
+fold.normalize("ά");                    // "α" (Greek alpha-with-tonos -> alpha)
+fold.normalize("का");              // unchanged (Devanagari is left intact)]]>
+		</programlisting>
+		<para>
+			Atomic Latin letters that do not decompose are mapped to an ASCII approximation by
+			default: for example the stroke letters and ligatures, eszett, and thorn
+			(<code>ø -&gt; o</code>, <code>æ -&gt; ae</code>, <code>ß -&gt; ss</code>,
+			<code>þ -&gt; th</code>). Both behaviors are configurable through the constructor:
+		</para>
+		<programlisting language="java">
+<![CDATA[// fold only Latin, and do not map the stroke letters
+CharSequenceNormalizer latinOnly = new AccentFoldCharSequenceNormalizer(
+    java.util.Set.of(Character.UnicodeScript.LATIN), false);]]>
+		</programlisting>
+		<para>
+			Diacritic folding is a recall optimization, not a linguistically correct transform, so it
+			is intended for a search or matching form rather than for display. Language-specific case
+			and letter rules (for example German <code>DIN</code> umlaut expansion, or the Turkish
+			dotless-i) are out of scope for the default folder and should be applied with an explicit
+			locale upstream.
+		</para>
+	</section>
+
+	<section xml:id="tools.normalizer.charclass">
+		<title>The CharClass engine and code point sets</title>
+		<para>
+			The set-based normalizers are built on <code>CharClass</code>, a configurable class of
+			Unicode code points paired with a single canonical replacement, backed by a
+			<code>CodePointSet</code> with O(1) membership. You choose both the membership and the
+			replacement code point with <code>CharClass.of(members, replacement)</code>; whitespace and
+			dashes are the two built-in presets, and any other class is one more configured instance:
+		</para>
+		<programlisting language="java">
+<![CDATA[CharClass ws = CharClass.whitespace();   // Unicode White_Space -> U+0020
+CharClass dash = CharClass.dashes();      // Unicode Dash (curated) -> U+002D
+
+ws.collapse("a   b");                      // "a b"          (runs -> one space)
+ws.trim("  hi  ");                         // "hi"
+String[] tokens = ws.split("one two"); // ["one", "two"]  (offset-aware via splitSpans)
+dash.normalize("a—b");                // "a-b"]]>
+		</programlisting>
+		<para>
+			A class applies its replacement three ways, which differ in whether they collapse runs and
+			whether they preserve character offsets:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>
+					<code>normalize(text)</code> replaces each member one-for-one with the replacement,
+					so it is length- and offset-preserving; use it when you still need spans back into
+					the original text.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<code>collapse(text)</code> reduces each maximal run of members to a single
+					replacement; it changes length, so it is a search and match transform.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<code>collapsePreserving(text, keep, keepReplacement)</code> collapses runs but emits
+					<code>keepReplacement</code> for any run containing a kept code point, which is how
+					you squish horizontal whitespace while keeping line breaks.
+				</para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			So the replacement is your choice and the method picks the behavior. Folding tabs and
+			newlines to a single newline, for example, is one configured class:
+		</para>
+		<programlisting language="java">
+<![CDATA[CharClass lineFold = CharClass.of(CodePointSet.of('\n', '\t'), '\n');
+lineFold.collapse("\n\n\n\t\n");   // "\n"  (the whole run folds to one newline)
+
+CharClass ws = CharClass.whitespace();
+ws.collapsePreserving(text, CodePointSet.of('\n'), '\n');   // squish spaces, keep paragraph breaks]]>
+		</programlisting>
+		<para>
+			When you need the normalized form together with a map back to the original, the
+			<code>normalizeAligned</code>, <code>collapseAligned</code>,
+			<code>collapsePreservingAligned</code>, <code>trimAligned</code>, and
+			<code>removeAllAligned</code> variants return an <code>AlignedText</code> that carries an
+			<code>Alignment</code>. The alignment maps spans between the two forms with
+			<code>toOriginalSpan</code> and <code>toNormalizedSpan</code>, staying correct across
+			deletions and length-changing folds, and composes with <code>andThen</code>.
+		</para>
+		<para>
+			A <code>CodePointSet</code> can be built explicitly, as a range, by union, or loaded from
+			a user definitions file so that delimiters can be extended without a code change. The
+			file is line oriented and parsed with the same cursor approach (no regular expression): a
+			<code>[name]</code> line opens a section, a <code>#</code> begins a comment, and each
+			remaining line is a hex code point or an inclusive range.
+		</para>
+		<programlisting language="none">
+<![CDATA[[whitespace]
+U+00A0          # no-break space
+U+2000-U+200A   # typographic spaces
+
+[dash]
+U+2E5D          # oblique hyphen]]>
+		</programlisting>
+		<programlisting language="java">
+<![CDATA[CodePointSet extra = CodePointSet.fromFile(path, "whitespace");
+CharClass wsPlus = CharClass.whitespace().withAdditional(extra);]]>
+		</programlisting>
+	</section>
+
+	<section xml:id="tools.normalizer.term">
+		<title>The layered term model</title>
+		<para>
+			<code>TermAnalyzer</code> tokenizes text and gives each token a
+			<emphasis>stack</emphasis> of normalization layers while keeping its source span. It is the
+			offset-preserving entry point for matching: the normalized form is
+			what you index or query, and the span ties every layer back to the original text for
+			highlighting, even when normalization changes a token's length. A <code>Term</code> is one
+			token projected through an ordered chain of
+			<code>Dimension</code>s: original, NFC, NFKC, whitespace, dash, case fold, accent fold,
+			confusable fold, stem, and lemma. The order is fixed because the transforms do not commute
+			(case folding then accent folding differs from the reverse). The original is always kept,
+			so aggressive folding stays safe and a match on any layer maps back to the source through
+			the token's <code>Span</code>.
+		</para>
+		<programlisting language="java">
+<![CDATA[TermAnalyzer analyzer = TermAnalyzer.builder()
+    .caseFold()
+    .stem(new PorterStemmer())
+    .build();
+
+Term term = analyzer.analyze("Running").get(0);
+// term.original()           -> "Running"
+// term.normalized()         -> "run"      (the final configured dimension, here STEM)
+// term.peel()               -> "running"  (the layer below the top, O(1))
+// term.at(Dimension.NFC)    -> computed lazily on first request, then cached]]>
+		</programlisting>
+		<para>
+			Segmentation uses the <xref linkend="tools.tokenizer.uax29"/> word tokenizer, so the input
+			does not need to be pre-tokenized. The dimensions named in the builder are computed eagerly;
+			any other dimension is computed on first request, applied on top of the final form, and
+			cached, so querying a configured layer or peeling the last one is O(1) and adding an
+			unrequested dimension costs one transform. The character-level dimensions have built-in
+			defaults; <code>STEM</code> and <code>LEMMA</code> require a
+			<code>Stemmer</code> or <code>Lemmatizer</code> (and <code>LEMMA</code> a part-of-speech
+			tag), and fail loudly if requested without them. An analyzer configured with a stemmer is
+			not thread-safe, because the Snowball stemmers are stateful.
+		</para>
+		<para>
+			Each dimension's transform is configurable on the builder. Beyond the no-argument methods
+			that enable a dimension with its default, there are convenience methods for the common
+			knobs, and a general <code>transform(dimension, normalizer)</code> escape hatch for any
+			character-level dimension:
+		</para>
+		<programlisting language="java">
+<![CDATA[TermAnalyzer analyzer = TermAnalyzer.builder()
+    .whitespace(CharClass.of(CodePointSet.of('\n', '\t'), '\n')::collapse) // custom target/behavior
+    .caseFold(Locale.forLanguageTag("tr"))                                 // Turkish case rules
+    .accentFold(Set.of(Character.UnicodeScript.LATIN), false)              // fold only Latin
+    .maxTokenLength(255)                                                   // tokenizer chopping
+    .build();]]>
+		</programlisting>
+		<para>
+			The whitespace and dash methods take any <code>CharSequenceNormalizer</code>, so a
+			<code>CharClass</code> method reference (<code>::normalize</code> for one-for-one,
+			<code>::collapse</code> for run-collapsing) selects both the fold target and the behavior.
+			The case-fold method takes a <code>Locale</code> for language-specific rules such as the
+			Turkish dotted/dotless i, and the accent-fold method takes the scripts to fold and whether
+			to fold stroke letters.
+		</para>
+	</section>
+
+	<section xml:id="tools.normalizer.confusables">
+		<title>Confusable (homoglyph) folding</title>
+		<para>
+			<code>Confusables</code> reduces text to its Unicode confusable
+			<emphasis>skeleton</emphasis> following
+			<link xlink:href="https://www.unicode.org/reports/tr39/">UTS #39</link>: it decomposes the
+			text, replaces each code point with its prototype, and decomposes again. Two strings are
+			confusable exactly when their skeletons are equal, which catches spoofing where Cyrillic or
+			Greek letters imitate Latin ones.
+		</para>
+		<programlisting language="java">
+<![CDATA[// "paypal" with Cyrillic a's looks identical but is a different code-point sequence
+Confusables.confusable("paypal", spoofed);   // true
+Confusables.skeleton("paypal");              // a matching key, not readable text]]>
+		</programlisting>
+		<para>
+			The skeleton changes length and offsets, so like accent folding it is a derived,
+			matching-only form. It is also available as
+			<code>ConfusableSkeletonCharSequenceNormalizer</code> and as the
+			<code>CONFUSABLE_FOLD</code> term dimension. The mapping comes from the bundled Unicode
+			security data file <code>confusables.txt</code>.
+		</para>
+	</section>
+
+	<section xml:id="tools.normalizer.language">
+		<title>Per-language profiles</title>
+		<para>
+			<code>NormalizationProfiles</code> selects per-language settings the same way OpenNLP
+			already selects a Snowball stemmer by language: ask for a language, or detect it with a
+			<code>LanguageDetector</code> when it is unspecified. Each
+			<code>NormalizationProfile</code> pairs a language with its Snowball stemmer and the
+			diacritic fold appropriate for that language, and builds a search-oriented
+			<code>TermAnalyzer</code>.
+		</para>
+		<programlisting language="java">
+<![CDATA[NormalizationProfile german = NormalizationProfiles.forLanguage("de").orElseThrow();
+TermAnalyzer analyzer = german.matchingAnalyzer();   // NFC, case fold, German fold, German stemmer
+// "Mueller" and "Müller" both reduce to the same matching term
+
+// detect the language when it is not known
+NormalizationProfiles.detect(text, languageDetector).map(NormalizationProfile::matchingAnalyzer);]]>
+		</programlisting>
+		<para>
+			The diacritic fold is the generic accent fold for English and the major Romance languages,
+			the German-specific fold (a-umlaut to <code>ae</code>, eszett to <code>ss</code>, following
+			DIN 5007-2) for German, and none for the Nordic languages and non-Latin scripts, where
+			folding distinct letters is language-wrong. As stated in
+			<xref linkend="tools.normalizer.accentfold"/>, this is a search-recall choice, not
+			linguistic correctness; a caller that wants different behavior builds a
+			<code>TermAnalyzer</code> directly.
+		</para>
+	</section>
+
+	<section xml:id="tools.normalizer.reference">
+		<title>Reference data</title>
+		<para>
+			The underlying Unicode data is also available directly as immutable reference tables,
+			with O(1) membership tests that match the Unicode standard:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>
+					<code>UnicodeWhitespace</code> lists the 25 characters carrying the
+					<code>White_Space</code> property, plus the related look-alike format characters
+					(zero width space, byte order mark, ...) that are <emphasis>not</emphasis>
+					whitespace. It exposes <code>isWhitespace(int)</code>,
+					<code>byCodePoint(int)</code>, and helpers for the line breaks and the
+					non-breaking spaces.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<code>UnicodeDash</code> lists every code point carrying the <code>Dash</code>
+					property, distinguishing the mathematical minus signs that are excluded from the
+					default normalization set.
+				</para>
+			</listitem>
+		</itemizedlist>
+	</section>
+
+</chapter>
