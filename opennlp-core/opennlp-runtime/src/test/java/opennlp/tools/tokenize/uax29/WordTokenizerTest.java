@@ -173,4 +173,15 @@ public class WordTokenizerTest {
     assertEquals("Hello", spans[0].getCoveredText(text).toString());
     assertEquals("world", spans[1].getCoveredText(text).toString());
   }
+
+  @Test
+  void nullParametersAreRejectedWithIllegalArgumentException() {
+    final WordTokenizer tokenizer = new WordTokenizer();
+    assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenize(null));
+    assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenizePos(null));
+    assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenizeSpans(null));
+    assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenizeTyped(null));
+    assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenize(null, (s, e, t) -> { }));
+    assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenize("x", null));
+  }
 }

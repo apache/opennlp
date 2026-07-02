@@ -25,24 +25,33 @@ import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 
 /**
- * Tests the Unicode {@code Extended_Pictographic} property of a code point.
+ * Checks the Unicode {@code Extended_Pictographic} property of a code point.
  *
  * <p>This is the one extra property the word boundary algorithm needs (rule WB3c), to keep emoji
  * zero-width-joiner sequences together. The data is loaded once from the {@code emoji-data.txt}
  * derived resource of the Unicode Character Database and stored in a {@link BitSet}, so membership
- * is an O(1) bit test.</p>
+ * is an O(1) bit check.</p>
  */
 public final class ExtendedPictographic {
 
   private static final String RESOURCE = "ExtendedPictographic.txt";
 
+  // Volatile so the lazily built set is safely published: the double-checked accessor reads the
+  // field once, and a fully populated BitSet becomes visible to every thread that observes the
+  // non-null reference.
   private static volatile BitSet members;
 
   private ExtendedPictographic() {
   }
 
-  // Package-visible so a per-pass caller can resolve the set once (see is(BitSet, int)) rather than
-  // once per code point.
+  /**
+   * {@return the resolved member bit set} Package-visible so a per-pass caller can resolve the set
+   * once (see {@link #is(BitSet, int)}) rather than once per code point.
+   *
+   * @throws IllegalStateException Thrown if the bundled data resource is missing.
+   * @throws UncheckedIOException Thrown if the bundled data resource cannot be read.
+   * @throws IllegalArgumentException Thrown if the bundled data is malformed.
+   */
   static BitSet members() {
     BitSet set = members;
     if (set == null) {
@@ -71,7 +80,15 @@ public final class ExtendedPictographic {
     return set;
   }
 
-  // Package-visible so the malformed-data handling can be exercised without the bundled resource.
+  /**
+   * Parses {@code Extended_Pictographic} definition lines into {@code set}. Package-visible so the
+   * malformed-data handling can be exercised without the bundled resource.
+   *
+   * @param in  The definition lines to read.
+   * @param set The bit set receiving the member code points.
+   * @throws IOException Thrown if reading {@code in} fails.
+   * @throws IllegalArgumentException Thrown if a definition line is malformed.
+   */
   static void parse(InputStream in, BitSet set) throws IOException {
     try (BufferedReader reader =
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
@@ -114,9 +131,15 @@ public final class ExtendedPictographic {
     return is(members(), codePoint);
   }
 
-  // Package-visible overload taking an already-resolved BitSet, so a caller that tests many code
-  // points in one pass (WordSegmenter, WordType) pays the volatile read behind members() once for the
-  // whole pass rather than once per code point.
+  /**
+   * Like {@link #is(int)} but against an already-resolved set, so a caller that checks many code
+   * points in one pass ({@link WordSegmenter}, {@link WordType}) pays the volatile read behind
+   * {@link #members()} once for the whole pass rather than once per code point.
+   *
+   * @param resolved  The resolved member set from {@link #members()}.
+   * @param codePoint The code point. Values outside {@code [0, U+10FFFF]} return {@code false}.
+   * @return Whether the code point has the {@code Extended_Pictographic} property.
+   */
   static boolean is(BitSet resolved, int codePoint) {
     return codePoint >= 0 && codePoint <= Character.MAX_CODE_POINT && resolved.get(codePoint);
   }

@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,20 +40,35 @@ public class WordBoundaryConformanceTest {
 
   private static final int BOUNDARY = 0x00F7; // division sign
 
-  @Test
-  void testOfficialUnicodeWordBreakConformance() throws IOException {
-    int total = 0;
-    int passed = 0;
-    final List<String> failures = new ArrayList<>();
+  private static List<String> conformanceLines;
 
+  @BeforeAll
+  static void loadConformanceData() throws IOException {
+    // Resource IO lives here so the test method itself is only parsing and assertions, and the
+    // data is prepared once before the test runs.
+    final List<String> loaded = new ArrayList<>();
     try (InputStream in = Objects.requireNonNull(
              WordBoundaryConformanceTest.class.getResourceAsStream("WordBreakTest.txt"),
              "Missing test resource: WordBreakTest.txt");
          BufferedReader reader =
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
       String raw;
-      int lineNumber = 0;
       while ((raw = reader.readLine()) != null) {
+        loaded.add(raw);
+      }
+    }
+    conformanceLines = loaded;
+  }
+
+  @Test
+  void testOfficialUnicodeWordBreakConformance() {
+    int total = 0;
+    int passed = 0;
+    final List<String> failures = new ArrayList<>();
+
+    {
+      int lineNumber = 0;
+      for (final String raw : conformanceLines) {
         lineNumber++;
         final int hash = raw.indexOf('#');
         final String content = (hash < 0 ? raw : raw.substring(0, hash)).strip();

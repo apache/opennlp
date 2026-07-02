@@ -41,6 +41,9 @@ public final class WordBreakProperty {
 
   private static final WordBreak[] VALUES = WordBreak.values();
 
+  // Volatile so the lazily built table is safely published: the double-checked accessor reads the
+  // field once, and a fully constructed, immutable Data instance becomes visible to every thread
+  // that observes the non-null reference.
   private static volatile Data data;
 
   private WordBreakProperty() {
@@ -64,8 +67,15 @@ public final class WordBreakProperty {
     }
   }
 
-  // Package-visible so a per-pass caller can resolve the table once (see the ordinalOf/of overloads
-  // that take a resolved Data) rather than once per code point.
+  /**
+   * {@return the resolved lookup table} Package-visible so a per-pass caller can resolve the table
+   * once (see the {@code ordinalOf}/{@code of} overloads that take a resolved {@link Data}) rather
+   * than once per code point.
+   *
+   * @throws IllegalStateException Thrown if the bundled data resource is missing.
+   * @throws UncheckedIOException Thrown if the bundled data resource cannot be read.
+   * @throws IllegalArgumentException Thrown if the bundled data is malformed.
+   */
   static Data data() {
     Data d = data;
     if (d == null) {
@@ -104,7 +114,16 @@ public final class WordBreakProperty {
     return new Data(bmp, start, end, value);
   }
 
-  // Package-visible so the malformed-data handling can be exercised without the bundled resource.
+  /**
+   * Parses {@code Word_Break} definition lines into the BMP table and the supplementary range list.
+   * Package-visible so the malformed-data handling can be exercised without the bundled resource.
+   *
+   * @param in            The definition lines to read.
+   * @param bmp           The per-code-point ordinal table for the Basic Multilingual Plane.
+   * @param supplementary The receiving list of {@code {start, end, ordinal}} supplementary ranges.
+   * @throws IOException Thrown if reading {@code in} fails.
+   * @throws IllegalArgumentException Thrown if a definition line is malformed.
+   */
   static void parse(InputStream in, byte[] bmp, List<int[]> supplementary) throws IOException {
     try (BufferedReader reader =
              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
@@ -118,8 +137,9 @@ public final class WordBreakProperty {
         final int semicolon = content.indexOf(';');
         if (semicolon < 0) {
           // A present-but-structurally-wrong line (no ';' to split code points from the value) is a
-          // hard error naming the line, mirroring ExtendedPictographic, not an opaque substring throw.
-          throw new IllegalStateException(
+          // hard error naming the line, matching the sibling loaders' IllegalArgumentException
+          // contract, not an opaque substring throw.
+          throw new IllegalArgumentException(
               "Malformed Word_Break data in " + RESOURCE + " (no ';'): " + content);
         }
         final String codePoints = content.substring(0, semicolon).strip();
@@ -129,18 +149,37 @@ public final class WordBreakProperty {
         final int dots = codePoints.indexOf("..");
         final int start;
         final int end;
-        if (dots < 0) {
-          start = Integer.parseInt(codePoints, 16);
-          end = start;
-        } else {
-          start = Integer.parseInt(codePoints.substring(0, dots), 16);
-          end = Integer.parseInt(codePoints.substring(dots + 2), 16);
+        try {
+          if (dots < 0) {
+            start = Integer.parseInt(codePoints, 16);
+            end = start;
+          } else {
+            start = Integer.parseInt(codePoints.substring(0, dots), 16);
+            end = Integer.parseInt(codePoints.substring(dots + 2), 16);
+          }
+        } catch (NumberFormatException e) {
+          // Malformed hex fails loud naming the resource and line, not through a raw
+          // NumberFormatException, the same contract as the sibling loaders.
+          throw new IllegalArgumentException(
+              "Malformed Word_Break data in " + RESOURCE + ": " + content, e);
         }
         assign(start, end, ordinal, bmp, supplementary);
       }
     }
   }
 
+  /**
+   * Assigns {@code ordinal} to the code point range {@code [start, end]}, filling the BMP portion
+   * directly and recording the rest as a supplementary range.
+   *
+   * @param start   The first code point of the range; the parser guarantees
+   *                {@code 0 <= start <= end}.
+   * @param end     The last code point of the range, at most {@code U+10FFFF} in well-formed data;
+   *                the portion above {@code U+FFFF} lands in {@code supplementary}.
+   * @param ordinal The {@link WordBreak} ordinal to record.
+   * @param bmp     The per-code-point ordinal table for the BMP.
+   * @param supplementary The receiving list of supplementary ranges.
+   */
   private static void assign(int start, int end, byte ordinal, byte[] bmp, List<int[]> supplementary) {
     final int bmpEnd = Math.min(end, 0xFFFF);
     if (start <= bmpEnd) {
@@ -161,8 +200,15 @@ public final class WordBreakProperty {
     return of(data(), codePoint);
   }
 
-  // Package-visible overload for a caller that already resolved Data once for a whole pass (see
-  // ordinalOf(Data, int)), so it is not looked up again per code point.
+  /**
+   * Like {@link #of(int)} but against an already-resolved table, so it is not looked up again per
+   * code point.
+   *
+   * @param resolved  The resolved table from {@link #data()}.
+   * @param codePoint The code point. Values outside {@code [0, U+10FFFF]} return
+   *     {@link WordBreak#OTHER}.
+   * @return The {@code Word_Break} value.
+   */
   static WordBreak of(Data resolved, int codePoint) {
     return VALUES[ordinalOf(resolved, codePoint)];
   }
@@ -178,9 +224,16 @@ public final class WordBreakProperty {
     return ordinalOf(data(), codePoint);
   }
 
-  // Package-visible overload taking an already-resolved Data (see data()), so a caller that looks up
-  // many code points in one pass (WordSegmenter) pays the volatile read behind data() once for the
-  // whole pass rather than once per code point.
+  /**
+   * Like {@link #ordinalOf(int)} but against an already-resolved table, so a caller that looks up
+   * many code points in one pass ({@link WordSegmenter}) pays the volatile read behind
+   * {@link #data()} once for the whole pass rather than once per code point.
+   *
+   * @param resolved  The resolved table from {@link #data()}.
+   * @param codePoint The code point. Values outside {@code [0, U+10FFFF]} return the ordinal of
+   *     {@link WordBreak#OTHER}.
+   * @return The ordinal of the {@code Word_Break} value.
+   */
   static int ordinalOf(Data resolved, int codePoint) {
     if (codePoint >= 0 && codePoint <= 0xFFFF) {
       return resolved.bmp[codePoint] & 0xFF; // unsigned byte ordinal

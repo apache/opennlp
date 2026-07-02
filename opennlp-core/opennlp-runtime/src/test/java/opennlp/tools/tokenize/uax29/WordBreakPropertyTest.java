@@ -97,8 +97,23 @@ public class WordBreakPropertyTest {
     // (like the sibling ExtendedPictographic) rather than throwing an opaque
     // StringIndexOutOfBoundsException that masks which line is bad.
     final String data = "0042\n"; // a code point with no Word_Break value -> malformed
-    assertThrows(IllegalStateException.class, () -> WordBreakProperty.parse(
+    assertThrows(IllegalArgumentException.class, () -> WordBreakProperty.parse(
         new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)),
+        new byte[0x10000], new ArrayList<>()));
+  }
+
+  @Test
+  void parseFailsLoudOnMalformedHex() {
+    // A structurally well-formed row with a non-hex code point column must fail loud naming the
+    // resource and the line, not surface a raw NumberFormatException, the same contract as the
+    // sibling loaders.
+    final String data = "004X; ALetter\n";
+    assertThrows(IllegalArgumentException.class, () -> WordBreakProperty.parse(
+        new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)),
+        new byte[0x10000], new ArrayList<>()));
+    final String rangeData = "0041..004X; ALetter\n";
+    assertThrows(IllegalArgumentException.class, () -> WordBreakProperty.parse(
+        new ByteArrayInputStream(rangeData.getBytes(StandardCharsets.UTF_8)),
         new byte[0x10000], new ArrayList<>()));
   }
 

@@ -155,7 +155,7 @@ public final class WordSegmenter {
    * Each segment is delivered as the half-open character range {@code [start, end)}; the segments
    * are contiguous and together cover the whole text.
    *
-   * @param text     The text to segment.
+   * @param text     The text to segment; may be empty, in which case no segment is delivered.
    * @param consumer The receiver of the segment ranges.
    */
   public static void forEachSegment(CharSequence text, SegmentConsumer consumer) {

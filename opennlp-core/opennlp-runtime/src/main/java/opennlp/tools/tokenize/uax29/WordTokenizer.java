@@ -57,13 +57,13 @@ public final class WordTokenizer implements Tokenizer {
     void token(int start, int end, WordType type);
   }
 
-  /** The default maximum token length. */
+  /** The default maximum token length: 255. */
   public static final int DEFAULT_MAX_TOKEN_LENGTH = 255;
 
   private final int maxTokenLength;
 
   /**
-   * Creates a tokenizer with the {@linkplain #DEFAULT_MAX_TOKEN_LENGTH default} maximum token
+   * Instantiates a tokenizer with the {@linkplain #DEFAULT_MAX_TOKEN_LENGTH default} maximum token
    * length.
    */
   public WordTokenizer() {
@@ -71,11 +71,12 @@ public final class WordTokenizer implements Tokenizer {
   }
 
   /**
-   * Creates a tokenizer with the given maximum token length.
+   * Instantiates a tokenizer with the given maximum token length.
    *
    * @param maxTokenLength The maximum number of characters in a token; longer tokens are chopped
    *                       into consecutive pieces. Must be at least {@code 1}.
-   * @throws IllegalArgumentException if {@code maxTokenLength} is less than {@code 1}.
+   * @throws IllegalArgumentException Thrown if {@code maxTokenLength} is equal to or less than
+   *     {@code 0}.
    */
   public WordTokenizer(int maxTokenLength) {
     if (maxTokenLength < 1) {
@@ -89,8 +90,11 @@ public final class WordTokenizer implements Tokenizer {
    *
    * @param text    The text to tokenize.
    * @param handler The receiver of the tokens.
+   * @throws IllegalArgumentException Thrown if {@code text} or {@code handler} is {@code null}.
    */
   public void tokenize(CharSequence text, TokenHandler handler) {
+    requireNonNullArg(text, "text");
+    requireNonNullArg(handler, "handler");
     WordSegmenter.forEachSegment(text, (start, end) -> {
       final WordType type = WordType.of(text, start, end);
       if (type != null) {
@@ -100,37 +104,52 @@ public final class WordTokenizer implements Tokenizer {
   }
 
   /**
-   * Returns the word tokens of {@code s} as strings, in order.
+   * Returns the word tokens of {@code text} as strings, in order.
    *
-   * @param s The text to tokenize.
+   * @param text The text to tokenize; an empty text yields no tokens.
    * @return The token strings.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   @Override
-  public String[] tokenize(String s) {
+  public String[] tokenize(String text) {
+    requireNonNullArg(text, "text");
+    if (text.isEmpty()) {
+      return new String[0];
+    }
     final List<String> tokens = new ArrayList<>();
-    tokenize(s, (start, end, type) -> tokens.add(s.substring(start, end)));
+    tokenize(text, (start, end, type) -> tokens.add(text.substring(start, end)));
     return tokens.toArray(new String[0]);
   }
 
   /**
-   * Returns the offset spans of the word tokens of {@code s}, in order.
+   * Returns the offset spans of the word tokens of {@code text}, in order.
    *
-   * @param s The text to tokenize.
+   * @param text The text to tokenize; an empty text yields no spans.
    * @return The token spans.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   @Override
-  public Span[] tokenizePos(String s) {
-    final List<Span> spans = tokenizeSpans(s);
+  public Span[] tokenizePos(String text) {
+    requireNonNullArg(text, "text");
+    if (text.isEmpty()) {
+      return new Span[0];
+    }
+    final List<Span> spans = tokenizeSpans(text);
     return spans.toArray(new Span[0]);
   }
 
   /**
-   * Returns the offset spans of the word tokens in {@code text}, in order.
+   * Computes the offset spans of the word tokens in {@code text}, in order.
    *
-   * @param text The text to tokenize.
+   * @param text The text to tokenize; an empty text yields no spans.
    * @return The word-token spans.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public List<Span> tokenizeSpans(CharSequence text) {
+    requireNonNullArg(text, "text");
+    if (text.isEmpty()) {
+      return new ArrayList<>();
+    }
     final List<Span> spans = new ArrayList<>();
     tokenize(text, (start, end, type) -> spans.add(new Span(start, end)));
     return spans;
@@ -139,10 +158,15 @@ public final class WordTokenizer implements Tokenizer {
   /**
    * Returns the word tokens in {@code text}, each carrying its {@link WordType}, in order.
    *
-   * @param text The text to tokenize.
+   * @param text The text to tokenize; an empty text yields no tokens.
    * @return The typed word tokens.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public List<WordToken> tokenizeTyped(CharSequence text) {
+    requireNonNullArg(text, "text");
+    if (text.length() == 0) {
+      return new ArrayList<>();
+    }
     final List<WordToken> tokens = new ArrayList<>();
     tokenize(text, (start, end, type) -> tokens.add(new WordToken(new Span(start, end), type)));
     return tokens;
@@ -166,6 +190,14 @@ public final class WordTokenizer implements Tokenizer {
     }
     if (from < end) {
       handler.token(from, end, type);
+    }
+  }
+
+  // Null parameters report IllegalArgumentException rather than requireNonNull's
+  // NullPointerException, matching the parameter contract of the CharClass engine.
+  private static void requireNonNullArg(Object value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException("The " + name + " must not be null.");
     }
   }
 }

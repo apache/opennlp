@@ -76,11 +76,22 @@ public enum WordType {
     return kind;
   }
 
-  // Classifies the code points in text over [start, end) as a word token type, or returns null
-  // when the range is not a word (pure whitespace, punctuation, or symbols). Emoji win over
-  // scripts, scripts over the generic alphanumeric/numeric split. The script category is taken from
-  // the first script code point in the range; UAX #29 word segments are single-script in practice, so
-  // for an unusual mixed-script run this reports the leading script, not a per-character determination.
+  /**
+   * Classifies the code points of {@code text} over {@code [start, end)} as a word token type, or
+   * {@code null} when the range is not a word (pure whitespace, punctuation, or symbols). Emoji
+   * win over scripts, scripts over the generic alphanumeric/numeric split. The script category is
+   * taken from the first script code point in the range; UAX&#160;#29 word segments are
+   * single-script in practice, so for an unusual mixed-script run this reports the leading script,
+   * not a per-character determination.
+   *
+   * @param text  The text containing the token.
+   * @param start The inclusive start character offset.
+   * @param end   The exclusive end character offset.
+   * @return The token type, or {@code null} if the range is not a word.
+   * @throws IllegalStateException Thrown if the bundled {@code Extended_Pictographic} data
+   *     resource is missing (raised transitively through {@link ExtendedPictographic}).
+   * @throws java.io.UncheckedIOException Thrown if that resource cannot be read.
+   */
   static WordType of(CharSequence text, int start, int end) {
     boolean hasLetter = false;
     boolean hasDigit = false;
