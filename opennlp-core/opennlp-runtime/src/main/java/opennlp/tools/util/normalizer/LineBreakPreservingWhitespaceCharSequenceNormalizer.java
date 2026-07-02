@@ -30,7 +30,7 @@ package opennlp.tools.util.normalizer;
  */
 public class LineBreakPreservingWhitespaceCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 5471829006633512874L;
+  private static final long serialVersionUID = -1773649272610859873L;
 
   private static final int NEWLINE = 0x000A;
 

@@ -27,7 +27,7 @@ package opennlp.tools.util.normalizer;
  */
 public class BulletCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 5521093348871625541L;
+  private static final long serialVersionUID = 5362120286188474236L;
 
   private static final CharClass BULLETS = CharClass.of(CodePointSet.of(
       0x2022,   // bullet

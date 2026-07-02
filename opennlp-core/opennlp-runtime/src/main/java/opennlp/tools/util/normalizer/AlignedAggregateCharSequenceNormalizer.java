@@ -26,7 +26,7 @@ package opennlp.tools.util.normalizer;
  */
 final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 3056944120186103477L;
+  private static final long serialVersionUID = 4895371247253260769L;
 
   private final OffsetAwareNormalizer[] steps;
 

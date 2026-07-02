@@ -28,7 +28,7 @@ package opennlp.tools.util.normalizer;
  */
 public class DigitCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 8451270936618204413L;
+  private static final long serialVersionUID = -3478452280126315708L;
 
   private static final DigitCharSequenceNormalizer INSTANCE = new DigitCharSequenceNormalizer();
 

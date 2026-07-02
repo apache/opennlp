@@ -34,7 +34,7 @@ package opennlp.tools.util.normalizer;
  */
 public class GermanUmlautCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 7106934482250176835L;
+  private static final long serialVersionUID = 5544134968448734502L;
 
   private static final int SMALL_A_UMLAUT = 0x00E4;
   private static final int SMALL_O_UMLAUT = 0x00F6;

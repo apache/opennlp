@@ -27,7 +27,7 @@ package opennlp.tools.util.normalizer;
  */
 public class QuoteCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 3415829076651283471L;
+  private static final long serialVersionUID = 6135398427498177491L;
 
   // Single quotes / apostrophes -> U+0027 APOSTROPHE.
   private static final CharClass SINGLE = CharClass.of(CodePointSet.of(

@@ -18,6 +18,7 @@ package opennlp.tools.util.normalizer;
 
 import java.util.Arrays;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.Span;
 
 /**
@@ -40,6 +41,7 @@ import opennlp.tools.util.Span;
  *
  * <p>Instances are immutable and thread-safe; build one with {@link Builder}.</p>
  */
+@ThreadSafe
 public final class Alignment {
 
   // For normalized character k, originalStart[k]/originalEnd[k] are the half-open original range it
@@ -216,6 +218,7 @@ public final class Alignment {
      *
      * @param charCount The number of UTF-16 characters; must not be negative.
      * @return This builder.
+     * @throws IllegalArgumentException Thrown if {@code charCount} is negative.
      */
     public Builder equal(int charCount) {
       if (charCount < 0) {
@@ -237,6 +240,8 @@ public final class Alignment {
      * @param originalCount   The number of original characters consumed; must not be negative.
      * @param normalizedCount The number of normalized characters produced; must not be negative.
      * @return This builder.
+     * @throws IllegalArgumentException Thrown if {@code originalCount} or {@code normalizedCount}
+     *     is negative.
      */
     public Builder replace(int originalCount, int normalizedCount) {
       if (originalCount < 0 || normalizedCount < 0) {

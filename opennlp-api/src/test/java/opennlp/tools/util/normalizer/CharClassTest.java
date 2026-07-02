@@ -395,4 +395,35 @@ public class CharClassTest {
       }
     }
   }
+
+  @Test
+  void nullParametersAreRejectedWithIllegalArgumentException() {
+    // The whole class reports IllegalArgumentException for a null parameter rather than
+    // requireNonNull's NullPointerException, so an invalid parameter and an invalid code point
+    // surface through the same exception type (review).
+    final CharClass ws = CharClass.whitespace();
+    final CodePointSet nl = CodePointSet.of('\n');
+    assertThrows(IllegalArgumentException.class, () -> CharClass.of(null, ' '));
+    assertThrows(IllegalArgumentException.class, () -> ws.withAdditional(null));
+    assertThrows(IllegalArgumentException.class, () -> ws.splitSpans(null));
+    assertThrows(IllegalArgumentException.class, () -> ws.normalize(null));
+    assertThrows(IllegalArgumentException.class, () -> ws.collapse(null));
+    assertThrows(IllegalArgumentException.class, () -> ws.collapsePreserving(null, nl, '\n'));
+    assertThrows(IllegalArgumentException.class, () -> ws.collapsePreserving("x", null, '\n'));
+    assertThrows(IllegalArgumentException.class, () -> ws.trim(null));
+    assertThrows(IllegalArgumentException.class, () -> ws.removeAll(null));
+    assertThrows(IllegalArgumentException.class, () -> ws.normalizeAligned(null));
+    assertThrows(IllegalArgumentException.class, () -> ws.collapseAligned(null));
+    assertThrows(IllegalArgumentException.class,
+        () -> ws.collapsePreservingAligned(null, nl, '\n'));
+    assertThrows(IllegalArgumentException.class,
+        () -> ws.collapsePreservingAligned("x", null, '\n'));
+    assertThrows(IllegalArgumentException.class, () -> ws.trimAligned(null));
+    assertThrows(IllegalArgumentException.class, () -> ws.removeAllAligned(null));
+    assertThrows(IllegalArgumentException.class, () -> CharClass.substitute(null, cp -> null));
+    assertThrows(IllegalArgumentException.class, () -> CharClass.substitute("x", null));
+    assertThrows(IllegalArgumentException.class,
+        () -> CharClass.substituteAligned(null, cp -> null));
+    assertThrows(IllegalArgumentException.class, () -> CharClass.substituteAligned("x", null));
+  }
 }
