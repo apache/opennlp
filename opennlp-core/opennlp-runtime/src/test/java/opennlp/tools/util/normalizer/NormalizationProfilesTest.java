@@ -45,6 +45,16 @@ public class NormalizationProfilesTest {
   }
 
   @Test
+  void testProfileRejectsInvalidComponents() {
+    assertThrows(NullPointerException.class,
+        () -> new NormalizationProfile(null, SnowballStemmer.ALGORITHM.ENGLISH, null));
+    assertThrows(NullPointerException.class,
+        () -> new NormalizationProfile("eng", null, null));
+    assertThrows(IllegalArgumentException.class,
+        () -> new NormalizationProfile("  ", SnowballStemmer.ALGORITHM.ENGLISH, null));
+  }
+
+  @Test
   void testTwoLetterCodeResolvesToProfile() {
     assertEquals(SnowballStemmer.ALGORITHM.GERMAN,
         NormalizationProfiles.forLanguage("de").orElseThrow().stemmerAlgorithm());

@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.util.Objects;
+
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
@@ -34,12 +36,27 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer;
  * statement of linguistic correctness; callers can build a {@link TermAnalyzer} directly to
  * override it.</p>
  *
- * @param language         The language, as an ISO 639-3 code (for example {@code "eng"}).
- * @param stemmerAlgorithm The Snowball algorithm for the language.
+ * @param language         The language, as an ISO 639-3 code (for example {@code "eng"}). Must
+ *                         not be {@code null} or blank.
+ * @param stemmerAlgorithm The Snowball algorithm for the language. Must not be {@code null}.
  * @param accentFold       The diacritic fold for the language, or {@code null} for none.
  */
 public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM stemmerAlgorithm,
     CharSequenceNormalizer accentFold) {
+
+  /**
+   * Validates the components.
+   *
+   * @throws NullPointerException if {@code language} or {@code stemmerAlgorithm} is {@code null}.
+   * @throws IllegalArgumentException if {@code language} is blank.
+   */
+  public NormalizationProfile {
+    Objects.requireNonNull(language, "language");
+    Objects.requireNonNull(stemmerAlgorithm, "stemmerAlgorithm");
+    if (language.isBlank()) {
+      throw new IllegalArgumentException("language must not be blank");
+    }
+  }
 
   /**
    * {@return a new {@link Stemmer} for this language} A fresh instance is returned on each call
