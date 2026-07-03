@@ -16,9 +16,15 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
@@ -49,8 +55,8 @@ public class TermAnalyzerTest {
   }
 
   @Test
-  void testChainAppliesInCanonicalOrderRegardlessOfBuilderOrder() {
-    // accentFold added before caseFold, but the canonical order is caseFold then accentFold.
+  void testChainAppliesInPipelineOrderRegardlessOfBuilderOrder() {
+    // accentFold added before caseFold, but the pipeline order is caseFold then accentFold.
     final TermAnalyzer analyzer = TermAnalyzer.builder().accentFold().caseFold().build();
     assertEquals(List.of(Dimension.CASE_FOLD, Dimension.ACCENT_FOLD), analyzer.dimensions());
     final String input = "CAF" + cp(0x00C9); // CAFE with capital acute E
@@ -255,5 +261,137 @@ public class TermAnalyzerTest {
     final Term term = analyzer.analyze("Running").get(0);
     assertEquals("run", term.normalized());
     assertEquals("run", term.at(Dimension.NFC));
+  }
+
+  @Test
+  void testAnalyzeTextRejectsNull() {
+    final TermAnalyzer analyzer = TermAnalyzer.builder().build();
+    assertThrows(NullPointerException.class, () -> analyzer.analyze((CharSequence) null));
+  }
+
+  @Test
+  void testAnalyzeTokensRejectsNullArrays() {
+    final TermAnalyzer analyzer = TermAnalyzer.builder().build();
+    assertThrows(NullPointerException.class,
+        () -> analyzer.analyze(null, new String[] {"NN"}));
+    assertThrows(NullPointerException.class,
+        () -> analyzer.analyze(new String[] {"cat"}, null));
+  }
+
+  @Test
+  void testAnalyzeTokensRejectsNullTokenElement() {
+    final TermAnalyzer analyzer = TermAnalyzer.builder().build();
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> analyzer.analyze(new String[] {"a", null}, new String[] {"X", "Y"}));
+    assertTrue(e.getMessage().contains("tokens[1]"), e.getMessage());
+  }
+
+  @Test
+  void testAtRejectsNullDimension() {
+    final Term term = TermAnalyzer.builder().build().analyze("x").get(0);
+    assertThrows(NullPointerException.class, () -> term.at(null));
+  }
+
+  @Test
+  void testBuilderRejectsNullArguments() {
+    assertThrows(NullPointerException.class,
+        () -> TermAnalyzer.builder().whitespace(null));
+    assertThrows(NullPointerException.class,
+        () -> TermAnalyzer.builder().dash(null));
+    assertThrows(NullPointerException.class,
+        () -> TermAnalyzer.builder().caseFold(null));
+    assertThrows(NullPointerException.class,
+        () -> TermAnalyzer.builder().accentFold(null, true));
+    assertThrows(NullPointerException.class, () -> TermAnalyzer.builder()
+        .transform(null, CaseFoldCharSequenceNormalizer.getInstance()));
+    assertThrows(NullPointerException.class,
+        () -> TermAnalyzer.builder().transform(Dimension.CASE_FOLD, null));
+    assertThrows(NullPointerException.class, () -> TermAnalyzer.builder().stem(null));
+    assertThrows(NullPointerException.class, () -> TermAnalyzer.builder().lemmatize(null));
+    assertThrows(NullPointerException.class, () -> TermAnalyzer.builder().tokenizer(null));
+  }
+
+  @Test
+  void testMaxTokenLengthRejectsNonPositiveValues() {
+    assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().maxTokenLength(0));
+    assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().maxTokenLength(-1));
+  }
+
+  @Test
+  void testAnalyzeTextWithLemmaConfiguredFailsFastEvenForEmptyText() {
+    final Lemmatizer lemmatizer = new Lemmatizer() {
+      @Override
+      public String[] lemmatize(String[] tokens, String[] tags) {
+        return tokens.clone();
+      }
+
+      @Override
+      public List<List<String>> lemmatize(List<String> tokens, List<String> tags) {
+        return List.of(tokens);
+      }
+    };
+    final TermAnalyzer analyzer = TermAnalyzer.builder().lemmatize(lemmatizer).build();
+    // The misconfiguration is reported up front, not only when a token happens to be produced.
+    assertThrows(IllegalStateException.class, () -> analyzer.analyze(""));
+  }
+
+  @Test
+  void testAtIsThreadSafeUnderConcurrentFirstAccess() throws Exception {
+    // Hammer the lazy cache: many threads request the same unconfigured dimension of a fresh Term
+    // at the same instant. All of them must observe the same cached value, with no exceptions from
+    // the concurrent first computation. Repeated over fresh terms to give races a chance to occur.
+    final int threads = 8;
+    final ExecutorService pool = Executors.newFixedThreadPool(threads);
+    try {
+      final TermAnalyzer analyzer = TermAnalyzer.builder().build();
+      for (int round = 0; round < 50; round++) {
+        final Term term = analyzer.analyze("HELLO").get(0);
+        final CyclicBarrier barrier = new CyclicBarrier(threads);
+        final List<Future<String>> results = new ArrayList<>(threads);
+        for (int i = 0; i < threads; i++) {
+          results.add(pool.submit(() -> {
+            barrier.await();
+            return term.at(Dimension.CASE_FOLD);
+          }));
+        }
+        final String winner = results.get(0).get(10, TimeUnit.SECONDS);
+        assertEquals("hello", winner);
+        for (final Future<String> result : results) {
+          // putIfAbsent keeps exactly one winner; every thread must have returned that instance.
+          assertSame(winner, result.get(10, TimeUnit.SECONDS));
+        }
+        // And the cache itself holds the same winner.
+        assertSame(winner, term.at(Dimension.CASE_FOLD));
+      }
+    } finally {
+      pool.shutdownNow();
+    }
+  }
+
+  @Test
+  void testConcurrentAccessAcrossDifferentDimensions() throws Exception {
+    // Threads touching different unconfigured dimensions concurrently must each get the correct
+    // value; the cache is shared but the computations are independent.
+    final Term term = TermAnalyzer.builder().build().analyze("HELLO").get(0);
+    final List<Dimension> dimensions = List.of(
+        Dimension.NFC, Dimension.NFKC, Dimension.WHITESPACE, Dimension.DASH, Dimension.CASE_FOLD);
+    final ExecutorService pool = Executors.newFixedThreadPool(dimensions.size());
+    try {
+      final CyclicBarrier barrier = new CyclicBarrier(dimensions.size());
+      final List<Future<String>> results = new ArrayList<>();
+      for (final Dimension dimension : dimensions) {
+        results.add(pool.submit(() -> {
+          barrier.await();
+          return term.at(dimension);
+        }));
+      }
+      assertEquals("HELLO", results.get(0).get(10, TimeUnit.SECONDS)); // NFC: unchanged
+      assertEquals("hello", results.get(4).get(10, TimeUnit.SECONDS)); // CASE_FOLD
+      for (final Future<String> result : results) {
+        result.get(10, TimeUnit.SECONDS); // no exceptions anywhere
+      }
+    } finally {
+      pool.shutdownNow();
+    }
   }
 }

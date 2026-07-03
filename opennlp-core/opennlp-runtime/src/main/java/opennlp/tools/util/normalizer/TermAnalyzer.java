@@ -58,7 +58,7 @@ public final class TermAnalyzer {
 
   private TermAnalyzer(Builder builder) {
     final List<Dimension> ordered = new ArrayList<>(builder.chain);
-    Collections.sort(ordered); // canonical pipeline order (enum declaration order)
+    Collections.sort(ordered); // pipeline order (enum declaration order)
     this.chain = List.copyOf(ordered);
     this.finalDimension = ordered.isEmpty() ? Dimension.ORIGINAL : ordered.get(ordered.size() - 1);
     // Only the per-analyzer overrides from the builder; the defaults live on Dimension itself.
@@ -81,10 +81,18 @@ public final class TermAnalyzer {
    * computed from this entry point: if a lemmatizer is configured, this method throws -- use
    * {@link #analyze(String[], String[])} when lemmas are needed.
    *
-   * @param text The text to analyze.
+   * @param text The text to analyze. Must not be {@code null}.
    * @return The terms.
+   * @throws NullPointerException if {@code text} is {@code null}.
+   * @throws IllegalStateException if {@link Dimension#LEMMA} is configured, because no
+   *     part-of-speech tags are available from raw text.
    */
   public List<Term> analyze(CharSequence text) {
+    Objects.requireNonNull(text, "text");
+    if (chain.contains(Dimension.LEMMA)) {
+      throw new IllegalStateException("Dimension LEMMA requires part-of-speech tags, which"
+          + " analyze(CharSequence) cannot supply; use analyze(tokens, tags)");
+    }
     final List<Span> spans = tokenizer.tokenizeSpans(text);
     final List<Term> terms = new ArrayList<>(spans.size());
     for (final Span span : spans) {
@@ -97,37 +105,61 @@ public final class TermAnalyzer {
    * Returns one {@link Term} per supplied token, attaching the matching part-of-speech tag so that
    * {@link Dimension#LEMMA} can be computed. The terms have no source span.
    *
-   * @param tokens The tokens.
-   * @param tags   The part-of-speech tag for each token; must be the same length as {@code tokens}.
+   * @param tokens The tokens. Must not be {@code null} or contain {@code null} elements.
+   * @param tags   The part-of-speech tag for each token; must be the same length as {@code tokens}
+   *               and must not be {@code null}. A {@code null} tag is only acceptable when
+   *               {@link Dimension#LEMMA} is not computed for that token.
    * @return The terms.
-   * @throws IllegalArgumentException if {@code tokens} and {@code tags} differ in length.
+   * @throws NullPointerException if {@code tokens} or {@code tags} is {@code null}.
+   * @throws IllegalArgumentException if {@code tokens} and {@code tags} differ in length, or if
+   *     {@code tokens} contains a {@code null} element.
    */
   public List<Term> analyze(String[] tokens, String[] tags) {
+    Objects.requireNonNull(tokens, "tokens");
+    Objects.requireNonNull(tags, "tags");
     if (tokens.length != tags.length) {
       throw new IllegalArgumentException(
           "tokens and tags must be the same length, got " + tokens.length + " and " + tags.length);
     }
     final List<Term> terms = new ArrayList<>(tokens.length);
     for (int i = 0; i < tokens.length; i++) {
+      if (tokens[i] == null) {
+        throw new IllegalArgumentException("tokens[" + i + "] is null");
+      }
       terms.add(new Term(this, tokens[i], null, tags[i]));
     }
     return terms;
   }
 
   /**
-   * {@return the configured dimensions that are computed eagerly, in canonical order} The list
+   * {@return the configured dimensions that are computed eagerly, in pipeline order} The list
    * never includes {@link Dimension#ORIGINAL}, which is always present.
    */
   public List<Dimension> dimensions() {
     return chain;
   }
 
+  /**
+   * {@return the last configured dimension in pipeline order, or {@link Dimension#ORIGINAL} when
+   * none are configured} This is the layer {@link Term#normalized()} reports.
+   */
   Dimension finalDimension() {
     return finalDimension;
   }
 
-  // Applies one dimension's transform to a single token value. Fails loudly when a token-level
-  // dimension was requested without the engine (or tag) it needs.
+  /**
+   * Applies one dimension's transform to a single token value.
+   *
+   * @param dimension The dimension whose transform to apply.
+   * @param input     The token value to transform.
+   * @param posTag    The token's part-of-speech tag; only read by {@link Dimension#LEMMA} and may
+   *                  be {@code null} otherwise.
+   * @return The transformed value; never {@code null}.
+   * @throws IllegalStateException if a token-level dimension was requested without the engine (or
+   *     tag) it needs: {@link Dimension#STEM} without a {@link Stemmer}, {@link Dimension#LEMMA}
+   *     without a {@link Lemmatizer} or without a tag, or a lemmatizer that returns no lemma. Also
+   *     thrown for a character-level dimension with neither a default nor a configured normalizer.
+   */
   String apply(Dimension dimension, String input, String posTag) {
     switch (dimension) {
       case ORIGINAL:
@@ -217,8 +249,9 @@ public final class TermAnalyzer {
      * behavior. For a custom class and target use a {@link CharClass} method reference, for example
      * {@code whitespace(CharClass.of(members, replacement)::collapse)}.
      *
-     * @param normalizer The whitespace normalizer to use.
+     * @param normalizer The whitespace normalizer to use. Must not be {@code null}.
      * @return this builder
+     * @throws NullPointerException if {@code normalizer} is {@code null}.
      */
     public Builder whitespace(CharSequenceNormalizer normalizer) {
       return transform(Dimension.WHITESPACE, normalizer);
@@ -237,8 +270,9 @@ public final class TermAnalyzer {
     /**
      * Enables {@link Dimension#DASH} with a specific normalizer (a custom dash set or target).
      *
-     * @param normalizer The dash normalizer to use.
+     * @param normalizer The dash normalizer to use. Must not be {@code null}.
      * @return this builder
+     * @throws NullPointerException if {@code normalizer} is {@code null}.
      */
     public Builder dash(CharSequenceNormalizer normalizer) {
       return transform(Dimension.DASH, normalizer);
@@ -258,8 +292,9 @@ public final class TermAnalyzer {
      * Enables {@link Dimension#CASE_FOLD} using the given locale's case rules (for example Turkish
      * dotted/dotless i), instead of the default {@link Locale#ROOT}.
      *
-     * @param locale The locale whose case rules to apply.
+     * @param locale The locale whose case rules to apply. Must not be {@code null}.
      * @return this builder
+     * @throws NullPointerException if {@code locale} is {@code null}.
      */
     public Builder caseFold(Locale locale) {
       Objects.requireNonNull(locale, "locale");
@@ -280,11 +315,15 @@ public final class TermAnalyzer {
      * Enables {@link Dimension#ACCENT_FOLD} restricted to a specific set of scripts, instead of the
      * default Latin/Greek/Cyrillic.
      *
-     * @param foldScripts       The scripts whose diacritics to fold.
+     * @param foldScripts       The scripts whose diacritics to fold. Must not be {@code null} or
+     *                          contain {@code null} elements.
      * @param foldStrokeLetters Whether to also fold stroke letters such as o-slash and l-stroke.
      * @return this builder
+     * @throws NullPointerException if {@code foldScripts} is {@code null} or contains a
+     *     {@code null} element.
      */
     public Builder accentFold(Set<Character.UnicodeScript> foldScripts, boolean foldStrokeLetters) {
+      Objects.requireNonNull(foldScripts, "foldScripts");
       return transform(Dimension.ACCENT_FOLD,
           new AccentFoldCharSequenceNormalizer(foldScripts, foldStrokeLetters));
     }
@@ -303,13 +342,15 @@ public final class TermAnalyzer {
      * Enables a character-level dimension with a specific normalizer, overriding its default (for
      * example a locale-specific case fold for a language profile).
      *
-     * @param dimension  The character-level dimension to enable.
-     * @param normalizer The normalizer to use for it.
+     * @param dimension  The character-level dimension to enable. Must not be {@code null}.
+     * @param normalizer The normalizer to use for it. Must not be {@code null}.
      * @return this builder
+     * @throws NullPointerException if {@code dimension} or {@code normalizer} is {@code null}.
      * @throws IllegalArgumentException if {@code dimension} is {@link Dimension#ORIGINAL},
      *     {@link Dimension#STEM}, or {@link Dimension#LEMMA}.
      */
     public Builder transform(Dimension dimension, CharSequenceNormalizer normalizer) {
+      Objects.requireNonNull(dimension, "dimension");
       if (dimension == Dimension.ORIGINAL || dimension == Dimension.STEM
           || dimension == Dimension.LEMMA) {
         throw new IllegalArgumentException(
@@ -323,8 +364,9 @@ public final class TermAnalyzer {
     /**
      * Enables {@link Dimension#STEM} through the given stemmer.
      *
-     * @param value The stemmer.
+     * @param value The stemmer. Must not be {@code null}.
      * @return this builder
+     * @throws NullPointerException if {@code value} is {@code null}.
      */
     public Builder stem(Stemmer value) {
       this.stemmer = Objects.requireNonNull(value, "stemmer");
@@ -335,8 +377,9 @@ public final class TermAnalyzer {
     /**
      * Enables {@link Dimension#LEMMA} through the given lemmatizer.
      *
-     * @param value The lemmatizer.
+     * @param value The lemmatizer. Must not be {@code null}.
      * @return this builder
+     * @throws NullPointerException if {@code value} is {@code null}.
      */
     public Builder lemmatize(Lemmatizer value) {
       this.lemmatizer = Objects.requireNonNull(value, "lemmatizer");
@@ -347,8 +390,9 @@ public final class TermAnalyzer {
     /**
      * Sets the tokenizer used by {@link TermAnalyzer#analyze(CharSequence)}.
      *
-     * @param value The tokenizer.
+     * @param value The tokenizer. Must not be {@code null}.
      * @return this builder
+     * @throws NullPointerException if {@code value} is {@code null}.
      */
     public Builder tokenizer(WordTokenizer value) {
       this.tokenizer = Objects.requireNonNull(value, "tokenizer");
@@ -360,8 +404,10 @@ public final class TermAnalyzer {
      * {@link TermAnalyzer#analyze(CharSequence)}. Convenience for
      * {@code tokenizer(new WordTokenizer(maxTokenLength))}.
      *
-     * @param maxTokenLength The maximum number of characters in a token.
+     * @param maxTokenLength The maximum number of characters in a token. Must be at least
+     *                       {@code 1}.
      * @return this builder
+     * @throws IllegalArgumentException if {@code maxTokenLength} is less than {@code 1}.
      */
     public Builder maxTokenLength(int maxTokenLength) {
       this.tokenizer = new WordTokenizer(maxTokenLength);

@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 /**
  * A layer of the {@link Term} normalization stack, in increasing order of aggressiveness. A
  * {@link TermAnalyzer} applies a configured prefix of these to each token; the declaration order is
- * the canonical pipeline order, because the transforms do not commute (case folding then accent
+ * the pipeline order, because the transforms do not commute (case folding then accent
  * folding differs from the reverse for Turkish dotted/dotless i and the German eszett).
  *
  * <p>This enum is the single definition of the character-level steps: each one carries its default
@@ -36,7 +36,7 @@ import java.util.function.Supplier;
  */
 public enum Dimension {
 
-  /** The original token text, the canonical source of truth. */
+  /** The original token text, the source of truth. */
   ORIGINAL(null),
 
   /** Unicode canonical composition (NFC); lossless under canonical equivalence. */
