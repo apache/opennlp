@@ -39,6 +39,8 @@ public interface OffsetMappingNameFinder extends TokenNameFinder {
    *
    * @param tokens The tokens to search.
    * @return The detected spans, in original-input character coordinates.
+   * @throws IllegalArgumentException Thrown if {@code tokens} is {@code null} or contains a
+   *     {@code null} token.
    */
   Span[] findInOriginal(String[] tokens);
 }

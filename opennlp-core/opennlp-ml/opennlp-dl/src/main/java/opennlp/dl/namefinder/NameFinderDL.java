@@ -98,6 +98,13 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   private static final boolean LOWER_CASE_DEFAULT = false;
 
   private static final String CHARS_TO_REPLACE = "##";
+
+  // Ordering for overlap resolution: longest span first, then higher probability. The dominant
+  // detection is kept and any later span overlapping it is dropped.
+  private static final Comparator<Span> BY_LENGTH_THEN_PROBABILITY =
+      Comparator.comparingInt(Span::length).reversed()
+          .thenComparing(Comparator.comparingDouble(Span::getProb).reversed());
+
   private static final Logger logger = LoggerFactory.getLogger(NameFinderDL.class);
 
   private final SentenceDetector sentenceDetector;
@@ -232,11 +239,19 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
     return mapped.toArray(new Span[0]);
   }
 
-  // Shared core: normalize the joined input (capturing the alignment back to the original), then
-  // decode each overlapping chunk bounded to its own character region and resolve overlaps. Bounding
-  // per chunk lets a boundary entity that two consecutive chunks both cover surface as overlapping
-  // candidates, which mergeOverlappingSpans collapses to the longer (more complete) span instead of
-  // silently keeping whichever a single forward cursor reached first.
+  /**
+   * Shared detection core: normalizes the joined input (capturing the alignment back to the
+   * original), then decodes each overlapping chunk bounded to its own character region and resolves
+   * overlaps. Bounding per chunk lets a boundary entity that two consecutive chunks both cover
+   * surface as overlapping candidates, which {@link #mergeOverlappingSpans(List)} collapses to the
+   * longer (more complete) span instead of silently keeping whichever a single forward cursor
+   * reached first.
+   *
+   * @param input The tokens to search; must not be {@code null} or contain a {@code null} token.
+   * @return The decoded spans paired with the normalization {@link AlignedText}.
+   * @throws IllegalArgumentException Thrown if {@code input} is {@code null} or contains a
+   *     {@code null} token.
+   */
   private DecodedSpans locate(String[] input) {
 
     requireNonNullArg(input, "input");
@@ -284,12 +299,6 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
   // A chunk's WordPiece tokens paired with the chunk's half-open character span in the full text.
   private record ChunkTokens(Tokens tokens, int start, int end) {
   }
-
-  // Ordering for overlap resolution: longest span first, then higher probability. The dominant
-  // detection is kept and any later span overlapping it is dropped.
-  private static final Comparator<Span> BY_LENGTH_THEN_PROBABILITY =
-      Comparator.comparingInt(Span::length).reversed()
-          .thenComparing(Comparator.comparingDouble(Span::getProb).reversed());
 
   /**
    * Resolves spans that overlap in character coordinates, as happens when an entity falls in the
