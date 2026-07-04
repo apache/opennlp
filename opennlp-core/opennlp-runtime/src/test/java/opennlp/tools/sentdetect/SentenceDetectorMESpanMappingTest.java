@@ -17,6 +17,8 @@
 package opennlp.tools.sentdetect;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.jupiter.api.Assertions;
@@ -191,5 +193,116 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     Assertions.assertEquals(2, spans.length);
     Assertions.assertEquals(0, spans[0].getStart());
     Assertions.assertEquals(3, spans[0].getEnd()); // includes the separator control
+  }
+
+  @Test
+  void mapPositionsToSpansClearsStaleProbsInTheZeroPositionsBranch() {
+    // The probs contract holds in every branch: with no positions, entries a caller left in the
+    // list are cleared so the list mirrors the returned spans instead of keeping stale values.
+    List<Double> stale = new ArrayList<>(List.of(0.4d, 0.3d));
+    Span[] spans = SentenceDetectorME.mapPositionsToSpans("  some text  ", new int[0], stale);
+    Assertions.assertEquals(1, spans.length);
+    Assertions.assertEquals(List.of(1d), stale);
+
+    // Blank input: no spans, and the stale entries are gone as well.
+    List<Double> blankStale = new ArrayList<>(List.of(0.4d));
+    Assertions.assertEquals(0,
+        SentenceDetectorME.mapPositionsToSpans(" \t ", new int[0], blankStale).length);
+    Assertions.assertTrue(blankStale.isEmpty());
+  }
+
+  @Test
+  void mapPositionsToSpansAttachesProbabilityOneInTheZeroPositionsBranch() {
+    // Every returned span carries its probability; the whole-text span of the zero-positions
+    // branch is no exception (it used to report the Span default of 0.0 via getProb()).
+    List<Double> probs = new ArrayList<>();
+    Span[] spans = SentenceDetectorME.mapPositionsToSpans("no end of sentence", new int[0], probs);
+    Assertions.assertEquals(1, spans.length);
+    Assertions.assertEquals(1d, spans[0].getProb());
+    Assertions.assertEquals(List.of(1d), probs);
+  }
+
+  @Test
+  void controlOnlyInputIsOneSpanOfContent() {
+    // Deliberate delta, the whole-text counterpart of
+    // informationSeparatorsAreContentNotWhitespace: information separators are content, so
+    // control-only input no longer trims to nothing. The old mapping returned no spans here.
+    List<Double> probs = new ArrayList<>();
+    Span[] spans = SentenceDetectorME.mapPositionsToSpans("\u001C\u001C", new int[0], probs);
+    Assertions.assertEquals(1, spans.length);
+    Assertions.assertEquals(0, spans[0].getStart());
+    Assertions.assertEquals(2, spans[0].getEnd());
+    Assertions.assertEquals(1d, spans[0].getProb());
+    Assertions.assertEquals(List.of(1d), probs);
+
+    // The same input through the public API: no end-of-sentence characters, so the detector
+    // takes the zero-positions branch and reports the control characters as one sentence span.
+    assertSpans(tokenEnd, "\u001C\u001C", new Span(0, 2));
+    Assertions.assertArrayEquals(new double[] {1d}, tokenEnd.probs());
+  }
+
+  @Test
+  void mapPositionsToSpansPreservesSupplementaryCharactersAtSpanEdges() {
+    // The trimming cursors scan by code point (CharClass discipline). Surrogate pairs at span
+    // edges must survive intact; U+1D518 and U+1D51E are supplementary-plane letters.
+    String frakturU = "\uD835\uDD18"; // MATHEMATICAL FRAKTUR CAPITAL U
+    String frakturA = "\uD835\uDD1E"; // MATHEMATICAL FRAKTUR SMALL A
+
+    List<Double> probs = new ArrayList<>();
+    String noPositions = "  " + frakturU + "no end" + frakturA + "  ";
+    Span[] spans = SentenceDetectorME.mapPositionsToSpans(noPositions, new int[0], probs);
+    Assertions.assertEquals(1, spans.length);
+    Assertions.assertEquals(frakturU + "no end" + frakturA,
+        spans[0].getCoveredText(noPositions).toString());
+
+    // A position between two sentences that start and end with supplementary characters.
+    probs = new ArrayList<>(List.of(0.9d));
+    String twoParts = frakturU + "one. " + frakturA + "two";
+    Span[] parts = SentenceDetectorME.mapPositionsToSpans(twoParts, new int[] {7}, probs);
+    Assertions.assertEquals(2, parts.length);
+    Assertions.assertEquals(frakturU + "one.", parts[0].getCoveredText(twoParts).toString());
+    Assertions.assertEquals(frakturA + "two", parts[1].getCoveredText(twoParts).toString());
+    Assertions.assertEquals(List.of(0.9d, 1d), probs);
+  }
+
+  @Test
+  void supplementaryCharactersFlowThroughTheDetectorUnharmed() {
+    // End-to-end through the trained model: the whitespace cursors of the detection loop also
+    // scan by code point, so a surrogate pair adjacent to the sentence boundary stays intact.
+    String fraktur = "\uD835\uDD18\uD835\uDD1E"; // two supplementary letters as a word
+    String input = "This is a " + fraktur + " test. " + SECOND;
+    Span[] spans = tokenEnd.sentPosDetect(input);
+    Assertions.assertEquals(2, spans.length);
+    Assertions.assertEquals("This is a " + fraktur + " test.",
+        spans[0].getCoveredText(input).toString());
+    Assertions.assertEquals(SECOND, spans[1].getCoveredText(input).toString());
+  }
+
+  @Test
+  void informationSeparatorGluedToTheDelimiterExtendsTheTokenEndBoundary() {
+    // Detection-loop delta of the Unicode White_Space set (OPENNLP-205), pinned deliberately:
+    // U+001C directly after the delimiter is content now. With useTokenEnd the token containing
+    // the end-of-sentence character runs through "\u001CThere" up to the next real whitespace,
+    // and the second sentence starts after that token; without useTokenEnd the second sentence
+    // starts at the separator and carries it as leading content. The old StringUtil-based
+    // cursors treated U+001C as whitespace and started the second sentence directly behind it
+    // in both configurations. Feature generation is untouched; only the placement of the
+    // accepted position moved.
+    String input = "This is a test.\u001C" + SECOND;
+    assertSpans(tokenEnd, input, new Span(0, 21), new Span(22, 57));
+    assertSpans(noTokenEnd, input, new Span(0, 15), new Span(15, 57));
+  }
+
+  @Test
+  void informationSeparatorInsideAbbreviationLikeTokenChangesTheCandidateSkip() {
+    // Detection-loop delta, pinned deliberately: in "z.\u001Cb. x" the first delimiter sits in
+    // front of non-whitespace content (U+001C is content now), so the delimiter-run skip
+    // heuristic merges it into the multi-period token and only the second delimiter is scored.
+    // The old cursors saw U+001C as whitespace and scored the first delimiter as well. The
+    // model splits at the second delimiter, so the multi-period token stays one sentence and
+    // "x" becomes the next; the separator is covered as content inside the first span.
+    String input = "z.\u001Cb. x";
+    assertSpans(tokenEnd, input, new Span(0, 5), new Span(6, 7));
+    assertSpans(noTokenEnd, input, new Span(0, 5), new Span(6, 7));
   }
 }
