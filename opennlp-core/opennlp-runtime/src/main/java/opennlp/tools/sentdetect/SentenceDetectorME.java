@@ -276,8 +276,11 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
   /**
    * Maps accepted sentence-start positions to trimmed sentence {@link Span}s, the core of the
-   * end-of-sentence position to span mapping (OPENNLP-205). Package-visible so the mapping is
-   * directly testable without a trained model.
+   * end-of-sentence position to span mapping (OPENNLP-205). Not part of the public API; the
+   * package visibility is deliberate, kept so the mapping can be exercised directly in tests.
+   * Several branches (the whitespace-only candidate that keeps {@code probs} aligned, and the
+   * stale-{@code probs} reset in the zero-positions branch) are not reachable through the public
+   * {@code sentPosDetect} entry point.
    *
    * <p>Each span runs from the previous position (or the text start) to the next position, with
    * Unicode {@code White_Space} trimmed from both edges. A candidate that is whitespace-only is
@@ -293,7 +296,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    * @return The trimmed spans, in order, each carrying its probability via
    *         {@link Span#getProb()}.
    */
-  static Span[] mapPositionsToSpans(CharSequence s, int[] starts, List<Double> probs) {
+  Span[] mapPositionsToSpans(CharSequence s, int[] starts, List<Double> probs) {
     final List<Span> spans = new ArrayList<>(starts.length + 1);
     int sentStart = 0;
     for (int si = 0; si < starts.length; si++) {
@@ -316,7 +319,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
 
   // Appends [start, end) as a span with the given probability attached, unless it is
   // whitespace-only and trims to nothing.
-  private static void addTrimmedSpan(List<Span> spans, CharSequence s, int start, int end,
+  private void addTrimmedSpan(List<Span> spans, CharSequence s, int start, int end,
       double prob) {
     Span span = trimmedSpan(s, start, end);
     if (span != null) {
@@ -327,7 +330,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
   // Returns [start, end) with Unicode White_Space trimmed from both edges, or null when nothing
   // remains. Scans by code point, matching the CharClass discipline; all current White_Space
   // members are BMP, but this keeps surrogate pairs at the edges intact by construction.
-  private static Span trimmedSpan(CharSequence s, int start, int end) {
+  private Span trimmedSpan(CharSequence s, int start, int end) {
     while (start < end) {
       final int cp = Character.codePointAt(s, start);
       if (!WHITESPACE.contains(cp)) {

@@ -145,9 +145,9 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
   void mapPositionsToSpansHandlesNoPositions() {
     java.util.List<Double> probs = new java.util.ArrayList<>();
     Assertions.assertEquals(0,
-        SentenceDetectorME.mapPositionsToSpans("  \t ", new int[0], probs).length);
+        tokenEnd.mapPositionsToSpans("  \t ", new int[0], probs).length);
     Assertions.assertTrue(probs.isEmpty());
-    Span[] whole = SentenceDetectorME.mapPositionsToSpans("  some text  ", new int[0], probs);
+    Span[] whole = tokenEnd.mapPositionsToSpans("  some text  ", new int[0], probs);
     Assertions.assertEquals(1, whole.length);
     Assertions.assertEquals(new Span(2, 11).getStart(), whole[0].getStart());
     Assertions.assertEquals(new Span(2, 11).getEnd(), whole[0].getEnd());
@@ -161,7 +161,7 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     // probability are dropped together. The old implementation removed the probability by index
     // from a pre-sized array, which could misalign the pairing.
     java.util.List<Double> probs = new java.util.ArrayList<>(java.util.List.of(0.9d, 0.8d));
-    Span[] spans = SentenceDetectorME.mapPositionsToSpans("ab  cd", new int[] {4, 4}, probs);
+    Span[] spans = tokenEnd.mapPositionsToSpans("ab  cd", new int[] {4, 4}, probs);
     Assertions.assertEquals(2, spans.length);
     Assertions.assertEquals(0, spans[0].getStart());
     Assertions.assertEquals(2, spans[0].getEnd());
@@ -175,7 +175,7 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
   @Test
   void mapPositionsToSpansTrimsTheFullUnicodeWhitespaceSet() {
     java.util.List<Double> probs = new java.util.ArrayList<>(java.util.List.of(0.7d));
-    Span[] spans = SentenceDetectorME.mapPositionsToSpans(
+    Span[] spans = tokenEnd.mapPositionsToSpans(
         "One.\u0085\u00A0\u2028Two", new int[] {7}, probs);
     Assertions.assertEquals(2, spans.length);
     Assertions.assertEquals(0, spans[0].getStart());
@@ -189,7 +189,7 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     // Deliberate delta from the old StringUtil-based mapping: the U+001C..U+001F information
     // separators are not Unicode White_Space, so they are no longer trimmed from span edges.
     java.util.List<Double> probs = new java.util.ArrayList<>(java.util.List.of(0.7d));
-    Span[] spans = SentenceDetectorME.mapPositionsToSpans("A.\u001C B", new int[] {4}, probs);
+    Span[] spans = tokenEnd.mapPositionsToSpans("A.\u001C B", new int[] {4}, probs);
     Assertions.assertEquals(2, spans.length);
     Assertions.assertEquals(0, spans[0].getStart());
     Assertions.assertEquals(3, spans[0].getEnd()); // includes the separator control
@@ -200,14 +200,14 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     // The probs contract holds in every branch: with no positions, entries a caller left in the
     // list are cleared so the list mirrors the returned spans instead of keeping stale values.
     List<Double> stale = new ArrayList<>(List.of(0.4d, 0.3d));
-    Span[] spans = SentenceDetectorME.mapPositionsToSpans("  some text  ", new int[0], stale);
+    Span[] spans = tokenEnd.mapPositionsToSpans("  some text  ", new int[0], stale);
     Assertions.assertEquals(1, spans.length);
     Assertions.assertEquals(List.of(1d), stale);
 
     // Blank input: no spans, and the stale entries are gone as well.
     List<Double> blankStale = new ArrayList<>(List.of(0.4d));
     Assertions.assertEquals(0,
-        SentenceDetectorME.mapPositionsToSpans(" \t ", new int[0], blankStale).length);
+        tokenEnd.mapPositionsToSpans(" \t ", new int[0], blankStale).length);
     Assertions.assertTrue(blankStale.isEmpty());
   }
 
@@ -216,7 +216,7 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     // Every returned span carries its probability; the whole-text span of the zero-positions
     // branch is no exception (it used to report the Span default of 0.0 via getProb()).
     List<Double> probs = new ArrayList<>();
-    Span[] spans = SentenceDetectorME.mapPositionsToSpans("no end of sentence", new int[0], probs);
+    Span[] spans = tokenEnd.mapPositionsToSpans("no end of sentence", new int[0], probs);
     Assertions.assertEquals(1, spans.length);
     Assertions.assertEquals(1d, spans[0].getProb());
     Assertions.assertEquals(List.of(1d), probs);
@@ -228,7 +228,7 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     // informationSeparatorsAreContentNotWhitespace: information separators are content, so
     // control-only input no longer trims to nothing. The old mapping returned no spans here.
     List<Double> probs = new ArrayList<>();
-    Span[] spans = SentenceDetectorME.mapPositionsToSpans("\u001C\u001C", new int[0], probs);
+    Span[] spans = tokenEnd.mapPositionsToSpans("\u001C\u001C", new int[0], probs);
     Assertions.assertEquals(1, spans.length);
     Assertions.assertEquals(0, spans[0].getStart());
     Assertions.assertEquals(2, spans[0].getEnd());
@@ -250,7 +250,7 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
 
     List<Double> probs = new ArrayList<>();
     String noPositions = "  " + frakturU + "no end" + frakturA + "  ";
-    Span[] spans = SentenceDetectorME.mapPositionsToSpans(noPositions, new int[0], probs);
+    Span[] spans = tokenEnd.mapPositionsToSpans(noPositions, new int[0], probs);
     Assertions.assertEquals(1, spans.length);
     Assertions.assertEquals(frakturU + "no end" + frakturA,
         spans[0].getCoveredText(noPositions).toString());
@@ -258,7 +258,7 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     // A position between two sentences that start and end with supplementary characters.
     probs = new ArrayList<>(List.of(0.9d));
     String twoParts = frakturU + "one. " + frakturA + "two";
-    Span[] parts = SentenceDetectorME.mapPositionsToSpans(twoParts, new int[] {7}, probs);
+    Span[] parts = tokenEnd.mapPositionsToSpans(twoParts, new int[] {7}, probs);
     Assertions.assertEquals(2, parts.length);
     Assertions.assertEquals(frakturU + "one.", parts[0].getCoveredText(twoParts).toString());
     Assertions.assertEquals(frakturA + "two", parts[1].getCoveredText(twoParts).toString());
