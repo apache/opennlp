@@ -22,7 +22,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 
 import opennlp.tools.lemmatizer.Lemmatizer;
@@ -69,7 +68,9 @@ public final class TermAnalyzer {
   }
 
   /**
-   * {@return a new builder}
+   * {@return a new {@link Builder}} The builder starts with no dimensions enabled and the default
+   * UAX&#160;#29 word tokenizer; enable dimensions and set a stemmer, lemmatizer, or tokenizer on it,
+   * then call {@link Builder#build()}.
    */
   public static Builder builder() {
     return new Builder();
@@ -83,12 +84,14 @@ public final class TermAnalyzer {
    *
    * @param text The text to analyze. Must not be {@code null}.
    * @return The terms.
-   * @throws NullPointerException if {@code text} is {@code null}.
+   * @throws IllegalArgumentException if {@code text} is {@code null}.
    * @throws IllegalStateException if {@link Dimension#LEMMA} is configured, because no
    *     part-of-speech tags are available from raw text.
    */
   public List<Term> analyze(CharSequence text) {
-    Objects.requireNonNull(text, "text");
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
     if (chain.contains(Dimension.LEMMA)) {
       throw new IllegalStateException("Dimension LEMMA requires part-of-speech tags, which"
           + " analyze(CharSequence) cannot supply; use analyze(tokens, tags)");
@@ -110,13 +113,16 @@ public final class TermAnalyzer {
    *               and must not be {@code null}. A {@code null} tag is only acceptable when
    *               {@link Dimension#LEMMA} is not computed for that token.
    * @return The terms.
-   * @throws NullPointerException if {@code tokens} or {@code tags} is {@code null}.
-   * @throws IllegalArgumentException if {@code tokens} and {@code tags} differ in length, or if
-   *     {@code tokens} contains a {@code null} element.
+   * @throws IllegalArgumentException if {@code tokens} or {@code tags} is {@code null}, if they
+   *     differ in length, or if {@code tokens} contains a {@code null} element.
    */
   public List<Term> analyze(String[] tokens, String[] tags) {
-    Objects.requireNonNull(tokens, "tokens");
-    Objects.requireNonNull(tags, "tags");
+    if (tokens == null) {
+      throw new IllegalArgumentException("tokens must not be null");
+    }
+    if (tags == null) {
+      throw new IllegalArgumentException("tags must not be null");
+    }
     if (tokens.length != tags.length) {
       throw new IllegalArgumentException(
           "tokens and tags must be the same length, got " + tokens.length + " and " + tags.length);
@@ -251,7 +257,7 @@ public final class TermAnalyzer {
      *
      * @param normalizer The whitespace normalizer to use. Must not be {@code null}.
      * @return this builder
-     * @throws NullPointerException if {@code normalizer} is {@code null}.
+     * @throws IllegalArgumentException if {@code normalizer} is {@code null}.
      */
     public Builder whitespace(CharSequenceNormalizer normalizer) {
       return transform(Dimension.WHITESPACE, normalizer);
@@ -272,7 +278,7 @@ public final class TermAnalyzer {
      *
      * @param normalizer The dash normalizer to use. Must not be {@code null}.
      * @return this builder
-     * @throws NullPointerException if {@code normalizer} is {@code null}.
+     * @throws IllegalArgumentException if {@code normalizer} is {@code null}.
      */
     public Builder dash(CharSequenceNormalizer normalizer) {
       return transform(Dimension.DASH, normalizer);
@@ -294,10 +300,12 @@ public final class TermAnalyzer {
      *
      * @param locale The locale whose case rules to apply. Must not be {@code null}.
      * @return this builder
-     * @throws NullPointerException if {@code locale} is {@code null}.
+     * @throws IllegalArgumentException if {@code locale} is {@code null}.
      */
     public Builder caseFold(Locale locale) {
-      Objects.requireNonNull(locale, "locale");
+      if (locale == null) {
+        throw new IllegalArgumentException("locale must not be null");
+      }
       return transform(Dimension.CASE_FOLD, CaseFoldCharSequenceNormalizer.getInstance(locale));
     }
 
@@ -319,11 +327,13 @@ public final class TermAnalyzer {
      *                          contain {@code null} elements.
      * @param foldStrokeLetters Whether to also fold stroke letters such as o-slash and l-stroke.
      * @return this builder
-     * @throws NullPointerException if {@code foldScripts} is {@code null} or contains a
+     * @throws IllegalArgumentException if {@code foldScripts} is {@code null} or contains a
      *     {@code null} element.
      */
     public Builder accentFold(Set<Character.UnicodeScript> foldScripts, boolean foldStrokeLetters) {
-      Objects.requireNonNull(foldScripts, "foldScripts");
+      if (foldScripts == null) {
+        throw new IllegalArgumentException("foldScripts must not be null");
+      }
       return transform(Dimension.ACCENT_FOLD,
           new AccentFoldCharSequenceNormalizer(foldScripts, foldStrokeLetters));
     }
@@ -345,18 +355,23 @@ public final class TermAnalyzer {
      * @param dimension  The character-level dimension to enable. Must not be {@code null}.
      * @param normalizer The normalizer to use for it. Must not be {@code null}.
      * @return this builder
-     * @throws NullPointerException if {@code dimension} or {@code normalizer} is {@code null}.
-     * @throws IllegalArgumentException if {@code dimension} is {@link Dimension#ORIGINAL},
-     *     {@link Dimension#STEM}, or {@link Dimension#LEMMA}.
+     * @throws IllegalArgumentException if {@code dimension} or {@code normalizer} is {@code null},
+     *     or if {@code dimension} is {@link Dimension#ORIGINAL}, {@link Dimension#STEM}, or
+     *     {@link Dimension#LEMMA}.
      */
     public Builder transform(Dimension dimension, CharSequenceNormalizer normalizer) {
-      Objects.requireNonNull(dimension, "dimension");
+      if (dimension == null) {
+        throw new IllegalArgumentException("dimension must not be null");
+      }
+      if (normalizer == null) {
+        throw new IllegalArgumentException("normalizer must not be null");
+      }
       if (dimension == Dimension.ORIGINAL || dimension == Dimension.STEM
           || dimension == Dimension.LEMMA) {
         throw new IllegalArgumentException(
             "transform(...) only applies to character-level dimensions, not " + dimension);
       }
-      transforms.put(dimension, Objects.requireNonNull(normalizer, "normalizer"));
+      transforms.put(dimension, normalizer);
       chain.add(dimension);
       return this;
     }
@@ -366,10 +381,13 @@ public final class TermAnalyzer {
      *
      * @param value The stemmer. Must not be {@code null}.
      * @return this builder
-     * @throws NullPointerException if {@code value} is {@code null}.
+     * @throws IllegalArgumentException if {@code value} is {@code null}.
      */
     public Builder stem(Stemmer value) {
-      this.stemmer = Objects.requireNonNull(value, "stemmer");
+      if (value == null) {
+        throw new IllegalArgumentException("stemmer must not be null");
+      }
+      this.stemmer = value;
       chain.add(Dimension.STEM);
       return this;
     }
@@ -379,10 +397,13 @@ public final class TermAnalyzer {
      *
      * @param value The lemmatizer. Must not be {@code null}.
      * @return this builder
-     * @throws NullPointerException if {@code value} is {@code null}.
+     * @throws IllegalArgumentException if {@code value} is {@code null}.
      */
     public Builder lemmatize(Lemmatizer value) {
-      this.lemmatizer = Objects.requireNonNull(value, "lemmatizer");
+      if (value == null) {
+        throw new IllegalArgumentException("lemmatizer must not be null");
+      }
+      this.lemmatizer = value;
       chain.add(Dimension.LEMMA);
       return this;
     }
@@ -392,10 +413,13 @@ public final class TermAnalyzer {
      *
      * @param value The tokenizer. Must not be {@code null}.
      * @return this builder
-     * @throws NullPointerException if {@code value} is {@code null}.
+     * @throws IllegalArgumentException if {@code value} is {@code null}.
      */
     public Builder tokenizer(WordTokenizer value) {
-      this.tokenizer = Objects.requireNonNull(value, "tokenizer");
+      if (value == null) {
+        throw new IllegalArgumentException("tokenizer must not be null");
+      }
+      this.tokenizer = value;
       return this;
     }
 

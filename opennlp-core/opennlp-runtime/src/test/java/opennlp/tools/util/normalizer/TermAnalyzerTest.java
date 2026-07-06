@@ -266,15 +266,15 @@ public class TermAnalyzerTest {
   @Test
   void testAnalyzeTextRejectsNull() {
     final TermAnalyzer analyzer = TermAnalyzer.builder().build();
-    assertThrows(NullPointerException.class, () -> analyzer.analyze((CharSequence) null));
+    assertThrows(IllegalArgumentException.class, () -> analyzer.analyze((CharSequence) null));
   }
 
   @Test
   void testAnalyzeTokensRejectsNullArrays() {
     final TermAnalyzer analyzer = TermAnalyzer.builder().build();
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> analyzer.analyze(null, new String[] {"NN"}));
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> analyzer.analyze(new String[] {"cat"}, null));
   }
 
@@ -289,26 +289,26 @@ public class TermAnalyzerTest {
   @Test
   void testAtRejectsNullDimension() {
     final Term term = TermAnalyzer.builder().build().analyze("x").get(0);
-    assertThrows(NullPointerException.class, () -> term.at(null));
+    assertThrows(IllegalArgumentException.class, () -> term.at(null));
   }
 
   @Test
   void testBuilderRejectsNullArguments() {
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> TermAnalyzer.builder().whitespace(null));
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> TermAnalyzer.builder().dash(null));
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> TermAnalyzer.builder().caseFold(null));
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> TermAnalyzer.builder().accentFold(null, true));
-    assertThrows(NullPointerException.class, () -> TermAnalyzer.builder()
+    assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder()
         .transform(null, CaseFoldCharSequenceNormalizer.getInstance()));
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> TermAnalyzer.builder().transform(Dimension.CASE_FOLD, null));
-    assertThrows(NullPointerException.class, () -> TermAnalyzer.builder().stem(null));
-    assertThrows(NullPointerException.class, () -> TermAnalyzer.builder().lemmatize(null));
-    assertThrows(NullPointerException.class, () -> TermAnalyzer.builder().tokenizer(null));
+    assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().stem(null));
+    assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().lemmatize(null));
+    assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().tokenizer(null));
   }
 
   @Test

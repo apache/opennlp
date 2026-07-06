@@ -18,7 +18,6 @@ package opennlp.tools.util.normalizer;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import opennlp.tools.util.Span;
@@ -54,13 +53,18 @@ public final class Term {
    * @param original The original token text. Must not be {@code null}.
    * @param span     The source span of the token, or {@code null} for pre-tokenized input.
    * @param posTag   The part-of-speech tag, or {@code null} when none is available.
-   * @throws NullPointerException if {@code analyzer} or {@code original} is {@code null}.
+   * @throws IllegalArgumentException if {@code analyzer} or {@code original} is {@code null}.
    * @throws IllegalStateException if a configured dimension needs an engine or tag that is
    *     missing (see {@link TermAnalyzer#apply(Dimension, String, String)}).
    */
   Term(TermAnalyzer analyzer, String original, Span span, String posTag) {
-    this.analyzer = Objects.requireNonNull(analyzer, "analyzer");
-    Objects.requireNonNull(original, "original");
+    if (analyzer == null) {
+      throw new IllegalArgumentException("analyzer must not be null");
+    }
+    if (original == null) {
+      throw new IllegalArgumentException("original must not be null");
+    }
+    this.analyzer = analyzer;
     this.span = span;
     this.posTag = posTag;
     String value = original;
@@ -108,12 +112,14 @@ public final class Term {
    *
    * @param dimension The dimension to project to. Must not be {@code null}.
    * @return The token at that dimension.
-   * @throws NullPointerException if {@code dimension} is {@code null}.
+   * @throws IllegalArgumentException if {@code dimension} is {@code null}.
    * @throws IllegalStateException if the dimension needs an engine or tag that was not configured
    *     (see {@link Dimension#STEM} and {@link Dimension#LEMMA}).
    */
   public String at(Dimension dimension) {
-    Objects.requireNonNull(dimension, "dimension");
+    if (dimension == null) {
+      throw new IllegalArgumentException("dimension must not be null");
+    }
     final String cached = layers.get(dimension);
     if (cached != null) {
       return cached;
