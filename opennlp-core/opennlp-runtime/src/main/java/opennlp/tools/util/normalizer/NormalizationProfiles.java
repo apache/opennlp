@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -87,13 +86,17 @@ public final class NormalizationProfiles {
   }
 
   /**
-   * Returns the profile for a language.
+   * Returns the {@link NormalizationProfile profile} for a language.
    *
-   * @param language An ISO 639-3 or ISO 639-1 language code; case-insensitive.
+   * @param language An ISO 639-3 or ISO 639-1 language code; case-insensitive. Must not be
+   *                 {@code null}.
    * @return The profile, or empty if the language has no Snowball stemmer.
+   * @throws IllegalArgumentException if {@code language} is {@code null}.
    */
   public static Optional<NormalizationProfile> forLanguage(String language) {
-    Objects.requireNonNull(language, "language");
+    if (language == null) {
+      throw new IllegalArgumentException("language must not be null");
+    }
     String code = language.strip().toLowerCase(Locale.ROOT);
     if (code.length() == 2) {
       try {
@@ -109,16 +112,21 @@ public final class NormalizationProfiles {
   }
 
   /**
-   * Detects the language of {@code text} and returns its profile.
+   * Detects the language of {@code text} and returns its {@link NormalizationProfile profile}.
    *
-   * @param text     The text to detect.
-   * @param detector The language detector to use.
+   * @param text     The text to detect. Must not be {@code null}.
+   * @param detector The language detector to use. Must not be {@code null}.
    * @return The profile for the detected language, or empty if it has no Snowball stemmer.
+   * @throws IllegalArgumentException if {@code text} or {@code detector} is {@code null}.
    */
   public static Optional<NormalizationProfile> detect(CharSequence text,
       LanguageDetector detector) {
-    Objects.requireNonNull(text, "text");
-    Objects.requireNonNull(detector, "detector");
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
+    if (detector == null) {
+      throw new IllegalArgumentException("detector must not be null");
+    }
     return forLanguage(detector.predictLanguage(text).getLang());
   }
 
