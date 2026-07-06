@@ -42,6 +42,7 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.StringList;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.TrainingParameters;
+import opennlp.tools.util.normalizer.CharClass;
 
 /**
  * A sentence detector for splitting up raw text into sentences.
@@ -185,15 +186,36 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     return sentences;
   }
 
+  // The whitespace definition of the sentence detector: the Unicode White_Space set
+  // (OPENNLP-205). It drives both the detection loop of sentPosDetect (the delimiter-run skip
+  // heuristic and the placement of sentence-start positions) and the position-to-span mapping,
+  // so both stages agree on what separates sentences. Unlike the previously used
+  // StringUtil.isWhitespace, this covers the next line control (U+0085) and does not treat the
+  // U+001C..U+001F information separators as whitespace; around those characters the candidate
+  // positions themselves can differ from pre-OPENNLP-205 releases, not only the span edges.
+  // Both deltas are pinned in SentenceDetectorMESpanMappingTest. Model feature generation
+  // (SDContextGenerator) is not affected.
+  private static final CharClass WHITESPACE = CharClass.whitespace();
+
   private int getFirstWS(CharSequence s, int pos) {
-    while (pos < s.length() && !StringUtil.isWhitespace(s.charAt(pos)))
-      pos++;
+    while (pos < s.length()) {
+      final int cp = Character.codePointAt(s, pos);
+      if (WHITESPACE.contains(cp)) {
+        break;
+      }
+      pos += Character.charCount(cp);
+    }
     return pos;
   }
 
   private int getFirstNonWS(CharSequence s, int pos) {
-    while (pos < s.length() && StringUtil.isWhitespace(s.charAt(pos)))
-      pos++;
+    while (pos < s.length()) {
+      final int cp = Character.codePointAt(s, pos);
+      if (!WHITESPACE.contains(cp)) {
+        break;
+      }
+      pos += Character.charCount(cp);
+    }
     return pos;
   }
 
@@ -244,77 +266,86 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     }
 
     int[] starts = ArrayMath.toIntArray(positions);
-
-    // string does not contain sentence end positions
-    if (starts.length == 0) {
-
-      // remove leading and trailing whitespace
-      int start = 0;
-      int end = s.length();
-
-      while (start < s.length() && StringUtil.isWhitespace(s.charAt(start)))
-        start++;
-
-      while (end > 0 && StringUtil.isWhitespace(s.charAt(end - 1)))
-        end--;
-
-      if (end - start > 0) {
-        localProbs.add(1d);
-        state.sentProbs = localProbs;
-        return new Span[] {new Span(start, end)};
-      }
-      else {
-        state.sentProbs = localProbs;
-        return new Span[0];
-      }
-    }
-
-    // Convert the sentence end indexes to spans
-
-    boolean leftover = starts[starts.length - 1] != s.length();
-    Span[] spans = new Span[leftover ? starts.length + 1 : starts.length];
-
-    for (int si = 0; si < starts.length; si++) {
-      int start;
-
-      if (si == 0) {
-        start = 0;
-      }
-      else {
-        start = starts[si - 1];
-      }
-
-      // A span might contain only white spaces, in this case the length of
-      // the span will be zero after trimming and should be ignored.
-      Span span = new Span(start, starts[si]).trim(s);
-      if (span.length() > 0) {
-        spans[si] = span;
-      }
-      else {
-        localProbs.remove(si);
-      }
-    }
-
-    if (leftover) {
-      Span span = new Span(starts[starts.length - 1], s.length()).trim(s);
-      if (span.length() > 0) {
-        spans[spans.length - 1] = span;
-        localProbs.add(1d);
-      }
-    }
-    /*
-     * set the prob for each span
-     */
-    for (int i = 0; i < spans.length; i++) {
-      double prob = localProbs.get(i);
-      spans[i] = new Span(spans[i], prob);
-
-    }
+    Span[] spans = mapPositionsToSpans(s, starts, localProbs);
 
     // Publish for backward-compatible probs() access (last-writer-wins under concurrency)
     state.sentProbs = localProbs;
 
     return spans;
+  }
+
+  /**
+   * Maps accepted sentence-start positions to trimmed sentence {@link Span}s, the core of the
+   * end-of-sentence position to span mapping (OPENNLP-205). Not part of the public API; the
+   * package visibility is deliberate, kept so the mapping can be exercised directly in tests.
+   * Several branches (the whitespace-only candidate that keeps {@code probs} aligned, and the
+   * stale-{@code probs} reset in the zero-positions branch) are not reachable through the public
+   * {@code sentPosDetect} entry point.
+   *
+   * <p>Each span runs from the previous position (or the text start) to the next position, with
+   * Unicode {@code White_Space} trimmed from both edges. A candidate that is whitespace-only is
+   * dropped together with its probability, so {@code probs} and the returned spans always stay
+   * aligned; text after the last position becomes a final span with probability {@code 1.0}.
+   * With no positions at all, the whole text is one trimmed span with probability {@code 1.0},
+   * or no span when it is blank.</p>
+   *
+   * @param s      The text the positions refer to.
+   * @param starts The accepted sentence-start positions, ascending.
+   * @param probs  The probability per position; mutated (in every branch) so it exactly mirrors
+   *               the probabilities of the returned spans.
+   * @return The trimmed spans, in order, each carrying its probability via
+   *         {@link Span#getProb()}.
+   */
+  Span[] mapPositionsToSpans(CharSequence s, int[] starts, List<Double> probs) {
+    final List<Span> spans = new ArrayList<>(starts.length + 1);
+    int sentStart = 0;
+    for (int si = 0; si < starts.length; si++) {
+      // A candidate might contain only whitespace; it is dropped together with its probability,
+      // which keeps the spans and the probabilities aligned by construction.
+      addTrimmedSpan(spans, s, sentStart, starts[si], probs.get(si));
+      sentStart = starts[si];
+    }
+    // The text after the last position; with no positions at all this is the whole text, which
+    // covers input without any accepted sentence end.
+    if (starts.length == 0 || starts[starts.length - 1] != s.length()) {
+      addTrimmedSpan(spans, s, sentStart, s.length(), 1d);
+    }
+    probs.clear();
+    for (Span span : spans) {
+      probs.add(span.getProb());
+    }
+    return spans.toArray(new Span[0]);
+  }
+
+  // Appends [start, end) as a span with the given probability attached, unless it is
+  // whitespace-only and trims to nothing.
+  private void addTrimmedSpan(List<Span> spans, CharSequence s, int start, int end,
+      double prob) {
+    Span span = trimmedSpan(s, start, end);
+    if (span != null) {
+      spans.add(new Span(span, prob));
+    }
+  }
+
+  // Returns [start, end) with Unicode White_Space trimmed from both edges, or null when nothing
+  // remains. Scans by code point, matching the CharClass discipline; all current White_Space
+  // members are BMP, but this keeps surrogate pairs at the edges intact by construction.
+  private Span trimmedSpan(CharSequence s, int start, int end) {
+    while (start < end) {
+      final int cp = Character.codePointAt(s, start);
+      if (!WHITESPACE.contains(cp)) {
+        break;
+      }
+      start += Character.charCount(cp);
+    }
+    while (end > start) {
+      final int cp = Character.codePointBefore(s, end);
+      if (!WHITESPACE.contains(cp)) {
+        break;
+      }
+      end -= Character.charCount(cp);
+    }
+    return end > start ? new Span(start, end) : null;
   }
 
   /**
