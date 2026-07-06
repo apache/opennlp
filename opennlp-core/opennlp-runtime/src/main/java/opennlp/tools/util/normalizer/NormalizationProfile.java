@@ -16,8 +16,6 @@
  */
 package opennlp.tools.util.normalizer;
 
-import java.util.Objects;
-
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
 
@@ -47,12 +45,16 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
   /**
    * Validates the components.
    *
-   * @throws NullPointerException if {@code language} or {@code stemmerAlgorithm} is {@code null}.
-   * @throws IllegalArgumentException if {@code language} is blank.
+   * @throws IllegalArgumentException if {@code language} or {@code stemmerAlgorithm} is
+   *     {@code null}, or if {@code language} is blank.
    */
   public NormalizationProfile {
-    Objects.requireNonNull(language, "language");
-    Objects.requireNonNull(stemmerAlgorithm, "stemmerAlgorithm");
+    if (language == null) {
+      throw new IllegalArgumentException("language must not be null");
+    }
+    if (stemmerAlgorithm == null) {
+      throw new IllegalArgumentException("stemmerAlgorithm must not be null");
+    }
     if (language.isBlank()) {
       throw new IllegalArgumentException("language must not be blank");
     }

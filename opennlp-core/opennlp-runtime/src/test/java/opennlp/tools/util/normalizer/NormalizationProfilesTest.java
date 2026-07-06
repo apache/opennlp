@@ -46,9 +46,9 @@ public class NormalizationProfilesTest {
 
   @Test
   void testProfileRejectsInvalidComponents() {
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> new NormalizationProfile(null, SnowballStemmer.ALGORITHM.ENGLISH, null));
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> new NormalizationProfile("eng", null, null));
     assertThrows(IllegalArgumentException.class,
         () -> new NormalizationProfile("  ", SnowballStemmer.ALGORITHM.ENGLISH, null));
@@ -177,6 +177,28 @@ public class NormalizationProfilesTest {
 
   @Test
   void testForLanguageRejectsNull() {
-    assertThrows(NullPointerException.class, () -> NormalizationProfiles.forLanguage(null));
+    assertThrows(IllegalArgumentException.class, () -> NormalizationProfiles.forLanguage(null));
+  }
+
+  @Test
+  void testDetectRejectsNull() {
+    final LanguageDetector detector = new LanguageDetector() {
+      @Override
+      public Language[] predictLanguages(CharSequence content) {
+        return new Language[0];
+      }
+
+      @Override
+      public Language predictLanguage(CharSequence content) {
+        return new Language("eng");
+      }
+
+      @Override
+      public String[] getSupportedLanguages() {
+        return new String[0];
+      }
+    };
+    assertThrows(IllegalArgumentException.class, () -> NormalizationProfiles.detect(null, detector));
+    assertThrows(IllegalArgumentException.class, () -> NormalizationProfiles.detect("text", null));
   }
 }
