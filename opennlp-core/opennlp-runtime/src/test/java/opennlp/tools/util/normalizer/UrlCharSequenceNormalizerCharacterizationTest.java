@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Characterization tests for {@link UrlCharSequenceNormalizer}.
@@ -126,6 +127,14 @@ public class UrlCharSequenceNormalizerCharacterizationTest {
     // right after it still matches.
     check("\uD83D\uDE00a@b.co", "\uD83D\uDE00 ");
     check("\u00E9a@b.co", "\u00E9 ");
+  }
+
+  @Test
+  void nullTextIsRejected() {
+    // Not characterization: the cursor refactor deliberately rejects null with an
+    // IllegalArgumentException, where the regex version threw an undocumented
+    // NullPointerException from Matcher.
+    assertThrows(IllegalArgumentException.class, () -> NORMALIZER.normalize(null));
   }
 
   @Test
