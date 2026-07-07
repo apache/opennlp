@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,32 +50,41 @@ public final class Confusables {
 
   private static final String RESOURCE = "confusables.txt";
 
-  // Maps a single confusable code point to its prototype sequence (one or more code points).
-  private static volatile Map<Integer, String> prototypes;
+  // The prototype map plus a BitSet over its keys, so the hot no-mapping test is one O(1) bit read
+  // with no Integer boxing. Immutable after construction; published through the volatile field.
+  private record Data(Map<Integer, String> prototypes, BitSet keys) {
+  }
+
+  private static volatile Data data;
 
   private Confusables() {
   }
 
-  private static Map<Integer, String> prototypes() {
-    Map<Integer, String> map = prototypes;
-    if (map == null) {
+  private static Data data() {
+    Data d = data;
+    if (d == null) {
       synchronized (Confusables.class) {
-        map = prototypes;
-        if (map == null) {
-          map = load();
-          prototypes = map;
+        d = data;
+        if (d == null) {
+          d = load();
+          data = d;
         }
       }
     }
-    return map;
+    return d;
   }
 
-  private static Map<Integer, String> load() {
+  private static Data load() {
     try (InputStream in = Confusables.class.getResourceAsStream(RESOURCE)) {
       if (in == null) {
         throw new IllegalStateException("Missing confusables data resource: " + RESOURCE);
       }
-      return parse(in);
+      final Map<Integer, String> prototypes = parse(in);
+      final BitSet keys = new BitSet();
+      for (final int codePoint : prototypes.keySet()) {
+        keys.set(codePoint);
+      }
+      return new Data(prototypes, keys);
     } catch (IOException e) {
       throw new UncheckedIOException("Unable to read confusables data resource " + RESOURCE, e);
     }
@@ -142,13 +152,51 @@ public final class Confusables {
    * @return The skeleton.
    */
   public static String skeleton(CharSequence text) {
-    final Map<Integer, String> map = prototypes();
+    final Data data = data();
+    final BitSet keys = data.keys();
+
+    // Fast path: when no code point of the text is a prototype key and the text is already in
+    // NFD form (trivially true for pure ASCII, which never decomposes), the skeleton is the text
+    // itself: NFD(text) == text, the map pass changes nothing because no key occurs, and the
+    // second NFD of an unchanged NFD string is again the identity. This skips both Normalizer
+    // passes and all allocation for the common clean-token case. Text that fails either test
+    // (a key, or a non-ASCII code point in un-normalized form) takes the full UTS #39 path below,
+    // whose two NFD passes remain required.
+    final int length = text.length();
+    boolean asciiOnly = true;
+    boolean anyKey = false;
+    int i = 0;
+    while (i < length) {
+      final char c = text.charAt(i);
+      final int codePoint;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        i++;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        i += Character.charCount(codePoint);
+      }
+      if (codePoint >= 0x80) {
+        asciiOnly = false;
+      }
+      if (keys.get(codePoint)) {
+        anyKey = true;
+        break;
+      }
+    }
+    if (!anyKey && (asciiOnly || Normalizer.isNormalized(text, Normalizer.Form.NFD))) {
+      return text.toString();
+    }
+
+    final Map<Integer, String> map = data.prototypes();
     final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
     final StringBuilder mapped = new StringBuilder(decomposed.length());
-    for (int i = 0; i < decomposed.length(); ) {
-      final int codePoint = decomposed.codePointAt(i);
-      i += Character.charCount(codePoint);
-      final String prototype = map.get(codePoint);
+    for (int j = 0; j < decomposed.length(); ) {
+      final int codePoint = decomposed.codePointAt(j);
+      j += Character.charCount(codePoint);
+      // The BitSet pre-filter keeps the common miss free of Integer boxing; only an actual key
+      // pays for the boxed map lookup.
+      final String prototype = keys.get(codePoint) ? map.get(codePoint) : null;
       if (prototype != null) {
         mapped.append(prototype);
       } else {
