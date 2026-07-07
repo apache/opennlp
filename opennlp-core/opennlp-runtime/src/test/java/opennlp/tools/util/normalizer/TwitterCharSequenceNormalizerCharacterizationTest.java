@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Characterization tests for {@link TwitterCharSequenceNormalizer}.
@@ -153,6 +154,14 @@ public class TwitterCharSequenceNormalizerCharacterizationTest {
   void thePassesComposeInOrder() {
     check("RT @user: check #cool :-) hahaha", "   check     haha");
     check("x #tag rt go", "x    go");
+  }
+
+  @Test
+  void nullTextIsRejected() {
+    // Not characterization: the cursor refactor deliberately rejects null with an
+    // IllegalArgumentException, where the regex version threw an undocumented
+    // NullPointerException from Matcher.
+    assertThrows(IllegalArgumentException.class, () -> NORMALIZER.normalize(null));
   }
 
   @Test
