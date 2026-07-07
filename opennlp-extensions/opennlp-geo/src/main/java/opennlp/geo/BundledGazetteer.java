@@ -23,7 +23,6 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -77,14 +76,6 @@ public final class BundledGazetteer implements Gazetteer {
 
   private static final String RESOURCE = "naturalearth-populated-places.txt";
 
-  // Population descending, then feature-class prior, then source and record id: a deterministic
-  // total order over any candidate list.
-  private static final Comparator<GazetteerEntry> RANKING =
-      Comparator.comparingLong(GazetteerEntry::population).reversed()
-          .thenComparingInt(entry -> featureClassRank(entry.featureClass()))
-          .thenComparing(GazetteerEntry::source)
-          .thenComparing(GazetteerEntry::recordId);
-
   // The character-level matching chain; stateless and thread-safe, shared by index and queries.
   private static final TermAnalyzer FOLD =
       TermAnalyzer.builder().nfc().caseFold().accentFold().build();
@@ -126,13 +117,13 @@ public final class BundledGazetteer implements Gazetteer {
         indexName(byName, alternateName, entry);
       }
       if (entry.countryCode() != null) {
-        byRegion.merge(entry.countryCode(), entry,
-            (existing, candidate) -> RANKING.compare(candidate, existing) < 0 ? candidate : existing);
+        byRegion.merge(entry.countryCode(), entry, (existing, candidate) ->
+            CandidateRanking.BY_PRIOR.compare(candidate, existing) < 0 ? candidate : existing);
       }
     }
     for (final Map.Entry<String, List<GazetteerEntry>> indexed : byName.entrySet()) {
       final List<GazetteerEntry> ranked = new ArrayList<>(indexed.getValue());
-      ranked.sort(RANKING);
+      ranked.sort(CandidateRanking.BY_PRIOR);
       indexed.setValue(List.copyOf(ranked));
     }
     this.idIndex = byId;
@@ -223,20 +214,6 @@ public final class BundledGazetteer implements Gazetteer {
       key.append(term.normalized());
     }
     return key.toString();
-  }
-
-  // CITY before ADMIN before POI before anything else (including unknown); used on ties only.
-  static int featureClassRank(String featureClass) {
-    if ("CITY".equals(featureClass)) {
-      return 0;
-    }
-    if ("ADMIN".equals(featureClass)) {
-      return 1;
-    }
-    if ("POI".equals(featureClass)) {
-      return 2;
-    }
-    return 3;
   }
 
   /**
