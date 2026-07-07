@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Characterization tests for {@link NumberCharSequenceNormalizer}.
@@ -71,6 +72,14 @@ public class NumberCharSequenceNormalizerCharacterizationTest {
     check("\uD835\uDFCF", "\uD835\uDFCF");
     check("\uD83D\uDE001\uD83D\uDE00", "\uD83D\uDE00 \uD83D\uDE00");
     check("1\uD835\uDFCF2", " \uD835\uDFCF ");
+  }
+
+  @Test
+  void nullTextIsRejected() {
+    // Not characterization: the cursor refactor deliberately rejects null with an
+    // IllegalArgumentException, where the regex version threw an undocumented
+    // NullPointerException from Matcher.
+    assertThrows(IllegalArgumentException.class, () -> NORMALIZER.normalize(null));
   }
 
   @Test

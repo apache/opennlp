@@ -16,17 +16,23 @@
  */
 package opennlp.tools.util.normalizer;
 
-import java.util.regex.Pattern;
-
 /**
- * A {@link NumberCharSequenceNormalizer} implementation that normalizes text
- * in terms of numbers. Every encounter will be replaced by a whitespace.
+ * A {@link CharSequenceNormalizer} implementation that normalizes text
+ * in terms of numbers: every maximal run of ASCII digits ({@code 0} to {@code 9}) is replaced
+ * by a single whitespace.
+ *
+ * <p>This reproduces, byte for byte, the output of the former regex implementation
+ * ({@code "\\d+"} replaced by a space; the {@code \d} class matches ASCII digits only), but runs
+ * as a single forward cursor scan on the {@link CharClass} engine instead of a regular
+ * expression. Non-ASCII digits, for example Arabic-Indic or fullwidth digits, are left
+ * unchanged, exactly as before.</p>
  */
 public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final long serialVersionUID = -782056416383201122L;
-  
-  private static final Pattern NUMBER_REGEX = Pattern.compile("\\d+");
+
+  private static final CharClass ASCII_DIGITS =
+      CharClass.of(CodePointSet.ofRange('0', '9'), ' ');
 
   private static final NumberCharSequenceNormalizer INSTANCE = new NumberCharSequenceNormalizer();
 
@@ -34,8 +40,11 @@ public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
+  /**
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
   @Override
-  public CharSequence normalize (CharSequence text) {
-    return NUMBER_REGEX.matcher(text).replaceAll(" ");
+  public CharSequence normalize(CharSequence text) {
+    return ASCII_DIGITS.collapse(text);
   }
 }
