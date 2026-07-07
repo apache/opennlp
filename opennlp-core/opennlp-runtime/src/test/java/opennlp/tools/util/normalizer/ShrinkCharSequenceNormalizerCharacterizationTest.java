@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Characterization tests for {@link ShrinkCharSequenceNormalizer}.
@@ -130,6 +131,14 @@ public class ShrinkCharSequenceNormalizerCharacterizationTest {
     // A pair followed by two lone low surrogates shrinks the three-low-surrogate run found
     // when scanning resumes inside the pair.
     check("\uD83D\uDE00\uDE00\uDE00", "\uD83D\uDE00\uDE00");
+  }
+
+  @Test
+  void nullTextIsRejected() {
+    // Not characterization: the cursor refactor deliberately rejects null with an
+    // IllegalArgumentException, where the regex version threw an undocumented
+    // NullPointerException from Matcher.
+    assertThrows(IllegalArgumentException.class, () -> NORMALIZER.normalize(null));
   }
 
   @Test
