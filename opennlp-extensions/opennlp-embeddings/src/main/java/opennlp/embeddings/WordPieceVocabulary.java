@@ -39,9 +39,11 @@ import java.util.Set;
 final class WordPieceVocabulary {
 
   private final Map<String, Integer> idByToken;
+  private final List<String> tokenById;
 
-  private WordPieceVocabulary(Map<String, Integer> idByToken) {
+  private WordPieceVocabulary(Map<String, Integer> idByToken, List<String> tokenById) {
     this.idByToken = idByToken;
+    this.tokenById = tokenById;
   }
 
   /**
@@ -81,7 +83,7 @@ final class WordPieceVocabulary {
                 + "' more than once, at lines " + idByToken.get(token) + " and " + id);
       }
     }
-    return new WordPieceVocabulary(Collections.unmodifiableMap(idByToken));
+    return new WordPieceVocabulary(Collections.unmodifiableMap(idByToken), List.copyOf(lines));
   }
 
   /** {@return every token in this vocabulary, suitable for a WordpieceTokenizer} */
@@ -106,5 +108,15 @@ final class WordPieceVocabulary {
   /** {@return the number of tokens in this vocabulary} */
   int size() {
     return idByToken.size();
+  }
+
+  /**
+   * Looks up the token at a row id.
+   *
+   * @param id The row id. Must be within {@code [0, size())}.
+   * @return The token at that id.
+   */
+  String token(int id) {
+    return tokenById.get(id);
   }
 }
