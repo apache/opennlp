@@ -19,7 +19,6 @@ package opennlp.spellcheck.stream;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.dictionary.SymSpellModel;
@@ -54,7 +53,6 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
 
   private final SpellCheckingCharSequenceNormalizer normalizer;
   private final String delimiter;
-  private final Pattern splitPattern;
 
   /**
    * Wraps {@code samples} with a default corrector ({@link #DEFAULT_DELIMITER space}
@@ -107,7 +105,6 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
       throw new IllegalArgumentException("delimiter must not be empty");
     }
     this.delimiter = delimiter;
-    this.splitPattern = Pattern.compile(Pattern.quote(delimiter));
   }
 
   @Override
@@ -119,15 +116,20 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
     if (line.isEmpty()) {
       return line;
     }
-    final String[] tokens = splitPattern.split(line, -1);
+    // A plain literal split (no regex): equivalent to the former
+    // Pattern.compile(Pattern.quote(delimiter)).split(line, -1) plus re-joining.
     final StringBuilder out = new StringBuilder(line.length());
-    for (int i = 0; i < tokens.length; i++) {
-      if (i > 0) {
-        out.append(delimiter);
-      }
-      final String token = tokens[i];
+    int from = 0;
+    while (true) {
+      final int at = line.indexOf(delimiter, from);
+      final String token = at >= 0 ? line.substring(from, at) : line.substring(from);
       // Empty tokens (e.g. from leading/trailing/duplicate delimiters) pass through.
       out.append(token.isEmpty() ? token : normalizer.normalize(token));
+      if (at < 0) {
+        break;
+      }
+      out.append(delimiter);
+      from = at + delimiter.length();
     }
     return out.toString();
   }
