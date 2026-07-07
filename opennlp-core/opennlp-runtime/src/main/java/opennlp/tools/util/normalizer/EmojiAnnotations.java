@@ -90,7 +90,8 @@ public final class EmojiAnnotations {
   }
 
   // Removes every U+FE0F VARIATION SELECTOR-16; allocation-free when none is present.
-  private static String stripPresentationSelector(CharSequence symbol) {
+  // Package-visible so EmojiAnnotator keys derived-only records the same way.
+  static String stripPresentationSelector(CharSequence symbol) {
     final int length = symbol.length();
     int i = 0;
     while (i < length && symbol.charAt(i) != 0xFE0F) {

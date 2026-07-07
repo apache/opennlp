@@ -55,6 +55,12 @@ public record EmojiAnnotation(String symbol, Map<String, Value> attributes) {
   public static final String CATEGORY = "category";
 
   /**
+   * The attribute key of the ISO 3166 region code of a flag emoji. Never a bundled row: the value
+   * is decoded from the code point sequence by the derived layer (see {@code EmojiFlags}).
+   */
+  public static final String ISO_REGION = "isoRegion";
+
+  /**
    * One attribute value with its provenance, mirroring one row of the bundled data file.
    *
    * @param value  The attribute value. Must not be {@code null} or empty.
@@ -123,6 +129,15 @@ public record EmojiAnnotation(String symbol, Map<String, Value> attributes) {
    */
   public Optional<String> name() {
     final Value value = attributes.get(NAME);
+    return value == null ? Optional.empty() : Optional.of(value.value());
+  }
+
+  /**
+   * {@return the ISO 3166 code of a flag emoji ({@code DE}, {@code GB-ENG}), or empty when this
+   * record is not a flag} Populated by the derived layer through {@code EmojiAnnotator}.
+   */
+  public Optional<String> isoRegion() {
+    final Value value = attributes.get(ISO_REGION);
     return value == null ? Optional.empty() : Optional.of(value.value());
   }
 
