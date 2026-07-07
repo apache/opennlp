@@ -144,7 +144,7 @@ public class SpellCheckCmdLineToolsTest extends AbstractTempDirTest {
   }
 
   @Test
-  void suggestModeTreatsNoBreakSpaceJoinedPairAsOneToken() throws IOException {
+  void suggestModeSplitsTokensOnNoBreakSpace() throws IOException {
     final Path unigrams = copyResource(UNIGRAMS, tempDir, "unigrams.txt");
     final Path bigrams = copyResource(BIGRAMS, tempDir, "bigrams.txt");
     final Path model = tempDir.resolve("en-spellcheck.bin");
@@ -170,9 +170,11 @@ public class SpellCheckCmdLineToolsTest extends AbstractTempDirTest {
     });
 
     final List<String> lines = Files.readAllLines(output, StandardCharsets.UTF_8);
-    // Characterization: tokens come from the regex \s+ (ASCII whitespace only), so the
-    // NBSP-joined pair is a single token, and no suggestion is within edit distance reach.
-    assertEquals(1, lines.size());
-    assertEquals("teh" + nbsp + "teh => []", lines.get(0));
+    // Since 3.0 tokens come from the Unicode White_Space set (WhitespaceTokenizer), so the
+    // NBSP separates the pair into two tokens, each with its own suggestion line (under
+    // the previous ASCII \s+ split the pair was one token with no suggestions in reach).
+    assertEquals(2, lines.size());
+    assertEquals("teh => [the]", lines.get(0));
+    assertEquals("teh => [the]", lines.get(1));
   }
 }

@@ -30,6 +30,7 @@ import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.SuggestItem;
 import opennlp.spellcheck.Verbosity;
 import opennlp.spellcheck.distance.EditDistance;
+import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 /**
  * Symmetric Delete spelling correction engine (SymSpell).
@@ -394,6 +395,36 @@ public final class SymSpell implements SpellChecker {
     return suggestions;
   }
 
+  /**
+   * Splits the input on runs of Unicode {@code White_Space}; leading and trailing runs are
+   * ignored, so whitespace-only input yields an empty array. A cursor scan on the
+   * standards-sourced set (no regex on the user-text path); unlike the previously used ASCII
+   * {@code \s+} split it also breaks on the no-break spaces, the next line control
+   * {@code U+0085} and the Unicode line and paragraph separators.
+   */
+  private static String[] splitOnWhitespace(String input) {
+    final List<String> terms = new ArrayList<>();
+    final int n = input.length();
+    int start = -1;
+    int i = 0;
+    while (i < n) {
+      final int cp = input.codePointAt(i);
+      if (UnicodeWhitespace.isWhitespace(cp)) {
+        if (start >= 0) {
+          terms.add(input.substring(start, i));
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+      i += Character.charCount(cp);
+    }
+    if (start >= 0) {
+      terms.add(input.substring(start));
+    }
+    return terms.toArray(new String[0]);
+  }
+
   @Override
   public List<SuggestItem> lookupCompound(String input, int maxEditDistance) {
     Objects.requireNonNull(input, "input must not be null");
@@ -401,7 +432,7 @@ public final class SymSpell implements SpellChecker {
       throw new IllegalArgumentException("maxEditDistance must not be negative: " + maxEditDistance);
     }
 
-    final String[] termList = input.trim().isEmpty() ? new String[0] : input.trim().split("\\s+");
+    final String[] termList = splitOnWhitespace(input);
     final List<SuggestItem> suggestionParts = new ArrayList<>();
 
     boolean lastCombi = false;

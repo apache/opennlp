@@ -183,37 +183,38 @@ public class SpellCheckingCharSequenceNormalizerTest {
   }
 
   @Test
-  void perTokenTreatsNoBreakSpaceAsPartOfTheToken() {
-    // Characterization: PER_TOKEN boundaries use Character.isWhitespace, which excludes the
-    // no-break spaces; an NBSP-joined pair is a single token, no dictionary entry is within
-    // reach, and the input passes through unchanged.
+  void perTokenTreatsNoBreakSpaceAsTokenBoundary() {
+    // Since 3.0 PER_TOKEN boundaries use the Unicode White_Space set, which includes the
+    // no-break spaces; both sides are corrected and the separator is copied verbatim
+    // (Character.isWhitespace excluded the Zs no-break spaces).
     final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
         .minTokenLength(3).build();
-    String nbsp = "teh" + cp(0x00A0) + "fxo";
-    assertEquals(nbsp, norm(normalizer, nbsp));
-    String narrow = "teh" + cp(0x202F) + "fxo";
-    assertEquals(narrow, norm(normalizer, narrow));
+    assertEquals("the" + cp(0x00A0) + "fox",
+        norm(normalizer, "teh" + cp(0x00A0) + "fxo"));
+    assertEquals("the" + cp(0x202F) + "fox",
+        norm(normalizer, "teh" + cp(0x202F) + "fxo"));
   }
 
   @Test
-  void perTokenTreatsNextLineControlAsPartOfTheToken() {
-    // Characterization: U+0085 NEL is not whitespace to Character.isWhitespace (the Unicode
-    // White_Space set includes it), so it does not separate tokens.
+  void perTokenTreatsNextLineControlAsTokenBoundary() {
+    // U+0085 NEL carries the Unicode White_Space property, so since 3.0 it separates
+    // tokens (Character.isWhitespace excludes it).
     final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
         .minTokenLength(3).build();
-    String input = "teh" + cp(0x0085) + "fxo";
+    assertEquals("the" + cp(0x0085) + "fox",
+        norm(normalizer, "teh" + cp(0x0085) + "fxo"));
+  }
+
+  @Test
+  void perTokenTreatsInformationSeparatorAsPartOfTheToken() {
+    // The U+001C..U+001F information separators are not Unicode White_Space, so since 3.0
+    // they no longer separate tokens; the joined token has no dictionary entry within
+    // reach and passes through unchanged (Character.isWhitespace treated U+001C as
+    // whitespace and corrected both sides).
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    String input = "teh" + cp(0x001C) + "fxo";
     assertEquals(input, norm(normalizer, input));
-  }
-
-  @Test
-  void perTokenTreatsInformationSeparatorAsTokenBoundary() {
-    // Characterization: U+001C is whitespace to Character.isWhitespace (the Unicode
-    // White_Space set excludes it), so it separates tokens and both sides are corrected;
-    // the separator itself is copied verbatim.
-    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
-        .minTokenLength(3).build();
-    assertEquals("the" + cp(0x001C) + "fox",
-        norm(normalizer, "teh" + cp(0x001C) + "fxo"));
   }
 
   @Test

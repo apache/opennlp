@@ -65,21 +65,22 @@ class NumberUtilTest {
 
   @Test
   void parse_withNoBreakSpaces() throws ParseException {
-    // Characterization: the pre-parse strip uses the regex \s, which matches only ASCII
-    // whitespace. NBSP and the narrow no-break space survive, and parsing stops at them.
-    Assertions.assertEquals(1L, NumberUtil.parse("1" + cp(0x00A0) + "234",
+    // Since 3.0 the pre-parse strip removes every Unicode White_Space code point, so the
+    // no-break spaces used as digit grouping separators no longer stop the parse (the
+    // previous ASCII \s strip left them in place and en parsing stopped at them).
+    Assertions.assertEquals(1234L, NumberUtil.parse("1" + cp(0x00A0) + "234",
         VALID_LANGUAGE_CODE).longValue());
-    Assertions.assertEquals(1L, NumberUtil.parse("1" + cp(0x202F) + "234",
+    Assertions.assertEquals(1234L, NumberUtil.parse("1" + cp(0x202F) + "234",
         VALID_LANGUAGE_CODE).longValue());
   }
 
   @Test
   void parse_withLineSeparatorAndNextLineControl() throws ParseException {
-    // Characterization: U+2028 and U+0085 are not ASCII whitespace, so they also survive
-    // the strip and stop the parse, although both carry the Unicode White_Space property.
-    Assertions.assertEquals(12L, NumberUtil.parse("12" + cp(0x2028) + "34",
+    // U+2028 and U+0085 carry the Unicode White_Space property, so since 3.0 they are
+    // stripped as well.
+    Assertions.assertEquals(1234L, NumberUtil.parse("12" + cp(0x2028) + "34",
         VALID_LANGUAGE_CODE).longValue());
-    Assertions.assertEquals(12L, NumberUtil.parse("12" + cp(0x0085) + "34",
+    Assertions.assertEquals(1234L, NumberUtil.parse("12" + cp(0x0085) + "34",
         VALID_LANGUAGE_CODE).longValue());
   }
 
