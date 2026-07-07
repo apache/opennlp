@@ -113,6 +113,29 @@ public class SpellCheckingCharSequenceNormalizerTest {
   }
 
   @Test
+  void punctuationPeelingFollowsUnicodeLetterAndNumberCategories() {
+    // Characterization for the token guards: the peeling classes are the complement of
+    // \p{L} and \p{N}, so Unicode punctuation peels like ASCII, and a combining mark
+    // (category Mark) peels off as a suffix rather than staying attached to the core.
+    final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
+    assertEquals("\u00ABquick\u00BB", norm(normalizer, "\u00ABquikc\u00BB"));
+    assertEquals("quick\u0301", norm(normalizer, "quikc\u0301"));
+    assertEquals("!!!", norm(normalizer, "!!!"));
+  }
+
+  @Test
+  void numberAndUrlGuardsHoldAtTheirExactBoundaries() {
+    final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
+    // Number-like: optional sign, digits with grouping/decimal marks, optional percent.
+    assertEquals("+3,14%", norm(normalizer, "+3,14%"));
+    assertEquals("-42%", norm(normalizer, "-42%"));
+    assertEquals("1.2.3", norm(normalizer, "1.2.3"));
+    // URL-like third alternative: a bare domain with a known TLD is never corrected.
+    assertEquals("quikc.com", norm(normalizer, "quikc.com"));
+    assertEquals("www.quikc.com/broen", norm(normalizer, "www.quikc.com/broen"));
+  }
+
+  @Test
   void compoundModeRepairsSpaceMerges() {
     final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
         .mode(SpellCheckingCharSequenceNormalizer.Mode.COMPOUND).build();
