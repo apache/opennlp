@@ -17,7 +17,11 @@
 package opennlp.embeddings;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.OptionalInt;
+import java.util.Set;
 
 import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
@@ -46,6 +50,9 @@ public final class StaticEmbeddingModel {
 
   private static final float NORMALIZE_EPSILON = 1e-12f;
   private static final String WEIGHTS_TENSOR_NAME = "weights";
+  // Never meaningful as a "similar word" result.
+  private static final Set<String> SPECIAL_TOKENS = Set.of(WordpieceTokenizer.BERT_CLS_TOKEN,
+      WordpieceTokenizer.BERT_SEP_TOKEN, WordpieceTokenizer.BERT_UNK_TOKEN);
 
   private final float[] embeddings;
   private final float[] weights;
@@ -188,5 +195,137 @@ public final class StaticEmbeddingModel {
   /** {@return the number of tokens in this model's vocabulary} */
   public int vocabularySize() {
     return vocabulary.size();
+  }
+
+  /**
+   * Cosine similarity between two pieces of text's pooled embeddings, the classic word2vec-era
+   * convenience this module exists to modernize.
+   *
+   * @param text1 The first text. Must not be {@code null}.
+   * @param text2 The second text. Must not be {@code null}.
+   * @return The cosine similarity, in {@code [-1, 1]}; {@code 0} when either text has no
+   *     in-vocabulary tokens (an undefined direction, not an error).
+   * @throws IllegalArgumentException Thrown if {@code text1} or {@code text2} is {@code null}.
+   */
+  public double similarity(String text1, String text2) {
+    if (text1 == null) {
+      throw new IllegalArgumentException("Text1 must not be null");
+    }
+    if (text2 == null) {
+      throw new IllegalArgumentException("Text2 must not be null");
+    }
+    return cosineSimilarity(embed(text1), embed(text2));
+  }
+
+  /**
+   * Finds the vocabulary tokens whose vectors are nearest a piece of text's pooled embedding,
+   * most similar first. A brute-force scan over the whole vocabulary; fine for the vocabulary
+   * sizes this module targets (tens of thousands of rows), not an approximate-nearest-neighbor
+   * index (a documented follow-up, not v1 scope).
+   *
+   * @param text The query text. Must not be {@code null}.
+   * @param topK The maximum number of results. Must be at least 1.
+   * @return Up to {@code topK} neighbors, most similar first, excluding the special tokens
+   *     ({@code [CLS]}, {@code [SEP]}, {@code [UNK]}); empty when {@code text} has no
+   *     in-vocabulary tokens.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null} or {@code topK} is
+   *     less than 1.
+   */
+  public List<Neighbor> mostSimilar(String text, int topK) {
+    if (text == null) {
+      throw new IllegalArgumentException("Text must not be null");
+    }
+    requirePositive(topK);
+    return nearestNeighbors(embed(text), topK, Set.of());
+  }
+
+  /**
+   * The classic word2vec analogy: {@code b} is to {@code a} as the results are to {@code c}
+   * (computed as {@code embed(b) - embed(a) + embed(c)}), for example {@code analogy("man",
+   * "king", "woman", 1)} for "man is to king as woman is to ?".
+   *
+   * @param a    The first term. Must not be {@code null}.
+   * @param b    The second term. Must not be {@code null}.
+   * @param c    The third term. Must not be {@code null}.
+   * @param topK The maximum number of results. Must be at least 1.
+   * @return Up to {@code topK} neighbors, most similar first, excluding the special tokens and
+   *     any vocabulary token that exactly matches {@code a}, {@code b}, or {@code c}.
+   * @throws IllegalArgumentException Thrown if {@code a}, {@code b}, or {@code c} is
+   *     {@code null}, or {@code topK} is less than 1.
+   */
+  public List<Neighbor> analogy(String a, String b, String c, int topK) {
+    if (a == null) {
+      throw new IllegalArgumentException("A must not be null");
+    }
+    if (b == null) {
+      throw new IllegalArgumentException("B must not be null");
+    }
+    if (c == null) {
+      throw new IllegalArgumentException("C must not be null");
+    }
+    requirePositive(topK);
+    final float[] va = embed(a);
+    final float[] vb = embed(b);
+    final float[] vc = embed(c);
+    final float[] target = new float[dimension];
+    for (int d = 0; d < dimension; d++) {
+      target[d] = vb[d] - va[d] + vc[d];
+    }
+    return nearestNeighbors(target, topK, Set.of(a, b, c));
+  }
+
+  private static void requirePositive(int topK) {
+    if (topK < 1) {
+      throw new IllegalArgumentException("TopK must be at least 1, got " + topK);
+    }
+  }
+
+  private List<Neighbor> nearestNeighbors(float[] query, int topK, Set<String> exclude) {
+    final double queryNorm = norm(query);
+    if (queryNorm < NORMALIZE_EPSILON) {
+      return List.of();
+    }
+    final List<Neighbor> candidates = new ArrayList<>(vocabulary.size());
+    for (int row = 0; row < vocabulary.size(); row++) {
+      final String token = vocabulary.token(row);
+      if (SPECIAL_TOKENS.contains(token) || exclude.contains(token)) {
+        continue;
+      }
+      final int base = row * dimension;
+      double dot = 0;
+      double rowNormSquared = 0;
+      for (int d = 0; d < dimension; d++) {
+        final float value = embeddings[base + d];
+        dot += query[d] * value;
+        rowNormSquared += (double) value * value;
+      }
+      final double rowNorm = Math.sqrt(rowNormSquared);
+      final double similarity = rowNorm < NORMALIZE_EPSILON ? 0.0 : dot / (queryNorm * rowNorm);
+      candidates.add(new Neighbor(token, similarity));
+    }
+    candidates.sort(Comparator.comparingDouble(Neighbor::similarity).reversed());
+    return topK >= candidates.size() ? List.copyOf(candidates)
+        : List.copyOf(candidates.subList(0, topK));
+  }
+
+  private static double cosineSimilarity(float[] a, float[] b) {
+    double dot = 0;
+    double normASquared = 0;
+    double normBSquared = 0;
+    for (int d = 0; d < a.length; d++) {
+      dot += (double) a[d] * b[d];
+      normASquared += (double) a[d] * a[d];
+      normBSquared += (double) b[d] * b[d];
+    }
+    final double denominator = Math.sqrt(normASquared) * Math.sqrt(normBSquared);
+    return denominator < NORMALIZE_EPSILON ? 0.0 : dot / denominator;
+  }
+
+  private static double norm(float[] vector) {
+    double sumOfSquares = 0;
+    for (final float value : vector) {
+      sumOfSquares += (double) value * value;
+    }
+    return Math.sqrt(sumOfSquares);
   }
 }
