@@ -96,6 +96,13 @@ public class SetBasedNormalizerTest {
     assertSame(DigitCharSequenceNormalizer.getInstance(), DigitCharSequenceNormalizer.getInstance());
   }
 
+  @Test
+  void testDigitsReturnAsciiDigitTextUncopied() {
+    // ASCII digits are already their own fold, so digit-clean text short-circuits uncopied.
+    final String text = "version 42 of 2026";
+    assertSame(text, DigitCharSequenceNormalizer.getInstance().normalize(text));
+  }
+
   // --- invisible / bidi controls -----------------------------------------------------------
 
   @Test
