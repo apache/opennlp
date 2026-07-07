@@ -20,14 +20,13 @@ package opennlp.uima.normalizer;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
-import java.util.regex.Pattern;
+
+import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 /**
  * Provides methods to parse numbers which occur in natural language texts.
  */
 public final class NumberUtil {
-
-  private final static Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
 
   /**
    * Checks if the language is supported.
@@ -71,7 +70,26 @@ public final class NumberUtil {
     }
 
     NumberFormat numberFormat = NumberFormat.getInstance(locale);
-    number = WHITESPACE_PATTERN.matcher(number).replaceAll("");
+    number = removeWhitespace(number);
     return numberFormat.parse(number);
+  }
+
+  /**
+   * Removes every Unicode {@code White_Space} code point from the given string with a
+   * cursor scan (no regex on the user-text path). Unlike the previously used ASCII
+   * {@code \s} strip this also removes the no-break spaces, which several locales use
+   * as digit grouping separators.
+   */
+  private static String removeWhitespace(String s) {
+    final StringBuilder sb = new StringBuilder(s.length());
+    int i = 0;
+    while (i < s.length()) {
+      final int cp = s.codePointAt(i);
+      if (!UnicodeWhitespace.isWhitespace(cp)) {
+        sb.appendCodePoint(cp);
+      }
+      i += Character.charCount(cp);
+    }
+    return sb.toString();
   }
 }

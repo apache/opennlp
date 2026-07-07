@@ -145,10 +145,10 @@ public class SymSpellCompoundTest {
   // ------------------------------------------------------------------
 
   @Test
-  void noBreakSpaceJoinedPairIsRepairedAsASplit() {
-    // Characterization: lookupCompound splits terms with the regex \s+, which matches only
-    // ASCII whitespace. An NBSP-joined pair is one term; the output is repaired to
-    // "hello world", but only through the single-split heuristic, which costs one edit.
+  void noBreakSpaceSeparatesTerms() {
+    // Since 3.0 lookupCompound splits terms on the Unicode White_Space set, so the
+    // NBSP-joined pair is two known terms. The reported edit distance is still 1 because
+    // it is measured against the raw input, where the NBSP differs from the space.
     final List<SuggestItem> r = tiny.lookupCompound("hello" + cp(0x00A0) + "world", 2);
     assertEquals(1, r.size());
     assertEquals("hello world", r.get(0).term());
@@ -156,27 +156,25 @@ public class SymSpellCompoundTest {
   }
 
   @Test
-  void noBreakSpaceJoinedTripleCannotBeFullyRepaired() {
-    // Characterization: a three-word NBSP-joined phrase is a single term, and the split
-    // heuristic can insert at most one space, so the phrase survives unrepaired.
+  void noBreakSpaceJoinedTripleIsFullyRepaired() {
+    // Since 3.0 the three NBSP-separated words are three terms; under the previous ASCII
+    // \s+ split this was one term and the single-split heuristic could not repair it.
     String input = "hello" + cp(0x00A0) + "world" + cp(0x00A0) + "hello";
-    assertEquals(input, correct(tiny, input));
+    assertEquals("hello world hello", correct(tiny, input));
   }
 
   @Test
-  void nextLineControlJoinedTripleCannotBeFullyRepaired() {
-    // Characterization: U+0085 NEL is not ASCII whitespace (the Unicode White_Space set
-    // includes it), so the same limitation applies.
+  void nextLineControlJoinedTripleIsFullyRepaired() {
+    // U+0085 NEL carries the Unicode White_Space property, so since 3.0 it separates terms.
     String input = "hello" + cp(0x0085) + "world" + cp(0x0085) + "hello";
-    assertEquals(input, correct(tiny, input));
+    assertEquals("hello world hello", correct(tiny, input));
   }
 
   @Test
-  void lineSeparatorJoinedTripleCannotBeFullyRepaired() {
-    // Characterization: U+2028 LINE SEPARATOR is not ASCII whitespace either, although it
-    // carries the Unicode White_Space property.
+  void lineSeparatorJoinedTripleIsFullyRepaired() {
+    // U+2028 LINE SEPARATOR is Unicode White_Space, so since 3.0 it separates terms.
     String input = "hello" + cp(0x2028) + "world" + cp(0x2028) + "hello";
-    assertEquals(input, correct(tiny, input));
+    assertEquals("hello world hello", correct(tiny, input));
   }
 
   private static String cp(int codePoint) {
