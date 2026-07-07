@@ -185,6 +185,70 @@ class StaticEmbeddingModelSimilarityTest {
   }
 
   @Test
+  void testAnalogyToleratesEqualTerms(@TempDir Path dir) throws IOException {
+    // A duplicate term used to crash with IllegalArgumentException("duplicate element") from
+    // Set.of before the exclusion moved to tokenized rows. b - a + c with a == b is just c's
+    // vector, so with man and woman excluded the exactly collinear queen must win.
+    final StaticEmbeddingModel model = load(dir);
+
+    final List<Neighbor> result = model.analogy("man", "man", "woman", 2);
+
+    assertEquals("queen", result.get(0).token());
+    assertEquals(1.0, result.get(0).similarity(), 1e-5);
+  }
+
+  @Test
+  void testAnalogyExclusionFoldsLikeEmbed(@TempDir Path dir) throws IOException {
+    // On an uncased model, capitalized inputs must exclude their lower-cased vocabulary rows.
+    // Before the fix the exclusion compared raw input strings, so "King" failed to exclude
+    // "king" and the analogy handed an input term back as a result.
+    final StaticEmbeddingModel model = load(dir);
+
+    final List<Neighbor> result = model.analogy("Man", "King", "Woman", 4);
+
+    assertEquals(2, result.size());
+    assertEquals("queen", result.get(0).token());
+    assertFalse(result.stream().map(Neighbor::token)
+        .anyMatch(token -> List.of("man", "king", "woman").contains(token)));
+  }
+
+  @Test
+  void testZeroVectorRowScoresZeroNotNaN(@TempDir Path dir) throws IOException {
+    // A non-special all-zero row has no direction; it must score exactly 0.0, not the NaN a
+    // naive 0/0 cosine would produce.
+    final Path vocab = dir.resolve("zero-vocab.txt");
+    Files.write(vocab, List.of("[CLS]", "[SEP]", "[UNK]", "a", "zero"));
+    final float[][] rows = {{0f, 0f}, {0f, 0f}, {0f, 0f}, {1f, 0f}, {0f, 0f}};
+    final ByteBuffer buffer = ByteBuffer.allocate(rows.length * 2 * 4)
+        .order(ByteOrder.LITTLE_ENDIAN);
+    for (final float[] row : rows) {
+      for (final float value : row) {
+        buffer.putFloat(value);
+      }
+    }
+    final byte[] data = buffer.array();
+    final String header = "{\"embeddings\":{\"dtype\":\"F32\",\"shape\":[" + rows.length
+        + ",2],\"data_offsets\":[0," + data.length + "]}}";
+    final byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    out.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
+        .putLong(headerBytes.length).array());
+    out.write(headerBytes);
+    out.write(data);
+    final Path tensors = dir.resolve("zero-model.safetensors");
+    Files.write(tensors, out.toByteArray());
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocab, tensors, true, false);
+
+    final List<Neighbor> result = model.mostSimilar("a", 5);
+
+    assertEquals(2, result.size());
+    assertEquals("a", result.get(0).token());
+    assertEquals("zero", result.get(1).token());
+    assertEquals(0.0, result.get(1).similarity());
+    assertTrue(result.stream().allMatch(neighbor -> Double.isFinite(neighbor.similarity())));
+  }
+
+  @Test
   void testMostSimilarRejectsInvalidArguments(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model = load(dir);
 
