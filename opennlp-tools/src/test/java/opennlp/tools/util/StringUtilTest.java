@@ -37,6 +37,48 @@ public class StringUtilTest {
     Assertions.assertTrue(StringUtil.isWhitespace((char) 0x202F));
   }
 
+  /**
+   * Pins the exact semantics of {@link StringUtil#isWhitespace(int)} at the code points where
+   * the JVM predicates and the Unicode {@code White_Space} property disagree, so the predicate
+   * cannot drift silently. The predicate is the union of {@link Character#isWhitespace(int)}
+   * and the {@code Zs} category: unlike the Unicode {@code White_Space} set it includes the
+   * {@code U+001C..U+001F} information separators and excludes the next line control
+   * {@code U+0085}. Features of trained sentence-detector and tokenizer models are built on
+   * this predicate, so it stays frozen; user-text code uses the Unicode set instead
+   * (see {@code opennlp.tools.util.normalizer.UnicodeWhitespace}).
+   */
+  @Test
+  void testIsWhitespaceBoundaryCodePoints() {
+    // ASCII whitespace controls and the space.
+    for (int cp = 0x0009; cp <= 0x000D; cp++) {
+      Assertions.assertTrue(StringUtil.isWhitespace(cp), "U+" + Integer.toHexString(cp));
+    }
+    Assertions.assertTrue(StringUtil.isWhitespace(0x0020));
+
+    // The information separators are included (via Character.isWhitespace); the Unicode
+    // White_Space set excludes them.
+    for (int cp = 0x001C; cp <= 0x001F; cp++) {
+      Assertions.assertTrue(StringUtil.isWhitespace(cp), "U+" + Integer.toHexString(cp));
+      Assertions.assertTrue(StringUtil.isWhitespace((char) cp), "U+" + Integer.toHexString(cp));
+    }
+
+    // The next line control is excluded (Cc, and not covered by Character.isWhitespace);
+    // the Unicode White_Space set includes it.
+    Assertions.assertFalse(StringUtil.isWhitespace(0x0085));
+    Assertions.assertFalse(StringUtil.isWhitespace((char) 0x0085));
+
+    // The Zs space separators and the line/paragraph separators are included.
+    int[] separators = {0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006,
+        0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x205F, 0x3000};
+    for (int cp : separators) {
+      Assertions.assertTrue(StringUtil.isWhitespace(cp), "U+" + Integer.toHexString(cp));
+    }
+
+    // Zero-width format characters are not whitespace, neither here nor in the Unicode set.
+    Assertions.assertFalse(StringUtil.isWhitespace(0x200B));
+    Assertions.assertFalse(StringUtil.isWhitespace(0xFEFF));
+  }
+
   @Test
   void testToLowerCase() {
     Assertions.assertEquals("test", StringUtil.toLowerCase("TEST"));

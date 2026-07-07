@@ -98,4 +98,62 @@ public class WhitespaceTokenizerTest {
     Assertions.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b", "\r", "\n", "\r", "\n", "c"},
         tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c"));
   }
+
+  @Test
+  void testNoBreakAndNarrowSpacesSplitTokens() {
+    // NBSP, figure space and narrow no-break space separate tokens.
+    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+    tokenizer.setKeepNewLines(false);
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x00A0) + "b"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x2007) + "b"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x202F) + "b"));
+  }
+
+  @Test
+  void testLineAndParagraphSeparatorsSplitTokens() {
+    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+    tokenizer.setKeepNewLines(false);
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x2028) + "b"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x2029) + "b"));
+  }
+
+  @Test
+  void testInformationSeparatorsSplitTokens() {
+    // Characterization: the U+001C..U+001F information separators split tokens today
+    // (Character.isWhitespace includes them, the Unicode White_Space set does not).
+    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+    tokenizer.setKeepNewLines(false);
+    for (int cp = 0x001C; cp <= 0x001F; cp++) {
+      Assertions.assertArrayEquals(new String[] {"a", "b"},
+          tokenizer.tokenize("a" + cp(cp) + "b"), "U+" + Integer.toHexString(cp));
+    }
+  }
+
+  @Test
+  void testNextLineControlDoesNotSplitTokens() {
+    // Characterization: U+0085 NEL does not split tokens today (Character.isWhitespace and
+    // the Zs category both exclude it; Unicode White_Space includes it).
+    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+    tokenizer.setKeepNewLines(false);
+    Assertions.assertArrayEquals(new String[] {"a" + cp(0x0085) + "b"},
+        tokenizer.tokenize("a" + cp(0x0085) + "b"));
+  }
+
+  @Test
+  void testZeroWidthSpaceDoesNotSplitTokens() {
+    // U+200B ZERO WIDTH SPACE is a format character, not whitespace.
+    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+    tokenizer.setKeepNewLines(false);
+    Assertions.assertArrayEquals(new String[] {"a" + cp(0x200B) + "b"},
+        tokenizer.tokenize("a" + cp(0x200B) + "b"));
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
 }

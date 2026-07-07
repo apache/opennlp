@@ -139,4 +139,47 @@ public class SymSpellCompoundTest {
   void nullInputIsRejected() {
     assertThrows(NullPointerException.class, () -> tiny.lookupCompound(null, 2));
   }
+
+  // ------------------------------------------------------------------
+  // Whitespace boundary code points.
+  // ------------------------------------------------------------------
+
+  @Test
+  void noBreakSpaceJoinedPairIsRepairedAsASplit() {
+    // Characterization: lookupCompound splits terms with the regex \s+, which matches only
+    // ASCII whitespace. An NBSP-joined pair is one term; the output is repaired to
+    // "hello world", but only through the single-split heuristic, which costs one edit.
+    final List<SuggestItem> r = tiny.lookupCompound("hello" + cp(0x00A0) + "world", 2);
+    assertEquals(1, r.size());
+    assertEquals("hello world", r.get(0).term());
+    assertEquals(1, r.get(0).editDistance());
+  }
+
+  @Test
+  void noBreakSpaceJoinedTripleCannotBeFullyRepaired() {
+    // Characterization: a three-word NBSP-joined phrase is a single term, and the split
+    // heuristic can insert at most one space, so the phrase survives unrepaired.
+    String input = "hello" + cp(0x00A0) + "world" + cp(0x00A0) + "hello";
+    assertEquals(input, correct(tiny, input));
+  }
+
+  @Test
+  void nextLineControlJoinedTripleCannotBeFullyRepaired() {
+    // Characterization: U+0085 NEL is not ASCII whitespace (the Unicode White_Space set
+    // includes it), so the same limitation applies.
+    String input = "hello" + cp(0x0085) + "world" + cp(0x0085) + "hello";
+    assertEquals(input, correct(tiny, input));
+  }
+
+  @Test
+  void lineSeparatorJoinedTripleCannotBeFullyRepaired() {
+    // Characterization: U+2028 LINE SEPARATOR is not ASCII whitespace either, although it
+    // carries the Unicode White_Space property.
+    String input = "hello" + cp(0x2028) + "world" + cp(0x2028) + "hello";
+    assertEquals(input, correct(tiny, input));
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
 }

@@ -146,4 +146,49 @@ public class SimpleTokenizerTest {
     Assertions.assertEquals("بنجاح", tokenizedText[3]);
     Assertions.assertEquals(".", tokenizedText[4]);
   }
+
+  @Test
+  void testNoBreakAndNarrowSpacesSeparateTokens() {
+    // NBSP, figure space and narrow no-break space are whitespace to this tokenizer.
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+    tokenizer.setKeepNewLines(false);
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x00A0) + "b"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x2007) + "b"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x202F) + "b"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x2028) + "b"));
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        tokenizer.tokenize("a" + cp(0x2029) + "b"));
+  }
+
+  @Test
+  void testInformationSeparatorsAreWhitespace() {
+    // Characterization: the U+001C..U+001F information separators are whitespace to this
+    // tokenizer today (Character.isWhitespace includes them, the Unicode White_Space set
+    // does not).
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+    tokenizer.setKeepNewLines(false);
+    for (int cp = 0x001C; cp <= 0x001F; cp++) {
+      Assertions.assertArrayEquals(new String[] {"a", "b"},
+          tokenizer.tokenize("a" + cp(cp) + "b"), "U+" + Integer.toHexString(cp));
+    }
+  }
+
+  @Test
+  void testNextLineControlIsNotWhitespace() {
+    // Characterization: U+0085 NEL is not whitespace today (Character.isWhitespace and the
+    // Zs category both exclude it; Unicode White_Space includes it), so it surfaces as an
+    // OTHER-class token of its own.
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+    tokenizer.setKeepNewLines(false);
+    Assertions.assertArrayEquals(new String[] {"a", cp(0x0085), "b"},
+        tokenizer.tokenize("a" + cp(0x0085) + "b"));
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
 }
