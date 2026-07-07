@@ -187,14 +187,16 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
   }
 
   // The whitespace definition of the sentence detector: the Unicode White_Space set
-  // (OPENNLP-205). It drives both the detection loop of sentPosDetect (the delimiter-run skip
-  // heuristic and the placement of sentence-start positions) and the position-to-span mapping,
-  // so both stages agree on what separates sentences. Unlike the previously used
-  // StringUtil.isWhitespace, this covers the next line control (U+0085) and does not treat the
-  // U+001C..U+001F information separators as whitespace; around those characters the candidate
-  // positions themselves can differ from pre-OPENNLP-205 releases, not only the span edges.
-  // Both deltas are pinned in SentenceDetectorMESpanMappingTest. Model feature generation
-  // (SDContextGenerator) is not affected.
+  // (OPENNLP-205). It drives the detection loop of sentPosDetect (the delimiter-run skip
+  // heuristic and the placement of sentence-start positions), the position-to-span mapping,
+  // and the whitespace guard of the abbreviation check in isAcceptableBreak, so all stages
+  // agree on what separates sentences. Unlike the previously used StringUtil.isWhitespace,
+  // this covers the next line control (U+0085) and does not treat the U+001C..U+001F
+  // information separators as whitespace; around those characters the candidate positions
+  // themselves can differ from pre-OPENNLP-205 releases, not only the span edges. The deltas
+  // are pinned in SentenceDetectorMESpanMappingTest and
+  // SentenceDetectorMEAbbreviationBreakTest. Model feature generation (SDContextGenerator)
+  // is not affected.
   private static final CharClass WHITESPACE = CharClass.whitespace();
 
   private int getFirstWS(CharSequence s, int pos) {
@@ -419,8 +421,11 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
            * Skip abbreviation candidate if regular characters exist directly before it,
            * That is, any letter or digit except: a whitespace, an apostrophe, or an opening round bracket.
            * This prevents mismatches from overlaps close to an actual sentence end.
+           * Whitespace is the detector-wide Unicode White_Space set (see WHITESPACE above),
+           * so since 3.0 the no-break spaces and U+0085 protect an abbreviation here while
+           * U+001C..U+001F no longer do.
            */
-            && (Character.isWhitespace(prevChar) || isApostrophe(prevChar) || prevChar == '(')) {
+            && (WHITESPACE.contains(prevChar) || isApostrophe(prevChar) || prevChar == '(')) {
           return false; // in case of a valid abbreviation: the (sentence) break is not accepted
         }
         // Try next occurrence of this abbreviation in the text

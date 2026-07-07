@@ -62,13 +62,13 @@ public class SentenceDetectorMEAbbreviationBreakTest extends AbstractSentenceDet
   }
 
   @Test
-  void noBreakSpaceBeforeAbbreviationAllowsTheBreak() {
-    // Characterization: NBSP, figure space and narrow no-break space are not whitespace to
-    // this guard today (it uses Character.isWhitespace, which excludes the Zs no-break
-    // spaces), so the abbreviation does not protect the break.
-    Assertions.assertTrue(acceptable(cp(0x00A0)));
-    Assertions.assertTrue(acceptable(cp(0x2007)));
-    Assertions.assertTrue(acceptable(cp(0x202F)));
+  void noBreakSpaceBeforeAbbreviationRejectsTheBreak() {
+    // NBSP, figure space and narrow no-break space carry the Unicode White_Space property,
+    // so since 3.0 the abbreviation protects the break behind them (the previously used
+    // Character.isWhitespace excludes the Zs no-break spaces).
+    Assertions.assertFalse(acceptable(cp(0x00A0)));
+    Assertions.assertFalse(acceptable(cp(0x2007)));
+    Assertions.assertFalse(acceptable(cp(0x202F)));
   }
 
   @Test
@@ -79,19 +79,20 @@ public class SentenceDetectorMEAbbreviationBreakTest extends AbstractSentenceDet
   }
 
   @Test
-  void informationSeparatorsBeforeAbbreviationRejectTheBreak() {
-    // Characterization: the U+001C..U+001F information separators count as whitespace today
-    // (Character.isWhitespace includes them, the Unicode White_Space set does not).
+  void informationSeparatorsBeforeAbbreviationAllowTheBreak() {
+    // The U+001C..U+001F information separators are not Unicode White_Space, so since 3.0
+    // they no longer make the abbreviation protect the break (Character.isWhitespace
+    // treated them as whitespace).
     for (int cp = 0x001C; cp <= 0x001F; cp++) {
-      Assertions.assertFalse(acceptable(cp(cp)), "U+" + Integer.toHexString(cp));
+      Assertions.assertTrue(acceptable(cp(cp)), "U+" + Integer.toHexString(cp));
     }
   }
 
   @Test
-  void nextLineControlBeforeAbbreviationAllowsTheBreak() {
-    // Characterization: U+0085 NEL is not whitespace to this guard today
-    // (Character.isWhitespace excludes it; Unicode White_Space includes it).
-    Assertions.assertTrue(acceptable(cp(0x0085)));
+  void nextLineControlBeforeAbbreviationRejectsTheBreak() {
+    // U+0085 NEL carries the Unicode White_Space property, so since 3.0 the abbreviation
+    // protects the break behind it (Character.isWhitespace excludes NEL).
+    Assertions.assertFalse(acceptable(cp(0x0085)));
   }
 
   private static String cp(int codePoint) {

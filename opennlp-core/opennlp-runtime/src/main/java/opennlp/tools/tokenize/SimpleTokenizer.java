@@ -21,11 +21,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 /**
  * A basic {@link Tokenizer} implementation which performs tokenization
  * using character classes.
+ * <p>
+ * The whitespace class is the Unicode {@code White_Space} set
+ * ({@link UnicodeWhitespace#isWhitespace(int)}). Since 3.0 the next line control
+ * {@code U+0085} separates tokens and the {@code U+001C}..{@code U+001F} information
+ * separators no longer do (they fall into the OTHER class), matching the standard
+ * instead of the JVM predicates.
  * <p>
  * To obtain an instance of this tokenizer use the static final
  * {@link #INSTANCE} field.
@@ -70,7 +76,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
     char pc = 0;
     for (int ci = 0; ci < sl; ci++) {
       char c = s.charAt(ci);
-      if (StringUtil.isWhitespace(c)) {
+      if (UnicodeWhitespace.isWhitespace(c)) {
         charType = CharacterEnum.WHITESPACE;
       }
       else if (Character.isAlphabetic(c)) {

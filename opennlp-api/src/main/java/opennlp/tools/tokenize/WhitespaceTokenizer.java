@@ -21,11 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.StringUtil;
+import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 /**
  * A basic {@link Tokenizer} implementation which performs tokenization
  * using white spaces.
+ * <p>
+ * Whitespace is the Unicode {@code White_Space} set
+ * ({@link UnicodeWhitespace#isWhitespace(int)}). Since 3.0 the next line control
+ * {@code U+0085} separates tokens and the {@code U+001C}..{@code U+001F} information
+ * separators no longer do, matching the standard instead of the JVM predicates. Token
+ * boundaries produced for text containing those code points differ from earlier releases,
+ * which can also shift the candidate spans {@code TokenizerME} scores for such text.
  * <p>
  * To obtain an instance of this tokenizer use the static final
  * {@link #INSTANCE} field.
@@ -53,7 +60,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     // gather potential tokens
     int end = d.length();
     for (int i = 0; i < end; i++) {
-      if (StringUtil.isWhitespace(d.charAt(i))) {
+      if (UnicodeWhitespace.isWhitespace(d.charAt(i))) {
         if (inTok) {
           tokens.add(new Span(tokStart, i));
           inTok = false;

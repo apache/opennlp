@@ -323,21 +323,20 @@ public class SpanTest {
 
   @Test
   void testTrimInformationSeparators() {
-    // Characterization: the U+001C..U+001F information separators are treated as whitespace
-    // by trim() (Character.isWhitespace includes them, the Unicode White_Space set does not).
+    // The U+001C..U+001F information separators are not Unicode White_Space, so since 3.0
+    // trim() leaves them in place (Character.isWhitespace treated them as whitespace).
     String text = cp(0x001C) + "ab" + cp(0x001F);
     Span span = new Span(0, text.length());
-    Assertions.assertEquals("ab", span.trim(text).getCoveredText(text));
+    Assertions.assertEquals(text, span.trim(text).getCoveredText(text));
   }
 
   @Test
   void testTrimNextLineControl() {
-    // Characterization: U+0085 NEL is not treated as whitespace by trim()
-    // (Character.isWhitespace and the Zs category both exclude it; Unicode White_Space
-    // includes it).
+    // U+0085 NEL carries the Unicode White_Space property, so since 3.0 trim() removes it
+    // (Character.isWhitespace and the Zs category both exclude it).
     String text = cp(0x0085) + "ab" + cp(0x0085);
     Span span = new Span(0, text.length());
-    Assertions.assertEquals(text, span.trim(text).getCoveredText(text));
+    Assertions.assertEquals("ab", span.trim(text).getCoveredText(text));
   }
 
   private static String cp(int codePoint) {

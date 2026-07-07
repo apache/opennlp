@@ -21,6 +21,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
+import opennlp.tools.util.normalizer.UnicodeWhitespace;
+
 /**
  * Class for storing start and end integer offsets.
  *
@@ -257,6 +259,11 @@ public class Span implements Comparable<Span>, Serializable {
   }
 
   /**
+   * Whitespace here is the Unicode {@code White_Space} set
+   * ({@link UnicodeWhitespace#isWhitespace(int)}). Since 3.0 this trims the next line
+   * control {@code U+0085} and no longer trims the {@code U+001C}..{@code U+001F}
+   * information separators, matching the standard instead of the JVM predicates.
+   *
    * @param text The {@link CharSequence text} to analyze.
    *
    * @return A copy of this {@link Span} with leading and trailing white spaces removed,
@@ -266,12 +273,12 @@ public class Span implements Comparable<Span>, Serializable {
 
     int newStartOffset = getStart();
 
-    for (int i = getStart(); i < getEnd() && StringUtil.isWhitespace(text.charAt(i)); i++) {
+    for (int i = getStart(); i < getEnd() && UnicodeWhitespace.isWhitespace(text.charAt(i)); i++) {
       newStartOffset++;
     }
 
     int newEndOffset = getEnd();
-    for (int i = getEnd(); i > getStart() && StringUtil.isWhitespace(text.charAt(i - 1)); i--) {
+    for (int i = getEnd(); i > getStart() && UnicodeWhitespace.isWhitespace(text.charAt(i - 1)); i--) {
       newEndOffset--;
     }
 
