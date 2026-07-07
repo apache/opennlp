@@ -123,24 +123,24 @@ public class WhitespaceTokenizerTest {
   }
 
   @Test
-  void testInformationSeparatorsSplitTokens() {
-    // Characterization: the U+001C..U+001F information separators split tokens today
-    // (Character.isWhitespace includes them, the Unicode White_Space set does not).
+  void testInformationSeparatorsDoNotSplitTokens() {
+    // The U+001C..U+001F information separators are not Unicode White_Space, so since 3.0
+    // they no longer split tokens (Character.isWhitespace treated them as whitespace).
     WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
     tokenizer.setKeepNewLines(false);
     for (int cp = 0x001C; cp <= 0x001F; cp++) {
-      Assertions.assertArrayEquals(new String[] {"a", "b"},
+      Assertions.assertArrayEquals(new String[] {"a" + cp(cp) + "b"},
           tokenizer.tokenize("a" + cp(cp) + "b"), "U+" + Integer.toHexString(cp));
     }
   }
 
   @Test
-  void testNextLineControlDoesNotSplitTokens() {
-    // Characterization: U+0085 NEL does not split tokens today (Character.isWhitespace and
-    // the Zs category both exclude it; Unicode White_Space includes it).
+  void testNextLineControlSplitsTokens() {
+    // U+0085 NEL carries the Unicode White_Space property, so since 3.0 it separates
+    // tokens (Character.isWhitespace and the Zs category both exclude it).
     WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
     tokenizer.setKeepNewLines(false);
-    Assertions.assertArrayEquals(new String[] {"a" + cp(0x0085) + "b"},
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
         tokenizer.tokenize("a" + cp(0x0085) + "b"));
   }
 
