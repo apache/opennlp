@@ -420,7 +420,7 @@ public final class CharClass {
   public AlignedText normalizeAligned(CharSequence text) {
     requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
@@ -457,7 +457,7 @@ public final class CharClass {
   public AlignedText collapseAligned(CharSequence text) {
     requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
@@ -502,7 +502,7 @@ public final class CharClass {
     requireNonNullArg(keep, "keep");
     requireValidCodePoint(keepReplacement);
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
@@ -595,7 +595,7 @@ public final class CharClass {
       }
       end -= charCount;
     }
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     if (start > 0) {
       alignment.replace(start, 0);
     }
@@ -617,7 +617,7 @@ public final class CharClass {
   public AlignedText removeAllAligned(CharSequence text) {
     requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
@@ -725,7 +725,7 @@ public final class CharClass {
     requireNonNullArg(text, "text");
     requireNonNullArg(substitution, "substitution");
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {

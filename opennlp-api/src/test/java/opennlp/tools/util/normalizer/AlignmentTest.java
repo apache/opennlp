@@ -157,6 +157,38 @@ public class AlignmentTest {
   }
 
   @Test
+  void testPreSizedBuilderMatchesDefaultBuilder() {
+    // The pre-size constructor is a capacity hint only: same edits, same alignment.
+    final Alignment sized = new Alignment.Builder(4).equal(1).replace(2, 1).equal(1).build(4);
+    final Alignment grown = new Alignment.Builder().equal(1).replace(2, 1).equal(1).build(4);
+    assertEquals(grown.normalizedLength(), sized.normalizedLength());
+    assertEquals(grown.originalLength(), sized.originalLength());
+    for (int i = 0; i <= sized.normalizedLength(); i++) {
+      assertEquals(grown.toOriginalOffset(i), sized.toOriginalOffset(i));
+    }
+    assertSpan(1, 3, sized.toOriginalSpan(1, 2));
+  }
+
+  @Test
+  void testPreSizedBuilderIsAHintNotALimit() {
+    // Recording more edits than the hint must grow, not fail.
+    final Alignment a = new Alignment.Builder(2).equal(40).build(40);
+    assertEquals(40, a.normalizedLength());
+    assertSpan(0, 40, a.toOriginalSpan(0, 40));
+  }
+
+  @Test
+  void testPreSizedBuilderAcceptsZero() {
+    final Alignment a = new Alignment.Builder(0).equal(3).build(3);
+    assertEquals(3, a.normalizedLength());
+  }
+
+  @Test
+  void testPreSizedBuilderRejectsNegativeLength() {
+    assertThrows(IllegalArgumentException.class, () -> new Alignment.Builder(-1));
+  }
+
+  @Test
   void testAndThenChainsThreeStages() {
     // "a  b" -> "a b" (collapse) -> "a-b" (space->dash) -> "a_b" (dash->underscore).
     final Alignment s1 = new Alignment.Builder().equal(1).replace(2, 1).equal(1).build(4);

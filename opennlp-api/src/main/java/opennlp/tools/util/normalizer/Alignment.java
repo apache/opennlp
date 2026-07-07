@@ -207,11 +207,37 @@ public final class Alignment {
   public static final class Builder {
 
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+    private static final int DEFAULT_CAPACITY = 16;
 
-    private int[] starts = new int[16];
-    private int[] ends = new int[16];
+    private int[] starts;
+    private int[] ends;
     private int count;
     private int originalCursor;
+
+    /** Creates a builder with a small default capacity. */
+    public Builder() {
+      this(DEFAULT_CAPACITY);
+    }
+
+    /**
+     * Creates a builder pre-sized for a normalized text of about {@code expectedLength}
+     * characters, so recording the edits of a typical pass (one entry per normalized character)
+     * does not regrow the backing arrays. The value is a sizing hint only; it does not limit how
+     * many edits can be recorded.
+     *
+     * @param expectedLength The expected normalized length, typically the length of the text
+     *     being normalized; must not be negative.
+     * @throws IllegalArgumentException Thrown if {@code expectedLength} is negative.
+     */
+    public Builder(int expectedLength) {
+      if (expectedLength < 0) {
+        throw new IllegalArgumentException(
+            "The expectedLength must not be negative: " + expectedLength);
+      }
+      final int capacity = Math.max(DEFAULT_CAPACITY, expectedLength);
+      starts = new int[capacity];
+      ends = new int[capacity];
+    }
 
     /**
      * Records {@code charCount} characters copied through unchanged (a one to one run).

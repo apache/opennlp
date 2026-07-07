@@ -415,8 +415,8 @@ public abstract class AbstractDL implements AutoCloseable {
   // An AlignedText whose alignment is the identity, for the case where no length-changing fold was
   // applied so the folded text has the same length and offsets as the original.
   private static AlignedText identityAligned(final String original, final String normalized) {
-    final Alignment alignment =
-        new Alignment.Builder().equal(normalized.length()).build(normalized.length());
+    final Alignment alignment = new Alignment.Builder(normalized.length())
+        .equal(normalized.length()).build(normalized.length());
     return new AlignedText(original, normalized, alignment);
   }
 
