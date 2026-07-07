@@ -568,6 +568,19 @@ for (Term term : analyzer.analyze(text)) {
 			from the Unicode-licensed CLDR short names and <code>emoji-test.txt</code> group headers, and
 			no third-party sentiment data set is included.
 		</para>
+		<para>
+			The annotations are wired as strictly opt-in feature inputs to three components, each
+			through its existing extension seam so that default behavior and existing models are
+			unchanged: the name finder (and any consumer of feature generation descriptors) activates
+			<code>EmojiAnnotationFeatureGenerator</code> by naming
+			<code>EmojiAnnotationFeatureGeneratorFactory</code> in a descriptor, the document
+			categorizer takes <code>EmojiFeatureGenerator</code> alongside its defaults through the
+			<code>DoccatFactory</code> feature generator array, and sentiment analysis trains with
+			<code>EmojiSentimentFactory</code>, whose context generator adds the emoji evidence and is
+			re-created from the model manifest at prediction time. A flag token then carries
+			gazetteer-like evidence (<code>emoji.type=FLAG</code>, <code>emoji.region=DE</code>) with no
+			dictionary, and a heart or crying face contributes its coarse polarity directly.
+		</para>
 	</section>
 
 	<section xml:id="tools.normalizer.confusables">

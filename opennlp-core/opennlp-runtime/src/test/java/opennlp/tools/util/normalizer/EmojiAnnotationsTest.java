@@ -135,6 +135,17 @@ public class EmojiAnnotationsTest {
     }
   }
 
+  @Test
+  void everyBundledSymbolStartsBeyondAscii() throws IOException {
+    // The feature generators fast-path tokens whose first char is ASCII without touching the
+    // annotation layer; this audit keeps that guard sound. It holds structurally: annotatable
+    // symbols are pictographs, and flags (regional indicators, the waving black flag) are
+    // supplementary-plane sequences handled by the derived layer.
+    for (final String symbol : bundled().keySet()) {
+      assertTrue(symbol.charAt(0) > 0x7F, "ASCII-leading annotated symbol: " + symbol);
+    }
+  }
+
   // --- lookup behavior ---
 
   @Test
