@@ -402,6 +402,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
     if (tags.contains("<NER2>")) {
       return null;
     }
+    // Corpus-format parsing: the AD tag field is ASCII-whitespace delimited by the format.
     String[] tag = tags.split("\\s+");
     for (String t : tag) {
       Matcher matcher = TAG_PATTERN.matcher(t);
