@@ -172,7 +172,19 @@ public final class WordSegmenter {
     final WordBreakProperty.Data wbData = WordBreakProperty.data();
     final BitSet pictographs = ExtendedPictographic.members();
 
-    final int firstCp = Character.codePointAt(text, 0);
+    // Decoding takes the BMP fast path throughout this class: a char that is not a high surrogate
+    // is its own code point, so the common case skips Character.codePointAt's pairing test and a
+    // separate Character.charCount call; only a high surrogate takes the supplementary decode.
+    final char firstChar = text.charAt(0);
+    final int firstCp;
+    final int firstCount;
+    if (!Character.isHighSurrogate(firstChar)) {
+      firstCp = firstChar;
+      firstCount = 1;
+    } else {
+      firstCp = Character.codePointAt(text, 0);
+      firstCount = Character.charCount(firstCp);
+    }
     int prev = WordBreakProperty.ordinalOf(wbData, firstCp);
     boolean prevSpecial = SPECIAL[prev];
     int last = OTHER_ORDINAL;
@@ -184,10 +196,18 @@ public final class WordSegmenter {
     }
 
     int segmentStart = 0;
-    int i = Character.charCount(firstCp);
+    int i = firstCount;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final int charCount = Character.charCount(codePoint);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       final int current = WordBreakProperty.ordinalOf(wbData, codePoint);
 
       // One table read per character. It is the decision for the common case and, as GO_SLOW, the
@@ -296,12 +316,19 @@ public final class WordSegmenter {
   private static WordBreak nextSignificant(CharSequence text, int from, int length,
       WordBreakProperty.Data wbData) {
     for (int j = from; j < length; ) {
-      final int codePoint = Character.codePointAt(text, j);
+      final char c = text.charAt(j);
+      final int codePoint;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        j++;
+      } else {
+        codePoint = Character.codePointAt(text, j);
+        j += Character.charCount(codePoint);
+      }
       final WordBreak value = WordBreakProperty.of(wbData, codePoint);
       if (!isIgnorable(value)) {
         return value;
       }
-      j += Character.charCount(codePoint);
     }
     return WordBreak.OTHER;
   }

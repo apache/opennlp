@@ -30,9 +30,12 @@ import opennlp.tools.util.Span;
  * presets ({@link #whitespace()}, {@link #dashes()}); any other class is one more configured
  * instance with no new engine code.</p>
  *
- * <p>Every operation is a single forward pass that reads one code point
- * ({@link Character#codePointAt(CharSequence, int)}), tests membership in O(1), acts, and advances
- * by {@link Character#charCount(int)}. There is no regular expression, no {@link java.util.regex}
+ * <p>Every operation is a single forward pass that reads one code point, tests membership in
+ * O(1), acts, and advances. A {@code char} that is not a high surrogate is its own code point, so
+ * BMP text (the overwhelming majority of input) decodes without
+ * {@link Character#codePointAt(CharSequence, int)} pairing or a separate
+ * {@link Character#charCount(int)} test; only a high surrogate takes the supplementary decode.
+ * There is no regular expression, no {@link java.util.regex}
  * allocation, and no reliance on {@link Character#isWhitespace(int)} or
  * {@link Character#isSpaceChar(int)}, all of which disagree with the Unicode standard.</p>
  *
@@ -130,7 +133,16 @@ public final class CharClass {
     int tokenStart = -1;
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (members.contains(codePoint)) {
         if (tokenStart >= 0) {
           spans.add(new Span(tokenStart, i));
@@ -139,7 +151,7 @@ public final class CharClass {
       } else if (tokenStart < 0) {
         tokenStart = i;
       }
-      i += Character.charCount(codePoint);
+      i += charCount;
     }
     if (tokenStart >= 0) {
       spans.add(new Span(tokenStart, length));
@@ -187,9 +199,18 @@ public final class CharClass {
     final StringBuilder out = new StringBuilder(length).append(text, 0, first);
     int i = first;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       out.appendCodePoint(members.contains(codePoint) ? replacement : codePoint);
-      i += Character.charCount(codePoint);
+      i += charCount;
     }
     return out.toString();
   }
@@ -220,13 +241,22 @@ public final class CharClass {
     final StringBuilder out = new StringBuilder(length).append(text, 0, first);
     int i = first;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (members.contains(codePoint)) {
         out.appendCodePoint(replacement);
         i = skipRun(text, i);
       } else {
         out.appendCodePoint(codePoint);
-        i += Character.charCount(codePoint);
+        i += charCount;
       }
     }
     return out.toString();
@@ -253,23 +283,41 @@ public final class CharClass {
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (members.contains(codePoint)) {
         boolean preserve = keep.contains(codePoint);
-        int j = i + Character.charCount(codePoint);
+        int j = i + charCount;
         while (j < length) {
-          final int next = Character.codePointAt(text, j);
+          final char nextChar = text.charAt(j);
+          final int next;
+          final int nextCount;
+          if (!Character.isHighSurrogate(nextChar)) {
+            next = nextChar;
+            nextCount = 1;
+          } else {
+            next = Character.codePointAt(text, j);
+            nextCount = Character.charCount(next);
+          }
           if (!members.contains(next)) {
             break;
           }
           preserve |= keep.contains(next);
-          j += Character.charCount(next);
+          j += nextCount;
         }
         out.appendCodePoint(preserve ? keepReplacement : replacement);
         i = j;
       } else {
         out.appendCodePoint(codePoint);
-        i += Character.charCount(codePoint);
+        i += charCount;
       }
     }
     return out.toString();
@@ -287,19 +335,37 @@ public final class CharClass {
     final int length = text.length();
     int start = 0;
     while (start < length) {
-      final int codePoint = Character.codePointAt(text, start);
+      final char c = text.charAt(start);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, start);
+        charCount = Character.charCount(codePoint);
+      }
       if (!members.contains(codePoint)) {
         break;
       }
-      start += Character.charCount(codePoint);
+      start += charCount;
     }
     int end = length;
     while (end > start) {
-      final int codePoint = Character.codePointBefore(text, end);
+      final char c = text.charAt(end - 1);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isLowSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointBefore(text, end);
+        charCount = Character.charCount(codePoint);
+      }
       if (!members.contains(codePoint)) {
         break;
       }
-      end -= Character.charCount(codePoint);
+      end -= charCount;
     }
     return text.subSequence(start, end).toString();
   }
@@ -325,11 +391,20 @@ public final class CharClass {
     final StringBuilder out = new StringBuilder(length).append(text, 0, first);
     int i = first;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (!members.contains(codePoint)) {
         out.appendCodePoint(codePoint);
       }
-      i += Character.charCount(codePoint);
+      i += charCount;
     }
     return out.toString();
   }
@@ -349,8 +424,16 @@ public final class CharClass {
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final int charCount = Character.charCount(codePoint);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (members.contains(codePoint)) {
         out.appendCodePoint(replacement);
         alignment.replace(charCount, Character.charCount(replacement));
@@ -378,14 +461,22 @@ public final class CharClass {
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (members.contains(codePoint)) {
         final int runEnd = skipRun(text, i);
         out.appendCodePoint(replacement);
         alignment.replace(runEnd - i, Character.charCount(replacement));
         i = runEnd;
       } else {
-        final int charCount = Character.charCount(codePoint);
         out.appendCodePoint(codePoint);
         alignment.equal(charCount);
         i += charCount;
@@ -415,24 +506,41 @@ public final class CharClass {
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (members.contains(codePoint)) {
         boolean preserve = keep.contains(codePoint);
-        int j = i + Character.charCount(codePoint);
+        int j = i + charCount;
         while (j < length) {
-          final int next = Character.codePointAt(text, j);
+          final char nextChar = text.charAt(j);
+          final int next;
+          final int nextCount;
+          if (!Character.isHighSurrogate(nextChar)) {
+            next = nextChar;
+            nextCount = 1;
+          } else {
+            next = Character.codePointAt(text, j);
+            nextCount = Character.charCount(next);
+          }
           if (!members.contains(next)) {
             break;
           }
           preserve |= keep.contains(next);
-          j += Character.charCount(next);
+          j += nextCount;
         }
         final int emitted = preserve ? keepReplacement : replacement;
         out.appendCodePoint(emitted);
         alignment.replace(j - i, Character.charCount(emitted));
         i = j;
       } else {
-        final int charCount = Character.charCount(codePoint);
         out.appendCodePoint(codePoint);
         alignment.equal(charCount);
         i += charCount;
@@ -455,19 +563,37 @@ public final class CharClass {
     final int length = text.length();
     int start = 0;
     while (start < length) {
-      final int codePoint = Character.codePointAt(text, start);
+      final char c = text.charAt(start);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, start);
+        charCount = Character.charCount(codePoint);
+      }
       if (!members.contains(codePoint)) {
         break;
       }
-      start += Character.charCount(codePoint);
+      start += charCount;
     }
     int end = length;
     while (end > start) {
-      final int codePoint = Character.codePointBefore(text, end);
+      final char c = text.charAt(end - 1);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isLowSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointBefore(text, end);
+        charCount = Character.charCount(codePoint);
+      }
       if (!members.contains(codePoint)) {
         break;
       }
-      end -= Character.charCount(codePoint);
+      end -= charCount;
     }
     final Alignment.Builder alignment = new Alignment.Builder();
     if (start > 0) {
@@ -495,8 +621,16 @@ public final class CharClass {
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final int charCount = Character.charCount(codePoint);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (members.contains(codePoint)) {
         alignment.replace(charCount, 0);
       } else {
@@ -535,8 +669,15 @@ public final class CharClass {
     int first = 0;
     int firstCount = 0;
     while (first < length) {
-      final int codePoint = Character.codePointAt(text, first);
-      firstCount = Character.charCount(codePoint);
+      final char c = text.charAt(first);
+      final int codePoint;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        firstCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, first);
+        firstCount = Character.charCount(codePoint);
+      }
       firstReplacement = substitution.apply(codePoint);
       if (firstReplacement != null) {
         break;
@@ -550,14 +691,23 @@ public final class CharClass {
         new StringBuilder(length).append(text, 0, first).append(firstReplacement);
     int i = first + firstCount;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       final String replacement = substitution.apply(codePoint);
       if (replacement != null) {
         out.append(replacement);
       } else {
         out.appendCodePoint(codePoint);
       }
-      i += Character.charCount(codePoint);
+      i += charCount;
     }
     return out.toString();
   }
@@ -579,8 +729,16 @@ public final class CharClass {
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final int charCount = Character.charCount(codePoint);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       final String replacement = substitution.apply(codePoint);
       if (replacement != null) {
         out.append(replacement);
@@ -600,11 +758,20 @@ public final class CharClass {
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (members.contains(codePoint)) {
         return i;
       }
-      i += Character.charCount(codePoint);
+      i += charCount;
     }
     return length;
   }
@@ -614,11 +781,20 @@ public final class CharClass {
     final int length = text.length();
     int i = runStart;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
+      final char c = text.charAt(i);
+      final int codePoint;
+      final int charCount;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        charCount = 1;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        charCount = Character.charCount(codePoint);
+      }
       if (!members.contains(codePoint)) {
         break;
       }
-      i += Character.charCount(codePoint);
+      i += charCount;
     }
     return i;
   }

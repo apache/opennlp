@@ -98,6 +98,13 @@ public class WordSegmenterTest {
   }
 
   @Test
+  void testUnpairedSurrogatesAdvanceOneCharAndSegmentAsOther() {
+    // A lone high or low surrogate must decode exactly like Character.codePointAt: one char,
+    // Word_Break class Other, so it separates from the letters on both sides.
+    assertEquals(List.of("ab", "\uD800", "cd", "\uDC00", "ef"), words("ab\uD800cd\uDC00ef"));
+  }
+
+  @Test
   void testEmptyText() {
     assertEquals(List.of(), words(""));
     assertArrayEquals(new int[] {0}, WordSegmenter.boundaries(""));

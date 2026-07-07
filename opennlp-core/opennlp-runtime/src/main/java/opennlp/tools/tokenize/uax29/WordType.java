@@ -100,8 +100,17 @@ public enum WordType {
     // behind ExtendedPictographic.members() is not repeated for every non-ASCII character of a token.
     final BitSet pictographs = ExtendedPictographic.members();
     for (int i = start; i < end; ) {
-      final int codePoint = Character.codePointAt(text, i);
-      i += Character.charCount(codePoint);
+      // BMP fast path: a char that is not a high surrogate is its own code point, so the common
+      // case skips Character.codePointAt's pairing test and a separate Character.charCount call.
+      final char c = text.charAt(i);
+      final int codePoint;
+      if (!Character.isHighSurrogate(c)) {
+        codePoint = c;
+        i++;
+      } else {
+        codePoint = Character.codePointAt(text, i);
+        i += Character.charCount(codePoint);
+      }
       if (codePoint < 0x80) {
         final int kind = ASCII_KIND[codePoint];
         if (kind == 1) {

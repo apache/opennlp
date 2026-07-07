@@ -227,6 +227,21 @@ public class CharClassTest {
     assertEquals(5, calls.get(), "the lazy builder must not re-apply the mapper");
   }
 
+  // --- BMP fast path: unpaired surrogates must decode exactly like Character.codePointAt ----
+
+  @Test
+  void testUnpairedSurrogatesPassThroughUnchanged() {
+    final String loneHigh = "\uD83D"; // high surrogate with no low surrogate following
+    final String loneLow = "\uDE00";  // low surrogate with no high surrogate preceding
+    final String text = "a" + loneHigh + " " + loneLow + "b";
+    assertEquals(text, WS.normalize(text));
+    assertEquals(text, WS.collapse(text));
+    assertEquals("a" + loneHigh + loneLow + "b", WS.removeAll(text));
+    assertEquals(text, WS.trim(" " + text + "\t"));
+    assertArrayEquals(new String[] {"a" + loneHigh, loneLow + "b"}, WS.split(text));
+    assertEquals(text, CharClass.substitute(text, codePoint -> null));
+  }
+
   // --- split / splitSpans ------------------------------------------------------------------
 
   @Test
