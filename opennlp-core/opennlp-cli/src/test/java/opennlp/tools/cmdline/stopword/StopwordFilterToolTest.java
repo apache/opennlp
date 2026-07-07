@@ -115,4 +115,38 @@ public class StopwordFilterToolTest {
     // they are not in this list.
     Assertions.assertEquals("the quick", out);
   }
+
+  @Test
+  void noBreakSpaceDoesNotSplitTokens() {
+    // Characterization: the tool splits input lines with the regex \s+, which matches only
+    // ASCII whitespace. An NBSP-joined pair is one token, so the stopword inside it is not
+    // filtered.
+    Assertions.assertEquals("the" + cp(0x00A0) + "fox",
+        filterEnglish("the" + cp(0x00A0) + "fox the\n"));
+  }
+
+  @Test
+  void nextLineControlDoesNotSplitTokens() {
+    // Characterization: U+0085 NEL is not ASCII whitespace, so it does not split tokens.
+    Assertions.assertEquals("the" + cp(0x0085) + "fox",
+        filterEnglish("the" + cp(0x0085) + "fox the\n"));
+  }
+
+  @Test
+  void informationSeparatorDoesNotSplitTokens() {
+    // U+001C is neither ASCII whitespace nor Unicode White_Space; it never splits tokens.
+    Assertions.assertEquals("the" + cp(0x001C) + "fox",
+        filterEnglish("the" + cp(0x001C) + "fox the\n"));
+  }
+
+  private String filterEnglish(String input) {
+    System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
+    StopwordFilterTool tool = new StopwordFilterTool();
+    tool.run(new String[] {"en"});
+    return capturedOut.toString(StandardCharsets.UTF_8).trim();
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
 }

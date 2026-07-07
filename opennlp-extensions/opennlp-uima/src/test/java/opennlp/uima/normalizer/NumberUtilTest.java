@@ -63,4 +63,35 @@ class NumberUtilTest {
     } , "java.lang.IllegalArgumentException: Language INVALID is not supported!");
   }
 
+  @Test
+  void parse_withNoBreakSpaces() throws ParseException {
+    // Characterization: the pre-parse strip uses the regex \s, which matches only ASCII
+    // whitespace. NBSP and the narrow no-break space survive, and parsing stops at them.
+    Assertions.assertEquals(1L, NumberUtil.parse("1" + cp(0x00A0) + "234",
+        VALID_LANGUAGE_CODE).longValue());
+    Assertions.assertEquals(1L, NumberUtil.parse("1" + cp(0x202F) + "234",
+        VALID_LANGUAGE_CODE).longValue());
+  }
+
+  @Test
+  void parse_withLineSeparatorAndNextLineControl() throws ParseException {
+    // Characterization: U+2028 and U+0085 are not ASCII whitespace, so they also survive
+    // the strip and stop the parse, although both carry the Unicode White_Space property.
+    Assertions.assertEquals(12L, NumberUtil.parse("12" + cp(0x2028) + "34",
+        VALID_LANGUAGE_CODE).longValue());
+    Assertions.assertEquals(12L, NumberUtil.parse("12" + cp(0x0085) + "34",
+        VALID_LANGUAGE_CODE).longValue());
+  }
+
+  @Test
+  void parse_withInformationSeparator() throws ParseException {
+    // U+001C is neither ASCII whitespace nor Unicode White_Space; it is never stripped.
+    Assertions.assertEquals(12L, NumberUtil.parse("12" + cp(0x001C) + "34",
+        VALID_LANGUAGE_CODE).longValue());
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
+
 }

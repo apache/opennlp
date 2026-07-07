@@ -142,4 +142,37 @@ public class SpellCheckCmdLineToolsTest extends AbstractTempDirTest {
     // Suggestions are listed (not corrected text) as: token => [s1, s2, ...]
     assertEquals("teh => [the]", lines.get(0));
   }
+
+  @Test
+  void suggestModeTreatsNoBreakSpaceJoinedPairAsOneToken() throws IOException {
+    final Path unigrams = copyResource(UNIGRAMS, tempDir, "unigrams.txt");
+    final Path bigrams = copyResource(BIGRAMS, tempDir, "bigrams.txt");
+    final Path model = tempDir.resolve("en-spellcheck.bin");
+
+    new SpellCheckModelBuilderTool().run(new String[] {
+        "-lang", "en",
+        "-unigrams", unigrams.toString(),
+        "-bigrams", bigrams.toString(),
+        "-model", model.toString()
+    });
+
+    final Path input = tempDir.resolve("input.txt");
+    final String nbsp = new String(Character.toChars(0x00A0));
+    Files.writeString(input, "teh" + nbsp + "teh\n", StandardCharsets.UTF_8);
+    final Path output = tempDir.resolve("output.txt");
+
+    new CorrectTextTool().run(new String[] {
+        "-model", model.toString(),
+        "-suggest", "true",
+        "-verbosity", "TOP",
+        "-inputFile", input.toString(),
+        "-outputFile", output.toString()
+    });
+
+    final List<String> lines = Files.readAllLines(output, StandardCharsets.UTF_8);
+    // Characterization: tokens come from the regex \s+ (ASCII whitespace only), so the
+    // NBSP-joined pair is a single token, and no suggestion is within edit distance reach.
+    assertEquals(1, lines.size());
+    assertEquals("teh" + nbsp + "teh => []", lines.get(0));
+  }
 }

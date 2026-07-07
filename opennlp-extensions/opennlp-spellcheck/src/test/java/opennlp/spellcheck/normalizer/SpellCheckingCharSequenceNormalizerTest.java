@@ -249,4 +249,51 @@ public class SpellCheckingCharSequenceNormalizerTest {
           () -> "core: " + core);
     }
   }
+
+  @Test
+  void perTokenTreatsNoBreakSpaceAsPartOfTheToken() {
+    // Characterization: PER_TOKEN boundaries use Character.isWhitespace, which excludes the
+    // no-break spaces; an NBSP-joined pair is a single token, no dictionary entry is within
+    // reach, and the input passes through unchanged.
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    String nbsp = "teh" + cp(0x00A0) + "fxo";
+    assertEquals(nbsp, norm(normalizer, nbsp));
+    String narrow = "teh" + cp(0x202F) + "fxo";
+    assertEquals(narrow, norm(normalizer, narrow));
+  }
+
+  @Test
+  void perTokenTreatsNextLineControlAsPartOfTheToken() {
+    // Characterization: U+0085 NEL is not whitespace to Character.isWhitespace (the Unicode
+    // White_Space set includes it), so it does not separate tokens.
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    String input = "teh" + cp(0x0085) + "fxo";
+    assertEquals(input, norm(normalizer, input));
+  }
+
+  @Test
+  void perTokenTreatsInformationSeparatorAsTokenBoundary() {
+    // Characterization: U+001C is whitespace to Character.isWhitespace (the Unicode
+    // White_Space set excludes it), so it separates tokens and both sides are corrected;
+    // the separator itself is copied verbatim.
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    assertEquals("the" + cp(0x001C) + "fox",
+        norm(normalizer, "teh" + cp(0x001C) + "fxo"));
+  }
+
+  @Test
+  void perTokenTreatsLineSeparatorAsTokenBoundary() {
+    // U+2028 is whitespace under both Character.isWhitespace and Unicode White_Space.
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    assertEquals("the" + cp(0x2028) + "fox",
+        norm(normalizer, "teh" + cp(0x2028) + "fxo"));
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
 }
