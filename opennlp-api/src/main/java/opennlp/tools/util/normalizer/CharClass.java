@@ -167,15 +167,25 @@ public final class CharClass {
   /**
    * Replaces each member code point with the replacement, one for one.
    *
+   * <p>When no code point of {@code text} is a member, the text is returned unchanged (as its
+   * {@link CharSequence#toString() string form}) without copying.</p>
+   *
    * @param text The text to normalize.
    * @return The normalized text.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String normalize(CharSequence text) {
     requireNonNullArg(text, "text");
-    final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
-    int i = 0;
+    // Scan-then-fold: find the first member without allocating. Member-free text (the common case
+    // on ASCII-heavy token streams) is returned unchanged; otherwise the fold loop starts from a
+    // builder pre-filled with the unchanged prefix and runs branch-free from there.
+    final int first = firstMember(text);
+    if (first == length) {
+      return text.toString();
+    }
+    final StringBuilder out = new StringBuilder(length).append(text, 0, first);
+    int i = first;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
       out.appendCodePoint(members.contains(codePoint) ? replacement : codePoint);
@@ -192,15 +202,23 @@ public final class CharClass {
    * the empty string). Use {@link #trim(CharSequence)} to drop edge members, or collapse and then
    * trim to do both.</p>
    *
+   * <p>When no code point of {@code text} is a member, the text is returned unchanged (as its
+   * {@link CharSequence#toString() string form}) without copying.</p>
+   *
    * @param text The text to collapse.
    * @return The collapsed text.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String collapse(CharSequence text) {
     requireNonNullArg(text, "text");
-    final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
-    int i = 0;
+    // Scan-then-fold, as in normalize(CharSequence).
+    final int first = firstMember(text);
+    if (first == length) {
+      return text.toString();
+    }
+    final StringBuilder out = new StringBuilder(length).append(text, 0, first);
+    int i = first;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
       if (members.contains(codePoint)) {
@@ -289,15 +307,23 @@ public final class CharClass {
   /**
    * Removes every member code point.
    *
+   * <p>When no code point of {@code text} is a member, the text is returned unchanged (as its
+   * {@link CharSequence#toString() string form}) without copying.</p>
+   *
    * @param text The text to filter.
    * @return The text with all members removed.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String removeAll(CharSequence text) {
     requireNonNullArg(text, "text");
-    final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
-    int i = 0;
+    // Scan-then-fold, as in normalize(CharSequence).
+    final int first = firstMember(text);
+    if (first == length) {
+      return text.toString();
+    }
+    final StringBuilder out = new StringBuilder(length).append(text, 0, first);
+    int i = first;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
       if (!members.contains(codePoint)) {
@@ -488,6 +514,10 @@ public final class CharClass {
    * offset-changing cursor pass behind the expanding folds (ellipsis, German umlaut, digit), so each
    * of them supplies only a mapper rather than re-implementing the loop. No regular expression.
    *
+   * <p>When {@code substitution} returns {@code null} for every code point of {@code text}, the
+   * text is returned unchanged (as its {@link CharSequence#toString() string form}) without
+   * copying. The mapper is still applied exactly once per code point.</p>
+   *
    * @param text         The text to transform.
    * @param substitution The replacement for a code point, or {@code null} to copy it through.
    * @return The transformed text.
@@ -496,9 +526,29 @@ public final class CharClass {
   public static String substitute(CharSequence text, IntFunction<String> substitution) {
     requireNonNullArg(text, "text");
     requireNonNullArg(substitution, "substitution");
-    final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
-    int i = 0;
+    // Scan-then-fold, applying the mapper exactly once per code point: scan until the mapper
+    // first fires; text the mapper leaves entirely alone is returned unchanged without copying,
+    // and otherwise the fold continues from a builder pre-filled with the unchanged prefix and
+    // the first replacement.
+    String firstReplacement = null;
+    int first = 0;
+    int firstCount = 0;
+    while (first < length) {
+      final int codePoint = Character.codePointAt(text, first);
+      firstCount = Character.charCount(codePoint);
+      firstReplacement = substitution.apply(codePoint);
+      if (firstReplacement != null) {
+        break;
+      }
+      first += firstCount;
+    }
+    if (firstReplacement == null) {
+      return text.toString();
+    }
+    final StringBuilder out =
+        new StringBuilder(length).append(text, 0, first).append(firstReplacement);
+    int i = first + firstCount;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
       final String replacement = substitution.apply(codePoint);
@@ -542,6 +592,21 @@ public final class CharClass {
       i += charCount;
     }
     return new AlignedText(text, out.toString(), alignment.build(length));
+  }
+
+  // Returns the offset of the first member code point, or the text length if there is none. The
+  // allocation-free scan phase shared by the folds that return member-free text unchanged.
+  private int firstMember(CharSequence text) {
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (members.contains(codePoint)) {
+        return i;
+      }
+      i += Character.charCount(codePoint);
+    }
+    return length;
   }
 
   // Returns the offset just past the maximal run of members starting at runStart.
