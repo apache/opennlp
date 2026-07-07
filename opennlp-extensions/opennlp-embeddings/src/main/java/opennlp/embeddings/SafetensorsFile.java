@@ -28,6 +28,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
+
 /**
  * Reads a <a href="https://github.com/huggingface/safetensors">safetensors</a> file: an 8-byte
  * little-endian header length, a JSON header describing each tensor's dtype, shape, and byte
@@ -42,8 +44,10 @@ import java.util.Set;
  *
  * <p>The whole file is read into memory up front (matching the project's existing bundled-data
  * readers), which is appropriate for the small (tens of megabytes) tables this module targets.
- * Instances are immutable and safe for concurrent reads after construction.</p>
+ * Instances are immutable and safe for concurrent reads after construction; every
+ * {@link #readFloat32(String)} call decodes into a fresh array the caller owns.</p>
  */
+@ThreadSafe
 public final class SafetensorsFile {
 
   private static final int HEADER_LENGTH_PREFIX_BYTES = 8;

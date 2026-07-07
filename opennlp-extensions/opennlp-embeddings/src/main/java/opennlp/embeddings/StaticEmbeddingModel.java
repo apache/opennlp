@@ -17,12 +17,12 @@
 package opennlp.embeddings;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
@@ -43,13 +43,20 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
  * pooled vector is L2-normalized with an epsilon floor so a token-less input yields a zero
  * vector rather than a division by zero.</p>
  *
- * <p>Instances are immutable and safe for concurrent {@link #embed(String)} calls after
- * construction.</p>
+ * <p><b>Thread safety.</b> Instances are immutable and safe for concurrent use after
+ * construction: every field is final, the loaded arrays are never exposed or mutated, and the
+ * tokenizer chain holds no per-call state. The one piece of global mutable state in that chain,
+ * the {@code keepNewLines} flag on the {@code WhitespaceTokenizer.INSTANCE} singleton that
+ * {@link WordpieceTokenizer} splits with, cannot affect results here: BERT basic tokenization
+ * has already replaced every whitespace character, line breaks included, with plain spaces
+ * before that split runs, so the flag's only behavioral branch never triggers on this input.</p>
  */
+@ThreadSafe
 public final class StaticEmbeddingModel {
 
   private static final float NORMALIZE_EPSILON = 1e-12f;
   private static final String WEIGHTS_TENSOR_NAME = "weights";
+  private static final int[] NO_EXCLUDED_ROWS = new int[0];
   // Never meaningful as a "similar word" result.
   private static final Set<String> SPECIAL_TOKENS = Set.of(WordpieceTokenizer.BERT_CLS_TOKEN,
       WordpieceTokenizer.BERT_SEP_TOKEN, WordpieceTokenizer.BERT_UNK_TOKEN);
@@ -61,10 +68,15 @@ public final class StaticEmbeddingModel {
   private final BertTokenizer tokenizer;
   private final boolean normalize;
   private final String unknownToken;
+  // Per-row L2 norms and the special-token mask are constants of the model, precomputed at
+  // load time so the nearest-neighbor scan does no per-row square-root or string hashing.
+  private final double[] rowNorms;
+  private final boolean[] specialRows;
 
   private StaticEmbeddingModel(float[] embeddings, float[] weights, int dimension,
                                 WordPieceVocabulary vocabulary, BertTokenizer tokenizer,
-                                boolean normalize, String unknownToken) {
+                                boolean normalize, String unknownToken, double[] rowNorms,
+                                boolean[] specialRows) {
     this.embeddings = embeddings;
     this.weights = weights;
     this.dimension = dimension;
@@ -72,6 +84,8 @@ public final class StaticEmbeddingModel {
     this.tokenizer = tokenizer;
     this.normalize = normalize;
     this.unknownToken = unknownToken;
+    this.rowNorms = rowNorms;
+    this.specialRows = specialRows;
   }
 
   /**
@@ -129,9 +143,27 @@ public final class StaticEmbeddingModel {
       }
     }
 
+    final double[] rowNorms = new double[vocabulary.size()];
+    for (int row = 0; row < rowNorms.length; row++) {
+      final int base = row * dimension;
+      double sumOfSquares = 0;
+      for (int d = 0; d < dimension; d++) {
+        final float value = embeddings[base + d];
+        sumOfSquares += (double) value * value;
+      }
+      rowNorms[row] = Math.sqrt(sumOfSquares);
+    }
+    final boolean[] specialRows = new boolean[vocabulary.size()];
+    for (final String special : SPECIAL_TOKENS) {
+      final int row = vocabulary.id(special);
+      if (row >= 0) {
+        specialRows[row] = true;
+      }
+    }
+
     final BertTokenizer tokenizer = new BertTokenizer(vocabulary.tokens(), lowerCase);
     return new StaticEmbeddingModel(embeddings, weights, dimension, vocabulary, tokenizer,
-        normalize, WordpieceTokenizer.BERT_UNK_TOKEN);
+        normalize, WordpieceTokenizer.BERT_UNK_TOKEN, rowNorms, specialRows);
   }
 
   /**
@@ -156,17 +188,23 @@ public final class StaticEmbeddingModel {
       if (unknownToken.equals(token)) {
         continue;
       }
-      final OptionalInt id = vocabulary.id(token);
-      if (id.isEmpty()) {
+      final int row = vocabulary.id(token);
+      if (row < 0) {
         throw new IllegalStateException("Tokenizer produced token '" + token
             + "' that is not in its own vocabulary; this indicates a tokenizer/vocabulary "
             + "construction bug, not an input problem");
       }
-      final int row = id.getAsInt();
-      final float weight = weights == null ? 1f : weights[row];
       final int base = row * dimension;
-      for (int d = 0; d < dimension; d++) {
-        sum[d] += embeddings[base + d] * weight;
+      if (weights == null) {
+        for (int d = 0; d < dimension; d++) {
+          sum[d] += embeddings[base + d];
+        }
+      }
+      else {
+        final float weight = weights[row];
+        for (int d = 0; d < dimension; d++) {
+          sum[d] += embeddings[base + d] * weight;
+        }
       }
       pooledCount++;
     }
@@ -236,7 +274,7 @@ public final class StaticEmbeddingModel {
       throw new IllegalArgumentException("Text must not be null");
     }
     requirePositive(topK);
-    return nearestNeighbors(embed(text), topK, Set.of());
+    return nearestNeighbors(embed(text), topK, NO_EXCLUDED_ROWS);
   }
 
   /**
@@ -249,7 +287,10 @@ public final class StaticEmbeddingModel {
    * @param c    The third term. Must not be {@code null}.
    * @param topK The maximum number of results. Must be at least 1.
    * @return Up to {@code topK} neighbors, most similar first, excluding the special tokens and
-   *     any vocabulary token that exactly matches {@code a}, {@code b}, or {@code c}.
+   *     every vocabulary token the three terms themselves tokenize to. The exclusion folds the
+   *     terms exactly the way {@link #embed(String)} folds text, so on an uncased model a
+   *     capitalized input excludes its lower-cased vocabulary row, and a multiword term
+   *     excludes each of its word pieces.
    * @throws IllegalArgumentException Thrown if {@code a}, {@code b}, or {@code c} is
    *     {@code null}, or {@code topK} is less than 1.
    */
@@ -271,7 +312,7 @@ public final class StaticEmbeddingModel {
     for (int d = 0; d < dimension; d++) {
       target[d] = vb[d] - va[d] + vc[d];
     }
-    return nearestNeighbors(target, topK, Set.of(a, b, c));
+    return nearestNeighbors(target, topK, excludedRows(a, b, c));
   }
 
   private static void requirePositive(int topK) {
@@ -280,32 +321,83 @@ public final class StaticEmbeddingModel {
     }
   }
 
-  private List<Neighbor> nearestNeighbors(float[] query, int topK, Set<String> exclude) {
+  // The vocabulary rows the given terms tokenize to, ascending and duplicate-free. Folding the
+  // terms through the model's own tokenizer (rather than comparing raw input strings against
+  // vocabulary tokens) is what makes the exclusion case- and accent-insensitive on uncased
+  // models, and it tolerates equal terms, which Set.of would reject as duplicates.
+  private int[] excludedRows(String... terms) {
+    final SortedSet<Integer> rows = new TreeSet<>();
+    for (final String term : terms) {
+      final String[] tokens = tokenizer.tokenize(term);
+      for (int i = 1; i < tokens.length - 1; i++) {
+        final String token = tokens[i];
+        if (unknownToken.equals(token)) {
+          continue;
+        }
+        final int row = vocabulary.id(token);
+        if (row >= 0) {
+          rows.add(row);
+        }
+      }
+    }
+    final int[] sorted = new int[rows.size()];
+    int i = 0;
+    for (final int row : rows) {
+      sorted[i++] = row;
+    }
+    return sorted;
+  }
+
+  // The scan visits rows in ascending order and sortedExcludedRows is ascending, so exclusion
+  // is a single pointer that advances past each excluded row as the scan reaches it.
+  private List<Neighbor> nearestNeighbors(float[] query, int topK, int[] sortedExcludedRows) {
     final double queryNorm = norm(query);
     if (queryNorm < NORMALIZE_EPSILON) {
       return List.of();
     }
-    final List<Neighbor> candidates = new ArrayList<>(vocabulary.size());
-    for (int row = 0; row < vocabulary.size(); row++) {
-      final String token = vocabulary.token(row);
-      if (SPECIAL_TOKENS.contains(token) || exclude.contains(token)) {
+    final TopK best = new TopK(topK);
+    int nextExcluded = 0;
+    final int rowCount = rowNorms.length;
+    for (int row = 0; row < rowCount; row++) {
+      if (nextExcluded < sortedExcludedRows.length && sortedExcludedRows[nextExcluded] == row) {
+        nextExcluded++;
+        continue;
+      }
+      if (specialRows[row]) {
+        continue;
+      }
+      final double rowNorm = rowNorms[row];
+      if (rowNorm < NORMALIZE_EPSILON) {
+        // A zero row has no direction; scored 0 rather than NaN from a 0/0 division.
+        best.offer(row, 0.0);
         continue;
       }
       final int base = row * dimension;
-      double dot = 0;
-      double rowNormSquared = 0;
-      for (int d = 0; d < dimension; d++) {
-        final float value = embeddings[base + d];
-        dot += query[d] * value;
-        rowNormSquared += (double) value * value;
+      // Four accumulators because the JIT must not reorder floating-point additions and so
+      // cannot unroll this reduction itself; the split summation order is chosen deliberately.
+      double dot0 = 0;
+      double dot1 = 0;
+      double dot2 = 0;
+      double dot3 = 0;
+      int d = 0;
+      for (final int limit = dimension - 3; d < limit; d += 4) {
+        dot0 += query[d] * embeddings[base + d];
+        dot1 += query[d + 1] * embeddings[base + d + 1];
+        dot2 += query[d + 2] * embeddings[base + d + 2];
+        dot3 += query[d + 3] * embeddings[base + d + 3];
       }
-      final double rowNorm = Math.sqrt(rowNormSquared);
-      final double similarity = rowNorm < NORMALIZE_EPSILON ? 0.0 : dot / (queryNorm * rowNorm);
-      candidates.add(new Neighbor(token, similarity));
+      double dot = dot0 + dot1 + dot2 + dot3;
+      for (; d < dimension; d++) {
+        dot += query[d] * embeddings[base + d];
+      }
+      best.offer(row, dot / (queryNorm * rowNorm));
     }
-    candidates.sort(Comparator.comparingDouble(Neighbor::similarity).reversed());
-    return topK >= candidates.size() ? List.copyOf(candidates)
-        : List.copyOf(candidates.subList(0, topK));
+    final Neighbor[] ordered = new Neighbor[best.size()];
+    for (int i = ordered.length - 1; i >= 0; i--) {
+      ordered[i] = new Neighbor(vocabulary.token(best.minRow()), best.minSimilarity());
+      best.removeMin();
+    }
+    return List.of(ordered);
   }
 
   private static double cosineSimilarity(float[] a, float[] b) {
@@ -327,5 +419,93 @@ public final class StaticEmbeddingModel {
       sumOfSquares += (double) value * value;
     }
     return Math.sqrt(sumOfSquares);
+  }
+
+  /**
+   * A bounded selection of the {@code k} highest-similarity rows, kept as a min-heap over
+   * primitive parallel arrays: the root is always the weakest kept candidate, so a full scan
+   * decides most rows with one comparison against it and the selection allocates nothing per
+   * row (the previous implementation materialized and fully sorted one record per vocabulary
+   * row per query).
+   */
+  private static final class TopK {
+
+    private final double[] similarities;
+    private final int[] rows;
+    private int size;
+
+    TopK(int capacity) {
+      this.similarities = new double[capacity];
+      this.rows = new int[capacity];
+    }
+
+    void offer(int row, double similarity) {
+      if (size < similarities.length) {
+        int i = size++;
+        similarities[i] = similarity;
+        rows[i] = row;
+        while (i > 0) {
+          final int parent = (i - 1) >>> 1;
+          if (similarities[parent] <= similarities[i]) {
+            break;
+          }
+          swap(parent, i);
+          i = parent;
+        }
+      }
+      else if (similarity > similarities[0]) {
+        similarities[0] = similarity;
+        rows[0] = row;
+        siftDown();
+      }
+    }
+
+    int size() {
+      return size;
+    }
+
+    int minRow() {
+      return rows[0];
+    }
+
+    double minSimilarity() {
+      return similarities[0];
+    }
+
+    void removeMin() {
+      size--;
+      similarities[0] = similarities[size];
+      rows[0] = rows[size];
+      siftDown();
+    }
+
+    private void siftDown() {
+      int i = 0;
+      while (true) {
+        final int left = 2 * i + 1;
+        final int right = left + 1;
+        int smallest = i;
+        if (left < size && similarities[left] < similarities[smallest]) {
+          smallest = left;
+        }
+        if (right < size && similarities[right] < similarities[smallest]) {
+          smallest = right;
+        }
+        if (smallest == i) {
+          return;
+        }
+        swap(i, smallest);
+        i = smallest;
+      }
+    }
+
+    private void swap(int i, int j) {
+      final double similarity = similarities[i];
+      similarities[i] = similarities[j];
+      similarities[j] = similarity;
+      final int row = rows[i];
+      rows[i] = rows[j];
+      rows[j] = row;
+    }
   }
 }
