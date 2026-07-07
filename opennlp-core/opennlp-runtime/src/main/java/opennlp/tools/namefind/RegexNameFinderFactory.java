@@ -82,6 +82,9 @@ public class RegexNameFinderFactory {
   /**
    * Enumeration of typical regex expressions available in OpenNLP.
    */
+  // Regex-by-design component: these are structured entity patterns (phone numbers,
+  // coordinates, MGRS) applied to user text on purpose; the embedded \s classes are part
+  // of the entity grammar, not a general whitespace predicate, and stay ASCII regex.
   public enum DEFAULT_REGEX_NAME_FINDER implements RegexAble {
 
     USA_PHONE_NUM {

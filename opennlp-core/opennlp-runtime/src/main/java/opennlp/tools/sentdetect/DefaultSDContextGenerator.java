@@ -27,7 +27,13 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * Generate event contexts for maxent decisions for sentence detection.
- *
+ * <p>
+ * Intentional exception to the Unicode {@code White_Space} migration (model stability):
+ * the whitespace checks in this class run on {@link StringUtil#isWhitespace(char)} and must
+ * stay on that frozen predicate. The generated feature strings are part of every trained
+ * sentence-detector model; moving to the Unicode set would change the features produced for
+ * text containing {@code U+001C}..{@code U+001F} or {@code U+0085} and silently degrade
+ * existing models. Pinned by {@code DefaultSDContextGeneratorTest}.
  */
 public class DefaultSDContextGenerator implements SDContextGenerator {
 

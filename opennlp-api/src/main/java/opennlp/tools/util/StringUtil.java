@@ -27,18 +27,23 @@ public class StringUtil {
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
   /**
-   * Determines if the specified {@link Character} is a whitespace.
-   * A character is considered a whitespace when one of the following conditions is met:
-   * <ul>
-   * <li>It's a {@link Character#isWhitespace(int)} whitespace.</li>
-   * <li>It's a part of the Unicode Zs category ({@link Character#SPACE_SEPARATOR}).</li>
-   * </ul>
+   * Determines if the specified {@link Character} is a whitespace under OpenNLP's legacy
+   * definition: the union of {@link Character#isWhitespace(int)} and the Unicode {@code Zs}
+   * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
+   * {@code Character.isWhitespace} excludes.
    *
-   * {@link Character#isWhitespace(int)} does not include no-break spaces.
-   * In OpenNLP no-break spaces are also considered as white spaces.
+   * <p>This predicate is deliberately <em>not</em> the Unicode {@code White_Space} property:
+   * it additionally treats the information separators {@code U+001C}..{@code U+001F} as
+   * whitespace and does not cover the next line control {@code U+0085}. It is kept frozen
+   * because the feature generation of trained models is built on it
+   * ({@code DefaultSDContextGenerator}, {@code DefaultTokenContextGenerator}); changing its
+   * semantics would silently change the features generated for existing models. Code that
+   * classifies whitespace in user text should use the standards-sourced
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)} or
+   * {@link opennlp.tools.util.normalizer.CharClass#whitespace()} instead.</p>
    *
    * @param charCode The character to check.
-   *                 
+   *
    * @return {@code true} if {@code charCode} represents a white space, {@code false} otherwise.
    */
   public static boolean isWhitespace(char charCode) {
@@ -47,16 +52,20 @@ public class StringUtil {
   }
 
   /**
-   * Determines if the specified {@link Character} is a whitespace.
-   * A character is considered a whitespace when one of the following conditions is met:
+   * Determines if the specified code point is a whitespace under OpenNLP's legacy
+   * definition: the union of {@link Character#isWhitespace(int)} and the Unicode {@code Zs}
+   * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
+   * {@code Character.isWhitespace} excludes.
    *
-   * <ul>
-   * <li>Its a {@link Character#isWhitespace(int)} whitespace.</li>
-   * <li>Its a part of the Unicode Zs category ({@link Character#SPACE_SEPARATOR}).</li>
-   * </ul>
-   *
-   * {@link Character#isWhitespace(int)} does not include no-break spaces.
-   * In OpenNLP no-break spaces are also considered as white spaces.
+   * <p>This predicate is deliberately <em>not</em> the Unicode {@code White_Space} property:
+   * it additionally treats the information separators {@code U+001C}..{@code U+001F} as
+   * whitespace and does not cover the next line control {@code U+0085}. It is kept frozen
+   * because the feature generation of trained models is built on it
+   * ({@code DefaultSDContextGenerator}, {@code DefaultTokenContextGenerator}); changing its
+   * semantics would silently change the features generated for existing models. Code that
+   * classifies whitespace in user text should use the standards-sourced
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)} or
+   * {@link opennlp.tools.util.normalizer.CharClass#whitespace()} instead.</p>
    *
    * @param charCode An int representation of a character to check.
    *
