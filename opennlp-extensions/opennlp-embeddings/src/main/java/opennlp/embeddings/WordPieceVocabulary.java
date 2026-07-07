@@ -24,8 +24,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
 import java.util.Set;
+
+import opennlp.tools.commons.ThreadSafe;
 
 /**
  * A BERT-style {@code vocab.txt} vocabulary: one token per line, the line number (0-based) is
@@ -36,6 +37,7 @@ import java.util.Set;
  *
  * <p>Immutable and safe for concurrent reads after construction.</p>
  */
+@ThreadSafe
 final class WordPieceVocabulary {
 
   private final Map<String, Integer> idByToken;
@@ -92,17 +94,19 @@ final class WordPieceVocabulary {
   }
 
   /**
-   * Looks up a token's row id.
+   * Looks up a token's row id. Returns a primitive with a {@code -1} sentinel rather than an
+   * {@code OptionalInt} because this sits on the per-token hot path of
+   * {@link StaticEmbeddingModel#embed(String)}.
    *
    * @param token The token to look up. Must not be {@code null}.
-   * @return The token's id, or empty when the token is not in this vocabulary.
+   * @return The token's id, or {@code -1} when the token is not in this vocabulary.
    */
-  OptionalInt id(String token) {
+  int id(String token) {
     if (token == null) {
       throw new IllegalArgumentException("Token must not be null");
     }
     final Integer id = idByToken.get(token);
-    return id == null ? OptionalInt.empty() : OptionalInt.of(id);
+    return id == null ? -1 : id;
   }
 
   /** {@return the number of tokens in this vocabulary} */
