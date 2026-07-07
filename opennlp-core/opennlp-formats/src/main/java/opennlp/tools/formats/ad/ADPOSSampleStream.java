@@ -40,6 +40,7 @@ import opennlp.tools.util.PlainTextByLineStream;
 @Internal
 public class ADPOSSampleStream implements ObjectStream<POSSample> {
 
+  // Corpus-format parsing: AD tag fields are ASCII-whitespace delimited by the format.
   private static final Pattern WHITESPACES_PATTERN = Pattern.compile("\\s+");
 
   private final ObjectStream<ADSentenceStream.Sentence> adSentenceStream;

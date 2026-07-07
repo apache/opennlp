@@ -70,6 +70,7 @@ public class ADNameSampleStream implements ObjectStream<NameSample> {
    * Pattern of a NER tag in Arvores Deitadas
    */
   private static final Pattern TAG_PATTERN = Pattern.compile("<(NER:)?(.*?)>");
+  // Corpus-format parsing: AD tag fields are ASCII-whitespace delimited by the format.
   private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
   private static final Pattern UNDERLINE_PATTERN = Pattern.compile("[_]+");
   private static final Pattern HYPHEN_PATTERN =

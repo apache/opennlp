@@ -200,6 +200,7 @@ public class DownloadUtil {
         expectedChecksum = reader.readLine();
 
         if (expectedChecksum != null) {
+          // Checksum-file format parsing (hash, whitespace, filename); not user text.
           expectedChecksum = expectedChecksum.split("\\s")[0].trim();
         }
       }

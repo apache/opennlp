@@ -262,6 +262,8 @@ public class NameSample implements Sample {
     return errorString.toString();
   }
 
+  // Annotation-markup parsing: the <START:type> tag grammar itself excludes ASCII
+  // whitespace in type names; this is the markup format, not user-text classification.
   private static final Pattern START_TAG_PATTERN = Pattern.compile("<START(:([^:>\\s]*))?>");
 
 
