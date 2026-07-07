@@ -84,20 +84,17 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   /** The default minimum token length below which tokens are left untouched. */
   public static final int DEFAULT_MIN_TOKEN_LENGTH = 4;
 
-  /** Matches tokens that are entirely digits, optionally with grouping/decimal marks. */
-  private static final Pattern NUMBER_LIKE = Pattern.compile("[+-]?[\\d.,]*\\d[\\d.,]*%?");
-
-  /** Matches URL- and email-like tokens that should never be spell-corrected. */
+  /**
+   * Matches URL- and email-like tokens that should never be spell-corrected.
+   * Deliberately still a regex: the three-alternative shape (scheme or www prefix, mail
+   * address, bare domain with a TLD word boundary) is a guard predicate whose exact accept
+   * boundary is non-trivial to reproduce as a cursor scan; converting it is tracked as a
+   * follow-up of the legacy normalizer de-regexing.
+   */
   private static final Pattern URL_LIKE = Pattern.compile(
       "(?:https?://|www\\.)\\S+"
           + "|[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+\\.[-.0-9A-Za-z]+"
           + "|\\S+\\.(?:com|org|net|edu|gov|io)\\b\\S*");
-
-  /** Leading non-letter/digit run kept verbatim around a token (e.g. opening quotes). */
-  private static final Pattern LEADING_NON_WORD = Pattern.compile("^[^\\p{L}\\p{N}]+");
-
-  /** Trailing non-letter/digit run kept verbatim around a token (e.g. punctuation). */
-  private static final Pattern TRAILING_NON_WORD = Pattern.compile("[^\\p{L}\\p{N}]+$");
 
   /** The correction mode. */
   public enum Mode {
@@ -240,10 +237,11 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    */
   private String correctToken(String token) {
     // Peel off leading/trailing punctuation so the core word is what we look up.
-    final String prefix = match(LEADING_NON_WORD, token);
-    final String suffix = token.length() > prefix.length()
-        ? match(TRAILING_NON_WORD, token.substring(prefix.length())) : "";
-    final String core = token.substring(prefix.length(), token.length() - suffix.length());
+    final int coreStart = leadingNonWordLength(token);
+    final int coreEnd = token.length() - trailingNonWordLength(token, coreStart);
+    final String prefix = token.substring(0, coreStart);
+    final String suffix = token.substring(coreEnd);
+    final String core = token.substring(coreStart, coreEnd);
 
     if (!isCorrectable(core)) {
       return token;
@@ -274,7 +272,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     if (skipUrls && URL_LIKE.matcher(core).matches()) {
       return false;
     }
-    if (skipNumbers && NUMBER_LIKE.matcher(core).matches()) {
+    if (skipNumbers && isNumberLike(core)) {
       return false;
     }
     // A token with no letters at all (pure symbols) cannot be a spelling error.
@@ -320,9 +318,78 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return sawLetter && s.length() > 1;
   }
 
-  private static String match(Pattern pattern, String s) {
-    final var m = pattern.matcher(s);
-    return m.find() ? m.group() : "";
+  /**
+   * Length of the leading run of non-letter/non-number code points (the former
+   * {@code "^[^\p{L}\p{N}]+"}), found by a forward cursor scan.
+   */
+  private static int leadingNonWordLength(String token) {
+    int i = 0;
+    while (i < token.length()) {
+      final int codePoint = token.codePointAt(i);
+      if (isLetterOrNumber(codePoint)) {
+        break;
+      }
+      i += Character.charCount(codePoint);
+    }
+    return i;
+  }
+
+  /**
+   * Length of the trailing run of non-letter/non-number code points after {@code from} (the
+   * former {@code "[^\p{L}\p{N}]+$"} applied behind the peeled prefix), found by a backward
+   * cursor scan.
+   */
+  private static int trailingNonWordLength(String token, int from) {
+    int end = token.length();
+    while (end > from) {
+      final int codePoint = token.codePointBefore(end);
+      if (isLetterOrNumber(codePoint)) {
+        break;
+      }
+      end -= Character.charCount(codePoint);
+    }
+    return token.length() - end;
+  }
+
+  // \p{L} is Character.isLetter; \p{N} is the Nd, Nl, and No categories (note that
+  // Character.isDigit only covers Nd).
+  private static boolean isLetterOrNumber(int codePoint) {
+    if (Character.isLetter(codePoint)) {
+      return true;
+    }
+    final int type = Character.getType(codePoint);
+    return type == Character.DECIMAL_DIGIT_NUMBER
+        || type == Character.LETTER_NUMBER
+        || type == Character.OTHER_NUMBER;
+  }
+
+  /**
+   * A cursor-scan replacement for the former {@code "[+-]?[\d.,]*\d[\d.,]*%?"} full-token
+   * match: an optional sign, then digits with optional grouping/decimal marks containing at
+   * least one ASCII digit, then an optional trailing percent sign.
+   */
+  private static boolean isNumberLike(String core) {
+    int start = 0;
+    if (start < core.length() && (core.charAt(start) == '+' || core.charAt(start) == '-')) {
+      start++;
+    }
+    int end = core.length();
+    if (end > start && core.charAt(end - 1) == '%') {
+      end--;
+    }
+    if (start >= end) {
+      return false;
+    }
+    boolean sawDigit = false;
+    for (int i = start; i < end; i++) {
+      final char c = core.charAt(i);
+      if (c >= '0' && c <= '9') {
+        sawDigit = true;
+      } else if (c != '.' && c != ',') {
+        return false;
+      }
+    }
+    return sawDigit;
   }
 
   /** A mutable builder for {@link SpellCheckingCharSequenceNormalizer}. */
