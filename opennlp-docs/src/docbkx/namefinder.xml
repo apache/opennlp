@@ -168,7 +168,8 @@ ids2Labels.put(6, "I-LOC");
 ids2Labels.put(7, "B-MISC");
 ids2Labels.put(8, "I-MISC");
 SentenceDetector sentenceDetector =
-    new SentenceDetectorME(new SentenceModel(new File("/path/to/en-sent.bin")));
+    new SentenceDetectorME(new SentenceModel(
+        new File("/path/to/opennlp-en-ud-ewt-sentence-1.3-2.5.4.bin")));
 String[] tokens = {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
 NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, ids2Labels, sentenceDetector);
 // findInOriginal returns spans in the original input's coordinates.
@@ -206,28 +207,16 @@ Span[] spans = nameFinderDL.findInOriginal(tokens);]]>
 					<code>CharClass</code> engine, and the broader normalization pipeline are documented
 					in <xref linkend="tools.normalizer"/>.
 				</para>
+				<para>
+					The following listing reuses <code>model</code>, <code>vocab</code>,
+					<code>ids2Labels</code>, <code>sentenceDetector</code>, and <code>tokens</code> from
+					the example above and only shows the <code>InferenceOptions</code> wiring:
+				</para>
 				<programlisting language="java">
-<![CDATA[File model = new File("/path/to/model.onnx");
-File vocab = new File("/path/to/vocab.txt");
-Map<Integer, String> ids2Labels = new HashMap<>(); // the model's BIO labels
-ids2Labels.put(0, "O");
-ids2Labels.put(1, "B-PER");
-ids2Labels.put(2, "I-PER");
-ids2Labels.put(3, "B-ORG");
-ids2Labels.put(4, "I-ORG");
-ids2Labels.put(5, "B-LOC");
-ids2Labels.put(6, "I-LOC");
-ids2Labels.put(7, "B-MISC");
-ids2Labels.put(8, "I-MISC");
-SentenceDetector sentenceDetector =
-    new SentenceDetectorME(new SentenceModel(new File("/path/to/en-sent.bin")));
-String[] tokens = {"George", "Washington", "was", "president", "."};
-
-InferenceOptions options = new InferenceOptions();
+<![CDATA[InferenceOptions options = new InferenceOptions();
 options.setNormalizeWhitespace(true);
 options.setNormalizeDashes(true);
 NameFinderDL finder = new NameFinderDL(model, vocab, ids2Labels, options, sentenceDetector);
-// findInOriginal maps spans back to the original input even when a fold changes its length.
 Span[] spans = finder.findInOriginal(tokens);]]>
 				</programlisting>
 			</section>
