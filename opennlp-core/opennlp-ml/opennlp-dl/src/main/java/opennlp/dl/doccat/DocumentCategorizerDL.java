@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -85,6 +84,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   private final boolean includeTokenTypeIds;
   private final int documentSplitSize;
   private final int splitOverlapSize;
+  private final boolean normalizeWhitespace;
+  private final boolean normalizeDashes;
 
   /**
    * Test-only constructor that injects an already-built {@link OrtSession} (or {@code null}),
@@ -101,6 +102,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
     this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
     this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
+    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
+    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
   }
 
   /**
@@ -132,6 +135,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
     this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
     this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
+    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
+    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
 
   }
 
@@ -165,16 +170,20 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
     this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
     this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
+    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
+    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
 
   }
 
   private static InferenceOptions validateConstructorArguments(
       final InferenceOptions inferenceOptions, final Object categoriesOrConfig,
       final ClassificationScoringStrategy classificationScoringStrategy) {
-    Objects.requireNonNull(categoriesOrConfig, "categoriesOrConfig");
-    Objects.requireNonNull(classificationScoringStrategy, "classificationScoringStrategy");
+    requireNonNullArg(inferenceOptions, "inferenceOptions");
+    requireNonNullArg(categoriesOrConfig, "categoriesOrConfig");
+    requireNonNullArg(classificationScoringStrategy, "classificationScoringStrategy");
     return inferenceOptions;
   }
+
 
   /**
    * Categorizes the document, failing loudly rather than returning an invalid distribution:
@@ -183,24 +192,45 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    *
    * @param strings The document to categorize; {@code strings[0]} is classified.
    * @return The per-category probabilities.
-   * @throws IllegalArgumentException If {@code strings} is {@code null} or empty.
+   * @throws IllegalArgumentException If {@code strings} is {@code null} or empty, or if
+   *     {@code strings[0]} has no tokens to classify (it is empty or only whitespace).
    * @throws IllegalStateException    If inference fails or the model returns an unexpected output.
    */
   @Override
   public double[] categorize(String[] strings) {
 
     if (strings == null || strings.length == 0) {
-      throw new IllegalArgumentException("strings must contain at least one document to categorize");
+      throw new IllegalArgumentException(
+          "The strings argument must contain at least one document to categorize");
+    }
+
+    if (strings[0] == null) {
+      throw new IllegalArgumentException("The document to categorize must not be null");
     }
 
     final List<Tokens> tokens = tokenize(strings[0]);
+    if (tokens.isEmpty()) {
+      throw new IllegalArgumentException(
+          "The document to categorize must contain at least one non-whitespace token");
+    }
 
     final List<double[]> scores = new LinkedList<>();
     for (final Tokens t : tokens) {
       scores.add(softmax(infer(t)));
     }
 
-    return classificationScoringStrategy.score(scores);
+    final double[] distribution = classificationScoringStrategy.score(scores);
+    return requireMatchingCategoryCount(distribution, categories.size());
+  }
+
+  // Package-visible so the model/category-count mismatch guard can be exercised without a live model.
+  static double[] requireMatchingCategoryCount(final double[] distribution, final int expected) {
+    if (distribution.length != expected) {
+      throw new IllegalStateException("The model produced " + distribution.length
+          + " category scores but the categorizer is configured with " + expected
+          + " categories; the model and the category configuration do not match");
+    }
+    return distribution;
   }
 
   /**
@@ -236,6 +266,12 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
       inputs.values().forEach(OnnxTensor::close);
     }
 
+    return logitsFromOutput(output);
+  }
+
+  // Package-visible so the output-shape dispatch, including the null and unexpected-type failures,
+  // can be exercised without a live model session.
+  static float[] logitsFromOutput(final Object output) {
     // Some models return a 2D array (e.g. BERT), others a 1D array (e.g. RoBERTa). A different
     // shape is a model-contract violation, surfaced on its own rather than as "inference failed".
     if (output instanceof float[][] v) {
@@ -243,7 +279,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     } else if (output instanceof float[] v) {
       return v;
     }
-    throw new IllegalStateException("Unexpected model output type: " + output.getClass().getName());
+    throw new IllegalStateException("Unexpected model output type: "
+        + (output == null ? "null" : output.getClass().getName()));
   }
 
   @Override
@@ -327,21 +364,15 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
 
   }
 
-  private List<Tokens> tokenize(final String text) {
+  private List<Tokens> tokenize(final String input) {
 
+    final String text = normalizeInput(input, normalizeWhitespace, normalizeDashes);
     final List<Tokens> t = new LinkedList<>();
 
-    // Segment long input text into overlapping chunks configured by InferenceOptions before
-    // feeding each chunk into BERT.
+    // Segment long input text into overlapping chunks (split on Unicode whitespace) configured by
+    // InferenceOptions before feeding each chunk into BERT.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    final String[] whitespaceTokenized = text.split("\\s+");
-
-    for (ChunkRange chunkRange : chunkRanges(
-        whitespaceTokenized.length, documentSplitSize, splitOverlapSize)) {
-
-      // The group is that subsection of string.
-      final String group = String.join(" ",
-          Arrays.copyOfRange(whitespaceTokenized, chunkRange.start(), chunkRange.end()));
+    for (final String group : whitespaceChunks(text, documentSplitSize, splitOverlapSize)) {
 
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);
@@ -402,6 +433,14 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
     // identical to the naive form. Results are kept in double precision throughout.
     double max = Double.NEGATIVE_INFINITY;
     for (final float value : input) {
+      // Reject any non-finite logit, not just NaN: a +Infinity logit makes max == +Inf, so
+      // value - max is Inf - Inf == NaN and the whole distribution silently goes NaN. Subtracting
+      // the maximum already handles merely-large finite logits, so only NaN/Infinity reach here.
+      if (!Float.isFinite(value)) {
+        throw new IllegalStateException(
+            "The model produced a non-finite logit (NaN or Infinity); cannot compute a "
+                + "classification distribution");
+      }
       max = Math.max(max, value);
     }
 

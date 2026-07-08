@@ -196,7 +196,13 @@ public class SourceForgeModelEval extends AbstractEvalTest {
       digest.update(sentence.getBytes(StandardCharsets.UTF_8));
     }
 
-    Assertions.assertEquals(new BigInteger("228544068397077998410949364710969159291"),
+    // Golden value updated for OPENNLP-205: the corrected Unicode White_Space trimming in
+    // SentenceDetectorME.mapPositionsToSpans changes sentence boundaries at the corpus
+    // positions where the Leipzig eng_news_2010_300K corpus contains characters affected by
+    // the delta documented on SentenceDetectorME.WHITESPACE (NEL now trimmed, U+001C..U+001F
+    // no longer trimmed). No other model in this suite invokes SentenceDetectorME, and every
+    // other digest in this class is unchanged.
+    Assertions.assertEquals(new BigInteger("75960100107764448986477802646419537130"),
         new BigInteger(1, digest.digest()));
   }
 

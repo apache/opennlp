@@ -22,14 +22,13 @@ import java.io.IOException;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.TreeMap;
 
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtException;
@@ -41,12 +40,15 @@ import opennlp.dl.AbstractDL;
 import opennlp.dl.InferenceOptions;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.namefind.TokenNameFinder;
+import opennlp.tools.namefind.OffsetMappingNameFinder;
 import opennlp.tools.sentdetect.SentenceDetector;
+import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.normalizer.AlignedText;
+import opennlp.tools.util.normalizer.Alignment;
 
 /**
- * An implementation of {@link TokenNameFinder} that uses ONNX models.
+ * An implementation of {@link opennlp.tools.namefind.TokenNameFinder} that uses ONNX models.
  *
  * <p>Tokenization performs BERT basic tokenization (text normalization)
  * before wordpiece, see {@link opennlp.tools.tokenize.BertTokenizer}. Input
@@ -64,17 +66,19 @@ import opennlp.tools.util.Span;
  * guarantee applies until {@link #close()} is called; callers must not race
  * {@code close()} with inference methods.</p>
  *
- * @see TokenNameFinder
+ * @see opennlp.tools.namefind.TokenNameFinder
  * @see InferenceOptions
  */
 @ThreadSafe
-public class NameFinderDL extends AbstractDL implements TokenNameFinder {
+public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder {
 
-  /** Example person labels; retained for reference. Decoding handles any B-/I- type. */
-  public static final String I_PER = "I-PER";
-  public static final String B_PER = "B-PER";
   public static final String SEPARATOR = "[SEP]";
   public static final String CLS_TOKEN = "[CLS]";
+
+  // Tokenizer-added markers (BERT and RoBERTa) that must never appear in a reconstructed span.
+  private static final Set<String> SPECIAL_TOKENS = Set.of(
+      CLS_TOKEN, SEPARATOR,
+      WordpieceTokenizer.ROBERTA_CLS_TOKEN, WordpieceTokenizer.ROBERTA_SEP_TOKEN);
 
   /** Prefix used by BIO labels for the first token in an entity span. */
   public static final String PREFIX_BEGIN = "B-";
@@ -94,6 +98,13 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   private static final boolean LOWER_CASE_DEFAULT = false;
 
   private static final String CHARS_TO_REPLACE = "##";
+
+  // Ordering for overlap resolution: longest span first, then higher probability. The dominant
+  // detection is kept and any later span overlapping it is dropped.
+  private static final Comparator<Span> BY_LENGTH_THEN_PROBABILITY =
+      Comparator.comparingInt(Span::length).reversed()
+          .thenComparing(Comparator.comparingDouble(Span::getProb).reversed());
+
   private static final Logger logger = LoggerFactory.getLogger(NameFinderDL.class);
 
   private final SentenceDetector sentenceDetector;
@@ -104,9 +115,11 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   private final boolean includeTokenTypeIds;
   private final int documentSplitSize;
   private final int splitOverlapSize;
+  private final boolean normalizeWhitespace;
+  private final boolean normalizeDashes;
 
   /**
-   * Instantiates a {@link TokenNameFinder name finder} using ONNX models.
+   * Instantiates a {@link opennlp.tools.namefind.TokenNameFinder name finder} using ONNX models.
    * 
    * @param model The ONNX model file.
    * @param vocabulary The model file's vocabulary file.
@@ -117,6 +130,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if {@code inferenceOptions}, {@code ids2Labels}, or
+   *     the sentence detector is {@code null}.
    */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       SentenceDetector sentenceDetector) throws IOException, OrtException {
@@ -126,7 +141,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   }
 
   /**
-   * Instantiates a {@link TokenNameFinder name finder} using ONNX models.
+   * Instantiates a {@link opennlp.tools.namefind.TokenNameFinder name finder} using ONNX models.
    *
    * @param model The ONNX model file.
    * @param vocabulary The model file's vocabulary file.
@@ -138,6 +153,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
    *
    * @throws OrtException Thrown if the {@code model} cannot be loaded.
    * @throws IOException Thrown if errors occurred loading the {@code model} or {@code vocabulary}.
+   * @throws IllegalArgumentException Thrown if {@code inferenceOptions}, {@code ids2Labels}, or
+   *     the sentence detector is {@code null}.
    */
   public NameFinderDL(File model, File vocabulary, Map<Integer, String> ids2Labels,
                       InferenceOptions inferenceOptions,
@@ -153,6 +170,8 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
     this.includeTokenTypeIds = inferenceOptions.isIncludeTokenTypeIds();
     this.documentSplitSize = inferenceOptions.getDocumentSplitSize();
     this.splitOverlapSize = inferenceOptions.getSplitOverlapSize();
+    this.normalizeWhitespace = inferenceOptions.isNormalizeWhitespace();
+    this.normalizeDashes = inferenceOptions.isNormalizeDashes();
     this.sentenceDetector = sentenceDetector;
 
   }
@@ -160,62 +179,166 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   private static InferenceOptions validateConstructorArguments(
       final InferenceOptions inferenceOptions, final Map<Integer, String> ids2Labels,
       final SentenceDetector sentenceDetector) {
-    Objects.requireNonNull(ids2Labels, "ids2Labels");
-    Objects.requireNonNull(sentenceDetector, "sentenceDetector");
+    requireNonNullArg(inferenceOptions, "inferenceOptions");
+    requireNonNullArg(ids2Labels, "ids2Labels");
+    requireNonNullArg(sentenceDetector, "sentenceDetector");
     return inferenceOptions;
   }
+
 
   /**
    * {@inheritDoc}
    *
-   * <p>This method joins the provided tokens with spaces, sentence-splits the joined text,
-   * runs each sentence through the ONNX token-classification model, decodes BIO labels into
-   * {@link Span spans}, and resolves those spans back to character offsets in the joined text.</p>
+   * <p>Joins the provided tokens with spaces, sentence-splits the joined text, runs each sentence
+   * through the ONNX token-classification model, decodes BIO labels into {@link Span spans}, and
+   * resolves those spans to character offsets in the joined text <em>after</em> any optional input
+   * normalization.</p>
+   *
+   * <p>Note: this returns correct original offsets in every case except one. Whitespace folding is
+   * length-preserving, so it never moves offsets. Only dash folding can change the input length, and
+   * only for a non-BMP dash; so when {@code normalizeDashes} is enabled and the input contains a
+   * supplementary-plane dash, the returned spans are offsets into the normalized text rather than
+   * the original. For an exact original mapping in that case, use {@link #findInOriginal(String[])}.</p>
    *
    * @throws IllegalStateException Thrown if inference fails, if the model output shape is not
    *     the expected {@code float[batch][token][label]} form, if the model output contains
    *     no usable label score for a token, or if the model's predicted index for a token is not
    *     present in the configured label map.
-   * @throws IllegalArgumentException Thrown if a token produced for the input is not present in
-   *     the vocabulary, which indicates the vocabulary file does not match the model.
+   * @throws IllegalArgumentException Thrown if {@code input} is {@code null} or contains a
+   *     {@code null} token, or if a token produced for the input is not present in the
+   *     vocabulary, which indicates the vocabulary file does not match the model.
    */
   @Override
   public Span[] find(String[] input) {
+    return locate(input).spans().toArray(new Span[0]);
+  }
 
-    final List<Span> spans = new ArrayList<>();
+  /**
+   * Finds names and returns their {@link Span spans} in coordinates of the original joined input
+   * ({@code String.join(" ", input)}), regardless of any whitespace or dash normalization applied
+   * before inference. Spans are mapped back through the normalization {@link Alignment}, so a fold
+   * that changes the input length (a supplementary dash shrinking, or an expansion) does not shift
+   * the reported offsets. This implements {@link OffsetMappingNameFinder}, so an interface-typed
+   * caller can reach the offset-correct path with
+   * {@code finder instanceof OffsetMappingNameFinder}.
+   *
+   * @param input The tokens to search.
+   * @return The detected spans, in original-input character coordinates.
+   * @throws IllegalStateException Thrown under the same conditions as {@link #find(String[])}.
+   * @throws IllegalArgumentException Thrown under the same conditions as {@link #find(String[])}.
+   */
+  @Override
+  public Span[] findInOriginal(String[] input) {
+    final DecodedSpans decoded = locate(input);
+    final Alignment alignment = decoded.aligned().alignment();
+    final List<Span> mapped = new ArrayList<>(decoded.spans().size());
+    for (final Span span : decoded.spans()) {
+      final Span original = alignment.toOriginalSpan(span.getStart(), span.getEnd());
+      mapped.add(new Span(original.getStart(), original.getEnd(), span.getType(), span.getProb()));
+    }
+    return mapped.toArray(new Span[0]);
+  }
+
+  /**
+   * Shared detection core: normalizes the joined input (capturing the alignment back to the
+   * original), then decodes each overlapping chunk bounded to its own character region and resolves
+   * overlaps. Bounding per chunk lets a boundary entity that two consecutive chunks both cover
+   * surface as overlapping candidates, which {@link #mergeOverlappingSpans(List)} collapses to the
+   * longer (more complete) span instead of silently keeping whichever a single forward cursor
+   * reached first.
+   *
+   * @param input The tokens to search; must not be {@code null} or contain a {@code null} token.
+   * @return The decoded spans paired with the normalization {@link AlignedText}.
+   * @throws IllegalArgumentException Thrown if {@code input} is {@code null} or contains a
+   *     {@code null} token.
+   */
+  private DecodedSpans locate(String[] input) {
+
+    requireNonNullArg(input, "input");
+    for (int i = 0; i < input.length; i++) {
+      if (input[i] == null) {
+        throw new IllegalArgumentException(
+            "The input must not contain null tokens; the token at index " + i + " was null.");
+      }
+    }
 
     // Join the tokens here because they will be tokenized using Wordpiece during inference.
-    final String text = String.join(" ", input);
+    final AlignedText normalized =
+        normalizeInputAligned(String.join(" ", input), normalizeWhitespace, normalizeDashes);
+    final String text = normalized.normalizedString();
 
     // sentPosDetect (not sentDetect) so each sentence's offset in the full text is known.
     final Span[] sentenceSpans = sentenceDetector.sentPosDetect(text);
 
+    final List<Span> candidates = new ArrayList<>();
     for (final Span sentenceSpan : sentenceSpans) {
 
-      // Floor the character cursor at this sentence's start, then thread it forward across the
-      // sentence's chunks so a repeated surface form is located at its next occurrence. Flooring
-      // per sentence keeps an entity from being matched against an identical surface form in an
-      // earlier sentence -- even one that produced no spans, which would otherwise leave the
-      // cursor behind and mis-locate the match.
-      int searchStart = sentenceSpan.getStart();
+      final int sentenceStart = sentenceSpan.getStart();
+      final String sentence = sentenceSpan.getCoveredText(text).toString();
 
-      // The WordPiece tokenized text. This changes the spacing in the text.
-      final List<Tokens> wordpieceTokens = tokenize(sentenceSpan.getCoveredText(text).toString());
-
-      for (final Tokens tokens : wordpieceTokens) {
-        final List<Span> decoded =
-            decodeSpans(text, tokens.tokens(), infer(tokens), ids2Labels, searchStart,
-                sentenceSpan.getEnd());
-        spans.addAll(decoded);
-        if (!decoded.isEmpty()) {
-          searchStart = decoded.get(decoded.size() - 1).getEnd();
-        }
+      // The WordPiece tokenized text, in overlapping chunks. This changes the spacing in the text.
+      for (final ChunkTokens chunk : tokenize(sentence)) {
+        // Decode within the chunk's own character region in the full text. Keeping each chunk's
+        // entities inside the region it was built from locates a repeated surface form in the right
+        // chunk rather than mis-matching it to an earlier occurrence, while still letting two
+        // overlapping chunks both emit a boundary entity for mergeOverlappingSpans to reconcile.
+        final int regionStart = sentenceStart + chunk.start();
+        final int regionEnd = sentenceStart + chunk.end();
+        candidates.addAll(decodeSpans(text, chunk.tokens().tokens(), infer(chunk.tokens()),
+            ids2Labels, regionStart, regionEnd));
       }
 
     }
 
-    return spans.toArray(new Span[0]);
+    return new DecodedSpans(mergeOverlappingSpans(candidates), normalized);
+  }
 
+  private record DecodedSpans(List<Span> spans, AlignedText aligned) {
+  }
+
+  // A chunk's WordPiece tokens paired with the chunk's half-open character span in the full text.
+  private record ChunkTokens(Tokens tokens, int start, int end) {
+  }
+
+  /**
+   * Resolves spans that overlap in character coordinates, as happens when an entity falls in the
+   * shared region of two consecutive overlapping chunks and is decoded by both. The longer span is
+   * kept (the more complete decode) and ties break toward the higher probability; any span that
+   * overlaps an already kept one is dropped. Adjacent but disjoint spans are never merged, so
+   * neighbouring distinct entities and repeated surface forms at different offsets are preserved.
+   * The returned list is in document order. The choice is length-dominant rather than type-aware:
+   * when two overlapping spans carry different entity types, the longer still wins regardless of
+   * type, which is the intended heuristic for the rare cross-type overlap at a chunk boundary.
+   *
+   * @param spans The decoded candidate spans, in the order they were produced.
+   * @return The overlap-free spans, ordered by start offset.
+   */
+  static List<Span> mergeOverlappingSpans(final List<Span> spans) {
+    if (spans.size() < 2) {
+      // Return a fresh list so the caller always owns the result, matching the >= 2 path below
+      // (which returns a new list); the input is never handed back aliased.
+      return new ArrayList<>(spans);
+    }
+    final List<Span> byDominance = new ArrayList<>(spans);
+    byDominance.sort(BY_LENGTH_THEN_PROBABILITY);
+    // Kept spans never overlap each other, so they form a start-sorted partition. A candidate can
+    // only intersect the kept span that starts at or just before it (floor) or the next kept span
+    // that starts within it (ceiling); checking those two is O(log n) instead of scanning every kept
+    // span, making the whole longest-wins pass O(n log n) rather than O(n^2). Keyed by start, the map
+    // also yields the result already in document order.
+    final TreeMap<Integer, Span> kept = new TreeMap<>();
+    for (final Span candidate : byDominance) {
+      final Map.Entry<Integer, Span> before = kept.floorEntry(candidate.getStart());
+      if (before != null && before.getValue().getEnd() > candidate.getStart()) {
+        continue;
+      }
+      final Map.Entry<Integer, Span> after = kept.ceilingEntry(candidate.getStart());
+      if (after != null && after.getKey() < candidate.getEnd()) {
+        continue;
+      }
+      kept.put(candidate.getStart(), candidate);
+    }
+    return new ArrayList<>(kept.values());
   }
 
   /**
@@ -356,7 +479,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
         continue;
       }
 
-      final SpanMatch match = findByRegex(text, spanText, characterStart, searchEnd);
+      final SpanMatch match = findInSource(text, spanText, characterStart, searchEnd);
       if (match.start() != -1) {
         spans.add(new Span(match.start(), match.end(), entityType, entity.probability()));
         characterStart = match.end();
@@ -487,9 +610,9 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   /**
    * Reconstructs source-like text from a span of WordPiece tokens.
    *
-   * <p>Special BERT tokens are skipped, {@code ##} continuations are merged into the preceding
-   * surface form, and simple punctuation spacing is normalized so the result can be located in
-   * the caller's original text.</p>
+   * <p>Special BERT and RoBERTa tokens are skipped, {@code ##} continuations are merged into the
+   * preceding surface form, and simple punctuation spacing is normalized so the result can be
+   * located in the caller's original text.</p>
    *
    * @param tokens The WordPiece token sequence.
    * @param startIndex The first token index to include.
@@ -503,7 +626,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
 
     for (int x = startIndex; x <= endIndex && x < tokens.length; x++) {
       final String token = tokens[x];
-      if (CLS_TOKEN.equals(token) || SEPARATOR.equals(token)) {
+      if (SPECIAL_TOKENS.contains(token)) {
         continue;
       }
 
@@ -567,33 +690,80 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   /**
    * Locates reconstructed span text in a bounded region of the original input text.
    *
+   * <p>Matching is a single forward cursor scan, not a regular expression. Each space in the
+   * reconstructed span matches a run of zero or more Unicode whitespace characters in the source
+   * (so an entity whose WordPiece pieces were rejoined with spaces, such as {@code "AT & T"} for
+   * {@code "AT&T"}, is still located), and every other code point matches case-insensitively.
+   * Using a cursor avoids {@link java.util.regex.Pattern}/{@link java.util.regex.Matcher}
+   * allocation and the ReDoS surface of regular expressions, and recognizes Unicode whitespace
+   * that Java's {@code \s} does not.</p>
+   *
    * @param text The original text.
-   * @param span The reconstructed span text.
+   * @param span The reconstructed span text, with sub-tokens separated by single ASCII spaces.
    * @param searchStart The first character offset to search from.
    * @param searchEnd The exclusive upper bound of the region to search.
    * @return The matched character offsets, or {@code (-1, -1)} when the reconstructed text
    *     cannot be found in the requested region.
    */
-  private static SpanMatch findByRegex(String text, String span, int searchStart, int searchEnd) {
+  private static SpanMatch findInSource(String text, String span, int searchStart, int searchEnd) {
 
-    // Reconstructed span text normalizes whitespace, so match flexibly: a space in the span may
-    // map to any run of whitespace OR none in the source (e.g. punctuation/'&' inside "U.S.A",
-    // "AT&T" that wordpiece tokenization split apart). Use \s* rather than \s+ so such entities
-    // are still located instead of being silently dropped.
-    final String regex = Pattern.quote(span).replace(" ", "\\E\\s*\\Q");
-
-    final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-    final Matcher matcher = pattern.matcher(text);
     final int regionStart = Math.min(Math.max(searchStart, 0), text.length());
     final int regionEnd = Math.min(Math.max(searchEnd, regionStart), text.length());
-    matcher.region(regionStart, regionEnd);
 
-    if (matcher.find()) {
-      return new SpanMatch(matcher.start(), matcher.end());
+    int start = regionStart;
+    while (start < regionEnd) {
+      final int end = matchAt(text, span, start, regionEnd);
+      if (end != -1) {
+        return new SpanMatch(start, end);
+      }
+      start += Character.charCount(text.codePointAt(start));
     }
 
     return new SpanMatch(-1, -1);
 
+  }
+
+  /**
+   * Attempts to match {@code span} against {@code text} beginning at {@code start} and bounded by
+   * {@code regionEnd}. A space in {@code span} consumes a run of zero or more Unicode whitespace
+   * code points in the source; every other code point must match case-insensitively.
+   *
+   * @return The exclusive end offset of the match in {@code text}, or {@code -1} if no match
+   *     begins at {@code start}.
+   */
+  private static int matchAt(String text, String span, int start, int regionEnd) {
+
+    int t = start;
+    int s = 0;
+
+    while (s < span.length()) {
+      final int spanCp = span.codePointAt(s);
+      if (spanCp == ' ') {
+        while (t < regionEnd && WHITESPACE.contains(text.codePointAt(t))) {
+          t += Character.charCount(text.codePointAt(t));
+        }
+        s += 1;
+      } else {
+        if (t >= regionEnd) {
+          return -1;
+        }
+        final int textCp = text.codePointAt(t);
+        if (!equalsIgnoreCase(spanCp, textCp)) {
+          return -1;
+        }
+        t += Character.charCount(textCp);
+        s += Character.charCount(spanCp);
+      }
+    }
+
+    return t;
+
+  }
+
+  private static boolean equalsIgnoreCase(int a, int b) {
+    return a == b
+        || Character.toLowerCase(a) == Character.toLowerCase(b)
+        || Character.toUpperCase(a) == Character.toUpperCase(b);
   }
 
   private record LabelPrediction(String label, double probability) {
@@ -609,24 +779,18 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
   private record SpanMatch(int start, int end) {
   }
 
-  private List<Tokens> tokenize(final String text) {
+  private List<ChunkTokens> tokenize(final String text) {
 
-    final List<Tokens> t = new LinkedList<>();
+    final List<ChunkTokens> t = new LinkedList<>();
 
-    // Segment long input text into overlapping chunks configured by InferenceOptions before
-    // feeding each chunk into BERT.
+    // Segment long input text into overlapping chunks (split on Unicode whitespace) configured by
+    // InferenceOptions before feeding each chunk into BERT, keeping each chunk's character span so
+    // its decoded spans can be bounded to the region the chunk covers.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    final String[] whitespaceTokenized = text.split("\\s+");
-
-    for (ChunkRange chunkRange : chunkRanges(
-        whitespaceTokenized.length, documentSplitSize, splitOverlapSize)) {
-
-      // The group is that subsection of string.
-      final String group = String.join(" ",
-          Arrays.copyOfRange(whitespaceTokenized, chunkRange.start(), chunkRange.end()));
+    for (final TextChunk chunk : whitespaceChunkSpans(text, documentSplitSize, splitOverlapSize)) {
 
       // Now we can tokenize the group and continue.
-      final String[] tokens = tokenizer.tokenize(group);
+      final String[] tokens = tokenizer.tokenize(chunk.text());
 
       final long[] ids = tokenIds(tokens, vocab);
 
@@ -636,7 +800,7 @@ public class NameFinderDL extends AbstractDL implements TokenNameFinder {
       final long[] types = new long[ids.length];
       Arrays.fill(types, 0);
 
-      t.add(new Tokens(tokens, ids, mask, types));
+      t.add(new ChunkTokens(new Tokens(tokens, ids, mask, types), chunk.start(), chunk.end()));
 
     }
 
