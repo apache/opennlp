@@ -14,6 +14,7 @@ variance reporting.
 | `SentenceDetectorMEBenchmark` | SentenceDetectorME | 3 approaches |
 | `POSTaggerMEBenchmark` | POSTaggerME | 3 approaches x 2 cache configs |
 | `SnowballStemmerBenchmark` | SnowballStemmer | 3 approaches (incl. pre-patch baseline) |
+| `CachingStemmerBenchmark` | CachingStemmer | cached vs uncached x 2 workloads |
 
 ### Approaches measured
 
@@ -31,17 +32,19 @@ mvn test-compile -Pjmh \
     -pl opennlp-core/opennlp-runtime -am \
     -Dforbiddenapis.skip=true -Dcheckstyle.skip=true
 
+# Materialize the test classpath once (JMH's forked JVMs inherit
+# java.class.path, which mvn exec:java does not populate — running
+# through exec:java fails with ClassNotFoundException: ForkedMain)
+mvn dependency:build-classpath -pl opennlp-core/opennlp-runtime \
+    -Pjmh -DincludeScope=test -Dmdep.outputFile=/tmp/cp.txt
+
+CP="opennlp-core/opennlp-runtime/target/classes:opennlp-core/opennlp-runtime/target/test-classes:$(cat /tmp/cp.txt)"
+
 # Run all ME benchmarks
-mvn exec:java -pl opennlp-core/opennlp-runtime \
-    -Pjmh -Dexec.classpathScope=test \
-    -Dexec.mainClass=org.openjdk.jmh.Main \
-    -Dexec.args="opennlp.tools.*.ME*"
+java -cp "$CP" org.openjdk.jmh.Main 'opennlp.tools.*.ME*'
 
 # Run POSTagger only (includes cacheSize param)
-mvn exec:java -pl opennlp-core/opennlp-runtime \
-    -Pjmh -Dexec.classpathScope=test \
-    -Dexec.mainClass=org.openjdk.jmh.Main \
-    -Dexec.args="POSTaggerMEBenchmark"
+java -cp "$CP" org.openjdk.jmh.Main POSTaggerMEBenchmark
 ```
 
 ### Regression testing (stock vs patched)
@@ -79,6 +82,30 @@ per-call owner check plus `ThreadLocal` lookup is no longer hidden by
 memory-level parallelism. Real pipelines stem as one stage among many,
 so the saturated-microbenchmark gap is an upper bound, and the legacy
 strategy was not shareable across threads in the first place.
+
+### CachingStemmer results (same environment)
+
+`CachingStemmerBenchmark` compares a `CachingStemmer` (per-thread LRU,
+default 1024 entries, wrapping the English Snowball stemmer) against
+the uncached shared stemmer. One op = 16 tokens from a 64k-token
+stream. The `zipf` workload samples a 512-word vocabulary with 1/rank
+weights (real-text repetition; the cache holds the whole vocabulary);
+`diverse` samples an 8192-word vocabulary uniformly (8x cache
+capacity: mostly misses plus constant eviction).
+
+| Workload | Strategy | 8 threads | 32 threads |
+|----------|----------|----------:|-----------:|
+| `zipf` | `cachedShared` | 48.5M ± 0.7M ops/s | 95.4M ± 0.9M |
+| `zipf` | `uncachedShared` | 1.43M ± 0.13M | 2.75M ± 0.34M |
+| `diverse` | `cachedShared` | 1.81M ± 0.51M | 3.45M ± 0.18M |
+| `diverse` | `uncachedShared` | 1.08M ± 0.09M | 3.13M ± 0.12M |
+
+On the Zipf workload the cache is a ~34x throughput multiplier (raw
+stemming becomes a hash lookup for the dominant vocabulary). On the
+cache-hostile workload it still does not lose: the ~12% residual hit
+rate pays for the eviction overhead. The cache more than recovers the
+`OwnerOrPerThreadState` lookup cost observed in
+`SnowballStemmerBenchmark` at full saturation.
 
 ### POSTagger cache impact
 
