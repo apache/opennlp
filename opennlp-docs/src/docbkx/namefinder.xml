@@ -155,13 +155,70 @@ Span[] nameSpans = nameFinder.find(sentence);]]>
 					<programlisting language="java">
 <![CDATA[File model = new File("/path/to/model.onnx");
 File vocab = new File("/path/to/vocab.txt");
-Map<Integer, String> categories = new HashMap<>();
-String[] tokens = new String[]{"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
-NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, false, getIds2Labels());
-Span[] spans = nameFinderDL.find(tokens);]]>
+// Maps every model output index to its BIO label. This must be exhaustive over the model's
+// output indices; an unmapped predicted index raises IllegalStateException during find().
+Map<Integer, String> ids2Labels = new HashMap<>();
+ids2Labels.put(0, "O");
+ids2Labels.put(1, "B-PER");
+ids2Labels.put(2, "I-PER");
+ids2Labels.put(3, "B-ORG");
+ids2Labels.put(4, "I-ORG");
+ids2Labels.put(5, "B-LOC");
+ids2Labels.put(6, "I-LOC");
+ids2Labels.put(7, "B-MISC");
+ids2Labels.put(8, "I-MISC");
+SentenceDetector sentenceDetector =
+    new SentenceDetectorME(new SentenceModel(
+        new File("/path/to/opennlp-en-ud-ewt-sentence-1.3-2.5.4.bin")));
+String[] tokens = {"George", "Washington", "was", "president", "of", "the", "United", "States", "."};
+NameFinderDL nameFinderDL = new NameFinderDL(model, vocab, ids2Labels, sentenceDetector);
+// findInOriginal returns spans in the original input's coordinates.
+Span[] spans = nameFinderDL.findInOriginal(tokens);]]>
 					</programlisting>
 					For additional examples, refer to the <code>NameFinderDLEval</code> class.
 				</para>
+				<para>
+					Long input text is split into overlapping chunks on the full Unicode
+					<code>White_Space</code> set before WordPiece tokenization, so spacing such as a
+					no-break space or the CJK ideographic space is recognized as a delimiter. After
+					inference, reconstructed entity text is matched back to the caller's original input
+					with a Unicode-aware cursor scan (not a regular expression), so
+					<code>Span#getCoveredText(...)</code> returns the source text even when WordPiece
+					rejoins sub-tokens with spaces or when the source uses non-ASCII whitespace between
+					tokens.
+				</para>
+				<para>
+					<code>findInOriginal</code> is declared by the <code>OffsetMappingNameFinder</code>
+					capability interface that <code>NameFinderDL</code> implements, so a caller holding a
+					plain <code>TokenNameFinder</code> can detect the offset-mapping capability with a
+					<code>finder instanceof OffsetMappingNameFinder</code> check (no reflection) and fall
+					back to token-index spans otherwise.
+				</para>
+				<para>
+					Optional preprocessing of the joined input text is available through
+					<code>InferenceOptions</code> and is off by default:
+					<code>setNormalizeWhitespace(true)</code> folds each Unicode whitespace character to
+					an ASCII space, and <code>setNormalizeDashes(true)</code> folds Unicode dashes to the
+					ASCII hyphen-minus. Whitespace folding is one code point to one character and
+					preserves offsets, and so is dash folding for Basic Multilingual Plane dashes; a
+					supplementary-plane dash shrinks from two UTF-16 units to one and shifts later
+					offsets, which <code>findInOriginal</code> maps back across (see
+					<xref linkend="tools.normalizer.dl"/>). Full details, the underlying
+					<code>CharClass</code> engine, and the broader normalization pipeline are documented
+					in <xref linkend="tools.normalizer"/>.
+				</para>
+				<para>
+					The following listing reuses <code>model</code>, <code>vocab</code>,
+					<code>ids2Labels</code>, <code>sentenceDetector</code>, and <code>tokens</code> from
+					the example above and only shows the <code>InferenceOptions</code> wiring:
+				</para>
+				<programlisting language="java">
+<![CDATA[InferenceOptions options = new InferenceOptions();
+options.setNormalizeWhitespace(true);
+options.setNormalizeDashes(true);
+NameFinderDL finder = new NameFinderDL(model, vocab, ids2Labels, options, sentenceDetector);
+Span[] spans = finder.findInOriginal(tokens);]]>
+				</programlisting>
 			</section>
 	</section>
 	</section>
