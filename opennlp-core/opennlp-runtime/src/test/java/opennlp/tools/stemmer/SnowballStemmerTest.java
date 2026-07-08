@@ -184,9 +184,12 @@ public class SnowballStemmerTest {
   @Test
   void testTurkish() {
     SnowballStemmer stemmer = new SnowballStemmer(ALGORITHM.TURKISH);
-    Assertions.assertEquals("ab'yle", stemmer.stem("ab'yle"));
+    // Expected values follow the reference data at
+    // https://github.com/snowballstem/snowball-data/tree/master/turkish: the Turkish algorithm
+    // removes proper-noun suffixes after an apostrophe (r_remove_proper_noun_suffix).
+    Assertions.assertEquals("ab", stemmer.stem("ab'yle"));
     Assertions.assertEquals("kaçmamak", stemmer.stem("kaçmamaktadır"));
-    Assertions.assertEquals("sarayı'nı", stemmer.stem("sarayı'nı"));
+    Assertions.assertEquals("sara", stemmer.stem("sarayı'nı"));
   }
 
   @Test

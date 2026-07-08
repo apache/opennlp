@@ -123,8 +123,6 @@
           <forkCount>${opennlp.forkCount}</forkCount>
           <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
           <excludes>
-            <exclude>**/stemmer/*</exclude>
-            <exclude>**/stemmer/snowball/*</exclude>
             <exclude>**/*IT.java</exclude>
           </excludes>
         </configuration>
