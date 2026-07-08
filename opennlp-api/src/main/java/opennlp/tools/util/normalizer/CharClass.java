@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.IntFunction;
 
 import opennlp.tools.util.Span;
+import opennlp.tools.util.normalizer.CodePoints.At;
 
 /**
  * A configurable class of Unicode code points and the cursor based operations over it.
@@ -30,10 +31,9 @@ import opennlp.tools.util.Span;
  * presets ({@link #whitespace()}, {@link #dashes()}); any other class is one more configured
  * instance with no new engine code.</p>
  *
- * <p>Every operation is a single forward pass that reads one code point
- * ({@link Character#codePointAt(CharSequence, int)}), tests membership in O(1), acts, and advances
- * by {@link Character#charCount(int)}. There is no regular expression, no {@link java.util.regex}
- * allocation, and no reliance on {@link Character#isWhitespace(int)} or
+ * <p>Every operation is a single forward pass that reads one code point via {@link CodePoints},
+ * tests membership in O(1), acts, and advances. There is no regular expression, no
+ * {@link java.util.regex} allocation, and no reliance on {@link Character#isWhitespace(int)} or
  * {@link Character#isSpaceChar(int)}, all of which disagree with the Unicode standard.</p>
  *
  * <p>Instances are immutable and thread-safe.</p>
@@ -47,6 +47,11 @@ public final class CharClass {
 
   private final CodePointSet members;
   private final int replacement;
+
+  @FunctionalInterface
+  private interface MemberFold {
+    int apply(StringBuilder out, CharSequence text, int index, At cp);
+  }
 
   private CharClass(CodePointSet members, int replacement) {
     this.members = members;
@@ -130,8 +135,8 @@ public final class CharClass {
     int tokenStart = -1;
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      if (members.contains(codePoint)) {
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
         if (tokenStart >= 0) {
           spans.add(new Span(tokenStart, i));
           tokenStart = -1;
@@ -139,7 +144,7 @@ public final class CharClass {
       } else if (tokenStart < 0) {
         tokenStart = i;
       }
-      i += Character.charCount(codePoint);
+      i = cp.nextIndex(i);
     }
     if (tokenStart >= 0) {
       spans.add(new Span(tokenStart, length));
@@ -167,21 +172,19 @@ public final class CharClass {
   /**
    * Replaces each member code point with the replacement, one for one.
    *
+   * <p>When no code point of {@code text} is a member, the text is returned unchanged (as its
+   * {@link CharSequence#toString() string form}) without copying.</p>
+   *
    * @param text The text to normalize.
    * @return The normalized text.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String normalize(CharSequence text) {
     requireNonNullArg(text, "text");
-    final StringBuilder out = new StringBuilder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      out.appendCodePoint(members.contains(codePoint) ? replacement : codePoint);
-      i += Character.charCount(codePoint);
-    }
-    return out.toString();
+    return foldUnlessClean(text, (out, ignoredText, ignoredIndex, cp) -> {
+      out.appendCodePoint(members.contains(cp.codePoint()) ? replacement : cp.codePoint());
+      return cp.nextIndex(ignoredIndex);
+    });
   }
 
   /**
@@ -192,26 +195,23 @@ public final class CharClass {
    * the empty string). Use {@link #trim(CharSequence)} to drop edge members, or collapse and then
    * trim to do both.</p>
    *
+   * <p>When no code point of {@code text} is a member, the text is returned unchanged (as its
+   * {@link CharSequence#toString() string form}) without copying.</p>
+   *
    * @param text The text to collapse.
    * @return The collapsed text.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String collapse(CharSequence text) {
     requireNonNullArg(text, "text");
-    final StringBuilder out = new StringBuilder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      if (members.contains(codePoint)) {
+    return foldUnlessClean(text, (out, foldText, index, cp) -> {
+      if (members.contains(cp.codePoint())) {
         out.appendCodePoint(replacement);
-        i = skipRun(text, i);
-      } else {
-        out.appendCodePoint(codePoint);
-        i += Character.charCount(codePoint);
+        return skipRun(foldText, index);
       }
-    }
-    return out.toString();
+      out.appendCodePoint(cp.codePoint());
+      return cp.nextIndex(index);
+    });
   }
 
   /**
@@ -235,23 +235,23 @@ public final class CharClass {
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      if (members.contains(codePoint)) {
-        boolean preserve = keep.contains(codePoint);
-        int j = i + Character.charCount(codePoint);
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
+        boolean preserve = keep.contains(cp.codePoint());
+        int j = cp.nextIndex(i);
         while (j < length) {
-          final int next = Character.codePointAt(text, j);
-          if (!members.contains(next)) {
+          final At next = CodePoints.at(text, j);
+          if (!members.contains(next.codePoint())) {
             break;
           }
-          preserve |= keep.contains(next);
-          j += Character.charCount(next);
+          preserve |= keep.contains(next.codePoint());
+          j = next.nextIndex(j);
         }
         out.appendCodePoint(preserve ? keepReplacement : replacement);
         i = j;
       } else {
-        out.appendCodePoint(codePoint);
-        i += Character.charCount(codePoint);
+        out.appendCodePoint(cp.codePoint());
+        i = cp.nextIndex(i);
       }
     }
     return out.toString();
@@ -269,19 +269,19 @@ public final class CharClass {
     final int length = text.length();
     int start = 0;
     while (start < length) {
-      final int codePoint = Character.codePointAt(text, start);
-      if (!members.contains(codePoint)) {
+      final At cp = CodePoints.at(text, start);
+      if (!members.contains(cp.codePoint())) {
         break;
       }
-      start += Character.charCount(codePoint);
+      start = cp.nextIndex(start);
     }
     int end = length;
     while (end > start) {
-      final int codePoint = Character.codePointBefore(text, end);
-      if (!members.contains(codePoint)) {
+      final At cp = CodePoints.before(text, end);
+      if (!members.contains(cp.codePoint())) {
         break;
       }
-      end -= Character.charCount(codePoint);
+      end = cp.previousIndex(end);
     }
     return text.subSequence(start, end).toString();
   }
@@ -289,23 +289,21 @@ public final class CharClass {
   /**
    * Removes every member code point.
    *
+   * <p>When no code point of {@code text} is a member, the text is returned unchanged (as its
+   * {@link CharSequence#toString() string form}) without copying.</p>
+   *
    * @param text The text to filter.
    * @return The text with all members removed.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public String removeAll(CharSequence text) {
     requireNonNullArg(text, "text");
-    final StringBuilder out = new StringBuilder(text.length());
-    final int length = text.length();
-    int i = 0;
-    while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      if (!members.contains(codePoint)) {
-        out.appendCodePoint(codePoint);
+    return foldUnlessClean(text, (out, ignoredText, index, cp) -> {
+      if (!members.contains(cp.codePoint())) {
+        out.appendCodePoint(cp.codePoint());
       }
-      i += Character.charCount(codePoint);
-    }
-    return out.toString();
+      return cp.nextIndex(index);
+    });
   }
 
   /**
@@ -319,20 +317,19 @@ public final class CharClass {
   public AlignedText normalizeAligned(CharSequence text) {
     requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final int charCount = Character.charCount(codePoint);
-      if (members.contains(codePoint)) {
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
         out.appendCodePoint(replacement);
-        alignment.replace(charCount, Character.charCount(replacement));
+        alignment.replace(cp.charCount(), Character.charCount(replacement));
       } else {
-        out.appendCodePoint(codePoint);
-        alignment.equal(charCount);
+        out.appendCodePoint(cp.codePoint());
+        alignment.equal(cp.charCount());
       }
-      i += charCount;
+      i = cp.nextIndex(i);
     }
     return new AlignedText(text, out.toString(), alignment.build(length));
   }
@@ -348,21 +345,20 @@ public final class CharClass {
   public AlignedText collapseAligned(CharSequence text) {
     requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      if (members.contains(codePoint)) {
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
         final int runEnd = skipRun(text, i);
         out.appendCodePoint(replacement);
         alignment.replace(runEnd - i, Character.charCount(replacement));
         i = runEnd;
       } else {
-        final int charCount = Character.charCount(codePoint);
-        out.appendCodePoint(codePoint);
-        alignment.equal(charCount);
-        i += charCount;
+        out.appendCodePoint(cp.codePoint());
+        alignment.equal(cp.charCount());
+        i = cp.nextIndex(i);
       }
     }
     return new AlignedText(text, out.toString(), alignment.build(length));
@@ -385,31 +381,30 @@ public final class CharClass {
     requireNonNullArg(keep, "keep");
     requireValidCodePoint(keepReplacement);
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      if (members.contains(codePoint)) {
-        boolean preserve = keep.contains(codePoint);
-        int j = i + Character.charCount(codePoint);
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
+        boolean preserve = keep.contains(cp.codePoint());
+        int j = cp.nextIndex(i);
         while (j < length) {
-          final int next = Character.codePointAt(text, j);
-          if (!members.contains(next)) {
+          final At next = CodePoints.at(text, j);
+          if (!members.contains(next.codePoint())) {
             break;
           }
-          preserve |= keep.contains(next);
-          j += Character.charCount(next);
+          preserve |= keep.contains(next.codePoint());
+          j = next.nextIndex(j);
         }
         final int emitted = preserve ? keepReplacement : replacement;
         out.appendCodePoint(emitted);
         alignment.replace(j - i, Character.charCount(emitted));
         i = j;
       } else {
-        final int charCount = Character.charCount(codePoint);
-        out.appendCodePoint(codePoint);
-        alignment.equal(charCount);
-        i += charCount;
+        out.appendCodePoint(cp.codePoint());
+        alignment.equal(cp.charCount());
+        i = cp.nextIndex(i);
       }
     }
     return new AlignedText(text, out.toString(), alignment.build(length));
@@ -429,21 +424,21 @@ public final class CharClass {
     final int length = text.length();
     int start = 0;
     while (start < length) {
-      final int codePoint = Character.codePointAt(text, start);
-      if (!members.contains(codePoint)) {
+      final At cp = CodePoints.at(text, start);
+      if (!members.contains(cp.codePoint())) {
         break;
       }
-      start += Character.charCount(codePoint);
+      start = cp.nextIndex(start);
     }
     int end = length;
     while (end > start) {
-      final int codePoint = Character.codePointBefore(text, end);
-      if (!members.contains(codePoint)) {
+      final At cp = CodePoints.before(text, end);
+      if (!members.contains(cp.codePoint())) {
         break;
       }
-      end -= Character.charCount(codePoint);
+      end = cp.previousIndex(end);
     }
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     if (start > 0) {
       alignment.replace(start, 0);
     }
@@ -465,19 +460,18 @@ public final class CharClass {
   public AlignedText removeAllAligned(CharSequence text) {
     requireNonNullArg(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final int charCount = Character.charCount(codePoint);
-      if (members.contains(codePoint)) {
-        alignment.replace(charCount, 0);
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
+        alignment.replace(cp.charCount(), 0);
       } else {
-        out.appendCodePoint(codePoint);
-        alignment.equal(charCount);
+        out.appendCodePoint(cp.codePoint());
+        alignment.equal(cp.charCount());
       }
-      i += charCount;
+      i = cp.nextIndex(i);
     }
     return new AlignedText(text, out.toString(), alignment.build(length));
   }
@@ -488,6 +482,10 @@ public final class CharClass {
    * offset-changing cursor pass behind the expanding folds (ellipsis, German umlaut, digit), so each
    * of them supplies only a mapper rather than re-implementing the loop. No regular expression.
    *
+   * <p>When {@code substitution} returns {@code null} for every code point of {@code text}, the
+   * text is returned unchanged (as its {@link CharSequence#toString() string form}) without
+   * copying. The mapper is still applied exactly once per code point.</p>
+   *
    * @param text         The text to transform.
    * @param substitution The replacement for a code point, or {@code null} to copy it through.
    * @return The transformed text.
@@ -496,18 +494,34 @@ public final class CharClass {
   public static String substitute(CharSequence text, IntFunction<String> substitution) {
     requireNonNullArg(text, "text");
     requireNonNullArg(substitution, "substitution");
-    final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
-    int i = 0;
+    String firstReplacement = null;
+    int first = 0;
+    int firstEnd = 0;
+    while (first < length) {
+      final At cp = CodePoints.at(text, first);
+      firstReplacement = substitution.apply(cp.codePoint());
+      if (firstReplacement != null) {
+        firstEnd = cp.nextIndex(first);
+        break;
+      }
+      first = cp.nextIndex(first);
+    }
+    if (firstReplacement == null) {
+      return text.toString();
+    }
+    final StringBuilder out =
+        new StringBuilder(length).append(text, 0, first).append(firstReplacement);
+    int i = firstEnd;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final String replacement = substitution.apply(codePoint);
+      final At cp = CodePoints.at(text, i);
+      final String replacement = substitution.apply(cp.codePoint());
       if (replacement != null) {
         out.append(replacement);
       } else {
-        out.appendCodePoint(codePoint);
+        out.appendCodePoint(cp.codePoint());
       }
-      i += Character.charCount(codePoint);
+      i = cp.nextIndex(i);
     }
     return out.toString();
   }
@@ -525,35 +539,63 @@ public final class CharClass {
     requireNonNullArg(text, "text");
     requireNonNullArg(substitution, "substitution");
     final StringBuilder out = new StringBuilder(text.length());
-    final Alignment.Builder alignment = new Alignment.Builder();
+    final Alignment.Builder alignment = new Alignment.Builder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      final int charCount = Character.charCount(codePoint);
-      final String replacement = substitution.apply(codePoint);
+      final At cp = CodePoints.at(text, i);
+      final String replacement = substitution.apply(cp.codePoint());
       if (replacement != null) {
         out.append(replacement);
-        alignment.replace(charCount, replacement.length());
+        alignment.replace(cp.charCount(), replacement.length());
       } else {
-        out.appendCodePoint(codePoint);
-        alignment.equal(charCount);
+        out.appendCodePoint(cp.codePoint());
+        alignment.equal(cp.charCount());
       }
-      i += charCount;
+      i = cp.nextIndex(i);
     }
     return new AlignedText(text, out.toString(), alignment.build(length));
   }
 
-  // Returns the offset just past the maximal run of members starting at runStart.
+  // Member-free text is returned uncopied; otherwise the fold starts from a builder pre-filled
+  // with the unchanged prefix.
+  private String foldUnlessClean(CharSequence text, MemberFold fold) {
+    final int length = text.length();
+    final int first = firstMember(text);
+    if (first == length) {
+      return text.toString();
+    }
+    final StringBuilder out = new StringBuilder(length).append(text, 0, first);
+    int i = first;
+    while (i < length) {
+      final At cp = CodePoints.at(text, i);
+      i = fold.apply(out, text, i, cp);
+    }
+    return out.toString();
+  }
+
+  private int firstMember(CharSequence text) {
+    final int length = text.length();
+    int i = 0;
+    while (i < length) {
+      final At cp = CodePoints.at(text, i);
+      if (members.contains(cp.codePoint())) {
+        return i;
+      }
+      i = cp.nextIndex(i);
+    }
+    return length;
+  }
+
   private int skipRun(CharSequence text, int runStart) {
     final int length = text.length();
     int i = runStart;
     while (i < length) {
-      final int codePoint = Character.codePointAt(text, i);
-      if (!members.contains(codePoint)) {
+      final At cp = CodePoints.at(text, i);
+      if (!members.contains(cp.codePoint())) {
         break;
       }
-      i += Character.charCount(codePoint);
+      i = cp.nextIndex(i);
     }
     return i;
   }
