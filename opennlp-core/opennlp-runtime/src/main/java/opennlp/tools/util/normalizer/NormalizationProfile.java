@@ -80,7 +80,9 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
   /**
    * Returns a matching analyzer for this language: NFC, case folding, the language's
    * {@linkplain #accentFold() diacritic fold} when it has one, then stemming. The returned
-   * analyzer is thread-safe: it stems through a thread-safe {@link SnowballStemmer}.
+   * analyzer is thread-safe, and repeated words resolve from a bounded per-thread stem cache
+   * instead of being re-stemmed (natural text is Zipf-distributed, so most tokens are cache
+   * hits).
    *
    * @return the analyzer.
    */
@@ -89,6 +91,6 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
     if (accentFold != null) {
       builder.transform(Dimension.ACCENT_FOLD, accentFold);
     }
-    return builder.stem(newStemmer()).build();
+    return builder.stem(stemmerFactory()).build();
   }
 }
