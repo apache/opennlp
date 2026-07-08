@@ -201,4 +201,24 @@ public class NormalizationProfilesTest {
     assertThrows(IllegalArgumentException.class, () -> NormalizationProfiles.detect(null, detector));
     assertThrows(IllegalArgumentException.class, () -> NormalizationProfiles.detect("text", null));
   }
+
+  @Test
+  void testMatchingAnalyzerIsThreadSafeForStemming() throws Exception {
+    final TermAnalyzer analyzer = NormalizationProfiles.forLanguage("eng").orElseThrow().matchingAnalyzer();
+    final String expected = analyzer.analyze("running").getFirst().at(Dimension.STEM);
+
+    try (var pool = java.util.concurrent.Executors.newFixedThreadPool(8)) {
+      var tasks = new java.util.concurrent.Future<?>[32];
+      for (int i = 0; i < tasks.length; i++) {
+        tasks[i] = pool.submit(() -> {
+          for (int n = 0; n < 50; n++) {
+            assertEquals(expected, analyzer.analyze("running").getFirst().at(Dimension.STEM));
+          }
+        });
+      }
+      for (var task : tasks) {
+        task.get(30, java.util.concurrent.TimeUnit.SECONDS);
+      }
+    }
+  }
 }

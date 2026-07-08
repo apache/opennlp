@@ -17,68 +17,76 @@
 
 package opennlp.tools.stemmer.snowball;
 
-import opennlp.tools.stemmer.Stemmer;
+import java.util.function.Supplier;
 
+import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.stemmer.Stemmer;
+import opennlp.tools.util.OwnerOrPerThreadState;
+
+/**
+ * A {@link Stemmer} backed by the generated Snowball engines.
+ *
+ * <p>The generated engines hold mutable per-call buffers, so this class routes each call to a
+ * per-thread engine via {@link OwnerOrPerThreadState}, the same pattern the thread-safe {@code *ME}
+ * components use. A single {@code SnowballStemmer} instance is therefore safe to share across
+ * threads.</p>
+ */
+@ThreadSafe
 public class SnowballStemmer implements Stemmer {
 
-  private final AbstractSnowballStemmer stemmer;
+  private final OwnerOrPerThreadState<AbstractSnowballStemmer> delegates;
   private final int repeat;
 
+  /**
+   * Creates a stemmer for the given algorithm and repeat count.
+   *
+   * @param algorithm The Snowball algorithm. Must not be {@code null}.
+   * @param repeat    How many times to apply the stemmer per word.
+   */
   public SnowballStemmer(ALGORITHM algorithm, int repeat) {
     this.repeat = repeat;
-
-    if (ALGORITHM.ARABIC.equals(algorithm)) {
-      stemmer = new arabicStemmer();
-    } else if (ALGORITHM.DANISH.equals(algorithm)) {
-      stemmer = new danishStemmer();
-    } else if (ALGORITHM.DUTCH.equals(algorithm)) {
-      stemmer = new dutchStemmer();
-    } else if (ALGORITHM.CATALAN.equals(algorithm)) {
-      stemmer = new catalanStemmer();
-    } else if (ALGORITHM.ENGLISH.equals(algorithm)) {
-      stemmer = new englishStemmer();
-    } else if (ALGORITHM.FINNISH.equals(algorithm)) {
-      stemmer = new finnishStemmer();
-    } else if (ALGORITHM.FRENCH.equals(algorithm)) {
-      stemmer = new frenchStemmer();
-    } else if (ALGORITHM.GERMAN.equals(algorithm)) {
-      stemmer = new germanStemmer();
-    } else if (ALGORITHM.GREEK.equals(algorithm)) {
-      stemmer = new greekStemmer();
-    } else if (ALGORITHM.HUNGARIAN.equals(algorithm)) {
-      stemmer = new hungarianStemmer();
-    } else if (ALGORITHM.INDONESIAN.equals(algorithm)) {
-      stemmer = new indonesianStemmer();
-    } else if (ALGORITHM.IRISH.equals(algorithm)) {
-      stemmer = new irishStemmer();
-    } else if (ALGORITHM.ITALIAN.equals(algorithm)) {
-      stemmer = new italianStemmer();
-    } else if (ALGORITHM.NORWEGIAN.equals(algorithm)) {
-      stemmer = new norwegianStemmer();
-    } else if (ALGORITHM.PORTER.equals(algorithm)) {
-      stemmer = new porterStemmer();
-    } else if (ALGORITHM.PORTUGUESE.equals(algorithm)) {
-      stemmer = new portugueseStemmer();
-    } else if (ALGORITHM.ROMANIAN.equals(algorithm)) {
-      stemmer = new romanianStemmer();
-    } else if (ALGORITHM.RUSSIAN.equals(algorithm)) {
-      stemmer = new russianStemmer();
-    } else if (ALGORITHM.SPANISH.equals(algorithm)) {
-      stemmer = new spanishStemmer();
-    } else if (ALGORITHM.SWEDISH.equals(algorithm)) {
-      stemmer = new swedishStemmer();
-    } else if (ALGORITHM.TURKISH.equals(algorithm)) {
-      stemmer = new turkishStemmer();
-    } else {
-      throw new IllegalStateException("Unexpected stemmer algorithm: " + algorithm);
-    }
+    final Supplier<AbstractSnowballStemmer> engine = engineFor(algorithm);
+    this.delegates = new OwnerOrPerThreadState<>(engine, stemmer -> { });
   }
 
+  /**
+   * Creates a stemmer for the given algorithm with {@code repeat = 1}.
+   *
+   * @param algorithm The Snowball algorithm. Must not be {@code null}.
+   */
   public SnowballStemmer(ALGORITHM algorithm) {
     this(algorithm, 1);
   }
 
+  private static Supplier<AbstractSnowballStemmer> engineFor(ALGORITHM algorithm) {
+    return switch (algorithm) {
+      case ARABIC -> arabicStemmer::new;
+      case DANISH -> danishStemmer::new;
+      case DUTCH -> dutchStemmer::new;
+      case CATALAN -> catalanStemmer::new;
+      case ENGLISH -> englishStemmer::new;
+      case FINNISH -> finnishStemmer::new;
+      case FRENCH -> frenchStemmer::new;
+      case GERMAN -> germanStemmer::new;
+      case GREEK -> greekStemmer::new;
+      case HUNGARIAN -> hungarianStemmer::new;
+      case INDONESIAN -> indonesianStemmer::new;
+      case IRISH -> irishStemmer::new;
+      case ITALIAN -> italianStemmer::new;
+      case NORWEGIAN -> norwegianStemmer::new;
+      case PORTER -> porterStemmer::new;
+      case PORTUGUESE -> portugueseStemmer::new;
+      case ROMANIAN -> romanianStemmer::new;
+      case RUSSIAN -> russianStemmer::new;
+      case SPANISH -> spanishStemmer::new;
+      case SWEDISH -> swedishStemmer::new;
+      case TURKISH -> turkishStemmer::new;
+    };
+  }
+
+  @Override
   public CharSequence stem(CharSequence word) {
+    final AbstractSnowballStemmer stemmer = delegates.get();
 
     stemmer.setCurrent(word.toString());
 

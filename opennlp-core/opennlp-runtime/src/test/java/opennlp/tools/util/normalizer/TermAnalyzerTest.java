@@ -30,6 +30,8 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.lemmatizer.Lemmatizer;
 import opennlp.tools.stemmer.PorterStemmer;
+import opennlp.tools.stemmer.Stemmer;
+import opennlp.tools.stemmer.StemmerFactory;
 import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -318,7 +320,10 @@ public class TermAnalyzerTest {
         .transform(null, CaseFoldCharSequenceNormalizer.getInstance()));
     assertThrows(IllegalArgumentException.class,
         () -> TermAnalyzer.builder().transform(Dimension.CASE_FOLD, null));
-    assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().stem(null));
+    assertThrows(IllegalArgumentException.class,
+        () -> TermAnalyzer.builder().stem((Stemmer) null));
+    assertThrows(IllegalArgumentException.class,
+        () -> TermAnalyzer.builder().stem((StemmerFactory) null));
     assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().lemmatize(null));
     assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().tokenizer(null));
   }

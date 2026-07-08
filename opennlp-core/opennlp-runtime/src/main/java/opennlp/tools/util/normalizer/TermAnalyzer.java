@@ -25,7 +25,9 @@ import java.util.Locale;
 import java.util.Set;
 
 import opennlp.tools.lemmatizer.Lemmatizer;
+import opennlp.tools.stemmer.SharingStemmer;
 import opennlp.tools.stemmer.Stemmer;
+import opennlp.tools.stemmer.StemmerFactory;
 import opennlp.tools.tokenize.uax29.WordTokenizer;
 import opennlp.tools.util.Span;
 
@@ -41,10 +43,12 @@ import opennlp.tools.util.Span;
  * {@link Dimension#LEMMA} are enabled by supplying a {@link Stemmer} or {@link Lemmatizer}.</p>
  *
  * <p>An instance is immutable and is thread-safe when its configured transforms are. The built-in
- * character normalizers are stateless, but the Snowball stemmers are not, so an analyzer configured
- * with a {@link Stemmer} (for example through {@code NormalizationProfile.matchingAnalyzer()}) should
- * not be shared across threads when {@link Dimension#STEM} is used. Build one with
- * {@link #builder()}.</p>
+ * character normalizers are stateless and the Snowball stemmers are thread-safe. When
+ * {@link Dimension#STEM} is enabled through {@link Builder#stem(StemmerFactory)}, stemming is
+ * routed through a {@link SharingStemmer} and the analyzer is safe to share across threads even
+ * when the factory mints stateful stemmers. A raw {@link Stemmer} passed to
+ * {@link Builder#stem(Stemmer)} is only safe when that stemmer is itself thread-safe or the
+ * analyzer is confined to one thread.</p>
  */
 public final class TermAnalyzer {
 
@@ -446,6 +450,21 @@ public final class TermAnalyzer {
       this.stemmer = value;
       chain.add(Dimension.STEM);
       return this;
+    }
+
+    /**
+     * Enables {@link Dimension#STEM} through a {@link StemmerFactory}. The analyzer receives a
+     * {@link SharingStemmer} so it can be shared across threads.
+     *
+     * @param factory The stemmer factory. Must not be {@code null}.
+     * @return this builder
+     * @throws IllegalArgumentException if {@code factory} is {@code null}.
+     */
+    public Builder stem(StemmerFactory factory) {
+      if (factory == null) {
+        throw new IllegalArgumentException("factory must not be null");
+      }
+      return stem(new SharingStemmer(factory));
     }
 
     /**
