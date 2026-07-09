@@ -111,6 +111,7 @@ public enum WordType {
         } else if (kind == 2) {
           hasDigit = true;
         }
+        i = cp.nextIndex(i);
         continue;
       }
       if (ExtendedPictographic.is(pictographs, codePoint) || isRegionalIndicator(codePoint)) {
