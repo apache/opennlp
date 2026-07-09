@@ -27,17 +27,17 @@ import java.util.Map;
  * {@code data_offsets} record, plus an optional {@code __metadata__} string map), not a
  * general-purpose JSON parser: no floating-point numbers, no arbitrary nesting depth, no
  * comments. This is the same discipline used by every other data-file cursor parser in the
- * project (no regular expressions, fail loud on malformed input).
+ * project (no regular expressions, fail loud on malformed input); the scanning primitives are
+ * shared with {@link FlatJsonFields} through {@link JsonCursor}.
  */
 final class SafetensorsHeaderParser {
 
   private static final String METADATA_KEY = "__metadata__";
 
-  private final String text;
-  private int position;
+  private final JsonCursor cursor;
 
   private SafetensorsHeaderParser(String text) {
-    this.text = text;
+    this.cursor = new JsonCursor(text, "safetensors header");
   }
 
   /**
@@ -60,35 +60,35 @@ final class SafetensorsHeaderParser {
   private Result parseTop() {
     final List<TensorInfo> tensors = new ArrayList<>();
     Map<String, String> metadata = Map.of();
-    skipWhitespace();
-    expect('{');
-    skipWhitespace();
-    if (peek() == '}') {
-      position++;
+    cursor.skipWhitespace();
+    cursor.expect('{');
+    cursor.skipWhitespace();
+    if (cursor.peek() == '}') {
+      cursor.consume();
       requireEnd();
       return new Result(tensors, metadata);
     }
     while (true) {
-      skipWhitespace();
-      final String key = parseString();
-      skipWhitespace();
-      expect(':');
-      skipWhitespace();
+      cursor.skipWhitespace();
+      final String key = cursor.parseString();
+      cursor.skipWhitespace();
+      cursor.expect(':');
+      cursor.skipWhitespace();
       if (METADATA_KEY.equals(key)) {
         metadata = parseStringMap();
       }
       else {
         tensors.add(parseTensorInfo(key));
       }
-      skipWhitespace();
-      final char next = consume();
+      cursor.skipWhitespace();
+      final char next = cursor.consume();
       if (next == ',') {
         continue;
       }
       if (next == '}') {
         break;
       }
-      throw malformed("Expected ',' or '}' after a header entry, got '" + next + "'");
+      throw cursor.malformed("Expected ',' or '}' after a header entry, got '" + next + "'");
     }
     requireEnd();
     return new Result(tensors, metadata);
@@ -97,82 +97,79 @@ final class SafetensorsHeaderParser {
   // Trailing whitespace is legal (writers space-pad the header to align the data section), but
   // any other trailing content means the declared header length and the JSON disagree.
   private void requireEnd() {
-    skipWhitespace();
-    if (position < text.length()) {
-      throw malformed("Trailing content after the header object");
-    }
+    cursor.requireEnd("Trailing content after the header object");
   }
 
   private TensorInfo parseTensorInfo(String name) {
-    expect('{');
+    cursor.expect('{');
     String dtype = null;
     int[] shape = null;
     long dataOffsetBegin = -1;
     long dataOffsetEnd = -1;
-    skipWhitespace();
-    while (peek() != '}') {
-      skipWhitespace();
-      final String field = parseString();
-      skipWhitespace();
-      expect(':');
-      skipWhitespace();
+    cursor.skipWhitespace();
+    while (cursor.peek() != '}') {
+      cursor.skipWhitespace();
+      final String field = cursor.parseString();
+      cursor.skipWhitespace();
+      cursor.expect(':');
+      cursor.skipWhitespace();
       switch (field) {
-        case "dtype" -> dtype = parseString();
+        case "dtype" -> dtype = cursor.parseString();
         case "shape" -> shape = parseIntArray();
         case "data_offsets" -> {
           final long[] offsets = parseLongArray();
           if (offsets.length != 2) {
-            throw malformed("Tensor '" + name + "' data_offsets must have exactly 2 elements, "
-                + "got " + offsets.length);
+            throw cursor.malformed("Tensor '" + name + "' data_offsets must have exactly 2 "
+                + "elements, got " + offsets.length);
           }
           dataOffsetBegin = offsets[0];
           dataOffsetEnd = offsets[1];
         }
-        default -> skipValue();
+        default -> cursor.skipValue();
       }
-      skipWhitespace();
-      final char next = consume();
+      cursor.skipWhitespace();
+      final char next = cursor.consume();
       if (next == ',') {
-        skipWhitespace();
+        cursor.skipWhitespace();
         continue;
       }
       if (next == '}') {
         if (dtype == null || shape == null || dataOffsetBegin < 0) {
-          throw malformed("Tensor '" + name
+          throw cursor.malformed("Tensor '" + name
               + "' is missing dtype, shape, or data_offsets");
         }
         return new TensorInfo(name, dtype, shape, dataOffsetBegin, dataOffsetEnd);
       }
-      throw malformed("Expected ',' or '}' in tensor '" + name + "', got '" + next + "'");
+      throw cursor.malformed("Expected ',' or '}' in tensor '" + name + "', got '" + next + "'");
     }
-    throw malformed("Tensor '" + name + "' has an empty object; missing dtype, shape, "
+    throw cursor.malformed("Tensor '" + name + "' has an empty object; missing dtype, shape, "
         + "and data_offsets");
   }
 
   private Map<String, String> parseStringMap() {
     final Map<String, String> map = new LinkedHashMap<>();
-    expect('{');
-    skipWhitespace();
-    if (peek() == '}') {
-      position++;
+    cursor.expect('{');
+    cursor.skipWhitespace();
+    if (cursor.peek() == '}') {
+      cursor.consume();
       return map;
     }
     while (true) {
-      skipWhitespace();
-      final String key = parseString();
-      skipWhitespace();
-      expect(':');
-      skipWhitespace();
-      map.put(key, parseString());
-      skipWhitespace();
-      final char next = consume();
+      cursor.skipWhitespace();
+      final String key = cursor.parseString();
+      cursor.skipWhitespace();
+      cursor.expect(':');
+      cursor.skipWhitespace();
+      map.put(key, cursor.parseString());
+      cursor.skipWhitespace();
+      final char next = cursor.consume();
       if (next == ',') {
         continue;
       }
       if (next == '}') {
         return map;
       }
-      throw malformed("Expected ',' or '}' in __metadata__, got '" + next + "'");
+      throw cursor.malformed("Expected ',' or '}' in __metadata__, got '" + next + "'");
     }
   }
 
@@ -181,7 +178,7 @@ final class SafetensorsHeaderParser {
     final int[] ints = new int[longs.length];
     for (int i = 0; i < longs.length; i++) {
       if (longs[i] < 0 || longs[i] > Integer.MAX_VALUE) {
-        throw malformed("Shape dimension out of int range: " + longs[i]);
+        throw cursor.malformed("Shape dimension out of int range: " + longs[i]);
       }
       ints[i] = (int) longs[i];
     }
@@ -189,205 +186,31 @@ final class SafetensorsHeaderParser {
   }
 
   private long[] parseLongArray() {
-    expect('[');
-    skipWhitespace();
+    cursor.expect('[');
+    cursor.skipWhitespace();
     final List<Long> values = new ArrayList<>();
-    if (peek() == ']') {
-      position++;
+    if (cursor.peek() == ']') {
+      cursor.consume();
       return new long[0];
     }
     while (true) {
-      skipWhitespace();
-      values.add(parseLong());
-      skipWhitespace();
-      final char next = consume();
+      cursor.skipWhitespace();
+      values.add(cursor.parseLong());
+      cursor.skipWhitespace();
+      final char next = cursor.consume();
       if (next == ',') {
         continue;
       }
       if (next == ']') {
         break;
       }
-      throw malformed("Expected ',' or ']' in a number array, got '" + next + "'");
+      throw cursor.malformed("Expected ',' or ']' in a number array, got '" + next + "'");
     }
     final long[] array = new long[values.size()];
     for (int i = 0; i < array.length; i++) {
       array[i] = values.get(i);
     }
     return array;
-  }
-
-  private long parseLong() {
-    final int start = position;
-    if (peek() == '-') {
-      position++;
-    }
-    if (position >= text.length() || !Character.isDigit(text.charAt(position))) {
-      throw malformed("Expected a non-negative integer");
-    }
-    while (position < text.length() && Character.isDigit(text.charAt(position))) {
-      position++;
-    }
-    try {
-      return Long.parseLong(text.substring(start, position));
-    }
-    catch (NumberFormatException e) {
-      throw malformed("Malformed integer: " + text.substring(start, position));
-    }
-  }
-
-  private String parseString() {
-    expect('"');
-    final StringBuilder value = new StringBuilder();
-    while (true) {
-      if (position >= text.length()) {
-        throw malformed("Unterminated string");
-      }
-      final char c = text.charAt(position++);
-      if (c == '"') {
-        return value.toString();
-      }
-      if (c == '\\') {
-        value.append(parseEscape());
-      }
-      else {
-        value.append(c);
-      }
-    }
-  }
-
-  private char parseEscape() {
-    if (position >= text.length()) {
-      throw malformed("Unterminated escape sequence");
-    }
-    final char escape = text.charAt(position++);
-    return switch (escape) {
-      case '"' -> '"';
-      case '\\' -> '\\';
-      case '/' -> '/';
-      case 'b' -> '\b';
-      case 'f' -> '\f';
-      case 'n' -> '\n';
-      case 'r' -> '\r';
-      case 't' -> '\t';
-      case 'u' -> parseUnicodeEscape();
-      default -> throw malformed("Unknown escape sequence: \\" + escape);
-    };
-  }
-
-  private char parseUnicodeEscape() {
-    if (position + 4 > text.length()) {
-      throw malformed("Truncated \\u escape sequence");
-    }
-    final String hex = text.substring(position, position + 4);
-    position += 4;
-    try {
-      return (char) Integer.parseInt(hex, 16);
-    }
-    catch (NumberFormatException e) {
-      throw malformed("Malformed \\u escape sequence: " + hex);
-    }
-  }
-
-  // Skips one JSON value of any type (string, number, array, object, true/false/null); used for
-  // header fields the reader does not care about (safetensors may add fields over time).
-  private void skipValue() {
-    skipWhitespace();
-    final char c = peek();
-    if (c == '"') {
-      parseString();
-    }
-    else if (c == '[') {
-      position++;
-      skipWhitespace();
-      if (peek() != ']') {
-        while (true) {
-          skipValue();
-          skipWhitespace();
-          final char next = consume();
-          if (next == ',') {
-            skipWhitespace();
-            continue;
-          }
-          if (next == ']') {
-            return;
-          }
-          throw malformed("Expected ',' or ']' while skipping an array, got '" + next + "'");
-        }
-      }
-      position++;
-    }
-    else if (c == '{') {
-      position++;
-      skipWhitespace();
-      if (peek() != '}') {
-        while (true) {
-          skipWhitespace();
-          parseString();
-          skipWhitespace();
-          expect(':');
-          skipValue();
-          skipWhitespace();
-          final char next = consume();
-          if (next == ',') {
-            continue;
-          }
-          if (next == '}') {
-            return;
-          }
-          throw malformed("Expected ',' or '}' while skipping an object, got '" + next + "'");
-        }
-      }
-      position++;
-    }
-    else if (c == '-' || Character.isDigit(c)) {
-      position++;
-      while (position < text.length() && "0123456789.eE+-".indexOf(text.charAt(position)) >= 0) {
-        position++;
-      }
-    }
-    else if (text.startsWith("true", position)) {
-      position += 4;
-    }
-    else if (text.startsWith("false", position)) {
-      position += 5;
-    }
-    else if (text.startsWith("null", position)) {
-      position += 4;
-    }
-    else {
-      throw malformed("Unexpected character while skipping a value: '" + c + "'");
-    }
-  }
-
-  private void skipWhitespace() {
-    while (position < text.length() && Character.isWhitespace(text.charAt(position))) {
-      position++;
-    }
-  }
-
-  private char peek() {
-    if (position >= text.length()) {
-      throw malformed("Unexpected end of header");
-    }
-    return text.charAt(position);
-  }
-
-  private char consume() {
-    final char c = peek();
-    position++;
-    return c;
-  }
-
-  private void expect(char c) {
-    final char actual = consume();
-    if (actual != c) {
-      throw malformed("Expected '" + c + "', got '" + actual + "'");
-    }
-  }
-
-  private IllegalArgumentException malformed(String message) {
-    return new IllegalArgumentException(
-        "Malformed safetensors header at offset " + position + ": " + message);
   }
 
   /**
