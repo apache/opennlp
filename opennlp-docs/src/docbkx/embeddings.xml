@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.embeddings" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<title>Static Embeddings</title>
+
+	<section xml:id="tools.embeddings.introduction">
+		<title>Introduction</title>
+		<para>
+			The <code>opennlp-embeddings</code> extension module produces sentence and word
+			embedding vectors from a static (non-contextual) embedding table: a per-token vector
+			matrix plus WordPiece tokenization. It is the modern successor to the word2vec and
+			GloVe workflow. Distillation tools can compress a sentence-transformer into such a
+			flat table (the Model2Vec family of releases is the primary target), and looking a
+			sentence up in the table approximates the transformer's semantics at a small fraction
+			of the cost: embedding a text is tokenize, gather, mean-pool, and normalize, with no
+			model forward pass, no GPU, and no native runtime.
+		</para>
+		<para>
+			Use it when embedding throughput and a pure-JVM deployment matter more than the last
+			few points of retrieval quality: semantic similarity and deduplication, candidate
+			retrieval for a heavier reranker, clustering, or classification features. A
+			contextual model remains the better choice when distinguishing word senses in context
+			is the point of the task.
+		</para>
+		<para>
+			No model is bundled with the module. Callers point it at a model directory they
+			downloaded; the table's own license applies to the table.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.api">
+		<title>Embedding Text with the API</title>
+		<para>
+			A model directory containing <code>vocab.txt</code>, <code>model.safetensors</code>,
+			<code>config.json</code>, and <code>tokenizer_config.json</code> (the layout published
+			model releases use) loads with a single call; the tokenizer and pooling switches are
+			read from the model's own configuration files:
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of("/path/to/model-directory"));
+
+float[] vector = model.embed("The quick brown fox");
+double similarity = model.similarity("coffee", "espresso");
+List<Neighbor> neighbors = model.mostSimilar("coffee", 5);
+List<Neighbor> analogy = model.analogy("man", "king", "woman", 1);]]>
+		</programlisting>
+		<para>
+			For a model laid out differently, the explicit overload takes the two data files and
+			the two switches directly: whether the tokenizer lower-cases (and strips accents),
+			and whether embeddings are L2-normalized. Both are properties of the model, published
+			in its configuration.
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(
+    Path.of("vocab.txt"), Path.of("model.safetensors"),
+    true,   // lowerCase, from the model's do_lower_case
+    true);  // normalize, from the model's config
+]]>
+		</programlisting>
+		<para>
+			Instances are immutable and safe for concurrent use, so one loaded model can serve
+			every thread of an application. Texts with no in-vocabulary tokens embed to a zero
+			vector rather than raising an error, and <code>similarity</code> reports
+			<code>0</code> for them.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.safetensors">
+		<title>The safetensors Reader</title>
+		<para>
+			Weights are read with a purpose-built reader for the safetensors format. Unlike
+			pickle-based checkpoint formats, a safetensors file carries no executable content
+			(the header is data-only JSON and the body is raw tensor bytes), so loading one
+			cannot execute arbitrary code. Only the header is read eagerly; tensor data streams
+			directly into the decoded array, so the file size is not limited by Java's
+			int-indexed arrays. One decoded tensor is capped at the maximum Java array length
+			(about 2.1 billion float elements), checked explicitly.
+		</para>
+	</section>
+</chapter>
