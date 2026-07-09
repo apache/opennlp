@@ -16,6 +16,7 @@
  */
 package opennlp.embeddings;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +57,10 @@ public final class StaticEmbeddingModel {
 
   private static final float NORMALIZE_EPSILON = 1e-12f;
   private static final String WEIGHTS_TENSOR_NAME = "weights";
+  private static final String VOCABULARY_FILE_NAME = "vocab.txt";
+  private static final String SAFETENSORS_FILE_NAME = "model.safetensors";
+  private static final String CONFIG_FILE_NAME = "config.json";
+  private static final String TOKENIZER_CONFIG_FILE_NAME = "tokenizer_config.json";
   private static final int[] NO_EXCLUDED_ROWS = new int[0];
   // Never meaningful as a "similar word" result.
   private static final Set<String> SPECIAL_TOKENS = Set.of(WordpieceTokenizer.BERT_CLS_TOKEN,
@@ -86,6 +91,78 @@ public final class StaticEmbeddingModel {
     this.unknownToken = unknownToken;
     this.rowNorms = rowNorms;
     this.specialRows = specialRows;
+  }
+
+  /**
+   * Loads a static embedding model from a model directory, reading the tokenizer and pooling
+   * switches from the model's own configuration files instead of requiring the caller to know
+   * them: {@code normalize} from {@code config.json} and {@code do_lower_case} from
+   * {@code tokenizer_config.json}. The directory must contain {@code vocab.txt},
+   * {@code model.safetensors}, {@code config.json}, and {@code tokenizer_config.json}, the
+   * layout Model2Vec-family releases publish (field names verified against published releases,
+   * not assumed).
+   *
+   * <p>A {@code strip_accents} that is absent or JSON {@code null} follows the BERT convention
+   * of stripping accents exactly when lower-casing, which is what the single lower-case switch
+   * of {@link #load(Path, Path, boolean, boolean)} does. A model that explicitly sets
+   * {@code strip_accents} against its {@code do_lower_case} value cannot be represented by
+   * that switch, so it is rejected rather than silently mis-tokenized.</p>
+   *
+   * @param modelDirectory The model directory. Must not be {@code null} and must be a
+   *                       directory.
+   * @return The loaded model.
+   * @throws IllegalArgumentException Thrown if {@code modelDirectory} is {@code null} or not a
+   *     directory, a required file is missing, a configuration file is malformed or lacks its
+   *     field, the accent handling is not representable, or the vocabulary and the embedding
+   *     matrix disagree; the message names the explicit overload as the fallback for
+   *     differently laid-out models.
+   * @throws java.io.UncheckedIOException Thrown if reading a file fails.
+   */
+  public static StaticEmbeddingModel load(Path modelDirectory) {
+    if (modelDirectory == null) {
+      throw new IllegalArgumentException("ModelDirectory must not be null");
+    }
+    if (!Files.isDirectory(modelDirectory)) {
+      throw new IllegalArgumentException(
+          "Model directory does not exist or is not a directory: " + modelDirectory);
+    }
+    final Path vocabularyFile = requiredFile(modelDirectory, VOCABULARY_FILE_NAME);
+    final Path safetensorsFile = requiredFile(modelDirectory, SAFETENSORS_FILE_NAME);
+    final Path configFile = requiredFile(modelDirectory, CONFIG_FILE_NAME);
+    final Path tokenizerConfigFile = requiredFile(modelDirectory, TOKENIZER_CONFIG_FILE_NAME);
+    final Boolean normalize = FlatJsonFields.topLevelBoolean(configFile, "normalize");
+    if (normalize == null) {
+      throw new IllegalArgumentException(configFile + " has no boolean 'normalize' field; "
+          + "use load(vocabularyFile, safetensorsFile, lowerCase, normalize) and choose "
+          + "explicitly");
+    }
+    final Boolean lowerCase =
+        FlatJsonFields.topLevelBoolean(tokenizerConfigFile, "do_lower_case");
+    if (lowerCase == null) {
+      throw new IllegalArgumentException(tokenizerConfigFile + " has no boolean "
+          + "'do_lower_case' field; use load(vocabularyFile, safetensorsFile, lowerCase, "
+          + "normalize) and choose explicitly");
+    }
+    final Boolean stripAccents =
+        FlatJsonFields.topLevelBoolean(tokenizerConfigFile, "strip_accents");
+    if (stripAccents != null && !stripAccents.equals(lowerCase)) {
+      throw new IllegalArgumentException(tokenizerConfigFile + " sets strip_accents="
+          + stripAccents + " against do_lower_case=" + lowerCase + "; the single lower-case "
+          + "switch strips accents exactly when lower-casing, so this model must be loaded "
+          + "with load(vocabularyFile, safetensorsFile, lowerCase, normalize) after choosing "
+          + "deliberately");
+    }
+    return load(vocabularyFile, safetensorsFile, lowerCase, normalize);
+  }
+
+  private static Path requiredFile(Path modelDirectory, String name) {
+    final Path file = modelDirectory.resolve(name);
+    if (!Files.isRegularFile(file)) {
+      throw new IllegalArgumentException("Model directory " + modelDirectory + " has no "
+          + name + "; for a different layout, use load(vocabularyFile, safetensorsFile, "
+          + "lowerCase, normalize)");
+    }
+    return file;
   }
 
   /**
