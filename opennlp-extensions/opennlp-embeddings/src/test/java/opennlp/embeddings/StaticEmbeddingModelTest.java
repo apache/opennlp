@@ -238,4 +238,90 @@ class StaticEmbeddingModelTest {
         () -> StaticEmbeddingModel.load(writeVocab(dir), file, true, false));
     assertTrue(e.getMessage().contains("weights"));
   }
+
+  // Writes the two JSON configuration files of a published model directory alongside the
+  // vocab/safetensors fixtures, with the shapes real releases use (extra fields, floats,
+  // nested objects, an explicit strip_accents null).
+  private static void writeConfigs(Path dir, String normalize, String doLowerCase)
+      throws IOException {
+    Files.writeString(dir.resolve("config.json"),
+        "{\"model_type\":\"model2vec\",\"architectures\":[\"StaticModel\"],"
+            + "\"apply_pca\":256,\"normalize\":" + normalize + ",\"hidden_dim\":3}");
+    Files.writeString(dir.resolve("tokenizer_config.json"),
+        "{\"added_tokens_decoder\":{\"0\":{\"content\":\"[PAD]\",\"special\":true}},"
+            + "\"do_lower_case\":" + doLowerCase + ",\"strip_accents\":null,"
+            + "\"tokenizer_class\":\"BertTokenizer\"}");
+  }
+
+  @Test
+  void testLoadsFromAModelDirectory(@TempDir Path dir) throws IOException {
+    writeVocab(dir);
+    writeSafetensors(dir, false);
+    writeConfigs(dir, "false", "true");
+
+    final StaticEmbeddingModel model = StaticEmbeddingModel.load(dir);
+
+    // Same fixture and switches as testEmbedMeanPoolsWithoutWeights, resolved from the configs
+    // this time; the upper-cased input additionally proves do_lower_case was picked up.
+    assertArrayEquals(new float[] {3.5f, 35f, 350f}, model.embed("HELLO WORLD"), 1e-5f);
+  }
+
+  @Test
+  void testDirectoryLoadReadsNormalizeFromTheConfig(@TempDir Path dir) throws IOException {
+    writeVocab(dir);
+    writeSafetensors(dir, false);
+    writeConfigs(dir, "true", "true");
+
+    final float[] result = StaticEmbeddingModel.load(dir).embed("cat");
+
+    double normSquared = 0;
+    for (final float v : result) {
+      normSquared += (double) v * v;
+    }
+    assertEquals(1.0, Math.sqrt(normSquared), 1e-5);
+  }
+
+  @Test
+  void testDirectoryLoadRejectsNullAndNonDirectory(@TempDir Path dir) {
+    assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(null));
+    assertThrows(IllegalArgumentException.class,
+        () -> StaticEmbeddingModel.load(dir.resolve("absent")));
+  }
+
+  @Test
+  void testDirectoryLoadNamesTheMissingFile(@TempDir Path dir) throws IOException {
+    writeVocab(dir);
+    writeSafetensors(dir, false);
+    // no config.json, no tokenizer_config.json
+
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(dir));
+    assertTrue(e.getMessage().contains("config.json"));
+    assertTrue(e.getMessage().contains("load(vocabularyFile, safetensorsFile"));
+  }
+
+  @Test
+  void testDirectoryLoadRejectsAConfigWithoutNormalize(@TempDir Path dir) throws IOException {
+    writeVocab(dir);
+    writeSafetensors(dir, false);
+    writeConfigs(dir, "false", "true");
+    Files.writeString(dir.resolve("config.json"), "{\"model_type\":\"model2vec\"}");
+
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(dir));
+    assertTrue(e.getMessage().contains("normalize"));
+  }
+
+  @Test
+  void testDirectoryLoadRejectsContradictoryStripAccents(@TempDir Path dir) throws IOException {
+    writeVocab(dir);
+    writeSafetensors(dir, false);
+    writeConfigs(dir, "false", "true");
+    Files.writeString(dir.resolve("tokenizer_config.json"),
+        "{\"do_lower_case\":true,\"strip_accents\":false}");
+
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(dir));
+    assertTrue(e.getMessage().contains("strip_accents"));
+  }
 }
