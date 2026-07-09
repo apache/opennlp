@@ -258,4 +258,37 @@ class SafetensorsFileTest {
 
     assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
   }
+
+  @Test
+  void testRejectsTensorLargerThanAJavaArray(@TempDir Path dir) throws IOException {
+    // 2_000_000 * 2_000 = 4 billion elements, over the float[] ceiling. The bogus small data
+    // range keeps the file tiny; the array-ceiling check fires before the range-mismatch check
+    // because it subsumes it for tensors this large.
+    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[2000000,2000],"
+        + "\"data_offsets\":[0,4]}}";
+    final Path file = writeFile(dir, "model.safetensors", header, new byte[] {1, 2, 3, 4});
+
+    final SafetensorsFile parsed = SafetensorsFile.read(file);
+
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> parsed.readFloat32("w"));
+    assertTrue(e.getMessage().contains("more than a Java array can hold"));
+  }
+
+  @Test
+  void testFailsLoudWhenTheFileIsTruncatedAfterRead(@TempDir Path dir) throws IOException {
+    // Tensor data is streamed on demand rather than held in memory, so a file that shrinks
+    // between read() and readFloat32() must fail loud, not return partial data.
+    final byte[] data = floatsToLittleEndianBytes(1f, 2f);
+    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[2],"
+        + "\"data_offsets\":[0," + data.length + "]}}";
+    final Path file = writeFile(dir, "model.safetensors", header, data);
+
+    final SafetensorsFile parsed = SafetensorsFile.read(file);
+    writeFile(dir, "model.safetensors", header, floatsToLittleEndianBytes(1f));
+
+    final IllegalStateException e =
+        assertThrows(IllegalStateException.class, () -> parsed.readFloat32("w"));
+    assertTrue(e.getMessage().contains("truncated"));
+  }
 }
