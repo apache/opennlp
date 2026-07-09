@@ -65,6 +65,7 @@ final class SafetensorsHeaderParser {
     skipWhitespace();
     if (peek() == '}') {
       position++;
+      requireEnd();
       return new Result(tensors, metadata);
     }
     while (true) {
@@ -89,7 +90,17 @@ final class SafetensorsHeaderParser {
       }
       throw malformed("Expected ',' or '}' after a header entry, got '" + next + "'");
     }
+    requireEnd();
     return new Result(tensors, metadata);
+  }
+
+  // Trailing whitespace is legal (writers space-pad the header to align the data section), but
+  // any other trailing content means the declared header length and the JSON disagree.
+  private void requireEnd() {
+    skipWhitespace();
+    if (position < text.length()) {
+      throw malformed("Trailing content after the header object");
+    }
   }
 
   private TensorInfo parseTensorInfo(String name) {
