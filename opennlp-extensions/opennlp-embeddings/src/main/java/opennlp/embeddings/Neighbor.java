@@ -16,6 +16,7 @@
  */
 package opennlp.embeddings;
 
+
 /**
  * One vocabulary token found near a query vector by {@link StaticEmbeddingModel#mostSimilar}
  * or {@link StaticEmbeddingModel#analogy}, most similar first.

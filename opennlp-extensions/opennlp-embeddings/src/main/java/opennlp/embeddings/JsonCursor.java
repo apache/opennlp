@@ -96,8 +96,7 @@ final class JsonCursor {
       }
       if (c == '\\') {
         value.append(parseEscape());
-      }
-      else {
+      } else {
         value.append(c);
       }
     }
@@ -128,11 +127,53 @@ final class JsonCursor {
     }
     final String hex = text.substring(position, position + 4);
     position += 4;
-    try {
-      return (char) Integer.parseInt(hex, 16);
+    // Each of the four characters must be a hex digit; Integer.parseInt alone would also
+    // accept a sign and silently decode the wrong character.
+    int value = 0;
+    for (int i = 0; i < 4; i++) {
+      final int digit = Character.digit(hex.charAt(i), 16);
+      if (digit < 0) {
+        throw malformed("Malformed \\u escape sequence: " + hex);
+      }
+      value = (value << 4) | digit;
     }
-    catch (NumberFormatException e) {
-      throw malformed("Malformed \\u escape sequence: " + hex);
+    return (char) value;
+  }
+
+  // Skips one number, holding it to the JSON grammar (optional minus, digits, optional
+  // fraction, optional signed exponent) so malformed input fails loud even in skipped fields.
+  private void skipNumber() {
+    if (peek() == '-') {
+      position++;
+    }
+    if (position >= text.length() || !Character.isDigit(text.charAt(position))) {
+      throw malformed("Malformed number");
+    }
+    while (position < text.length() && Character.isDigit(text.charAt(position))) {
+      position++;
+    }
+    if (position < text.length() && text.charAt(position) == '.') {
+      position++;
+      if (position >= text.length() || !Character.isDigit(text.charAt(position))) {
+        throw malformed("Malformed number: digit expected after the decimal point");
+      }
+      while (position < text.length() && Character.isDigit(text.charAt(position))) {
+        position++;
+      }
+    }
+    if (position < text.length()
+        && (text.charAt(position) == 'e' || text.charAt(position) == 'E')) {
+      position++;
+      if (position < text.length()
+          && (text.charAt(position) == '+' || text.charAt(position) == '-')) {
+        position++;
+      }
+      if (position >= text.length() || !Character.isDigit(text.charAt(position))) {
+        throw malformed("Malformed number: digit expected in the exponent");
+      }
+      while (position < text.length() && Character.isDigit(text.charAt(position))) {
+        position++;
+      }
     }
   }
 
@@ -149,8 +190,7 @@ final class JsonCursor {
     }
     try {
       return Long.parseLong(text.substring(start, position));
-    }
-    catch (NumberFormatException e) {
+    } catch (NumberFormatException e) {
       throw malformed("Malformed integer: " + text.substring(start, position));
     }
   }
@@ -162,8 +202,7 @@ final class JsonCursor {
     final char c = peek();
     if (c == '"') {
       parseString();
-    }
-    else if (c == '[') {
+    } else if (c == '[') {
       position++;
       skipWhitespace();
       if (peek() != ']') {
@@ -182,8 +221,7 @@ final class JsonCursor {
         }
       }
       position++;
-    }
-    else if (c == '{') {
+    } else if (c == '{') {
       position++;
       skipWhitespace();
       if (peek() != '}') {
@@ -205,17 +243,11 @@ final class JsonCursor {
         }
       }
       position++;
-    }
-    else if (c == '-' || Character.isDigit(c)) {
-      position++;
-      while (position < text.length() && "0123456789.eE+-".indexOf(text.charAt(position)) >= 0) {
-        position++;
-      }
-    }
-    else if (consumeLiteral("true") || consumeLiteral("false") || consumeLiteral("null")) {
+    } else if (c == '-' || Character.isDigit(c)) {
+      skipNumber();
+    } else if (consumeLiteral("true") || consumeLiteral("false") || consumeLiteral("null")) {
       // consumed, nothing to record
-    }
-    else {
+    } else {
       throw malformed("Unexpected character while skipping a value: '" + c + "'");
     }
   }
