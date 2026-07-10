@@ -291,4 +291,46 @@ class SafetensorsFileTest {
         assertThrows(IllegalStateException.class, () -> parsed.readFloat32("w"));
     assertTrue(e.getMessage().contains("truncated"));
   }
+
+  @Test
+  void testReadFloat32RejectsElementCountByteRangeMismatch(@TempDir Path dir) throws IOException {
+    // Shape [2] declares two F32 elements (8 bytes) but the data range holds only one.
+    final byte[] data = floatsToLittleEndianBytes(1f);
+    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[2],"
+        + "\"data_offsets\":[0," + data.length + "]}}";
+    final Path file = writeFile(dir, "model.safetensors", header, data);
+
+    final SafetensorsFile parsed = SafetensorsFile.read(file);
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> parsed.readFloat32("w"));
+    assertTrue(e.getMessage().contains("2 F32 elements"), e.getMessage());
+  }
+
+  @Test
+  void testTensorInfoShapeIsDefensivelyCopied() {
+    final int[] shape = {2, 3};
+    final TensorInfo info = new TensorInfo("t", "F32", shape, 0, 24);
+    shape[0] = 99;
+    assertEquals(2, info.shape()[0], "construction must copy the caller's array");
+    info.shape()[0] = 99;
+    assertEquals(2, info.shape()[0], "the accessor must return a copy");
+    assertEquals(6, info.elementCount());
+  }
+
+  @Test
+  void testTensorInfoEqualsByValue() {
+    final TensorInfo a = new TensorInfo("t", "F32", new int[] {2, 3}, 0, 24);
+    final TensorInfo b = new TensorInfo("t", "F32", new int[] {2, 3}, 0, 24);
+    assertEquals(a, b);
+    assertEquals(a.hashCode(), b.hashCode());
+  }
+
+  @Test
+  void testTensorInfoElementCountOverflowFailsLoudly() {
+    final TensorInfo crafted = new TensorInfo("t", "F32",
+        new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE}, 0, 8);
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, crafted::elementCount);
+    assertTrue(e.getMessage().contains("overflows"), e.getMessage());
+  }
 }

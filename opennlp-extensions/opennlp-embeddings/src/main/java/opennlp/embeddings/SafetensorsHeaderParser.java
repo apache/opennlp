@@ -76,8 +76,7 @@ final class SafetensorsHeaderParser {
       cursor.skipWhitespace();
       if (METADATA_KEY.equals(key)) {
         metadata = parseStringMap();
-      }
-      else {
+      } else {
         tensors.add(parseTensorInfo(key));
       }
       cursor.skipWhitespace();

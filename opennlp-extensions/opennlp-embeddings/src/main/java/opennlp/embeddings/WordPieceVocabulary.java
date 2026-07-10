@@ -17,7 +17,6 @@
 package opennlp.embeddings;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -55,23 +54,16 @@ final class WordPieceVocabulary {
    * @return The parsed vocabulary.
    * @throws IllegalArgumentException Thrown if {@code file} is {@code null}, missing, or
    *     contains a duplicate token.
-   * @throws UncheckedIOException Thrown if reading the file fails.
+   * @throws IOException Thrown if reading the file fails.
    */
-  static WordPieceVocabulary read(Path file) {
+  static WordPieceVocabulary read(Path file) throws IOException {
     if (file == null) {
       throw new IllegalArgumentException("File must not be null");
     }
     if (!Files.isRegularFile(file)) {
       throw new IllegalArgumentException("File does not exist or is not a regular file: " + file);
     }
-    final List<String> lines;
-    try {
-      lines = Files.readAllLines(file);
-    }
-    catch (IOException e) {
-      throw new UncheckedIOException("Unable to read vocabulary file " + file, e);
-    }
-    return fromLines(lines, file.toString());
+    return fromLines(Files.readAllLines(file), file.toString());
   }
 
   // Package-private so tests can build a vocabulary from in-memory lines without a temp file.
@@ -121,6 +113,10 @@ final class WordPieceVocabulary {
    * @return The token at that id.
    */
   String token(int id) {
+    if (id < 0 || id >= tokenById.size()) {
+      throw new IllegalArgumentException(
+          "Id " + id + " is outside [0, " + tokenById.size() + ")");
+    }
     return tokenById.get(id);
   }
 }

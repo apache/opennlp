@@ -16,6 +16,7 @@
  */
 package opennlp.embeddings;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -54,6 +55,26 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
  */
 @ThreadSafe
 public final class StaticEmbeddingModel {
+
+  /** How the tokenizer treats letter case, matching the base model's tokenizer configuration. */
+  public enum Casing {
+
+    /** Lower-case and strip accents, the uncased BGE/BERT convention. */
+    UNCASED,
+
+    /** Preserve case and accents. */
+    CASED
+  }
+
+  /** Whether pooled vectors are length-normalized, matching the model's configuration. */
+  public enum Normalization {
+
+    /** L2-normalize each pooled vector. */
+    L2,
+
+    /** Leave pooled vectors unnormalized. */
+    NONE
+  }
 
   private static final float NORMALIZE_EPSILON = 1e-12f;
   private static final String WEIGHTS_TENSOR_NAME = "weights";
@@ -104,7 +125,7 @@ public final class StaticEmbeddingModel {
    *
    * <p>A {@code strip_accents} that is absent or JSON {@code null} follows the BERT convention
    * of stripping accents exactly when lower-casing, which is what the single lower-case switch
-   * of {@link #load(Path, Path, boolean, boolean)} does. A model that explicitly sets
+   * of {@link #load(Path, Path, Casing, Normalization)} does. A model that explicitly sets
    * {@code strip_accents} against its {@code do_lower_case} value cannot be represented by
    * that switch, so it is rejected rather than silently mis-tokenized.</p>
    *
@@ -116,9 +137,9 @@ public final class StaticEmbeddingModel {
    *     field, the accent handling is not representable, or the vocabulary and the embedding
    *     matrix disagree; the message names the explicit overload as the fallback for
    *     differently laid-out models.
-   * @throws java.io.UncheckedIOException Thrown if reading a file fails.
+   * @throws IOException Thrown if reading a file fails.
    */
-  public static StaticEmbeddingModel load(Path modelDirectory) {
+  public static StaticEmbeddingModel load(Path modelDirectory) throws IOException {
     if (modelDirectory == null) {
       throw new IllegalArgumentException("ModelDirectory must not be null");
     }
@@ -133,15 +154,15 @@ public final class StaticEmbeddingModel {
     final Boolean normalize = FlatJsonFields.topLevelBoolean(configFile, "normalize");
     if (normalize == null) {
       throw new IllegalArgumentException(configFile + " has no boolean 'normalize' field; "
-          + "use load(vocabularyFile, safetensorsFile, lowerCase, normalize) and choose "
+          + "use load(vocabularyFile, safetensorsFile, casing, normalization) and choose "
           + "explicitly");
     }
     final Boolean lowerCase =
         FlatJsonFields.topLevelBoolean(tokenizerConfigFile, "do_lower_case");
     if (lowerCase == null) {
       throw new IllegalArgumentException(tokenizerConfigFile + " has no boolean "
-          + "'do_lower_case' field; use load(vocabularyFile, safetensorsFile, lowerCase, "
-          + "normalize) and choose explicitly");
+          + "'do_lower_case' field; use load(vocabularyFile, safetensorsFile, casing, "
+          + "normalization) and choose explicitly");
     }
     final Boolean stripAccents =
         FlatJsonFields.topLevelBoolean(tokenizerConfigFile, "strip_accents");
@@ -149,10 +170,12 @@ public final class StaticEmbeddingModel {
       throw new IllegalArgumentException(tokenizerConfigFile + " sets strip_accents="
           + stripAccents + " against do_lower_case=" + lowerCase + "; the single lower-case "
           + "switch strips accents exactly when lower-casing, so this model must be loaded "
-          + "with load(vocabularyFile, safetensorsFile, lowerCase, normalize) after choosing "
+          + "with load(vocabularyFile, safetensorsFile, casing, normalization) after choosing "
           + "deliberately");
     }
-    return load(vocabularyFile, safetensorsFile, lowerCase, normalize);
+    return load(vocabularyFile, safetensorsFile,
+        lowerCase ? Casing.UNCASED : Casing.CASED,
+        normalize ? Normalization.L2 : Normalization.NONE);
   }
 
   private static Path requiredFile(Path modelDirectory, String name) {
@@ -160,7 +183,7 @@ public final class StaticEmbeddingModel {
     if (!Files.isRegularFile(file)) {
       throw new IllegalArgumentException("Model directory " + modelDirectory + " has no "
           + name + "; for a different layout, use load(vocabularyFile, safetensorsFile, "
-          + "lowerCase, normalize)");
+          + "casing, normalization)");
     }
     return file;
   }
@@ -179,23 +202,35 @@ public final class StaticEmbeddingModel {
    *                         An optional 1-D {@code F32} tensor named {@code "weights"}, one
    *                         scalar per vocabulary row, is used as a per-token pooling weight
    *                         when present.
-   * @param lowerCase        Whether the tokenizer should lower-case and strip accents, matching
-   *                         the base model's tokenizer configuration ({@code true} for the
-   *                         uncased BGE/BERT family this module targets).
-   * @param normalize        Whether {@link #embed(String)} L2-normalizes its result, matching
-   *                         the source model's {@code config.json} {@code normalize} field.
+   * @param casing           Whether the tokenizer lower-cases and strips accents
+   *                         ({@link Casing#UNCASED}, matching the uncased BGE/BERT family this
+   *                         module targets) or preserves case ({@link Casing#CASED}), matching
+   *                         the base model's tokenizer configuration.
+   * @param normalization    Whether {@link #embed(String)} L2-normalizes its result
+   *                         ({@link Normalization#L2}), matching the source model's
+   *                         {@code config.json} {@code normalize} field.
    * @return The loaded model.
    * @throws IllegalArgumentException Thrown if an argument is {@code null}, a file is missing
    *     or malformed, or the vocabulary size and the embedding matrix's row count disagree.
+   * @throws IOException Thrown if reading a file fails.
    */
   public static StaticEmbeddingModel load(Path vocabularyFile, Path safetensorsFile,
-                                           boolean lowerCase, boolean normalize) {
+                                           Casing casing, Normalization normalization)
+      throws IOException {
     if (vocabularyFile == null) {
       throw new IllegalArgumentException("VocabularyFile must not be null");
     }
     if (safetensorsFile == null) {
       throw new IllegalArgumentException("SafetensorsFile must not be null");
     }
+    if (casing == null) {
+      throw new IllegalArgumentException("Casing must not be null");
+    }
+    if (normalization == null) {
+      throw new IllegalArgumentException("Normalization must not be null");
+    }
+    final boolean lowerCase = casing == Casing.UNCASED;
+    final boolean normalize = normalization == Normalization.L2;
     final WordPieceVocabulary vocabulary = WordPieceVocabulary.read(vocabularyFile);
     final SafetensorsFile tensors = SafetensorsFile.read(safetensorsFile);
 
@@ -276,8 +311,7 @@ public final class StaticEmbeddingModel {
         for (int d = 0; d < dimension; d++) {
           sum[d] += embeddings[base + d];
         }
-      }
-      else {
+      } else {
         final float weight = weights[row];
         for (int d = 0; d < dimension; d++) {
           sum[d] += embeddings[base + d] * weight;
@@ -529,8 +563,7 @@ public final class StaticEmbeddingModel {
           swap(parent, i);
           i = parent;
         }
-      }
-      else if (similarity > similarities[0]) {
+      } else if (similarity > similarities[0]) {
         similarities[0] = similarity;
         rows[0] = row;
         siftDown();

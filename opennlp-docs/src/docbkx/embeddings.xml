@@ -69,8 +69,8 @@ List<Neighbor> analogy = model.analogy("man", "king", "woman", 1);]]>
 			<![CDATA[
 StaticEmbeddingModel model = StaticEmbeddingModel.load(
     Path.of("vocab.txt"), Path.of("model.safetensors"),
-    true,   // lowerCase, from the model's do_lower_case
-    true);  // normalize, from the model's config
+    StaticEmbeddingModel.Casing.UNCASED,      // from the model's do_lower_case
+    StaticEmbeddingModel.Normalization.L2);   // from the model's config
 ]]>
 		</programlisting>
 		<para>

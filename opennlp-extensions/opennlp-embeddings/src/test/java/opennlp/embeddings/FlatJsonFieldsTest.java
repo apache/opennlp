@@ -17,7 +17,7 @@
 package opennlp.embeddings;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -113,7 +113,7 @@ class FlatJsonFieldsTest {
 
   @Test
   void testMissingFileFailsAsAnIoProblem(@TempDir Path dir) {
-    assertThrows(UncheckedIOException.class,
+    assertThrows(IOException.class,
         () -> FlatJsonFields.topLevelBoolean(dir.resolve("absent.json"), "normalize"));
   }
 }

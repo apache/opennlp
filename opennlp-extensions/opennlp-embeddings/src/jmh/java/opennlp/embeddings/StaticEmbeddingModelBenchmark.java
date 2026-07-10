@@ -45,6 +45,8 @@ import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import opennlp.embeddings.StaticEmbeddingModel.Casing;
+import opennlp.embeddings.StaticEmbeddingModel.Normalization;
 
 /**
  * JMH benchmark for {@link StaticEmbeddingModel}, the raw-lookup-throughput number the module's
@@ -92,7 +94,8 @@ public class StaticEmbeddingModelBenchmark {
       tempDir = Files.createTempDirectory("opennlp-embeddings-jmh");
       final Path vocabFile = writeVocab(tempDir);
       final Path safetensorsFile = writeSafetensors(tempDir);
-      model = StaticEmbeddingModel.load(vocabFile, safetensorsFile, true, true);
+      model = StaticEmbeddingModel.load(vocabFile, safetensorsFile,
+            Casing.UNCASED, Normalization.L2);
     }
 
     @TearDown(Level.Trial)

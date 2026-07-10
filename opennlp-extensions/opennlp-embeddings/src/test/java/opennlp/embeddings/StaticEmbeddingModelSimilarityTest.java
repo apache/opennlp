@@ -28,6 +28,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.embeddings.StaticEmbeddingModel.Casing;
+import opennlp.embeddings.StaticEmbeddingModel.Normalization;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -66,29 +69,14 @@ class StaticEmbeddingModelSimilarityTest {
   }
 
   private static Path writeSafetensors(Path dir) throws IOException {
-    final ByteBuffer buffer =
-        ByteBuffer.allocate(ROWS.length * DIMENSION * 4).order(ByteOrder.LITTLE_ENDIAN);
-    for (final float[] row : ROWS) {
-      for (final float value : row) {
-        buffer.putFloat(value);
-      }
-    }
-    final byte[] data = buffer.array();
-    final String header = "{\"embeddings\":{\"dtype\":\"F32\",\"shape\":[" + ROWS.length + ","
-        + DIMENSION + "],\"data_offsets\":[0," + data.length + "]}}";
-    final byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    out.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
-        .putLong(headerBytes.length).array());
-    out.write(headerBytes);
-    out.write(data);
     final Path file = dir.resolve("model.safetensors");
-    Files.write(file, out.toByteArray());
+    SafetensorsTestFiles.write(file, SafetensorsTestFiles.matrix("embeddings", ROWS));
     return file;
   }
 
   private static StaticEmbeddingModel load(Path dir) throws IOException {
-    return StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir), true, false);
+    return StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir),
+            Casing.UNCASED, Normalization.NONE);
   }
 
   @Test
@@ -237,7 +225,8 @@ class StaticEmbeddingModelSimilarityTest {
     out.write(data);
     final Path tensors = dir.resolve("zero-model.safetensors");
     Files.write(tensors, out.toByteArray());
-    final StaticEmbeddingModel model = StaticEmbeddingModel.load(vocab, tensors, true, false);
+    final StaticEmbeddingModel model =
+        StaticEmbeddingModel.load(vocab, tensors, Casing.UNCASED, Normalization.NONE);
 
     final List<Neighbor> result = model.mostSimilar("a", 5);
 

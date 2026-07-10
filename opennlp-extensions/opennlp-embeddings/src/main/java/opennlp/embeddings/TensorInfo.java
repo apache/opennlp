@@ -16,6 +16,9 @@
  */
 package opennlp.embeddings;
 
+import java.util.Arrays;
+
+
 /**
  * Header metadata for one tensor in a safetensors file, as declared by the file's own JSON
  * header. Carries no data; {@link SafetensorsFile#readFloat32(String)} resolves the bytes.
@@ -33,13 +36,61 @@ public record TensorInfo(String name, String dtype, int[] shape, long dataOffset
                           long dataOffsetEnd) {
 
   /**
+   * Creates the metadata, copying {@code shape} so later mutation of the caller's array cannot
+   * corrupt the validated state.
+   */
+  public TensorInfo {
+    shape = shape.clone();
+  }
+
+  /**
+   * @return The tensor's dimensions, outermost first, as a copy; mutating it does not affect
+   *     this record.
+   */
+  @Override
+  public int[] shape() {
+    return shape.clone();
+  }
+
+  /**
    * @return The number of elements the tensor holds, the product of {@link #shape()}.
+   * @throws IllegalArgumentException Thrown if the product overflows a {@code long}, which only
+   *     a crafted header can produce.
    */
   public long elementCount() {
     long count = 1;
     for (int dimension : shape) {
-      count *= dimension;
+      try {
+        count = Math.multiplyExact(count, dimension);
+      } catch (ArithmeticException e) {
+        throw new IllegalArgumentException("Tensor '" + name + "' declares a shape "
+            + Arrays.toString(shape) + " whose element count overflows a long", e);
+      }
     }
     return count;
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof TensorInfo that
+        && name.equals(that.name) && dtype.equals(that.dtype)
+        && Arrays.equals(shape, that.shape)
+        && dataOffsetBegin == that.dataOffsetBegin && dataOffsetEnd == that.dataOffsetEnd;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = name.hashCode();
+    result = 31 * result + dtype.hashCode();
+    result = 31 * result + Arrays.hashCode(shape);
+    result = 31 * result + Long.hashCode(dataOffsetBegin);
+    result = 31 * result + Long.hashCode(dataOffsetEnd);
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return "TensorInfo[name=" + name + ", dtype=" + dtype + ", shape=" + Arrays.toString(shape)
+        + ", dataOffsetBegin=" + dataOffsetBegin + ", dataOffsetEnd=" + dataOffsetEnd + "]";
   }
 }

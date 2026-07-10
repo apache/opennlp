@@ -41,8 +41,8 @@ For a model laid out differently, the explicit overload takes the two data files
 ```java
 StaticEmbeddingModel model = StaticEmbeddingModel.load(
     Path.of("vocab.txt"), Path.of("model.safetensors"),
-    true,   // lowerCase, from the model's do_lower_case
-    true);  // normalize, from the model's config
+    StaticEmbeddingModel.Casing.UNCASED,      // from the model's do_lower_case
+    StaticEmbeddingModel.Normalization.L2);   // from the model's config
 ```
 
 Instances are immutable and safe for concurrent use, so one loaded model can serve every thread of an application. Texts with no in-vocabulary tokens embed to a zero vector rather than raising an error.
