@@ -426,6 +426,21 @@ public class TermAnalyzerTest {
   }
 
   @Test
+  void testCaseFoldThenFullCaseFoldViaTransformFailsLoudly() {
+    // The guard must also hold when the fold arrives through the generic transform(...) entry.
+    assertThrows(IllegalStateException.class,
+        () -> TermAnalyzer.builder().caseFold().transform(Dimension.FULL_CASE_FOLD,
+            FullCaseFoldCharSequenceNormalizer.getInstance()));
+  }
+
+  @Test
+  void testFullCaseFoldThenCaseFoldViaTransformFailsLoudly() {
+    assertThrows(IllegalStateException.class,
+        () -> TermAnalyzer.builder().fullCaseFold().transform(Dimension.CASE_FOLD,
+            CaseFoldCharSequenceNormalizer.getInstance()));
+  }
+
+  @Test
   void testFullCaseFoldExpandsThroughTheTermModel() {
     // Full case folding is an expanding fold, so it also exercises the Term stack on a length change.
     final TermAnalyzer analyzer = TermAnalyzer.builder().fullCaseFold().build();

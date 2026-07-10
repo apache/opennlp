@@ -309,7 +309,6 @@ public final class TermAnalyzer {
       if (locale == null) {
         throw new IllegalArgumentException("locale must not be null");
       }
-      requireNotBothCaseFolds(Dimension.CASE_FOLD);
       return transform(Dimension.CASE_FOLD, CaseFoldCharSequenceNormalizer.getInstance(locale));
     }
 

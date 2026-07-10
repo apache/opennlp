@@ -138,6 +138,15 @@ public final class TextNormalizer {
      * <p>Unlike {@link #caseFold()}, which lower cases, this applies the full case foldings of
      * {@code CaseFolding.txt} including the expanding folds (sharp s to {@code ss}, the ligatures).
      * It is offset-aware, so it composes into {@link #buildAligned()}.</p>
+     *
+     * <p>Combining this with {@link #caseFold()} is redundant: full case folding already lower
+     * cases everything the locale fold does. This builder composes rungs freely and does not
+     * enforce the exclusion; the opinionated {@code TermAnalyzer} layer does.</p>
+     *
+     * <p>The fold operates per code point and expects composed (NFC) input for the composed
+     * characters it maps; {@link #nfc()} cannot precede it inside {@link #buildAligned()}
+     * because NFC does not report offsets, so feed the aligned pipeline composed text or accept
+     * that decomposed sequences pass through unfolded.</p>
      */
     public Builder fullCaseFold() {
       return add(Dimension.FULL_CASE_FOLD.defaultNormalizer());

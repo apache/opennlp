@@ -41,7 +41,10 @@ import java.util.Map;
  *
  * <p>The {@code S} simple and {@code T} Turkic mappings are deliberately excluded, so the fold is the
  * language-neutral one (the Turkish dotless-i rule is not applied here). The fold matches precomposed
- * code points, so apply NFC composition first if the input may contain decomposed forms.</p>
+ * code points, so apply NFC composition first if the input may contain decomposed forms. Inside an
+ * offset-aware pipeline that precondition cannot be established by a preceding rung, because NFC
+ * reports no offsets and {@code TextNormalizer.Builder.buildAligned()} rejects it; feed the aligned
+ * pipeline composed text, or accept that decomposed sequences pass through this fold unchanged.</p>
  */
 public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNormalizer {
 

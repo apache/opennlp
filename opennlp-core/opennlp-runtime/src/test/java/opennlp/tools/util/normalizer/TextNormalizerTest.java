@@ -69,9 +69,28 @@ public class TextNormalizerTest {
   void testEveryRungIsInvokable() {
     final CharSequenceNormalizer n = TextNormalizer.builder()
         .stripInvisible().nfc().nfkc().whitespace().quotes().dashes().digits().ellipsis().bullets()
-        .caseFold().fullCaseFold().accentFold().build();
-    // BOM stripped, Arabic-Indic 1 -> 1, case + full case + accent folded (sharp s expands to "ss").
+        .fullCaseFold().accentFold().build();
+    // BOM stripped, Arabic-Indic 1 -> 1, full case + accent folded (sharp s expands to "ss").
     final String input = cp(0xFEFF) + "CAF" + cp(0x00C9) + cp(0x00DF) + " " + cp(0x0661);
     assertEquals("cafess 1", n.normalize(input).toString());
+  }
+
+  @Test
+  void testCaseFoldRungIsInvokable() {
+    final CharSequenceNormalizer n = TextNormalizer.builder().caseFold().build();
+    assertEquals("cafe", n.normalize("CAFE").toString());
+  }
+
+  @Test
+  void testCaseFoldWithFullCaseFoldIsPermittedButRedundant() {
+    // This builder composes rungs freely and does not enforce the exclusion the TermAnalyzer
+    // layer does; the combination is documented as redundant, and this pins that it changes
+    // nothing over full case folding alone.
+    final String input = "STRA" + cp(0x00DF) + "E";
+    final CharSequenceNormalizer redundant = TextNormalizer.builder()
+        .caseFold().fullCaseFold().build();
+    final CharSequenceNormalizer fullOnly = TextNormalizer.builder().fullCaseFold().build();
+    assertEquals(fullOnly.normalize(input).toString(), redundant.normalize(input).toString());
+    assertEquals("strasse", redundant.normalize(input).toString());
   }
 }
