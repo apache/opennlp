@@ -24,26 +24,54 @@ import java.util.Comparator;
  *
  * <p>Encoding walks it one byte at a time ({@link #step(int, byte)}) while scanning the input, so
  * every piece that starts at a given input position is enumerated in one forward pass; this is the
- * lattice-population step of subword segmentation. Children of a node are stored as a sorted
- * label slice and found by binary search.</p>
+ * lattice-population step of subword segmentation. This step sits in the innermost loop of the
+ * encoder, so wide nodes (the root and the first level of a real vocabulary) dispatch through a
+ * 256-entry direct table, one load per byte, and narrow nodes scan their short sorted label slice
+ * linearly; both layouts enumerate identical transitions.</p>
  */
 final class PieceTrie {
 
   /** The node id returned when no transition exists. */
   static final int DEAD = -1;
 
+  // A node dispatches through a 256-entry slice of directPool when it has more children than
+  // this; below it, a linear scan of the sorted label slice wins on memory and is branch-cheap.
+  private static final int DIRECT_THRESHOLD = 8;
+
   // Per node: the slice [childStart[n], childStart[n + 1]) of labels/childNodes, and the piece id
-  // accepted at the node, or -1.
+  // accepted at the node, or -1. Wide nodes additionally index directPool at directStart[n].
   private final int[] childStart;
   private final byte[] labels;
   private final int[] childNodes;
   private final int[] values;
+  private final int[] directStart;
+  private final int[] directPool;
 
   private PieceTrie(int[] childStart, byte[] labels, int[] childNodes, int[] values) {
     this.childStart = childStart;
     this.labels = labels;
     this.childNodes = childNodes;
     this.values = values;
+    this.directStart = new int[values.length];
+    int wide = 0;
+    for (int node = 0; node < values.length; node++) {
+      if (childStart[node + 1] - childStart[node] > DIRECT_THRESHOLD) {
+        directStart[node] = wide * 256;
+        wide++;
+      } else {
+        directStart[node] = -1;
+      }
+    }
+    this.directPool = new int[wide * 256];
+    java.util.Arrays.fill(directPool, DEAD);
+    for (int node = 0; node < values.length; node++) {
+      final int direct = directStart[node];
+      if (direct >= 0) {
+        for (int edge = childStart[node]; edge < childStart[node + 1]; edge++) {
+          directPool[direct + (labels[edge] & 0xFF)] = childNodes[edge];
+        }
+      }
+    }
   }
 
   /**
@@ -82,19 +110,14 @@ final class PieceTrie {
    * @return The child node id, or {@link #DEAD} when no such transition exists.
    */
   int step(int node, byte b) {
-    final int from = childStart[node];
+    final int direct = directStart[node];
+    if (direct >= 0) {
+      return directPool[direct + (b & 0xFF)];
+    }
     final int to = childStart[node + 1];
-    int low = from;
-    int high = to - 1;
-    while (low <= high) {
-      final int mid = (low + high) >>> 1;
-      final int c = Byte.compareUnsigned(labels[mid], b);
-      if (c < 0) {
-        low = mid + 1;
-      } else if (c > 0) {
-        high = mid - 1;
-      } else {
-        return childNodes[mid];
+    for (int edge = childStart[node]; edge < to; edge++) {
+      if (labels[edge] == b) {
+        return childNodes[edge];
       }
     }
     return DEAD;
@@ -140,6 +163,12 @@ final class PieceTrie {
       int i = from;
       if (i < to && pieces[order[i]].length == depth) {
         i++;
+        // A second key ending at the same depth is a duplicate; the sort made them adjacent.
+        if (i < to && pieces[order[i]].length == depth) {
+          throw new IllegalArgumentException("The piece '"
+              + new String(pieces[order[i]], java.nio.charset.StandardCharsets.UTF_8)
+              + "' is defined more than once.");
+        }
       }
       while (i < to) {
         final byte label = pieces[order[i]][depth];
