@@ -77,7 +77,7 @@ public class PopulationPriorGeocoderTest {
   }
 
   @Test
-  void testResolvesAmbiguityByPopulation() {
+  void testResolvesAmbiguityByPopulation() throws IOException {
     final String text = "She grew up in Springfield.";
     final Span mention = mentionOf(text, "Springfield");
     final List<GeoResolution> resolutions = geocoder().resolve(text, List.of(mention));
@@ -86,7 +86,7 @@ public class PopulationPriorGeocoderTest {
   }
 
   @Test
-  void testUnresolvedMentionOmitted() {
+  void testUnresolvedMentionOmitted() throws IOException {
     final String text = "From Springfield to Atlantis.";
     final Span springfield = mentionOf(text, "Springfield");
     final Span atlantis = mentionOf(text, "Atlantis");
@@ -97,7 +97,7 @@ public class PopulationPriorGeocoderTest {
   }
 
   @Test
-  void testResultsAlignedToInputSpansInInputOrder() {
+  void testResultsAlignedToInputSpansInInputOrder() throws IOException {
     final String text = "Solo, then Springfield, then Tietown.";
     final Span solo = mentionOf(text, "Solo");
     final Span springfield = mentionOf(text, "Springfield");
@@ -111,7 +111,7 @@ public class PopulationPriorGeocoderTest {
   }
 
   @Test
-  void testSingleCandidateConfidence() {
+  void testSingleCandidateConfidence() throws IOException {
     final String text = "Landed in Solo today.";
     final List<GeoResolution> resolutions =
         geocoder().resolve(text, List.of(mentionOf(text, "Solo")));
@@ -119,7 +119,7 @@ public class PopulationPriorGeocoderTest {
   }
 
   @Test
-  void testTieBrokenByFeatureClassAtTieConfidence() {
+  void testTieBrokenByFeatureClassAtTieConfidence() throws IOException {
     final String text = "Tietown was quiet.";
     final List<GeoResolution> resolutions =
         geocoder().resolve(text, List.of(mentionOf(text, "Tietown")));
@@ -129,7 +129,7 @@ public class PopulationPriorGeocoderTest {
   }
 
   @Test
-  void testUnknownPopulationsScoreAsTie() {
+  void testUnknownPopulationsScoreAsTie() throws IOException {
     final String text = "Ghostville again.";
     final List<GeoResolution> resolutions =
         geocoder().resolve(text, List.of(mentionOf(text, "Ghostville")));
@@ -138,7 +138,7 @@ public class PopulationPriorGeocoderTest {
   }
 
   @Test
-  void testConfidenceIsTheDocumentedSeparationFunction() {
+  void testConfidenceIsTheDocumentedSeparationFunction() throws IOException {
     final String text = "Back to Springfield.";
     final List<GeoResolution> resolutions =
         geocoder().resolve(text, List.of(mentionOf(text, "Springfield")));
@@ -150,14 +150,14 @@ public class PopulationPriorGeocoderTest {
   }
 
   @Test
-  void testEmptyMentionListAndEmptySpanResolveToNothing() {
+  void testEmptyMentionListAndEmptySpanResolveToNothing() throws IOException {
     final PopulationPriorGeocoder geocoder = geocoder();
     assertTrue(geocoder.resolve("Springfield", List.of()).isEmpty());
     assertTrue(geocoder.resolve("Springfield", List.of(new Span(3, 3))).isEmpty());
   }
 
   @Test
-  void testDeterministicAcrossRuns() {
+  void testDeterministicAcrossRuns() throws IOException {
     final String text = "Springfield, Solo, Tietown, Ghostville, and Atlantis.";
     final List<Span> mentions = List.of(
         mentionOf(text, "Springfield"), mentionOf(text, "Solo"), mentionOf(text, "Tietown"),
@@ -169,17 +169,93 @@ public class PopulationPriorGeocoderTest {
   }
 
   @Test
-  void testDoesNotDependOnTheGazetteerReturnOrder() {
+  void testDoesNotDependOnTheGazetteerReturnOrder() throws IOException {
     // A gazetteer that returns candidates worst-first: the geocoder re-ranks and still picks
     // the most populous entry.
     final GazetteerEntry small = new GazetteerEntry("stub", "small", "Springfield", List.of(),
-        new GeoPoint(0.0, 0.0), null, List.of(), 1000L, "CITY", Map.of());
+        new GeoPoint(0.0, 0.0), null, List.of(), 1000L,
+        GazetteerEntry.FEATURE_CLASS_CITY, Map.of());
     final GazetteerEntry large = new GazetteerEntry("stub", "large", "Springfield", List.of(),
-        new GeoPoint(1.0, 1.0), null, List.of(), 2000L, "CITY", Map.of());
-    final Gazetteer worstFirst = new Gazetteer() {
+        new GeoPoint(1.0, 1.0), null, List.of(), 2000L,
+        GazetteerEntry.FEATURE_CLASS_CITY, Map.of());
+    final Gazetteer worstFirst = fixedLookupGazetteer(small, large);
+    final String text = "Springfield";
+    final List<GeoResolution> resolutions = new PopulationPriorGeocoder(worstFirst)
+        .resolve(text, List.of(new Span(0, text.length())));
+    assertEquals("large", resolutions.get(0).entry().recordId());
+  }
+
+  @Test
+  void testResolvesAgainstTheBundledTable() throws IOException {
+    final String text = "The flight goes from Paris to Springfield.";
+    final Span paris = mentionOf(text, "Paris");
+    final Span springfield = mentionOf(text, "Springfield");
+    final PopulationPriorGeocoder geocoder =
+        new PopulationPriorGeocoder(BundledGazetteer.getInstance());
+    final List<GeoResolution> resolutions = geocoder.resolve(text, List.of(paris, springfield));
+    assertEquals(2, resolutions.size());
+    assertEquals("FR", resolutions.get(0).entry().countryCode()); // not Paris, Texas
+    assertEquals("US", resolutions.get(1).entry().countryCode());
+    assertEquals(List.of("Massachusetts"), resolutions.get(1).entry().containment());
+    for (final GeoResolution resolution : resolutions) {
+      assertTrue(resolution.confidence() >= 0.0 && resolution.confidence() <= 1.0);
+    }
+  }
+
+  @Test
+  void testConfidenceStaysInRangeForAdversarialPopulations() throws IOException {
+    // Populations near Long.MAX_VALUE would overflow long arithmetic (first + second turns
+    // negative); the confidence is computed in double and clamped, so the [0, 1] contract of
+    // GeoResolution holds even for an adversarial gazetteer.
+    final String text = "Overflowville";
+    final List<GeoResolution> tie = new PopulationPriorGeocoder(fixedLookupGazetteer(
+        entryWithPopulation("adv-1", Long.MAX_VALUE),
+        entryWithPopulation("adv-2", Long.MAX_VALUE)))
+        .resolve(text, List.of(new Span(0, text.length())));
+    assertEquals(0.5, tie.get(0).confidence()); // a dead tie at maximal magnitude
+
+    final List<GeoResolution> dominant = new PopulationPriorGeocoder(fixedLookupGazetteer(
+        entryWithPopulation("adv-max", Long.MAX_VALUE),
+        entryWithPopulation("adv-one", 1L)))
+        .resolve(text, List.of(new Span(0, text.length())));
+    final double confidence = dominant.get(0).confidence();
+    assertTrue(confidence >= 0.0 && confidence <= 1.0, "Out of range: " + confidence);
+    assertTrue(confidence > 0.5, "A dominant winner must score above the tie: " + confidence);
+    assertEquals("adv-max", dominant.get(0).entry().recordId());
+  }
+
+  @Test
+  void testThirdPartyGazetteerUsingTheConstantsGetsTheFeatureClassPrior() throws IOException {
+    // A gazetteer that labels its records with the published FEATURE_CLASS_* constants gets
+    // the CITY-over-ADMIN tie-break on equal population, even though it is not the bundled
+    // implementation and returns its candidates ADMIN first.
+    final GazetteerEntry admin = new GazetteerEntry("ext", "admin-1", "Twinsburg", List.of(),
+        new GeoPoint(41.3, -81.4), "US", List.of(), 5000L,
+        GazetteerEntry.FEATURE_CLASS_ADMIN, Map.of());
+    final GazetteerEntry city = new GazetteerEntry("ext", "city-1", "Twinsburg", List.of(),
+        new GeoPoint(41.4, -81.5), "US", List.of(), 5000L,
+        GazetteerEntry.FEATURE_CLASS_CITY, Map.of());
+    final String text = "Twinsburg";
+    final List<GeoResolution> resolutions = new PopulationPriorGeocoder(
+        fixedLookupGazetteer(admin, city))
+        .resolve(text, List.of(new Span(0, text.length())));
+    assertEquals("city-1", resolutions.get(0).entry().recordId());
+    assertEquals(0.5, resolutions.get(0).confidence()); // still a population dead tie
+  }
+
+  private static GazetteerEntry entryWithPopulation(String recordId, long population) {
+    return new GazetteerEntry("adv", recordId, "Overflowville", List.of(),
+        new GeoPoint(0.0, 0.0), null, List.of(), population,
+        GazetteerEntry.FEATURE_CLASS_CITY, Map.of());
+  }
+
+  // A minimal third-party Gazetteer: every lookup returns the given entries in the given order.
+  private static Gazetteer fixedLookupGazetteer(GazetteerEntry... entries) {
+    final List<GazetteerEntry> result = List.of(entries);
+    return new Gazetteer() {
       @Override
       public List<GazetteerEntry> lookup(CharSequence name) {
-        return List.of(small, large);
+        return result;
       }
 
       @Override
@@ -194,30 +270,9 @@ public class PopulationPriorGeocoderTest {
 
       @Override
       public Set<String> sources() {
-        return Set.of("stub");
+        return Set.of(result.get(0).source());
       }
     };
-    final String text = "Springfield";
-    final List<GeoResolution> resolutions = new PopulationPriorGeocoder(worstFirst)
-        .resolve(text, List.of(new Span(0, text.length())));
-    assertEquals("large", resolutions.get(0).entry().recordId());
-  }
-
-  @Test
-  void testResolvesAgainstTheBundledTable() {
-    final String text = "The flight goes from Paris to Springfield.";
-    final Span paris = mentionOf(text, "Paris");
-    final Span springfield = mentionOf(text, "Springfield");
-    final PopulationPriorGeocoder geocoder =
-        new PopulationPriorGeocoder(BundledGazetteer.getInstance());
-    final List<GeoResolution> resolutions = geocoder.resolve(text, List.of(paris, springfield));
-    assertEquals(2, resolutions.size());
-    assertEquals("FR", resolutions.get(0).entry().countryCode()); // not Paris, Texas
-    assertEquals("US", resolutions.get(1).entry().countryCode());
-    assertEquals(List.of("Massachusetts"), resolutions.get(1).entry().containment());
-    for (final GeoResolution resolution : resolutions) {
-      assertTrue(resolution.confidence() >= 0.0 && resolution.confidence() <= 1.0);
-    }
   }
 
   @Test
