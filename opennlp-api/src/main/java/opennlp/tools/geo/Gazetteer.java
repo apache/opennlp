@@ -16,6 +16,7 @@
  */
 package opennlp.tools.geo;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +36,13 @@ import java.util.Set;
  * which is the recommended behavior; an implementation with different semantics must document
  * them.</p>
  *
+ * <p>Relationship to {@link opennlp.tools.entitylinker.EntityLinker}: that interface is the
+ * generic entity enrichment contract (any entity type, initialization through properties,
+ * sentence-segmented input), and its implementations may well be backed by a {@code Gazetteer}.
+ * New consumers that look up place records or resolve location mentions should target this
+ * interface and {@link Geocoder}; {@code EntityLinker} remains the contract for generic entity
+ * enrichment beyond locations.</p>
+ *
  * <p>Implementations must be immutable and thread-safe after construction: one instance is meant
  * to be shared across an application's threads for concurrent lookups.</p>
  */
@@ -47,8 +55,10 @@ public interface Gazetteer {
    * @param name The place name to look up. Must not be {@code null}.
    * @return The matching entries, never {@code null}; empty when nothing matches.
    * @throws IllegalArgumentException Thrown if {@code name} is {@code null}.
+   * @throws IOException Thrown if a backing store or remote service fails. An in-memory
+   *     implementation never throws it.
    */
-  List<GazetteerEntry> lookup(CharSequence name);
+  List<GazetteerEntry> lookup(CharSequence name) throws IOException;
 
   /**
    * Finds the entry with a source-scoped identifier.
@@ -58,14 +68,16 @@ public interface Gazetteer {
    * @param recordId The record identifier within that dataset. Must not be {@code null}.
    * @return The entry, or empty when this gazetteer has no such record.
    * @throws IllegalArgumentException Thrown if {@code source} or {@code recordId} is {@code null}.
+   * @throws IOException Thrown if a backing store or remote service fails. An in-memory
+   *     implementation never throws it.
    */
-  Optional<GazetteerEntry> byId(String source, String recordId);
+  Optional<GazetteerEntry> byId(String source, String recordId) throws IOException;
 
   /**
    * Finds a representative entry for an ISO 3166-1 alpha-2 region code.
    *
-   * <p>This is the stable join key shared with the emoji annotation layer: a flag emoji decodes
-   * to the same alpha-2 code, so region-level signals from either side resolve against the same
+   * <p>The alpha-2 code is a stable join key across annotation layers: any region-level signal
+   * that decodes to the same code (a flag emoji does, for example) can resolve against the same
    * lookup without any dataset-specific identifier.</p>
    *
    * @param isoCountryCode The ISO 3166-1 alpha-2 code, two ASCII capital letters. Must not be
@@ -74,8 +86,10 @@ public interface Gazetteer {
    *     implementation's documented choice, for example the capital or the most populous record),
    *     or empty when the region is unknown to this gazetteer.
    * @throws IllegalArgumentException Thrown if {@code isoCountryCode} is {@code null}.
+   * @throws IOException Thrown if a backing store or remote service fails. An in-memory
+   *     implementation never throws it.
    */
-  Optional<GazetteerEntry> byRegion(String isoCountryCode);
+  Optional<GazetteerEntry> byRegion(String isoCountryCode) throws IOException;
 
   /**
    * {@return the dataset identifiers this gazetteer serves; never {@code null} or empty} Every

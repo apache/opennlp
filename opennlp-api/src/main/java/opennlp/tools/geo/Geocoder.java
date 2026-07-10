@@ -16,6 +16,7 @@
  */
 package opennlp.tools.geo;
 
+import java.io.IOException;
 import java.util.List;
 
 import opennlp.tools.util.Span;
@@ -28,6 +29,11 @@ import opennlp.tools.util.Span;
  * them so an implementation can use co-occurring mentions for disambiguation; a simple
  * implementation may score each mention independently, and a context-aware scorer is a later
  * implementation of this same contract, not a contract change.</p>
+ *
+ * <p>Relationship to {@link opennlp.tools.entitylinker.EntityLinker}: that interface is the
+ * generic entity enrichment contract for any entity type. New consumers that resolve location
+ * mentions against place data should target this interface and {@link Gazetteer};
+ * {@code EntityLinker} remains the contract for generic entity enrichment beyond locations.</p>
  *
  * <p>Implementations must be immutable and thread-safe after construction, so one geocoder can
  * serve concurrent documents.</p>
@@ -50,6 +56,8 @@ public interface Geocoder {
    * @return The resolutions for the resolvable mentions, in input order; never {@code null}.
    * @throws IllegalArgumentException Thrown if {@code text} or {@code locationMentions} is
    *     {@code null}, or a mention is {@code null} or out of the text's bounds.
+   * @throws IOException Thrown if the underlying {@link Gazetteer} fails with it; a geocoder
+   *     over an in-memory gazetteer never throws it.
    */
-  List<GeoResolution> resolve(CharSequence text, List<Span> locationMentions);
+  List<GeoResolution> resolve(CharSequence text, List<Span> locationMentions) throws IOException;
 }

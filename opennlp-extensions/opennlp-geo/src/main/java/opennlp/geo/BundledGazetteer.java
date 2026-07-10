@@ -58,19 +58,24 @@ import opennlp.tools.util.normalizer.TermAnalyzer;
  * hyphenation variation ({@code Winston-Salem} and {@code Winston Salem} produce the same
  * key).</p>
  *
- * <p><b>ASCII-only v1 boundary.</b> The bundled table is deliberately pure ASCII: a place whose
- * primary name is not ASCII is carried as the transliterated ASCII name Natural Earth provides
- * ({@code NAMEASCII}), and the Unicode form is omitted in v1. Because queries are folded through
- * the chain above, accented queries still match the ASCII rows; native-script names (for example
- * CJK or Cyrillic forms) are not matchable against this table and belong to a later, richer data
- * tier behind the same {@link Gazetteer} interface.</p>
+ * <p><b>ASCII-only v1 boundary.</b> The bundled table is deliberately pure ASCII: a place's
+ * display name is accent-folded to ASCII, with the upstream transliteration as a fallback and,
+ * where it differs, as an alternate name; the Unicode form is omitted in v1. Because queries are
+ * folded through the chain above, accented queries still match the ASCII rows; native-script
+ * names (for example CJK or Cyrillic forms) are not matchable against this table and belong to a
+ * later, richer data tier behind the same {@link Gazetteer} interface.</p>
  *
  * <p><b>Ranking.</b> {@link #lookup(CharSequence)} returns candidates ordered by population
- * descending, then by feature class ({@code CITY} before {@code ADMIN} before {@code POI} before
- * anything else), then by source and record id for a deterministic total order.
+ * descending, then by feature class ({@link GazetteerEntry#FEATURE_CLASS_CITY} before
+ * {@link GazetteerEntry#FEATURE_CLASS_ADMIN} before {@link GazetteerEntry#FEATURE_CLASS_POI}
+ * before anything else), then by source and record id for a deterministic total order.
  * {@link #byRegion(String)} returns the most populous bundled entry for the region under the
  * same order; with this dataset that is a city-level record (very often the capital or primate
  * city), a documented v1 approximation of a country-level record.</p>
+ *
+ * <p><b>Custom rows.</b> {@link #fromEntries(List)} builds a gazetteer over caller-supplied
+ * entries with exactly the indexing, folding, and ranking described above, without touching the
+ * bundled table or the shared instance.</p>
  */
 public final class BundledGazetteer implements Gazetteer {
 
@@ -88,11 +93,12 @@ public final class BundledGazetteer implements Gazetteer {
   private final Set<String> sources;
 
   /**
-   * Indexes the given entries. Package-private so tests can build a gazetteer from crafted rows;
-   * production use goes through {@link #getInstance()}.
+   * Indexes the given entries. Package-private; callers go through {@link #getInstance()} for
+   * the bundled table or {@link #fromEntries(List)} for their own entries.
    *
    * @throws IllegalArgumentException Thrown if {@code entries} is {@code null}, contains a
-   *     {@code null} element, or contains two entries with the same (source, recordId).
+   *     {@code null} element, contains two entries with the same (source, recordId), or
+   *     contains an entry with a name that folds to an empty match key.
    */
   BundledGazetteer(List<GazetteerEntry> entries) {
     if (entries == null) {
@@ -152,6 +158,23 @@ public final class BundledGazetteer implements Gazetteer {
       }
     }
     return result;
+  }
+
+  /**
+   * Creates a gazetteer over caller-supplied entries, indexed and ranked exactly like the
+   * bundled table (same folding chain, same candidate order). The bundled table is not loaded
+   * and the shared {@link #getInstance()} instance is not affected, so callers can build any
+   * number of independent gazetteers over their own place records.
+   *
+   * @param entries The entries to index. Must not be {@code null} or contain {@code null}
+   *                elements.
+   * @return A new immutable, thread-safe gazetteer over the given entries.
+   * @throws IllegalArgumentException Thrown if {@code entries} is {@code null}, contains a
+   *     {@code null} element, contains two entries with the same (source, recordId), or
+   *     contains an entry with a name that folds to an empty match key.
+   */
+  public static BundledGazetteer fromEntries(List<GazetteerEntry> entries) {
+    return new BundledGazetteer(entries);
   }
 
   @Override
@@ -349,7 +372,10 @@ public final class BundledGazetteer implements Gazetteer {
                                 GazetteerEntry entry) {
     final String key = foldKey(name);
     if (key.isEmpty()) {
-      return;
+      // Fail loud: silently skipping would load a row that no lookup can ever reach.
+      throw new IllegalArgumentException("Name '" + name + "' of record " + entry.source() + ";"
+          + entry.recordId() + " folds to an empty match key, so the record would be"
+          + " unreachable by lookup");
     }
     final List<GazetteerEntry> entries =
         byName.computeIfAbsent(key, unused -> new ArrayList<>(2));

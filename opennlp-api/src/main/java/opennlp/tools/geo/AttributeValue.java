@@ -21,21 +21,25 @@ import opennlp.tools.commons.ThreadSafe;
 /**
  * One provenance-tagged attribute value of a {@link GazetteerEntry}.
  *
- * <p>This is the provenance discipline of the emoji annotation layer applied to location data:
- * every dataset-specific value carries the identifier of the dataset or judgment it came from, so
- * a consumer can always tell bundled facts, derived facts, and joined facts apart, and mixed-source
- * entries stay auditable. A value with no source cannot be constructed.</p>
+ * <p>Every dataset-specific value carries the identifier of the dataset or judgment it came
+ * from, so a consumer can always tell bundled facts, derived facts, and joined facts apart, and
+ * mixed-source entries stay auditable. A value with no source cannot be constructed; a project
+ * judgment with no dataset behind it is marked {@link #SOURCE_UNSPECIFIED} explicitly.</p>
  *
  * <p>Instances are immutable and thread-safe.</p>
  *
  * @param value  The attribute value. Must not be {@code null} or empty.
- * @param source The provenance tag, for example {@code naturalearth} or {@code UNSPECIFIED} (the
- *               explicit marker for a project judgment). Must not be {@code null} or empty.
+ * @param source The provenance tag, for example {@code naturalearth} or
+ *               {@link #SOURCE_UNSPECIFIED} (the explicit marker for a project judgment). Must
+ *               not be {@code null} or empty.
  * @param notes  Free-text notes, for example the upstream field a value was derived from. Must
  *               not be {@code null}; may be empty.
  */
 @ThreadSafe
 public record AttributeValue(String value, String source, String notes) {
+
+  /** The explicit provenance marker of a project judgment with no dataset behind it. */
+  public static final String SOURCE_UNSPECIFIED = "UNSPECIFIED";
 
   /**
    * Creates an attribute value.

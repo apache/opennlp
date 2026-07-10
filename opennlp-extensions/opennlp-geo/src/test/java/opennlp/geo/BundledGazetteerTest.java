@@ -20,7 +20,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.geo.AttributeValue;
 import opennlp.tools.geo.GazetteerEntry;
+import opennlp.tools.geo.GeoPoint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -292,6 +295,70 @@ public class BundledGazetteerTest {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> gazetteer(ROWS[0], "naturalearth;1;Zurich;;47.4;8.5;CH;;1108000;CITY;"));
     assertTrue(e.getMessage().startsWith("Duplicate gazetteer record"), e.getMessage());
+  }
+
+  @Test
+  void testParseRejectsOutOfRangeLongitude() {
+    assertMalformedAt(3, "naturalearth;1;Zurich;;47.4;190.0;CH;;1108000;CITY;");
+    assertMalformedAt(3, "naturalearth;1;Zurich;;47.4;-190.0;CH;;1108000;CITY;");
+  }
+
+  @Test
+  void testParseRejectsDuplicateAttributeKey() {
+    assertMalformedAt(3, "naturalearth;1;Zurich;;47.4;8.5;CH;;1108000;CITY;wikidata=Q72|wikidata=Q73");
+  }
+
+  @Test
+  void testParseRejectsEmptyPipeListElements() {
+    // Leading, trailing, and doubled pipes in the altNames field.
+    assertMalformedAt(3, "naturalearth;1;Zurich;|Zuerich;47.4;8.5;CH;;1108000;CITY;");
+    assertMalformedAt(3, "naturalearth;1;Zurich;Zuerich|;47.4;8.5;CH;;1108000;CITY;");
+    assertMalformedAt(3, "naturalearth;1;Zurich;Zuerich||Turicum;47.4;8.5;CH;;1108000;CITY;");
+    // The same shapes in the containment field.
+    assertMalformedAt(3, "naturalearth;1;Zurich;;47.4;8.5;CH;|Zurich;1108000;CITY;");
+    assertMalformedAt(3, "naturalearth;1;Zurich;;47.4;8.5;CH;Zurich|;1108000;CITY;");
+  }
+
+  @Test
+  void testNameWithoutWordTokensFailsLoudAtLoadTime() {
+    // A row that parses but whose name folds to an empty match key would be unreachable by
+    // lookup; the loader rejects it instead of silently skipping the index entry.
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> gazetteer("naturalearth;1;...;;47.4;8.5;CH;;1108000;CITY;"));
+    assertTrue(e.getMessage().contains("folds to an empty match key"), e.getMessage());
+    assertTrue(e.getMessage().contains("naturalearth;1"), e.getMessage());
+  }
+
+  @Test
+  void testAlternateNameWithoutWordTokensFailsLoudAtLoadTime() {
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> gazetteer("naturalearth;1;Zurich;...;47.4;8.5;CH;;1108000;CITY;"));
+    assertTrue(e.getMessage().contains("folds to an empty match key"), e.getMessage());
+  }
+
+  @Test
+  void testFromEntriesBuildsACustomGazetteer() {
+    // The documented third-party path: build a gazetteer over caller-supplied entries without
+    // touching the bundled table, and get the same folding and ranking behavior.
+    final GazetteerEntry smallville = new GazetteerEntry("customsource", "sv-1", "Smallville",
+        List.of("Small Ville"), new GeoPoint(38.0, -97.0), "US",
+        List.of("Kansas"), 45001L, GazetteerEntry.FEATURE_CLASS_CITY, Map.of());
+    final GazetteerEntry bigtown = new GazetteerEntry("customsource", "bt-1", "Bigtown",
+        List.of(), new GeoPoint(40.0, -75.0), "US",
+        List.of(), 250000L, GazetteerEntry.FEATURE_CLASS_CITY, Map.of());
+    final BundledGazetteer custom = BundledGazetteer.fromEntries(List.of(smallville, bigtown));
+    assertEquals(Set.of("customsource"), custom.sources());
+    assertEquals("sv-1", custom.lookup("smallville").get(0).recordId()); // case folded
+    assertEquals("sv-1", custom.lookup("Small Ville").get(0).recordId()); // alternate name
+    assertEquals("bt-1", custom.byRegion("US").orElseThrow().recordId()); // most populous
+    assertEquals(smallville, custom.byId("customsource", "sv-1").orElseThrow());
+  }
+
+  @Test
+  void testFromEntriesValidatesItsInput() {
+    assertThrows(IllegalArgumentException.class, () -> BundledGazetteer.fromEntries(null));
+    assertThrows(IllegalArgumentException.class,
+        () -> BundledGazetteer.fromEntries(Arrays.asList((GazetteerEntry) null)));
   }
 
   private static void assertMalformedAt(int line, String row) {
