@@ -155,4 +155,26 @@ class SafetensorsHeaderParserTest {
     assertTrue(e.getMessage().contains("Malformed safetensors header at offset"),
         () -> "Message should carry the offset, got: " + e.getMessage());
   }
+  @Test
+  void testSignedUnicodeEscapeFailsLoudly() {
+    // Integer.parseInt would accept "-0FF" and decode the wrong character; the parser must not.
+    final String header = "{\"__metadata__\":{\"note\":\"a\\u-0FFb\"},"
+        + "\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4]}}";
+    assertThrows(IllegalArgumentException.class, () -> SafetensorsHeaderParser.parse(header));
+  }
+
+  @Test
+  void testMalformedNumberInSkippedFieldFailsLoudly() {
+    // Skipped unknown fields still hold values to the JSON grammar; "1e++--..5" is not a number.
+    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],"
+        + "\"data_offsets\":[0,4],\"unknown\":1e++--..5}}";
+    assertThrows(IllegalArgumentException.class, () -> SafetensorsHeaderParser.parse(header));
+  }
+
+  @Test
+  void testWellFormedNumbersInSkippedFieldsAreAccepted() {
+    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],"
+        + "\"data_offsets\":[0,4],\"a\":-1.5e+10,\"b\":0.25,\"c\":3}}";
+    assertEquals(1, SafetensorsHeaderParser.parse(header).tensors().size());
+  }
 }
