@@ -28,11 +28,14 @@ package opennlp.subword.sentencepiece;
 final class Utf8Text {
 
   private final byte[] bytes;
+  private final int byteLength;
+  // Null for pure-ASCII text, where byte offsets equal UTF-16 offsets.
   private final int[] byteToChar;
   private final int charLength;
 
-  private Utf8Text(byte[] bytes, int[] byteToChar, int charLength) {
+  private Utf8Text(byte[] bytes, int byteLength, int[] byteToChar, int charLength) {
     this.bytes = bytes;
+    this.byteLength = byteLength;
     this.byteToChar = byteToChar;
     this.charLength = charLength;
   }
@@ -45,6 +48,19 @@ final class Utf8Text {
    */
   static Utf8Text of(CharSequence text) {
     final int charLength = text.length();
+    // The common case: pure ASCII, where the bytes are the chars and the map is the identity.
+    int ascii = 0;
+    while (ascii < charLength && text.charAt(ascii) < 0x80) {
+      ascii++;
+    }
+    if (ascii == charLength) {
+      final byte[] exact = new byte[charLength];
+      for (int i = 0; i < charLength; i++) {
+        exact[i] = (byte) text.charAt(i);
+      }
+      return new Utf8Text(exact, charLength, null, charLength);
+    }
+
     final byte[] bytes = new byte[charLength * 3 + 1];
     final int[] byteToChar = new int[charLength * 3 + 2];
     int b = 0;
@@ -82,14 +98,19 @@ final class Utf8Text {
       c += charCount;
     }
     byteToChar[b] = charLength;
-    final byte[] exact = java.util.Arrays.copyOf(bytes, b);
-    final int[] exactMap = java.util.Arrays.copyOf(byteToChar, b + 1);
-    return new Utf8Text(exact, exactMap, charLength);
+    // The oversized buffers are kept and carried with an explicit length instead of being
+    // trimmed; the per-call copies were pure allocation traffic.
+    return new Utf8Text(bytes, b, byteToChar, charLength);
   }
 
-  /** {@return the UTF-8 bytes} */
+  /** {@return the UTF-8 buffer; valid up to {@link #byteLength()}} */
   byte[] bytes() {
     return bytes;
+  }
+
+  /** {@return the number of valid bytes in {@link #bytes()}} */
+  int byteLength() {
+    return byteLength;
   }
 
   /** {@return the length of the original text in UTF-16 units} */
@@ -104,6 +125,6 @@ final class Utf8Text {
    * @return The UTF-16 offset; the text length for the end offset.
    */
   int charOffset(int byteOffset) {
-    return byteToChar[byteOffset];
+    return byteToChar == null ? byteOffset : byteToChar[byteOffset];
   }
 }

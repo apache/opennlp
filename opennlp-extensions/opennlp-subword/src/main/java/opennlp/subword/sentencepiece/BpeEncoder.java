@@ -75,29 +75,30 @@ final class BpeEncoder {
   /**
    * Segments normalized text.
    *
-   * @param normalized The normalized UTF-8 bytes; must not be null.
+   * @param normalized The buffer holding the normalized UTF-8 bytes; must not be null.
+   * @param size       The number of valid bytes in {@code normalized}.
    * @return The segments covering all bytes, in text order.
    */
-  List<Segment> encode(byte[] normalized) {
-    if (normalized.length == 0) {
+  List<Segment> encode(byte[] normalized, int size) {
+    if (size == 0) {
       return List.of();
     }
 
     // The symbol list as index-linked ranges of the normalized bytes; merged-away symbols
     // become empty ranges.
-    final IntBuilder fromB = new IntBuilder(normalized.length);
-    final IntBuilder toB = new IntBuilder(normalized.length);
+    final IntBuilder fromB = new IntBuilder(size);
+    final IntBuilder toB = new IntBuilder(size);
     final List<Boolean> freezeList = new ArrayList<>();
     int position = 0;
-    while (position < normalized.length) {
+    while (position < size) {
       int matched = 0;
       if (userDefinedMatcher != null) {
-        matched = longestUserDefinedMatch(normalized, position);
+        matched = longestUserDefinedMatch(normalized, size, position);
       }
       final boolean frozen = matched > 0;
       final int length = frozen ? matched
           : Math.min(SentencePieceNormalizer.utf8Length(normalized[position]),
-              normalized.length - position);
+              size - position);
       fromB.append(position);
       toB.append(position + length);
       freezeList.add(frozen);
@@ -199,10 +200,10 @@ final class BpeEncoder {
     return resegment(parts[1], consumed, depth + 1, revMerge, output);
   }
 
-  private int longestUserDefinedMatch(byte[] input, int from) {
+  private int longestUserDefinedMatch(byte[] input, int inputLength, int from) {
     int node = userDefinedMatcher.root();
     int longest = 0;
-    for (int i = from; i < input.length; i++) {
+    for (int i = from; i < inputLength; i++) {
       node = userDefinedMatcher.step(node, input[i]);
       if (node == PieceTrie.DEAD) {
         break;
