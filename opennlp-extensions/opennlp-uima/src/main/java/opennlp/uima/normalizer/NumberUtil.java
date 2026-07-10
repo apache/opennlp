@@ -52,6 +52,12 @@ public final class NumberUtil {
 
   /**
    * Parses a specified {@link String number} for a certain {@code languageCode}.
+   * <p>
+   * Before parsing, every Unicode {@code White_Space} code point is removed from
+   * {@code number}. Since 3.0 this includes the no-break spaces ({@code U+00A0},
+   * {@code U+2007}, {@code U+202F}), which several locales use as digit grouping
+   * separators; the previously used ASCII {@code \s} strip left them in place and
+   * stopped the number parse at them.
    *
    * @param number The suspected number to parse.
    * @param languageCode A ISO conform language code, e.g. "en", "pt"

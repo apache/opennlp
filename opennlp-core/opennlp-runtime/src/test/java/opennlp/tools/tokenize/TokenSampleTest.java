@@ -131,4 +131,22 @@ public class TokenSampleTest {
     Assertions.assertNotEquals(createPredSample(), createGoldSample());
     Assertions.assertNotEquals(new Object(), createPredSample());
   }
+
+  @Test
+  void testParseSharesRuntimeWhitespaceTokenization() {
+    // Sample parsing shares the runtime WhitespaceTokenizer (Unicode White_Space since 3.0):
+    // the next line control U+0085 separates sample tokens exactly like an ASCII space, so the
+    // two parses must agree in text and spans.
+    TokenSample nelSeparated = TokenSample.parse(
+        "token1" + cp(0x0085) + "token2", TokenSample.DEFAULT_SEPARATOR_CHARS);
+    TokenSample spaceSeparated = TokenSample.parse(
+        "token1 token2", TokenSample.DEFAULT_SEPARATOR_CHARS);
+    Assertions.assertEquals(spaceSeparated.getText(), nelSeparated.getText());
+    Assertions.assertArrayEquals(spaceSeparated.getTokenSpans(), nelSeparated.getTokenSpans());
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
+
 }
