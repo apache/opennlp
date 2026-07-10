@@ -205,6 +205,12 @@
 			</dependency>
 
 			<dependency>
+				<artifactId>opennlp-embeddings</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
 				<artifactId>opennlp-morfologik</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>
