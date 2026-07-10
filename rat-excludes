@@ -70,3 +70,8 @@ src/main/resources/opennlp/tools/tokenize/uax29/WordBreakProperty.txt
 src/main/resources/opennlp/tools/tokenize/uax29/ExtendedPictographic.txt
 src/main/resources/opennlp/tools/util/normalizer/confusables.txt
 src/test/resources/opennlp/tools/tokenize/uax29/WordBreakTest.txt
+
+<!-- opennlp-subword bundled test models and fixtures (project-generated binaries and data) -->
+src/test/resources/opennlp/subword/sentencepiece/*.model
+src/test/resources/opennlp/subword/sentencepiece/*.fixtures.tsv
+src/test/resources/opennlp/subword/sentencepiece/corpus.txt
