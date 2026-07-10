@@ -16,6 +16,7 @@
  */
 package opennlp.geo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,10 +29,12 @@ import opennlp.tools.util.Span;
 /**
  * A {@link Geocoder} that resolves each mention by a population prior: candidates come from
  * {@link Gazetteer#lookup(CharSequence)} and the winner is the first under the module's
- * deterministic candidate order (population descending, then the {@code CITY} over {@code ADMIN}
- * over {@code POI} feature-class prior on population ties, then source and record id). The
- * candidates are re-sorted here, so the result does not depend on the gazetteer's own return
- * order.
+ * deterministic candidate order (population descending, then the
+ * {@link opennlp.tools.geo.GazetteerEntry#FEATURE_CLASS_CITY CITY} over
+ * {@link opennlp.tools.geo.GazetteerEntry#FEATURE_CLASS_ADMIN ADMIN} over
+ * {@link opennlp.tools.geo.GazetteerEntry#FEATURE_CLASS_POI POI} feature-class prior on
+ * population ties, then source and record id). Multi-candidate lists are re-sorted here, so the
+ * result does not depend on the gazetteer's own return order.
  *
  * <p><b>Confidence is a documented heuristic, not a probability.</b> For a single candidate it
  * is {@code 0.9}; for several it is {@code 0.5 + 0.4 * (p1 - p2) / (p1 + p2)}, where {@code p1}
@@ -70,7 +73,8 @@ public final class PopulationPriorGeocoder implements Geocoder {
   }
 
   @Override
-  public List<GeoResolution> resolve(CharSequence text, List<Span> locationMentions) {
+  public List<GeoResolution> resolve(CharSequence text, List<Span> locationMentions)
+      throws IOException {
     if (text == null) {
       throw new IllegalArgumentException("Text must not be null");
     }
@@ -90,28 +94,42 @@ public final class PopulationPriorGeocoder implements Geocoder {
     final List<GeoResolution> resolutions = new ArrayList<>(locationMentions.size());
     for (final Span mention : locationMentions) {
       final CharSequence mentionText = text.subSequence(mention.getStart(), mention.getEnd());
-      final List<GazetteerEntry> candidates = new ArrayList<>(gazetteer.lookup(mentionText));
-      if (candidates.isEmpty()) {
+      final List<GazetteerEntry> found = gazetteer.lookup(mentionText);
+      if (found.isEmpty()) {
         continue; // unresolved mentions are omitted, never fabricated
       }
-      candidates.sort(CandidateRanking.BY_PRIOR);
+      final List<GazetteerEntry> candidates;
+      if (found.size() == 1) {
+        // Nothing to rank; skip the per-mention copy and sort on this hot path.
+        candidates = found;
+      } else {
+        // Multi-candidate lists are re-sorted because the Gazetteer contract only promises a
+        // best-effort ranking: an arbitrary implementation's return order is not this module's
+        // deterministic candidate order, and the documented result must not depend on it.
+        final List<GazetteerEntry> ranked = new ArrayList<>(found);
+        ranked.sort(CandidateRanking.BY_PRIOR);
+        candidates = ranked;
+      }
       resolutions.add(new GeoResolution(mention, candidates.get(0), confidence(candidates)));
     }
     return resolutions;
   }
 
   // The heuristic prior documented in the class javadoc: monotonic in the relative population
-  // separation between the winner and the runner-up, bounded away from certainty.
+  // separation between the winner and the runner-up, bounded away from certainty. Computed in
+  // double so populations near Long.MAX_VALUE cannot overflow, and clamped so the [0, 1]
+  // contract of GeoResolution holds unconditionally.
   private static double confidence(List<GazetteerEntry> rankedCandidates) {
     if (rankedCandidates.size() == 1) {
       return SINGLE_CANDIDATE_CONFIDENCE;
     }
-    final long first = rankedCandidates.get(0).population();
-    final long second = rankedCandidates.get(1).population();
-    final long total = first + second;
-    if (total == 0) {
+    final double first = rankedCandidates.get(0).population();
+    final double second = rankedCandidates.get(1).population();
+    final double total = first + second;
+    if (total == 0.0) {
       return TIE_CONFIDENCE;
     }
-    return TIE_CONFIDENCE + SEPARATION_WEIGHT * ((double) (first - second) / total);
+    final double raw = TIE_CONFIDENCE + SEPARATION_WEIGHT * ((first - second) / total);
+    return Math.min(1.0, Math.max(0.0, raw));
   }
 }

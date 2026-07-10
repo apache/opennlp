@@ -22,9 +22,10 @@ import opennlp.tools.geo.GazetteerEntry;
 
 /**
  * The shared candidate order of this module: population descending, then a small feature-class
- * prior ({@code CITY} before {@code ADMIN} before {@code POI} before anything else, applied on
- * population ties only), then source and record id. The trailing identifier comparison makes the
- * order total, so any candidate list sorts the same way on every run.
+ * prior ({@link GazetteerEntry#FEATURE_CLASS_CITY} before {@link GazetteerEntry#FEATURE_CLASS_ADMIN}
+ * before {@link GazetteerEntry#FEATURE_CLASS_POI} before anything else, applied on population
+ * ties only), then source and record id. The trailing identifier comparison makes the order
+ * total, so any candidate list sorts the same way on every run.
  */
 final class CandidateRanking {
 
@@ -38,15 +39,16 @@ final class CandidateRanking {
   private CandidateRanking() {
   }
 
-  // CITY before ADMIN before POI before anything else (including unknown).
+  // CITY before ADMIN before POI before anything else (including unknown). Matching on the
+  // published constants is what makes the prior portable: any gazetteer that uses them gets it.
   static int featureClassRank(String featureClass) {
-    if ("CITY".equals(featureClass)) {
+    if (GazetteerEntry.FEATURE_CLASS_CITY.equals(featureClass)) {
       return 0;
     }
-    if ("ADMIN".equals(featureClass)) {
+    if (GazetteerEntry.FEATURE_CLASS_ADMIN.equals(featureClass)) {
       return 1;
     }
-    if ("POI".equals(featureClass)) {
+    if (GazetteerEntry.FEATURE_CLASS_POI.equals(featureClass)) {
       return 2;
     }
     return 3;

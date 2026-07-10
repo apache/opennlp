@@ -1,20 +1,9 @@
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License. You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# Bundled gazetteer table, authored by this project as a derivation of the Natural Earth
-# "Populated Places" dataset (loaded by opennlp.geo.BundledGazetteer). 7342 rows.
+# Bundled gazetteer table, authored by the Apache OpenNLP project as a derivation of the
+# Natural Earth "Populated Places" dataset (loaded by opennlp.geo.BundledGazetteer).
+# 7342 rows. Regenerated with dev/derive-populated-places.py in this module; the
+# underlying data is in the public domain (see the derivation record below), so this file
+# carries the derivation record instead of a source license header. See the Natural Earth
+# section of the LICENSE file.
 #
 # Derivation record:
 #   Source     Natural Earth 1:10m Cultural Vectors, Populated Places
@@ -35,10 +24,14 @@
 #   source        Always "naturalearth" in this table (the dataset id, also the provenance
 #                 tag of every attribute value in the last field).
 #   recordId      The stable Natural Earth id (upstream field NE_ID).
-#   name          The canonical place name (upstream field NAMEASCII, the transliterated
-#                 ASCII name; see the ASCII note below).
-#   altNames      Pipe separated alternate names (upstream fields NAMEALT, NAMEPAR, MEGANAME,
-#                 pipe-split as published, deduplicated case-insensitively), possibly empty.
+#   name          The canonical place name: the upstream display name (NAME) folded to
+#                 ASCII; the upstream transliteration (NAMEASCII) for the 2
+#                 rows whose NAME does not reduce to clean ASCII; explicitly corrected for
+#                 1 row damaged in both fields (see the mojibake note).
+#   altNames      Pipe separated alternate names: NAMEASCII where it differs from the
+#                 derived name, then the upstream fields NAMEALT, NAMEPAR, MEGANAME
+#                 (pipe-split as published), deduplicated case-insensitively; possibly
+#                 empty.
 #   lat, lon      WGS84 decimal degrees from the feature's point geometry, 5 decimals.
 #   iso2          ISO 3166-1 alpha-2 country code (upstream field ISO_A2); empty where the
 #                 source assigns no code (its -99 sentinel, e.g. disputed territories).
@@ -52,14 +45,29 @@
 #                 (GEONAMESID where positive), whosonfirst (WOF_ID). Keys the source does not
 #                 provide are never fabricated.
 #
-# ASCII note: this file is deliberately pure ASCII. A place whose primary name is not ASCII
-# is carried as the transliterated ASCII name Natural Earth provides (NAMEASCII), and the
-# Unicode form is omitted in v1; alternate names and admin-1 names are accent-stripped to
-# ASCII (NFD, drop combining marks, standard stroke-letter transliterations) and dropped when
-# that is not enough. Matching still works for accented queries because BundledGazetteer
-# folds queries and index keys through the same chain. A handful of upstream admin-1 values
-# are corrupted in the upstream distribution itself (they contain '?'); those containment
-# elements are omitted rather than carried.
+# ASCII note: this file is deliberately pure ASCII. Names and admin-1 values are
+# accent-stripped to ASCII (NFD, drop combining marks, standard stroke-letter
+# transliterations); an alternate name or containment element that is not ASCII after the
+# fold is dropped (0 alternate names, 0
+# containment elements), and a display name that is not ASCII after the fold falls back to
+# the upstream transliteration. Matching still works for accented queries because
+# BundledGazetteer folds queries and index keys through the same chain; native-script names
+# belong to a later, richer data tier.
+#
+# Mojibake note: the upstream distribution itself carries encoding damage in some fields
+# (an accented letter replaced by '?' or by a wrong ASCII letter). This derivation never
+# carries a value it knows to be damaged:
+#   - a containment value that announces damage with '?' is omitted (38
+#     elements);
+#   - a value verified against its accent-bearing upstream sibling or the documented place
+#     name is repaired to that spelling (67 containment elements,
+#     5 alternate names, 1 canonical name); the audited repair
+#     tables are in the generation script;
+#   - an alternate name that is a one-character corruption of the derived name at an
+#     accented position is dropped (21 values, upstream forms like
+#     'Zarich' for Zurich).
+# The generation script hard-fails on anomalies it does not recognize, so a refresh forces
+# a reviewed decision instead of importing new corruption.
 #
 # A line starting with '#' is a comment; data rows carry no inline comments.
 naturalearth;1159112629;Colonia del Sacramento;;-34.46979;-57.83612;UY;Colonia;21714;CITY;wikidata=Q56064|geonames=3443013|whosonfirst=421199749
@@ -69,13 +77,13 @@ naturalearth;1159112679;Canelones;;-34.53800;-56.28400;UY;Canelones;19698;CITY;w
 naturalearth;1159112703;Florida;;-34.09900;-56.21500;UY;Florida;32234;CITY;wikidata=Q842472|geonames=3442585|whosonfirst=890431207
 naturalearth;1159112719;Bassar;;9.26100;0.78900;TG;Kara;61845;CITY;wikidata=Q810474|geonames=2367568|whosonfirst=421176889
 naturalearth;1159112735;Sotouboua;;8.55700;0.98500;TG;Centre;21054;CITY;wikidata=Q1120978|geonames=2364079|whosonfirst=421191659
-naturalearth;1159112749;Medenine;;33.40000;10.41670;TN;MUdenine;61705;CITY;wikidata=Q846653|whosonfirst=1141905989
+naturalearth;1159112749;Medenine;;33.40000;10.41670;TN;Medenine;61705;CITY;wikidata=Q846653|whosonfirst=1141905989
 naturalearth;1159112765;Kebili;;33.69000;8.97100;TN;Kebili;19875;CITY;wikidata=Q27157|geonames=2468018|whosonfirst=421201981
 naturalearth;1159112779;Tataouine;;33.00000;10.46670;TN;Tataouine;62577;CITY;wikidata=Q817149|geonames=2464701|whosonfirst=421178871
 naturalearth;1159112795;L'Ariana;;36.86667;10.20000;TN;Manubah;97687;CITY;wikidata=Q627487|geonames=2473247|whosonfirst=1141905991
 naturalearth;1159112811;Jendouba;;36.50000;8.75000;TN;Jendouba;51408;CITY;wikidata=Q27064|geonames=2470088|whosonfirst=1141905993
-naturalearth;1159112827;Kasserine;;35.21670;8.71670;TN;Kasssrine;76243;CITY;wikidata=Q852735|whosonfirst=1141905995
-naturalearth;1159112843;Sdid Bouzid;;35.01670;9.50000;TN;Sidi Bou Zid;42098;CITY;wikidata=Q692716|geonames=2465840|whosonfirst=421169019
+naturalearth;1159112827;Kasserine;;35.21670;8.71670;TN;Kasserine;76243;CITY;wikidata=Q852735|whosonfirst=1141905995
+naturalearth;1159112843;Sidi Bouzid;;35.01670;9.50000;TN;Sidi Bou Zid;42098;CITY;wikidata=Q692716|geonames=2465840|whosonfirst=421169019
 naturalearth;1159112859;Siliana;;36.08330;9.38330;TN;Siliana;26960;CITY;wikidata=Q27216|geonames=2465030|whosonfirst=421169017
 naturalearth;1159112873;Mahdia;;35.48391;11.04088;TN;Mahdia;45977;CITY;wikidata=Q466054|whosonfirst=1141905997
 naturalearth;1159112893;Monastir;;35.73070;10.76730;TN;Monastir;71546;CITY;wikidata=Q208715|geonames=2473493|whosonfirst=1141905999
@@ -88,13 +96,13 @@ naturalearth;1159113001;Son La;;21.32800;103.91000;VN;Son La;19054;CITY;wikidata
 naturalearth;1159113019;Tuyen Quang;;21.81800;105.21100;VN;Tuyen Quang;36430;CITY;wikidata=Q33389|geonames=1563287|whosonfirst=890438559
 naturalearth;1159113041;Yen Bai;;21.70500;104.87500;VN;Yen Bai;96540;CITY;wikidata=Q26019|geonames=1560349|whosonfirst=421203841
 naturalearth;1159113057;Hai Duong;;20.94200;106.33101;VN;;58030;CITY;wikidata=Q36354|geonames=1581326|whosonfirst=421197241
-naturalearth;1159113073;Thai Binh;;20.45030;106.33303;VN;ThMi Bmnh;210000;CITY;wikidata=Q36497|geonames=1566346|whosonfirst=1141906003
+naturalearth;1159113073;Thai Binh;;20.45030;106.33303;VN;Thai Binh;210000;CITY;wikidata=Q36497|geonames=1566346|whosonfirst=1141906003
 naturalearth;1159113089;Tuy Hoa;;13.08200;109.31600;VN;Phu Yen;69596;CITY;wikidata=Q35747|geonames=1563281|whosonfirst=890443889
 naturalearth;1159113099;Thu Dau Mot;;10.96907;106.65274;VN;Binh Duong;244277;CITY;wikidata=Q524553|geonames=1565022|whosonfirst=890433751
 naturalearth;1159113119;Dong Ha;;16.85000;107.13330;VN;;17662;CITY;wikidata=Q33343|geonames=1582926|whosonfirst=1141906007
 naturalearth;1159113135;Cao Lanh;;10.46700;105.63600;VN;;149837;CITY;wikidata=Q35656|geonames=1586151|whosonfirst=890437801
 naturalearth;1159113149;Truc Giang;;10.23500;106.37500;VN;;59442;CITY;wikidata=Q36635|geonames=1587976|whosonfirst=421176031
-naturalearth;1159113161;Tra Vinh;;9.93400;106.33400;VN;TrM Vinh;131360;CITY;wikidata=Q36136|geonames=1563926|whosonfirst=1141906009
+naturalearth;1159113161;Tra Vinh;;9.93400;106.33400;VN;Tra Vinh;131360;CITY;wikidata=Q36136|geonames=1563926|whosonfirst=1141906009
 naturalearth;1159113175;Vinh Long;;10.25600;105.96400;VN;Vinh Long;103314;CITY;wikidata=Q34789|geonames=1562693|whosonfirst=421181439
 naturalearth;1159113189;Cao Bang;;22.66400;106.26801;VN;;41112;CITY;wikidata=Q1034096|geonames=1586185|whosonfirst=421167909
 naturalearth;1159113205;Yoro;;15.12983;-87.12850;HN;Yoro;15774;CITY;wikidata=Q2561180|geonames=3600195|whosonfirst=890442107
@@ -308,7 +316,7 @@ naturalearth;1159117087;Farim;;12.49300;-15.22700;GW;Oio;6792;CITY;wikidata=Q102
 naturalearth;1159117095;Fulacunda;;11.77300;-15.19500;GW;Quinara;1311;CITY;wikidata=Q2427704|whosonfirst=1141906079
 naturalearth;1159117115;Gabu;;12.28000;-14.23400;GW;Gabu;14430;CITY;wikidata=Q1015891|geonames=2372532|whosonfirst=421174523
 naturalearth;1159117133;Catio;;11.27304;-15.25425;GW;Tombali;9898;CITY;wikidata=Q1190869|geonames=2373526|whosonfirst=890444371
-naturalearth;1159117145;Barclayville;;4.67410;-8.23160;LR;GrandKru;2733;CITY;wikidata=Q807963|geonames=2278889|whosonfirst=421183487
+naturalearth;1159117145;Barclayville;;4.67410;-8.23160;LR;Grand Kru;2733;CITY;wikidata=Q807963|geonames=2278889|whosonfirst=421183487
 naturalearth;1159117163;Voinjama;;8.41670;-9.75000;LR;Lofa;26594;CITY;wikidata=Q1024888|geonames=2273312|whosonfirst=421178825
 naturalearth;1159117193;Bensonville;Bentol;6.43330;-10.60000;LR;Montserrado;4089;CITY;wikidata=Q818201|geonames=2278682|whosonfirst=1141906081
 naturalearth;1159117211;Kakata;;6.52600;-10.34900;LR;Margibi;33945;CITY;wikidata=Q426891|geonames=2276086|whosonfirst=421168953
@@ -347,7 +355,7 @@ naturalearth;1159117791;Black River;;18.03100;-77.85200;JM;Saint Elizabeth;4229;
 naturalearth;1159117809;Falmouth;;18.47958;-77.65605;JM;Trelawny;7779;CITY;wikidata=Q1394786|geonames=3490520|whosonfirst=1141906091
 naturalearth;1159117825;Savanna-la-Mar;Sav-la-Mar, Sav, Savanna La Mar;18.16400;-77.94800;JM;Westmoreland;30000;CITY;wikidata=Q305508|whosonfirst=1141906093
 naturalearth;1159117841;Port Antonio;;18.15900;-76.38000;JM;Portland;14400;CITY;wikidata=Q162782|geonames=3489005|whosonfirst=890435481
-naturalearth;1159117855;St. Ann's Bay;;18.43264;-77.19952;JM;Saint Ann;13671;CITY;wikidata=Q630692|whosonfirst=1141906097
+naturalearth;1159117855;Saint Ann's Bay;St. Ann's Bay;18.43264;-77.19952;JM;Saint Ann;13671;CITY;wikidata=Q630692|whosonfirst=1141906097
 naturalearth;1159117871;Port Maria;;18.37700;-76.90000;JM;Saint Mary;7906;CITY;wikidata=Q265115|geonames=3488985|whosonfirst=890435479
 naturalearth;1159117887;Half Way Tree;Halfway Tree;18.03330;-76.80000;JM;Saint Andrew;96494;CITY;wikidata=Q1423367|whosonfirst=1141906099
 naturalearth;1159117905;Port Morant;;17.89100;-76.32900;JM;Saint Thomas;11536;CITY;wikidata=Q7230807|geonames=3488982|whosonfirst=1141906101
@@ -507,7 +515,7 @@ naturalearth;1159120795;Kampong Spoe;;11.45200;104.51900;KH;Kampong Spoe;33231;C
 naturalearth;1159120815;Kampong Thum;;12.71200;104.88900;KH;Kampong Thum;19951;CITY;wikidata=Q976223|geonames=1831125|whosonfirst=890435369
 naturalearth;1159120831;Prey Veng;;11.48400;105.32400;KH;Prey Ving;74000;CITY;wikidata=Q934619|geonames=1822610|whosonfirst=1141906175
 naturalearth;1159120843;Phnum Tbeng Meanchey;;13.81670;104.96670;KH;Preah Vihear;24380;CITY;wikidata=Q2428308|geonames=1830098|whosonfirst=890417861
-naturalearth;1159120859;Stoeng Treng;;13.52300;105.97400;KH;StMng Tr;29665;CITY;wikidata=Q10859501|geonames=1822029|whosonfirst=1141906177
+naturalearth;1159120859;Stoeng Treng;;13.52300;105.97400;KH;Stoeng Treng;29665;CITY;wikidata=Q10859501|geonames=1822029|whosonfirst=1141906177
 naturalearth;1159120879;Kracheh;;12.46900;106.02400;KH;Kracheh;19975;CITY;wikidata=Q261892|geonames=1830564|whosonfirst=890437827
 naturalearth;1159120887;Senmonorom;;12.45000;107.20000;KH;Mondol Kiri;7944;CITY;wikidata=Q2530693|geonames=1822227|whosonfirst=890444159
 naturalearth;1159120907;Lumphat;;13.50700;106.98100;KH;Rotanokiri;19205;CITY;wikidata=Q2235920|geonames=1830377|whosonfirst=421187885
@@ -589,7 +597,7 @@ naturalearth;1159122125;San Carlos;;11.18936;-84.77586;NI;Nicaragua;13451;CITY;w
 naturalearth;1159122139;Onverwacht;;5.60000;-55.20000;SR;Para;2105;CITY;wikidata=Q1861566|geonames=3383384|whosonfirst=890444599
 naturalearth;1159122155;Groningen;;5.79700;-55.48100;SR;Saramacca;3216;CITY;wikidata=Q508935|geonames=3384125|whosonfirst=1141906229
 naturalearth;1159122171;Leninobod;;39.75000;69.00000;TJ;Leninabad;11468;CITY;wikidata=Q6522635|whosonfirst=1141906231
-naturalearth;1159122179;Mariscal Estigarribia;Mariscal Jose F. Estigarribia;-22.03000;-60.60999;PY;Boqueran;2500;CITY;wikidata=Q1093167|geonames=3867236|whosonfirst=1141906233
+naturalearth;1159122179;Mariscal Estigarribia;Mariscal Jose F. Estigarribia;-22.03000;-60.60999;PY;Boqueron;2500;CITY;wikidata=Q1093167|geonames=3867236|whosonfirst=1141906233
 naturalearth;1159122193;Caacupe;;-25.38700;-57.14000;PY;Cordillera;21696;CITY;wikidata=Q135959|geonames=3439320|whosonfirst=890444635
 naturalearth;1159122209;Jinotepe;;11.84600;-86.19500;NI;Carazo;29507;CITY;wikidata=Q477580|geonames=3618926|whosonfirst=890442119
 naturalearth;1159122225;Jinotega;;13.09100;-86.00000;NI;Jinotega;51073;CITY;wikidata=Q1026296|geonames=3618929|whosonfirst=1141906235
@@ -613,14 +621,14 @@ naturalearth;1159122475;Hradec Kralove;;50.20600;15.81200;CZ;Kralovehradecky;951
 naturalearth;1159122481;Fderik;;22.67900;-12.70700;MR;Tiris Zemmour;5760;CITY;wikidata=Q113034|geonames=2379615|whosonfirst=1141906243
 naturalearth;1159122491;Aleg;;17.05800;-13.90900;MR;Brakna;8388;CITY;wikidata=Q986384|geonames=2381659|whosonfirst=1141906245
 naturalearth;1159122507;Akjoujt;;19.74700;-14.39100;MR;Inchiri;370;CITY;wikidata=Q419544|geonames=2381690|whosonfirst=1141906247
-naturalearth;1159122521;Dahuk;;36.86670;43.00000;IQ;Dihok;986000;CITY;wikidata=Q152831|geonames=96994|whosonfirst=1141906249
+naturalearth;1159122521;Duhok;Dahuk;36.86670;43.00000;IQ;Dihok;986000;CITY;wikidata=Q152831|geonames=96994|whosonfirst=1141906249
 naturalearth;1159122533;Samarra;;34.19400;43.87500;IQ;Sala ad-Din;158508;CITY;wikidata=Q170047|geonames=91597|whosonfirst=890449805
 naturalearth;1159122553;Awasa;;7.06000;38.47700;ET;Southern Nations, Nationalities and Peoples;133097;CITY;wikidata=Q755765|geonames=343137|whosonfirst=890418073
 naturalearth;1159122569;Gore;;8.14900;35.53701;ET;Addis Ababa;9352;CITY;wikidata=Q3110215|geonames=335943|whosonfirst=421180433
 naturalearth;1159122581;Schwerin;;53.63330;11.41670;DE;Mecklenburg-Vorpommern;96641;CITY;wikidata=Q1709|geonames=2834282|whosonfirst=101748851
 naturalearth;1159122603;Turgay;;49.62600;63.49900;KZ;Qostanay;5277;CITY;wikidata=Q1956467|geonames=1518062|whosonfirst=421175783
 naturalearth;1159122613;Yasuj;;30.65900;51.59400;IR;Kohgiluyeh and Buyer Ahmad;96786;CITY;wikidata=Q383129|whosonfirst=1141906251
-naturalearth;1159122629;Shar e Kord;;32.32100;50.85400;IR;Chahar Mahall and Bakhtiari;129153;CITY;wikidata=Q386649|geonames=115770|whosonfirst=421171861
+naturalearth;1159122629;Shahrekord;Shar e Kord;32.32100;50.85400;IR;Chahar Mahall and Bakhtiari;129153;CITY;wikidata=Q386649|geonames=115770|whosonfirst=421171861
 naturalearth;1159122651;Mangyshlak;;43.69046;51.14174;KZ;Mangghystau;147443;CITY;wikidata=Q198989|geonames=610612|whosonfirst=890433415
 naturalearth;1159122667;Panaji;;15.49200;73.81800;IN;Goa;65586;CITY;wikidata=Q214681|geonames=1260607|whosonfirst=102029109
 naturalearth;1159122685;Mobaye;;4.32000;21.18000;CF;Basse-Kotto;19431;CITY;wikidata=Q1025621|geonames=237478|whosonfirst=421204849
@@ -860,7 +868,7 @@ naturalearth;1159126081;Linares;;38.08332;-3.63335;ES;Andalucia;59761;CITY;wikid
 naturalearth;1159126095;Algeciras;;36.13188;-5.45266;ES;Andalucia;111027;CITY;wikidata=Q484552|geonames=2522013|whosonfirst=101748183
 naturalearth;1159126109;Leon;;42.57997;-5.57001;ES;Castilla y Leon;136227;CITY;wikidata=Q15699|geonames=3118532|whosonfirst=101748389
 naturalearth;1159126121;Mataro;;41.53996;2.45002;ES;Cataluna;183293;CITY;wikidata=Q11492|geonames=3117164|whosonfirst=101748313
-naturalearth;1159126139;Al Ladhiqiyah;;35.53999;35.77998;SY;Lattakia (Al Ladhiqiyah);539147;CITY;wikidata=Q200030|geonames=173576|whosonfirst=1141906287
+naturalearth;1159126139;Latakia;Al Ladhiqiyah;35.53999;35.77998;SY;Lattakia (Al Ladhiqiyah);539147;CITY;wikidata=Q200030|geonames=173576|whosonfirst=1141906287
 naturalearth;1159126149;Madinat ath Thawrah;;35.83666;38.54808;SY;Ar Raqqah;87880;CITY;wikidata=Q1822804|geonames=172374|whosonfirst=890449887
 naturalearth;1159126163;Izaz;;36.58879;37.04409;SY;Aleppo (Halab);31534;CITY;wikidata=Q277674|geonames=172082|whosonfirst=1141906289
 naturalearth;1159126179;Manbij;;36.52665;37.95633;SY;Aleppo (Halab);120169;CITY;wikidata=Q1146939|geonames=167357|whosonfirst=1141906291
@@ -900,7 +908,7 @@ naturalearth;1159126629;Big Delta;;64.15253;-145.84219;US;Alaska;591;CITY;wikida
 naturalearth;1159126647;Allakaket;;66.56548;-152.64550;US;Alaska;97;CITY;wikidata=Q79350|whosonfirst=1141906353
 naturalearth;1159126661;Tanana;;65.17187;-152.07879;US;Alaska;308;CITY;wikidata=Q79614|whosonfirst=1141906355
 naturalearth;1159126673;Borlange;;60.48332;15.41667;SE;Dalarna;39422;CITY;wikidata=Q54341|geonames=2720383|whosonfirst=101816099
-naturalearth;1159126687;Vasteraas;Vasteras;59.60908;16.55768;SE;Vastmanland;107194;CITY;wikidata=Q25412|geonames=2664454|whosonfirst=101752303
+naturalearth;1159126687;Vasteras;Vasteraas;59.60908;16.55768;SE;Vastmanland;107194;CITY;wikidata=Q25412|geonames=2664454|whosonfirst=101752303
 naturalearth;1159126699;Mykolayiv;;46.96774;31.98434;UA;Mykolayiv;510840;CITY;wikidata=Q41572|geonames=700569|whosonfirst=101752809
 naturalearth;1159126717;Chernihiv;;51.50493;31.30154;UA;Chernihiv;307684;CITY;wikidata=Q157053|geonames=710735|whosonfirst=101752969
 naturalearth;1159126729;Khmelnytskyy;Khmel'nyts'kyz;49.42493;27.00155;UA;Khmel'nyts'kyy;398346;CITY;wikidata=Q156717|geonames=706369|whosonfirst=101752841
@@ -1001,7 +1009,7 @@ naturalearth;1159127911;Urubamba;;-13.30421;-72.11662;PE;Cusco;7540;CITY;wikidat
 naturalearth;1159127923;Santo Tomas;;-14.46001;-72.08000;PE;Cusco;4134;CITY;wikidata=Q1974445|geonames=3948917|whosonfirst=1141906381
 naturalearth;1159127931;Putina;;-15.47003;-69.42999;PE;Callao;8118;CITY;wikidata=Q3344150|geonames=3931137|whosonfirst=421172819
 naturalearth;1159127939;Casma;;-9.44001;-78.20999;PE;Ancash;30000;CITY;wikidata=Q3236687|whosonfirst=1141906385
-naturalearth;1159127941;Tournavista;;-8.93218;-74.70522;PE;HuRnuco;511;CITY;whosonfirst=1141906387
+naturalearth;1159127941;Tournavista;;-8.93218;-74.70522;PE;Huanuco;511;CITY;whosonfirst=1141906387
 naturalearth;1159127947;Huamachuco;;-7.81003;-78.04995;PE;La Libertad;30835;CITY;wikidata=Q1632770|geonames=3696509|whosonfirst=890442161
 naturalearth;1159127957;Otuzco;;-7.90000;-78.57000;PE;La Libertad;10134;CITY;wikidata=Q3056421|geonames=3694212|whosonfirst=890440183
 naturalearth;1159127965;Lamas;;-6.43001;-76.52002;PE;San Martin;13693;CITY;wikidata=Q3139869|geonames=3695757|whosonfirst=890442159
@@ -1013,7 +1021,7 @@ naturalearth;1159127997;Tarma;;-11.41001;-75.72999;PE;Junin;51350;CITY;wikidata=
 naturalearth;1159128003;La Oroya;;-11.52004;-75.94000;PE;Junin;33345;CITY;wikidata=Q1759360|geonames=3936952|whosonfirst=890442201
 naturalearth;1159128011;Huaura;;-11.06001;-77.59998;PE;Lima;40400;CITY;wikidata=Q16576408|geonames=3939023|whosonfirst=421201407
 naturalearth;1159128019;Huacho;;-11.11003;-77.61995;PE;Lima;80474;CITY;wikidata=Q1002052|geonames=3940002|whosonfirst=890442213
-naturalearth;1159128025;General Eugenio Alejandrino Garay;Fortin Coronel Eugenia Garay;-20.51995;-62.20999;PY;Boqueran;972;CITY;whosonfirst=1141906391
+naturalearth;1159128025;General Eugenio Alejandrino Garay;Fortin Coronel Eugenia Garay;-20.51995;-62.20999;PY;Boqueron;972;CITY;whosonfirst=1141906391
 naturalearth;1159128033;Arroyos y Esteros;;-25.04996;-57.08999;PY;Cordillera;3055;CITY;wikidata=Q2639218|geonames=3439395|whosonfirst=421176155
 naturalearth;1159128039;Villa Hayes;;-25.09001;-57.52999;PY;Presidente Hayes;15643;CITY;wikidata=Q135953|geonames=3436725|whosonfirst=1141906393
 naturalearth;1159128047;Fortin Falcon;;-23.05029;-59.84995;PY;Presidente Hayes;0;CITY;whosonfirst=1141906395
@@ -1024,12 +1032,12 @@ naturalearth;1159128071;San Lorenzo;;-25.34002;-57.52004;PY;Asuncion;500000;CITY
 naturalearth;1159128077;Ypacarai;;-25.40999;-57.27998;PY;Asuncion;30150;CITY;wikidata=Q643576|geonames=3436585|whosonfirst=421201399
 naturalearth;1159128085;San Juan Bautista;;-26.67999;-57.15001;PY;Misiones;7882;CITY;wikidata=Q530895|geonames=3437063|whosonfirst=1141906403
 naturalearth;1159128091;Paraguari;;-25.62000;-57.16001;PY;Paraguari;18881;CITY;wikidata=Q917103|geonames=3437600|whosonfirst=890444633
-naturalearth;1159128097;Nacunday;;-26.02003;-54.76995;PY;Alto Paranp;1250;CITY;wikidata=Q2445774|geonames=3437701|whosonfirst=1141906405
+naturalearth;1159128097;Nacunday;;-26.02003;-54.76995;PY;Alto Parana;1250;CITY;wikidata=Q2445774|geonames=3437701|whosonfirst=1141906405
 naturalearth;1159128105;Coronel Oviedo;;-25.44999;-56.43995;PY;Caaguazu;88101;CITY;wikidata=Q935504|geonames=3438819|whosonfirst=890420659
 naturalearth;1159128111;Caazapa;;-26.20002;-56.38001;PY;Caazapa;5504;CITY;wikidata=Q135939|geonames=3439297|whosonfirst=1141906407
-naturalearth;1159128119;Ype Jhu;;-23.91003;-55.45999;PY;Canindey;600;CITY;wikidata=Q578964|whosonfirst=1141906409
+naturalearth;1159128119;Ype Jhu;;-23.91003;-55.45999;PY;Canindeyu;600;CITY;wikidata=Q578964|whosonfirst=1141906409
 naturalearth;1159128125;Encarnacion;;-27.34718;-55.87392;PY;Itapua;357119;CITY;wikidata=Q47138|geonames=3438735|whosonfirst=421173109
-naturalearth;1159128131;Coronel Bogado;;-27.17003;-56.25004;PY;Itapga;14297;CITY;wikidata=Q2443596|geonames=3438825|whosonfirst=1141906411
+naturalearth;1159128131;Coronel Bogado;;-27.17003;-56.25004;PY;Itapua;14297;CITY;wikidata=Q2443596|geonames=3438825|whosonfirst=1141906411
 naturalearth;1159128139;Esteli;;13.08999;-86.35998;NI;Esteli;107839;CITY;wikidata=Q1007634|geonames=3619194|whosonfirst=1141906413
 naturalearth;1159128143;Boaco;;12.46997;-85.66000;NI;Boaco;29046;CITY;wikidata=Q887488|geonames=3620674|whosonfirst=421179765
 naturalearth;1159128151;Juigalpa;;12.11000;-85.37997;NI;Chontales;54731;CITY;wikidata=Q1025801|geonames=3618908|whosonfirst=890451733
@@ -1438,7 +1446,7 @@ naturalearth;1159130521;Melun;;48.53330;2.66665;FR;Ile-de-France;249432;CITY;wik
 naturalearth;1159130525;Arras;;50.28332;2.78333;FR;Nord-Pas-de-Calais;64165;CITY;wikidata=Q131329|geonames=3036784|whosonfirst=101840533
 naturalearth;1159130531;Besancon;;47.23000;6.03001;FR;Franche-Comte;128426;CITY;wikidata=Q37776|geonames=3033123|whosonfirst=101749003
 naturalearth;1159130535;Rio Verde;;-52.64998;-71.46661;CL;Magallanes y Antartica Chilena;358;CITY;wikidata=Q56131|geonames=3868409|whosonfirst=1141906577
-naturalearth;1159130541;Cuya;;-19.11668;-70.13330;CL;Tarapace;20;CITY;wikidata=Q5795129|whosonfirst=1141906579
+naturalearth;1159130541;Cuya;;-19.11668;-70.13330;CL;Tarapaca;20;CITY;wikidata=Q5795129|whosonfirst=1141906579
 naturalearth;1159130545;Chuquicamata;;-22.32000;-68.92999;CL;Antofagasta;0;CITY;wikidata=Q55342984|whosonfirst=1141906583
 naturalearth;1159130551;Maria Elena;;-22.35002;-69.67000;CL;Antofagasta;2370;CITY;wikidata=Q16923|geonames=3878253|whosonfirst=1141906585
 naturalearth;1159130555;Tierra Amarilla;;-27.48004;-70.27998;CL;Atacama;12888;CITY;wikidata=Q188142|geonames=3869877|whosonfirst=1141906587
@@ -1451,8 +1459,8 @@ naturalearth;1159130579;Quillota;;-32.87997;-71.26000;CL;Valparaiso;79686;CITY;w
 naturalearth;1159130587;Nueva Imperial;;-38.74003;-72.96003;CL;La Araucania;18777;CITY;wikidata=Q51050|geonames=3878456|whosonfirst=102017315
 naturalearth;1159130591;Loncoche;;-39.37001;-72.63000;CL;La Araucania;15590;CITY;wikidata=Q16900|geonames=3882582|whosonfirst=102017455
 naturalearth;1159130593;Villarica;;-39.28005;-72.23000;CL;La Araucania;31602;CITY;wikidata=Q201019|geonames=3868158|whosonfirst=102016805
-naturalearth;1159130597;Tolten;;-39.21659;-73.21234;CL;La Araucanpa;2293;CITY;wikidata=Q200926|geonames=3869675|whosonfirst=1141906591
-naturalearth;1159130603;Lonquimay;;-38.43333;-71.23328;CL;La Araucanpa;10237;CITY;wikidata=Q16902|geonames=3882534|whosonfirst=1141906593
+naturalearth;1159130597;Tolten;;-39.21659;-73.21234;CL;La Araucania;2293;CITY;wikidata=Q200926|geonames=3869675|whosonfirst=1141906591
+naturalearth;1159130603;Lonquimay;;-38.43333;-71.23328;CL;La Araucania;10237;CITY;wikidata=Q16902|geonames=3882534|whosonfirst=1141906593
 naturalearth;1159130607;Angol;;-37.80221;-72.70550;CL;La Araucania;44856;CITY;wikidata=Q3608|geonames=3899629|whosonfirst=102017967
 naturalearth;1159130611;Collipulli;;-37.95997;-72.43001;CL;La Araucania;16392;CITY;wikidata=Q3843|geonames=3894177|whosonfirst=102017769
 naturalearth;1159130615;La Union;;-40.28996;-73.08997;CL;Los Rios;26298;CITY;wikidata=Q14469|geonames=3883629|whosonfirst=102017501
@@ -1461,7 +1469,7 @@ naturalearth;1159130625;Coronel;;-37.02995;-73.16002;CL;Bio-Bio;92940;CITY;wikid
 naturalearth;1159130629;Talcahuano;;-36.71669;-73.11666;CL;Bio-Bio;288074;CITY;wikidata=Q41997|geonames=3870282|whosonfirst=102016891
 naturalearth;1159130633;Quirihue;;-36.28002;-72.53000;CL;Nuble;6529;CITY;wikidata=Q56115|geonames=3873958|whosonfirst=1141906595
 naturalearth;1159130639;Curanilahue;;-37.48000;-73.34000;CL;Bio-Bio;30611;CITY;wikidata=Q3892|geonames=3892892|whosonfirst=102017719
-naturalearth;1159130643;Santa Barbara;;-37.67001;-72.01998;CL;BHo-B;3494;CITY;wikidata=Q187961|geonames=3871655|whosonfirst=1141906597
+naturalearth;1159130643;Santa Barbara;;-37.67001;-72.01998;CL;Bio-Bio;3494;CITY;wikidata=Q187961|geonames=3871655|whosonfirst=1141906597
 naturalearth;1159130647;Pichilemu;;-34.38003;-71.99998;CL;Libertador General Bernardo O'Higgins;11603;CITY;wikidata=Q25304|geonames=3876256|whosonfirst=1141906601
 naturalearth;1159130651;San Fernando;;-34.58002;-70.98997;CL;Libertador General Bernardo O'Higgins;60746;CITY;wikidata=Q187807|whosonfirst=1141906603
 naturalearth;1159130657;Puerto Varas;;-41.33000;-72.99000;CL;Los Lagos;24958;CITY;wikidata=Q51596|geonames=3874930|whosonfirst=102017135
@@ -1470,7 +1478,7 @@ naturalearth;1159130665;Castro;;-42.48076;-73.76233;CL;Los Lagos;29926;CITY;wiki
 naturalearth;1159130669;Chonchi;;-42.63710;-73.79402;CL;Los Lagos;381;CITY;wikidata=Q3788|whosonfirst=1141906605
 naturalearth;1159130675;Linares;;-35.85067;-71.59136;CL;Maule;81015;CITY;wikidata=Q14494|geonames=3883167|whosonfirst=102017479
 naturalearth;1159130679;Cauquenes;;-35.97513;-72.31363;CL;Maule;31362;CITY;wikidata=Q3749|geonames=3896105|whosonfirst=102017861
-naturalearth;1159130685;Piraievs;;37.95002;23.69999;GR;Attiki;466065;CITY;wikidata=Q58976|geonames=255274|whosonfirst=101752341
+naturalearth;1159130685;Piraeus;Piraievs;37.95002;23.69999;GR;Attiki;466065;CITY;wikidata=Q58976|geonames=255274|whosonfirst=101752341
 naturalearth;1159130689;Volos;;39.36996;22.95001;GR;Thessalia;110632;CITY;wikidata=Q200036|geonames=251833|whosonfirst=101752321
 naturalearth;1159130695;Hania;;35.51221;24.01558;GR;Kriti;78728;CITY;wikidata=Q182299|geonames=260114|whosonfirst=101752343
 naturalearth;1159130699;Kavala;;40.94121;24.40176;GR;Anatoliki Makedonia kai Thraki;59240;CITY;wikidata=Q187352|geonames=735861|whosonfirst=101752337
@@ -1520,8 +1528,8 @@ naturalearth;1159130881;Presidente Dutra;;-5.25003;-44.51998;BR;Maranhao;30330;C
 naturalearth;1159130885;Itapecuru Mirim;;-3.40001;-44.36002;BR;Maranhao;34943;CITY;wikidata=Q2012733|geonames=3397936|whosonfirst=101943397
 naturalearth;1159130891;Sao Jose de Ribamar;;-2.54999;-44.06998;BR;Maranhao;55265;CITY;wikidata=Q1006367|geonames=3388441|whosonfirst=101943483
 naturalearth;1159130895;Santa Ines;;-3.66000;-45.39003;BR;Maranhao;67424;CITY;wikidata=Q2469099|geonames=3389609|whosonfirst=101943247
-naturalearth;1159130899;Rosario;;-2.94004;-44.26002;BR;Maranh;6798;CITY;wikidata=Q2106358|geonames=3390188|whosonfirst=1141906623
-naturalearth;1159130903;Timon;Teresina;-5.11500;-42.84497;BR;Maranh;203157;CITY;wikidata=Q1017101|geonames=3386361|whosonfirst=1141906625
+naturalearth;1159130899;Rosario;;-2.94004;-44.26002;BR;Maranhao;6798;CITY;wikidata=Q2106358|geonames=3390188|whosonfirst=1141906623
+naturalearth;1159130903;Timon;Teresina;-5.11500;-42.84497;BR;Maranhao;203157;CITY;wikidata=Q1017101|geonames=3386361|whosonfirst=1141906625
 naturalearth;1159130909;Capanema;;-1.19002;-47.18000;BR;Para;47766;CITY;wikidata=Q1947031|geonames=3403208|whosonfirst=101942899
 naturalearth;1159130913;Portel;;-1.94997;-50.81998;BR;Para;21315;CITY;wikidata=Q2089210|geonames=3391412|whosonfirst=101942169
 naturalearth;1159130917;Itupiranga;;-5.12001;-49.30002;BR;Para;21301;CITY;wikidata=Q2008167|geonames=3397851|whosonfirst=101942259
@@ -1726,17 +1734,17 @@ naturalearth;1159131799;Pedro Luro;;-39.48334;-62.68332;AR;Ciudad de Buenos Aire
 naturalearth;1159131803;Tres Arroyos;;-38.36997;-60.26995;AR;Ciudad de Buenos Aires;47136;CITY;wikidata=Q2077013|geonames=3833859|whosonfirst=421170331
 naturalearth;1159131809;Coronel Suarez;;-37.46662;-61.91662;AR;Ciudad de Buenos Aires;27000;CITY;wikidata=Q3693997|geonames=3860164|whosonfirst=421204621
 naturalearth;1159131813;Balcarce;;-37.83331;-58.24999;AR;Ciudad de Buenos Aires;18967;CITY;wikidata=Q2365352|whosonfirst=1141906735
-naturalearth;1159131817;25 de Mayo;Veinticinco de Mayo;-37.80003;-67.68330;AR;RRo Negro;17430;CITY;wikidata=Q2449535|geonames=3833111|whosonfirst=1141906737
+naturalearth;1159131817;25 de Mayo;Veinticinco de Mayo;-37.80003;-67.68330;AR;Rio Negro;17430;CITY;wikidata=Q2449535|geonames=3833111|whosonfirst=1141906737
 naturalearth;1159131821;General Roca;;-39.01996;-67.60997;AR;Rio Negro;73212;CITY;wikidata=Q52506|geonames=3855065|whosonfirst=421172809
-naturalearth;1159131827;Comallo;;-41.03332;-70.26657;AR;RRo Negro;741;CITY;wikidata=Q1954924|geonames=3860475|whosonfirst=1141906739
-naturalearth;1159131831;Ingeniero Jacobacci;;-41.30003;-69.58331;AR;RRo Negro;5719;CITY;wikidata=Q2205145|whosonfirst=1141906741
-naturalearth;1159131835;General Conesa;;-40.10005;-64.43329;AR;RRo Negro;2958;CITY;wikidata=Q1985908|whosonfirst=1141906745
-naturalearth;1159131839;Choele Choel;;-39.26661;-65.68331;AR;RRo Negro;10000;CITY;wikidata=Q52522|whosonfirst=1141906747
+naturalearth;1159131827;Comallo;;-41.03332;-70.26657;AR;Rio Negro;741;CITY;wikidata=Q1954924|geonames=3860475|whosonfirst=1141906739
+naturalearth;1159131831;Ingeniero Jacobacci;;-41.30003;-69.58331;AR;Rio Negro;5719;CITY;wikidata=Q2205145|whosonfirst=1141906741
+naturalearth;1159131835;General Conesa;;-40.10005;-64.43329;AR;Rio Negro;2958;CITY;wikidata=Q1985908|whosonfirst=1141906745
+naturalearth;1159131839;Choele Choel;;-39.26661;-65.68331;AR;Rio Negro;10000;CITY;wikidata=Q52522|whosonfirst=1141906747
 naturalearth;1159131845;San Francisco;;-31.43003;-62.08997;AR;Cordoba;59062;CITY;wikidata=Q949535|geonames=3837675|whosonfirst=421178987
 naturalearth;1159131849;Alta Gracia;;-31.65999;-64.42998;AR;Cordoba;40384;CITY;wikidata=Q48293|geonames=3866163|whosonfirst=421169173
 naturalearth;1159131853;Villa Maria;;-32.41003;-63.26002;AR;Cordoba;92453;CITY;wikidata=Q2525523|geonames=3832694|whosonfirst=421169161
 naturalearth;1159131857;Bell Ville;;-32.60004;-62.67996;AR;Cordoba;35105;CITY;wikidata=Q284308|geonames=3864331|whosonfirst=421174005
-naturalearth;1159131863;Villa Rumipal;;-32.18332;-64.48328;AR;CRrdoba;1269;CITY;wikidata=Q10391476|whosonfirst=1141906749
+naturalearth;1159131863;Villa Rumipal;;-32.18332;-64.48328;AR;Cordoba;1269;CITY;wikidata=Q10391476|whosonfirst=1141906749
 naturalearth;1159131867;Villa Carlos Paz;;-31.42001;-64.50000;AR;Cordoba;69451;CITY;wikidata=Q48285|geonames=3832791|whosonfirst=421203525
 naturalearth;1159131871;Chumbicha;;-28.86662;-66.23331;AR;Catamarca;2572;CITY;wikidata=Q5116156|geonames=3861217|whosonfirst=1141906751
 naturalearth;1159131875;Tinogasta;;-28.06662;-67.56658;AR;Catamarca;587;CITY;wikidata=Q81563|geonames=3834361|whosonfirst=1141906753
@@ -1748,7 +1756,7 @@ naturalearth;1159131899;Yacuiba;;-22.03004;-63.70000;AR;Salta;82803;CITY;wikidat
 naturalearth;1159131903;Tartagal;;-22.55001;-63.81002;AR;Salta;60819;CITY;wikidata=Q106115|geonames=3834601|whosonfirst=421194143
 naturalearth;1159131907;Joaquin V. Gonzalez;;-25.08334;-64.18335;AR;Salta;13376;CITY;wikidata=Q1014965|geonames=3853491|whosonfirst=1141906765
 naturalearth;1159131911;General Guemes;;-24.66662;-65.04997;AR;Salta;19828;CITY;wikidata=Q1501621|whosonfirst=1141906767
-naturalearth;1159131917;Trancas;;-26.21666;-65.28331;AR;Tucumtn;1599;CITY;wikidata=Q976838|geonames=3833947|whosonfirst=1141906769
+naturalearth;1159131917;Trancas;;-26.21666;-65.28331;AR;Tucuman;1599;CITY;wikidata=Q976838|geonames=3833947|whosonfirst=1141906769
 naturalearth;1159131921;Presidencia Roque Saenz Pena;;-26.79001;-60.45002;AR;Chaco;81879;CITY;wikidata=Q1656936|geonames=3840300|whosonfirst=890440197
 naturalearth;1159131925;Pampa del Infierno;;-26.51659;-61.16659;AR;Chaco;2921;CITY;wikidata=Q1578938|geonames=3842142|whosonfirst=1141906771
 naturalearth;1159131929;Villa Angela;;-27.58329;-60.71667;AR;Chaco;30051;CITY;wikidata=Q1657303|geonames=3832811|whosonfirst=1141906773
@@ -2144,11 +2152,11 @@ naturalearth;1159133619;Johnstown;;40.32708;-78.92222;US;Pennsylvania;69286;CITY
 naturalearth;1159133623;Scranton;;41.40929;-75.66268;US;Pennsylvania;156196;CITY;wikidata=Q271395|geonames=5211303|whosonfirst=101718305
 naturalearth;1159133629;State College;;40.79372;-77.86025;US;Pennsylvania;87926;CITY;wikidata=Q1187041|geonames=5213681|whosonfirst=101718127
 naturalearth;1159133633;Erie;;42.12992;-80.08499;US;Pennsylvania;178182;CITY;wikidata=Q234061|geonames=5188843|whosonfirst=101718253
-naturalearth;1159133637;Wilkes Barre;;41.24904;-75.87794;US;Pennsylvania;158913;CITY;wikidata=Q745594|geonames=5219488|whosonfirst=101716955
+naturalearth;1159133637;Wilkes-Barre;Wilkes Barre;41.24904;-75.87794;US;Pennsylvania;158913;CITY;wikidata=Q745594|geonames=5219488|whosonfirst=101716955
 naturalearth;1159133641;Nieuw Nickerie;;5.95042;-56.99000;SR;Nickerie;15992;CITY;wikidata=Q738313|geonames=3383427|whosonfirst=890444603
 naturalearth;1159133647;Upata;;8.02043;-62.41000;VE;Bolivar;53685;CITY;wikidata=Q940082|geonames=3625710|whosonfirst=421203023
 naturalearth;1159133651;El Manteco;;7.35039;-62.53332;VE;Bol;2215;CITY;whosonfirst=1141906841
-naturalearth;1159133655;Chaguaramas;;9.33597;-66.25448;VE;Anzoztegui;15000;CITY;wikidata=Q1058829|whosonfirst=1141906843
+naturalearth;1159133655;Chaguaramas;;9.33597;-66.25448;VE;Anzoategui;15000;CITY;wikidata=Q1058829|whosonfirst=1141906843
 naturalearth;1159133659;Barcelona;;10.13038;-64.72001;VE;Anzoategui;600954;CITY;wikidata=Q391221|geonames=3648559|whosonfirst=890439909
 naturalearth;1159133665;El Tigre;;8.89035;-64.26002;VE;Anzoategui;197440;CITY;wikidata=Q1020297|geonames=3641351|whosonfirst=421176317
 naturalearth;1159133669;Maiquetia;;10.60040;-66.96998;VE;Vargas;315442;CITY;wikidata=Q1677956|geonames=3633341|whosonfirst=421169099
@@ -2350,7 +2358,7 @@ naturalearth;1159134559;Udon Thani;;17.40476;102.78932;TH;Udon Thani;247231;CITY
 naturalearth;1159134565;Lao Chi;Lao Cai;22.50135;103.96600;VN;Lao Cai;67206;CITY;wikidata=Q33373|geonames=1576303|whosonfirst=890439923
 naturalearth;1159134569;Hoa Binh;;20.81370;105.33831;VN;Hoa Binh;105260;CITY;wikidata=Q130324|geonames=1580830|whosonfirst=890435363
 naturalearth;1159134573;Son Tay;;21.13818;105.50502;VN;Ha Tay;189547;CITY;wikidata=Q1365138|geonames=1567621|whosonfirst=890435341
-naturalearth;1159134577;Ninh Binh;;20.25430;105.97502;VN;Ninh Bmnh;130517;CITY;wikidata=Q33929|geonames=1571968|whosonfirst=1141906931
+naturalearth;1159134577;Ninh Binh;;20.25430;105.97502;VN;Ninh Binh;130517;CITY;wikidata=Q33929|geonames=1571968|whosonfirst=1141906931
 naturalearth;1159134583;Viet Tri;;21.33041;105.42999;VN;;350000;CITY;wikidata=Q36082|geonames=1562820|whosonfirst=890443887
 naturalearth;1159134587;Bac Giang;Phu Lang Thuong;21.26701;106.20002;VN;;53728;CITY;wikidata=Q36736|geonames=1591527|whosonfirst=421197159
 naturalearth;1159134591;Nakhon Phanom;;17.39448;104.76946;TH;Nakhon Phanom;55377;CITY;wikidata=Q777162|geonames=1608531|whosonfirst=102025185
@@ -2453,7 +2461,7 @@ naturalearth;1159135071;Bath;;51.38375;-2.35002;GB;Bath and North East Somerset;
 naturalearth;1159135075;Exeter;;50.70041;-3.52995;GB;Devon;113118;CITY;wikidata=Q134672|geonames=2649808|whosonfirst=101750383
 naturalearth;1159135079;Cambridge;;52.20039;0.11662;GB;Cambridgeshire;128488;CITY;wikidata=Q350|geonames=2653941|whosonfirst=101750465
 naturalearth;1159135085;Kingston upon Hull;;53.75043;-0.32999;GB;Kingston upon Hull;302296;CITY;wikidata=Q128147|geonames=2645425|whosonfirst=101750561
-naturalearth;1159135089;Londonderry;;55.00037;-7.33328;GB;Derry;83652;CITY;wikidata=Q163584|geonames=2643736|whosonfirst=101751941
+naturalearth;1159135089;Londonderry/Derry;Londonderry;55.00037;-7.33328;GB;Derry;83652;CITY;wikidata=Q163584|geonames=2643736|whosonfirst=101751941
 naturalearth;1159135093;Lisburn;;54.51034;-6.04772;GB;Dungannon;12899;CITY;wikidata=Q1828035|whosonfirst=1141906971
 naturalearth;1159135097;Penzance;;50.13372;-5.55003;GB;Cornwall;20812;CITY;wikidata=Q208209|geonames=2640377|whosonfirst=1141906973
 naturalearth;1159135103;York;;53.95117;-1.07210;GB;York;158947;CITY;wikidata=Q42462|geonames=2633352|whosonfirst=101751641
@@ -2694,7 +2702,7 @@ naturalearth;1159136175;Harper;;4.37538;-7.71698;LR;Maryland;32661;CITY;wikidata
 naturalearth;1159136179;Gbarnga;;7.01041;-9.49000;LR;Bong;45835;CITY;wikidata=Q985291|geonames=2277060|whosonfirst=421168955
 naturalearth;1159136185;Koidu;;8.44048;-10.84999;SL;Eastern;87539;CITY;wikidata=Q1002580|geonames=2407660|whosonfirst=1141907083
 naturalearth;1159136189;Kenema;;7.88041;-11.18997;SL;Eastern;143137;CITY;wikidata=Q634698|geonames=2407790|whosonfirst=1141907087
-naturalearth;1159136193;Zwedru;;6.07039;-8.13001;LR;GrandGedeh;25678;CITY;wikidata=Q231884|geonames=2272491|whosonfirst=421198527
+naturalearth;1159136193;Zwedru;;6.07039;-8.13001;LR;Grand Gedeh;25678;CITY;wikidata=Q231884|geonames=2272491|whosonfirst=421198527
 naturalearth;1159136197;Diffa;;13.31705;12.60888;NE;Diffa;30988;CITY;wikidata=Q990527|geonames=2445704|whosonfirst=421198541
 naturalearth;1159136203;Nguigmi;;14.25317;13.11082;NE;Diffa;17897;CITY;wikidata=Q646915|geonames=2440495|whosonfirst=421199035
 naturalearth;1159136207;Pec;;42.66033;20.31074;;Dakovica;105163;CITY;wikidata=Q112657|geonames=787157|whosonfirst=101912609
@@ -2723,7 +2731,7 @@ naturalearth;1159136305;Leeuwarden;;53.25038;5.78336;NL;Friesland;125778;CITY;wi
 naturalearth;1159136311;Groningen;;53.22041;6.58000;NL;Groningen;216688;CITY;wikidata=Q749|geonames=2755251|whosonfirst=101751909
 naturalearth;1159136315;Harstad;;68.78791;16.51557;NO;Troms;19433;CITY;wikidata=Q1034159|geonames=3153823|whosonfirst=101814671
 naturalearth;1159136319;Utrecht;;52.10035;5.12004;NL;Utrecht;640000;CITY;wikidata=Q803|geonames=2745912|whosonfirst=101751827
-naturalearth;1159136323;Alesund;;62.45980;6.26328;NO;MOre og Romsdal;47772;CITY;wikidata=Q62266|geonames=3163392|whosonfirst=1141907101
+naturalearth;1159136323;Alesund;;62.45980;6.26328;NO;More og Romsdal;47772;CITY;wikidata=Q62266|geonames=3163392|whosonfirst=1141907101
 naturalearth;1159136329;Sandnes;;58.84541;5.69003;NO;Rogaland;46911;CITY;wikidata=Q27587|geonames=6453393|whosonfirst=1141907105
 naturalearth;1159136333;Drammen;;59.73848;10.19923;NO;Buskerud;90722;CITY;wikidata=Q26525|geonames=3159016|whosonfirst=101751925
 naturalearth;1159136337;Moss;;59.43698;10.66916;NO;Astfold;36901;CITY;wikidata=Q109021|geonames=3145375|whosonfirst=101816203
@@ -2737,7 +2745,7 @@ naturalearth;1159136371;Presov;;48.99973;21.23936;SK;Presov;94718;CITY;wikidata=
 naturalearth;1159136375;Kaunas;;54.95040;23.88003;LT;Kauno;374643;CITY;wikidata=Q4115712|geonames=598316|whosonfirst=101752745
 naturalearth;1159136381;Jelgava;;56.65270;23.71281;LV;Jelgava;67207;CITY;wikidata=Q179830|geonames=459279|whosonfirst=101751785
 naturalearth;1159136385;Al Kharj;;24.15557;47.31204;SA;Ar Riyad;298428;CITY;wikidata=Q2162128|geonames=109353|whosonfirst=1141907107
-naturalearth;1159136389;Ad Damman;Ad-Dammam;26.43014;50.09772;SA;Ash Sharqiyah;2054710;CITY;wikidata=Q160320|geonames=110336|whosonfirst=421190297
+naturalearth;1159136389;Dammam;Ad Damman|Ad-Dammam;26.43014;50.09772;SA;Ash Sharqiyah;2054710;CITY;wikidata=Q160320|geonames=110336|whosonfirst=421190297
 naturalearth;1159136393;Hafar al Batin;;28.43365;45.96008;SA;Ash Sharqiyah;249194;CITY;wikidata=Q27400|geonames=106297|whosonfirst=1141907111
 naturalearth;1159136395;Al Jubayl;;27.00464;49.64600;SA;Ash Sharqiyah;237274;CITY;wikidata=Q27430|geonames=109435|whosonfirst=890439855
 naturalearth;1159136401;Gwadar;;25.13897;62.32859;PK;Baluchistan;51901;CITY;wikidata=Q580533|geonames=1177446|whosonfirst=1141907113
@@ -2856,7 +2864,7 @@ naturalearth;1159136897;Taza;;34.22038;-4.01997;MA;Taza - Al Hoceima - Taounate;
 naturalearth;1159136903;Ouezzane;;34.81034;-5.57001;MA;Gharb - Chrarda - Beni Hssen;69658;CITY;wikidata=Q602426|geonames=2540810|whosonfirst=890444513
 naturalearth;1159136905;Kenitra;;34.27040;-6.58000;MA;Gharb - Chrarda - Beni Hssen;551786;CITY;wikidata=Q478207|geonames=2544571|whosonfirst=1141907191
 naturalearth;1159136909;Settat;;33.01043;-7.62001;MA;Chaouia - Ouardigha;161748;CITY;wikidata=Q818019|geonames=2537406|whosonfirst=890432365
-naturalearth;1159136915;Er Rachidia;;31.94041;-4.44997;MA;Mekncs - Tafilalet;228489;CITY;wikidata=Q1980885|geonames=7280528|whosonfirst=1141907195
+naturalearth;1159136915;Er Rachidia;;31.94041;-4.44997;MA;Meknes - Tafilalet;228489;CITY;wikidata=Q1980885|geonames=7280528|whosonfirst=1141907195
 naturalearth;1159136917;Meknes;;33.90042;-5.55998;MA;Meknes - Tafilalet;697628;CITY;wikidata=Q178663|geonames=2542715|whosonfirst=890435383
 naturalearth;1159136923;Tiznit;;29.71042;-9.73999;MA;Souss - Massa - Draa;57705;CITY;wikidata=Q587107|geonames=2527089|whosonfirst=421180041
 naturalearth;1159136927;El Jadida;;33.26036;-8.50998;MA;Doukkala - Abda;180470;CITY;wikidata=Q219583|geonames=2550078|whosonfirst=890438743
@@ -3111,7 +3119,7 @@ naturalearth;1159138049;Artemovsk;;54.34874;93.43553;RU;Krasnoyarsk;4948;CITY;wi
 naturalearth;1159138055;Uyar;;55.81038;94.31532;RU;Krasnoyarsk;13167;CITY;wikidata=Q197351|geonames=1487922|whosonfirst=102013973
 naturalearth;1159138059;Uzhur;;55.32917;89.82071;RU;Krasnoyarsk;19212;CITY;wikidata=Q196803|geonames=1487882|whosonfirst=102012881
 naturalearth;1159138063;Sayanogorsk;;53.08943;91.40041;RU;Krasnoyarsk;55642;CITY;wikidata=Q193580|geonames=1492893|whosonfirst=102014257
-naturalearth;1159138067;Podkamennaya;;61.59951;90.12364;RU;Krasnoyarsk;10;CITY;wikidata=Q2946788|whosonfirst=1141907293
+naturalearth;1159138067;Podkamennaya Tunguska;Podkamennaya;61.59951;90.12364;RU;Krasnoyarsk;10;CITY;wikidata=Q2946788|whosonfirst=1141907293
 naturalearth;1159138073;Igarka;;67.46711;86.58334;RU;Krasnoyarsk;7470;CITY;wikidata=Q141606|geonames=1505991|whosonfirst=102002203
 naturalearth;1159138077;Agapa;;71.45038;89.24999;RU;Taymyr;10;CITY;whosonfirst=1141907295
 naturalearth;1159138081;Boyarka;;70.76698;97.50003;RU;Taymyr;35968;CITY;whosonfirst=1141907297
@@ -3381,8 +3389,8 @@ naturalearth;1159139263;Oshikango;;-17.39952;15.88000;NA;Ohangwena;12423;CITY;wi
 naturalearth;1159139267;Cuangar;;-17.60953;18.61999;NA;Kavango;500;CITY;wikidata=Q203050|geonames=3349245|whosonfirst=1141907487
 naturalearth;1159139271;Katima Mulilo;;-17.49962;24.26001;NA;Caprivi;25027;CITY;wikidata=Q864100|geonames=877178|whosonfirst=421172733
 naturalearth;1159139275;Mucusso;;-18.01953;21.43000;AO;Cuando Cubango;100;CITY;wikidata=Q1106933|whosonfirst=1141907489
-naturalearth;1159139279;Dawra;Daora;27.46291;-12.99219;MA;LaRyoune - Boujdour - Sakia El Hamra;10;CITY;wikidata=Q1165464|whosonfirst=1141907491
-naturalearth;1159139283;Lemsid;;26.54819;-13.84819;MA;LaRyoune - Boujdour - Sakia El Hamra;100;CITY;wikidata=Q6521520|whosonfirst=1141907493
+naturalearth;1159139279;Dawra;Daora;27.46291;-12.99219;MA;Laayoune - Boujdour - Sakia El Hamra;10;CITY;wikidata=Q1165464|whosonfirst=1141907491
+naturalearth;1159139283;Lemsid;;26.54819;-13.84819;MA;Laayoune - Boujdour - Sakia El Hamra;100;CITY;wikidata=Q6521520|whosonfirst=1141907493
 naturalearth;1159139287;Tan Tan;;28.43040;-11.10003;MA;Guelmim - Es-Semara;64868;CITY;wikidata=Q936316|geonames=2530241|whosonfirst=890451665
 naturalearth;1159139291;Utkholok;;57.55040;157.23334;RU;Kamchatka;10;CITY;whosonfirst=1141907495
 naturalearth;1159139297;Bol'sheretsk;;52.43898;156.35939;RU;Kamchatka;10;CITY;whosonfirst=1141907497
@@ -3567,7 +3575,7 @@ naturalearth;1159140109;San Pedro de Macoris;;18.45036;-69.29997;DO;San Pedro de
 naturalearth;1159140113;Armenia;;4.53428;-75.68113;CO;Quindio;315328;CITY;wikidata=Q328518|geonames=3689560|whosonfirst=421169147
 naturalearth;1159140117;Pereira;;4.81039;-75.67999;CO;Risaralda;568750;CITY;wikidata=Q51111|geonames=3672486|whosonfirst=890440193
 naturalearth;1159140121;Honda;;5.19034;-74.75000;CO;Tolima;35469;CITY;wikidata=Q932513|geonames=3680840|whosonfirst=421169137
-naturalearth;1159140127;San Vicente del Caguan;;2.10949;-74.77032;CO;Caqueti;1500;CITY;wikidata=Q1642041|geonames=3668290|whosonfirst=1141907593
+naturalearth;1159140127;San Vicente del Caguan;;2.10949;-74.77032;CO;Caqueta;1500;CITY;wikidata=Q1642041|geonames=3668290|whosonfirst=1141907593
 naturalearth;1159140131;Florencia;;1.61040;-75.61999;CO;Caqueta;130337;CITY;wikidata=Q849859|geonames=3682426|whosonfirst=1141907595
 naturalearth;1159140135;Guapi;;2.56040;-77.85999;CO;Cauca;13853;CITY;wikidata=Q2432113|geonames=3681505|whosonfirst=421176417
 naturalearth;1159140139;Neiva;;2.93105;-75.33025;CO;Huila;352855;CITY;wikidata=Q638260|geonames=3673899|whosonfirst=421204341
@@ -3597,12 +3605,12 @@ naturalearth;1159140243;Matanzas;;23.04153;-81.57749;CU;Matanzas;146733;CITY;wik
 naturalearth;1159140247;Colon;;22.71958;-80.90580;CU;Matanzas;63882;CITY;wikidata=Q5029|geonames=3563843|whosonfirst=890444801
 naturalearth;1159140253;Sagua la Grande;;22.80903;-80.07109;CU;Villa Clara;62073;CITY;wikidata=Q5030|geonames=3541440|whosonfirst=890442077
 naturalearth;1159140257;Fort-de-France;;14.61041;-61.08003;MQ;Martinique;253995;CITY;wikidata=Q81621|geonames=3570675|whosonfirst=1141907601
-naturalearth;1159140261;Zongo;;4.33034;18.61503;CD;Cquateur;17667;CITY;wikidata=Q219930|geonames=2310763|whosonfirst=1141907603
+naturalearth;1159140261;Zongo;;4.33034;18.61503;CD;Equateur;17667;CITY;wikidata=Q219930|geonames=2310763|whosonfirst=1141907603
 naturalearth;1159140269;Libenge;;3.66043;18.61999;CD;Equateur;27053;CITY;wikidata=Q3237716|geonames=2313762|whosonfirst=421175899
 naturalearth;1159140273;Bongandanga;;1.51036;21.05002;CD;Equateur;4105;CITY;wikidata=Q2910050|geonames=218229|whosonfirst=421167063
-naturalearth;1159140275;Ikela;;-1.18294;23.26658;CD;Cquateur;291;CITY;wikidata=Q3086891|whosonfirst=1141907605
-naturalearth;1159140281;Binga;;2.38341;20.41998;CD;Cquateur;64639;CITY;wikidata=Q4086832|geonames=218855|whosonfirst=1141907609
-naturalearth;1159140283;Basankusu;;1.23371;19.80002;CD;Cquateur;52216;CITY;wikidata=Q1102117|whosonfirst=1141907611
+naturalearth;1159140275;Ikela;;-1.18294;23.26658;CD;Equateur;291;CITY;wikidata=Q3086891|whosonfirst=1141907605
+naturalearth;1159140281;Binga;;2.38341;20.41998;CD;Equateur;64639;CITY;wikidata=Q4086832|geonames=218855|whosonfirst=1141907609
+naturalearth;1159140283;Basankusu;;1.23371;19.80002;CD;Equateur;52216;CITY;wikidata=Q1102117|whosonfirst=1141907611
 naturalearth;1159140291;Boende;;-0.21959;20.86001;CD;Equateur;32091;CITY;wikidata=Q616131|geonames=218680|whosonfirst=421198611
 naturalearth;1159140295;Gbadolite;;4.29037;21.01995;CD;Equateur;50493;CITY;wikidata=Q833866|geonames=216404|whosonfirst=1141907613
 naturalearth;1159140299;Businga;;3.34038;20.86998;CD;Equateur;34247;CITY;wikidata=Q581003|geonames=217637|whosonfirst=421175669
@@ -3669,7 +3677,7 @@ naturalearth;1159140559;Giessen;;50.58372;8.65000;DE;Hessen;82358;CITY;wikidata=
 naturalearth;1159140563;Wiesbaden;;50.08039;8.25003;DE;Hessen;617126;CITY;wikidata=Q1721|geonames=2809346|whosonfirst=101748579
 naturalearth;1159140567;Bremerhaven;;53.55044;8.57998;DE;Bremen;137751;CITY;wikidata=Q2706|geonames=2944368|whosonfirst=101748845
 naturalearth;1159140571;Osnabruck;;52.28044;8.04999;DE;Niedersachsen;231268;CITY;wikidata=Q2916|geonames=2856883|whosonfirst=101748795
-naturalearth;1159140577;Hannover;;52.36697;9.71666;DE;Niedersachsen;722490;CITY;wikidata=Q1715|geonames=2910831|whosonfirst=101748819
+naturalearth;1159140577;Hanover;Hannover;52.36697;9.71666;DE;Niedersachsen;722490;CITY;wikidata=Q1715|geonames=2910831|whosonfirst=101748819
 naturalearth;1159140581;Gottingen;;51.52043;9.92000;DE;Niedersachsen;139419;CITY;wikidata=Q3033|geonames=2918632|whosonfirst=101748721
 naturalearth;1159140585;Gera;;50.87037;12.07000;DE;Thuringen;104659;CITY;wikidata=Q3750|geonames=2921232|whosonfirst=101748611
 naturalearth;1159140589;Jena;;50.93044;11.58001;DE;Thuringen;104712;CITY;wikidata=Q3150|geonames=2895044|whosonfirst=101748613
@@ -3841,7 +3849,7 @@ naturalearth;1159141369;Lusanga;;-5.58293;16.51666;CD;Bandundu;177;CITY;wikidata
 naturalearth;1159141373;Mangai;;-4.03961;19.53001;CD;Bandundu;37188;CITY;wikidata=Q6748616|geonames=2313084|whosonfirst=890451637
 naturalearth;1159141377;Kasongo-Lunda;;-6.47962;16.82997;CD;Bandundu;20060;CITY;wikidata=Q3193717|geonames=2315026|whosonfirst=421175901
 naturalearth;1159141381;Mushie;;-3.01962;16.92004;CD;Bandundu;33062;CITY;wikidata=Q1102126|geonames=2312249|whosonfirst=421175897
-naturalearth;1159141387;Dibaya;;-6.50954;22.87001;CD;Kasao-Occidental;603;CITY;wikidata=Q3026485|geonames=217336|whosonfirst=1141907743
+naturalearth;1159141387;Dibaya;;-6.50954;22.87001;CD;Kasai-Occidental;603;CITY;wikidata=Q3026485|geonames=217336|whosonfirst=1141907743
 naturalearth;1159141391;Mweka;;-4.83962;21.56999;CD;Kasai-Occidental;50675;CITY;wikidata=Q2977263|geonames=207596|whosonfirst=421167055
 naturalearth;1159141395;Luebo;;-5.34951;21.41000;CD;Kasai-Occidental;35183;CITY;wikidata=Q651248|geonames=210939|whosonfirst=421205143
 naturalearth;1159141399;Demba;;-5.50960;22.25997;CD;Kasai-Occidental;22263;CITY;wikidata=Q3022059|geonames=217389|whosonfirst=421188137
@@ -3947,7 +3955,7 @@ naturalearth;1159141877;Shillong;;25.57049;91.88001;IN;Meghalaya;375527;CITY;wik
 naturalearth;1159141881;Nandi;;-17.79960;177.41660;FJ;Western;42284;CITY;wikidata=Q619443|geonames=2202064|whosonfirst=421179869
 naturalearth;1159141885;Lautoka;;-17.61610;177.46662;FJ;Western;55894;CITY;wikidata=Q856662|whosonfirst=1141907795
 naturalearth;1159141891;Lambarene;;-0.69961;10.21663;GA;Moyen-Ogooue;25310;CITY;wikidata=Q874197|geonames=2399888|whosonfirst=421189661
-naturalearth;1159141895;Bifoum;;-0.33291;10.38323;GA;Moyen-Ogooul;134;CITY;wikidata=Q4904779|geonames=2401735|whosonfirst=1141907797
+naturalearth;1159141895;Bifoum;;-0.33291;10.38323;GA;Moyen-Ogooue;134;CITY;wikidata=Q4904779|geonames=2401735|whosonfirst=1141907797
 naturalearth;1159141899;Ndende;;-2.38292;11.38327;GA;Ngounie;6200;CITY;wikidata=Q2591916|geonames=2397614|whosonfirst=1141907799
 naturalearth;1159141903;Mouila;;-1.86615;11.01668;GA;Ngounie;28000;CITY;wikidata=Q746670|geonames=2398073|whosonfirst=1141907801
 naturalearth;1159141909;Omboue;;-1.56622;9.24997;GA;Ogooue-Maritime;1667;CITY;wikidata=Q2717524|geonames=2396853|whosonfirst=890438717
@@ -3986,8 +3994,8 @@ naturalearth;1159142057;Mulhouse;;47.75041;7.34998;FR;Alsace;215454;CITY;wikidat
 naturalearth;1159142061;Nancy;;48.68368;6.20002;FR;Lorraine;268976;CITY;wikidata=Q40898|geonames=2990999|whosonfirst=101750135
 naturalearth;1159142065;Metz;;49.12035;6.18003;FR;Lorraine;409186;CITY;wikidata=Q22690|geonames=2994160|whosonfirst=101750105
 naturalearth;1159142071;Cochrane;;-47.26628;-72.54995;CL;Ais;4441;CITY;wikidata=Q3800|geonames=3894483|whosonfirst=1141907809
-naturalearth;1159142075;Lagunas;;-20.98287;-69.68330;CL;Tarapac;10;CITY;whosonfirst=1141907811
-naturalearth;1159142079;Pozo Almonte;;-20.26963;-69.80001;CL;Tarapacm;10830;CITY;wikidata=Q51585|geonames=3875235|whosonfirst=1141907813
+naturalearth;1159142075;Lagunas;;-20.98287;-69.68330;CL;Tarapaca;10;CITY;whosonfirst=1141907811
+naturalearth;1159142079;Pozo Almonte;;-20.26963;-69.80001;CL;Tarapaca;10830;CITY;wikidata=Q51585|geonames=3875235|whosonfirst=1141907813
 naturalearth;1159142083;Toconao;;-23.18289;-68.01663;CL;Antofagasta;378;CITY;wikidata=Q7812041|geonames=3869724|whosonfirst=1141907815
 naturalearth;1159142089;Huasco;;-28.46959;-71.22001;CL;Atacama;2558;CITY;wikidata=Q14422|geonames=3887758|whosonfirst=1141907817
 naturalearth;1159142093;Diego de Almagro;;-26.36962;-70.05000;CL;Atacama;18137;CITY;wikidata=Q13033|geonames=3892454|whosonfirst=102017699
@@ -4231,7 +4239,7 @@ naturalearth;1159143181;Basse-terre;;16.01041;-61.70548;GP;Guadeloupe;307;CITY;w
 naturalearth;1159143187;St.-Benoit;;-21.03351;55.71282;RE;La Reunion;35310;CITY;wikidata=Q478215|geonames=935267|whosonfirst=1141907909
 naturalearth;1159143191;Manacapuru;;-3.28958;-60.61998;BR;Amazonas;59102;CITY;wikidata=Q983526|geonames=3663529|whosonfirst=101941861
 naturalearth;1159143195;Maues;;-3.38963;-57.72003;BR;Amazonas;32561;CITY;wikidata=Q1808581|geonames=3395062|whosonfirst=101941977
-naturalearth;1159143199;Pedreiras;;-4.56961;-44.67002;BR;Maranh;13638;CITY;wikidata=Q1957216|geonames=6319761|whosonfirst=1141907911
+naturalearth;1159143199;Pedreiras;;-4.56961;-44.67002;BR;Maranhao;13638;CITY;wikidata=Q1957216|geonames=6319761|whosonfirst=1141907911
 naturalearth;1159143205;Codo;;-4.47959;-43.87997;BR;Maranhao;83288;CITY;wikidata=Q2013225|geonames=3402000|whosonfirst=101943445
 naturalearth;1159143209;Coroata;;-4.12958;-44.15000;BR;Maranhao;34129;CITY;wikidata=Q967552|geonames=3401703|whosonfirst=101943413
 naturalearth;1159143213;Chapadinha;;-3.73953;-43.36000;BR;Maranhao;40804;CITY;wikidata=Q746060|geonames=3402229|whosonfirst=101943539
@@ -4245,15 +4253,15 @@ naturalearth;1159143245;Castanhal;;-1.28960;-47.93003;BR;Para;137406;CITY;wikida
 naturalearth;1159143249;Salinopolis;;-0.60949;-47.33999;BR;Para;40998;CITY;wikidata=Q1008198|geonames=3389822|whosonfirst=101965485
 naturalearth;1159143253;Alenquer;;-1.93959;-54.79000;BR;Para;26290;CITY;wikidata=Q2289869|geonames=3407980|whosonfirst=101942053
 naturalearth;1159143259;Oriximina;;-1.75960;-55.86998;BR;Para;35581;CITY;wikidata=Q2011919|geonames=3393471|whosonfirst=101941975
-naturalearth;1159143263;Xinguara;;-7.10061;-49.94805;BR;Par;4047;CITY;wikidata=Q2008249|geonames=6318968|whosonfirst=1141907917
-naturalearth;1159143267;Jacunda;;-4.43946;-49.11569;BR;Par;51375;CITY;wikidata=Q1967407|geonames=6317351|whosonfirst=1141907919
-naturalearth;1159143271;Uruara;Sitio Vista Alegre;-3.82960;-54.02999;BR;Par;10;CITY;wikidata=Q2009083|geonames=6318838|whosonfirst=1141907921
+naturalearth;1159143263;Xinguara;;-7.10061;-49.94805;BR;Para;4047;CITY;wikidata=Q2008249|geonames=6318968|whosonfirst=1141907917
+naturalearth;1159143267;Jacunda;;-4.43946;-49.11569;BR;Para;51375;CITY;wikidata=Q1967407|geonames=6317351|whosonfirst=1141907919
+naturalearth;1159143271;Uruara;Sitio Vista Alegre;-3.82960;-54.02999;BR;Para;10;CITY;wikidata=Q2009083|geonames=6318838|whosonfirst=1141907921
 naturalearth;1159143277;Altamira;;-3.19961;-52.21000;BR;Para;70888;CITY;wikidata=Q434285|geonames=3407882|whosonfirst=101942051
 naturalearth;1159143281;Paragominas;;-2.95958;-47.49001;BR;Para;69613;CITY;wikidata=Q935005|geonames=3393106|whosonfirst=101942501
 naturalearth;1159143285;Cameta;;-2.23962;-49.50999;BR;Para;45200;CITY;wikidata=Q1805206|geonames=3403697|whosonfirst=101942319
-naturalearth;1159143289;Rolim de Moura;;-11.73020;-61.78063;BR;Rondinia;24516;CITY;wikidata=Q1784242|geonames=6318182|whosonfirst=1141907923
+naturalearth;1159143289;Rolim de Moura;;-11.73020;-61.78063;BR;Rondonia;24516;CITY;wikidata=Q1784242|geonames=6318182|whosonfirst=1141907923
 naturalearth;1159143295;Ariquemes;;-9.93961;-63.07999;BR;Rondonia;58096;CITY;wikidata=Q1646975|geonames=3665199|whosonfirst=101941709
-naturalearth;1159143299;Abuna;;-9.69539;-65.35972;BR;Rondinia;1929;CITY;wikidata=Q4670642|geonames=3665510|whosonfirst=1141907925
+naturalearth;1159143299;Abuna;;-9.69539;-65.35972;BR;Rondonia;1929;CITY;wikidata=Q4670642|geonames=3665510|whosonfirst=1141907925
 naturalearth;1159143303;Tocantinopolis;;-6.31958;-47.41998;BR;Tocantins;8750;CITY;wikidata=Q587927|geonames=3386309|whosonfirst=1141907927
 naturalearth;1159143307;Gurupi;;-11.71961;-49.05999;BR;Tocantins;64789;CITY;wikidata=Q1784265|geonames=3461724|whosonfirst=101942409
 naturalearth;1159143313;Aquidauana;;-20.46962;-55.79002;BR;Mato Grosso do Sul;40803;CITY;wikidata=Q1792157|geonames=3471896|whosonfirst=101961161
@@ -4432,8 +4440,8 @@ naturalearth;1159144087;Telsen;;-42.39960;-66.95001;AR;Chubut;500;CITY;wikidata=
 naturalearth;1159144091;Malargue;;-35.46612;-69.58331;AR;Mendoza;11847;CITY;wikidata=Q1886759|whosonfirst=1141908045
 naturalearth;1159144095;Tunuyan;;-33.56618;-69.01668;AR;Mendoza;22834;CITY;wikidata=Q2290708|geonames=3833520|whosonfirst=1141908047
 naturalearth;1159144099;La Paz;;-33.46614;-67.55000;AR;Mendoza;4400;CITY;wikidata=Q2520337|geonames=3849516|whosonfirst=1141908049
-naturalearth;1159144105;Chos Malal;;-37.38295;-70.26657;AR;Neuqutn;8556;CITY;wikidata=Q288993|geonames=3861262|whosonfirst=1141908051
-naturalearth;1159144109;Las Lajas;;-38.51627;-70.36659;AR;Neuqutn;1218;CITY;wikidata=Q1016895|geonames=3848216|whosonfirst=1141908053
+naturalearth;1159144105;Chos Malal;;-37.38295;-70.26657;AR;Neuquen;8556;CITY;wikidata=Q288993|geonames=3861262|whosonfirst=1141908051
+naturalearth;1159144109;Las Lajas;;-38.51627;-70.36659;AR;Neuquen;1218;CITY;wikidata=Q1016895|geonames=3848216|whosonfirst=1141908053
 naturalearth;1159144113;Aiquile;;-18.18955;-65.18001;BO;Cochabamba;8224;CITY;wikidata=Q1617416|geonames=3924341|whosonfirst=890442183
 naturalearth;1159144121;Padilla;;-19.29961;-64.30996;BO;Chuquisaca;2920;CITY;wikidata=Q1584051|geonames=3909038|whosonfirst=421171009
 naturalearth;1159144125;Camargo;;-20.63958;-65.20998;BO;Chuquisaca;4715;CITY;wikidata=Q1642851|geonames=3922451|whosonfirst=1141908055
@@ -4453,7 +4461,7 @@ naturalearth;1159144185;Formosa;;-15.53948;-47.33999;BR;Goias;81232;CITY;wikidat
 naturalearth;1159144189;Zarate;;-34.08956;-59.04002;AR;Ciudad de Buenos Aires;88781;CITY;wikidata=Q246956|geonames=3427213|whosonfirst=421204003
 naturalearth;1159144195;Carhue;;-37.18286;-62.73331;AR;Ciudad de Buenos Aires;7190;CITY;wikidata=Q54117|geonames=3862634|whosonfirst=1141908063
 naturalearth;1159144199;Darregueira;;-37.69957;-63.16659;AR;Ciudad de Buenos Aires;3412;CITY;wikidata=Q5799420|whosonfirst=1141908065
-naturalearth;1159144205;Juarez;;-37.66552;-59.80003;AR;Ciudad de Buenos Aires;10609;CITY;wikidata=Q2053011|whosonfirst=1141908067
+naturalearth;1159144205;Benito Juarez;Juarez;-37.66552;-59.80003;AR;Ciudad de Buenos Aires;10609;CITY;wikidata=Q2053011|whosonfirst=1141908067
 naturalearth;1159144211;Mar de Ajo;;-36.71622;-56.67660;AR;Ciudad de Buenos Aires;13610;CITY;wikidata=Q991680|geonames=3430866|whosonfirst=1141908069
 naturalearth;1159144215;Lobos;;-35.18489;-59.09467;AR;Ciudad de Buenos Aires;18278;CITY;wikidata=Q1867123|whosonfirst=1141908071
 naturalearth;1159144219;Chascomus;;-35.56621;-58.01662;AR;Ciudad de Buenos Aires;21054;CITY;wikidata=Q2677190|geonames=3435448|whosonfirst=1141908073
@@ -4465,8 +4473,8 @@ naturalearth;1159144241;Azul;;-36.77963;-59.87000;AR;Ciudad de Buenos Aires;5394
 naturalearth;1159144247;Villalonga;;-39.92110;-62.62431;AR;Ciudad de Buenos Aires;2838;CITY;wikidata=Q2433642|whosonfirst=1141908077
 naturalearth;1159144251;Victorica;;-36.21625;-65.45002;AR;La Pampa;4458;CITY;wikidata=Q2272570|geonames=3832923|whosonfirst=1141908079
 naturalearth;1159144255;General Pico;;-35.65960;-63.77002;AR;La Pampa;57029;CITY;wikidata=Q58349|geonames=3855075|whosonfirst=421177953
-naturalearth;1159144257;San Antonio Oeste;;-40.73288;-64.93328;AR;RRo Negro;8492;CITY;wikidata=Q1894082|whosonfirst=1141908081
-naturalearth;1159144265;Sierra Colorado;;-40.58286;-67.79998;AR;RRo Negro;1522;CITY;wikidata=Q692861|geonames=3835304|whosonfirst=1141908083
+naturalearth;1159144257;San Antonio Oeste;;-40.73288;-64.93328;AR;Rio Negro;8492;CITY;wikidata=Q1894082|whosonfirst=1141908081
+naturalearth;1159144265;Sierra Colorado;;-40.58286;-67.79998;AR;Rio Negro;1522;CITY;wikidata=Q692861|geonames=3835304|whosonfirst=1141908083
 naturalearth;1159144269;Mercedes;;-33.68959;-65.46997;AR;San Luis;49345;CITY;wikidata=Q1756745|whosonfirst=1141908085
 naturalearth;1159144273;Rio Tercero;;-32.17960;-64.12002;AR;Cordoba;53389;CITY;wikidata=Q994351|geonames=3838793|whosonfirst=421173539
 naturalearth;1159144277;Belen;;-27.64959;-67.03328;AR;Catamarca;11359;CITY;wikidata=Q934213|geonames=3864430|whosonfirst=1141908087
@@ -4532,7 +4540,7 @@ naturalearth;1159144547;Shkoder;;42.06845;19.51885;AL;Shkoder;155767;CITY;wikida
 naturalearth;1159144553;Brugge;Bruges;51.22037;3.23002;BE;Brugge;146469;CITY;wikidata=Q12994|geonames=2800931|whosonfirst=101748097
 naturalearth;1159144557;Namur;;50.47039;4.87003;BE;Namur;106284;CITY;wikidata=Q134121|geonames=2790471|whosonfirst=101748077
 naturalearth;1159144561;Charleroi;;50.42040;4.45000;BE;Charleroi;345367;CITY;wikidata=Q81046|geonames=2800481|whosonfirst=101748075
-naturalearth;1159144565;Shirvan;Ali Bayramli;39.93230;48.92026;AZ;;70684;CITY;wikidata=Q241116|geonames=148565|whosonfirst=890433249
+naturalearth;1159144565;Sirvan;Shirvan|Ali Bayramli;39.93230;48.92026;AZ;;70684;CITY;wikidata=Q241116|geonames=148565|whosonfirst=890433249
 naturalearth;1159144577;Goycay;;40.65342;47.74059;AZ;Goycay;35348;CITY;wikidata=Q1822209|geonames=586427|whosonfirst=421178483
 naturalearth;1159144581;Lankaran;;38.75400;48.85106;AZ;Astara;60180;CITY;wikidata=Q228811|whosonfirst=1141908127
 naturalearth;1159144585;Saki;;41.19233;47.17055;AZ;;64968;CITY;wikidata=Q234783|geonames=585170|whosonfirst=890440185
@@ -4568,12 +4576,12 @@ naturalearth;1159144701;Ndalatando;;-9.29955;14.90998;AO;Cuanza Norte;8144;CITY;
 naturalearth;1159144703;Quibala;;-10.72959;14.97995;AO;Cuanza Sul;8915;CITY;wikidata=Q602772|geonames=3346598|whosonfirst=421180045
 naturalearth;1159144705;Calulo;;-9.99961;14.90001;AO;Cuanza Sul;795;CITY;wikidata=Q3651040|whosonfirst=1141908157
 naturalearth;1159144707;Waku Kungo;;-11.35953;15.12000;AO;Cuanza Sul;12069;CITY;wikidata=Q2944819|geonames=3345497|whosonfirst=421180043
-naturalearth;1159144709;Songo;;-7.34959;14.84999;AO;UGge;10579;CITY;whosonfirst=1141908159
+naturalearth;1159144709;Songo;;-7.34959;14.84999;AO;Uige;10579;CITY;whosonfirst=1141908159
 naturalearth;1159144711;Mbanza-Congo;Mbanza Congo;-6.26961;14.24000;AO;Zaire;60182;CITY;wikidata=Q500189|geonames=2239520|whosonfirst=421205397
 naturalearth;1159144715;Nzeto;;-7.22960;12.86003;AO;Zaire;21059;CITY;wikidata=Q2351452|geonames=2239001|whosonfirst=421195151
 naturalearth;1159144719;Soyo;;-6.12961;12.36998;AO;Zaire;67491;CITY;wikidata=Q1015108|geonames=2236967|whosonfirst=890440279
 naturalearth;1159144723;Cabinda;;-5.55962;12.18999;AO;Cabinda;91791;CITY;wikidata=Q459360|geonames=2243271|whosonfirst=890434603
-naturalearth;1159144727;Calucinga;;-11.31958;16.19998;AO;BiO;531;CITY;whosonfirst=1141908161
+naturalearth;1159144727;Calucinga;;-11.31958;16.19998;AO;Bie;531;CITY;whosonfirst=1141908161
 naturalearth;1159144733;Camacupa;;-12.01959;17.46998;AO;Bie;19828;CITY;wikidata=Q1027956|geonames=3351014|whosonfirst=890441563
 naturalearth;1159144737;Cubal;;-13.03958;14.24000;AO;Benguela;4837;CITY;wikidata=Q1142891|geonames=3349229|whosonfirst=1141908163
 naturalearth;1159144741;Mavinga;;-15.78954;20.36004;AO;Cuando Cubango;30000;CITY;wikidata=Q1620590|whosonfirst=1141908167
@@ -4581,9 +4589,9 @@ naturalearth;1159144745;Cuito Caunavale;;-15.15961;19.16998;AO;Cuando Cubango;14
 naturalearth;1159144751;Luiana;;-17.36955;22.99998;AO;Cuando Cubango;150;CITY;whosonfirst=1141908171
 naturalearth;1159144755;Ondjiva;Onjiva;-17.06962;15.73004;AO;Cunene;10169;CITY;wikidata=Q635045|geonames=3346821|whosonfirst=421173959
 naturalearth;1159144759;Chitado;;-17.31963;13.92002;AO;Cunene;500;CITY;wikidata=Q17165769|whosonfirst=1141908173
-naturalearth;1159144763;Chibemba;;-15.74959;14.08001;AO;HuOla;1502;CITY;whosonfirst=1141908175
-naturalearth;1159144769;Chibia;;-15.18963;13.69001;AO;HuOla;1411;CITY;wikidata=Q2346746|geonames=3349997|whosonfirst=1141908177
-naturalearth;1159144773;Quipungo;;-14.82955;14.55001;AO;HuOla;186;CITY;wikidata=Q774789|geonames=3346498|whosonfirst=1141908179
+naturalearth;1159144763;Chibemba;;-15.74959;14.08001;AO;Huila;1502;CITY;whosonfirst=1141908175
+naturalearth;1159144769;Chibia;;-15.18963;13.69001;AO;Huila;1411;CITY;wikidata=Q2346746|geonames=3349997|whosonfirst=1141908177
+naturalearth;1159144773;Quipungo;;-14.82955;14.55001;AO;Huila;186;CITY;wikidata=Q774789|geonames=3346498|whosonfirst=1141908179
 naturalearth;1159144777;Luau;;-10.70954;22.23000;AO;Moxico;18465;CITY;wikidata=Q1872804|geonames=876177|whosonfirst=890443471
 naturalearth;1159144781;Cangamba;;-13.69959;19.86002;AO;Moxico;1307;CITY;wikidata=Q1033167|whosonfirst=1141908181
 naturalearth;1159144789;Lumbala Nguimbo;;-14.09962;21.44002;AO;Moxico;25;CITY;wikidata=Q10320952|whosonfirst=1141908185
@@ -4616,8 +4624,8 @@ naturalearth;1159144907;Bermejo;;-22.72958;-64.34999;BO;Tarija;36544;CITY;wikida
 naturalearth;1159144913;Timimoun;;29.23652;0.27000;DZ;Adrar;49237;CITY;wikidata=Q1021173|geonames=2476403|whosonfirst=890436901
 naturalearth;1159144917;Sidi bel Abbes;Sidi-Bel-Abbes;35.19034;-0.63997;DZ;Sidi Bel Abbes;208604;CITY;wikidata=Q852276|geonames=2481007|whosonfirst=421169025
 naturalearth;1159144921;Tlimcen;Tlemcen;34.89041;-1.32001;DZ;Tlemcen;229777;CITY;wikidata=Q185134|geonames=2475687|whosonfirst=890440143
-naturalearth;1159144925;Beni Ounif;;32.04927;-1.25138;DZ;BZchar;5628;CITY;wikidata=Q1648984|geonames=2504594|whosonfirst=1141908217
-naturalearth;1159144931;Abadla;;31.01709;-2.73331;DZ;BZchar;14364;CITY;wikidata=Q304704|geonames=2509271|whosonfirst=1141908221
+naturalearth;1159144925;Beni Ounif;;32.04927;-1.25138;DZ;Bechar;5628;CITY;wikidata=Q1648984|geonames=2504594|whosonfirst=1141908217
+naturalearth;1159144931;Abadla;;31.01709;-2.73331;DZ;Bechar;14364;CITY;wikidata=Q304704|geonames=2509271|whosonfirst=1141908221
 naturalearth;1159144935;Sefra;;32.76042;-0.57995;DZ;Naama;63420;CITY;wikidata=Q2745712|geonames=2507943|whosonfirst=421178275
 naturalearth;1159144939;Skikda;;36.88042;6.89998;DZ;Skikda;225181;CITY;wikidata=Q2292517|geonames=2479536|whosonfirst=421169023
 naturalearth;1159144943;Kandi;;11.13037;2.94002;BJ;Alibori;109701;CITY;wikidata=Q845666|geonames=2393693|whosonfirst=421176849
@@ -4641,7 +4649,7 @@ naturalearth;1159145021;Blida;;36.42035;2.83000;DZ;Blida;511348;CITY;wikidata=Q2
 naturalearth;1159145025;Bouira;;36.38048;3.90001;DZ;Bouira;110144;CITY;wikidata=Q722522|geonames=2502958|whosonfirst=1141908245
 naturalearth;1159145029;Medea;;36.27041;2.77000;DZ;Medea;147707;CITY;wikidata=Q1982137|geonames=2488835|whosonfirst=1141908247
 naturalearth;1159145033;Souk Ahras;;36.29038;7.95000;DZ;Souk Ahras;134947;CITY;wikidata=Q402992|geonames=2479215|whosonfirst=1141908249
-naturalearth;1159145039;Tebessa;Tbessa;35.41043;8.12001;DZ;TZbessa;171742;CITY;wikidata=Q984575|geonames=2477461|whosonfirst=1141908251
+naturalearth;1159145039;Tebessa;Tbessa;35.41043;8.12001;DZ;Tebessa;171742;CITY;wikidata=Q984575|geonames=2477461|whosonfirst=1141908251
 naturalearth;1159145043;Mostar;;43.35049;17.82004;BA;Herzegovina-Neretva;163067;CITY;wikidata=Q93347|geonames=3194828|whosonfirst=890518727
 naturalearth;1159145047;Khaskovo;Kurdzhali;41.94378;25.56329;BG;Haskovo;79699;CITY;wikidata=Q186254|geonames=730435|whosonfirst=101748881
 naturalearth;1159145051;Stara Zagora;;42.42313;25.62271;BG;Stara Zagora;143431;CITY;wikidata=Q170415|geonames=726848|whosonfirst=101748895
@@ -4851,7 +4859,7 @@ naturalearth;1159146001;Gitega;;-3.42601;29.84359;BI;Muramvya;23167;CITY;wikidat
 naturalearth;1159146005;Gardiz;Gardez;33.60005;69.21463;AF;Paktya;103601;CITY;wikidata=Q467632|geonames=1141857|whosonfirst=421168803
 naturalearth;1159146007;Lemosos;Lemesos;34.67541;33.03332;CY;Limassol;154000;CITY;wikidata=Q185632|geonames=146384|whosonfirst=101749147
 naturalearth;1159146011;Pokhara;;28.20420;84.00558;NP;Gorkha;200000;CITY;wikidata=Q6640|geonames=1282898|whosonfirst=890443741
-naturalearth;1159146013;Puch'on;Bucheon;37.50084;126.78111;KR;Gyeonggi-do;866000;CITY;wikidata=Q42099|geonames=1838716|whosonfirst=102026355
+naturalearth;1159146013;Bucheon;Puch'on;37.50084;126.78111;KR;Gyeonggi-do;866000;CITY;wikidata=Q42099|geonames=1838716|whosonfirst=102026355
 naturalearth;1159146015;Songnam;Seongnam;37.44056;127.13583;KR;Gyeonggi-do;942000;CITY;wikidata=Q42108|geonames=1897000|whosonfirst=102026521
 naturalearth;1159146017;Goyang;Koyang;37.65468;126.83530;KR;Gyeonggi-do;903000;CITY;wikidata=Q42061|geonames=1842485|whosonfirst=102026411
 naturalearth;1159146019;Capitol Hill;;15.21125;145.75058;MP;;2500;CITY;wikidata=Q3273113|geonames=4041170|whosonfirst=1141908371
@@ -4893,14 +4901,14 @@ naturalearth;1159146097;Elephant Island;;-61.99959;-57.99999;AQ;;6;CITY;whosonfi
 naturalearth;1159146101;Scott Base;New Zealand;-77.84694;166.74910;AQ;;85;CITY;wikidata=Q1136714|geonames=6620787|whosonfirst=1141908419
 naturalearth;1159146103;McMurdo Station;USA;-77.73228;166.86942;AQ;;1000;CITY;wikidata=Q498627|whosonfirst=890418557
 naturalearth;1159146105;Zhongshan Station;Formerly Sun Yat-Sen Station|China;-69.43406;76.33930;AQ;;60;CITY;wikidata=Q197899|geonames=6620792|whosonfirst=1141908423
-naturalearth;1159146107;Vostok;Russia;-78.46628;106.80003;AQ;;25;CITY;wikidata=Q211014|geonames=6620791|whosonfirst=1141908425
+naturalearth;1159146107;Vostok Station;Vostok|Russia;-78.46628;106.80003;AQ;;25;CITY;wikidata=Q211014|geonames=6620791|whosonfirst=1141908425
 naturalearth;1159146109;Peter I Island;Norway;-68.79516;-90.58420;AQ;;1;CITY;whosonfirst=1141908427
 naturalearth;1159146111;Mirny Station;Russia;-66.57553;93.00629;AQ;;169;CITY;wikidata=Q646492|whosonfirst=1141908429
 naturalearth;1159146113;Mawson Station;Australia;-67.61452;62.87500;AQ;;60;CITY;wikidata=Q1434388|geonames=6620769|whosonfirst=1141908431
 naturalearth;1159146115;Davis Station;Australia;-68.77767;78.14074;AQ;;70;CITY;wikidata=Q1315213|geonames=6620748|whosonfirst=1141908433
 naturalearth;1159146119;Concordia Research Station;France;-74.66631;124.16704;AQ;;30;CITY;wikidata=Q403127|whosonfirst=1141908437
 naturalearth;1159146121;Casey Station;Australia;-66.28609;110.53621;AQ;;200;CITY;wikidata=Q1047169|whosonfirst=1141908439
-naturalearth;1159146123;AmundseniScott South Pole Station;USA;-90.00000;176.99445;AQ;;200;CITY;wikidata=Q243307|geonames=6299995|whosonfirst=1141908441
+naturalearth;1159146123;Amundsen-Scott South Pole Station;USA;-90.00000;176.99445;AQ;;200;CITY;wikidata=Q243307|geonames=6299995|whosonfirst=1141908441
 naturalearth;1159146125;Wasa Station;Sweden;-73.04961;-13.41671;AQ;;10;CITY;wikidata=Q2280257|geonames=6620790|whosonfirst=1141908443
 naturalearth;1159146127;Troll Station;Norway;-72.01629;2.53332;AQ;;44;CITY;wikidata=Q1082371|geonames=6620459|whosonfirst=1141908445
 naturalearth;1159146129;Svea Station;Sweden;-74.58290;-11.21669;AQ;;10;CITY;wikidata=Q3445731|geonames=6620789|whosonfirst=1141908447
@@ -4913,7 +4921,7 @@ naturalearth;1159146143;Sobral Base;Sobral Scientific Base|Argentina;-81.17909;-
 naturalearth;1159146145;Aboa Station;Finland;-75.04959;-13.41671;AQ;;18;CITY;whosonfirst=1141908463
 naturalearth;1159146147;San Martin Base;Argentina;-68.11632;-67.10000;AQ;;20;CITY;wikidata=Q923120|geonames=6620784|whosonfirst=1141908465
 naturalearth;1159146149;Gen. O'Higgins Base;Base General Bernardo O'Higgins Riquelme|Chile;-63.32842;-57.88959;AQ;;44;CITY;wikidata=Q2318477|whosonfirst=1141908467
-naturalearth;1159146151;Esperanza Station;Argentina;-63.37533;-57.02590;AQ;;250;CITY;wikidata=Q1368174|whosonfirst=1141908469
+naturalearth;1159146151;Esperanza Base;Esperanza Station|Argentina;-63.37533;-57.02590;AQ;;250;CITY;wikidata=Q1368174|whosonfirst=1141908469
 naturalearth;1159146155;Orcadas Station;Argentina;-60.73290;-44.73330;AQ;;45;CITY;wikidata=Q1440159|geonames=6620777|whosonfirst=1141908473
 naturalearth;1159146157;Signy Research Station;South Orkney Islands, UK;-60.63131;-45.60070;AQ;;8;CITY;wikidata=Q1751827|geonames=6638726|whosonfirst=1141908475
 naturalearth;1159146159;Kullorsuaq;;74.57806;-57.22499;GL;;450;CITY;wikidata=Q669016|geonames=3422228|whosonfirst=1141908477
@@ -5028,12 +5036,12 @@ naturalearth;1159146401;Bodo;;67.27644;14.42929;NO;Nordland;34073;CITY;wikidata=
 naturalearth;1159146403;Chiclayo;;-6.76291;-79.83658;PE;Lambayeque;596792;CITY;wikidata=Q260911|geonames=3698350|whosonfirst=890445067
 naturalearth;1159146407;Juliaca;;-15.50000;-70.13997;PE;Callao;245675;CITY;wikidata=Q696074|geonames=3937513|whosonfirst=890442203
 naturalearth;1159146409;Cerro de Pasco;;-10.69001;-76.26998;PE;Pasco;137232;CITY;wikidata=Q674320|geonames=3944797|whosonfirst=890445223
-naturalearth;1159146411;Tarapoto;;-6.50995;-76.47997;PE;San Mart;936;CITY;wikidata=Q927933|whosonfirst=1141908509
+naturalearth;1159146411;Tarapoto;;-6.50995;-76.47997;PE;San Martin;936;CITY;wikidata=Q927933|whosonfirst=1141908509
 naturalearth;1159146413;Ayacucho;;-13.17502;-74.21995;PE;Ayacucho;166314;CITY;wikidata=Q504215|geonames=3947019|whosonfirst=1141908511
 naturalearth;1159146415;Callao;;-12.07003;-77.13497;PE;Lima;876877;CITY;wikidata=Q105037|geonames=3946083|whosonfirst=421169179
 naturalearth;1159146417;Concepcion;;-23.40639;-57.43441;PY;Concepcion;59118;CITY;wikidata=Q840962|geonames=3438834|whosonfirst=890440117
 naturalearth;1159146419;Villarrica;;-25.75002;-56.43331;PY;Guaira;41157;CITY;wikidata=Q288685|geonames=3436714|whosonfirst=890444631
-naturalearth;1159146421;Puerto Cabezas;;14.03334;-83.38337;NI;Atlantico Norte;43001;CITY;wikidata=Q1008456|geonames=3617154|whosonfirst=421197893
+naturalearth;1159146421;Bilwi;Puerto Cabezas;14.03334;-83.38337;NI;Atlantico Norte;43001;CITY;wikidata=Q1008456|geonames=3617154|whosonfirst=421197893
 naturalearth;1159146425;Leon;;12.43556;-86.87944;NI;Leon;164441;CITY;wikidata=Q208151|geonames=3618030|whosonfirst=890442115
 naturalearth;1159146427;Setubal;;38.52996;-8.90001;PT;Lisboa;117974;CITY;wikidata=Q173699|geonames=2262963|whosonfirst=101752077
 naturalearth;1159146429;Porto;;41.15195;-8.62195;PT;Porto;1337000;CITY;wikidata=Q36433|geonames=2735943|whosonfirst=101752093
@@ -5048,13 +5056,13 @@ naturalearth;1159146447;Namsos;;64.48331;11.50001;NO;Nord-Trondelag;9035;CITY;wi
 naturalearth;1159146449;Liepaga;;56.50997;21.01002;LV;Liepaja;85132;CITY;wikidata=Q167668|geonames=457954|whosonfirst=101751783
 naturalearth;1159146451;Alta;;69.96664;23.24167;NO;Finnmark;12077;CITY;wikidata=Q3366952|geonames=847633|whosonfirst=101814717
 naturalearth;1159146453;Vadso;;70.09660;29.76575;NO;Finnmark;5139;CITY;wikidata=Q104379|geonames=777073|whosonfirst=101814709
-naturalearth;1159146455;Al Hufuf;;25.34875;49.58559;SA;Ash Sharqiyah;637389;CITY;wikidata=Q27136|geonames=109571|whosonfirst=1141908515
+naturalearth;1159146455;Hofuf;Al Hufuf;25.34875;49.58559;SA;Ash Sharqiyah;637389;CITY;wikidata=Q27136|geonames=109571|whosonfirst=1141908515
 naturalearth;1159146457;Chaman;;30.92505;66.44632;PK;Baluchistan;88568;CITY;wikidata=Q1017644|geonames=1181611|whosonfirst=421167899
 naturalearth;1159146461;Turbat;;25.99178;63.07180;PK;Baluchistan;147791;CITY;wikidata=Q2977093|geonames=1163054|whosonfirst=421176983
 naturalearth;1159146463;Faisalabad;;31.41193;73.10805;PK;Punjab;2617000;CITY;wikidata=Q173985|geonames=1179400|whosonfirst=421181503
 naturalearth;1159146465;Rawalpindi;;33.59100;73.06750;PK;Punjab;1858000;CITY;wikidata=Q93230|geonames=1166993|whosonfirst=421173213
 naturalearth;1159146467;Bahawalpur;;29.38997;71.67499;PK;Punjab;552607;CITY;wikidata=Q318156|geonames=1183880|whosonfirst=421200425
-naturalearth;1159146469;Mirput Khas;;25.53179;69.01180;PK;Sind;356435;CITY;wikidata=Q1020490|geonames=1170295|whosonfirst=421169699
+naturalearth;1159146469;Mirpur Khas;Mirput Khas;25.53179;69.01180;PK;Sind;356435;CITY;wikidata=Q1020490|geonames=1170295|whosonfirst=421169699
 naturalearth;1159146471;Sukkur;;27.71357;68.84855;PK;Sind;417767;CITY;wikidata=Q868631|geonames=1164408|whosonfirst=421204523
 naturalearth;1159146473;Karakol;;42.49204;78.38182;KG;Ysyk-Kol;70171;CITY;wikidata=Q194452|geonames=1528121|whosonfirst=421181483
 naturalearth;1159146475;Saidu;;34.75003;72.34999;PK;N.W.F.P.;1860310;CITY;wikidata=Q378879|geonames=1166475|whosonfirst=1141908517
@@ -5074,7 +5082,7 @@ naturalearth;1159146505;Velikiye Luki;;56.31996;30.52004;RU;Pskov;103149;CITY;wi
 naturalearth;1159146507;Belomorsk;;64.52522;34.76583;RU;Karelia;12165;CITY;wikidata=Q104773|geonames=577922|whosonfirst=102001951
 naturalearth;1159146509;Kem;;64.95359;34.56837;RU;Karelia;13829;CITY;wikidata=Q145717|geonames=551145|whosonfirst=102001935
 naturalearth;1159146511;Krasino;;70.73145;54.42080;RU;Arkhangel'sk;10;CITY;wikidata=Q3816797|whosonfirst=1141908527
-naturalearth;1159146515;Matochkin Shar;;73.26999;56.44970;RU;Arkhangel'sk;10;CITY;wikidata=Q3851905|whosonfirst=1141908529
+naturalearth;1159146515;Matockin Sar;Matochkin Shar;73.26999;56.44970;RU;Arkhangel'sk;10;CITY;wikidata=Q3851905|whosonfirst=1141908529
 naturalearth;1159146517;Severodvinsk;;64.57002;39.83001;RU;Arkhangel'sk;194292;CITY;wikidata=Q190499|geonames=496285|whosonfirst=102001945
 naturalearth;1159146519;Kursk;;51.73998;36.19003;RU;Kursk;409431;CITY;wikidata=Q3159|geonames=538560|whosonfirst=102005349
 naturalearth;1159146521;Tula;;54.19996;37.62994;RU;Tula;489486;CITY;wikidata=Q2770|geonames=480562|whosonfirst=102003897
@@ -5086,7 +5094,7 @@ naturalearth;1159146533;Shoyna;;67.86664;44.13337;RU;Nenets;300;CITY;wikidata=Q2
 naturalearth;1159146535;Novy Port;;67.69833;72.92830;RU;Yamal-Nenets;1790;CITY;wikidata=Q2070417|geonames=1496535|whosonfirst=1141908535
 naturalearth;1159146537;Salekhard;;66.53502;66.60998;RU;Yamal-Nenets;38025;CITY;wikidata=Q6494|geonames=1493197|whosonfirst=102002207
 naturalearth;1159146539;Gyda;;70.88142;78.46610;RU;Yamal-Nenets;10;CITY;wikidata=Q1976289|whosonfirst=1141908537
-naturalearth;1159146541;Tazovskiy;;67.46667;78.69999;RU;Yamal-Nenets;5981;CITY;wikidata=Q1420679|geonames=1489853|whosonfirst=890479371
+naturalearth;1159146541;Tazovsky;Tazovskiy;67.46667;78.69999;RU;Yamal-Nenets;5981;CITY;wikidata=Q1420679|geonames=1489853|whosonfirst=890479371
 naturalearth;1159146543;Novy Urengoy;;66.08332;76.63325;RU;Yamal-Nenets;94212;CITY;wikidata=Q175470|geonames=1496511|whosonfirst=890479307
 naturalearth;1159146545;Nadym;;65.52981;72.51479;RU;Yamal-Nenets;46339;CITY;wikidata=Q5099|geonames=1498087|whosonfirst=890479309
 naturalearth;1159146547;Noyabrsk;;63.16654;75.61651;RU;Yamal-Nenets;110572;CITY;wikidata=Q175524|whosonfirst=1141908539
@@ -5109,7 +5117,7 @@ naturalearth;1159146583;Prokopyevsk;;53.89998;86.70999;RU;Kemerovo;275615;CITY;w
 naturalearth;1159146587;Salalah;;17.02546;54.08521;OM;Dhofar;203877;CITY;wikidata=Q1294439|geonames=286621|whosonfirst=890439893
 naturalearth;1159146589;Makhachkala;Machackala;42.98002;47.49998;RU;Dagestan;554981;CITY;wikidata=Q5168|geonames=532096|whosonfirst=102016747
 naturalearth;1159146591;Suhar;;24.36197;56.73442;OM;Al Batnah;151349;CITY;wikidata=Q943270|geonames=286282|whosonfirst=890443201
-naturalearth;1159146593;As Sib;;23.68025;58.18254;OM;Muscat;237816;CITY;wikidata=Q948050|geonames=288967|whosonfirst=890430371
+naturalearth;1159146593;Seeb;As Sib;23.68025;58.18254;OM;Muscat;237816;CITY;wikidata=Q948050|geonames=288967|whosonfirst=890430371
 naturalearth;1159146595;Pohang;;36.02086;129.37152;KR;Daegu;435266;CITY;wikidata=Q42157|whosonfirst=1141908545
 naturalearth;1159146597;Ulsan;;35.54868;129.31501;KR;Ulsan;1061000;CITY;wikidata=Q41278|geonames=1833747|whosonfirst=102026291
 naturalearth;1159146599;Daegu;Taegu;35.86874;128.60503;KR;Taegu-gwangyoksi;2460000;CITY;wikidata=Q20927|geonames=1835329|whosonfirst=102026315
@@ -5126,7 +5134,7 @@ naturalearth;1159146623;Cheremkhovo;;53.15881;103.07385;RU;Irkutsk;57395;CITY;wi
 naturalearth;1159146625;Zima;;53.93305;102.03309;RU;Irkutsk;60239;CITY;wikidata=Q140012|geonames=2012484|whosonfirst=890480517
 naturalearth;1159146627;Tulun;;54.56534;100.56538;RU;Irkutsk;51330;CITY;wikidata=Q196709|geonames=2014927|whosonfirst=102014033
 naturalearth;1159146629;Nizhneudinsk;;54.89767;99.02769;RU;Irkutsk;43326;CITY;wikidata=Q172671|geonames=1497549|whosonfirst=102014013
-naturalearth;1159146631;Ust Kut;;56.76497;105.75999;RU;Irkutsk;25388;CITY;wikidata=Q196964|whosonfirst=1141908553
+naturalearth;1159146631;Ust-Kut;Ust Kut;56.76497;105.75999;RU;Irkutsk;25388;CITY;wikidata=Q196964|whosonfirst=1141908553
 naturalearth;1159146633;Bodaybo;;57.85075;114.19324;RU;Irkutsk;15933;CITY;wikidata=Q105272|geonames=2026583|whosonfirst=102014439
 naturalearth;1159146635;Komsa;;61.86804;89.25774;RU;Krasnoyarsk;10;CITY;whosonfirst=1141908555
 naturalearth;1159146637;Kansk;;56.19002;95.71001;RU;Krasnoyarsk;101502;CITY;wikidata=Q144345|geonames=1504682|whosonfirst=102013913
@@ -5138,7 +5146,7 @@ naturalearth;1159146649;Vorontsovo;;71.69832;83.56419;RU;Taymyr;100;CITY;wikidat
 naturalearth;1159146651;Starorybnoye;;72.76660;104.80000;RU;Taymyr;10;CITY;whosonfirst=1141908559
 naturalearth;1159146653;Mikhaylova;;75.09499;86.98243;RU;Taymyr;10;CITY;whosonfirst=1141908563
 naturalearth;1159146655;Dudinka;;69.41820;86.22501;RU;Taymyr;23619;CITY;wikidata=Q135482|geonames=1507116|whosonfirst=102002181
-naturalearth;1159146659;Teli;;51.03330;90.23329;RU;Tuva;3732;CITY;wikidata=Q2400032|geonames=1489828|whosonfirst=102014403
+naturalearth;1159146659;Teeli;Teli;51.03330;90.23329;RU;Tuva;3732;CITY;wikidata=Q2400032|geonames=1489828|whosonfirst=102014403
 naturalearth;1159146661;Novyy Uoyin;;56.13498;111.73389;RU;Buryat;4184;CITY;wikidata=Q910276|geonames=2018813|whosonfirst=890482705
 naturalearth;1159146663;Bagdarin;;54.43330;113.60003;RU;Buryat;4676;CITY;wikidata=Q799866|geonames=2027244|whosonfirst=890481289
 naturalearth;1159146665;Severobaykalsk;;55.63401;109.31296;RU;Buryat;25800;CITY;wikidata=Q193662|geonames=2016910|whosonfirst=890479299
@@ -5157,17 +5165,17 @@ naturalearth;1159146691;Khilok;;51.35000;110.45004;RU;Chita;10627;CITY;wikidata=
 naturalearth;1159146695;Nakhodka;;42.83745;132.88743;RU;Primor'ye;159551;CITY;wikidata=Q156658|geonames=2019528|whosonfirst=102001817
 naturalearth;1159146697;Ussuriysk;;43.80002;132.01999;RU;Primor'ye;157068;CITY;wikidata=Q196934|geonames=2014006|whosonfirst=102001759
 naturalearth;1159146699;Lesozavodsk;;45.47476;133.42978;RU;Primor'ye;41778;CITY;wikidata=Q157478|geonames=2020812|whosonfirst=102015331
-naturalearth;1159146701;Kavache;;70.73329;136.21664;RU;Sakha (Yakutia);0;CITY;wikidata=Q5396422|geonames=2023024|whosonfirst=1141908565
+naturalearth;1159146701;Kazachye;Kavache;70.73329;136.21664;RU;Sakha (Yakutia);0;CITY;wikidata=Q5396422|geonames=2023024|whosonfirst=1141908565
 naturalearth;1159146703;Verkhoyansk;;67.54470;133.38497;RU;Sakha (Yakutia);1388;CITY;wikidata=Q133057|geonames=2013465|whosonfirst=890479177
-naturalearth;1159146705;Cherskiy;;68.75005;161.33004;RU;Sakha (Yakutia);3707;CITY;wikidata=Q384623|geonames=2126199|whosonfirst=890479319
+naturalearth;1159146705;Chersky;Cherskiy;68.75005;161.33004;RU;Sakha (Yakutia);3707;CITY;wikidata=Q384623|geonames=2126199|whosonfirst=890479319
 naturalearth;1159146707;Srednekolymsk;;67.45000;153.71004;RU;Sakha (Yakutia);3459;CITY;wikidata=Q196464|geonames=2121025|whosonfirst=890482051
 naturalearth;1159146709;Zyryanka;;65.73597;150.89000;RU;Sakha (Yakutia);3627;CITY;wikidata=Q2089807|geonames=2119283|whosonfirst=890478295
 naturalearth;1159146713;Eldikan;;60.80002;135.18331;RU;Sakha (Yakutia);1516;CITY;wikidata=Q2283318|geonames=2024444|whosonfirst=1141908567
 naturalearth;1159146715;Chagda;;60.10001;133.89998;RU;Sakha (Yakutia);10;CITY;whosonfirst=1141908569
 naturalearth;1159146717;Khandyga;;62.66601;135.60003;RU;Sakha (Yakutia);6796;CITY;wikidata=Q2619416|geonames=2022773|whosonfirst=102002349
-naturalearth;1159146719;Ust Maya;;60.45658;134.54330;RU;Sakha (Yakutia);3062;CITY;wikidata=Q2476679|geonames=2013918|whosonfirst=890479311
+naturalearth;1159146719;Ust-Maya;Ust Maya;60.45658;134.54330;RU;Sakha (Yakutia);3062;CITY;wikidata=Q2476679|geonames=2013918|whosonfirst=890479311
 naturalearth;1159146721;Neryungri;;56.67405;124.71036;RU;Sakha (Yakutia);66320;CITY;wikidata=Q172470|geonames=2019309|whosonfirst=890480509
-naturalearth;1159146723;Chernyshevskiy;;63.01275;112.47142;RU;Sakha (Yakutia);5137;CITY;wikidata=Q995292|geonames=2025456|whosonfirst=890479199
+naturalearth;1159146723;Chernyshevsky;Chernyshevskiy;63.01275;112.47142;RU;Sakha (Yakutia);5137;CITY;wikidata=Q995292|geonames=2025456|whosonfirst=890479199
 naturalearth;1159146725;Terbyas;;64.37608;120.54690;RU;Sakha (Yakutia);10;CITY;wikidata=Q16897387|geonames=2015257|whosonfirst=1141908571
 naturalearth;1159146727;Vilyuysk;;63.75527;121.62476;RU;Sakha (Yakutia);9948;CITY;wikidata=Q133089|geonames=2013392|whosonfirst=102002339
 naturalearth;1159146731;Sangar;;63.92415;127.47391;RU;Sakha (Yakutia);4633;CITY;wikidata=Q2630577|geonames=2017215|whosonfirst=102002333
@@ -5175,13 +5183,13 @@ naturalearth;1159146733;Menkere;;67.98860;123.35050;RU;Sakha (Yakutia);10;CITY;w
 naturalearth;1159146735;Saskylakh;;71.91663;114.08331;RU;Sakha (Yakutia);1920;CITY;wikidata=Q2476715|geonames=2017155|whosonfirst=890480827
 naturalearth;1159146737;Govorovo;;70.21136;125.99328;RU;Sakha (Yakutia);943;CITY;whosonfirst=1141908575
 naturalearth;1159146739;Sagastyr;;73.37793;126.59235;RU;Sakha (Yakutia);10;CITY;whosonfirst=1141908577
-naturalearth;1159146741;Ust Olensk;;72.99778;119.77293;RU;Sakha (Yakutia);10;CITY;wikidata=Q2069721|whosonfirst=1141908581
+naturalearth;1159146741;Ust-Olenyok;Ust Olensk;72.99778;119.77293;RU;Sakha (Yakutia);10;CITY;wikidata=Q2069721|whosonfirst=1141908581
 naturalearth;1159146743;Suntar;;62.14441;117.63193;RU;Sakha (Yakutia);8639;CITY;wikidata=Q1275240|geonames=2015913|whosonfirst=102002309
-naturalearth;1159146745;Olenek;;68.52500;112.45002;RU;Sakha (Yakutia);10;CITY;wikidata=Q1025881|geonames=2018567|whosonfirst=1141908583
-naturalearth;1159146749;Udachnyy;;66.42317;112.39654;RU;Sakha (Yakutia);15266;CITY;wikidata=Q196792|geonames=2014624|whosonfirst=890479181
+naturalearth;1159146745;Olenyok;Olenek;68.52500;112.45002;RU;Sakha (Yakutia);10;CITY;wikidata=Q1025881|geonames=2018567|whosonfirst=1141908583
+naturalearth;1159146749;Udachny;Udachnyy;66.42317;112.39654;RU;Sakha (Yakutia);15266;CITY;wikidata=Q196792|geonames=2014624|whosonfirst=890479181
 naturalearth;1159146751;Birobidzhan;;48.79742;132.95079;RU;Yevrey;76146;CITY;wikidata=Q7769|geonames=2026643|whosonfirst=102015229
 naturalearth;1159146753;Khakhar;;57.66660;135.43002;RU;Khabarovsk;10;CITY;whosonfirst=1141908585
-naturalearth;1159146755;De Kastri;;51.46659;140.78333;RU;Khabarovsk;3615;CITY;wikidata=Q2355091|geonames=2126018|whosonfirst=102015379
+naturalearth;1159146755;De-Kastri;De Kastri;51.46659;140.78333;RU;Khabarovsk;3615;CITY;wikidata=Q2355091|geonames=2126018|whosonfirst=102015379
 naturalearth;1159146757;Chumikan;;54.71139;135.31451;RU;Khabarovsk;1305;CITY;wikidata=Q1140817|geonames=2025256|whosonfirst=102015349
 naturalearth;1159146759;Komsomolsk na Amure;;50.55499;137.02000;RU;Khabarovsk;275908;CITY;wikidata=Q154801|geonames=2021851|whosonfirst=102015409
 naturalearth;1159146761;Ayan;;56.45424;138.16733;RU;Khabarovsk;1286;CITY;wikidata=Q412044|geonames=2027316|whosonfirst=890485805
@@ -5196,7 +5204,7 @@ naturalearth;1159146779;Aleksandrovsk Sakhalinskiy;;50.89750;142.15612;RU;Sakhal
 naturalearth;1159146781;Korsakov;;46.64244;142.77748;RU;Sakhalin;35091;CITY;wikidata=Q155331|geonames=2124286|whosonfirst=102001595
 naturalearth;1159146785;Ensenada;;31.86998;-116.62000;MX;Baja California;256565;CITY;wikidata=Q656189|geonames=4006702|whosonfirst=101993465
 naturalearth;1159146787;Saltillo;;25.42190;-101.00693;MX;Coahuila;754000;CITY;wikidata=Q53077|geonames=3988086|whosonfirst=102000871
-naturalearth;1159146789;Ciudad Juarez;Ciudad Jugrez;31.69232;-106.49199;MX;Chihuahua;1343000;CITY;wikidata=Q26590|geonames=4013708|whosonfirst=101994153
+naturalearth;1159146789;Ciudad Juarez;;31.69232;-106.49199;MX;Chihuahua;1343000;CITY;wikidata=Q26590|geonames=4013708|whosonfirst=101994153
 naturalearth;1159146791;Delicias;;28.19997;-105.49998;MX;Chihuahua;114783;CITY;wikidata=Q1962715|geonames=4013720|whosonfirst=1141908587
 naturalearth;1159146793;Durango;;24.03110;-104.67003;MX;Durango;457140;CITY;wikidata=Q112813|geonames=4011743|whosonfirst=101994335
 naturalearth;1159146795;Los Mochis;;25.78999;-109.00000;MX;Sinaloa;249047;CITY;wikidata=Q752460|geonames=3997479|whosonfirst=101993793
@@ -5206,7 +5214,7 @@ naturalearth;1159146803;Manzanillo;;19.04959;-104.32309;MX;Colima;110735;CITY;wi
 naturalearth;1159146805;Tehuantepec;;16.33000;-95.22999;MX;Oaxaca;42776;CITY;wikidata=Q629479|geonames=3516843|whosonfirst=101996263
 naturalearth;1159146807;Villahermosa;;17.99997;-92.89997;MX;Tabasco;428564;CITY;wikidata=Q210886|geonames=3514670|whosonfirst=101994837
 naturalearth;1159146809;Cuernavaca;;18.92111;-99.24000;MX;Morelos;834001;CITY;wikidata=Q204245|geonames=3529947|whosonfirst=101993267
-naturalearth;1159146811;Queretaro;Quergtaro;20.57770;-100.38667;MX;Queretaro;961000;CITY;wikidata=Q173121|geonames=3991164|whosonfirst=101996369
+naturalearth;1159146811;Queretaro;;20.57770;-100.38667;MX;Queretaro;961000;CITY;wikidata=Q173121|geonames=3991164|whosonfirst=101996369
 naturalearth;1159146813;Tapachula;;14.89998;-92.26999;MX;Chiapas;221521;CITY;wikidata=Q988225|geonames=3516266|whosonfirst=101994355
 naturalearth;1159146815;Chetumal;;18.50002;-88.30000;MX;Quintana Roo;154517;CITY;wikidata=Q459553|geonames=3531023|whosonfirst=102001489
 naturalearth;1159146817;Progreso;;21.28331;-89.66658;MX;Yucatan;47124;CITY;wikidata=Q657637|geonames=3521108|whosonfirst=102001367
@@ -5216,22 +5224,22 @@ naturalearth;1159146825;Nampo;N'ampo;38.76887;125.45049;KP;Namp'o-si;1127000;CIT
 naturalearth;1159146827;Chongjin;Ch'ongjin;41.78462;129.79000;KP;Hamgyong-bukto;672614;CITY;wikidata=Q109336|geonames=2044757|whosonfirst=1141908589
 naturalearth;1159146829;Kimchaek;;40.67231;129.20275;KP;Hamgyong-bukto;187270;CITY;wikidata=Q714873|whosonfirst=1141908591
 naturalearth;1159146831;Hamhung;;39.91200;127.54349;KP;Hamgyong-namdo;773000;CITY;wikidata=Q109356|geonames=1877449|whosonfirst=890442051
-naturalearth;1159146833;Ondorhaan;;47.31668;110.65003;MN;Hentiy;14723;CITY;wikidata=Q297632|geonames=2029656|whosonfirst=421202027
+naturalearth;1159146833;Ondorkhaan;Ondorhaan;47.31668;110.65003;MN;Hentiy;14723;CITY;wikidata=Q297632|geonames=2029656|whosonfirst=421202027
 naturalearth;1159146835;Bayankhongor;;46.30000;100.98333;MN;Bayanhongor;26252;CITY;wikidata=Q804117|whosonfirst=1141908593
 naturalearth;1159146839;Uliastay;;47.75002;96.81672;MN;Dzavhan;8056;CITY;wikidata=Q943374|geonames=1515007|whosonfirst=1141908595
-naturalearth;1159146841;Altay;;46.36186;96.25585;MN;Govi-Altay;32488;CITY;wikidata=Q433861|geonames=1516393|whosonfirst=1141908599
+naturalearth;1159146841;Altai;Altay;46.36186;96.25585;MN;Govi-Altay;32488;CITY;wikidata=Q433861|geonames=1516393|whosonfirst=1141908599
 naturalearth;1159146843;Moron;;49.64528;100.15444;MN;Hovsgol;27690;CITY;wikidata=Q572951|geonames=2029945|whosonfirst=421180747
 naturalearth;1159146845;Ulaangom;;49.98332;92.06662;MN;Uvs;35796;CITY;wikidata=Q822815|geonames=1515029|whosonfirst=421199231
 naturalearth;1159146847;Bulgan;;48.81060;103.53171;MN;Bulgan;17348;CITY;wikidata=Q945055|geonames=2032201|whosonfirst=421166891
 naturalearth;1159146849;Mandalgovi;;45.74998;106.26601;MN;Dundgovi;2984;CITY;wikidata=Q1000373|whosonfirst=1141908601
-naturalearth;1159146851;Darhan;;49.46239;105.97254;MN;Selenge;74738;CITY;wikidata=Q235571|geonames=2031964|whosonfirst=1141908603
-naturalearth;1159146853;Dzuunharaa;;48.86659;106.46662;MN;Selenge;18830;CITY;wikidata=Q1028289|geonames=2031533|whosonfirst=421177043
-naturalearth;1159146857;Arvayheer;;46.24998;102.76659;MN;Ovorhangay;28053;CITY;wikidata=Q717684|geonames=2032814|whosonfirst=1141908605
-naturalearth;1159146859;Baruun Urt;;46.69998;113.28331;MN;Suhbaatar;15805;CITY;wikidata=Q809657|geonames=2032614|whosonfirst=421191717
+naturalearth;1159146851;Darkhan;Darhan;49.46239;105.97254;MN;Selenge;74738;CITY;wikidata=Q235571|geonames=2031964|whosonfirst=1141908603
+naturalearth;1159146853;Zuunkharaa;Dzuunharaa;48.86659;106.46662;MN;Selenge;18830;CITY;wikidata=Q1028289|geonames=2031533|whosonfirst=421177043
+naturalearth;1159146857;Arvaikheer;Arvayheer;46.24998;102.76659;MN;Ovorhangay;28053;CITY;wikidata=Q717684|geonames=2032814|whosonfirst=1141908605
+naturalearth;1159146859;Baruun-Urt;Baruun Urt;46.69998;113.28331;MN;Suhbaatar;15805;CITY;wikidata=Q809657|geonames=2032614|whosonfirst=421191717
 naturalearth;1159146861;Manily;;62.54999;165.30003;RU;Kamchatka;10;CITY;whosonfirst=1141908607
-naturalearth;1159146863;Oktyabrskiy;;52.66359;156.23872;RU;Kamchatka;1534;CITY;wikidata=Q1691320|whosonfirst=1141908609
+naturalearth;1159146863;Oktyabrsky;Oktyabrskiy;52.66359;156.23872;RU;Kamchatka;1534;CITY;wikidata=Q1691320|whosonfirst=1141908609
 naturalearth;1159146865;Klyuchi;;56.29996;160.85002;RU;Kamchatka;1089;CITY;wikidata=Q1373959|geonames=2124440|whosonfirst=1141908611
-naturalearth;1159146867;Ust Kamchatsk;;56.21350;162.43498;RU;Kamchatka;4939;CITY;wikidata=Q1934124|geonames=2115627|whosonfirst=890485331
+naturalearth;1159146867;Ust-Kamchatsk;Ust Kamchatsk;56.21350;162.43498;RU;Kamchatka;4939;CITY;wikidata=Q1934124|geonames=2115627|whosonfirst=890485331
 naturalearth;1159146869;Cork;;51.89284;-8.46511;IE;Cork;188907;CITY;wikidata=Q36647|geonames=2965140|whosonfirst=101751727
 naturalearth;1159146871;Sassari;;40.73001;8.57001;IT;Sardegna;120729;CITY;wikidata=Q13629|geonames=3167096|whosonfirst=101752539
 naturalearth;1159146875;Turin;Torino;45.07233;7.66801;IT;Piemonte;1652000;CITY;wikidata=Q495|geonames=3165524|whosonfirst=101752697
@@ -5266,7 +5274,7 @@ naturalearth;1159146937;Cucuta;;7.92002;-72.51998;CO;Norte de Santander;722146;C
 naturalearth;1159146939;Villavicencio;;4.15332;-73.63500;CO;Meta;374763;CITY;wikidata=Q749224|geonames=3665900|whosonfirst=890440337
 naturalearth;1159146941;Santa Clara;;22.40001;-79.96665;CU;Villa Clara;250512;CITY;wikidata=Q211590|geonames=3537906|whosonfirst=890444793
 naturalearth;1159146943;Torshavn;Thorshavn;62.03002;-6.82003;FO;Eysturoyar;14398;CITY;wikidata=Q10704|geonames=2611396|whosonfirst=1141908627
-naturalearth;1159146947;El Giza;;30.00999;31.19002;EG;Al Jizah;2681863;CITY;wikidata=Q81788|geonames=360995|whosonfirst=421204393
+naturalearth;1159146947;Giza;El Giza;30.00999;31.19002;EG;Al Jizah;2681863;CITY;wikidata=Q81788|geonames=360995|whosonfirst=421204393
 naturalearth;1159146949;Stuttgart;;48.77998;9.20000;DE;Baden-Wurttemberg;2944700;CITY;wikidata=Q1022|geonames=2825297|whosonfirst=101905809
 naturalearth;1159146951;Bremen;;53.08000;8.80002;DE;Bremen;724909;CITY;wikidata=Q24879|geonames=2944388|whosonfirst=101913887
 naturalearth;1159146953;Nurnberg;Nuremberg;49.44999;11.07999;DE;Bayern;737304;CITY;wikidata=Q2090|geonames=2861650|whosonfirst=101748543
@@ -5525,7 +5533,7 @@ naturalearth;1159147519;Yalta;;44.49931;34.15940;RU;Crimea;79509;CITY;wikidata=Q
 naturalearth;1159147523;Chernobyl;Chornobyl;51.38941;30.09888;UA;Kiev;0;CITY;wikidata=Q129677|geonames=710403|whosonfirst=1141908725
 naturalearth;1159147525;Sumy;;50.92429;34.78086;UA;Sumy;294456;CITY;wikidata=Q156752|geonames=692194|whosonfirst=101752495
 naturalearth;1159147527;Mariupol;;47.09618;37.55620;UA;Donets'k;481626;CITY;wikidata=Q37133|geonames=701822|whosonfirst=101752849
-naturalearth;1159147529;Sayhut;;15.21050;51.24544;YE;Al Mahrah;189;CITY;wikidata=Q12217525|whosonfirst=1141908727
+naturalearth;1159147529;Sayhut al Ghamirah;Sayhut;15.21050;51.24544;YE;Al Mahrah;189;CITY;wikidata=Q12217525|whosonfirst=1141908727
 naturalearth;1159147531;Al Mukalla;;14.54116;49.12593;YE;Hadramawt;258132;CITY;wikidata=Q310772|geonames=78754|whosonfirst=421168637
 naturalearth;1159147533;Dasoguz;Dashkhovuz;41.83999;59.96496;TM;Tashauz;201424;CITY;wikidata=Q487672|geonames=601734|whosonfirst=421168745
 naturalearth;1159147535;Urgentch;Urgench;41.55998;60.64001;UZ;Khorezm;150110;CITY;wikidata=Q472925|geonames=1512473|whosonfirst=890435301
@@ -5567,7 +5575,7 @@ naturalearth;1159147615;Nova Vicosa;;-17.88001;-39.37001;BR;Bahia;55980;CITY;wik
 naturalearth;1159147617;Alagoinhas;;-12.14000;-38.42999;BR;Bahia;124070;CITY;wikidata=Q818261|geonames=3472766|whosonfirst=101947571
 naturalearth;1159147619;Juazeiro;;-9.42001;-40.49997;BR;Bahia;95132;CITY;wikidata=Q753044|geonames=3397154|whosonfirst=101949763
 naturalearth;1159147621;Vitoria;Grande Vitaria;-20.33204;-40.35394;BR;Espirito Santo;1704000;CITY;wikidata=Q168376|geonames=3444924|whosonfirst=101954595
-naturalearth;1159147623;Joao Pessoa;Joco Pessoa;-7.09919;-34.87802;BR;Paraiba;956000;CITY;wikidata=Q167436|geonames=3397277|whosonfirst=101946905
+naturalearth;1159147623;Joao Pessoa;;-7.09919;-34.87802;BR;Paraiba;956000;CITY;wikidata=Q167436|geonames=3397277|whosonfirst=101946905
 naturalearth;1159147625;Campina Grande;;-7.23001;-35.88002;BR;Paraiba;417261;CITY;wikidata=Q193016|geonames=3403642|whosonfirst=101946493
 naturalearth;1159147627;Nova Friburgo;;-22.26000;-42.54005;BR;Rio de Janeiro;171991;CITY;wikidata=Q468563|geonames=3456166|whosonfirst=101953487
 naturalearth;1159147631;Brochet;;57.88322;-101.66660;CA;Manitoba;278;CITY;wikidata=Q4972659|geonames=5909245|whosonfirst=1141908735
@@ -5585,14 +5593,14 @@ naturalearth;1159147655;Dryden;;49.78333;-92.83334;CA;Ontario;7862;CITY;wikidata
 naturalearth;1159147657;Attawapiskat;;52.91663;-82.43332;CA;Ontario;1802;CITY;wikidata=Q1656303|geonames=5888118|whosonfirst=1141908749
 naturalearth;1159147659;Hamilton;;43.24998;-79.83000;CA;Ontario;721053;CITY;wikidata=Q133116|whosonfirst=1141908751
 naturalearth;1159147661;Windsor;;42.31546;-83.03685;CA;Ontario;319246;CITY;wikidata=Q182625|geonames=6182962|whosonfirst=101735855
-naturalearth;1159147663;Trois Rivieres;;46.34997;-72.54995;CA;Quebec;119693;CITY;wikidata=Q44012|geonames=6169141|whosonfirst=101738021
+naturalearth;1159147663;Trois-Rivieres;Trois Rivieres;46.34997;-72.54995;CA;Quebec;119693;CITY;wikidata=Q44012|geonames=6169141|whosonfirst=101738021
 naturalearth;1159147667;Sept-Iles;;50.31609;-66.36002;CA;Quebec;25686;CITY;wikidata=Q141699|whosonfirst=1141908753
 naturalearth;1159147669;Corner Brook;;48.95000;-57.93335;CA;Newfoundland and Labrador;20791;CITY;wikidata=Q991363|geonames=5927969|whosonfirst=890456223
 naturalearth;1159147671;Isafjordur;;66.08332;-23.14997;IS;Vestfirdir;2534;CITY;wikidata=Q106896|geonames=3415667|whosonfirst=101803683
 naturalearth;1159147673;Akureyri;Akureyi;65.66657;-18.10002;IS;Akureyri;16563;CITY;wikidata=Q29042|geonames=2633274|whosonfirst=101751757
 naturalearth;1159147675;Keflavik;;64.01665;-22.56659;IS;Sudurnes;7930;CITY;wikidata=Q170693|geonames=3415496|whosonfirst=101751751
 naturalearth;1159147677;Esquel;;-42.90003;-71.31661;AR;Chubut;20048;CITY;wikidata=Q81656|geonames=3855974|whosonfirst=1141908755
-naturalearth;1159147679;Zapala;;-38.90002;-70.06666;AR;Neuqutn;19152;CITY;wikidata=Q147196|whosonfirst=1141908757
+naturalearth;1159147679;Zapala;;-38.90002;-70.06666;AR;Neuquen;19152;CITY;wikidata=Q147196|whosonfirst=1141908757
 naturalearth;1159147681;Cochabamba;;-17.41001;-66.16998;BO;Cochabamba;1000000;CITY;wikidata=Q183124|geonames=3919968|whosonfirst=890445163
 naturalearth;1159147685;Olavarria;;-36.90004;-60.33000;AR;Ciudad de Buenos Aires;86320;CITY;wikidata=Q1004149|geonames=3842670|whosonfirst=421172801
 naturalearth;1159147687;Tandil;;-37.32001;-59.15004;AR;Ciudad de Buenos Aires;104325;CITY;wikidata=Q1000336|geonames=3427833|whosonfirst=421185997
@@ -5677,7 +5685,7 @@ naturalearth;1159147861;Myitkyina;;25.35963;97.39275;MM;Kachin;139100;CITY;wikid
 naturalearth;1159147865;Monywa;;22.10499;95.15000;MM;Sagaing;226222;CITY;wikidata=Q1360304|geonames=1308522|whosonfirst=890440013
 naturalearth;1159147867;Valladolid;;41.65000;-4.75003;ES;Castilla y Leon;322304;CITY;wikidata=Q8356|geonames=3106672|whosonfirst=101748363
 naturalearth;1159147869;Dosso;;13.05002;3.20000;NE;Dosso;49750;CITY;wikidata=Q985620|geonames=2445488|whosonfirst=421168173
-naturalearth;1159147871;Hims;;34.73190;36.71808;SY;Homs (Hims);1005000;CITY;wikidata=Q131301|geonames=169577|whosonfirst=421168647
+naturalearth;1159147871;Homs;Hims;34.73190;36.71808;SY;Homs (Hims);1005000;CITY;wikidata=Q131301|geonames=169577|whosonfirst=421168647
 naturalearth;1159147873;Aweil;;8.76656;27.40002;SS;North Bahr-al-Ghazal;46705;CITY;wikidata=Q791685|geonames=364367|whosonfirst=421200267
 naturalearth;1159147875;Tokar;;18.43333;37.73329;SD;Red Sea;73202;CITY;wikidata=Q1010754|geonames=366323|whosonfirst=890431247
 naturalearth;1159147877;Linkoping;;58.41001;15.62994;SE;Ostergotland;96732;CITY;wikidata=Q25413|geonames=2694762|whosonfirst=101752291
@@ -5722,8 +5730,8 @@ naturalearth;1159147963;Yambio;;4.57053;28.41634;SS;West Equatoria;40382;CITY;wi
 naturalearth;1159147965;Bor;;6.20720;31.55915;SS;Jungoli;26782;CITY;wikidata=Q893274|geonames=377241|whosonfirst=421171247
 naturalearth;1159147967;Medani;;14.39996;33.52001;SD;Gezira;332714;CITY;wikidata=Q852528|geonames=364103|whosonfirst=890431203
 naturalearth;1159147969;Gedaref;;14.03998;35.38000;SD;Gedarif;201282;CITY;wikidata=Q311199|geonames=379062|whosonfirst=1141908837
-naturalearth;1159147973;EdDamer;;17.58997;33.95998;SD;River Nile;103941;CITY;wikidata=Q311312|geonames=380173|whosonfirst=890439877
-naturalearth;1159147975;Atbara;;17.70999;33.97998;SD;River Nile;168612;CITY;wikidata=Q753906|geonames=378231|whosonfirst=1141908839
+naturalearth;1159147973;Ad-Damir;Ed Damer;17.58997;33.95998;SD;River Nile;103941;CITY;wikidata=Q311312|geonames=380173|whosonfirst=890439877
+naturalearth;1159147975;Atbarah;Atbara;17.70999;33.97998;SD;River Nile;168612;CITY;wikidata=Q753906|geonames=378231|whosonfirst=1141908839
 naturalearth;1159147977;Wadi Halfa;;21.80003;31.34996;SD;Northern;17121;CITY;wikidata=Q740865|whosonfirst=1141908841
 naturalearth;1159147979;Merowe;;18.48330;31.81665;SD;Northern;10234;CITY;wikidata=Q2784541|geonames=370481|whosonfirst=890443217
 naturalearth;1159147981;Kosti;;13.16998;32.66001;SD;White Nile;345068;CITY;wikidata=Q587715|geonames=371760|whosonfirst=1141908843
@@ -5750,7 +5758,7 @@ naturalearth;1159148027;Angoche;;-16.23003;39.91001;MZ;Nampula;57835;CITY;wikida
 naturalearth;1159148029;Mocambique;;-15.03990;40.68218;MZ;Nampula;54315;CITY;wikidata=Q331099|geonames=1037390|whosonfirst=890436945
 naturalearth;1159148031;Vryburg;;-26.96002;24.73000;ZA;North West;49588;CITY;wikidata=Q1027291|geonames=942511|whosonfirst=101924673
 naturalearth;1159148033;Rustenburg;;-25.65002;27.24003;ZA;North West;165976;CITY;wikidata=Q182049|geonames=958724|whosonfirst=101925429
-naturalearth;1159148035;Mmabatho;MMabatho (Mafikeng);-25.83001;25.61000;ZA;North West;104428;CITY;wikidata=Q358762|geonames=975436|whosonfirst=1141908865
+naturalearth;1159148035;Mmabatho;Mmabatho (Mafikeng);-25.83001;25.61000;ZA;North West;104428;CITY;wikidata=Q358762|geonames=975436|whosonfirst=1141908865
 naturalearth;1159148037;Klerksdorp;;-26.88003;26.62002;ZA;North West;178921;CITY;wikidata=Q1015647|geonames=989921|whosonfirst=101926525
 naturalearth;1159148039;Kroonstad;;-27.66003;27.21001;ZA;Orange Free State;103992;CITY;wikidata=Q264014|geonames=986846|whosonfirst=101926645
 naturalearth;1159148041;Polokwane;Pietersburg (Polokwane);-23.89003;29.45003;ZA;Limpopo;220045;CITY;wikidata=Q131662|geonames=965289|whosonfirst=101923475
@@ -5834,7 +5842,7 @@ naturalearth;1159148215;Minna;;9.61999;6.55003;NG;Niger;291905;CITY;wikidata=Q99
 naturalearth;1159148217;Zaria;;11.08193;7.70806;NG;Kaduna;889000;CITY;wikidata=Q147975|geonames=2317765|whosonfirst=890444289
 naturalearth;1159148219;Jos;;9.92997;8.89004;NG;Plateau;816824;CITY;wikidata=Q321079|geonames=2335953|whosonfirst=890444315
 naturalearth;1159148221;Yola;;9.20999;12.48000;NG;Adamawa;96006;CITY;wikidata=Q994114|geonames=2318044|whosonfirst=1141908897
-naturalearth;1159148225;Lodz;Lhdz;51.76780;19.45823;PL;Lodz;758000;CITY;wikidata=Q580|geonames=3093133|whosonfirst=101913783
+naturalearth;1159148225;Lodz;;51.76780;19.45823;PL;Lodz;758000;CITY;wikidata=Q580|geonames=3093133|whosonfirst=101913783
 naturalearth;1159148227;Berezniki;;59.42000;56.75999;RU;Perm';167748;CITY;wikidata=Q105002|geonames=577206|whosonfirst=102008189
 naturalearth;1159148229;Keetmanshoop;;-26.57390;18.12999;NA;Karas;18039;CITY;wikidata=Q160884|geonames=3356264|whosonfirst=421189849
 naturalearth;1159148231;Maltahohe;;-24.84000;16.93999;NA;Hardap;2329;CITY;wikidata=Q666079|geonames=3355624|whosonfirst=421173613
@@ -6020,7 +6028,7 @@ naturalearth;1159148633;Harar;;9.31996;42.15003;ET;Addis Ababa;174994;CITY;wikid
 naturalearth;1159148635;Goba;;7.01002;39.97000;ET;Addis Ababa;34369;CITY;wikidata=Q745871|geonames=336350|whosonfirst=421173609
 naturalearth;1159148639;Jima;;7.67998;36.83004;ET;Addis Ababa;128306;CITY;wikidata=Q385341|geonames=333772|whosonfirst=890442041
 naturalearth;1159148641;Nazret;;8.54998;39.27000;ET;Addis Ababa;476892;CITY;wikidata=Q351427|geonames=330186|whosonfirst=890431217
-naturalearth;1159148643;Nagele;;5.31661;39.58331;ET;Addis Ababa;11772;CITY;wikidata=Q2714363|whosonfirst=1141908969
+naturalearth;1159148643;Negele Boran;Nagele;5.31661;39.58331;ET;Addis Ababa;11772;CITY;wikidata=Q2714363|whosonfirst=1141908969
 naturalearth;1159148645;Gode;;5.95001;43.45000;ET;Somali;75000;CITY;wikidata=Q744673|whosonfirst=1141908971
 naturalearth;1159148647;Dolo Bay;;4.18335;42.08331;ET;Somali;11810;CITY;wikidata=Q3034265|geonames=338666|whosonfirst=1141908973
 naturalearth;1159148649;Kemi;;65.73331;24.58169;FI;Lapland;22641;CITY;wikidata=Q203619|geonames=653281|whosonfirst=101839183
@@ -6045,7 +6053,7 @@ naturalearth;1159148689;Zabol;;31.02145;61.48146;IR;Sistan and Baluchestan;23396
 naturalearth;1159148693;Zahedan;;29.49999;60.83002;IR;Sistan and Baluchestan;598887;CITY;wikidata=Q140561|geonames=1159301|whosonfirst=421177981
 naturalearth;1159148695;Tuticorin;;8.79780;78.13180;IN;Tamil Nadu;436094;CITY;wikidata=Q41562|geonames=8629640|whosonfirst=1141908991
 naturalearth;1159148697;Dindigul;;10.35991;77.97828;IN;Tamil Nadu;200797;CITY;wikidata=Q853945|geonames=1272543|whosonfirst=102030349
-naturalearth;1159148699;Aarhus;Arhus;56.15720;10.21068;DK;Midtjylland;237551;CITY;wikidata=Q25319|geonames=2624652|whosonfirst=101749163
+naturalearth;1159148699;Arhus;Aarhus;56.15720;10.21068;DK;Midtjylland;237551;CITY;wikidata=Q25319|geonames=2624652|whosonfirst=101749163
 naturalearth;1159148701;Korhogo;;9.45998;-5.63995;CI;Savanes;177711;CITY;wikidata=Q985627|geonames=2286304|whosonfirst=421204241
 naturalearth;1159148703;Labe;;11.31999;-12.30001;GN;Labe;140575;CITY;wikidata=Q1020384|geonames=2418362|whosonfirst=421203621
 naturalearth;1159148705;Boke;;10.93999;-14.29999;GN;Boke;116270;CITY;wikidata=Q891240|geonames=2422924|whosonfirst=1141908995
@@ -6061,7 +6069,7 @@ naturalearth;1159148725;Barcelos;;-0.97499;-62.92390;BR;Amazonas;12584;CITY;wiki
 naturalearth;1159148729;Tonantins;;-2.87271;-67.80189;BR;Amazonas;4561;CITY;wikidata=Q1793355|geonames=3661894|whosonfirst=101941579
 naturalearth;1159148731;Tefe;;-3.36002;-64.69999;BR;Amazonas;51437;CITY;wikidata=Q975545|geonames=3661944|whosonfirst=101941619
 naturalearth;1159148733;Coari;;-4.07997;-63.12998;BR;Amazonas;53305;CITY;wikidata=Q645204|geonames=3664539|whosonfirst=101941633
-naturalearth;1159148735;Sao Cabriel da Cachoeira;;-0.13324;-67.08331;BR;Amazonas;15231;CITY;wikidata=Q694840|geonames=3662342|whosonfirst=101941549
+naturalearth;1159148735;Sao Gabriel da Cachoeira;Sao Cabriel da Cachoeira;-0.13324;-67.08331;BR;Amazonas;15231;CITY;wikidata=Q694840|geonames=3662342|whosonfirst=101941549
 naturalearth;1159148737;Novo Airao;;-2.62079;-60.94378;BR;Amazonas;9049;CITY;wikidata=Q1750332|geonames=6319334|whosonfirst=1141908997
 naturalearth;1159148739;Itacoatiara;;-3.14003;-58.43998;BR;Amazonas;51509;CITY;wikidata=Q1750426|geonames=6319320|whosonfirst=1141908999
 naturalearth;1159148741;Parintins;;-2.61004;-56.74001;BR;Amazonas;64428;CITY;wikidata=Q926713|geonames=3393008|whosonfirst=101942013
@@ -6070,12 +6078,12 @@ naturalearth;1159148747;Crato;;-7.46390;-63.03996;BR;Amazonas;273883;CITY;whoson
 naturalearth;1159148749;Imperatriz;;-5.52004;-47.49001;BR;Maranhao;218106;CITY;wikidata=Q504755|geonames=3398269|whosonfirst=101943107
 naturalearth;1159148751;Balsas;;-7.52002;-46.04999;BR;Maranhao;68056;CITY;wikidata=Q1813001|geonames=3406545|whosonfirst=101942917
 naturalearth;1159148753;Breves;;-1.68002;-50.49000;BR;Para;47164;CITY;wikidata=Q1804770|geonames=3404817|whosonfirst=101942201
-naturalearth;1159148755;Jacareacanga;;-6.22802;-57.76013;BR;Par;31661;CITY;wikidata=Q1805252|geonames=3397763|whosonfirst=1141909005
+naturalearth;1159148755;Jacareacanga;;-6.22802;-57.76013;BR;Para;31661;CITY;wikidata=Q1805252|geonames=3397763|whosonfirst=1141909005
 naturalearth;1159148757;Tucurui;;-3.76736;-49.67365;BR;Para;76337;CITY;wikidata=Q374432|geonames=3385935|whosonfirst=101942277
 naturalearth;1159148759;Itaituba;;-4.25862;-55.92502;BR;Para;92308;CITY;wikidata=Q655734|geonames=3397967|whosonfirst=101941999
 naturalearth;1159148761;Conceicao do Araguaia;;-8.25000;-49.29002;BR;Para;27115;CITY;wikidata=Q1788037|geonames=3401845|whosonfirst=101942303
 naturalearth;1159148765;Abaetetuba;;-1.72453;-48.88488;BR;Para;79420;CITY;wikidata=Q1615298|geonames=3408424|whosonfirst=101942429
-naturalearth;1159148767;Principe da Beira;;-12.41667;-64.41665;BR;Rondinia;956;CITY;whosonfirst=1141909007
+naturalearth;1159148767;Principe da Beira;;-12.41667;-64.41665;BR;Rondonia;956;CITY;whosonfirst=1141909007
 naturalearth;1159148769;Araguaina;;-7.19001;-48.21001;BR;Tocantins;50444;CITY;wikidata=Q625279|geonames=3407357|whosonfirst=1141909009
 naturalearth;1159148771;Palmas;;-10.23774;-48.28779;BR;Tocantins;235315;CITY;wikidata=Q178993|geonames=3474574|whosonfirst=101942585
 naturalearth;1159148773;Teofilo Otoni;;-17.87004;-41.50001;BR;Minas Gerais;101170;CITY;wikidata=Q1637552|geonames=3446621|whosonfirst=101954141
@@ -6200,7 +6208,7 @@ naturalearth;1159149039;Touggourt;;33.09998;6.05998;DZ;Ouargla;133954;CITY;wikid
 naturalearth;1159149041;Ouargla;Ghardina;31.96997;5.34002;DZ;Ouargla;176271;CITY;wikidata=Q852469|geonames=2485801|whosonfirst=890444479
 naturalearth;1159149043;Biskra;;34.85998;5.73003;DZ;Biskra;202103;CITY;wikidata=Q312759|whosonfirst=1141909131
 naturalearth;1159149045;Djelfa;;34.67999;3.25002;DZ;Djelfa;170901;CITY;wikidata=Q2794758|whosonfirst=1141909133
-naturalearth;1159149047;Setif;;36.18003;5.39997;DZ;SZtif;274744;CITY;wikidata=Q244004|geonames=2481700|whosonfirst=1141909135
+naturalearth;1159149047;Setif;;36.18003;5.39997;DZ;Setif;274744;CITY;wikidata=Q244004|geonames=2481700|whosonfirst=1141909135
 naturalearth;1159149049;Batna;;35.56996;6.17000;DZ;Batna;280798;CITY;wikidata=Q338844|geonames=2505572|whosonfirst=421175991
 naturalearth;1159149053;Burgas;;42.51460;27.47464;BG;Burgas;195966;CITY;wikidata=Q6509|geonames=732770|whosonfirst=101748905
 naturalearth;1159149055;Vitsyebsk;;55.18871;30.18533;BY;Vitsyebsk;342700;CITY;wikidata=Q102217|geonames=620127|whosonfirst=1141909139
@@ -6322,7 +6330,7 @@ naturalearth;1159149313;Atakpame;;7.53004;1.12002;TG;Plateaux;80683;CITY;wikidat
 naturalearth;1159149315;Sousse;;35.82999;10.62503;TN;Sousse;327004;CITY;wikidata=Q180717|geonames=2464915|whosonfirst=890444461
 naturalearth;1159149317;Taizz;Ta'izz;13.60640;44.03747;YE;Ta`izz;751000;CITY;wikidata=Q466216|geonames=70225|whosonfirst=890449743
 naturalearth;1159149319;Sitka;;57.06040;-135.32755;US;Alaska;8931;CITY;wikidata=Q79804|geonames=5557293|whosonfirst=85916107
-naturalearth;1159149323;Lvov;L'viv;49.83498;24.02999;UA;L'viv;803880;CITY;wikidata=Q36036|geonames=702550|whosonfirst=101752483
+naturalearth;1159149323;Lviv;Lvov|L'viv;49.83498;24.02999;UA;L'viv;803880;CITY;wikidata=Q36036|geonames=702550|whosonfirst=101752483
 naturalearth;1159149325;Odessa;Odesa;46.49196;30.70806;UA;Odessa;991000;CITY;wikidata=Q1874|geonames=698740|whosonfirst=101752799
 naturalearth;1159149327;Zhytomyr;Zhytomyra;50.24558;28.66217;UA;Zhytomyr;282192;CITY;wikidata=Q156713|geonames=686967|whosonfirst=101752889
 naturalearth;1159149329;Dnipro;Dnipropetrovsk|Dnipropetrovs'k;48.48192;34.99808;UA;Dnipropetrovs'k;1050000;CITY;wikidata=Q48256|geonames=709930|whosonfirst=101752861
@@ -6333,8 +6341,8 @@ naturalearth;1159149337;Bukhara;Buxoro;39.78001;64.43001;UZ;Bukhoro;319476;CITY;
 naturalearth;1159149341;Nukus;;42.47000;59.61501;UZ;Karakalpakstan;230006;CITY;wikidata=Q489898|geonames=601294|whosonfirst=1141909169
 naturalearth;1159149343;Turkmenabat;Chardzhev;39.11000;63.58004;TM;Chardzhou;234817;CITY;wikidata=Q487684|geonames=1219649|whosonfirst=421186121
 naturalearth;1159149345;Mary;;37.60002;61.83332;TM;Mary;178708;CITY;wikidata=Q5713|geonames=1218667|whosonfirst=421177997
-naturalearth;1159149347;Andijon;Andizhan;40.79000;72.33997;UZ;Andijon;650000;CITY;wikidata=Q487656|geonames=1514588|whosonfirst=421203169
-naturalearth;1159149349;Haiphong;Hai Phnng;20.83195;106.67815;VN;;1969000;CITY;wikidata=Q72818|geonames=1581298|whosonfirst=890440107
+naturalearth;1159149347;Andijan;Andijon|Andizhan;40.79000;72.33997;UZ;Andijon;650000;CITY;wikidata=Q487656|geonames=1514588|whosonfirst=421203169
+naturalearth;1159149349;Haiphong;Hai Phong;20.83195;106.67815;VN;;1969000;CITY;wikidata=Q72818|geonames=1581298|whosonfirst=890440107
 naturalearth;1159149351;Da Nang;;16.06004;108.24997;VN;;1000000;CITY;wikidata=Q25282|geonames=1583992|whosonfirst=421168907
 naturalearth;1159149353;Kabwe;;-14.44001;28.44998;ZM;Central;188979;CITY;wikidata=Q216902|geonames=916095|whosonfirst=421179935
 naturalearth;1159149355;Mufulira;;-12.55000;28.25997;ZM;Copperbelt;153624;CITY;wikidata=Q636209|geonames=905395|whosonfirst=421168763
@@ -6353,7 +6361,7 @@ naturalearth;1159149383;Gulu;;2.78000;32.28003;UG;Aswa;146858;CITY;wikidata=Q581
 naturalearth;1159149385;Kigali;;-1.95164;30.05859;RW;Kigali City;860000;CITY;wikidata=Q3859|geonames=202061|whosonfirst=421171291
 naturalearth;1159149387;Cottica;;3.85001;-54.23329;SR;Sipaliwini;29210;CITY;wikidata=Q1376242|geonames=3384389|whosonfirst=1141909175
 naturalearth;1159149389;Cordoba;;37.88000;-4.77000;ES;Andalucia;321376;CITY;wikidata=Q5818|geonames=2519240|whosonfirst=101748233
-naturalearth;1159149391;Maradi;;13.49164;7.09640;NE;Maradi;232555;CITY;wikidata=Q664550|geonames=2441291|whosonfirst=890439955
+naturalearth;1159149391;Niamey;Maradi;13.49164;7.09640;NE;Maradi;232555;CITY;wikidata=Q664550|geonames=2441291|whosonfirst=890439955
 naturalearth;1159149395;Tahoua;;14.89998;5.25993;NE;Tahoua;115956;CITY;wikidata=Q877122|geonames=2439376|whosonfirst=421189385
 naturalearth;1159149397;Constanta;;44.20266;28.60997;RO;Constanta;303399;CITY;wikidata=Q79808|geonames=680963|whosonfirst=101751965
 naturalearth;1159149399;Lulea;;65.59664;22.15838;SE;Norrbotten;48638;CITY;wikidata=Q26268|geonames=604490|whosonfirst=101814899
@@ -6369,7 +6377,7 @@ naturalearth;1159149419;Chimbote;;-9.07000;-78.57000;PE;Ancash;349846;CITY;wikid
 naturalearth;1159149421;Pucallpa;;-8.36891;-74.53500;PE;Ucayali;310750;CITY;wikidata=Q217071|geonames=3693345|whosonfirst=890442157
 naturalearth;1159149423;Iquitos;;-3.75002;-73.25001;PE;Loreto;458729;CITY;wikidata=Q193289|geonames=3696183|whosonfirst=890445049
 naturalearth;1159149425;Huancayo;;-12.08000;-75.20002;PE;Junin;412733;CITY;wikidata=Q468782|geonames=3939459|whosonfirst=890442211
-naturalearth;1159149427;Ciudad del Este;;-25.51670;-54.61606;PY;Alto Paran;320872;CITY;wikidata=Q192235|whosonfirst=1141909179
+naturalearth;1159149427;Ciudad del Este;;-25.51670;-54.61606;PY;Alto Parana;320872;CITY;wikidata=Q192235|whosonfirst=1141909179
 naturalearth;1159149431;Ponta Delgada;;37.74830;-25.66658;PT;Azores;61526;CITY;wikidata=Q208149|geonames=3372783|whosonfirst=1141909181
 naturalearth;1159149433;Vigo;;42.22002;-8.73000;ES;Galicia;378952;CITY;wikidata=Q8745|geonames=3105976|whosonfirst=101748395
 naturalearth;1159149435;Bilbao;;43.24998;-2.92999;ES;Pais Vasco;875552;CITY;wikidata=Q8692|geonames=3128026|whosonfirst=101748385
@@ -6381,7 +6389,7 @@ naturalearth;1159149445;Tabuk;;28.38384;36.55497;SA;Tabuk;547957;CITY;wikidata=Q
 naturalearth;1159149449;Juba;;4.82998;31.58003;SS;Central Equatoria;111975;CITY;wikidata=Q1947|geonames=373303|whosonfirst=421179961
 naturalearth;1159149451;Malakal;;9.53690;31.65599;SS;Upper Nile;160765;CITY;wikidata=Q220049|geonames=370737|whosonfirst=421179959
 naturalearth;1159149453;Omdurman;;15.61668;32.48002;SD;Khartoum;2395159;CITY;wikidata=Q180921|geonames=365137|whosonfirst=890437895
-naturalearth;1159149455;El Obeid;;13.18329;30.21670;SD;North Kurdufan;393311;CITY;wikidata=Q309475|geonames=379003|whosonfirst=1141909185
+naturalearth;1159149455;Al-Ubayyid;El Obeid;13.18329;30.21670;SD;North Kurdufan;393311;CITY;wikidata=Q309475|geonames=379003|whosonfirst=1141909185
 naturalearth;1159149457;The Hague;;52.08004;4.26996;NL;Zuid-Holland;1406000;CITY;wikidata=Q36600|geonames=2747373|whosonfirst=101752763
 naturalearth;1159149459;Kristiansand;;58.14562;7.97498;NO;Vest-Agder;63814;CITY;wikidata=Q2415|geonames=3149318|whosonfirst=1141909187
 naturalearth;1159149461;Ljubljana;;46.05529;14.51497;SI;Osrednjeslovenska;314807;CITY;wikidata=Q437|geonames=3196359|whosonfirst=101752073
@@ -6410,7 +6418,7 @@ naturalearth;1159149511;Podgorica;;42.46597;19.26631;ME;Podgorica;145850;CITY;wi
 naturalearth;1159149513;Quelimane;;-17.88001;36.88999;MZ;Zambezia;188964;CITY;wikidata=Q318306|geonames=1028434|whosonfirst=421168433
 naturalearth;1159149515;East London;;-32.97004;27.87002;ZA;Eastern Cape;338627;CITY;wikidata=Q209537|whosonfirst=1141909197
 naturalearth;1159149517;Middelburg;;-31.50000;25.00999;ZA;Eastern Cape;18164;CITY;wikidata=Q1002188|geonames=976358|whosonfirst=101928045
-naturalearth;1159149521;Naltchik;;43.49811;43.61795;RU;Kabardin-Balkar;307866;CITY;wikidata=Q5265|geonames=523523|whosonfirst=102016345
+naturalearth;1159149521;Nalchik;Naltchik;43.49811;43.61795;RU;Kabardin-Balkar;307866;CITY;wikidata=Q5265|geonames=523523|whosonfirst=102016345
 naturalearth;1159149523;Stavropol;;45.05000;41.98001;RU;Stavropol';363064;CITY;wikidata=Q5206|geonames=487846|whosonfirst=102008063
 naturalearth;1159149525;Ugolnye Kopi;;64.73329;177.70000;RU;Chukchi Autonomous Okrug;3367;CITY;wikidata=Q1305638|geonames=2120245|whosonfirst=1141909199
 naturalearth;1159149527;Kaliningrad;;54.70001;20.49734;RU;Kaliningrad;434954;CITY;wikidata=Q1829|geonames=554234|whosonfirst=102002441
@@ -6440,33 +6448,33 @@ naturalearth;1159149579;Omsk;;54.99193;73.39801;RU;Omsk;1135000;CITY;wikidata=Q8
 naturalearth;1159149581;Tyumen;;57.14001;65.52999;RU;Tyumen';519119;CITY;wikidata=Q5815|geonames=1488754|whosonfirst=102011811
 naturalearth;1159149583;Novokuznetsk;;53.75001;87.11498;RU;Kemerovo;539616;CITY;wikidata=Q93910|geonames=1496990|whosonfirst=102013211
 naturalearth;1159149585;Kemerovo;;55.33997;86.08998;RU;Kemerovo;477090;CITY;wikidata=Q6066|geonames=1503901|whosonfirst=102012857
-naturalearth;1159149587;Groznyy;;43.31869;45.69870;RU;Chechnya;226100;CITY;wikidata=Q5196|geonames=558418|whosonfirst=102016615
+naturalearth;1159149587;Grozny;Groznyy;43.31869;45.69870;RU;Chechnya;226100;CITY;wikidata=Q5196|geonames=558418|whosonfirst=102016615
 naturalearth;1159149589;Kandy;;7.27998;80.67000;LK;Kandy;111701;CITY;wikidata=Q203197|geonames=1241622|whosonfirst=421181497
-naturalearth;1159149593;Sri Jawewardenepura Kotte;;6.90000;79.94999;LK;Colombo;115826;CITY;wikidata=Q41963|geonames=1238992|whosonfirst=421182301
+naturalearth;1159149593;Sri Jayawardenepura Kotte;Sri Jawewardenepura Kotte;6.90000;79.94999;LK;Colombo;115826;CITY;wikidata=Q41963|geonames=1238992|whosonfirst=421182301
 naturalearth;1159149595;Daejeon;Taejon|Daejon;36.33749;127.42308;KR;Daejeon;1468000;CITY;wikidata=Q20921|geonames=1835235|whosonfirst=102026311
 naturalearth;1159149597;Gwangju;Kwangju;35.17291;126.90849;KR;Kwangju-gwangyoksi;1440000;CITY;wikidata=Q41283|geonames=1841811|whosonfirst=102026391
 naturalearth;1159149599;Busan;Pusan;35.09700;129.00810;KR;Busan;3480000;CITY;wikidata=Q16520|geonames=1838524|whosonfirst=102026353
 naturalearth;1159149601;Zamboanga;;6.92192;122.07809;PH;Zamboanga del Sur;773000;CITY;wikidata=Q1629|geonames=1679432|whosonfirst=890429511
 naturalearth;1159149603;Laoag;;18.19885;120.59361;PH;Ilocos Norte;207048;CITY;wikidata=Q39738|geonames=1707404|whosonfirst=1141909201
-naturalearth;1159149605;Baguio City;;16.42999;120.56994;PH;Benguet;447824;CITY;wikidata=Q1822|geonames=1728930|whosonfirst=421192581
+naturalearth;1159149605;Baguio;Baguio City;16.42999;120.56994;PH;Benguet;447824;CITY;wikidata=Q1822|geonames=1728930|whosonfirst=421192581
 naturalearth;1159149607;General Santos;;6.11083;125.17473;PH;South Cotabato;950530;CITY;wikidata=Q594275|whosonfirst=1141909203
-naturalearth;1159149611;Ust-Ulimsk;;57.98996;102.63331;RU;Irkutsk;100271;CITY;wikidata=Q196946|geonames=2013952|whosonfirst=890479313
+naturalearth;1159149611;Ust-Ilimsk;Ust-Ulimsk;57.98996;102.63331;RU;Irkutsk;100271;CITY;wikidata=Q196946|geonames=2013952|whosonfirst=890479313
 naturalearth;1159149613;Angarsk;;52.56001;103.92000;RU;Irkutsk;243158;CITY;wikidata=Q103565|geonames=2027667|whosonfirst=102014305
 naturalearth;1159149615;Abakan;;53.70369;91.44500;RU;Krasnoyarsk;167289;CITY;wikidata=Q875|geonames=1512236|whosonfirst=102014169
 naturalearth;1159149617;Norilsk;;69.34002;88.22499;RU;Taymyr;165873;CITY;wikidata=Q175517|geonames=1497337|whosonfirst=102002183
 naturalearth;1159149619;Khatanga;;72.04114;102.46500;RU;Taymyr;3205;CITY;wikidata=Q918830|geonames=2022572|whosonfirst=890480837
 naturalearth;1159149621;Kyzyl;;51.70670;94.38307;RU;Tuva;108240;CITY;wikidata=Q6049|geonames=1500973|whosonfirst=102014345
-naturalearth;1159149623;Ulan Ude;;51.82499;107.62500;RU;Buryat;360278;CITY;wikidata=Q6816|geonames=2014407|whosonfirst=102014655
+naturalearth;1159149623;Ulan-Ude;Ulan Ude;51.82499;107.62500;RU;Buryat;360278;CITY;wikidata=Q6816|geonames=2014407|whosonfirst=102014655
 naturalearth;1159149625;Blagoveshchensk;;50.26661;127.53334;RU;Amur;221296;CITY;wikidata=Q6934|geonames=2026609|whosonfirst=102015119
 naturalearth;1159149629;Bukachacha;;52.98334;116.91662;RU;Chita;3372;CITY;wikidata=Q1003237|geonames=2026023|whosonfirst=102014497
 naturalearth;1159149631;Dalnegorsk;;44.53722;135.51725;RU;Primor'ye;8123;CITY;wikidata=Q7054|whosonfirst=1141909205
 naturalearth;1159149633;Ambarchik;;69.65101;162.33360;RU;Sakha (Yakutia);0;CITY;wikidata=Q2629730|geonames=2127222|whosonfirst=1141909207
 naturalearth;1159149635;Batagay;;67.65599;134.63503;RU;Sakha (Yakutia);4266;CITY;wikidata=Q2359080|geonames=2027044|whosonfirst=102002323
 naturalearth;1159149637;Chokurdakh;;70.61831;147.89458;RU;Sakha (Yakutia);2506;CITY;wikidata=Q2312088|geonames=2126123|whosonfirst=890480515
-naturalearth;1159149639;Ust Nera;;64.56659;143.19998;RU;Sakha (Yakutia);9148;CITY;wikidata=Q1025866|geonames=2120048|whosonfirst=102002331
+naturalearth;1159149639;Ust-Nera;Ust Nera;64.56659;143.19998;RU;Sakha (Yakutia);9148;CITY;wikidata=Q1025866|geonames=2120048|whosonfirst=102002331
 naturalearth;1159149641;Lensk;;60.72527;114.94703;RU;Sakha (Yakutia);25589;CITY;wikidata=Q157493|geonames=2020838|whosonfirst=102002315
 naturalearth;1159149643;Aldan;;58.60300;125.38939;RU;Sakha (Yakutia);24426;CITY;wikidata=Q103273|geonames=2027968|whosonfirst=102014975
-naturalearth;1159149647;Mirnyy;;62.54002;113.96135;RU;Sakha (Yakutia);40308;CITY;wikidata=Q105477|geonames=2019951|whosonfirst=102002295
+naturalearth;1159149647;Mirny;Mirnyy;62.54002;113.96135;RU;Sakha (Yakutia);40308;CITY;wikidata=Q105477|geonames=2019951|whosonfirst=102002295
 naturalearth;1159149649;Zhigansk;;66.76971;123.37112;RU;Sakha (Yakutia);3237;CITY;wikidata=Q2621673|geonames=2012530|whosonfirst=890482955
 naturalearth;1159149651;Okhotsk;;59.38300;143.21704;RU;Khabarovsk;5570;CITY;wikidata=Q648799|geonames=2122605|whosonfirst=102015347
 naturalearth;1159149653;Khabarovsk;;48.45499;135.12001;RU;Khabarovsk;579000;CITY;wikidata=Q4454|geonames=2022890|whosonfirst=102015519
@@ -6474,7 +6482,7 @@ naturalearth;1159149655;Okha;;53.57390;142.94785;RU;Sakhalin;26560;CITY;wikidata
 naturalearth;1159149657;Yuzhno Sakhalinsk;Yuzhno-Sakhalinsk;46.96497;142.74001;RU;Sakhalin;176484;CITY;wikidata=Q7859|geonames=2119441|whosonfirst=102001587
 naturalearth;1159149659;Mexicali;;32.65193;-115.48196;MX;Baja California;885000;CITY;wikidata=Q199440|geonames=3996069|whosonfirst=101993461
 naturalearth;1159149661;La Paz;;24.13996;-110.32000;MX;Baja California Sur;189767;CITY;wikidata=Q214215|geonames=4000900|whosonfirst=101994029
-naturalearth;1159149665;Torreon;Torrein;25.57200;-103.42195;MX;Coahuila;1144000;CITY;wikidata=Q386991|geonames=3981254|whosonfirst=102000853
+naturalearth;1159149665;Torreon;;25.57200;-103.42195;MX;Coahuila;1144000;CITY;wikidata=Q386991|geonames=3981254|whosonfirst=102000853
 naturalearth;1159149667;Culiacan;;24.83194;-107.38191;MX;Sinaloa;809000;CITY;wikidata=Q211760|geonames=4012176|whosonfirst=101993731
 naturalearth;1159149669;Nogales;;31.30500;-110.94500;MX;Sonora;178097;CITY;wikidata=Q79783|geonames=5306611|whosonfirst=85917325
 naturalearth;1159149671;Hermosillo;;29.09888;-110.95406;MX;Sonora;595811;CITY;wikidata=Q189138|geonames=4004898|whosonfirst=101993983
@@ -6494,12 +6502,12 @@ naturalearth;1159149701;Ogbomosho;;8.13195;4.23804;NG;Oyo;951000;CITY;wikidata=Q
 naturalearth;1159149703;Warri;;5.51996;5.76000;NG;Delta;830106;CITY;wikidata=Q574593|geonames=2319133|whosonfirst=421199457
 naturalearth;1159149705;Kaduna;;10.52196;7.43805;NG;Kaduna;1442000;CITY;wikidata=Q208318|geonames=2335727|whosonfirst=1125880387
 naturalearth;1159149707;Gdansk;Danzig;54.35997;18.64004;PL;Pomeranian;740000;CITY;wikidata=Q1792|geonames=3099434|whosonfirst=101752271
-naturalearth;1159149709;Krakow;Krakew;50.06193;19.95807;PL;Lesser Poland;756000;CITY;wikidata=Q31487|geonames=3094802|whosonfirst=101752117
+naturalearth;1159149709;Krakow;;50.06193;19.95807;PL;Lesser Poland;756000;CITY;wikidata=Q31487|geonames=3094802|whosonfirst=101752117
 naturalearth;1159149711;Dalandzadgad;;43.58355;104.44028;MN;Omnogovi;15093;CITY;wikidata=Q822808|geonames=2032007|whosonfirst=890442035
 naturalearth;1159149713;Wonsan;;39.16049;127.43082;KP;Kangwon-do;329207;CITY;wikidata=Q109374|geonames=1866923|whosonfirst=890440273
 naturalearth;1159149715;Sinuiju;;40.08586;124.42128;KP;P'yongan-bukto;288112;CITY;wikidata=Q156243|geonames=2040893|whosonfirst=890435315
 naturalearth;1159149719;Dund-Us;Hovd;48.01664;91.63326;MN;Hovd;30500;CITY;wikidata=Q731256|geonames=1516048|whosonfirst=421186165
-naturalearth;1159149721;Choybalsan;;48.06659;114.50602;MN;Dornod;33376;CITY;wikidata=Q318245|geonames=2032054|whosonfirst=421168931
+naturalearth;1159149721;Choibalsan;Choybalsan;48.06659;114.50602;MN;Dornod;33376;CITY;wikidata=Q318245|geonames=2032054|whosonfirst=421168931
 naturalearth;1159149723;Luderitz;;-26.64800;15.15943;NA;Karas;15137;CITY;wikidata=Q159325|geonames=3355672|whosonfirst=421181465
 naturalearth;1159149725;Walvis Bay;;-22.95753;14.50531;NA;Erongo;52058;CITY;wikidata=Q220843|geonames=3359638|whosonfirst=890452797
 naturalearth;1159149727;Mwanza;;-2.52001;32.93002;TZ;Mwanza;493944;CITY;wikidata=Q110218|geonames=152224|whosonfirst=890442025
@@ -6543,13 +6551,13 @@ naturalearth;1159149811;Mahajanga;;-15.67001;46.34502;MG;Mahajanga;154657;CITY;w
 naturalearth;1159149813;Toliara;;-23.35683;43.68998;MG;Toliary;115319;CITY;wikidata=Q824043|geonames=1055429|whosonfirst=421167175
 naturalearth;1159149815;Surakarta;;-7.56498;110.82501;ID;Jawa Tengah;555308;CITY;wikidata=Q4803|geonames=1625812|whosonfirst=102018909
 naturalearth;1159149817;Bandar Lampung;;-5.42807;105.26805;ID;Lampung;865000;CITY;wikidata=Q8156|geonames=1624917|whosonfirst=102018833
-naturalearth;1159149819;Tanjungpandan;;-2.75003;107.65001;ID;Bangka-Belitung;62374;CITY;wikidata=Q3056359|geonames=1624877|whosonfirst=102018831
+naturalearth;1159149819;Tanjung Pandan;Tanjungpandan;-2.75003;107.65001;ID;Bangka-Belitung;62374;CITY;wikidata=Q3056359|geonames=1624877|whosonfirst=102018831
 naturalearth;1159149821;Malang;;-7.97805;112.60807;ID;Jawa Timur;805000;CITY;wikidata=Q11445|geonames=1636722|whosonfirst=102019893
 naturalearth;1159149823;Kupang;;-10.17867;123.58299;ID;Nusa Tenggara Timur;282396;CITY;wikidata=Q14155|geonames=2057087|whosonfirst=102021397
 naturalearth;1159149827;Parepare;;-4.01667;119.63331;ID;Sulawesi Selatan;87776;CITY;wikidata=Q14636|geonames=1632352|whosonfirst=1141909229
 naturalearth;1159149829;Cuenca;;-2.89999;-78.99999;EC;Azuay;286878;CITY;wikidata=Q54886|geonames=3658666|whosonfirst=421169119
 naturalearth;1159149831;Santa Cruz;;-0.53331;-90.35000;EC;Gal;11262;CITY;whosonfirst=1141909231
-naturalearth;1159149833;Puerto Limon;;10.00002;-83.03334;CR;Limon;85001;CITY;wikidata=Q30620|geonames=3622247|whosonfirst=421172761
+naturalearth;1159149833;Limon;Puerto Limon;10.00002;-83.03334;CR;Limon;85001;CITY;wikidata=Q30620|geonames=3622247|whosonfirst=421172761
 naturalearth;1159149835;Santiago de Cuba;;20.02502;-75.82133;CU;Santiago de Cuba;555865;CITY;wikidata=Q117040|geonames=3536729|whosonfirst=1141909233
 naturalearth;1159149837;Santiago;Santiago de los Caballeros;19.50001;-70.67001;DO;Santiago;1550753;CITY;wikidata=Q42763|geonames=3492914|whosonfirst=421177029
 naturalearth;1159149839;Manizales;;5.05999;-75.52000;CO;Caldas;375848;CITY;wikidata=Q235190|geonames=3675443|whosonfirst=890435401
@@ -6599,10 +6607,10 @@ naturalearth;1159149937;Gorontalo;;0.54998;123.07005;ID;Gorontalo;365497;CITY;wi
 naturalearth;1159149939;Tongliao;;43.62190;122.26805;CN;Nei Mongol;884000;CITY;wikidata=Q570884|geonames=2034400|whosonfirst=102027867
 naturalearth;1159149941;Hohhot;Huhot;40.82192;111.65805;CN;Nei Mongol;1726000;CITY;wikidata=Q535534|geonames=2036892|whosonfirst=102027913
 naturalearth;1159149943;Chifeng;;42.27196;118.94804;CN;Nei Mongol;1277000;CITY;wikidata=Q570829|geonames=2038067|whosonfirst=102027943
-naturalearth;1159149945;Ulanhot;;46.08002;122.08003;CN;Nei Mongol;241894;CITY;wikidata=Q1000383|geonames=2034312|whosonfirst=890515815
+naturalearth;1159149945;Ulan Hot;Ulanhot;46.08002;122.08003;CN;Nei Mongol;241894;CITY;wikidata=Q1000383|geonames=2034312|whosonfirst=890515815
 naturalearth;1159149947;Hailar;;49.19998;119.70002;CN;Nei Mongol;231171;CITY;wikidata=Q986724|geonames=2037078|whosonfirst=102027923
 naturalearth;1159149949;Jiamusi;;46.83197;130.34807;CN;Heilongjiang;1020000;CITY;wikidata=Q29003|geonames=2036581|whosonfirst=102027905
-naturalearth;1159149953;Beian;;48.24626;126.52860;CN;Heilongjiang;154936;CITY;wikidata=Q814616|geonames=2038365|whosonfirst=1141909253
+naturalearth;1159149953;Bei'an;Beian;48.24626;126.52860;CN;Heilongjiang;154936;CITY;wikidata=Q814616|geonames=2038365|whosonfirst=1141909253
 naturalearth;1159149955;Daqing;;46.58190;124.99806;CN;Heilongjiang;1693000;CITY;wikidata=Q304848|geonames=2037860|whosonfirst=102027937
 naturalearth;1159149957;Jixi;Jixi, Heilongjiang;45.30191;130.96809;CN;Heilongjiang;965000;CITY;wikidata=Q28979|geonames=2036389|whosonfirst=102027895
 naturalearth;1159149959;Nagoya;;35.15694;136.91305;JP;Aichi;3230000;CITY;wikidata=Q11751|geonames=1856057|whosonfirst=102031499
@@ -6658,12 +6666,12 @@ naturalearth;1159150069;Ayoun el Atrous;;16.66659;-9.61666;MR;Hodh el Gharbi;142
 naturalearth;1159150071;Segou;;13.43999;-6.26002;ML;Segou;122952;CITY;wikidata=Q333476|geonames=2451478|whosonfirst=421195699
 naturalearth;1159150073;Skopje;;42.00001;21.43346;MK;Centar;494087;CITY;wikidata=Q384|geonames=785842|whosonfirst=890491957
 naturalearth;1159150075;Al Jawf;;24.19998;23.28999;LY;Al Kufrah;24132;CITY;wikidata=Q134086|whosonfirst=1141909275
-naturalearth;1159150079;Tmassah;;26.36664;15.80001;LY;Murzuq;500;CITY;wikidata=Q4117083|geonames=2209906|whosonfirst=1141909277
-naturalearth;1159150081;Misratah;;32.37997;15.10000;LY;Misratah;386120;CITY;wikidata=Q131323|geonames=2214846|whosonfirst=421168935
-naturalearth;1159150083;Zuwarah;;32.93441;12.07915;LY;An Nuqat al Khams;180310;CITY;wikidata=Q231167|geonames=2208425|whosonfirst=1141909279
+naturalearth;1159150079;Tmassa;Tmassah;26.36664;15.80001;LY;Murzuq;500;CITY;wikidata=Q4117083|geonames=2209906|whosonfirst=1141909277
+naturalearth;1159150081;Misrata;Misratah;32.37997;15.10000;LY;Misratah;386120;CITY;wikidata=Q131323|geonames=2214846|whosonfirst=421168935
+naturalearth;1159150083;Zuwara;Zuwarah;32.93441;12.07915;LY;An Nuqat al Khams;180310;CITY;wikidata=Q231167|geonames=2208425|whosonfirst=1141909279
 naturalearth;1159150085;Kirkuk;;35.47224;44.39227;IQ;At-Ta'mim;601433;CITY;wikidata=Q173310|geonames=94787|whosonfirst=890449811
 naturalearth;1159150087;Mosul;Al-Mawsil;36.34695;43.14306;IQ;Ninawa;1316000;CITY;wikidata=Q83317|geonames=99072|whosonfirst=421186153
-naturalearth;1159150089;An Najaf;;32.00033;44.33537;IQ;An-Najaf;665552;CITY;wikidata=Q168193|geonames=98860|whosonfirst=421168639
+naturalearth;1159150089;Najaf;An Najaf;32.00033;44.33537;IQ;An-Najaf;665552;CITY;wikidata=Q168193|geonames=98860|whosonfirst=421168639
 naturalearth;1159150091;Bahir Dar;;11.60005;37.38329;ET;Amhara;206748;CITY;wikidata=Q464699|geonames=342884|whosonfirst=890442393
 naturalearth;1159150093;Mekele;Mek'ele;13.49999;39.46998;ET;Tigray;95856;CITY;wikidata=Q332319|geonames=331180|whosonfirst=890435323
 naturalearth;1159150097;Dire Dawa;;9.59000;41.86002;ET;Dire Dawa;252279;CITY;wikidata=Q193486|geonames=338832|whosonfirst=421192777
@@ -6671,7 +6679,7 @@ naturalearth;1159150099;Rovaniemi;;66.50003;25.71594;FI;Lapland;34781;CITY;wikid
 naturalearth;1159150101;Vaasa;;63.09998;21.60001;FI;Western Finland;57014;CITY;wikidata=Q125080|geonames=632978|whosonfirst=101748437
 naturalearth;1159150103;Tampere;;61.50001;23.75001;FI;Pirkanmaa;259279;CITY;wikidata=Q40840|geonames=634963|whosonfirst=101748431
 naturalearth;1159150105;Aqtobe;Aktyubinsk;50.28002;57.16999;KZ;Aqtobe;262457;CITY;wikidata=Q477232|geonames=610611|whosonfirst=421168753
-naturalearth;1159150107;Rudny;;52.95270;63.13004;KZ;Qostanay;124000;CITY;wikidata=Q1008853|geonames=1519843|whosonfirst=421198737
+naturalearth;1159150107;Rudniy;Rudny;52.95270;63.13004;KZ;Qostanay;124000;CITY;wikidata=Q1008853|geonames=1519843|whosonfirst=421198737
 naturalearth;1159150109;Qyzylorda;Qyzlorda|Kyzylorda;44.80002;65.46499;KZ;Qyzylorda;300000;CITY;wikidata=Q491123|geonames=1519922|whosonfirst=421204885
 naturalearth;1159150111;Atyrau;;47.11269;51.92002;KZ;Atyrau;182753;CITY;wikidata=Q486913|geonames=610529|whosonfirst=421181511
 naturalearth;1159150115;Ekibastuz;;51.72998;75.31994;KZ;Pavlodar;127868;CITY;wikidata=Q496442|geonames=1524325|whosonfirst=421199715
@@ -6714,12 +6722,12 @@ naturalearth;1159150195;Montes Claros;;-16.72003;-43.86002;BR;Minas Gerais;33237
 naturalearth;1159150197;Uberlandia;;-18.90000;-48.27998;BR;Minas Gerais;563536;CITY;wikidata=Q194328|geonames=3445831|whosonfirst=101952471
 naturalearth;1159150199;Colider;;-10.81729;-55.45058;BR;Mato Grosso;27139;CITY;wikidata=Q1805608|geonames=6316881|whosonfirst=1141909287
 naturalearth;1159150201;Alta Floresta;;-9.90003;-55.90998;BR;Mato Grosso;40466;CITY;wikidata=Q433574|geonames=3407884|whosonfirst=1141909289
-naturalearth;1159150205;Cuiaba;Cuiabe;-15.56766;-56.08693;BR;Mato Grosso;806000;CITY;wikidata=Q170762|geonames=3465038|whosonfirst=101961233
+naturalearth;1159150205;Cuiaba;;-15.56766;-56.08693;BR;Mato Grosso;806000;CITY;wikidata=Q170762|geonames=3465038|whosonfirst=101961233
 naturalearth;1159150207;Pelotas;;-31.75001;-52.33002;BR;Rio Grande do Sul;320674;CITY;wikidata=Q109188|geonames=3454244|whosonfirst=101959521
 naturalearth;1159150209;Caxias do Sul;;-29.17999;-51.17004;BR;Rio Grande do Sul;381270;CITY;wikidata=Q110017|geonames=3466537|whosonfirst=101960531
 naturalearth;1159150211;Ponta Grossa;;-25.09001;-50.16005;BR;Parana;292177;CITY;wikidata=Q242906|geonames=3453186|whosonfirst=101967985
 naturalearth;1159150213;Teresina;;-5.09305;-42.78196;BR;Piaui;907000;CITY;wikidata=Q165341|geonames=3386496|whosonfirst=101943607
-naturalearth;1159150215;Maceio;Maceia;-9.61805;-35.73192;BR;Alagoas;1186000;CITY;wikidata=Q168888|geonames=3395981|whosonfirst=101948377
+naturalearth;1159150215;Maceio;;-9.61805;-35.73192;BR;Alagoas;1186000;CITY;wikidata=Q168888|geonames=3395981|whosonfirst=101948377
 naturalearth;1159150217;Vitoria da Conquista;;-14.85001;-40.84000;BR;Bahia;308204;CITY;wikidata=Q22062839|geonames=3444914|whosonfirst=101949621
 naturalearth;1159150219;Barreiras;;-12.14000;-45.00000;BR;Bahia;158292;CITY;wikidata=Q1384520|geonames=3470583|whosonfirst=101946919
 naturalearth;1159150223;Vila Velha;;-20.33805;-40.29023;BR;Espirito Santo;1209091;CITY;wikidata=Q334197|geonames=3445026|whosonfirst=101954585
@@ -6753,7 +6761,7 @@ naturalearth;1159150283;Rawson;;-43.30001;-65.09999;AR;Chubut;26335;CITY;wikidat
 naturalearth;1159150285;Neuquen;;-38.95004;-68.05999;AR;Neuquen;242092;CITY;wikidata=Q44239|geonames=3843123|whosonfirst=421193995
 naturalearth;1159150287;Trinidad;;-14.83337;-64.89998;BO;El Beni;84259;CITY;wikidata=Q34986|geonames=3902377|whosonfirst=421186665
 naturalearth;1159150289;Santa Rosa;;-36.62000;-64.29999;AR;La Pampa;111424;CITY;wikidata=Q44215|geonames=3835994|whosonfirst=421191197
-naturalearth;1159150291;San Carlos de Bariloche;;-41.14996;-71.30000;AR;Rio Negro;95394;CITY;wikidata=Q47772|geonames=3837856|whosonfirst=890437287
+naturalearth;1159150291;Bariloche;San Carlos de Bariloche;-41.14996;-71.30000;AR;Rio Negro;95394;CITY;wikidata=Q47772|geonames=3837856|whosonfirst=890437287
 naturalearth;1159150295;Salta;;-24.78336;-65.41664;AR;Salta;512686;CITY;wikidata=Q36307|geonames=3838233|whosonfirst=421169165
 naturalearth;1159150297;Tucuman;San Miguel De Tucuman|San Miguel de Tucumnn;-26.81405;-65.21857;AR;Tucuman;830000;CITY;wikidata=Q44255|geonames=3836873|whosonfirst=421172797
 naturalearth;1159150299;Formosa;;-26.17283;-58.18282;AR;Formosa;221383;CITY;wikidata=Q44214|geonames=3433899|whosonfirst=421204615
@@ -6766,13 +6774,13 @@ naturalearth;1159150313;Petrolina;;-9.38001;-40.50997;BR;Pernambuco;260985;CITY;
 naturalearth;1159150315;Bamenda;;5.95998;10.15002;CM;Nord-Ouest;445299;CITY;wikidata=Q528432|geonames=2234974|whosonfirst=421169257
 naturalearth;1159150317;Garoua;;9.30001;13.39002;CM;Nord;436899;CITY;wikidata=Q157915|geonames=2231320|whosonfirst=421182669
 naturalearth;1159150319;Herat;;34.33001;62.16999;AF;Hirat;481009;CITY;wikidata=Q45313|geonames=1140026|whosonfirst=890443569
-naturalearth;1159150321;Mazar-e Sharif;;36.69999;67.10003;AF;Balkh;458151;CITY;wikidata=Q130469|geonames=1133616|whosonfirst=890443559
+naturalearth;1159150321;Mazar-i-Sharif;Mazar-e Sharif;36.69999;67.10003;AF;Balkh;458151;CITY;wikidata=Q130469|geonames=1133616|whosonfirst=890443559
 naturalearth;1159150323;Battambang;Batdambang;13.10001;103.20005;KH;Batdambang;154773;CITY;wikidata=Q748336|geonames=1831797|whosonfirst=890412899
 naturalearth;1159150325;Siem Reap;Siemreab;13.36664;103.85003;KH;Siemreab;109398;CITY;wikidata=Q11711|geonames=1822214|whosonfirst=890444157
 naturalearth;1159150327;Malanje;Malange;-9.54000;16.34003;AO;Malanje;125856;CITY;wikidata=Q621001|geonames=2239862|whosonfirst=421168947
 naturalearth;1159150331;Benguela;;-12.57826;13.40723;AO;Benguela;151226;CITY;wikidata=Q214248|geonames=3351663|whosonfirst=890444581
 naturalearth;1159150333;Lubango;;-14.91001;13.49002;AO;Huila;125632;CITY;wikidata=Q122044|geonames=3347762|whosonfirst=1141909315
-naturalearth;1159150335;Namibe;;-15.19004;12.16002;AO;Namibe;132900;CITY;wikidata=Q221914|geonames=3347019|whosonfirst=421169033
+naturalearth;1159150335;Mocamedes;Namibe;-15.19004;12.16002;AO;Namibe;132900;CITY;wikidata=Q221914|geonames=3347019|whosonfirst=421169033
 naturalearth;1159150337;Tarija;;-21.51668;-64.74999;BO;Tarija;159269;CITY;wikidata=Q35004|geonames=3903320|whosonfirst=890451755
 naturalearth;1159150339;Bridgetown;;13.10200;-59.61653;BB;Saint Michael;191152;CITY;wikidata=Q36168|geonames=2075807|whosonfirst=101936933
 naturalearth;1159150341;Annaba;;36.92001;7.75998;DZ;Annaba;503524;CITY;wikidata=Q45942|geonames=2506999|whosonfirst=890440139
@@ -6821,7 +6829,7 @@ naturalearth;1159150435;Basseterre;;17.30203;-62.71701;KN;;21887;CITY;wikidata=Q
 naturalearth;1159150439;Las Palmas;;28.09998;-15.43000;ES;;378495;CITY;wikidata=Q11974|geonames=2515270|whosonfirst=101748161
 naturalearth;1159150441;Berbera;;10.43555;45.01642;;;242344;CITY;wikidata=Q191718|geonames=64435|whosonfirst=421181457
 naturalearth;1159150443;Port Louis;;-20.16664;57.49999;MU;;595491;CITY;wikidata=Q3929|geonames=934154|whosonfirst=85674971
-naturalearth;1159150445;Gaza;;31.53000;34.44502;PS;;505700;CITY;wikidata=Q47492|geonames=281133|whosonfirst=101919639
+naturalearth;1159150445;Gaza City;Gaza;31.53000;34.44502;PS;;505700;CITY;wikidata=Q47492|geonames=281133|whosonfirst=101919639
 naturalearth;1159150447;Saint George's;;12.05263;-61.74164;GD;;33734;CITY;wikidata=Q41547|geonames=3579925|whosonfirst=890451719
 naturalearth;1159150449;Papeete;;-17.53336;-149.56667;PF;;131695;CITY;wikidata=Q130800|geonames=4033936|whosonfirst=421176587
 naturalearth;1159150451;Manama;;26.23614;50.58305;BH;;563920;CITY;wikidata=Q3882|geonames=290340|whosonfirst=890440103
@@ -6830,7 +6838,7 @@ naturalearth;1159150457;Saint John's;;17.11804;-61.85003;AG;;35499;CITY;wikidata
 naturalearth;1159150459;Magong;Makung;23.56667;119.58333;TW;Penghu;56435;CITY;wikidata=Q701428|geonames=1672228|whosonfirst=890472077
 naturalearth;1159150461;Taichung;T'aichung;24.15208;120.68167;TW;Taichung City;2629323;CITY;wikidata=Q245023|geonames=1668399|whosonfirst=102026649
 naturalearth;1159150463;Kozhikode;Calicut;11.25238;75.76804;IN;Kerala;953000;CITY;wikidata=Q28729|geonames=1265873|whosonfirst=102029641
-naturalearth;1159150465;Bhubaneshwar;Bhubaneswar;20.27237;85.82541;IN;Orissa;844000;CITY;wikidata=Q171771|geonames=1275817|whosonfirst=102030665
+naturalearth;1159150465;Bhubaneswar;Bhubaneshwar;20.27237;85.82541;IN;Orissa;844000;CITY;wikidata=Q171771|geonames=1275817|whosonfirst=102030665
 naturalearth;1159150467;Jamshedpur;;22.78948;86.19557;IN;Jharkhand;1300000;CITY;wikidata=Q200054|geonames=1269300|whosonfirst=102029983
 naturalearth;1159150469;Montevideo;;-34.90538;-56.18682;UY;Montevideo;1513000;CITY;wikidata=Q1335|geonames=5038018|whosonfirst=890437681
 naturalearth;1159150471;Helena;;46.59275;-112.03529;US;Montana;38725;CITY;wikidata=Q38733|geonames=5656882|whosonfirst=85972711
@@ -6861,7 +6869,7 @@ naturalearth;1159150525;Milwaukee;;43.02961;-87.91667;US;Wisconsin;1388000;CITY;
 naturalearth;1159150529;Buffalo;;42.88192;-78.88195;US;New York;1016000;CITY;wikidata=Q40435|geonames=5110629|whosonfirst=85978023
 naturalearth;1159150531;Pittsburgh;;40.43194;-80.00193;US;Pennsylvania;1838000;CITY;wikidata=Q1342|geonames=5206379|whosonfirst=101718805
 naturalearth;1159150533;Ciudad Guayana;;8.37002;-62.61999;VE;Bolivar;746535;CITY;wikidata=Q507080|geonames=3645528|whosonfirst=890435399
-naturalearth;1159150535;Lome;Lomi;6.13388;1.22081;TG;Maritime;1452000;CITY;wikidata=Q3792|geonames=2365267|whosonfirst=421199773
+naturalearth;1159150535;Lome;;6.13388;1.22081;TG;Maritime;1452000;CITY;wikidata=Q3792|geonames=2365267|whosonfirst=421199773
 naturalearth;1159150537;Tunis;;36.80278;10.17968;TN;Tunis;2412500;CITY;wikidata=Q3572|geonames=2464470|whosonfirst=421195703
 naturalearth;1159150539;Kodiak;;57.79000;-152.40699;US;Alaska;9461;CITY;wikidata=Q79985|geonames=5866583|whosonfirst=85915867
 naturalearth;1159150541;Cold Bay;;55.20000;-162.71509;US;Alaska;200;CITY;wikidata=Q79523|whosonfirst=1141909339
@@ -6873,10 +6881,10 @@ naturalearth;1159150553;Valdez;;61.13600;-146.34829;US;Alaska;4036;CITY;wikidata
 naturalearth;1159150555;Juneau;;58.30339;-134.40071;US;Alaska;30711;CITY;wikidata=Q29445|geonames=5554072|whosonfirst=85915729
 naturalearth;1159150557;Fairbanks;;64.83698;-147.71066;US;Alaska;56993;CITY;wikidata=Q79638|geonames=5861897|whosonfirst=85915635
 naturalearth;1159150559;Prudhoe Bay;;70.29218;-148.66936;US;Alaska;2500;CITY;wikidata=Q1013046|whosonfirst=85916159
-naturalearth;1159150561;Sevastapol;;44.60392;33.52439;RU;Crimea;379200;CITY;wikidata=Q7525|geonames=694423|whosonfirst=101752787
+naturalearth;1159150561;Sevastopol;Sevastapol;44.60392;33.52439;RU;Crimea;379200;CITY;wikidata=Q7525|geonames=694423|whosonfirst=101752787
 naturalearth;1159150565;Abu Dhabi;;24.46668;54.36659;AE;Abu Dhabi;603492;CITY;wikidata=Q1519|geonames=292968|whosonfirst=421179641
 naturalearth;1159150567;Ashgabat;;37.95000;58.38330;TM;Ahal;727700;CITY;wikidata=Q23438|geonames=162183|whosonfirst=421167889
-naturalearth;1159150569;Samarqand;;39.67002;66.94500;UZ;Samarkand;708000;CITY;wikidata=Q5753|geonames=1216265|whosonfirst=421204413
+naturalearth;1159150569;Samarkand;Samarqand;39.67002;66.94500;UZ;Samarkand;708000;CITY;wikidata=Q5753|geonames=1216265|whosonfirst=421204413
 naturalearth;1159150571;Lusaka;;-15.41470;28.28138;ZM;Lusaka;1328000;CITY;wikidata=Q3881|geonames=909137|whosonfirst=421178937
 naturalearth;1159150573;Harare;;-17.81584;31.04276;ZW;Harare;1572000;CITY;wikidata=Q3921|geonames=890299|whosonfirst=421201479
 naturalearth;1159150575;Bulawayo;;-20.17000;28.58000;ZW;Bulawayo;699385;CITY;wikidata=Q193250|geonames=894701|whosonfirst=421168015
@@ -6899,11 +6907,11 @@ naturalearth;1159150611;Cusco;Cuzco;-13.52503;-71.97216;PE;Cusco;361182;CITY;wik
 naturalearth;1159150613;Tacna;;-18.00000;-70.25001;PE;Tacna;280098;CITY;wikidata=Q272795|geonames=3928128|whosonfirst=890445181
 naturalearth;1159150615;Trujillo;;-8.12003;-79.01997;PE;La Libertad;765171;CITY;wikidata=Q214173|geonames=3691175|whosonfirst=890445027
 naturalearth;1159150619;Ica;;-14.06799;-75.72549;PE;Ica;279420;CITY;wikidata=Q840712|geonames=3938527|whosonfirst=421186795
-naturalearth;1159150621;Asuncion;Asuncian;-25.29067;-57.62583;PY;Asuncion;1870000;CITY;wikidata=Q2933|geonames=1730025|whosonfirst=1125905513
+naturalearth;1159150621;Asuncion;;-25.29067;-57.62583;PY;Asuncion;1870000;CITY;wikidata=Q2933|geonames=1730025|whosonfirst=1125905513
 naturalearth;1159150623;Managua;;12.15496;-86.27044;NI;Managua;920000;CITY;wikidata=Q3274|geonames=3617763|whosonfirst=890451731
 naturalearth;1159150625;Freetown;;8.47196;-13.23616;SL;Western;827000;CITY;wikidata=Q3780|geonames=2408770|whosonfirst=421176817
 naturalearth;1159150627;Agadez;;16.99587;7.98281;NE;Agadez;117770;CITY;wikidata=Q320049|geonames=2447938|whosonfirst=890445391
-naturalearth;1159150629;Niyala;;12.05997;24.88999;SD;South Darfur;392373;CITY;wikidata=Q851576|geonames=369004|whosonfirst=1141909349
+naturalearth;1159150629;Nyala;Niyala;12.05997;24.88999;SD;South Darfur;392373;CITY;wikidata=Q851576|geonames=369004|whosonfirst=1141909349
 naturalearth;1159150631;Wau;;7.69998;27.98996;SS;West Bahr-al-Ghazal;127384;CITY;wikidata=Q276534|geonames=363885|whosonfirst=421203053
 naturalearth;1159150633;Dongola;;19.16659;30.48330;SD;Northern;26404;CITY;wikidata=Q821321|geonames=363417|whosonfirst=1141909351
 naturalearth;1159150637;Kassala;;15.45997;36.39002;SD;Kassala;401477;CITY;wikidata=Q686813|geonames=372753|whosonfirst=1141909355
@@ -6977,7 +6985,7 @@ naturalearth;1159150787;Grootfontein;;-19.56662;18.11656;NA;Otjozondjupa;24099;C
 naturalearth;1159150789;Zanzibar;;-6.16000;39.20003;TZ;Zanzibar West;403658;CITY;wikidata=Q2222874|geonames=148730|whosonfirst=890435609
 naturalearth;1159150791;Valencia;;39.48696;-0.40196;ES;Comunidad Valenciana;808000;CITY;wikidata=Q8818|geonames=2509954|whosonfirst=101748241
 naturalearth;1159150793;Palana;;59.08400;159.95002;RU;Kamchatka;3671;CITY;wikidata=Q695360|geonames=2122262|whosonfirst=890487663
-naturalearth;1159150795;Petropavlovsk Kamchatskiy;;53.06199;158.62302;RU;Kamchatka;187282;CITY;wikidata=Q7951|geonames=2122104|whosonfirst=102015555
+naturalearth;1159150795;Petropavlovsk-Kamchatsky;Petropavlovsk Kamchatskiy;53.06199;158.62302;RU;Kamchatka;187282;CITY;wikidata=Q7951|geonames=2122104|whosonfirst=102015555
 naturalearth;1159150799;Abuja;;9.05462;7.48951;NG;Federal Capital Territory;1576000;CITY;wikidata=Q3787|geonames=2322794|whosonfirst=421168971
 naturalearth;1159150801;Padang;;-0.95806;100.35807;ID;Sumatera Barat;855000;CITY;wikidata=Q7253|geonames=1633419|whosonfirst=102019633
 naturalearth;1159150803;Bissau;;11.86502;-15.59836;GW;Bissau;403339;CITY;wikidata=Q3739|geonames=2374775|whosonfirst=421197943
@@ -7001,13 +7009,13 @@ naturalearth;1159150841;Bandjarmasin;Bandjermasin;-3.32999;114.58008;ID;Kalimant
 naturalearth;1159150843;Makassar;Kota Makassar|Ujung Pandang;-5.13801;119.43008;ID;Sulawesi Selatan;1262000;CITY;wikidata=Q14634|geonames=1622786|whosonfirst=102018665
 naturalearth;1159150845;Lyon;;45.77195;4.82808;FR;Rhone-Alpes;1423000;CITY;wikidata=Q456|geonames=2996944|whosonfirst=101749431
 naturalearth;1159150847;Quito;;-0.21304;-78.50200;EC;Pichincha;1701000;CITY;wikidata=Q2900|geonames=3652462|whosonfirst=421173233
-naturalearth;1159150849;San Jose;San Josi;9.93037;-84.07881;CR;San Jose;1284000;CITY;wikidata=Q3070|geonames=3669623|whosonfirst=421171925
+naturalearth;1159150849;San Jose;;9.93037;-84.07881;CR;San Jose;1284000;CITY;wikidata=Q3070|geonames=3669623|whosonfirst=421171925
 naturalearth;1159150853;San Salvador;;13.70328;-89.21558;SV;San Salvador;1433000;CITY;wikidata=Q3110|geonames=1690681|whosonfirst=421191785
 naturalearth;1159150855;Kingston;;17.97708;-76.76743;JM;Kingston;937700;CITY;wikidata=Q34692|geonames=3489854|whosonfirst=421186515
 naturalearth;1159150857;Cartagena;;10.40168;-75.51634;CO;Bolivar;887000;CITY;wikidata=Q657461|geonames=3687238|whosonfirst=421181367
 naturalearth;1159150859;Mitu;;1.19831;-70.17361;CO;Vaupes;5917;CITY;wikidata=Q130242|geonames=3674676|whosonfirst=1141909363
 naturalearth;1159150861;Bumba;;2.18998;22.45996;CD;Equateur;160539;CITY;wikidata=Q1004822|geonames=217745|whosonfirst=421168669
-naturalearth;1159150863;Ndjamena;N'Djamnna|N'Djam-na;12.11504;15.04720;TD;Hadjer-Lamis;989000;CITY;wikidata=Q3659|geonames=2427123|whosonfirst=890440301
+naturalearth;1159150863;N'Djamena;Ndjamena|N'Djamnna|N'Djam-na;12.11504;15.04720;TD;Hadjer-Lamis;989000;CITY;wikidata=Q3659|geonames=2427123|whosonfirst=890440301
 naturalearth;1159150865;Abeche;;13.83999;20.82998;TD;Ouaddai;158317;CITY;wikidata=Q242587|geonames=245785|whosonfirst=890439891
 naturalearth;1159150867;Malabo;;3.75001;8.78328;GQ;Bioko Norte;155963;CITY;wikidata=Q3818|geonames=2309527|whosonfirst=421178347
 naturalearth;1159150871;Luxor;;25.70002;32.65004;EG;Qina;609248;CITY;wikidata=Q130514|geonames=360502|whosonfirst=421204231
@@ -7027,7 +7035,7 @@ naturalearth;1159150899;Matadi;;-5.81661;13.45002;CD;Bas-Congo;245862;CITY;wikid
 naturalearth;1159150901;Kolwezi;;-10.71672;25.47244;CD;Katanga;418000;CITY;wikidata=Q271404|geonames=922773|whosonfirst=421168775
 naturalearth;1159150903;Lubumbashi;Lumumbashi;-11.67808;27.47807;CD;Katanga;1352000;CITY;wikidata=Q187593|geonames=922704|whosonfirst=421198057
 naturalearth;1159150907;Lilongwe;;-13.98330;33.78330;MW;Lilongwe;646750;CITY;wikidata=Q3876|geonames=927967|whosonfirst=421168781
-naturalearth;1159150909;Guatemala;Ciudad de Guatemala (Guatemala City);14.62308;-90.52891;GT;Guatemala;1024000;CITY;wikidata=Q1555|geonames=3598132|whosonfirst=421169087
+naturalearth;1159150909;Guatemala City;Guatemala|Ciudad de Guatemala (Guatemala City);14.62308;-90.52891;GT;Guatemala;1024000;CITY;wikidata=Q1555|geonames=3598132|whosonfirst=421169087
 naturalearth;1159150911;Cayenne;;4.93299;-52.33002;GF;Guinaa;61550;CITY;wikidata=Q44401|geonames=3382160|whosonfirst=890442055
 naturalearth;1159150913;Libreville;;0.38539;9.45796;GA;Estuaire;578156;CITY;wikidata=Q3825|geonames=2399697|whosonfirst=421189663
 naturalearth;1159150915;Vishakhapatnam;Visakhapatnam;17.68290;83.21985;IN;Andhra Pradesh;1529000;CITY;wikidata=Q200016|geonames=1253102|whosonfirst=102028261
@@ -7037,7 +7045,7 @@ naturalearth;1159150921;Timbuktu;;16.76658;-3.01660;ML;Timbuktu;68872;CITY;wikid
 naturalearth;1159150925;Punta Arenas;;-53.16499;-70.94000;CL;Magallanes y Antartica Chilena;117430;CITY;wikidata=Q51599|geonames=3874787|whosonfirst=102017123
 naturalearth;1159150927;Iquique;;-20.24999;-70.12997;CL;Tarapaca;227499;CITY;wikidata=Q14440|geonames=3887127|whosonfirst=102017581
 naturalearth;1159150929;Antofagasta;;-23.64999;-70.40000;CL;Antofagasta;309832;CITY;wikidata=Q3612|geonames=3899539|whosonfirst=102017963
-naturalearth;1159150931;Valparaiso;Valpara so;-33.04774;-71.61703;CL;Valparaiso;854000;CITY;wikidata=Q33986|geonames=3445575|whosonfirst=102016833
+naturalearth;1159150931;Valparaiso;;-33.04774;-71.61703;CL;Valparaiso;854000;CITY;wikidata=Q33986|geonames=3445575|whosonfirst=102016833
 naturalearth;1159150933;Valdivia;;-39.82165;-73.23311;CL;Los Rios;159599;CITY;wikidata=Q160687|geonames=3868707|whosonfirst=102016837
 naturalearth;1159150935;Concepcion;;-36.83001;-73.05002;CL;Bio-Bio;889725;CITY;wikidata=Q1880|geonames=3893894|whosonfirst=102017759
 naturalearth;1159150937;Puerto Montt;;-41.46999;-72.92998;CL;Los Lagos;174629;CITY;wikidata=Q36214|geonames=3874960|whosonfirst=102017145
@@ -7051,8 +7059,8 @@ naturalearth;1159150953;Banghazi;Benghazi;32.11868;20.06478;LY;Benghazi;1180000;
 naturalearth;1159150955;Thessaloniki;;40.69805;22.88305;GR;Kentriki Makedonia;828000;CITY;wikidata=Q17151|geonames=734077|whosonfirst=101752331
 naturalearth;1159150957;Beirut;Bayrut;33.87392;35.50776;LB;Beirut;1846000;CITY;wikidata=Q3820|geonames=276781|whosonfirst=890442383
 naturalearth;1159150961;Tbilisi;T'Bilisi;41.72696;44.78885;GE;Tbilisi;1100000;CITY;wikidata=Q994|geonames=611717|whosonfirst=890443227
-naturalearth;1159150963;Gonder;;12.61004;37.46003;ET;Amhara;156230;CITY;wikidata=Q218861|geonames=336014|whosonfirst=890442043
-naturalearth;1159150965;Astana;;51.18113;71.42777;KZ;Aqmola;345604;CITY;wikidata=Q1520|geonames=1526273|whosonfirst=421182469
+naturalearth;1159150963;Gondar;Gonder;12.61004;37.46003;ET;Amhara;156230;CITY;wikidata=Q218861|geonames=336014|whosonfirst=890442043
+naturalearth;1159150965;Nur-Sultan;Astana;51.18113;71.42777;KZ;Aqmola;345604;CITY;wikidata=Q1520|geonames=1526273|whosonfirst=421182469
 naturalearth;1159150967;Qaraghandy;;49.88498;73.11501;KZ;Qaraghandy;451800;CITY;wikidata=Q484706|geonames=1519942|whosonfirst=1141909367
 naturalearth;1159150969;Almaty;;43.32694;76.91309;KZ;Almaty;1209000;CITY;wikidata=Q35493|geonames=1526384|whosonfirst=421176003
 naturalearth;1159150971;Isfahan;Esfahan;32.70195;51.69809;IR;Esfahan;1628000;CITY;wikidata=Q42053|geonames=418863|whosonfirst=421168719
@@ -7071,13 +7079,13 @@ naturalearth;1159150999;Yamoussoukro;;6.81838;-5.27550;CI;Lacs;206499;CITY;wikid
 naturalearth;1159151001;Cruzeiro do Sul;;-7.62999;-72.66997;BR;Acre;56862;CITY;wikidata=Q941136|geonames=3664464|whosonfirst=1141909369
 naturalearth;1159151003;Leticia;;-4.20121;-69.95526;CO;Amazonas;59575;CITY;wikidata=Q214913|geonames=3676623|whosonfirst=890439981
 naturalearth;1159151005;Manaus;;-3.09809;-60.00196;BR;Amazonas;1753000;CITY;wikidata=Q40236|geonames=3663517|whosonfirst=101941913
-naturalearth;1159151007;Caxias;;-4.83300;-43.35003;BR;Maranh;134640;CITY;wikidata=Q997107|geonames=3402383|whosonfirst=1141909373
+naturalearth;1159151007;Caxias;;-4.83300;-43.35003;BR;Maranhao;134640;CITY;wikidata=Q997107|geonames=3402383|whosonfirst=1141909373
 naturalearth;1159151009;Santarem;;-2.43325;-54.69998;BR;Para;230428;CITY;wikidata=Q659450|geonames=3389353|whosonfirst=101942031
 naturalearth;1159151011;Maraba;;-5.34997;-49.11598;BR;Para;166182;CITY;wikidata=Q509818|geonames=3395503|whosonfirst=101942193
 naturalearth;1159151015;Vilhena;;-12.71660;-60.11660;BR;Rondonia;63231;CITY;wikidata=Q1749958|geonames=3924679|whosonfirst=101941921
-naturalearth;1159151017;Ji-Parana;;-10.83331;-61.96700;BR;Rondinia;65016;CITY;wikidata=Q983815|geonames=3925033|whosonfirst=1141909375
+naturalearth;1159151017;Ji-Parana;;-10.83331;-61.96700;BR;Rondonia;65016;CITY;wikidata=Q983815|geonames=3925033|whosonfirst=1141909375
 naturalearth;1159151019;Campo Grande;;-20.44809;-54.61857;BR;Mato Grosso do Sul;778000;CITY;wikidata=Q168929|geonames=3467747|whosonfirst=101961475
-naturalearth;1159151021;Florianopolis;Florianapolis;-27.57804;-48.52197;BR;Santa Catarina;1023000;CITY;wikidata=Q132997|geonames=3463237|whosonfirst=101958175
+naturalearth;1159151021;Florianopolis;;-27.57804;-48.52197;BR;Santa Catarina;1023000;CITY;wikidata=Q132997|geonames=3463237|whosonfirst=101958175
 naturalearth;1159151023;Feira de Santana;;-12.25002;-38.97001;BR;Bahia;481911;CITY;wikidata=Q194343|geonames=3463478|whosonfirst=101950293
 naturalearth;1159151025;Winnipeg;;49.88299;-97.16599;CA;Manitoba;632063;CITY;wikidata=Q2135|geonames=6183235|whosonfirst=101734959
 naturalearth;1159151027;Churchill;;58.76599;-94.16599;CA;Manitoba;1000;CITY;wikidata=Q744553|geonames=5922111|whosonfirst=101734697
@@ -7088,7 +7096,7 @@ naturalearth;1159151037;Prince Rupert;;54.31667;-130.32999;CA;British Columbia;1
 naturalearth;1159151039;Victoria;;48.43328;-123.35000;CA;British Columbia;289625;CITY;wikidata=Q2132|geonames=6174041|whosonfirst=101740879
 naturalearth;1159151041;Arctic Bay;;73.03331;-85.16662;CA;Nunavut;604;CITY;wikidata=Q638017|geonames=5886735|whosonfirst=1141909377
 naturalearth;1159151043;Resolute;;74.68333;-94.90001;CA;Nunavut;250;CITY;wikidata=Q606622|geonames=6121522|whosonfirst=1141909379
-naturalearth;1159151045;Repulse Bay;;66.52947;-86.28293;CA;Nunavut;1000;CITY;wikidata=Q1723761|whosonfirst=101735481
+naturalearth;1159151045;Naujaat;Repulse Bay;66.52947;-86.28293;CA;Nunavut;1000;CITY;wikidata=Q1723761|whosonfirst=101735481
 naturalearth;1159151047;Yellowknife;;62.44201;-114.39698;CA;Northwest Territories;19234;CITY;wikidata=Q2061|geonames=6185377|whosonfirst=101735429
 naturalearth;1159151051;Fort Good Hope;;66.26661;-128.63332;CA;Northwest Territories;597;CITY;wikidata=Q201313|geonames=5955840|whosonfirst=1141909383
 naturalearth;1159151053;Whitehorse;;60.71672;-135.04998;CA;Yukon;23276;CITY;wikidata=Q2058|geonames=6180550|whosonfirst=101740697
@@ -7102,7 +7110,7 @@ naturalearth;1159151069;Halifax;;44.65002;-63.60000;CA;Nova Scotia;359111;CITY;w
 naturalearth;1159151071;St. John's;Saint John's;47.58499;-52.68101;CA;Newfoundland and Labrador;131469;CITY;wikidata=Q2082|geonames=6324733|whosonfirst=890456615
 naturalearth;1159151073;Nain;;56.54735;-61.68605;CA;Newfoundland and Labrador;1151;CITY;wikidata=Q3335210|geonames=6943610|whosonfirst=1141909387
 naturalearth;1159151075;Charlottetown;;46.24928;-63.13132;CA;Prince Edward Island;42402;CITY;wikidata=Q2127|geonames=5920288|whosonfirst=1141909391
-naturalearth;1159151077;Ndele;;8.40914;20.65304;CF;Bamingui-Bangoran;11764;CITY;wikidata=Q612713|geonames=237379|whosonfirst=421205399
+naturalearth;1159151077;N'Dele;Ndele;8.40914;20.65304;CF;Bamingui-Bangoran;11764;CITY;wikidata=Q612713|geonames=237379|whosonfirst=421205399
 naturalearth;1159151079;Belgrade;Beograd;44.82059;20.46605;RS;Grad Beograd;1099000;CITY;wikidata=Q3711|geonames=792680|whosonfirst=890476941
 naturalearth;1159151081;Obo;;5.39999;26.50003;CF;Haut-Mbomou;12887;CITY;wikidata=Q1025617|geonames=236950|whosonfirst=421188145
 naturalearth;1159151083;Bandar Seri Begawan;;4.88333;114.93328;BN;Brunei and Muara;296500;CITY;wikidata=Q9279|geonames=1820906|whosonfirst=421188863
@@ -7151,8 +7159,8 @@ naturalearth;1159151179;Naypyidaw;Nay Pyi Taw;19.76850;96.11667;MM;Mandalay;9300
 naturalearth;1159151181;San Juan;;18.44002;-66.12998;PR;;2478905;CITY;wikidata=Q41211|geonames=4568127|whosonfirst=101919427
 naturalearth;1159151183;Stanley;;-51.70001;-57.84997;FK;;2213;CITY;wikidata=Q12245|geonames=3426691|whosonfirst=1141909409
 naturalearth;1159151185;Hamilton;;32.29419;-64.78394;BM;;52320;CITY;wikidata=Q30985|geonames=3573197|whosonfirst=890442097
-naturalearth;1159151187;Nukualofa;;-21.13851;-175.22056;TO;;42620;CITY;wikidata=Q38834|geonames=4032402|whosonfirst=1141909411
-naturalearth;1159151189;Hargeysa;;9.56002;44.06531;;;477876;CITY;wikidata=Q168652|geonames=57289|whosonfirst=421181455
+naturalearth;1159151187;Nuku'alofa;Nukualofa;-21.13851;-175.22056;TO;;42620;CITY;wikidata=Q38834|geonames=4032402|whosonfirst=1141909411
+naturalearth;1159151189;Hargeisa;Hargeysa;9.56002;44.06531;;;477876;CITY;wikidata=Q168652|geonames=57289|whosonfirst=421181455
 naturalearth;1159151191;Victoria;;-4.61663;55.44999;SC;;33576;CITY;wikidata=Q3940|geonames=241131|whosonfirst=421202159
 naturalearth;1159151195;Sao Tome;;0.33747;6.72965;ST;;88219;CITY;wikidata=Q3932|geonames=3388092|whosonfirst=101946455
 naturalearth;1159151197;Apia;;-13.83572;-171.76860;WS;;61916;CITY;wikidata=Q36260|geonames=3689793|whosonfirst=890445003
@@ -7188,7 +7196,7 @@ naturalearth;1159151261;Barcelona;;41.38524;2.18142;ES;Cataluna;4920000;CITY;wik
 naturalearth;1159151263;Bucharest;Bucuresti;44.43532;26.09800;RO;Bucharest;1942000;CITY;wikidata=Q19660|geonames=683506|whosonfirst=101751949
 naturalearth;1159151267;Aleppo;Halab;36.23192;37.16807;SY;Aleppo (Halab);2738000;CITY;wikidata=Q41183|geonames=170063|whosonfirst=421202163
 naturalearth;1159151269;Damascus;Dimashq;33.50198;36.29805;SY;Damascus;2466000;CITY;wikidata=Q3766|geonames=170654|whosonfirst=421202165
-naturalearth;1159151271;Zurich;Zarich;47.38193;8.54806;CH;Zurich;1108000;CITY;wikidata=Q72|geonames=2657896|whosonfirst=101748463
+naturalearth;1159151271;Zurich;;47.38193;8.54806;CH;Zurich;1108000;CITY;wikidata=Q72|geonames=2657896|whosonfirst=101748463
 naturalearth;1159151273;Lisbon;Lisboa;38.72467;-9.14681;PT;Lisboa;2812000;CITY;wikidata=Q597|geonames=2267057|whosonfirst=101752087
 naturalearth;1159151275;Khartoum;Al-Khartum;15.59002;32.53223;SD;Khartoum;4754000;CITY;wikidata=Q1963|geonames=379252|whosonfirst=890441687
 naturalearth;1159151277;Jeddah;Jiddah;21.51883;39.21725;SA;Makkah;3012000;CITY;wikidata=Q374365|geonames=105343|whosonfirst=421200923
@@ -7220,7 +7228,7 @@ naturalearth;1159151333;Dongguan;Dongguan, Guangdong;23.02154;113.75047;CN;Guang
 naturalearth;1159151335;Bandung;;-6.94808;107.56807;ID;Jawa Barat;2394000;CITY;wikidata=Q10389|geonames=1650357|whosonfirst=102021015
 naturalearth;1159151339;Surabaya;Surabaja;-7.24729;112.74889;ID;Jawa Timur;2845000;CITY;wikidata=Q11462|geonames=1625822|whosonfirst=102018911
 naturalearth;1159151341;Guayaquil;;-2.21809;-79.92199;EC;Guayas;2514000;CITY;wikidata=Q43509|geonames=3657509|whosonfirst=1125373543
-naturalearth;1159151343;Medellin;Medelldn;6.27695;-75.57696;CO;Antioquia;3297000;CITY;wikidata=Q48278|geonames=3674962|whosonfirst=890442155
+naturalearth;1159151343;Medellin;;6.27695;-75.57696;CO;Antioquia;3297000;CITY;wikidata=Q48278|geonames=3674962|whosonfirst=890442155
 naturalearth;1159151345;Cali;;3.40191;-76.50191;CO;Valle del Cauca;2254000;CITY;wikidata=Q51103|geonames=3687925|whosonfirst=421169145
 naturalearth;1159151347;Havana;La Habana;23.13390;-82.36613;CU;Ciudad de la Habana;2174000;CITY;wikidata=Q1563|geonames=3553478|whosonfirst=421186583
 naturalearth;1159151349;Alexandria;Al-Iskandariyah;31.20197;29.94805;EG;Al Iskandariyah;4165000;CITY;wikidata=Q87|geonames=361058|whosonfirst=890429453
@@ -7253,7 +7261,7 @@ naturalearth;1159151407;Hyderabad;;17.40193;78.47801;IN;Telangana;6376000;CITY;w
 naturalearth;1159151411;Pune;Poona;18.51639;73.85189;IN;Maharashtra;4672000;CITY;wikidata=Q1538|geonames=1259229|whosonfirst=102028965
 naturalearth;1159151413;Nagpur;;21.17191;79.08805;IN;Maharashtra;2454000;CITY;wikidata=Q1513|geonames=1262180|whosonfirst=102029277
 naturalearth;1159151415;Tripoli;Tarabulus;32.89250;13.18001;LY;Tajura' wa an Nawahi al Arba;2189000;CITY;wikidata=Q3579|whosonfirst=1141909421
-naturalearth;1159151417;Tel Aviv-Yafo;Tel Aviv-Jaffa;32.08194;34.76807;IL;Tel Aviv;3112000;CITY;wikidata=Q33935|geonames=293394|whosonfirst=1125955239
+naturalearth;1159151417;Tel Aviv;Tel Aviv-Yafo|Tel Aviv-Jaffa;32.08194;34.76807;IL;Tel Aviv;3112000;CITY;wikidata=Q33935|geonames=293394|whosonfirst=1125955239
 naturalearth;1159151419;Helsinki;;60.16380;24.93246;FI;Southern Finland;1115000;CITY;wikidata=Q1757|geonames=658225|whosonfirst=101748417
 naturalearth;1159151421;Mashhad;;36.27197;59.56805;IR;Razavi Khorasan;2469000;CITY;wikidata=Q121157|geonames=124665|whosonfirst=1125929605
 naturalearth;1159151423;Jaipur;;26.92308;75.80804;IN;Rajasthan;2917000;CITY;wikidata=Q66485|geonames=1269515|whosonfirst=102030017
@@ -7264,15 +7272,15 @@ naturalearth;1159151433;Ahmedabad;Ahmadabad;23.03200;72.57806;IN;Dadra and Nagar
 naturalearth;1159151435;Surat;;21.20193;72.83809;IN;Dadra and Nagar Haveli;3842000;CITY;wikidata=Q4629|geonames=1255364|whosonfirst=102028539
 naturalearth;1159151437;Kobenhavn;Copenhagen|K;55.68051;12.56154;DK;Hovedstaden;1085000;CITY;wikidata=Q1748|geonames=2618425|whosonfirst=101749159
 naturalearth;1159151439;Abidjan;;5.32313;-4.02021;CI;Lagunes;3802000;CITY;wikidata=Q1515|geonames=2293538|whosonfirst=421199985
-naturalearth;1159151441;Belem;Belnm;-1.44806;-48.48197;BR;Para;2167000;CITY;wikidata=Q12829733|geonames=3405870|whosonfirst=101942553
-naturalearth;1159151443;Brasilia;Brasglia;-15.78139;-47.91800;BR;Distrito Federal;3716996;CITY;wikidata=Q2844|geonames=3469058|whosonfirst=101964877
+naturalearth;1159151441;Belem;;-1.44806;-48.48197;BR;Para;2167000;CITY;wikidata=Q12829733|geonames=3405870|whosonfirst=101942553
+naturalearth;1159151443;Brasilia;;-15.78139;-47.91800;BR;Distrito Federal;3716996;CITY;wikidata=Q2844|geonames=3469058|whosonfirst=101964877
 naturalearth;1159151447;Porto Alegre;Phrto Alegre;-30.04807;-51.20196;BR;Rio Grande do Sul;3917000;CITY;wikidata=Q40269|geonames=3452925|whosonfirst=101960525
 naturalearth;1159151449;Curitiba;;-25.41807;-49.32194;BR;Parana;3084000;CITY;wikidata=Q4361|geonames=3464975|whosonfirst=101957995
 naturalearth;1159151451;Fortaleza;;-3.74807;-38.58193;BR;Ceara;3602319;CITY;wikidata=Q43463|geonames=3399415|whosonfirst=101944733
 naturalearth;1159151453;Salvador;;-12.96803;-38.48193;BR;Bahia;3484000;CITY;wikidata=Q36947|geonames=3450554|whosonfirst=101950447
 naturalearth;1159151455;Edmonton;;53.55197;-113.50193;CA;Alberta;1058000;CITY;wikidata=Q2096|geonames=5946768|whosonfirst=890458485
 naturalearth;1159151457;Montreal;;45.50194;-73.58524;CA;Quebec;3678000;CITY;wikidata=Q340|geonames=6077243|whosonfirst=101736545
-naturalearth;1159151459;Goiania;Goinnia;-16.71808;-49.30197;BR;Goias;2022000;CITY;wikidata=Q83189|geonames=3462377|whosonfirst=101968251
+naturalearth;1159151459;Goiania;;-16.71808;-49.30197;BR;Goias;2022000;CITY;wikidata=Q83189|geonames=3462377|whosonfirst=101968251
 naturalearth;1159151461;Recife;;-8.06053;-34.90877;BR;Pernambuco;3651000;CITY;wikidata=Q48344|geonames=3390760|whosonfirst=101948669
 naturalearth;1159151465;Brussels;Bruxelles-Brussel;50.83526;4.33137;BE;Brussels;1743000;CITY;wikidata=Q239|geonames=2800866|whosonfirst=1175610569
 naturalearth;1159151467;Dhaka;;23.72501;90.40663;BD;Dhaka;12797394;CITY;wikidata=Q1354|geonames=1185241|whosonfirst=421181477
@@ -7280,7 +7288,7 @@ naturalearth;1159151469;Luanda;;-8.83634;13.23248;AO;Luanda;5172900;CITY;wikidat
 naturalearth;1159151471;Algiers;El Djazacr|El Djazasr;36.76501;3.04861;DZ;Alger;3354000;CITY;wikidata=Q3561|geonames=2507480|whosonfirst=421174649
 naturalearth;1159151473;Chattogram;Chittagong;22.33194;91.79802;BD;Chittagong;4529000;CITY;wikidata=Q376749|geonames=1205733|whosonfirst=421199663
 naturalearth;1159151475;Perth;;-31.95307;115.83805;AU;Western Australia;1532000;CITY;wikidata=Q3183|geonames=2063523|whosonfirst=101937679
-naturalearth;1159151477;Rangoon;Yangon;16.78530;96.16473;MM;Yangon;4088000;CITY;wikidata=Q37995|geonames=1298824|whosonfirst=890443751
+naturalearth;1159151477;Yangon;Rangoon;16.78530;96.16473;MM;Yangon;4088000;CITY;wikidata=Q37995|geonames=1298824|whosonfirst=890443751
 naturalearth;1159151479;San Francisco;San Francisco-Oakland;37.78426;-122.39960;US;California;3450000;CITY;wikidata=Q62|geonames=5391959|whosonfirst=85922583
 naturalearth;1159151483;Denver;Denver-Aurora;39.74113;-104.98596;US;Colorado;2313000;CITY;wikidata=Q16554|geonames=5419384|whosonfirst=85928879
 naturalearth;1159151485;Houston;;29.74127;-95.34844;US;Texas;4459000;CITY;wikidata=Q16555|geonames=4699066|whosonfirst=101725629
@@ -7288,7 +7296,7 @@ naturalearth;1159151487;Miami;;25.78956;-80.22605;US;Florida;5585000;CITY;wikida
 naturalearth;1159151489;Atlanta;;33.73946;-84.36764;US;Georgia;4506000;CITY;wikidata=Q23556|geonames=4180439|whosonfirst=85936429
 naturalearth;1159151491;Chicago;;41.84796;-87.63524;US;Illinois;8990000;CITY;wikidata=Q1297|geonames=4887398|whosonfirst=85940195
 naturalearth;1159151493;Caracas;;10.50294;-66.91898;VE;Distrito Capital;2985000;CITY;wikidata=Q1533|geonames=3646738|whosonfirst=890442147
-naturalearth;1159151495;Kiev;Kyiv;50.43531;30.51468;UA;Kiev;2709000;CITY;wikidata=Q1899|geonames=703448|whosonfirst=101752489
+naturalearth;1159151495;Kyiv;Kiev;50.43531;30.51468;UA;Kiev;2709000;CITY;wikidata=Q1899|geonames=703448|whosonfirst=101752489
 naturalearth;1159151497;Dubai;Dubayy;25.21491;55.28695;AE;Dubay;1379000;CITY;wikidata=Q612|geonames=292223|whosonfirst=421174961
 naturalearth;1159151501;Tashkent;;41.30383;69.26882;UZ;Tashkent;2184000;CITY;wikidata=Q269|geonames=1512569|whosonfirst=421168855
 naturalearth;1159151503;Madrid;;40.40197;-3.68530;ES;Comunidad de Madrid;5567000;CITY;wikidata=Q2807|geonames=3117735|whosonfirst=101748283
@@ -7344,7 +7352,7 @@ naturalearth;1159151613;Paris;;48.85809;2.35299;FR;Ile-de-France;9904000;CITY;wi
 naturalearth;1159151615;Santiago;;-33.44020;-70.65050;CL;Region Metropolitana de Santiago;5720000;CITY;wikidata=Q2887|geonames=3449741|whosonfirst=102016915
 naturalearth;1159151617;Kolkata;Calcutta;22.56958;88.36913;IN;West Bengal;14787000;CITY;wikidata=Q1348|geonames=1275004|whosonfirst=102030585
 naturalearth;1159151619;Rio de Janeiro;;-22.90731;-43.21212;BR;Rio de Janeiro;11748000;CITY;wikidata=Q8678|geonames=3451190|whosonfirst=101953261
-naturalearth;1159151621;Sao Paulo;Sio Paulo|S;-23.55673;-46.62697;BR;Sao Paulo;18845000;CITY;wikidata=Q174|geonames=3448439|whosonfirst=1141909435
+naturalearth;1159151621;Sao Paulo;S;-23.55673;-46.62697;BR;Sao Paulo;18845000;CITY;wikidata=Q174|geonames=3448439|whosonfirst=1141909435
 naturalearth;1159151623;Sydney;;-33.87137;151.21255;AU;New South Wales;4630000;CITY;wikidata=Q3130|geonames=2147714|whosonfirst=101932003
 naturalearth;1159151627;Singapore;;1.29498;103.85388;SG;;5183700;CITY;wikidata=Q334|geonames=1880252|whosonfirst=102032341
 naturalearth;1159151629;Hong Kong;;22.30693;114.18306;HK;;7206000;CITY;wikidata=Q8646|geonames=1819729|whosonfirst=890437279
