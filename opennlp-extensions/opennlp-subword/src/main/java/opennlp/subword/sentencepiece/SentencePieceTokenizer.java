@@ -253,10 +253,11 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
       throw new IllegalArgumentException("The text must not be null.");
     }
     final Utf8Text input = Utf8Text.of(text);
-    final SentencePieceNormalizer.Normalized normalized = normalizer.normalize(input.bytes());
+    final SentencePieceNormalizer.Normalized normalized =
+        normalizer.normalize(input.bytes(), input.byteLength());
     final List<Segment> segments = algorithm == Algorithm.UNIGRAM
-        ? unigramEncoder.encode(normalized.bytes())
-        : bpeEncoder.encode(normalized.bytes());
+        ? unigramEncoder.encode(normalized.bytes(), normalized.length())
+        : bpeEncoder.encode(normalized.bytes(), normalized.length());
 
     final List<SubwordPiece> out = new ArrayList<>(segments.size());
     final byte[] norm = normalized.bytes();
@@ -269,10 +270,14 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     int pendingUnkEnd = 0;
 
     for (final Segment segment : segments) {
-      final String piece = new String(norm, segment.from(), segment.to() - segment.from(),
-          StandardCharsets.UTF_8);
       final boolean isUnk = segment.id() == unkId;
       final boolean isControl = types[segment.id()] == TYPE_CONTROL;
+      // A non-unknown segment's bytes are exactly the vocabulary piece's bytes (that is what
+      // the match meant), so the vocabulary string is reused; only unknown segments carry
+      // surface content that needs decoding.
+      final String piece = isUnk
+          ? new String(norm, segment.from(), segment.to() - segment.from(), StandardCharsets.UTF_8)
+          : pieces[segment.id()];
 
       if (isControl) {
         if (pendingUnk != null) {
@@ -332,8 +337,10 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
       throw new IllegalArgumentException("The text must not be null.");
     }
     final Utf8Text input = Utf8Text.of(text);
-    final SentencePieceNormalizer.Normalized result = normalizer.normalize(input.bytes());
-    final String normalized = new String(result.bytes(), StandardCharsets.UTF_8);
+    final SentencePieceNormalizer.Normalized result =
+        normalizer.normalize(input.bytes(), input.byteLength());
+    final String normalized = new String(result.bytes(), 0, result.length(),
+        StandardCharsets.UTF_8);
     final int[] normToOrig = result.normToOrig();
     final byte[] norm = result.bytes();
 
@@ -345,9 +352,10 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     int groupOrigEnd = -1;
     int groupChars = 0;
     int b = 0;
-    while (b < norm.length) {
+    final int normLength = result.length();
+    while (b < normLength) {
       final int byteLength = Math.min(SentencePieceNormalizer.utf8Length(norm[b]),
-          norm.length - b);
+          normLength - b);
       final int origStart = input.charOffset(normToOrig[b]);
       final int origEnd = input.charOffset(normToOrig[b + byteLength]);
       final int chars = byteLength == 4 ? 2 : 1;

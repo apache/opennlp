@@ -67,33 +67,37 @@ final class UnigramEncoder {
   /**
    * Segments normalized text.
    *
-   * @param normalized The normalized UTF-8 bytes; must not be null.
+   * @param normalized The buffer holding the normalized UTF-8 bytes; must not be null.
+   * @param size       The number of valid bytes in {@code normalized}.
    * @return The best-path segments covering all bytes, in text order.
    */
-  List<Segment> encode(byte[] normalized) {
-    final int size = normalized.length;
+  List<Segment> encode(byte[] normalized, int size) {
     if (size == 0) {
       return List.of();
     }
 
-    // The best path ending at each byte position (exclusive end).
-    final int[] bestStartsAt = new int[size + 1];
-    final float[] bestScore = new float[size + 1];
-    final int[] bestId = new int[size + 1];
-    java.util.Arrays.fill(bestStartsAt, -1);
+    // The best path ending at each byte position (exclusive end), interleaved as
+    // [startsAt, scoreBits, id] triples so a frontier update touches one cache line. Scores
+    // travel as raw float bits, a lossless round trip; all arithmetic happens on the floats.
+    final int[] best = new int[3 * (size + 1)];
+    for (int i = 0; i <= size; i++) {
+      best[3 * i] = -1;
+    }
+    best[1] = Float.floatToRawIntBits(0.0f);
 
     int startsAt = 0;
     int maxFrontier = 0;
     while (startsAt < size) {
-      float bestScoreTillHere = bestScore[startsAt];
+      float bestScoreTillHere = Float.intBitsToFloat(best[3 * startsAt + 1]);
       if (bestScoreTillHere < -SCORE_RESET_THRESHOLD
           || bestScoreTillHere > SCORE_RESET_THRESHOLD) {
         // Re-bases accumulated scores to keep float precision on very long inputs; every
         // reachable frontier position shifts by the same offset, so the argmax is unchanged.
         final float offset = bestScoreTillHere;
         for (int i = startsAt; i <= maxFrontier; i++) {
-          if (i == startsAt || bestStartsAt[i] != -1) {
-            bestScore[i] -= offset;
+          if (i == startsAt || best[3 * i] != -1) {
+            best[3 * i + 1] = Float.floatToRawIntBits(
+                Float.intBitsToFloat(best[3 * i + 1]) - offset);
           }
         }
         bestScoreTillHere = 0.0f;
@@ -122,10 +126,11 @@ final class UnigramEncoder {
         // User-defined symbols receive a length bonus instead of a trained score.
         final float score = userDefined[id] ? 0.1f * (length - 1) : scores[id];
         final float candidate = score + bestScoreTillHere;
-        if (bestStartsAt[keyPos] == -1 || candidate > bestScore[keyPos]) {
-          bestScore[keyPos] = candidate;
-          bestStartsAt[keyPos] = startsAt;
-          bestId[keyPos] = id;
+        final int slot = 3 * keyPos;
+        if (best[slot] == -1 || candidate > Float.intBitsToFloat(best[slot + 1])) {
+          best[slot + 1] = Float.floatToRawIntBits(candidate);
+          best[slot] = startsAt;
+          best[slot + 2] = id;
         }
         if (!hasSingleNode && length == mblen) {
           hasSingleNode = true;
@@ -136,10 +141,11 @@ final class UnigramEncoder {
         final int end = startsAt + mblen;
         maxFrontier = Math.max(maxFrontier, end);
         final float candidate = unkScore + bestScoreTillHere;
-        if (bestStartsAt[end] == -1 || candidate > bestScore[end]) {
-          bestScore[end] = candidate;
-          bestStartsAt[end] = startsAt;
-          bestId[end] = unkId;
+        final int slot = 3 * end;
+        if (best[slot] == -1 || candidate > Float.intBitsToFloat(best[slot + 1])) {
+          best[slot + 1] = Float.floatToRawIntBits(candidate);
+          best[slot] = startsAt;
+          best[slot + 2] = unkId;
         }
       }
 
@@ -149,12 +155,12 @@ final class UnigramEncoder {
     final List<Segment> results = new ArrayList<>(size / 4 + 1);
     int endsAt = size;
     while (endsAt > 0) {
-      final int from = bestStartsAt[endsAt];
+      final int from = best[3 * endsAt];
       if (from < 0) {
         throw new IllegalStateException(
             "The Viterbi path is broken at normalized byte " + endsAt + ".");
       }
-      results.add(new Segment(from, endsAt, bestId[endsAt]));
+      results.add(new Segment(from, endsAt, best[3 * endsAt + 2]));
       endsAt = from;
     }
     Collections.reverse(results);

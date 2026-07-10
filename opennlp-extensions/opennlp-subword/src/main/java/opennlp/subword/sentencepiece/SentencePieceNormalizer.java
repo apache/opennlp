@@ -45,6 +45,10 @@ final class SentencePieceNormalizer {
   private final boolean escapeWhitespaces;
   private final boolean treatWhitespaceAsSuffix;
   private final PieceTrie userDefinedMatcher;
+  // For each possible first byte, whether any character-map rule or user-defined symbol starts
+  // with it. A clear bit proves normalizePrefix would pass the byte through raw, which lets the
+  // scan skip the whole prefix machinery for plain ASCII text.
+  private final boolean[] ruleLead = new boolean[256];
 
   /**
    * Instantiates the normalizer.
@@ -98,15 +102,32 @@ final class SentencePieceNormalizer {
     this.escapeWhitespaces = escapeWhitespaces;
     this.treatWhitespaceAsSuffix = treatWhitespaceAsSuffix;
     this.userDefinedMatcher = userDefinedMatcher;
+    for (int b = 0; b < 256; b++) {
+      final boolean charsMapLead = trie != null && trie.hasTransitionFromRoot(b);
+      final boolean userDefinedLead = userDefinedMatcher != null
+          && userDefinedMatcher.step(userDefinedMatcher.root(), (byte) b) != PieceTrie.DEAD;
+      ruleLead[b] = charsMapLead || userDefinedLead;
+    }
   }
 
-  /** The normalized bytes plus the normalized-byte to original-byte offset map. */
-  record Normalized(byte[] bytes, int[] normToOrig) {
+  /**
+   * The normalized bytes plus the normalized-byte to original-byte offset map. The arrays are
+   * builder-backed and may be oversized; {@code length} bytes are valid, and the offset map
+   * holds {@code length + 1} entries.
+   */
+  record Normalized(byte[] bytes, int length, int[] normToOrig) {
   }
 
   // One normalization step: `consumed` input bytes produced `data[from, to)`. The data array is
-  // the input itself (pass-through), the replacement blob, or the replacement character.
-  private record Chunk(byte[] data, int from, int to, int consumed) {
+  // the input itself (pass-through), the replacement blob, or the replacement character. One
+  // mutable scratch per normalize call, refilled per chunk, so the scan allocates nothing per
+  // code point.
+  private static final class Chunk {
+
+    private byte[] data;
+    private int from;
+    private int to;
+    private int consumed;
 
     boolean isSingleSpace() {
       return to - from == 1 && data[from] == ' ';
@@ -116,46 +137,61 @@ final class SentencePieceNormalizer {
   /**
    * Normalizes UTF-8 input.
    *
-   * @param input The well-formed UTF-8 bytes to normalize; must not be null.
-   * @return The normalized bytes with the offset map; {@code normToOrig.length} is always
-   *     {@code bytes.length + 1}.
+   * @param input       The buffer holding well-formed UTF-8 bytes; must not be null.
+   * @param inputLength The number of valid bytes in {@code input}.
+   * @return The normalized bytes with the offset map; the arrays are builder-backed, valid for
+   *     {@code length} bytes and {@code length + 1} map entries.
    */
-  Normalized normalize(byte[] input) {
-    final ByteBuilder normalized = new ByteBuilder(input.length + (input.length >> 1) + 4);
-    final IntBuilder normToOrig = new IntBuilder(input.length + (input.length >> 1) + 5);
+  Normalized normalize(byte[] input, int inputLength) {
+    final ByteBuilder normalized = new ByteBuilder(inputLength + (inputLength >> 1) + 4);
+    final IntBuilder normToOrig = new IntBuilder(inputLength + (inputLength >> 1) + 5);
+    final Chunk chunk = new Chunk();
 
     int from = 0;
     int consumed = 0;
 
     // Ignores heading whitespace.
     if (removeExtraWhitespaces) {
-      while (from < input.length) {
-        final Chunk p = normalizePrefix(input, from);
-        if (!p.isSingleSpace()) {
+      while (from < inputLength) {
+        normalizePrefix(input, inputLength, from, chunk);
+        if (!chunk.isSingleSpace()) {
           break;
         }
-        from += p.consumed();
-        consumed += p.consumed();
+        from += chunk.consumed;
+        consumed += chunk.consumed;
       }
     }
 
     // All input was whitespace.
-    if (from >= input.length) {
-      return new Normalized(new byte[0], new int[] {consumed});
+    if (from >= inputLength) {
+      normToOrig.append(consumed);
+      return new Normalized(normalized.array(), 0, normToOrig.array());
     }
 
-    final byte[] spaceSymbol = escapeWhitespaces ? SPACE_SYMBOL : new byte[] {' '};
+    final byte[] spaceSymbol = escapeWhitespaces ? SPACE_SYMBOL : SINGLE_SPACE;
 
     if (!treatWhitespaceAsSuffix && addDummyPrefix) {
       appendSpace(normalized, normToOrig, spaceSymbol, consumed);
     }
 
     boolean isPrevSpace = removeExtraWhitespaces;
-    while (from < input.length) {
-      final Chunk p = normalizePrefix(input, from);
-      int spFrom = p.from();
-      final int spTo = p.to();
-      final byte[] spData = p.data();
+    while (from < inputLength) {
+      final int lead = input[from] & 0xFF;
+      // Fast path: an ASCII byte no rule starts with passes through raw; the chunk would be
+      // the byte itself, no leading-space stripping applies, and it does not end in a space.
+      if (lead < 0x80 && lead != ' ' && !ruleLead[lead]) {
+        normalized.append(input[from]);
+        normToOrig.append(consumed);
+        consumed++;
+        from++;
+        isPrevSpace = false;
+        continue;
+      }
+
+      normalizePrefix(input, inputLength, from, chunk);
+      int spFrom = chunk.from;
+      final int spTo = chunk.to;
+      final byte[] spData = chunk.data;
 
       // Removes heading spaces in the chunk if the previous chunk ended with whitespace.
       while (isPrevSpace && spFrom < spTo && spData[spFrom] == ' ') {
@@ -174,8 +210,8 @@ final class SentencePieceNormalizer {
         isPrevSpace = spData[spTo - 1] == ' ';
       }
 
-      consumed += p.consumed();
-      from += p.consumed();
+      consumed += chunk.consumed;
+      from += chunk.consumed;
       if (!removeExtraWhitespaces) {
         isPrevSpace = false;
       }
@@ -200,8 +236,10 @@ final class SentencePieceNormalizer {
       throw new IllegalStateException("The offset map has " + normToOrig.length()
           + " entries for " + normalized.length() + " normalized bytes.");
     }
-    return new Normalized(normalized.toArray(), normToOrig.toArray());
+    return new Normalized(normalized.array(), normalized.length(), normToOrig.array());
   }
+
+  private static final byte[] SINGLE_SPACE = {' '};
 
   private static void appendSpace(ByteBuilder normalized, IntBuilder normToOrig,
                                   byte[] spaceSymbol, int consumed) {
@@ -211,19 +249,24 @@ final class SentencePieceNormalizer {
     }
   }
 
-  // Normalizes the longest applicable prefix of input[from, ...): a user-defined symbol passes
-  // through raw, otherwise the longest character-map rule applies, otherwise one code point
-  // passes through raw (or becomes U+FFFD when the lead byte is malformed).
-  private Chunk normalizePrefix(byte[] input, int from) {
+  // Fills the scratch with the normalized form of the longest applicable prefix of
+  // input[from, inputLength): a user-defined symbol passes through raw, otherwise the longest
+  // character-map rule applies, otherwise one code point passes through raw (or becomes U+FFFD
+  // when the lead byte is malformed).
+  private void normalizePrefix(byte[] input, int inputLength, int from, Chunk chunk) {
     if (userDefinedMatcher != null) {
-      final int matched = longestUserDefinedMatch(input, from);
+      final int matched = longestUserDefinedMatch(input, inputLength, from);
       if (matched > 0) {
-        return new Chunk(input, from, from + matched, matched);
+        chunk.data = input;
+        chunk.from = from;
+        chunk.to = from + matched;
+        chunk.consumed = matched;
+        return;
       }
     }
 
     if (trie != null) {
-      final long match = trie.longestPrefixMatch(input, from, input.length);
+      final long match = trie.longestPrefixMatch(input, from, inputLength);
       if (match >= 0) {
         final int value = (int) (match >>> 32);
         final int length = (int) (match & 0xFFFFFFFFL);
@@ -233,22 +276,33 @@ final class SentencePieceNormalizer {
           while (blob[replacementTo] != 0) {
             replacementTo++;
           }
-          return new Chunk(blob, replacementFrom, replacementTo, length);
+          chunk.data = blob;
+          chunk.from = replacementFrom;
+          chunk.to = replacementTo;
+          chunk.consumed = length;
+          return;
         }
       }
     }
 
-    final int charLength = Math.min(utf8Length(input[from]), input.length - from);
+    final int charLength = Math.min(utf8Length(input[from]), inputLength - from);
     if (isMalformed(input, from, charLength)) {
-      return new Chunk(REPLACEMENT_CHAR, 0, REPLACEMENT_CHAR.length, 1);
+      chunk.data = REPLACEMENT_CHAR;
+      chunk.from = 0;
+      chunk.to = REPLACEMENT_CHAR.length;
+      chunk.consumed = 1;
+      return;
     }
-    return new Chunk(input, from, from + charLength, charLength);
+    chunk.data = input;
+    chunk.from = from;
+    chunk.to = from + charLength;
+    chunk.consumed = charLength;
   }
 
-  private int longestUserDefinedMatch(byte[] input, int from) {
+  private int longestUserDefinedMatch(byte[] input, int inputLength, int from) {
     int node = userDefinedMatcher.root();
     int longest = 0;
-    for (int i = from; i < input.length; i++) {
+    for (int i = from; i < inputLength; i++) {
       node = userDefinedMatcher.step(node, input[i]);
       if (node == PieceTrie.DEAD) {
         break;
