@@ -456,7 +456,9 @@ public final class TermAnalyzer {
      * Enables {@link Dimension#STEM} through a {@link StemmerFactory}. The analyzer receives a
      * {@link CachingStemmer} with the {@linkplain CachingStemmer#DEFAULT_CAPACITY default cache
      * capacity}: it can be shared across threads, and repeated words resolve from a bounded
-     * per-thread cache instead of being re-stemmed.
+     * per-thread cache instead of being re-stemmed. The cache is keyed to the thread, so the
+     * memoization pays off on threads reused across many tokens (a fixed platform-thread pool);
+     * on a virtual-thread-per-task executor every task starts with an empty cache.
      *
      * @param factory The stemmer factory. Must not be {@code null}.
      * @return this builder

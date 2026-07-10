@@ -41,9 +41,17 @@ public class SnowballStemmer implements Stemmer {
    * Creates a stemmer for the given algorithm and repeat count.
    *
    * @param algorithm The Snowball algorithm. Must not be {@code null}.
-   * @param repeat    How many times to apply the stemmer per word.
+   * @param repeat    How many times to apply the stemmer per word; must be positive.
+   * @throws IllegalArgumentException Thrown if {@code algorithm} is {@code null} or
+   *     {@code repeat} is not positive.
    */
   public SnowballStemmer(ALGORITHM algorithm, int repeat) {
+    if (algorithm == null) {
+      throw new IllegalArgumentException("algorithm must not be null");
+    }
+    if (repeat <= 0) {
+      throw new IllegalArgumentException("repeat must be positive, got " + repeat);
+    }
     this.repeat = repeat;
     final Supplier<AbstractSnowballStemmer> engine = engineFor(algorithm);
     this.delegates = new OwnerOrPerThreadState<>(engine, stemmer -> { });
@@ -58,7 +66,8 @@ public class SnowballStemmer implements Stemmer {
     this(algorithm, 1);
   }
 
-  private static Supplier<AbstractSnowballStemmer> engineFor(ALGORITHM algorithm) {
+  // Shared with SnowballStemmerFactory, whose products embed one engine directly.
+  static Supplier<AbstractSnowballStemmer> engineFor(ALGORITHM algorithm) {
     return switch (algorithm) {
       case ARABIC -> arabicStemmer::new;
       case DANISH -> danishStemmer::new;
@@ -95,6 +104,15 @@ public class SnowballStemmer implements Stemmer {
     }
 
     return stemmer.getCurrent();
+  }
+
+  /**
+   * Removes this thread's engine to prevent classloader leaks in container environments. Call
+   * when the thread is returned to a pool or the stemmer is no longer needed, mirroring
+   * {@code clearThreadLocalState()} on the thread-safe {@code *ME} components.
+   */
+  public void clearThreadLocalState() {
+    delegates.clearForCurrentThread();
   }
 
   public enum ALGORITHM {

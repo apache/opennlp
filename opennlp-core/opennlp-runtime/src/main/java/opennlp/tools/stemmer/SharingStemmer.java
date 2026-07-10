@@ -17,6 +17,8 @@
 
 package opennlp.tools.stemmer;
 
+import java.util.List;
+
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.OwnerOrPerThreadState;
 
@@ -49,5 +51,19 @@ public final class SharingStemmer implements Stemmer {
   @Override
   public CharSequence stem(CharSequence word) {
     return delegates.get().stem(word);
+  }
+
+  @Override
+  public List<CharSequence> stemAll(CharSequence word) {
+    return delegates.get().stemAll(word);
+  }
+
+  /**
+   * Removes this thread's delegate to prevent classloader leaks in container environments. Call
+   * when the thread is returned to a pool or the stemmer is no longer needed, mirroring
+   * {@code clearThreadLocalState()} on the thread-safe {@code *ME} components.
+   */
+  public void clearThreadLocalState() {
+    delegates.clearForCurrentThread();
   }
 }

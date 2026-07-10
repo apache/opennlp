@@ -20,12 +20,16 @@ package opennlp.tools.stemmer;
 /**
  * An immutable, thread-safe factory for {@link Stemmer} instances.
  *
- * <p>Generated and stateful stemmers (Snowball, Porter, Hunspell, and similar) hold per-call
- * mutable buffers and must not be shared across threads. A {@code StemmerFactory} captures the
- * configuration (algorithm, repeat count, dictionary path, ...) and mints a fresh {@link Stemmer}
- * on each {@link #newStemmer()} call. The factory itself is safe to share; confine each returned
- * {@link Stemmer} to a single thread, or route through a thread-local adapter when a component must
- * be shared.</p>
+ * <p>Stateful stemming engines hold per-call mutable buffers and must not be shared across
+ * threads. A {@code StemmerFactory} captures the configuration (algorithm, repeat count,
+ * dictionary path, ...) and mints a fresh {@link Stemmer} on each {@link #newStemmer()} call. The
+ * factory itself is safe to share; confine each returned {@link Stemmer} to a single thread, or
+ * route through a thread-local adapter when a component must be shared.</p>
+ *
+ * <p>Despite the name, this is not one of the {@code BaseToolFactory}-based tool factories (such
+ * as {@code LemmatizerFactory}) that are instantiated by name from a model manifest. It is a
+ * plain functional supplier of configured {@link Stemmer} instances and takes no part in the
+ * model-loading mechanism.</p>
  *
  * <p>Implementations must be immutable and thread-safe after construction.</p>
  */
@@ -36,18 +40,4 @@ public interface StemmerFactory {
    * distinct instance on each call when the underlying engine is stateful.
    */
   Stemmer newStemmer();
-
-  /**
-   * Stems one word using a freshly minted {@link Stemmer}.
-   *
-   * <p>This is a convenience for one-off use. Pipelines that stem many tokens should call
-   * {@link #newStemmer()} once per thread instead of invoking this
-   * method per token.</p>
-   *
-   * @param word The input word. Must not be {@code null}.
-   * @return The stemmed form.
-   */
-  default CharSequence stem(CharSequence word) {
-    return newStemmer().stem(word);
-  }
 }

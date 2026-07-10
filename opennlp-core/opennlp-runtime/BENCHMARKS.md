@@ -107,6 +107,13 @@ rate pays for the eviction overhead. The cache more than recovers the
 `OwnerOrPerThreadState` lookup cost observed in
 `SnowballStemmerBenchmark` at full saturation.
 
+The cache is keyed to the physical thread, and these runs use a fixed
+platform-thread pool whose threads live for the whole measurement. On
+a virtual-thread-per-task executor every task starts with an empty
+cache, so the multiplier only applies to repeats within one task;
+workloads that stem a handful of words per task should expect
+uncached-level throughput there.
+
 ### POSTagger cache impact
 
 The `POSTaggerMEBenchmark` uses `@Param({"0", "3"})` for cache

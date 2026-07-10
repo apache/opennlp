@@ -40,7 +40,6 @@ class StemmerFactoryTest {
     StemmerFactory factory = new SnowballStemmerFactory(SnowballStemmer.ALGORITHM.ENGLISH);
     Stemmer direct = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
     Assertions.assertEquals(direct.stem("running"), factory.newStemmer().stem("running"));
-    Assertions.assertEquals(direct.stem("running"), factory.stem("running"));
   }
 
   @Test
@@ -234,5 +233,99 @@ class StemmerFactoryTest {
         task.get(30, TimeUnit.SECONDS);
       }
     }
+  }
+  @Test
+  void factoryPassesRepeatThrough() {
+    // "internationalization" stems differently at repeat 1 and 2, witnessing the pass-through.
+    final Stemmer once = new SnowballStemmerFactory(SnowballStemmer.ALGORITHM.ENGLISH, 1).newStemmer();
+    final Stemmer twice = new SnowballStemmerFactory(SnowballStemmer.ALGORITHM.ENGLISH, 2).newStemmer();
+    Assertions.assertEquals("internation", once.stem("internationalization").toString());
+    Assertions.assertEquals("intern", twice.stem("internationalization").toString());
+    Assertions.assertEquals(
+        new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH, 2).stem("internationalization").toString(),
+        twice.stem("internationalization").toString());
+  }
+
+  @Test
+  void factoryRejectsNullAlgorithmWithIllegalArgument() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new SnowballStemmerFactory(null, 1));
+  }
+
+  @Test
+  void snowballConstructorValidatesLikeTheFactory() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new SnowballStemmer(null, 1));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH, 0));
+  }
+
+  @Test
+  void sharingStemmerForwardsStemAllToMultiOutputDelegate() {
+    // A multi-output delegate must keep its full result list through the wrapper.
+    final StemmerFactory multiOutput = () -> new Stemmer() {
+      @Override
+      public CharSequence stem(CharSequence word) {
+        return word.toString() + "-a";
+      }
+
+      @Override
+      public List<CharSequence> stemAll(CharSequence word) {
+        return List.of(word.toString() + "-a", word.toString() + "-b");
+      }
+    };
+    final SharingStemmer sharing = new SharingStemmer(multiOutput);
+    Assertions.assertEquals(2, sharing.stemAll("run").size());
+    Assertions.assertEquals("run-b", sharing.stemAll("run").get(1).toString());
+  }
+
+  @Test
+  void clearThreadLocalStateEmptiesTheOwnerCache() {
+    // On the owning thread the state object is retained and reset: the cache must be empty
+    // afterwards, observable as a fresh delegate call for a previously cached word.
+    final List<String> delegateCalls = new ArrayList<>();
+    final StemmerFactory counting = () -> word -> {
+      delegateCalls.add(word.toString());
+      return word.toString() + "-s";
+    };
+    final CachingStemmer caching = new CachingStemmer(counting);
+    caching.stem("dog");
+    caching.stem("dog");
+    Assertions.assertEquals(1, delegateCalls.size(), "second lookup is served from the cache");
+    caching.clearThreadLocalState();
+    Assertions.assertEquals("dog-s", caching.stem("dog").toString());
+    Assertions.assertEquals(2, delegateCalls.size(), "the clear emptied the cache");
+  }
+
+  @Test
+  void clearThreadLocalStateReleasesAWorkerThreadsDelegate() throws Exception {
+    // On a non-owner thread the per-thread delegate is removed and rebuilt on next use.
+    final List<Integer> built = new ArrayList<>();
+    final StemmerFactory counting = () -> {
+      synchronized (built) {
+        built.add(built.size());
+      }
+      return word -> word.toString() + "-s";
+    };
+    final SharingStemmer sharing = new SharingStemmer(counting);
+    sharing.stem("owner");
+    final int builtForOwner = built.size();
+    final Thread worker = new Thread(() -> {
+      sharing.stem("dog");
+      sharing.stem("cat");
+      final int beforeClear = built.size();
+      sharing.clearThreadLocalState();
+      sharing.stem("fish");
+      Assertions.assertEquals(beforeClear + 1, built.size(),
+          "a fresh delegate is built after the clear");
+    });
+    worker.start();
+    worker.join(30_000);
+    Assertions.assertTrue(built.size() > builtForOwner, "the worker built its own delegate");
+
+    final SnowballStemmer snowball = new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH);
+    Assertions.assertEquals("run", snowball.stem("running").toString());
+    snowball.clearThreadLocalState();
+    Assertions.assertEquals("run", snowball.stem("running").toString());
   }
 }

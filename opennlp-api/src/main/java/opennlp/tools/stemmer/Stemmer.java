@@ -41,7 +41,9 @@ public interface Stemmer {
 
   /**
    * {@return every stem form for {@code word}} The default returns a single-element list with
-   * {@link #stem(CharSequence)}. Multi-output engines (Hunspell, lemmatizers) override this.
+   * {@link #stem(CharSequence)}. Dictionary-based engines that can produce several root forms for
+   * one word override this; wrappers that delegate to another {@code Stemmer} must forward this
+   * method so a multi-output delegate keeps its full result list.
    *
    * @param word The input word. Must not be {@code null}.
    */

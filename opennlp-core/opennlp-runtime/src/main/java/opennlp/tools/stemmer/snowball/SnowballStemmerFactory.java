@@ -17,16 +17,19 @@
 
 package opennlp.tools.stemmer.snowball;
 
-import java.util.Objects;
-
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.StemmerFactory;
 
 /**
- * A thread-safe factory for {@link SnowballStemmer} instances. Since {@link SnowballStemmer} is
- * itself thread-safe, this factory mainly serves as an immutable capture of the stemmer
- * configuration for APIs that accept a {@link StemmerFactory}.
+ * A thread-safe factory that captures a Snowball stemmer configuration for APIs that accept a
+ * {@link StemmerFactory}.
+ *
+ * <p>{@link #newStemmer()} returns a thread-confined stemmer that drives its generated engine
+ * through a plain field, with none of the per-call thread routing of the shareable
+ * {@link SnowballStemmer}. This keeps the one-stemmer-per-thread pattern (and per-thread
+ * delegates inside caching or sharing wrappers) free of that indirection; use
+ * {@link SnowballStemmer} directly when a single shared instance is wanted instead.</p>
  *
  * @param algorithm The Snowball algorithm. Must not be {@code null}.
  * @param repeat    How many times to apply the stemmer per word; must be positive.
@@ -47,18 +50,42 @@ public record SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm, int re
   /**
    * Validates the components.
    *
-   * @throws NullPointerException if {@code algorithm} is {@code null}.
-   * @throws IllegalArgumentException if {@code repeat} is not positive.
+   * @throws IllegalArgumentException Thrown if {@code algorithm} is {@code null} or
+   *     {@code repeat} is not positive.
    */
   public SnowballStemmerFactory {
-    Objects.requireNonNull(algorithm, "algorithm");
+    if (algorithm == null) {
+      throw new IllegalArgumentException("algorithm must not be null");
+    }
     if (repeat <= 0) {
-      throw new IllegalArgumentException("repeat must be positive");
+      throw new IllegalArgumentException("repeat must be positive, got " + repeat);
     }
   }
 
   @Override
   public Stemmer newStemmer() {
-    return new SnowballStemmer(algorithm, repeat);
+    return new ConfinedStemmer(SnowballStemmer.engineFor(algorithm).get(), repeat);
+  }
+
+  // One engine in a plain field: the zero-indirection product for thread-confined use, per the
+  // StemmerFactory contract. Not thread-safe.
+  private static final class ConfinedStemmer implements Stemmer {
+
+    private final AbstractSnowballStemmer engine;
+    private final int repeat;
+
+    private ConfinedStemmer(AbstractSnowballStemmer engine, int repeat) {
+      this.engine = engine;
+      this.repeat = repeat;
+    }
+
+    @Override
+    public CharSequence stem(CharSequence word) {
+      engine.setCurrent(word.toString());
+      for (int i = 0; i < repeat; i++) {
+        engine.stem();
+      }
+      return engine.getCurrent();
+    }
   }
 }

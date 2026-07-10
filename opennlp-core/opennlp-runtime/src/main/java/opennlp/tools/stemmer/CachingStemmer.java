@@ -37,6 +37,12 @@ import opennlp.tools.util.OwnerOrPerThreadState;
  * regardless of whether the factory's stemmers are. Memory is bounded by
  * {@code capacity * averageWordLength} characters per thread that stems.</p>
  *
+ * <p>Because the cache is keyed to the thread, the memoization pays off on threads that are
+ * reused across many words, such as a fixed platform-thread pool. On a virtual-thread-per-task
+ * executor every task starts with an empty cache, so repeats are only served within one task.
+ * Call {@link #clearThreadLocalState()} before returning a pooled thread that should not retain
+ * its delegate and cache.</p>
+ *
  * <p>{@link #stemAll(CharSequence)} is forwarded to the delegate uncached, so multi-output
  * engines keep their full result list.</p>
  */
@@ -100,6 +106,15 @@ public final class CachingStemmer implements Stemmer {
     return state.get().delegate.stemAll(word);
   }
 
+  /**
+   * Removes this thread's delegate and cache to prevent classloader leaks in container
+   * environments. Call when the thread is returned to a pool or the stemmer is no longer needed,
+   * mirroring {@code clearThreadLocalState()} on the thread-safe {@code *ME} components.
+   */
+  public void clearThreadLocalState() {
+    state.clearForCurrentThread();
+  }
+
   private static final class ThreadState {
 
     private final Stemmer delegate;
@@ -107,8 +122,10 @@ public final class CachingStemmer implements Stemmer {
 
     private ThreadState(Stemmer delegate, int capacity) {
       this.delegate = delegate;
-      // Access-ordered so iteration order is least-recently-used first.
-      this.cache = new LinkedHashMap<>(Math.min(capacity, 4096), 0.75f, true) {
+      // Access-ordered so iteration order is least-recently-used first. The initial table size
+      // accounts for the 0.75 load factor so a cache filled to capacity never rehashes; the clamp
+      // keeps the eager allocation reasonable for very large capacities.
+      this.cache = new LinkedHashMap<>(Math.min((int) (capacity / 0.75f) + 1, 4096), 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
           return size() > capacity;

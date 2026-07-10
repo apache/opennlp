@@ -63,7 +63,9 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
   }
 
   /**
-   * {@return a thread-safe factory for this language's Snowball stemmer}
+   * {@return a thread-safe factory for this language's Snowball stemmer} The factory may be
+   * shared; each {@linkplain StemmerFactory#newStemmer() minted stemmer} is confined to the
+   * calling thread.
    */
   public StemmerFactory stemmerFactory() {
     return new SnowballStemmerFactory(stemmerAlgorithm);
@@ -74,7 +76,7 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
    * thread-safe and may be shared across threads.
    */
   public Stemmer newStemmer() {
-    return stemmerFactory().newStemmer();
+    return new SnowballStemmer(stemmerAlgorithm);
   }
 
   /**
@@ -82,7 +84,8 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
    * {@linkplain #accentFold() diacritic fold} when it has one, then stemming. The returned
    * analyzer is thread-safe, and repeated words resolve from a bounded per-thread stem cache
    * instead of being re-stemmed (natural text is Zipf-distributed, so most tokens are cache
-   * hits).
+   * hits). The cache is keyed to the thread, so build the analyzer once and reuse it from
+   * threads that live across many calls, such as a fixed platform-thread pool.
    *
    * @return the analyzer.
    */
