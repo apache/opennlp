@@ -17,7 +17,6 @@
 package opennlp.embeddings;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -44,16 +43,10 @@ final class FlatJsonFields {
    *     {@code null} (the formats treat those the same: fall back to the default).
    * @throws IllegalArgumentException Thrown if the file is not a well-formed JSON object, the
    *     field appears more than once, or its value is neither a boolean nor {@code null}.
-   * @throws UncheckedIOException Thrown if reading the file fails.
+   * @throws IOException Thrown if reading the file fails.
    */
-  static Boolean topLevelBoolean(Path file, String field) {
-    final String json;
-    try {
-      json = Files.readString(file);
-    }
-    catch (IOException e) {
-      throw new UncheckedIOException("Unable to read " + file, e);
-    }
+  static Boolean topLevelBoolean(Path file, String field) throws IOException {
+    final String json = Files.readString(file);
     final JsonCursor cursor = new JsonCursor(json, file.getFileName().toString());
     cursor.skipWhitespace();
     cursor.expect('{');
@@ -62,8 +55,7 @@ final class FlatJsonFields {
     boolean seen = false;
     if (cursor.peek() == '}') {
       cursor.consume();
-    }
-    else {
+    } else {
       while (true) {
         cursor.skipWhitespace();
         final String key = cursor.parseString();
@@ -77,15 +69,12 @@ final class FlatJsonFields {
           seen = true;
           if (cursor.consumeLiteral("true")) {
             value = Boolean.TRUE;
-          }
-          else if (cursor.consumeLiteral("false")) {
+          } else if (cursor.consumeLiteral("false")) {
             value = Boolean.FALSE;
-          }
-          else if (!cursor.consumeLiteral("null")) {
+          } else if (!cursor.consumeLiteral("null")) {
             throw cursor.malformed("Field '" + field + "' must be a boolean or null");
           }
-        }
-        else {
+        } else {
           cursor.skipValue();
         }
         cursor.skipWhitespace();

@@ -17,7 +17,6 @@
 package opennlp.embeddings;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -89,9 +88,9 @@ public final class SafetensorsFile {
    *     file's actual length.
    * @throws IllegalArgumentException Thrown if {@code file} is {@code null} or missing, or the
    *     file is malformed.
-   * @throws UncheckedIOException Thrown if reading the file fails.
+   * @throws IOException Thrown if reading the file fails.
    */
-  public static SafetensorsFile read(Path file) {
+  public static SafetensorsFile read(Path file) throws IOException {
     if (file == null) {
       throw new IllegalArgumentException("File must not be null");
     }
@@ -139,9 +138,6 @@ public final class SafetensorsFile {
       return new SafetensorsFile(file, dataStart, Collections.unmodifiableMap(tensorsByName),
           Collections.unmodifiableMap(parsed.metadata()));
     }
-    catch (IOException e) {
-      throw new UncheckedIOException("Unable to read safetensors file " + file, e);
-    }
   }
 
   /** {@return the names of every tensor declared in the header, in header order} */
@@ -178,9 +174,9 @@ public final class SafetensorsFile {
    *     this file, not declared with dtype {@code F32}, or larger than a Java array can hold.
    * @throws IllegalStateException Thrown if the file has been truncated since
    *     {@link #read(Path)} validated the tensor's byte range.
-   * @throws UncheckedIOException Thrown if reading the file fails.
+   * @throws IOException Thrown if reading the file fails.
    */
-  public float[] readFloat32(String name) {
+  public float[] readFloat32(String name) throws IOException {
     final TensorInfo info = tensorInfo(name);
     if (!"F32".equals(info.dtype())) {
       throw new IllegalArgumentException(
@@ -221,9 +217,6 @@ public final class SafetensorsFile {
         position += (long) floats * Float.BYTES;
       }
       return values;
-    }
-    catch (IOException e) {
-      throw new UncheckedIOException("Unable to read tensor '" + name + "' from " + file, e);
     }
   }
 

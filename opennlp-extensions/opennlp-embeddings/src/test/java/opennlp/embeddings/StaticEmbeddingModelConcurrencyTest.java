@@ -16,11 +16,7 @@
  */
 package opennlp.embeddings;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -35,14 +31,17 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.embeddings.StaticEmbeddingModel.Casing;
+import opennlp.embeddings.StaticEmbeddingModel.Normalization;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A concurrency smoke test for the {@code @ThreadSafe} claim on {@link StaticEmbeddingModel}:
  * one shared instance, many threads, every concurrent result compared against the
  * single-threaded reference computed up front. All operations are deterministic, so any
- * deviation under concurrency is a thread-safety defect by definition. Mirrors the
- * {@code LexiconConcurrencyTest} pattern from the opennlp-wordnet module.
+ * deviation under concurrency is a thread-safety defect by definition: one shared instance,
+ * reference results computed single-threaded first, then compared under contention.
  */
 class StaticEmbeddingModelConcurrencyTest {
 
@@ -57,25 +56,10 @@ class StaticEmbeddingModelConcurrencyTest {
         {0f, 0f}, {0f, 0f}, {0f, 0f},
         {3f, 3f}, {2f, 4f}, {2f, 1f}, {1f, 2f}, {-3f, -1f},
     };
-    final ByteBuffer buffer = ByteBuffer.allocate(rows.length * 2 * 4)
-        .order(ByteOrder.LITTLE_ENDIAN);
-    for (final float[] row : rows) {
-      for (final float value : row) {
-        buffer.putFloat(value);
-      }
-    }
-    final byte[] data = buffer.array();
-    final String header = "{\"embeddings\":{\"dtype\":\"F32\",\"shape\":[" + rows.length
-        + ",2],\"data_offsets\":[0," + data.length + "]}}";
-    final byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    out.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
-        .putLong(headerBytes.length).array());
-    out.write(headerBytes);
-    out.write(data);
     final Path tensors = dir.resolve("model.safetensors");
-    Files.write(tensors, out.toByteArray());
-    return StaticEmbeddingModel.load(vocab, tensors, true, true);
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", rows));
+    return StaticEmbeddingModel.load(vocab, tensors,
+        Casing.UNCASED, Normalization.L2);
   }
 
   @Test
