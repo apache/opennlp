@@ -233,6 +233,13 @@
     </fileSet>
 
     <fileSet>
+      <directory>../opennlp-extensions/opennlp-embeddings/target/reports/apidocs</directory>
+      <fileMode>644</fileMode>
+      <directoryMode>755</directoryMode>
+      <outputDirectory>docs/apidocs/opennlp-embeddings</outputDirectory>
+    </fileSet>
+
+    <fileSet>
       <directory>../opennlp-extensions/opennlp-spellcheck/target/reports/apidocs</directory>
       <fileMode>644</fileMode>
       <directoryMode>755</directoryMode>

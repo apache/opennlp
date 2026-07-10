@@ -28,6 +28,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import opennlp.embeddings.StaticEmbeddingModel.Casing;
+import opennlp.embeddings.StaticEmbeddingModel.Normalization;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -57,51 +60,24 @@ class StaticEmbeddingModelTest {
   }
 
   private static Path writeSafetensors(Path dir, boolean withWeights) throws IOException {
-    final ByteArrayOutputStream data = new ByteArrayOutputStream();
-    final ByteBuffer embeddingBuffer =
-        ByteBuffer.allocate(ROWS.length * DIMENSION * 4).order(ByteOrder.LITTLE_ENDIAN);
-    for (final float[] row : ROWS) {
-      for (final float value : row) {
-        embeddingBuffer.putFloat(value);
-      }
-    }
-    final byte[] embeddingBytes = embeddingBuffer.array();
-    data.write(embeddingBytes);
-
-    String header = "{\"embeddings\":{\"dtype\":\"F32\",\"shape\":[" + ROWS.length + ","
-        + DIMENSION + "],\"data_offsets\":[0," + embeddingBytes.length + "]}";
+    final Path file = dir.resolve("model.safetensors");
     if (withWeights) {
       // Weight per row: [1, 1, 1, 2, 1, 1] so "hello" (row 3) counts double in the sum but not
       // in the pooling denominator, which is the exact behavior being pinned.
-      final float[] weightValues = {1f, 1f, 1f, 2f, 1f, 1f};
-      final ByteBuffer weightBuffer =
-          ByteBuffer.allocate(weightValues.length * 4).order(ByteOrder.LITTLE_ENDIAN);
-      for (final float value : weightValues) {
-        weightBuffer.putFloat(value);
-      }
-      final byte[] weightBytes = weightBuffer.array();
-      final int start = embeddingBytes.length;
-      data.write(weightBytes);
-      header += ",\"weights\":{\"dtype\":\"F32\",\"shape\":[" + weightValues.length
-          + "],\"data_offsets\":[" + start + "," + (start + weightBytes.length) + "]}";
+      SafetensorsTestFiles.write(file,
+          SafetensorsTestFiles.matrix("embeddings", ROWS),
+          SafetensorsTestFiles.vector("weights", new float[] {1f, 1f, 1f, 2f, 1f, 1f}));
+    } else {
+      SafetensorsTestFiles.write(file, SafetensorsTestFiles.matrix("embeddings", ROWS));
     }
-    header += "}";
-
-    final byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    out.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
-        .putLong(headerBytes.length).array());
-    out.write(headerBytes);
-    out.write(data.toByteArray());
-    final Path file = dir.resolve("model.safetensors");
-    Files.write(file, out.toByteArray());
     return file;
   }
 
   @Test
   void testEmbedMeanPoolsWithoutWeights(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
-        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false), true, false);
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.NONE);
 
     final float[] result = model.embed("hello world");
 
@@ -113,7 +89,8 @@ class StaticEmbeddingModelTest {
   void testEmbedAppliesPerTokenWeightsButDividesByTokenCount(@TempDir Path dir)
       throws IOException {
     final StaticEmbeddingModel model =
-        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, true), true, false);
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, true),
+            Casing.UNCASED, Normalization.NONE);
 
     final float[] result = model.embed("hello world");
 
@@ -125,7 +102,8 @@ class StaticEmbeddingModelTest {
   @Test
   void testEmbedNormalizesToUnitLength(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
-        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false), true, true);
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.L2);
 
     final float[] result = model.embed("cat");
 
@@ -142,7 +120,8 @@ class StaticEmbeddingModelTest {
   @Test
   void testEmbedSkipsUnknownTokens(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
-        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false), true, false);
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.NONE);
 
     // "xyzzy" cannot be represented by any vocabulary piece, so it becomes [UNK] and must be
     // excluded from both the sum and the pooling denominator, leaving just "cat".
@@ -154,7 +133,8 @@ class StaticEmbeddingModelTest {
   @Test
   void testEmbedOfTextWithNoInVocabularyTokensIsZeroVector(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
-        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false), true, false);
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.NONE);
 
     assertArrayEquals(new float[] {0f, 0f, 0f}, model.embed("xyzzy"), 1e-5f);
   }
@@ -162,7 +142,8 @@ class StaticEmbeddingModelTest {
   @Test
   void testEmbedOfEmptyTextIsZeroVectorNotAnError(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
-        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false), true, true);
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.L2);
 
     assertArrayEquals(new float[] {0f, 0f, 0f}, model.embed(""), 1e-5f);
   }
@@ -170,7 +151,8 @@ class StaticEmbeddingModelTest {
   @Test
   void testDimensionAndVocabularySizeAccessors(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
-        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false), true, false);
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.NONE);
 
     assertEquals(DIMENSION, model.dimension());
     assertEquals(VOCAB_TOKENS.size(), model.vocabularySize());
@@ -179,7 +161,8 @@ class StaticEmbeddingModelTest {
   @Test
   void testEmbedRejectsNullText(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
-        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false), true, false);
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.NONE);
 
     assertThrows(IllegalArgumentException.class, () -> model.embed(null));
   }
@@ -190,9 +173,9 @@ class StaticEmbeddingModelTest {
     final Path tensors = writeSafetensors(dir, false);
 
     assertThrows(IllegalArgumentException.class,
-        () -> StaticEmbeddingModel.load(null, tensors, true, false));
+        () -> StaticEmbeddingModel.load(null, tensors, Casing.UNCASED, Normalization.NONE));
     assertThrows(IllegalArgumentException.class,
-        () -> StaticEmbeddingModel.load(vocab, null, true, false));
+        () -> StaticEmbeddingModel.load(vocab, null, Casing.UNCASED, Normalization.NONE));
   }
 
   @Test
@@ -201,7 +184,8 @@ class StaticEmbeddingModelTest {
     Files.write(shortVocab, List.of("[CLS]", "[SEP]", "[UNK]"));
 
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> StaticEmbeddingModel.load(shortVocab, writeSafetensors(dir, false), true, false));
+        () -> StaticEmbeddingModel.load(shortVocab, writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.NONE));
     assertTrue(e.getMessage().contains("rows"));
   }
 
@@ -235,7 +219,7 @@ class StaticEmbeddingModelTest {
     Files.write(file, out.toByteArray());
 
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> StaticEmbeddingModel.load(writeVocab(dir), file, true, false));
+        () -> StaticEmbeddingModel.load(writeVocab(dir), file, Casing.UNCASED, Normalization.NONE));
     assertTrue(e.getMessage().contains("weights"));
   }
 
