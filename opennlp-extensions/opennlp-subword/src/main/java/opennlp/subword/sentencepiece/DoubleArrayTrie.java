@@ -60,32 +60,48 @@ final class DoubleArrayTrie {
    *     key matches. Values are non-negative, so the result is negative only on no-match.
    */
   long longestPrefixMatch(byte[] key, int from, int to) {
-    long result = -1;
-    int nodePos = 0;
-    int unit = unit(nodePos);
-    nodePos ^= offset(unit);
-    for (int i = from; i < to; i++) {
-      final int b = key[i] & 0xFF;
-      nodePos ^= b;
-      unit = unit(nodePos);
-      if ((unit & 0x800000FF) != b) {
-        return result;
-      }
+    // The JVM's own bounds checks guard the walk; a well-formed trie never leaves the array,
+    // so the translation below is the fail-loud path for corrupt data, not a hot branch.
+    final int[] u = units;
+    try {
+      long result = -1;
+      int nodePos = 0;
+      int unit = u[0];
       nodePos ^= offset(unit);
-      if (((unit >>> 8) & 1) == 1) {
-        final int value = unit(nodePos) & 0x7FFFFFFF;
-        result = ((long) value << 32) | (i - from + 1);
+      for (int i = from; i < to; i++) {
+        final int b = key[i] & 0xFF;
+        nodePos ^= b;
+        unit = u[nodePos];
+        if ((unit & 0x800000FF) != b) {
+          return result;
+        }
+        nodePos ^= offset(unit);
+        if (((unit >>> 8) & 1) == 1) {
+          final int value = u[nodePos] & 0x7FFFFFFF;
+          result = ((long) value << 32) | (i - from + 1);
+        }
       }
+      return result;
+    } catch (ArrayIndexOutOfBoundsException e) {
+      throw new IllegalArgumentException(
+          "The trie references a unit outside its " + u.length + " units.", e);
     }
-    return result;
   }
 
-  private int unit(int nodePos) {
+  /**
+   * Tests whether any key starts with the given byte, which is exactly whether the root has a
+   * transition on it; used to precompute the first-byte gate of the normalizer scan.
+   *
+   * @param b The first key byte as an unsigned value.
+   * @return {@code true} if some key starts with {@code b}.
+   */
+  boolean hasTransitionFromRoot(int b) {
+    final int root = units[0];
+    final int nodePos = offset(root) ^ b;
     if (nodePos < 0 || nodePos >= units.length) {
-      throw new IllegalArgumentException(
-          "The trie references unit " + nodePos + " outside its " + units.length + " units.");
+      return false;
     }
-    return units[nodePos];
+    return (units[nodePos] & 0x800000FF) == b;
   }
 
   // The offset from a unit to its children, as encoded by Darts-clone.

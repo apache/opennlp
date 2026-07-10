@@ -61,4 +61,9 @@ final class ByteBuilder {
   byte[] toArray() {
     return Arrays.copyOf(data, length);
   }
+
+  /** {@return the backing array, valid up to {@link #length()}} */
+  byte[] array() {
+    return data;
+  }
 }

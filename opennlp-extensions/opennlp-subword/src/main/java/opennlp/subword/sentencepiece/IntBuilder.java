@@ -53,4 +53,9 @@ final class IntBuilder {
   int[] toArray() {
     return Arrays.copyOf(data, length);
   }
+
+  /** {@return the backing array, valid up to {@link #length()}} */
+  int[] array() {
+    return data;
+  }
 }
