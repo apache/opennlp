@@ -34,6 +34,11 @@ import opennlp.tools.util.normalizer.UnicodeWhitespace;
  * boundaries produced for text containing those code points differ from earlier releases,
  * which can also shift the candidate spans {@code TokenizerME} scores for such text.
  * <p>
+ * With {@link #setKeepNewLines(boolean)} enabled, the line separator code points
+ * {@code \n}, {@code \r} and, since 3.0, the next line control {@code U+0085}, the line
+ * separator {@code U+2028} and the paragraph separator {@code U+2029} are returned as
+ * tokens of their own; all other whitespace is dropped.
+ * <p>
  * To obtain an instance of this tokenizer use the static final
  * {@link #INSTANCE} field.
  */
@@ -86,8 +91,13 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     return tokens.toArray(new Span[0]);
   }
 
+  // The line separator code points emitted as tokens under keepNewLines: the ASCII pair,
+  // plus NEL (U+0085) and the Unicode line and paragraph separators, which count as
+  // whitespace since 3.0. (The previous version compared against the Character category
+  // constants LINE_SEPARATOR and LETTER_NUMBER, whose byte values happen to be 13 and 10.)
   private boolean isLineSeparator(char character) {
-    return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
+    return character == '\n' || character == '\r'
+        || character == '\u0085' || character == '\u2028' || character == '\u2029';
   }
 
 }

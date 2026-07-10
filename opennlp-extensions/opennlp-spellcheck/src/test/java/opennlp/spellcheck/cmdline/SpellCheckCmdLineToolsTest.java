@@ -177,4 +177,41 @@ public class SpellCheckCmdLineToolsTest extends AbstractTempDirTest {
     assertEquals("teh => [the]", lines.get(0));
     assertEquals("teh => [the]", lines.get(1));
   }
+
+  @Test
+  void suggestModeKeepsWhitespaceOnlyLinesAsEmptyLines() throws IOException {
+    final Path unigrams = copyResource(UNIGRAMS, tempDir, "unigrams.txt");
+    final Path bigrams = copyResource(BIGRAMS, tempDir, "bigrams.txt");
+    final Path model = tempDir.resolve("en-spellcheck.bin");
+
+    new SpellCheckModelBuilderTool().run(new String[] {
+        "-lang", "en",
+        "-unigrams", unigrams.toString(),
+        "-bigrams", bigrams.toString(),
+        "-model", model.toString()
+    });
+
+    // Three lines: an ASCII-blank line, an NBSP-only line and a token line. The blank-line
+    // guard uses the same Unicode White_Space set as the tokenization, so the NBSP-only
+    // line keeps its place in the output as an empty line instead of vanishing (an
+    // isBlank() guard missed it and the line produced no output at all).
+    final Path input = tempDir.resolve("input.txt");
+    final String nbsp = new String(Character.toChars(0x00A0));
+    Files.writeString(input, " \n" + nbsp + "\nteh\n", StandardCharsets.UTF_8);
+    final Path output = tempDir.resolve("output.txt");
+
+    new CorrectTextTool().run(new String[] {
+        "-model", model.toString(),
+        "-suggest", "true",
+        "-verbosity", "TOP",
+        "-inputFile", input.toString(),
+        "-outputFile", output.toString()
+    });
+
+    final List<String> lines = Files.readAllLines(output, StandardCharsets.UTF_8);
+    assertEquals(3, lines.size());
+    assertEquals("", lines.get(0));
+    assertEquals("", lines.get(1));
+    assertEquals("teh => [the]", lines.get(2));
+  }
 }

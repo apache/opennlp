@@ -137,13 +137,17 @@ public class CorrectTextTool extends BasicCmdLineTool {
     final int effectiveMax = Math.min(maxEditDistance, checker.maxEditDistance());
     String line;
     while ((line = in.readLine()) != null) {
-      if (line.isBlank()) {
+      // User text: tokenize on the Unicode White_Space set (WhitespaceTokenizer)
+      // instead of the ASCII \s regex, so NBSP-style separators split tokens too.
+      final String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(line);
+      // A line without tokens (empty or whitespace-only, on the same Unicode set) keeps its
+      // place in the output as an empty line; an isBlank() guard would miss NBSP-only lines
+      // and silently drop them.
+      if (tokens.length == 0) {
         out.newLine();
         continue;
       }
-      // User text: tokenize on the Unicode White_Space set (WhitespaceTokenizer)
-      // instead of the ASCII \s regex, so NBSP-style separators split tokens too.
-      for (String token : WhitespaceTokenizer.INSTANCE.tokenize(line)) {
+      for (String token : tokens) {
         final List<SuggestItem> suggestions =
             checker.lookup(token.toLowerCase(Locale.ROOT), verbosity, effectiveMax);
         final StringBuilder terms = new StringBuilder();

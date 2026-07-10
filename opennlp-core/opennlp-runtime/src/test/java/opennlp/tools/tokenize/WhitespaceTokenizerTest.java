@@ -153,6 +153,38 @@ public class WhitespaceTokenizerTest {
         tokenizer.tokenize("a" + cp(0x200B) + "b"));
   }
 
+  @Test
+  void testKeepNewLinesEmitsUnicodeLineSeparators() {
+    // Since 3.0 the next line control U+0085 and the Unicode line and paragraph separators
+    // are emitted as tokens of their own under keepNewLines, so line structure can be
+    // reconstructed from the token stream instead of being silently dropped.
+    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+    try {
+      tokenizer.setKeepNewLines(true);
+      for (int separator : new int[] {0x0085, 0x2028, 0x2029}) {
+        Assertions.assertArrayEquals(new String[] {"a", cp(separator), "b"},
+            tokenizer.tokenize("a" + cp(separator) + "b"),
+            "U+" + Integer.toHexString(separator));
+      }
+    } finally {
+      tokenizer.setKeepNewLines(false);
+    }
+  }
+
+  @Test
+  void testKeepNewLinesDropsNonSeparatorWhitespace() {
+    // Whitespace that is not a line separator (here NBSP) is still dropped under
+    // keepNewLines; only \n, \r, U+0085, U+2028 and U+2029 are emitted as tokens.
+    WhitespaceTokenizer tokenizer = WhitespaceTokenizer.INSTANCE;
+    try {
+      tokenizer.setKeepNewLines(true);
+      Assertions.assertArrayEquals(new String[] {"a", "b"},
+          tokenizer.tokenize("a" + cp(0x00A0) + "b"));
+    } finally {
+      tokenizer.setKeepNewLines(false);
+    }
+  }
+
   private static String cp(int codePoint) {
     return new String(Character.toChars(codePoint));
   }

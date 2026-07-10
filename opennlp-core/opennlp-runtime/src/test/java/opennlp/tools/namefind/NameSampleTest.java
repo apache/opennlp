@@ -301,4 +301,34 @@ public class NameSampleTest {
   public static NameSample createPredSample() {
     return createSimpleNameSample(false);
   }
+
+  @Test
+  void testParseSharesRuntimeWhitespaceTokenization() throws IOException {
+    // Sample parsing shares the runtime WhitespaceTokenizer (Unicode White_Space since 3.0):
+    // the next line control U+0085 separates annotation tokens, so token and name indices
+    // follow the runtime tokenization of the same text.
+    NameSample sample = NameSample.parse(
+        "<START:person> John <END>" + cp(0x0085) + "works", false);
+    Assertions.assertArrayEquals(new String[] {"John", "works"}, sample.getSentence());
+    Assertions.assertEquals(1, sample.getNames().length);
+    Assertions.assertEquals(new Span(0, 1, "person"), sample.getNames()[0]);
+  }
+
+  @Test
+  void testParseKeepsInformationSeparatorInsideToken() throws IOException {
+    // The U+001C..U+001F information separators are not Unicode White_Space, so since 3.0
+    // they stay inside an annotation token instead of splitting it and shifting the name
+    // indices behind it.
+    NameSample sample = NameSample.parse(
+        "<START:person> Jo" + cp(0x001C) + "hn <END> works", false);
+    Assertions.assertArrayEquals(new String[] {"Jo" + cp(0x001C) + "hn", "works"},
+        sample.getSentence());
+    Assertions.assertEquals(1, sample.getNames().length);
+    Assertions.assertEquals(new Span(0, 1, "person"), sample.getNames()[0]);
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
+
 }

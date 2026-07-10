@@ -162,6 +162,9 @@ public class POSSample implements Sample {
    */
   public static POSSample parse(String sentenceString) throws InvalidFormatException {
 
+    // Sample parsing deliberately shares the runtime WhitespaceTokenizer, so training samples
+    // split exactly like inference input (Unicode White_Space since 3.0): lines containing
+    // U+0085 or U+001C..U+001F yield correspondingly shifted word_tag pairs.
     String[] tokenTags = WhitespaceTokenizer.INSTANCE.tokenize(sentenceString);
 
     String[] sentence = new String[tokenTags.length];

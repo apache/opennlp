@@ -94,6 +94,9 @@ public class AnnotationConfiguration {
             if (line.startsWith(BRACKET_OPEN) && line.endsWith(BRACKET_CLOSE)) {
               sectionType = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
             } else {
+              // Configuration-file parsing shares the runtime WhitespaceTokenizer (Unicode
+              // White_Space since 3.0); brat annotation.conf type names are ASCII delimited,
+              // so the migration is equivalent here.
               String typeName = WhitespaceTokenizer.INSTANCE.tokenize(line)[0];
 
               switch (sectionType) {

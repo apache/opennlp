@@ -389,6 +389,12 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
    * <p>Note: The implementation always returns {@code true} if no
    * abbreviation dictionary is available for the underlying model.</p>
    *
+   * <p>The whitespace guard of the abbreviation check uses the detector-wide Unicode
+   * {@code White_Space} set. Since 3.0 the no-break spaces ({@code U+00A0}, {@code U+2007},
+   * {@code U+202F}) and the next line control {@code U+0085} protect an abbreviation before
+   * a break candidate, while the {@code U+001C}..{@code U+001F} information separators no
+   * longer do, matching the standard instead of {@link Character#isWhitespace(char)}.</p>
+   *
    * @param s the {@link CharSequence} in which the break occurred.
    * @param fromIndex the start of the segment currently being evaluated.
    * @param candidateIndex the index of the candidate sentence ending.

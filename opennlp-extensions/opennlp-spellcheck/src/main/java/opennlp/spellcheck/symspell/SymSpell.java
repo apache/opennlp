@@ -425,6 +425,33 @@ public final class SymSpell implements SpellChecker {
     return terms.toArray(new String[0]);
   }
 
+  /**
+   * Trims leading and trailing runs of Unicode {@code White_Space}, the same set
+   * {@link #splitOnWhitespace(String)} breaks terms on. {@link String#trim()} only strips
+   * code points up to {@code U+0020}, so a leading or trailing no-break space or next line
+   * control would survive it and inflate the edit distance reported by
+   * {@link #lookupCompound(String, int)}.
+   */
+  private static String trimWhitespace(String input) {
+    int start = 0;
+    int end = input.length();
+    while (start < end) {
+      final int cp = input.codePointAt(start);
+      if (!UnicodeWhitespace.isWhitespace(cp)) {
+        break;
+      }
+      start += Character.charCount(cp);
+    }
+    while (end > start) {
+      final int cp = input.codePointBefore(end);
+      if (!UnicodeWhitespace.isWhitespace(cp)) {
+        break;
+      }
+      end -= Character.charCount(cp);
+    }
+    return input.substring(start, end);
+  }
+
   @Override
   public List<SuggestItem> lookupCompound(String input, int maxEditDistance) {
     Objects.requireNonNull(input, "input must not be null");
@@ -562,8 +589,11 @@ public final class SymSpell implements SpellChecker {
     }
 
     final String corrected = joined.toString();
+    // Measure against the input trimmed on the same Unicode White_Space set the terms were
+    // split on; the ASCII String.trim() would keep leading/trailing NBSP or NEL runs and
+    // report an inflated distance for them.
     final int distance = editDistance.distance(
-        input.trim(), corrected, Integer.MAX_VALUE - 1);
+        trimWhitespace(input), corrected, Integer.MAX_VALUE - 1);
     final long frequency = (long) freqProduct;
     return Collections.singletonList(
         new SuggestItem(corrected, Math.max(distance, 0), frequency));

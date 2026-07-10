@@ -142,4 +142,18 @@ public class POSSampleTest {
 
     Assertions.fail();
   }
+
+  @Test
+  void testParseSharesRuntimeWhitespaceTokenization() throws InvalidFormatException {
+    // Sample parsing shares the runtime WhitespaceTokenizer (Unicode White_Space since 3.0):
+    // the next line control U+0085 separates word_tag pairs like a space does.
+    POSSample sample = POSSample.parse("the_DT" + cp(0x0085) + "dog_NN");
+    Assertions.assertArrayEquals(new String[] {"the", "dog"}, sample.getSentence());
+    Assertions.assertArrayEquals(new String[] {"DT", "NN"}, sample.getTags());
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
+
 }

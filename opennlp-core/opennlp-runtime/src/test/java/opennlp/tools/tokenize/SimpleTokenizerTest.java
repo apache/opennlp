@@ -187,6 +187,52 @@ public class SimpleTokenizerTest {
         tokenizer.tokenize("a" + cp(0x0085) + "b"));
   }
 
+  @Test
+  void testKeepNewLinesEmitsUnicodeLineSeparators() {
+    // Since 3.0 the next line control U+0085 and the Unicode line and paragraph separators
+    // are emitted as tokens of their own under keepNewLines, so line structure can be
+    // reconstructed from the token stream instead of being silently dropped.
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+    try {
+      tokenizer.setKeepNewLines(true);
+      for (int separator : new int[] {0x0085, 0x2028, 0x2029}) {
+        Assertions.assertArrayEquals(new String[] {"a", cp(separator), "b"},
+            tokenizer.tokenize("a" + cp(separator) + "b"),
+            "U+" + Integer.toHexString(separator));
+      }
+    } finally {
+      tokenizer.setKeepNewLines(false);
+    }
+  }
+
+  @Test
+  void testKeepNewLinesEmitsSeparatorAfterOtherWhitespace() {
+    // The emitted span is the separator's own position: a newline preceded by a space must
+    // come out as "\n", not as the stale preceding whitespace character.
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+    try {
+      tokenizer.setKeepNewLines(true);
+      Assertions.assertArrayEquals(new String[] {"a", "\n", "b"},
+          tokenizer.tokenize("a \n b"));
+    } finally {
+      tokenizer.setKeepNewLines(false);
+    }
+  }
+
+  @Test
+  void testKeepNewLinesHandlesLeadingSeparator() {
+    // A separator at the very start of the input has no preceding token; it must be emitted
+    // as its own span instead of failing on a negative start offset.
+    SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+    try {
+      tokenizer.setKeepNewLines(true);
+      Assertions.assertArrayEquals(new String[] {"\n", "a"},
+          tokenizer.tokenize("\na"));
+    } finally {
+      tokenizer.setKeepNewLines(false);
+    }
+  }
+
   private static String cp(int codePoint) {
     return new String(Character.toChars(codePoint));
   }
