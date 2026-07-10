@@ -23,9 +23,12 @@ package opennlp.tools.util.normalizer;
  *
  * <p>Only a pictograph with a mapped emoticon is folded; everything else is copied through, so the
  * fold rewrites the signal into ASCII instead of deleting it the way the deprecated
- * {@link EmojiCharSequenceNormalizer} does. An emoji-presentation sequence (a base pictograph
- * followed by U+FE0F VARIATION SELECTOR-16) folds as one unit, so no dangling variation selector is
- * left behind. The mapping is many to one (the grinning-face family folds to {@code :D}); the
+ * {@link EmojiCharSequenceNormalizer} does. A trailing U+FE0F VARIATION SELECTOR-16 after any
+ * mapped pictograph is absorbed into the fold, so no dangling variation selector is left behind.
+ * A mapped pictograph inside a larger ZWJ sequence (HEART ON FIRE, the family emoji) or followed
+ * by U+FE0E VARIATION SELECTOR-15, which requests text presentation, is left untouched; folding a
+ * fragment of a distinct emoji would corrupt it. The mapping is many to one (the grinning-face
+ * family folds to {@code :D}); the
  * reverse direction is {@link EmoticonToEmojiCharSequenceNormalizer}, and a round trip through both
  * converges on the canonical forms rather than restoring every variant.</p>
  *

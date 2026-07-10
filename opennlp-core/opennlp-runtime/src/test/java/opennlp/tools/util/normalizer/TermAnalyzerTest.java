@@ -445,4 +445,26 @@ public class TermAnalyzerTest {
     assertEquals("masse", term.normalized());
     assertEquals("masse", term.at(Dimension.FULL_CASE_FOLD));
   }
+
+  @Test
+  void testEmojiFoldLayersTheEmoticonOnTheToken() {
+    // A one-code-point pictograph token gains an EMOJI_FOLD layer of a different length.
+    final TermAnalyzer analyzer = TermAnalyzer.builder().emojiFold().build();
+    final Term term = analyzer.analyze(cp(0x1F600)).get(0); // GRINNING FACE
+    assertEquals(":D", term.at(Dimension.EMOJI_FOLD));
+    assertEquals(cp(0x1F600), term.at(Dimension.ORIGINAL));
+  }
+
+  @Test
+  void testEmojiFoldLeavesPlainTokensUntouched() {
+    final TermAnalyzer analyzer = TermAnalyzer.builder().emojiFold().build();
+    final Term term = analyzer.analyze("hello").get(0);
+    assertEquals("hello", term.at(Dimension.EMOJI_FOLD));
+  }
+
+  @Test
+  void testEmojiFoldDefaultNormalizerWiring() {
+    assertEquals(EmojiToEmoticonCharSequenceNormalizer.getInstance(),
+        Dimension.EMOJI_FOLD.defaultNormalizer());
+  }
 }

@@ -110,4 +110,48 @@ public class EmojiToEmoticonCharSequenceNormalizerTest {
     assertEquals("hi :)", at.normalizedString());
     assertEquals(new Span(4, 6), at.toOriginalSpan(3, 5)); // ":)" maps back to the pictograph
   }
+
+  @Test
+  void zwjSequenceIsNotCorrupted() {
+    // HEART ON FIRE is HEAVY BLACK HEART + FE0F + ZWJ + FIRE: the embedded heart must not fold,
+    // which would emit "<3" and leave a dangling joiner in front of the flame.
+    final String heartOnFire = cp(0x2764) + cp(0xFE0F) + cp(0x200D) + cp(0x1F525);
+    assertEquals(heartOnFire, norm().normalize(heartOnFire).toString());
+
+    // COUPLE WITH HEART: the heart sits between two joiners; neither side may fold.
+    final String couple = cp(0x1F469) + cp(0x200D) + cp(0x2764) + cp(0xFE0F) + cp(0x200D)
+        + cp(0x1F48B) + cp(0x200D) + cp(0x1F468);
+    assertEquals(couple, norm().normalize(couple).toString());
+  }
+
+  @Test
+  void zwjSequenceNextToAFoldableEmojiOnlyFoldsTheStandaloneOne() {
+    final String heartOnFire = cp(0x2764) + cp(0xFE0F) + cp(0x200D) + cp(0x1F525);
+    final String input = cp(0x1F642) + " " + heartOnFire;
+    assertEquals(":) " + heartOnFire, norm().normalize(input).toString());
+  }
+
+  @Test
+  void textPresentationSelectorSuppressesTheFold() {
+    // U+FE0E explicitly requests text presentation; folding would both misread the author's
+    // intent and leave the selector dangling.
+    final String textSmiley = cp(0x263A) + cp(0xFE0E);
+    assertEquals(textSmiley, norm().normalize(textSmiley).toString());
+  }
+
+  @Test
+  void trailingEmojiPresentationSelectorIsAbsorbedForEveryMappedPictograph() {
+    // 1F642 has no explicit FE0F row; the selector must still fold with it, not dangle.
+    assertEquals(":)", norm().normalize(cp(0x1F642) + cp(0xFE0F)).toString());
+  }
+
+  @Test
+  void absorbedSelectorMapsBackToTheWholeSequence() {
+    final AlignedText at = norm().normalizeAligned(cp(0x1F642) + cp(0xFE0F) + "!");
+    assertEquals(":)!", at.normalizedString());
+    // ":)" covers the pictograph plus the absorbed selector: three UTF-16 units.
+    assertEquals(new Span(0, 3), at.toOriginalSpan(0, 2));
+    assertEquals(at.normalizedString(),
+        norm().normalize(cp(0x1F642) + cp(0xFE0F) + "!").toString());
+  }
 }

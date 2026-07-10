@@ -56,15 +56,15 @@ public class EmojiEmoticonsTest {
     // folding one direction and then the other converges on a canonical form instead of producing
     // text the reverse table does not know. This is the audit the data file header promises.
     final EmojiEmoticons.Tables tables = bundled();
-    final Set<String> emoticonSources = sources(tables.emoticonToEmoji());
-    final Set<String> emojiSources = sources(tables.emojiToEmoticon());
-    for (final List<EmojiEmoticons.Mapping> candidates : tables.emojiToEmoticon().values()) {
+    final Set<String> emoticonSources = sources(tables.emoticonToEmoji().table());
+    final Set<String> emojiSources = sources(tables.emojiToEmoticon().table());
+    for (final List<EmojiEmoticons.Mapping> candidates : tables.emojiToEmoticon().table().values()) {
       for (final EmojiEmoticons.Mapping mapping : candidates) {
         assertTrue(emoticonSources.contains(mapping.target()),
             "EMOJI target has no EMOTICON row: " + mapping);
       }
     }
-    for (final List<EmojiEmoticons.Mapping> candidates : tables.emoticonToEmoji().values()) {
+    for (final List<EmojiEmoticons.Mapping> candidates : tables.emoticonToEmoji().table().values()) {
       for (final EmojiEmoticons.Mapping mapping : candidates) {
         assertTrue(emojiSources.contains(mapping.target()),
             "EMOTICON target has no EMOJI row: " + mapping);
@@ -78,11 +78,11 @@ public class EmojiEmoticonsTest {
     // that also occurs inside text; the emoji direction runs unguarded because its sources are
     // pictographs. These are the data invariants those design choices rest on.
     final EmojiEmoticons.Tables tables = bundled();
-    for (final String source : sources(tables.emoticonToEmoji())) {
+    for (final String source : sources(tables.emoticonToEmoji().table())) {
       source.chars().forEach(c ->
           assertTrue(c > 0x20 && c < 0x7F, "Non-ASCII-printable emoticon source: " + source));
     }
-    for (final String source : sources(tables.emojiToEmoticon())) {
+    for (final String source : sources(tables.emojiToEmoticon().table())) {
       assertTrue(source.codePointAt(0) > 0x7F, "ASCII-leading emoji source: " + source);
     }
   }
@@ -92,18 +92,23 @@ public class EmojiEmoticonsTest {
     // Locks the bundled row counts so a data edit trips this test for a conscious bump, the same
     // discipline as the CaseFolding.txt completeness audit.
     final EmojiEmoticons.Tables tables = bundled();
-    assertEquals(35, sources(tables.emojiToEmoticon()).size());
-    assertEquals(26, sources(tables.emoticonToEmoji()).size());
+    assertEquals(35, sources(tables.emojiToEmoticon().table()).size());
+    assertEquals(26, sources(tables.emoticonToEmoji().table()).size());
   }
 
   @Test
   void candidatesAreSortedLongestFirst() throws IOException {
-    // The scan takes the first region match, so longest-match correctness rests on this ordering.
+    // The scan takes the first region match, so longest-match correctness rests on this ordering
+    // in BOTH directions; the emoji table relies on it to try "2764 FE0F" before bare "2764".
     final EmojiEmoticons.Tables tables = bundled();
-    for (final List<EmojiEmoticons.Mapping> candidates : tables.emoticonToEmoji().values()) {
-      for (int i = 1; i < candidates.size(); i++) {
-        assertTrue(candidates.get(i - 1).source().length() >= candidates.get(i).source().length(),
-            "Candidates not longest-first: " + candidates);
+    for (final EmojiEmoticons.Direction direction
+        : List.of(tables.emoticonToEmoji(), tables.emojiToEmoticon())) {
+      for (final List<EmojiEmoticons.Mapping> candidates : direction.table().values()) {
+        for (int i = 1; i < candidates.size(); i++) {
+          assertTrue(
+              candidates.get(i - 1).source().length() >= candidates.get(i).source().length(),
+              "Candidates not longest-first: " + candidates);
+        }
       }
     }
   }
@@ -155,8 +160,8 @@ public class EmojiEmoticonsTest {
         + "003A 0029 ; 263A ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; emoticon row\n";
     final EmojiEmoticons.Tables tables = EmojiEmoticons.parse(
         new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
-    assertEquals(1, sources(tables.emojiToEmoticon()).size());
-    assertEquals(1, sources(tables.emoticonToEmoji()).size());
+    assertEquals(1, sources(tables.emojiToEmoticon().table()).size());
+    assertEquals(1, sources(tables.emoticonToEmoji().table()).size());
   }
 
   @Test
@@ -165,8 +170,8 @@ public class EmojiEmoticonsTest {
         + "263A ; 003A 0029 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; the only data row\n";
     final EmojiEmoticons.Tables tables = EmojiEmoticons.parse(
         new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8)));
-    assertEquals(1, sources(tables.emojiToEmoticon()).size());
-    assertTrue(sources(tables.emoticonToEmoji()).isEmpty());
-    assertFalse(sources(tables.emojiToEmoticon()).contains("#"));
+    assertEquals(1, sources(tables.emojiToEmoticon().table()).size());
+    assertTrue(sources(tables.emoticonToEmoji().table()).isEmpty());
+    assertFalse(sources(tables.emojiToEmoticon().table()).contains("#"));
   }
 }

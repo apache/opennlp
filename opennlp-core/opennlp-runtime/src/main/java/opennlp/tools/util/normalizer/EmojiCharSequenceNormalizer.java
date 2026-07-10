@@ -27,7 +27,9 @@ import java.util.regex.Pattern;
  *     BMP pictographs such as U+2764 HEAVY BLACK HEART pass through untouched; deleting the symbol
  *     also destroys its signal for downstream components. Use
  *     {@link EmojiToEmoticonCharSequenceNormalizer} to fold emoji to ASCII emoticons, or
- *     {@link EmoticonToEmojiCharSequenceNormalizer} for the reverse direction.
+ *     {@link EmoticonToEmojiCharSequenceNormalizer} for the reverse direction. The default
+ *     language detector chain intentionally keeps this normalizer: its models were trained with
+ *     pictographs blanked, and folding to ASCII emoticons would feed them n-grams they never saw.
  */
 @Deprecated(since = "3.0.0")
 public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {

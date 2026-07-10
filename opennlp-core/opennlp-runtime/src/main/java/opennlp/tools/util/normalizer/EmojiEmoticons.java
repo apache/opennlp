@@ -39,6 +39,13 @@ import java.util.Objects;
  * characters, and an emoji-presentation source such as U+2764 U+FE0F is two code points that must
  * fold as one unit so no dangling variation selector is left behind. The scan is a single cursor
  * pass, longest match first at each position.</p>
+ *
+ * <p>In the pictographic direction the scan is sequence-aware: a mapped pictograph does not fold
+ * when it participates in a larger ZWJ sequence (HEART ON FIRE, the family emoji) or when
+ * followed by U+FE0E, which explicitly requests text presentation; both would otherwise corrupt
+ * a distinct emoji or leave a dangling invisible selector. A trailing U+FE0F after any mapped
+ * pictograph is absorbed into the fold, so the no-dangling-selector guarantee holds for every
+ * mapped source, not only those with an explicit variation-selector row.</p>
  */
 final class EmojiEmoticons {
 
@@ -55,42 +62,58 @@ final class EmojiEmoticons {
   }
 
   /**
-   * The two direction tables, each keyed by the first code point of the source sequence, candidates
-   * ordered longest source first so a scan is longest-match.
+   * One direction table, keyed by the first code point of the source sequence, candidates ordered
+   * longest source first so a scan is longest-match. The first-code-point range bounds let the
+   * scan skip the map lookup for the common code point that no source starts with.
    */
-  record Tables(Map<Integer, List<Mapping>> emojiToEmoticon,
-                Map<Integer, List<Mapping>> emoticonToEmoji) {
+  record Direction(Map<Integer, List<Mapping>> table, int minFirst, int maxFirst) {
+
+    List<Mapping> candidates(int codePoint) {
+      if (codePoint < minFirst || codePoint > maxFirst) {
+        return null;
+      }
+      return table.get(codePoint);
+    }
   }
 
-  static Map<Integer, List<Mapping>> emojiToEmoticon() {
+  /** The two direction tables. */
+  record Tables(Direction emojiToEmoticon, Direction emoticonToEmoji) {
+  }
+
+  static Direction emojiToEmoticon() {
     return tables().emojiToEmoticon();
   }
 
-  static Map<Integer, List<Mapping>> emoticonToEmoji() {
+  static Direction emoticonToEmoji() {
     return tables().emoticonToEmoji();
   }
 
+  // Sequence-context code points of the pictographic direction.
+  private static final int ZERO_WIDTH_JOINER = 0x200D;
+  private static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
+  private static final int VARIATION_SELECTOR_EMOJI = 0xFE0F;
+
   /**
-   * Applies the table in a single longest-match-first cursor pass.
+   * Applies the direction table in a single longest-match-first cursor pass.
    *
-   * @param table       A direction table from {@link #emojiToEmoticon()} or
-   *                    {@link #emoticonToEmoji()}.
+   * @param direction   A direction from {@link #emojiToEmoticon()} or {@link #emoticonToEmoji()}.
    * @param delimited   If {@code true}, a source matches only when delimited by the text boundary
    *                    or Unicode {@code White_Space} on both sides (the emoticon direction, where
-   *                    the source sequences also occur inside ordinary text such as URLs).
+   *                    the source sequences also occur inside ordinary text such as URLs). If
+   *                    {@code false}, the pictographic sequence rules apply instead: no fold
+   *                    inside a ZWJ sequence or before U+FE0E, and a trailing U+FE0F is absorbed.
    */
-  static String substitute(CharSequence text, Map<Integer, List<Mapping>> table,
-                           boolean delimited) {
+  static String substitute(CharSequence text, Direction direction, boolean delimited) {
     Objects.requireNonNull(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
     int i = 0;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
-      final Mapping match = matchAt(text, i, table.get(codePoint), delimited);
-      if (match != null) {
-        out.append(match.target());
-        i += match.source().length();
+      final long match = matchAt(text, i, direction.candidates(codePoint), delimited);
+      if (match >= 0) {
+        out.append(direction.candidates(codePoint).get((int) (match >>> 32)).target());
+        i += (int) match;
       } else {
         out.appendCodePoint(codePoint);
         i += Character.charCount(codePoint);
@@ -101,10 +124,10 @@ final class EmojiEmoticons {
 
   /**
    * Like {@link #substitute} but also produces the {@link Alignment} back to the original text.
-   * Each replaced source sequence maps to its replacement as one block.
+   * Each replaced source sequence, including an absorbed trailing U+FE0F, maps to its replacement
+   * as one block.
    */
-  static AlignedText substituteAligned(CharSequence text, Map<Integer, List<Mapping>> table,
-                                       boolean delimited) {
+  static AlignedText substituteAligned(CharSequence text, Direction direction, boolean delimited) {
     Objects.requireNonNull(text, "text");
     final StringBuilder out = new StringBuilder(text.length());
     final Alignment.Builder alignment = new Alignment.Builder();
@@ -112,11 +135,13 @@ final class EmojiEmoticons {
     int i = 0;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
-      final Mapping match = matchAt(text, i, table.get(codePoint), delimited);
-      if (match != null) {
-        out.append(match.target());
-        alignment.replace(match.source().length(), match.target().length());
-        i += match.source().length();
+      final long match = matchAt(text, i, direction.candidates(codePoint), delimited);
+      if (match >= 0) {
+        final String target = direction.candidates(codePoint).get((int) (match >>> 32)).target();
+        final int consumed = (int) match;
+        out.append(target);
+        alignment.replace(consumed, target.length());
+        i += consumed;
       } else {
         out.appendCodePoint(codePoint);
         final int charCount = Character.charCount(codePoint);
@@ -127,21 +152,44 @@ final class EmojiEmoticons {
     return new AlignedText(text, out.toString(), alignment.build(length));
   }
 
-  // Returns the longest candidate matching at position i, or null. Candidates are pre-sorted
-  // longest source first, so the first region match wins.
-  private static Mapping matchAt(CharSequence text, int i, List<Mapping> candidates,
-                                 boolean delimited) {
+  // Returns the winning candidate as (candidateIndex << 32) | consumedChars, or -1 when nothing
+  // folds here. Candidates are pre-sorted longest source first, so the first acceptable region
+  // match wins. In the pictographic direction (delimited == false) a match is rejected when the
+  // source adjoins a ZWJ sequence or is followed by U+FE0E, and a trailing U+FE0F joins the
+  // consumed region.
+  private static long matchAt(CharSequence text, int i, List<Mapping> candidates,
+                              boolean delimited) {
     if (candidates == null || (delimited && !boundaryBefore(text, i))) {
-      return null;
+      return -1;
     }
-    for (final Mapping candidate : candidates) {
-      final int end = i + candidate.source().length();
-      if (end <= text.length() && regionMatches(text, i, candidate.source())
-          && (!delimited || boundaryAfter(text, end))) {
-        return candidate;
+    if (!delimited && i > 0 && Character.codePointBefore(text, i) == ZERO_WIDTH_JOINER) {
+      return -1;
+    }
+    for (int index = 0; index < candidates.size(); index++) {
+      final Mapping candidate = candidates.get(index);
+      int end = i + candidate.source().length();
+      if (end > text.length() || !regionMatches(text, i, candidate.source())) {
+        continue;
       }
+      if (delimited) {
+        if (boundaryAfter(text, end)) {
+          return ((long) index << 32) | (end - i);
+        }
+        continue;
+      }
+      // Absorb one trailing emoji-presentation selector into the fold.
+      if (end < text.length() && Character.codePointAt(text, end) == VARIATION_SELECTOR_EMOJI) {
+        end++;
+      }
+      if (end < text.length()) {
+        final int following = Character.codePointAt(text, end);
+        if (following == ZERO_WIDTH_JOINER || following == VARIATION_SELECTOR_TEXT) {
+          continue;
+        }
+      }
+      return ((long) index << 32) | (end - i);
     }
-    return null;
+    return -1;
   }
 
   private static boolean boundaryBefore(CharSequence text, int i) {
@@ -234,14 +282,21 @@ final class EmojiEmoticons {
         candidates.add(new Mapping(source, target));
       }
     }
-    // Longest source first, so the scan in matchAt is longest-match by construction.
-    for (final List<Mapping> candidates : emojiToEmoticon.values()) {
-      candidates.sort(Comparator.comparingInt((Mapping m) -> m.source().length()).reversed());
+    return new Tables(direction(emojiToEmoticon), direction(emoticonToEmoji));
+  }
+
+  // Longest source first, so the scan in matchAt is longest-match by construction; the
+  // first-code-point bounds feed the no-match short circuit.
+  private static Direction direction(Map<Integer, List<Mapping>> table) {
+    int min = Integer.MAX_VALUE;
+    int max = Integer.MIN_VALUE;
+    for (final Map.Entry<Integer, List<Mapping>> entry : table.entrySet()) {
+      min = Math.min(min, entry.getKey());
+      max = Math.max(max, entry.getKey());
+      entry.getValue().sort(
+          Comparator.comparingInt((Mapping m) -> m.source().length()).reversed());
     }
-    for (final List<Mapping> candidates : emoticonToEmoji.values()) {
-      candidates.sort(Comparator.comparingInt((Mapping m) -> m.source().length()).reversed());
-    }
-    return new Tables(Map.copyOf(emojiToEmoticon), Map.copyOf(emoticonToEmoji));
+    return new Direction(Map.copyOf(table), min, max);
   }
 
   private static String decode(String hexCodePoints, int lineNumber, String content) {
