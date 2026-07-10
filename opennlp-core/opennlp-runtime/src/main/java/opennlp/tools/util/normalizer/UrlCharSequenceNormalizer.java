@@ -17,7 +17,7 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * A {@link UrlCharSequenceNormalizer} implementation that normalizes text
+ * A {@link CharSequenceNormalizer} implementation that normalizes text
  * in terms of URls and email addresses. Every encounter will be replaced by a whitespace.
  *
  * <p>Two forward cursor passes reproduce, byte for byte, the accept/reject boundary of the
@@ -75,21 +75,26 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
   }
 
   // "https?://[-_.?&~;+=/#0-9A-Za-z]+" -> " "
-  private static String removeUrls(CharSequence text) {
+  private static CharSequence removeUrls(CharSequence text) {
     final int length = text.length();
-    final StringBuilder out = new StringBuilder(length);
+    StringBuilder out = null;
     int i = 0;
     while (i < length) {
       final int end = matchUrlEnd(text, i);
       if (end > i) {
+        if (out == null) {
+          out = new StringBuilder(length).append(text, 0, i);
+        }
         out.append(' ');
         i = end;
       } else {
-        out.append(text.charAt(i));
+        if (out != null) {
+          out.append(text.charAt(i));
+        }
         i++;
       }
     }
-    return out.toString();
+    return out == null ? text : out.toString();
   }
 
   // Returns the exclusive end of a URL match starting at start, or -1 if there is none.
@@ -130,21 +135,26 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
   }
 
   // "(?<![-+_.0-9A-Za-z])[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+[-.0-9A-Za-z]+" -> " "
-  private static String removeMailAddresses(String text) {
+  private static CharSequence removeMailAddresses(CharSequence text) {
     final int length = text.length();
-    final StringBuilder out = new StringBuilder(length);
+    StringBuilder out = null;
     int i = 0;
     while (i < length) {
       final int end = matchMailEnd(text, i);
       if (end > i) {
+        if (out == null) {
+          out = new StringBuilder(length).append(text, 0, i);
+        }
         out.append(' ');
         i = end;
       } else {
-        out.append(text.charAt(i));
+        if (out != null) {
+          out.append(text.charAt(i));
+        }
         i++;
       }
     }
-    return out.toString();
+    return out == null ? text : out.toString();
   }
 
   // Returns the exclusive end of a mail match starting at start, or -1 if there is none.

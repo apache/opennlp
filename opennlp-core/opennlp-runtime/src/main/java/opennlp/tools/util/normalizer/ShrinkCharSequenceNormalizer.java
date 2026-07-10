@@ -17,7 +17,7 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * A {@link ShrinkCharSequenceNormalizer} implementation that shrinks repeated spaces / chars
+ * A {@link CharSequenceNormalizer} implementation that shrinks repeated spaces / chars
  * in text.
  *
  * <p>Two forward cursor passes reproduce, byte for byte, the output of the former regex
@@ -39,10 +39,6 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final long serialVersionUID = -4511969661556543048L;
 
-  // The six characters the former regex "\s" class matched (ASCII only, no UNICODE flags).
-  private static final CodePointSet ASCII_WHITESPACE =
-      CodePointSet.ofRange(0x0009, 0x000D).union(CodePointSet.of(0x0020));
-
   // The code points the former "." (without DOTALL) refused to match: the regex line terminators.
   private static final CodePointSet REGEX_LINE_TERMINATORS =
       CodePointSet.of(0x000A, 0x000D, 0x0085, 0x2028, 0x2029);
@@ -61,34 +57,53 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
     if (text == null) {
       throw new IllegalArgumentException("The text must not be null.");
     }
-    return shrinkRepeatedCodePoints(shrinkWhitespace(text)).trim();
+    final CharSequence shrunk = shrinkRepeatedCodePoints(shrinkWhitespace(text));
+    // Trim exactly like String.trim did (chars at or below U+0020), without copying when
+    // nothing changed anywhere in the pipeline.
+    int start = 0;
+    int end = shrunk.length();
+    while (start < end && shrunk.charAt(start) <= ' ') {
+      start++;
+    }
+    while (end > start && shrunk.charAt(end - 1) <= ' ') {
+      end--;
+    }
+    if (start == 0 && end == shrunk.length()) {
+      return shrunk;
+    }
+    return shrunk.subSequence(start, end).toString();
   }
 
   // Replaces each run of two or more ASCII whitespace characters with a single space; a lone
   // whitespace character stays as it is (the former "\s{2,}" never matched a run of one).
-  private static String shrinkWhitespace(CharSequence text) {
+  private static CharSequence shrinkWhitespace(CharSequence text) {
     final int length = text.length();
-    final StringBuilder out = new StringBuilder(length);
+    StringBuilder out = null;
     int i = 0;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
-      if (ASCII_WHITESPACE.contains(codePoint)) {
+      if (AsciiChars.WHITESPACE.contains(codePoint)) {
         int runEnd = i + 1; // members are single-char ASCII
-        while (runEnd < length && ASCII_WHITESPACE.contains(text.charAt(runEnd))) {
+        while (runEnd < length && AsciiChars.WHITESPACE.contains(text.charAt(runEnd))) {
           runEnd++;
         }
         if (runEnd - i >= 2) {
+          if (out == null) {
+            out = new StringBuilder(length).append(text, 0, i);
+          }
           out.append(' ');
-        } else {
+        } else if (out != null) {
           out.append(text.charAt(i));
         }
         i = runEnd;
       } else {
-        out.appendCodePoint(codePoint);
+        if (out != null) {
+          out.appendCodePoint(codePoint);
+        }
         i += Character.charCount(codePoint);
       }
     }
-    return out.toString();
+    return out == null ? text : out.toString();
   }
 
   // Shrinks each run of three or more repeats of one code point to two copies of its first
@@ -96,9 +111,9 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
   // must not be a regex line terminator, every repeat advances by the first occurrence's char
   // count while comparing whole code points ASCII case-insensitively (mirroring the engine's
   // backreference matching), and a failed attempt resumes at the next char, like the regex scan.
-  private static String shrinkRepeatedCodePoints(String text) {
+  private static CharSequence shrinkRepeatedCodePoints(CharSequence text) {
     final int length = text.length();
-    final StringBuilder out = new StringBuilder(length);
+    StringBuilder out = null;
     int i = 0;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
@@ -107,27 +122,25 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
         int repeats = 0;
         int end = i + charCount;
         while (end + charCount <= length
-            && asciiCaseInsensitiveEquals(Character.codePointAt(text, end), codePoint)) {
+            && AsciiChars.caseInsensitiveEquals(Character.codePointAt(text, end), codePoint)) {
           end += charCount;
           repeats++;
         }
         if (repeats >= 2) {
+          if (out == null) {
+            out = new StringBuilder(length).append(text, 0, i);
+          }
           out.append(text, i, i + charCount).append(text, i, i + charCount);
           i = end;
           continue;
         }
       }
-      out.append(text.charAt(i));
+      if (out != null) {
+        out.append(text.charAt(i));
+      }
       i++;
     }
-    return out.toString();
+    return out == null ? text : out.toString();
   }
 
-  private static boolean asciiCaseInsensitiveEquals(int a, int b) {
-    return asciiToLower(a) == asciiToLower(b);
-  }
-
-  private static int asciiToLower(int codePoint) {
-    return codePoint >= 'A' && codePoint <= 'Z' ? codePoint + 0x20 : codePoint;
-  }
 }

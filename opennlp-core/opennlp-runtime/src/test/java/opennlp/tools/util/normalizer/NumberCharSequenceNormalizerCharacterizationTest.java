@@ -89,31 +89,9 @@ public class NumberCharSequenceNormalizerCharacterizationTest {
         "\u0661", "\u2460", "\uD835\uDFCF", "\uD83D\uDE00", "\uD83D", "\uDE00"};
     final Random random = new Random(42);
     for (int i = 0; i < 5000; i++) {
-      final String input = randomInput(random, pool);
+      final String input = CharacterizationInputs.randomInput(random, pool);
       assertEquals(formerRegex.matcher(input).replaceAll(" "),
-          NORMALIZER.normalize(input).toString(), () -> "Input: " + escape(input));
+          NORMALIZER.normalize(input).toString(), () -> "Input: " + CharacterizationInputs.escape(input));
     }
-  }
-
-  private static String randomInput(Random random, String[] pool) {
-    final int pieces = random.nextInt(24);
-    final StringBuilder b = new StringBuilder();
-    for (int i = 0; i < pieces; i++) {
-      b.append(pool[random.nextInt(pool.length)]);
-    }
-    return b.toString();
-  }
-
-  private static String escape(String s) {
-    final StringBuilder b = new StringBuilder();
-    for (int i = 0; i < s.length(); i++) {
-      final char c = s.charAt(i);
-      if (c >= 0x20 && c <= 0x7E) {
-        b.append(c);
-      } else {
-        b.append(String.format("\\u%04X", (int) c));
-      }
-    }
-    return b.toString();
   }
 }

@@ -19,6 +19,7 @@ package opennlp.tools.util.normalizer;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +44,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *       runs ({@code "hAHa"} becomes {@code "hAhA"}, {@code "hjaja"} becomes {@code "jaja"}).</li>
  * </ul>
  */
+// The word-boundary characterization pins the JDK 21+ regex engine's non-ASCII behavior; on
+// older engines "\b" treated non-ASCII word characters differently, so these expectations are
+// tied to the project's Java baseline.
 public class TwitterCharSequenceNormalizerCharacterizationTest {
 
   private static final TwitterCharSequenceNormalizer NORMALIZER =
@@ -177,35 +181,19 @@ public class TwitterCharSequenceNormalizerCharacterizationTest {
         "\uD83D\uDE00", "\uD83D", "\uDE00", "\u00A0"};
     final Random random = new Random(42);
     for (int i = 0; i < 5000; i++) {
-      final String input = randomInput(random, pool);
+      final String input = CharacterizationInputs.randomInput(random, pool);
       String expected = hashUserRegex.matcher(input).replaceAll(" ");
       expected = rtRegex.matcher(expected).replaceAll(" ");
       expected = faceRegex.matcher(expected).replaceAll(" ");
       expected = laughRegex.matcher(expected).replaceAll("$1$2$1$2");
       assertEquals(expected, NORMALIZER.normalize(input).toString(),
-          () -> "Input: " + escape(input));
+          () -> "Input: " + CharacterizationInputs.escape(input));
     }
   }
-
-  private static String randomInput(Random random, String[] pool) {
-    final int pieces = random.nextInt(24);
-    final StringBuilder b = new StringBuilder();
-    for (int i = 0; i < pieces; i++) {
-      b.append(pool[random.nextInt(pool.length)]);
-    }
-    return b.toString();
-  }
-
-  private static String escape(String s) {
-    final StringBuilder b = new StringBuilder();
-    for (int i = 0; i < s.length(); i++) {
-      final char c = s.charAt(i);
-      if (c >= 0x20 && c <= 0x7E) {
-        b.append(c);
-      } else {
-        b.append(String.format("\\u%04X", (int) c));
-      }
-    }
-    return b.toString();
+  @Test
+  void noMatchInputIsReturnedUncopied() {
+    // With nothing to fold, every pass declines to allocate and the input instance comes back.
+    final String plain = "the bird flew over green fields";
+    Assertions.assertSame(plain, NORMALIZER.normalize(plain));
   }
 }

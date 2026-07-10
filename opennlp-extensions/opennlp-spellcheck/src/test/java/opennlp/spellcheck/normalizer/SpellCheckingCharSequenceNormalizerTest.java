@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -203,5 +204,39 @@ public class SpellCheckingCharSequenceNormalizerTest {
   void nullCheckerIsRejected() {
     assertThrows(NullPointerException.class,
         () -> new SpellCheckingCharSequenceNormalizer((SymSpell) null));
+  }
+  @Test
+  void numberLikeRejectsShapesTheFormerRegexRejected() {
+    // Reject-side pins for the scan structure: at most one trailing percent, a digit required,
+    // no letters, no bare sign.
+    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("5%%"));
+    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("+%"));
+    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("1,2a"));
+    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("+"));
+    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike(""));
+    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("%"));
+    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("..,,"));
+    Assertions.assertTrue(SpellCheckingCharSequenceNormalizer.isNumberLike("+3,14%"));
+    Assertions.assertTrue(SpellCheckingCharSequenceNormalizer.isNumberLike("5%"));
+  }
+
+  @Test
+  void numberLikeMatchesTheFormerRegexOverGeneratedTokens() {
+    // Differential over the token alphabet of the former "[+-]?[\\d.,]*\\d[\\d.,]*%?" guard.
+    final java.util.regex.Pattern former =
+        java.util.regex.Pattern.compile("[+-]?[\\d.,]*\\d[\\d.,]*%?");
+    final char[] alphabet = {'+', '-', '%', '.', ',', '0', '5', '9', 'a'};
+    final java.util.Random random = new java.util.Random(42);
+    for (int round = 0; round < 20_000; round++) {
+      final int length = random.nextInt(7);
+      final StringBuilder token = new StringBuilder();
+      for (int i = 0; i < length; i++) {
+        token.append(alphabet[random.nextInt(alphabet.length)]);
+      }
+      final String core = token.toString();
+      Assertions.assertEquals(former.matcher(core).matches(),
+          SpellCheckingCharSequenceNormalizer.isNumberLike(core),
+          () -> "core: " + core);
+    }
   }
 }

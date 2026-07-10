@@ -16,24 +16,32 @@
  */
 package opennlp.tools.util.normalizer;
 
-import java.io.Serializable;
-
 /**
- * A char sequence normalizer, used to adjusting (prune, substitute, add, etc.)
- * characters in order to remove noise from text
- *
- * @see <a href="https://en.wikipedia.org/wiki/Text_normalization">Text normalization</a>
+ * ASCII character helpers shared by the cursor-scan rewrites of the legacy normalizers, so the
+ * definitions the former regexes agreed on cannot drift apart between classes.
  */
-public interface CharSequenceNormalizer extends Serializable {
+final class AsciiChars {
 
-  /**
-   * Normalizes a sequence of characters.
-   *
-   * @param text The {@link CharSequence} to normalize. Must not be {@code null}.
-   * @return The normalized {@link CharSequence}.
-   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}. Implementations
-   *     predating this contract may still throw {@link NullPointerException}; they are aligned
-   *     as they are migrated.
-   */
-  CharSequence normalize(CharSequence text);
+  /** The six characters the former regex {@code \s} class matched. */
+  static final CodePointSet WHITESPACE =
+      CodePointSet.ofRange(0x0009, 0x000D).union(CodePointSet.of(0x0020));
+
+  private AsciiChars() {
+  }
+
+  static char toLower(char c) {
+    return c >= 'A' && c <= 'Z' ? (char) (c + 0x20) : c;
+  }
+
+  static int toLower(int codePoint) {
+    return codePoint >= 'A' && codePoint <= 'Z' ? codePoint + 0x20 : codePoint;
+  }
+
+  static boolean caseInsensitiveEquals(char a, char b) {
+    return toLower(a) == toLower(b);
+  }
+
+  static boolean caseInsensitiveEquals(int a, int b) {
+    return toLower(a) == toLower(b);
+  }
 }

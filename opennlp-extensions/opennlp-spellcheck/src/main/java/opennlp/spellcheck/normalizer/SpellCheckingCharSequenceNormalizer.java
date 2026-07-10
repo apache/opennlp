@@ -366,9 +366,10 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   /**
    * A cursor-scan replacement for the former {@code "[+-]?[\d.,]*\d[\d.,]*%?"} full-token
    * match: an optional sign, then digits with optional grouping/decimal marks containing at
-   * least one ASCII digit, then an optional trailing percent sign.
+   * least one ASCII digit, then an optional trailing percent sign. Package-private so the tests
+   * can hold the classification against the former regex directly.
    */
-  private static boolean isNumberLike(String core) {
+  static boolean isNumberLike(String core) {
     int start = 0;
     if (start < core.length() && (core.charAt(start) == '+' || core.charAt(start) == '-')) {
       start++;

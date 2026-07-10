@@ -19,6 +19,7 @@ package opennlp.tools.util.normalizer;
 import java.util.Random;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -150,34 +151,18 @@ public class ShrinkCharSequenceNormalizerCharacterizationTest {
         "\uD83D\uDE00", "\uD83D", "\uDE00"};
     final Random random = new Random(42);
     for (int i = 0; i < 5000; i++) {
-      final String input = randomInput(random, pool);
+      final String input = CharacterizationInputs.randomInput(random, pool);
       final String expected = repeatedCharRegex
           .matcher(spaceRegex.matcher(input).replaceAll(" "))
           .replaceAll("$1$1").trim();
       assertEquals(expected, NORMALIZER.normalize(input).toString(),
-          () -> "Input: " + escape(input));
+          () -> "Input: " + CharacterizationInputs.escape(input));
     }
   }
-
-  private static String randomInput(Random random, String[] pool) {
-    final int pieces = random.nextInt(24);
-    final StringBuilder b = new StringBuilder();
-    for (int i = 0; i < pieces; i++) {
-      b.append(pool[random.nextInt(pool.length)]);
-    }
-    return b.toString();
-  }
-
-  private static String escape(String s) {
-    final StringBuilder b = new StringBuilder();
-    for (int i = 0; i < s.length(); i++) {
-      final char c = s.charAt(i);
-      if (c >= 0x20 && c <= 0x7E) {
-        b.append(c);
-      } else {
-        b.append(String.format("\\u%04X", (int) c));
-      }
-    }
-    return b.toString();
+  @Test
+  void noMatchInputIsReturnedUncopied() {
+    // Single spaces, no repeat runs, nothing to trim: no pass may allocate.
+    final String plain = "single spaced words only";
+    Assertions.assertSame(plain, NORMALIZER.normalize(plain));
   }
 }

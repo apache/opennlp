@@ -17,7 +17,7 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * A {@link TwitterCharSequenceNormalizer} implementation that normalizes text
+ * A {@link CharSequenceNormalizer} implementation that normalizes text
  * in terms of Twitter character patterns. Every encounter will be replaced by a whitespace.
  *
  * <p>Four forward cursor passes reproduce, byte for byte, the output of the former regex
@@ -41,10 +41,6 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final long serialVersionUID = -8155452559337913929L;
 
-  // The six characters the former regex "\s" class matched; "\S" was their complement.
-  private static final CodePointSet ASCII_WHITESPACE =
-      CodePointSet.ofRange(0x0009, 0x000D).union(CodePointSet.of(0x0020));
-
   private static final TwitterCharSequenceNormalizer INSTANCE = new TwitterCharSequenceNormalizer();
 
   public static TwitterCharSequenceNormalizer getInstance() {
@@ -64,33 +60,38 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
 
   // "[#@]\S+" -> " ": a hash or at sign starts a match only if a non-whitespace char follows;
   // the match then swallows the whole non-whitespace run (including further # and @).
-  private static String removeTagsAndHandles(CharSequence text) {
+  private static CharSequence removeTagsAndHandles(CharSequence text) {
     final int length = text.length();
-    final StringBuilder out = new StringBuilder(length);
+    StringBuilder out = null;
     int i = 0;
     while (i < length) {
       final char c = text.charAt(i);
       if ((c == '#' || c == '@')
-          && i + 1 < length && !ASCII_WHITESPACE.contains(text.charAt(i + 1))) {
+          && i + 1 < length && !AsciiChars.WHITESPACE.contains(text.charAt(i + 1))) {
         int end = i + 2;
-        while (end < length && !ASCII_WHITESPACE.contains(text.charAt(end))) {
+        while (end < length && !AsciiChars.WHITESPACE.contains(text.charAt(end))) {
           end++;
+        }
+        if (out == null) {
+          out = new StringBuilder(length).append(text, 0, i);
         }
         out.append(' ');
         i = end;
       } else {
-        out.append(c);
+        if (out != null) {
+          out.append(c);
+        }
         i++;
       }
     }
-    return out.toString();
+    return out == null ? text : out.toString();
   }
 
   // "\b(rt[ :])+" (case-insensitive) -> " ": one or more three-char units of r, t, and a space
   // or colon, starting where the JDK engine put a word boundary.
-  private static String removeRetweetMarkers(String text) {
+  private static CharSequence removeRetweetMarkers(CharSequence text) {
     final int length = text.length();
-    final StringBuilder out = new StringBuilder(length);
+    StringBuilder out = null;
     int i = 0;
     while (i < length) {
       final char c = text.charAt(i);
@@ -100,18 +101,23 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
           end += 3;
         }
         if (end > i) {
+          if (out == null) {
+            out = new StringBuilder(length).append(text, 0, i);
+          }
           out.append(' ');
           i = end;
           continue;
         }
       }
-      out.append(c);
+      if (out != null) {
+        out.append(c);
+      }
       i++;
     }
-    return out.toString();
+    return out == null ? text : out.toString();
   }
 
-  private static boolean isRetweetUnit(String text, int at) {
+  private static boolean isRetweetUnit(CharSequence text, int at) {
     final char r = text.charAt(at);
     final char t = text.charAt(at + 1);
     final char separator = text.charAt(at + 2);
@@ -120,7 +126,9 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
   }
 
   // Mirrors how the JDK regex engine decided whether "\b" held before a word character at
-  // index (java.util.regex.Pattern.Bound without UNICODE_CHARACTER_CLASS): the boundary is
+  // index (java.util.regex.Pattern.Bound without UNICODE_CHARACTER_CLASS, as of JDK 21; older
+  // engines treated non-ASCII word characters differently, so the characterization only holds
+  // on the project's supported runtimes): the boundary is
   // blocked if the preceding code point is an ASCII word character, or is a non-spacing mark
   // with a base character. The base-character scan steps backwards one char at a time and reads
   // Character.codePointAt at each position, exactly like the engine, so it stops on the low
@@ -156,28 +164,36 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
 
   // "[:;x]-?[()dop]" (case-insensitive) -> " ": eyes, an optional nose, and a mouth. The
   // optional nose is tried first, like the greedy "-?"; a bare "-" is never a mouth.
-  private static String removeEmoticons(String text) {
+  private static CharSequence removeEmoticons(CharSequence text) {
     final int length = text.length();
-    final StringBuilder out = new StringBuilder(length);
+    StringBuilder out = null;
     int i = 0;
     while (i < length) {
       final char c = text.charAt(i);
       if (isEmoticonEyes(c)) {
         if (i + 2 < length && text.charAt(i + 1) == '-' && isEmoticonMouth(text.charAt(i + 2))) {
+          if (out == null) {
+            out = new StringBuilder(length).append(text, 0, i);
+          }
           out.append(' ');
           i += 3;
           continue;
         }
         if (i + 1 < length && isEmoticonMouth(text.charAt(i + 1))) {
+          if (out == null) {
+            out = new StringBuilder(length).append(text, 0, i);
+          }
           out.append(' ');
           i += 2;
           continue;
         }
       }
-      out.append(c);
+      if (out != null) {
+        out.append(c);
+      }
       i++;
     }
-    return out.toString();
+    return out == null ? text : out.toString();
   }
 
   private static boolean isEmoticonEyes(char c) {
@@ -194,9 +210,9 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
   // last consonant and the last vowel, which is what the repeated groups held). The four
   // character sets involved are pairwise disjoint, so the greedy runs never backtrack into
   // another viable split; a failed attempt resumes at the next char, like the regex scan.
-  private static String shrinkLaughter(String text) {
+  private static CharSequence shrinkLaughter(CharSequence text) {
     final int length = text.length();
-    final StringBuilder out = new StringBuilder(length);
+    StringBuilder out = null;
     int i = 0;
     while (i < length) {
       final char c = text.charAt(i);
@@ -216,7 +232,7 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
           while (true) {
             int consonantRunEnd = end;
             while (consonantRunEnd < length
-                && asciiCaseInsensitiveEquals(text.charAt(consonantRunEnd), consonant)) {
+                && AsciiChars.caseInsensitiveEquals(text.charAt(consonantRunEnd), consonant)) {
               consonantRunEnd++;
             }
             if (consonantRunEnd == end) {
@@ -224,7 +240,7 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
             }
             int vowelRunEnd = consonantRunEnd;
             while (vowelRunEnd < length
-                && asciiCaseInsensitiveEquals(text.charAt(vowelRunEnd), vowel)) {
+                && AsciiChars.caseInsensitiveEquals(text.charAt(vowelRunEnd), vowel)) {
               vowelRunEnd++;
             }
             if (vowelRunEnd == consonantRunEnd) {
@@ -233,16 +249,21 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
             end = vowelRunEnd;
           }
           if (end > q) {
+            if (out == null) {
+              out = new StringBuilder(length).append(text, 0, i);
+            }
             out.append(consonant).append(vowel).append(consonant).append(vowel);
             i = end;
             continue;
           }
         }
       }
-      out.append(c);
+      if (out != null) {
+        out.append(c);
+      }
       i++;
     }
-    return out.toString();
+    return out == null ? text : out.toString();
   }
 
   private static boolean isLaughConsonant(char c) {
@@ -254,11 +275,4 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
         || c == 'A' || c == 'I' || c == 'E' || c == 'O' || c == 'U';
   }
 
-  private static boolean asciiCaseInsensitiveEquals(char a, char b) {
-    return asciiToLower(a) == asciiToLower(b);
-  }
-
-  private static char asciiToLower(char c) {
-    return c >= 'A' && c <= 'Z' ? (char) (c + 0x20) : c;
-  }
 }
