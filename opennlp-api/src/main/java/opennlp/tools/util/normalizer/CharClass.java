@@ -48,11 +48,6 @@ public final class CharClass {
   private final CodePointSet members;
   private final int replacement;
 
-  @FunctionalInterface
-  private interface MemberFold {
-    int apply(StringBuilder out, CharSequence text, int index, At cp);
-  }
-
   private CharClass(CodePointSet members, int replacement) {
     this.members = members;
     this.replacement = replacement;
@@ -181,10 +176,19 @@ public final class CharClass {
    */
   public String normalize(CharSequence text) {
     requireNonNullArg(text, "text");
-    return foldUnlessClean(text, (out, ignoredText, ignoredIndex, cp) -> {
-      out.appendCodePoint(members.contains(cp.codePoint()) ? replacement : cp.codePoint());
-      return cp.nextIndex(ignoredIndex);
-    });
+    final int length = text.length();
+    final int first = firstMember(text);
+    if (first == length) {
+      return text.toString();
+    }
+    final StringBuilder out = new StringBuilder(length).append(text, 0, first);
+    int i = first;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      out.appendCodePoint(members.contains(codePoint) ? replacement : codePoint);
+      i += Character.charCount(codePoint);
+    }
+    return out.toString();
   }
 
   /**
@@ -204,14 +208,24 @@ public final class CharClass {
    */
   public String collapse(CharSequence text) {
     requireNonNullArg(text, "text");
-    return foldUnlessClean(text, (out, foldText, index, cp) -> {
-      if (members.contains(cp.codePoint())) {
+    final int length = text.length();
+    final int first = firstMember(text);
+    if (first == length) {
+      return text.toString();
+    }
+    final StringBuilder out = new StringBuilder(length).append(text, 0, first);
+    int i = first;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (members.contains(codePoint)) {
         out.appendCodePoint(replacement);
-        return skipRun(foldText, index);
+        i = skipRun(text, i);
+      } else {
+        out.appendCodePoint(codePoint);
+        i += Character.charCount(codePoint);
       }
-      out.appendCodePoint(cp.codePoint());
-      return cp.nextIndex(index);
-    });
+    }
+    return out.toString();
   }
 
   /**
@@ -298,12 +312,21 @@ public final class CharClass {
    */
   public String removeAll(CharSequence text) {
     requireNonNullArg(text, "text");
-    return foldUnlessClean(text, (out, ignoredText, index, cp) -> {
-      if (!members.contains(cp.codePoint())) {
-        out.appendCodePoint(cp.codePoint());
+    final int length = text.length();
+    final int first = firstMember(text);
+    if (first == length) {
+      return text.toString();
+    }
+    final StringBuilder out = new StringBuilder(length).append(text, 0, first);
+    int i = first;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (!members.contains(codePoint)) {
+        out.appendCodePoint(codePoint);
       }
-      return cp.nextIndex(index);
-    });
+      i += Character.charCount(codePoint);
+    }
+    return out.toString();
   }
 
   /**
@@ -557,23 +580,9 @@ public final class CharClass {
     return new AlignedText(text, out.toString(), alignment.build(length));
   }
 
-  // Member-free text is returned uncopied; otherwise the fold starts from a builder pre-filled
+  // The index of the first member code point, or text.length() when the text is member-free. The
+  // folds above return member-free text uncopied and otherwise start from a builder pre-filled
   // with the unchanged prefix.
-  private String foldUnlessClean(CharSequence text, MemberFold fold) {
-    final int length = text.length();
-    final int first = firstMember(text);
-    if (first == length) {
-      return text.toString();
-    }
-    final StringBuilder out = new StringBuilder(length).append(text, 0, first);
-    int i = first;
-    while (i < length) {
-      final At cp = CodePoints.at(text, i);
-      i = fold.apply(out, text, i, cp);
-    }
-    return out.toString();
-  }
-
   private int firstMember(CharSequence text) {
     final int length = text.length();
     int i = 0;

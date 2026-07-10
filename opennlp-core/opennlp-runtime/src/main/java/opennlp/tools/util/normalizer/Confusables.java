@@ -150,8 +150,8 @@ public final class Confusables {
    * @return The skeleton.
    */
   public static String skeleton(CharSequence text) {
-    final Data data = data();
-    final BitSet keys = data.keys();
+    final Data d = data();
+    final BitSet keys = d.keys();
 
     // Clean ASCII or NFD text with no confusable keys skips both Normalizer passes.
     final int length = text.length();
@@ -159,21 +159,21 @@ public final class Confusables {
     boolean anyKey = false;
     int i = 0;
     while (i < length) {
-      final CodePoints.At cp = CodePoints.at(text, i);
-      if (cp.codePoint() >= 0x80) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (codePoint >= 0x80) {
         asciiOnly = false;
       }
-      if (keys.get(cp.codePoint())) {
+      if (keys.get(codePoint)) {
         anyKey = true;
         break;
       }
-      i = cp.nextIndex(i);
+      i += Character.charCount(codePoint);
     }
     if (!anyKey && (asciiOnly || Normalizer.isNormalized(text, Normalizer.Form.NFD))) {
       return text.toString();
     }
 
-    final Map<Integer, String> map = data.prototypes();
+    final Map<Integer, String> map = d.prototypes();
     final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
     final StringBuilder mapped = new StringBuilder(decomposed.length());
     for (int j = 0; j < decomposed.length(); ) {

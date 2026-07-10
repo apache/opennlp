@@ -22,7 +22,6 @@ import java.util.BitSet;
 import java.util.List;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.normalizer.CodePoints;
 
 /**
  * Finds word boundaries in text using the Unicode Text Segmentation algorithm
@@ -173,9 +172,7 @@ public final class WordSegmenter {
     final WordBreakProperty.Data wbData = WordBreakProperty.data();
     final BitSet pictographs = ExtendedPictographic.members();
 
-    final CodePoints.At first = CodePoints.at(text, 0);
-    final int firstCp = first.codePoint();
-    final int firstCount = first.charCount();
+    final int firstCp = Character.codePointAt(text, 0);
     int prev = WordBreakProperty.ordinalOf(wbData, firstCp);
     boolean prevSpecial = SPECIAL[prev];
     int last = OTHER_ORDINAL;
@@ -187,11 +184,10 @@ public final class WordSegmenter {
     }
 
     int segmentStart = 0;
-    int i = firstCount;
+    int i = Character.charCount(firstCp);
     while (i < length) {
-      final CodePoints.At cp = CodePoints.at(text, i);
-      final int codePoint = cp.codePoint();
-      final int charCount = cp.charCount();
+      final int codePoint = Character.codePointAt(text, i);
+      final int charCount = Character.charCount(codePoint);
       final int current = WordBreakProperty.ordinalOf(wbData, codePoint);
 
       // One table read per character. It is the decision for the common case and, as GO_SLOW, the
@@ -222,7 +218,7 @@ public final class WordSegmenter {
       }
       prev = current;
       prevSpecial = currentSpecial;
-      i = cp.nextIndex(i);
+      i += charCount;
     }
     consumer.accept(segmentStart, length);
   }
@@ -300,12 +296,12 @@ public final class WordSegmenter {
   private static WordBreak nextSignificant(CharSequence text, int from, int length,
       WordBreakProperty.Data wbData) {
     for (int j = from; j < length; ) {
-      final CodePoints.At cp = CodePoints.at(text, j);
-      final WordBreak value = WordBreakProperty.of(wbData, cp.codePoint());
+      final int codePoint = Character.codePointAt(text, j);
+      final WordBreak value = WordBreakProperty.of(wbData, codePoint);
       if (!isIgnorable(value)) {
         return value;
       }
-      j = cp.nextIndex(j);
+      j += Character.charCount(codePoint);
     }
     return WordBreak.OTHER;
   }

@@ -21,19 +21,39 @@ package opennlp.tools.util.normalizer;
  *
  * <p>A {@code char} that is not a high surrogate is treated as its own code point, so BMP text
  * decodes without {@link Character#codePointAt(CharSequence, int)} on every step.</p>
+ *
+ * <p>Package-private on purpose: this is a decoding detail of the cursor passes in this package,
+ * not part of the public API.</p>
  */
-public final class CodePoints {
+final class CodePoints {
 
-  /** A code point at an index together with its UTF-16 width. */
-  public record At(int codePoint, int charCount) {
+  /**
+   * A code point at an index together with its UTF-16 width.
+   *
+   * <p>The advance methods pair with the decode direction: an {@code At} read forward via
+   * {@link #at(CharSequence, int)} advances with {@link At#nextIndex(int)} (taking the start
+   * index it was read at), and an {@code At} read backward via {@link #before(CharSequence, int)}
+   * retreats with {@link At#previousIndex(int)} (taking the exclusive end index it was read at).
+   * Mixing an {@code At} with the other direction's method yields a wrong index.</p>
+   */
+  record At(int codePoint, int charCount) {
 
-    /** {@return the index immediately after this code point} */
-    public int nextIndex(int index) {
+    /**
+     * {@return the index immediately after this code point}
+     *
+     * @param index The start index this {@code At} was read at via {@link #at(CharSequence, int)}.
+     */
+    int nextIndex(int index) {
       return index + charCount;
     }
 
-    /** {@return the index immediately before this code point when read from the end} */
-    public int previousIndex(int index) {
+    /**
+     * {@return the index immediately before this code point when read from the end}
+     *
+     * @param index The exclusive end index this {@code At} was read at via
+     *     {@link #before(CharSequence, int)}.
+     */
+    int previousIndex(int index) {
       return index - charCount;
     }
   }
@@ -48,7 +68,7 @@ public final class CodePoints {
    * @param index The UTF-16 index; must be in {@code [0, text.length())}.
    * @return The decoded code point and its char width.
    */
-  public static At at(CharSequence text, int index) {
+  static At at(CharSequence text, int index) {
     final char c = text.charAt(index);
     if (!Character.isHighSurrogate(c)) {
       return new At(c, 1);
@@ -64,7 +84,7 @@ public final class CodePoints {
    * @param index The UTF-16 index after the code point; must be in {@code (0, text.length()]}.
    * @return The decoded code point and its char width.
    */
-  public static At before(CharSequence text, int index) {
+  static At before(CharSequence text, int index) {
     final char c = text.charAt(index - 1);
     if (!Character.isLowSurrogate(c)) {
       return new At(c, 1);
