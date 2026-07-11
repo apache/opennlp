@@ -30,6 +30,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.embeddings.StaticEmbeddingModel.Casing;
 import opennlp.embeddings.StaticEmbeddingModel.Normalization;
+import opennlp.tools.embeddings.TextEmbedder;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -307,5 +308,27 @@ class StaticEmbeddingModelTest {
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(dir));
     assertTrue(e.getMessage().contains("strip_accents"));
+  }
+
+  @Test
+  void testTextEmbedderSeamMatchesDirectUseAndBatches(@TempDir Path dir) throws IOException {
+    final TextEmbedder embedder =
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir, false),
+            Casing.UNCASED, Normalization.NONE);
+
+    // The CharSequence entry point produces the same vector as the String one, including for a
+    // CharSequence that is not a String.
+    assertArrayEquals(new float[] {3.5f, 35f, 350f},
+        embedder.embed(new StringBuilder("hello world")), 1e-5f);
+    assertEquals(DIMENSION, embedder.dimension());
+
+    // The interface's default batch method returns one vector per input, in input order.
+    final float[][] vectors = embedder.embedAll(List.of("hello world", "cat"));
+    assertEquals(2, vectors.length);
+    assertArrayEquals(new float[] {3.5f, 35f, 350f}, vectors[0], 1e-5f);
+    assertArrayEquals(new float[] {5f, 50f, 500f}, vectors[1], 1e-5f);
+
+    assertThrows(IllegalArgumentException.class, () -> embedder.embed(null));
+    assertThrows(IllegalArgumentException.class, () -> embedder.embedAll(null));
   }
 }
