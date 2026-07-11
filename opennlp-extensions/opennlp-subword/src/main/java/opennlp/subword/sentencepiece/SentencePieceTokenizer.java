@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.subword.SubwordPiece;
-import opennlp.subword.SubwordTokenizer;
+import opennlp.tools.tokenize.SubwordPiece;
+import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
 import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
