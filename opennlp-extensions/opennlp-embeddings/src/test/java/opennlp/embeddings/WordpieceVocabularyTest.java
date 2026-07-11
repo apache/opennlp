@@ -32,12 +32,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * The vocabulary contract: line number is the id, duplicates fail loud, the id lookup uses a
  * {@code -1} sentinel, and the reverse lookup enforces its bounds.
  */
-class WordPieceVocabularyTest {
+class WordpieceVocabularyTest {
 
   @Test
   void testLineNumberIsTheTokenId() {
-    final WordPieceVocabulary vocabulary =
-        WordPieceVocabulary.fromLines(List.of("[CLS]", "[SEP]", "hello", "world"), "test");
+    final WordpieceVocabulary vocabulary =
+        WordpieceVocabulary.fromLines(List.of("[CLS]", "[SEP]", "hello", "world"), "test");
     assertEquals(4, vocabulary.size());
     assertEquals(0, vocabulary.id("[CLS]"));
     assertEquals(2, vocabulary.id("hello"));
@@ -47,8 +47,8 @@ class WordPieceVocabularyTest {
 
   @Test
   void testUnknownTokenIdIsTheSentinel() {
-    final WordPieceVocabulary vocabulary =
-        WordPieceVocabulary.fromLines(List.of("hello"), "test");
+    final WordpieceVocabulary vocabulary =
+        WordpieceVocabulary.fromLines(List.of("hello"), "test");
     assertEquals(-1, vocabulary.id("missing"));
     assertThrows(IllegalArgumentException.class, () -> vocabulary.id(null));
   }
@@ -56,15 +56,15 @@ class WordPieceVocabularyTest {
   @Test
   void testDuplicateTokenFailsLoudlyNamingBothLines() {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> WordPieceVocabulary.fromLines(List.of("hello", "world", "hello"), "test"));
+        () -> WordpieceVocabulary.fromLines(List.of("hello", "world", "hello"), "test"));
     assertTrue(e.getMessage().contains("hello"), e.getMessage());
     assertTrue(e.getMessage().contains("0") && e.getMessage().contains("2"), e.getMessage());
   }
 
   @Test
   void testReverseLookupEnforcesBounds() {
-    final WordPieceVocabulary vocabulary =
-        WordPieceVocabulary.fromLines(List.of("hello"), "test");
+    final WordpieceVocabulary vocabulary =
+        WordpieceVocabulary.fromLines(List.of("hello"), "test");
     assertEquals("hello", vocabulary.token(0));
     assertThrows(IllegalArgumentException.class, () -> vocabulary.token(-1));
     assertThrows(IllegalArgumentException.class, () -> vocabulary.token(1));
@@ -74,7 +74,7 @@ class WordPieceVocabularyTest {
   void testReadFromFileMatchesInMemoryLines(@TempDir Path dir) throws IOException {
     final Path file = dir.resolve("vocab.txt");
     Files.write(file, List.of("[CLS]", "token"));
-    final WordPieceVocabulary read = WordPieceVocabulary.read(file);
+    final WordpieceVocabulary read = WordpieceVocabulary.read(file);
     assertEquals(2, read.size());
     assertEquals(1, read.id("token"));
   }
