@@ -25,6 +25,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.embeddings.TextEmbedder;
 import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
@@ -54,7 +55,7 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
  * before that split runs, so the flag's only behavioral branch never triggers on this input.</p>
  */
 @ThreadSafe
-public final class StaticEmbeddingModel {
+public final class StaticEmbeddingModel implements TextEmbedder {
 
   /** How the tokenizer treats letter case, matching the base model's tokenizer configuration. */
   public enum Casing {
@@ -90,7 +91,7 @@ public final class StaticEmbeddingModel {
   private final float[] embeddings;
   private final float[] weights;
   private final int dimension;
-  private final WordPieceVocabulary vocabulary;
+  private final WordpieceVocabulary vocabulary;
   private final BertTokenizer tokenizer;
   private final boolean normalize;
   private final String unknownToken;
@@ -100,7 +101,7 @@ public final class StaticEmbeddingModel {
   private final boolean[] specialRows;
 
   private StaticEmbeddingModel(float[] embeddings, float[] weights, int dimension,
-                                WordPieceVocabulary vocabulary, BertTokenizer tokenizer,
+                                WordpieceVocabulary vocabulary, BertTokenizer tokenizer,
                                 boolean normalize, String unknownToken, double[] rowNorms,
                                 boolean[] specialRows) {
     this.embeddings = embeddings;
@@ -231,7 +232,7 @@ public final class StaticEmbeddingModel {
     }
     final boolean lowerCase = casing == Casing.UNCASED;
     final boolean normalize = normalization == Normalization.L2;
-    final WordPieceVocabulary vocabulary = WordPieceVocabulary.read(vocabularyFile);
+    final WordpieceVocabulary vocabulary = WordpieceVocabulary.read(vocabularyFile);
     final SafetensorsFile tensors = SafetensorsFile.read(safetensorsFile);
 
     final String matrixName = tensors.singleMatrixTensorName();
@@ -276,6 +277,22 @@ public final class StaticEmbeddingModel {
     final BertTokenizer tokenizer = new BertTokenizer(vocabulary.tokens(), lowerCase);
     return new StaticEmbeddingModel(embeddings, weights, dimension, vocabulary, tokenizer,
         normalize, WordpieceTokenizer.BERT_UNK_TOKEN, rowNorms, specialRows);
+  }
+
+  /**
+   * Embeds a piece of text.
+   *
+   * @param text The text to embed. Must not be {@code null}.
+   * @return The pooled embedding vector, of length {@link #dimension()}. A text with no
+   *     in-vocabulary tokens yields a zero vector.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   */
+  @Override
+  public float[] embed(CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("Text must not be null");
+    }
+    return embed(text instanceof String s ? s : text.toString());
   }
 
   /**
@@ -337,6 +354,7 @@ public final class StaticEmbeddingModel {
   }
 
   /** {@return the dimension of every vector this model produces} */
+  @Override
   public int dimension() {
     return dimension;
   }
