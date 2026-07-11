@@ -37,12 +37,12 @@ import opennlp.tools.commons.ThreadSafe;
  * <p>Immutable and safe for concurrent reads after construction.</p>
  */
 @ThreadSafe
-final class WordPieceVocabulary {
+final class WordpieceVocabulary {
 
   private final Map<String, Integer> idByToken;
   private final List<String> tokenById;
 
-  private WordPieceVocabulary(Map<String, Integer> idByToken, List<String> tokenById) {
+  private WordpieceVocabulary(Map<String, Integer> idByToken, List<String> tokenById) {
     this.idByToken = idByToken;
     this.tokenById = tokenById;
   }
@@ -56,7 +56,7 @@ final class WordPieceVocabulary {
    *     contains a duplicate token.
    * @throws IOException Thrown if reading the file fails.
    */
-  static WordPieceVocabulary read(Path file) throws IOException {
+  static WordpieceVocabulary read(Path file) throws IOException {
     if (file == null) {
       throw new IllegalArgumentException("File must not be null");
     }
@@ -67,7 +67,7 @@ final class WordPieceVocabulary {
   }
 
   // Package-private so tests can build a vocabulary from in-memory lines without a temp file.
-  static WordPieceVocabulary fromLines(List<String> lines, String sourceName) {
+  static WordpieceVocabulary fromLines(List<String> lines, String sourceName) {
     final Map<String, Integer> idByToken = new LinkedHashMap<>(lines.size() * 2);
     for (int id = 0; id < lines.size(); id++) {
       final String token = lines.get(id);
@@ -77,7 +77,7 @@ final class WordPieceVocabulary {
                 + "' more than once, at lines " + idByToken.get(token) + " and " + id);
       }
     }
-    return new WordPieceVocabulary(Collections.unmodifiableMap(idByToken), List.copyOf(lines));
+    return new WordpieceVocabulary(Collections.unmodifiableMap(idByToken), List.copyOf(lines));
   }
 
   /** {@return every token in this vocabulary, suitable for a WordpieceTokenizer} */
