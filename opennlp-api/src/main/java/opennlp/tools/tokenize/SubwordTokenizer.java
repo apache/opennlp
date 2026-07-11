@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package opennlp.subword;
+package opennlp.tools.tokenize;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import java.util.List;
  *
  * <p>Subword tokenization is the input layer of modern sequence models: text is decomposed into
  * pieces from a trained vocabulary so that any input, including words never seen in training, maps
- * to a bounded id space. Unlike a linguistic {@code Tokenizer}, the segmentation is
+ * to a bounded id space. Unlike a linguistic {@link Tokenizer}, the segmentation is
  * vocabulary-driven, and the pieces are in the model's normalized form rather than substrings of
  * the input. The offsets carried by each {@link SubwordPiece} are what tie the two worlds
  * together: they always refer to the caller's original text.</p>
