@@ -18,8 +18,6 @@ package opennlp.tools.embeddings;
 
 import java.util.List;
 
-import opennlp.tools.util.java.Experimental;
-
 /**
  * Encodes text into a fixed-length vector.
  *
@@ -27,11 +25,8 @@ import opennlp.tools.util.java.Experimental;
  * for one word, this interface accepts a sentence, paragraph, or document.</p>
  *
  * <p>Thread safety is implementation specific.</p>
- *
- * <p>Warning: Experimental new feature; the API might change in a later release.</p>
  */
-@Experimental
-public interface TextEmbedder {
+public interface TextEmbedder extends AutoCloseable {
 
   /**
    * Embeds a piece of text.
@@ -72,6 +67,16 @@ public interface TextEmbedder {
       vectors[i] = embed(text);
     }
     return vectors;
+  }
+
+  /**
+   * Releases resources owned by this embedder. The default implementation does nothing.
+   * Callers must not race this method with embedding calls.
+   *
+   * @throws Exception Thrown if releasing backend resources fails.
+   */
+  @Override
+  default void close() throws Exception {
   }
 
   /** {@return the dimension of every vector this embedder produces} */

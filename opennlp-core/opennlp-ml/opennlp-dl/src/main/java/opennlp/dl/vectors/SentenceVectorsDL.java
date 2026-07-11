@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,8 +36,6 @@ import opennlp.dl.AbstractDL;
 import opennlp.dl.Tokens;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.embeddings.TextEmbedder;
-import opennlp.tools.tokenize.Tokenizer;
-
 
 /**
  * Facilitates the generation of sentence vectors using
@@ -128,7 +125,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       throw new IllegalArgumentException("sentence must not be null");
     }
 
-    final Tokens tokens = tokenize(sentence, tokenizer, vocab);
+    final Tokens tokens = encodeTokens(sentence);
 
     final Map<String, OnnxTensor> inputs = new HashMap<>();
 
@@ -206,7 +203,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
       if (text == null) {
         throw new IllegalArgumentException("texts[" + i + "] must not be null");
       }
-      encoded[i] = tokenize(text instanceof String s ? s : text.toString(), tokenizer, vocab);
+      encoded[i] = encodeTokens(text);
       byLength.computeIfAbsent(encoded[i].ids().length, length -> new ArrayList<>()).add(i);
     }
     try {
@@ -302,43 +299,6 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
     final long[] shape = tensorInfo.getShape();
     final long last = shape.length > 0 ? shape[shape.length - 1] : -1;
     return last > 0 && last <= Integer.MAX_VALUE ? (int) last : -1;
-  }
-
-  /**
-   * Encodes text as model inputs: wordpiece token ids, an attention mask of ones,
-   * and single-segment (all zero) token type ids.
-   *
-   * @param text The text to encode.
-   * @param tokenizer The wordpiece tokenizer matching the {@code vocab}.
-   * @param vocab The vocabulary map.
-   * @return The encoded {@link Tokens}.
-   *
-   * @throws IllegalArgumentException Thrown if the tokenizer emits a token that is
-   *     not present in the vocabulary.
-   */
-  static Tokens tokenize(final String text, final Tokenizer tokenizer,
-      final Map<String, Integer> vocab) {
-
-    final String[] tokens = tokenizer.tokenize(text);
-
-    final long[] ids = new long[tokens.length];
-
-    for (int x = 0; x < tokens.length; x++) {
-      final Integer id = vocab.get(tokens[x]);
-      if (id == null) {
-        throw new IllegalArgumentException("Token '" + tokens[x]
-            + "' is not present in the vocabulary; the vocabulary file does not match the model.");
-      }
-      ids[x] = id;
-    }
-
-    final long[] mask = new long[ids.length];
-    Arrays.fill(mask, 1);
-
-    final long[] types = new long[ids.length];
-
-    return new Tokens(tokens, ids, mask, types);
-
   }
 
 }
