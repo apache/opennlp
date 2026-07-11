@@ -20,22 +20,26 @@ package opennlp.tools.stemmer.snowball;
 import java.util.function.Supplier;
 
 import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.stemmer.SharingStemmer;
 import opennlp.tools.stemmer.Stemmer;
-import opennlp.tools.util.OwnerOrPerThreadState;
 
 /**
  * A {@link Stemmer} backed by the generated Snowball engines.
  *
  * <p>The generated engines hold mutable per-call buffers, so this class routes each call to a
- * per-thread engine via {@link OwnerOrPerThreadState}, the same pattern the thread-safe {@code *ME}
- * components use. A single {@code SnowballStemmer} instance is therefore safe to share across
- * threads.</p>
+ * per-thread engine, the same pattern the thread-safe {@code *ME} components use. A single
+ * {@code SnowballStemmer} instance is therefore safe to share across threads.</p>
+ *
+ * <p>As with the {@code *ME} components, long-running environments such as application
+ * containers should call {@link #clearThreadLocalState()} when a pooled thread no longer uses
+ * this stemmer; otherwise the thread retains its engine until the instance is unreachable,
+ * which can pin the defining classloader on redeploys.</p>
  */
 @ThreadSafe
 public class SnowballStemmer implements Stemmer {
 
-  private final OwnerOrPerThreadState<AbstractSnowballStemmer> delegates;
-  private final int repeat;
+  // All per-thread routing is delegated, so the pattern lives in exactly one class.
+  private final SharingStemmer sharing;
 
   /**
    * Creates a stemmer for the given algorithm and repeat count.
@@ -46,15 +50,7 @@ public class SnowballStemmer implements Stemmer {
    *     {@code repeat} is not positive.
    */
   public SnowballStemmer(ALGORITHM algorithm, int repeat) {
-    if (algorithm == null) {
-      throw new IllegalArgumentException("algorithm must not be null");
-    }
-    if (repeat <= 0) {
-      throw new IllegalArgumentException("repeat must be positive, got " + repeat);
-    }
-    this.repeat = repeat;
-    final Supplier<AbstractSnowballStemmer> engine = engineFor(algorithm);
-    this.delegates = new OwnerOrPerThreadState<>(engine, stemmer -> { });
+    this.sharing = new SharingStemmer(new SnowballStemmerFactory(algorithm, repeat));
   }
 
   /**
@@ -95,15 +91,7 @@ public class SnowballStemmer implements Stemmer {
 
   @Override
   public CharSequence stem(CharSequence word) {
-    final AbstractSnowballStemmer stemmer = delegates.get();
-
-    stemmer.setCurrent(word.toString());
-
-    for (int i = 0; i < repeat; i++) {
-      stemmer.stem();
-    }
-
-    return stemmer.getCurrent();
+    return sharing.stem(word);
   }
 
   /**
@@ -112,7 +100,7 @@ public class SnowballStemmer implements Stemmer {
    * {@code clearThreadLocalState()} on the thread-safe {@code *ME} components.
    */
   public void clearThreadLocalState() {
-    delegates.clearForCurrentThread();
+    sharing.clearThreadLocalState();
   }
 
   public enum ALGORITHM {

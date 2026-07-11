@@ -4,7 +4,7 @@
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * the License. You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -22,12 +22,7 @@ import java.util.List;
 /**
  * Reduces a word to its root form.
  *
- * <p>Thread safety is implementation-specific: check the implementation's documentation before
- * sharing an instance across threads. Stateful engines mutate internal buffers on each
- * {@link #stem(CharSequence)} call; when an implementation is not documented as thread-safe,
- * share a {@link StemmerFactory} across threads and confine each {@code Stemmer} to one thread,
- * or wrap the factory in a thread-local adapter when a single {@code Stemmer} reference must be
- * shared.</p>
+ * <p>Thread safety is implementation specific.</p>
  */
 public interface Stemmer {
 
@@ -36,16 +31,17 @@ public interface Stemmer {
    *
    * @param word The input word. Must not be {@code null}.
    * @return The stemmed form.
+   * @throws IllegalArgumentException Thrown if {@code word} is {@code null}.
    */
   CharSequence stem(CharSequence word);
 
   /**
-   * {@return every stem form for {@code word}} The default returns a single-element list with
-   * {@link #stem(CharSequence)}. Dictionary-based engines that can produce several root forms for
-   * one word override this; wrappers that delegate to another {@code Stemmer} must forward this
-   * method so a multi-output delegate keeps its full result list.
+   * {@return all stem forms for {@code word}} Defaults to a single-element list from
+   * {@link #stem(CharSequence)}. Dictionary-based engines may override this to return
+   * multiple roots; delegating wrappers must forward it to preserve the full list.
    *
    * @param word The input word. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code word} is {@code null}.
    */
   default List<CharSequence> stemAll(CharSequence word) {
     return List.of(stem(word));

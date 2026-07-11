@@ -25,11 +25,9 @@ import opennlp.tools.stemmer.StemmerFactory;
  * A thread-safe factory that captures a Snowball stemmer configuration for APIs that accept a
  * {@link StemmerFactory}.
  *
- * <p>{@link #newStemmer()} returns a thread-confined stemmer that drives its generated engine
- * through a plain field, with none of the per-call thread routing of the shareable
- * {@link SnowballStemmer}. This keeps the one-stemmer-per-thread pattern (and per-thread
- * delegates inside caching or sharing wrappers) free of that indirection; use
- * {@link SnowballStemmer} directly when a single shared instance is wanted instead.</p>
+ * <p>Use this factory for the classic one-stemmer-per-thread pattern: {@link #newStemmer()}
+ * returns a plain, thread-confined stemmer without the per-call thread routing of the
+ * shareable {@link SnowballStemmer}.</p>
  *
  * @param algorithm The Snowball algorithm. Must not be {@code null}.
  * @param repeat    How many times to apply the stemmer per word; must be positive.
@@ -81,6 +79,9 @@ public record SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm, int re
 
     @Override
     public CharSequence stem(CharSequence word) {
+      if (word == null) {
+        throw new IllegalArgumentException("word must not be null");
+      }
       engine.setCurrent(word.toString());
       for (int i = 0; i < repeat; i++) {
         engine.stem();

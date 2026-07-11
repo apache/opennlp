@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -327,5 +328,40 @@ class StemmerFactoryTest {
     Assertions.assertEquals("run", snowball.stem("running").toString());
     snowball.clearThreadLocalState();
     Assertions.assertEquals("run", snowball.stem("running").toString());
+  }
+
+  @Test
+  void nullWordThrowsIllegalArgumentAcrossTheStemmerApi() {
+    final SnowballStemmerFactory factory =
+        new SnowballStemmerFactory(SnowballStemmer.ALGORITHM.ENGLISH);
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH).stem(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> factory.newStemmer().stem(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new CachingStemmer(factory).stem(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new SharingStemmer(factory).stem(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new PorterStemmer().stem((CharSequence) null));
+  }
+
+  @Test
+  void clearCacheForcesRestemmingOnTheCallingThread() {
+    final AtomicInteger delegateCalls = new AtomicInteger();
+    final StemmerFactory counting = () -> word -> {
+      delegateCalls.incrementAndGet();
+      return word.toString();
+    };
+    final CachingStemmer cached = new CachingStemmer(counting);
+
+    cached.stem("running");
+    cached.stem("running");
+    Assertions.assertEquals(1, delegateCalls.get(), "the repeat is served from the cache");
+
+    cached.clearCache();
+    cached.stem("running");
+    Assertions.assertEquals(2, delegateCalls.get(),
+        "after clearCache() the word goes through the delegate again");
   }
 }

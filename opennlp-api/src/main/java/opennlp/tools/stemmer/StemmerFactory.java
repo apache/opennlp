@@ -18,26 +18,18 @@
 package opennlp.tools.stemmer;
 
 /**
- * An immutable, thread-safe factory for {@link Stemmer} instances.
- *
- * <p>Stateful stemming engines hold per-call mutable buffers and must not be shared across
- * threads. A {@code StemmerFactory} captures the configuration (algorithm, repeat count,
- * dictionary path, ...) and mints a fresh {@link Stemmer} on each {@link #newStemmer()} call. The
- * factory itself is safe to share; confine each returned {@link Stemmer} to a single thread, or
- * route through a thread-local adapter when a component must be shared.</p>
+ * A factory for {@link Stemmer} instances: it captures a stemmer configuration (algorithm,
+ * repeat count, dictionary path, ...) once and mints configured stemmers on demand.
  *
  * <p>Despite the name, this is not one of the {@code BaseToolFactory}-based tool factories (such
  * as {@code LemmatizerFactory}) that are instantiated by name from a model manifest. It is a
- * plain functional supplier of configured {@link Stemmer} instances and takes no part in the
- * model-loading mechanism.</p>
- *
- * <p>Implementations must be immutable and thread-safe after construction.</p>
+ * plain supplier of configured {@link Stemmer} instances and takes no part in the model-loading
+ * mechanism.</p>
  */
 public interface StemmerFactory {
 
   /**
-   * {@return a new {@link Stemmer} confined to the calling thread} Implementations must return a
-   * distinct instance on each call when the underlying engine is stateful.
+   * {@return a new {@link Stemmer}}
    */
   Stemmer newStemmer();
 }

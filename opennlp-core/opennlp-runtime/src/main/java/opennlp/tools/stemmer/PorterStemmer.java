@@ -599,6 +599,9 @@ public class PorterStemmer implements Stemmer {
    * Returns the result as a CharSequence.
    */
   public CharSequence stem(CharSequence word) {
+    if (word == null) {
+      throw new IllegalArgumentException("word must not be null");
+    }
     return stem(word.toString());
   }
 

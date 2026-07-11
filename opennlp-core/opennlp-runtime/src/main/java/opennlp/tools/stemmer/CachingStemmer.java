@@ -23,6 +23,7 @@ import java.util.Map;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.OwnerOrPerThreadState;
+import opennlp.tools.util.jvm.StringInterners;
 
 /**
  * A {@link Stemmer} that memoizes word-to-stem mappings in a bounded per-thread LRU cache.
@@ -40,8 +41,10 @@ import opennlp.tools.util.OwnerOrPerThreadState;
  * <p>Because the cache is keyed to the thread, the memoization pays off on threads that are
  * reused across many words, such as a fixed platform-thread pool. On a virtual-thread-per-task
  * executor every task starts with an empty cache, so repeats are only served within one task.
- * Call {@link #clearThreadLocalState()} before returning a pooled thread that should not retain
- * its delegate and cache.</p>
+ * As with the thread-safe {@code *ME} components, long-running environments such as application
+ * containers should call {@link #clearThreadLocalState()} when a pooled thread no longer uses
+ * this stemmer; otherwise the thread retains its delegate and cache until the instance is
+ * unreachable, which can pin the defining classloader on redeploys.</p>
  *
  * <p>{@link #stemAll(CharSequence)} is forwarded to the delegate uncached, so multi-output
  * engines keep their full result list.</p>
@@ -89,14 +92,18 @@ public final class CachingStemmer implements Stemmer {
 
   @Override
   public CharSequence stem(CharSequence word) {
+    if (word == null) {
+      throw new IllegalArgumentException("word must not be null");
+    }
     final ThreadState ts = state.get();
     final String key = word.toString();
     final String cached = ts.cache.get(key);
     if (cached != null) {
       return cached;
     }
-    // toString() detaches the result from any buffer the delegate may reuse internally.
-    final String stemmed = ts.delegate.stem(key).toString();
+    // toString() detaches the result from any buffer the delegate may reuse internally, and
+    // interning stores one instance per distinct stem across all threads' caches.
+    final String stemmed = StringInterners.intern(ts.delegate.stem(key).toString());
     ts.cache.put(key, stemmed);
     return stemmed;
   }
@@ -113,6 +120,14 @@ public final class CachingStemmer implements Stemmer {
    */
   public void clearThreadLocalState() {
     state.clearForCurrentThread();
+  }
+
+  /**
+   * Empties the calling thread's cache while keeping its delegate, forcing every subsequent
+   * word through a fresh stemming pass. Only the calling thread's cache is affected.
+   */
+  public void clearCache() {
+    state.get().cache.clear();
   }
 
   private static final class ThreadState {
