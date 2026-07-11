@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import opennlp.subword.SubwordPiece;
+import opennlp.tools.tokenize.SubwordPiece;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
