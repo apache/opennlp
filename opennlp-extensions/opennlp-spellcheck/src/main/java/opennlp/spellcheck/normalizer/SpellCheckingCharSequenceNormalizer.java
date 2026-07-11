@@ -184,7 +184,10 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
       throw new IllegalStateException("no SpellChecker attached; this instance was likely "
           + "restored by Java deserialization. Re-attach one via withSpellChecker(...).");
     }
-    if (text == null || text.isEmpty()) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
+    if (text.isEmpty()) {
       return text;
     }
     final String input = text.toString();

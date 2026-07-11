@@ -37,6 +37,9 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
 
   @Override
   public CharSequence normalize (CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
     return EMOJI_REGEX.matcher(text).replaceAll(" ");
   }
 }

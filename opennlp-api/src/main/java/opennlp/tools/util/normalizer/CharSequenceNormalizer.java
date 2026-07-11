@@ -31,9 +31,7 @@ public interface CharSequenceNormalizer extends Serializable {
    *
    * @param text The {@link CharSequence} to normalize. Must not be {@code null}.
    * @return The normalized {@link CharSequence}.
-   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}. Implementations
-   *     predating this contract may still throw {@link NullPointerException}; they are aligned
-   *     as they are migrated.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   CharSequence normalize(CharSequence text);
 }

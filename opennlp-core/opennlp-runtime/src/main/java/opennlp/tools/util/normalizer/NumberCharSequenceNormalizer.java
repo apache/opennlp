@@ -17,15 +17,11 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * A {@link CharSequenceNormalizer} implementation that normalizes text
- * in terms of numbers: every maximal run of ASCII digits ({@code 0} to {@code 9}) is replaced
- * by a single whitespace.
- *
- * <p>This reproduces, byte for byte, the output of the former regex implementation
- * ({@code "\\d+"} replaced by a space; the {@code \d} class matches ASCII digits only), but runs
- * as a single forward cursor scan on the {@link CharClass} engine instead of a regular
- * expression. Non-ASCII digits, for example Arabic-Indic or fullwidth digits, are left
- * unchanged, exactly as before.</p>
+ * A {@link CharSequenceNormalizer} implementation that normalizes text in terms of numbers:
+ * every maximal run of ASCII digits ({@code 0} to {@code 9}), that is the longest unbroken
+ * stretch of consecutive digits, is replaced by a single space. For example, {@code "a1234b56"}
+ * becomes {@code "a b "}. Non-ASCII digits, for example Arabic-Indic or fullwidth digits, are
+ * not treated as digits and are left unchanged.
  */
 public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
 
@@ -41,10 +37,13 @@ public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
   }
 
   /**
-   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * {@inheritDoc}
    */
   @Override
   public CharSequence normalize(CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
     return ASCII_DIGITS.collapse(text);
   }
 }

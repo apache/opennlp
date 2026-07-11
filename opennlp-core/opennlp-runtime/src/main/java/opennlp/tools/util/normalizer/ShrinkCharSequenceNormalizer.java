@@ -17,30 +17,25 @@
 package opennlp.tools.util.normalizer;
 
 /**
- * A {@link CharSequenceNormalizer} implementation that shrinks repeated spaces / chars
- * in text.
- *
- * <p>Two forward cursor passes reproduce, byte for byte, the output of the former regex
- * implementation ({@code "\\s{2,}"} replaced by one space, then {@code "(.)\\1{2,}"} with
- * {@code CASE_INSENSITIVE} replaced by {@code "$1$1"}, then {@link String#trim()}):</p>
+ * A {@link CharSequenceNormalizer} implementation that shrinks repeated whitespace and repeated
+ * characters in text, in three steps:
  * <ol>
- *   <li>Each run of two or more ASCII whitespace characters (the six characters the regex
- *       {@code \s} class matches; this legacy rung predates the Unicode {@code White_Space}
- *       based {@link CharClass#whitespace()}) collapses to a single space. A lone whitespace
+ *   <li>Each run of two or more ASCII whitespace characters (tab, line feed, vertical tab,
+ *       form feed, carriage return, or space) collapses to a single space. A lone whitespace
  *       character is kept as it is.</li>
  *   <li>Each run of three or more repeats of one code point shrinks to two copies of its first
- *       occurrence. Repeats compare case-insensitively over ASCII only, and a run never starts
- *       on a regex line terminator, because the former {@code .} did not match one.</li>
+ *       occurrence, comparing repeats case-insensitively over ASCII; a run never starts on a
+ *       line terminator. For example, {@code "coooool"} becomes {@code "cool"}.</li>
+ *   <li>Every leading and trailing character at or below {@code U+0020} is dropped, the same
+ *       rule {@link String#trim()} applies.</li>
  * </ol>
- * <p>The result is finally trimmed with {@link String#trim()}, preserving the legacy contract
- * that every leading or trailing char up to {@code U+0020} is dropped.</p>
  */
 public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = -4511969661556543048L;
+  private static final long serialVersionUID = 7042871810299585743L;
 
-  // The code points the former "." (without DOTALL) refused to match: the regex line terminators.
-  private static final CodePointSet REGEX_LINE_TERMINATORS =
+  /** The line terminator code points; a repeat run never starts on one. */
+  private static final CodePointSet LINE_TERMINATORS =
       CodePointSet.of(0x000A, 0x000D, 0x0085, 0x2028, 0x2029);
 
   private static final ShrinkCharSequenceNormalizer INSTANCE = new ShrinkCharSequenceNormalizer();
@@ -50,7 +45,7 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
   }
 
   /**
-   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * {@inheritDoc}
    */
   @Override
   public CharSequence normalize(CharSequence text) {
@@ -58,8 +53,8 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
       throw new IllegalArgumentException("The text must not be null.");
     }
     final CharSequence shrunk = shrinkRepeatedCodePoints(shrinkWhitespace(text));
-    // Trim exactly like String.trim did (chars at or below U+0020), without copying when
-    // nothing changed anywhere in the pipeline.
+    // Drops every leading and trailing char at or below U+0020, without copying when nothing
+    // changed anywhere in the pipeline.
     int start = 0;
     int end = shrunk.length();
     while (start < end && shrunk.charAt(start) <= ' ') {
@@ -74,9 +69,14 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
     return shrunk.subSequence(start, end).toString();
   }
 
-  // Replaces each run of two or more ASCII whitespace characters with a single space; a lone
-  // whitespace character stays as it is (the former "\s{2,}" never matched a run of one).
-  private static CharSequence shrinkWhitespace(CharSequence text) {
+  /**
+   * Replaces each run of two or more ASCII whitespace characters with a single space; a lone
+   * whitespace character stays as it is.
+   *
+   * @param text The text to scan; never null.
+   * @return The input itself when no run was found, otherwise the shrunk copy.
+   */
+  private CharSequence shrinkWhitespace(CharSequence text) {
     final int length = text.length();
     StringBuilder out = null;
     int i = 0;
@@ -106,18 +106,22 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
     return out == null ? text : out.toString();
   }
 
-  // Shrinks each run of three or more repeats of one code point to two copies of its first
-  // occurrence, exactly as the former "(.)\1{2,}" -> "$1$1" pass did: the run's first code point
-  // must not be a regex line terminator, every repeat advances by the first occurrence's char
-  // count while comparing whole code points ASCII case-insensitively (mirroring the engine's
-  // backreference matching), and a failed attempt resumes at the next char, like the regex scan.
-  private static CharSequence shrinkRepeatedCodePoints(CharSequence text) {
+  /**
+   * Shrinks each run of three or more repeats of one code point to two copies of its first
+   * occurrence. The run's first code point must not be a line terminator, every repeat
+   * advances by the first occurrence's char count while comparing whole code points ASCII
+   * case-insensitively, and a failed attempt resumes at the next char.
+   *
+   * @param text The text to scan; never null.
+   * @return The input itself when no run was found, otherwise the shrunk copy.
+   */
+  private CharSequence shrinkRepeatedCodePoints(CharSequence text) {
     final int length = text.length();
     StringBuilder out = null;
     int i = 0;
     while (i < length) {
       final int codePoint = Character.codePointAt(text, i);
-      if (!REGEX_LINE_TERMINATORS.contains(codePoint)) {
+      if (!LINE_TERMINATORS.contains(codePoint)) {
         final int charCount = Character.charCount(codePoint);
         int repeats = 0;
         int end = i + charCount;

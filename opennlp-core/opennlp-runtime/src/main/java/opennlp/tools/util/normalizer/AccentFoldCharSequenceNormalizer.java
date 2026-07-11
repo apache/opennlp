@@ -76,6 +76,9 @@ public class AccentFoldCharSequenceNormalizer implements CharSequenceNormalizer 
 
   @Override
   public CharSequence normalize(CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
     final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
     final StringBuilder out = new StringBuilder(decomposed.length());
 

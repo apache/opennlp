@@ -42,6 +42,9 @@ public class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNor
 
   @Override
   public CharSequence normalize(CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
     return Confusables.skeleton(text);
   }
 }

@@ -75,6 +75,9 @@ public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
 
   @Override
   public CharSequence normalize(CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
     return text.toString().toLowerCase(locale);
   }
 }

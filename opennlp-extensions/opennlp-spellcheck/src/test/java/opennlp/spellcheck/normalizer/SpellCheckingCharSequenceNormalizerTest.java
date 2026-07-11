@@ -50,6 +50,13 @@ public class SpellCheckingCharSequenceNormalizerTest {
   }
 
   @Test
+  void nullTextThrowsIllegalArgumentException() {
+    // The CharSequenceNormalizer contract: null is rejected, not passed through.
+    final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
+    assertThrows(IllegalArgumentException.class, () -> normalizer.normalize(null));
+  }
+
+  @Test
   void perTokenCorrectsTypos() {
     // Lower the min length so the 3-letter typos ("teh", "fxo") are also corrected.
     final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
@@ -164,10 +171,9 @@ public class SpellCheckingCharSequenceNormalizerTest {
   }
 
   @Test
-  void emptyAndNullInputsArePassedThrough() {
+  void emptyInputIsPassedThrough() {
     final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
     assertEquals("", norm(normalizer, ""));
-    org.junit.jupiter.api.Assertions.assertNull(normalizer.normalize(null));
   }
 
   @Test

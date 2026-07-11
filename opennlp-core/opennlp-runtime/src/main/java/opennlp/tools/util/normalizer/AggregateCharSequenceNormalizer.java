@@ -33,6 +33,9 @@ public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
 
   @Override
   public CharSequence normalize (CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
 
     for (CharSequenceNormalizer normalizers : normalizers) {
       text = normalizers.normalize(text);

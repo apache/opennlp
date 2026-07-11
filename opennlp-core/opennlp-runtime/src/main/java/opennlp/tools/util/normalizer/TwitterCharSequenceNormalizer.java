@@ -20,26 +20,25 @@ package opennlp.tools.util.normalizer;
  * A {@link CharSequenceNormalizer} implementation that normalizes text
  * in terms of Twitter character patterns. Every encounter will be replaced by a whitespace.
  *
- * <p>Four forward cursor passes reproduce, byte for byte, the output of the former regex
- * implementation:</p>
+ * <p>Normalization runs in four passes:</p>
  * <ol>
- *   <li>a {@code #} or {@code @} followed by at least one non-whitespace character, together
- *       with the whole following non-whitespace run, becomes one space (the whitespace class is
- *       the six ASCII characters the former {@code \S} complemented);</li>
- *   <li>each maximal sequence of {@code rt} units (case-insensitive, each followed by a space or
- *       colon) becomes one space when it starts on a word boundary as the JDK regex engine
- *       defined it for {@code \b};</li>
- *   <li>each emoticon, eyes {@code :}, {@code ;} or {@code x}, an optional {@code -} nose, and a
- *       mouth out of {@code ( ) d o p} (case-insensitive), becomes one space, including inside
+ *   <li>hashtags and handles: a {@code #} or {@code @} followed by at least one non-whitespace
+ *       character, together with the whole following non-whitespace run, becomes one space
+ *       (whitespace here means tab, line feed, vertical tab, form feed, carriage return, or
+ *       space);</li>
+ *   <li>retweet markers: each sequence of {@code rt} units (case-insensitive, each followed by
+ *       a space or colon) becomes one space when it starts on a word boundary;</li>
+ *   <li>emoticons: eyes {@code :}, {@code ;} or {@code x}, an optional {@code -} nose, and a
+ *       mouth out of {@code ( ) d o p} (case-insensitive), become one space, including inside
  *       words;</li>
- *   <li>laughter, a run of {@code h}/{@code j}, a run of vowels, and at least one repetition of
+ *   <li>laughter: a run of {@code h}/{@code j}, a run of vowels, and at least one repetition of
  *       the two runs' last characters, shrinks to those two characters twice
  *       ({@code "hahaha"} to {@code "haha"}), comparing ASCII case-insensitively.</li>
  * </ol>
  */
 public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = -8155452559337913929L;
+  private static final long serialVersionUID = 3921004098714878226L;
 
   private static final TwitterCharSequenceNormalizer INSTANCE = new TwitterCharSequenceNormalizer();
 
@@ -48,7 +47,7 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
   }
 
   /**
-   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * {@inheritDoc}
    */
   @Override
   public CharSequence normalize(CharSequence text) {
@@ -58,9 +57,15 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
     return shrinkLaughter(removeEmoticons(removeRetweetMarkers(removeTagsAndHandles(text))));
   }
 
-  // "[#@]\S+" -> " ": a hash or at sign starts a match only if a non-whitespace char follows;
-  // the match then swallows the whole non-whitespace run (including further # and @).
-  private static CharSequence removeTagsAndHandles(CharSequence text) {
+  /**
+   * Replaces each hashtag or handle with one space: a {@code #} or {@code @} matches only if a
+   * non-whitespace char follows, and the match then swallows the whole non-whitespace run,
+   * including further {@code #} and {@code @}.
+   *
+   * @param text The text to scan; never null.
+   * @return The input itself when nothing matched, otherwise the normalized copy.
+   */
+  private CharSequence removeTagsAndHandles(CharSequence text) {
     final int length = text.length();
     StringBuilder out = null;
     int i = 0;
@@ -87,9 +92,14 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
     return out == null ? text : out.toString();
   }
 
-  // "\b(rt[ :])+" (case-insensitive) -> " ": one or more three-char units of r, t, and a space
-  // or colon, starting where the JDK engine put a word boundary.
-  private static CharSequence removeRetweetMarkers(CharSequence text) {
+  /**
+   * Replaces each sequence of one or more retweet units with one space when the sequence
+   * starts on a word boundary.
+   *
+   * @param text The text to scan; never null.
+   * @return The input itself when nothing matched, otherwise the normalized copy.
+   */
+  private CharSequence removeRetweetMarkers(CharSequence text) {
     final int length = text.length();
     StringBuilder out = null;
     int i = 0;
@@ -117,7 +127,14 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
     return out == null ? text : out.toString();
   }
 
-  private static boolean isRetweetUnit(CharSequence text, int at) {
+  /**
+   * {@return whether the three chars starting at {@code at} form one retweet unit:
+   * {@code r} or {@code R}, {@code t} or {@code T}, then a space or colon}
+   *
+   * @param text The text to look into; never null.
+   * @param at   The index of the unit's first char; at least three chars must remain.
+   */
+  private boolean isRetweetUnit(CharSequence text, int at) {
     final char r = text.charAt(at);
     final char t = text.charAt(at + 1);
     final char separator = text.charAt(at + 2);
@@ -125,15 +142,18 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
         && (separator == ' ' || separator == ':');
   }
 
-  // Mirrors how the JDK regex engine decided whether "\b" held before a word character at
-  // index (java.util.regex.Pattern.Bound without UNICODE_CHARACTER_CLASS, as of JDK 21; older
-  // engines treated non-ASCII word characters differently, so the characterization only holds
-  // on the project's supported runtimes): the boundary is
-  // blocked if the preceding code point is an ASCII word character, or is a non-spacing mark
-  // with a base character. The base-character scan steps backwards one char at a time and reads
-  // Character.codePointAt at each position, exactly like the engine, so it stops on the low
-  // surrogate of a supplementary-plane mark.
-  private static boolean wordBeforeBlocksBoundary(CharSequence text, int index) {
+  /**
+   * {@return whether the word boundary before {@code index} is blocked} The boundary is
+   * blocked if the preceding code point is an ASCII word character, or is a non-spacing mark
+   * whose backwards base-character scan reaches a letter or digit. This matches the word
+   * boundary decision of the JDK 21 regular-expression engine; the backwards scan reads one
+   * char at a time, so it intentionally stops on the low surrogate of a
+   * supplementary-plane mark, exactly like that engine.
+   *
+   * @param text  The text to look into; never null.
+   * @param index The index the boundary is checked before.
+   */
+  private boolean wordBeforeBlocksBoundary(CharSequence text, int index) {
     if (index <= 0) {
       return false;
     }
@@ -155,16 +175,23 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
     return false;
   }
 
-  private static boolean isAsciiWord(int codePoint) {
+  /** {@return whether {@code codePoint} is an ASCII letter, digit, or underscore} */
+  private boolean isAsciiWord(int codePoint) {
     return codePoint >= 'a' && codePoint <= 'z'
         || codePoint >= 'A' && codePoint <= 'Z'
         || codePoint >= '0' && codePoint <= '9'
         || codePoint == '_';
   }
 
-  // "[:;x]-?[()dop]" (case-insensitive) -> " ": eyes, an optional nose, and a mouth. The
-  // optional nose is tried first, like the greedy "-?"; a bare "-" is never a mouth.
-  private static CharSequence removeEmoticons(CharSequence text) {
+  /**
+   * Replaces each emoticon with one space, including inside words: eyes, then an optional
+   * {@code -} nose (tried first when present), then a mouth. A bare {@code -} is never a
+   * mouth.
+   *
+   * @param text The text to scan; never null.
+   * @return The input itself when nothing matched, otherwise the normalized copy.
+   */
+  private CharSequence removeEmoticons(CharSequence text) {
     final int length = text.length();
     StringBuilder out = null;
     int i = 0;
@@ -196,21 +223,27 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
     return out == null ? text : out.toString();
   }
 
-  private static boolean isEmoticonEyes(char c) {
+  /** {@return whether {@code c} is an emoticon's eyes: {@code :}, {@code ;}, or {@code x}} */
+  private boolean isEmoticonEyes(char c) {
     return c == ':' || c == ';' || c == 'x' || c == 'X';
   }
 
-  private static boolean isEmoticonMouth(char c) {
+  /** {@return whether {@code c} is an emoticon's mouth: one of {@code ( ) d o p}, either case} */
+  private boolean isEmoticonMouth(char c) {
     return c == '(' || c == ')' || c == 'd' || c == 'D'
         || c == 'o' || c == 'O' || c == 'p' || c == 'P';
   }
 
-  // "([hj])+([aieou])+(\1+\2+)+" (case-insensitive) -> "$1$2$1$2": a run of h/j, a run of
-  // vowels, and at least one complete repetition of runs of the two captured characters (the
-  // last consonant and the last vowel, which is what the repeated groups held). The four
-  // character sets involved are pairwise disjoint, so the greedy runs never backtrack into
-  // another viable split; a failed attempt resumes at the next char, like the regex scan.
-  private static CharSequence shrinkLaughter(CharSequence text) {
+  /**
+   * Shrinks laughter: a run of {@code h}/{@code j}, a run of vowels, and at least one complete
+   * repetition of runs of the two last characters of those runs, shrink to those two
+   * characters twice. The character sets involved are pairwise disjoint, so the greedy runs
+   * never overlap ambiguously; a failed attempt resumes at the next char.
+   *
+   * @param text The text to scan; never null.
+   * @return The input itself when nothing matched, otherwise the normalized copy.
+   */
+  private CharSequence shrinkLaughter(CharSequence text) {
     final int length = text.length();
     StringBuilder out = null;
     int i = 0;
@@ -266,11 +299,13 @@ public class TwitterCharSequenceNormalizer implements CharSequenceNormalizer {
     return out == null ? text : out.toString();
   }
 
-  private static boolean isLaughConsonant(char c) {
+  /** {@return whether {@code c} is a laughter consonant: {@code h} or {@code j}, either case} */
+  private boolean isLaughConsonant(char c) {
     return c == 'h' || c == 'H' || c == 'j' || c == 'J';
   }
 
-  private static boolean isLaughVowel(char c) {
+  /** {@return whether {@code c} is a laughter vowel: {@code a e i o u}, either case} */
+  private boolean isLaughVowel(char c) {
     return c == 'a' || c == 'i' || c == 'e' || c == 'o' || c == 'u'
         || c == 'A' || c == 'I' || c == 'E' || c == 'O' || c == 'U';
   }

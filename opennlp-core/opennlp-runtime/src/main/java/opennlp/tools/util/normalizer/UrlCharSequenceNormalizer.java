@@ -20,41 +20,38 @@ package opennlp.tools.util.normalizer;
  * A {@link CharSequenceNormalizer} implementation that normalizes text
  * in terms of URls and email addresses. Every encounter will be replaced by a whitespace.
  *
- * <p>Two forward cursor passes reproduce, byte for byte, the accept/reject boundary of the
- * former regex implementation:</p>
+ * <p>Normalization runs in two passes:</p>
  * <ol>
  *   <li>URLs: a lowercase {@code http://} or {@code https://} scheme followed by at least one
- *       character out of the former body class {@code [-_.?&~;+=/#0-9A-Za-z]}; the match ends at
- *       the first character outside that class, so a colon (port), percent escape, at sign
- *       (userinfo), or non-ASCII label cuts it short, exactly as before.</li>
- *   <li>Email addresses: a maximal run of the former local-part class {@code [-+_.0-9A-Za-z]}
- *       whose left neighbor is outside that class (the lookbehind), an {@code @}, and then a
- *       maximal run of the former domain class {@code [-.0-9A-Za-z]} that must not start with a
- *       dot and must span at least two chars. The two-char minimum falls out of the former
- *       {@code [-0-9A-Za-z]+[-.0-9A-Za-z]+} pair: with no dot following, the first class lent
- *       its last character to the second through backtracking, which needed a run of two.</li>
+ *       character out of the body set {@code [-_.?&~;+=/#0-9A-Za-z]} becomes one space; the
+ *       match ends at the first character outside that set, so a colon (port), a percent
+ *       escape, an at sign (userinfo), or a non-ASCII label cuts it short.</li>
+ *   <li>Email addresses: a maximal run of the local-part set {@code [-+_.0-9A-Za-z]} whose
+ *       left neighbor is outside that set, an {@code @}, and a domain run out of
+ *       {@code [-.0-9A-Za-z]} that must not start with a dot and must span at least two
+ *       chars, become one space.</li>
  * </ol>
  */
 public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 2023145028634552389L;
+  private static final long serialVersionUID = 8104568774596047804L;
 
   private static final CodePointSet ASCII_ALNUM = CodePointSet.ofRange('0', '9')
       .union(CodePointSet.ofRange('A', 'Z'))
       .union(CodePointSet.ofRange('a', 'z'));
 
-  // The former URL body class: [-_.?&~;+=/#0-9A-Za-z]
+  /** The URL body set: {@code [-_.?&~;+=/#0-9A-Za-z]}. */
   private static final CodePointSet URL_BODY =
       ASCII_ALNUM.union(CodePointSet.of('-', '_', '.', '?', '&', '~', ';', '+', '=', '/', '#'));
 
-  // The former mail local-part class (also the lookbehind class): [-+_.0-9A-Za-z]
+  /** The mail local-part set, also the left-neighbor exclusion set: {@code [-+_.0-9A-Za-z]}. */
   private static final CodePointSet MAIL_LOCAL =
       ASCII_ALNUM.union(CodePointSet.of('-', '+', '_', '.'));
 
-  // The former first domain class: [-0-9A-Za-z]
+  /** The set a domain may start with: {@code [-0-9A-Za-z]}. */
   private static final CodePointSet MAIL_DOMAIN_START = ASCII_ALNUM.union(CodePointSet.of('-'));
 
-  // The former second domain class: [-.0-9A-Za-z]
+  /** The set a domain continues with: {@code [-.0-9A-Za-z]}. */
   private static final CodePointSet MAIL_DOMAIN = MAIL_DOMAIN_START.union(CodePointSet.of('.'));
 
   private static final UrlCharSequenceNormalizer INSTANCE = new UrlCharSequenceNormalizer();
@@ -64,7 +61,7 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
   }
 
   /**
-   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * {@inheritDoc}
    */
   @Override
   public CharSequence normalize(CharSequence text) {
@@ -74,8 +71,13 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
     return removeMailAddresses(removeUrls(text));
   }
 
-  // "https?://[-_.?&~;+=/#0-9A-Za-z]+" -> " "
-  private static CharSequence removeUrls(CharSequence text) {
+  /**
+   * Replaces each URL with one space.
+   *
+   * @param text The text to scan; never null.
+   * @return The input itself when nothing matched, otherwise the normalized copy.
+   */
+  private CharSequence removeUrls(CharSequence text) {
     final int length = text.length();
     StringBuilder out = null;
     int i = 0;
@@ -97,8 +99,14 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
     return out == null ? text : out.toString();
   }
 
-  // Returns the exclusive end of a URL match starting at start, or -1 if there is none.
-  private static int matchUrlEnd(CharSequence text, int start) {
+  /**
+   * {@return the exclusive end of a URL match starting at {@code start}, or {@code -1} if
+   * there is none}
+   *
+   * @param text  The text to look into; never null.
+   * @param start The index the match must start at.
+   */
+  private int matchUrlEnd(CharSequence text, int start) {
     final int length = text.length();
     if (!regionEquals(text, start, "http")) {
       return -1;
@@ -122,7 +130,14 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
     return end;
   }
 
-  private static boolean regionEquals(CharSequence text, int at, String literal) {
+  /**
+   * {@return whether the chars at {@code at} equal {@code literal} exactly}
+   *
+   * @param text    The text to look into; never null.
+   * @param at      The index the comparison starts at.
+   * @param literal The chars to compare against; never null.
+   */
+  private boolean regionEquals(CharSequence text, int at, String literal) {
     if (at + literal.length() > text.length()) {
       return false;
     }
@@ -134,8 +149,13 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
     return true;
   }
 
-  // "(?<![-+_.0-9A-Za-z])[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+[-.0-9A-Za-z]+" -> " "
-  private static CharSequence removeMailAddresses(CharSequence text) {
+  /**
+   * Replaces each email address with one space.
+   *
+   * @param text The text to scan; never null.
+   * @return The input itself when nothing matched, otherwise the normalized copy.
+   */
+  private CharSequence removeMailAddresses(CharSequence text) {
     final int length = text.length();
     StringBuilder out = null;
     int i = 0;
@@ -157,10 +177,16 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
     return out == null ? text : out.toString();
   }
 
-  // Returns the exclusive end of a mail match starting at start, or -1 if there is none.
-  private static int matchMailEnd(CharSequence text, int start) {
+  /**
+   * {@return the exclusive end of an email match starting at {@code start}, or {@code -1} if
+   * there is none}
+   *
+   * @param text  The text to look into; never null.
+   * @param start The index the match must start at.
+   */
+  private int matchMailEnd(CharSequence text, int start) {
     if (start > 0 && MAIL_LOCAL.contains(text.charAt(start - 1))) {
-      return -1; // the lookbehind: a match never starts inside a local-part run
+      return -1; // a match never starts inside a local-part run
     }
     if (!MAIL_LOCAL.contains(text.charAt(start))) {
       return -1;
