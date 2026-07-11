@@ -4381,6 +4381,17 @@ Arguments description:
 
   <para>Links an entity to an external data set</para>
 
+  <para>
+  The EntityLinker tool loads a properties file (the <emphasis>model</emphasis> argument) 
+  that configures one or more linker implementations for specific entity types. 
+  The tool expects tokenized and named-entity annotated sentences from standard input, 
+  and outputs the linked results. Each entity type can be mapped to a different linker 
+  implementation via the properties file using keys of the form 
+  <literal>linker.&lt;entityType&gt;</literal>. See the 
+  <link xlink:href="#tools.entitylinker.api.properties">Entity Linker chapter</link> 
+  for detailed configuration instructions.
+  </para>
+
   <screen>
 <![CDATA[Usage: opennlp EntityLinker model < sentences]]>
   </screen>

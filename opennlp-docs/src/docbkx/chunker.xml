@@ -65,8 +65,8 @@ Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_V
     [PP for_IN ] [NP the_DT planes_NNS ] ._.]]>
 		</screen>
 		The tag set used by the English pos model is the
-		<link xlink:href="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">
-			Penn Treebank tag set
+		<link xlink:href="https://www.clips.uantwerpen.be/pages/mbsp-tags">
+			Penn Treebank and CoNLL-2000 chunk tag sets
 		</link>.
 		</para>
 		</section>

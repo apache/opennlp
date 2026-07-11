@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter xml:id="tools.entitylinker" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<title>Entity Linker</title>
+
+	<section xml:id="tools.entitylinker.overview">
+		<title>Overview</title>
+		<para>
+		The EntityLinker framework connects named entities extracted from text to external
+		knowledge sources. For example, a person name extracted by the Name Finder can be
+		linked to a database record, or a location entity can be resolved against a gazetteer.
+		</para>
+		<para>
+		Unlike other OpenNLP components that rely on pre-trained models, the EntityLinker is an
+		extension framework. It provides the <classname>EntityLinker</classname> interface and
+		supporting classes so that developers can implement custom linking logic for their
+		specific use cases and data sources.
+		</para>
+	</section>
+
+	<section xml:id="tools.entitylinker.cmdline">
+		<title>EntityLinker Tool</title>
+		<para>
+		The command line tool runs a configured EntityLinker against sentences read from standard input.
+		It requires a properties file that specifies which linker implementation to use for each entity type.
+		</para>
+		<para>
+		<screen>
+<![CDATA[Usage: opennlp EntityLinker model < sentences]]>
+		</screen>
+		The <emphasis>model</emphasis> argument is the path to a properties file configuring
+		one or more EntityLinker implementations. The tool reads tokenized and named-entity-tagged
+		sentences from stdin and outputs the linked results.
+		</para>
+	</section>
+
+	<section xml:id="tools.entitylinker.api">
+		<title>EntityLinker API</title>
+		<para>
+		The core of the framework is the <classname>EntityLinker&lt;T&gt;</classname> interface,
+		parameterized by a span type that extends <classname>Span</classname>. Two implementations
+		are provided out of the box:
+		<itemizedlist>
+			<listitem><classname>LinkedSpan&lt;BaseLink&gt;</classname> — a span with an
+			attached list of n-best linked entries from an external source.</listitem>
+			<listitem><classname>BaseLink</classname> — an abstract class representing a
+			minimal tuple of linked data: parent ID, item ID, item name, item type, and a
+			score map.</listitem>
+		</itemizedlist>
+		</para>
+
+		<section xml:id="tools.entitylinker.api.implementing">
+			<title>Implementing a Custom EntityLinker</title>
+			<para>
+			To create a custom linker, implement the <classname>EntityLinker</classname> interface.
+			The typical pattern is:
+			<programlisting language="java">
+<![CDATA[public class GazetteerLinker implements EntityLinker<LinkedSpan<BaseLink>> {
+
+  @Override
+  public void init(EntityLinkerProperties properties) throws IOException {
+    // Load resources: database connections, gazetteer indices, etc.
+    String dbPath = properties.getProperty("gazetteer.dbPath", "default.db");
+    // Initialize your data source here
+  }
+
+  @Override
+  public List<LinkedSpan<BaseLink>> find(String doctext, Span[] sentences,
+      Span[][] tokensBySentence, Span[][] namesBySentence) {
+    // Link all named entities across the entire document
+    return find(doctext, sentences, tokensBySentence, namesBySentence, 0);
+  }
+
+  @Override
+  public List<LinkedSpan<BaseLink>> find(String doctext, Span[] sentences,
+      Span[][] tokensBySentence, Span[][] namesBySentence, int sentenceIndex) {
+    List<LinkedSpan<BaseLink>> results = new ArrayList<>();
+    Span[] names = namesBySentence[sentenceIndex];
+    for (Span name : names) {
+      String searchTerm = name.getCoveredText(doctext).toString();
+      BaseLink link = lookupInDataSource(searchTerm);
+      ArrayList<BaseLink> links = new ArrayList<>();
+      links.add(link);
+      results.add(new LinkedSpan<>(links, name, 0));
+    }
+    return results;
+  }
+}]]>
+			</programlisting>
+			</para>
+		</section>
+
+		<section xml:id="tools.entitylinker.api.properties">
+			<title>Configuring with Properties</title>
+			<para>
+			EntityLinker implementations are loaded via
+			<classname>EntityLinkerProperties</classname>, which wraps a standard Java
+			<literal>.properties</literal> file. The properties file specifies which
+			implementation class to use for each entity type:
+			<screen>
+<![CDATA[linker.location=com.example.GazetteerLinker
+linker.person=com.example.PersonDBLinker
+gazetteer.dbPath=/data/gazetteer.sqlite
+person.dbUrl=jdbc:mysql://localhost/persons]]>
+			</screen>
+			Use <classname>EntityLinkerFactory</classname> to instantiate a linker
+			from a properties file:
+			<programlisting language="java">
+<![CDATA[EntityLinkerProperties props = new EntityLinkerProperties(new File("linker.properties"));
+EntityLinker<?> linker = EntityLinkerFactory.getLinker("location", props);
+List<? extends Span> linkedSpans = linker.find(docText, sentences, tokens, names);]]>
+			</programlisting>
+			The factory reads the <literal>linker.location</literal> key to
+			identify the implementation class, instantiates it via the extension loader,
+			and calls <methodname>init</methodname> with the properties object.
+			</para>
+		</section>
+
+		<section xml:id="tools.entitylinker.api.embedding">
+			<title>Embedding in a Pipeline</title>
+			<para>
+			A typical NLP pipeline using the EntityLinker might look like this:
+			<programlisting language="java">
+<![CDATA[// 1. Sentence detection
+SentenceDetectorME sentenceDetector = new SentenceDetectorME(sentenceModel);
+Span[] sentences = sentenceDetector.sentPosDetect(documentText);
+
+// 2. Tokenization
+TokenizerME tokenizer = new TokenizerME(tokenizerModel);
+Span[][] tokensBySentence = new Span[sentences.length][];
+String[][] tokenTexts = new String[sentences.length][];
+for (int i = 0; i < sentences.length; i++) {
+  tokensBySentence[i] = tokenizer.tokenizePos(
+      sentences[i].getCoveredText(documentText).toString());
+}
+
+// 3. Named Entity Recognition
+TokenNameFinderME nameFinder = new TokenNameFinderME(nerModel);
+Span[][] namesBySentence = new Span[sentences.length][];
+for (int i = 0; i < sentences.length; i++) {
+  namesBySentence[i] = nameFinder.find(tokensBySentence[i]);
+}
+
+// 4. Entity Linking
+EntityLinkerProperties props = new EntityLinkerProperties(new File("linker.properties"));
+EntityLinker<?> linker = EntityLinkerFactory.getLinker(props);
+List<? extends Span> linkedSpans = linker.find(
+    documentText, sentences, tokensBySentence, namesBySentence);]]>
+			</programlisting>
+			</para>
+		</section>
+	</section>
+
+</chapter>
