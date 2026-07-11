@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Test;
 
-import opennlp.subword.SubwordPiece;
+import opennlp.tools.tokenize.SubwordPiece;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
