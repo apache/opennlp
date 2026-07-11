@@ -211,19 +211,23 @@ public class SpellCheckingCharSequenceNormalizerTest {
     assertThrows(NullPointerException.class,
         () -> new SpellCheckingCharSequenceNormalizer((SymSpell) null));
   }
+  private boolean numberLike(String core) {
+    return new SpellCheckingCharSequenceNormalizer(symSpell).isNumberLike(core);
+  }
+
   @Test
   void numberLikeRejectsShapesTheFormerRegexRejected() {
     // Reject-side pins for the scan structure: at most one trailing percent, a digit required,
     // no letters, no bare sign.
-    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("5%%"));
-    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("+%"));
-    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("1,2a"));
-    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("+"));
-    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike(""));
-    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("%"));
-    Assertions.assertFalse(SpellCheckingCharSequenceNormalizer.isNumberLike("..,,"));
-    Assertions.assertTrue(SpellCheckingCharSequenceNormalizer.isNumberLike("+3,14%"));
-    Assertions.assertTrue(SpellCheckingCharSequenceNormalizer.isNumberLike("5%"));
+    Assertions.assertFalse(numberLike("5%%"));
+    Assertions.assertFalse(numberLike("+%"));
+    Assertions.assertFalse(numberLike("1,2a"));
+    Assertions.assertFalse(numberLike("+"));
+    Assertions.assertFalse(numberLike(""));
+    Assertions.assertFalse(numberLike("%"));
+    Assertions.assertFalse(numberLike("..,,"));
+    Assertions.assertTrue(numberLike("+3,14%"));
+    Assertions.assertTrue(numberLike("5%"));
   }
 
   @Test
@@ -241,7 +245,7 @@ public class SpellCheckingCharSequenceNormalizerTest {
       }
       final String core = token.toString();
       Assertions.assertEquals(former.matcher(core).matches(),
-          SpellCheckingCharSequenceNormalizer.isNumberLike(core),
+          numberLike(core),
           () -> "core: " + core);
     }
   }

@@ -84,13 +84,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   /** The default minimum token length below which tokens are left untouched. */
   public static final int DEFAULT_MIN_TOKEN_LENGTH = 4;
 
-  /**
-   * Matches URL- and email-like tokens that should never be spell-corrected.
-   * Deliberately still a regex: the three-alternative shape (scheme or www prefix, mail
-   * address, bare domain with a TLD word boundary) is a guard predicate whose exact accept
-   * boundary is non-trivial to reproduce as a cursor scan; converting it is tracked as a
-   * follow-up of the legacy normalizer de-regexing.
-   */
+  /** Matches URL- and email-like tokens that should never be spell-corrected. */
   private static final Pattern URL_LIKE = Pattern.compile(
       "(?:https?://|www\\.)\\S+"
           + "|[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+\\.[-.0-9A-Za-z]+"
@@ -322,10 +316,12 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   }
 
   /**
-   * Length of the leading run of non-letter/non-number code points (the former
-   * {@code "^[^\p{L}\p{N}]+"}), found by a forward cursor scan.
+   * {@return the length of the leading run of non-letter, non-number code points of
+   * {@code token}}
+   *
+   * @param token The token to scan; never null.
    */
-  private static int leadingNonWordLength(String token) {
+  private int leadingNonWordLength(String token) {
     int i = 0;
     while (i < token.length()) {
       final int codePoint = token.codePointAt(i);
@@ -338,11 +334,13 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   }
 
   /**
-   * Length of the trailing run of non-letter/non-number code points after {@code from} (the
-   * former {@code "[^\p{L}\p{N}]+$"} applied behind the peeled prefix), found by a backward
-   * cursor scan.
+   * {@return the length of the trailing run of non-letter, non-number code points of
+   * {@code token}, looking only behind {@code from}}
+   *
+   * @param token The token to scan; never null.
+   * @param from  The index the backward scan must not cross.
    */
-  private static int trailingNonWordLength(String token, int from) {
+  private int trailingNonWordLength(String token, int from) {
     int end = token.length();
     while (end > from) {
       final int codePoint = token.codePointBefore(end);
@@ -354,9 +352,13 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return token.length() - end;
   }
 
-  // \p{L} is Character.isLetter; \p{N} is the Nd, Nl, and No categories (note that
-  // Character.isDigit only covers Nd).
-  private static boolean isLetterOrNumber(int codePoint) {
+  /**
+   * {@return whether {@code codePoint} is a letter or a number} Numbers cover the decimal,
+   * letter, and other number categories, not only the decimal digits.
+   *
+   * @param codePoint The code point to classify.
+   */
+  private boolean isLetterOrNumber(int codePoint) {
     if (Character.isLetter(codePoint)) {
       return true;
     }
@@ -367,12 +369,14 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
   }
 
   /**
-   * A cursor-scan replacement for the former {@code "[+-]?[\d.,]*\d[\d.,]*%?"} full-token
-   * match: an optional sign, then digits with optional grouping/decimal marks containing at
-   * least one ASCII digit, then an optional trailing percent sign. Package-private so the tests
-   * can hold the classification against the former regex directly.
+   * {@return whether {@code core} looks like a number: an optional sign, then digits with
+   * optional grouping or decimal marks containing at least one ASCII digit, then an optional
+   * trailing percent sign} Package private so the differential test can drive the
+   * classification directly.
+   *
+   * @param core The token to classify; never null.
    */
-  static boolean isNumberLike(String core) {
+  boolean isNumberLike(String core) {
     int start = 0;
     if (start < core.length() && (core.charAt(start) == '+' || core.charAt(start) == '-')) {
       start++;

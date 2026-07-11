@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
+// Exercises the deprecated alias on purpose: it must keep behaving like its successor.
+@SuppressWarnings("deprecation")
 public class TwitterCharSequenceNormalizerTest {
 
   private final TwitterCharSequenceNormalizer normalizer = TwitterCharSequenceNormalizer.getInstance();

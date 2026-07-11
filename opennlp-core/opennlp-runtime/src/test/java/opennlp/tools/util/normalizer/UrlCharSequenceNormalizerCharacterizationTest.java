@@ -161,4 +161,46 @@ public class UrlCharSequenceNormalizerCharacterizationTest {
     final String plain = "no links in this sentence at all";
     Assertions.assertSame(plain, NORMALIZER.normalize(plain));
   }
+
+  @Test
+  void weirdUrlsMatchTheFormerRegexExactly() {
+    // Adversarial shapes in the spirit of the web-platform-tests URL suite: userinfo, ports,
+    // percent escapes, IPv6 brackets, backslashes, IDN and punycode hosts, stray schemes and
+    // separators. Each input runs differentially through the two former patterns, so the
+    // accept/reject boundary is pinned by construction rather than by hand.
+    final Pattern urls = Pattern.compile("https?://[-_.?&~;+=/#0-9A-Za-z]+");
+    final Pattern mails =
+        Pattern.compile("(?<![-+_.0-9A-Za-z])[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+[-.0-9A-Za-z]+");
+    final String[] inputs = {
+        "http://user:pass@example.com/path",
+        "https://example.com:8080/x",
+        "http://example.com/foo%20bar",
+        "http://[2001:db8::1]/x",
+        "http://example.com\\path\\file",
+        "https://xn--nxasmq6b.example/x",
+        "http://\u00e9xample.com/x",
+        "HtTp://Example.com",
+        "//example.com/protocol-relative",
+        "http://example.com.",
+        "http://example.com?",
+        "http://a..b//c#frag?q=1;2+3~4",
+        "mailto:someone@example.com",
+        "a@b@cd.com",
+        "user@[1.2.3.4]",
+        "user@%41.com",
+        "user@example.com:25",
+        "data:text/html,x",
+        "javascript:alert(1)",
+        "ftp://example.com/file",
+        "http://example.com/a b http://second.example/c",
+        "http:///triple-slash",
+        "http//missing-colon.example",
+        "https://.leading.dot",
+    };
+    for (final String input : inputs) {
+      final String viaRegexes =
+          mails.matcher(urls.matcher(input).replaceAll(" ")).replaceAll(" ");
+      assertEquals(viaRegexes, NORMALIZER.normalize(input).toString(), input);
+    }
+  }
 }

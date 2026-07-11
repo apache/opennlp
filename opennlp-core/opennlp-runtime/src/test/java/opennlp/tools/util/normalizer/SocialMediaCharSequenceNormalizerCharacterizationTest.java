@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Characterization tests for {@link TwitterCharSequenceNormalizer}.
+ * Characterization tests for {@link SocialMediaCharSequenceNormalizer}.
  *
  * <p>The fixed expectations below were probed against the regex implementation (four passes:
  * {@code "[#@]\\S+"} to a space, {@code "\\b(rt[ :])+"} case-insensitive to a space,
@@ -47,10 +47,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 // The word-boundary characterization pins the JDK 21+ regex engine's non-ASCII behavior; on
 // older engines "\b" treated non-ASCII word characters differently, so these expectations are
 // tied to the project's Java baseline.
-public class TwitterCharSequenceNormalizerCharacterizationTest {
+public class SocialMediaCharSequenceNormalizerCharacterizationTest {
 
-  private static final TwitterCharSequenceNormalizer NORMALIZER =
-      TwitterCharSequenceNormalizer.getInstance();
+  private static final SocialMediaCharSequenceNormalizer NORMALIZER =
+      SocialMediaCharSequenceNormalizer.getInstance();
 
   private static void check(String input, String expected) {
     assertEquals(expected, NORMALIZER.normalize(input).toString());
@@ -195,5 +195,15 @@ public class TwitterCharSequenceNormalizerCharacterizationTest {
     // With nothing to fold, every pass declines to allocate and the input instance comes back.
     final String plain = "the bird flew over green fields";
     Assertions.assertSame(plain, NORMALIZER.normalize(plain));
+  }
+
+  // Pins that the deprecated alias and its successor are the same implementation.
+  @Test
+  @SuppressWarnings("deprecation")
+  void deprecatedTwitterAliasBehavesIdentically() {
+    final String input = "rt @user #topic hahaha :-) x";
+    assertEquals(
+        SocialMediaCharSequenceNormalizer.getInstance().normalize(input).toString(),
+        TwitterCharSequenceNormalizer.getInstance().normalize(input).toString());
   }
 }

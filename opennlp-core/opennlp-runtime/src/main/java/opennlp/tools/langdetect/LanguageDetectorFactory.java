@@ -23,7 +23,7 @@ import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.normalizer.EmojiCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.NumberCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.ShrinkCharSequenceNormalizer;
-import opennlp.tools.util.normalizer.TwitterCharSequenceNormalizer;
+import opennlp.tools.util.normalizer.SocialMediaCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
 
 
@@ -37,7 +37,7 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
  * <ul>
  * <li> {@link EmojiCharSequenceNormalizer}
  * <li> {@link UrlCharSequenceNormalizer}
- * <li> {@link TwitterCharSequenceNormalizer}
+ * <li> {@link SocialMediaCharSequenceNormalizer}
  * <li> {@link NumberCharSequenceNormalizer}
  * <li> {@link ShrinkCharSequenceNormalizer}
  * </ul>
@@ -51,7 +51,7 @@ public class LanguageDetectorFactory extends BaseToolFactory {
     return new DefaultLanguageDetectorContextGenerator(1, 3,
         EmojiCharSequenceNormalizer.getInstance(),
         UrlCharSequenceNormalizer.getInstance(),
-        TwitterCharSequenceNormalizer.getInstance(),
+        SocialMediaCharSequenceNormalizer.getInstance(),
         NumberCharSequenceNormalizer.getInstance(),
         ShrinkCharSequenceNormalizer.getInstance());
   }

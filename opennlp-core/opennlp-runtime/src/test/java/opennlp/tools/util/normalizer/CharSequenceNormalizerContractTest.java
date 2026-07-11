@@ -45,7 +45,7 @@ class CharSequenceNormalizerContractTest {
         Arguments.of("nfkc", NfkcCharSequenceNormalizer.getInstance()),
         Arguments.of("number", NumberCharSequenceNormalizer.getInstance()),
         Arguments.of("shrink", ShrinkCharSequenceNormalizer.getInstance()),
-        Arguments.of("twitter", TwitterCharSequenceNormalizer.getInstance()),
+        Arguments.of("socialMedia", SocialMediaCharSequenceNormalizer.getInstance()),
         Arguments.of("url", UrlCharSequenceNormalizer.getInstance()));
   }
 
