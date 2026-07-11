@@ -214,12 +214,12 @@ public class NameFinderMEWithDatesTest extends AbstractNameFinderTest {
   public static Stream<Arguments> provideDataDE() {
     // Note: Positions (start, end) start at index 0 and are 'start' inclusively, 'end' exclusively!
     return Stream.of(
-      Arguments.of("Die erste Ausgabe erschien am 5. Oktober 1907 .",
-              "5. Oktober 1907", 5, 8, false),
-      Arguments.of("Die dritte Staffel erschien am 17.11.2023 .",
-              "17.11.2023", 5, 6, true),
-      Arguments.of("Ein bedeutender Durchbruch wurde im März 2024 erzielt .",
-              "März 2024", 5, 7, false)
+     Arguments.of("Die erste Ausgabe erschien am 5. Oktober 1907 .",
+              "5. Oktober 1907", 4, 8, false),
+     Arguments.of("Die dritte Staffel erschien am 17.11.2023 .",
+              "17.11.2023", 4, 6, true),
+     Arguments.of("Ein bedeutender Durchbruch wurde im März 2024 erzielt .",
+              "März 2024", 4, 7, false)
     );
   }
 
