@@ -223,11 +223,11 @@ public final class StaticEmbeddingModel implements TextEmbedder {
           + "belong to the same model");
     }
     final int dimension = matrixInfo.shape()[1];
-    final float[] embeddings = tensors.readFloat32(matrixName);
+    final float[] embeddings = tensors.readFloats(matrixName);
 
     float[] weights = null;
     if (tensors.tensorNames().contains(WEIGHTS_TENSOR_NAME)) {
-      weights = tensors.readFloat32(WEIGHTS_TENSOR_NAME);
+      weights = tensors.readFloats(WEIGHTS_TENSOR_NAME);
       if (weights.length != vocabulary.size()) {
         throw new IllegalArgumentException("Tensor '" + WEIGHTS_TENSOR_NAME + "' in "
             + safetensorsFile + " has " + weights.length + " elements but the vocabulary has "
