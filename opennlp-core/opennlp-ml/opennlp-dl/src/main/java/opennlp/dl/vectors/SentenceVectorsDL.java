@@ -147,7 +147,10 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   /**
    * {@inheritDoc}
    *
-   * <p>Adapts {@link #getVectors(String)} to the {@link TextEmbedder} contract.</p>
+   * <p>Adapts {@link #getVectors(String)} to the {@link TextEmbedder} contract. Empty or
+   * unrecognized input is still run through the model, which returns the vector for the
+   * wrapped {@code [CLS] ... [SEP]} sequence; it is not special-cased to a zero vector the way
+   * the static-table embedder is.</p>
    *
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    * @throws IllegalStateException Thrown if inference fails; the cause carries the

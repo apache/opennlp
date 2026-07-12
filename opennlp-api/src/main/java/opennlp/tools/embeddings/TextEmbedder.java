@@ -37,6 +37,11 @@ public interface TextEmbedder {
   /**
    * Embeds a piece of text.
    *
+   * <p>Behavior for empty text, or text with no tokens the embedder recognizes, is
+   * implementation-defined: an implementation may return a zero vector, the vector of a special
+   * or fallback token, or something else, and should document its choice. Callers that need a
+   * uniform response should handle it themselves.</p>
+   *
    * @param text The text to embed; must not be null.
    * @return The embedding vector, of length {@link #dimension()}.
    * @throws IllegalArgumentException Thrown if {@code text} is null.
