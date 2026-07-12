@@ -19,6 +19,7 @@ package opennlp.embeddings;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,16 +35,17 @@ import opennlp.tools.commons.ThreadSafe;
 /**
  * Reads a <a href="https://github.com/huggingface/safetensors">safetensors</a> file: an 8-byte
  * little-endian header length, a JSON header describing each tensor's dtype, shape, and byte
- * range, followed by the raw tensor bytes. Only the {@code F32} decode path
- * {@link #readFloat32(String)} needs is implemented.
+ * range, followed by the raw tensor bytes. The floating-point decode path
+ * {@link #readFloats(String)} supports the {@code F32}, {@code F16} (IEEE half) and {@code BF16}
+ * (bfloat16) dtypes, widening the two 16-bit types to {@code float}.
  *
  * <p>Only the header is read eagerly; tensor data is streamed into a fresh array with positional
  * reads on request, so a decoded {@code float[]} is capped at {@link Integer#MAX_VALUE} - 8
  * elements. The file must stay in place and unchanged between {@link #read(Path)} and a later
- * {@link #readFloat32(String)} call; a file truncated in between fails loud rather than returning
+ * {@link #readFloats(String)} call; a file truncated in between fails loud rather than returning
  * partial data.</p>
  *
- * <p>Instances are immutable and safe for concurrent use: every {@link #readFloat32(String)}
+ * <p>Instances are immutable and safe for concurrent use: every {@link #readFloats(String)}
  * call opens its own channel and decodes into a fresh array the caller owns.</p>
  */
 @ThreadSafe
@@ -158,14 +160,67 @@ public final class SafetensorsFile {
   }
 
   /**
-   * Decodes a {@code F32} tensor's data, streaming it from the file.
+   * Decodes a floating-point tensor's data to {@code float[]}, streaming it from the file.
+   * Accepts the {@code F32}, {@code F16} (IEEE half) and {@code BF16} (bfloat16) dtypes; the two
+   * 16-bit types are widened to {@code float} as they are read. {@code F16} is model2vec's
+   * default output dtype, so this is the common case for downloaded distilled tables.
+   *
+   * @param name The tensor's name. Must not be {@code null}.
+   * @return The tensor's elements in row-major (shape outermost-first) order.
+   * @throws IllegalArgumentException Thrown if {@code name} is {@code null}, not a tensor in
+   *     this file, not a supported float dtype ({@code F32}, {@code F16}, {@code BF16}), or
+   *     larger than a Java array can hold.
+   * @throws IllegalStateException Thrown if the file has been truncated since
+   *     {@link #read(Path)} validated the tensor's byte range.
+   * @throws IOException Thrown if reading the file fails.
+   */
+  public float[] readFloats(String name) throws IOException {
+    final TensorInfo info = tensorInfo(name);
+    final int elementBytes = floatElementBytes(info.dtype(), name);
+    final long elementCount = info.elementCount();
+    if (elementCount < 0 || elementCount > MAX_ARRAY_LENGTH) {
+      throw new IllegalArgumentException("Tensor '" + name + "' declares " + elementCount
+          + " elements, more than a Java array can hold (" + MAX_ARRAY_LENGTH
+          + "); decoding to a float[] is capped there");
+    }
+    final long byteLength = info.dataOffsetEnd() - info.dataOffsetBegin();
+    if (byteLength != elementCount * elementBytes) {
+      throw new IllegalArgumentException("Tensor '" + name + "' declares " + elementCount + " "
+          + info.dtype() + " elements but its data range is " + byteLength + " bytes");
+    }
+    final float[] values = new float[(int) elementCount];
+    final String dtype = info.dtype();
+    try (FileChannel channel = FileChannel.open(file, StandardOpenOption.READ)) {
+      final ByteBuffer chunk = ByteBuffer.allocate((int) Math.min(READ_CHUNK_BYTES, byteLength))
+          .order(ByteOrder.LITTLE_ENDIAN);
+      long position = dataStart + info.dataOffsetBegin();
+      int decoded = 0;
+      while (decoded < values.length) {
+        chunk.clear();
+        final long remainingBytes = byteLength - (long) decoded * elementBytes;
+        if (remainingBytes < chunk.capacity()) {
+          chunk.limit((int) remainingBytes);
+        }
+        readFully(channel, chunk, position, file);
+        chunk.flip();
+        final int count = chunk.remaining() / elementBytes;
+        decodeInto(chunk, dtype, values, decoded, count);
+        decoded += count;
+        position += (long) count * elementBytes;
+      }
+      return values;
+    }
+  }
+
+  /**
+   * Decodes an {@code F32} tensor, rejecting any other dtype. Use {@link #readFloats(String)} to
+   * also accept {@code F16} and {@code BF16}.
    *
    * @param name The tensor's name. Must not be {@code null}.
    * @return The tensor's elements in row-major (shape outermost-first) order.
    * @throws IllegalArgumentException Thrown if {@code name} is {@code null}, not a tensor in
    *     this file, not declared with dtype {@code F32}, or larger than a Java array can hold.
-   * @throws IllegalStateException Thrown if the file has been truncated since
-   *     {@link #read(Path)} validated the tensor's byte range.
+   * @throws IllegalStateException Thrown if the file has been truncated since {@link #read(Path)}.
    * @throws IOException Thrown if reading the file fails.
    */
   public float[] readFloat32(String name) throws IOException {
@@ -174,38 +229,58 @@ public final class SafetensorsFile {
       throw new IllegalArgumentException(
           "Tensor '" + name + "' has dtype " + info.dtype() + ", not F32");
     }
-    final long elementCount = info.elementCount();
-    if (elementCount < 0 || elementCount > MAX_ARRAY_LENGTH) {
-      throw new IllegalArgumentException("Tensor '" + name + "' declares " + elementCount
-          + " elements, more than a Java array can hold (" + MAX_ARRAY_LENGTH
-          + "); decoding to a float[] is capped there");
-    }
-    final long byteLength = info.dataOffsetEnd() - info.dataOffsetBegin();
-    if (byteLength != elementCount * Float.BYTES) {
-      throw new IllegalArgumentException("Tensor '" + name + "' declares " + elementCount
-          + " F32 elements but its data range is " + byteLength + " bytes");
-    }
-    final float[] values = new float[(int) elementCount];
-    try (FileChannel channel = FileChannel.open(file, StandardOpenOption.READ)) {
-      final ByteBuffer chunk = ByteBuffer.allocate((int) Math.min(READ_CHUNK_BYTES, byteLength))
-          .order(ByteOrder.LITTLE_ENDIAN);
-      long position = dataStart + info.dataOffsetBegin();
-      int decoded = 0;
-      while (decoded < values.length) {
-        chunk.clear();
-        final long remainingBytes = byteLength - (long) decoded * Float.BYTES;
-        if (remainingBytes < chunk.capacity()) {
-          chunk.limit((int) remainingBytes);
+    return readFloats(name);
+  }
+
+  /**
+   * Widens one chunk of raw tensor bytes into the output array according to its dtype.
+   *
+   * @param chunk  The raw little-endian bytes, positioned at the first element to decode.
+   * @param dtype  The tensor's dtype ({@code F32}, {@code F16}, or {@code BF16}).
+   * @param out    The destination array.
+   * @param offset The index in {@code out} to write the first decoded element to.
+   * @param count  The number of elements to decode from {@code chunk}.
+   */
+  private static void decodeInto(ByteBuffer chunk, String dtype, float[] out, int offset,
+                                 int count) {
+    switch (dtype) {
+      case "F32" -> chunk.asFloatBuffer().get(out, offset, count);
+      case "F16" -> {
+        final ShortBuffer shorts = chunk.asShortBuffer();
+        for (int i = 0; i < count; i++) {
+          out[offset + i] = Float.float16ToFloat(shorts.get());
         }
-        readFully(channel, chunk, position, file);
-        chunk.flip();
-        final int floats = chunk.remaining() / Float.BYTES;
-        chunk.asFloatBuffer().get(values, decoded, floats);
-        decoded += floats;
-        position += (long) floats * Float.BYTES;
       }
-      return values;
+      case "BF16" -> {
+        // bfloat16 is the high 16 bits of a float32: shift back up and reinterpret.
+        final ShortBuffer shorts = chunk.asShortBuffer();
+        for (int i = 0; i < count; i++) {
+          out[offset + i] = Float.intBitsToFloat((shorts.get() & 0xFFFF) << 16);
+        }
+      }
+      default -> throw new IllegalArgumentException("Unsupported float dtype: " + dtype);
     }
+  }
+
+  /**
+   * {@return the number of bytes one element of {@code dtype} occupies}
+   *
+   * @param dtype      The tensor dtype.
+   * @param tensorName The tensor's name, for the error message.
+   * @throws IllegalArgumentException if {@code dtype} is not a supported float type.
+   */
+  private static int floatElementBytes(String dtype, String tensorName) {
+    return switch (dtype) {
+      case "F32" -> Float.BYTES;
+      case "F16", "BF16" -> Short.BYTES;
+      default -> throw new IllegalArgumentException("Tensor '" + tensorName + "' has dtype "
+          + dtype + ", not a supported float type (F32, F16, BF16)");
+    };
+  }
+
+  /** {@return whether {@code dtype} is a float type this reader decodes} */
+  private static boolean isFloatDtype(String dtype) {
+    return "F32".equals(dtype) || "F16".equals(dtype) || "BF16".equals(dtype);
   }
 
   /**
@@ -232,22 +307,23 @@ public final class SafetensorsFile {
   }
 
   /**
-   * Finds the single 2-dimensional {@code F32} tensor in this file, the shape a static embedding
-   * table's weight matrix takes (vocabulary size by hidden dimension). Strict rather than guessing
-   * a name convention, so a wrong guess cannot silently load the wrong tensor.
+   * Finds the single 2-dimensional floating-point tensor in this file (dtype {@code F32},
+   * {@code F16}, or {@code BF16}), the shape a static embedding table's weight matrix takes
+   * (vocabulary size by hidden dimension). Strict rather than guessing a name convention, so a
+   * wrong guess cannot silently load the wrong tensor.
    *
-   * @return The name of the single 2-D F32 tensor.
-   * @throws IllegalArgumentException Thrown if the file has zero or more than one 2-D F32
+   * @return The name of the single 2-D float tensor.
+   * @throws IllegalArgumentException Thrown if the file has zero or more than one 2-D float
    *     tensor; the message lists every candidate so the caller can pick explicitly with
-   *     {@link #readFloat32(String)}.
+   *     {@link #readFloats(String)}.
    */
   public String singleMatrixTensorName() {
     String found = null;
     for (final TensorInfo info : tensorsByName.values()) {
-      if ("F32".equals(info.dtype()) && info.shape().length == 2) {
+      if (isFloatDtype(info.dtype()) && info.shape().length == 2) {
         if (found != null) {
           throw new IllegalArgumentException(
-              "More than one 2-D F32 tensor in this file; specify the name explicitly. "
+              "More than one 2-D float tensor in this file; specify the name explicitly. "
                   + "Candidates: " + tensorsByName.keySet());
         }
         found = info.name();
@@ -255,7 +331,8 @@ public final class SafetensorsFile {
     }
     if (found == null) {
       throw new IllegalArgumentException(
-          "No 2-D F32 tensor in this file. Available tensors: " + tensorsByName.keySet());
+          "No 2-D float (F32/F16/BF16) tensor in this file. Available tensors: "
+              + tensorsByName.keySet());
     }
     return found;
   }
