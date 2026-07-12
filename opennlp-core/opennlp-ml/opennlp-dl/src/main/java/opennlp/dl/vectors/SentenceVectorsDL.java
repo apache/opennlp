@@ -48,6 +48,16 @@ import opennlp.tools.tokenize.Tokenizer;
  * encoding: {@code attention_mask} is {@code 1} for every real
  * token and {@code token_type_ids} is {@code 0} throughout.</p>
  *
+ * <p><b>Release note (OpenNLP 3.0.0):</b> prior releases sent an
+ * all-zero {@code attention_mask} and all-one {@code token_type_ids},
+ * so the encoder attended to nothing and the output vectors were
+ * incorrect. Additionally, tokenization now performs BERT basic
+ * tokenization (lower casing and accent stripping by default, see
+ * {@link opennlp.tools.tokenize.WordpieceEncoder}) before wordpiece.
+ * Output vectors change with the corrected encoding and tokenization;
+ * any embeddings persisted from the previous behavior are not
+ * comparable with the corrected output and must be re-embedded.</p>
+ *
  * <p>This class is thread-safe and may be shared across threads: {@link #getVectors(String)}
  * holds no per-call instance state and the underlying {@link OrtSession} supports
  * concurrent execution. This thread-safety guarantee applies until {@link #close()}
