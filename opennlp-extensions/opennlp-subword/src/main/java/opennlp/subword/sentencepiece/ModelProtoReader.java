@@ -28,6 +28,14 @@ import java.util.List;
  * directly and keeps only the fields inference needs: the pieces with scores and types, the
  * normalizer spec, the handful of trainer-spec fields that change runtime behavior, and the
  * embedded self-test samples. Unknown fields are skipped, malformed input fails loudly.</p>
+ *
+ * <p>This is a self-contained wire reader, not a performance optimization: model loading happens
+ * once and is not on any hot path. It exists so this module reads a protobuf-encoded file without
+ * adding a {@code protobuf-java} runtime dependency, which the project does not otherwise use, for
+ * a load-time parse of a schema that is stable in practice. If OpenNLP ever takes on a real
+ * protobuf dependency for other reasons, this hand-rolled reader should be retired in favor of it:
+ * generate from {@code sentencepiece_model.proto} (or parse via the descriptor API) and delete
+ * this class, since the dependency-avoidance rationale no longer holds.</p>
  */
 final class ModelProtoReader {
 
