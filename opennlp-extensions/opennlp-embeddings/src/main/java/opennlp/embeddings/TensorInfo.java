@@ -70,6 +70,7 @@ public record TensorInfo(String name, String dtype, int[] shape, long dataOffset
     return count;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean equals(Object other) {
     return other instanceof TensorInfo that
@@ -78,6 +79,7 @@ public record TensorInfo(String name, String dtype, int[] shape, long dataOffset
         && dataOffsetBegin == that.dataOffsetBegin && dataOffsetEnd == that.dataOffsetEnd;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int hashCode() {
     int result = name.hashCode();
@@ -88,6 +90,7 @@ public record TensorInfo(String name, String dtype, int[] shape, long dataOffset
     return result;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String toString() {
     return "TensorInfo[name=" + name + ", dtype=" + dtype + ", shape=" + Arrays.toString(shape)
