@@ -14,36 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.tools.tokenize;
 
-import java.util.Set;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests {@link BertTokenizer}.
+ * The reference token sequences of the removed full-pipeline {@code Tokenizer}, re-asserted
+ * against {@link WordpieceEncoder}.
  * <p>
  * All expected token sequences in this test were generated with the HuggingFace
  * {@code tokenizers} reference implementation ({@code BertWordPieceTokenizer})
  * using the same vocabulary, so they are verified to be identical to the
- * reference BERT tokenization.
+ * reference BERT tokenization. The encoder requires its special tokens to be
+ * present in the vocabulary (every piece must have an id), so the vocabularies
+ * here include them; the token sequences are unchanged.
  */
-public class BertTokenizerTest {
+public class WordpieceEncoderReferenceSequencesTest {
 
-  private static final Set<String> VOCABULARY = Set.of(
+  private static final List<String> VOCABULARY = List.of(
+      "[CLS]", "[SEP]", "[UNK]",
       "the", "quick", "brown", "fox", "jumps", "over", "lazy", "dog",
       "em", "##bed", "##ding", "##s",
       "wurttemberg", "strasse", "grosse",
       "don", "t", "wait", "what", ".", ",", "?", "!", "'",
-      "\u6211", "\u7231",  // CJK: 我 爱
+      "\u6211", "\u7231",  // CJK
       "natural", "language", "processing");
 
   @Test
   void testLowerCasesCapitalizedWords() {
-    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
-    final String[] tokens = tokenizer.tokenize("The quick brown fox jumps over the lazy dog.");
+    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
+    final String[] tokens =
+        encoder.encodeToPieces("The quick brown fox jumps over the lazy dog.");
 
     final String[] expected = {"[CLS]", "the", "quick", "brown", "fox", "jumps", "over",
         "the", "lazy", "dog", ".", "[SEP]"};
@@ -52,8 +56,8 @@ public class BertTokenizerTest {
 
   @Test
   void testLowerCasesBeforeWordpieceSplitting() {
-    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
-    final String[] tokens = tokenizer.tokenize("Embeddings");
+    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
+    final String[] tokens = encoder.encodeToPieces("Embeddings");
 
     final String[] expected = {"[CLS]", "em", "##bed", "##ding", "##s", "[SEP]"};
     Assertions.assertArrayEquals(expected, tokens);
@@ -61,10 +65,10 @@ public class BertTokenizerTest {
 
   @Test
   void testStripsAccentsButKeepsNonCombiningCharacters() {
-    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
-    // ü decomposes to u + combining diaeresis and the mark is stripped;
-    // ß is not a combining mark and must survive, leaving an OOV token.
-    final String[] tokens = tokenizer.tokenize("W\u00fcrttemberg Stra\u00dfe");
+    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
+    // The u-umlaut decomposes to u plus a combining diaeresis and the mark is stripped;
+    // the sharp s is not a combining mark and must survive, leaving an OOV token.
+    final String[] tokens = encoder.encodeToPieces("W\u00fcrttemberg Stra\u00dfe");
 
     final String[] expected = {"[CLS]", "wurttemberg", "[UNK]", "[SEP]"};
     Assertions.assertArrayEquals(expected, tokens);
@@ -72,8 +76,8 @@ public class BertTokenizerTest {
 
   @Test
   void testSplitsPunctuationRunsIntoSingleCharacters() {
-    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
-    final String[] tokens = tokenizer.tokenize("Wait... what?!");
+    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
+    final String[] tokens = encoder.encodeToPieces("Wait... what?!");
 
     final String[] expected = {"[CLS]", "wait", ".", ".", ".", "what", "?", "!", "[SEP]"};
     Assertions.assertArrayEquals(expected, tokens);
@@ -81,8 +85,8 @@ public class BertTokenizerTest {
 
   @Test
   void testSplitsApostrophesAsPunctuation() {
-    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
-    final String[] tokens = tokenizer.tokenize("don't");
+    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
+    final String[] tokens = encoder.encodeToPieces("don't");
 
     final String[] expected = {"[CLS]", "don", "'", "t", "[SEP]"};
     Assertions.assertArrayEquals(expected, tokens);
@@ -90,8 +94,8 @@ public class BertTokenizerTest {
 
   @Test
   void testIsolatesCjkIdeographs() {
-    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
-    final String[] tokens = tokenizer.tokenize("\u6211\u7231natural language processing");
+    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
+    final String[] tokens = encoder.encodeToPieces("\u6211\u7231natural language processing");
 
     final String[] expected = {"[CLS]", "\u6211", "\u7231", "natural", "language",
         "processing", "[SEP]"};
@@ -100,10 +104,10 @@ public class BertTokenizerTest {
 
   @Test
   void testCleansControlCharactersAndNormalizesWhitespace() {
-    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
+    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
     // Tab and no-break space are whitespace; the NUL character is removed,
     // joining "brown" and "fox" into one out-of-vocabulary token.
-    final String[] tokens = tokenizer.tokenize("the\tquick\u00a0brown\u0000fox");
+    final String[] tokens = encoder.encodeToPieces("the\tquick\u00a0brown\u0000fox");
 
     final String[] expected = {"[CLS]", "the", "quick", "[UNK]", "[SEP]"};
     Assertions.assertArrayEquals(expected, tokens);
@@ -111,11 +115,11 @@ public class BertTokenizerTest {
 
   @Test
   void testRemovesPrivateUseAndUnassignedCharacters() {
-    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
+    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
     // The reference implementation treats all C* categories as control
     // characters: private use (U+E000, Co) and noncharacters (U+FDD0, Cn)
     // are removed, joining the surrounding text into one OOV token.
-    final String[] tokens = tokenizer.tokenize("fox\ue000jumps and fox\ufdd0jumps");
+    final String[] tokens = encoder.encodeToPieces("fox\ue000jumps and fox\ufdd0jumps");
 
     final String[] expected = {"[CLS]", "[UNK]", "[UNK]", "[UNK]", "[SEP]"};
     Assertions.assertArrayEquals(expected, tokens);
@@ -123,19 +127,21 @@ public class BertTokenizerTest {
 
   @Test
   void testRejectsNullSpecialTokens() {
-    Assertions.assertThrows(NullPointerException.class,
-        () -> new BertTokenizer(VOCABULARY, true, null, "[SEP]", "[UNK]"));
-    Assertions.assertThrows(NullPointerException.class,
-        () -> new BertTokenizer(VOCABULARY, true, "[CLS]", null, "[UNK]"));
-    Assertions.assertThrows(NullPointerException.class,
-        () -> new BertTokenizer(VOCABULARY, true, "[CLS]", "[SEP]", null));
+    // The encoder's contract throws IllegalArgumentException where the removed class threw
+    // NullPointerException.
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new WordpieceEncoder(VOCABULARY, true, null, "[SEP]", "[UNK]"));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new WordpieceEncoder(VOCABULARY, true, "[CLS]", null, "[UNK]"));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new WordpieceEncoder(VOCABULARY, true, "[CLS]", "[SEP]", null));
   }
 
   @Test
   void testCasedModeKeepsCaseAndAccents() {
-    final Tokenizer tokenizer = new BertTokenizer(
-        Set.of("The", "W\u00fcrttemberg", "fox"), false);
-    final String[] tokens = tokenizer.tokenize("The W\u00fcrttemberg fox");
+    final WordpieceEncoder encoder = new WordpieceEncoder(
+        List.of("[CLS]", "[SEP]", "[UNK]", "The", "W\u00fcrttemberg", "fox"), false);
+    final String[] tokens = encoder.encodeToPieces("The W\u00fcrttemberg fox");
 
     final String[] expected = {"[CLS]", "The", "W\u00fcrttemberg", "fox", "[SEP]"};
     Assertions.assertArrayEquals(expected, tokens);
@@ -143,20 +149,13 @@ public class BertTokenizerTest {
 
   @Test
   void testCustomSpecialTokens() {
-    final Tokenizer tokenizer = new BertTokenizer(Set.of("the", "fox"), true,
+    final WordpieceEncoder encoder = new WordpieceEncoder(
+        List.of("<s>", "</s>", "<unk>", "the", "fox"), true,
         WordpieceTokenizer.ROBERTA_CLS_TOKEN, WordpieceTokenizer.ROBERTA_SEP_TOKEN,
         WordpieceTokenizer.ROBERTA_UNK_TOKEN);
-    final String[] tokens = tokenizer.tokenize("The unknown fox");
+    final String[] tokens = encoder.encodeToPieces("The unknown fox");
 
     final String[] expected = {"<s>", "the", "<unk>", "fox", "</s>"};
     Assertions.assertArrayEquals(expected, tokens);
   }
-
-  @Test
-  void testTokenizePosIsUnsupported() {
-    final Tokenizer tokenizer = new BertTokenizer(VOCABULARY);
-    Assertions.assertThrows(UnsupportedOperationException.class,
-        () -> tokenizer.tokenizePos("the fox"));
-  }
-
 }

@@ -47,7 +47,7 @@ import opennlp.tools.tokenize.Tokenizer;
  * so the encoder attended to nothing and the output vectors were
  * incorrect. Additionally, tokenization now performs BERT basic
  * tokenization (lower casing and accent stripping by default, see
- * {@link opennlp.tools.tokenize.BertTokenizer}) before wordpiece.
+ * {@link opennlp.tools.tokenize.WordpieceEncoder}) before wordpiece.
  * Output vectors change with the corrected encoding and tokenization;
  * any embeddings persisted from the previous behavior are not
  * comparable with the corrected output and must be re-embedded.</p>

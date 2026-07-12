@@ -50,7 +50,7 @@ import opennlp.tools.util.normalizer.Alignment;
  * An implementation of {@link opennlp.tools.namefind.TokenNameFinder} that uses ONNX models.
  *
  * <p>Tokenization performs BERT basic tokenization (text normalization)
- * before wordpiece, see {@link opennlp.tools.tokenize.BertTokenizer}. Input
+ * before wordpiece, see {@link opennlp.tools.tokenize.WordpieceEncoder}. Input
  * text is <b>not</b> lower cased by default, because named entity recognition
  * models are commonly cased: capitalization is a strong signal for entity
  * boundaries. For uncased models, set
