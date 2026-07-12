@@ -33,37 +33,23 @@ import opennlp.tools.util.OwnerOrPerThreadState;
  * thread-safe {@code *ME} components.</p>
  */
 @ThreadSafe
-public final class SharingStemmer implements Stemmer {
-
-  private final OwnerOrPerThreadState<Stemmer> delegates;
+public final class SharingStemmer extends DelegatingStemmer<Stemmer> {
 
   /**
    * @param factory The factory that mints per-thread delegates. Must not be {@code null}.
    * @throws IllegalArgumentException if {@code factory} is {@code null}.
    */
   public SharingStemmer(StemmerFactory factory) {
-    if (factory == null) {
-      throw new IllegalArgumentException("factory must not be null");
-    }
-    this.delegates = new OwnerOrPerThreadState<>(factory::newStemmer, stemmer -> { });
+    super(requireFactory(factory)::newStemmer, stemmer -> { });
   }
 
   @Override
   public CharSequence stem(CharSequence word) {
-    return delegates.get().stem(word);
+    return state.get().stem(word);
   }
 
   @Override
   public List<CharSequence> stemAll(CharSequence word) {
-    return delegates.get().stemAll(word);
-  }
-
-  /**
-   * Removes this thread's delegate to prevent classloader leaks in container environments. Call
-   * when the thread is returned to a pool or the stemmer is no longer needed, mirroring
-   * {@code clearThreadLocalState()} on the thread-safe {@code *ME} components.
-   */
-  public void clearThreadLocalState() {
-    delegates.clearForCurrentThread();
+    return state.get().stemAll(word);
   }
 }

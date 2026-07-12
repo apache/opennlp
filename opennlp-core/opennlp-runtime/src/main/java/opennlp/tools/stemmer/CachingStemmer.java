@@ -20,9 +20,9 @@ package opennlp.tools.stemmer;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.util.OwnerOrPerThreadState;
 
 /**
  * A {@link Stemmer} that memoizes word-to-stem mappings in a bounded per-thread LRU cache.
@@ -49,15 +49,13 @@ import opennlp.tools.util.OwnerOrPerThreadState;
  * engines keep their full result list.</p>
  */
 @ThreadSafe
-public final class CachingStemmer implements Stemmer {
+public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.ThreadState> {
 
   /**
    * Covers the high-frequency vocabulary of most corpora while keeping the per-thread footprint
    * small.
    */
   public static final int DEFAULT_CAPACITY = 1024;
-
-  private final OwnerOrPerThreadState<ThreadState> state;
 
   /**
    * Creates a caching stemmer with the {@linkplain #DEFAULT_CAPACITY default capacity}.
@@ -78,15 +76,26 @@ public final class CachingStemmer implements Stemmer {
    *     not positive.
    */
   public CachingStemmer(StemmerFactory factory, int capacity) {
-    if (factory == null) {
-      throw new IllegalArgumentException("factory must not be null");
-    }
+    super(threadStateSupplier(factory, capacity), threadState -> threadState.cache.clear());
+  }
+
+  /**
+   * Validates the constructor arguments eagerly, then returns a supplier that mints one delegate
+   * and its per-thread cache. Validating here keeps a null factory or non-positive capacity a
+   * construction-time failure rather than a deferred first-use one.
+   *
+   * @param factory  The factory that mints one delegate per thread. Must not be {@code null}.
+   * @param capacity The maximum number of word-to-stem entries kept per thread; must be positive.
+   * @return a supplier of fresh per-thread state.
+   * @throws IllegalArgumentException if {@code factory} is {@code null} or {@code capacity} is
+   *     not positive.
+   */
+  private static Supplier<ThreadState> threadStateSupplier(StemmerFactory factory, int capacity) {
+    requireFactory(factory);
     if (capacity <= 0) {
       throw new IllegalArgumentException("capacity must be positive, got " + capacity);
     }
-    this.state = new OwnerOrPerThreadState<>(
-        () -> new ThreadState(factory.newStemmer(), capacity),
-        threadState -> threadState.cache.clear());
+    return () -> new ThreadState(factory.newStemmer(), capacity);
   }
 
   @Override
@@ -114,15 +123,6 @@ public final class CachingStemmer implements Stemmer {
   }
 
   /**
-   * Removes this thread's delegate and cache to prevent classloader leaks in container
-   * environments. Call when the thread is returned to a pool or the stemmer is no longer needed,
-   * mirroring {@code clearThreadLocalState()} on the thread-safe {@code *ME} components.
-   */
-  public void clearThreadLocalState() {
-    state.clearForCurrentThread();
-  }
-
-  /**
    * Empties the calling thread's cache while keeping its delegate, forcing every subsequent
    * word through a fresh stemming pass. Only the calling thread's cache is affected. A thread
    * that has not stemmed yet has its state initialized by this call, so invoke it on the
@@ -132,7 +132,7 @@ public final class CachingStemmer implements Stemmer {
     state.get().cache.clear();
   }
 
-  private static final class ThreadState {
+  static final class ThreadState {
 
     private final Stemmer delegate;
     private final LinkedHashMap<String, String> cache;
