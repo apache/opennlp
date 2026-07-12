@@ -40,12 +40,18 @@ final class JsonCursor {
     this.inputName = inputName;
   }
 
+  /** Advances the cursor past any run of whitespace. */
   void skipWhitespace() {
     while (position < text.length() && Character.isWhitespace(text.charAt(position))) {
       position++;
     }
   }
 
+  /**
+   * {@return the character at the cursor without advancing}
+   *
+   * @throws IllegalArgumentException Thrown if the cursor is at the end of the input.
+   */
   char peek() {
     if (position >= text.length()) {
       throw malformed("Unexpected end of input");
@@ -53,12 +59,23 @@ final class JsonCursor {
     return text.charAt(position);
   }
 
+  /**
+   * {@return the character at the cursor, advancing past it}
+   *
+   * @throws IllegalArgumentException Thrown if the cursor is at the end of the input.
+   */
   char consume() {
     final char c = peek();
     position++;
     return c;
   }
 
+  /**
+   * Consumes the next character, requiring it to be {@code c}.
+   *
+   * @param c The expected character.
+   * @throws IllegalArgumentException Thrown if the next character is not {@code c}.
+   */
   void expect(char c) {
     final char actual = consume();
     if (actual != c) {
@@ -83,6 +100,11 @@ final class JsonCursor {
     }
   }
 
+  /**
+   * {@return the JSON string starting at the cursor, with escapes decoded}
+   *
+   * @throws IllegalArgumentException Thrown if the string is unterminated or has a bad escape.
+   */
   String parseString() {
     expect('"');
     final StringBuilder value = new StringBuilder();
@@ -102,6 +124,7 @@ final class JsonCursor {
     }
   }
 
+  /** {@return the character named by the escape sequence following a backslash} */
   private char parseEscape() {
     if (position >= text.length()) {
       throw malformed("Unterminated escape sequence");
@@ -121,6 +144,7 @@ final class JsonCursor {
     };
   }
 
+  /** {@return the character named by a {@code \\uXXXX} escape} */
   private char parseUnicodeEscape() {
     if (position + 4 > text.length()) {
       throw malformed("Truncated \\u escape sequence");
@@ -140,8 +164,10 @@ final class JsonCursor {
     return (char) value;
   }
 
-  // Skips one number, holding it to the JSON grammar (optional minus, digits, optional
-  // fraction, optional signed exponent) so malformed input fails loud even in skipped fields.
+  /**
+   * Skips one JSON number, holding it to the grammar (optional minus, digits, optional fraction,
+   * optional signed exponent) so malformed input fails loud even in a skipped field.
+   */
   private void skipNumber() {
     if (peek() == '-') {
       position++;
@@ -177,6 +203,11 @@ final class JsonCursor {
     }
   }
 
+  /**
+   * {@return the integer starting at the cursor, parsed as a {@code long}}
+   *
+   * @throws IllegalArgumentException Thrown if no integer is present or it overflows a long.
+   */
   long parseLong() {
     final int start = position;
     if (peek() == '-') {
@@ -195,8 +226,10 @@ final class JsonCursor {
     }
   }
 
-  // Skips one JSON value of any type (string, number, array, object, true/false/null); used
-  // for fields a reader does not care about, so unknown additions never break it.
+  /**
+   * Skips one JSON value of any type (string, number, array, object, true/false/null), so a
+   * reader tolerates fields it does not care about.
+   */
   void skipValue() {
     skipWhitespace();
     final char c = peek();
@@ -252,6 +285,11 @@ final class JsonCursor {
     }
   }
 
+  /**
+   * {@return an exception naming the input and the cursor offset}
+   *
+   * @param message What was wrong at the cursor.
+   */
   IllegalArgumentException malformed(String message) {
     return new IllegalArgumentException(
         "Malformed " + inputName + " at offset " + position + ": " + message);

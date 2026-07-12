@@ -22,13 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A cursor parser for the JSON header of a safetensors file. Purpose-built for the header's
- * fixed, shallow shape (a flat object of tensor name to a {@code dtype}/{@code shape}/
- * {@code data_offsets} record, plus an optional {@code __metadata__} string map), not a
- * general-purpose JSON parser: no floating-point numbers, no arbitrary nesting depth, no
- * comments. This is the same discipline used by every other data-file cursor parser in the
- * project (no regular expressions, fail loud on malformed input); the scanning primitives are
- * shared with {@link FlatJsonFields} through {@link JsonCursor}.
+ * A cursor parser for the JSON header of a safetensors file: a flat object of tensor name to a
+ * {@code dtype}/{@code shape}/{@code data_offsets} record, plus an optional {@code __metadata__}
+ * string map. Not a general-purpose JSON parser; it fails loud on anything outside that shape.
  */
 final class SafetensorsHeaderParser {
 
@@ -57,6 +53,7 @@ final class SafetensorsHeaderParser {
     return parser.parseTop();
   }
 
+  /** {@return the parsed header: its tensors in header order and the {@code __metadata__} map} */
   private Result parseTop() {
     final List<TensorInfo> tensors = new ArrayList<>();
     Map<String, String> metadata = Map.of();
@@ -93,12 +90,19 @@ final class SafetensorsHeaderParser {
     return new Result(tensors, metadata);
   }
 
-  // Trailing whitespace is legal (writers space-pad the header to align the data section), but
-  // any other trailing content means the declared header length and the JSON disagree.
+  /**
+   * Requires the rest of the header to be whitespace only. Trailing whitespace is legal (writers
+   * space-pad the header to align the data section); other trailing content is a length mismatch.
+   */
   private void requireEnd() {
     cursor.requireEnd("Trailing content after the header object");
   }
 
+  /**
+   * {@return one tensor's metadata, parsed from its header record}
+   *
+   * @param name The tensor's name, the key it was declared under.
+   */
   private TensorInfo parseTensorInfo(String name) {
     cursor.expect('{');
     String dtype = null;
@@ -145,6 +149,7 @@ final class SafetensorsHeaderParser {
         + "and data_offsets");
   }
 
+  /** {@return a JSON object of string values, used for the {@code __metadata__} map} */
   private Map<String, String> parseStringMap() {
     final Map<String, String> map = new LinkedHashMap<>();
     cursor.expect('{');
@@ -172,6 +177,11 @@ final class SafetensorsHeaderParser {
     }
   }
 
+  /**
+   * {@return a JSON array of non-negative integers as an {@code int[]}}
+   *
+   * @throws IllegalArgumentException Thrown if any element is outside the {@code int} range.
+   */
   private int[] parseIntArray() {
     final long[] longs = parseLongArray();
     final int[] ints = new int[longs.length];
@@ -184,6 +194,7 @@ final class SafetensorsHeaderParser {
     return ints;
   }
 
+  /** {@return a JSON array of integers as a {@code long[]}} */
   private long[] parseLongArray() {
     cursor.expect('[');
     cursor.skipWhitespace();
