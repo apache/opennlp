@@ -22,11 +22,9 @@ import java.nio.file.Path;
 
 /**
  * Reads single top-level fields out of a small flat JSON configuration file (a model's
- * {@code config.json} or {@code tokenizer_config.json}) without a JSON library dependency,
- * sharing {@link JsonCursor}'s scanning primitives with the safetensors header parser. Only
- * what the model-directory loader needs is implemented: top-level boolean look-ups. Every
- * other field, of any type and nesting, is skipped structurally, and nested occurrences of the
- * looked-up name never match (a top-level field is what the configuration formats define).
+ * {@code config.json} or {@code tokenizer_config.json}) without a JSON library dependency. Only
+ * top-level boolean look-ups are implemented; every other field is skipped structurally, and a
+ * nested occurrence of the looked-up name never matches.
  */
 final class FlatJsonFields {
 

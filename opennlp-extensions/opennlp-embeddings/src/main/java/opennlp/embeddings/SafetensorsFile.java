@@ -34,22 +34,14 @@ import opennlp.tools.commons.ThreadSafe;
 /**
  * Reads a <a href="https://github.com/huggingface/safetensors">safetensors</a> file: an 8-byte
  * little-endian header length, a JSON header describing each tensor's dtype, shape, and byte
- * range, followed by the raw tensor bytes. Deliberately not a general tensor-format library:
- * only the {@code F32} decode path {@link #readFloat32(String)} needs is implemented, since
- * that is what a distilled static-embedding table stores.
+ * range, followed by the raw tensor bytes. Only the {@code F32} decode path
+ * {@link #readFloat32(String)} needs is implemented.
  *
- * <p><b>Security.</b> Unlike PyTorch's pickle-based checkpoint format, safetensors carries no
- * executable content: the header is data-only JSON and the body is raw tensor bytes, so loading
- * one cannot execute arbitrary code. No hardening beyond ordinary malformed-input handling is
- * needed.</p>
- *
- * <p>Only the header is read eagerly; tensor data is streamed straight into the caller's array
- * with positional reads when requested, so the file size is not limited by Java's int-indexed
- * arrays. The remaining ceiling is per tensor, not per file: one decoded {@code float[]} holds
- * at most {@link Integer#MAX_VALUE} - 8 elements, and {@link #readFloat32(String)} checks that
- * explicitly. The file must stay in place and unchanged between {@link #read(Path)} and later
- * {@link #readFloat32(String)} calls; a file truncated in between fails loud rather than
- * returning partial data.</p>
+ * <p>Only the header is read eagerly; tensor data is streamed into a fresh array with positional
+ * reads on request, so a decoded {@code float[]} is capped at {@link Integer#MAX_VALUE} - 8
+ * elements. The file must stay in place and unchanged between {@link #read(Path)} and a later
+ * {@link #readFloat32(String)} call; a file truncated in between fails loud rather than returning
+ * partial data.</p>
  *
  * <p>Instances are immutable and safe for concurrent use: every {@link #readFloat32(String)}
  * call opens its own channel and decodes into a fresh array the caller owns.</p>
@@ -194,10 +186,6 @@ public final class SafetensorsFile {
           + " F32 elements but its data range is " + byteLength + " bytes");
     }
     final float[] values = new float[(int) elementCount];
-    // When the build baseline reaches JDK 22+, this loop can become a single MemorySegment.copy
-    // out of a FileChannel.map'd segment (long-indexed, deterministic unmap via Arena); on the
-    // JDK 21 baseline java.lang.foreign is still a preview API, so positional reads are the
-    // portable way past the 2 GB byte[]/ByteBuffer ceiling.
     try (FileChannel channel = FileChannel.open(file, StandardOpenOption.READ)) {
       final ByteBuffer chunk = ByteBuffer.allocate((int) Math.min(READ_CHUNK_BYTES, byteLength))
           .order(ByteOrder.LITTLE_ENDIAN);
@@ -220,9 +208,17 @@ public final class SafetensorsFile {
     }
   }
 
-  // Fills the buffer with bytes starting at the given file position; fails loud if the file
-  // ends first, which can only happen when the file shrank after read(Path) validated ranges
-  // against its length.
+  /**
+   * Fills the buffer with bytes starting at the given file position.
+   *
+   * @param channel  The open channel to read from.
+   * @param buffer   The buffer to fill.
+   * @param position The starting file position.
+   * @param file     The file, for error messages.
+   * @throws IOException Thrown if reading fails.
+   * @throws IllegalStateException Thrown if the file ends before the buffer is full, which can
+   *     only happen when the file shrank after {@link #read(Path)} validated its ranges.
+   */
   private static void readFully(FileChannel channel, ByteBuffer buffer, long position, Path file)
       throws IOException {
     while (buffer.hasRemaining()) {
@@ -236,10 +232,9 @@ public final class SafetensorsFile {
   }
 
   /**
-   * Finds the single 2-dimensional {@code F32} tensor in this file, the shape a static
-   * embedding table's weight matrix takes (vocabulary size by hidden dimension). Deliberately
-   * strict rather than guessing a name convention: distillation tools do not agree on one, and a
-   * wrong guess would silently load the wrong tensor.
+   * Finds the single 2-dimensional {@code F32} tensor in this file, the shape a static embedding
+   * table's weight matrix takes (vocabulary size by hidden dimension). Strict rather than guessing
+   * a name convention, so a wrong guess cannot silently load the wrong tensor.
    *
    * @return The name of the single 2-D F32 tensor.
    * @throws IllegalArgumentException Thrown if the file has zero or more than one 2-D F32
