@@ -28,11 +28,8 @@ import java.util.PriorityQueue;
  * user-defined symbols, which are frozen whole) and adjacent pairs merge greedily, highest piece
  * score first, until no adjacent pair forms a vocabulary piece.
  *
- * <p>This ports the reference implementation's agenda algorithm: candidate pairs sit in a
- * priority queue ordered by score with ties broken towards the leftmost pair, stale entries are
- * detected by a length check when popped, and merges that land on a piece marked unused are
- * re-segmented back into their constituents afterwards. Only pieces of the normal, user-defined,
- * and unused types participate in merges.</p>
+ * <p>Only pieces of the normal, user-defined, and unused types participate in merges; a merge that
+ * lands on an unused piece is re-segmented back into its constituents.</p>
  */
 final class BpeEncoder {
 
@@ -67,8 +64,10 @@ final class BpeEncoder {
     this.userDefinedMatcher = userDefinedMatcher;
   }
 
-  // A candidate merge of the symbols at indices left and right; size is the merged byte length
-  // used to detect staleness after either side has changed.
+  /**
+   * A candidate merge of the symbols at indices {@code left} and {@code right}; {@code size} is the
+   * merged byte length, used to detect staleness after either side has changed.
+   */
   private record Pair(int left, int right, float score, int size) {
   }
 
@@ -179,9 +178,18 @@ final class BpeEncoder {
     }
   }
 
-  // Emits a symbol, splitting a piece of the unused type back into the pieces it was merged
-  // from. Positions are assigned by a running cursor; constituent byte lengths always sum to the
-  // merged length, so the cursor stays aligned with the normalized bytes.
+  /**
+   * Emits a symbol, splitting a piece of the unused type back into the pieces it was merged from.
+   * Positions are assigned by a running cursor; constituent byte lengths always sum to the merged
+   * length, so the cursor stays aligned with the normalized bytes.
+   *
+   * @param piece    The piece content to emit.
+   * @param consumed The running byte cursor into the normalized text.
+   * @param depth    The current recursion depth.
+   * @param revMerge The map from a merged piece to its two constituents.
+   * @param output   The segment list to append to.
+   * @return The updated byte cursor.
+   */
   private int resegment(String piece, int consumed, int depth, Map<String, String[]> revMerge,
                         List<Segment> output) {
     final Integer mapped = pieces.get(piece);

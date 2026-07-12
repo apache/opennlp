@@ -29,10 +29,16 @@ final class EncoderTokenizer implements Tokenizer {
 
   private final WordpieceEncoder encoder;
 
+  /**
+   * Instantiates the adapter.
+   *
+   * @param encoder The encoder whose pieces this tokenizer returns.
+   */
   EncoderTokenizer(final WordpieceEncoder encoder) {
     this.encoder = encoder;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String[] tokenize(final String text) {
     return encoder.encodeToPieces(text);
