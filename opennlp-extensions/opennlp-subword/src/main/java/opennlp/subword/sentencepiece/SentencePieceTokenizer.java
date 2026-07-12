@@ -487,11 +487,12 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     }
   }
 
-  // The embedded self-test samples, exposed for the parity tests.
+  /** {@return the embedded self-test input samples} */
   List<String> selfTestInputs() {
     return selfTestInputs;
   }
 
+  /** {@return the embedded self-test expected segmentations} */
   List<String> selfTestExpected() {
     return selfTestExpected;
   }

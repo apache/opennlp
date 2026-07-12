@@ -104,7 +104,12 @@ final class DoubleArrayTrie {
     return (units[nodePos] & 0x800000FF) == b;
   }
 
-  // The offset from a unit to its children, as encoded by Darts-clone.
+  /**
+   * Returns the offset from a unit to its children, as encoded by Darts-clone.
+   *
+   * @param unit The unit word.
+   * @return The child offset.
+   */
   private static int offset(int unit) {
     return (unit >>> 10) << ((unit & (1 << 9)) >>> 6);
   }

@@ -20,10 +20,9 @@ package opennlp.subword.sentencepiece;
  * A caller's text encoded as UTF-8, keeping the map from every byte offset back to the UTF-16
  * offset it came from.
  *
- * <p>The whole pipeline runs in byte space to match the reference implementation, but the spans
- * reported to the caller must be UTF-16 offsets into the original {@code CharSequence}; this map
- * converts them. An unpaired surrogate, which UTF-8 cannot represent, is encoded as U+FFFD, kept
- * deterministic so that parity fixtures can cover it.</p>
+ * <p>The pipeline runs in UTF-8 byte space, but the spans reported to the caller must be UTF-16
+ * offsets into the original {@code CharSequence}; this map converts them. An unpaired surrogate,
+ * which UTF-8 cannot represent, is encoded as U+FFFD.</p>
  */
 final class Utf8Text {
 
@@ -98,8 +97,6 @@ final class Utf8Text {
       c += charCount;
     }
     byteToChar[b] = charLength;
-    // The oversized buffers are kept and carried with an explicit length instead of being
-    // trimmed; the per-call copies were pure allocation traffic.
     return new Utf8Text(bytes, b, byteToChar, charLength);
   }
 

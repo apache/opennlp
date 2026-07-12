@@ -24,13 +24,8 @@ import java.util.List;
  * Viterbi segmentation under a unigram language model: of all ways to cover the normalized text
  * with vocabulary pieces, it finds the one with the highest total log-probability.
  *
- * <p>This is a port of the reference implementation's optimized single-pass decoder, which
- * exploits the unigram independence assumption to keep only the best path ending at each byte
- * position instead of a full lattice. Characters no piece covers fall back to the unknown id
- * with a fixed penalty below the lowest piece score, and user-defined symbols receive a
- * length-based bonus score so they always win. Tie-breaking and score arithmetic follow the
- * reference exactly, including its occasional re-basing of accumulated scores on very long
- * inputs, because segmentation parity is asserted against it.</p>
+ * <p>Characters no piece covers fall back to the unknown id with a fixed penalty below the lowest
+ * piece score, and user-defined symbols receive a length-based bonus score so they always win.</p>
  */
 final class UnigramEncoder {
 
