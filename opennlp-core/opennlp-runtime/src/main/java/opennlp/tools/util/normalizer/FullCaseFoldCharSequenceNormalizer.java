@@ -24,10 +24,13 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * A {@link CharSequenceNormalizer} that applies Unicode full case folding (UTS&#160;#21) for
- * case-insensitive matching, using the bundled {@code CaseFolding.txt} data of the Unicode Character
+ * A {@link CharSequenceNormalizer} that applies Unicode full case folding for case-insensitive
+ * matching, as defined by the Default Case Algorithms in
+ * <a href="https://www.unicode.org/versions/latest/core-spec/chapter-3/">Section 3.13 of the
+ * Unicode Standard</a>, using the bundled {@code CaseFolding.txt} data of the Unicode Character
  * Database.
  *
  * <p>Unlike {@link CaseFoldCharSequenceNormalizer}, which lower cases with
@@ -67,28 +70,41 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
     return INSTANCE;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws NullPointerException if {@code text} is {@code null}.
+   */
   @Override
   public CharSequence normalize(CharSequence text) {
-    // Resolve the table once per call rather than once per code point, so the volatile read and
-    // double-checked-lock guard is not repeated in the hot per-character loop (CharClass.substitute
-    // calls the substitution function once per code point in text).
+    Objects.requireNonNull(text, "text must not be null");
     final Map<Integer, String> table = foldings();
     return CharClass.substitute(text, table::get);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws NullPointerException if {@code text} is {@code null}.
+   */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
+    Objects.requireNonNull(text, "text must not be null");
     final Map<Integer, String> table = foldings();
     return CharClass.substituteAligned(text, table::get);
   }
 
+  /**
+   * {@return the folding table, loading it on first use} Lazily initialized and cached for the
+   * lifetime of the class.
+   */
   private static Map<Integer, String> foldings() {
     Map<Integer, String> map = foldings;
     if (map == null) {
       synchronized (FullCaseFoldCharSequenceNormalizer.class) {
         map = foldings;
         if (map == null) {
-          map = load();
+          map = initFoldings();
           foldings = map;
         }
       }
@@ -96,7 +112,13 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
     return map;
   }
 
-  private static Map<Integer, String> load() {
+  /**
+   * {@return the folding table parsed from the bundled {@code CaseFolding.txt} resource}
+   *
+   * @throws IllegalStateException if the resource is missing.
+   * @throws UncheckedIOException if the resource cannot be read.
+   */
+  private static Map<Integer, String> initFoldings() {
     try (InputStream in = FullCaseFoldCharSequenceNormalizer.class.getResourceAsStream(RESOURCE)) {
       if (in == null) {
         throw new IllegalStateException("Missing case folding data resource: " + RESOURCE);
@@ -107,10 +129,17 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
     }
   }
 
-  // Package-private so the malformed-data handling can be exercised without the bundled resource.
-  // Loads the full-folding mappings: the C (common) and F (full) status rows of CaseFolding.txt. The
-  // S (simple) and T (Turkic) status rows are deliberately skipped so the fold stays language-neutral
-  // and full rather than simple.
+  /**
+   * Parses the full-folding mappings, the {@code C} (common) and {@code F} (full) status rows of
+   * {@code CaseFolding.txt}. The {@code S} (simple) and {@code T} (Turkic) status rows are
+   * deliberately skipped so the fold stays language-neutral and full rather than simple.
+   * Package-private so the malformed-data handling can be exercised without the bundled resource.
+   *
+   * @param in the stream to parse, in {@code CaseFolding.txt} format. Must not be {@code null}.
+   * @return the mapping from source code point to its full case folding.
+   * @throws IOException if the stream cannot be read.
+   * @throws IllegalArgumentException if the data is malformed.
+   */
   static Map<Integer, String> parse(InputStream in) throws IOException {
     final Map<Integer, String> map = new HashMap<>();
     try (BufferedReader reader =

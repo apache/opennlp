@@ -326,9 +326,15 @@ public final class TermAnalyzer {
       return this;
     }
 
-    // fullCaseFold() already includes case folding plus the expanding folds, so configuring both
-    // CASE_FOLD and FULL_CASE_FOLD is always redundant double-folding rather than a meaningful
-    // configuration; fail loud instead of silently running both in canonical order.
+    /**
+     * Rejects configuring both case folds. {@link #fullCaseFold()} already includes case folding
+     * plus the expanding folds, so combining it with {@link #caseFold()} is always redundant
+     * double-folding rather than a meaningful configuration; fail loud instead of silently running
+     * both in canonical order.
+     *
+     * @param adding the case-fold dimension being configured.
+     * @throws IllegalStateException if the other case-fold dimension is already configured.
+     */
     private void requireNotBothCaseFolds(Dimension adding) {
       final Dimension other = adding == Dimension.CASE_FOLD ? Dimension.FULL_CASE_FOLD
           : Dimension.CASE_FOLD;
