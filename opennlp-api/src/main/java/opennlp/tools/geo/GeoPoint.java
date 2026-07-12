@@ -19,12 +19,8 @@ package opennlp.tools.geo;
 import opennlp.tools.commons.ThreadSafe;
 
 /**
- * A geographic point in WGS84 decimal degrees.
- *
- * <p>Both coordinates are range-validated at construction: latitude must be in
- * {@code [-90, 90]} and longitude in {@code [-180, 180]}, and neither may be {@code NaN}. An
- * out-of-range value is always a data or programming error, so it fails loud here rather than
- * surfacing later as a nonsense distance or a silently unmatchable entry.</p>
+ * A geographic point in WGS84 decimal degrees. Both coordinates are range-validated at
+ * construction and neither may be {@code NaN}.
  *
  * <p>Instances are immutable and thread-safe.</p>
  *

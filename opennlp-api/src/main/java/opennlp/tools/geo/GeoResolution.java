@@ -23,19 +23,14 @@ import opennlp.tools.util.Span;
  * One resolved location mention: the mention's span in the document, the winning
  * {@link GazetteerEntry}, and the resolver's confidence.
  *
- * <p>The {@link #mention() mention} span is in ORIGINAL document coordinates, the same coordinate
- * space as Name Finder output. Resolution results attach to entity spans, not to any normalized
- * or tokenized view of the text, so a consumer can always report the resolved place against the
- * exact characters of the source document.</p>
- *
- * <p>Instances are immutable and thread-safe.</p>
+ * <p>The {@link #mention() mention} span is in original document coordinates, the same coordinate
+ * space as Name Finder output. Instances are immutable and thread-safe.</p>
  *
  * @param mention    The location mention's span, in original document coordinates. Must not be
  *                   {@code null}.
  * @param entry      The winning candidate. Must not be {@code null}.
- * @param confidence The resolver-defined confidence, in {@code [0, 1]}. How the value is computed
- *                   (and how much it can be trusted) is the {@link Geocoder} implementation's
- *                   documented choice.
+ * @param confidence The resolver-defined confidence, in {@code [0, 1]}; how it is computed is the
+ *                   {@link Geocoder} implementation's documented choice.
  */
 @ThreadSafe
 public record GeoResolution(Span mention, GazetteerEntry entry, double confidence) {

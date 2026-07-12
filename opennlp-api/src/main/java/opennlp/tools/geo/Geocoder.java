@@ -24,16 +24,9 @@ import opennlp.tools.util.Span;
 /**
  * Resolves location mentions in a document against a {@link Gazetteer}.
  *
- * <p>The mentions are entity spans in ORIGINAL document coordinates, typically the
+ * <p>The mentions are entity spans in original document coordinates, typically the
  * {@code LOCATION} spans produced by a name finder. The whole document text is passed alongside
- * them so an implementation can use co-occurring mentions for disambiguation; a simple
- * implementation may score each mention independently, and a context-aware scorer is a later
- * implementation of this same contract, not a contract change.</p>
- *
- * <p>Relationship to {@link opennlp.tools.entitylinker.EntityLinker}: that interface is the
- * generic entity enrichment contract for any entity type. New consumers that resolve location
- * mentions against place data should target this interface and {@link Gazetteer};
- * {@code EntityLinker} remains the contract for generic entity enrichment beyond locations.</p>
+ * them so an implementation may use co-occurring mentions for disambiguation.</p>
  *
  * <p>Implementations must be immutable and thread-safe after construction, so one geocoder can
  * serve concurrent documents.</p>
