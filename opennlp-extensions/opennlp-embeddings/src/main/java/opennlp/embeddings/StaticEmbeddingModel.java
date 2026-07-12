@@ -26,7 +26,6 @@ import java.util.TreeSet;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.embeddings.TextEmbedder;
-import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
 /**
@@ -92,7 +91,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private final float[] weights;
   private final int dimension;
   private final WordpieceVocabulary vocabulary;
-  private final BertTokenizer tokenizer;
+  private final WordpiecePipeline tokenizer;
   private final boolean normalize;
   private final String unknownToken;
   // Per-row L2 norms and the special-token mask are constants of the model, precomputed at
@@ -101,7 +100,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private final boolean[] specialRows;
 
   private StaticEmbeddingModel(float[] embeddings, float[] weights, int dimension,
-                                WordpieceVocabulary vocabulary, BertTokenizer tokenizer,
+                                WordpieceVocabulary vocabulary, WordpiecePipeline tokenizer,
                                 boolean normalize, String unknownToken, double[] rowNorms,
                                 boolean[] specialRows) {
     this.embeddings = embeddings;
@@ -274,7 +273,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       }
     }
 
-    final BertTokenizer tokenizer = new BertTokenizer(vocabulary.tokens(), lowerCase);
+    final WordpiecePipeline tokenizer = new WordpiecePipeline(vocabulary.tokens(), lowerCase);
     return new StaticEmbeddingModel(embeddings, weights, dimension, vocabulary, tokenizer,
         normalize, WordpieceTokenizer.BERT_UNK_TOKEN, rowNorms, specialRows);
   }
