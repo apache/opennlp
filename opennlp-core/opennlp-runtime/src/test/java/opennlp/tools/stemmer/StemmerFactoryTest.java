@@ -347,6 +347,15 @@ class StemmerFactoryTest {
   }
 
   @Test
+  void hugeCapacityConstructsAndStems() {
+    // Pins the overflow-safe table sizing: capacities near Integer.MAX_VALUE are documented
+    // as legal ("must be positive") and must not wrap the LinkedHashMap initial capacity.
+    final CachingStemmer cached = new CachingStemmer(
+        new SnowballStemmerFactory(SnowballStemmer.ALGORITHM.ENGLISH), Integer.MAX_VALUE);
+    Assertions.assertEquals("run", cached.stem("running").toString());
+  }
+
+  @Test
   void clearCacheForcesRestemmingOnTheCallingThread() {
     final AtomicInteger delegateCalls = new AtomicInteger();
     final StemmerFactory counting = () -> word -> {

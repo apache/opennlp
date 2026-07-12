@@ -23,7 +23,6 @@ import java.util.Map;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.OwnerOrPerThreadState;
-import opennlp.tools.util.jvm.StringInterners;
 
 /**
  * A {@link Stemmer} that memoizes word-to-stem mappings in a bounded per-thread LRU cache.
@@ -101,9 +100,10 @@ public final class CachingStemmer implements Stemmer {
     if (cached != null) {
       return cached;
     }
-    // toString() detaches the result from any buffer the delegate may reuse internally, and
-    // interning stores one instance per distinct stem across all threads' caches.
-    final String stemmed = StringInterners.intern(ts.delegate.stem(key).toString());
+    // toString() detaches the result from any buffer the delegate may reuse internally. The
+    // result is deliberately NOT interned: the JVM-wide interner holds strong references
+    // forever, which would defeat this class's bounded-memory guarantee on open vocabularies.
+    final String stemmed = ts.delegate.stem(key).toString();
     ts.cache.put(key, stemmed);
     return stemmed;
   }
@@ -124,7 +124,9 @@ public final class CachingStemmer implements Stemmer {
 
   /**
    * Empties the calling thread's cache while keeping its delegate, forcing every subsequent
-   * word through a fresh stemming pass. Only the calling thread's cache is affected.
+   * word through a fresh stemming pass. Only the calling thread's cache is affected. A thread
+   * that has not stemmed yet has its state initialized by this call, so invoke it on the
+   * thread whose cache should be emptied, not from an unrelated maintenance thread.
    */
   public void clearCache() {
     state.get().cache.clear();
@@ -139,8 +141,10 @@ public final class CachingStemmer implements Stemmer {
       this.delegate = delegate;
       // Access-ordered so iteration order is least-recently-used first. The initial table size
       // accounts for the 0.75 load factor so a cache filled to capacity never rehashes; the clamp
-      // keeps the eager allocation reasonable for very large capacities.
-      this.cache = new LinkedHashMap<>(Math.min((int) (capacity / 0.75f) + 1, 4096), 0.75f, true) {
+      // keeps the eager allocation reasonable for very large capacities. Sized in double
+      // arithmetic: the int expression overflows to a negative capacity near Integer.MAX_VALUE.
+      this.cache = new LinkedHashMap<>((int) Math.min(capacity / 0.75d + 1.0d, 4096.0d),
+          0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
           return size() > capacity;
