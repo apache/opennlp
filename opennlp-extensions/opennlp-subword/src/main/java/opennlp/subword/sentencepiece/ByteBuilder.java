@@ -24,10 +24,20 @@ final class ByteBuilder {
   private byte[] data;
   private int length;
 
+  /**
+   * Instantiates the buffer.
+   *
+   * @param capacity The initial capacity hint.
+   */
   ByteBuilder(int capacity) {
     data = new byte[Math.max(capacity, 16)];
   }
 
+  /**
+   * Appends one byte.
+   *
+   * @param b The byte to append.
+   */
   void append(byte b) {
     if (length == data.length) {
       data = Arrays.copyOf(data, data.length + (data.length >> 1));
@@ -35,6 +45,13 @@ final class ByteBuilder {
     data[length++] = b;
   }
 
+  /**
+   * Appends a run of bytes.
+   *
+   * @param source The source array.
+   * @param from   The inclusive start offset in {@code source}.
+   * @param count  The number of bytes to append.
+   */
   void append(byte[] source, int from, int count) {
     while (length + count > data.length) {
       data = Arrays.copyOf(data, data.length + (data.length >> 1));
@@ -43,14 +60,26 @@ final class ByteBuilder {
     length += count;
   }
 
+  /** {@return the number of valid bytes} */
   int length() {
     return length;
   }
 
+  /**
+   * Shrinks the valid length.
+   *
+   * @param newLength The new length, not greater than the current length.
+   */
   void truncate(int newLength) {
     length = newLength;
   }
 
+  /**
+   * Tests whether the valid bytes end with the given suffix.
+   *
+   * @param suffix The suffix to test.
+   * @return {@code true} when the buffer ends with {@code suffix}.
+   */
   boolean endsWith(byte[] suffix) {
     if (length < suffix.length) {
       return false;
@@ -58,6 +87,7 @@ final class ByteBuilder {
     return Arrays.equals(data, length - suffix.length, length, suffix, 0, suffix.length);
   }
 
+  /** {@return a trimmed copy of the valid bytes} */
   byte[] toArray() {
     return Arrays.copyOf(data, length);
   }

@@ -257,6 +257,16 @@ public abstract class AbstractDL implements AutoCloseable {
     return createPipelineTokenizer(vocab, lowerCase);
   }
 
+  /**
+   * Builds the pipeline tokenizer, selecting the RoBERTa special tokens when the vocabulary
+   * carries them and the BERT defaults otherwise.
+   *
+   * @param vocab     The vocabulary map.
+   * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
+   * @return A configured {@link Tokenizer}.
+   * @throws IllegalArgumentException Thrown if the selected special tokens are not all present in
+   *     the vocabulary.
+   */
   static Tokenizer createPipelineTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
     if (vocab.containsKey(

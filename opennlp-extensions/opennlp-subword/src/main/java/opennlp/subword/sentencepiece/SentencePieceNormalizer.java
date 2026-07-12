@@ -25,9 +25,6 @@ package opennlp.subword.sentencepiece;
  * {@code normToOrig}, mapping every normalized byte to the offset of the original byte chunk it
  * was derived from, with one trailing entry for the end position; that map is what lets every
  * downstream piece report an exact span of the caller's text.</p>
- *
- * <p>This mirrors the reference implementation's normalizer semantics rule for rule, since parity
- * of both the normalized bytes and the offset map is what the tests assert.</p>
  */
 final class SentencePieceNormalizer {
 
@@ -118,10 +115,11 @@ final class SentencePieceNormalizer {
   record Normalized(byte[] bytes, int length, int[] normToOrig) {
   }
 
-  // One normalization step: `consumed` input bytes produced `data[from, to)`. The data array is
-  // the input itself (pass-through), the replacement blob, or the replacement character. One
-  // mutable scratch per normalize call, refilled per chunk, so the scan allocates nothing per
-  // code point.
+  /**
+   * One normalization step: {@code consumed} input bytes produced {@code data[from, to)}. The data
+   * array is the input itself (pass-through), the replacement blob, or the replacement character.
+   * A single mutable scratch is refilled per chunk so the scan allocates nothing per code point.
+   */
   private static final class Chunk {
 
     private byte[] data;
@@ -249,10 +247,17 @@ final class SentencePieceNormalizer {
     }
   }
 
-  // Fills the scratch with the normalized form of the longest applicable prefix of
-  // input[from, inputLength): a user-defined symbol passes through raw, otherwise the longest
-  // character-map rule applies, otherwise one code point passes through raw (or becomes U+FFFD
-  // when the lead byte is malformed).
+  /**
+   * Fills the scratch with the normalized form of the longest applicable prefix of
+   * {@code input[from, inputLength)}: a user-defined symbol passes through raw, otherwise the
+   * longest character-map rule applies, otherwise one code point passes through raw (or becomes
+   * U+FFFD when the lead byte is malformed).
+   *
+   * @param input       The UTF-8 input buffer.
+   * @param inputLength The number of valid bytes in {@code input}.
+   * @param from        The offset to normalize from.
+   * @param chunk       The scratch to fill.
+   */
   private void normalizePrefix(byte[] input, int inputLength, int from, Chunk chunk) {
     if (userDefinedMatcher != null) {
       final int matched = longestUserDefinedMatch(input, inputLength, from);
@@ -314,8 +319,13 @@ final class SentencePieceNormalizer {
     return longest;
   }
 
-  // The byte length of a UTF-8 sequence by its lead byte, as the reference implementation
-  // computes it: trail and malformed lead bytes report one byte.
+  /**
+   * Returns the byte length of a UTF-8 sequence from its lead byte; trail and malformed lead bytes
+   * report one byte.
+   *
+   * @param lead The lead byte.
+   * @return The sequence length in bytes, from one to four.
+   */
   static int utf8Length(byte lead) {
     final int high = (lead & 0xFF) >>> 4;
     if (high < 0xC) {
@@ -328,9 +338,15 @@ final class SentencePieceNormalizer {
     };
   }
 
-  // Checks a single code point for well-formedness: correct trail-byte count and no unpaired
-  // surrogate or out-of-range value. The public tokenizer API encodes its own well-formed UTF-8,
-  // so this only guards direct byte-level use.
+  /**
+   * Checks a single code point for well-formedness: correct trail-byte count and no unpaired
+   * surrogate or out-of-range value.
+   *
+   * @param input  The UTF-8 input buffer.
+   * @param from   The offset of the lead byte.
+   * @param length The candidate sequence length.
+   * @return {@code true} when the sequence is malformed.
+   */
   private static boolean isMalformed(byte[] input, int from, int length) {
     if ((input[from] & 0x80) == 0) {
       return false;

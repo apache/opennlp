@@ -24,10 +24,20 @@ final class IntBuilder {
   private int[] data;
   private int length;
 
+  /**
+   * Instantiates the buffer.
+   *
+   * @param capacity The initial capacity hint.
+   */
   IntBuilder(int capacity) {
     data = new int[Math.max(capacity, 16)];
   }
 
+  /**
+   * Appends one value.
+   *
+   * @param value The value to append.
+   */
   void append(int value) {
     if (length == data.length) {
       data = Arrays.copyOf(data, data.length + (data.length >> 1));
@@ -35,6 +45,13 @@ final class IntBuilder {
     data[length++] = value;
   }
 
+  /**
+   * Reads a value by index.
+   *
+   * @param index An index in {@code [0, length())}.
+   * @return The value at {@code index}.
+   * @throws IndexOutOfBoundsException Thrown if {@code index} is out of range.
+   */
   int get(int index) {
     if (index >= length) {
       throw new IndexOutOfBoundsException("index " + index + " is outside [0, " + length + ")");
@@ -42,14 +59,21 @@ final class IntBuilder {
     return data[index];
   }
 
+  /** {@return the number of valid values} */
   int length() {
     return length;
   }
 
+  /**
+   * Shrinks the valid length.
+   *
+   * @param newLength The new length, not greater than the current length.
+   */
   void truncate(int newLength) {
     length = newLength;
   }
 
+  /** {@return a trimmed copy of the valid values} */
   int[] toArray() {
     return Arrays.copyOf(data, length);
   }
