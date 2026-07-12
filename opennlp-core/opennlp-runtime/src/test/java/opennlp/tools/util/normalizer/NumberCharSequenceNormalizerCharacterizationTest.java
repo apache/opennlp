@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -72,6 +73,12 @@ public class NumberCharSequenceNormalizerCharacterizationTest {
     check("\uD835\uDFCF", "\uD835\uDFCF");
     check("\uD83D\uDE001\uD83D\uDE00", "\uD83D\uDE00 \uD83D\uDE00");
     check("1\uD835\uDFCF2", " \uD835\uDFCF ");
+  }
+
+  @Test
+  void digitFreeInputIsReturnedUncopied() {
+    final String text = "no digits in here at all";
+    assertSame(text, NumberCharSequenceNormalizer.getInstance().normalize(text));
   }
 
   @Test

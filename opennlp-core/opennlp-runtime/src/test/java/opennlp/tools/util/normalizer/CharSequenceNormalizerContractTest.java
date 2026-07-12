@@ -46,7 +46,17 @@ class CharSequenceNormalizerContractTest {
         Arguments.of("number", NumberCharSequenceNormalizer.getInstance()),
         Arguments.of("shrink", ShrinkCharSequenceNormalizer.getInstance()),
         Arguments.of("socialMedia", SocialMediaCharSequenceNormalizer.getInstance()),
-        Arguments.of("url", UrlCharSequenceNormalizer.getInstance()));
+        Arguments.of("url", UrlCharSequenceNormalizer.getInstance()),
+        Arguments.of("bullet", BulletCharSequenceNormalizer.getInstance()),
+        Arguments.of("dash", DashCharSequenceNormalizer.getInstance()),
+        Arguments.of("digit", DigitCharSequenceNormalizer.getInstance()),
+        Arguments.of("ellipsis", EllipsisCharSequenceNormalizer.getInstance()),
+        Arguments.of("germanUmlaut", GermanUmlautCharSequenceNormalizer.getInstance()),
+        Arguments.of("invisible", InvisibleCharSequenceNormalizer.getInstance()),
+        Arguments.of("lineBreakPreservingWhitespace",
+            LineBreakPreservingWhitespaceCharSequenceNormalizer.getInstance()),
+        Arguments.of("quote", QuoteCharSequenceNormalizer.getInstance()),
+        Arguments.of("whitespace", WhitespaceCharSequenceNormalizer.getInstance()));
   }
 
   @ParameterizedTest(name = "{0}")

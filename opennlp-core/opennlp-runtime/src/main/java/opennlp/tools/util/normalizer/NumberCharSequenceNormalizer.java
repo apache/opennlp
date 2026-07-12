@@ -44,6 +44,14 @@ public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
     if (text == null) {
       throw new IllegalArgumentException("The text must not be null.");
     }
-    return ASCII_DIGITS.collapse(text);
+    // The common digit-free text is returned without copying, like the sibling normalizers.
+    final int length = text.length();
+    for (int i = 0; i < length; i++) {
+      final char c = text.charAt(i);
+      if (c >= '0' && c <= '9') {
+        return ASCII_DIGITS.collapse(text);
+      }
+    }
+    return text;
   }
 }

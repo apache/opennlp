@@ -30,7 +30,8 @@ public interface CharSequenceNormalizer extends Serializable {
    * Normalizes a sequence of characters.
    *
    * @param text The {@link CharSequence} to normalize. Must not be {@code null}.
-   * @return The normalized {@link CharSequence}.
+   * @return The normalized {@link CharSequence}. When no normalization applies,
+   *     implementations may return the given {@code text} instance itself rather than a copy.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   CharSequence normalize(CharSequence text);
