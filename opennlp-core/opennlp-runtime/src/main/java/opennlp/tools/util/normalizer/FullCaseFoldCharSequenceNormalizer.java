@@ -55,9 +55,12 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
 
   private static final String RESOURCE = "CaseFolding.txt";
 
-  // Maps a source code point to its full case folding (one or more code points), for the C and F
-  // status rows of CaseFolding.txt.
-  private static volatile Map<Integer, String> foldings;
+  /**
+   * Maps a source code point to its full case folding (one or more code points), for the C and F
+   * status rows of {@code CaseFolding.txt}. Loaded once when this class initializes, which
+   * happens on first use.
+   */
+  private static final Map<Integer, String> FOLDINGS = initFoldings();
 
   private static final FullCaseFoldCharSequenceNormalizer INSTANCE =
       new FullCaseFoldCharSequenceNormalizer();
@@ -78,8 +81,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
   @Override
   public CharSequence normalize(CharSequence text) {
     Objects.requireNonNull(text, "text must not be null");
-    final Map<Integer, String> table = foldings();
-    return CharClass.substitute(text, table::get);
+    return CharClass.substitute(text, FOLDINGS::get);
   }
 
   /**
@@ -90,26 +92,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     Objects.requireNonNull(text, "text must not be null");
-    final Map<Integer, String> table = foldings();
-    return CharClass.substituteAligned(text, table::get);
-  }
-
-  /**
-   * {@return the folding table, loading it on first use} Lazily initialized and cached for the
-   * lifetime of the class.
-   */
-  private static Map<Integer, String> foldings() {
-    Map<Integer, String> map = foldings;
-    if (map == null) {
-      synchronized (FullCaseFoldCharSequenceNormalizer.class) {
-        map = foldings;
-        if (map == null) {
-          map = initFoldings();
-          foldings = map;
-        }
-      }
-    }
-    return map;
+    return CharClass.substituteAligned(text, FOLDINGS::get);
   }
 
   /**
