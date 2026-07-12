@@ -74,6 +74,12 @@ class StaticEmbeddingModelTest {
     return file;
   }
 
+  private static Path writeSafetensorsF16(Path dir) throws IOException {
+    final Path file = dir.resolve("model.safetensors");
+    SafetensorsTestFiles.write(file, "F16", SafetensorsTestFiles.matrix("embeddings", ROWS));
+    return file;
+  }
+
   @Test
   void testEmbedMeanPoolsWithoutWeights(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model =
@@ -84,6 +90,18 @@ class StaticEmbeddingModelTest {
 
     // (hello + world) / 2 = ([3,30,300] + [4,40,400]) / 2 = [3.5, 35, 350]
     assertArrayEquals(new float[] {3.5f, 35f, 350f}, result, 1e-5f);
+  }
+
+  @Test
+  void testLoadsAnF16EmbeddingMatrix(@TempDir Path dir) throws IOException {
+    // model2vec writes float16 by default, so the loader must accept it and widen to float.
+    final StaticEmbeddingModel model =
+        StaticEmbeddingModel.load(writeVocab(dir), writeSafetensorsF16(dir),
+            Casing.UNCASED, Normalization.NONE);
+
+    assertEquals(DIMENSION, model.dimension());
+    // (hello + world) / 2 = [3.5, 35, 350]; the row values are all exact in IEEE half.
+    assertArrayEquals(new float[] {3.5f, 35f, 350f}, model.embed("hello world"), 1e-2f);
   }
 
   @Test
