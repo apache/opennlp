@@ -206,9 +206,15 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     return pieces;
   }
 
-  // Greedy longest-match wordpiece over one whitespace-delimited word, exactly as
-  // WordpieceTokenizer#tokenize segments it; pieces are emitted only if the whole word is
-  // representable, otherwise the word becomes a single unknown piece.
+  /**
+   * Greedily longest-match segments one whitespace-delimited word; the pieces are emitted only if
+   * the whole word is representable, otherwise the word becomes a single unknown piece.
+   *
+   * @param mapped The normalized text with per-character original-text ranges.
+   * @param from   The inclusive start of the word in {@code mapped}.
+   * @param to     The exclusive end of the word in {@code mapped}.
+   * @param pieces The output list to append to.
+   */
   private void encodeWord(MappedText mapped, int from, int to, List<SubwordPiece> pieces) {
     final int wordStart = mapped.starts[from];
     final int wordEnd = mapped.ends[to - 1];
@@ -247,8 +253,10 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     }
   }
 
-  // The normalized text with, for every char, the original-text range it came from. Characters
-  // inserted by the pipeline (isolation spaces) carry an empty range at the insertion point.
+  /**
+   * The normalized text with, for every char, the original-text range it came from. Characters
+   * inserted by the pipeline (isolation spaces) carry an empty range at the insertion point.
+   */
   private static final class MappedText {
     private char[] chars;
     private int[] starts;
@@ -281,8 +289,13 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     }
   }
 
-  // Text cleaning and CJK isolation in one pass: both are per-code-point
-  // transforms, and a CJK code point is never dropped or whitespace, so the fusion is exact.
+  /**
+   * Cleans the text (control and whitespace normalization) and isolates CJK code points in one
+   * pass, recording the original-text range of every output character.
+   *
+   * @param original The original input text.
+   * @return The cleaned, CJK-isolated text with per-character ranges.
+   */
   private static MappedText cleanAndIsolateCjk(String original) {
     final MappedText out = new MappedText(original.length() + 16);
     int i = 0;
@@ -311,7 +324,13 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     return out;
   }
 
-  // BertNormalization#isolatePunctuation with the range of each char preserved.
+  /**
+   * Isolates punctuation, surrounding each punctuation code point with spaces, preserving the
+   * original-text range of every character.
+   *
+   * @param in The input text with per-character ranges.
+   * @return The punctuation-isolated text with per-character ranges.
+   */
   private static MappedText isolatePunctuation(MappedText in) {
     final MappedText out = new MappedText(in.length + 16);
     int i = 0;
@@ -334,13 +353,14 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     return out;
   }
 
-  // Lower casing and accent stripping with ranges preserved. The content is computed
-  // with whole-run library calls, applied per whitespace run
-  // (equivalent on whole strings: no case mapping context crosses a space, and NFD
-  // composition is boundary-safe at a space). The per-char ranges are reconstructed from a
-  // per-code-point rerun of the same transforms; if a contextual case mapping (Greek final
-  // sigma) makes the rerun disagree with the authoritative content, every char of that run
-  // falls back to the run's full range, which widens spans but never misplaces them.
+  /**
+   * Lower cases and strips accents, preserving the original-text range of every character. When a
+   * contextual case mapping prevents a per-character range from being recovered, the whole
+   * whitespace run falls back to its full range, which widens spans but never misplaces them.
+   *
+   * @param in The input text with per-character ranges.
+   * @return The lower-cased, accent-stripped text with per-character ranges.
+   */
   private static MappedText lowerCaseAndStripAccents(MappedText in) {
     final MappedText out = new MappedText(in.length + 16);
     int from = 0;
