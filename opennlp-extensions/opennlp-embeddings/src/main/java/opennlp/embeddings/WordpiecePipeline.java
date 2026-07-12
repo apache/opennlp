@@ -25,13 +25,9 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
 
 /**
  * The full BERT tokenization pipeline used for embedding-table lookup: basic tokenization
- * (control removal, whitespace normalization, CJK isolation, optional lower casing with
- * accent stripping, punctuation isolation) followed by {@link WordpieceTokenizer} with the
- * BERT special tokens and the reference 100-character word limit.
- *
- * <p>This module-internal pipeline exists so the embedding hot path depends only on the
- * stable wordpiece stage; it produces pieces without offset bookkeeping, which the lookup
- * path does not need.</p>
+ * (control removal, whitespace normalization, CJK isolation, optional lower casing with accent
+ * stripping, punctuation isolation) followed by {@link WordpieceTokenizer} with the BERT special
+ * tokens and the 100-character word limit. It produces pieces without offset bookkeeping.
  */
 final class WordpiecePipeline {
 
@@ -40,6 +36,10 @@ final class WordpiecePipeline {
   private final WordpieceTokenizer wordpieceTokenizer;
   private final boolean lowerCase;
 
+  /**
+   * @param vocabulary The wordpiece vocabulary. Must not be {@code null}.
+   * @param lowerCase  Whether basic tokenization lower-cases and strips accents.
+   */
   WordpiecePipeline(Set<String> vocabulary, boolean lowerCase) {
     Objects.requireNonNull(vocabulary, "vocabulary must not be null");
     this.wordpieceTokenizer = new WordpieceTokenizer(vocabulary,
@@ -48,10 +48,16 @@ final class WordpiecePipeline {
     this.lowerCase = lowerCase;
   }
 
+  /**
+   * {@return the wordpiece tokens of {@code text}, wrapped in {@code [CLS]} and {@code [SEP]}}
+   *
+   * @param text The text to tokenize.
+   */
   String[] tokenize(String text) {
     return wordpieceTokenizer.tokenize(normalize(text));
   }
 
+  /** {@return {@code text} after BERT basic tokenization} */
   private String normalize(String text) {
     String normalized = cleanText(text);
     normalized = isolateCjkCharacters(normalized);
@@ -61,6 +67,7 @@ final class WordpiecePipeline {
     return isolatePunctuation(normalized);
   }
 
+  /** {@return {@code text} with null, replacement, and control characters removed} */
   private static String cleanText(String text) {
     final StringBuilder cleaned = new StringBuilder(text.length());
     text.codePoints().forEach(codePoint -> {
@@ -76,6 +83,7 @@ final class WordpiecePipeline {
     return cleaned.toString();
   }
 
+  /** {@return {@code text} with each CJK character surrounded by spaces} */
   private static String isolateCjkCharacters(String text) {
     final StringBuilder spaced = new StringBuilder(text.length());
     text.codePoints().forEach(codePoint -> {
@@ -88,6 +96,7 @@ final class WordpiecePipeline {
     return spaced.toString();
   }
 
+  /** {@return {@code text} with combining accent marks removed} */
   private static String stripAccents(String text) {
     final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
     final StringBuilder stripped = new StringBuilder(decomposed.length());
@@ -99,6 +108,7 @@ final class WordpiecePipeline {
     return stripped.toString();
   }
 
+  /** {@return {@code text} with each punctuation character surrounded by spaces} */
   private static String isolatePunctuation(String text) {
     final StringBuilder spaced = new StringBuilder(text.length());
     text.codePoints().forEach(codePoint -> {
@@ -111,6 +121,7 @@ final class WordpiecePipeline {
     return spaced.toString();
   }
 
+  /** {@return whether the code point is a control character, treating tab/newline/return as not} */
   private static boolean isControl(int codePoint) {
     if (codePoint == '\t' || codePoint == '\n' || codePoint == '\r') {
       return false;
@@ -122,6 +133,7 @@ final class WordpiecePipeline {
     };
   }
 
+  /** {@return whether the code point is whitespace for BERT basic tokenization} */
   private static boolean isWhitespace(int codePoint) {
     if (codePoint == ' ' || codePoint == '\t' || codePoint == '\n' || codePoint == '\r') {
       return true;
@@ -129,6 +141,7 @@ final class WordpiecePipeline {
     return Character.getType(codePoint) == Character.SPACE_SEPARATOR;
   }
 
+  /** {@return whether the code point is punctuation for BERT basic tokenization} */
   private static boolean isPunctuation(int codePoint) {
     if ((codePoint >= 33 && codePoint <= 47) || (codePoint >= 58 && codePoint <= 64)
         || (codePoint >= 91 && codePoint <= 96) || (codePoint >= 123 && codePoint <= 126)) {
@@ -143,6 +156,7 @@ final class WordpiecePipeline {
     };
   }
 
+  /** {@return whether the code point is a CJK ideograph} */
   private static boolean isCjk(int codePoint) {
     return (codePoint >= 0x4E00 && codePoint <= 0x9FFF)
         || (codePoint >= 0x3400 && codePoint <= 0x4DBF)

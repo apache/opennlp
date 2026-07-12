@@ -30,28 +30,16 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
 
 /**
  * A static (non-contextual) sentence embedding model: a per-token vector table plus WordPiece
- * tokenization, the pure-JVM word2vec/GloVe successor described in the design doc this module
- * implements. Distilled tables in this shape (Model2Vec and compatible releases) carry a modern
- * sentence-transformer's semantics in a flat lookup table, so embedding a sentence is tokenize,
- * gather, (optionally) weight, mean-pool, and (optionally) normalize: no model forward pass, no
- * GPU, no native runtime.
+ * tokenization. Embedding a sentence is tokenize, gather each token's row, optionally weight,
+ * mean-pool, and optionally L2-normalize; there is no model forward pass. It loads distilled
+ * tables in the Model2Vec release layout: a {@code vocab.txt} and a {@code model.safetensors}
+ * holding one 2-D {@code F32} matrix, with an optional per-token {@code weights} tensor.
  *
- * <p>The pooling formula matches the reference Model2Vec implementations exactly (verified
- * against MinishLab's Rust {@code model2vec-rs}, not assumed): {@code [CLS]}/{@code [SEP]} are
- * never added to the pool (this class tokenizes for lookup, not for a transformer), unknown
- * tokens are dropped rather than contributing a meaningless vector, each remaining token's
- * vector is multiplied by its optional per-token weight, the sum is divided by the plain count
- * of pooled tokens (not the sum of weights), and if the model calls for normalization the
- * pooled vector is L2-normalized with an epsilon floor so a token-less input yields a zero
- * vector rather than a division by zero.</p>
+ * <p>{@code [CLS]} and {@code [SEP]} are never pooled and unknown tokens are dropped; the sum is
+ * divided by the count of pooled tokens, not the sum of weights. A text with no in-vocabulary
+ * tokens yields a zero vector.</p>
  *
- * <p><b>Thread safety.</b> Instances are immutable and safe for concurrent use after
- * construction: every field is final, the loaded arrays are never exposed or mutated, and the
- * tokenizer chain holds no per-call state. The one piece of global mutable state in that chain,
- * the {@code keepNewLines} flag on the {@code WhitespaceTokenizer.INSTANCE} singleton that
- * {@link WordpieceTokenizer} splits with, cannot affect results here: BERT basic tokenization
- * has already replaced every whitespace character, line breaks included, with plain spaces
- * before that split runs, so the flag's only behavioral branch never triggers on this input.</p>
+ * <p>Instances are immutable and safe for concurrent use after construction.</p>
  */
 @ThreadSafe
 public final class StaticEmbeddingModel implements TextEmbedder {
@@ -94,8 +82,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private final WordpiecePipeline tokenizer;
   private final boolean normalize;
   private final String unknownToken;
-  // Per-row L2 norms and the special-token mask are constants of the model, precomputed at
-  // load time so the nearest-neighbor scan does no per-row square-root or string hashing.
+  // Per-row L2 norms and special-token mask, precomputed at load time so the neighbor scan
+  // does no per-row square root or string hashing.
   private final double[] rowNorms;
   private final boolean[] specialRows;
 
@@ -116,18 +104,16 @@ public final class StaticEmbeddingModel implements TextEmbedder {
 
   /**
    * Loads a static embedding model from a model directory, reading the tokenizer and pooling
-   * switches from the model's own configuration files instead of requiring the caller to know
-   * them: {@code normalize} from {@code config.json} and {@code do_lower_case} from
-   * {@code tokenizer_config.json}. The directory must contain {@code vocab.txt},
-   * {@code model.safetensors}, {@code config.json}, and {@code tokenizer_config.json}, the
-   * layout Model2Vec-family releases publish (field names verified against published releases,
-   * not assumed).
+   * switches from the model's own configuration files: {@code normalize} from {@code config.json}
+   * and {@code do_lower_case} from {@code tokenizer_config.json}. The directory must contain
+   * {@code vocab.txt}, {@code model.safetensors}, {@code config.json}, and
+   * {@code tokenizer_config.json}.
    *
-   * <p>A {@code strip_accents} that is absent or JSON {@code null} follows the BERT convention
-   * of stripping accents exactly when lower-casing, which is what the single lower-case switch
-   * of {@link #load(Path, Path, Casing, Normalization)} does. A model that explicitly sets
-   * {@code strip_accents} against its {@code do_lower_case} value cannot be represented by
-   * that switch, so it is rejected rather than silently mis-tokenized.</p>
+   * <p>A {@code strip_accents} that explicitly disagrees with {@code do_lower_case} cannot be
+   * represented by the single lower-case switch of
+   * {@link #load(Path, Path, Casing, Normalization)} and is rejected rather than silently
+   * mis-tokenized; when absent or {@code null} it follows the BERT convention of stripping
+   * accents exactly when lower-casing.</p>
    *
    * @param modelDirectory The model directory. Must not be {@code null} and must be a
    *                       directory.
@@ -135,8 +121,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @throws IllegalArgumentException Thrown if {@code modelDirectory} is {@code null} or not a
    *     directory, a required file is missing, a configuration file is malformed or lacks its
    *     field, the accent handling is not representable, or the vocabulary and the embedding
-   *     matrix disagree; the message names the explicit overload as the fallback for
-   *     differently laid-out models.
+   *     matrix disagree.
    * @throws IOException Thrown if reading a file fails.
    */
   public static StaticEmbeddingModel load(Path modelDirectory) throws IOException {
@@ -190,9 +175,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
 
   /**
    * Loads a static embedding model from a BERT-style {@code vocab.txt} and a safetensors weight
-   * file, the file pair a Model2Vec-family distillation publishes. No model is bundled with this
-   * module: the caller points at files they downloaded (see the module's design doc for the
-   * license posture).
+   * file. No model is bundled with this module; the caller supplies the files.
    *
    * @param vocabularyFile   The {@code vocab.txt} file: one token per line, line number is the
    *                         token's row id. Must not be {@code null} and must exist.
@@ -203,12 +186,9 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    *                         scalar per vocabulary row, is used as a per-token pooling weight
    *                         when present.
    * @param casing           Whether the tokenizer lower-cases and strips accents
-   *                         ({@link Casing#UNCASED}, matching the uncased BGE/BERT family this
-   *                         module targets) or preserves case ({@link Casing#CASED}), matching
-   *                         the base model's tokenizer configuration.
+   *                         ({@link Casing#UNCASED}) or preserves case ({@link Casing#CASED}).
    * @param normalization    Whether {@link #embed(String)} L2-normalizes its result
-   *                         ({@link Normalization#L2}), matching the source model's
-   *                         {@code config.json} {@code normalize} field.
+   *                         ({@link Normalization#L2}) or not ({@link Normalization#NONE}).
    * @return The loaded model.
    * @throws IllegalArgumentException Thrown if an argument is {@code null}, a file is missing
    *     or malformed, or the vocabulary size and the embedding matrix's row count disagree.
@@ -279,11 +259,10 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   }
 
   /**
-   * Embeds a piece of text.
+   * {@inheritDoc}
    *
-   * @param text The text to embed. Must not be {@code null}.
-   * @return The pooled embedding vector, of length {@link #dimension()}. A text with no
-   *     in-vocabulary tokens yields a zero vector.
+   * <p>A text with no in-vocabulary tokens yields a zero vector.</p>
+   *
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   @Override
@@ -306,8 +285,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (text == null) {
       throw new IllegalArgumentException("Text must not be null");
     }
-    // The tokenizer always wraps its output in [CLS] ... [SEP]; neither belongs in the pool
-    // (this is table lookup, not transformer input), so the first and last tokens are skipped.
+    // The tokenizer wraps its output in [CLS] ... [SEP]; skip both, they are never pooled.
     final String[] tokens = tokenizer.tokenize(text);
     final float[] sum = new float[dimension];
     int pooledCount = 0;
@@ -352,7 +330,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     return sum;
   }
 
-  /** {@return the dimension of every vector this model produces} */
+  /** {@inheritDoc} */
   @Override
   public int dimension() {
     return dimension;
@@ -364,8 +342,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   }
 
   /**
-   * Cosine similarity between two pieces of text's pooled embeddings, the classic word2vec-era
-   * convenience this module exists to modernize.
+   * Cosine similarity between two pieces of text's pooled embeddings.
    *
    * @param text1 The first text. Must not be {@code null}.
    * @param text2 The second text. Must not be {@code null}.
@@ -385,9 +362,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
 
   /**
    * Finds the vocabulary tokens whose vectors are nearest a piece of text's pooled embedding,
-   * most similar first. A brute-force scan over the whole vocabulary; fine for the vocabulary
-   * sizes this module targets (tens of thousands of rows), not an approximate-nearest-neighbor
-   * index (a documented follow-up, not v1 scope).
+   * most similar first. This is a brute-force scan over the whole vocabulary.
    *
    * @param text The query text. Must not be {@code null}.
    * @param topK The maximum number of results. Must be at least 1.
@@ -443,16 +418,25 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     return nearestNeighbors(target, topK, excludedRows(a, b, c));
   }
 
+  /**
+   * Requires {@code topK} to be at least 1.
+   *
+   * @param topK The requested result count.
+   * @throws IllegalArgumentException Thrown if {@code topK} is less than 1.
+   */
   private static void requirePositive(int topK) {
     if (topK < 1) {
       throw new IllegalArgumentException("TopK must be at least 1, got " + topK);
     }
   }
 
-  // The vocabulary rows the given terms tokenize to, ascending and duplicate-free. Folding the
-  // terms through the model's own tokenizer (rather than comparing raw input strings against
-  // vocabulary tokens) is what makes the exclusion case- and accent-insensitive on uncased
-  // models, and it tolerates equal terms, which Set.of would reject as duplicates.
+  /**
+   * {@return the vocabulary rows the given terms tokenize to, ascending and duplicate-free}
+   * Folding the terms through the model's own tokenizer keeps the exclusion case- and
+   * accent-insensitive on uncased models.
+   *
+   * @param terms The terms to fold and exclude.
+   */
   private int[] excludedRows(String... terms) {
     final SortedSet<Integer> rows = new TreeSet<>();
     for (final String term : terms) {
@@ -476,8 +460,16 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     return sorted;
   }
 
-  // The scan visits rows in ascending order and sortedExcludedRows is ascending, so exclusion
-  // is a single pointer that advances past each excluded row as the scan reaches it.
+  /**
+   * Scans the whole vocabulary for the rows nearest {@code query}, most similar first.
+   *
+   * @param query The query vector.
+   * @param topK The maximum number of neighbors to return.
+   * @param sortedExcludedRows Row ids to skip, in ascending order; the scan advances a single
+   *     pointer through them as it visits rows in order.
+   * @return Up to {@code topK} neighbors, most similar first; empty when {@code query} has no
+   *     direction.
+   */
   private List<Neighbor> nearestNeighbors(float[] query, int topK, int[] sortedExcludedRows) {
     final double queryNorm = norm(query);
     if (queryNorm < NORMALIZE_EPSILON) {
@@ -501,8 +493,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
         continue;
       }
       final int base = row * dimension;
-      // Four accumulators because the JIT must not reorder floating-point additions and so
-      // cannot unroll this reduction itself; the split summation order is chosen deliberately.
+      // Four accumulators so the JIT can vectorize the dot product without reordering FP adds.
       double dot0 = 0;
       double dot1 = 0;
       double dot2 = 0;
@@ -528,6 +519,12 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     return List.of(ordered);
   }
 
+  /**
+   * {@return the cosine similarity of two vectors, or {@code 0} when either has no direction}
+   *
+   * @param a The first vector.
+   * @param b The second vector, of the same length as {@code a}.
+   */
   private static double cosineSimilarity(float[] a, float[] b) {
     double dot = 0;
     double normASquared = 0;
@@ -541,6 +538,11 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     return denominator < NORMALIZE_EPSILON ? 0.0 : dot / denominator;
   }
 
+  /**
+   * {@return the L2 norm of a vector}
+   *
+   * @param vector The vector to measure.
+   */
   private static double norm(float[] vector) {
     double sumOfSquares = 0;
     for (final float value : vector) {
@@ -552,9 +554,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   /**
    * A bounded selection of the {@code k} highest-similarity rows, kept as a min-heap over
    * primitive parallel arrays: the root is always the weakest kept candidate, so a full scan
-   * decides most rows with one comparison against it and the selection allocates nothing per
-   * row (the previous implementation materialized and fully sorted one record per vocabulary
-   * row per query).
+   * decides most rows with one comparison against it and allocates nothing per row.
    */
   private static final class TopK {
 
@@ -562,11 +562,20 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     private final int[] rows;
     private int size;
 
+    /**
+     * @param capacity The maximum number of rows to keep.
+     */
     TopK(int capacity) {
       this.similarities = new double[capacity];
       this.rows = new int[capacity];
     }
 
+    /**
+     * Offers a candidate row, keeping it only if it ranks among the top {@code capacity}.
+     *
+     * @param row The candidate row id.
+     * @param similarity The row's similarity to the query.
+     */
     void offer(int row, double similarity) {
       if (size < similarities.length) {
         int i = size++;
@@ -587,18 +596,22 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       }
     }
 
+    /** {@return the number of rows currently held} */
     int size() {
       return size;
     }
 
+    /** {@return the row id of the weakest held candidate, the heap root} */
     int minRow() {
       return rows[0];
     }
 
+    /** {@return the similarity of the weakest held candidate, the heap root} */
     double minSimilarity() {
       return similarities[0];
     }
 
+    /** Removes the weakest held candidate, the heap root. */
     void removeMin() {
       size--;
       similarities[0] = similarities[size];
@@ -606,6 +619,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       siftDown();
     }
 
+    /** Restores the min-heap invariant from the root downward. */
     private void siftDown() {
       int i = 0;
       while (true) {
@@ -626,6 +640,12 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       }
     }
 
+    /**
+     * Swaps two heap entries in both parallel arrays.
+     *
+     * @param i The first index.
+     * @param j The second index.
+     */
     private void swap(int i, int j) {
       final double similarity = similarities[i];
       similarities[i] = similarities[j];

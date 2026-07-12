@@ -28,11 +28,9 @@ import java.util.Set;
 import opennlp.tools.commons.ThreadSafe;
 
 /**
- * A BERT-style {@code vocab.txt} vocabulary: one token per line, the line number (0-based) is
- * the token's id. This is the same file format {@code bert-base-uncased} and the BGE family of
- * models ship (the tokenizer {@code minishlab/potion-base-8M} was distilled from), and it is the
- * row index into a static-embedding table's weight matrix: row {@code id} is that token's
- * vector.
+ * A BERT-style {@code vocab.txt} vocabulary: one token per line, the line number (0-based) is the
+ * token's id. That id is the row index into a static-embedding table's weight matrix: row
+ * {@code id} holds that token's vector.
  *
  * <p>Immutable and safe for concurrent reads after construction.</p>
  */
@@ -66,7 +64,14 @@ final class WordpieceVocabulary {
     return fromLines(Files.readAllLines(file), file.toString());
   }
 
-  // Package-private so tests can build a vocabulary from in-memory lines without a temp file.
+  /**
+   * Builds a vocabulary from in-memory lines, the token order.
+   *
+   * @param lines      The tokens, one per element; the index is the token's id.
+   * @param sourceName The source's name, for error messages.
+   * @return The parsed vocabulary.
+   * @throws IllegalArgumentException Thrown if a token appears more than once.
+   */
   static WordpieceVocabulary fromLines(List<String> lines, String sourceName) {
     final Map<String, Integer> idByToken = new LinkedHashMap<>(lines.size() * 2);
     for (int id = 0; id < lines.size(); id++) {
