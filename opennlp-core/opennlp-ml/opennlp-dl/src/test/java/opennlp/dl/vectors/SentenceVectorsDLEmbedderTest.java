@@ -19,10 +19,12 @@ package opennlp.dl.vectors;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -45,9 +47,16 @@ class SentenceVectorsDLEmbedderTest {
   // 7 * [0.5, -1, 2]
   private static final float[] CLS_VECTOR = {3.5f, -7f, 14f};
 
-  private static File model() throws URISyntaxException {
-    return new File(SentenceVectorsDLEmbedderTest.class
-        .getResource("/opennlp/dl/vectors/tiny-vectors.onnx").toURI());
+  // Copy the model out of the classpath rather than resolving it in place: when this test runs
+  // from the opennlp-dl test-jar (as it does in opennlp-dl-gpu) the resource URI is inside a jar
+  // and is not hierarchical, so new File(uri) would fail.
+  private static File model(Path dir) throws IOException {
+    final Path file = dir.resolve("tiny-vectors.onnx");
+    try (InputStream is = Objects.requireNonNull(SentenceVectorsDLEmbedderTest.class
+        .getResourceAsStream("/opennlp/dl/vectors/tiny-vectors.onnx"))) {
+      Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
+    }
+    return file.toFile();
   }
 
   private static File vocab(Path dir) throws IOException {
@@ -60,7 +69,7 @@ class SentenceVectorsDLEmbedderTest {
 
   @Test
   void testEmbedderContractOverARealSession(@TempDir Path dir) throws Exception {
-    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(), vocab(dir))) {
+    try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), vocab(dir))) {
 
       // The original entry point is untouched by the interface adoption.
       assertArrayEquals(CLS_VECTOR, vectors.getVectors("hello world"), 1e-5f);
