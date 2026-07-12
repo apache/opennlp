@@ -29,27 +29,18 @@ import opennlp.tools.util.Span;
 /**
  * A {@link Geocoder} that resolves each mention by a population prior: candidates come from
  * {@link Gazetteer#lookup(CharSequence)} and the winner is the first under the module's
- * deterministic candidate order (population descending, then the
- * {@link opennlp.tools.geo.GazetteerEntry#FEATURE_CLASS_CITY CITY} over
- * {@link opennlp.tools.geo.GazetteerEntry#FEATURE_CLASS_ADMIN ADMIN} over
- * {@link opennlp.tools.geo.GazetteerEntry#FEATURE_CLASS_POI POI} feature-class prior on
- * population ties, then source and record id). Multi-candidate lists are re-sorted here, so the
+ * deterministic candidate order (population descending, then a CITY/ADMIN/POI feature-class prior
+ * on population ties, then source and record id). Multi-candidate lists are re-sorted here, so the
  * result does not depend on the gazetteer's own return order.
  *
- * <p><b>Confidence is a documented heuristic, not a probability.</b> For a single candidate it
- * is {@code 0.9}; for several it is {@code 0.5 + 0.4 * (p1 - p2) / (p1 + p2)}, where {@code p1}
- * and {@code p2} are the populations of the winner and the runner-up ({@code 0.5} when both are
- * unknown). The value is monotonic in the relative population separation: a dead tie scores
- * {@code 0.5}, a dominant winner approaches {@code 0.9}, and {@code 1.0} is never reported
- * because a prior with no context cannot certify a resolution. Document-context-aware scoring
- * (co-occurring mentions constraining each other) is the named follow-up, as a second
- * {@link Geocoder} implementation behind the same contract; the whole document is already part
- * of {@link #resolve(CharSequence, List)} for exactly that reason, and this implementation
- * deliberately does not read it beyond the mention spans.</p>
+ * <p>Confidence is a documented heuristic, not a probability. A single candidate scores
+ * {@code 0.9}; several score {@code 0.5 + 0.4 * (p1 - p2) / (p1 + p2)} over the winner and
+ * runner-up populations {@code p1} and {@code p2} ({@code 0.5} when both are unknown), clamped to
+ * {@code [0, 1]} and never {@code 1.0}.</p>
  *
  * <p>Mentions are resolved independently and in input order; a mention with no candidates is
  * omitted from the result. Instances are immutable and thread-safe when the supplied
- * {@link Gazetteer} is (the bundled one is).</p>
+ * {@link Gazetteer} is.</p>
  */
 public final class PopulationPriorGeocoder implements Geocoder {
 
@@ -72,6 +63,7 @@ public final class PopulationPriorGeocoder implements Geocoder {
     this.gazetteer = gazetteer;
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<GeoResolution> resolve(CharSequence text, List<Span> locationMentions)
       throws IOException {
@@ -100,12 +92,10 @@ public final class PopulationPriorGeocoder implements Geocoder {
       }
       final List<GazetteerEntry> candidates;
       if (found.size() == 1) {
-        // Nothing to rank; skip the per-mention copy and sort on this hot path.
         candidates = found;
       } else {
-        // Multi-candidate lists are re-sorted because the Gazetteer contract only promises a
-        // best-effort ranking: an arbitrary implementation's return order is not this module's
-        // deterministic candidate order, and the documented result must not depend on it.
+        // Re-sort: the Gazetteer contract only promises a best-effort ranking, so the result
+        // must not depend on the implementation's own return order (OPENNLP-1879).
         final List<GazetteerEntry> ranked = new ArrayList<>(found);
         ranked.sort(CandidateRanking.BY_PRIOR);
         candidates = ranked;
@@ -115,10 +105,12 @@ public final class PopulationPriorGeocoder implements Geocoder {
     return resolutions;
   }
 
-  // The heuristic prior documented in the class javadoc: monotonic in the relative population
-  // separation between the winner and the runner-up, bounded away from certainty. Computed in
-  // double so populations near Long.MAX_VALUE cannot overflow, and clamped so the [0, 1]
-  // contract of GeoResolution holds unconditionally.
+  /**
+   * {@return the heuristic confidence for the ranked candidates} Monotonic in the relative
+   * population separation between the winner and the runner-up, computed in {@code double} so
+   * populations near {@link Long#MAX_VALUE} cannot overflow, and clamped to the {@code [0, 1]}
+   * contract of {@link GeoResolution}.
+   */
   private static double confidence(List<GazetteerEntry> rankedCandidates) {
     if (rankedCandidates.size() == 1) {
       return SINGLE_CANDIDATE_CONFIDENCE;

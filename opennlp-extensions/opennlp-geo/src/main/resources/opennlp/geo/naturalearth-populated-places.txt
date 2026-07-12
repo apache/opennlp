@@ -45,29 +45,15 @@
 #                 (GEONAMESID where positive), whosonfirst (WOF_ID). Keys the source does not
 #                 provide are never fabricated.
 #
-# ASCII note: this file is deliberately pure ASCII. Names and admin-1 values are
-# accent-stripped to ASCII (NFD, drop combining marks, standard stroke-letter
-# transliterations); an alternate name or containment element that is not ASCII after the
-# fold is dropped (0 alternate names, 0
-# containment elements), and a display name that is not ASCII after the fold falls back to
-# the upstream transliteration. Matching still works for accented queries because
-# BundledGazetteer folds queries and index keys through the same chain; native-script names
-# belong to a later, richer data tier.
+# ASCII note: this file is deliberately pure ASCII. Names and admin-1 values are accent-stripped
+# to ASCII; a display name that is not ASCII after the fold falls back to the upstream
+# transliteration. Accented queries still match because BundledGazetteer folds queries and index
+# keys through the same chain.
 #
-# Mojibake note: the upstream distribution itself carries encoding damage in some fields
-# (an accented letter replaced by '?' or by a wrong ASCII letter). This derivation never
-# carries a value it knows to be damaged:
-#   - a containment value that announces damage with '?' is omitted (38
-#     elements);
-#   - a value verified against its accent-bearing upstream sibling or the documented place
-#     name is repaired to that spelling (67 containment elements,
-#     5 alternate names, 1 canonical name); the audited repair
-#     tables are in the generation script;
-#   - an alternate name that is a one-character corruption of the derived name at an
-#     accented position is dropped (21 values, upstream forms like
-#     'Zarich' for Zurich).
-# The generation script hard-fails on anomalies it does not recognize, so a refresh forces
-# a reviewed decision instead of importing new corruption.
+# Mojibake note: the upstream distribution carries encoding damage in some fields (an accented
+# letter replaced by '?' or by a wrong ASCII letter). This derivation never emits a value it knows
+# to be damaged: such values are omitted, or repaired against an accent-bearing upstream sibling
+# using the audited tables in the generation script, which hard-fails on unrecognized anomalies.
 #
 # A line starting with '#' is a comment; data rows carry no inline comments.
 naturalearth;1159112629;Colonia del Sacramento;;-34.46979;-57.83612;UY;Colonia;21714;CITY;wikidata=Q56064|geonames=3443013|whosonfirst=421199749

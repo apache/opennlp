@@ -23,31 +23,14 @@ import opennlp.tools.commons.ThreadSafe;
 
 /**
  * One gazetteer record: a named place with its location, coarse classification, and
- * dataset-specific extras.
+ * dataset-specific extras. The identifier is scoped by its {@link #source() source} dataset, and
+ * anything a dataset knows beyond the common core goes into the {@link #attributes() attributes}
+ * map as provenance-tagged {@link AttributeValue}s.
  *
- * <p>The shape is deliberately generic. Nothing here is GeoNames-shaped or OSM-shaped: the field
- * names are neutral, the identifier is scoped by the {@link #source() source} dataset it belongs
- * to, and everything a particular dataset knows beyond the common core goes into the
- * {@link #attributes() attributes} map as provenance-tagged {@link AttributeValue}s. The dataset
- * is an implementation detail of a {@link Gazetteer}; it is never the contract, so bundled,
- * user-downloaded, and user-ingested datasets all produce the same record type.</p>
- *
- * <p>The {@link #countryCode() country code} is an ISO 3166-1 alpha-2 code, a stable join key
- * across annotation layers: any region-level signal that decodes to the same code (a flag emoji
- * does, for example) can be joined with location records without any dataset-specific
- * identifier.</p>
- *
- * <p>Attribute keys follow a documented convention, published as the {@code ATTRIBUTE_KEY_*}
- * constants on this record, not an enforced one. When a dataset provides a stable external
- * identifier for a record, implementations should carry it under the matching conventional key:
- * {@link #ATTRIBUTE_KEY_FIPS} (US FIPS code), {@link #ATTRIBUTE_KEY_GEOID} (US Census GEOID),
- * {@link #ATTRIBUTE_KEY_ZCTA} (US Census ZIP Code Tabulation Area), {@link #ATTRIBUTE_KEY_WIKIDATA}
- * (Wikidata item id), {@link #ATTRIBUTE_KEY_GEONAMES} (GeoNames id), and
- * {@link #ATTRIBUTE_KEY_WHOSONFIRST} (Who's On First id). The point of the convention is
- * downstream enrichment: external datasets such as US Census tables (by GEOID or FIPS), IRS
- * statistics (by ZIP or ZCTA), or municipal feeds join through these keys without the gazetteer
- * ever bundling them. An entry only carries the keys its source actually provides, each with
- * provenance in {@link AttributeValue#source()}; a key is never fabricated.</p>
+ * <p>The {@link #countryCode() country code} is an ISO 3166-1 alpha-2 code. Attribute keys follow
+ * the {@code ATTRIBUTE_KEY_*} convention published as constants on this record; an entry only
+ * carries the keys its source actually provides, each with provenance in
+ * {@link AttributeValue#source()}, and a key is never fabricated.</p>
  *
  * <p>Instances are immutable and thread-safe: the list and map components are defensively copied
  * to immutable views at construction.</p>
@@ -67,18 +50,13 @@ import opennlp.tools.commons.ThreadSafe;
  * @param containment    The administrative containment chain, outermost first, possibly empty.
  *                       Must not be {@code null} or contain {@code null} or empty elements.
  * @param population     The population, {@code 0} when unknown or genuinely zero. Must not be
- *                       negative. The zero sentinel is a deliberate choice: it mirrors upstream
- *                       gazetteer conventions, which publish {@code 0} (or a negative sentinel
- *                       normalized to {@code 0}) for unknown, so a distinct unknown marker would
- *                       have to be fabricated. Consumers that rank or score by population must
- *                       treat {@code 0} as absent evidence, never as a confirmed empty place.
+ *                       negative. Consumers that rank or score by population must treat {@code 0}
+ *                       as absent evidence, never as a confirmed empty place.
  * @param featureClass   The coarse, dataset-neutral feature class, conventionally one of the
  *                       {@code FEATURE_CLASS_*} constants on this record ({@link
  *                       #FEATURE_CLASS_CITY}, {@link #FEATURE_CLASS_ADMIN},
  *                       {@link #FEATURE_CLASS_POI}); {@code null} when unknown. Must not be
- *                       empty when present. Consumers that apply feature-class priors match on
- *                       these constants, so a gazetteer using its own spellings forfeits those
- *                       priors.
+ *                       empty when present.
  * @param attributes     The dataset-specific extras keyed by attribute name, each value carrying
  *                       its own provenance. Must not be {@code null} or contain {@code null} or
  *                       empty keys or {@code null} values.
