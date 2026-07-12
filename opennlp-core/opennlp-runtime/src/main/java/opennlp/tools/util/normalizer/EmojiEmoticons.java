@@ -30,34 +30,47 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The bundled, project-authored emoji/emoticon fold data ({@code emoji-emoticons.txt}) and the
- * sequence-substitution pass shared by {@link EmojiToEmoticonCharSequenceNormalizer} and
- * {@link EmoticonToEmojiCharSequenceNormalizer}.
- *
- * <p>Unlike the per-code-point folds behind {@link CharClass#substituteAligned}, both directions
- * here substitute code point <em>sequences</em>: an emoticon source such as {@code :-)} is three
- * characters, and an emoji-presentation source such as U+2764 U+FE0F is two code points that must
- * fold as one unit so no dangling variation selector is left behind. The scan is a single cursor
- * pass, longest match first at each position.</p>
- *
- * <p>In the pictographic direction the scan is sequence-aware: a mapped pictograph does not fold
- * when it participates in a larger ZWJ sequence (HEART ON FIRE, the family emoji) or when
- * followed by U+FE0E, which explicitly requests text presentation; both would otherwise corrupt
- * a distinct emoji or leave a dangling invisible selector. A trailing U+FE0F after any mapped
- * pictograph is absorbed into the fold, so the no-dangling-selector guarantee holds for every
- * mapped source, not only those with an explicit variation-selector row.</p>
+ * The bundled emoji/emoticon fold tables ({@code emoji-emoticons.txt}) and the sequence
+ * substitution shared by {@link EmojiToEmoticonCharSequenceNormalizer} and
+ * {@link EmoticonToEmojiCharSequenceNormalizer}. Both directions substitute code point
+ * <em>sequences</em>, longest match first at each position. In the emoticon direction a source
+ * matches only when delimited by the text boundary or whitespace on both sides; in the emoji
+ * direction a mapped pictograph inside a ZWJ sequence or before U+FE0E is left untouched, and a
+ * trailing U+FE0F is absorbed into the fold.
  */
 final class EmojiEmoticons {
 
   private static final String RESOURCE = "emoji-emoticons.txt";
 
-  // The two direction tables, loaded lazily on first use and cached.
-  private static volatile Tables tables;
+  // Sequence-context code points of the pictographic direction.
+  private static final int ZERO_WIDTH_JOINER = 0x200D;
+  private static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
+  private static final int VARIATION_SELECTOR_EMOJI = 0xFE0F;
 
-  private EmojiEmoticons() {
+  private static final EmojiEmoticons INSTANCE = new EmojiEmoticons(loadBundled());
+
+  private final Direction emojiToEmoticon;
+  private final Direction emoticonToEmoji;
+
+  private EmojiEmoticons(Tables tables) {
+    this.emojiToEmoticon = tables.emojiToEmoticon();
+    this.emoticonToEmoji = tables.emoticonToEmoji();
   }
 
-  /** One fold row: a source code point sequence and its replacement. */
+  /**
+   * {@return the shared instance over the bundled {@code emoji-emoticons.txt} data} The tables are
+   * loaded once when this class initializes.
+   */
+  static EmojiEmoticons getInstance() {
+    return INSTANCE;
+  }
+
+  /**
+   * One fold row: a source code point sequence and its replacement.
+   *
+   * @param source the code point sequence to replace.
+   * @param target the replacement sequence.
+   */
   record Mapping(String source, String target) {
   }
 
@@ -65,9 +78,19 @@ final class EmojiEmoticons {
    * One direction table, keyed by the first code point of the source sequence, candidates ordered
    * longest source first so a scan is longest-match. The first-code-point range bounds let the
    * scan skip the map lookup for the common code point that no source starts with.
+   *
+   * @param table    the candidate mappings keyed by first source code point.
+   * @param minFirst the smallest first code point of any source.
+   * @param maxFirst the largest first code point of any source.
    */
   record Direction(Map<Integer, List<Mapping>> table, int minFirst, int maxFirst) {
 
+    /**
+     * {@return the candidate mappings whose source starts with {@code codePoint}, longest source
+     * first, or {@code null} if no source starts with it}
+     *
+     * @param codePoint the code point at the current scan position.
+     */
     List<Mapping> candidates(int codePoint) {
       if (codePoint < minFirst || codePoint > maxFirst) {
         return null;
@@ -76,35 +99,70 @@ final class EmojiEmoticons {
     }
   }
 
-  /** The two direction tables. */
+  /**
+   * The two direction tables produced by {@link #parse(InputStream)}.
+   *
+   * @param emojiToEmoticon the pictograph-to-emoticon direction.
+   * @param emoticonToEmoji the emoticon-to-pictograph direction.
+   */
   record Tables(Direction emojiToEmoticon, Direction emoticonToEmoji) {
   }
 
-  static Direction emojiToEmoticon() {
-    return tables().emojiToEmoticon();
+  /**
+   * Folds mapped pictographs in {@code text} to their ASCII emoticons.
+   *
+   * @param text the text to fold. Must not be {@code null}.
+   * @return the folded text.
+   */
+  String emojiToEmoticon(CharSequence text) {
+    return substitute(text, emojiToEmoticon, false);
   }
 
-  static Direction emoticonToEmoji() {
-    return tables().emoticonToEmoji();
+  /**
+   * Folds mapped pictographs in {@code text} to their ASCII emoticons, producing the
+   * {@link Alignment} back to the original text. Each replaced source sequence, including an
+   * absorbed trailing U+FE0F, maps to its replacement as one block.
+   *
+   * @param text the text to fold. Must not be {@code null}.
+   * @return the folded text with its alignment.
+   */
+  AlignedText emojiToEmoticonAligned(CharSequence text) {
+    return substituteAligned(text, emojiToEmoticon, false);
   }
 
-  // Sequence-context code points of the pictographic direction.
-  private static final int ZERO_WIDTH_JOINER = 0x200D;
-  private static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
-  private static final int VARIATION_SELECTOR_EMOJI = 0xFE0F;
+  /**
+   * Folds whitespace-delimited ASCII emoticons in {@code text} to their pictographs.
+   *
+   * @param text the text to fold. Must not be {@code null}.
+   * @return the folded text.
+   */
+  String emoticonToEmoji(CharSequence text) {
+    return substitute(text, emoticonToEmoji, true);
+  }
+
+  /**
+   * Folds whitespace-delimited ASCII emoticons in {@code text} to their pictographs, producing
+   * the {@link Alignment} back to the original text.
+   *
+   * @param text the text to fold. Must not be {@code null}.
+   * @return the folded text with its alignment.
+   */
+  AlignedText emoticonToEmojiAligned(CharSequence text) {
+    return substituteAligned(text, emoticonToEmoji, true);
+  }
 
   /**
    * Applies the direction table in a single longest-match-first cursor pass.
    *
-   * @param direction   A direction from {@link #emojiToEmoticon()} or {@link #emoticonToEmoji()}.
-   * @param delimited   If {@code true}, a source matches only when delimited by the text boundary
-   *                    or Unicode {@code White_Space} on both sides (the emoticon direction, where
-   *                    the source sequences also occur inside ordinary text such as URLs). If
-   *                    {@code false}, the pictographic sequence rules apply instead: no fold
-   *                    inside a ZWJ sequence or before U+FE0E, and a trailing U+FE0F is absorbed.
+   * @param text      the text to fold.
+   * @param direction the direction table to apply.
+   * @param delimited if {@code true}, a source matches only when delimited by the text boundary
+   *                  or Unicode {@code White_Space} on both sides (the emoticon direction). If
+   *                  {@code false}, the pictographic sequence rules apply instead: no fold inside
+   *                  a ZWJ sequence or before U+FE0E, and a trailing U+FE0F is absorbed.
+   * @return the folded text.
    */
-  static String substitute(CharSequence text, Direction direction, boolean delimited) {
-    Objects.requireNonNull(text, "text");
+  private static String substitute(CharSequence text, Direction direction, boolean delimited) {
     final StringBuilder out = new StringBuilder(text.length());
     final int length = text.length();
     int i = 0;
@@ -123,12 +181,17 @@ final class EmojiEmoticons {
   }
 
   /**
-   * Like {@link #substitute} but also produces the {@link Alignment} back to the original text.
-   * Each replaced source sequence, including an absorbed trailing U+FE0F, maps to its replacement
-   * as one block.
+   * Like {@link #substitute(CharSequence, Direction, boolean)} but also produces the
+   * {@link Alignment} back to the original text. Each replaced source sequence, including an
+   * absorbed trailing U+FE0F, maps to its replacement as one block.
+   *
+   * @param text      the text to fold.
+   * @param direction the direction table to apply.
+   * @param delimited see {@link #substitute(CharSequence, Direction, boolean)}.
+   * @return the folded text with its alignment.
    */
-  static AlignedText substituteAligned(CharSequence text, Direction direction, boolean delimited) {
-    Objects.requireNonNull(text, "text");
+  private static AlignedText substituteAligned(CharSequence text, Direction direction,
+                                               boolean delimited) {
     final StringBuilder out = new StringBuilder(text.length());
     final Alignment.Builder alignment = new Alignment.Builder();
     final int length = text.length();
@@ -152,11 +215,20 @@ final class EmojiEmoticons {
     return new AlignedText(text, out.toString(), alignment.build(length));
   }
 
-  // Returns the winning candidate as (candidateIndex << 32) | consumedChars, or -1 when nothing
-  // folds here. Candidates are pre-sorted longest source first, so the first acceptable region
-  // match wins. In the pictographic direction (delimited == false) a match is rejected when the
-  // source adjoins a ZWJ sequence or is followed by U+FE0E, and a trailing U+FE0F joins the
-  // consumed region.
+  /**
+   * Finds the winning candidate at position {@code i}. Candidates are pre-sorted longest source
+   * first, so the first acceptable region match wins. In the pictographic direction
+   * ({@code delimited == false}) a match is rejected when the source adjoins a ZWJ sequence or is
+   * followed by U+FE0E, and a trailing U+FE0F joins the consumed region.
+   *
+   * @param text       the text being scanned.
+   * @param i          the scan position.
+   * @param candidates the candidates whose source starts with the code point at {@code i}, or
+   *                   {@code null} if there are none.
+   * @param delimited  whether the whitespace-delimited boundary rule applies.
+   * @return the winning candidate encoded as {@code (candidateIndex << 32) | consumedChars}, or
+   *     {@code -1} when nothing folds here.
+   */
   private static long matchAt(CharSequence text, int i, List<Mapping> candidates,
                               boolean delimited) {
     if (candidates == null || (delimited && !boundaryBefore(text, i))) {
@@ -192,14 +264,34 @@ final class EmojiEmoticons {
     return -1;
   }
 
+  /**
+   * {@return whether position {@code i} is preceded by the text boundary or whitespace}
+   *
+   * @param text the text being scanned.
+   * @param i    the scan position.
+   */
   private static boolean boundaryBefore(CharSequence text, int i) {
     return i == 0 || CharClass.whitespace().contains(Character.codePointBefore(text, i));
   }
 
+  /**
+   * {@return whether position {@code end} is the text boundary or followed by whitespace}
+   *
+   * @param text the text being scanned.
+   * @param end  the position just past a candidate match.
+   */
   private static boolean boundaryAfter(CharSequence text, int end) {
     return end == text.length() || CharClass.whitespace().contains(Character.codePointAt(text, end));
   }
 
+  /**
+   * {@return whether {@code text} contains exactly {@code source} starting at {@code start}}
+   *
+   * @param text   the text being scanned.
+   * @param start  the position to compare from. The caller guarantees
+   *               {@code start + source.length() <= text.length()}.
+   * @param source the sequence to compare against.
+   */
   private static boolean regionMatches(CharSequence text, int start, String source) {
     for (int k = 0; k < source.length(); k++) {
       if (text.charAt(start + k) != source.charAt(k)) {
@@ -209,21 +301,13 @@ final class EmojiEmoticons {
     return true;
   }
 
-  private static Tables tables() {
-    Tables t = tables;
-    if (t == null) {
-      synchronized (EmojiEmoticons.class) {
-        t = tables;
-        if (t == null) {
-          t = load();
-          tables = t;
-        }
-      }
-    }
-    return t;
-  }
-
-  private static Tables load() {
+  /**
+   * {@return the tables parsed from the bundled {@code emoji-emoticons.txt} resource}
+   *
+   * @throws IllegalStateException if the resource is missing.
+   * @throws UncheckedIOException if the resource cannot be read.
+   */
+  private static Tables loadBundled() {
     try (InputStream in = EmojiEmoticons.class.getResourceAsStream(RESOURCE)) {
       if (in == null) {
         throw new IllegalStateException("Missing emoji/emoticon fold data resource: " + RESOURCE);
@@ -235,11 +319,20 @@ final class EmojiEmoticons {
     }
   }
 
-  // Package-private so the malformed-data handling can be exercised without the bundled resource.
-  // Parses rows of "source ; target ; fold_type ; standard ; unicode_version ; notes" with
-  // space-separated hexadecimal code points; '#' starts a comment line. EMOJI rows load into the
-  // emoji-to-emoticon table, EMOTICON rows into the emoticon-to-emoji table.
+  /**
+   * Parses rows of {@code source ; target ; fold_type ; standard ; unicode_version ; notes} with
+   * space-separated hexadecimal code points; {@code '#'} starts a comment line. {@code EMOJI} rows
+   * load into the emoji-to-emoticon table, {@code EMOTICON} rows into the emoticon-to-emoji
+   * table. Package-private so the malformed-data handling can be exercised without the bundled
+   * resource.
+   *
+   * @param in the stream to parse. Must not be {@code null}.
+   * @return the two direction tables.
+   * @throws IOException if the stream cannot be read.
+   * @throws IllegalArgumentException if the data is malformed.
+   */
   static Tables parse(InputStream in) throws IOException {
+    Objects.requireNonNull(in, "in must not be null");
     final Map<Integer, List<Mapping>> emojiToEmoticon = new HashMap<>();
     final Map<Integer, List<Mapping>> emoticonToEmoji = new HashMap<>();
     try (BufferedReader reader =
@@ -285,8 +378,14 @@ final class EmojiEmoticons {
     return new Tables(direction(emojiToEmoticon), direction(emoticonToEmoji));
   }
 
-  // Longest source first, so the scan in matchAt is longest-match by construction; the
-  // first-code-point bounds feed the no-match short circuit.
+  /**
+   * Builds a {@link Direction} from a parsed table: sorts each candidate list longest source
+   * first, so the scan in {@link #matchAt} is longest-match by construction, and computes the
+   * first-code-point bounds that feed the no-match short circuit.
+   *
+   * @param table the mutable table produced by {@link #parse(InputStream)}.
+   * @return the immutable direction.
+   */
   private static Direction direction(Map<Integer, List<Mapping>> table) {
     int min = Integer.MAX_VALUE;
     int max = Integer.MIN_VALUE;
@@ -299,6 +398,15 @@ final class EmojiEmoticons {
     return new Direction(Map.copyOf(table), min, max);
   }
 
+  /**
+   * Decodes a space-separated hexadecimal code point sequence.
+   *
+   * @param hexCodePoints the field to decode.
+   * @param lineNumber    the line number, for the error message.
+   * @param content       the full line, for the error message.
+   * @return the decoded sequence.
+   * @throws IllegalArgumentException if the field is empty or not valid hexadecimal.
+   */
   private static String decode(String hexCodePoints, int lineNumber, String content) {
     final String stripped = hexCodePoints.strip();
     if (stripped.isEmpty()) {

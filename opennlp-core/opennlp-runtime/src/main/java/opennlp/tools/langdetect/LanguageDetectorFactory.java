@@ -47,9 +47,7 @@ public class LanguageDetectorFactory extends BaseToolFactory {
   /**
    * @return Retrieves a {@link LanguageDetectorContextGenerator}.
    */
-  // The deprecated emoji normalizer stays in this default chain deliberately: existing language
-  // detector models were trained with pictographs blanked, and the suggested replacement folds
-  // them to ASCII emoticons, which would inject ASCII n-grams the models never saw.
+  // Kept deliberately: existing language detector models were trained with this normalizer.
   @SuppressWarnings("deprecation")
   public LanguageDetectorContextGenerator getContextGenerator() {
     return new DefaultLanguageDetectorContextGenerator(1, 3,

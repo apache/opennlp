@@ -114,6 +114,11 @@ public class EmojiEmoticonsTest {
   }
 
   @Test
+  void parseRejectsANullStream() {
+    assertThrows(NullPointerException.class, () -> EmojiEmoticons.parse(null));
+  }
+
+  @Test
   void parseFailsLoudOnWrongFieldCount() {
     final String data = "1F642 ; 003A 0029 ; EMOJI ; UNSPECIFIED ; 17.0.0\n";
     assertThrows(IllegalArgumentException.class, () -> EmojiEmoticons.parse(

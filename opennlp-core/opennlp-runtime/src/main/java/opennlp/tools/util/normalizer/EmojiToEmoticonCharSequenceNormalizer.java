@@ -16,26 +16,18 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.util.Objects;
+
 /**
- * A {@link CharSequenceNormalizer} that folds emoji to ASCII emoticons, using the bundled,
- * project-authored {@code emoji-emoticons.txt} mapping (for example U+1F642 SLIGHTLY SMILING FACE
- * to {@code :)}).
+ * A {@link CharSequenceNormalizer} that folds emoji to ASCII emoticons, using the bundled
+ * {@code emoji-emoticons.txt} mapping (for example U+1F642 SLIGHTLY SMILING FACE to {@code :)}).
  *
- * <p>Only a pictograph with a mapped emoticon is folded; everything else is copied through, so the
- * fold rewrites the signal into ASCII instead of deleting it the way the deprecated
- * {@link EmojiCharSequenceNormalizer} does. A trailing U+FE0F VARIATION SELECTOR-16 after any
- * mapped pictograph is absorbed into the fold, so no dangling variation selector is left behind.
- * A mapped pictograph inside a larger ZWJ sequence (HEART ON FIRE, the family emoji) or followed
- * by U+FE0E VARIATION SELECTOR-15, which requests text presentation, is left untouched; folding a
- * fragment of a distinct emoji would corrupt it. The mapping is many to one (the grinning-face
- * family folds to {@code :D}); the
- * reverse direction is {@link EmoticonToEmojiCharSequenceNormalizer}, and a round trip through both
- * converges on the canonical forms rather than restoring every variant.</p>
- *
- * <p>This is an offset-changing transform (a one-character pictograph such as U+263A expands to the
- * two-character {@code :)}), so it is offset-aware: {@link #normalizeAligned(CharSequence)} reports
- * the {@link Alignment} from the folded text back to the input. A single cursor pass with no
- * regular expression.</p>
+ * <p>A mapped pictograph inside a larger ZWJ sequence or followed by U+FE0E VARIATION SELECTOR-15
+ * is left untouched; a trailing U+FE0F VARIATION SELECTOR-16 after any mapped pictograph is
+ * absorbed into the fold, so no dangling variation selector is left behind. This is an expanding,
+ * offset-changing transform: {@link #normalizeAligned(CharSequence)} reports the {@link Alignment}
+ * from the folded text back to the input. The reverse direction is
+ * {@link EmoticonToEmojiCharSequenceNormalizer}.</p>
  */
 public final class EmojiToEmoticonCharSequenceNormalizer implements OffsetAwareNormalizer {
 
@@ -52,13 +44,25 @@ public final class EmojiToEmoticonCharSequenceNormalizer implements OffsetAwareN
     return INSTANCE;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws NullPointerException if {@code text} is {@code null}.
+   */
   @Override
   public CharSequence normalize(CharSequence text) {
-    return EmojiEmoticons.substitute(text, EmojiEmoticons.emojiToEmoticon(), false);
+    Objects.requireNonNull(text, "text must not be null");
+    return EmojiEmoticons.getInstance().emojiToEmoticon(text);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws NullPointerException if {@code text} is {@code null}.
+   */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
-    return EmojiEmoticons.substituteAligned(text, EmojiEmoticons.emojiToEmoticon(), false);
+    Objects.requireNonNull(text, "text must not be null");
+    return EmojiEmoticons.getInstance().emojiToEmoticonAligned(text);
   }
 }

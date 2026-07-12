@@ -27,6 +27,7 @@ import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EmoticonToEmojiCharSequenceNormalizerTest {
 
@@ -36,6 +37,12 @@ public class EmoticonToEmojiCharSequenceNormalizerTest {
 
   private static String cp(int codePoint) {
     return new String(Character.toChars(codePoint));
+  }
+
+  @Test
+  void nullInputIsRejectedAtThePublicBoundary() {
+    assertThrows(NullPointerException.class, () -> norm().normalize(null));
+    assertThrows(NullPointerException.class, () -> norm().normalizeAligned(null));
   }
 
   @Test

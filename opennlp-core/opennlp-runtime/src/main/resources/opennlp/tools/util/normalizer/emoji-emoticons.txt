@@ -13,28 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Bidirectional emoji/emoticon fold data, authored by this project (no third-party data set is
-# copied here). One row per mapping:
+# Bidirectional emoji/emoticon fold data, authored by this project. One row per mapping:
 #
 #   source ; target ; fold_type ; standard ; unicode_version ; notes
 #
-# source and target are space-separated Unicode code points in hexadecimal. fold_type EMOJI maps a
-# pictograph (optionally followed by U+FE0F VARIATION SELECTOR-16, the emoji presentation selector)
-# to its ASCII emoticon; fold_type EMOTICON maps an ASCII emoticon to its canonical pictograph.
-# No published standard defines an emoji-emoticon correspondence, so every row's standard column is
-# UNSPECIFIED, the explicit marker for a project choice; the notes column cites the Unicode
-# character name of the pictograph as a descriptive reference. Code points and names checked
-# against Unicode 17.0.0.
-#
-# The two directions close over each other: every EMOJI target appears as an EMOTICON source and
-# every EMOTICON target appears as an EMOJI source (asserted by EmojiEmoticonsTest), so folding one
-# direction and then the other converges on the canonical form instead of dropping text.
-#
-# Sentiment and other per-symbol annotations deliberately do not live here; the mapping data and
-# the annotation data stay separately auditable (see the OPENNLP-1852 epic).
-#
-# A line starting with '#' is a comment; data rows carry no inline comments. The notes column is
-# the sixth and final field, so it may contain ';' (the winking emoticon does) but not '#'.
+# source and target are space-separated hexadecimal Unicode code points. fold_type EMOJI maps a
+# pictograph to its ASCII emoticon; EMOTICON maps an emoticon to its canonical pictograph. The
+# standard column is UNSPECIFIED (project-authored mapping; no published standard defines this
+# correspondence). Every fold target is a source in the opposite direction, asserted by
+# EmojiEmoticonsTest. A line starting with '#' is a comment; the notes column is the sixth and
+# final field, so it may contain ';' but not '#'.
 #
 # fold_type EMOJI: pictograph to canonical ASCII emoticon (many to one).
 1F642 ; 003A 0029 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; SLIGHTLY SMILING FACE -> :)
