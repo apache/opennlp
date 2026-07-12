@@ -25,9 +25,9 @@ import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.SuggestItem;
 import opennlp.spellcheck.Verbosity;
 import opennlp.spellcheck.dictionary.SymSpellModel;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.util.normalizer.AggregateCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.CharSequenceNormalizer;
-import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 /**
  * A {@link CharSequenceNormalizer} that corrects spelling in text using a
@@ -37,7 +37,7 @@ import opennlp.tools.util.normalizer.UnicodeWhitespace;
  * <ul>
  *   <li>{@link Mode#PER_TOKEN PER_TOKEN} (default) &ndash; the input is split into
  *       whitespace-delimited tokens (whitespace being the Unicode {@code White_Space}
- *       set, {@link UnicodeWhitespace#isWhitespace(int)}) and each token is corrected
+ *       set, {@link StringUtil#isUnicodeWhitespace(int)}) and each token is corrected
  *       independently with
  *       {@link SpellChecker#lookup}. The original whitespace runs between tokens are
  *       preserved verbatim, so the shape of the line is kept. Tokens the dictionary
@@ -227,9 +227,9 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     final int n = input.length();
     while (i < n) {
       // Copy a run of whitespace (the Unicode White_Space set) verbatim.
-      if (UnicodeWhitespace.isWhitespace(input.charAt(i))) {
+      if (StringUtil.isUnicodeWhitespace(input.charAt(i))) {
         final int start = i;
-        while (i < n && UnicodeWhitespace.isWhitespace(input.charAt(i))) {
+        while (i < n && StringUtil.isUnicodeWhitespace(input.charAt(i))) {
           i++;
         }
         out.append(input, start, i);
@@ -237,7 +237,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
       }
       // Take a non-whitespace token and correct it.
       final int start = i;
-      while (i < n && !UnicodeWhitespace.isWhitespace(input.charAt(i))) {
+      while (i < n && !StringUtil.isUnicodeWhitespace(input.charAt(i))) {
         i++;
       }
       out.append(correctToken(input.substring(start, i)));

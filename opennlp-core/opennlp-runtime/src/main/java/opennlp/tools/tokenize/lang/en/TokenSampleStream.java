@@ -55,8 +55,6 @@ public class TokenSampleStream implements Iterator<TokenSample> {
   }
 
   public TokenSample next() {
-    // Format parsing: the training data is a space-separated Penn Treebank style format,
-    // so the ASCII \s+ split is the format's own delimiter, not user-text classification.
     String[] tokens = line.split("\\s+");
     if (tokens.length == 0) {
       evenq = true;

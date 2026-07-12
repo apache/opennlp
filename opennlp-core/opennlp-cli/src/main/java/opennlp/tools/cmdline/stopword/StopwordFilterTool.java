@@ -90,8 +90,6 @@ public final class StopwordFilterTool extends BasicCmdLineTool {
           writer.println();
           continue;
         }
-        // User text: tokenize on the Unicode White_Space set (WhitespaceTokenizer)
-        // instead of the ASCII \s regex, so NBSP-style separators split tokens too.
         final String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(line);
         final String[] kept = filter.filter(tokens);
         writer.println(String.join(" ", kept));

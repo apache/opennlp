@@ -30,7 +30,7 @@ import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.SuggestItem;
 import opennlp.spellcheck.Verbosity;
 import opennlp.spellcheck.distance.EditDistance;
-import opennlp.tools.util.normalizer.UnicodeWhitespace;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Symmetric Delete spelling correction engine (SymSpell).
@@ -397,10 +397,7 @@ public final class SymSpell implements SpellChecker {
 
   /**
    * Splits the input on runs of Unicode {@code White_Space}; leading and trailing runs are
-   * ignored, so whitespace-only input yields an empty array. A cursor scan on the
-   * standards-sourced set (no regex on the user-text path); unlike the previously used ASCII
-   * {@code \s+} split it also breaks on the no-break spaces, the next line control
-   * {@code U+0085} and the Unicode line and paragraph separators.
+   * ignored, so whitespace-only input yields an empty array.
    */
   private static String[] splitOnWhitespace(String input) {
     final List<String> terms = new ArrayList<>();
@@ -409,7 +406,7 @@ public final class SymSpell implements SpellChecker {
     int i = 0;
     while (i < n) {
       final int cp = input.codePointAt(i);
-      if (UnicodeWhitespace.isWhitespace(cp)) {
+      if (StringUtil.isUnicodeWhitespace(cp)) {
         if (start >= 0) {
           terms.add(input.substring(start, i));
           start = -1;
@@ -427,24 +424,21 @@ public final class SymSpell implements SpellChecker {
 
   /**
    * Trims leading and trailing runs of Unicode {@code White_Space}, the same set
-   * {@link #splitOnWhitespace(String)} breaks terms on. {@link String#trim()} only strips
-   * code points up to {@code U+0020}, so a leading or trailing no-break space or next line
-   * control would survive it and inflate the edit distance reported by
-   * {@link #lookupCompound(String, int)}.
+   * {@link #splitOnWhitespace(String)} breaks terms on.
    */
   private static String trimWhitespace(String input) {
     int start = 0;
     int end = input.length();
     while (start < end) {
       final int cp = input.codePointAt(start);
-      if (!UnicodeWhitespace.isWhitespace(cp)) {
+      if (!StringUtil.isUnicodeWhitespace(cp)) {
         break;
       }
       start += Character.charCount(cp);
     }
     while (end > start) {
       final int cp = input.codePointBefore(end);
-      if (!UnicodeWhitespace.isWhitespace(cp)) {
+      if (!StringUtil.isUnicodeWhitespace(cp)) {
         break;
       }
       end -= Character.charCount(cp);
@@ -589,9 +583,7 @@ public final class SymSpell implements SpellChecker {
     }
 
     final String corrected = joined.toString();
-    // Measure against the input trimmed on the same Unicode White_Space set the terms were
-    // split on; the ASCII String.trim() would keep leading/trailing NBSP or NEL runs and
-    // report an inflated distance for them.
+    // Trim on the same set the terms were split on, so the distance is not inflated.
     final int distance = editDistance.distance(
         trimWhitespace(input), corrected, Integer.MAX_VALUE - 1);
     final long frequency = (long) freqProduct;

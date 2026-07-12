@@ -55,8 +55,6 @@ public class DocumentSampleStream extends FilterObjectStream<String, DocumentSam
     if (sampleString != null) {
 
       // Whitespace tokenize entire string
-      // Sample parsing deliberately shares the runtime WhitespaceTokenizer, so training samples
-      // split exactly like inference input (Unicode White_Space since 3.0).
       String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(sampleString);
 
       DocumentSample sample;

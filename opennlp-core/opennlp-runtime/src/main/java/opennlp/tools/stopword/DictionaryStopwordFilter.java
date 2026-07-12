@@ -258,8 +258,6 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
         if (trimmed.isEmpty() || trimmed.startsWith(COMMENT_PREFIX)) {
           continue;
         }
-        // Resource-format parsing: stopword list files delimit multi-word entries with
-        // ASCII whitespace, so the \s+ split is the file format, not user-text handling.
         final String[] tokens = trimmed.split("\\s+");
         if (tokens.length > 0) {
           dict.put(new StringList(tokens));
@@ -396,7 +394,6 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
           if (trimmed.isEmpty() || trimmed.startsWith(COMMENT_PREFIX)) {
             continue;
           }
-          // Resource-format parsing: same file format as parseStream above.
           addEntries.add(trimmed.split("\\s+"));
         }
       }

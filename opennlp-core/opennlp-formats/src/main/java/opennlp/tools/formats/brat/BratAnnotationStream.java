@@ -223,9 +223,6 @@ public class BratAnnotationStream implements ObjectStream<BratAnnotation> {
   public BratAnnotation read() throws IOException {
     String line = reader.readLine();
     if (line != null) {
-      // Annotation-line field splitting deliberately shares the runtime WhitespaceTokenizer
-      // (Unicode White_Space since 3.0); brat .ann fields are TAB/space delimited, so this
-      // only shifts fields for covered text containing exotic whitespace code points.
       Span[] tokens = WhitespaceTokenizer.INSTANCE.tokenizePos(line);
 
       if (tokens.length > 2) {

@@ -79,6 +79,34 @@ public class StringUtilTest {
     Assertions.assertFalse(StringUtil.isWhitespace(0xFEFF));
   }
 
+  /**
+   * The {@link StringUtil#isUnicodeWhitespace(int)} facade must agree with the Unicode
+   * {@code White_Space} reference implementation on every code point, including the
+   * deltas to the legacy predicate ({@code U+0085} in, {@code U+001C..U+001F} out).
+   */
+  @Test
+  void testIsUnicodeWhitespaceDelegates() {
+    for (int cp = 0x0000; cp <= 0x3000; cp++) {
+      Assertions.assertEquals(
+          opennlp.tools.util.normalizer.UnicodeWhitespace.isWhitespace(cp),
+          StringUtil.isUnicodeWhitespace(cp), "U+" + Integer.toHexString(cp));
+    }
+    // The deltas to the legacy predicate.
+    Assertions.assertTrue(StringUtil.isUnicodeWhitespace(0x0085));
+    Assertions.assertTrue(StringUtil.isUnicodeWhitespace((char) 0x0085));
+    for (int cp = 0x001C; cp <= 0x001F; cp++) {
+      Assertions.assertFalse(StringUtil.isUnicodeWhitespace(cp), "U+" + Integer.toHexString(cp));
+      Assertions.assertFalse(StringUtil.isUnicodeWhitespace((char) cp),
+          "U+" + Integer.toHexString(cp));
+    }
+    // Members and non-members on both overloads.
+    Assertions.assertTrue(StringUtil.isUnicodeWhitespace(' '));
+    Assertions.assertTrue(StringUtil.isUnicodeWhitespace((char) 0x00A0));
+    Assertions.assertTrue(StringUtil.isUnicodeWhitespace(0x2028));
+    Assertions.assertFalse(StringUtil.isUnicodeWhitespace('a'));
+    Assertions.assertFalse(StringUtil.isUnicodeWhitespace(0x200B));
+  }
+
   @Test
   void testToLowerCase() {
     Assertions.assertEquals("test", StringUtil.toLowerCase("TEST"));
