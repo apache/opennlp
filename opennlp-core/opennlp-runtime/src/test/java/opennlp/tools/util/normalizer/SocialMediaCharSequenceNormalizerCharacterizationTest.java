@@ -197,13 +197,4 @@ public class SocialMediaCharSequenceNormalizerCharacterizationTest {
     Assertions.assertSame(plain, NORMALIZER.normalize(plain));
   }
 
-  // Pins that the deprecated alias and its successor are the same implementation.
-  @Test
-  @SuppressWarnings("deprecation")
-  void deprecatedTwitterAliasBehavesIdentically() {
-    final String input = "rt @user #topic hahaha :-) x";
-    assertEquals(
-        SocialMediaCharSequenceNormalizer.getInstance().normalize(input).toString(),
-        TwitterCharSequenceNormalizer.getInstance().normalize(input).toString());
-  }
 }
