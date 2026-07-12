@@ -37,6 +37,13 @@
 			is the point of the task.
 		</para>
 		<para>
+			OpenNLP supports contextual, ONNX-backed sentence vectors as well, in the
+			<code>opennlp-dl</code> module. Those are inherently more accurate; Model2Vec trades
+			some accuracy for a large speed gain. Both paths implement the same
+			<code>TextEmbedder</code> interface (in <code>opennlp-api</code>), so an application can
+			swap one for the other without changing its calling code.
+		</para>
+		<para>
 			No model is bundled with the module. Callers point it at a model directory they
 			downloaded; the table's own license applies to the table.
 		</para>
@@ -76,8 +83,10 @@ StaticEmbeddingModel model = StaticEmbeddingModel.load(
 		<para>
 			Instances are immutable and safe for concurrent use, so one loaded model can serve
 			every thread of an application. Texts with no in-vocabulary tokens embed to a zero
-			vector rather than raising an error, and <code>similarity</code> reports
-			<code>0</code> for them.
+			vector rather than raising an error (matching the reference implementation), and
+			<code>similarity</code> reports <code>0</code> for them. This is a rare edge case for
+			text in the model's language, since WordPiece backs off to subwords; it mostly happens
+			for empty input or text outside the vocabulary's coverage.
 		</para>
 	</section>
 
