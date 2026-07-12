@@ -22,29 +22,16 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * The gazetteer seam: name, identifier, and region lookup over a set of place records.
- *
- * <p>This interface is the contract every location dataset sits behind. A bundled public-domain
- * table, a user-downloaded dataset, a user-ingested database, and a remote service client are all
- * implementations of this one seam, so a consumer written against {@code Gazetteer} never changes
- * when the data tier does. Nothing in the contract names or presumes a particular dataset; each
- * record's {@link GazetteerEntry#source() source} tag says where it came from.</p>
+ * The gazetteer seam: name, identifier, and region lookup over a set of place records. A bundled
+ * table, a downloaded dataset, an ingested database, and a remote service client are all
+ * implementations of this one interface; each record's {@link GazetteerEntry#source() source} tag
+ * says where it came from.
  *
  * <p>Name matching semantics (case and accent folding, tokenization) are the implementation's
- * concern. The reference implementations fold both indexed names and queries through the same
- * normalization chain used for text matching elsewhere in OpenNLP (NFC, case fold, accent fold),
- * which is the recommended behavior; an implementation with different semantics must document
- * them.</p>
+ * concern and must be documented by the implementation.</p>
  *
- * <p>Relationship to {@link opennlp.tools.entitylinker.EntityLinker}: that interface is the
- * generic entity enrichment contract (any entity type, initialization through properties,
- * sentence-segmented input), and its implementations may well be backed by a {@code Gazetteer}.
- * New consumers that look up place records or resolve location mentions should target this
- * interface and {@link Geocoder}; {@code EntityLinker} remains the contract for generic entity
- * enrichment beyond locations.</p>
- *
- * <p>Implementations must be immutable and thread-safe after construction: one instance is meant
- * to be shared across an application's threads for concurrent lookups.</p>
+ * <p>Implementations must be immutable and thread-safe after construction, so one instance can be
+ * shared across threads for concurrent lookups.</p>
  */
 public interface Gazetteer {
 
@@ -75,10 +62,6 @@ public interface Gazetteer {
 
   /**
    * Finds a representative entry for an ISO 3166-1 alpha-2 region code.
-   *
-   * <p>The alpha-2 code is a stable join key across annotation layers: any region-level signal
-   * that decodes to the same code (a flag emoji does, for example) can resolve against the same
-   * lookup without any dataset-specific identifier.</p>
    *
    * @param isoCountryCode The ISO 3166-1 alpha-2 code, two ASCII capital letters. Must not be
    *                       {@code null}.

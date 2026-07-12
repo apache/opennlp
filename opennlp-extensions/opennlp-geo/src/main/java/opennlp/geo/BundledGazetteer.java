@@ -40,42 +40,23 @@ import opennlp.tools.util.normalizer.TermAnalyzer;
 
 /**
  * The bundled {@link Gazetteer}: a public-domain populated-places table derived from Natural
- * Earth, shipped inside this jar so location lookup works with no download and no configuration.
+ * Earth, shipped in this jar so location lookup works with no download or configuration. The
+ * table is parsed once, lazily, on first {@link #getInstance()}, with fail-loud errors that name
+ * the resource and line for any malformed row; after loading an instance is immutable and
+ * thread-safe.
  *
- * <p>The table ({@code naturalearth-populated-places.txt}) is a project-authored, semicolon
- * separated derivation of the Natural Earth "Populated Places" dataset (public domain); its full
- * derivation record is in the file header. It is parsed once, lazily, on first use
- * ({@link #getInstance()}), with fail-loud errors that name the resource and line for any
- * malformed row. After loading, an instance is immutable and thread-safe; one instance serves
- * concurrent lookups.</p>
+ * <p>Indexed names and queries are folded through the same normalization chain (NFC, case fold,
+ * accent fold with {@link TermAnalyzer} over UAX&#160;#29 word tokens), so matching is robust to
+ * case, accents, and hyphenation. The bundled table is pure ASCII; native-script names are not
+ * matchable against it.</p>
  *
- * <p><b>Name matching.</b> Both indexed names and queries are folded through the same
- * normalization chain used for matching elsewhere in OpenNLP: the name is segmented with the
- * UAX&#160;#29 word tokenizer and each token is normalized with {@link TermAnalyzer} configured
- * as NFC, case fold, accent fold; the folded tokens joined by single spaces form the match key.
- * Folding queries and index keys identically makes matching robust to case ({@code ZURICH}),
- * accents (a query containing {@code u} with umlaut finds the ASCII row), and punctuation or
- * hyphenation variation ({@code Winston-Salem} and {@code Winston Salem} produce the same
- * key).</p>
- *
- * <p><b>ASCII-only v1 boundary.</b> The bundled table is deliberately pure ASCII: a place's
- * display name is accent-folded to ASCII, with the upstream transliteration as a fallback and,
- * where it differs, as an alternate name; the Unicode form is omitted in v1. Because queries are
- * folded through the chain above, accented queries still match the ASCII rows; native-script
- * names (for example CJK or Cyrillic forms) are not matchable against this table and belong to a
- * later, richer data tier behind the same {@link Gazetteer} interface.</p>
- *
- * <p><b>Ranking.</b> {@link #lookup(CharSequence)} returns candidates ordered by population
- * descending, then by feature class ({@link GazetteerEntry#FEATURE_CLASS_CITY} before
- * {@link GazetteerEntry#FEATURE_CLASS_ADMIN} before {@link GazetteerEntry#FEATURE_CLASS_POI}
- * before anything else), then by source and record id for a deterministic total order.
- * {@link #byRegion(String)} returns the most populous bundled entry for the region under the
- * same order; with this dataset that is a city-level record (very often the capital or primate
- * city), a documented v1 approximation of a country-level record.</p>
- *
- * <p><b>Custom rows.</b> {@link #fromEntries(List)} builds a gazetteer over caller-supplied
- * entries with exactly the indexing, folding, and ranking described above, without touching the
- * bundled table or the shared instance.</p>
+ * <p>{@link #lookup(CharSequence)} returns candidates ordered by population descending, then a
+ * feature-class prior ({@link GazetteerEntry#FEATURE_CLASS_CITY} before
+ * {@link GazetteerEntry#FEATURE_CLASS_ADMIN} before {@link GazetteerEntry#FEATURE_CLASS_POI}),
+ * then source and record id for a deterministic total order. {@link #byRegion(String)} returns
+ * the most populous bundled entry for the region. {@link #fromEntries(List)} builds a gazetteer
+ * over caller-supplied entries with the same indexing and ranking, without touching the bundled
+ * table or the shared instance.</p>
  */
 public final class BundledGazetteer implements Gazetteer {
 
@@ -177,6 +158,7 @@ public final class BundledGazetteer implements Gazetteer {
     return new BundledGazetteer(entries);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<GazetteerEntry> lookup(CharSequence name) {
     if (name == null) {
@@ -190,6 +172,7 @@ public final class BundledGazetteer implements Gazetteer {
     return entries == null ? List.of() : entries;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) {
     if (source == null) {
@@ -201,6 +184,7 @@ public final class BundledGazetteer implements Gazetteer {
     return Optional.ofNullable(idIndex.get(new IdKey(source, recordId)));
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byRegion(String isoCountryCode) {
     if (isoCountryCode == null) {
@@ -217,13 +201,19 @@ public final class BundledGazetteer implements Gazetteer {
     return Optional.ofNullable(regionIndex.get(key));
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<String> sources() {
     return sources;
   }
 
-  // Folds one name to its match key: UAX #29 word tokens, each NFC + case fold + accent fold,
-  // joined by single spaces. Empty when the name contains no word token.
+  /**
+   * Folds one name to its match key: UAX&#160;#29 word tokens, each NFC + case fold + accent
+   * fold, joined by single spaces. Returns empty when the name contains no word token.
+   *
+   * @param name The name to fold. Must not be {@code null}.
+   * @return The match key, or empty when the name has no word token.
+   */
   static String foldKey(CharSequence name) {
     final List<Term> terms = FOLD.analyze(name);
     if (terms.isEmpty()) {
@@ -240,8 +230,7 @@ public final class BundledGazetteer implements Gazetteer {
   }
 
   /**
-   * Parses gazetteer rows from a stream of the bundled table format. Package-private so the
-   * fail-loud handling can be exercised without the bundled resource.
+   * Parses gazetteer rows from a stream of the bundled table format.
    *
    * <p>Row format, eleven semicolon separated fields (documented in the data file header):
    * {@code source;recordId;name;altNames;lat;lon;iso2;containment;population;featureClass;
@@ -272,7 +261,7 @@ public final class BundledGazetteer implements Gazetteer {
   }
 
   private static GazetteerEntry parseRow(String line, String resourceName, int lineNumber) {
-    // Cursor scan into exactly 11 fields; no regular expression, no String.split.
+    // Scan the line into exactly 11 semicolon-separated fields.
     final String[] fields = new String[11];
     int fieldCount = 0;
     int start = 0;
