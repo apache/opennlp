@@ -145,12 +145,10 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   }
 
   /**
-   * Embeds a piece of text. This is {@link #getVectors(String)} behind the
-   * {@link TextEmbedder} contract: inference failures surface as an unchecked exception
-   * because the seam is runtime-neutral.
+   * {@inheritDoc}
    *
-   * @param text The text to embed; must not be {@code null}.
-   * @return The sentence vector, of length {@link #dimension()}.
+   * <p>Adapts {@link #getVectors(String)} to the {@link TextEmbedder} contract.</p>
+   *
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    * @throws IllegalStateException Thrown if inference fails; the cause carries the
    *     underlying {@link OrtException}.
@@ -168,9 +166,11 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
   }
 
   /**
-   * {@return the dimension of every vector this model produces} Read from the model's
-   * declared output metadata when it is static there; a model that declares the hidden
-   * dimension dynamically is probed with one inference on first call and the result cached.
+   * {@inheritDoc}
+   *
+   * <p>Read from the model's declared output metadata when it is static; a model that declares
+   * the hidden dimension dynamically is probed with one inference on the first call and the
+   * result cached.</p>
    */
   @Override
   public int dimension() {
@@ -186,8 +186,13 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
     }
   }
 
-  // The last dimension of the first output's declared shape; getVectors reads the first
-  // output, so only its shape matters. Returns -1 when the model declares it dynamically.
+  /**
+   * {@return the last dimension of the first output's declared shape, or {@code -1} when the
+   * model declares it dynamically}
+   *
+   * @param session The model's ONNX session.
+   * @throws OrtException Thrown if reading the output metadata fails.
+   */
   private static int declaredOutputDimension(final OrtSession session) throws OrtException {
     for (final NodeInfo output : session.getOutputInfo().values()) {
       if (output.getInfo() instanceof TensorInfo tensorInfo) {
