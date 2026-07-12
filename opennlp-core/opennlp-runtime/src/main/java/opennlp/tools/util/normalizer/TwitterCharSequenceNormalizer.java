@@ -22,7 +22,7 @@ package opennlp.tools.util.normalizer;
  *
  * @deprecated Use {@link SocialMediaCharSequenceNormalizer}.
  */
-@Deprecated
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class TwitterCharSequenceNormalizer extends SocialMediaCharSequenceNormalizer {
 
   private static final long serialVersionUID = 3921004098714878226L;
