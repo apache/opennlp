@@ -22,6 +22,8 @@ import java.nio.CharBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import opennlp.tools.util.normalizer.UnicodeWhitespace;
+
 public class StringUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
@@ -32,15 +34,10 @@ public class StringUtil {
    * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
    * {@code Character.isWhitespace} excludes.
    *
-   * <p>This predicate is deliberately <em>not</em> the Unicode {@code White_Space} property:
-   * it additionally treats the information separators {@code U+001C}..{@code U+001F} as
-   * whitespace and does not cover the next line control {@code U+0085}. It is kept frozen
-   * because the feature generation of trained models is built on it
-   * ({@code DefaultSDContextGenerator}, {@code DefaultTokenContextGenerator}); changing its
-   * semantics would silently change the features generated for existing models. Code that
-   * classifies whitespace in user text should use the standards-sourced
-   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)} or
-   * {@link opennlp.tools.util.normalizer.CharClass#whitespace()} instead.</p>
+   * <p>This predicate is deliberately not the Unicode {@code White_Space} property and is
+   * kept frozen because trained-model feature generation depends on it. Use
+   * {@link #isUnicodeWhitespace(char)} for whitespace classification in user text
+   * (OPENNLP-1875).</p>
    *
    * @param charCode The character to check.
    *
@@ -57,15 +54,10 @@ public class StringUtil {
    * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
    * {@code Character.isWhitespace} excludes.
    *
-   * <p>This predicate is deliberately <em>not</em> the Unicode {@code White_Space} property:
-   * it additionally treats the information separators {@code U+001C}..{@code U+001F} as
-   * whitespace and does not cover the next line control {@code U+0085}. It is kept frozen
-   * because the feature generation of trained models is built on it
-   * ({@code DefaultSDContextGenerator}, {@code DefaultTokenContextGenerator}); changing its
-   * semantics would silently change the features generated for existing models. Code that
-   * classifies whitespace in user text should use the standards-sourced
-   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)} or
-   * {@link opennlp.tools.util.normalizer.CharClass#whitespace()} instead.</p>
+   * <p>This predicate is deliberately not the Unicode {@code White_Space} property and is
+   * kept frozen because trained-model feature generation depends on it. Use
+   * {@link #isUnicodeWhitespace(int)} for whitespace classification in user text
+   * (OPENNLP-1875).</p>
    *
    * @param charCode An int representation of a character to check.
    *
@@ -74,6 +66,34 @@ public class StringUtil {
   public static boolean isWhitespace(int charCode) {
     return Character.isWhitespace(charCode)  ||
         Character.getType(charCode) == Character.SPACE_SEPARATOR;
+  }
+
+  /**
+   * Determines if the specified {@link Character} is a whitespace under the Unicode
+   * {@code White_Space} property; delegates to
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)}.
+   *
+   * @param charCode The character to check.
+   *
+   * @return {@code true} if {@code charCode} has the {@code White_Space} property,
+   *     {@code false} otherwise.
+   */
+  public static boolean isUnicodeWhitespace(char charCode) {
+    return UnicodeWhitespace.isWhitespace(charCode);
+  }
+
+  /**
+   * Determines if the specified code point is a whitespace under the Unicode
+   * {@code White_Space} property; delegates to
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)}.
+   *
+   * @param charCode An int representation of a character to check.
+   *
+   * @return {@code true} if {@code charCode} has the {@code White_Space} property,
+   *     {@code false} otherwise.
+   */
+  public static boolean isUnicodeWhitespace(int charCode) {
+    return UnicodeWhitespace.isWhitespace(charCode);
   }
 
 

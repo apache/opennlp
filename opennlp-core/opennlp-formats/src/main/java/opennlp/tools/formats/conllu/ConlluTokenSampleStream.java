@@ -60,9 +60,6 @@ public class ConlluTokenSampleStream extends FilterObjectStream<ConlluSentence, 
 
           searchIndex = tokenIndex + token.length();
           if (searchIndex < text.length()) {
-            // Format parsing, not user-text classification: this aligns the CoNLL-U token
-            // column with the "# text" comment, and the legacy StringUtil predicate is kept
-            // so existing sample streams reproduce the same TokenSamples.
             if (!StringUtil.isWhitespace(text.charAt(searchIndex))) {
               text.insert(searchIndex,
                   TokenSample.DEFAULT_SEPARATOR_CHARS);

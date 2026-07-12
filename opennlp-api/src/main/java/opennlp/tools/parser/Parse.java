@@ -119,7 +119,6 @@ public class Parse implements Cloneable, Comparable<Parse> {
 
   /**
    * The patter used to identify tokens in Penn Treebank labeled constituents.
-   * Format parsing: the bracketed PTB syntax is ASCII-whitespace delimited by definition.
    */
   private static final Pattern tokenPattern = Pattern.compile("^[^ ()]+ ([^ ()]+)\\s*\\)");
 

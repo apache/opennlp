@@ -21,7 +21,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
-import opennlp.tools.util.normalizer.UnicodeWhitespace;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Provides methods to parse numbers which occur in natural language texts.
@@ -54,10 +54,7 @@ public final class NumberUtil {
    * Parses a specified {@link String number} for a certain {@code languageCode}.
    * <p>
    * Before parsing, every Unicode {@code White_Space} code point is removed from
-   * {@code number}. Since 3.0 this includes the no-break spaces ({@code U+00A0},
-   * {@code U+2007}, {@code U+202F}), which several locales use as digit grouping
-   * separators; the previously used ASCII {@code \s} strip left them in place and
-   * stopped the number parse at them.
+   * {@code number} (since 3.0; see OPENNLP-1875).
    *
    * @param number The suspected number to parse.
    * @param languageCode A ISO conform language code, e.g. "en", "pt"
@@ -81,17 +78,14 @@ public final class NumberUtil {
   }
 
   /**
-   * Removes every Unicode {@code White_Space} code point from the given string with a
-   * cursor scan (no regex on the user-text path). Unlike the previously used ASCII
-   * {@code \s} strip this also removes the no-break spaces, which several locales use
-   * as digit grouping separators.
+   * Removes every Unicode {@code White_Space} code point from the given string.
    */
   private static String removeWhitespace(String s) {
     final StringBuilder sb = new StringBuilder(s.length());
     int i = 0;
     while (i < s.length()) {
       final int cp = s.codePointAt(i);
-      if (!UnicodeWhitespace.isWhitespace(cp)) {
+      if (!StringUtil.isUnicodeWhitespace(cp)) {
         sb.appendCodePoint(cp);
       }
       i += Character.charCount(cp);

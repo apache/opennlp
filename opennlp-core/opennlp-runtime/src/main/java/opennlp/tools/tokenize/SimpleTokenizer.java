@@ -21,22 +21,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.normalizer.UnicodeWhitespace;
+import opennlp.tools.util.StringUtil;
 
 /**
  * A basic {@link Tokenizer} implementation which performs tokenization
  * using character classes.
  * <p>
- * The whitespace class is the Unicode {@code White_Space} set
- * ({@link UnicodeWhitespace#isWhitespace(int)}). Since 3.0 the next line control
- * {@code U+0085} separates tokens and the {@code U+001C}..{@code U+001F} information
- * separators no longer do (they fall into the OTHER class), matching the standard
- * instead of the JVM predicates.
- * <p>
- * With {@link #setKeepNewLines(boolean)} enabled, the line separator code points
- * {@code \n}, {@code \r} and, since 3.0, the next line control {@code U+0085}, the line
- * separator {@code U+2028} and the paragraph separator {@code U+2029} are returned as
- * tokens of their own; all other whitespace is dropped.
+ * Since 3.0, the whitespace class is the Unicode {@code White_Space} set
+ * ({@link StringUtil#isUnicodeWhitespace(int)}); see OPENNLP-1875 for the delta to earlier
+ * releases. With {@link #setKeepNewLines(boolean)} enabled, line separator code points are
+ * returned as tokens of their own.
  * <p>
  * To obtain an instance of this tokenizer use the static final
  * {@link #INSTANCE} field.
@@ -81,7 +75,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
     char pc = 0;
     for (int ci = 0; ci < sl; ci++) {
       char c = s.charAt(ci);
-      if (UnicodeWhitespace.isWhitespace(c)) {
+      if (StringUtil.isUnicodeWhitespace(c)) {
         charType = CharacterEnum.WHITESPACE;
       }
       else if (Character.isAlphabetic(c)) {
@@ -105,8 +99,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
         }
       }
       if (keepNewLines && isLineSeparator(c)) {
-        // Use the separator's own position: after a preceding whitespace character (or at
-        // the start of the input) `start` still points at stale, or no, token content.
+        // Use the separator's own position; start may point at stale content here.
         tokens.add(new Span(ci, ci + 1));
         start = ci + 1;
       }
@@ -119,10 +112,6 @@ public class SimpleTokenizer extends AbstractTokenizer {
     return tokens.toArray(new Span[0]);
   }
 
-  // The line separator code points emitted as tokens under keepNewLines: the ASCII pair,
-  // plus NEL (U+0085) and the Unicode line and paragraph separators, which count as
-  // whitespace since 3.0. (The previous version compared against the Character category
-  // constants LINE_SEPARATOR and LETTER_NUMBER, whose byte values happen to be 13 and 10.)
   private boolean isLineSeparator(char character) {
     return character == '\n' || character == '\r'
         || character == '\u0085' || character == '\u2028' || character == '\u2029';

@@ -262,8 +262,6 @@ public class NameSample implements Sample {
     return errorString.toString();
   }
 
-  // Annotation-markup parsing: the <START:type> tag grammar itself excludes ASCII
-  // whitespace in type names; this is the markup format, not user-text classification.
   private static final Pattern START_TAG_PATTERN = Pattern.compile("<START(:([^:>\\s]*))?>");
 
 
@@ -294,10 +292,6 @@ public class NameSample implements Sample {
   public static NameSample parse(String taggedTokens, String defaultType, boolean clearAdaptiveData)
           throws IOException {
 
-    // Sample parsing deliberately shares the runtime WhitespaceTokenizer, so training samples
-    // split exactly like inference input (Unicode White_Space since 3.0): annotation lines
-    // containing U+0085 or U+001C..U+001F yield correspondingly shifted tokens and name
-    // indices, pinned in NameSampleTest.
     String[] parts = WhitespaceTokenizer.INSTANCE.tokenize(taggedTokens);
 
     List<String> tokenList = new ArrayList<>(parts.length);

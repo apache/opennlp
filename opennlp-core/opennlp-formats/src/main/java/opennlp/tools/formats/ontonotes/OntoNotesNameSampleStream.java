@@ -114,8 +114,6 @@ public class OntoNotesNameSampleStream extends FilterObjectStream<String, NameSa
               break;
             }
 
-            // Sample parsing deliberately shares the runtime WhitespaceTokenizer, so training
-            // samples split exactly like inference input (Unicode White_Space since 3.0).
             String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(line);
             List<Span> entities = new LinkedList<>();
             List<String> cleanedTokens = new ArrayList<>(tokens.length);

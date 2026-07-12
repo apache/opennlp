@@ -31,10 +31,6 @@ import opennlp.tools.util.StringUtil;
  * @implNote The implementation is very limited, but good enough to parse the
  * <a href="https://catalog.ldc.upenn.edu/LDC2003T13">MUC corpora</a>.
  * Its must very likely be extended/improved/fixed to parse a different SGML corpora.
- * <p>
- * Markup parsing, not user-text classification: the whitespace checks in this parser
- * delimit SGML tag names and attributes, so the legacy {@code StringUtil} predicate is
- * kept on purpose (the Unicode {@code White_Space} migration does not apply here).
  */
 public class SgmlParser {
 

@@ -179,9 +179,6 @@ public class TokenSample implements Sample {
     Objects.requireNonNull(sampleString, "sampleString must not be null");
     Objects.requireNonNull(separatorChars, "separatorChars must not be null");
 
-    // Sample parsing deliberately shares the runtime WhitespaceTokenizer, so training samples
-    // split exactly like inference input (Unicode White_Space since 3.0): sample lines
-    // containing U+0085 or U+001C..U+001F yield correspondingly shifted token spans.
     Span[] whitespaceTokenSpans = WhitespaceTokenizer.INSTANCE.tokenizePos(sampleString);
 
     // Pre-allocate 20% for newly created tokens

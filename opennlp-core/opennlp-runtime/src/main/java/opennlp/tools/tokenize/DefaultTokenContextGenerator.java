@@ -115,12 +115,9 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
    * to the given list {@code preds}.
    *
    * <p>
-   * Intentional exception to the Unicode {@code White_Space} migration (model stability):
-   * the {@code _ws} class is decided by {@link StringUtil#isWhitespace(char)} and must stay
-   * on that frozen predicate. The feature strings are part of every trained tokenizer model;
-   * moving to the Unicode set would change the features produced for text containing
-   * {@code U+001C}..{@code U+001F} or {@code U+0085} and silently degrade existing models.
-   * Pinned by {@code DefaultTokenContextGeneratorTest}.
+   * The {@code _ws} class deliberately stays on the frozen
+   * {@link StringUtil#isWhitespace(char)} predicate: the feature strings are part of every
+   * trained tokenizer model (OPENNLP-1875). Pinned by {@code DefaultTokenContextGeneratorTest}.
    *
    * @param key The input string to process.
    * @param c   A character used to discriminate which fixed text shall be appended.

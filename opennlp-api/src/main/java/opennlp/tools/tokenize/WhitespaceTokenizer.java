@@ -21,23 +21,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import opennlp.tools.util.Span;
-import opennlp.tools.util.normalizer.UnicodeWhitespace;
+import opennlp.tools.util.StringUtil;
 
 /**
  * A basic {@link Tokenizer} implementation which performs tokenization
  * using white spaces.
  * <p>
- * Whitespace is the Unicode {@code White_Space} set
- * ({@link UnicodeWhitespace#isWhitespace(int)}). Since 3.0 the next line control
- * {@code U+0085} separates tokens and the {@code U+001C}..{@code U+001F} information
- * separators no longer do, matching the standard instead of the JVM predicates. Token
- * boundaries produced for text containing those code points differ from earlier releases,
- * which can also shift the candidate spans {@code TokenizerME} scores for such text.
- * <p>
- * With {@link #setKeepNewLines(boolean)} enabled, the line separator code points
- * {@code \n}, {@code \r} and, since 3.0, the next line control {@code U+0085}, the line
- * separator {@code U+2028} and the paragraph separator {@code U+2029} are returned as
- * tokens of their own; all other whitespace is dropped.
+ * Since 3.0, whitespace is the Unicode {@code White_Space} set
+ * ({@link StringUtil#isUnicodeWhitespace(int)}); see OPENNLP-1875 for the delta to earlier
+ * releases. With {@link #setKeepNewLines(boolean)} enabled, line separator code points are
+ * returned as tokens of their own.
  * <p>
  * To obtain an instance of this tokenizer use the static final
  * {@link #INSTANCE} field.
@@ -65,7 +58,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     // gather potential tokens
     int end = d.length();
     for (int i = 0; i < end; i++) {
-      if (UnicodeWhitespace.isWhitespace(d.charAt(i))) {
+      if (StringUtil.isUnicodeWhitespace(d.charAt(i))) {
         if (inTok) {
           tokens.add(new Span(tokStart, i));
           inTok = false;
@@ -91,10 +84,6 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     return tokens.toArray(new Span[0]);
   }
 
-  // The line separator code points emitted as tokens under keepNewLines: the ASCII pair,
-  // plus NEL (U+0085) and the Unicode line and paragraph separators, which count as
-  // whitespace since 3.0. (The previous version compared against the Character category
-  // constants LINE_SEPARATOR and LETTER_NUMBER, whose byte values happen to be 13 and 10.)
   private boolean isLineSeparator(char character) {
     return character == '\n' || character == '\r'
         || character == '\u0085' || character == '\u2028' || character == '\u2029';
