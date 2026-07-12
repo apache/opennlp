@@ -60,11 +60,9 @@ import opennlp.tools.tokenize.Tokenizer;
  * concurrent execution. This thread-safety guarantee applies until {@link #close()}
  * is called; callers must not race {@code close()} with inference methods.</p>
  *
- * <p>As a {@link TextEmbedder} this class is the contextual tier: every vector comes from a
- * full transformer forward pass. {@link #getVectors(String)} remains the primary entry point
- * and is unchanged; {@link #embed(CharSequence)} is an adapter over it for callers coding
- * against the seam. Batched inference ({@code embedAll} executing one padded model run) is a
- * possible future override; the inherited default embeds one text at a time.</p>
+ * <p>{@link #getVectors(String)} is the primary entry point; {@link #embed(CharSequence)}
+ * adapts it to the {@link TextEmbedder} contract. The inherited {@code embedAll} embeds one
+ * text at a time.</p>
  */
 @ThreadSafe
 public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
