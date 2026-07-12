@@ -333,4 +333,48 @@ class SafetensorsFileTest {
         assertThrows(IllegalArgumentException.class, crafted::elementCount);
     assertTrue(e.getMessage().contains("overflows"), e.getMessage());
   }
+
+  @Test
+  void testReadsF16TensorWidenedToFloat(@TempDir Path dir) throws IOException {
+    // F16 is model2vec's default output dtype, so this is the common downloaded-model case.
+    final Path file = dir.resolve("f16.safetensors");
+    final float[] expected = {1.0f, -2.0f, 0.5f, 3.5f}; // all exact in IEEE half
+    SafetensorsTestFiles.write(file, "F16", SafetensorsTestFiles.vector("w", expected));
+
+    final SafetensorsFile parsed = SafetensorsFile.read(file);
+    assertEquals("F16", parsed.tensorInfo("w").dtype());
+    assertArrayEquals(expected, parsed.readFloats("w"), 1e-3f);
+  }
+
+  @Test
+  void testReadsBf16TensorWidenedToFloat(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("bf16.safetensors");
+    final float[] expected = {1.0f, -2.0f, 0.5f, 100.0f}; // exact in bfloat16
+    SafetensorsTestFiles.write(file, "BF16", SafetensorsTestFiles.vector("w", expected));
+
+    final SafetensorsFile parsed = SafetensorsFile.read(file);
+    assertEquals("BF16", parsed.tensorInfo("w").dtype());
+    assertArrayEquals(expected, parsed.readFloats("w"), 1e-3f);
+  }
+
+  @Test
+  void testSingleMatrixTensorNameAcceptsF16(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("f16-matrix.safetensors");
+    SafetensorsTestFiles.write(file, "F16",
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {{1f, 2f}, {3f, 4f}}));
+
+    final SafetensorsFile parsed = SafetensorsFile.read(file);
+    assertEquals("embeddings", parsed.singleMatrixTensorName());
+  }
+
+  @Test
+  void testReadFloat32StrictlyRejectsF16(@TempDir Path dir) throws IOException {
+    final Path file = dir.resolve("f16-strict.safetensors");
+    SafetensorsTestFiles.write(file, "F16", SafetensorsTestFiles.vector("w", new float[] {1f, 2f}));
+
+    final SafetensorsFile parsed = SafetensorsFile.read(file);
+    // readFloats accepts it; the strict readFloat32 must not.
+    assertArrayEquals(new float[] {1f, 2f}, parsed.readFloats("w"), 1e-3f);
+    assertThrows(IllegalArgumentException.class, () -> parsed.readFloat32("w"));
+  }
 }
