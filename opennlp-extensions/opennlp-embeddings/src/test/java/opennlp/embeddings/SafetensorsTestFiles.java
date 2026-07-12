@@ -53,27 +53,45 @@ final class SafetensorsTestFiles {
   }
 
   /**
-   * Writes a safetensors file holding the given F32 tensors, header first, data in declaration
-   * order.
+   * Writes a safetensors file holding the given tensors as {@code F32}, header first, data in
+   * declaration order.
    */
   static void write(Path file, Tensor... tensors) throws IOException {
+    write(file, "F32", tensors);
+  }
+
+  /**
+   * Writes a safetensors file encoding each tensor value as {@code dtype}, one of {@code F32},
+   * {@code F16} (IEEE half), or {@code BF16} (bfloat16). The {@link Tensor} values stay
+   * {@code float}; they are converted to the target dtype's bytes here.
+   */
+  static void write(Path file, String dtype, Tensor... tensors) throws IOException {
+    final int elementBytes = switch (dtype) {
+      case "F32" -> Float.BYTES;
+      case "F16", "BF16" -> Short.BYTES;
+      default -> throw new IllegalArgumentException("unsupported test dtype: " + dtype);
+    };
     final ByteArrayOutputStream data = new ByteArrayOutputStream();
     final StringJoiner header = new StringJoiner(",", "{", "}");
     int offset = 0;
     for (final Tensor tensor : tensors) {
       final ByteBuffer buffer =
-          ByteBuffer.allocate(tensor.values().length * Float.BYTES)
-              .order(ByteOrder.LITTLE_ENDIAN);
+          ByteBuffer.allocate(tensor.values().length * elementBytes).order(ByteOrder.LITTLE_ENDIAN);
       for (final float value : tensor.values()) {
-        buffer.putFloat(value);
+        switch (dtype) {
+          case "F32" -> buffer.putFloat(value);
+          case "F16" -> buffer.putShort(Float.floatToFloat16(value));
+          case "BF16" -> buffer.putShort((short) (Float.floatToIntBits(value) >>> 16));
+          default -> throw new IllegalArgumentException("unsupported test dtype: " + dtype);
+        }
       }
       data.writeBytes(buffer.array());
       final StringJoiner shape = new StringJoiner(",", "[", "]");
       for (final int dimension : tensor.shape()) {
         shape.add(Integer.toString(dimension));
       }
-      final int end = offset + tensor.values().length * Float.BYTES;
-      header.add("\"" + tensor.name() + "\":{\"dtype\":\"F32\",\"shape\":" + shape
+      final int end = offset + tensor.values().length * elementBytes;
+      header.add("\"" + tensor.name() + "\":{\"dtype\":\"" + dtype + "\",\"shape\":" + shape
           + ",\"data_offsets\":[" + offset + "," + end + "]}");
       offset = end;
     }
