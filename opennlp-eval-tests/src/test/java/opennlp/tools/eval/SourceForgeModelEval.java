@@ -161,10 +161,14 @@ public class SourceForgeModelEval extends AbstractEvalTest {
 
   @BeforeAll
   static void verifyTrainingData() throws Exception {
+    // Golden value updated for OPENNLP-1875: SimpleTokenizer now splits on the Unicode
+    // White_Space set, and this corpus carries NEL (U+0085) and the C0 separators
+    // (U+001C..U+001F), so a handful of lines retokenize. Every other digest in this class
+    // is unchanged because they run over their own gold data or space-joined text.
     verifyTrainingData(new LeipzigTestSampleStream(25, SimpleTokenizer.INSTANCE,
             new MarkableFileInputStreamFactory(new File(getOpennlpDataDir(),
                 "leipzig/eng_news_2010_300K-sentences.txt"))),
-        new BigInteger("172812413483919324675263268750583851712"));
+        new BigInteger("19406144476937988740790792132372571062"));
   }
 
   @Test
