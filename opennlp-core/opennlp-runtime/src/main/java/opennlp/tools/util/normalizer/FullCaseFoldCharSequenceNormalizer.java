@@ -61,6 +61,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
   private static final FullCaseFoldCharSequenceNormalizer INSTANCE =
       new FullCaseFoldCharSequenceNormalizer();
 
+  /** Creates the singleton; use {@link #getInstance()}. */
   private FullCaseFoldCharSequenceNormalizer() {
   }
 
