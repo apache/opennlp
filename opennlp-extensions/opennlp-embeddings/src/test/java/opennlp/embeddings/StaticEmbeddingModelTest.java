@@ -105,6 +105,56 @@ class StaticEmbeddingModelTest {
   }
 
   @Test
+  void testLoadsAModelWhoseVocabularyDroppedTheFrameTokens(@TempDir Path dir) throws IOException {
+    // Model2Vec mean-pools content pieces and never frames, so it removes [CLS]/[SEP] from the
+    // distilled table, keeping only [PAD]/[UNK]. Such a table must still load; the loader caches
+    // the frame onto the unknown row and pooling skips it. The content rows below carry the same
+    // values as the framed fixture, so the embedding must match it piece for piece.
+    final List<String> tokens = List.of("[PAD]", "[UNK]", "hello", "world", "cat");
+    final float[][] rows = {
+        {9f, 9f, 9f},       // [PAD], never pooled
+        {8f, 8f, 8f},       // [UNK], never pooled
+        {3f, 30f, 300f},    // hello, same as the framed fixture's row
+        {4f, 40f, 400f},    // world, same as the framed fixture's row
+        {5f, 50f, 500f},    // cat, same as the framed fixture's row
+    };
+    final Path vocab = dir.resolve("vocab.txt");
+    Files.write(vocab, tokens);
+    final Path tensors = dir.resolve("model.safetensors");
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", rows));
+
+    final StaticEmbeddingModel model =
+        StaticEmbeddingModel.load(vocab, tensors, Casing.UNCASED, Normalization.NONE);
+
+    // (hello + world) / 2, identical to testEmbedMeanPoolsWithoutWeights: the cached frame and
+    // any [UNK] are skipped, so only the two content pieces pool.
+    assertArrayEquals(new float[] {3.5f, 35f, 350f}, model.embed("hello world"), 1e-5f);
+    // "xyzzy" folds to [UNK] and is dropped, leaving just "cat".
+    assertArrayEquals(new float[] {5f, 50f, 500f}, model.embed("cat xyzzy"), 1e-5f);
+    // Text with no content pieces is a zero vector, not the frame or [UNK] vector.
+    assertArrayEquals(new float[] {0f, 0f, 0f}, model.embed("xyzzy"), 1e-5f);
+    // The unknown row must never surface as a neighbor.
+    for (final Neighbor neighbor : model.mostSimilar("cat", 4)) {
+      assertTrue(!"[UNK]".equals(neighbor.token()) && !"[PAD]".equals(neighbor.token()),
+          "a special row leaked into neighbors: " + neighbor.token());
+    }
+  }
+
+  @Test
+  void testRejectsAWordPieceVocabularyWithoutUnknownToken(@TempDir Path dir) throws IOException {
+    final List<String> tokens = List.of("[CLS]", "[SEP]", "hello", "world");
+    final float[][] rows = {{0f, 0f, 0f}, {1f, 1f, 1f}, {2f, 2f, 2f}, {3f, 3f, 3f}};
+    final Path vocab = dir.resolve("vocab.txt");
+    Files.write(vocab, tokens);
+    final Path tensors = dir.resolve("model.safetensors");
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", rows));
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> StaticEmbeddingModel.load(vocab, tensors, Casing.UNCASED, Normalization.NONE));
+    assertTrue(e.getMessage().contains("[UNK]"), e.getMessage());
+  }
+
+  @Test
   void testEmbedAppliesPerTokenWeightsButDividesByTokenCount(@TempDir Path dir)
       throws IOException {
     final StaticEmbeddingModel model =
