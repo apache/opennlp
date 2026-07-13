@@ -136,9 +136,7 @@ public class ShrinkCharSequenceNormalizerCharacterizationTest {
 
   @Test
   void nullTextIsRejected() {
-    // Not characterization: the cursor refactor deliberately rejects null with an
-    // IllegalArgumentException, where the regex version threw an undocumented
-    // NullPointerException from Matcher.
+    // Not characterization: the refactor deliberately rejects null with IllegalArgumentException.
     assertThrows(IllegalArgumentException.class, () -> NORMALIZER.normalize(null));
   }
 

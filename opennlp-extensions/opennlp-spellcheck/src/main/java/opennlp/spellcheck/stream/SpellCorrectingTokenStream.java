@@ -90,19 +90,23 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    *                   {@code null}
    * @param delimiter  the literal token delimiter to split and re-join on; must not be
    *                   {@code null} or empty
-   * @throws NullPointerException     if {@code normalizer} or {@code delimiter} is
-   *                                  {@code null}
-   * @throws IllegalArgumentException if {@code delimiter} is empty
+   * @throws IllegalArgumentException if {@code normalizer} or {@code delimiter} is
+   *                                  {@code null}, or if {@code delimiter} is empty
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples,
                                     SpellCheckingCharSequenceNormalizer normalizer,
                                     String delimiter) {
     super(samples);
-    this.normalizer = Objects.requireNonNull(normalizer, "normalizer must not be null");
-    Objects.requireNonNull(delimiter, "delimiter must not be null");
+    if (normalizer == null) {
+      throw new IllegalArgumentException("normalizer must not be null");
+    }
+    if (delimiter == null) {
+      throw new IllegalArgumentException("delimiter must not be null");
+    }
     if (delimiter.isEmpty()) {
       throw new IllegalArgumentException("delimiter must not be empty");
     }
+    this.normalizer = normalizer;
     this.delimiter = delimiter;
   }
 
