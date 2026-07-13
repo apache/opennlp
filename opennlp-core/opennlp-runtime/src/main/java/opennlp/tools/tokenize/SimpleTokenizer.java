@@ -97,7 +97,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
           start = ci;
         }
       }
-      if (keepNewLines && isLineSeparator(c)) {
+      if (keepNewLines && StringUtil.isLineSeparator(c)) {
         // Use the separator's own position; start may point at stale content here.
         tokens.add(new Span(ci, ci + 1));
         start = ci + 1;
@@ -109,14 +109,6 @@ public class SimpleTokenizer extends AbstractTokenizer {
       tokens.add(new Span(start, sl));
     }
     return tokens.toArray(new Span[0]);
-  }
-
-  /**
-   * Checks whether {@code character} is a line separator: LF, CR, NEL, LS, or PS.
-   */
-  private boolean isLineSeparator(char character) {
-    return character == '\n' || character == '\r'
-        || character == '\u0085' || character == '\u2028' || character == '\u2029';
   }
 
 }
