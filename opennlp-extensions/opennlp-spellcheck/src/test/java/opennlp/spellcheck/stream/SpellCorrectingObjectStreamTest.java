@@ -24,6 +24,9 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import opennlp.spellcheck.SpellChecker;
+import opennlp.spellcheck.dictionary.SymSpellModel;
+import opennlp.spellcheck.normalizer.SpellCheckingCharSequenceNormalizer;
 import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.spellcheck.symspell.TinyDictionary;
 import opennlp.tools.util.InputStreamFactory;
@@ -103,8 +106,17 @@ public class SpellCorrectingObjectStreamTest {
   }
 
   @Test
-  void wrapsWithModelConstructorAndNullChecks() {
-    assertThrows(NullPointerException.class,
+  void nullArgumentsAreRejected() throws IOException {
+    assertThrows(IllegalArgumentException.class,
         () -> new SpellCorrectingObjectStream(null, symSpell));
+    try (ObjectStream<String> samples = lineStream("a\n")) {
+      assertThrows(IllegalArgumentException.class,
+          () -> new SpellCorrectingObjectStream(samples, (SpellChecker) null));
+      assertThrows(IllegalArgumentException.class,
+          () -> new SpellCorrectingObjectStream(samples, (SymSpellModel) null));
+      assertThrows(IllegalArgumentException.class,
+          () -> new SpellCorrectingObjectStream(samples,
+              (SpellCheckingCharSequenceNormalizer) null));
+    }
   }
 }

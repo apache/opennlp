@@ -18,7 +18,6 @@
 package opennlp.spellcheck.stream;
 
 import java.io.IOException;
-import java.util.Objects;
 
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.dictionary.SymSpellModel;
@@ -58,12 +57,12 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    *
    * @param samples      the source token-line stream; must not be {@code null}
    * @param spellChecker the engine used to correct tokens; must not be {@code null}
-   * @throws NullPointerException if {@code samples} or {@code spellChecker} is {@code null}
+   * @throws IllegalArgumentException if {@code samples} or {@code spellChecker} is {@code null}
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples, SpellChecker spellChecker) {
-    this(Objects.requireNonNull(samples, "samples must not be null"),
+    this(samples,
         SpellCheckingCharSequenceNormalizer.builder(
-            Objects.requireNonNull(spellChecker, "spellChecker must not be null"))
+            requireNonNullArg(spellChecker, "spellChecker"))
             .mode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN).build(),
         DEFAULT_DELIMITER);
   }
@@ -74,9 +73,10 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    *
    * @param samples the source token-line stream; must not be {@code null}
    * @param model   the loaded model whose engine is used; must not be {@code null}
+   * @throws IllegalArgumentException if {@code samples} or {@code model} is {@code null}
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples, SymSpellModel model) {
-    this(samples, Objects.requireNonNull(model, "model must not be null").getSymSpell());
+    this(samples, requireNonNullArg(model, "model").getSymSpell());
   }
 
   /**
@@ -90,13 +90,14 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    *                   {@code null}
    * @param delimiter  the literal token delimiter to split and re-join on; must not be
    *                   {@code null} or empty
-   * @throws IllegalArgumentException if {@code normalizer} or {@code delimiter} is
-   *                                  {@code null}, or if {@code delimiter} is empty
+   * @throws IllegalArgumentException if {@code samples}, {@code normalizer} or
+   *                                  {@code delimiter} is {@code null}, or if
+   *                                  {@code delimiter} is empty
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples,
                                     SpellCheckingCharSequenceNormalizer normalizer,
                                     String delimiter) {
-    super(samples);
+    super(requireNonNullArg(samples, "samples"));
     if (normalizer == null) {
       throw new IllegalArgumentException("normalizer must not be null");
     }
@@ -108,6 +109,21 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
     }
     this.normalizer = normalizer;
     this.delimiter = delimiter;
+  }
+
+  /**
+   * Validates that a constructor argument is not {@code null}.
+   *
+   * @param value the argument to check
+   * @param name  the parameter name used in the error message
+   * @return {@code value}, never {@code null}
+   * @throws IllegalArgumentException if {@code value} is {@code null}
+   */
+  private static <T> T requireNonNullArg(T value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException(name + " must not be null");
+    }
+    return value;
   }
 
   /** {@inheritDoc} */

@@ -83,7 +83,7 @@ public class NumberCharSequenceNormalizerCharacterizationTest {
 
   @Test
   void nullTextIsRejected() {
-    // Not characterization: the refactor deliberately rejects null with IllegalArgumentException.
+    // Null input is rejected with IllegalArgumentException.
     assertThrows(IllegalArgumentException.class, () -> NORMALIZER.normalize(null));
   }
 

@@ -140,8 +140,8 @@ public class SocialMediaCharSequenceNormalizer implements CharSequenceNormalizer
    * {@return whether the word boundary before {@code index} is blocked} The boundary is
    * blocked if the preceding code point is an ASCII word character, or is a non-spacing mark
    * whose backwards base-character scan reaches a letter or digit. The scan reads one char at
-   * a time and stops on the low surrogate of a supplementary-plane mark, which keeps the
-   * output byte-identical to earlier releases.
+   * a time and stops on the low surrogate of a supplementary-plane mark; that stop is part of
+   * the boundary behavior this normalizer preserves.
    *
    * @param text  The text to look into; never null.
    * @param index The index the boundary is checked before.
