@@ -31,7 +31,7 @@ import java.util.Objects;
  */
 public final class EmojiToEmoticonCharSequenceNormalizer implements OffsetAwareNormalizer {
 
-  private static final long serialVersionUID = 7118395871093868025L;
+  private static final long serialVersionUID = -4515950955072716487L;
 
   private static final EmojiToEmoticonCharSequenceNormalizer INSTANCE =
       new EmojiToEmoticonCharSequenceNormalizer();
