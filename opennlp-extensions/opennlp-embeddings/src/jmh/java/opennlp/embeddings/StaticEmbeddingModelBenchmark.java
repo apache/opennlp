@@ -35,6 +35,7 @@ import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -52,10 +53,15 @@ import opennlp.embeddings.StaticEmbeddingModel.Normalization;
  * JMH benchmark for {@link StaticEmbeddingModel}, the raw-lookup-throughput number the module's
  * design doc calls for before any "faster than Python" claim is made (a concurrent gRPC-traffic
  * comparison against a Python baseline is a separate, later benchmark; this one is the JVM-only
- * baseline). The fixture is sized to match {@code minishlab/potion-base-8M} (29,528 vocabulary
- * rows, 256 dimensions), synthesized rather than downloaded so the benchmark has no network
- * dependency, but seeded with real English words so the benchmark sentences tokenize into actual
- * vocabulary hits rather than degenerating into all-unknown-token lookups.
+ * baseline).
+ *
+ * <p>The {@code modelDir} parameter selects the table to benchmark. Its default,
+ * {@code "synthetic"}, builds a fixture sized to {@code minishlab/potion-base-8M} (29,528 rows,
+ * 256 dimensions) in a temp directory, so the benchmark runs with no model download. Passing one
+ * or more real model directories instead, for example
+ * {@code -p modelDir=/models/potion-base-8M,/models/bge-large-en-v1.5-static}, benchmarks those
+ * tables directly and reports one row per directory, which is how the two-model comparison in the
+ * README is produced.</p>
  */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
@@ -63,6 +69,9 @@ import opennlp.embeddings.StaticEmbeddingModel.Normalization;
 @Measurement(iterations = 10, time = 2)
 @Fork(2)
 public class StaticEmbeddingModelBenchmark {
+
+  /** The synthetic-fixture selector; any other value is treated as a model directory path. */
+  private static final String SYNTHETIC = "synthetic";
 
   // Matches minishlab/potion-base-8M's config.json (hidden_dim) and its reported total
   // parameter count (7,559,168 / 256), verified against the real model repo, not guessed.
@@ -86,23 +95,36 @@ public class StaticEmbeddingModelBenchmark {
   @State(Scope.Benchmark)
   public static class ModelState {
 
+    /**
+     * The model to benchmark: {@code "synthetic"} for the built-in fixture, or a model directory
+     * path. Override with {@code -p modelDir=dir1,dir2} to benchmark real tables.
+     */
+    @Param({SYNTHETIC})
+    public String modelDir;
+
     StaticEmbeddingModel model;
     private Path tempDir;
 
     @Setup(Level.Trial)
     public void load() throws IOException {
-      tempDir = Files.createTempDirectory("opennlp-embeddings-jmh");
-      final Path vocabFile = writeVocab(tempDir);
-      final Path safetensorsFile = writeSafetensors(tempDir);
-      model = StaticEmbeddingModel.load(vocabFile, safetensorsFile,
+      if (SYNTHETIC.equals(modelDir)) {
+        tempDir = Files.createTempDirectory("opennlp-embeddings-jmh");
+        final Path vocabFile = writeVocab(tempDir);
+        final Path safetensorsFile = writeSafetensors(tempDir);
+        model = StaticEmbeddingModel.load(vocabFile, safetensorsFile,
             Casing.UNCASED, Normalization.L2);
+      } else {
+        model = StaticEmbeddingModel.load(Path.of(modelDir));
+      }
     }
 
     @TearDown(Level.Trial)
     public void cleanup() throws IOException {
-      Files.deleteIfExists(tempDir.resolve("vocab.txt"));
-      Files.deleteIfExists(tempDir.resolve("model.safetensors"));
-      Files.deleteIfExists(tempDir);
+      if (tempDir != null) {
+        Files.deleteIfExists(tempDir.resolve("vocab.txt"));
+        Files.deleteIfExists(tempDir.resolve("model.safetensors"));
+        Files.deleteIfExists(tempDir);
+      }
     }
 
     private static Path writeVocab(Path dir) throws IOException {
