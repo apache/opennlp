@@ -49,6 +49,10 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  */
 public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwareNormalizer {
 
+  // Serializable through the OffsetAwareNormalizer contract; the model state is not itself
+  // serializable, so this only carries the serialver-computed value the convention expects.
+  private static final long serialVersionUID = -7114394869301531147L;
+
   /** The segmentation algorithm a model was trained with. */
   public enum Algorithm {
     /** Unigram language model, decoded by best-path search. */
