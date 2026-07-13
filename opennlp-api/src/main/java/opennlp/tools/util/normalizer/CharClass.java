@@ -31,10 +31,8 @@ import opennlp.tools.util.normalizer.CodePoints.At;
  * presets ({@link #whitespace()}, {@link #dashes()}); any other class is one more configured
  * instance with no new engine code.</p>
  *
- * <p>Every operation is a single forward pass that reads one code point via {@link CodePoints},
- * tests membership in O(1), acts, and advances. There is no regular expression, no
- * {@link java.util.regex} allocation, and no reliance on {@link Character#isWhitespace(int)} or
- * {@link Character#isSpaceChar(int)}, all of which disagree with the Unicode standard.</p>
+ * <p>Every operation is a single forward cursor pass over the text: no regular expression and no
+ * per-call allocation beyond the result.</p>
  *
  * <p>Instances are immutable and thread-safe.</p>
  */
@@ -501,9 +499,8 @@ public final class CharClass {
 
   /**
    * Applies a per-code-point substitution: each code point for which {@code substitution} returns a
-   * non-null string is replaced by that string, and the rest are copied through. This is the shared,
-   * offset-changing cursor pass behind the expanding folds (ellipsis, German umlaut, digit), so each
-   * of them supplies only a mapper rather than re-implementing the loop. No regular expression.
+   * non-null string is replaced by that string, and the rest are copied through. This is the shared
+   * cursor pass behind the expanding folds, with no regular expression.
    *
    * <p>When {@code substitution} returns {@code null} for every code point of {@code text}, the
    * text is returned unchanged (as its {@link CharSequence#toString() string form}) without
@@ -580,9 +577,14 @@ public final class CharClass {
     return new AlignedText(text, out.toString(), alignment.build(length));
   }
 
-  // The index of the first member code point, or text.length() when the text is member-free. The
-  // folds above return member-free text uncopied and otherwise start from a builder pre-filled
-  // with the unchanged prefix.
+  /**
+   * Finds the index of the first member code point, so callers can return member-free text
+   * uncopied.
+   *
+   * @param text The text to scan.
+   * @return The index of the first member code point, or {@code text.length()} when the text
+   *     contains no member.
+   */
   private int firstMember(CharSequence text) {
     final int length = text.length();
     int i = 0;
@@ -596,6 +598,14 @@ public final class CharClass {
     return length;
   }
 
+  /**
+   * Advances past a run of member code points.
+   *
+   * @param text The text to scan.
+   * @param runStart The index where the member run starts.
+   * @return The index of the first non-member code point at or after {@code runStart}, or
+   *     {@code text.length()} when the run extends to the end of the text.
+   */
   private int skipRun(CharSequence text, int runStart) {
     final int length = text.length();
     int i = runStart;
@@ -609,15 +619,29 @@ public final class CharClass {
     return i;
   }
 
+  /**
+   * Validates that {@code codePoint} is a Unicode code point.
+   *
+   * @param codePoint The value to validate.
+   * @throws IllegalArgumentException Thrown if {@code codePoint} is negative or greater than
+   *     {@link Character#MAX_CODE_POINT}.
+   */
   private static void requireValidCodePoint(int codePoint) {
     if (codePoint < 0 || codePoint > Character.MAX_CODE_POINT) {
       throw new IllegalArgumentException("Not a Unicode code point: " + codePoint);
     }
   }
 
-  // Null parameters report IllegalArgumentException rather than requireNonNull's
-  // NullPointerException, so an invalid parameter and an invalid code point surface through the
-  // same exception type.
+  /**
+   * Validates that a parameter is not {@code null}, reporting {@link IllegalArgumentException} so
+   * that a null parameter and an invalid code point surface through the same exception type.
+   *
+   * @param value The parameter value to validate.
+   * @param name The parameter name used in the error message.
+   * @param <T> The parameter type.
+   * @return {@code value}, never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code null}.
+   */
   private static <T> T requireNonNullArg(T value, String name) {
     if (value == null) {
       throw new IllegalArgumentException("The " + name + " must not be null.");

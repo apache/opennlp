@@ -26,6 +26,7 @@ import java.text.Normalizer;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Computes the Unicode confusable <em>skeleton</em> of text, following the skeleton algorithm
@@ -35,16 +36,14 @@ import java.util.Map;
  * lookalikes, exactly when their skeletons are equal.
  *
  * <p>The mapping is loaded once from the {@code confusables.txt} resource of the Unicode security
- * data (parsed with simple cursor scanning, no regular expression). The skeleton of a string is
- * {@code NFD(map(NFD(s)))}: decompose, replace each code point with its prototype, and decompose
- * again. This changes length and offsets, so it belongs to the derived, matching-only form rather
- * than to any offset-preserving transform.</p>
+ * data. The skeleton of a string is {@code NFD(map(NFD(s)))}: decompose, replace each code point
+ * with its prototype, and decompose again. This changes length and offsets, so it is a
+ * matching-only comparison form, not an offset-preserving transform.</p>
  *
- * <p>This implements only the skeleton transform and the confusable-detection test built on
- * skeleton equality. The other mechanisms defined in UTS&#160;#39, such as identifier
+ * <p>This implements only the UTS&#160;#39 skeleton transform and the confusable-detection test
+ * built on skeleton equality. The other mechanisms defined in the report, such as identifier
  * restriction levels, mixed-script and whole-script confusable detection, and the bidirectional
- * skeleton, are out of scope; the skeleton here is a comparison form, not a security-grade
- * conformance claim for the full report.</p>
+ * skeleton, are out of scope.</p>
  */
 public final class Confusables {
 
@@ -53,25 +52,18 @@ public final class Confusables {
   private record Data(Map<Integer, String> prototypes, BitSet keys) {
   }
 
-  private static volatile Data data;
+  private static final Data DATA = load();
 
   private Confusables() {
   }
 
-  private static Data data() {
-    Data d = data;
-    if (d == null) {
-      synchronized (Confusables.class) {
-        d = data;
-        if (d == null) {
-          d = load();
-          data = d;
-        }
-      }
-    }
-    return d;
-  }
-
+  /**
+   * {@return the prototype mapping and key set parsed from the bundled {@code confusables.txt}
+   * resource}
+   *
+   * @throws IllegalStateException Thrown if the resource is missing.
+   * @throws UncheckedIOException Thrown if the resource cannot be read.
+   */
   private static Data load() {
     try (InputStream in = Confusables.class.getResourceAsStream(RESOURCE)) {
       if (in == null) {
@@ -88,7 +80,16 @@ public final class Confusables {
     }
   }
 
-  // Package-private so the malformed-data handling can be exercised without the bundled resource.
+  /**
+   * Parses the source-to-prototype mappings from the {@code confusables.txt} data. Package-private
+   * so the malformed-data handling can be exercised without the bundled resource.
+   *
+   * @param in The data stream.
+   * @return The source code point to prototype string mapping.
+   * @throws IOException Thrown if the stream cannot be read.
+   * @throws IllegalArgumentException Thrown if a line is structurally malformed or holds a
+   *     non-hexadecimal code point.
+   */
   static Map<Integer, String> parse(InputStream in) throws IOException {
     final Map<Integer, String> map = new HashMap<>();
     try (BufferedReader reader =
@@ -105,8 +106,8 @@ public final class Confusables {
         final int firstSemicolon = content.indexOf(';');
         final int secondSemicolon = content.indexOf(';', firstSemicolon + 1);
         if (firstSemicolon < 0 || secondSemicolon < 0) {
-          // A present-but-structurally-wrong line (fewer than two ';') is a hard error, like the
-          // malformed-hex path below and the sibling loaders -- never silently dropped.
+          // A present-but-structurally-wrong line (fewer than two ';') is a hard error, never
+          // silently dropped.
           throw new IllegalArgumentException("Malformed confusables data in " + RESOURCE + " at line "
               + lineNumber + ": " + content);
         }
@@ -114,8 +115,7 @@ public final class Confusables {
           final int source = Integer.parseInt(content.substring(0, firstSemicolon).strip(), 16);
           final String target = content.substring(firstSemicolon + 1, secondSemicolon).strip();
           final StringBuilder prototype = new StringBuilder();
-          // Scan the whitespace-delimited hex tokens by hand to honor the no-regex contract and
-          // avoid compiling a Pattern for every one of the ~10k lines during static init.
+          // Scan the whitespace-delimited hex tokens by hand, with no regular expression.
           final int targetLength = target.length();
           int pos = 0;
           while (pos < targetLength) {
@@ -148,9 +148,11 @@ public final class Confusables {
    *
    * @param text The text to reduce.
    * @return The skeleton.
+   * @throws NullPointerException Thrown if {@code text} is {@code null}.
    */
   public static String skeleton(CharSequence text) {
-    final Data d = data();
+    Objects.requireNonNull(text, "text must not be null");
+    final Data d = DATA;
     final BitSet keys = d.keys();
 
     // Clean ASCII or NFD text with no confusable keys skips both Normalizer passes.
@@ -195,8 +197,11 @@ public final class Confusables {
    *
    * @param left  The first string.
    * @param right The second string.
+   * @throws NullPointerException Thrown if {@code left} or {@code right} is {@code null}.
    */
   public static boolean confusable(CharSequence left, CharSequence right) {
+    Objects.requireNonNull(left, "left must not be null");
+    Objects.requireNonNull(right, "right must not be null");
     return skeleton(left).equals(skeleton(right));
   }
 }

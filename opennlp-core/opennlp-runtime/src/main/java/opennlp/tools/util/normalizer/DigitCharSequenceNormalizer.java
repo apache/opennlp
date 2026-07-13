@@ -42,20 +42,25 @@ public class DigitCharSequenceNormalizer implements OffsetAwareNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return CharClass.substitute(text, DigitCharSequenceNormalizer::toAscii);
   }
 
-  // The ASCII digit for a Unicode decimal digit code point, or null to copy the code point through.
-  // An ASCII digit is already its own fold, so it reports null and takes the copy-through path;
-  // the substitution and its alignment are identical either way (a one-for-one replacement records
-  // the same alignment run as a copy), and text whose digits are all ASCII is returned uncopied.
+  /**
+   * Maps a code point to its ASCII digit fold.
+   *
+   * @param codePoint The code point to fold.
+   * @return The ASCII digit string for a non-ASCII Unicode decimal digit, or {@code null} to copy
+   *     the code point through (ASCII digits are already their own fold).
+   */
   private static String toAscii(int codePoint) {
     final int value = Character.digit(codePoint, 10);
     return value >= 0 && codePoint != '0' + value ? ASCII_DIGITS[value] : null;
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     return CharClass.substituteAligned(text, DigitCharSequenceNormalizer::toAscii);

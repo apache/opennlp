@@ -34,6 +34,7 @@ final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormali
     this.steps = steps;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     CharSequence result = text;
@@ -43,6 +44,7 @@ final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormali
     return result;
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     if (steps.length == 0) {
