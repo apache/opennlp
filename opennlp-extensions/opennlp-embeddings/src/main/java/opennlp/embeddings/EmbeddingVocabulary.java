@@ -43,6 +43,7 @@ final class EmbeddingVocabulary {
   private final Map<String, Integer> idByToken;
   private final List<String> tokenById;
 
+  /** Holds the parsed piece-to-row and row-to-piece views; built by the {@code from*} factories. */
   private EmbeddingVocabulary(Map<String, Integer> idByToken, List<String> tokenById) {
     this.idByToken = idByToken;
     this.tokenById = tokenById;
@@ -119,9 +120,7 @@ final class EmbeddingVocabulary {
   }
 
   /**
-   * Looks up a token's row id. Returns a primitive with a {@code -1} sentinel rather than an
-   * {@code OptionalInt} because this sits on the per-token hot path of
-   * {@link StaticEmbeddingModel#embed(String)}.
+   * Looks up a token's row id.
    *
    * @param token The token to look up. Must not be {@code null}.
    * @return The token's id, or {@code -1} when the token is not in this vocabulary.
