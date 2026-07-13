@@ -71,7 +71,7 @@ import opennlp.tools.util.normalizer.CharSequenceNormalizer;
  */
 public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 488960282194566688L;
 
   /** The default minimum token length below which tokens are left untouched. */
   public static final int DEFAULT_MIN_TOKEN_LENGTH = 4;

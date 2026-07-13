@@ -34,7 +34,7 @@ package opennlp.tools.util.normalizer;
  */
 public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 8104568774596047804L;
+  private static final long serialVersionUID = 2023145028634552389L;
 
   private static final CodePointSet ASCII_ALNUM = CodePointSet.ofRange('0', '9')
       .union(CodePointSet.ofRange('A', 'Z'))

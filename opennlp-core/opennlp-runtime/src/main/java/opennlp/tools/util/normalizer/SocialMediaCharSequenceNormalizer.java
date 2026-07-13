@@ -31,7 +31,7 @@ package opennlp.tools.util.normalizer;
  */
 public class SocialMediaCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 6248559154336110434L;
+  private static final long serialVersionUID = -5441528948820855349L;
 
   private static final SocialMediaCharSequenceNormalizer INSTANCE = new SocialMediaCharSequenceNormalizer();
 

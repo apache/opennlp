@@ -31,7 +31,7 @@ import java.util.Objects;
  */
 public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 9183472265510038829L;
+  private static final long serialVersionUID = -3462240068381722106L;
 
   private static final CaseFoldCharSequenceNormalizer INSTANCE =
       new CaseFoldCharSequenceNormalizer();

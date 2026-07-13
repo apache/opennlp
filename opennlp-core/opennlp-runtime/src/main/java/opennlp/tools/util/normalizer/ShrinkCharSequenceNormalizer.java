@@ -32,7 +32,7 @@ package opennlp.tools.util.normalizer;
  */
 public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 7042871810299585743L;
+  private static final long serialVersionUID = -4511969661556543048L;
 
   /** The line terminator code points; a repeat run never starts on one. */
   private static final CodePointSet LINE_TERMINATORS =
