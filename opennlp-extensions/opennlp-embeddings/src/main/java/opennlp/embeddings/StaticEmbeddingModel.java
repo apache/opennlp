@@ -23,21 +23,34 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.IntPredicate;
 
+import opennlp.subword.sentencepiece.SentencePieceTokenizer;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.embeddings.TextEmbedder;
+import opennlp.tools.tokenize.SubwordPiece;
+import opennlp.tools.tokenize.SubwordTokenizer;
+import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 
 /**
- * A static (non-contextual) sentence embedding model: a per-token vector table plus WordPiece
- * tokenization. Embedding a sentence is tokenize, gather each token's row, optionally weight,
- * mean-pool, and optionally L2-normalize; there is no model forward pass. It loads distilled
- * tables in the Model2Vec release layout: a {@code vocab.txt} and a {@code model.safetensors}
- * holding one 2-D {@code F32} matrix, with an optional per-token {@code weights} tensor.
+ * A static (non-contextual) sentence embedding model: a per-token vector table plus subword
+ * tokenization. Embedding a sentence is tokenize, gather each piece's row, optionally weight,
+ * mean-pool, and optionally L2-normalize; there is no model forward pass.
  *
- * <p>{@code [CLS]} and {@code [SEP]} are never pooled and unknown tokens are dropped; the sum is
- * divided by the count of pooled tokens, not the sum of weights. A text with no in-vocabulary
- * tokens yields a zero vector.</p>
+ * <p>It loads distilled tables in the Model2Vec release layout for both tokenizer families:
+ * WordPiece models carry a {@code vocab.txt} whose line number is the matrix row, and
+ * SentencePiece models carry a Unigram {@code tokenizer.json} whose {@code model.vocab} list
+ * order is the row order, next to the trained SentencePiece {@code .model} file that performs
+ * the segmentation. In both cases the {@code model.safetensors} holds one 2-D float matrix, with
+ * an optional per-token {@code weights} tensor. Matrix rows are resolved by piece <i>string</i>,
+ * never by tokenizer id, so the two files may order or offset their ids differently without
+ * corrupting lookups; a piece the matrix does not carry fails loud at load time.</p>
+ *
+ * <p>Special pieces (the WordPiece {@code [CLS]}/{@code [SEP]}/{@code [UNK]} frame, a
+ * SentencePiece model's control and unknown pieces) are never pooled; the sum is divided by the
+ * count of pooled pieces, not the sum of weights. A text with no in-vocabulary pieces yields a
+ * zero vector.</p>
  *
  * <p>Instances are immutable and safe for concurrent use after construction.</p>
  */
@@ -70,58 +83,73 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private static final String SAFETENSORS_FILE_NAME = "model.safetensors";
   private static final String CONFIG_FILE_NAME = "config.json";
   private static final String TOKENIZER_CONFIG_FILE_NAME = "tokenizer_config.json";
+  private static final String TOKENIZER_JSON_FILE_NAME = "tokenizer.json";
+  // The file names SentencePiece models ship their trained .model under, by convention family.
+  private static final List<String> SENTENCEPIECE_MODEL_FILE_NAMES =
+      List.of("sentencepiece.bpe.model", "spiece.model", "tokenizer.model");
   private static final int[] NO_EXCLUDED_ROWS = new int[0];
   // Never meaningful as a "similar word" result.
-  private static final Set<String> SPECIAL_TOKENS = Set.of(WordpieceTokenizer.BERT_CLS_TOKEN,
-      WordpieceTokenizer.BERT_SEP_TOKEN, WordpieceTokenizer.BERT_UNK_TOKEN);
+  private static final Set<String> WORDPIECE_SPECIAL_TOKENS =
+      Set.of(WordpieceTokenizer.BERT_CLS_TOKEN, WordpieceTokenizer.BERT_SEP_TOKEN,
+          WordpieceTokenizer.BERT_UNK_TOKEN);
+  private static final Set<String> SENTENCEPIECE_SPECIAL_TOKENS =
+      Set.of("<s>", "</s>", "<pad>", "<unk>", "<mask>");
 
   private final float[] embeddings;
   private final float[] weights;
   private final int dimension;
-  private final WordpieceVocabulary vocabulary;
-  private final WordpiecePipeline tokenizer;
+  private final EmbeddingVocabulary vocabulary;
+  private final SubwordTokenizer tokenizer;
+  // Tokenizer-id-space test for pieces that are never pooled: the WordPiece frame and unknown
+  // pieces, or a SentencePiece model's control and unknown pieces (whose piece string is the
+  // unmatched surface text, not a vocabulary entry).
+  private final IntPredicate skipPieceId;
   private final boolean normalize;
-  private final String unknownToken;
   // Per-row L2 norms and special-token mask, precomputed at load time so the neighbor scan
   // does no per-row square root or string hashing.
   private final double[] rowNorms;
   private final boolean[] specialRows;
 
   private StaticEmbeddingModel(float[] embeddings, float[] weights, int dimension,
-                                WordpieceVocabulary vocabulary, WordpiecePipeline tokenizer,
-                                boolean normalize, String unknownToken, double[] rowNorms,
+                                EmbeddingVocabulary vocabulary, SubwordTokenizer tokenizer,
+                                IntPredicate skipPieceId, boolean normalize, double[] rowNorms,
                                 boolean[] specialRows) {
     this.embeddings = embeddings;
     this.weights = weights;
     this.dimension = dimension;
     this.vocabulary = vocabulary;
     this.tokenizer = tokenizer;
+    this.skipPieceId = skipPieceId;
     this.normalize = normalize;
-    this.unknownToken = unknownToken;
     this.rowNorms = rowNorms;
     this.specialRows = specialRows;
   }
 
   /**
-   * Loads a static embedding model from a model directory, reading the tokenizer and pooling
-   * switches from the model's own configuration files: {@code normalize} from {@code config.json}
-   * and {@code do_lower_case} from {@code tokenizer_config.json}. The directory must contain
-   * {@code vocab.txt}, {@code model.safetensors}, {@code config.json}, and
-   * {@code tokenizer_config.json}.
+   * Loads a static embedding model from a model directory, detecting the tokenizer family from
+   * the files present and reading the pooling switch ({@code normalize}) from the model's
+   * {@code config.json}.
    *
-   * <p>A {@code strip_accents} that explicitly disagrees with {@code do_lower_case} cannot be
-   * represented by the single lower-case switch of
-   * {@link #load(Path, Path, Casing, Normalization)} and is rejected rather than silently
-   * mis-tokenized; when absent or {@code null} it follows the BERT convention of stripping
-   * accents exactly when lower-casing.</p>
+   * <p>A directory with a {@code vocab.txt} is a WordPiece model; its casing is read from
+   * {@code do_lower_case} in {@code tokenizer_config.json}. A {@code strip_accents} that
+   * explicitly disagrees with {@code do_lower_case} cannot be represented by the single
+   * lower-case switch of {@link #load(Path, Path, Casing, Normalization)} and is rejected rather
+   * than silently mis-tokenized; when absent or {@code null} it follows the BERT convention of
+   * stripping accents exactly when lower-casing. When both layouts are present, the
+   * {@code vocab.txt} wins.</p>
+   *
+   * <p>A directory with a trained SentencePiece file ({@code sentencepiece.bpe.model},
+   * {@code spiece.model}, or {@code tokenizer.model}) next to a Unigram {@code tokenizer.json}
+   * is a SentencePiece model; the {@code .model} file carries its own text normalizer, so there
+   * is no casing switch to read.</p>
    *
    * @param modelDirectory The model directory. Must not be {@code null} and must be a
    *                       directory.
    * @return The loaded model.
    * @throws IllegalArgumentException Thrown if {@code modelDirectory} is {@code null} or not a
-   *     directory, a required file is missing, a configuration file is malformed or lacks its
-   *     field, the accent handling is not representable, or the vocabulary and the embedding
-   *     matrix disagree.
+   *     directory, neither layout's files are present, a configuration file is malformed or
+   *     lacks its field, the accent handling is not representable, or the tokenizer and the
+   *     embedding matrix disagree.
    * @throws IOException Thrown if reading a file fails.
    */
   public static StaticEmbeddingModel load(Path modelDirectory) throws IOException {
@@ -132,16 +160,45 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       throw new IllegalArgumentException(
           "Model directory does not exist or is not a directory: " + modelDirectory);
     }
-    final Path vocabularyFile = requiredFile(modelDirectory, VOCABULARY_FILE_NAME);
-    final Path safetensorsFile = requiredFile(modelDirectory, SAFETENSORS_FILE_NAME);
-    final Path configFile = requiredFile(modelDirectory, CONFIG_FILE_NAME);
-    final Path tokenizerConfigFile = requiredFile(modelDirectory, TOKENIZER_CONFIG_FILE_NAME);
-    final Boolean normalize = FlatJsonFields.topLevelBoolean(configFile, "normalize");
-    if (normalize == null) {
-      throw new IllegalArgumentException(configFile + " has no boolean 'normalize' field; "
-          + "use load(vocabularyFile, safetensorsFile, casing, normalization) and choose "
-          + "explicitly");
+    final Path vocabularyFile = modelDirectory.resolve(VOCABULARY_FILE_NAME);
+    if (Files.isRegularFile(vocabularyFile)) {
+      return loadWordpieceDirectory(modelDirectory, vocabularyFile);
     }
+    final Path sentencePieceModelFile = firstRegularFile(modelDirectory,
+        SENTENCEPIECE_MODEL_FILE_NAMES);
+    final Path tokenizerJsonFile = modelDirectory.resolve(TOKENIZER_JSON_FILE_NAME);
+    if (sentencePieceModelFile != null && Files.isRegularFile(tokenizerJsonFile)) {
+      return loadSentencePiece(sentencePieceModelFile, tokenizerJsonFile,
+          requiredFile(modelDirectory, SAFETENSORS_FILE_NAME),
+          requiredNormalize(requiredFile(modelDirectory, CONFIG_FILE_NAME)));
+    }
+    if (Files.isRegularFile(tokenizerJsonFile)) {
+      throw new IllegalArgumentException("Model directory " + modelDirectory + " has a "
+          + TOKENIZER_JSON_FILE_NAME + " but no trained SentencePiece file ("
+          + String.join(", ", SENTENCEPIECE_MODEL_FILE_NAMES) + "); copy the .model file "
+          + "from the model's base tokenizer next to it");
+    }
+    throw new IllegalArgumentException("Model directory " + modelDirectory + " has neither a "
+        + VOCABULARY_FILE_NAME + " (WordPiece layout) nor a " + TOKENIZER_JSON_FILE_NAME
+        + " with a trained SentencePiece file (SentencePiece layout)");
+  }
+
+  /**
+   * Loads the WordPiece directory layout, reading the tokenizer and pooling switches from the
+   * model's own configuration files.
+   *
+   * @param modelDirectory The model directory.
+   * @param vocabularyFile The directory's {@code vocab.txt}.
+   * @return The loaded model.
+   * @throws IOException Thrown if reading a file fails.
+   */
+  private static StaticEmbeddingModel loadWordpieceDirectory(Path modelDirectory,
+                                                             Path vocabularyFile)
+      throws IOException {
+    final Path safetensorsFile = requiredFile(modelDirectory, SAFETENSORS_FILE_NAME);
+    final Path tokenizerConfigFile = requiredFile(modelDirectory, TOKENIZER_CONFIG_FILE_NAME);
+    final Normalization normalization =
+        requiredNormalize(requiredFile(modelDirectory, CONFIG_FILE_NAME));
     final Boolean lowerCase =
         FlatJsonFields.topLevelBoolean(tokenizerConfigFile, "do_lower_case");
     if (lowerCase == null) {
@@ -159,28 +216,62 @@ public final class StaticEmbeddingModel implements TextEmbedder {
           + "deliberately");
     }
     return load(vocabularyFile, safetensorsFile,
-        lowerCase ? Casing.UNCASED : Casing.CASED,
-        normalize ? Normalization.L2 : Normalization.NONE);
+        lowerCase ? Casing.UNCASED : Casing.CASED, normalization);
+  }
+
+  /**
+   * Reads the required {@code normalize} switch out of a model's {@code config.json}.
+   *
+   * @param configFile The {@code config.json} file.
+   * @return The corresponding {@link Normalization}.
+   * @throws IllegalArgumentException Thrown if the field is missing or not a boolean.
+   * @throws IOException Thrown if reading the file fails.
+   */
+  private static Normalization requiredNormalize(Path configFile) throws IOException {
+    final Boolean normalize = FlatJsonFields.topLevelBoolean(configFile, "normalize");
+    if (normalize == null) {
+      throw new IllegalArgumentException(configFile + " has no boolean 'normalize' field; "
+          + "use the explicit load overloads and choose the normalization deliberately");
+    }
+    return normalize ? Normalization.L2 : Normalization.NONE;
+  }
+
+  /**
+   * {@return the first of the given file names that exists as a regular file in the directory,
+   * or {@code null} when none does}
+   *
+   * @param directory The directory to look in.
+   * @param names     The file names to try, in order.
+   */
+  private static Path firstRegularFile(Path directory, List<String> names) {
+    for (final String name : names) {
+      final Path file = directory.resolve(name);
+      if (Files.isRegularFile(file)) {
+        return file;
+      }
+    }
+    return null;
   }
 
   private static Path requiredFile(Path modelDirectory, String name) {
     final Path file = modelDirectory.resolve(name);
     if (!Files.isRegularFile(file)) {
       throw new IllegalArgumentException("Model directory " + modelDirectory + " has no "
-          + name + "; for a different layout, use load(vocabularyFile, safetensorsFile, "
-          + "casing, normalization)");
+          + name + "; for a different layout, use the explicit load overloads");
     }
     return file;
   }
 
   /**
-   * Loads a static embedding model from a BERT-style {@code vocab.txt} and a safetensors weight
-   * file. No model is bundled with this module; the caller supplies the files.
+   * Loads a WordPiece static embedding model from a BERT-style {@code vocab.txt} and a
+   * safetensors weight file. No model is bundled with this module; the caller supplies the
+   * files.
    *
    * @param vocabularyFile   The {@code vocab.txt} file: one token per line, line number is the
-   *                         token's row id. Must not be {@code null} and must exist.
+   *                         token's row id. Must not be {@code null}, must exist, and must
+   *                         contain the {@code [CLS]}, {@code [SEP]}, and {@code [UNK]} tokens.
    * @param safetensorsFile  The {@code model.safetensors} file. Must not be {@code null} and
-   *                         must exist, and must contain exactly one 2-D {@code F32} tensor
+   *                         must exist, and must contain exactly one 2-D float tensor
    *                         (the embedding matrix) whose row count matches the vocabulary size.
    *                         An optional 1-D {@code F32} tensor named {@code "weights"}, one
    *                         scalar per vocabulary row, is used as a per-token pooling weight
@@ -209,15 +300,145 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (normalization == null) {
       throw new IllegalArgumentException("Normalization must not be null");
     }
-    final boolean lowerCase = casing == Casing.UNCASED;
-    final boolean normalize = normalization == Normalization.L2;
-    final WordpieceVocabulary vocabulary = WordpieceVocabulary.read(vocabularyFile);
-    final SafetensorsFile tensors = SafetensorsFile.read(safetensorsFile);
+    final EmbeddingVocabulary vocabulary = EmbeddingVocabulary.fromVocabTxt(vocabularyFile);
+    final Matrix matrix = readMatrix(vocabulary, safetensorsFile, vocabularyFile.toString());
+    final WordpieceEncoder tokenizer =
+        new WordpieceEncoder(vocabulary.orderedTokens(), casing == Casing.UNCASED);
+    // The encoder validated the frame tokens' presence, so these rows exist.
+    final int classificationId = vocabulary.id(WordpieceTokenizer.BERT_CLS_TOKEN);
+    final int separatorId = vocabulary.id(WordpieceTokenizer.BERT_SEP_TOKEN);
+    final int unknownId = vocabulary.id(WordpieceTokenizer.BERT_UNK_TOKEN);
+    final IntPredicate skipPieceId =
+        id -> id == classificationId || id == separatorId || id == unknownId;
+    return new StaticEmbeddingModel(matrix.embeddings(), matrix.weights(), matrix.dimension(),
+        vocabulary, tokenizer, skipPieceId, normalization == Normalization.L2,
+        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size()),
+        specialRows(vocabulary, WORDPIECE_SPECIAL_TOKENS));
+  }
 
+  /**
+   * Loads a SentencePiece static embedding model from a trained SentencePiece {@code .model}
+   * file, the Unigram {@code tokenizer.json} naming the matrix rows, and a safetensors weight
+   * file. No model is bundled with this module; the caller supplies the files.
+   *
+   * <p>The {@code .model} file carries the model's own text normalizer and segmentation state,
+   * so there is no casing switch. The two vocabulary files may order or offset their ids
+   * differently: matrix rows are resolved by piece string, and every piece the tokenizer can
+   * emit (except its control and unknown pieces, which are never pooled) must be present in the
+   * {@code tokenizer.json} vocabulary, verified once at load time.</p>
+   *
+   * @param sentencePieceModelFile The trained SentencePiece {@code .model} file. Must not be
+   *                               {@code null} and must exist.
+   * @param tokenizerJsonFile      The Unigram {@code tokenizer.json} file; its
+   *                               {@code model.vocab} list order is the matrix row order, with
+   *                               {@code added_tokens} overlaid. Must not be {@code null} and
+   *                               must exist.
+   * @param safetensorsFile        The {@code model.safetensors} file. Must not be {@code null}
+   *                               and must exist, and must contain exactly one 2-D float tensor
+   *                               (the embedding matrix) whose row count matches the vocabulary
+   *                               size. An optional 1-D {@code F32} tensor named
+   *                               {@code "weights"}, one scalar per vocabulary row, is used as
+   *                               a per-token pooling weight when present.
+   * @param normalization          Whether {@link #embed(String)} L2-normalizes its result
+   *                               ({@link Normalization#L2}) or not ({@link Normalization#NONE}).
+   * @return The loaded model.
+   * @throws IllegalArgumentException Thrown if an argument is {@code null}, a file is missing
+   *     or malformed, the vocabulary size and the embedding matrix's row count disagree, or the
+   *     tokenizer emits pieces the vocabulary does not map.
+   * @throws IOException Thrown if reading a file fails.
+   */
+  public static StaticEmbeddingModel loadSentencePiece(Path sentencePieceModelFile,
+                                                        Path tokenizerJsonFile,
+                                                        Path safetensorsFile,
+                                                        Normalization normalization)
+      throws IOException {
+    if (sentencePieceModelFile == null) {
+      throw new IllegalArgumentException("SentencePieceModelFile must not be null");
+    }
+    if (tokenizerJsonFile == null) {
+      throw new IllegalArgumentException("TokenizerJsonFile must not be null");
+    }
+    if (safetensorsFile == null) {
+      throw new IllegalArgumentException("SafetensorsFile must not be null");
+    }
+    if (normalization == null) {
+      throw new IllegalArgumentException("Normalization must not be null");
+    }
+    final EmbeddingVocabulary vocabulary =
+        EmbeddingVocabulary.fromTokenizerJson(tokenizerJsonFile);
+    final SentencePieceTokenizer tokenizer =
+        SentencePieceTokenizer.load(sentencePieceModelFile);
+    requireVocabularyCoverage(tokenizer, vocabulary, sentencePieceModelFile, tokenizerJsonFile);
+    final Matrix matrix = readMatrix(vocabulary, safetensorsFile, tokenizerJsonFile.toString());
+    final IntPredicate skipPieceId =
+        id -> tokenizer.isUnknown(id) || tokenizer.isControl(id);
+    return new StaticEmbeddingModel(matrix.embeddings(), matrix.weights(), matrix.dimension(),
+        vocabulary, tokenizer, skipPieceId, normalization == Normalization.L2,
+        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size()),
+        specialRows(vocabulary, SENTENCEPIECE_SPECIAL_TOKENS));
+  }
+
+  /**
+   * Verifies once at load time that every piece the tokenizer can emit maps to a matrix row, so
+   * embedding never meets an unmapped piece. Control and unknown pieces are exempt: they are
+   * never pooled, and a distillation legitimately drops them from the matrix.
+   *
+   * @param tokenizer              The loaded SentencePiece tokenizer.
+   * @param vocabulary             The matrix row vocabulary.
+   * @param sentencePieceModelFile The tokenizer's source file, for error messages.
+   * @param tokenizerJsonFile      The vocabulary's source file, for error messages.
+   * @throws IllegalArgumentException Thrown if a poolable piece has no matrix row.
+   */
+  private static void requireVocabularyCoverage(SentencePieceTokenizer tokenizer,
+                                                EmbeddingVocabulary vocabulary,
+                                                Path sentencePieceModelFile,
+                                                Path tokenizerJsonFile) {
+    int missing = 0;
+    final StringBuilder samples = new StringBuilder();
+    for (int id = 0; id < tokenizer.vocabularySize(); id++) {
+      if (tokenizer.isUnknown(id) || tokenizer.isControl(id)) {
+        continue;
+      }
+      if (vocabulary.id(tokenizer.idToPiece(id)) < 0) {
+        if (missing < 5) {
+          if (missing > 0) {
+            samples.append(", ");
+          }
+          samples.append('\'').append(tokenizer.idToPiece(id)).append('\'');
+        }
+        missing++;
+      }
+    }
+    if (missing > 0) {
+      throw new IllegalArgumentException(sentencePieceModelFile + " defines " + missing
+          + " pieces that " + tokenizerJsonFile + " does not map to a matrix row (first: "
+          + samples + "); these files do not belong to the same model");
+    }
+  }
+
+  /** The embedding matrix and its optional per-token weights, as read from a safetensors file. */
+  private record Matrix(float[] embeddings, float[] weights, int dimension) {
+  }
+
+  /**
+   * Reads the embedding matrix and the optional {@code weights} tensor, holding both to the
+   * vocabulary's size.
+   *
+   * @param vocabulary           The matrix row vocabulary.
+   * @param safetensorsFile      The safetensors file to read.
+   * @param vocabularySourceName The vocabulary's source, for error messages.
+   * @return The matrix, its optional weights, and its dimension.
+   * @throws IllegalArgumentException Thrown if the matrix's row count or the weights tensor's
+   *     length disagrees with the vocabulary size.
+   * @throws IOException Thrown if reading the file fails.
+   */
+  private static Matrix readMatrix(EmbeddingVocabulary vocabulary, Path safetensorsFile,
+                                   String vocabularySourceName) throws IOException {
+    final SafetensorsFile tensors = SafetensorsFile.read(safetensorsFile);
     final String matrixName = tensors.singleMatrixTensorName();
     final TensorInfo matrixInfo = tensors.tensorInfo(matrixName);
     if (matrixInfo.shape()[0] != vocabulary.size()) {
-      throw new IllegalArgumentException("Vocabulary " + vocabularyFile + " has "
+      throw new IllegalArgumentException("Vocabulary " + vocabularySourceName + " has "
           + vocabulary.size() + " tokens but embedding matrix '" + matrixName + "' in "
           + safetensorsFile + " has " + matrixInfo.shape()[0] + " rows; these files do not "
           + "belong to the same model");
@@ -234,9 +455,19 @@ public final class StaticEmbeddingModel implements TextEmbedder {
             + vocabulary.size() + " tokens");
       }
     }
+    return new Matrix(embeddings, weights, dimension);
+  }
 
-    final double[] rowNorms = new double[vocabulary.size()];
-    for (int row = 0; row < rowNorms.length; row++) {
+  /**
+   * {@return the L2 norm of every matrix row, precomputed for the neighbor scan}
+   *
+   * @param embeddings The flat row-major matrix.
+   * @param dimension  The row width.
+   * @param rowCount   The number of rows.
+   */
+  private static double[] rowNorms(float[] embeddings, int dimension, int rowCount) {
+    final double[] rowNorms = new double[rowCount];
+    for (int row = 0; row < rowCount; row++) {
       final int base = row * dimension;
       double sumOfSquares = 0;
       for (int d = 0; d < dimension; d++) {
@@ -245,17 +476,26 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       }
       rowNorms[row] = Math.sqrt(sumOfSquares);
     }
+    return rowNorms;
+  }
+
+  /**
+   * {@return the mask of rows holding special tokens, excluded from neighbor results}
+   *
+   * @param vocabulary    The matrix row vocabulary.
+   * @param specialTokens The special-token strings of the model's convention; tokens absent
+   *                      from the vocabulary are simply not marked.
+   */
+  private static boolean[] specialRows(EmbeddingVocabulary vocabulary,
+                                       Set<String> specialTokens) {
     final boolean[] specialRows = new boolean[vocabulary.size()];
-    for (final String special : SPECIAL_TOKENS) {
+    for (final String special : specialTokens) {
       final int row = vocabulary.id(special);
       if (row >= 0) {
         specialRows[row] = true;
       }
     }
-
-    final WordpiecePipeline tokenizer = new WordpiecePipeline(vocabulary.tokens(), lowerCase);
-    return new StaticEmbeddingModel(embeddings, weights, dimension, vocabulary, tokenizer,
-        normalize, WordpieceTokenizer.BERT_UNK_TOKEN, rowNorms, specialRows);
+    return specialRows;
   }
 
   /**
@@ -285,20 +525,19 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (text == null) {
       throw new IllegalArgumentException("Text must not be null");
     }
-    // The tokenizer wraps its output in [CLS] ... [SEP]; skip both, they are never pooled.
-    final String[] tokens = tokenizer.tokenize(text);
+    final List<SubwordPiece> pieces = tokenizer.encode(text);
     final float[] sum = new float[dimension];
     int pooledCount = 0;
-    for (int i = 1; i < tokens.length - 1; i++) {
-      final String token = tokens[i];
-      if (unknownToken.equals(token)) {
+    for (int i = 0; i < pieces.size(); i++) {
+      final SubwordPiece piece = pieces.get(i);
+      if (skipPieceId.test(piece.id())) {
         continue;
       }
-      final int row = vocabulary.id(token);
+      final int row = vocabulary.id(piece.piece());
       if (row < 0) {
-        throw new IllegalStateException("Tokenizer produced token '" + token
-            + "' that is not in its own vocabulary; this indicates a tokenizer/vocabulary "
-            + "construction bug, not an input problem");
+        throw new IllegalStateException("Tokenizer produced piece '" + piece.piece()
+            + "' that has no matrix row; load-time validation admits no such piece, so this "
+            + "indicates a construction bug, not an input problem");
       }
       final int base = row * dimension;
       if (weights == null) {
@@ -366,9 +605,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    *
    * @param text The query text. Must not be {@code null}.
    * @param topK The maximum number of results. Must be at least 1.
-   * @return Up to {@code topK} neighbors, most similar first, excluding the special tokens
-   *     ({@code [CLS]}, {@code [SEP]}, {@code [UNK]}); empty when {@code text} has no
-   *     in-vocabulary tokens.
+   * @return Up to {@code topK} neighbors, most similar first, excluding the model's special
+   *     tokens; empty when {@code text} has no in-vocabulary tokens.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null} or {@code topK} is
    *     less than 1.
    */
@@ -389,10 +627,10 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @param b    The second term. Must not be {@code null}.
    * @param c    The third term. Must not be {@code null}.
    * @param topK The maximum number of results. Must be at least 1.
-   * @return Up to {@code topK} neighbors, most similar first, excluding the special tokens and
-   *     every vocabulary token the three terms themselves tokenize to. The exclusion folds the
-   *     terms exactly the way {@link #embed(String)} folds text, so on an uncased model a
-   *     capitalized input excludes its lower-cased vocabulary row, and a multiword term
+   * @return Up to {@code topK} neighbors, most similar first, excluding the model's special
+   *     tokens and every vocabulary token the three terms themselves tokenize to. The exclusion
+   *     folds the terms exactly the way {@link #embed(String)} folds text, so on an uncased
+   *     model a capitalized input excludes its lower-cased vocabulary row, and a multiword term
    *     excludes each of its word pieces.
    * @throws IllegalArgumentException Thrown if {@code a}, {@code b}, or {@code c} is
    *     {@code null}, or {@code topK} is less than 1.
@@ -433,20 +671,18 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   /**
    * {@return the vocabulary rows the given terms tokenize to, ascending and duplicate-free}
    * Folding the terms through the model's own tokenizer keeps the exclusion case- and
-   * accent-insensitive on uncased models.
+   * accent-insensitive on models that normalize.
    *
    * @param terms The terms to fold and exclude.
    */
   private int[] excludedRows(String... terms) {
     final SortedSet<Integer> rows = new TreeSet<>();
     for (final String term : terms) {
-      final String[] tokens = tokenizer.tokenize(term);
-      for (int i = 1; i < tokens.length - 1; i++) {
-        final String token = tokens[i];
-        if (unknownToken.equals(token)) {
+      for (final SubwordPiece piece : tokenizer.encode(term)) {
+        if (skipPieceId.test(piece.id())) {
           continue;
         }
-        final int row = vocabulary.id(token);
+        final int row = vocabulary.id(piece.piece());
         if (row >= 0) {
           rows.add(row);
         }

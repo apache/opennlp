@@ -77,3 +77,5 @@ src/test/resources/opennlp/dl/vectors/tiny-vectors.onnx
 src/test/resources/opennlp/subword/sentencepiece/*.model
 src/test/resources/opennlp/subword/sentencepiece/*.fixtures.tsv
 src/test/resources/opennlp/subword/sentencepiece/corpus.txt
+<!-- opennlp-embeddings copy of the opennlp-subword tiny SentencePiece test model -->
+src/test/resources/opennlp/embeddings/tiny-unigram.model

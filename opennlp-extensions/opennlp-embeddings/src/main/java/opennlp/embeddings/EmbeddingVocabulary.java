@@ -28,25 +28,28 @@ import java.util.Set;
 import opennlp.tools.commons.ThreadSafe;
 
 /**
- * A BERT-style {@code vocab.txt} vocabulary: one token per line, the line number (0-based) is the
- * token's id. That id is the row index into a static-embedding table's weight matrix: row
- * {@code id} holds that token's vector.
+ * The row table of a static embedding matrix: piece string to row index and back. Row {@code id}
+ * of the matrix holds the vector of the piece at position {@code id} in this vocabulary.
+ *
+ * <p>Two layouts produce it: a BERT-style {@code vocab.txt} (one token per line, the line number
+ * is the row), and a {@code tokenizer.json} with a Unigram model (the {@code model.vocab} list
+ * order is the row order, with {@code added_tokens} overlaid).</p>
  *
  * <p>Immutable and safe for concurrent reads after construction.</p>
  */
 @ThreadSafe
-final class WordpieceVocabulary {
+final class EmbeddingVocabulary {
 
   private final Map<String, Integer> idByToken;
   private final List<String> tokenById;
 
-  private WordpieceVocabulary(Map<String, Integer> idByToken, List<String> tokenById) {
+  private EmbeddingVocabulary(Map<String, Integer> idByToken, List<String> tokenById) {
     this.idByToken = idByToken;
     this.tokenById = tokenById;
   }
 
   /**
-   * Reads a {@code vocab.txt} file.
+   * Reads a {@code vocab.txt} file: one token per line, the line number (0-based) is the row.
    *
    * @param file The vocabulary file. Must not be {@code null} and must exist.
    * @return The parsed vocabulary.
@@ -54,7 +57,7 @@ final class WordpieceVocabulary {
    *     contains a duplicate token.
    * @throws IOException Thrown if reading the file fails.
    */
-  static WordpieceVocabulary read(Path file) throws IOException {
+  static EmbeddingVocabulary fromVocabTxt(Path file) throws IOException {
     if (file == null) {
       throw new IllegalArgumentException("File must not be null");
     }
@@ -65,29 +68,54 @@ final class WordpieceVocabulary {
   }
 
   /**
+   * Reads the Unigram vocabulary of a {@code tokenizer.json} file: the {@code model.vocab} list
+   * order is the row order, with {@code added_tokens} overlaid.
+   *
+   * @param file The {@code tokenizer.json} file. Must not be {@code null} and must exist.
+   * @return The parsed vocabulary.
+   * @throws IllegalArgumentException Thrown if {@code file} is {@code null}, missing, or not a
+   *     well-formed Unigram {@code tokenizer.json}, or a piece appears more than once.
+   * @throws IOException Thrown if reading the file fails.
+   */
+  static EmbeddingVocabulary fromTokenizerJson(Path file) throws IOException {
+    if (file == null) {
+      throw new IllegalArgumentException("File must not be null");
+    }
+    if (!Files.isRegularFile(file)) {
+      throw new IllegalArgumentException("File does not exist or is not a regular file: " + file);
+    }
+    return fromLines(TokenizerJsonVocab.rows(file), file.toString());
+  }
+
+  /**
    * Builds a vocabulary from in-memory lines, the token order.
    *
-   * @param lines      The tokens, one per element; the index is the token's id.
+   * @param lines      The tokens, one per element; the index is the token's row.
    * @param sourceName The source's name, for error messages.
    * @return The parsed vocabulary.
    * @throws IllegalArgumentException Thrown if a token appears more than once.
    */
-  static WordpieceVocabulary fromLines(List<String> lines, String sourceName) {
+  static EmbeddingVocabulary fromLines(List<String> lines, String sourceName) {
     final Map<String, Integer> idByToken = new LinkedHashMap<>(lines.size() * 2);
     for (int id = 0; id < lines.size(); id++) {
       final String token = lines.get(id);
       if (idByToken.putIfAbsent(token, id) != null) {
         throw new IllegalArgumentException(
             "Vocabulary " + sourceName + " declares token '" + token
-                + "' more than once, at lines " + idByToken.get(token) + " and " + id);
+                + "' more than once, at rows " + idByToken.get(token) + " and " + id);
       }
     }
-    return new WordpieceVocabulary(Collections.unmodifiableMap(idByToken), List.copyOf(lines));
+    return new EmbeddingVocabulary(Collections.unmodifiableMap(idByToken), List.copyOf(lines));
   }
 
-  /** {@return every token in this vocabulary, suitable for a WordpieceTokenizer} */
+  /** {@return every token in this vocabulary, without order} */
   Set<String> tokens() {
     return idByToken.keySet();
+  }
+
+  /** {@return every token in row order, suitable for an id-is-index tokenizer constructor} */
+  List<String> orderedTokens() {
+    return tokenById;
   }
 
   /**
