@@ -54,7 +54,7 @@ public final class NumberUtil {
    * Parses a specified {@link String number} for a certain {@code languageCode}.
    * <p>
    * Before parsing, every Unicode {@code White_Space} code point is removed from
-   * {@code number} (since 3.0; see OPENNLP-1875).
+   * {@code number}.
    *
    * @param number The suspected number to parse.
    * @param languageCode A ISO conform language code, e.g. "en", "pt"

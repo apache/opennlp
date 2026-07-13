@@ -186,8 +186,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     return sentences;
   }
 
-  // The detector-wide whitespace definition: the Unicode White_Space set, shared by
-  // detection, span mapping and the abbreviation guard so all stages agree.
+  // Detector-wide whitespace (Unicode White_Space): detection, span mapping and the guard agree.
   private static final CharClass WHITESPACE = CharClass.whitespace();
 
   private int getFirstWS(CharSequence s, int pos) {

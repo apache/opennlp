@@ -61,10 +61,8 @@ final class BertNormalization {
 
   /**
    * A whitespace character in the BERT sense: space, tab, newline, carriage
-   * return, or Unicode space separators ({@code Zs}).
-   *
-   * <p>This definition is deliberately not the Unicode {@code White_Space} set and stays
-   * frozen to match the vocabularies pre-trained models were trained with.</p>
+   * return, or Unicode space separators ({@code Zs}). Frozen to match pre-trained
+   * model vocabularies; not the Unicode {@code White_Space} set.
    */
   static boolean isWhitespace(int codePoint) {
     if (codePoint == ' ' || codePoint == '\t' || codePoint == '\n' || codePoint == '\r') {
