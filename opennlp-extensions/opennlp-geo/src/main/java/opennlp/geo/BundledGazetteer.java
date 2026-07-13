@@ -120,8 +120,9 @@ public final class BundledGazetteer implements Gazetteer {
   /**
    * {@return the shared instance backed by the bundled table} The table is loaded and indexed
    * once, on first access; later calls return the same immutable instance. A missing or
-   * malformed bundled resource fails the one-time initialization with an error that names the
-   * resource and, for malformed data, the line.
+   * malformed bundled resource fails the one-time class initialization, so the error that
+   * names the resource (and, for malformed data, the line) surfaces wrapped in a
+   * {@link ExceptionInInitializerError} on the first call.
    */
   public static BundledGazetteer getInstance() {
     return Holder.INSTANCE;

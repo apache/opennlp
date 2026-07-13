@@ -35,6 +35,7 @@ final class CandidateRanking {
           .thenComparing(GazetteerEntry::source)
           .thenComparing(GazetteerEntry::recordId);
 
+  /** Prevents instantiation; this is a static utility. */
   private CandidateRanking() {
   }
 
