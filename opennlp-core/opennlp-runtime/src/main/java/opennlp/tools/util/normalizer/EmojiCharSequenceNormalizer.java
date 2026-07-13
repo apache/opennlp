@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * @deprecated Replaces every supplementary-plane code point with a space, not only emoji. Use
  *     {@link EmojiToEmoticonCharSequenceNormalizer} instead.
  */
-@Deprecated(since = "3.0.0")
+@Deprecated(since = "3.0.0", forRemoval = true)
 public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final long serialVersionUID = 4553401197981667914L;

@@ -44,6 +44,7 @@ public interface OffsetAwareNormalizer extends CharSequenceNormalizer {
    *
    * @param text The {@link CharSequence} to normalize.
    * @return The normalized text paired with its alignment to {@code text}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   AlignedText normalizeAligned(CharSequence text);
 }

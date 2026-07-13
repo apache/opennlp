@@ -44,11 +44,7 @@ public final class EmoticonToEmojiCharSequenceNormalizer implements OffsetAwareN
     return INSTANCE;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @throws IllegalArgumentException if {@code text} is {@code null}.
-   */
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     if (text == null) {
@@ -57,11 +53,7 @@ public final class EmoticonToEmojiCharSequenceNormalizer implements OffsetAwareN
     return EmojiEmoticons.getInstance().emoticonToEmoji(text);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @throws IllegalArgumentException if {@code text} is {@code null}.
-   */
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     if (text == null) {
