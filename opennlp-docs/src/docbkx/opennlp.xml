@@ -111,6 +111,7 @@ under the License.
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./spellcheck.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./chunker.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./parser.xml" />
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./entitylinker.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./coref.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./model-loading.xml" />
 	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="./extension.xml" />

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<chapter xml:id="tools.entitylinker" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<title>Entity Linker</title>
+
+	<section xml:id="tools.entitylinker.overview">
+		<title>Overview</title>
+		<para>
+		The Entity Linker API lets an application associate named entities with records in an
+		external data source. For example, a location found by a Name Finder can be matched to a
+		gazetteer entry, or a person can be matched to a directory record. OpenNLP provides the
+		linking interfaces and data types; applications supply the implementation and data source.
+		</para>
+		<para>
+		An <classname>EntityLinker</classname> receives the document text, sentence and token spans,
+		and the name spans produced for each sentence. It returns application-defined spans that hold
+		the links. <classname>LinkedSpan</classname> and <classname>BaseLink</classname> are support
+		classes for this result; they are not linker implementations.
+		</para>
+	</section>
+
+	<section xml:id="tools.entitylinker.inputs">
+		<title>Preparing Input Spans</title>
+		<para>
+		The four arguments passed to <methodname>find</methodname> use two coordinate systems. Sentence
+		and token spans are character offsets in the complete document. Name spans are token indexes
+		within their sentence, as returned by <classname>NameFinderME</classname>. The outer indexes of
+		<varname>tokensBySentence</varname> and <varname>namesBySentence</varname> must correspond to the
+		same entry in <varname>sentences</varname>.
+		</para>
+		<para>
+		The following method prepares those arrays. The sentence detector, tokenizer, and name finder
+		are accepted as interfaces so the same code works with their standard OpenNLP implementations.
+		<programlisting language="java">
+<![CDATA[static List<? extends Span> linkEntities(String documentText,
+    SentenceDetector sentenceDetector, Tokenizer tokenizer,
+    TokenNameFinder nameFinder, EntityLinker<? extends Span> linker) {
+
+  Span[] sentences = sentenceDetector.sentPosDetect(documentText);
+  Span[][] tokensBySentence = new Span[sentences.length][];
+  Span[][] namesBySentence = new Span[sentences.length][];
+
+  for (int i = 0; i < sentences.length; i++) {
+    Span sentence = sentences[i];
+    String sentenceText = sentence.getCoveredText(documentText).toString();
+    Span[] relativeTokenSpans = tokenizer.tokenizePos(sentenceText);
+    String[] tokenTexts = Span.spansToStrings(relativeTokenSpans, sentenceText);
+
+    namesBySentence[i] = nameFinder.find(tokenTexts);
+    tokensBySentence[i] = new Span[relativeTokenSpans.length];
+    for (int j = 0; j < relativeTokenSpans.length; j++) {
+      // Tokenizer offsets are sentence-relative; EntityLinker expects document offsets.
+      tokensBySentence[i][j] = new Span(relativeTokenSpans[j], sentence.getStart());
+    }
+  }
+
+  return linker.find(documentText, sentences, tokensBySentence, namesBySentence);
+}]]>
+		</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.entitylinker.implementing">
+		<title>Implementing an Entity Linker</title>
+		<para>
+		Implement <classname>EntityLinker&lt;T&gt;</classname>, where <classname>T</classname> extends
+		<classname>Span</classname>. Load reusable resources in <methodname>init</methodname>. Implement
+		the document overload of <methodname>find</methodname> by visiting each sentence, and implement
+		the sentence overload with the actual lookup logic.
+		</para>
+		<para>
+		This example uses <classname>LinkedSpan</classname> for its results and a small concrete
+		subclass of <classname>BaseLink</classname> for gazetteer records:
+		<programlisting language="java">
+<![CDATA[public final class GazetteerLink extends BaseLink {
+
+  public GazetteerLink(String id, String name) {
+    super(null, id, name, "location");
+  }
+}
+
+public final class GazetteerLinker
+    implements EntityLinker<LinkedSpan<GazetteerLink>> {
+
+  private Map<String, GazetteerLink> entries;
+
+  @Override
+  public void init(EntityLinkerProperties properties) throws IOException {
+    String path = properties.getProperty("gazetteer.path", "gazetteer.tsv");
+    entries = loadEntries(Path.of(path));
+  }
+
+  @Override
+  public List<LinkedSpan<GazetteerLink>> find(String documentText,
+      Span[] sentences, Span[][] tokensBySentence, Span[][] namesBySentence) {
+    List<LinkedSpan<GazetteerLink>> results = new ArrayList<>();
+    for (int i = 0; i < sentences.length; i++) {
+      results.addAll(find(documentText, sentences, tokensBySentence,
+          namesBySentence, i));
+    }
+    return results;
+  }
+
+  @Override
+  public List<LinkedSpan<GazetteerLink>> find(String documentText,
+      Span[] sentences, Span[][] tokensBySentence, Span[][] namesBySentence,
+      int sentenceIndex) {
+    List<LinkedSpan<GazetteerLink>> results = new ArrayList<>();
+    Span[] tokens = tokensBySentence[sentenceIndex];
+
+    for (Span name : namesBySentence[sentenceIndex]) {
+      // Name spans contain token indexes, so map their boundaries through the token spans.
+      int start = tokens[name.getStart()].getStart();
+      int end = tokens[name.getEnd() - 1].getEnd();
+      String searchTerm = documentText.substring(start, end);
+      GazetteerLink match = entries.get(searchTerm);
+
+      if (match != null) {
+        ArrayList<GazetteerLink> matches = new ArrayList<>();
+        matches.add(match);
+        LinkedSpan<GazetteerLink> linkedSpan =
+            new LinkedSpan<>(matches, start, end, name.getType());
+        linkedSpan.setSentenceid(sentenceIndex);
+        linkedSpan.setSearchTerm(searchTerm);
+        results.add(linkedSpan);
+      }
+    }
+    return results;
+  }
+
+  private static Map<String, GazetteerLink> loadEntries(Path path)
+      throws IOException {
+    // Parse the application's data source here.
+    return Map.of();
+  }
+}]]>
+		</programlisting>
+		</para>
+		<para>
+		A production implementation should validate array lengths and name boundaries before indexing
+		into <varname>tokens</varname>, normalize lookup keys consistently, and define how multiple
+		candidate records are scored and ordered.
+		</para>
+	</section>
+
+	<section xml:id="tools.entitylinker.configuration">
+		<title>Loading an Implementation</title>
+		<para>
+		<classname>EntityLinkerFactory</classname> loads an implementation through OpenNLP's extension
+		loader and then calls its <methodname>init</methodname> method. With the overload that accepts an
+		entity type, the key is <literal>linker.&lt;entityType&gt;</literal>:
+		<screen>
+<![CDATA[linker.location=com.example.GazetteerLinker
+gazetteer.path=/data/locations.tsv]]>
+		</screen>
+		</para>
+		<para>
+		Load the properties and request the configured linker as follows:
+		<programlisting language="java">
+<![CDATA[EntityLinkerProperties properties =
+    new EntityLinkerProperties(new File("entity-linker.properties"));
+EntityLinker<?> linker = EntityLinkerFactory.getLinker("location", properties);]]>
+		</programlisting>
+		The overload without an entity type reads the key <literal>linker</literal> instead.
+		</para>
+	</section>
+
+	<section xml:id="tools.entitylinker.commandline">
+		<title>Command Line Tool</title>
+		<para>
+		The <command>EntityLinker</command> command loads the <literal>linker.location</literal>
+		implementation from a properties file. It reads blank-line-separated documents in the native
+		Name Finder sample format from standard input and writes each linked span to standard output.
+		</para>
+		<screen>
+<![CDATA[opennlp EntityLinker entity-linker.properties < names.txt]]>
+		</screen>
+		<para>
+		Each non-empty input line is a tokenized sentence whose names use
+		<literal>&lt;START:type&gt;</literal> and <literal>&lt;END&gt;</literal> markers. For example:
+		<screen>
+<![CDATA[The office is in <START:location> New York <END> .
+
+The second document starts after the blank line .]]>
+		</screen>
+		</para>
+	</section>
+
+</chapter>
