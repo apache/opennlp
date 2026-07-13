@@ -300,7 +300,7 @@ class StaticEmbeddingModelTest {
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> StaticEmbeddingModel.load(dir));
     assertTrue(e.getMessage().contains("config.json"));
-    assertTrue(e.getMessage().contains("load(vocabularyFile, safetensorsFile"));
+    assertTrue(e.getMessage().contains("explicit load overloads"));
   }
 
   @Test
