@@ -22,11 +22,9 @@ import java.util.List;
  * Splits text into subword units against a fixed vocabulary, reporting for every unit its
  * vocabulary id and the exact span of the original text it covers.
  *
- * <p>Subword tokenization splits text into pieces drawn from a trained vocabulary, so that any
- * input, including words never seen in training, maps to a bounded id space. The segmentation is
- * vocabulary-driven rather than linguistic, and each piece is in the model's normalized form, so a
- * piece is generally not a substring of the input. The offsets carried by each
- * {@link SubwordPiece} always refer to the caller's original text.</p>
+ * <p>The segmentation is vocabulary-driven rather than linguistic, and each piece is in the
+ * model's normalized form, so a piece is generally not a substring of the input. The offsets
+ * carried by each {@link SubwordPiece} always refer to the caller's original text.</p>
  *
  * <p>Implementations are expected to be safe for concurrent use by multiple threads; any
  * implementation that is not must document it.</p>

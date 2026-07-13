@@ -33,7 +33,7 @@ final class PieceTrie {
   static final int DEAD = -1;
 
   // A node dispatches through a 256-entry slice of directPool when it has more children than
-  // this; below it, a linear scan of the sorted label slice wins on memory and is branch-cheap.
+  // this; otherwise a linear scan of the sorted label slice is used.
   private static final int DIRECT_THRESHOLD = 8;
 
   // Per node: the slice [childStart[n], childStart[n + 1]) of labels/childNodes, and the piece id
