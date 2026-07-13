@@ -65,7 +65,7 @@ Rockwell_NNP said_VBD the_DT agreement_NN calls_VBZ for_IN it_PRP to_TO supply_V
     [PP for_IN ] [NP the_DT planes_NNS ] ._.]]>
 		</screen>
 		The example uses
-		<link xlink:href="https://catalog.ldc.upenn.edu/docs/LDC95T7/cl93.html">
+		<link xlink:href="https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html">
 			Penn Treebank part-of-speech tags
 		</link> and
 		<link xlink:href="https://aclanthology.org/W00-0726/">
