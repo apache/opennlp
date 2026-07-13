@@ -31,6 +31,8 @@ The command replaces model and tokenizer files produced by an earlier distillati
 
 bge-m3 is an [XLM-RoBERTa](https://arxiv.org/abs/1911.02116)/SentencePiece model with a 250k multilingual vocabulary, native dimension 1024.
 
+This exact script ships in the module as `scripts/distill_bge_m3.py`, and `scripts/parity/` holds a harness that reruns the parity check and the single-thread speed comparison against the Python reference on any machine.
+
 ### On the dimension
 
 `pcaDims` controls the output vector width and defaults to 256. A larger value increases the model's memory, disk, and inference cost. Evaluate retrieval or classification quality on the target task before changing it.
