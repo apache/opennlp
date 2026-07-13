@@ -69,6 +69,16 @@ bge-m3-static/
 
 `load` detects the SentencePiece layout from the `.model` file next to `tokenizer.json`; it does not need `tokenizer_config.json`, because the `.model` carries the model's own text normalizer. If you forget the `.model` file, the loader says so by name.
 
+### Let the tool assemble it
+
+Rather than assemble the directory by hand, run the `AssembleModel` command. It completes the directory in place and verifies it by loading it, so a run that prints a summary is a directory that works:
+
+```
+opennlp-embeddings AssembleModel -modelDir bge-m3-static
+```
+
+For a WordPiece distillation it derives the missing `vocab.txt` and `tokenizer_config.json` from `tokenizer.json` (the row order is the vocabulary in id order; the casing is the normalizer's lowercase flag). For a SentencePiece distillation it checks that the trained `.model` file is present and names the fix if it is not. Either way it prints the family, row count, and dimension of the loaded model.
+
 ## 4. Load and verify in the JVM
 
 ```java
