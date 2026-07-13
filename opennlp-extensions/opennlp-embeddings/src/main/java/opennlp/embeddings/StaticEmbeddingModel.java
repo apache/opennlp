@@ -110,6 +110,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private final double[] rowNorms;
   private final boolean[] specialRows;
 
+  /** Holds the loaded, validated state; callers reach this through the {@code load} factories. */
   private StaticEmbeddingModel(float[] embeddings, float[] weights, int dimension,
                                 EmbeddingVocabulary vocabulary, SubwordTokenizer tokenizer,
                                 IntPredicate skipPieceId, boolean normalize, double[] rowNorms,
@@ -253,6 +254,13 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     return null;
   }
 
+  /**
+   * {@return the named file in the directory, requiring it to exist as a regular file}
+   *
+   * @param modelDirectory The model directory.
+   * @param name           The required file name.
+   * @throws IllegalArgumentException Thrown if the file is absent.
+   */
   private static Path requiredFile(Path modelDirectory, String name) {
     final Path file = modelDirectory.resolve(name);
     if (!Files.isRegularFile(file)) {

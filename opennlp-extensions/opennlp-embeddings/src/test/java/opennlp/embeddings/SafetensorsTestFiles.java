@@ -26,12 +26,12 @@ import java.nio.file.Path;
 import java.util.StringJoiner;
 
 /**
- * Writes small well-formed safetensors fixtures for tests and benchmarks, replacing the writer
- * that used to be copied into every test class. Negative tests that need deliberately malformed
- * bytes still hand-roll them.
+ * Writes small well-formed safetensors fixtures for tests and benchmarks. Negative tests that
+ * need deliberately malformed bytes still hand-roll them.
  */
 final class SafetensorsTestFiles {
 
+  /** Not instantiable. */
   private SafetensorsTestFiles() {
   }
 
@@ -39,6 +39,12 @@ final class SafetensorsTestFiles {
   record Tensor(String name, int[] shape, float[] values) {
   }
 
+  /**
+   * {@return a tensor of the given 2-D matrix, row-major}
+   *
+   * @param name The tensor name.
+   * @param rows The matrix rows, each of the same length.
+   */
   static Tensor matrix(String name, float[][] rows) {
     final int dimension = rows[0].length;
     final float[] values = new float[rows.length * dimension];

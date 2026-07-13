@@ -66,6 +66,7 @@ public final class SafetensorsFile {
   private final Map<String, TensorInfo> tensorsByName;
   private final Map<String, String> metadata;
 
+  /** Holds the parsed header; built by {@link #read(Path)}. */
   private SafetensorsFile(Path file, long dataStart, Map<String, TensorInfo> tensorsByName,
                            Map<String, String> metadata) {
     this.file = file;

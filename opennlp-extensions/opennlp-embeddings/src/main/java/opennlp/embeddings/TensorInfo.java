@@ -38,8 +38,20 @@ public record TensorInfo(String name, String dtype, int[] shape, long dataOffset
   /**
    * Creates the metadata, copying {@code shape} so later mutation of the caller's array cannot
    * corrupt the validated state.
+   *
+   * @throws IllegalArgumentException Thrown if {@code name}, {@code dtype}, or {@code shape} is
+   *     {@code null}.
    */
   public TensorInfo {
+    if (name == null) {
+      throw new IllegalArgumentException("Name must not be null");
+    }
+    if (dtype == null) {
+      throw new IllegalArgumentException("Dtype must not be null");
+    }
+    if (shape == null) {
+      throw new IllegalArgumentException("Shape must not be null");
+    }
     shape = shape.clone();
   }
 

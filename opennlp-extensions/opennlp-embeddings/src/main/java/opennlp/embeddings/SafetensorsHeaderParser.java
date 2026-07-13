@@ -32,6 +32,7 @@ final class SafetensorsHeaderParser {
 
   private final JsonCursor cursor;
 
+  /** Wraps the header text in a cursor; driven by {@link #parse(String)}. */
   private SafetensorsHeaderParser(String text) {
     this.cursor = new JsonCursor(text, "safetensors header");
   }
