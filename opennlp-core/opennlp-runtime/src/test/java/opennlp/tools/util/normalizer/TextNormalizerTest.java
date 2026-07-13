@@ -55,7 +55,7 @@ public class TextNormalizerTest {
 
   @Test
   void testWithRejectsNull() {
-    assertThrows(NullPointerException.class, () -> TextNormalizer.builder().with(null));
+    assertThrows(IllegalArgumentException.class, () -> TextNormalizer.builder().with(null));
   }
 
   @Test

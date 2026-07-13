@@ -52,8 +52,8 @@ public class FullCaseFoldCharSequenceNormalizerTest {
 
   @Test
   void nullInputIsRejectedAtThePublicBoundary() {
-    assertThrows(NullPointerException.class, () -> norm().normalize(null));
-    assertThrows(NullPointerException.class, () -> norm().normalizeAligned(null));
+    assertThrows(IllegalArgumentException.class, () -> norm().normalize(null));
+    assertThrows(IllegalArgumentException.class, () -> norm().normalizeAligned(null));
   }
 
   @Test

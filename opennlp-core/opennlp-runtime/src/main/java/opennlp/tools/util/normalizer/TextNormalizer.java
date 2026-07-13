@@ -18,7 +18,6 @@ package opennlp.tools.util.normalizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Entry point for composing the normalization rungs into a single {@link CharSequenceNormalizer}.
@@ -153,11 +152,15 @@ public final class TextNormalizer {
     /**
      * Appends a custom normalizer.
      *
-     * @param custom The normalizer to append.
+     * @param custom The normalizer to append. Must not be {@code null}.
      * @return This builder.
+     * @throws IllegalArgumentException if {@code custom} is {@code null}.
      */
     public Builder with(CharSequenceNormalizer custom) {
-      return add(Objects.requireNonNull(custom, "custom"));
+      if (custom == null) {
+        throw new IllegalArgumentException("custom must not be null");
+      }
+      return add(custom);
     }
 
     /** {@return the composed normalizer for the rungs added so far} */

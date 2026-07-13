@@ -24,7 +24,6 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * A {@link CharSequenceNormalizer} that applies Unicode full case folding for case-insensitive
@@ -73,22 +72,26 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
   /**
    * {@inheritDoc}
    *
-   * @throws NullPointerException if {@code text} is {@code null}.
+   * @throws IllegalArgumentException if {@code text} is {@code null}.
    */
   @Override
   public CharSequence normalize(CharSequence text) {
-    Objects.requireNonNull(text, "text must not be null");
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
     return CharClass.substitute(text, FOLDINGS::get);
   }
 
   /**
    * {@inheritDoc}
    *
-   * @throws NullPointerException if {@code text} is {@code null}.
+   * @throws IllegalArgumentException if {@code text} is {@code null}.
    */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
-    Objects.requireNonNull(text, "text must not be null");
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
     return CharClass.substituteAligned(text, FOLDINGS::get);
   }
 
