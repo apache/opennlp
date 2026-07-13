@@ -34,10 +34,9 @@ public class StringUtil {
    * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
    * {@code Character.isWhitespace} excludes.
    *
-   * <p>This predicate is deliberately not the Unicode {@code White_Space} property and is
-   * kept frozen because trained-model feature generation depends on it. Use
-   * {@link #isUnicodeWhitespace(char)} for whitespace classification in user text
-   * (OPENNLP-1875).</p>
+   * <p>This predicate is deliberately not the Unicode {@code White_Space} property and stays
+   * frozen because trained-model feature generation depends on it; use
+   * {@link #isUnicodeWhitespace(char)} for whitespace classification in user text.</p>
    *
    * @param charCode The character to check.
    *
@@ -54,10 +53,9 @@ public class StringUtil {
    * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
    * {@code Character.isWhitespace} excludes.
    *
-   * <p>This predicate is deliberately not the Unicode {@code White_Space} property and is
-   * kept frozen because trained-model feature generation depends on it. Use
-   * {@link #isUnicodeWhitespace(int)} for whitespace classification in user text
-   * (OPENNLP-1875).</p>
+   * <p>This predicate is deliberately not the Unicode {@code White_Space} property and stays
+   * frozen because trained-model feature generation depends on it; use
+   * {@link #isUnicodeWhitespace(int)} for whitespace classification in user text.</p>
    *
    * @param charCode An int representation of a character to check.
    *

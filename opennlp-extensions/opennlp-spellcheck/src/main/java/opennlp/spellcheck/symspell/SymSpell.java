@@ -446,6 +446,9 @@ public final class SymSpell implements SpellChecker {
     return input.substring(start, end);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<SuggestItem> lookupCompound(String input, int maxEditDistance) {
     Objects.requireNonNull(input, "input must not be null");
