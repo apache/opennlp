@@ -178,7 +178,7 @@ public class SpellCheckingCharSequenceNormalizerTest {
 
   @Test
   void nullCheckerIsRejected() {
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> new SpellCheckingCharSequenceNormalizer((SymSpell) null));
   }
 

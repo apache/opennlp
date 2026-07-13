@@ -19,7 +19,6 @@ package opennlp.spellcheck.normalizer;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import opennlp.spellcheck.SpellChecker;
@@ -136,11 +135,14 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @param model the loaded model whose engine is used; must not be {@code null}
    */
   public SpellCheckingCharSequenceNormalizer(SymSpellModel model) {
-    this(Objects.requireNonNull(model, "model must not be null").getSymSpell());
+    this(builder(model));
   }
 
   private SpellCheckingCharSequenceNormalizer(Builder b) {
-    this.spellChecker = Objects.requireNonNull(b.spellChecker, "spellChecker must not be null");
+    if (b.spellChecker == null) {
+      throw new IllegalArgumentException("spellChecker must not be null");
+    }
+    this.spellChecker = b.spellChecker;
     this.mode = b.mode;
     this.minTokenLength = b.minTokenLength;
     // The engine throws if a query exceeds its configured maximum, so clamp to it; an
@@ -155,7 +157,10 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @return a new {@link Builder} seeded with sensible defaults
    */
   public static Builder builder(SpellChecker spellChecker) {
-    return new Builder(Objects.requireNonNull(spellChecker, "spellChecker must not be null"));
+    if (spellChecker == null) {
+      throw new IllegalArgumentException("spellChecker must not be null");
+    }
+    return new Builder(spellChecker);
   }
 
   /**
@@ -163,7 +168,10 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @return a new {@link Builder} seeded with sensible defaults
    */
   public static Builder builder(SymSpellModel model) {
-    return new Builder(Objects.requireNonNull(model, "model must not be null").getSymSpell());
+    if (model == null) {
+      throw new IllegalArgumentException("model must not be null");
+    }
+    return new Builder(model.getSymSpell());
   }
 
   /**
@@ -347,7 +355,10 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
      * @return this builder
      */
     public Builder mode(Mode value) {
-      this.mode = Objects.requireNonNull(value, "mode must not be null");
+      if (value == null) {
+        throw new IllegalArgumentException("mode must not be null");
+      }
+      this.mode = value;
       return this;
     }
 
