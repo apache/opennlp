@@ -162,6 +162,7 @@ public record GazetteerEntry(
     attributes = Map.copyOf(attributes);
   }
 
+  /** {@return {@code true} if {@code code} is two ASCII uppercase letters}. */
   private static boolean isAlpha2(String code) {
     return code.length() == 2
         && code.charAt(0) >= 'A' && code.charAt(0) <= 'Z'

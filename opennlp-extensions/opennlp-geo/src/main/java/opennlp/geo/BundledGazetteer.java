@@ -66,8 +66,6 @@ public final class BundledGazetteer implements Gazetteer {
   private static final TermAnalyzer FOLD =
       TermAnalyzer.builder().nfc().caseFold().accentFold().build();
 
-  private static volatile BundledGazetteer instance;
-
   private final Map<IdKey, GazetteerEntry> idIndex;
   private final Map<String, List<GazetteerEntry>> nameIndex;
   private final Map<String, GazetteerEntry> regionIndex;
@@ -121,24 +119,12 @@ public final class BundledGazetteer implements Gazetteer {
 
   /**
    * {@return the shared instance backed by the bundled table} The table is loaded and indexed
-   * once, on the first call; later calls return the same immutable instance.
-   *
-   * @throws IllegalStateException Thrown if the bundled data resource is missing.
-   * @throws IllegalArgumentException Thrown if the bundled data is malformed; the message names
-   *     the resource and line.
+   * once, on first access; later calls return the same immutable instance. A missing or
+   * malformed bundled resource fails the one-time initialization with an error that names the
+   * resource and, for malformed data, the line.
    */
   public static BundledGazetteer getInstance() {
-    BundledGazetteer result = instance;
-    if (result == null) {
-      synchronized (BundledGazetteer.class) {
-        result = instance;
-        if (result == null) {
-          result = new BundledGazetteer(load());
-          instance = result;
-        }
-      }
-    }
-    return result;
+    return Holder.INSTANCE;
   }
 
   /**
@@ -260,6 +246,12 @@ public final class BundledGazetteer implements Gazetteer {
     return entries;
   }
 
+  /**
+   * Parses one data line into a gazetteer entry.
+   *
+   * @throws IllegalArgumentException Thrown if the line is malformed; the message names
+   *     {@code resourceName} and {@code lineNumber}.
+   */
   private static GazetteerEntry parseRow(String line, String resourceName, int lineNumber) {
     // Scan the line into exactly 11 semicolon-separated fields.
     final String[] fields = new String[11];
@@ -298,8 +290,13 @@ public final class BundledGazetteer implements Gazetteer {
     }
   }
 
-  // Splits a pipe separated list field; an empty field is an empty list, and empty elements
-  // (from a leading, trailing, or doubled pipe) surface through GazetteerEntry's validation.
+  /**
+   * Splits a pipe separated list field. An empty field yields an empty list, and empty elements
+   * from a leading, trailing, or doubled pipe surface through {@link GazetteerEntry}'s
+   * validation.
+   *
+   * @return The list of field values, never {@code null}.
+   */
   private static List<String> splitList(String field) {
     if (field.isEmpty()) {
       return List.of();
@@ -317,7 +314,13 @@ public final class BundledGazetteer implements Gazetteer {
     }
   }
 
-  // Parses the attributes field: pipe separated key=value pairs, provenance is the row's source.
+  /**
+   * Parses the attributes field of pipe separated {@code key=value} pairs, taking {@code source}
+   * as each attribute's provenance.
+   *
+   * @return The attribute map keyed by attribute name, never {@code null}.
+   * @throws IllegalArgumentException Thrown if a pair is not {@code key=value} or a key repeats.
+   */
   private static Map<String, AttributeValue> parseAttributes(String field, String source) {
     if (field.isEmpty()) {
       return Map.of();
@@ -338,6 +341,12 @@ public final class BundledGazetteer implements Gazetteer {
     return attributes;
   }
 
+  /**
+   * Builds the exception for a malformed row, naming the resource and line and chaining the
+   * given cause when present.
+   *
+   * @return The exception to throw for the malformed row.
+   */
   private static IllegalArgumentException malformed(String resourceName, int lineNumber,
                                                     String line, Throwable cause) {
     final String message = "Malformed gazetteer data in " + resourceName + " at line "
@@ -346,6 +355,15 @@ public final class BundledGazetteer implements Gazetteer {
         ? new IllegalArgumentException(message) : new IllegalArgumentException(message, cause);
   }
 
+  /**
+   * Reads and parses the bundled data resource.
+   *
+   * @return The parsed entries in file order.
+   * @throws IllegalStateException Thrown if the bundled data resource is missing.
+   * @throws UncheckedIOException Thrown if the resource cannot be read.
+   * @throws IllegalArgumentException Thrown if a row is malformed; the message names the resource
+   *     and line.
+   */
   private static List<GazetteerEntry> load() {
     try (InputStream in = BundledGazetteer.class.getResourceAsStream(RESOURCE)) {
       if (in == null) {
@@ -357,11 +375,17 @@ public final class BundledGazetteer implements Gazetteer {
     }
   }
 
+  /**
+   * Indexes {@code entry} under the folded match key of {@code name}, listing it once even when
+   * several of its names fold to the same key.
+   *
+   * @throws IllegalArgumentException Thrown if {@code name} folds to an empty match key, which
+   *     would leave the record unreachable by lookup.
+   */
   private static void indexName(Map<String, List<GazetteerEntry>> byName, String name,
                                 GazetteerEntry entry) {
     final String key = foldKey(name);
     if (key.isEmpty()) {
-      // Fail loud: silently skipping would load a row that no lookup can ever reach.
       throw new IllegalArgumentException("Name '" + name + "' of record " + entry.source() + ";"
           + entry.recordId() + " folds to an empty match key, so the record would be"
           + " unreachable by lookup");
@@ -375,15 +399,25 @@ public final class BundledGazetteer implements Gazetteer {
     }
   }
 
+  /** {@return {@code true} if {@code c} is an ASCII letter}. */
   private static boolean isAsciiLetter(char c) {
     return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
   }
 
+  /** {@return {@code c} upper-cased if it is an ASCII lowercase letter, otherwise unchanged}. */
   private static char upperAscii(char c) {
     return c >= 'a' && c <= 'z' ? (char) (c - ('a' - 'A')) : c;
   }
 
-  // The composite identifier of one record; only (source, recordId) together are unique.
+  /**
+   * Holds the shared instance, initialized on first access to {@link #getInstance()} by the
+   * class loader without locking.
+   */
+  private static final class Holder {
+    static final BundledGazetteer INSTANCE = new BundledGazetteer(load());
+  }
+
+  /** The composite identifier of one record; only (source, recordId) together are unique. */
   private record IdKey(String source, String recordId) {
   }
 }
