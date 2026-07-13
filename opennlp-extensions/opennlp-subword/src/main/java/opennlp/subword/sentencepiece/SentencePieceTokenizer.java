@@ -33,24 +33,20 @@ import opennlp.tools.util.normalizer.Alignment;
 import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
 
 /**
- * A {@link SubwordTokenizer} over a trained SentencePiece model file, implemented purely in Java.
- *
- * <p>A {@code .model} file is self-contained: it carries the vocabulary with piece scores and
- * types, the segmentation algorithm (unigram language model or byte-pair encoding), and the text
- * normalizer the model was trained with. This class runs all three, so its output matches the
- * reference implementation piece for piece and id for id, which is what makes the produced ids
- * valid inputs for models trained against the same vocabulary.</p>
+ * A {@link SubwordTokenizer} over a trained SentencePiece {@code .model} file, implemented purely
+ * in Java. The file carries the vocabulary with piece scores and types, the segmentation algorithm
+ * (unigram language model or byte-pair encoding), and the text normalizer, all of which this class
+ * runs.
  *
  * <p>Every piece carries the exact span of the caller's original text it came from, mapped back
- * through the model's own normalizer. That normalizer is also exposed through
- * {@link OffsetAwareNormalizer} for reuse as an offset-aware step outside tokenization.</p>
+ * through the model's own normalizer, which is also exposed through {@link OffsetAwareNormalizer}
+ * for reuse outside tokenization.</p>
  *
  * <p>Instances are immutable after loading and safe for concurrent use by multiple threads.</p>
  */
 public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwareNormalizer {
 
-  // Serializable through the OffsetAwareNormalizer contract; the model state is not itself
-  // serializable, so this only carries the serialver-computed value the convention expects.
+  // Serializable through the OffsetAwareNormalizer contract.
   private static final long serialVersionUID = -7114394869301531147L;
 
   /** The segmentation algorithm a model was trained with. */
@@ -280,9 +276,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     for (final Segment segment : segments) {
       final boolean isUnk = segment.id() == unkId;
       final boolean isControl = types[segment.id()] == TYPE_CONTROL;
-      // A non-unknown segment's bytes are exactly the vocabulary piece's bytes (that is what
-      // the match meant), so the vocabulary string is reused; only unknown segments carry
-      // surface content that needs decoding.
+      // A non-unknown segment reuses its vocabulary string; only unknown segments need decoding.
       final String piece = isUnk
           ? new String(norm, segment.from(), segment.to() - segment.from(), StandardCharsets.UTF_8)
           : pieces[segment.id()];

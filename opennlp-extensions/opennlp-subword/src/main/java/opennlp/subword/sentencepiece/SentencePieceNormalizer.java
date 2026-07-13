@@ -43,8 +43,7 @@ final class SentencePieceNormalizer {
   private final boolean treatWhitespaceAsSuffix;
   private final PieceTrie userDefinedMatcher;
   // For each possible first byte, whether any character-map rule or user-defined symbol starts
-  // with it. A clear bit proves normalizePrefix would pass the byte through raw, which lets the
-  // scan skip the whole prefix machinery for plain ASCII text.
+  // with it; a clear bit means normalizePrefix passes the byte through raw.
   private final boolean[] ruleLead = new boolean[256];
 
   /**
@@ -118,7 +117,6 @@ final class SentencePieceNormalizer {
   /**
    * One normalization step: {@code consumed} input bytes produced {@code data[from, to)}. The data
    * array is the input itself (pass-through), the replacement blob, or the replacement character.
-   * A single mutable scratch is refilled per chunk so the scan allocates nothing per code point.
    */
   private static final class Chunk {
 
@@ -176,8 +174,8 @@ final class SentencePieceNormalizer {
     boolean isPrevSpace = removeExtraWhitespaces;
     while (from < inputLength) {
       final int lead = input[from] & 0xFF;
-      // Fast path: an ASCII byte no rule starts with passes through raw; the chunk would be
-      // the byte itself, no leading-space stripping applies, and it does not end in a space.
+      // An ASCII byte no rule starts with passes through raw: the chunk is the byte itself, no
+      // leading-space stripping applies, and it does not end in a space.
       if (lead < 0x80 && lead != ' ' && !ruleLead[lead]) {
         normalized.append(input[from]);
         normToOrig.append(consumed);
