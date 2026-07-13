@@ -115,8 +115,9 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
    * to the given list {@code preds}.
    *
    * <p>
-   * The {@code _ws} class uses the frozen {@link StringUtil#isWhitespace(char)} predicate; the
-   * feature strings are part of every trained tokenizer model.
+   * The {@code _ws} class uses {@link StringUtil#isWhitespace(char)}, which keeps the
+   * whitespace definition of OpenNLP 1.x and 2.x; the feature strings are part of every
+   * trained tokenizer model.
    *
    * @param key The input string to process.
    * @param c   A character used to discriminate which fixed text shall be appended.

@@ -63,7 +63,7 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
           inTok = false;
           tokStart = -1;
         }
-        if (keepNewLines && isLineSeparator(d.charAt(i))) {
+        if (keepNewLines && StringUtil.isLineSeparator(d.charAt(i))) {
           tokStart = i;
           tokens.add(new Span(tokStart, tokStart + 1));
           tokStart = -1;
@@ -81,14 +81,6 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     }
 
     return tokens.toArray(new Span[0]);
-  }
-
-  /**
-   * Checks whether {@code character} is a line separator: LF, CR, NEL, LS, or PS.
-   */
-  private boolean isLineSeparator(char character) {
-    return character == '\n' || character == '\r'
-        || character == '\u0085' || character == '\u2028' || character == '\u2029';
   }
 
 }

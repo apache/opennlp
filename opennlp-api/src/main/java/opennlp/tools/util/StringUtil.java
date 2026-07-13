@@ -34,8 +34,9 @@ public class StringUtil {
    * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
    * {@code Character.isWhitespace} excludes.
    *
-   * <p>Frozen for trained-model feature generation; use {@link #isUnicodeWhitespace(char)}
-   * to classify user text.</p>
+   * <p>This is the whitespace definition of OpenNLP 1.x and 2.x. It is kept for feature
+   * generation, since the feature strings it produces are part of trained models; use
+   * {@link #isUnicodeWhitespace(char)} to classify user text.</p>
    *
    * @param charCode The character to check.
    *
@@ -52,8 +53,9 @@ public class StringUtil {
    * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
    * {@code Character.isWhitespace} excludes.
    *
-   * <p>Frozen for trained-model feature generation; use {@link #isUnicodeWhitespace(int)}
-   * to classify user text.</p>
+   * <p>This is the whitespace definition of OpenNLP 1.x and 2.x. It is kept for feature
+   * generation, since the feature strings it produces are part of trained models; use
+   * {@link #isUnicodeWhitespace(int)} to classify user text.</p>
    *
    * @param charCode An int representation of a character to check.
    *
@@ -90,6 +92,19 @@ public class StringUtil {
    */
   public static boolean isUnicodeWhitespace(int charCode) {
     return UnicodeWhitespace.isWhitespace(charCode);
+  }
+
+  /**
+   * Determines if the specified {@link Character} is a line separator: LF ({@code U+000A}),
+   * CR ({@code U+000D}), NEL ({@code U+0085}), LS ({@code U+2028}), or PS ({@code U+2029}).
+   *
+   * @param character The character to check.
+   *
+   * @return {@code true} if {@code character} is a line separator, {@code false} otherwise.
+   */
+  public static boolean isLineSeparator(char character) {
+    return character == '\n' || character == '\r'
+        || character == '\u0085' || character == '\u2028' || character == '\u2029';
   }
 
 
