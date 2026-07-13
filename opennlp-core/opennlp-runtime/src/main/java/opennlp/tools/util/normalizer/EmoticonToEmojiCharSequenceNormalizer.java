@@ -37,6 +37,7 @@ public final class EmoticonToEmojiCharSequenceNormalizer implements OffsetAwareN
   private static final EmoticonToEmojiCharSequenceNormalizer INSTANCE =
       new EmoticonToEmojiCharSequenceNormalizer();
 
+  /** Instantiated once for {@link #getInstance()}. */
   private EmoticonToEmojiCharSequenceNormalizer() {
   }
 

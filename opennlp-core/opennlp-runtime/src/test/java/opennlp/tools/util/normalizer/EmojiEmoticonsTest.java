@@ -54,7 +54,7 @@ public class EmojiEmoticonsTest {
   void directionsCloseOverEachOther() throws IOException {
     // Every EMOJI target must be an EMOTICON source and every EMOTICON target an EMOJI source, so
     // folding one direction and then the other converges on a canonical form instead of producing
-    // text the reverse table does not know. This is the audit the data file header promises.
+    // text the reverse table does not know.
     final EmojiEmoticons.Tables tables = bundled();
     final Set<String> emoticonSources = sources(tables.emoticonToEmoji().table());
     final Set<String> emojiSources = sources(tables.emojiToEmoticon().table());
@@ -76,7 +76,7 @@ public class EmojiEmoticonsTest {
   void emoticonSourcesAreAsciiAndEmojiSourcesAreNot() throws IOException {
     // The whitespace-delimited boundary guard exists because emoticon sources are ordinary ASCII
     // that also occurs inside text; the emoji direction runs unguarded because its sources are
-    // pictographs. These are the data invariants those design choices rest on.
+    // pictographs.
     final EmojiEmoticons.Tables tables = bundled();
     for (final String source : sources(tables.emoticonToEmoji().table())) {
       source.chars().forEach(c ->
@@ -89,8 +89,7 @@ public class EmojiEmoticonsTest {
 
   @Test
   void bundledRowCountsAreAudited() throws IOException {
-    // Locks the bundled row counts so a data edit trips this test for a conscious bump, the same
-    // discipline as the CaseFolding.txt completeness audit.
+    // Locks the bundled row counts so a data edit trips this test for a conscious bump.
     final EmojiEmoticons.Tables tables = bundled();
     assertEquals(35, sources(tables.emojiToEmoticon().table()).size());
     assertEquals(26, sources(tables.emoticonToEmoji().table()).size());

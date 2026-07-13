@@ -73,9 +73,8 @@ public class EmoticonToEmojiCharSequenceNormalizerTest {
 
   @Test
   void trailingPunctuationBlocksTheFoldByDesign() {
-    // Deliberate conservatism: "fun :)." keeps the emoticon because ')' is followed by '.', not
-    // whitespace or the boundary. A missed fold costs nothing; loosening the guard is a data-driven
-    // follow-up, not a default.
+    // "fun :)." keeps the emoticon because ')' is followed by '.', not whitespace or the
+    // boundary.
     assertEquals("fun :).", norm().normalize("fun :).").toString());
     assertEquals(":):(", norm().normalize(":):(").toString());
   }
@@ -124,8 +123,7 @@ public class EmoticonToEmojiCharSequenceNormalizerTest {
   @Test
   void foldingBeforeTokenizationMakesEmoticonsAndEmojiOneClass() {
     // The UAX #29 word tokenizer drops an unfolded emoticon as punctuation but keeps a pictograph
-    // as an EMOJI token, so this rung applied before tokenization is exactly what lets the signal
-    // survive; this is the settled answer to the epic's WordType question, with no tokenizer change.
+    // as an EMOJI token, so folding before tokenization is what lets the signal survive.
     final WordTokenizer tokenizer = new WordTokenizer();
     assertArrayEquals(new String[] {"great"}, tokenizer.tokenize("great :)"));
     final String folded = norm().normalize("great :)").toString();
