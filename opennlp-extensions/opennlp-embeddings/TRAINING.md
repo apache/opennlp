@@ -45,6 +45,8 @@ print("dim:", static.dim)
 .venv-distill/bin/python distill_bge_m3.py
 ```
 
+This exact script ships in the module as `scripts/distill_bge_m3.py`, and `scripts/parity/` holds a harness that reruns the parity check and the single-thread speed comparison against the Python reference on any machine.
+
 ### On the dimension
 
 `pca_dims` is the one quality knob worth thinking about, and bigger is not better. Distilling bge-m3 at 256 and at 512 gives the same cross-lingual similarity within noise (English/Chinese paraphrase around 0.69 either way), while 512 doubles the matrix on disk and in memory and cuts embedding throughput. PCA to 256 already captures the useful variance of the teacher; the extra dimensions are mostly noise that dilutes the signal. 256 is a good default, and it is where the reference potion tables sit too.

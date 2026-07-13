@@ -1,0 +1,20 @@
+The weather is beautiful today and the sky is clear.
+Machine learning models turn text into vectors.
+I would like a cup of coffee with milk please.
+The quarterly financial results disappointed investors.
+Das Wetter ist heute wunderschoen und der Himmel ist klar.
+Maschinelles Lernen verwandelt Text in Vektoren.
+Le temps est magnifique aujourd'hui et le ciel est degage.
+Los modelos de aprendizaje automatico convierten texto en vectores.
+今天天气很好，天空很晴朗。
+机器学习模型把文本转换成向量。
+今日はとても良い天気で空が澄んでいます。
+機械学習モデルはテキストをベクトルに変換します。
+Сегодня прекрасная погода и ясное небо.
+Модели машинного обучения превращают текст в векторы.
+La retrieval semantica trova documenti per significato non per parole.
+Natural language processing is a field of artificial intelligence.
+A quick brown fox jumps over the lazy dog near the river.
+Embeddings place similar sentences close together in space.
+Coffee, tea, and espresso are all popular hot drinks.
+The library opens at nine in the morning on weekdays.

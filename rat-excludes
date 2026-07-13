@@ -79,3 +79,5 @@ src/test/resources/opennlp/subword/sentencepiece/*.fixtures.tsv
 src/test/resources/opennlp/subword/sentencepiece/corpus.txt
 <!-- opennlp-embeddings copy of the opennlp-subword tiny SentencePiece test model -->
 src/test/resources/opennlp/embeddings/tiny-unigram.model
+<!-- opennlp-embeddings parity harness input sentences (data file, no AL header possible) -->
+scripts/parity/sentences.txt
