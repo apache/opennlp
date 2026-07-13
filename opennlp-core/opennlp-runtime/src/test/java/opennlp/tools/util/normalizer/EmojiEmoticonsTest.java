@@ -114,7 +114,7 @@ public class EmojiEmoticonsTest {
 
   @Test
   void parseRejectsANullStream() {
-    assertThrows(NullPointerException.class, () -> EmojiEmoticons.parse(null));
+    assertThrows(IllegalArgumentException.class, () -> EmojiEmoticons.parse(null));
   }
 
   @Test

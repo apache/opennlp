@@ -27,7 +27,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * The bundled emoji/emoticon fold tables ({@code emoji-emoticons.txt}) and the sequence
@@ -42,7 +41,6 @@ final class EmojiEmoticons {
 
   private static final String RESOURCE = "emoji-emoticons.txt";
 
-  // Sequence-context code points of the pictographic direction.
   private static final int ZERO_WIDTH_JOINER = 0x200D;
   private static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
   private static final int VARIATION_SELECTOR_EMOJI = 0xFE0F;
@@ -332,7 +330,9 @@ final class EmojiEmoticons {
    * @throws IllegalArgumentException if the data is malformed.
    */
   static Tables parse(InputStream in) throws IOException {
-    Objects.requireNonNull(in, "in must not be null");
+    if (in == null) {
+      throw new IllegalArgumentException("in must not be null");
+    }
     final Map<Integer, List<Mapping>> emojiToEmoticon = new HashMap<>();
     final Map<Integer, List<Mapping>> emoticonToEmoji = new HashMap<>();
     try (BufferedReader reader =
@@ -345,8 +345,8 @@ final class EmojiEmoticons {
         if (content.isEmpty() || content.startsWith("#")) {
           continue;
         }
-        // Bounded split: the notes column is free text that may itself contain ';' (for example
-        // the winking emoticon), so only the first five separators are structural.
+        // The notes column is free text that may itself contain ';', so only the first five
+        // separators are structural.
         final String[] fields = content.split(";", 6);
         if (fields.length != 6) {
           throw new IllegalArgumentException("Malformed emoji/emoticon fold data in " + RESOURCE
