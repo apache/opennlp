@@ -94,8 +94,8 @@ public final class PopulationPriorGeocoder implements Geocoder {
       if (found.size() == 1) {
         candidates = found;
       } else {
-        // Re-sort: the Gazetteer contract only promises a best-effort ranking, so the result
-        // must not depend on the implementation's own return order (OPENNLP-1879).
+        // Re-sort so the winner does not depend on the gazetteer's own return order, which the
+        // contract leaves as a best-effort ranking.
         final List<GazetteerEntry> ranked = new ArrayList<>(found);
         ranked.sort(CandidateRanking.BY_PRIOR);
         candidates = ranked;
@@ -106,10 +106,9 @@ public final class PopulationPriorGeocoder implements Geocoder {
   }
 
   /**
-   * {@return the heuristic confidence for the ranked candidates} Monotonic in the relative
-   * population separation between the winner and the runner-up, computed in {@code double} so
-   * populations near {@link Long#MAX_VALUE} cannot overflow, and clamped to the {@code [0, 1]}
-   * contract of {@link GeoResolution}.
+   * {@return the heuristic confidence for the ranked candidates} The value rises with the
+   * relative population separation between the winner and the runner-up and is clamped to the
+   * {@code [0, 1]} contract of {@link GeoResolution}.
    */
   private static double confidence(List<GazetteerEntry> rankedCandidates) {
     if (rankedCandidates.size() == 1) {
