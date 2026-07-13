@@ -595,8 +595,11 @@ public class PorterStemmer implements Stemmer {
   }
 
   /**
-   * Stem a word provided as a CharSequence.
-   * Returns the result as a CharSequence.
+   * Stem a word provided as a CharSequence. Returns the result as a CharSequence.
+   *
+   * @param word The word to stem. Must not be {@code null}.
+   * @return the stemmed word.
+   * @throws IllegalArgumentException if {@code word} is {@code null}.
    */
   public CharSequence stem(CharSequence word) {
     if (word == null) {

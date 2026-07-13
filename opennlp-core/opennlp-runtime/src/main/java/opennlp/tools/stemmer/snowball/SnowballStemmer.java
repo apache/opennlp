@@ -62,7 +62,13 @@ public class SnowballStemmer implements Stemmer {
     this(algorithm, 1);
   }
 
-  // Shared with SnowballStemmerFactory, whose products embed one engine directly.
+  /**
+   * Returns a supplier of a fresh Snowball engine for the given algorithm, shared with
+   * {@link SnowballStemmerFactory} whose products embed one engine directly.
+   *
+   * @param algorithm The Snowball algorithm.
+   * @return a supplier that mints a new engine on each call.
+   */
   static Supplier<AbstractSnowballStemmer> engineFor(ALGORITHM algorithm) {
     return switch (algorithm) {
       case ARABIC -> arabicStemmer::new;
@@ -89,6 +95,9 @@ public class SnowballStemmer implements Stemmer {
     };
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public CharSequence stem(CharSequence word) {
     return sharing.stem(word);

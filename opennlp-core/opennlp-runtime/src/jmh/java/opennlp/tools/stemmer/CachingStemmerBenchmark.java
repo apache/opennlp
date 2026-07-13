@@ -48,10 +48,10 @@ import opennlp.tools.stemmer.snowball.SnowballStemmerFactory;
  *
  * <p>Two workloads drive both strategies:</p>
  * <ul>
- *   <li>{@code zipf} — a 64k-token stream sampled with 1/rank weights from a 512-word
+ *   <li>{@code zipf}: a 64k-token stream sampled with 1/rank weights from a 512-word
  *       vocabulary. This models real text, where a small vocabulary dominates; the default
  *       1024-entry cache holds the whole vocabulary.</li>
- *   <li>{@code diverse} — a 64k-token stream sampled uniformly from an 8192-word vocabulary,
+ *   <li>{@code diverse}: a 64k-token stream sampled uniformly from an 8192-word vocabulary,
  *       8x the cache capacity. This is the cache-hostile case: mostly misses plus constant
  *       eviction, so it bounds the overhead the cache can add.</li>
  * </ul>

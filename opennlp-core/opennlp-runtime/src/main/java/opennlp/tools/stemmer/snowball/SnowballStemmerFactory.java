@@ -65,18 +65,28 @@ public record SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm, int re
     return new ConfinedStemmer(SnowballStemmer.engineFor(algorithm).get(), repeat);
   }
 
-  // One engine in a plain field: the zero-indirection product for thread-confined use, per the
-  // StemmerFactory contract. Not thread-safe.
+  /** A plain, thread-confined stemmer that applies one Snowball engine directly; not thread-safe. */
   private static final class ConfinedStemmer implements Stemmer {
 
     private final AbstractSnowballStemmer engine;
     private final int repeat;
 
+    /**
+     * Creates a thread-confined stemmer over the given engine.
+     *
+     * @param engine The Snowball engine to apply.
+     * @param repeat How many times to apply the engine per word.
+     */
     private ConfinedStemmer(AbstractSnowballStemmer engine, int repeat) {
       this.engine = engine;
       this.repeat = repeat;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IllegalArgumentException if {@code word} is {@code null}.
+     */
     @Override
     public CharSequence stem(CharSequence word) {
       if (word == null) {

@@ -33,7 +33,7 @@ mvn test-compile -Pjmh \
     -Dforbiddenapis.skip=true -Dcheckstyle.skip=true
 
 # Materialize the test classpath once (JMH's forked JVMs inherit
-# java.class.path, which mvn exec:java does not populate — running
+# java.class.path, which mvn exec:java does not populate, running
 # through exec:java fails with ClassNotFoundException: ForkedMain)
 mvn dependency:build-classpath -pl opennlp-core/opennlp-runtime \
     -Pjmh -DincludeScope=test -Dmdep.outputFile=/tmp/cp.txt
@@ -47,7 +47,7 @@ java -cp "$CP" org.openjdk.jmh.Main 'opennlp.tools.*.ME*'
 java -cp "$CP" org.openjdk.jmh.Main POSTaggerMEBenchmark
 ```
 
-### Regression testing (stock vs patched)
+### Baseline comparison
 
 Run the `newInstancePerCall` benchmark on both stock and patched
 builds. The throughput numbers should be within JMH's error margin.

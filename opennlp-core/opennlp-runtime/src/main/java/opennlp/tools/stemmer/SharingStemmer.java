@@ -43,13 +43,29 @@ public final class SharingStemmer extends DelegatingStemmer<Stemmer> {
     super(requireFactory(factory)::newStemmer, stemmer -> { });
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException if {@code word} is {@code null}.
+   */
   @Override
   public CharSequence stem(CharSequence word) {
+    if (word == null) {
+      throw new IllegalArgumentException("word must not be null");
+    }
     return state.get().stem(word);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException if {@code word} is {@code null}.
+   */
   @Override
   public List<CharSequence> stemAll(CharSequence word) {
+    if (word == null) {
+      throw new IllegalArgumentException("word must not be null");
+    }
     return state.get().stemAll(word);
   }
 }

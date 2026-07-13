@@ -27,26 +27,15 @@ import opennlp.tools.commons.ThreadSafe;
 /**
  * A {@link Stemmer} that memoizes word-to-stem mappings in a bounded per-thread LRU cache.
  *
- * <p>Natural language is Zipf-distributed: a small vocabulary accounts for most tokens, so the
- * same words are stemmed over and over. Wrapping a stemmer in a {@code CachingStemmer} turns
- * those repeats into a hash lookup instead of a full stemming pass.</p>
- *
  * <p>Each thread gets its own delegate stemmer (minted from the supplied {@link StemmerFactory})
- * and its own cache, following the {@link OwnerOrPerThreadState} pattern of the thread-safe
- * {@code *ME} components. There is no cross-thread sharing at all, so instances are safe to share
- * regardless of whether the factory's stemmers are. Memory is bounded by
- * {@code capacity * averageWordLength} characters per thread that stems.</p>
+ * and its own cache, so instances are safe to share regardless of whether the factory's stemmers
+ * are, and memory is bounded to {@code capacity} entries per thread that stems. Caching pays off
+ * on threads reused across many words, such as a fixed platform-thread pool; on a
+ * virtual-thread-per-task executor every task starts with an empty cache, so repeats are served
+ * only within one task. {@link #stemAll(CharSequence)} is forwarded to the delegate uncached.</p>
  *
- * <p>Because the cache is keyed to the thread, the memoization pays off on threads that are
- * reused across many words, such as a fixed platform-thread pool. On a virtual-thread-per-task
- * executor every task starts with an empty cache, so repeats are only served within one task.
- * As with the thread-safe {@code *ME} components, long-running environments such as application
- * containers should call {@link #clearThreadLocalState()} when a pooled thread no longer uses
- * this stemmer; otherwise the thread retains its delegate and cache until the instance is
- * unreachable, which can pin the defining classloader on redeploys.</p>
- *
- * <p>{@link #stemAll(CharSequence)} is forwarded to the delegate uncached, so multi-output
- * engines keep their full result list.</p>
+ * <p>Long-running environments such as application containers should call
+ * {@link #clearThreadLocalState()} when a pooled thread no longer uses this stemmer.</p>
  */
 @ThreadSafe
 public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.ThreadState> {
@@ -80,9 +69,8 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
   }
 
   /**
-   * Validates the constructor arguments eagerly, then returns a supplier that mints one delegate
-   * and its per-thread cache. Validating here keeps a null factory or non-positive capacity a
-   * construction-time failure rather than a deferred first-use one.
+   * Validates the constructor arguments eagerly and returns a supplier that mints one delegate and
+   * its per-thread cache, so invalid arguments fail at construction rather than on first use.
    *
    * @param factory  The factory that mints one delegate per thread. Must not be {@code null}.
    * @param capacity The maximum number of word-to-stem entries kept per thread; must be positive.
@@ -98,6 +86,11 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
     return () -> new ThreadState(factory.newStemmer(), capacity);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException if {@code word} is {@code null}.
+   */
   @Override
   public CharSequence stem(CharSequence word) {
     if (word == null) {
@@ -109,16 +102,23 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
     if (cached != null) {
       return cached;
     }
-    // toString() detaches the result from any buffer the delegate may reuse internally. The
-    // result is deliberately NOT interned: the JVM-wide interner holds strong references
-    // forever, which would defeat this class's bounded-memory guarantee on open vocabularies.
+    // toString() detaches the result from any buffer the delegate reuses; the result is not
+    // interned, which would defeat the bounded-memory guarantee on open vocabularies.
     final String stemmed = ts.delegate.stem(key).toString();
     ts.cache.put(key, stemmed);
     return stemmed;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException if {@code word} is {@code null}.
+   */
   @Override
   public List<CharSequence> stemAll(CharSequence word) {
+    if (word == null) {
+      throw new IllegalArgumentException("word must not be null");
+    }
     return state.get().delegate.stemAll(word);
   }
 
@@ -137,12 +137,16 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
     private final Stemmer delegate;
     private final LinkedHashMap<String, String> cache;
 
+    /**
+     * Creates the per-thread delegate and its access-ordered LRU cache.
+     *
+     * @param delegate The stemmer minted for this thread.
+     * @param capacity The maximum number of entries retained before eviction.
+     */
     private ThreadState(Stemmer delegate, int capacity) {
       this.delegate = delegate;
-      // Access-ordered so iteration order is least-recently-used first. The initial table size
-      // accounts for the 0.75 load factor so a cache filled to capacity never rehashes; the clamp
-      // keeps the eager allocation reasonable for very large capacities. Sized in double
-      // arithmetic: the int expression overflows to a negative capacity near Integer.MAX_VALUE.
+      // Access-ordered for LRU iteration; sized in double arithmetic against the 0.75 load factor
+      // so a full cache never rehashes, with the clamp bounding the eager allocation.
       this.cache = new LinkedHashMap<>((int) Math.min(capacity / 0.75d + 1.0d, 4096.0d),
           0.75f, true) {
         @Override

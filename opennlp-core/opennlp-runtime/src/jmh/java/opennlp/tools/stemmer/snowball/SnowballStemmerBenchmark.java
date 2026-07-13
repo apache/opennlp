@@ -39,17 +39,17 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import opennlp.tools.stemmer.Stemmer;
 
 /**
- * JMH benchmark for the thread-safe {@link SnowballStemmer} versus the pre-patch implementation
- * that held its generated engine in a plain field.
+ * JMH benchmark for the thread-safe {@link SnowballStemmer} versus a baseline replica of the
+ * previous implementation that held its generated engine in a plain field.
  *
  * <p>Three strategies are measured, all at {@link Threads#MAX}:</p>
  * <ul>
- *   <li>{@code sharedInstance} — one thread-safe {@link SnowballStemmer} shared by every thread
+ *   <li>{@code sharedInstance}: one thread-safe {@link SnowballStemmer} shared by every thread
  *       (one thread runs on the owner fast path, the rest on {@link ThreadLocal} state)</li>
- *   <li>{@code instancePerThread} — one thread-safe {@link SnowballStemmer} per thread (every
+ *   <li>{@code instancePerThread}: one thread-safe {@link SnowballStemmer} per thread (every
  *       thread is the owner of its own instance, so this isolates the owner-fast-path cost)</li>
- *   <li>{@code legacyInstancePerThread} — the old non-thread-safe implementation, one per thread
- *       (the pre-patch baseline; sharing it across threads would be a correctness bug)</li>
+ *   <li>{@code legacyInstancePerThread}: the old non-thread-safe implementation, one per thread
+ *       (the baseline; sharing it across threads would be a correctness bug)</li>
  * </ul>
  */
 @BenchmarkMode(Mode.Throughput)
@@ -67,8 +67,8 @@ public class SnowballStemmerBenchmark {
   };
 
   /**
-   * Replica of the pre-patch {@code SnowballStemmer}: the generated engine lives in a plain
-   * field, so an instance must not be shared across threads.
+   * Baseline replica of the previous {@code SnowballStemmer} implementation: the generated engine
+   * lives in a plain field, so an instance must not be shared across threads.
    */
   static final class LegacySnowballStemmer implements Stemmer {
 
