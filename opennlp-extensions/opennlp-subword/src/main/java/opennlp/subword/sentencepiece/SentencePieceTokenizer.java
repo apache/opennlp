@@ -41,10 +41,9 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  * reference implementation piece for piece and id for id, which is what makes the produced ids
  * valid inputs for models trained against the same vocabulary.</p>
  *
- * <p>Beyond parity, every piece carries the exact span of the caller's original text it came
- * from, mapped back through the model's own normalizer. The normalizer is also exposed on its own
- * through {@link OffsetAwareNormalizer}, so the model's text normalization can be reused as an
- * offset-aware step outside of tokenization.</p>
+ * <p>Every piece carries the exact span of the caller's original text it came from, mapped back
+ * through the model's own normalizer. That normalizer is also exposed through
+ * {@link OffsetAwareNormalizer} for reuse as an offset-aware step outside tokenization.</p>
  *
  * <p>Instances are immutable after loading and safe for concurrent use by multiple threads.</p>
  */
@@ -247,6 +246,11 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     return new SentencePieceTokenizer(ModelProtoReader.read(in.readAllBytes()));
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if {@code text} is null.
+   */
   @Override
   public List<SubwordPiece> encode(CharSequence text) {
     if (text == null) {
@@ -326,11 +330,21 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     return out;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if {@code text} is null.
+   */
   @Override
   public CharSequence normalize(CharSequence text) {
     return normalizeAligned(text).normalized();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if {@code text} is null.
+   */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     if (text == null) {
@@ -376,6 +390,17 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     return new AlignedText(text, normalized, builder.build(input.charLength()));
   }
 
+  /**
+   * Emits the pending alignment group as a replace run, preceded by a deletion for any original
+   * text skipped before it, and returns the advanced cursor.
+   *
+   * @param builder   The alignment builder to append to.
+   * @param cursor    The original-text offset reached so far.
+   * @param origStart The inclusive original-text start of the group.
+   * @param origEnd   The exclusive original-text end of the group.
+   * @param chars     The number of normalized chars in the group; zero flushes nothing.
+   * @return The original-text offset after the group.
+   */
   private static int flushGroup(Alignment.Builder builder, int cursor, int origStart, int origEnd,
                                 int chars) {
     if (chars == 0) {
@@ -480,6 +505,12 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     return types[id] == TYPE_BYTE;
   }
 
+  /**
+   * Verifies that an id is a valid vocabulary id.
+   *
+   * @param id The id to check.
+   * @throws IllegalArgumentException Thrown if {@code id} is outside {@code [0, vocabularySize())}.
+   */
   private void checkId(int id) {
     if (id < 0 || id >= pieces.length) {
       throw new IllegalArgumentException(
@@ -507,6 +538,12 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     }
   }
 
+  /**
+   * Parses a byte-fallback piece string of the form {@code <0xAB>} into its byte value.
+   *
+   * @param piece The piece string.
+   * @return The byte value in {@code [0, 255]}, or {@code -1} when the string is not a byte piece.
+   */
   private static int parseBytePiece(String piece) {
     if (piece.length() != 6 || !piece.startsWith("<0x") || piece.charAt(5) != '>') {
       return -1;
