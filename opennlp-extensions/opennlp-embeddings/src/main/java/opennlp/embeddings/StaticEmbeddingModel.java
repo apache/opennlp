@@ -90,9 +90,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private static final List<String> SENTENCEPIECE_MODEL_FILE_NAMES =
       List.of("sentencepiece.bpe.model", "spiece.model", "tokenizer.model");
   private static final int[] NO_EXCLUDED_ROWS = new int[0];
-  // Never meaningful as a "similar word" result. Includes [PAD] and [MASK], which a distilled
-  // table keeps although text never tokenizes to them, so they would otherwise surface as
-  // neighbors.
+  // Excluded from neighbor results, including [PAD] and [MASK] that a distilled table keeps.
   private static final Set<String> WORDPIECE_SPECIAL_TOKENS =
       Set.of(WordpieceTokenizer.BERT_CLS_TOKEN, WordpieceTokenizer.BERT_SEP_TOKEN,
           WordpieceTokenizer.BERT_UNK_TOKEN, "[PAD]", "[MASK]");
@@ -104,13 +102,10 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private final int dimension;
   private final EmbeddingVocabulary vocabulary;
   private final SubwordTokenizer tokenizer;
-  // Tokenizer-id-space test for pieces that are never pooled: the WordPiece frame and unknown
-  // pieces, or a SentencePiece model's control and unknown pieces (whose piece string is the
-  // unmatched surface text, not a vocabulary entry).
+  // Tokenizer-id test for pieces that are never pooled (frame, control, and unknown pieces).
   private final IntPredicate skipPieceId;
   private final boolean normalize;
-  // Per-row L2 norms and special-token mask, precomputed at load time so the neighbor scan
-  // does no per-row square root or string hashing.
+  // Per-row L2 norms and special-token mask, precomputed at load time for the neighbor scan.
   private final double[] rowNorms;
   private final boolean[] specialRows;
 
@@ -324,10 +319,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     }
     final WordpieceEncoder tokenizer =
         wordpieceEncoder(vocabulary, casing == Casing.UNCASED, unknownId);
-    // The encoder frames every encoding with [CLS] ... [SEP], and pooling skips that frame. When
-    // the distillation kept the frame rows, skip them by their own ids; when it dropped them,
-    // wordpieceEncoder framed with the unknown id instead, so skipping the unknown id removes
-    // them. A negative id is the "absent" sentinel and matches no emitted piece.
+    // Pooling skips the [CLS]/[SEP] frame by id; an absent frame maps to the unknown id, which
+    // is skipped the same way. A negative id is the absent sentinel and matches no emitted piece.
     final int classificationId = vocabulary.id(WordpieceTokenizer.BERT_CLS_TOKEN);
     final int separatorId = vocabulary.id(WordpieceTokenizer.BERT_SEP_TOKEN);
     final IntPredicate skipPieceId =
