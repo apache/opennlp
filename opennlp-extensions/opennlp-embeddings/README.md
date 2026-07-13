@@ -110,9 +110,16 @@ Two seams keep the module small. `SubwordTokenizer` is the tokenization seam: th
 
 ## Performance
 
-A static table wins on speed and footprint because there is no model forward pass: the hot path is a vocabulary lookup, a handful of vector adds, and one normalization. The module ships a JMH benchmark (`StaticEmbeddingModelBenchmark`) that measures `embed()` and `mostSimilar()` throughput, so you can reproduce numbers on your own hardware and model.
+A static table wins on speed and footprint because there is no model forward pass: the hot path is a vocabulary lookup, a handful of vector adds, and one normalization. The module ships a JMH benchmark (`StaticEmbeddingModelBenchmark`) that measures `embed()` and `mostSimilar()` throughput on a real model directory (`-p modelDir=/path/to/model`), so you can reproduce numbers on your own hardware and model.
 
-In our measurements on the potion-base-8M distilled table, the JVM path ran roughly an order of magnitude faster single-threaded than the model2vec Python reference on the same table, at around a fifth of the resident memory, with output vectors matching the reference within floating-point tolerance. Parity was established before any of the throughput work, so the speed is not bought with accuracy. Treat these as a starting expectation: results depend on the model, the text length distribution, and the hardware, so run the benchmark on the model you plan to use.
+Two things drive the numbers, and the benchmark separates them. `embed()` is tokenize-and-pool, so its cost tracks the text and the tokenizer, not the table size. `mostSimilar()` is a brute-force scan over every row, so its cost tracks the vocabulary size directly. A run comparing a small WordPiece table against the large multilingual SentencePiece table makes the split visible (throughput across all cores, one machine, indicative not publishable):
+
+| table | tokenizer, rows | `embed()` | `mostSimilar()` |
+| --- | --- | --- | --- |
+| potion-base-8M | WordPiece, 29.5k | ~295k ops/s | ~9,000 ops/s |
+| bge-m3 (distilled) | SentencePiece, 250k | ~1.47M ops/s | ~550 ops/s |
+
+So a large multilingual vocabulary is free for embedding and expensive for a full nearest-neighbor scan; that scan is where an approximate index earns its place once the table is large. Separately, on the potion-base-8M table the JVM path ran roughly an order of magnitude faster single-threaded than the model2vec Python reference at around a fifth of the resident memory, with output vectors matching the reference within floating-point tolerance, so the speed is not bought with accuracy. Treat all of these as a starting expectation and run the benchmark on the model you plan to use.
 
 ## Usage
 
@@ -185,5 +192,6 @@ For a multilingual SentencePiece table (for example one distilled from a bge-m3 
 
 ## See also
 
+- [`TRAINING.md`](TRAINING.md) for distilling your own table from a sentence-transformer teacher, including the multilingual SentencePiece worked example.
 - The Dev Manual chapter (`opennlp-docs/src/docbkx/embeddings.xml`) for the same material in the manual.
 - `opennlp-dl` for the contextual, ONNX-backed sentence vector path, which shares the `TextEmbedder` interface with this module.
