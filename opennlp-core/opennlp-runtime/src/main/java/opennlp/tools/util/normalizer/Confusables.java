@@ -26,7 +26,6 @@ import java.text.Normalizer;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Computes the Unicode confusable <em>skeleton</em> of text, following the skeleton algorithm
@@ -106,8 +105,6 @@ public final class Confusables {
         final int firstSemicolon = content.indexOf(';');
         final int secondSemicolon = content.indexOf(';', firstSemicolon + 1);
         if (firstSemicolon < 0 || secondSemicolon < 0) {
-          // A present-but-structurally-wrong line (fewer than two ';') is a hard error, never
-          // silently dropped.
           throw new IllegalArgumentException("Malformed confusables data in " + RESOURCE + " at line "
               + lineNumber + ": " + content);
         }
@@ -148,10 +145,12 @@ public final class Confusables {
    *
    * @param text The text to reduce.
    * @return The skeleton.
-   * @throws NullPointerException Thrown if {@code text} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public static String skeleton(CharSequence text) {
-    Objects.requireNonNull(text, "text must not be null");
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
     final Data d = DATA;
     final BitSet keys = d.keys();
 
@@ -197,11 +196,15 @@ public final class Confusables {
    *
    * @param left  The first string.
    * @param right The second string.
-   * @throws NullPointerException Thrown if {@code left} or {@code right} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code left} or {@code right} is {@code null}.
    */
   public static boolean confusable(CharSequence left, CharSequence right) {
-    Objects.requireNonNull(left, "left must not be null");
-    Objects.requireNonNull(right, "right must not be null");
+    if (left == null) {
+      throw new IllegalArgumentException("left must not be null");
+    }
+    if (right == null) {
+      throw new IllegalArgumentException("right must not be null");
+    }
     return skeleton(left).equals(skeleton(right));
   }
 }

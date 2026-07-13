@@ -633,8 +633,7 @@ public final class CharClass {
   }
 
   /**
-   * Validates that a parameter is not {@code null}, reporting {@link IllegalArgumentException} so
-   * that a null parameter and an invalid code point surface through the same exception type.
+   * Validates that a parameter is not {@code null}.
    *
    * @param value The parameter value to validate.
    * @param name The parameter name used in the error message.

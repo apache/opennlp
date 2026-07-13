@@ -486,9 +486,6 @@ public class CharClassTest {
 
   @Test
   void nullParametersAreRejectedWithIllegalArgumentException() {
-    // The whole class reports IllegalArgumentException for a null parameter rather than
-    // requireNonNull's NullPointerException, so an invalid parameter and an invalid code point
-    // surface through the same exception type (review).
     final CharClass ws = CharClass.whitespace();
     final CodePointSet nl = CodePointSet.of('\n');
     assertThrows(IllegalArgumentException.class, () -> CharClass.of(null, ' '));

@@ -21,9 +21,6 @@ package opennlp.tools.util.normalizer;
  *
  * <p>A {@code char} that is not a high surrogate is treated as its own code point, so BMP text
  * decodes without {@link Character#codePointAt(CharSequence, int)} on every step.</p>
- *
- * <p>Package-private on purpose: this is a decoding detail of the cursor passes in this package,
- * not part of the public API.</p>
  */
 final class CodePoints {
 
