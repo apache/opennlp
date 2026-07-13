@@ -19,7 +19,9 @@ package opennlp.embeddings;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -88,10 +90,12 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private static final List<String> SENTENCEPIECE_MODEL_FILE_NAMES =
       List.of("sentencepiece.bpe.model", "spiece.model", "tokenizer.model");
   private static final int[] NO_EXCLUDED_ROWS = new int[0];
-  // Never meaningful as a "similar word" result.
+  // Never meaningful as a "similar word" result. Includes [PAD] and [MASK], which a distilled
+  // table keeps although text never tokenizes to them, so they would otherwise surface as
+  // neighbors.
   private static final Set<String> WORDPIECE_SPECIAL_TOKENS =
       Set.of(WordpieceTokenizer.BERT_CLS_TOKEN, WordpieceTokenizer.BERT_SEP_TOKEN,
-          WordpieceTokenizer.BERT_UNK_TOKEN);
+          WordpieceTokenizer.BERT_UNK_TOKEN, "[PAD]", "[MASK]");
   private static final Set<String> SENTENCEPIECE_SPECIAL_TOKENS =
       Set.of("<s>", "</s>", "<pad>", "<unk>", "<mask>");
 
@@ -277,7 +281,9 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    *
    * @param vocabularyFile   The {@code vocab.txt} file: one token per line, line number is the
    *                         token's row id. Must not be {@code null}, must exist, and must
-   *                         contain the {@code [CLS]}, {@code [SEP]}, and {@code [UNK]} tokens.
+   *                         contain the {@code [UNK]} token. The {@code [CLS]} and {@code [SEP]}
+   *                         frame tokens are optional: a distilled table that dropped them (as
+   *                         Model2Vec does) still loads, because the frame is never pooled.
    * @param safetensorsFile  The {@code model.safetensors} file. Must not be {@code null} and
    *                         must exist, and must contain exactly one 2-D float tensor
    *                         (the embedding matrix) whose row count matches the vocabulary size.
@@ -310,18 +316,57 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     }
     final EmbeddingVocabulary vocabulary = EmbeddingVocabulary.fromVocabTxt(vocabularyFile);
     final Matrix matrix = readMatrix(vocabulary, safetensorsFile, vocabularyFile.toString());
+    final int unknownId = vocabulary.id(WordpieceTokenizer.BERT_UNK_TOKEN);
+    if (unknownId < 0) {
+      throw new IllegalArgumentException("Vocabulary " + vocabularyFile + " has no "
+          + WordpieceTokenizer.BERT_UNK_TOKEN + " token; a WordPiece embedding model needs an "
+          + "unknown token as the fallback for out-of-vocabulary text");
+    }
     final WordpieceEncoder tokenizer =
-        new WordpieceEncoder(vocabulary.orderedTokens(), casing == Casing.UNCASED);
-    // The encoder validated the frame tokens' presence, so these rows exist.
+        wordpieceEncoder(vocabulary, casing == Casing.UNCASED, unknownId);
+    // The encoder frames every encoding with [CLS] ... [SEP], and pooling skips that frame. When
+    // the distillation kept the frame rows, skip them by their own ids; when it dropped them,
+    // wordpieceEncoder framed with the unknown id instead, so skipping the unknown id removes
+    // them. A negative id is the "absent" sentinel and matches no emitted piece.
     final int classificationId = vocabulary.id(WordpieceTokenizer.BERT_CLS_TOKEN);
     final int separatorId = vocabulary.id(WordpieceTokenizer.BERT_SEP_TOKEN);
-    final int unknownId = vocabulary.id(WordpieceTokenizer.BERT_UNK_TOKEN);
     final IntPredicate skipPieceId =
-        id -> id == classificationId || id == separatorId || id == unknownId;
+        id -> id == unknownId || id == classificationId || id == separatorId;
     return new StaticEmbeddingModel(matrix.embeddings(), matrix.weights(), matrix.dimension(),
         vocabulary, tokenizer, skipPieceId, normalization == Normalization.L2,
         rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size()),
         specialRows(vocabulary, WORDPIECE_SPECIAL_TOKENS));
+  }
+
+  /**
+   * Builds the WordPiece encoder, caching {@code [CLS]} and {@code [SEP]} onto the unknown row
+   * when the distilled vocabulary dropped them. A static embedding table mean-pools its content
+   * pieces and never frames, so distillers routinely remove {@code [CLS]}/{@code [SEP]} from the
+   * table; the encoder still frames every encoding and needs an id for the frame, and pooling
+   * skips the frame regardless of its id, so pointing the absent frame tokens at the unknown row
+   * makes the model loadable without changing which pieces are pooled.
+   *
+   * @param vocabulary The matrix row vocabulary; must contain the unknown token.
+   * @param lowerCase  Whether the tokenizer lower-cases and strips accents.
+   * @param unknownId  The unknown token's row, reused as the frame id when a frame token is
+   *                   absent.
+   * @return The encoder.
+   */
+  private static WordpieceEncoder wordpieceEncoder(EmbeddingVocabulary vocabulary,
+                                                   boolean lowerCase, int unknownId) {
+    if (vocabulary.id(WordpieceTokenizer.BERT_CLS_TOKEN) >= 0
+        && vocabulary.id(WordpieceTokenizer.BERT_SEP_TOKEN) >= 0) {
+      return new WordpieceEncoder(vocabulary.orderedTokens(), lowerCase);
+    }
+    final List<String> tokens = vocabulary.orderedTokens();
+    final Map<String, Integer> ids = new HashMap<>(tokens.size() * 2);
+    for (int id = 0; id < tokens.size(); id++) {
+      ids.put(tokens.get(id), id);
+    }
+    ids.putIfAbsent(WordpieceTokenizer.BERT_CLS_TOKEN, unknownId);
+    ids.putIfAbsent(WordpieceTokenizer.BERT_SEP_TOKEN, unknownId);
+    return new WordpieceEncoder(ids, lowerCase, WordpieceTokenizer.BERT_CLS_TOKEN,
+        WordpieceTokenizer.BERT_SEP_TOKEN, WordpieceTokenizer.BERT_UNK_TOKEN);
   }
 
   /**
