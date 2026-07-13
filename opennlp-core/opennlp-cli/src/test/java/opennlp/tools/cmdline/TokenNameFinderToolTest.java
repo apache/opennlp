@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import opennlp.tools.cmdline.namefind.TokenNameFinderTool;
+import opennlp.tools.ml.AlgorithmType;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.NameSampleDataStream;
@@ -128,6 +129,8 @@ public class TokenNameFinderToolTest {
             StandardCharsets.ISO_8859_1);
 
     TrainingParameters params = new TrainingParameters();
+    // This test verifies CLI output, so keep its fixture independent of the default trainer.
+    params.put(Parameters.ALGORITHM_PARAM, AlgorithmType.PERCEPTRON.getAlgorithmType());
     params.put(Parameters.ITERATIONS_PARAM, 70);
     params.put(Parameters.CUTOFF_PARAM, 1);
 
