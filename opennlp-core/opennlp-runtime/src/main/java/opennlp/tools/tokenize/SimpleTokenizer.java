@@ -27,10 +27,6 @@ import opennlp.tools.util.StringUtil;
  * A basic {@link Tokenizer} implementation which performs tokenization
  * using character classes.
  * <p>
- * Since 3.0, the whitespace class is the Unicode {@code White_Space} set
- * ({@link StringUtil#isUnicodeWhitespace(int)}). With {@link #setKeepNewLines(boolean)}
- * enabled, line separator code points are returned as tokens of their own.
- * <p>
  * To obtain an instance of this tokenizer use the static final
  * {@link #INSTANCE} field.
  */
@@ -74,7 +70,7 @@ public class SimpleTokenizer extends AbstractTokenizer {
     char pc = 0;
     for (int ci = 0; ci < sl; ci++) {
       char c = s.charAt(ci);
-      if (StringUtil.isUnicodeWhitespace(c)) {
+      if (StringUtil.isWhitespace(c)) {
         charType = CharacterEnum.WHITESPACE;
       }
       else if (Character.isAlphabetic(c)) {
@@ -97,10 +93,9 @@ public class SimpleTokenizer extends AbstractTokenizer {
           start = ci;
         }
       }
-      if (keepNewLines && StringUtil.isLineSeparator(c)) {
-        // Use the separator's own position; start may point at stale content here.
-        tokens.add(new Span(ci, ci + 1));
-        start = ci + 1;
+      if (keepNewLines && isLineSeparator(c)) {
+        tokens.add(new Span(start, start + 1));
+        start = start + 1;
       }
       state = charType;
       pc = c;
@@ -109,6 +104,10 @@ public class SimpleTokenizer extends AbstractTokenizer {
       tokens.add(new Span(start, sl));
     }
     return tokens.toArray(new Span[0]);
+  }
+
+  private boolean isLineSeparator(char character) {
+    return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
   }
 
 }

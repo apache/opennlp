@@ -45,7 +45,6 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 /**
  * A command line tool that corrects spelling in text using a {@link SymSpellModel}.
@@ -137,13 +136,11 @@ public class CorrectTextTool extends BasicCmdLineTool {
     final int effectiveMax = Math.min(maxEditDistance, checker.maxEditDistance());
     String line;
     while ((line = in.readLine()) != null) {
-      final String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(line);
-      // A whitespace-only line keeps its place in the output as an empty line.
-      if (tokens.length == 0) {
+      if (line.isBlank()) {
         out.newLine();
         continue;
       }
-      for (String token : tokens) {
+      for (String token : line.trim().split("\\s+")) {
         final List<SuggestItem> suggestions =
             checker.lookup(token.toLowerCase(Locale.ROOT), verbosity, effectiveMax);
         final StringBuilder terms = new StringBuilder();

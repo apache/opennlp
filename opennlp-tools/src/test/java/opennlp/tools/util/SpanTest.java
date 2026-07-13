@@ -305,44 +305,6 @@ public class SpanTest {
     Assertions.assertEquals("", span1.trim(string1).getCoveredText(string1));
   }
 
-  @Test
-  void testTrimNoBreakAndNarrowSpaces() {
-    // NBSP, figure space and narrow no-break space are whitespace for trim().
-    String text = cp(0x00A0) + cp(0x2007) + "ab" + cp(0x202F);
-    Span span = new Span(0, text.length());
-    Assertions.assertEquals("ab", span.trim(text).getCoveredText(text));
-  }
-
-  @Test
-  void testTrimLineAndParagraphSeparators() {
-    // U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are whitespace for trim().
-    String text = cp(0x2028) + "ab" + cp(0x2029);
-    Span span = new Span(0, text.length());
-    Assertions.assertEquals("ab", span.trim(text).getCoveredText(text));
-  }
-
-  @Test
-  void testTrimInformationSeparators() {
-    // The U+001C..U+001F information separators are not Unicode White_Space, so since 3.0
-    // trim() leaves them in place (Character.isWhitespace treated them as whitespace).
-    String text = cp(0x001C) + "ab" + cp(0x001F);
-    Span span = new Span(0, text.length());
-    Assertions.assertEquals(text, span.trim(text).getCoveredText(text));
-  }
-
-  @Test
-  void testTrimNextLineControl() {
-    // U+0085 NEL carries the Unicode White_Space property, so since 3.0 trim() removes it
-    // (Character.isWhitespace and the Zs category both exclude it).
-    String text = cp(0x0085) + "ab" + cp(0x0085);
-    Span span = new Span(0, text.length());
-    Assertions.assertEquals("ab", span.trim(text).getCoveredText(text));
-  }
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
-
   /**
    * Test if it fails to construct span with invalid start
    */

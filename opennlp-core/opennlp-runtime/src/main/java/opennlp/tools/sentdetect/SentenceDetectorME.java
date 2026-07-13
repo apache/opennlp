@@ -186,7 +186,15 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
     return sentences;
   }
 
-  // Detector-wide whitespace (Unicode White_Space): detection, span mapping and the guard agree.
+  // The whitespace definition of the sentence detector: the Unicode White_Space set
+  // (OPENNLP-205). It drives both the detection loop of sentPosDetect (the delimiter-run skip
+  // heuristic and the placement of sentence-start positions) and the position-to-span mapping,
+  // so both stages agree on what separates sentences. Unlike the previously used
+  // StringUtil.isWhitespace, this covers the next line control (U+0085) and does not treat the
+  // U+001C..U+001F information separators as whitespace; around those characters the candidate
+  // positions themselves can differ from pre-OPENNLP-205 releases, not only the span edges.
+  // Both deltas are pinned in SentenceDetectorMESpanMappingTest. Model feature generation
+  // (SDContextGenerator) is not affected.
   private static final CharClass WHITESPACE = CharClass.whitespace();
 
   private int getFirstWS(CharSequence s, int pos) {
@@ -412,7 +420,7 @@ public class SentenceDetectorME implements SentenceDetector, Probabilistic {
            * That is, any letter or digit except: a whitespace, an apostrophe, or an opening round bracket.
            * This prevents mismatches from overlaps close to an actual sentence end.
            */
-            && (WHITESPACE.contains(prevChar) || isApostrophe(prevChar) || prevChar == '(')) {
+            && (Character.isWhitespace(prevChar) || isApostrophe(prevChar) || prevChar == '(')) {
           return false; // in case of a valid abbreviation: the (sentence) break is not accepted
         }
         // Try next occurrence of this abbreviation in the text

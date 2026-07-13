@@ -34,7 +34,6 @@ import opennlp.tools.cmdline.CLI;
 import opennlp.tools.cmdline.TerminateToolException;
 import opennlp.tools.stopword.StopwordFilter;
 import opennlp.tools.stopword.StopwordLists;
-import opennlp.tools.tokenize.WhitespaceTokenizer;
 
 /**
  * A command line tool that filters stop words from whitespace-separated
@@ -90,7 +89,7 @@ public final class StopwordFilterTool extends BasicCmdLineTool {
           writer.println();
           continue;
         }
-        final String[] tokens = WhitespaceTokenizer.INSTANCE.tokenize(line);
+        final String[] tokens = line.split("\\s+");
         final String[] kept = filter.filter(tokens);
         writer.println(String.join(" ", kept));
       }
