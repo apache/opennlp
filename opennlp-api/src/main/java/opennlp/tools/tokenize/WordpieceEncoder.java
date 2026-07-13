@@ -171,6 +171,11 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     return id;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException Thrown if {@code text} is null.
+   */
   @Override
   public List<SubwordPiece> encode(CharSequence text) {
     if (text == null) {
