@@ -127,6 +127,7 @@ final class SentencePieceNormalizer {
     private int to;
     private int consumed;
 
+    /** {@return whether this chunk is exactly one ASCII space byte} */
     boolean isSingleSpace() {
       return to - from == 1 && data[from] == ' ';
     }
@@ -304,6 +305,15 @@ final class SentencePieceNormalizer {
     chunk.consumed = charLength;
   }
 
+  /**
+   * Returns the byte length of the longest user-defined symbol that is a prefix of
+   * {@code input[from, inputLength)}.
+   *
+   * @param input       The UTF-8 input buffer.
+   * @param inputLength The number of valid bytes in {@code input}.
+   * @param from        The offset to match from.
+   * @return The matched length in bytes, or zero when no user-defined symbol matches.
+   */
   private int longestUserDefinedMatch(byte[] input, int inputLength, int from) {
     int node = userDefinedMatcher.root();
     int longest = 0;
@@ -364,6 +374,14 @@ final class SentencePieceNormalizer {
         || length != minimalUtf8Length(codePoint);
   }
 
+  /**
+   * Decodes the code point of a UTF-8 sequence of the given length.
+   *
+   * @param input  The UTF-8 input buffer.
+   * @param from   The offset of the lead byte.
+   * @param length The sequence length in bytes, from one to four.
+   * @return The decoded code point.
+   */
   private static int codePointAt(byte[] input, int from, int length) {
     return switch (length) {
       case 1 -> input[from] & 0x7F;
@@ -375,6 +393,13 @@ final class SentencePieceNormalizer {
     };
   }
 
+  /**
+   * Returns the number of bytes the shortest UTF-8 encoding of a code point uses, which detects
+   * overlong encodings.
+   *
+   * @param codePoint The code point.
+   * @return The minimal encoding length in bytes, from one to four.
+   */
   private static int minimalUtf8Length(int codePoint) {
     if (codePoint < 0x80) {
       return 1;

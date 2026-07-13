@@ -60,8 +60,8 @@ final class DoubleArrayTrie {
    *     key matches. Values are non-negative, so the result is negative only on no-match.
    */
   long longestPrefixMatch(byte[] key, int from, int to) {
-    // The JVM's own bounds checks guard the walk; a well-formed trie never leaves the array,
-    // so the translation below is the fail-loud path for corrupt data, not a hot branch.
+    // The JVM's own bounds checks guard the walk; the catch below translates an out-of-range unit
+    // reference from corrupt data into a loud failure.
     final int[] u = units;
     try {
       long result = -1;
