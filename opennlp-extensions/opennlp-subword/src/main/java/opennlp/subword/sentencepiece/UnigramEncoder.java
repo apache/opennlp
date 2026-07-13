@@ -72,8 +72,7 @@ final class UnigramEncoder {
     }
 
     // The best path ending at each byte position (exclusive end), interleaved as
-    // [startsAt, scoreBits, id] triples so a frontier update touches one cache line. Scores
-    // travel as raw float bits, a lossless round trip; all arithmetic happens on the floats.
+    // [startsAt, scoreBits, id] triples; scores travel as raw float bits, a lossless round trip.
     final int[] best = new int[3 * (size + 1)];
     for (int i = 0; i <= size; i++) {
       best[3 * i] = -1;

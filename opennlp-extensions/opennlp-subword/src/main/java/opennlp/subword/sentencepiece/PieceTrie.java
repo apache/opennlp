@@ -22,12 +22,10 @@ import java.util.Comparator;
 /**
  * An immutable byte-level trie over vocabulary pieces, packed into flat arrays.
  *
- * <p>Encoding walks it one byte at a time ({@link #step(int, byte)}) while scanning the input, so
- * every piece that starts at a given input position is enumerated in one forward pass; this is the
- * lattice-population step of subword segmentation. This step sits in the innermost loop of the
- * encoder, so wide nodes (the root and the first level of a real vocabulary) dispatch through a
- * 256-entry direct table, one load per byte, and narrow nodes scan their short sorted label slice
- * linearly; both layouts enumerate identical transitions.</p>
+ * <p>Encoding walks it one byte at a time ({@link #step(int, byte)}), so every piece that starts
+ * at a given input position is enumerated in one forward pass. Wide nodes dispatch through a
+ * 256-entry direct table and narrow nodes scan a short sorted label slice; both layouts enumerate
+ * identical transitions.</p>
  */
 final class PieceTrie {
 
@@ -158,6 +156,15 @@ final class PieceTrie {
       this.order = order;
     }
 
+    /**
+     * Counts the nodes and edges of the subtrie for the sorted key range {@code [from, to)} at the
+     * given depth.
+     *
+     * @param from  The inclusive start index into {@code order}.
+     * @param to    The exclusive end index into {@code order}.
+     * @param depth The byte depth this node partitions on.
+     * @throws IllegalArgumentException Thrown if a key is defined more than once.
+     */
     void count(int from, int to, int depth) {
       nodeCount++;
       int i = from;
@@ -182,6 +189,7 @@ final class PieceTrie {
       }
     }
 
+    /** Allocates the packed arrays to the node and edge counts gathered by {@link #count}. */
     void allocate() {
       childStart = new int[nodeCount + 1];
       labels = new byte[edgeCount];
@@ -189,6 +197,16 @@ final class PieceTrie {
       values = new int[nodeCount];
     }
 
+    /**
+     * Fills the packed arrays for the sorted key range {@code [from, to)} at the given depth and
+     * returns the node id assigned to it.
+     *
+     * @param from  The inclusive start index into {@code order}.
+     * @param to    The exclusive end index into {@code order}.
+     * @param depth The byte depth this node partitions on.
+     * @return The id of the node created for this range.
+     * @throws IllegalArgumentException Thrown if a key is defined more than once.
+     */
     int fill(int from, int to, int depth) {
       final int node = nextNode++;
       values[node] = -1;

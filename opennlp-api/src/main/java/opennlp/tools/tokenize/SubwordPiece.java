@@ -22,12 +22,11 @@ import opennlp.tools.util.Span;
  * One subword unit produced by a {@link SubwordTokenizer}, carrying both the vocabulary view
  * (the piece string and its id) and the exact place in the caller's text it came from.
  *
- * <p>The piece string is in the tokenizer's internal, normalized form (for example, a leading
- * word-boundary marker instead of a space), so it is generally not a substring of the input.
- * {@code start} and {@code end} are UTF-16 offsets into the original input text, so the surface
- * that produced this piece is {@code text.subSequence(start, end)}. Pieces that carry no surface
- * of their own (control symbols, or the fill bytes of a byte-fallback expansion) report an empty
- * span, {@code start == end}.</p>
+ * <p>The piece string is in the tokenizer's normalized form, so it is generally not a substring of
+ * the input. {@code start} and {@code end} are UTF-16 offsets into the original text, so the
+ * surface that produced this piece is {@code text.subSequence(start, end)}. Pieces that carry no
+ * surface of their own, such as control symbols or the fill bytes of a byte-fallback expansion,
+ * report an empty span with {@code start == end}.</p>
  *
  * @param piece The piece in the vocabulary's normalized form; never null or empty.
  * @param id    The vocabulary id of the piece.

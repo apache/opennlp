@@ -23,19 +23,11 @@ import java.util.List;
 /**
  * Reads the binary {@code ModelProto} serialization of a SentencePiece {@code .model} file.
  *
- * <p>The format is standard protocol-buffer wire encoding of one flat message
- * ({@code sentencepiece_model.proto}, Apache License 2.0), so this reader walks the tag stream
+ * <p>The format is the standard protocol-buffer wire encoding of one flat message
+ * ({@code sentencepiece_model.proto}, Apache License 2.0). This reader walks the tag stream
  * directly and keeps only the fields inference needs: the pieces with scores and types, the
- * normalizer spec, the handful of trainer-spec fields that change runtime behavior, and the
- * embedded self-test samples. Unknown fields are skipped, malformed input fails loudly.</p>
- *
- * <p>This is a self-contained wire reader, not a performance optimization: model loading happens
- * once and is not on any hot path. It exists so this module reads a protobuf-encoded file without
- * adding a {@code protobuf-java} runtime dependency, which the project does not otherwise use, for
- * a load-time parse of a schema that is stable in practice. If OpenNLP ever takes on a real
- * protobuf dependency for other reasons, this hand-rolled reader should be retired in favor of it:
- * generate from {@code sentencepiece_model.proto} (or parse via the descriptor API) and delete
- * this class, since the dependency-avoidance rationale no longer holds.</p>
+ * normalizer spec, the trainer-spec fields that change runtime behavior, and the embedded
+ * self-test samples. Unknown fields are skipped, and malformed input fails loudly.</p>
  */
 final class ModelProtoReader {
 
@@ -82,6 +74,12 @@ final class ModelProtoReader {
     return model;
   }
 
+  /**
+   * Parses one {@code SentencePiece} sub-message and appends its piece, score, and type.
+   *
+   * @param model The model to append to.
+   * @param end   The exclusive end offset of the sub-message payload.
+   */
   private void piece(RawModel model, int end) {
     String piece = null;
     float score = 0;
@@ -107,6 +105,12 @@ final class ModelProtoReader {
     model.types.add(type);
   }
 
+  /**
+   * Parses the {@code TrainerSpec} sub-message, keeping the fields that change runtime behavior.
+   *
+   * @param model The model to populate.
+   * @param end   The exclusive end offset of the sub-message payload.
+   */
   private void trainerSpec(RawModel model, int end) {
     while (pos < end) {
       final long tag = varint();
@@ -120,6 +124,13 @@ final class ModelProtoReader {
     }
   }
 
+  /**
+   * Parses the {@code NormalizerSpec} sub-message: the precompiled character map and the
+   * whitespace-handling flags.
+   *
+   * @param model The model to populate.
+   * @param end   The exclusive end offset of the sub-message payload.
+   */
   private void normalizerSpec(RawModel model, int end) {
     while (pos < end) {
       final long tag = varint();
@@ -133,6 +144,13 @@ final class ModelProtoReader {
     }
   }
 
+  /**
+   * Parses the {@code SelfTestData} sub-message, collecting the input and expected-segmentation
+   * sample pairs.
+   *
+   * @param model The model to populate.
+   * @param end   The exclusive end offset of the sub-message payload.
+   */
   private void selfTestData(RawModel model, int end) {
     while (pos < end) {
       final long tag = varint();
@@ -158,7 +176,15 @@ final class ModelProtoReader {
     }
   }
 
-  // Returns the exclusive end offset of a length-delimited payload, verifying the wire type.
+  /**
+   * Reads the length prefix of a length-delimited field and returns the exclusive end offset of its
+   * payload.
+   *
+   * @param tag The field tag, whose wire type must be length-delimited.
+   * @return The exclusive end offset of the payload.
+   * @throws IllegalArgumentException Thrown if the wire type is wrong or the length runs past the
+   *     input.
+   */
   private int lenPayload(long tag) {
     if ((tag & 7) != WIRE_LEN) {
       throw malformed("field " + (tag >>> 3) + " is not length-delimited");
@@ -203,6 +229,13 @@ final class ModelProtoReader {
     return b;
   }
 
+  /**
+   * Reads a base-128 varint from the current position, advancing past it.
+   *
+   * @return The decoded value.
+   * @throws IllegalArgumentException Thrown if the input ends mid-varint or the varint exceeds 64
+   *     bits.
+   */
   private long varint() {
     long value = 0;
     for (int shift = 0; shift < 64; shift += 7) {
@@ -218,6 +251,13 @@ final class ModelProtoReader {
     throw malformed("varint exceeds 64 bits");
   }
 
+  /**
+   * Skips the value of an unrecognized field according to its wire type.
+   *
+   * @param tag The field tag.
+   * @throws IllegalArgumentException Thrown if the wire type is unsupported or the value runs past
+   *     the input.
+   */
   private void skip(long tag) {
     switch ((int) (tag & 7)) {
       case WIRE_VARINT -> varint();
