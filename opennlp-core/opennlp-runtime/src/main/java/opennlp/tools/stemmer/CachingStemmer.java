@@ -102,8 +102,7 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
     if (cached != null) {
       return cached;
     }
-    // toString() detaches the result from any buffer the delegate reuses; the result is not
-    // interned, which would defeat the bounded-memory guarantee on open vocabularies.
+    // toString() copies the result out of any buffer the delegate reuses.
     final String stemmed = ts.delegate.stem(key).toString();
     ts.cache.put(key, stemmed);
     return stemmed;
@@ -145,8 +144,7 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
      */
     private ThreadState(Stemmer delegate, int capacity) {
       this.delegate = delegate;
-      // Access-ordered for LRU iteration; sized in double arithmetic against the 0.75 load factor
-      // so a full cache never rehashes, with the clamp bounding the eager allocation.
+      // Access-ordered for LRU eviction.
       this.cache = new LinkedHashMap<>((int) Math.min(capacity / 0.75d + 1.0d, 4096.0d),
           0.75f, true) {
         @Override

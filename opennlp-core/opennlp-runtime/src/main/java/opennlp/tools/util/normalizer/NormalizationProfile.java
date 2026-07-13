@@ -83,9 +83,8 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
    * Returns a matching analyzer for this language: NFC, case folding, the language's
    * {@linkplain #accentFold() diacritic fold} when it has one, then stemming. The returned
    * analyzer is thread-safe, and repeated words resolve from a bounded per-thread stem cache
-   * instead of being re-stemmed (natural text is Zipf-distributed, so most tokens are cache
-   * hits). The cache is keyed to the thread, so build the analyzer once and reuse it from
-   * threads that live across many calls, such as a fixed platform-thread pool.
+   * instead of being re-stemmed. The cache is keyed to the thread, so build the analyzer once
+   * and reuse it from threads that live across many calls, such as a fixed platform-thread pool.
    *
    * @return the analyzer.
    */

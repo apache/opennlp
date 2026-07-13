@@ -38,7 +38,6 @@ import opennlp.tools.stemmer.Stemmer;
 @ThreadSafe
 public class SnowballStemmer implements Stemmer {
 
-  // All per-thread routing is delegated, so the pattern lives in exactly one class.
   private final SharingStemmer sharing;
 
   /**
