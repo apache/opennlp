@@ -44,6 +44,12 @@ final class FlatJsonFields {
    * @throws IOException Thrown if reading the file fails.
    */
   static Boolean topLevelBoolean(Path file, String field) throws IOException {
+    if (file == null) {
+      throw new IllegalArgumentException("File must not be null");
+    }
+    if (field == null) {
+      throw new IllegalArgumentException("Field must not be null");
+    }
     final String json = Files.readString(file);
     final JsonCursor cursor = new JsonCursor(json, file.getFileName().toString());
     cursor.skipWhitespace();
