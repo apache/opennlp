@@ -55,6 +55,7 @@ public final class TermAnalyzer {
   private final Lemmatizer lemmatizer;
   private final WordTokenizer tokenizer;
 
+  /** Constructs an analyzer from the builder's configured chain, transforms, and engines. */
   private TermAnalyzer(Builder builder) {
     final List<Dimension> ordered = new ArrayList<>(builder.chain);
     Collections.sort(ordered); // pipeline order (enum declaration order)
@@ -188,9 +189,7 @@ public final class TermAnalyzer {
         }
         final String[] lemmas = lemmatizer.lemmatize(new String[] {input}, new String[] {posTag});
         if (lemmas == null || lemmas.length == 0 || lemmas[0] == null) {
-          // A contract-violating Lemmatizer must fail loud here: a null cached under LEMMA would
-          // read as "absent" in Term.at's lazy cache and recompute through normalized() forever,
-          // surfacing as a StackOverflowError far from the cause.
+          // A contract-violating Lemmatizer must fail loud here rather than caching a null lemma.
           throw new IllegalStateException(
               "The Lemmatizer returned no lemma for token '" + input + "'");
         }
@@ -217,6 +216,7 @@ public final class TermAnalyzer {
     private Lemmatizer lemmatizer;
     private WordTokenizer tokenizer = new WordTokenizer();
 
+    /** Creates an empty builder; use {@link TermAnalyzer#builder()}. */
     private Builder() {
     }
 
@@ -327,10 +327,8 @@ public final class TermAnalyzer {
     }
 
     /**
-     * Rejects configuring both case folds. {@link #fullCaseFold()} already includes case folding
-     * plus the expanding folds, so combining it with {@link #caseFold()} is always redundant
-     * double-folding rather than a meaningful configuration; fail loud instead of silently running
-     * both in canonical order.
+     * Rejects configuring both {@link #caseFold()} and {@link #fullCaseFold()}, since full case
+     * folding already includes case folding plus the expanding folds.
      *
      * @param adding the case-fold dimension being configured.
      * @throws IllegalStateException if the other case-fold dimension is already configured.

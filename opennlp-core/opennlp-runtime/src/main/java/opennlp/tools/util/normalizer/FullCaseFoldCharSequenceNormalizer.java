@@ -42,12 +42,9 @@ import java.util.Objects;
  * the {@link Alignment} from the folded text back to the input. A single cursor pass with no regular
  * expression.</p>
  *
- * <p>The {@code S} simple and {@code T} Turkic mappings are deliberately excluded, so the fold is the
- * language-neutral one (the Turkish dotless-i rule is not applied here). The fold matches precomposed
- * code points, so apply NFC composition first if the input may contain decomposed forms. Inside an
- * offset-aware pipeline that precondition cannot be established by a preceding rung, because NFC
- * reports no offsets and {@code TextNormalizer.Builder.buildAligned()} rejects it; feed the aligned
- * pipeline composed text, or accept that decomposed sequences pass through this fold unchanged.</p>
+ * <p>The {@code S} simple and {@code T} Turkic status mappings are excluded, so the Turkish and
+ * Azerbaijani dotless-i rule is not applied here. Input is expected in NFC: the fold matches
+ * precomposed code points, so decomposed sequences pass through unchanged.</p>
  */
 public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNormalizer {
 
@@ -60,7 +57,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
    * status rows of {@code CaseFolding.txt}. Loaded once when this class initializes, which
    * happens on first use.
    */
-  private static final Map<Integer, String> FOLDINGS = initFoldings();
+  private static final Map<Integer, String> FOLDINGS = Map.copyOf(initFoldings());
 
   private static final FullCaseFoldCharSequenceNormalizer INSTANCE =
       new FullCaseFoldCharSequenceNormalizer();
@@ -148,8 +145,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
         }
         if (!"C".equals(status) && !"F".equals(status)) {
           // An unrecognized status is not a known-and-skipped case (S/T above); treat it as
-          // corruption rather than silently dropping data, the same fail-loud contract as the
-          // sibling loaders (Confusables, WordBreakProperty).
+          // corruption rather than silently dropping data.
           throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
               + " at line " + lineNumber + ": unrecognized status '" + status + "' in: " + content);
         }

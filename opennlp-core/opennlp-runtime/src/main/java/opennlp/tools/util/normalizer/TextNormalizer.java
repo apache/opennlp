@@ -36,6 +36,7 @@ import java.util.Objects;
  */
 public final class TextNormalizer {
 
+  /** Prevents instantiation; use the static factory methods. */
   private TextNormalizer() {
   }
 
@@ -70,6 +71,7 @@ public final class TextNormalizer {
 
     private final List<CharSequenceNormalizer> steps = new ArrayList<>();
 
+    /** Creates an empty builder; use {@link TextNormalizer#builder()}. */
     private Builder() {
     }
 
@@ -135,18 +137,9 @@ public final class TextNormalizer {
     /**
      * {@return this builder with Unicode full case folding appended}
      *
-     * <p>Unlike {@link #caseFold()}, which lower cases, this applies the full case foldings of
-     * {@code CaseFolding.txt} including the expanding folds (sharp s to {@code ss}, the ligatures).
-     * It is offset-aware, so it composes into {@link #buildAligned()}.</p>
-     *
-     * <p>Combining this with {@link #caseFold()} is redundant: full case folding already lower
-     * cases everything the locale fold does. This builder composes rungs freely and does not
-     * enforce the exclusion; the opinionated {@code TermAnalyzer} layer does.</p>
-     *
-     * <p>The fold operates per code point and expects composed (NFC) input for the composed
-     * characters it maps; {@link #nfc()} cannot precede it inside {@link #buildAligned()}
-     * because NFC does not report offsets, so feed the aligned pipeline composed text or accept
-     * that decomposed sequences pass through unfolded.</p>
+     * <p>Applies the full case foldings of {@code CaseFolding.txt} including the expanding folds
+     * (sharp s to {@code ss}, the ligatures). It expects composed (NFC) input, since it maps per
+     * code point. Prefer {@link #caseFold()} when the plain lower-case fold is sufficient.</p>
      */
     public Builder fullCaseFold() {
       return add(Dimension.FULL_CASE_FOLD.defaultNormalizer());
@@ -175,18 +168,14 @@ public final class TextNormalizer {
     /**
      * {@return an offset-aware composition of the rungs added so far}
      *
-     * <p>Every rung must be an {@link OffsetAwareNormalizer}. Each per-code-point fold is one;
-     * the folds that delegate to {@link java.text.Normalizer} or to JDK case mapping (NFC, NFKC,
-     * accent folding, confusable folding, and case folding) cannot report their per-character edits
-     * and so are rejected here. The returned normalizer's
+     * <p>Every rung must be an {@link OffsetAwareNormalizer}. NFC, NFKC, accent folding, confusable
+     * folding, and case folding are rejected because they delegate to {@link java.text.Normalizer}
+     * or JDK case mapping and cannot report their per-character edits. The returned normalizer's
      * {@link OffsetAwareNormalizer#normalizeAligned(CharSequence)} maps a span found in the fully
-     * normalized text back to the original input through every stage, so a match in a normalized
-     * document reports its true offsets in the source.</p>
+     * normalized text back to the original input through every stage.</p>
      *
-     * @throws IllegalStateException Thrown if any rung cannot report an alignment (for example NFC,
-     *     NFKC, accent folding, confusable folding, or case folding, which delegate to
-     *     {@link java.text.Normalizer} or to JDK case mapping); the message names the offending
-     *     rung.
+     * @throws IllegalStateException Thrown if any rung cannot report an alignment; the message names
+     *     the offending rung.
      */
     public OffsetAwareNormalizer buildAligned() {
       final OffsetAwareNormalizer[] aligned = new OffsetAwareNormalizer[steps.size()];
@@ -204,6 +193,7 @@ public final class TextNormalizer {
       return new AlignedAggregateCharSequenceNormalizer(aligned);
     }
 
+    /** Appends a normalizer rung and returns this builder. */
     private Builder add(CharSequenceNormalizer normalizer) {
       steps.add(normalizer);
       return this;

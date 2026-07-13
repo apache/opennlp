@@ -101,9 +101,7 @@ public class FullCaseFoldCharSequenceNormalizerTest {
 
   @Test
   void statusRowOrderForTheSameSourceDoesNotMatter() {
-    // The real CaseFolding.txt gives some code points two rows for the same source: a loaded C/F
-    // row and a skipped S/T row, in either order (LATIN CAPITAL LETTER I has C then T; LATIN CAPITAL
-    // LETTER SHARP S has F then S). The skipped row must never erase the loaded mapping.
+    // Pins that a skipped S/T row never erases the loaded C/F mapping, in either row order.
     final String loadedThenSkipped = "0049; C; 0069; # loaded row first\n"
         + "0049; T; 0131; # skipped row second, must not overwrite\n";
     final String skippedThenLoaded = "1E9E; S; 00DF; # skipped row first, must not block the load\n"

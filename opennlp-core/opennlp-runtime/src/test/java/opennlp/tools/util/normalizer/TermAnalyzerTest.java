@@ -164,10 +164,7 @@ public class TermAnalyzerTest {
 
   @Test
   void testLemmatizerReturningNullFailsLoudlyInsteadOfOverflowing() {
-    // A contract-violating Lemmatizer that returns a null lemma must surface as a clear
-    // IllegalStateException. Before this guard the null was cached under LEMMA, read as "absent"
-    // by Term.at's lazy cache, and recomputed through normalized() forever, surfacing as a
-    // StackOverflowError far from the cause.
+    // Pins that a Lemmatizer returning a null lemma fails with a clear IllegalStateException.
     final Lemmatizer broken = new Lemmatizer() {
       @Override
       public String[] lemmatize(String[] tokens, String[] tags) {
