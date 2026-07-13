@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConfusablesTest {
@@ -118,5 +119,12 @@ public class ConfusablesTest {
     final String spoof = "p" + cp(0x0430) + "yp" + cp(0x0430) + "l";
     final TermAnalyzer analyzer = TermAnalyzer.builder().confusableFold().build();
     assertEquals(Confusables.skeleton("paypal"), analyzer.analyze(spoof).get(0).normalized());
+  }
+
+  @Test
+  void testNullArgumentsAreRejected() {
+    assertThrows(IllegalArgumentException.class, () -> Confusables.skeleton(null));
+    assertThrows(IllegalArgumentException.class, () -> Confusables.confusable(null, "a"));
+    assertThrows(IllegalArgumentException.class, () -> Confusables.confusable("a", null));
   }
 }
