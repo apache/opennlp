@@ -257,9 +257,6 @@ public class Span implements Comparable<Span>, Serializable {
   }
 
   /**
-   * Since 3.0, whitespace here is the Unicode {@code White_Space} set
-   * ({@link StringUtil#isUnicodeWhitespace(int)}).
-   *
    * @param text The {@link CharSequence text} to analyze.
    *
    * @return A copy of this {@link Span} with leading and trailing white spaces removed,
@@ -269,12 +266,12 @@ public class Span implements Comparable<Span>, Serializable {
 
     int newStartOffset = getStart();
 
-    for (int i = getStart(); i < getEnd() && StringUtil.isUnicodeWhitespace(text.charAt(i)); i++) {
+    for (int i = getStart(); i < getEnd() && StringUtil.isWhitespace(text.charAt(i)); i++) {
       newStartOffset++;
     }
 
     int newEndOffset = getEnd();
-    for (int i = getEnd(); i > getStart() && StringUtil.isUnicodeWhitespace(text.charAt(i - 1)); i--) {
+    for (int i = getEnd(); i > getStart() && StringUtil.isWhitespace(text.charAt(i - 1)); i--) {
       newEndOffset--;
     }
 

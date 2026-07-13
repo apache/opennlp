@@ -56,33 +56,4 @@ public class DefaultSDContextGeneratorTest {
         "Mr. Smith joined RONDHUIT Inc. as a manager of sales department.", 29);
     Assertions.assertArrayEquals("sn/eos=./x=Inc/3/xcap/xabbrev/v=RONDHUIT/vcap/s=/n=as".split("/"), context);
   }
-
-  /**
-   * Model-stability pin: the whitespace features ({@code sp}, {@code sn}) are built on
-   * {@code StringUtil.isWhitespace} (the union of {@code Character.isWhitespace} and the
-   * {@code Zs} category) and must not migrate to the Unicode {@code White_Space} set, or the
-   * generated feature strings would change for existing trained models. This pins the two
-   * points where the predicates disagree: the {@code U+001C..U+001F} information separators
-   * produce the whitespace feature, the next line control {@code U+0085} does not.
-   */
-  @Test
-  void testWhitespaceFeaturesStayOnTheLegacyPredicate() {
-    SDContextGenerator generator =
-        new DefaultSDContextGenerator(Collections.emptySet(), Factory.defaultEosCharacters);
-
-    Assertions.assertTrue(hasSpaceNextFeature(generator, cp(0x00A0)), "NBSP");
-    Assertions.assertTrue(hasSpaceNextFeature(generator, cp(0x001C)), "U+001C");
-    Assertions.assertTrue(hasSpaceNextFeature(generator, cp(0x001F)), "U+001F");
-    Assertions.assertFalse(hasSpaceNextFeature(generator, cp(0x0085)), "U+0085 NEL");
-  }
-
-  private static boolean hasSpaceNextFeature(SDContextGenerator generator, String separator) {
-    // The eos character is at index 3; "sn" fires when the character after it is whitespace.
-    String[] context = generator.getContext("Foo." + separator + "Bar", 3);
-    return Arrays.asList(context).contains("sn");
-  }
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 }

@@ -94,19 +94,6 @@ public class StringUtil {
     return UnicodeWhitespace.isWhitespace(charCode);
   }
 
-  /**
-   * Determines if the specified {@link Character} is a line separator: LF ({@code U+000A}),
-   * CR ({@code U+000D}), NEL ({@code U+0085}), LS ({@code U+2028}), or PS ({@code U+2029}).
-   *
-   * @param character The character to check.
-   *
-   * @return {@code true} if {@code character} is a line separator, {@code false} otherwise.
-   */
-  public static boolean isLineSeparator(char character) {
-    return character == '\n' || character == '\r'
-        || character == '\u0085' || character == '\u2028' || character == '\u2029';
-  }
-
 
   /**
    * Converts a {@link CharSequence} to lower case, independent of the current

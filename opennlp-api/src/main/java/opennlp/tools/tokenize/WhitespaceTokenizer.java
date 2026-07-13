@@ -27,10 +27,6 @@ import opennlp.tools.util.StringUtil;
  * A basic {@link Tokenizer} implementation which performs tokenization
  * using white spaces.
  * <p>
- * Since 3.0, whitespace is the Unicode {@code White_Space} set
- * ({@link StringUtil#isUnicodeWhitespace(int)}). With {@link #setKeepNewLines(boolean)}
- * enabled, line separator code points are returned as tokens of their own.
- * <p>
  * To obtain an instance of this tokenizer use the static final
  * {@link #INSTANCE} field.
  */
@@ -57,13 +53,13 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     // gather potential tokens
     int end = d.length();
     for (int i = 0; i < end; i++) {
-      if (StringUtil.isUnicodeWhitespace(d.charAt(i))) {
+      if (StringUtil.isWhitespace(d.charAt(i))) {
         if (inTok) {
           tokens.add(new Span(tokStart, i));
           inTok = false;
           tokStart = -1;
         }
-        if (keepNewLines && StringUtil.isLineSeparator(d.charAt(i))) {
+        if (keepNewLines && isLineSeparator(d.charAt(i))) {
           tokStart = i;
           tokens.add(new Span(tokStart, tokStart + 1));
           tokStart = -1;
@@ -81,6 +77,10 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     }
 
     return tokens.toArray(new Span[0]);
+  }
+
+  private boolean isLineSeparator(char character) {
+    return character == Character.LINE_SEPARATOR || character == Character.LETTER_NUMBER;
   }
 
 }
