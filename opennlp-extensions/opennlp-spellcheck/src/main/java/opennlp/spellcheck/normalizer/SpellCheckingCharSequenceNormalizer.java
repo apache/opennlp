@@ -48,34 +48,26 @@ import opennlp.tools.util.normalizer.CharSequenceNormalizer;
  *       input.</li>
  * </ul>
  *
- * <p>Several guards keep the corrector from "fixing" tokens that should be left as
- * they are (configurable through the {@link Builder}):</p>
- * <ul>
- *   <li>tokens shorter than {@code minTokenLength} are skipped;</li>
- *   <li>numeric tokens are skipped ({@code skipNumbers}, on by default);</li>
- *   <li>URL- and email-like tokens are skipped ({@code skipUrls}, on by default);</li>
- *   <li>a token whose lower-cased form is already in the dictionary is never
- *       changed (the engine returns it at edit distance {@code 0}).</li>
- * </ul>
+ * <p>Several guards, all configurable through the {@link Builder}, keep the corrector from
+ * "fixing" tokens that should be left as they are: tokens shorter than {@code minTokenLength}
+ * are skipped, numeric tokens are skipped when {@code skipNumbers} is set (on by default),
+ * URL- and email-like tokens are skipped when {@code skipUrls} is set (on by default), and a
+ * token whose lower-cased form is already in the dictionary is never changed.</p>
  *
- * <p><b>Casing.</b> Dictionaries are normally lower-cased, so lookups are performed on
- * the lower-cased token, and the original casing pattern is re-applied to the
- * correction: an all-upper token yields an all-upper correction, a leading-capital
- * token yields a leading-capital correction, otherwise the suggestion's own casing is
- * used. When no correction applies, the original token (including its casing and any
- * surrounding punctuation) is emitted unchanged.</p>
+ * <p><b>Casing.</b> Lookups are performed on the lower-cased token and the original casing
+ * pattern is re-applied to the correction: an all-upper token yields an all-upper correction,
+ * a leading-capital token yields a leading-capital correction, otherwise the suggestion's own
+ * casing is used. When no correction applies, the original token is emitted unchanged.</p>
  *
  * <p>This normalizer composes cleanly inside an
  * {@link AggregateCharSequenceNormalizer}; place it after noise-removing normalizers
  * (URL, emoji, shrink) so it sees clean tokens.</p>
  *
- * <p><b>Serialization.</b> {@link CharSequenceNormalizer} is {@link java.io.Serializable},
- * but the backing {@link SpellChecker} usually is not; it is therefore held in a
- * {@code transient} field and is {@code null} after Java deserialization. A deserialized
- * instance is inert until a checker is re-attached: obtain a working copy with the same
- * settings via {@link #withSpellChecker(SpellChecker)} (this matches how the engine is
- * rebuilt from a model rather than Java-serialized). Calling {@link #normalize} on an
- * instance with no checker throws {@link IllegalStateException}.</p>
+ * <p><b>Serialization.</b> The settings fields are serialized, but the backing
+ * {@link SpellChecker} is held in a {@code transient} field and is {@code null} after Java
+ * deserialization; re-attach a checker with {@link #withSpellChecker(SpellChecker)} to obtain
+ * a working copy with the same settings. Calling {@link #normalize} on an instance with no
+ * checker throws {@link IllegalStateException}.</p>
  */
 public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormalizer {
 
@@ -172,6 +164,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
         .build();
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     if (spellChecker == null) {
@@ -191,6 +184,14 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return normalizePerToken(input);
   }
 
+  /**
+   * Corrects the whole input as a phrase with {@link SpellChecker#lookupCompound}, repairing
+   * wrongly inserted or omitted spaces. Returns the input unchanged when it is blank or the
+   * engine offers no correction.
+   *
+   * @param input The text to correct; never null.
+   * @return The corrected phrase, or the input itself when nothing changed.
+   */
   private CharSequence normalizeCompound(String input) {
     if (input.isBlank()) {
       return input;
@@ -203,6 +204,13 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return corrected.isEmpty() ? input : corrected;
   }
 
+  /**
+   * Corrects each whitespace-delimited token independently, copying the whitespace runs
+   * between tokens verbatim so the shape of the line is kept.
+   *
+   * @param input The text to correct; never null.
+   * @return The text with each token corrected.
+   */
   private CharSequence normalizePerToken(String input) {
     final StringBuilder out = new StringBuilder(input.length());
     int i = 0;
@@ -301,6 +309,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return corrected;
   }
 
+  /** {@return whether {@code s} has more than one character and every letter in it is upper-case} */
   private static boolean isAllUpper(String s) {
     boolean sawLetter = false;
     for (int k = 0; k < s.length(); k++) {

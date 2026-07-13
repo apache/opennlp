@@ -33,14 +33,9 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
  * Extend this class to change the Language Detector behaviour,
  * such as the {@link LanguageDetectorContextGenerator}.
  * The default {@link DefaultLanguageDetectorContextGenerator} will use char n-grams of
- * size 1 to 3 and the following normalizers:
- * <ul>
- * <li> {@link EmojiCharSequenceNormalizer}
- * <li> {@link UrlCharSequenceNormalizer}
- * <li> {@link SocialMediaCharSequenceNormalizer}
- * <li> {@link NumberCharSequenceNormalizer}
- * <li> {@link ShrinkCharSequenceNormalizer}
- * </ul>
+ * size 1 to 3 and the {@link EmojiCharSequenceNormalizer}, {@link UrlCharSequenceNormalizer},
+ * {@link SocialMediaCharSequenceNormalizer}, {@link NumberCharSequenceNormalizer}, and
+ * {@link ShrinkCharSequenceNormalizer}.
  */
 public class LanguageDetectorFactory extends BaseToolFactory {
 

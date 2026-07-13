@@ -40,6 +40,7 @@ public class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNor
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     if (text == null) {

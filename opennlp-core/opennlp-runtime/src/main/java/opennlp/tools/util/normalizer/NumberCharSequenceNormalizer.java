@@ -32,6 +32,7 @@ public class NumberCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final NumberCharSequenceNormalizer INSTANCE = new NumberCharSequenceNormalizer();
 
+  /** {@return the shared, stateless instance} */
   public static NumberCharSequenceNormalizer getInstance() {
     return INSTANCE;
   }

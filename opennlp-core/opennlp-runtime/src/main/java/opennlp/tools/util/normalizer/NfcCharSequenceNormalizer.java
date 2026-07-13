@@ -38,6 +38,7 @@ public class NfcCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     if (text == null) {

@@ -73,6 +73,7 @@ public class CaseFoldCharSequenceNormalizer implements CharSequenceNormalizer {
     return Locale.ROOT.equals(locale) ? INSTANCE : new CaseFoldCharSequenceNormalizer(locale);
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     if (text == null) {

@@ -32,11 +32,9 @@ import opennlp.tools.util.ObjectStream;
  * (whitespace by default). Every token is spell-corrected independently and the tokens
  * are re-joined with the same delimiter.
  *
- * <p>This is the shape produced by OpenNLP tokenizers / token-sample formats and is
- * what the trainable components consume: a fixed sequence of tokens per element. Unlike
- * {@link SpellCorrectingObjectStream} in compound mode, this stream is
- * <em>token-count preserving</em> &ndash; it never splits or merges tokens, so the
- * corrected element stays aligned with any parallel annotation (tags, spans).</p>
+ * <p>This is the shape produced by OpenNLP tokenizers and token-sample formats, a fixed
+ * sequence of tokens per element. This stream is token-count preserving: it never splits or
+ * merges tokens, so the corrected element stays aligned with any parallel annotation.</p>
  *
  * <p>Correction always runs in
  * {@link SpellCheckingCharSequenceNormalizer.Mode#PER_TOKEN per-token} mode and reuses
@@ -60,9 +58,10 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    *
    * @param samples      the source token-line stream; must not be {@code null}
    * @param spellChecker the engine used to correct tokens; must not be {@code null}
+   * @throws NullPointerException if {@code samples} or {@code spellChecker} is {@code null}
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples, SpellChecker spellChecker) {
-    this(samples,
+    this(Objects.requireNonNull(samples, "samples must not be null"),
         SpellCheckingCharSequenceNormalizer.builder(
             Objects.requireNonNull(spellChecker, "spellChecker must not be null"))
             .mode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN).build(),
@@ -107,6 +106,7 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
     this.delimiter = delimiter;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String read() throws IOException {
     final String line = samples.read();
@@ -116,8 +116,7 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
     if (line.isEmpty()) {
       return line;
     }
-    // A plain literal split (no regex): equivalent to the former
-    // Pattern.compile(Pattern.quote(delimiter)).split(line, -1) plus re-joining.
+    // Split on the literal delimiter and re-join, correcting each non-empty token.
     final StringBuilder out = new StringBuilder(line.length());
     int from = 0;
     while (true) {

@@ -21,21 +21,13 @@ package opennlp.tools.util.normalizer;
  * user handles, retweet markers, emoticons, and repeated laughter. Every encounter will be
  * replaced by a whitespace.
  *
- * <p>Normalization runs in four passes:</p>
- * <ol>
- *   <li>hashtags and handles: a {@code #} or {@code @} followed by at least one non-whitespace
- *       character, together with the whole following non-whitespace run, becomes one space
- *       (whitespace here means tab, line feed, vertical tab, form feed, carriage return, or
- *       space);</li>
- *   <li>retweet markers: each sequence of {@code rt} units (case-insensitive, each followed by
- *       a space or colon) becomes one space when it starts on a word boundary;</li>
- *   <li>emoticons: eyes {@code :}, {@code ;} or {@code x}, an optional {@code -} nose, and a
- *       mouth out of {@code ( ) d o p} (case-insensitive), become one space, including inside
- *       words;</li>
- *   <li>laughter: a run of {@code h}/{@code j}, a run of vowels, and at least one repetition of
- *       the two runs' last characters, shrinks to those two characters twice
- *       ({@code "hahaha"} to {@code "haha"}), comparing ASCII case-insensitively.</li>
- * </ol>
+ * <p>Normalization runs in four passes: a {@code #} or {@code @} together with the following
+ * non-whitespace run becomes one space; each sequence of case-insensitive {@code rt} units,
+ * each followed by a space or colon, becomes one space when it starts on a word boundary; each
+ * emoticon (eyes {@code :}, {@code ;} or {@code x}, an optional {@code -} nose, and a mouth out
+ * of {@code ( ) d o p}, case-insensitive) becomes one space, including inside words. Finally,
+ * repeated laughter shrinks to two of its repeating units ({@code "hahaha"} to {@code "haha"}),
+ * comparing ASCII case-insensitively.</p>
  */
 public class SocialMediaCharSequenceNormalizer implements CharSequenceNormalizer {
 
@@ -43,6 +35,7 @@ public class SocialMediaCharSequenceNormalizer implements CharSequenceNormalizer
 
   private static final SocialMediaCharSequenceNormalizer INSTANCE = new SocialMediaCharSequenceNormalizer();
 
+  /** {@return the shared, stateless instance} */
   public static SocialMediaCharSequenceNormalizer getInstance() {
     return INSTANCE;
   }
@@ -146,10 +139,9 @@ public class SocialMediaCharSequenceNormalizer implements CharSequenceNormalizer
   /**
    * {@return whether the word boundary before {@code index} is blocked} The boundary is
    * blocked if the preceding code point is an ASCII word character, or is a non-spacing mark
-   * whose backwards base-character scan reaches a letter or digit. This matches the word
-   * boundary decision of the JDK 21 regular-expression engine; the backwards scan reads one
-   * char at a time, so it intentionally stops on the low surrogate of a
-   * supplementary-plane mark, exactly like that engine.
+   * whose backwards base-character scan reaches a letter or digit. The scan reads one char at
+   * a time and stops on the low surrogate of a supplementary-plane mark, which keeps the
+   * output byte-identical to earlier releases.
    *
    * @param text  The text to look into; never null.
    * @param index The index the boundary is checked before.

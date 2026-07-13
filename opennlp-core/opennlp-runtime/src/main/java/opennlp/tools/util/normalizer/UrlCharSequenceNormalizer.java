@@ -56,6 +56,7 @@ public class UrlCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final UrlCharSequenceNormalizer INSTANCE = new UrlCharSequenceNormalizer();
 
+  /** {@return the shared, stateless instance} */
   public static UrlCharSequenceNormalizer getInstance() {
     return INSTANCE;
   }

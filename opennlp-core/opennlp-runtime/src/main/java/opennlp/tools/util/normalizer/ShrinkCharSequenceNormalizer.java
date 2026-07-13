@@ -40,6 +40,7 @@ public class ShrinkCharSequenceNormalizer implements CharSequenceNormalizer {
 
   private static final ShrinkCharSequenceNormalizer INSTANCE = new ShrinkCharSequenceNormalizer();
 
+  /** {@return the shared, stateless instance} */
   public static ShrinkCharSequenceNormalizer getInstance() {
     return INSTANCE;
   }
