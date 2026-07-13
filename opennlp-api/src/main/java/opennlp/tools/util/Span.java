@@ -258,7 +258,7 @@ public class Span implements Comparable<Span>, Serializable {
 
   /**
    * Since 3.0, whitespace here is the Unicode {@code White_Space} set
-   * ({@link StringUtil#isUnicodeWhitespace(int)}); see OPENNLP-1875.
+   * ({@link StringUtil#isUnicodeWhitespace(int)}).
    *
    * @param text The {@link CharSequence text} to analyze.
    *

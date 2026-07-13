@@ -28,9 +28,8 @@ import opennlp.tools.util.StringUtil;
  * using white spaces.
  * <p>
  * Since 3.0, whitespace is the Unicode {@code White_Space} set
- * ({@link StringUtil#isUnicodeWhitespace(int)}); see OPENNLP-1875 for the delta to earlier
- * releases. With {@link #setKeepNewLines(boolean)} enabled, line separator code points are
- * returned as tokens of their own.
+ * ({@link StringUtil#isUnicodeWhitespace(int)}). With {@link #setKeepNewLines(boolean)}
+ * enabled, line separator code points are returned as tokens of their own.
  * <p>
  * To obtain an instance of this tokenizer use the static final
  * {@link #INSTANCE} field.
@@ -84,6 +83,9 @@ public class WhitespaceTokenizer extends AbstractTokenizer {
     return tokens.toArray(new Span[0]);
   }
 
+  /**
+   * Checks whether {@code character} is a line separator: LF, CR, NEL, LS, or PS.
+   */
   private boolean isLineSeparator(char character) {
     return character == '\n' || character == '\r'
         || character == '\u0085' || character == '\u2028' || character == '\u2029';

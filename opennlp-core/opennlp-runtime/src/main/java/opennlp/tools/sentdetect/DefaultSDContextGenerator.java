@@ -29,8 +29,8 @@ import opennlp.tools.util.StringUtil;
  * Generate event contexts for maxent decisions for sentence detection.
  * <p>
  * The whitespace checks deliberately stay on the frozen {@link StringUtil#isWhitespace(char)}
- * predicate: the generated feature strings are part of every trained sentence-detector model
- * (OPENNLP-1875). Pinned by {@code DefaultSDContextGeneratorTest}.
+ * predicate because the generated feature strings are part of every trained
+ * sentence-detector model.
  */
 public class DefaultSDContextGenerator implements SDContextGenerator {
 
