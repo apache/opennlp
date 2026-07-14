@@ -539,4 +539,79 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 			</para>
 		</section>
 	</section>
+	<section xml:id="tools.tokenizer.subword">
+		<title>Subword Tokenization</title>
+		<para>
+			Neural models usually operate on subword units drawn from a fixed vocabulary rather than
+			on words. The <code>SubwordTokenizer</code> interface in
+			<code>opennlp.tools.tokenize</code> covers this case: <code>encode</code> splits text into
+			pieces, and every returned <code>SubwordPiece</code> carries the piece string in the
+			model's normalized form, its vocabulary id, and the exact span of the original text it
+			came from. Because the segmentation runs after the model's own normalization, a piece is
+			generally not a substring of the input; the spans always refer to the caller's original
+			text, so annotations computed over the pieces can be mapped back without guesswork. The
+			<code>encodeToIds</code> and <code>encodeToPieces</code> methods return just the ids or
+			the piece strings when the spans are not needed. Implementations are safe for concurrent
+			use by multiple threads.
+		</para>
+		<section xml:id="tools.tokenizer.subword.sentencepiece">
+			<title>SentencePiece</title>
+			<para>
+				<code>SentencePieceTokenizer</code> in the <code>opennlp-subword</code> artifact
+				(package <code>opennlp.subword.sentencepiece</code>) runs a trained SentencePiece
+				<code>.model</code> file purely in Java, with no native library. The file itself
+				carries everything the class needs: the vocabulary with piece scores and types, the
+				segmentation algorithm (unigram language model or byte-pair encoding), and the text
+				normalizer the model was trained with. Loading is a one-time cost and the resulting
+				instance is immutable, so one tokenizer can be shared by any number of threads.
+				<programlisting language="java">
+<![CDATA[SentencePieceTokenizer tokenizer = SentencePieceTokenizer.load(Path.of("spiece.model"));
+
+for (SubwordPiece piece : tokenizer.encode("Subword pieces keep their original offsets.")) {
+  System.out.println(piece.piece() + " -> id " + piece.id()
+      + ", original text [" + piece.start() + ", " + piece.end() + ")");
+}
+
+int[] ids = tokenizer.encodeToIds("Ready for the embedding layer.");]]>
+				</programlisting>
+				The vocabulary can be inspected through <code>vocabularySize</code>,
+				<code>idToPiece</code>, <code>pieceToId</code>, and <code>score</code>, and the
+				<code>algorithm</code> method reports whether the model uses the unigram or the
+				byte-pair encoding algorithm.
+			</para>
+			<para>
+				The model's own normalizer is also exposed directly:
+				<code>SentencePieceTokenizer</code> implements <code>OffsetAwareNormalizer</code>, so
+				<code>normalize</code> applies the model's normalization rules to arbitrary text and
+				<code>normalizeAligned</code> additionally returns the character alignment described
+				in <xref linkend="tools.normalizer"/>. This is useful when other processing must see
+				text exactly as the subword model does.
+			</para>
+		</section>
+		<section xml:id="tools.tokenizer.subword.wordpiece">
+			<title>WordPiece</title>
+			<para>
+				<code>WordpieceEncoder</code> in <code>opennlp.tools.tokenize</code> runs the full
+				BERT tokenization pipeline: control character removal, whitespace normalization, CJK
+				isolation, optional lower casing with accent stripping, punctuation isolation, and
+				greedy longest-match wordpiece segmentation. It is constructed from the model's
+				vocabulary, conventionally the lines of a <code>vocab.txt</code> file, where a piece's
+				id is its line number.
+				<programlisting language="java">
+<![CDATA[List<String> vocabulary = Files.readAllLines(Path.of("vocab.txt"));
+
+WordpieceEncoder encoder = new WordpieceEncoder(vocabulary);        // uncased model
+WordpieceEncoder cased = new WordpieceEncoder(vocabulary, false);   // cased model
+
+List<SubwordPiece> pieces = encoder.encode("OpenNLP encodes text for BERT models.");
+int[] ids = encoder.encodeToIds("OpenNLP encodes text for BERT models.");]]>
+				</programlisting>
+				Every encoding is framed by the classification and separator pieces, which carry empty
+				spans at the text's boundaries, and words the vocabulary cannot cover become the
+				unknown piece. Models with other special tokens or with non-contiguous ids are
+				supported through the constructors taking explicit special tokens or a piece-to-id
+				map.
+			</para>
+		</section>
+	</section>
 </chapter>
