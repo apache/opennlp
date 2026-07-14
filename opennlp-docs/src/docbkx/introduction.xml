@@ -335,6 +335,29 @@ Arguments description:
                 the interface 'StringInterner' and specify this class via 'opennlp.interner.class'.
             </para>
         </section>
+        <section xml:id="intro.sysprops.whitespace">
+            <title>Whitespace Definition</title>
+            <para>
+                Tokenization, corpus format parsing, and feature generation classify whitespace
+                using the Unicode <code>White_Space</code> property by default. A small set of
+                models trained under OpenNLP's legacy whitespace definition (the union of
+                <code>Character.isWhitespace</code> and the Unicode <code>Zs</code> category)
+                need that definition instead to decode correctly.
+            </para>
+            <para>
+                Users may switch to the legacy definition by setting the following system
+                property:
+                <screen>
+<![CDATA[-Dopennlp.whitespace.mode=LEGACY]]>
+                </screen>
+            </para>
+            <para>
+                Accepted values are <code>LEGACY</code> and <code>UNICODE</code> (the default),
+                case-insensitive; any other value throws an <code>IllegalArgumentException</code>.
+                The setting applies process-wide, so training and decoding of a given model must
+                use the same value. Legacy support is scheduled for removal in 4.0.
+            </para>
+        </section>
     </section>
 
 </chapter>

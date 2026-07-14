@@ -17,8 +17,11 @@
 
 package opennlp.tools.tokenize;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import opennlp.tools.util.WhitespaceMode;
 
 /**
  * Tests for the {@link SimpleTokenizer} class.
@@ -27,6 +30,15 @@ public class SimpleTokenizerTest {
 
   // The SimpleTokenizer is thread safe
   private final SimpleTokenizer mTokenizer = SimpleTokenizer.INSTANCE;
+
+  /**
+   * Restores {@link WhitespaceMode} property resolution after each test, so no mode
+   * state leaks.
+   */
+  @AfterEach
+  void resetWhitespaceMode() {
+    WhitespaceMode.reset();
+  }
 
   /**
    * Tests if it can tokenize whitespace separated tokens.
@@ -145,5 +157,41 @@ public class SimpleTokenizerTest {
     Assertions.assertEquals("المشروع", tokenizedText[2]);
     Assertions.assertEquals("بنجاح", tokenizedText[3]);
     Assertions.assertEquals(".", tokenizedText[4]);
+  }
+
+  /**
+   * Under the default {@link WhitespaceMode#UNICODE}, the next line control ({@code U+0085})
+   * separates tokens like whitespace, and the information separators ({@code U+001C..U+001F})
+   * do not.
+   */
+  @Test
+  void testNextLineControlIsWhitespaceByDefault() {
+    WhitespaceMode.reset();
+
+    char nextLine = (char) 0x0085;
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        mTokenizer.tokenize("a" + nextLine + "b"));
+
+    char infoSeparator = (char) 0x001C;
+    Assertions.assertArrayEquals(new String[] {"a", String.valueOf(infoSeparator), "b"},
+        mTokenizer.tokenize("a" + infoSeparator + "b"));
+  }
+
+  /**
+   * Under {@link WhitespaceMode#LEGACY}, the information separators ({@code U+001C..U+001F})
+   * separate tokens like whitespace, and the next line control ({@code U+0085}) does not,
+   * matching OpenNLP 1.x/2.x tokenizer models.
+   */
+  @Test
+  void testInformationSeparatorsAreWhitespaceUnderLegacyMode() {
+    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
+
+    char infoSeparator = (char) 0x001C;
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        mTokenizer.tokenize("a" + infoSeparator + "b"));
+
+    char nextLine = (char) 0x0085;
+    Assertions.assertArrayEquals(new String[] {"a", String.valueOf(nextLine), "b"},
+        mTokenizer.tokenize("a" + nextLine + "b"));
   }
 }
