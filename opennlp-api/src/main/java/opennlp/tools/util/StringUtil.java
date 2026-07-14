@@ -29,47 +29,57 @@ public class StringUtil {
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
   /**
-   * Determines if the specified {@link Character} is a whitespace under OpenNLP's legacy
-   * definition: the union of {@link Character#isWhitespace(int)} and the Unicode {@code Zs}
-   * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
-   * {@code Character.isWhitespace} excludes.
+   * Determines if the specified {@link Character} is a whitespace under the active
+   * {@link WhitespaceMode}: the Unicode {@code White_Space} property by default, or, when
+   * the {@value WhitespaceMode#MODE_PROPERTY} system property selects
+   * {@link WhitespaceMode#LEGACY}, the union of {@link Character#isWhitespace(int)} and the
+   * Unicode {@code Zs} category ({@link Character#SPACE_SEPARATOR}) that OpenNLP 1.x and 2.x
+   * used.
    *
-   * <p>This is the whitespace definition of OpenNLP 1.x and 2.x. It is kept for feature
-   * generation, since the feature strings it produces are part of trained models; use
-   * {@link #isUnicodeWhitespace(char)} to classify user text.</p>
+   * <p>Tokenization, corpus format parsing, and feature generation all resolve whitespace
+   * through this method, so they share one {@link WhitespaceMode} for the life of the
+   * process; use {@link #isUnicodeWhitespace(char)} directly where the Unicode definition
+   * should apply unconditionally, such as user-text normalization with no trained-model
+   * dependency.</p>
    *
    * @param charCode The character to check.
    *
-   * @return {@code true} if {@code charCode} represents a white space, {@code false} otherwise.
+   * @return {@code true} if {@code charCode} represents a white space under the active
+   *     {@link WhitespaceMode}, {@code false} otherwise.
    */
   public static boolean isWhitespace(char charCode) {
-    return Character.isWhitespace(charCode)  ||
-        Character.getType(charCode) == Character.SPACE_SEPARATOR;
+    return WhitespaceMode.current() == WhitespaceMode.LEGACY
+        ? isLegacyWhitespace(charCode) : isUnicodeWhitespace(charCode);
   }
 
   /**
-   * Determines if the specified code point is a whitespace under OpenNLP's legacy
-   * definition: the union of {@link Character#isWhitespace(int)} and the Unicode {@code Zs}
-   * category ({@link Character#SPACE_SEPARATOR}), which adds the no-break spaces that
-   * {@code Character.isWhitespace} excludes.
-   *
-   * <p>This is the whitespace definition of OpenNLP 1.x and 2.x. It is kept for feature
-   * generation, since the feature strings it produces are part of trained models; use
-   * {@link #isUnicodeWhitespace(int)} to classify user text.</p>
+   * Determines if the specified code point is a whitespace under the active
+   * {@link WhitespaceMode}; see {@link #isWhitespace(char)} for details.
    *
    * @param charCode An int representation of a character to check.
    *
-   * @return {@code true} if {@code charCode} represents a white space, {@code false} otherwise.
+   * @return {@code true} if {@code charCode} represents a white space under the active
+   *     {@link WhitespaceMode}, {@code false} otherwise.
    */
   public static boolean isWhitespace(int charCode) {
-    return Character.isWhitespace(charCode)  ||
+    return WhitespaceMode.current() == WhitespaceMode.LEGACY
+        ? isLegacyWhitespace(charCode) : isUnicodeWhitespace(charCode);
+  }
+
+  /**
+   * The OpenNLP 1.x/2.x definition: {@link Character#isWhitespace(int)} or the Unicode
+   * {@code Zs} category.
+   */
+  private static boolean isLegacyWhitespace(int charCode) {
+    return Character.isWhitespace(charCode) ||
         Character.getType(charCode) == Character.SPACE_SEPARATOR;
   }
 
   /**
    * Determines if the specified {@link Character} is a whitespace under the Unicode
    * {@code White_Space} property; delegates to
-   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)}.
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)}. This is also
+   * what {@link #isWhitespace(char)} resolves to under the default {@link WhitespaceMode}.
    *
    * @param charCode The character to check.
    *
@@ -83,7 +93,8 @@ public class StringUtil {
   /**
    * Determines if the specified code point is a whitespace under the Unicode
    * {@code White_Space} property; delegates to
-   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)}.
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)}. This is also
+   * what {@link #isWhitespace(int)} resolves to under the default {@link WhitespaceMode}.
    *
    * @param charCode An int representation of a character to check.
    *
@@ -93,7 +104,6 @@ public class StringUtil {
   public static boolean isUnicodeWhitespace(int charCode) {
     return UnicodeWhitespace.isWhitespace(charCode);
   }
-
 
   /**
    * Converts a {@link CharSequence} to lower case, independent of the current

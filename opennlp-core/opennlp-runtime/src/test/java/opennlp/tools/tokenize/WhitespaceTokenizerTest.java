@@ -17,13 +17,25 @@
 
 package opennlp.tools.tokenize;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import opennlp.tools.util.WhitespaceMode;
 
 /**
  * Tests for the {@link WhitespaceTokenizer} class.
  */
 public class WhitespaceTokenizerTest {
+
+  /**
+   * Restores {@link WhitespaceMode} property resolution after each test, so no mode
+   * state leaks.
+   */
+  @AfterEach
+  void resetWhitespaceMode() {
+    WhitespaceMode.reset();
+  }
 
   @Test
   void testOneToken() {
@@ -97,5 +109,41 @@ public class WhitespaceTokenizerTest {
     Assertions.assertEquals(11, tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c").length);
     Assertions.assertArrayEquals(new String[] {"a", "\r", "\n", "\r", "\n", "b", "\r", "\n", "\r", "\n", "c"},
         tokenizer.tokenize("a\r\n\r\n b\r\n\r\n c"));
+  }
+
+  /**
+   * Under the default {@link WhitespaceMode#UNICODE}, the next line control ({@code U+0085})
+   * separates tokens like whitespace, and the information separators ({@code U+001C..U+001F})
+   * do not.
+   */
+  @Test
+  void testNextLineControlIsWhitespaceByDefault() {
+    WhitespaceMode.reset();
+
+    char nextLine = (char) 0x0085;
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        WhitespaceTokenizer.INSTANCE.tokenize("a" + nextLine + "b"));
+
+    char infoSeparator = (char) 0x001C;
+    Assertions.assertArrayEquals(new String[] {"a" + infoSeparator + "b"},
+        WhitespaceTokenizer.INSTANCE.tokenize("a" + infoSeparator + "b"));
+  }
+
+  /**
+   * Under {@link WhitespaceMode#LEGACY}, the information separators ({@code U+001C..U+001F})
+   * separate tokens like whitespace, and the next line control ({@code U+0085}) does not,
+   * matching OpenNLP 1.x/2.x tokenizer models.
+   */
+  @Test
+  void testInformationSeparatorsAreWhitespaceUnderLegacyMode() {
+    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
+
+    char infoSeparator = (char) 0x001C;
+    Assertions.assertArrayEquals(new String[] {"a", "b"},
+        WhitespaceTokenizer.INSTANCE.tokenize("a" + infoSeparator + "b"));
+
+    char nextLine = (char) 0x0085;
+    Assertions.assertArrayEquals(new String[] {"a" + nextLine + "b"},
+        WhitespaceTokenizer.INSTANCE.tokenize("a" + nextLine + "b"));
   }
 }
