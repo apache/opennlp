@@ -45,6 +45,8 @@ public final class ArcStandardState {
   private final int[] heads;
   private final String[] relations;
   private final int[] assignedDependents;
+  private final int[] leftmostDependents;
+  private final int[] rightmostDependents;
 
   private int top;
   private int bufferFront;
@@ -68,6 +70,10 @@ public final class ArcStandardState {
     this.heads = new int[tokenCount];
     this.relations = new String[tokenCount];
     this.assignedDependents = new int[tokenCount];
+    this.leftmostDependents = new int[tokenCount];
+    this.rightmostDependents = new int[tokenCount];
+    java.util.Arrays.fill(this.leftmostDependents, NONE);
+    java.util.Arrays.fill(this.rightmostDependents, NONE);
   }
 
   /**
@@ -133,6 +139,12 @@ public final class ArcStandardState {
     relations[dependent] = relation;
     if (head >= 0) {
       assignedDependents[head]++;
+      if (leftmostDependents[head] == NONE || dependent < leftmostDependents[head]) {
+        leftmostDependents[head] = dependent;
+      }
+      if (rightmostDependents[head] == NONE || dependent > rightmostDependents[head]) {
+        rightmostDependents[head] = dependent;
+      }
     }
   }
 
@@ -192,10 +204,50 @@ public final class ArcStandardState {
    * @throws IllegalArgumentException Thrown if {@code index} is out of range.
    */
   public int assignedDependents(int index) {
+    checkTokenIndex(index);
+    return assignedDependents[index];
+  }
+
+  private void checkTokenIndex(int index) {
     if (index < 0 || index >= tokenCount) {
       throw new IllegalArgumentException("token index out of range: " + index);
     }
-    return assignedDependents[index];
+  }
+
+  /**
+   * Retrieves the leftmost dependent attached to a token so far.
+   *
+   * @param index The zero-based token index. Must be within {@code [0, tokenCount)}.
+   * @return The dependent's token index, or {@link #NONE} when none is attached.
+   * @throws IllegalArgumentException Thrown if {@code index} is out of range.
+   */
+  public int leftmostDependent(int index) {
+    checkTokenIndex(index);
+    return leftmostDependents[index];
+  }
+
+  /**
+   * Retrieves the rightmost dependent attached to a token so far.
+   *
+   * @param index The zero-based token index. Must be within {@code [0, tokenCount)}.
+   * @return The dependent's token index, or {@link #NONE} when none is attached.
+   * @throws IllegalArgumentException Thrown if {@code index} is out of range.
+   */
+  public int rightmostDependent(int index) {
+    checkTokenIndex(index);
+    return rightmostDependents[index];
+  }
+
+  /**
+   * Retrieves the relation a token was attached under, when it has been attached.
+   *
+   * @param index The zero-based token index. Must be within {@code [0, tokenCount)}.
+   * @return The relation label, or {@code null} when the token is still unattached.
+   * @throws IllegalArgumentException Thrown if {@code index} is out of range.
+   */
+  public String assignedRelation(int index) {
+    checkTokenIndex(index);
+    return relations[index];
   }
 
   /**
