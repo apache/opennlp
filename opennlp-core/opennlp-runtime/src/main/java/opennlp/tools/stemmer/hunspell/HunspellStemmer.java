@@ -100,6 +100,19 @@ public class HunspellStemmer implements Stemmer {
       if (flagSets != null && HunspellDictionary.hasFlag(flagSets, suffix.flag())) {
         analyses.add(stem);
       }
+      for (final Affix inner : dictionary.suffixes()) {
+        if (!inner.allowsContinuation(suffix.flag())) {
+          continue;
+        }
+        final String doubleStem = removeSuffix(stem, inner);
+        if (doubleStem == null) {
+          continue;
+        }
+        final List<int[]> innerFlags = dictionary.lookup(doubleStem);
+        if (innerFlags != null && HunspellDictionary.hasFlag(innerFlags, inner.flag())) {
+          analyses.add(doubleStem);
+        }
+      }
     }
     for (final Affix prefix : dictionary.prefixes()) {
       final String stem = removePrefix(word, prefix);

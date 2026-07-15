@@ -118,6 +118,27 @@ public class HunspellStemmerTest {
   }
 
   @Test
+  void testTwofoldSuffixesThroughContinuationClasses() throws IOException {
+    final String affix = String.join("\n",
+        "SET UTF-8",
+        "SFX A Y 1",
+        "SFX A 0 er/B .",
+        "SFX B Y 1",
+        "SFX B 0 s .",
+        "");
+    final String words = String.join("\n", "1", "kind/A", "");
+    final HunspellDictionary dictionary = HunspellDictionary.load(
+        new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayInputStream(words.getBytes(StandardCharsets.UTF_8)));
+    final HunspellStemmer twofold = new HunspellStemmer(dictionary);
+
+    Assertions.assertEquals("kind", twofold.stem("kinder").toString());
+    Assertions.assertEquals("kind", twofold.stem("kinders").toString());
+    // B alone never applies: no entry carries it directly
+    Assertions.assertEquals("kinds", twofold.stem("kinds").toString());
+  }
+
+  @Test
   void testNumericFlagMode() throws IOException {
     final String affix = String.join("\n",
         "SET UTF-8",
