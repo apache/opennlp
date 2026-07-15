@@ -20,6 +20,8 @@ package opennlp.tools.relation;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * One extraction rule for {@link RelationAnnotator}: a dependency path shape between two
  * entity heads and the relation type to emit when the shape matches.
@@ -95,7 +97,7 @@ public record RelationPattern(String type, String path, String trigger) {
     final List<String> steps = new ArrayList<>();
     int start = -1;
     for (int i = 0; i <= path.length(); i++) {
-      if (i == path.length() || Character.isWhitespace(path.charAt(i))) {
+      if (i == path.length() || StringUtil.isWhitespace(path.charAt(i))) {
         if (start >= 0) {
           steps.add(path.substring(start, i));
           start = -1;
