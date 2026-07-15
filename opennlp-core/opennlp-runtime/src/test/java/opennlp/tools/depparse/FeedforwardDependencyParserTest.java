@@ -124,6 +124,25 @@ public class FeedforwardDependencyParserTest {
   }
 
   @Test
+  void testPretrainedSeedingAppliesAndValidates() throws IOException {
+    // near-zero learning keeps the seeded row observable after one epoch
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(4, 8, 1, 32, 1e-9, 0.0, 0.0, 1, 17L);
+    final float[] vector = {0.25f, -0.5f, 0.75f, -1.0f};
+    final FeedforwardDependencyModel seeded = FeedforwardDependencyTrainer.train(
+        ObjectStreamUtils.createObjectStream(corpus()), settings,
+        word -> "dog".equals(word) ? vector.clone() : null);
+    final int row = seeded.wordIds().get("dog");
+    for (int d = 0; d < vector.length; d++) {
+      assertEquals(vector[d], seeded.embeddings()[row][d], 1e-4);
+    }
+    assertThrows(IllegalArgumentException.class,
+        () -> FeedforwardDependencyTrainer.train(
+            ObjectStreamUtils.createObjectStream(corpus()), settings,
+            word -> new float[] {1.0f}));
+  }
+
+  @Test
   void testArgumentValidation() {
     assertThrows(IllegalArgumentException.class,
         () -> new FeedforwardDependencyParser(null));
