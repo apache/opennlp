@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.depparse.DependencyArc;
 import opennlp.tools.depparse.DependencySample;
+import opennlp.tools.util.InputStreamFactory;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,9 +34,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Tests that {@link ConlluDependencySampleStream} maps the basic dependency columns and
- * skips sentences without a usable annotation, including sentences whose multiword tokens
- * were merged by {@link ConlluStream}.
+ * Tests that the raw reader maps the basic dependency columns, keeps the syntactic
+ * words of multiword tokens while dropping the range line itself, and skips sentences
+ * without a usable annotation.
  */
 public class ConlluDependencySampleStreamTest {
 
@@ -67,14 +68,16 @@ public class ConlluDependencySampleStreamTest {
       line("2", "bark", "bark", "VERB", "VBP", "_", "0", "root", "_", "_"),
       "") + "\n";
 
+  private static InputStreamFactory factory() {
+    return () -> new ByteArrayInputStream(CONLLU.getBytes(StandardCharsets.UTF_8));
+  }
+
   private static ConlluDependencySampleStream stream() throws IOException {
-    return new ConlluDependencySampleStream(new ConlluStream(
-        () -> new ByteArrayInputStream(CONLLU.getBytes(StandardCharsets.UTF_8))),
-        ConlluTagset.U);
+    return new ConlluDependencySampleStream(factory(), ConlluTagset.U);
   }
 
   @Test
-  void testReadsSamplesAndSkipsUnusableSentences() throws IOException {
+  void testReadsSamplesKeepsContractionsAndSkipsUnusableSentences() throws IOException {
     try (ConlluDependencySampleStream samples = stream()) {
       final DependencySample first = samples.read();
       assertNotNull(first);
@@ -83,23 +86,57 @@ public class ConlluDependencySampleStreamTest {
       assertEquals(1, first.getGraph().headOf(0));
       assertEquals(DependencyArc.ROOT_HEAD, first.getGraph().headOf(1));
       assertEquals(3, first.getGraph().headOf(2));
-      assertEquals(1, first.getGraph().headOf(3));
       assertEquals("obj", first.getGraph().relationOf(3));
 
-      // the underscore-head sentence and the merged-contraction sentence are both skipped
+      // the underscore-head sentence is skipped; the contraction sentence is KEPT,
+      // with the range line dropped and its syntactic words intact
       final DependencySample second = samples.read();
       assertNotNull(second);
-      assertArrayEquals(new String[] {"Dogs", "bark"}, second.getTokens());
+      assertArrayEquals(new String[] {"in", "Haus"}, second.getTokens());
       assertEquals(1, second.getGraph().headOf(0));
+      assertEquals("case", second.getGraph().relationOf(0));
+
+      final DependencySample third = samples.read();
+      assertNotNull(third);
+      assertArrayEquals(new String[] {"Dogs", "bark"}, third.getTokens());
 
       assertNull(samples.read());
     }
   }
 
   @Test
-  void testNullTagsetThrows() {
+  void testResetRestartsTheStream() throws IOException {
+    try (ConlluDependencySampleStream samples = stream()) {
+      assertNotNull(samples.read());
+      samples.reset();
+      final DependencySample first = samples.read();
+      assertNotNull(first);
+      assertArrayEquals(new String[] {"He", "bought", "the", "bonds"}, first.getTokens());
+    }
+  }
+
+  @Test
+  void testXposTagsetSelectsTheOtherColumn() throws IOException {
+    try (ConlluDependencySampleStream samples =
+        new ConlluDependencySampleStream(factory(), ConlluTagset.X)) {
+      assertArrayEquals(new String[] {"PRP", "VBD", "DT", "NNS"},
+          samples.read().getTags());
+    }
+  }
+
+  @Test
+  void testMalformedLineFailsLoud() {
+    final InputStreamFactory bad = () -> new ByteArrayInputStream(
+        "1\ttoo\tfew\tcolumns\n".getBytes(StandardCharsets.UTF_8));
+    assertThrows(IOException.class,
+        () -> new ConlluDependencySampleStream(bad, ConlluTagset.U).read());
+  }
+
+  @Test
+  void testValidation() {
     assertThrows(IllegalArgumentException.class,
-        () -> new ConlluDependencySampleStream(new ConlluStream(
-            () -> new ByteArrayInputStream(CONLLU.getBytes(StandardCharsets.UTF_8))), null));
+        () -> new ConlluDependencySampleStream(null, ConlluTagset.U));
+    assertThrows(IllegalArgumentException.class,
+        () -> new ConlluDependencySampleStream(factory(), null));
   }
 }

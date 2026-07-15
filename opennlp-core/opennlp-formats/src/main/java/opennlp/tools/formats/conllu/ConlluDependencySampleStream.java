@@ -17,7 +17,10 @@
 
 package opennlp.tools.formats.conllu;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,55 +29,68 @@ import org.slf4j.LoggerFactory;
 
 import opennlp.tools.depparse.DependencyGraph;
 import opennlp.tools.depparse.DependencySample;
-import opennlp.tools.util.FilterObjectStream;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 /**
- * Reads {@link DependencySample samples} from a stream of {@link ConlluSentence sentences},
- * mapping the {@code HEAD} and {@code DEPREL} columns of the basic dependency annotation.
+ * Reads {@link DependencySample samples} directly from CoNLL-U content, mapping the
+ * {@code HEAD} and {@code DEPREL} columns of the basic dependency annotation.
  *
- * <p>Empty nodes carry no basic dependency annotation and are dropped; the remaining word
- * lines keep their one-based ids, which are shifted to the zero-based indices of
- * {@link DependencyGraph}. Sentences containing a multiword token are skipped entirely:
- * {@link ConlluStream} merges such a range with its syntactic words, so the dependency
- * annotation of those words is no longer recoverable. Sentences whose annotation is
- * incomplete or invalid, for example an underscore head, are skipped as well. Skips are
- * counted and the count is logged once the stream is exhausted.</p>
+ * <p>The file is parsed raw, deliberately not through {@link ConlluStream}: that stream
+ * merges multiword token ranges with their syntactic words, which suits the token and
+ * lemma views but destroys the dependency annotation of every sentence containing a
+ * contraction. Here range lines and empty nodes are dropped while their syntactic words
+ * are kept, so contraction-bearing sentences train and evaluate normally. Sentences
+ * whose annotation is incomplete or invalid, for example an underscore head, are
+ * skipped and counted; the count is logged once the stream is exhausted.</p>
  *
  * @since 3.0.0
  */
-public class ConlluDependencySampleStream
-    extends FilterObjectStream<ConlluSentence, DependencySample> {
+public class ConlluDependencySampleStream implements ObjectStream<DependencySample> {
 
   private static final Logger logger =
       LoggerFactory.getLogger(ConlluDependencySampleStream.class);
 
-  private final ConlluTagset tagset;
+  private static final int COLUMNS = 10;
+  private static final int FORM = 1;
+  private static final int UPOS = 3;
+  private static final int XPOS = 4;
+  private static final int HEAD = 6;
+  private static final int DEPREL = 7;
 
+  private final InputStreamFactory in;
+  private final int tagColumn;
+
+  private BufferedReader reader;
   private int skipped;
 
   /**
    * Initializes the stream.
    *
-   * @param samples The sentences to convert. Must not be {@code null}.
-   * @param tagset The tagset whose part-of-speech column feeds the sample tags. Must not
-   *               be {@code null}.
+   * @param in The CoNLL-U content. Must not be {@code null}.
+   * @param tagset The tagset whose part-of-speech column feeds the sample tags. Must
+   *               not be {@code null}.
+   * @throws IOException Thrown if opening the content fails.
    * @throws IllegalArgumentException Thrown if any parameter is {@code null}.
    */
-  public ConlluDependencySampleStream(ObjectStream<ConlluSentence> samples,
-      ConlluTagset tagset) {
-    super(samples);
+  public ConlluDependencySampleStream(InputStreamFactory in, ConlluTagset tagset)
+      throws IOException {
+    if (in == null) {
+      throw new IllegalArgumentException("in must not be null");
+    }
     if (tagset == null) {
       throw new IllegalArgumentException("tagset must not be null");
     }
-    this.tagset = tagset;
+    this.in = in;
+    this.tagColumn = tagset == ConlluTagset.U ? UPOS : XPOS;
+    this.reader = open();
   }
 
   @Override
   public DependencySample read() throws IOException {
-    ConlluSentence sentence;
-    while ((sentence = samples.read()) != null) {
-      final DependencySample sample = convert(sentence);
+    List<String[]> words;
+    while (!(words = nextSentence()).isEmpty()) {
+      final DependencySample sample = convert(words);
       if (sample != null) {
         return sample;
       }
@@ -89,35 +105,50 @@ public class ConlluDependencySampleStream
   }
 
   /**
+   * Reads the syntactic word lines of the next sentence: comments, multiword token
+   * ranges, and empty nodes are dropped; an empty list means the end of the content.
+   */
+  private List<String[]> nextSentence() throws IOException {
+    final List<String[]> words = new ArrayList<>();
+    String line;
+    while ((line = reader.readLine()) != null) {
+      if (line.isBlank()) {
+        if (!words.isEmpty()) {
+          return words;
+        }
+        continue;
+      }
+      if (line.charAt(0) == '#') {
+        continue;
+      }
+      final String[] fields = line.split("\t", -1);
+      if (fields.length < COLUMNS) {
+        throw new IOException("not a CoNLL-U word line: " + line);
+      }
+      final String id = fields[0];
+      if (id.indexOf('-') < 0 && id.indexOf('.') < 0) {
+        words.add(fields);
+      }
+    }
+    return words;
+  }
+
+  /**
    * Converts one sentence, or returns {@code null} when its annotation is unusable.
    */
-  private DependencySample convert(ConlluSentence sentence) {
-    final List<ConlluWordLine> words = new ArrayList<>();
-    for (final ConlluWordLine line : sentence.getWordLines()) {
-      final String id = line.getId();
-      if (id.indexOf('-') >= 0) {
-        // a merged multiword token: its syntactic words are gone, the sentence is unusable
-        return null;
-      }
-      if (id.indexOf('.') < 0) {
-        words.add(line);
-      }
-    }
-    if (words.isEmpty()) {
-      return null;
-    }
+  private DependencySample convert(List<String[]> words) {
     final int n = words.size();
     final String[] tokens = new String[n];
     final String[] tags = new String[n];
     final int[] heads = new int[n];
     final String[] relations = new String[n];
     for (int i = 0; i < n; i++) {
-      final ConlluWordLine word = words.get(i);
-      tokens[i] = word.getForm();
-      tags[i] = word.getPosTag(tagset);
-      relations[i] = word.getDeprel();
+      final String[] word = words.get(i);
+      tokens[i] = word[FORM];
+      tags[i] = word[tagColumn];
+      relations[i] = word[DEPREL];
       try {
-        heads[i] = Integer.parseInt(word.getHead()) - 1;
+        heads[i] = Integer.parseInt(word[HEAD]) - 1;
       } catch (NumberFormatException e) {
         return null;
       }
@@ -127,5 +158,22 @@ public class ConlluDependencySampleStream
     } catch (IllegalArgumentException e) {
       return null;
     }
+  }
+
+  @Override
+  public void reset() throws IOException, UnsupportedOperationException {
+    reader.close();
+    reader = open();
+    skipped = 0;
+  }
+
+  @Override
+  public void close() throws IOException {
+    reader.close();
+  }
+
+  private BufferedReader open() throws IOException {
+    return new BufferedReader(
+        new InputStreamReader(in.createInputStream(), StandardCharsets.UTF_8));
   }
 }
