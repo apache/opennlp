@@ -57,7 +57,25 @@ public final class MecabDictionary {
   record Category(String name, boolean invoke, boolean group, int length) {
   }
 
-  private final Map<String, List<WordEntry>> lexicon;
+  /** One node of the lexicon trie, keyed by the next surface character. */
+  private static final class TrieNode {
+    private final Map<Character, TrieNode> children = new HashMap<>();
+    private List<WordEntry> entries;
+  }
+
+  /** Receives one common-prefix match during {@link #prefixMatches}. */
+  interface PrefixMatchConsumer {
+
+    /**
+     * Accepts one match.
+     *
+     * @param length The matched surface length in characters.
+     * @param entries The lexicon entries for that surface.
+     */
+    void accept(int length, List<WordEntry> entries);
+  }
+
+  private final TrieNode lexicon;
   private final int maxSurfaceLength;
   private final short[] connectionCosts;
   private final int rightSize;
@@ -65,7 +83,7 @@ public final class MecabDictionary {
   private final String[] categoryOfChar;
   private final Map<String, List<WordEntry>> unknownEntries;
 
-  private MecabDictionary(Map<String, List<WordEntry>> lexicon, int maxSurfaceLength,
+  private MecabDictionary(TrieNode lexicon, int maxSurfaceLength,
       short[] connectionCosts, int rightSize, Map<String, Category> categories,
       String[] categoryOfChar, Map<String, List<WordEntry>> unknownEntries) {
     this.lexicon = lexicon;
@@ -150,8 +168,22 @@ public final class MecabDictionary {
     final Map<String, List<WordEntry>> unknown = new HashMap<>();
     readLexicon(directory.resolve("unk.def"), charset, unknown);
 
-    return new MecabDictionary(lexicon, maxSurface, costs, rightSize, categories,
-        categoryOfChar, unknown);
+    return new MecabDictionary(buildTrie(lexicon), maxSurface, costs, rightSize,
+        categories, categoryOfChar, unknown);
+  }
+
+  /** Folds the surface-keyed lexicon into a character trie for prefix search. */
+  private static TrieNode buildTrie(Map<String, List<WordEntry>> lexicon) {
+    final TrieNode root = new TrieNode();
+    for (final Map.Entry<String, List<WordEntry>> entry : lexicon.entrySet()) {
+      TrieNode node = root;
+      final String surface = entry.getKey();
+      for (int i = 0; i < surface.length(); i++) {
+        node = node.children.computeIfAbsent(surface.charAt(i), key -> new TrieNode());
+      }
+      node.entries = List.copyOf(entry.getValue());
+    }
+    return root;
   }
 
   /** Reads one lexicon-format CSV file; returns the longest surface seen. */
@@ -232,7 +264,33 @@ public final class MecabDictionary {
    * @return The entries, or {@code null} when the surface is not listed.
    */
   List<WordEntry> lookup(String surface) {
-    return lexicon.get(surface);
+    TrieNode node = lexicon;
+    for (int i = 0; i < surface.length() && node != null; i++) {
+      node = node.children.get(surface.charAt(i));
+    }
+    return node == null ? null : node.entries;
+  }
+
+  /**
+   * Reports every lexicon surface starting at a text position, walking the trie once
+   * with no substring allocation.
+   *
+   * @param text The text being segmented.
+   * @param from The position surfaces must start at.
+   * @param to The exclusive end of the searchable stretch.
+   * @param consumer Receives each match.
+   */
+  void prefixMatches(String text, int from, int to, PrefixMatchConsumer consumer) {
+    TrieNode node = lexicon;
+    for (int i = from; i < to; i++) {
+      node = node.children.get(text.charAt(i));
+      if (node == null) {
+        return;
+      }
+      if (node.entries != null) {
+        consumer.accept(i - from + 1, node.entries);
+      }
+    }
   }
 
   /** @return The longest surface form in the lexicon, bounding prefix enumeration. */
