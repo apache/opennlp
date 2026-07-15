@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class DependencyParserMETest {
 
+  private static DependencyModel model;
   private static DependencyParserME parser;
 
   private static DependencySample sample(String[] tokens, String[] tags, int[] heads,
@@ -64,8 +65,9 @@ public class DependencyParserMETest {
   static void trainParser() throws IOException {
     final TrainingParameters parameters = TrainingParameters.defaultParams();
     parameters.put(Parameters.CUTOFF_PARAM, 0);
-    parser = DependencyParserME.train(ObjectStreamUtils.createObjectStream(corpus()),
-        parameters);
+    model = DependencyParserME.train("eng",
+        ObjectStreamUtils.createObjectStream(corpus()), parameters);
+    parser = new DependencyParserME(model);
   }
 
   @Test
@@ -108,15 +110,40 @@ public class DependencyParserMETest {
 
   @Test
   void testConstructorRejectsNullModel() {
-    assertThrows(IllegalArgumentException.class, () -> new DependencyParserME(null));
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyParserME((DependencyModel) null));
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyParserME((opennlp.tools.ml.model.MaxentModel) null));
   }
 
   @Test
   void testTrainValidatesArguments() {
     assertThrows(IllegalArgumentException.class,
-        () -> DependencyParserME.train(null, TrainingParameters.defaultParams()));
+        () -> DependencyParserME.train("eng", null, TrainingParameters.defaultParams()));
     assertThrows(IllegalArgumentException.class,
-        () -> DependencyParserME.train(
+        () -> DependencyParserME.train("eng",
             ObjectStreamUtils.createObjectStream(corpus()), null));
+    assertThrows(IllegalArgumentException.class,
+        () -> DependencyParserME.train(null,
+            ObjectStreamUtils.createObjectStream(corpus()),
+            TrainingParameters.defaultParams()));
+  }
+
+  @Test
+  void testModelRoundTripThroughSerialization() throws IOException {
+    final java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+    model.serialize(out);
+    final DependencyModel reloaded = new DependencyModel(
+        new java.io.ByteArrayInputStream(out.toByteArray()));
+    final DependencyGraph parsed = new DependencyParserME(reloaded)
+        .parse(new String[] {"the", "dog", "barks"}, new String[] {"DT", "NN", "VBZ"});
+    assertEquals(DependencyGraph.of(new int[] {1, 2, -1},
+        new String[] {"det", "nsubj", "root"}), parsed);
+  }
+
+  @Test
+  void testModelRejectsNullParserModel() {
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyModel("eng", null, null));
   }
 }

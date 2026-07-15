@@ -19,6 +19,7 @@ package opennlp.tools.depparse;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import opennlp.tools.ml.EventTrainer;
 import opennlp.tools.ml.TrainerFactory;
@@ -45,7 +46,21 @@ public class DependencyParserME implements DependencyParser {
   private final DependencyContextGenerator contextGenerator;
 
   /**
-   * Initializes a {@link DependencyParserME} with a trained transition model.
+   * Initializes a {@link DependencyParserME} from a {@link DependencyModel}.
+   *
+   * @param model The model to parse with. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null}.
+   */
+  public DependencyParserME(DependencyModel model) {
+    if (model == null) {
+      throw new IllegalArgumentException("model must not be null");
+    }
+    this.model = model.getParserModel();
+    this.contextGenerator = new DependencyContextGenerator();
+  }
+
+  /**
+   * Initializes a {@link DependencyParserME} with a raw transition model.
    *
    * @param model The transition classification model. Must not be {@code null}.
    * @throws IllegalArgumentException Thrown if {@code model} is {@code null}.
@@ -109,32 +124,37 @@ public class DependencyParserME implements DependencyParser {
   }
 
   /**
-   * Trains a greedy arc-standard parser from dependency samples.
+   * Trains a greedy arc-standard parser model from dependency samples.
    *
    * <p>Non-projective samples have no arc-standard derivation and are skipped during
    * event generation.</p>
    *
+   * @param languageCode The ISO language code of the training data. Must not be
+   *                     {@code null}.
    * @param samples The training samples. Must not be {@code null}.
    * @param parameters The {@link TrainingParameters}. Must not be {@code null} and must
    *                   select an event model trainer.
-   * @return A trained {@link DependencyParserME}. Never {@code null}.
+   * @return A trained {@link DependencyModel}. Never {@code null}.
    * @throws IOException Thrown if reading the samples fails.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null} or the
    *         configured trainer is not an event model trainer.
    */
-  public static DependencyParserME train(ObjectStream<DependencySample> samples,
-      TrainingParameters parameters) throws IOException {
-    if (samples == null || parameters == null) {
-      throw new IllegalArgumentException("samples and parameters must not be null");
+  public static DependencyModel train(String languageCode,
+      ObjectStream<DependencySample> samples, TrainingParameters parameters)
+      throws IOException {
+    if (languageCode == null || samples == null || parameters == null) {
+      throw new IllegalArgumentException(
+          "languageCode, samples and parameters must not be null");
     }
     final TrainerType trainerType = TrainerFactory.getTrainerType(parameters);
     if (!TrainerType.EVENT_MODEL_TRAINER.equals(trainerType)) {
       throw new IllegalArgumentException("Trainer type is not supported: " + trainerType);
     }
+    final Map<String, String> manifestInfoEntries = new HashMap<>();
     final EventTrainer<TrainingParameters> trainer =
-        TrainerFactory.getEventTrainer(parameters, new HashMap<>());
+        TrainerFactory.getEventTrainer(parameters, manifestInfoEntries);
     final ObjectStream<Event> events =
         new DependencyEventStream(samples, new DependencyContextGenerator());
-    return new DependencyParserME(trainer.train(events));
+    return new DependencyModel(languageCode, trainer.train(events), manifestInfoEntries);
   }
 }
