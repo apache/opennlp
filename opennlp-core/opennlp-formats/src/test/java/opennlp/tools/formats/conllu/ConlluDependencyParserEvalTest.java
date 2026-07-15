@@ -79,6 +79,6 @@ public class ConlluDependencyParserEvalTest {
 
   private static ConlluDependencySampleStream samples(Path conllu) throws IOException {
     final InputStreamFactory in = new MarkableFileInputStreamFactory(conllu.toFile());
-    return new ConlluDependencySampleStream(new ConlluStream(in), ConlluTagset.U);
+    return new ConlluDependencySampleStream(in, ConlluTagset.U);
   }
 }
