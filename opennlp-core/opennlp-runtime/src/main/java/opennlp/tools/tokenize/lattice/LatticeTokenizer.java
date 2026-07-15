@@ -203,19 +203,14 @@ public class LatticeTokenizer implements Tokenizer {
   private List<Node> candidates(String text, int from, int to, int offset) {
     final int position = from + offset;
     final List<Node> candidates = new ArrayList<>();
-    final int longest = Math.min(dictionary.maxSurfaceLength(), to - position);
-    boolean lexiconMatch = false;
-    for (int length = 1; length <= longest; length++) {
-      final List<WordEntry> entries =
-          dictionary.lookup(text.substring(position, position + length));
-      if (entries == null) {
-        continue;
-      }
-      lexiconMatch = true;
+    final boolean[] matched = new boolean[1];
+    dictionary.prefixMatches(text, position, to, (length, entries) -> {
+      matched[0] = true;
       for (final WordEntry entry : entries) {
         candidates.add(new Node(position, position + length, entry, false));
       }
-    }
+    });
+    final boolean lexiconMatch = matched[0];
 
     final Category category = dictionary.categoryOf(text.charAt(position));
     if (!lexiconMatch || category.invoke()) {
