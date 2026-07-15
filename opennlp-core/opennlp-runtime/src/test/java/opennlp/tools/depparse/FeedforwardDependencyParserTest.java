@@ -125,6 +125,34 @@ public class FeedforwardDependencyParserTest {
   }
 
   @Test
+  void testRefinementKeepsToyPerformance() throws IOException {
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 60, 32, 0.05, 0.0, 0.0, 1, 17L);
+    final FeedforwardDependencyModel local = FeedforwardDependencyTrainer.train(
+        ObjectStreamUtils.createObjectStream(corpus()), settings);
+    final FeedforwardDependencyTrainer.Settings refineSettings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 2, 32, 0.01, 0.0, 0.0, 1, 17L);
+    final FeedforwardDependencyModel refined = FeedforwardDependencyTrainer.refine(
+        local, ObjectStreamUtils.createObjectStream(corpus()), refineSettings, 2);
+
+    final DependencyEvaluator evaluator =
+        new DependencyEvaluator(new FeedforwardDependencyParser(refined, 2));
+    evaluator.evaluate(ObjectStreamUtils.createObjectStream(corpus()));
+    assertEquals(1.0d, evaluator.getUas());
+    assertEquals(1.0d, evaluator.getLas());
+  }
+
+  @Test
+  void testRefineValidation() {
+    final FeedforwardDependencyTrainer.Settings settings =
+        FeedforwardDependencyTrainer.Settings.defaults();
+    assertThrows(IllegalArgumentException.class, () -> FeedforwardDependencyTrainer
+        .refine(null, ObjectStreamUtils.createObjectStream(corpus()), settings, 4));
+    assertThrows(IllegalArgumentException.class, () -> FeedforwardDependencyTrainer
+        .refine(model, ObjectStreamUtils.createObjectStream(corpus()), settings, 1));
+  }
+
+  @Test
   void testBeamSizeValidation() {
     assertThrows(IllegalArgumentException.class,
         () -> new FeedforwardDependencyParser(model, 0));
