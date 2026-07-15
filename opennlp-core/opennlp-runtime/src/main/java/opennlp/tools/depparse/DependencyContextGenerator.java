@@ -21,9 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Generates the classification features for one arc-standard configuration: words and tags
- * of the topmost stack and frontmost buffer positions, their pairings, and a bucketed
- * distance between stack top and buffer front.
+ * Generates the classification features for one arc-standard configuration: words and
+ * tags of the topmost stack and frontmost buffer positions, their pairings, the partial
+ * structure built so far (tags and relations of the leftmost and rightmost dependents,
+ * valency counts), and a bucketed distance between stack top and buffer front.
  *
  * <p>Instances hold no state and are safe to share between threads.</p>
  *
@@ -62,10 +63,19 @@ public class DependencyContextGenerator {
     final String s2t = tag(tags, s2);
     final String b0w = word(tokens, b0);
     final String b0t = tag(tags, b0);
+    final String b1w = word(tokens, b1);
     final String b1t = tag(tags, b1);
     final String b2t = tag(tags, b2);
 
-    final List<String> features = new ArrayList<>(20);
+    final String s0lct = dependentTag(state, tags, s0, true);
+    final String s0rct = dependentTag(state, tags, s0, false);
+    final String s1lct = dependentTag(state, tags, s1, true);
+    final String s1rct = dependentTag(state, tags, s1, false);
+    final String s0lcl = dependentRelation(state, s0, true);
+    final String s0rcl = dependentRelation(state, s0, false);
+    final String s1rcl = dependentRelation(state, s1, false);
+
+    final List<String> features = new ArrayList<>(36);
     features.add("s0w=" + s0w);
     features.add("s0t=" + s0t);
     features.add("s1w=" + s1w);
@@ -73,17 +83,36 @@ public class DependencyContextGenerator {
     features.add("s2t=" + s2t);
     features.add("b0w=" + b0w);
     features.add("b0t=" + b0t);
+    features.add("b1w=" + b1w);
     features.add("b1t=" + b1t);
     features.add("b2t=" + b2t);
     features.add("s0wt=" + s0w + '/' + s0t);
+    features.add("s1wt=" + s1w + '/' + s1t);
+    features.add("b0wt=" + b0w + '/' + b0t);
     features.add("s0w,b0w=" + s0w + '|' + b0w);
     features.add("s0t,b0t=" + s0t + '|' + b0t);
+    features.add("s0w,b0t=" + s0w + '|' + b0t);
+    features.add("s0t,b0w=" + s0t + '|' + b0w);
+    features.add("s0wt,b0t=" + s0w + '/' + s0t + '|' + b0t);
     features.add("s1t,s0t=" + s1t + '|' + s0t);
+    features.add("s1t,s0w=" + s1t + '|' + s0w);
+    features.add("s1w,s0t=" + s1w + '|' + s0t);
     features.add("s1t,s0t,b0t=" + s1t + '|' + s0t + '|' + b0t);
     features.add("s0t,b0t,b1t=" + s0t + '|' + b0t + '|' + b1t);
+    features.add("s2t,s1t,s0t=" + s2t + '|' + s1t + '|' + s0t);
+    features.add("s0lct=" + s0lct);
+    features.add("s0rct=" + s0rct);
+    features.add("s1lct=" + s1lct);
+    features.add("s1rct=" + s1rct);
+    features.add("s0lcl=" + s0lcl);
+    features.add("s0rcl=" + s0rcl);
+    features.add("s1rcl=" + s1rcl);
+    features.add("s1t,s1rct,s0t=" + s1t + '|' + s1rct + '|' + s0t);
+    features.add("s0t,s0lct,b0t=" + s0t + '|' + s0lct + '|' + b0t);
     features.add("s0deps=" + dependents(state, s0));
     features.add("s1deps=" + dependents(state, s1));
     features.add("dist=" + distance(s0, b0));
+    features.add("dist,s0t,b0t=" + distance(s0, b0) + '|' + s0t + '|' + b0t);
     return features.toArray(new String[0]);
   }
 
@@ -99,6 +128,32 @@ public class DependencyContextGenerator {
       return ROOT_VALUE;
     }
     return index == ArcStandardState.NONE ? NONE_VALUE : tags[index];
+  }
+
+  /** The tag of a token's leftmost or rightmost dependent attached so far. */
+  private static String dependentTag(ArcStandardState state, String[] tags, int index,
+      boolean leftmost) {
+    if (index < 0) {
+      return NONE_VALUE;
+    }
+    final int dependent =
+        leftmost ? state.leftmostDependent(index) : state.rightmostDependent(index);
+    return tag(tags, dependent);
+  }
+
+  /** The relation of a token's leftmost or rightmost dependent attached so far. */
+  private static String dependentRelation(ArcStandardState state, int index,
+      boolean leftmost) {
+    if (index < 0) {
+      return NONE_VALUE;
+    }
+    final int dependent =
+        leftmost ? state.leftmostDependent(index) : state.rightmostDependent(index);
+    if (dependent < 0) {
+      return NONE_VALUE;
+    }
+    final String relation = state.assignedRelation(dependent);
+    return relation == null ? NONE_VALUE : relation;
   }
 
   private static String dependents(ArcStandardState state, int index) {
