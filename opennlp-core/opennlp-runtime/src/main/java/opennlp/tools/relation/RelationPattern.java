@@ -17,6 +17,9 @@
 
 package opennlp.tools.relation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * One extraction rule for {@link RelationAnnotator}: a dependency path shape between two
  * entity heads and the relation type to emit when the shape matches.
@@ -60,7 +63,7 @@ public record RelationPattern(String type, String path, String trigger) {
       throw new IllegalArgumentException("trigger must not be blank");
     }
     boolean down = false;
-    for (final String step : path.trim().split("\\s+")) {
+    for (final String step : splitSteps(path)) {
       if (step.length() < 2 || (step.charAt(0) != '<' && step.charAt(0) != '>')) {
         throw new IllegalArgumentException("not a valid path step: " + step);
       }
@@ -71,5 +74,36 @@ public record RelationPattern(String type, String path, String trigger) {
             "up steps must come before down steps: " + path);
       }
     }
+  }
+
+  /**
+   * Splits the path into its steps.
+   *
+   * @return The steps in order. Never {@code null} or empty.
+   */
+  public List<String> steps() {
+    return splitSteps(path);
+  }
+
+  /**
+   * Splits a path on whitespace with a single character scan.
+   *
+   * @param path The path to split.
+   * @return The whitespace-free steps in order. Never {@code null}.
+   */
+  private static List<String> splitSteps(String path) {
+    final List<String> steps = new ArrayList<>();
+    int start = -1;
+    for (int i = 0; i <= path.length(); i++) {
+      if (i == path.length() || Character.isWhitespace(path.charAt(i))) {
+        if (start >= 0) {
+          steps.add(path.substring(start, i));
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+    }
+    return steps;
   }
 }

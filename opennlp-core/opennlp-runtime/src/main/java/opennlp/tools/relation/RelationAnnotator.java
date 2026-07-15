@@ -58,7 +58,7 @@ public class RelationAnnotator implements DocumentAnnotator {
       LayerKey.of("relations", RelationMention.class);
 
   private final List<RelationPattern> patterns;
-  private final List<String[]> patternSteps;
+  private final List<List<String>> patternSteps;
 
   /**
    * Initializes the annotator.
@@ -80,7 +80,7 @@ public class RelationAnnotator implements DocumentAnnotator {
     this.patterns = List.copyOf(patterns);
     this.patternSteps = new ArrayList<>(this.patterns.size());
     for (final RelationPattern pattern : this.patterns) {
-      patternSteps.add(pattern.path().trim().split("\\s+"));
+      patternSteps.add(pattern.steps());
     }
   }
 
@@ -188,7 +188,7 @@ public class RelationAnnotator implements DocumentAnnotator {
 
     for (int p = 0; p < patterns.size(); p++) {
       final RelationPattern pattern = patterns.get(p);
-      if (stepsEqual(patternSteps.get(p), steps)
+      if (patternSteps.get(p).equals(steps)
           && (pattern.trigger() == null || pattern.trigger().equals(pivotForm))) {
         final Span subjectSpan = entities.get(subject).span();
         final Span objectSpan = entities.get(object).span();
@@ -254,22 +254,4 @@ public class RelationAnnotator implements DocumentAnnotator {
     return chain;
   }
 
-  /**
-   * Compares a pattern's steps with a pair's path steps.
-   *
-   * @param pattern The pattern steps.
-   * @param path The pair's path steps.
-   * @return {@code true} if both sequences are identical.
-   */
-  private static boolean stepsEqual(String[] pattern, List<String> path) {
-    if (pattern.length != path.size()) {
-      return false;
-    }
-    for (int i = 0; i < pattern.length; i++) {
-      if (!pattern[i].equals(path.get(i))) {
-        return false;
-      }
-    }
-    return true;
-  }
 }
