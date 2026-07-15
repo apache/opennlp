@@ -96,6 +96,43 @@ public class FeedforwardDependencyParserTest {
   }
 
   @Test
+  void testBeamOfOneMatchesGreedy() {
+    final FeedforwardDependencyParser beamed = new FeedforwardDependencyParser(model, 1);
+    for (final DependencySample sample : corpus()) {
+      assertEquals(parser.parse(sample.getTokens(), sample.getTags()),
+          beamed.parse(sample.getTokens(), sample.getTags()));
+    }
+  }
+
+  @Test
+  void testBeamedParserReproducesTrainingSentences() {
+    final FeedforwardDependencyParser beamed = new FeedforwardDependencyParser(model, 4);
+    assertEquals(DependencyGraph.of(new int[] {1, 2, -1},
+            new String[] {"det", "nsubj", "root"}),
+        beamed.parse(new String[] {"the", "dog", "barks"},
+            new String[] {"DT", "NN", "VBZ"}));
+  }
+
+  @Test
+  void testBeamedParseIsDeterministicAndSingleRooted() {
+    final FeedforwardDependencyParser beamed = new FeedforwardDependencyParser(model, 8);
+    final String[] tokens = {"unseen", "words", "everywhere"};
+    final String[] tags = {"JJ", "NNS", "RB"};
+    final DependencyGraph first = beamed.parse(tokens, tags);
+    assertEquals(first, beamed.parse(tokens, tags));
+    assertEquals(3, first.size());
+    first.root();
+  }
+
+  @Test
+  void testBeamSizeValidation() {
+    assertThrows(IllegalArgumentException.class,
+        () -> new FeedforwardDependencyParser(model, 0));
+    assertThrows(IllegalArgumentException.class,
+        () -> new FeedforwardDependencyParser(null, 4));
+  }
+
+  @Test
   void testModelRoundTripThroughSerialization() throws IOException {
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
