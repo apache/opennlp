@@ -112,6 +112,33 @@ public final class FeedforwardDependencyTrainer {
    */
   public static FeedforwardDependencyModel train(ObjectStream<DependencySample> samples,
       Settings settings) throws IOException {
+    return train(samples, settings, null);
+  }
+
+  /**
+   * Trains a model from dependency samples, seeding word embeddings from a pretrained
+   * source.
+   *
+   * <p>The provider is consulted once per vocabulary word during initialization; words
+   * it returns {@code null} for keep their random initialization, and all embeddings
+   * remain trainable afterwards. The pretrained source is a training-time ingredient
+   * only: the learned embeddings ship inside the model, so parsing carries no
+   * dependency on the source.</p>
+   *
+   * @param samples The training samples. Must not be {@code null}.
+   * @param settings The hyperparameters. Must not be {@code null}.
+   * @param pretrained Maps a normalized word to its pretrained vector of exactly
+   *                   {@link Settings#embeddingSize()} dimensions, or {@code null} for
+   *                   unknown words. May be {@code null} to disable seeding.
+   * @return A trained {@link FeedforwardDependencyModel}. Never {@code null}.
+   * @throws IOException Thrown if reading the samples fails.
+   * @throws IllegalArgumentException Thrown if {@code samples} or {@code settings} is
+   *         {@code null}, no trainable example can be derived, or a pretrained vector
+   *         has the wrong dimensionality.
+   */
+  public static FeedforwardDependencyModel train(ObjectStream<DependencySample> samples,
+      Settings settings, java.util.function.Function<String, float[]> pretrained)
+      throws IOException {
     if (samples == null || settings == null) {
       throw new IllegalArgumentException("samples and settings must not be null");
     }
@@ -121,6 +148,9 @@ public final class FeedforwardDependencyTrainer {
       corpus.add(sample);
     }
     final FeedforwardDependencyModel model = initialize(corpus, settings);
+    if (pretrained != null) {
+      seed(model, pretrained, settings);
+    }
     final List<int[]> featureList = new ArrayList<>();
     final List<Integer> goldList = new ArrayList<>();
     collectExamples(corpus, model, featureList, goldList);
@@ -129,6 +159,30 @@ public final class FeedforwardDependencyTrainer {
     }
     optimize(model, featureList, goldList, settings);
     return model;
+  }
+
+  /** Overwrites the random word rows with pretrained vectors where available. */
+  private static void seed(FeedforwardDependencyModel model,
+      java.util.function.Function<String, float[]> pretrained, Settings settings) {
+    int seeded = 0;
+    for (final Map.Entry<String, Integer> entry : model.wordIds().entrySet()) {
+      if (entry.getKey().startsWith("*")) {
+        continue; // the special symbols have no pretrained meaning
+      }
+      final float[] vector = pretrained.apply(entry.getKey());
+      if (vector == null) {
+        continue;
+      }
+      if (vector.length != settings.embeddingSize()) {
+        throw new IllegalArgumentException("pretrained vector for '" + entry.getKey()
+            + "' has " + vector.length + " dimensions, expected "
+            + settings.embeddingSize());
+      }
+      System.arraycopy(vector, 0, model.embeddings()[entry.getValue()], 0, vector.length);
+      seeded++;
+    }
+    logger.info("seeded {} of {} word embeddings from the pretrained source", seeded,
+        model.wordIds().size());
   }
 
   /** Builds the vocabularies and randomly initialized weights. */
