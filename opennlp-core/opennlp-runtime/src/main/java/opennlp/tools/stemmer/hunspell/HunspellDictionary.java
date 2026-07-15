@@ -40,10 +40,11 @@ import opennlp.tools.util.StringUtil;
  *
  * <p>Supported affix features: {@code PFX} and {@code SFX} rules with strip strings,
  * character-class conditions, and cross-product combination of one prefix with one
- * suffix; {@code FLAG} modes {@code char} (default), {@code long}, and {@code num};
- * the {@code SET} encoding declaration. Compounding, continuation classes, and
- * conversion tables are not interpreted in this version; rules using them simply do
- * not fire, so unsupported analyses are missed rather than invented.</p>
+ * suffix; twofold suffixes through the continuation classes on suffix rules;
+ * {@code FLAG} modes {@code char} (default), {@code long}, and {@code num}; the
+ * {@code SET} encoding declaration. Compounding and conversion tables are not
+ * interpreted in this version; rules using them simply do not fire, so unsupported
+ * analyses are missed rather than invented.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  *
@@ -53,9 +54,25 @@ import opennlp.tools.util.StringUtil;
  */
 public final class HunspellDictionary {
 
-  /** One parsed affix rule; {@code affix} is the surface material added to the stem. */
+  /** One parsed affix rule; {@code affix} is the surface material added to the stem,
+   * and {@code continuation} lists the flags of affixes that may stack on top. */
   record Affix(int flag, boolean crossProduct, String strip, String affix,
-      AffixCondition condition) {
+      AffixCondition condition, int[] continuation) {
+
+    /**
+     * Checks whether a further affix may stack on this one.
+     *
+     * @param otherFlag The stacking affix's flag.
+     * @return {@code true} if this affix's continuation classes allow it.
+     */
+    boolean allowsContinuation(int otherFlag) {
+      for (final int candidate : continuation) {
+        if (candidate == otherFlag) {
+          return true;
+        }
+      }
+      return false;
+    }
   }
 
   private final Map<String, List<int[]>> entries;
@@ -252,15 +269,17 @@ public final class HunspellDictionary {
       }
       final String strip = "0".equals(fields[2]) ? "" : fields[2];
       String affixText = fields[3];
-      final int continuation = affixText.indexOf('/');
-      if (continuation >= 0) {
-        affixText = affixText.substring(0, continuation);
+      int[] continuation = new int[0];
+      final int slash = affixText.indexOf('/');
+      if (slash >= 0) {
+        continuation = parseFlags(affixText.substring(slash + 1), result.flagMode, line + 1);
+        affixText = affixText.substring(0, slash);
       }
       if ("0".equals(affixText)) {
         affixText = "";
       }
       final Affix affix = new Affix(flag, crossProduct, strip, affixText,
-          AffixCondition.parse(fields[4], suffix, line + 1));
+          AffixCondition.parse(fields[4], suffix, line + 1), continuation);
       if (suffix) {
         result.suffixes.add(affix);
       } else {
