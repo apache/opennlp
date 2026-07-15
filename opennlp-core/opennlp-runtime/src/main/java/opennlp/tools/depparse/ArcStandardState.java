@@ -76,6 +76,28 @@ public final class ArcStandardState {
     java.util.Arrays.fill(this.rightmostDependents, NONE);
   }
 
+  private ArcStandardState(ArcStandardState source) {
+    this.tokenCount = source.tokenCount;
+    this.stack = source.stack.clone();
+    this.heads = source.heads.clone();
+    this.relations = source.relations.clone();
+    this.assignedDependents = source.assignedDependents.clone();
+    this.leftmostDependents = source.leftmostDependents.clone();
+    this.rightmostDependents = source.rightmostDependents.clone();
+    this.top = source.top;
+    this.bufferFront = source.bufferFront;
+  }
+
+  /**
+   * Creates an independent copy of this configuration, so alternatives can be advanced
+   * side by side during search.
+   *
+   * @return A copy that can be advanced without affecting this state. Never {@code null}.
+   */
+  public ArcStandardState copy() {
+    return new ArcStandardState(this);
+  }
+
   /**
    * @return {@code true} if the buffer is empty and only the artificial root remains on
    *         the stack, so the parse is complete.
