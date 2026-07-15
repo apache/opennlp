@@ -35,51 +35,56 @@ import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
 
 /**
- * A {@link Gazetteer} over a user-supplied file in the GeoNames main table format: one
- * tab-separated row per place with name, ASCII name, comma-separated alternate names,
- * coordinates, feature class, country code, and population.
+ * A {@link Gazetteer} over a division table derived from Overture Maps data with the
+ * {@code dev/derive-overture-divisions.py} script in this module: one tab-separated row
+ * per division with id, primary name, comma-separated alternate names, coordinates,
+ * country code, Overture subtype, and population.
  *
- * <p>The file is downloaded by the caller; nothing is bundled, and complying with the
- * publisher's license terms, including attribution, is the caller's responsibility.
- * The whole table is indexed in memory, so this loader is meant for the filtered city
- * extracts rather than the full multi-gigabyte dump; memory grows with row and
- * alternate-name count.</p>
+ * <p>The upstream data is published under a permissive data license and distributed as
+ * partitioned Parquet, which this module deliberately does not parse; the derivation
+ * script flattens the division features into this plain table, and the script's output
+ * header carries the derivation record. Because divisions include countries and
+ * regions, not only settlements, a derived table also resolves mentions like
+ * {@code Australia} or {@code Bavaria} that place-only gazetteers miss.</p>
  *
- * <p>Lookup matches the canonical name, the ASCII name, and every alternate name,
- * case-insensitively and without further folding; the ASCII name column is what makes
- * accent-free queries hit accented places. Candidates are returned ranked by population
- * descending. Feature classes map coarsely: {@code P} rows become
- * {@link GazetteerEntry#FEATURE_CLASS_CITY}, {@code A} rows
- * {@link GazetteerEntry#FEATURE_CLASS_ADMIN}, everything else
- * {@link GazetteerEntry#FEATURE_CLASS_POI}.</p>
+ * <p>Lookup matches the primary and every alternate name case-insensitively;
+ * candidates are ranked by population descending. Subtypes map coarsely:
+ * {@code locality} rows become {@link GazetteerEntry#FEATURE_CLASS_CITY}; the
+ * sub-locality subtypes ({@code borough}, {@code macrohood}, {@code neighborhood},
+ * {@code microhood}) become {@link GazetteerEntry#FEATURE_CLASS_POI}; every other
+ * subtype, countries through local administrative areas, becomes
+ * {@link GazetteerEntry#FEATURE_CLASS_ADMIN}.</p>
  *
  * <p>Instances are immutable after loading and safe to share between threads.</p>
  *
  * @since 3.0.0
  */
-public final class GeoNamesGazetteer implements Gazetteer {
+public final class OvertureGazetteer implements Gazetteer {
 
   /** The dataset identifier this gazetteer scopes its record ids to. */
-  public static final String SOURCE = "geonames";
+  public static final String SOURCE = "overture";
 
-  private static final int COLUMNS = 19;
+  private static final int COLUMNS = 8;
+
+  private static final Set<String> SUB_LOCALITY_SUBTYPES =
+      Set.of("borough", "macrohood", "neighborhood", "microhood");
 
   private final GazetteerIndex index;
 
-  private GeoNamesGazetteer(GazetteerIndex index) {
+  private OvertureGazetteer(GazetteerIndex index) {
     this.index = index;
   }
 
   /**
-   * Loads a GeoNames main-format table from a file.
+   * Loads a derived division table from a file.
    *
    * @param table The tab-separated table. Must not be {@code null}.
-   * @return A loaded {@link GeoNamesGazetteer}. Never {@code null}.
+   * @return A loaded {@link OvertureGazetteer}. Never {@code null}.
    * @throws IOException Thrown if reading fails.
    * @throws IllegalArgumentException Thrown if {@code table} is {@code null} or a row
    *         is not in the expected format.
    */
-  public static GeoNamesGazetteer load(Path table) throws IOException {
+  public static OvertureGazetteer load(Path table) throws IOException {
     if (table == null) {
       throw new IllegalArgumentException("table must not be null");
     }
@@ -89,16 +94,17 @@ public final class GeoNamesGazetteer implements Gazetteer {
   }
 
   /**
-   * Loads a GeoNames main-format table from a stream.
+   * Loads a derived division table from a stream.
    *
    * @param in The tab-separated content. Must not be {@code null}. The stream is read
-   *           fully but not closed.
-   * @return A loaded {@link GeoNamesGazetteer}. Never {@code null}.
+   *           fully but not closed. Lines starting with {@code #} carry the derivation
+   *           record and are skipped.
+   * @return A loaded {@link OvertureGazetteer}. Never {@code null}.
    * @throws IOException Thrown if reading fails.
    * @throws IllegalArgumentException Thrown if {@code in} is {@code null}, the content
-   *         is empty, or a row is not in the expected format.
+   *         has no rows, or a row is not in the expected format.
    */
-  public static GeoNamesGazetteer load(InputStream in) throws IOException {
+  public static OvertureGazetteer load(InputStream in) throws IOException {
     if (in == null) {
       throw new IllegalArgumentException("in must not be null");
     }
@@ -109,7 +115,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
     int lineNumber = 0;
     while ((line = reader.readLine()) != null) {
       lineNumber++;
-      if (line.isBlank()) {
+      if (line.isBlank() || line.charAt(0) == '#') {
         continue;
       }
       index.add(parseRow(line, lineNumber));
@@ -118,7 +124,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
       throw new IllegalArgumentException("the table contains no rows");
     }
     index.freeze();
-    return new GeoNamesGazetteer(index);
+    return new OvertureGazetteer(index);
   }
 
   @Override
@@ -150,7 +156,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
     return Set.of(SOURCE);
   }
 
-  /** Parses one main-format row into an entry, failing loud with the line number. */
+  /** Parses one derived row into an entry, failing loud with the line number. */
   private static GazetteerEntry parseRow(String line, int lineNumber) {
     final String[] fields = line.split("\t", -1);
     if (fields.length < COLUMNS) {
@@ -161,35 +167,31 @@ public final class GeoNamesGazetteer implements Gazetteer {
       final String id = fields[0].trim();
       final String name = fields[1].trim();
       final Set<String> alternates = new LinkedHashSet<>();
-      final String ascii = fields[2].trim();
-      if (!ascii.isEmpty() && !ascii.equals(name)) {
-        alternates.add(ascii);
-      }
-      for (final String alternate : fields[3].split(",")) {
+      for (final String alternate : fields[2].split(",")) {
         final String trimmed = alternate.trim();
         if (!trimmed.isEmpty() && !trimmed.equals(name)) {
           alternates.add(trimmed);
         }
       }
       final GeoPoint location = new GeoPoint(
-          Double.parseDouble(fields[4].trim()), Double.parseDouble(fields[5].trim()));
-      final String countryCode = fields[8].trim().isEmpty() ? null : fields[8].trim();
-      final String population = fields[14].trim();
+          Double.parseDouble(fields[3].trim()), Double.parseDouble(fields[4].trim()));
+      final String countryCode = fields[5].trim().isEmpty() ? null : fields[5].trim();
+      final String population = fields[7].trim();
       return new GazetteerEntry(SOURCE, id, name, List.copyOf(alternates), location,
           countryCode, List.of(), population.isEmpty() ? 0L : Long.parseLong(population),
           featureClass(fields[6].trim()), Map.of());
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(
-          "line " + lineNumber + " is not a GeoNames row: " + e.getMessage(), e);
+          "line " + lineNumber + " is not a derived division row: " + e.getMessage(), e);
     }
   }
 
-  /** Maps the one-letter GeoNames feature class onto the coarse conventional classes. */
-  private static String featureClass(String geoNamesClass) {
-    return switch (geoNamesClass) {
-      case "P" -> GazetteerEntry.FEATURE_CLASS_CITY;
-      case "A" -> GazetteerEntry.FEATURE_CLASS_ADMIN;
-      default -> GazetteerEntry.FEATURE_CLASS_POI;
-    };
+  /** Maps the Overture division subtype onto the coarse conventional classes. */
+  private static String featureClass(String subtype) {
+    if ("locality".equals(subtype)) {
+      return GazetteerEntry.FEATURE_CLASS_CITY;
+    }
+    return SUB_LOCALITY_SUBTYPES.contains(subtype)
+        ? GazetteerEntry.FEATURE_CLASS_POI : GazetteerEntry.FEATURE_CLASS_ADMIN;
   }
 }
