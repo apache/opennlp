@@ -96,7 +96,7 @@ public class EmojiAnnotationsTest {
     try (InputStream in = EmojiEmoticons.class.getResourceAsStream("emoji-emoticons.txt")) {
       tables = EmojiEmoticons.parse(in);
     }
-    for (final List<EmojiEmoticons.Mapping> candidates : tables.emojiToEmoticon().values()) {
+    for (final List<EmojiEmoticons.Mapping> candidates : tables.emojiToEmoticon().table().values()) {
       for (final EmojiEmoticons.Mapping mapping : candidates) {
         final String key = mapping.source().replace(cp(0xFE0F), "");
         assertTrue(annotations.containsKey(key),
