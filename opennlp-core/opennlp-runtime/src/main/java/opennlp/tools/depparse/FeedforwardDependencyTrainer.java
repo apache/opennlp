@@ -51,7 +51,7 @@ public final class FeedforwardDependencyTrainer {
   private static final double ADAGRAD_EPSILON = 1e-6;
 
   private FeedforwardDependencyTrainer() {
-    // static trainer only
+    // This class only exposes static training methods and is never instantiated.
   }
 
   /**
@@ -373,7 +373,9 @@ public final class FeedforwardDependencyTrainer {
         }
         if (!goldSurvives) {
           if (goldChild == null) {
-            return -1.0; // the oracle transition was inapplicable; nothing to learn from
+            // The gold transition was not applicable in the gold configuration, so
+            // this sentence yields no update.
+            return -1.0;
           }
           survivors.add(goldChild);
           return updateFromCandidates(survivors);
@@ -553,7 +555,9 @@ public final class FeedforwardDependencyTrainer {
     int seeded = 0;
     for (final Map.Entry<String, Integer> entry : model.wordIds().entrySet()) {
       if (entry.getKey().startsWith("*")) {
-        continue; // the special symbols have no pretrained meaning
+        // The special unknown, padding, and root symbols have no pretrained
+        // counterpart, so they keep their random initialization.
+        continue;
       }
       final float[] vector = pretrained.apply(entry.getKey());
       if (vector == null) {
@@ -590,7 +594,8 @@ public final class FeedforwardDependencyTrainer {
         labelIds.putIfAbsent(graph.relationOf(i), 0);
       }
     }
-    // the outcome space: shift plus both arc directions for every observed label
+    // The outcome space is the shift transition plus both arc directions for every
+    // relation label observed in the training data.
     transitionIds.putIfAbsent(Transition.SHIFT.encode(), 0);
     for (final String label : labelIds.keySet()) {
       transitionIds.putIfAbsent(Transition.leftArc(label).encode(), 0);

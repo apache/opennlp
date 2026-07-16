@@ -37,7 +37,7 @@ final class FeedforwardContext {
   static final int LABEL_POSITIONS = 8;
 
   private FeedforwardContext() {
-    // static template only
+    // This class only exposes the static feature template and is never instantiated.
   }
 
   /**
