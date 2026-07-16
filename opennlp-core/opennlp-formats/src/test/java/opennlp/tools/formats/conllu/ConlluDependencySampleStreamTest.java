@@ -133,6 +133,41 @@ public class ConlluDependencySampleStreamTest {
   }
 
   @Test
+  void testSemanticallyInvalidAnnotationIsSkippedNotFatal() throws IOException {
+    // Structurally well-formed lines whose annotation cannot form a valid tree, here an
+    // out-of-range head and a rootless cycle, skip the sentence instead of failing, so
+    // one broken sentence cannot abort reading a large treebank.
+    final String content = String.join("\n",
+        line("1", "far", "far", "ADV", "RB", "_", "5", "advmod", "_", "_"),
+        line("2", "off", "off", "ADP", "RP", "_", "0", "root", "_", "_"),
+        "",
+        line("1", "loop", "loop", "NOUN", "NN", "_", "2", "dep", "_", "_"),
+        line("2", "back", "back", "ADV", "RB", "_", "1", "dep", "_", "_"),
+        "",
+        line("1", "Fine", "fine", "ADJ", "JJ", "_", "0", "root", "_", "_"),
+        "") + "\n";
+    final InputStreamFactory in =
+        () -> new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+    try (ConlluDependencySampleStream samples =
+        new ConlluDependencySampleStream(in, ConlluTagset.U)) {
+      final DependencySample onlyValid = samples.read();
+      assertNotNull(onlyValid);
+      assertArrayEquals(new String[] {"Fine"}, onlyValid.getTokens());
+      assertEquals(DependencyArc.ROOT_HEAD, onlyValid.getGraph().headOf(0));
+      assertNull(samples.read());
+    }
+  }
+
+  @Test
+  void testEmptyContentYieldsNoSample() throws IOException {
+    final InputStreamFactory in = () -> new ByteArrayInputStream(new byte[0]);
+    try (ConlluDependencySampleStream samples =
+        new ConlluDependencySampleStream(in, ConlluTagset.U)) {
+      assertNull(samples.read());
+    }
+  }
+
+  @Test
   void testValidation() {
     assertThrows(IllegalArgumentException.class,
         () -> new ConlluDependencySampleStream(null, ConlluTagset.U));
