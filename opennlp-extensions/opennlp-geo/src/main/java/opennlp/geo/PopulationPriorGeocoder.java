@@ -67,22 +67,7 @@ public final class PopulationPriorGeocoder implements Geocoder {
   @Override
   public List<GeoResolution> resolve(CharSequence text, List<Span> locationMentions)
       throws IOException {
-    if (text == null) {
-      throw new IllegalArgumentException("Text must not be null");
-    }
-    if (locationMentions == null) {
-      throw new IllegalArgumentException("LocationMentions must not be null");
-    }
-    for (final Span mention : locationMentions) {
-      if (mention == null) {
-        throw new IllegalArgumentException(
-            "LocationMentions must not contain a null element, got: " + locationMentions);
-      }
-      if (mention.getEnd() > text.length()) {
-        throw new IllegalArgumentException("Mention " + mention
-            + " is outside the text, whose length is " + text.length());
-      }
-    }
+    GeocoderInput.validateResolveArguments(text, locationMentions);
     final List<GeoResolution> resolutions = new ArrayList<>(locationMentions.size());
     for (final Span mention : locationMentions) {
       final CharSequence mentionText = text.subSequence(mention.getStart(), mention.getEnd());

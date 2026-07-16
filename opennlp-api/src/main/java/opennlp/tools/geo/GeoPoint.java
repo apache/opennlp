@@ -19,8 +19,9 @@ package opennlp.tools.geo;
 import opennlp.tools.commons.ThreadSafe;
 
 /**
- * A geographic point in WGS84 decimal degrees. Both coordinates are range-validated at
- * construction and neither may be {@code NaN}.
+ * A geographic point in <a href="https://epsg.org/crs_4326/WGS-84.html">WGS84 (EPSG:4326)</a>
+ * decimal degrees. Both coordinates are range-validated at construction and neither may be
+ * {@code NaN}.
  *
  * <p>Instances are immutable and thread-safe.</p>
  *
