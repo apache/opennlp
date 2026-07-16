@@ -522,6 +522,80 @@ path: /dev/opennlp/trunk/opennlp-tools/en-ontonotes.bin]]>
 		</section>
 	</section>
 
+	<section xml:id="tools.corpora.bionlp2004">
+		<title>BioNLP/NLPBA 2004</title>
+		<para>
+		The BioNLP/NLPBA 2004 shared task uses biomedical abstracts derived from the GENIA
+		corpus for named entity recognition. It defines five entity types:
+		<literal>DNA</literal>, <literal>RNA</literal>, <literal>protein</literal>,
+		<literal>cell_type</literal>, and <literal>cell_line</literal>. The
+		<link xlink:href="https://aclanthology.org/W04-1213/">shared task paper</link>
+		describes the corpus and annotation task. OpenNLP identifies this input format as
+		<literal>bionlp2004</literal>.
+		</para>
+
+		<section xml:id="tools.corpora.bionlp2004.getting">
+			<title>Getting the data</title>
+			<para>
+			A copy of the original training and evaluation files is available in the
+			<filename>original-data</filename> directory of the
+			<link xlink:href="https://github.com/spyysalo/jnlpba">JNLPBA corpus repository</link>.
+			The corpus is not distributed with OpenNLP. Review the terms supplied with the corpus
+			before using or redistributing it.
+			</para>
+		</section>
+
+		<section xml:id="tools.corpora.bionlp2004.format">
+			<title>Input format</title>
+			<para>
+			The converter reads UTF-8 text with one token and one IOB tag per line, separated by a
+			tab. A blank line ends a sentence. <literal>B-type</literal> starts an entity,
+			<literal>I-type</literal> continues it, and <literal>O</literal> marks a token outside
+			an entity. Lines beginning with <literal>###MEDLINE:</literal> mark document boundaries
+			in the original corpus. For example:
+			</para>
+			<screen>
+<![CDATA[IL-2	B-DNA
+receptor	I-DNA
+activates	O
+T	B-cell_type
+cells	I-cell_type
+.	O
+
+]]>
+			</screen>
+		</section>
+
+		<section xml:id="tools.corpora.bionlp2004.converting">
+			<title>Converting the data</title>
+			<para>
+			Pass the desired entity types to <option>-types</option> as a comma-separated list. The
+			values are case-sensitive and must use the names shown above. This command selects all
+			five types and writes native OpenNLP name finder samples to
+			<filename>jnlpba.train</filename>:
+			</para>
+			<screen>
+<![CDATA[$ opennlp TokenNameFinderConverter bionlp2004 \
+  -data original-data/train/Genia4ERtask1.iob2 \
+  -types DNA,protein,cell_type,cell_line,RNA \
+  > jnlpba.train]]>
+			</screen>
+			<para>
+			The input example from the previous section is converted to:
+			</para>
+			<screen>
+<![CDATA[<START:DNA> IL-2 receptor <END> activates <START:cell_type> T cells <END> .]]>
+			</screen>
+			<para>
+			To convert only a subset, list only those types, for example
+			<literal>-types protein,cell_type</literal>. The resulting file can be passed to the
+			standard <command>TokenNameFinderTrainer</command>. See
+			<xref linkend="tools.namefind.training"/> for training
+			parameters and data recommendations.
+			</para>
+		</section>
+	</section>
+
 	<section xml:id="tools.corpora.brat">
 		<title>Brat Format Support</title>
 		<para>
