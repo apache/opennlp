@@ -16,6 +16,8 @@
  */
 package opennlp.subword.sentencepiece;
 
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -27,7 +29,9 @@ import java.util.Comparator;
  * 256-entry direct table and narrow nodes scan a short sorted label slice; both layouts enumerate
  * identical transitions.</p>
  */
-final class PieceTrie {
+final class PieceTrie implements Serializable {
+
+  private static final long serialVersionUID = 30340094783102906L;
 
   /** The node id returned when no transition exists. */
   static final int DEAD = -1;
@@ -45,6 +49,15 @@ final class PieceTrie {
   private final int[] directStart;
   private final int[] directPool;
 
+  /**
+   * Wraps the packed arrays produced by {@link Builder} and derives the direct-dispatch tables
+   * for wide nodes.
+   *
+   * @param childStart Per node, the start of its edge slice; one trailing entry marks the end.
+   * @param labels     The transition label of every edge.
+   * @param childNodes The target node of every edge, parallel to {@code labels}.
+   * @param values     Per node, the accepted piece id, or {@code -1}.
+   */
   private PieceTrie(int[] childStart, byte[] labels, int[] childNodes, int[] values) {
     this.childStart = childStart;
     this.labels = labels;
@@ -61,7 +74,7 @@ final class PieceTrie {
       }
     }
     this.directPool = new int[wide * 256];
-    java.util.Arrays.fill(directPool, DEAD);
+    Arrays.fill(directPool, DEAD);
     for (int node = 0; node < values.length; node++) {
       final int direct = directStart[node];
       if (direct >= 0) {
@@ -131,6 +144,41 @@ final class PieceTrie {
     return values[node];
   }
 
+  /**
+   * Returns the byte length of the longest piece in this trie that is a prefix of
+   * {@code input[from, inputLength)}.
+   *
+   * @param input       The UTF-8 input buffer; must not be null.
+   * @param inputLength The number of valid bytes in {@code input}.
+   * @param from        The offset to match from.
+   * @return The matched length in bytes, or zero when no piece matches.
+   */
+  int longestMatch(byte[] input, int inputLength, int from) {
+    int node = root();
+    int longest = 0;
+    for (int i = from; i < inputLength; i++) {
+      node = step(node, input[i]);
+      if (node == DEAD) {
+        break;
+      }
+      if (value(node) >= 0) {
+        longest = i - from + 1;
+      }
+    }
+    return longest;
+  }
+
+  /**
+   * Creates the exception reported wherever a vocabulary piece turns out to be defined twice,
+   * keeping the message identical across all detection sites.
+   *
+   * @param piece The duplicated piece content.
+   * @return The exception to throw.
+   */
+  static IllegalArgumentException duplicatePiece(String piece) {
+    return new IllegalArgumentException("The piece '" + piece + "' is defined more than once.");
+  }
+
   // Builds the packed form from keys sorted by unsigned byte order. Key ranges sharing a prefix
   // are contiguous after the sort, so each recursion partitions its range by the byte at the
   // current depth.
@@ -150,6 +198,14 @@ final class PieceTrie {
     private int nextNode;
     private int nextEdge;
 
+    /**
+     * Prepares a builder over the keys and their sort order; {@link #count} and {@link #fill}
+     * perform the actual construction.
+     *
+     * @param pieces The UTF-8 bytes of each piece.
+     * @param ids    The id stored for each piece, parallel to {@code pieces}.
+     * @param order  The indices of {@code pieces} sorted by unsigned byte order.
+     */
     Builder(byte[][] pieces, int[] ids, Integer[] order) {
       this.pieces = pieces;
       this.ids = ids;
@@ -172,9 +228,7 @@ final class PieceTrie {
         i++;
         // A second key ending at the same depth is a duplicate; the sort made them adjacent.
         if (i < to && pieces[order[i]].length == depth) {
-          throw new IllegalArgumentException("The piece '"
-              + new String(pieces[order[i]], java.nio.charset.StandardCharsets.UTF_8)
-              + "' is defined more than once.");
+          throw duplicatePiece(new String(pieces[order[i]], StandardCharsets.UTF_8));
         }
       }
       while (i < to) {
@@ -213,9 +267,7 @@ final class PieceTrie {
       int i = from;
       if (i < to && pieces[order[i]].length == depth) {
         if (values[node] != -1 || (i + 1 < to && pieces[order[i + 1]].length == depth)) {
-          throw new IllegalArgumentException(
-              "The piece '" + new String(pieces[order[i]], java.nio.charset.StandardCharsets.UTF_8)
-                  + "' is defined more than once.");
+          throw duplicatePiece(new String(pieces[order[i]], StandardCharsets.UTF_8));
         }
         values[node] = ids[order[i]];
         i++;

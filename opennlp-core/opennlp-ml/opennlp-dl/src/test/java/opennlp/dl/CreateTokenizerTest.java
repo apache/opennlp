@@ -101,7 +101,8 @@ public class CreateTokenizerTest {
     final Map<String, Integer> vocab = robertaVocab();
     vocab.remove(WordpieceTokenizer.ROBERTA_UNK_TOKEN);
 
-    assertThrows(IllegalArgumentException.class, () -> AbstractDL.createPipelineTokenizer(vocab, false));
+    assertThrows(IllegalArgumentException.class,
+        () -> AbstractDL.createPipelineTokenizer(vocab, false));
     assertThrows(IllegalArgumentException.class, () -> AbstractDL.createWordpieceTokenizer(vocab));
   }
 

@@ -40,13 +40,18 @@ import java.util.Set;
  * <p>Ids follow the line-number convention of BERT {@code vocab.txt} files: with the list
  * constructors a piece's id is its index, and with the map constructor the ids are given
  * explicitly. The classification, separator, and unknown tokens must all be present in the
- * vocabulary, because every emitted piece must have an id.</p>
+ * vocabulary, because every emitted piece must have an id. Vocabulary entries starting with
+ * {@code ##} are continuation pieces, matching a word's interior rather than its start.</p>
  *
  * <p>Instances are immutable and safe for concurrent use by multiple threads.</p>
  *
  * @see WordpieceTokenizer
  */
 public final class WordpieceEncoder implements SubwordTokenizer {
+
+  // The wordpiece vocabulary convention: a piece with this prefix continues the current word,
+  // so it can only match after the word's first piece.
+  private static final String CONTINUATION_PREFIX = "##";
 
   // The reference implementation's limit: longer words become the unknown piece.
   private static final int MAX_WORD_CHARACTERS = 100;
@@ -144,6 +149,15 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     this.unknownId = requiredId(byPiece, unknownToken);
   }
 
+  /**
+   * Converts an ordered vocabulary list into the piece-to-id mapping, assigning each piece its
+   * index as the id.
+   *
+   * @param vocabulary The ordered vocabulary.
+   * @return The piece-to-id mapping.
+   * @throws IllegalArgumentException Thrown if the list is null or contains a null or duplicate
+   *     entry.
+   */
   private static Map<String, Integer> byPiece(List<String> vocabulary) {
     if (vocabulary == null) {
       throw new IllegalArgumentException("The vocabulary must not be null.");
@@ -162,6 +176,14 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     return byPiece;
   }
 
+  /**
+   * Looks up the id of a special token that must be present in the vocabulary.
+   *
+   * @param ids          The piece-to-id mapping.
+   * @param specialToken The token to look up.
+   * @return The token's id.
+   * @throws IllegalArgumentException Thrown if the token is not in the vocabulary.
+   */
   private static int requiredId(Map<String, Integer> ids, String specialToken) {
     final Integer id = ids.get(specialToken);
     if (id == null) {
@@ -171,11 +193,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     return id;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @throws IllegalArgumentException Thrown if {@code text} is null.
-   */
+  /** {@inheritDoc} */
   @Override
   public List<SubwordPiece> encode(CharSequence text) {
     if (text == null) {
@@ -236,7 +254,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
       while (start < end) {
         String substring = new String(mapped.chars, start, end - start);
         if (start > from) {
-          substring = "##" + substring;
+          substring = CONTINUATION_PREFIX + substring;
         }
         if (vocabulary.contains(substring)) {
           wordPieces.add(new SubwordPiece(substring, ids.get(substring),
@@ -268,12 +286,24 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     private int[] ends;
     private int length;
 
+    /**
+     * Instantiates an empty mapped text.
+     *
+     * @param capacity The initial capacity hint in chars.
+     */
     private MappedText(int capacity) {
       chars = new char[capacity];
       starts = new int[capacity];
       ends = new int[capacity];
     }
 
+    /**
+     * Appends one char with the original-text range it came from.
+     *
+     * @param c             The char to append.
+     * @param originalStart The inclusive original-text start of the char.
+     * @param originalEnd   The exclusive original-text end of the char.
+     */
     private void add(char c, int originalStart, int originalEnd) {
       if (length == chars.length) {
         final int capacity = Math.max(16, length * 2);
@@ -287,6 +317,13 @@ public final class WordpieceEncoder implements SubwordTokenizer {
       length++;
     }
 
+    /**
+     * Appends every char of a string, all sharing one original-text range.
+     *
+     * @param s             The string to append.
+     * @param originalStart The inclusive original-text start shared by all chars.
+     * @param originalEnd   The exclusive original-text end shared by all chars.
+     */
     private void add(String s, int originalStart, int originalEnd) {
       for (int i = 0; i < s.length(); i++) {
         add(s.charAt(i), originalStart, originalEnd);
@@ -385,8 +422,20 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     return out;
   }
 
+  /**
+   * Lower cases and accent-strips one non-space run, emitting per-character ranges when the
+   * transformation is reproducible per code point and the run's full range otherwise.
+   *
+   * @param in   The input text with per-character ranges.
+   * @param from The inclusive start of the run in {@code in}.
+   * @param to   The exclusive end of the run in {@code in}.
+   * @param out  The output text to append to.
+   */
   private static void transformRun(MappedText in, int from, int to, MappedText out) {
     final String run = new String(in.chars, from, to - from);
+    // Locale.ROOT lower casing is the reference behavior of BERT's do_lower_case: the reference
+    // pipeline applies the full locale-independent Unicode case mappings (including one-to-many
+    // ones like the dotted capital I), which a per-code-point mapping cannot reproduce.
     final String content = stripAccents(run.toLowerCase(Locale.ROOT));
 
     // Rerun per code point to learn how many output chars each input code point produces.
@@ -419,6 +468,13 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     }
   }
 
+  /**
+   * Removes combining marks after NFD decomposition, the accent stripping of BERT's
+   * {@code do_lower_case} mode.
+   *
+   * @param text The text to strip.
+   * @return The text without non-spacing marks.
+   */
   private static String stripAccents(String text) {
     final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
     final StringBuilder stripped = new StringBuilder(decomposed.length());
@@ -430,6 +486,13 @@ public final class WordpieceEncoder implements SubwordTokenizer {
     return stripped.toString();
   }
 
+  /**
+   * Reads the code point at an index, joining a surrogate pair when one starts there.
+   *
+   * @param text  The text to read from.
+   * @param index The char index to read at.
+   * @return The code point at {@code index}.
+   */
   private static int codePointAt(MappedText text, int index) {
     final char c = text.chars[index];
     if (Character.isHighSurrogate(c) && index + 1 < text.length

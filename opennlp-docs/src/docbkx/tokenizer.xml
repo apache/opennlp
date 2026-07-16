@@ -551,8 +551,8 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 			generally not a substring of the input; the spans always refer to the caller's original
 			text, so annotations computed over the pieces can be mapped back without guesswork. The
 			<code>encodeToIds</code> and <code>encodeToPieces</code> methods return just the ids or
-			the piece strings when the spans are not needed. Implementations are safe for concurrent
-			use by multiple threads.
+			the piece strings when the spans are not needed. Implementations are expected to be safe
+			for concurrent use by multiple threads.
 		</para>
 		<section xml:id="tools.tokenizer.subword.sentencepiece">
 			<title>SentencePiece</title>

@@ -26,9 +26,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.tokenize.SubwordPiece;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -64,49 +61,14 @@ class SentencePieceRealModelEvalTest {
 
   private static void assertModel(Path modelPath, Path fixturesPath) throws IOException {
     final SentencePieceTokenizer tokenizer = SentencePieceTokenizer.load(modelPath);
-    int lines = 0;
+    final List<SentencePieceFixtures.Fixture> fixtures;
     try (BufferedReader reader = Files.newBufferedReader(fixturesPath, StandardCharsets.UTF_8)) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        lines++;
-        final String[] cols = line.split("\t", -1);
-        final String input = unescape(cols[0]);
-        final int count = Integer.parseInt(cols[1]);
-        final String context = modelPath.getFileName() + " input <" + input + ">";
-
-        final List<SubwordPiece> actual = tokenizer.encode(input);
-        assertEquals(count, actual.size(), context + " piece count; got " + actual);
-        for (int i = 0; i < count; i++) {
-          final SubwordPiece got = actual.get(i);
-          assertEquals(unescape(cols[2 + i * 4]), got.piece(), context + " piece " + i);
-          assertEquals(Integer.parseInt(cols[3 + i * 4]), got.id(), context + " id " + i);
-          assertEquals(Integer.parseInt(cols[4 + i * 4]), got.start(), context + " start " + i);
-          assertEquals(Integer.parseInt(cols[5 + i * 4]), got.end(), context + " end " + i);
-        }
-        assertEquals(unescape(cols[2 + count * 4]), tokenizer.normalize(input).toString(),
-            context + " normalized form");
-      }
+      fixtures = SentencePieceFixtures.read(reader);
     }
-    assertTrue(lines >= 30, modelPath.getFileName() + " fixtures must not be truncated");
-  }
-
-  private static String unescape(String s) {
-    final StringBuilder out = new StringBuilder(s.length());
-    for (int i = 0; i < s.length(); i++) {
-      final char c = s.charAt(i);
-      if (c == '\\' && i + 1 < s.length()) {
-        i++;
-        switch (s.charAt(i)) {
-          case 't' -> out.append('\t');
-          case 'n' -> out.append('\n');
-          case 'r' -> out.append('\r');
-          case '\\' -> out.append('\\');
-          default -> throw new IllegalArgumentException("bad escape in fixture: " + s);
-        }
-      } else {
-        out.append(c);
-      }
+    for (final SentencePieceFixtures.Fixture fixture : fixtures) {
+      SentencePieceFixtures.assertFixture(tokenizer, fixture,
+          modelPath.getFileName() + " input <" + fixture.input() + ">");
     }
-    return out.toString();
+    assertTrue(fixtures.size() >= 30, modelPath.getFileName() + " fixtures must not be truncated");
   }
 }

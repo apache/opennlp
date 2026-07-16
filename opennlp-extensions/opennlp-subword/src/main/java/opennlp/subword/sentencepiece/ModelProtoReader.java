@@ -28,6 +28,10 @@ import java.util.List;
  * directly and keeps only the fields inference needs: the pieces with scores and types, the
  * normalizer spec, the trainer-spec fields that change runtime behavior, and the embedded
  * self-test samples. Unknown fields are skipped, and malformed input fails loudly.</p>
+ *
+ * @see <a href=
+ *     "https://github.com/google/sentencepiece/blob/master/src/sentencepiece_model.proto">
+ *     sentencepiece_model.proto</a>
  */
 final class ModelProtoReader {
 
@@ -37,9 +41,43 @@ final class ModelProtoReader {
   private static final int WIRE_LEN = 2;
   private static final int WIRE_FIXED32 = 5;
 
+  // Field numbers of the ModelProto message in sentencepiece_model.proto.
+  private static final int FIELD_MODEL_PIECES = 1;
+  private static final int FIELD_MODEL_TRAINER_SPEC = 2;
+  private static final int FIELD_MODEL_NORMALIZER_SPEC = 3;
+  private static final int FIELD_MODEL_SELF_TEST_DATA = 4;
+
+  // Field numbers of the ModelProto.SentencePiece sub-message.
+  private static final int FIELD_PIECE_PIECE = 1;
+  private static final int FIELD_PIECE_SCORE = 2;
+  private static final int FIELD_PIECE_TYPE = 3;
+
+  // Field numbers of the TrainerSpec sub-message.
+  private static final int FIELD_TRAINER_MODEL_TYPE = 3;
+  private static final int FIELD_TRAINER_TREAT_WHITESPACE_AS_SUFFIX = 24;
+  private static final int FIELD_TRAINER_BYTE_FALLBACK = 35;
+  private static final int FIELD_TRAINER_UNK_ID = 40;
+
+  // Field numbers of the NormalizerSpec sub-message.
+  private static final int FIELD_NORMALIZER_PRECOMPILED_CHARSMAP = 2;
+  private static final int FIELD_NORMALIZER_ADD_DUMMY_PREFIX = 3;
+  private static final int FIELD_NORMALIZER_REMOVE_EXTRA_WHITESPACES = 4;
+  private static final int FIELD_NORMALIZER_ESCAPE_WHITESPACES = 5;
+
+  // Field numbers of the SelfTestData sub-message and its Sample entries.
+  private static final int FIELD_SELF_TEST_SAMPLES = 1;
+  private static final int FIELD_SAMPLE_INPUT = 1;
+  private static final int FIELD_SAMPLE_EXPECTED = 2;
+
   private final byte[] data;
   private int pos;
 
+  /**
+   * Prepares a reader positioned at the start of the given bytes; {@link #read(byte[])} drives
+   * the actual parse.
+   *
+   * @param data The raw bytes of a {@code .model} file.
+   */
   private ModelProtoReader(byte[] data) {
     this.data = data;
   }
@@ -61,10 +99,10 @@ final class ModelProtoReader {
       final long tag = reader.varint();
       final int field = (int) (tag >>> 3);
       switch (field) {
-        case 1 -> reader.piece(model, reader.lenPayload(tag));
-        case 2 -> reader.trainerSpec(model, reader.lenPayload(tag));
-        case 3 -> reader.normalizerSpec(model, reader.lenPayload(tag));
-        case 4 -> reader.selfTestData(model, reader.lenPayload(tag));
+        case FIELD_MODEL_PIECES -> reader.piece(model, reader.lenPayload(tag));
+        case FIELD_MODEL_TRAINER_SPEC -> reader.trainerSpec(model, reader.lenPayload(tag));
+        case FIELD_MODEL_NORMALIZER_SPEC -> reader.normalizerSpec(model, reader.lenPayload(tag));
+        case FIELD_MODEL_SELF_TEST_DATA -> reader.selfTestData(model, reader.lenPayload(tag));
         default -> reader.skip(tag);
       }
     }
@@ -87,9 +125,9 @@ final class ModelProtoReader {
     while (pos < end) {
       final long tag = varint();
       switch ((int) (tag >>> 3)) {
-        case 1 -> piece = utf8(lenPayload(tag));
-        case 2 -> score = fixed32Float(tag);
-        case 3 -> type = (int) varintOf(tag);
+        case FIELD_PIECE_PIECE -> piece = utf8(lenPayload(tag));
+        case FIELD_PIECE_SCORE -> score = fixed32Float(tag);
+        case FIELD_PIECE_TYPE -> type = (int) varintOf(tag);
         default -> skip(tag);
       }
     }
@@ -115,10 +153,11 @@ final class ModelProtoReader {
     while (pos < end) {
       final long tag = varint();
       switch ((int) (tag >>> 3)) {
-        case 3 -> model.modelType = (int) varintOf(tag);
-        case 24 -> model.treatWhitespaceAsSuffix = varintOf(tag) != 0;
-        case 35 -> model.byteFallback = varintOf(tag) != 0;
-        case 40 -> model.unkId = (int) varintOf(tag);
+        case FIELD_TRAINER_MODEL_TYPE -> model.modelType = (int) varintOf(tag);
+        case FIELD_TRAINER_TREAT_WHITESPACE_AS_SUFFIX ->
+            model.treatWhitespaceAsSuffix = varintOf(tag) != 0;
+        case FIELD_TRAINER_BYTE_FALLBACK -> model.byteFallback = varintOf(tag) != 0;
+        case FIELD_TRAINER_UNK_ID -> model.unkId = (int) varintOf(tag);
         default -> skip(tag);
       }
     }
@@ -135,10 +174,12 @@ final class ModelProtoReader {
     while (pos < end) {
       final long tag = varint();
       switch ((int) (tag >>> 3)) {
-        case 2 -> model.precompiledCharsMap = bytes(lenPayload(tag));
-        case 3 -> model.addDummyPrefix = varintOf(tag) != 0;
-        case 4 -> model.removeExtraWhitespaces = varintOf(tag) != 0;
-        case 5 -> model.escapeWhitespaces = varintOf(tag) != 0;
+        case FIELD_NORMALIZER_PRECOMPILED_CHARSMAP ->
+            model.precompiledCharsMap = bytes(lenPayload(tag));
+        case FIELD_NORMALIZER_ADD_DUMMY_PREFIX -> model.addDummyPrefix = varintOf(tag) != 0;
+        case FIELD_NORMALIZER_REMOVE_EXTRA_WHITESPACES ->
+            model.removeExtraWhitespaces = varintOf(tag) != 0;
+        case FIELD_NORMALIZER_ESCAPE_WHITESPACES -> model.escapeWhitespaces = varintOf(tag) != 0;
         default -> skip(tag);
       }
     }
@@ -154,15 +195,15 @@ final class ModelProtoReader {
   private void selfTestData(RawModel model, int end) {
     while (pos < end) {
       final long tag = varint();
-      if ((int) (tag >>> 3) == 1) {
+      if ((int) (tag >>> 3) == FIELD_SELF_TEST_SAMPLES) {
         final int sampleEnd = lenPayload(tag);
         String input = null;
         String expected = null;
         while (pos < sampleEnd) {
           final long sampleTag = varint();
           switch ((int) (sampleTag >>> 3)) {
-            case 1 -> input = utf8(lenPayload(sampleTag));
-            case 2 -> expected = utf8(lenPayload(sampleTag));
+            case FIELD_SAMPLE_INPUT -> input = utf8(lenPayload(sampleTag));
+            case FIELD_SAMPLE_EXPECTED -> expected = utf8(lenPayload(sampleTag));
             default -> skip(sampleTag);
           }
         }
@@ -196,6 +237,13 @@ final class ModelProtoReader {
     return pos + (int) length;
   }
 
+  /**
+   * Reads the varint value of a field after checking its wire type.
+   *
+   * @param tag The field tag, whose wire type must be varint.
+   * @return The decoded value.
+   * @throws IllegalArgumentException Thrown if the wire type is wrong or the varint is malformed.
+   */
   private long varintOf(long tag) {
     if ((tag & 7) != WIRE_VARINT) {
       throw malformed("field " + (tag >>> 3) + " is not a varint");
@@ -203,6 +251,13 @@ final class ModelProtoReader {
     return varint();
   }
 
+  /**
+   * Reads the little-endian 32-bit float value of a field after checking its wire type.
+   *
+   * @param tag The field tag, whose wire type must be 32-bit.
+   * @return The decoded float.
+   * @throws IllegalArgumentException Thrown if the wire type is wrong or the input is truncated.
+   */
   private float fixed32Float(long tag) {
     if ((tag & 7) != WIRE_FIXED32) {
       throw malformed("field " + (tag >>> 3) + " is not a 32-bit value");
@@ -216,12 +271,24 @@ final class ModelProtoReader {
     return Float.intBitsToFloat(bits);
   }
 
+  /**
+   * Decodes the bytes from the current position up to {@code end} as UTF-8, advancing past them.
+   *
+   * @param end The exclusive end offset of the payload.
+   * @return The decoded string.
+   */
   private String utf8(int end) {
     final String s = new String(data, pos, end - pos, StandardCharsets.UTF_8);
     pos = end;
     return s;
   }
 
+  /**
+   * Copies the bytes from the current position up to {@code end}, advancing past them.
+   *
+   * @param end The exclusive end offset of the payload.
+   * @return The copied bytes.
+   */
   private byte[] bytes(int end) {
     final byte[] b = new byte[end - pos];
     System.arraycopy(data, pos, b, 0, b.length);
@@ -268,6 +335,12 @@ final class ModelProtoReader {
     }
   }
 
+  /**
+   * Advances the position by a fixed number of bytes.
+   *
+   * @param count The number of bytes to skip.
+   * @throws IllegalArgumentException Thrown if fewer than {@code count} bytes remain.
+   */
   private void advance(int count) {
     if (pos + count > data.length) {
       throw malformed("truncated field");
@@ -275,6 +348,12 @@ final class ModelProtoReader {
     pos += count;
   }
 
+  /**
+   * Creates the exception for malformed input, carrying the current byte position.
+   *
+   * @param detail A short description of what is malformed.
+   * @return The exception to throw.
+   */
   private IllegalArgumentException malformed(String detail) {
     return new IllegalArgumentException(
         "The model data is malformed at byte " + pos + ": " + detail + ".");
