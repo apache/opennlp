@@ -33,6 +33,10 @@ import opennlp.tools.util.Span;
 /**
  * Tests the lattice segmenter against a project-authored miniature dictionary; no
  * external dictionary data is involved.
+ *
+ * <p>Source strings are written as Unicode escapes to keep this file ASCII-only; the
+ * class works over the same miniature Japanese dictionary as the sibling usage
+ * example, whose javadoc spells out each fixture word.</p>
  */
 public class LatticeTokenizerTest {
 
@@ -44,12 +48,12 @@ public class LatticeTokenizerTest {
   @BeforeAll
   static void loadDictionary() throws IOException {
     write("lexicon.csv", String.join("\n",
-        "東京,0,0,3000,noun,proper",
-        "京都,0,0,3000,noun,proper",
-        "東,0,0,6000,noun,common",
-        "都,0,0,4000,noun,suffix",
-        "に,0,0,1000,particle,case",
-        "行く,0,0,3000,verb,base",
+        "\u6771\u4EAC,0,0,3000,noun,proper",
+        "\u4EAC\u90FD,0,0,3000,noun,proper",
+        "\u6771,0,0,6000,noun,common",
+        "\u90FD,0,0,4000,noun,suffix",
+        "\u306B,0,0,1000,particle,case",
+        "\u884C\u304F,0,0,3000,verb,base",
         ""));
     write("matrix.def", "1 1\n0 0 0\n");
     write("char.def", String.join("\n",
@@ -79,9 +83,9 @@ public class LatticeTokenizerTest {
   @Test
   void testLatticePrefersTheCheaperSegmentation() {
     // the famous case: Tokyo+Metro must win over East+Kyoto
-    final String text = "東京都に行く";
+    final String text = "\u6771\u4EAC\u90FD\u306B\u884C\u304F";
     Assertions.assertArrayEquals(
-        new String[] {"東京", "都", "に", "行く"},
+        new String[] {"\u6771\u4EAC", "\u90FD", "\u306B", "\u884C\u304F"},
         tokenizer.tokenize(text));
     Assertions.assertArrayEquals(new Span[] {
         new Span(0, 2), new Span(2, 3), new Span(3, 4), new Span(4, 6)},
@@ -91,7 +95,7 @@ public class LatticeTokenizerTest {
   @Test
   void testMorphemesCarryDictionaryFeatures() {
     final List<Morpheme> morphemes =
-        tokenizer.analyze("東京都に行く");
+        tokenizer.analyze("\u6771\u4EAC\u90FD\u306B\u884C\u304F");
     Assertions.assertEquals(4, morphemes.size());
     Assertions.assertEquals(List.of("noun", "proper"), morphemes.get(0).features());
     Assertions.assertEquals(List.of("particle", "case"), morphemes.get(2).features());
@@ -100,7 +104,7 @@ public class LatticeTokenizerTest {
 
   @Test
   void testUnknownLatinRunGroupsIntoOneMorpheme() {
-    final List<Morpheme> morphemes = tokenizer.analyze("ABCに行く");
+    final List<Morpheme> morphemes = tokenizer.analyze("ABC\u306B\u884C\u304F");
     Assertions.assertEquals(3, morphemes.size());
     Assertions.assertEquals("ABC", morphemes.get(0).surface());
     Assertions.assertEquals(true, morphemes.get(0).unknown());
@@ -109,17 +113,17 @@ public class LatticeTokenizerTest {
 
   @Test
   void testUnknownKanjiPreferOneMorphemeOverTwo() {
-    final List<Morpheme> morphemes = tokenizer.analyze("峠道に行く");
+    final List<Morpheme> morphemes = tokenizer.analyze("\u5CE0\u9053\u306B\u884C\u304F");
     Assertions.assertEquals(3, morphemes.size());
-    Assertions.assertEquals("峠道", morphemes.get(0).surface());
+    Assertions.assertEquals("\u5CE0\u9053", morphemes.get(0).surface());
     Assertions.assertEquals(true, morphemes.get(0).unknown());
   }
 
   @Test
   void testWhitespaceSeparatesAndIsNeverAMorpheme() {
-    final String text = "東京 に 行く";
+    final String text = "\u6771\u4EAC \u306B \u884C\u304F";
     Assertions.assertArrayEquals(
-        new String[] {"東京", "に", "行く"},
+        new String[] {"\u6771\u4EAC", "\u306B", "\u884C\u304F"},
         tokenizer.tokenize(text));
     Assertions.assertArrayEquals(new Span[] {
         new Span(0, 2), new Span(3, 4), new Span(5, 7)},
@@ -144,13 +148,13 @@ public class LatticeTokenizerTest {
    */
   @Test
   void testSingleCharacterInput() {
-    Assertions.assertArrayEquals(new String[] {"に"}, tokenizer.tokenize("に"));
-    Assertions.assertArrayEquals(new Span[] {new Span(0, 1)}, tokenizer.tokenizePos("に"));
-    Assertions.assertFalse(tokenizer.analyze("に").get(0).unknown());
+    Assertions.assertArrayEquals(new String[] {"\u306B"}, tokenizer.tokenize("\u306B"));
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 1)}, tokenizer.tokenizePos("\u306B"));
+    Assertions.assertFalse(tokenizer.analyze("\u306B").get(0).unknown());
 
-    final List<Morpheme> unknown = tokenizer.analyze("峠");
+    final List<Morpheme> unknown = tokenizer.analyze("\u5CE0");
     Assertions.assertEquals(1, unknown.size());
-    Assertions.assertEquals("峠", unknown.get(0).surface());
+    Assertions.assertEquals("\u5CE0", unknown.get(0).surface());
     Assertions.assertEquals(new Span(0, 1), unknown.get(0).span());
     Assertions.assertTrue(unknown.get(0).unknown());
   }
@@ -163,9 +167,9 @@ public class LatticeTokenizerTest {
    */
   @Test
   void testEntirelyUnknownInputGroupsIntoOneDefaultMorpheme() {
-    final List<Morpheme> morphemes = tokenizer.analyze("①②③");
+    final List<Morpheme> morphemes = tokenizer.analyze("\u2460\u2461\u2462");
     Assertions.assertEquals(1, morphemes.size());
-    Assertions.assertEquals("①②③", morphemes.get(0).surface());
+    Assertions.assertEquals("\u2460\u2461\u2462", morphemes.get(0).surface());
     Assertions.assertEquals(new Span(0, 3), morphemes.get(0).span());
     Assertions.assertTrue(morphemes.get(0).unknown());
     Assertions.assertEquals(List.of("symbol", "unknown"), morphemes.get(0).features());
@@ -178,9 +182,9 @@ public class LatticeTokenizerTest {
    */
   @Test
   void testMixedKnownAndUnknownRuns() {
-    final String text = "東京①に行く";
+    final String text = "\u6771\u4EAC\u2460\u306B\u884C\u304F";
     Assertions.assertArrayEquals(
-        new String[] {"東京", "①", "に", "行く"},
+        new String[] {"\u6771\u4EAC", "\u2460", "\u306B", "\u884C\u304F"},
         tokenizer.tokenize(text));
     Assertions.assertArrayEquals(new Span[] {
         new Span(0, 2), new Span(2, 3), new Span(3, 4), new Span(4, 6)},
@@ -197,9 +201,9 @@ public class LatticeTokenizerTest {
    */
   @Test
   void testSpansStayOriginalAfterLeadingWhitespace() {
-    final String text = "  東京都に行く";
+    final String text = "  \u6771\u4EAC\u90FD\u306B\u884C\u304F";
     Assertions.assertArrayEquals(
-        new String[] {"東京", "都", "に", "行く"},
+        new String[] {"\u6771\u4EAC", "\u90FD", "\u306B", "\u884C\u304F"},
         tokenizer.tokenize(text));
     Assertions.assertArrayEquals(new Span[] {
         new Span(2, 4), new Span(4, 5), new Span(5, 6), new Span(6, 8)},
@@ -213,7 +217,7 @@ public class LatticeTokenizerTest {
   @Test
   void testShortLexiconRowFailsLoud(@TempDir Path broken) throws IOException {
     Files.write(broken.resolve("lexicon.csv"),
-        "東,0,0\n".getBytes(StandardCharsets.UTF_8));
+        "\u6771,0,0\n".getBytes(StandardCharsets.UTF_8));
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
   }
 
@@ -224,7 +228,7 @@ public class LatticeTokenizerTest {
   @Test
   void testNonNumericLexiconCostFailsLoud(@TempDir Path broken) throws IOException {
     Files.write(broken.resolve("lexicon.csv"),
-        "東,0,0,abc,noun\n".getBytes(StandardCharsets.UTF_8));
+        "\u6771,0,0,abc,noun\n".getBytes(StandardCharsets.UTF_8));
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
   }
 
@@ -235,7 +239,7 @@ public class LatticeTokenizerTest {
   @Test
   void testMalformedMatrixLineFailsLoud(@TempDir Path broken) throws IOException {
     Files.write(broken.resolve("lexicon.csv"),
-        "東,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+        "\u6771,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
     Files.write(broken.resolve("matrix.def"), "1 1\n0 0\n".getBytes(StandardCharsets.UTF_8));
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
   }
@@ -248,7 +252,7 @@ public class LatticeTokenizerTest {
   void testCharDefMappingWithoutCategoryFailsLoud(@TempDir Path broken)
       throws IOException {
     Files.write(broken.resolve("lexicon.csv"),
-        "東,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+        "\u6771,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
     Files.write(broken.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
     Files.write(broken.resolve("char.def"),
         "DEFAULT 0 1 0\n0x4E00..0x9FFF\n".getBytes(StandardCharsets.UTF_8));
@@ -265,7 +269,7 @@ public class LatticeTokenizerTest {
   void testMissingDefaultTemplateFailsLoudAtTokenizeTime(@TempDir Path partial)
       throws IOException {
     Files.write(partial.resolve("lexicon.csv"),
-        "東,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+        "\u6771,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
     Files.write(partial.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
     Files.write(partial.resolve("char.def"),
         "DEFAULT 0 1 0\nKANJI 0 0 2\n0x4E00..0x9FFF KANJI\n"
@@ -274,13 +278,13 @@ public class LatticeTokenizerTest {
         "KANJI,0,0,8000,noun\n".getBytes(StandardCharsets.UTF_8));
     final LatticeTokenizer limited =
         new LatticeTokenizer(MecabDictionary.load(partial));
-    Assertions.assertThrows(IllegalStateException.class, () -> limited.analyze("①"));
+    Assertions.assertThrows(IllegalStateException.class, () -> limited.analyze("\u2460"));
   }
 
   @Test
   void testMalformedDictionariesFailLoud(@TempDir Path broken) throws IOException {
     Files.write(broken.resolve("lexicon.csv"),
-        "東,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+        "\u6771,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
 
     Files.write(broken.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
