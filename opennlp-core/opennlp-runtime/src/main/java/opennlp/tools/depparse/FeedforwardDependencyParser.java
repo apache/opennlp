@@ -27,10 +27,10 @@ import java.util.List;
  * with a beam size above one.
  *
  * <p>With a beam, the decoder keeps the highest scoring transition sequences side by
- * side, scored by summed log-probabilities, so one locally attractive but globally
- * wrong transition no longer commits the whole parse. Every complete arc-standard
- * derivation of a sentence has the same length, which keeps the summed scores
- * comparable without length normalization.</p>
+ * side, scored by summed log-probabilities, so a single locally attractive but globally
+ * wrong transition can still be recovered while the correct parse remains inside the
+ * beam. Every complete arc-standard derivation of a sentence has the same length, which
+ * keeps the summed scores comparable without length normalization.</p>
  *
  * <p>Inference is ordinary array arithmetic with no native runtime involved, so this
  * parser deploys exactly like the classical one while scoring configurations with
