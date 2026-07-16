@@ -35,7 +35,7 @@ import opennlp.tools.commons.ThreadSafe;
  */
 @Internal
 @ThreadSafe
-class CHMStringDeduplicator implements StringInterner {
+public class CHMStringDeduplicator implements StringInterner {
   private final int prob;
   private final Map<String, String> map;
 

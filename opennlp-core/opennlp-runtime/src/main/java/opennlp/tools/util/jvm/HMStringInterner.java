@@ -30,7 +30,7 @@ import opennlp.tools.commons.Internal;
  * https://shipilev.net/jvm/anatomy-quarks/10-string-intern/</a>
  */
 @Internal
-class HMStringInterner implements StringInterner {
+public class HMStringInterner implements StringInterner {
 
   private final Map<String, String> map;
 

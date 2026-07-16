@@ -31,7 +31,7 @@ import opennlp.tools.commons.ThreadSafe;
  */
 @Internal
 @ThreadSafe
-class JvmStringInterner implements StringInterner {
+public class JvmStringInterner implements StringInterner {
 
   /**
    * {@inheritDoc}
