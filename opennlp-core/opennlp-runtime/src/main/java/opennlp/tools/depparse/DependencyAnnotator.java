@@ -37,6 +37,13 @@ import opennlp.tools.document.Layers;
  * container's rule that annotations reference each other by layer and index, never by
  * object identity.</p>
  *
+ * <p>The whole token layer is handed to the parser as one sequence, so the result is a
+ * single tree over all tokens of the document and the arc indices are positions in the
+ * document-wide token layer. Because every token span already refers to the original
+ * document text, anchoring an arc on its dependent token's span puts the arc in document
+ * coordinates without any offset arithmetic, no matter which sentence the token came
+ * from.</p>
+ *
  * @since 3.0.0
  */
 public class DependencyAnnotator implements DocumentAnnotator {
@@ -63,6 +70,23 @@ public class DependencyAnnotator implements DocumentAnnotator {
     this.parser = parser;
   }
 
+  /**
+   * Parses the document's token layer and adds the {@link #DEPENDENCIES} layer.
+   *
+   * <p>The token and tag values are read in layer order and passed to the parser as one
+   * sequence. The resulting arcs are emitted in token order, so the new layer is aligned
+   * with {@link Layers#TOKENS} by position, and each arc annotation reuses the span of
+   * its dependent token.</p>
+   *
+   * @param document The document to annotate. Must not be {@code null} and must carry a
+   *                 non-empty {@link Layers#TOKENS} layer plus a {@link Layers#POS_TAGS}
+   *                 layer of equal size.
+   * @return A new {@link Document} with the {@link #DEPENDENCIES} layer added. Never
+   *         {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, the
+   *         token layer is absent or empty, or the tag layer does not have exactly one
+   *         tag per token.
+   */
   @Override
   public Document annotate(Document document) {
     if (document == null) {
@@ -74,6 +98,7 @@ public class DependencyAnnotator implements DocumentAnnotator {
       throw new IllegalArgumentException("document needs aligned "
           + Layers.TOKENS + " and " + Layers.POS_TAGS + " layers");
     }
+    // unwrap the aligned layers into the parallel arrays the parser interface expects
     final String[] words = new String[tokens.size()];
     final String[] posTags = new String[tokens.size()];
     for (int i = 0; i < words.length; i++) {
@@ -81,6 +106,9 @@ public class DependencyAnnotator implements DocumentAnnotator {
       posTags[i] = tags.get(i).value();
     }
     final DependencyGraph graph = parser.parse(words, posTags);
+    // graph.arcs() is in token order with one arc per token; anchoring each arc on its
+    // dependent token's span keeps the layer aligned with the token layer and puts the
+    // arc in document coordinates, since token spans refer to the original text
     final List<Annotation<DependencyArc>> arcs = new ArrayList<>(graph.size());
     for (final DependencyArc arc : graph.arcs()) {
       arcs.add(new Annotation<>(tokens.get(arc.dependent()).span(), arc));
