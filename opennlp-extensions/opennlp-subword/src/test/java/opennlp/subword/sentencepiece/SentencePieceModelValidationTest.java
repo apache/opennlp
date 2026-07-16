@@ -21,7 +21,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -45,7 +47,7 @@ class SentencePieceModelValidationTest {
   @Test
   void testNullAndEmptyInputFailLoudly() {
     assertThrows(IllegalArgumentException.class,
-        () -> SentencePieceTokenizer.load((java.nio.file.Path) null));
+        () -> SentencePieceTokenizer.load((Path) null));
     assertThrows(IllegalArgumentException.class,
         () -> SentencePieceTokenizer.load((InputStream) null));
     assertThrows(IllegalArgumentException.class,
@@ -62,7 +64,7 @@ class SentencePieceModelValidationTest {
   @Test
   void testTruncatedModelFailsLoudly() throws IOException {
     final byte[] whole = readModel();
-    final byte[] truncated = java.util.Arrays.copyOf(whole, whole.length / 3);
+    final byte[] truncated = Arrays.copyOf(whole, whole.length / 3);
     assertThrows(IllegalArgumentException.class,
         () -> SentencePieceTokenizer.load(new ByteArrayInputStream(truncated)));
   }

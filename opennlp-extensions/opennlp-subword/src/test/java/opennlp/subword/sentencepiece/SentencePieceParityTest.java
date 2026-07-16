@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -29,8 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import opennlp.tools.tokenize.SubwordPiece;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -63,22 +60,10 @@ class SentencePieceParityTest {
   void testFixtureParity(String model) throws IOException {
     final SentencePieceTokenizer tokenizer = tokenizer(model);
     int lines = 0;
-    for (final Fixture fixture : fixtures(model)) {
+    for (final SentencePieceFixtures.Fixture fixture : fixtures(model)) {
       lines++;
-      final List<SubwordPiece> actual = tokenizer.encode(fixture.input);
-      final String context = model + " input <" + fixture.input + ">";
-      assertEquals(fixture.pieces.size(), actual.size(),
-          context + " piece count; got " + actual);
-      for (int i = 0; i < actual.size(); i++) {
-        final SubwordPiece expected = fixture.pieces.get(i);
-        final SubwordPiece got = actual.get(i);
-        assertEquals(expected.piece(), got.piece(), context + " piece " + i);
-        assertEquals(expected.id(), got.id(), context + " id of piece " + i);
-        assertEquals(expected.start(), got.start(), context + " start of piece " + i);
-        assertEquals(expected.end(), got.end(), context + " end of piece " + i);
-      }
-      assertEquals(fixture.normalized, tokenizer.normalize(fixture.input).toString(),
-          context + " normalized form");
+      SentencePieceFixtures.assertFixture(tokenizer, fixture,
+          model + " input <" + fixture.input() + ">");
     }
     assertTrue(lines >= 30, "the fixture file must not be empty or truncated");
   }
@@ -101,50 +86,12 @@ class SentencePieceParityTest {
     }
   }
 
-  private record Fixture(String input, List<SubwordPiece> pieces, String normalized) {
-  }
-
-  private static List<Fixture> fixtures(String model) throws IOException {
-    final List<Fixture> fixtures = new ArrayList<>();
+  private static List<SentencePieceFixtures.Fixture> fixtures(String model) throws IOException {
     try (InputStream in =
              SentencePieceParityTest.class.getResourceAsStream(model + ".fixtures.tsv")) {
       assertNotNull(in, "missing test resource " + model + ".fixtures.tsv");
-      final BufferedReader reader =
-          new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-      String line;
-      while ((line = reader.readLine()) != null) {
-        final String[] cols = line.split("\t", -1);
-        final String input = unescape(cols[0]);
-        final int count = Integer.parseInt(cols[1]);
-        final List<SubwordPiece> pieces = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-          pieces.add(new SubwordPiece(unescape(cols[2 + i * 4]),
-              Integer.parseInt(cols[3 + i * 4]), Integer.parseInt(cols[4 + i * 4]),
-              Integer.parseInt(cols[5 + i * 4])));
-        }
-        fixtures.add(new Fixture(input, pieces, unescape(cols[2 + count * 4])));
-      }
+      return SentencePieceFixtures.read(
+          new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)));
     }
-    return fixtures;
-  }
-
-  private static String unescape(String s) {
-    final StringBuilder out = new StringBuilder(s.length());
-    for (int i = 0; i < s.length(); i++) {
-      final char c = s.charAt(i);
-      if (c == '\\' && i + 1 < s.length()) {
-        i++;
-        switch (s.charAt(i)) {
-          case 't' -> out.append('\t');
-          case 'n' -> out.append('\n');
-          case 'r' -> out.append('\r');
-          case '\\' -> out.append('\\');
-          default -> throw new IllegalArgumentException("bad escape in fixture: " + s);
-        }
-      } else {
-        out.append(c);
-      }
-    }
-    return out.toString();
   }
 }

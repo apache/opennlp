@@ -16,6 +16,8 @@
  */
 package opennlp.subword.sentencepiece;
 
+import java.io.Serializable;
+
 /**
  * Read-only lookup over a serialized Darts-clone double-array trie, the dictionary format
  * embedded in a SentencePiece model's precompiled character map.
@@ -25,8 +27,23 @@ package opennlp.subword.sentencepiece;
  * prefix match is needed here, so this walks the byte key once and remembers the last accepting
  * state. Out-of-range unit references, which a well-formed trie never produces, fail loudly
  * rather than reading arbitrary memory.</p>
+ *
+ * @see <a href="https://github.com/s-yata/darts-clone">Darts-clone</a>
  */
-final class DoubleArrayTrie {
+final class DoubleArrayTrie implements Serializable {
+
+  private static final long serialVersionUID = -1572336116472261588L;
+
+  // A non-leaf unit stores its transition label in the low 8 bits and the leaf flag in the sign
+  // bit. Key bytes are in [0, 255] with the sign bit clear, so comparing (unit & this mask)
+  // against a key byte both matches the label and rejects leaf units in one test.
+  private static final int LEAF_FLAG_AND_LABEL_MASK = 0x800000FF;
+
+  // A leaf unit stores the key's value in its low 31 bits; the sign bit is the leaf flag.
+  private static final int LEAF_VALUE_MASK = 0x7FFFFFFF;
+
+  // Bit 8 of a non-leaf unit marks that one of its children is a leaf holding this key's value.
+  private static final int HAS_LEAF_BIT = 8;
 
   private final int[] units;
 
@@ -72,12 +89,12 @@ final class DoubleArrayTrie {
         final int b = key[i] & 0xFF;
         nodePos ^= b;
         unit = u[nodePos];
-        if ((unit & 0x800000FF) != b) {
+        if ((unit & LEAF_FLAG_AND_LABEL_MASK) != b) {
           return result;
         }
         nodePos ^= offset(unit);
-        if (((unit >>> 8) & 1) == 1) {
-          final int value = u[nodePos] & 0x7FFFFFFF;
+        if (((unit >>> HAS_LEAF_BIT) & 1) == 1) {
+          final int value = u[nodePos] & LEAF_VALUE_MASK;
           result = ((long) value << 32) | (i - from + 1);
         }
       }
@@ -101,11 +118,14 @@ final class DoubleArrayTrie {
     if (nodePos < 0 || nodePos >= units.length) {
       return false;
     }
-    return (units[nodePos] & 0x800000FF) == b;
+    return (units[nodePos] & LEAF_FLAG_AND_LABEL_MASK) == b;
   }
 
   /**
-   * Returns the offset from a unit to its children, as encoded by Darts-clone.
+   * Returns the offset from a unit to its children, as encoded by Darts-clone: bits 10 to 30 hold
+   * the raw offset, and bit 9 is an extension flag that scales it by 256 for far-away children.
+   * The expression {@code (unit & (1 << 9)) >>> 6} evaluates to 8 exactly when bit 9 is set, so
+   * the raw offset is shifted left by either 0 or 8 bits.
    *
    * @param unit The unit word.
    * @return The child offset.

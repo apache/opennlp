@@ -32,6 +32,14 @@ final class Utf8Text {
   private final int[] byteToChar;
   private final int charLength;
 
+  /**
+   * Wraps an encoded buffer and its offset map.
+   *
+   * @param bytes      The UTF-8 buffer.
+   * @param byteLength The number of valid bytes in {@code bytes}.
+   * @param byteToChar The byte-to-UTF-16 offset map, or null for pure-ASCII text.
+   * @param charLength The length of the original text in UTF-16 units.
+   */
   private Utf8Text(byte[] bytes, int byteLength, int[] byteToChar, int charLength) {
     this.bytes = bytes;
     this.byteLength = byteLength;

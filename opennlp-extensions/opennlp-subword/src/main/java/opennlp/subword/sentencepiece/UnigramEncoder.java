@@ -16,6 +16,7 @@
  */
 package opennlp.subword.sentencepiece;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,9 +28,14 @@ import java.util.List;
  * <p>Characters no piece covers fall back to the unknown id with a fixed penalty below the lowest
  * piece score, and user-defined symbols receive a length-based bonus score so they always win.</p>
  */
-final class UnigramEncoder {
+final class UnigramEncoder implements Serializable {
+
+  private static final long serialVersionUID = 5648005733414803707L;
 
   private static final float UNK_PENALTY = 10.0f;
+  // The score of a user-defined symbol is this bonus per matched byte beyond the first instead
+  // of a trained log-probability, so longer user-defined matches always win the best path.
+  private static final float USER_DEFINED_LENGTH_BONUS = 0.1f;
   private static final float SCORE_RESET_THRESHOLD = 100000.0f;
 
   private final PieceTrie trie;
@@ -65,8 +71,12 @@ final class UnigramEncoder {
    * @param normalized The buffer holding the normalized UTF-8 bytes; must not be null.
    * @param size       The number of valid bytes in {@code normalized}.
    * @return The best-path segments covering all bytes, in text order.
+   * @throws IllegalArgumentException Thrown if {@code normalized} is null.
    */
   List<Segment> encode(byte[] normalized, int size) {
+    if (normalized == null) {
+      throw new IllegalArgumentException("The normalized buffer must not be null.");
+    }
     if (size == 0) {
       return List.of();
     }
@@ -118,7 +128,8 @@ final class UnigramEncoder {
         maxFrontier = Math.max(maxFrontier, keyPos);
         final int length = keyPos - startsAt;
         // User-defined symbols receive a length bonus instead of a trained score.
-        final float score = userDefined[id] ? 0.1f * (length - 1) : scores[id];
+        final float score = userDefined[id]
+            ? USER_DEFINED_LENGTH_BONUS * (length - 1) : scores[id];
         final float candidate = score + bestScoreTillHere;
         final int slot = 3 * keyPos;
         if (best[slot] == -1 || candidate > Float.intBitsToFloat(best[slot + 1])) {
