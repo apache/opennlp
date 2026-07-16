@@ -17,13 +17,17 @@
 package opennlp.tools.tokenize;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * The reference token sequences of the removed full-pipeline {@code Tokenizer}, re-asserted
- * against {@link WordpieceEncoder}.
+ * Reference token-sequence expectations for {@link WordpieceEncoder}, covering lower casing,
+ * accent stripping, punctuation and CJK isolation, and text cleaning.
  * <p>
  * All expected token sequences in this test were generated with the HuggingFace
  * {@code tokenizers} reference implementation ({@code BertWordPieceTokenizer})
@@ -43,92 +47,56 @@ public class WordpieceEncoderReferenceSequencesTest {
       "\u6211", "\u7231",  // CJK
       "natural", "language", "processing");
 
-  @Test
-  void testLowerCasesCapitalizedWords() {
-    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
-    final String[] tokens =
-        encoder.encodeToPieces("The quick brown fox jumps over the lazy dog.");
-
-    final String[] expected = {"[CLS]", "the", "quick", "brown", "fox", "jumps", "over",
-        "the", "lazy", "dog", ".", "[SEP]"};
-    Assertions.assertArrayEquals(expected, tokens);
+  /**
+   * The reference input and expected-sequence pairs, one argument set per pipeline behavior.
+   *
+   * @return The (input, expected pieces) pairs.
+   */
+  static Stream<Arguments> referenceSequences() {
+    return Stream.of(
+        // Lower cases capitalized words.
+        Arguments.of("The quick brown fox jumps over the lazy dog.",
+            new String[] {"[CLS]", "the", "quick", "brown", "fox", "jumps", "over",
+                "the", "lazy", "dog", ".", "[SEP]"}),
+        // Lower cases before wordpiece splitting.
+        Arguments.of("Embeddings",
+            new String[] {"[CLS]", "em", "##bed", "##ding", "##s", "[SEP]"}),
+        // The u-umlaut decomposes to u plus a combining diaeresis and the mark is stripped;
+        // the sharp s is not a combining mark and must survive, leaving an OOV token.
+        Arguments.of("W\u00fcrttemberg Stra\u00dfe",
+            new String[] {"[CLS]", "wurttemberg", "[UNK]", "[SEP]"}),
+        // Splits punctuation runs into single characters.
+        Arguments.of("Wait... what?!",
+            new String[] {"[CLS]", "wait", ".", ".", ".", "what", "?", "!", "[SEP]"}),
+        // Splits apostrophes as punctuation.
+        Arguments.of("don't",
+            new String[] {"[CLS]", "don", "'", "t", "[SEP]"}),
+        // Isolates CJK ideographs into single-character pieces.
+        Arguments.of("\u6211\u7231natural language processing",
+            new String[] {"[CLS]", "\u6211", "\u7231", "natural", "language",
+                "processing", "[SEP]"}),
+        // Tab and no-break space are whitespace; the NUL character is removed,
+        // joining "brown" and "fox" into one out-of-vocabulary token.
+        Arguments.of("the\tquick\u00a0brown\u0000fox",
+            new String[] {"[CLS]", "the", "quick", "[UNK]", "[SEP]"}),
+        // The reference implementation treats all C* categories as control
+        // characters: private use (U+E000, Co) and noncharacters (U+FDD0, Cn)
+        // are removed, joining the surrounding text into one OOV token.
+        Arguments.of("fox\ue000jumps and fox\ufdd0jumps",
+            new String[] {"[CLS]", "[UNK]", "[UNK]", "[UNK]", "[SEP]"}));
   }
 
-  @Test
-  void testLowerCasesBeforeWordpieceSplitting() {
+  @ParameterizedTest
+  @MethodSource("referenceSequences")
+  void testEncodesTheReferenceSequence(String input, String[] expected) {
     final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
-    final String[] tokens = encoder.encodeToPieces("Embeddings");
-
-    final String[] expected = {"[CLS]", "em", "##bed", "##ding", "##s", "[SEP]"};
-    Assertions.assertArrayEquals(expected, tokens);
-  }
-
-  @Test
-  void testStripsAccentsButKeepsNonCombiningCharacters() {
-    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
-    // The u-umlaut decomposes to u plus a combining diaeresis and the mark is stripped;
-    // the sharp s is not a combining mark and must survive, leaving an OOV token.
-    final String[] tokens = encoder.encodeToPieces("W\u00fcrttemberg Stra\u00dfe");
-
-    final String[] expected = {"[CLS]", "wurttemberg", "[UNK]", "[SEP]"};
-    Assertions.assertArrayEquals(expected, tokens);
-  }
-
-  @Test
-  void testSplitsPunctuationRunsIntoSingleCharacters() {
-    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
-    final String[] tokens = encoder.encodeToPieces("Wait... what?!");
-
-    final String[] expected = {"[CLS]", "wait", ".", ".", ".", "what", "?", "!", "[SEP]"};
-    Assertions.assertArrayEquals(expected, tokens);
-  }
-
-  @Test
-  void testSplitsApostrophesAsPunctuation() {
-    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
-    final String[] tokens = encoder.encodeToPieces("don't");
-
-    final String[] expected = {"[CLS]", "don", "'", "t", "[SEP]"};
-    Assertions.assertArrayEquals(expected, tokens);
-  }
-
-  @Test
-  void testIsolatesCjkIdeographs() {
-    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
-    final String[] tokens = encoder.encodeToPieces("\u6211\u7231natural language processing");
-
-    final String[] expected = {"[CLS]", "\u6211", "\u7231", "natural", "language",
-        "processing", "[SEP]"};
-    Assertions.assertArrayEquals(expected, tokens);
-  }
-
-  @Test
-  void testCleansControlCharactersAndNormalizesWhitespace() {
-    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
-    // Tab and no-break space are whitespace; the NUL character is removed,
-    // joining "brown" and "fox" into one out-of-vocabulary token.
-    final String[] tokens = encoder.encodeToPieces("the\tquick\u00a0brown\u0000fox");
-
-    final String[] expected = {"[CLS]", "the", "quick", "[UNK]", "[SEP]"};
-    Assertions.assertArrayEquals(expected, tokens);
-  }
-
-  @Test
-  void testRemovesPrivateUseAndUnassignedCharacters() {
-    final WordpieceEncoder encoder = new WordpieceEncoder(VOCABULARY);
-    // The reference implementation treats all C* categories as control
-    // characters: private use (U+E000, Co) and noncharacters (U+FDD0, Cn)
-    // are removed, joining the surrounding text into one OOV token.
-    final String[] tokens = encoder.encodeToPieces("fox\ue000jumps and fox\ufdd0jumps");
-
-    final String[] expected = {"[CLS]", "[UNK]", "[UNK]", "[UNK]", "[SEP]"};
-    Assertions.assertArrayEquals(expected, tokens);
+    Assertions.assertArrayEquals(expected, encoder.encodeToPieces(input),
+        "sequence broke on: " + input);
   }
 
   @Test
   void testRejectsNullSpecialTokens() {
-    // The encoder's contract throws IllegalArgumentException where the removed class threw
-    // NullPointerException.
+    // The encoder's contract throws IllegalArgumentException for null special tokens.
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new WordpieceEncoder(VOCABULARY, true, null, "[SEP]", "[UNK]"));
     Assertions.assertThrows(IllegalArgumentException.class,

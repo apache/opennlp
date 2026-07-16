@@ -16,6 +16,8 @@
  */
 package opennlp.subword.sentencepiece;
 
+import java.io.Serializable;
+
 /**
  * The model-embedded text normalizer of a SentencePiece model, operating in UTF-8 byte space.
  *
@@ -26,7 +28,9 @@ package opennlp.subword.sentencepiece;
  * was derived from, with one trailing entry for the end position; that map is what lets every
  * downstream piece report an exact span of the caller's text.</p>
  */
-final class SentencePieceNormalizer {
+final class SentencePieceNormalizer implements Serializable {
+
+  private static final long serialVersionUID = -3059745470932191300L;
 
   // U+2581 LOWER ONE EIGHTH BLOCK in UTF-8, the escaped form of a space.
   static final byte[] SPACE_SYMBOL = {(byte) 0xE2, (byte) 0x96, (byte) 0x81};
@@ -238,6 +242,15 @@ final class SentencePieceNormalizer {
 
   private static final byte[] SINGLE_SPACE = {' '};
 
+  /**
+   * Appends the space symbol to the normalized output, mapping each of its bytes to the same
+   * original-byte offset.
+   *
+   * @param normalized  The normalized-byte builder to append to.
+   * @param normToOrig  The offset-map builder to append to.
+   * @param spaceSymbol The bytes of the (possibly escaped) space symbol.
+   * @param consumed    The original-byte offset the symbol maps back to.
+   */
   private static void appendSpace(ByteBuilder normalized, IntBuilder normToOrig,
                                   byte[] spaceSymbol, int consumed) {
     normalized.append(spaceSymbol, 0, spaceSymbol.length);
@@ -259,7 +272,7 @@ final class SentencePieceNormalizer {
    */
   private void normalizePrefix(byte[] input, int inputLength, int from, Chunk chunk) {
     if (userDefinedMatcher != null) {
-      final int matched = longestUserDefinedMatch(input, inputLength, from);
+      final int matched = userDefinedMatcher.longestMatch(input, inputLength, from);
       if (matched > 0) {
         chunk.data = input;
         chunk.from = from;
@@ -301,30 +314,6 @@ final class SentencePieceNormalizer {
     chunk.from = from;
     chunk.to = from + charLength;
     chunk.consumed = charLength;
-  }
-
-  /**
-   * Returns the byte length of the longest user-defined symbol that is a prefix of
-   * {@code input[from, inputLength)}.
-   *
-   * @param input       The UTF-8 input buffer.
-   * @param inputLength The number of valid bytes in {@code input}.
-   * @param from        The offset to match from.
-   * @return The matched length in bytes, or zero when no user-defined symbol matches.
-   */
-  private int longestUserDefinedMatch(byte[] input, int inputLength, int from) {
-    int node = userDefinedMatcher.root();
-    int longest = 0;
-    for (int i = from; i < inputLength; i++) {
-      node = userDefinedMatcher.step(node, input[i]);
-      if (node == PieceTrie.DEAD) {
-        break;
-      }
-      if (userDefinedMatcher.value(node) >= 0) {
-        longest = i - from + 1;
-      }
-    }
-    return longest;
   }
 
   /**

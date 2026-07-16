@@ -47,6 +47,8 @@ final class ReferenceBertPipeline {
     String normalized = cleanText(text);
     normalized = isolateCjkCharacters(normalized);
     if (lowerCase) {
+      // Locale.ROOT lower casing is the reference behavior of BERT's do_lower_case: the full
+      // locale-independent Unicode case mappings, including one-to-many ones.
       normalized = stripAccents(normalized.toLowerCase(Locale.ROOT));
     }
     return BertNormalization.isolatePunctuation(normalized);
