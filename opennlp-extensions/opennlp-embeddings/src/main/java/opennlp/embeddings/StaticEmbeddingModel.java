@@ -49,7 +49,7 @@ import opennlp.tools.tokenize.WordpieceTokenizer;
  * never by tokenizer id, so the two files may order or offset their ids differently without
  * corrupting lookups; a piece the matrix does not carry fails loud at load time.</p>
  *
- * <p>Special pieces (the WordPiece {@code [CLS]}/{@code [SEP]}/{@code [UNK]} frame, a
+ * <p>Special pieces (the WordPiece {@code [CLS]}, {@code [SEP]}, and {@code [UNK]} tokens, a
  * SentencePiece model's control and unknown pieces) are never pooled; the sum is divided by the
  * count of pooled pieces, not the sum of weights. A text with no in-vocabulary pieces yields a
  * zero vector.</p>
@@ -81,14 +81,6 @@ public final class StaticEmbeddingModel implements TextEmbedder {
 
   private static final float NORMALIZE_EPSILON = 1e-12f;
   private static final String WEIGHTS_TENSOR_NAME = "weights";
-  private static final String VOCABULARY_FILE_NAME = "vocab.txt";
-  private static final String SAFETENSORS_FILE_NAME = "model.safetensors";
-  private static final String CONFIG_FILE_NAME = "config.json";
-  private static final String TOKENIZER_CONFIG_FILE_NAME = "tokenizer_config.json";
-  private static final String TOKENIZER_JSON_FILE_NAME = "tokenizer.json";
-  // The file names SentencePiece models ship their trained .model under, by convention family.
-  private static final List<String> SENTENCEPIECE_MODEL_FILE_NAMES =
-      List.of("sentencepiece.bpe.model", "spiece.model", "tokenizer.model");
   private static final int[] NO_EXCLUDED_ROWS = new int[0];
   // Excluded from neighbor results, including [PAD] and [MASK] that a distilled table keeps.
   private static final Set<String> WORDPIECE_SPECIAL_TOKENS =
@@ -102,7 +94,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private final int dimension;
   private final EmbeddingVocabulary vocabulary;
   private final SubwordTokenizer tokenizer;
-  // Tokenizer-id test for pieces that are never pooled (frame, control, and unknown pieces).
+  // Tokenizer-id test for pieces that are never pooled (delimiter, control, unknown pieces).
   private final IntPredicate skipPieceId;
   private final boolean normalize;
   // Per-row L2 norms and special-token mask, precomputed at load time for the neighbor scan.
@@ -160,26 +152,27 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       throw new IllegalArgumentException(
           "Model directory does not exist or is not a directory: " + modelDirectory);
     }
-    final Path vocabularyFile = modelDirectory.resolve(VOCABULARY_FILE_NAME);
+    final Path vocabularyFile = modelDirectory.resolve(ModelFileNames.VOCABULARY);
     if (Files.isRegularFile(vocabularyFile)) {
       return loadWordpieceDirectory(modelDirectory, vocabularyFile);
     }
     final Path sentencePieceModelFile = firstRegularFile(modelDirectory,
-        SENTENCEPIECE_MODEL_FILE_NAMES);
-    final Path tokenizerJsonFile = modelDirectory.resolve(TOKENIZER_JSON_FILE_NAME);
+        ModelFileNames.SENTENCEPIECE_MODELS);
+    final Path tokenizerJsonFile = modelDirectory.resolve(ModelFileNames.TOKENIZER_JSON);
     if (sentencePieceModelFile != null && Files.isRegularFile(tokenizerJsonFile)) {
       return loadSentencePiece(sentencePieceModelFile, tokenizerJsonFile,
-          requiredFile(modelDirectory, SAFETENSORS_FILE_NAME),
-          requiredNormalize(requiredFile(modelDirectory, CONFIG_FILE_NAME)));
+          requiredFile(modelDirectory, ModelFileNames.SAFETENSORS),
+          requiredNormalize(requiredFile(modelDirectory, ModelFileNames.CONFIG)));
     }
     if (Files.isRegularFile(tokenizerJsonFile)) {
       throw new IllegalArgumentException("Model directory " + modelDirectory + " has a "
-          + TOKENIZER_JSON_FILE_NAME + " but no trained SentencePiece file ("
-          + String.join(", ", SENTENCEPIECE_MODEL_FILE_NAMES) + "); copy the .model file "
+          + ModelFileNames.TOKENIZER_JSON + " but no trained SentencePiece file ("
+          + String.join(", ", ModelFileNames.SENTENCEPIECE_MODELS) + "); copy the .model file "
           + "from the model's base tokenizer next to it");
     }
     throw new IllegalArgumentException("Model directory " + modelDirectory + " has neither a "
-        + VOCABULARY_FILE_NAME + " (WordPiece layout) nor a " + TOKENIZER_JSON_FILE_NAME
+        + ModelFileNames.VOCABULARY + " (WordPiece layout) nor a "
+        + ModelFileNames.TOKENIZER_JSON
         + " with a trained SentencePiece file (SentencePiece layout)");
   }
 
@@ -195,10 +188,11 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private static StaticEmbeddingModel loadWordpieceDirectory(Path modelDirectory,
                                                              Path vocabularyFile)
       throws IOException {
-    final Path safetensorsFile = requiredFile(modelDirectory, SAFETENSORS_FILE_NAME);
-    final Path tokenizerConfigFile = requiredFile(modelDirectory, TOKENIZER_CONFIG_FILE_NAME);
+    final Path safetensorsFile = requiredFile(modelDirectory, ModelFileNames.SAFETENSORS);
+    final Path tokenizerConfigFile =
+        requiredFile(modelDirectory, ModelFileNames.TOKENIZER_CONFIG);
     final Normalization normalization =
-        requiredNormalize(requiredFile(modelDirectory, CONFIG_FILE_NAME));
+        requiredNormalize(requiredFile(modelDirectory, ModelFileNames.CONFIG));
     final Boolean lowerCase =
         FlatJsonFields.topLevelBoolean(tokenizerConfigFile, "do_lower_case");
     if (lowerCase == null) {
@@ -277,8 +271,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @param vocabularyFile   The {@code vocab.txt} file: one token per line, line number is the
    *                         token's row id. Must not be {@code null}, must exist, and must
    *                         contain the {@code [UNK]} token. The {@code [CLS]} and {@code [SEP]}
-   *                         frame tokens are optional: a distilled table that dropped them (as
-   *                         Model2Vec does) still loads, because the frame is never pooled.
+   *                         delimiter tokens are optional: a distilled table that dropped them
+   *                         (as Model2Vec does) still loads, because they are never pooled.
    * @param safetensorsFile  The {@code model.safetensors} file. Must not be {@code null} and
    *                         must exist, and must contain exactly one 2-D float tensor
    *                         (the embedding matrix) whose row count matches the vocabulary size.
@@ -319,8 +313,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     }
     final WordpieceEncoder tokenizer =
         wordpieceEncoder(vocabulary, casing == Casing.UNCASED, unknownId);
-    // Pooling skips the [CLS]/[SEP] frame by id; an absent frame maps to the unknown id, which
-    // is skipped the same way. A negative id is the absent sentinel and matches no emitted piece.
+    // Pooling skips [CLS] and [SEP] by id; when absent they map to the unknown id, which is
+    // skipped the same way. A negative id is the absent sentinel and matches no emitted piece.
     final int classificationId = vocabulary.id(WordpieceTokenizer.BERT_CLS_TOKEN);
     final int separatorId = vocabulary.id(WordpieceTokenizer.BERT_SEP_TOKEN);
     final IntPredicate skipPieceId =
@@ -332,17 +326,18 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   }
 
   /**
-   * Builds the WordPiece encoder, caching {@code [CLS]} and {@code [SEP]} onto the unknown row
+   * Builds the WordPiece encoder, mapping {@code [CLS]} and {@code [SEP]} onto the unknown row
    * when the distilled vocabulary dropped them. A static embedding table mean-pools its content
-   * pieces and never frames, so distillers routinely remove {@code [CLS]}/{@code [SEP]} from the
-   * table; the encoder still frames every encoding and needs an id for the frame, and pooling
-   * skips the frame regardless of its id, so pointing the absent frame tokens at the unknown row
-   * makes the model loadable without changing which pieces are pooled.
+   * pieces and never pools the delimiters, so distillers routinely remove
+   * {@code [CLS]}/{@code [SEP]} from the table; the encoder still wraps every encoding in them
+   * and needs an id for each, and pooling skips them regardless of their ids, so pointing the
+   * absent delimiter tokens at the unknown row makes the model loadable without changing which
+   * pieces are pooled.
    *
    * @param vocabulary The matrix row vocabulary; must contain the unknown token.
    * @param lowerCase  Whether the tokenizer lower-cases and strips accents.
-   * @param unknownId  The unknown token's row, reused as the frame id when a frame token is
-   *                   absent.
+   * @param unknownId  The unknown token's row, reused as the id of {@code [CLS]} or
+   *                   {@code [SEP]} when that token is absent.
    * @return The encoder.
    */
   private static WordpieceEncoder wordpieceEncoder(EmbeddingVocabulary vocabulary,
@@ -845,6 +840,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     private int size;
 
     /**
+     * Creates an empty selection.
+     *
      * @param capacity The maximum number of rows to keep.
      */
     TopK(int capacity) {

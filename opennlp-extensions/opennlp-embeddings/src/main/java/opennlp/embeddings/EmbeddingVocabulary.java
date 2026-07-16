@@ -124,6 +124,7 @@ final class EmbeddingVocabulary {
    *
    * @param token The token to look up. Must not be {@code null}.
    * @return The token's id, or {@code -1} when the token is not in this vocabulary.
+   * @throws IllegalArgumentException Thrown if {@code token} is {@code null}.
    */
   int id(String token) {
     if (token == null) {
@@ -143,6 +144,7 @@ final class EmbeddingVocabulary {
    *
    * @param id The row id. Must be within {@code [0, size())}.
    * @return The token at that id.
+   * @throws IllegalArgumentException Thrown if {@code id} is outside {@code [0, size())}.
    */
   String token(int id) {
     if (id < 0 || id >= tokenById.size()) {

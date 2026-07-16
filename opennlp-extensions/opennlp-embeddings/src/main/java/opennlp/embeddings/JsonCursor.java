@@ -31,6 +31,8 @@ final class JsonCursor {
   private int position;
 
   /**
+   * Creates a cursor positioned at the start of the given JSON text.
+   *
    * @param text      The JSON text to scan. Must not be {@code null}.
    * @param inputName What the text is (for error messages), e.g. {@code "safetensors header"}
    *                  or a file name.

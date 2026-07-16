@@ -53,6 +53,15 @@ public final class SafetensorsFile {
 
   private static final int HEADER_LENGTH_PREFIX_BYTES = 8;
 
+  /** The header's dtype marker for 32-bit IEEE floats. */
+  private static final String DTYPE_F32 = "F32";
+
+  /** The header's dtype marker for 16-bit IEEE half floats. */
+  private static final String DTYPE_F16 = "F16";
+
+  /** The header's dtype marker for 16-bit bfloat16 floats. */
+  private static final String DTYPE_BF16 = "BF16";
+
   // Positional-read chunk size, a multiple of Float.BYTES so every filled chunk decodes to
   // whole floats.
   private static final int READ_CHUNK_BYTES = 1 << 20;
@@ -163,7 +172,7 @@ public final class SafetensorsFile {
   /**
    * Decodes a floating-point tensor's data to {@code float[]}, streaming it from the file.
    * Accepts the {@code F32}, {@code F16} (IEEE half) and {@code BF16} (bfloat16) dtypes; the two
-   * 16-bit types are widened to {@code float} as they are read. {@code F16} is model2vec's
+   * 16-bit types are widened to {@code float} as they are read. {@code F16} is Model2Vec's
    * default output dtype, so this is the common case for downloaded distilled tables.
    *
    * @param name The tensor's name. Must not be {@code null}.
@@ -226,9 +235,9 @@ public final class SafetensorsFile {
    */
   public float[] readFloat32(String name) throws IOException {
     final TensorInfo info = tensorInfo(name);
-    if (!"F32".equals(info.dtype())) {
+    if (!DTYPE_F32.equals(info.dtype())) {
       throw new IllegalArgumentException(
-          "Tensor '" + name + "' has dtype " + info.dtype() + ", not F32");
+          "Tensor '" + name + "' has dtype " + info.dtype() + ", not " + DTYPE_F32);
     }
     return readFloats(name);
   }
@@ -245,14 +254,14 @@ public final class SafetensorsFile {
   private static void decodeInto(ByteBuffer chunk, String dtype, float[] out, int offset,
                                  int count) {
     switch (dtype) {
-      case "F32" -> chunk.asFloatBuffer().get(out, offset, count);
-      case "F16" -> {
+      case DTYPE_F32 -> chunk.asFloatBuffer().get(out, offset, count);
+      case DTYPE_F16 -> {
         final ShortBuffer shorts = chunk.asShortBuffer();
         for (int i = 0; i < count; i++) {
           out[offset + i] = Float.float16ToFloat(shorts.get());
         }
       }
-      case "BF16" -> {
+      case DTYPE_BF16 -> {
         // bfloat16 is the high 16 bits of a float32: shift back up and reinterpret.
         final ShortBuffer shorts = chunk.asShortBuffer();
         for (int i = 0; i < count; i++) {
@@ -268,20 +277,21 @@ public final class SafetensorsFile {
    *
    * @param dtype      The tensor dtype.
    * @param tensorName The tensor's name, for the error message.
-   * @throws IllegalArgumentException if {@code dtype} is not a supported float type.
+   * @throws IllegalArgumentException Thrown if {@code dtype} is not a supported float type.
    */
   private static int floatElementBytes(String dtype, String tensorName) {
     return switch (dtype) {
-      case "F32" -> Float.BYTES;
-      case "F16", "BF16" -> Short.BYTES;
+      case DTYPE_F32 -> Float.BYTES;
+      case DTYPE_F16, DTYPE_BF16 -> Short.BYTES;
       default -> throw new IllegalArgumentException("Tensor '" + tensorName + "' has dtype "
-          + dtype + ", not a supported float type (F32, F16, BF16)");
+          + dtype + ", not a supported float type (" + DTYPE_F32 + ", " + DTYPE_F16 + ", "
+          + DTYPE_BF16 + ")");
     };
   }
 
   /** {@return whether {@code dtype} is a float type this reader decodes} */
   private static boolean isFloatDtype(String dtype) {
-    return "F32".equals(dtype) || "F16".equals(dtype) || "BF16".equals(dtype);
+    return DTYPE_F32.equals(dtype) || DTYPE_F16.equals(dtype) || DTYPE_BF16.equals(dtype);
   }
 
   /**
