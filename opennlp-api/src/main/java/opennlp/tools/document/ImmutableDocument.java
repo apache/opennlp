@@ -69,7 +69,8 @@ final class ImmutableDocument implements Document {
     if (annotations == null) {
       return List.of();
     }
-    // safe: with(LayerKey, List) verified every value against the key's type on insertion
+    // This cast is safe because with(LayerKey, List) verified every value against the
+    // key's type when the layer was inserted.
     return (List<Annotation<T>>) (List<?>) annotations;
   }
 

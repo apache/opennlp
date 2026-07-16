@@ -31,14 +31,17 @@ import opennlp.tools.document.Layers;
  * Adapts a {@link Stemmer} to the document pipeline: stems the token layer and provides
  * {@link #STEMS}, one annotation per token on the token's span.
  *
- * <p>Stemming needs no tags, so unlike lemmatization this annotator only requires the
- * token layer.</p>
+ * <p>Stemming operates on the token surface alone, so this annotator requires only the
+ * token layer; no part-of-speech tags are involved.</p>
  *
  * @since 3.0.0
  */
 public class StemmerAnnotator implements DocumentAnnotator {
 
-  /** Stems; aligned with the token layer, each annotation on its token's span. */
+  /**
+   * The stem layer. It is aligned with the token layer by position, and each annotation
+   * carries the stem of its token on that token's span.
+   */
   public static final LayerKey<String> STEMS = LayerKey.of("stems", String.class);
 
   private final Stemmer stemmer;
