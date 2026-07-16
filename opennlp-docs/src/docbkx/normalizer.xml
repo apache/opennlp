@@ -245,14 +245,16 @@ Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized tex
 			for it with a plain <code>instanceof</code>, the same pattern the name finder uses for
 			<code>OffsetMappingNameFinder</code>. Every per-code-point fold implements it: whitespace, the
 			line-break-preserving whitespace rung, dashes, invisible-control stripping, quotes, digits,
-			ellipsis, bullets, and the German umlaut transliteration. The folds that route through
+			ellipsis, bullets, the German umlaut transliteration, and Unicode full case folding
+			(<code>fullCaseFold()</code>, whose expansions come from a bundled table with known lengths,
+			so it reports its edits). The folds that route through
 			<code>java.text.Normalizer</code> (NFC, NFKC, accent folding, and confusable folding) or
-			through JDK case mapping (case folding) cannot report their per-character edits, so they do
-			not implement the interface, and a chain that contains one is rejected by
-			<code>buildAligned()</code> with an <code>IllegalStateException</code> that names the rung,
-			rather than returning a pipeline that would hand back an offset that does not hold. The
-			per-stage maps and their composition use the <code>Alignment</code> machinery described in
-			<xref linkend="tools.normalizer.charclass"/>.
+			through JDK case mapping (the locale-based <code>caseFold()</code>) cannot report their
+			per-character edits, so they do not implement the interface, and a chain that contains one
+			is rejected by <code>buildAligned()</code> with an <code>IllegalStateException</code> that
+			names the step, rather than returning a pipeline that would hand back an offset that does
+			not hold. The per-stage maps and their composition use the <code>Alignment</code> machinery
+			described in <xref linkend="tools.normalizer.charclass"/>.
 		</para>
 	</section>
 
@@ -451,7 +453,7 @@ CharClass wsPlus = CharClass.whitespace().withAdditional(extra);]]>
 			what you index or query, and the span ties every layer back to the original text for
 			highlighting, even when normalization changes a token's length. A <code>Term</code> is one
 			token projected through an ordered chain of
-			<code>Dimension</code>s: original, NFC, NFKC, whitespace, dash, case fold, accent fold,
+			<code>Dimension</code>s: original, NFC, NFKC, whitespace, dash, case fold, full case fold, accent fold,
 			confusable fold, stem, and lemma. The order is fixed because the transforms do not commute
 			(case folding then accent folding differs from the reverse). The original is always kept,
 			so aggressive folding stays safe and a match on any layer maps back to the source through

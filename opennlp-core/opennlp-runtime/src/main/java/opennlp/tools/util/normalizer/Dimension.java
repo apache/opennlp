@@ -19,15 +19,10 @@ package opennlp.tools.util.normalizer;
 import java.util.function.Supplier;
 
 /**
- * A layer of the {@link Term} normalization stack, in increasing order of aggressiveness. A
- * {@link TermAnalyzer} applies a configured prefix of these to each token; the declaration order is
- * the pipeline order, because the transforms do not commute (case folding then accent
- * folding differs from the reverse for Turkish dotted/dotless i and the German eszett).
- *
- * <p>This enum is the single definition of the character-level steps: each one carries its default
- * {@link CharSequenceNormalizer}, which both {@link TermAnalyzer} and {@link TextNormalizer} read
- * from rather than re-listing. The default is resolved lazily, so loading this enum does not eagerly
- * initialize heavy data such as the confusables table.</p>
+ * A layer of the {@link Term} normalization stack, in increasing order of aggressiveness. The
+ * declaration order is the canonical application order, because the transforms do not commute.
+ * Each character-level dimension carries its default {@link CharSequenceNormalizer}, resolved
+ * lazily on first request.
  *
  * <p>{@link #ORIGINAL} is the source token and is always present. {@link #STEM} and {@link #LEMMA}
  * are token-level and have no default normalizer; they require a
@@ -54,6 +49,9 @@ public enum Dimension {
   /** Case folding; lossy and locale sensitive. */
   CASE_FOLD(CaseFoldCharSequenceNormalizer::getInstance),
 
+  /** Unicode full case folding (UTS #21); lossy and expanding (sharp s to ss, the ligatures). */
+  FULL_CASE_FOLD(FullCaseFoldCharSequenceNormalizer::getInstance),
+
   /** Diacritic and accent folding; lossy, script gated, and language-wrong for some languages. */
   ACCENT_FOLD(AccentFoldCharSequenceNormalizer::getInstance),
 
@@ -68,6 +66,7 @@ public enum Dimension {
 
   private final Supplier<CharSequenceNormalizer> defaultNormalizer;
 
+  /** Associates the dimension with its lazily resolved default normalizer, or {@code null}. */
   Dimension(Supplier<CharSequenceNormalizer> defaultNormalizer) {
     this.defaultNormalizer = defaultNormalizer;
   }

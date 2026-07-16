@@ -18,15 +18,14 @@ package opennlp.tools.util.normalizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * Entry point for composing the normalization rungs into a single {@link CharSequenceNormalizer}.
+ * Entry point for composing normalization steps into a single {@link CharSequenceNormalizer}.
  *
  * <p>Use {@link #builder()} to assemble a chain, or {@link #defaultChain()} for a conservative,
- * ready-made chain. The rungs are applied in the order they are added, so the caller controls
- * the chain. Each rung is a shared, stateless normalizer; the built normalizer is an
- * {@link AggregateCharSequenceNormalizer} that applies them in sequence.</p>
+ * ready-made chain. Steps run in the order they are added. Each step is a shared, stateless
+ * normalizer; the built result is an {@link AggregateCharSequenceNormalizer} that applies them
+ * in sequence.</p>
  *
  * <pre>{@code
  * CharSequenceNormalizer n = TextNormalizer.builder()
@@ -36,6 +35,7 @@ import java.util.Objects;
  */
 public final class TextNormalizer {
 
+  /** Prevents instantiation; use the static factory methods. */
   private TextNormalizer() {
   }
 
@@ -63,13 +63,16 @@ public final class TextNormalizer {
   }
 
   /**
-   * A fluent builder that appends normalization rungs in order and composes them into one
+   * A fluent builder that appends normalization steps in order and composes them into one
    * {@link CharSequenceNormalizer} via {@link #build()}.
    */
   public static final class Builder {
 
     private final List<CharSequenceNormalizer> steps = new ArrayList<>();
 
+    /**
+     * Use {@link TextNormalizer#builder()} to obtain an instance.
+     */
     private Builder() {
     }
 
@@ -132,6 +135,17 @@ public final class TextNormalizer {
       return add(Dimension.CASE_FOLD.defaultNormalizer());
     }
 
+    /**
+     * {@return this builder with Unicode full case folding appended}
+     *
+     * <p>Applies the full case foldings of {@code CaseFolding.txt} including the expanding folds
+     * (sharp s to {@code ss}, the ligatures). It expects composed (NFC) input, since it maps per
+     * code point. Prefer {@link #caseFold()} when the plain lower-case fold is sufficient.</p>
+     */
+    public Builder fullCaseFold() {
+      return add(Dimension.FULL_CASE_FOLD.defaultNormalizer());
+    }
+
     /** {@return this builder with script-gated diacritic folding appended} */
     public Builder accentFold() {
       return add(Dimension.ACCENT_FOLD.defaultNormalizer());
@@ -140,40 +154,40 @@ public final class TextNormalizer {
     /**
      * Appends a custom normalizer.
      *
-     * @param custom The normalizer to append.
+     * @param custom The normalizer to append. Must not be {@code null}.
      * @return This builder.
+     * @throws IllegalArgumentException if {@code custom} is {@code null}.
      */
     public Builder with(CharSequenceNormalizer custom) {
-      return add(Objects.requireNonNull(custom, "custom"));
+      if (custom == null) {
+        throw new IllegalArgumentException("custom must not be null");
+      }
+      return add(custom);
     }
 
-    /** {@return the composed normalizer for the rungs added so far} */
+    /** {@return the composed normalizer for the steps added so far} */
     public CharSequenceNormalizer build() {
       return new AggregateCharSequenceNormalizer(steps.toArray(new CharSequenceNormalizer[0]));
     }
 
     /**
-     * {@return an offset-aware composition of the rungs added so far}
+     * {@return an offset-aware composition of the steps added so far}
      *
-     * <p>Every rung must be an {@link OffsetAwareNormalizer}. Each per-code-point fold is one;
-     * the folds that delegate to {@link java.text.Normalizer} or to JDK case mapping (NFC, NFKC,
-     * accent folding, confusable folding, and case folding) cannot report their per-character edits
-     * and so are rejected here. The returned normalizer's
+     * <p>Every step must be an {@link OffsetAwareNormalizer}. NFC, NFKC, accent folding, confusable
+     * folding, and case folding are rejected because they delegate to {@link java.text.Normalizer}
+     * or JDK case mapping and cannot report their per-character edits. The returned normalizer's
      * {@link OffsetAwareNormalizer#normalizeAligned(CharSequence)} maps a span found in the fully
-     * normalized text back to the original input through every stage, so a match in a normalized
-     * document reports its true offsets in the source.</p>
+     * normalized text back to the original input through every stage.</p>
      *
-     * @throws IllegalStateException Thrown if any rung cannot report an alignment (for example NFC,
-     *     NFKC, accent folding, confusable folding, or case folding, which delegate to
-     *     {@link java.text.Normalizer} or to JDK case mapping); the message names the offending
-     *     rung.
+     * @throws IllegalStateException if any step cannot report an alignment; the message names the
+     *     offending step
      */
     public OffsetAwareNormalizer buildAligned() {
       final OffsetAwareNormalizer[] aligned = new OffsetAwareNormalizer[steps.size()];
       for (int i = 0; i < steps.size(); i++) {
         final CharSequenceNormalizer step = steps.get(i);
         if (!(step instanceof OffsetAwareNormalizer)) {
-          throw new IllegalStateException("rung at 0-based index " + i + " (" + step.getClass().getName()
+          throw new IllegalStateException("step at 0-based index " + i + " (" + step.getClass().getName()
               + ") is not offset-aware and cannot be composed into an aligned pipeline; the "
               + "per-code-point folds report an alignment, while folds that delegate to "
               + "java.text.Normalizer or JDK case mapping (such as NFC, NFKC, accent, confusable, "
@@ -184,6 +198,7 @@ public final class TextNormalizer {
       return new AlignedAggregateCharSequenceNormalizer(aligned);
     }
 
+    /** Appends a normalization step and returns this builder. */
     private Builder add(CharSequenceNormalizer normalizer) {
       steps.add(normalizer);
       return this;

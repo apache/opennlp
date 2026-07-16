@@ -613,6 +613,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 The following license applies to the Unicode data files bundled inside the
 opennlp-runtime jar (opennlp/tools/util/normalizer/confusables.txt,
+opennlp/tools/util/normalizer/CaseFolding.txt,
 opennlp/tools/tokenize/uax29/WordBreakProperty.txt, and
 opennlp/tools/tokenize/uax29/ExtendedPictographic.txt):
 

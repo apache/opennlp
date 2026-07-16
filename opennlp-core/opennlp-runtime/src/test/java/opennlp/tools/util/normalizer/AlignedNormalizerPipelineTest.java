@@ -60,7 +60,8 @@ public class AlignedNormalizerPipelineTest {
         DigitCharSequenceNormalizer.getInstance(),
         EllipsisCharSequenceNormalizer.getInstance(),
         BulletCharSequenceNormalizer.getInstance(),
-        GermanUmlautCharSequenceNormalizer.getInstance()
+        GermanUmlautCharSequenceNormalizer.getInstance(),
+        FullCaseFoldCharSequenceNormalizer.getInstance()
     };
     final String[] inputs = {
         "",
@@ -145,11 +146,11 @@ public class AlignedNormalizerPipelineTest {
 
   @Test
   void buildAlignedReportsTheOffendingRungIndexWhenItIsNotFirst() {
-    // A non-alignable rung after several offset-aware ones must still be rejected, and the message
+    // A non-alignable step after several offset-aware ones must still be rejected, and the message
     // must name its 0-based position (index 2) and type so the failure points at the right fold.
     final IllegalStateException ex = assertThrows(IllegalStateException.class,
         () -> TextNormalizer.builder().whitespace().dashes().caseFold().buildAligned());
-    assertTrue(ex.getMessage().contains("rung at 0-based index 2"), ex.getMessage());
+    assertTrue(ex.getMessage().contains("step at 0-based index 2"), ex.getMessage());
     assertTrue(ex.getMessage().contains("CaseFold"), ex.getMessage());
   }
 
@@ -178,6 +179,7 @@ public class AlignedNormalizerPipelineTest {
     assertTrue(EllipsisCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertTrue(BulletCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertTrue(GermanUmlautCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
+    assertTrue(FullCaseFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     // The folds that route through java.text.Normalizer or JDK case mapping cannot, by design.
     assertFalse(NfkcCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
     assertFalse(CaseFoldCharSequenceNormalizer.getInstance() instanceof OffsetAwareNormalizer);
