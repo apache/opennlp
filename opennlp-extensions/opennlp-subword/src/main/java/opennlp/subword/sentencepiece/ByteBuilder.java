@@ -68,9 +68,15 @@ final class ByteBuilder {
   /**
    * Shrinks the valid length.
    *
-   * @param newLength The new length, not greater than the current length.
+   * @param newLength The new length, not negative and not greater than the current length.
+   * @throws IllegalArgumentException Thrown if {@code newLength} is negative or greater than the
+   *     current length.
    */
   void truncate(int newLength) {
+    if (newLength < 0 || newLength > length) {
+      throw new IllegalArgumentException(
+          "The new length " + newLength + " is outside [0, " + length + "].");
+    }
     length = newLength;
   }
 
