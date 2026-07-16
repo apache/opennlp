@@ -189,7 +189,9 @@ public final class TermAnalyzer {
         }
         final String[] lemmas = lemmatizer.lemmatize(new String[] {input}, new String[] {posTag});
         if (lemmas == null || lemmas.length == 0 || lemmas[0] == null) {
-          // A contract-violating Lemmatizer must fail loud here rather than caching a null lemma.
+          // A contract-violating Lemmatizer must fail loud here: a null cached under LEMMA would
+          // read as "absent" in Term.at's lazy cache and recompute through normalized() forever,
+          // surfacing as a StackOverflowError far from the cause.
           throw new IllegalStateException(
               "The Lemmatizer returned no lemma for token '" + input + "'");
         }
@@ -216,7 +218,9 @@ public final class TermAnalyzer {
     private Lemmatizer lemmatizer;
     private WordTokenizer tokenizer = new WordTokenizer();
 
-    /** Creates an empty builder; use {@link TermAnalyzer#builder()}. */
+    /**
+     * Use {@link TermAnalyzer#builder()} to obtain an instance.
+     */
     private Builder() {
     }
 

@@ -267,7 +267,7 @@ Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized tex
 			through JDK case mapping (the locale-based <code>caseFold()</code>) cannot report their
 			per-character edits, so they do not implement the interface, and a chain that contains one
 			is rejected by <code>buildAligned()</code> with an <code>IllegalStateException</code> that
-			names the rung, rather than returning a pipeline that would hand back an offset that does
+			names the step, rather than returning a pipeline that would hand back an offset that does
 			not hold. The per-stage maps and their composition use the <code>Alignment</code> machinery
 			described in <xref linkend="tools.normalizer.charclass"/>.
 		</para>
