@@ -43,14 +43,16 @@ import java.util.Map;
  */
 public final class ModelAssembler {
 
-  private static final String SAFETENSORS_FILE_NAME = "model.safetensors";
-  private static final String TOKENIZER_JSON_FILE_NAME = "tokenizer.json";
-  private static final String CONFIG_FILE_NAME = "config.json";
-  private static final String VOCABULARY_FILE_NAME = "vocab.txt";
-  private static final String TOKENIZER_CONFIG_FILE_NAME = "tokenizer_config.json";
-  private static final List<String> SENTENCEPIECE_MODEL_FILE_NAMES =
-      List.of("sentencepiece.bpe.model", "spiece.model", "tokenizer.model");
+  /** The WordPiece tokenizer family, the {@code model.type} of a BERT-style distillation. */
+  private static final String FAMILY_WORDPIECE = "WordPiece";
 
+  /** The Unigram {@code model.type} a SentencePiece distillation's {@code tokenizer.json} uses. */
+  private static final String FAMILY_UNIGRAM = "Unigram";
+
+  /** The SentencePiece tokenizer family, reported for an assembled Unigram directory. */
+  private static final String FAMILY_SENTENCEPIECE = "SentencePiece";
+
+  /** Not instantiable. */
   private ModelAssembler() {
   }
 
@@ -88,17 +90,17 @@ public final class ModelAssembler {
       throw new IllegalArgumentException(
           "Model directory does not exist or is not a directory: " + modelDirectory);
     }
-    requireFile(modelDirectory, SAFETENSORS_FILE_NAME);
-    requireFile(modelDirectory, CONFIG_FILE_NAME);
-    final Path tokenizerJson = requireFile(modelDirectory, TOKENIZER_JSON_FILE_NAME);
+    requireFile(modelDirectory, ModelFileNames.SAFETENSORS);
+    requireFile(modelDirectory, ModelFileNames.CONFIG);
+    final Path tokenizerJson = requireFile(modelDirectory, ModelFileNames.TOKENIZER_JSON);
 
     final TokenizerJson tokenizer = readTokenizerJson(tokenizerJson);
     return switch (tokenizer.modelType()) {
-      case "WordPiece" -> assembleWordpiece(modelDirectory, tokenizer);
-      case "Unigram" -> assembleSentencePiece(modelDirectory);
+      case FAMILY_WORDPIECE -> assembleWordpiece(modelDirectory, tokenizer);
+      case FAMILY_UNIGRAM -> assembleSentencePiece(modelDirectory);
       default -> throw new IllegalArgumentException(tokenizerJson + " has a '"
-          + tokenizer.modelType() + "' tokenizer model; only WordPiece and Unigram "
-          + "(SentencePiece) distillations are supported");
+          + tokenizer.modelType() + "' tokenizer model; only " + FAMILY_WORDPIECE + " and "
+          + FAMILY_UNIGRAM + " (" + FAMILY_SENTENCEPIECE + ") distillations are supported");
     };
   }
 
@@ -113,17 +115,17 @@ public final class ModelAssembler {
    */
   private static Result assembleWordpiece(Path modelDirectory, TokenizerJson tokenizer)
       throws IOException {
-    final Path vocabularyFile = modelDirectory.resolve(VOCABULARY_FILE_NAME);
+    final Path vocabularyFile = modelDirectory.resolve(ModelFileNames.VOCABULARY);
     boolean wroteVocabulary = false;
     if (!Files.exists(vocabularyFile)) {
       if (tokenizer.orderedVocabulary() == null) {
         throw new IllegalArgumentException("tokenizer.json in " + modelDirectory
-            + " has no model.vocab dictionary; cannot derive " + VOCABULARY_FILE_NAME);
+            + " has no model.vocab dictionary; cannot derive " + ModelFileNames.VOCABULARY);
       }
       Files.write(vocabularyFile, tokenizer.orderedVocabulary());
       wroteVocabulary = true;
     }
-    final Path tokenizerConfigFile = modelDirectory.resolve(TOKENIZER_CONFIG_FILE_NAME);
+    final Path tokenizerConfigFile = modelDirectory.resolve(ModelFileNames.TOKENIZER_CONFIG);
     boolean wroteTokenizerConfig = false;
     if (!Files.exists(tokenizerConfigFile)) {
       // The BERT normalizer's lowercase flag is the casing; default to lower-casing (the uncased
@@ -134,7 +136,7 @@ public final class ModelAssembler {
       wroteTokenizerConfig = true;
     }
     final StaticEmbeddingModel model = load(modelDirectory);
-    return new Result("WordPiece", model.dimension(), model.vocabularySize(),
+    return new Result(FAMILY_WORDPIECE, model.dimension(), model.vocabularySize(),
         wroteVocabulary, wroteTokenizerConfig);
   }
 
@@ -147,14 +149,16 @@ public final class ModelAssembler {
    * @throws IOException Thrown if loading fails to read a file.
    */
   private static Result assembleSentencePiece(Path modelDirectory) throws IOException {
-    if (firstExisting(modelDirectory, SENTENCEPIECE_MODEL_FILE_NAMES) == null) {
+    if (firstExisting(modelDirectory, ModelFileNames.SENTENCEPIECE_MODELS) == null) {
       throw new IllegalArgumentException("Model directory " + modelDirectory + " is a "
-          + "SentencePiece model but has no trained model file (one of "
-          + String.join(", ", SENTENCEPIECE_MODEL_FILE_NAMES) + "); copy it from the teacher "
-          + "model's repository (it is named sentencepiece.bpe.model there) into this directory");
+          + FAMILY_SENTENCEPIECE + " model but has no trained model file (one of "
+          + String.join(", ", ModelFileNames.SENTENCEPIECE_MODELS) + "); copy it from the "
+          + "teacher model's repository (it is named sentencepiece.bpe.model there) into this "
+          + "directory");
     }
     final StaticEmbeddingModel model = load(modelDirectory);
-    return new Result("SentencePiece", model.dimension(), model.vocabularySize(), false, false);
+    return new Result(FAMILY_SENTENCEPIECE, model.dimension(), model.vocabularySize(),
+        false, false);
   }
 
   /**

@@ -28,6 +28,7 @@ import java.nio.file.Path;
  */
 final class FlatJsonFields {
 
+  /** Not instantiable. */
   private FlatJsonFields() {
   }
 

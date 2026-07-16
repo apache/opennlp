@@ -17,11 +17,9 @@
 
 # OpenNLP Static Embeddings
 
-Embeddings have become an essential part of AI workloads. As such, OpenNLP introduces a pure-JVM approach to embeddings with a modern Model2Vec engine.
+Turn text into embedding vectors from a static (non-contextual) table: a per-token vector matrix plus subword tokenization, WordPiece or SentencePiece. It uses the same lookup-table approach as [word2vec](https://code.google.com/archive/p/word2vec/) and [GloVe](https://nlp.stanford.edu/projects/glove/). Distillation tools can compress a sentence-transformer into such a flat table (the [Model2Vec](https://github.com/MinishLab/model2vec) family is the primary target), and looking a sentence up in the table approximates the transformer's semantics at a fraction of the cost. Because SentencePiece models are supported, this includes multilingual tables distilled from encoders like the [XLM-RoBERTa](https://arxiv.org/abs/1911.02116) family. There is no model forward pass, no GPU, and no native runtime; it is pure JVM.
 
-Turn text into embedding vectors from a static (non-contextual) table: a per-token vector matrix plus subword tokenization, WordPiece or SentencePiece. It is the modern successor to the word2vec and GloVe workflow. Distillation tools can compress a sentence-transformer into such a flat table (the Model2Vec family is the primary target), and looking a sentence up in the table approximates the transformer's semantics at a fraction of the cost. Because SentencePiece models are supported, this includes multilingual tables distilled from encoders like the XLM-RoBERTa family. There is no model forward pass, no GPU, and no native runtime; it is pure JVM.
-
-OpenNLP also supports ONNX models, which are inherently more accurate. Model2Vec sacrifices some accuracy for a large speed gain, and OpenNLP recognizes that trade-off, so both embedding methods are supported and share the same `TextEmbedder` seam.
+OpenNLP also supports ONNX models, which are inherently more accurate. Model2Vec sacrifices some accuracy for a large speed gain, and OpenNLP recognizes that trade-off, so both embedding methods are supported and implement the same `TextEmbedder` interface.
 
 ## Quickstart
 
@@ -60,7 +58,7 @@ flowchart LR
   E --> F["float[] vector"]
 ```
 
-1. **Tokenize.** The model's own subword tokenizer splits the text into pieces: WordPiece with the model's casing rule, or a trained SentencePiece model that carries its own text normalizer. Special pieces (the WordPiece `[CLS]`/`[SEP]`/`[UNK]` frame, a SentencePiece model's control and unknown pieces) never contribute to the pooled vector.
+1. **Tokenize.** The model's own subword tokenizer splits the text into pieces: WordPiece with the model's casing rule, or a trained SentencePiece model that carries its own text normalizer. Special pieces (the WordPiece `[CLS]`, `[SEP]`, and `[UNK]` tokens, a SentencePiece model's control and unknown pieces) never contribute to the pooled vector.
 2. **Gather.** Each piece contributes its matrix row, found by the piece *string* rather than the tokenizer's numeric id. The two files of a SentencePiece model routinely order and offset their ids differently (the fairseq convention shifts them by one, and distillation tools reorder the vocabulary outright), so string lookup is what keeps the pairing robust; a poolable piece with no matrix row fails loud at load time, not at query time. Unknown pieces are dropped, and a text with no in-vocabulary pieces embeds to a zero vector rather than raising.
 3. **Weight and pool.** Per-token weights (when the model carries them) multiply into the running sum, and the sum is divided by the plain token count. This mean-pool matches the reference implementation of the targeted model family exactly, verified against it rather than assumed.
 4. **Normalize.** The pooled vector is L2-normalized by default so cosine similarity is a dot product. Normalization can be turned off for models that expect raw pooled vectors.
@@ -87,7 +85,7 @@ flowchart TD
   MAT --> M
 ```
 
-The weights are read with a purpose-built **safetensors** reader. Unlike pickle-based checkpoint formats, safetensors carries no executable content, so loading a downloaded file cannot execute arbitrary code. Tensor data streams directly into the decoded array, so the file size is not bound by Java's int-indexed arrays; a single decoded tensor is capped at the maximum Java array length (about 2.1 billion float elements), checked explicitly.
+The weights are read with a purpose-built [safetensors](https://github.com/huggingface/safetensors) reader. Unlike pickle-based checkpoint formats, safetensors carries no executable content, so loading a downloaded file cannot execute arbitrary code. Tensor data streams directly into the decoded array, so the file size is not bound by Java's int-indexed arrays; a single decoded tensor is capped at the maximum Java array length (about 2.1 billion float elements), checked explicitly.
 
 ## Architecture
 
@@ -106,11 +104,11 @@ flowchart TD
   DL["SentenceVectorsDL<br/>(opennlp-dl, ONNX)"] -. implements .-> TE
 ```
 
-Two seams keep the module small. `SubwordTokenizer` is the tokenization seam: the WordPiece encoder from `opennlp-api` and the pure-JVM SentencePiece implementation from `opennlp-subword` both produce the same piece stream, so the pooling code has exactly one path. `TextEmbedder` is the embedding seam: the static path here and the contextual ONNX path in `opennlp-dl` both implement it, so callers can swap one for the other without touching their code.
+Two interfaces keep the module small. `SubwordTokenizer` is the tokenization interface: the WordPiece encoder from `opennlp-api` and the pure-JVM SentencePiece implementation from `opennlp-subword` both produce the same piece stream, so the pooling code has exactly one path. `TextEmbedder` is the embedding interface: the static path here and the contextual ONNX path in `opennlp-dl` both implement it, so callers can swap one for the other without touching their code.
 
 ## Performance
 
-A static table wins on speed and footprint because there is no model forward pass: the hot path is a vocabulary lookup, a handful of vector adds, and one normalization. The module ships a JMH benchmark (`StaticEmbeddingModelBenchmark`) that measures `embed()` and `mostSimilar()` throughput on a real model directory (`-p modelDir=/path/to/model`), so you can reproduce numbers on your own hardware and model.
+A static table wins on speed and footprint because there is no model forward pass: the hot path is a vocabulary lookup, a handful of vector adds, and one normalization. The module ships a Java Microbenchmark Harness (JMH) benchmark (`StaticEmbeddingModelBenchmark`) that measures `embed()` and `mostSimilar()` throughput on a real model directory (`-p modelDir=/path/to/model`), so you can reproduce numbers on your own hardware and model.
 
 Two things drive the numbers, and the benchmark separates them. `embed()` is tokenize-and-pool, so its cost tracks the text and the tokenizer, not the table size. `mostSimilar()` is a brute-force scan over every row, so its cost tracks the vocabulary size directly. A run comparing a small WordPiece table against the large multilingual SentencePiece table makes the split visible (throughput across all cores, one machine, indicative not publishable):
 
@@ -119,7 +117,7 @@ Two things drive the numbers, and the benchmark separates them. `embed()` is tok
 | potion-base-8M | WordPiece, 29.5k | ~295k ops/s | ~9,000 ops/s |
 | bge-m3 (distilled) | SentencePiece, 250k | ~1.47M ops/s | ~550 ops/s |
 
-So a large multilingual vocabulary is free for embedding and expensive for a full nearest-neighbor scan; that scan is where an approximate index earns its place once the table is large. Separately, on the potion-base-8M table the JVM path ran roughly an order of magnitude faster single-threaded than the model2vec Python reference at around a fifth of the resident memory, with output vectors matching the reference within floating-point tolerance, so the speed is not bought with accuracy. Treat all of these as a starting expectation and run the benchmark on the model you plan to use.
+So a large multilingual vocabulary is free for embedding and expensive for a full nearest-neighbor scan; that scan is where an approximate index earns its place once the table is large. Separately, `scripts/parity/` holds a harness that reruns the single-thread speed comparison against the Model2Vec Python reference and checks that the output vectors match it within floating-point tolerance, so a cross-runtime comparison is something you reproduce on your own hardware rather than quote. Treat all of these as a starting expectation and run the benchmark on the model you plan to use.
 
 ## Usage
 
@@ -176,7 +174,7 @@ IntStream.range(0, docs.size())
     .forEach(i -> System.out.println(docs.get(i)));
 ```
 
-Here `dot` is any dot product over two float arrays. For a full RAG-style retriever, keep the document vectors in whatever index you already use and score queries the same way. This applies to most modern search engines, since they tend to decouple the HNSW lookups from the vectors you feed them.
+Here `dot` is any dot product over two float arrays. For a full retrieval-augmented generation (RAG) retriever, keep the document vectors in whatever index you already use and score queries the same way. A vector index that stores and searches precomputed vectors, such as a Hierarchical Navigable Small World (HNSW) index, does not care how those vectors were produced, so these embeddings can feed it directly.
 
 ## Getting a model
 

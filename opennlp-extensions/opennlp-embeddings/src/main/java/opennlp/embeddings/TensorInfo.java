@@ -56,8 +56,8 @@ public record TensorInfo(String name, String dtype, int[] shape, long dataOffset
   }
 
   /**
-   * @return The tensor's dimensions, outermost first, as a copy; mutating it does not affect
-   *     this record.
+   * {@return the tensor's dimensions, outermost first, as a copy; mutating it does not affect
+   * this record}
    */
   @Override
   public int[] shape() {
