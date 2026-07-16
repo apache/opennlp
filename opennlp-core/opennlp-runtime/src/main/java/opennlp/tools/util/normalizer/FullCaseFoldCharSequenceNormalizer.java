@@ -51,6 +51,28 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
 
   private static final String RESOURCE = "CaseFolding.txt";
 
+  /** Field separator in {@code CaseFolding.txt} ({@code <code>; <status>; <mapping>;}). */
+  private static final String FIELD_SEPARATOR = ";";
+
+  /**
+   * Separates hex code points inside a multi-character mapping field. The Unicode
+   * {@code CaseFolding.txt} format uses ASCII space ({@code U+0020}), not a general whitespace
+   * class.
+   */
+  private static final String MAPPING_CODE_POINT_SEPARATOR = " ";
+
+  /** {@code CaseFolding.txt} status {@code C}: common mapping shared by simple and full folding. */
+  private static final String STATUS_COMMON = "C";
+
+  /** {@code CaseFolding.txt} status {@code F}: full mapping that may expand string length. */
+  private static final String STATUS_FULL = "F";
+
+  /** {@code CaseFolding.txt} status {@code S}: simple mapping; skipped by this full fold. */
+  private static final String STATUS_SIMPLE = "S";
+
+  /** {@code CaseFolding.txt} status {@code T}: Turkic mapping; skipped by this full fold. */
+  private static final String STATUS_TURKIC = "T";
+
   /**
    * Maps a source code point to its full case folding (one or more code points), for the C and F
    * status rows of {@code CaseFolding.txt}. Loaded once when this class initializes, which
@@ -137,17 +159,17 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
         if (content.isEmpty()) {
           continue;
         }
-        final String[] fields = content.split(";");
+        final String[] fields = content.split(FIELD_SEPARATOR);
         if (fields.length < 3) {
           throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
               + " at line " + lineNumber + ": " + content);
         }
         final String status = fields[1].strip();
-        if ("S".equals(status) || "T".equals(status)) {
+        if (STATUS_SIMPLE.equals(status) || STATUS_TURKIC.equals(status)) {
           // Simple and Turkic mappings are recognized but deliberately not part of the full fold.
           continue;
         }
-        if (!"C".equals(status) && !"F".equals(status)) {
+        if (!STATUS_COMMON.equals(status) && !STATUS_FULL.equals(status)) {
           // An unrecognized status is not a known-and-skipped case (S/T above); treat it as
           // corruption rather than silently dropping data.
           throw new IllegalArgumentException("Malformed case folding data in " + RESOURCE
@@ -156,7 +178,7 @@ public final class FullCaseFoldCharSequenceNormalizer implements OffsetAwareNorm
         try {
           final int source = Integer.parseInt(fields[0].strip(), 16);
           final StringBuilder target = new StringBuilder();
-          for (final String hex : fields[2].strip().split(" ")) {
+          for (final String hex : fields[2].strip().split(MAPPING_CODE_POINT_SEPARATOR)) {
             target.appendCodePoint(Integer.parseInt(hex, 16));
           }
           map.put(source, target.toString());

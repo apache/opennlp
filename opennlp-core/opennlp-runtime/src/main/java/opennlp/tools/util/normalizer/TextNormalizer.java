@@ -20,12 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entry point for composing the normalization rungs into a single {@link CharSequenceNormalizer}.
+ * Entry point for composing normalization steps into a single {@link CharSequenceNormalizer}.
  *
  * <p>Use {@link #builder()} to assemble a chain, or {@link #defaultChain()} for a conservative,
- * ready-made chain. The rungs are applied in the order they are added, so the caller controls
- * the chain. Each rung is a shared, stateless normalizer; the built normalizer is an
- * {@link AggregateCharSequenceNormalizer} that applies them in sequence.</p>
+ * ready-made chain. Steps run in the order they are added. Each step is a shared, stateless
+ * normalizer; the built result is an {@link AggregateCharSequenceNormalizer} that applies them
+ * in sequence.</p>
  *
  * <pre>{@code
  * CharSequenceNormalizer n = TextNormalizer.builder()
@@ -63,14 +63,16 @@ public final class TextNormalizer {
   }
 
   /**
-   * A fluent builder that appends normalization rungs in order and composes them into one
+   * A fluent builder that appends normalization steps in order and composes them into one
    * {@link CharSequenceNormalizer} via {@link #build()}.
    */
   public static final class Builder {
 
     private final List<CharSequenceNormalizer> steps = new ArrayList<>();
 
-    /** Creates an empty builder; use {@link TextNormalizer#builder()}. */
+    /**
+     * Use {@link TextNormalizer#builder()} to obtain an instance.
+     */
     private Builder() {
     }
 
@@ -163,29 +165,29 @@ public final class TextNormalizer {
       return add(custom);
     }
 
-    /** {@return the composed normalizer for the rungs added so far} */
+    /** {@return the composed normalizer for the steps added so far} */
     public CharSequenceNormalizer build() {
       return new AggregateCharSequenceNormalizer(steps.toArray(new CharSequenceNormalizer[0]));
     }
 
     /**
-     * {@return an offset-aware composition of the rungs added so far}
+     * {@return an offset-aware composition of the steps added so far}
      *
-     * <p>Every rung must be an {@link OffsetAwareNormalizer}. NFC, NFKC, accent folding, confusable
+     * <p>Every step must be an {@link OffsetAwareNormalizer}. NFC, NFKC, accent folding, confusable
      * folding, and case folding are rejected because they delegate to {@link java.text.Normalizer}
      * or JDK case mapping and cannot report their per-character edits. The returned normalizer's
      * {@link OffsetAwareNormalizer#normalizeAligned(CharSequence)} maps a span found in the fully
      * normalized text back to the original input through every stage.</p>
      *
-     * @throws IllegalStateException Thrown if any rung cannot report an alignment; the message names
-     *     the offending rung.
+     * @throws IllegalStateException if any step cannot report an alignment; the message names the
+     *     offending step
      */
     public OffsetAwareNormalizer buildAligned() {
       final OffsetAwareNormalizer[] aligned = new OffsetAwareNormalizer[steps.size()];
       for (int i = 0; i < steps.size(); i++) {
         final CharSequenceNormalizer step = steps.get(i);
         if (!(step instanceof OffsetAwareNormalizer)) {
-          throw new IllegalStateException("rung at 0-based index " + i + " (" + step.getClass().getName()
+          throw new IllegalStateException("step at 0-based index " + i + " (" + step.getClass().getName()
               + ") is not offset-aware and cannot be composed into an aligned pipeline; the "
               + "per-code-point folds report an alignment, while folds that delegate to "
               + "java.text.Normalizer or JDK case mapping (such as NFC, NFKC, accent, confusable, "
@@ -196,7 +198,7 @@ public final class TextNormalizer {
       return new AlignedAggregateCharSequenceNormalizer(aligned);
     }
 
-    /** Appends a normalizer rung and returns this builder. */
+    /** Appends a normalization step and returns this builder. */
     private Builder add(CharSequenceNormalizer normalizer) {
       steps.add(normalizer);
       return this;
