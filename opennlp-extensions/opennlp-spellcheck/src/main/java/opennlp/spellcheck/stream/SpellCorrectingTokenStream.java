@@ -31,9 +31,11 @@ import opennlp.tools.util.ObjectStream;
  * (whitespace by default). Every token is spell-corrected independently and the tokens
  * are re-joined with the same delimiter.
  *
- * <p>This is the shape produced by OpenNLP tokenizers and token-sample formats, a fixed
- * sequence of tokens per element. This stream is token-count preserving: it never splits or
- * merges tokens, so the corrected element stays aligned with any parallel annotation.</p>
+ * <p>This is the shape produced by OpenNLP tokenizers / token-sample formats and is
+ * what the trainable components consume: a fixed sequence of tokens per element. Unlike
+ * {@link SpellCorrectingObjectStream} in compound mode, this stream is
+ * <em>token-count preserving</em> &ndash; it never splits or merges tokens, so the
+ * corrected element stays aligned with any parallel annotation (tags, spans).</p>
  *
  * <p>Correction always runs in
  * {@link SpellCheckingCharSequenceNormalizer.Mode#PER_TOKEN per-token} mode and reuses
