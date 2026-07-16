@@ -16,6 +16,7 @@
  */
 package opennlp.subword.sentencepiece;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,9 @@ import java.util.PriorityQueue;
  * <p>Only pieces of the normal, user-defined, and unused types participate in merges; a merge that
  * lands on an unused piece is re-segmented back into its constituents.</p>
  */
-final class BpeEncoder {
+final class BpeEncoder implements Serializable {
+
+  private static final long serialVersionUID = -57799941356582785L;
 
   private static final int MAX_RESEGMENT_DEPTH = 100;
 
@@ -77,8 +80,12 @@ final class BpeEncoder {
    * @param normalized The buffer holding the normalized UTF-8 bytes; must not be null.
    * @param size       The number of valid bytes in {@code normalized}.
    * @return The segments covering all bytes, in text order.
+   * @throws IllegalArgumentException Thrown if {@code normalized} is null.
    */
   List<Segment> encode(byte[] normalized, int size) {
+    if (normalized == null) {
+      throw new IllegalArgumentException("The normalized buffer must not be null.");
+    }
     if (size == 0) {
       return List.of();
     }
@@ -92,7 +99,7 @@ final class BpeEncoder {
     while (position < size) {
       int matched = 0;
       if (userDefinedMatcher != null) {
-        matched = longestUserDefinedMatch(normalized, size, position);
+        matched = userDefinedMatcher.longestMatch(normalized, size, position);
       }
       final boolean frozen = matched > 0;
       final int length = frozen ? matched
@@ -158,6 +165,20 @@ final class BpeEncoder {
     return output;
   }
 
+  /**
+   * Offers the adjacent symbol pair {@code (left, right)} as a merge candidate: the pair joins
+   * the agenda only when the concatenation is a mergeable vocabulary piece, and a merge landing
+   * on an unused piece is remembered in {@code revMerge} for later re-segmentation.
+   *
+   * @param normalized The buffer holding the normalized UTF-8 bytes.
+   * @param from       Per symbol, the inclusive start offset in {@code normalized}.
+   * @param to         Per symbol, the exclusive end offset in {@code normalized}.
+   * @param freeze     Per symbol, whether it is a user-defined symbol excluded from merging.
+   * @param left       The index of the left symbol, or {@code -1} for none.
+   * @param right      The index of the right symbol, or {@code -1} for none.
+   * @param agenda     The merge agenda to add to.
+   * @param revMerge   The map from a merged piece to its two constituents.
+   */
   private void maybeAddPair(byte[] normalized, int[] from, int[] to, boolean[] freeze,
                             int left, int right, PriorityQueue<Pair> agenda,
                             Map<String, String[]> revMerge) {
@@ -206,20 +227,5 @@ final class BpeEncoder {
     }
     consumed = resegment(parts[0], consumed, depth + 1, revMerge, output);
     return resegment(parts[1], consumed, depth + 1, revMerge, output);
-  }
-
-  private int longestUserDefinedMatch(byte[] input, int inputLength, int from) {
-    int node = userDefinedMatcher.root();
-    int longest = 0;
-    for (int i = from; i < inputLength; i++) {
-      node = userDefinedMatcher.step(node, input[i]);
-      if (node == PieceTrie.DEAD) {
-        break;
-      }
-      if (userDefinedMatcher.value(node) >= 0) {
-        longest = i - from + 1;
-      }
-    }
-    return longest;
   }
 }

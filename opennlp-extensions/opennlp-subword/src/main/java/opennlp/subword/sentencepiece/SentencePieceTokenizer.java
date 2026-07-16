@@ -22,9 +22,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntUnaryOperator;
 
 import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
@@ -43,6 +45,11 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  * for reuse outside tokenization.</p>
  *
  * <p>Instances are immutable after loading and safe for concurrent use by multiple threads.</p>
+ *
+ * @see <a href="https://github.com/google/sentencepiece">SentencePiece</a>
+ * @see <a href="https://aclanthology.org/D18-2012/">Kudo &amp; Richardson (EMNLP 2018),
+ *     "SentencePiece: A simple and language independent subword tokenizer and detokenizer for
+ *     Neural Text Processing"</a>
  */
 public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwareNormalizer {
 
@@ -82,6 +89,13 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
   private final List<String> selfTestInputs;
   private final List<String> selfTestExpected;
 
+  /**
+   * Validates a parsed model and derives the runtime structures: the piece maps, the byte-piece
+   * table, the normalizer, and the encoder matching the model's algorithm.
+   *
+   * @param model The parsed model description.
+   * @throws IllegalArgumentException Thrown if the model is structurally invalid.
+   */
   private SentencePieceTokenizer(ModelProtoReader.RawModel model) {
     final int count = model.pieces.size();
     pieces = model.pieces.toArray(new String[0]);
@@ -106,7 +120,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     reservedPieces = new HashMap<>();
     final List<String> userDefined = new ArrayList<>();
     byteToId = new int[256];
-    java.util.Arrays.fill(byteToId, -1);
+    Arrays.fill(byteToId, -1);
     int foundUnkId = -1;
     float minScore = Float.MAX_VALUE;
     for (int i = 0; i < count; i++) {
@@ -124,7 +138,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
       final Map<String, Integer> target =
           isMain || algorithm == Algorithm.BPE ? mainPieces : reservedPieces;
       if (mainPieces.containsKey(piece) || reservedPieces.containsKey(piece)) {
-        throw new IllegalArgumentException("The piece '" + piece + "' is defined more than once.");
+        throw PieceTrie.duplicatePiece(piece);
       }
       target.put(piece, i);
       switch (types[i]) {
@@ -165,7 +179,8 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
       }
     }
 
-    final PieceTrie userDefinedMatcher = userDefined.isEmpty() ? null : trieOf(userDefined, id -> 0);
+    final PieceTrie userDefinedMatcher =
+        userDefined.isEmpty() ? null : trieOf(userDefined, id -> 0);
 
     normalizer = new SentencePieceNormalizer(model.precompiledCharsMap, model.addDummyPrefix,
         model.removeExtraWhitespaces, model.escapeWhitespaces, model.treatWhitespaceAsSuffix,
@@ -204,8 +219,14 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     selfTestExpected = List.copyOf(model.selfTestExpected);
   }
 
-  private static PieceTrie trieOf(List<String> pieceList,
-                                  java.util.function.IntUnaryOperator idOf) {
+  /**
+   * Builds a {@link PieceTrie} over the given pieces.
+   *
+   * @param pieceList The pieces to index.
+   * @param idOf      Maps a piece's index in {@code pieceList} to the id the trie stores for it.
+   * @return The packed trie.
+   */
+  private static PieceTrie trieOf(List<String> pieceList, IntUnaryOperator idOf) {
     final byte[][] keys = new byte[pieceList.size()][];
     final int[] ids = new int[pieceList.size()];
     for (int i = 0; i < keys.length; i++) {
@@ -246,11 +267,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     return new SentencePieceTokenizer(ModelProtoReader.read(in.readAllBytes()));
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @throws IllegalArgumentException Thrown if {@code text} is null.
-   */
+  /** {@inheritDoc} */
   @Override
   public List<SubwordPiece> encode(CharSequence text) {
     if (text == null) {
@@ -526,13 +543,16 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     return selfTestExpected;
   }
 
+  // The prefix of a byte-fallback piece string; a full piece has the form "<0xAB>".
+  private static final String BYTE_PIECE_PREFIX = "<0x";
+
   // "<0xAB>" piece strings for all byte values, as byte fallback emits them.
   private static final String[] BYTE_PIECES = new String[256];
 
   static {
     final char[] hex = "0123456789ABCDEF".toCharArray();
     for (int b = 0; b < 256; b++) {
-      BYTE_PIECES[b] = "<0x" + hex[b >>> 4] + hex[b & 0xF] + ">";
+      BYTE_PIECES[b] = BYTE_PIECE_PREFIX + hex[b >>> 4] + hex[b & 0xF] + ">";
     }
   }
 
@@ -543,7 +563,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    * @return The byte value in {@code [0, 255]}, or {@code -1} when the string is not a byte piece.
    */
   private static int parseBytePiece(String piece) {
-    if (piece.length() != 6 || !piece.startsWith("<0x") || piece.charAt(5) != '>') {
+    if (piece.length() != 6 || !piece.startsWith(BYTE_PIECE_PREFIX) || piece.charAt(5) != '>') {
       return -1;
     }
     final int high = Character.digit(piece.charAt(3), 16);

@@ -20,8 +20,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,11 +59,13 @@ class WordpieceEncoderTest {
     assertEquals(expectedEnd, piece.end(), "end of " + piece);
   }
 
-  @Test
-  void testPieceSequenceMatchesTheReferencePipelineOnCuratedInputs() {
-    final ReferenceBertPipeline reference = new ReferenceBertPipeline(new HashSet<>(VOCAB), true);
-    final WordpieceEncoder encoder = uncased();
-    final String[] inputs = {
+  /**
+   * The curated parity inputs, each exercising a normalization step of the pipeline.
+   *
+   * @return The inputs.
+   */
+  static Stream<String> curatedInputs() {
+    return Stream.of(
         "",
         "   ",
         "Hello, WORLD!",
@@ -81,12 +87,16 @@ class WordpieceEncoderTest {
         "\uD83D\uDE00",
         "!!!",
         "a".repeat(101),
-        "he said: \u00ABhello\u00BB.",
-    };
-    for (final String input : inputs) {
-      assertArrayEquals(reference.tokenize(input), encoder.encodeToPieces(input),
-          "parity broke on: " + input);
-    }
+        "he said: \u00ABhello\u00BB.");
+  }
+
+  @ParameterizedTest
+  @MethodSource("curatedInputs")
+  void testPieceSequenceMatchesTheReferencePipelineOnCuratedInputs(String input) {
+    final ReferenceBertPipeline reference = new ReferenceBertPipeline(new HashSet<>(VOCAB), true);
+    final WordpieceEncoder encoder = uncased();
+    assertArrayEquals(reference.tokenize(input), encoder.encodeToPieces(input),
+        "parity broke on: " + input);
   }
 
   @Test
@@ -193,14 +203,13 @@ class WordpieceEncoderTest {
     assertPiece(pieces.get(2), "hello", 4, 6, 11);
   }
 
-  @Test
-  void testEmptyAndBlankTextEncodeToTheFramePiecesOnly() {
-    for (final String input : new String[] {"", "   "}) {
-      final List<SubwordPiece> pieces = uncased().encode(input);
-      assertEquals(2, pieces.size());
-      assertPiece(pieces.get(0), "[CLS]", 2, 0, 0);
-      assertPiece(pieces.get(1), "[SEP]", 3, input.length(), input.length());
-    }
+  @ParameterizedTest
+  @ValueSource(strings = {"", "   "})
+  void testEmptyAndBlankTextEncodeToTheFramePiecesOnly(String input) {
+    final List<SubwordPiece> pieces = uncased().encode(input);
+    assertEquals(2, pieces.size(), "frame pieces broke on <" + input + ">");
+    assertPiece(pieces.get(0), "[CLS]", 2, 0, 0);
+    assertPiece(pieces.get(1), "[SEP]", 3, input.length(), input.length());
   }
 
   @Test
