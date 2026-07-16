@@ -34,10 +34,12 @@ import opennlp.tools.util.StringUtil;
  * <p>{@link #stem(CharSequence)} returns the first analysis, preferring the word's own
  * dictionary entry; {@link #stemAll(CharSequence)} returns every distinct analysis. A
  * word with no analysis is returned unchanged, so the stemmer degrades to identity on
- * unknown vocabulary. Capitalized forms also try their lowercase variant.</p>
+ * unknown vocabulary. A form containing uppercase characters is also analyzed in its
+ * lowercase variant, so sentence-initial capitalization does not hide an entry.</p>
  *
- * <p>The stemmer reads only immutable dictionary state and is safe to share between
- * threads, satisfying the single-thread confinement contract trivially.</p>
+ * <p>The {@link Stemmer} interface leaves thread safety to the implementation. This
+ * implementation reads only the immutable dictionary state, so a single instance is
+ * safe to share between threads.</p>
  *
  * @since 3.0.0
  */
@@ -80,13 +82,29 @@ public class HunspellStemmer implements Stemmer {
     return List.copyOf(new ArrayList<CharSequence>(analyses));
   }
 
-  /** Collects the case variants to analyze: the surface form, then its lowercase. */
+  /**
+   * Collects the case variants to analyze: the surface form first, then its lowercase
+   * form when the two differ. Ordering matters because the first analysis found wins
+   * in {@link #stem(CharSequence)}.
+   *
+   * @param surface The surface form.
+   * @return The variants in analysis order. Never {@code null} or empty.
+   */
   private static List<String> variants(String surface) {
     final String lowered = StringUtil.toLowerCase(surface);
     return lowered.equals(surface) ? List.of(surface) : List.of(surface, lowered);
   }
 
-  /** Runs direct lookup, suffix removal, prefix removal, and cross products. */
+  /**
+   * Adds every analysis of one case variant to the result set: the word's own
+   * dictionary entry, single suffix removal, twofold suffix removal through
+   * continuation classes, single prefix removal, and cross-product removal of one
+   * prefix together with one suffix. Insertion order into the set fixes the
+   * preference order reported by {@link #stemAll(CharSequence)}.
+   *
+   * @param word The case variant to analyze.
+   * @param analyses The mutable, insertion-ordered set collecting the stems found.
+   */
   private void analyze(String word, Set<String> analyses) {
     if (dictionary.lookup(word) != null) {
       analyses.add(word);
@@ -144,7 +162,10 @@ public class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Undoes one suffix rule.
+   * Undoes one suffix rule: cuts the affix material off the end of the word, restores
+   * the strip string the rule removed on application, and checks the rule's condition
+   * against the restored stem. Rules with empty affix material and candidates that
+   * would leave an empty stem are rejected.
    *
    * @param word The surface form.
    * @param suffix The rule to undo.
@@ -161,7 +182,10 @@ public class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Undoes one prefix rule.
+   * Undoes one prefix rule: cuts the affix material off the start of the word,
+   * restores the strip string the rule removed on application, and checks the rule's
+   * condition against the restored stem. Rules with empty affix material and
+   * candidates that would leave an empty stem are rejected.
    *
    * @param word The surface form.
    * @param prefix The rule to undo.

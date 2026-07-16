@@ -54,8 +54,13 @@ import opennlp.tools.util.StringUtil;
  */
 public final class HunspellDictionary {
 
-  /** One parsed affix rule; {@code affix} is the surface material added to the stem,
-   * and {@code continuation} lists the flags of affixes that may stack on top. */
+  /**
+   * One parsed affix rule. {@code affix} is the surface material the rule adds to the
+   * stem, {@code strip} is the stem material the rule replaces (restored during
+   * analysis), {@code crossProduct} states whether the rule may combine with an affix
+   * of the opposite kind, and {@code continuation} lists the flags of further affixes
+   * that may stack on top of this one.
+   */
   record Affix(int flag, boolean crossProduct, String strip, String affix,
       AffixCondition condition, int[] continuation) {
 
@@ -169,6 +174,13 @@ public final class HunspellDictionary {
     return false;
   }
 
+  /**
+   * Reads a stream fully into memory. The stream is not closed.
+   *
+   * @param in The stream to drain.
+   * @return All bytes the stream produced. Never {@code null}.
+   * @throws IOException Thrown if reading fails.
+   */
   private static byte[] readAll(InputStream in) throws IOException {
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
     final byte[] buffer = new byte[8192];
@@ -179,7 +191,15 @@ public final class HunspellDictionary {
     return out.toByteArray();
   }
 
-  /** Finds the {@code SET} declaration by scanning the raw bytes as ASCII. */
+  /**
+   * Finds the {@code SET} declaration by scanning the raw affix bytes as ASCII, which
+   * is safe because the declaration itself is ASCII in every supported encoding. Both
+   * files are then decoded with the declared charset.
+   *
+   * @param affixBytes The raw affix file content.
+   * @return The declared charset, or UTF-8 when no declaration is present.
+   * @throws IOException Thrown if the declared encoding name is not supported.
+   */
   private static Charset declaredCharset(byte[] affixBytes) throws IOException {
     final String ascii = new String(affixBytes, StandardCharsets.US_ASCII);
     for (final String line : splitLines(ascii)) {
@@ -196,9 +216,14 @@ public final class HunspellDictionary {
     return StandardCharsets.UTF_8;
   }
 
-  /** The flag encodings a dictionary may declare. */
+  /** The flag encodings a dictionary may declare with the {@code FLAG} directive. */
   private enum FlagMode {
-    CHAR, LONG, NUM
+    /** The default: each single character is one flag. */
+    CHAR,
+    /** Declared as {@code FLAG long}: each pair of characters is one flag. */
+    LONG,
+    /** Declared as {@code FLAG num}: comma-separated decimal numbers are flags. */
+    NUM
   }
 
   /** The parsed affix file content. */
@@ -208,6 +233,16 @@ public final class HunspellDictionary {
     private FlagMode flagMode = FlagMode.CHAR;
   }
 
+  /**
+   * Parses the affix file: the {@code FLAG} declaration and the {@code PFX} and
+   * {@code SFX} blocks. Directives outside the supported set (compounding,
+   * conversion tables, suggestion options, ...) are skipped, so their rules never
+   * fire and unsupported analyses are missed rather than invented.
+   *
+   * @param content The decoded affix file content.
+   * @return The parsed rules and flag mode. Never {@code null}.
+   * @throws IOException Thrown if a supported directive is malformed.
+   */
   private static AffixFile parseAffix(String content) throws IOException {
     final AffixFile result = new AffixFile();
     final String[] lines = splitLines(content);
@@ -243,7 +278,18 @@ public final class HunspellDictionary {
     return result;
   }
 
-  /** Parses one PFX or SFX header and its rule lines; returns the next line index. */
+  /**
+   * Parses one {@code PFX} or {@code SFX} block: the header line naming the flag, the
+   * cross-product marker, and the rule count, followed by exactly that many rule
+   * lines.
+   *
+   * @param lines All lines of the affix file.
+   * @param index The line index of the block header.
+   * @param header The already-split header fields.
+   * @param result The parse target the rules are added to.
+   * @return The index of the first line after the block.
+   * @throws IOException Thrown if the header or a rule line is malformed.
+   */
   private static int parseAffixBlock(String[] lines, int index, String[] header,
       AffixFile result) throws IOException {
     if (header.length < 4) {
@@ -289,6 +335,17 @@ public final class HunspellDictionary {
     return line;
   }
 
+  /**
+   * Parses the word list: an optional leading entry count, then one entry per line
+   * consisting of the word, an optional {@code /flags} run, and optional
+   * whitespace-separated morphological fields, which are ignored. A slash escaped as
+   * {@code \/} belongs to the word itself and is unescaped in the stored key.
+   *
+   * @param content The decoded word-list content.
+   * @param flagMode The flag encoding declared by the affix file.
+   * @return The words mapped to the flag sets of their entries. Never {@code null}.
+   * @throws IOException Thrown if a flag run is malformed.
+   */
   private static Map<String, List<int[]>> parseWordList(String content,
       FlagMode flagMode) throws IOException {
     final String[] lines = splitLines(content);
@@ -325,6 +382,13 @@ public final class HunspellDictionary {
     return entries;
   }
 
+  /**
+   * Checks whether a line consists purely of decimal digits, which identifies the
+   * optional entry-count header of a word list.
+   *
+   * @param line The trimmed line to inspect.
+   * @return {@code true} if the line is a non-empty digit run.
+   */
   private static boolean isCount(String line) {
     if (line.isEmpty()) {
       return false;
@@ -337,7 +401,13 @@ public final class HunspellDictionary {
     return true;
   }
 
-  /** Finds the first {@code /} that is not escaped as {@code \/}. */
+  /**
+   * Finds the first {@code /} that is not escaped as {@code \/}, which separates the
+   * word from its flag run in a word-list entry.
+   *
+   * @param line The word-list line to scan.
+   * @return The index of the separator, or {@code -1} when the entry has no flags.
+   */
   private static int unescapedSlash(String line) {
     for (int i = 0; i < line.length(); i++) {
       if (line.charAt(i) == '/' && (i == 0 || line.charAt(i - 1) != '\\')) {
@@ -347,6 +417,13 @@ public final class HunspellDictionary {
     return -1;
   }
 
+  /**
+   * Finds the first whitespace character, which terminates the word or flag field of
+   * a word-list entry before its optional morphological fields.
+   *
+   * @param text The text to scan.
+   * @return The index of the first whitespace character, or {@code -1} if none.
+   */
   private static int whitespaceIndex(String text) {
     for (int i = 0; i < text.length(); i++) {
       if (StringUtil.isWhitespace(text.charAt(i))) {
@@ -356,6 +433,17 @@ public final class HunspellDictionary {
     return -1;
   }
 
+  /**
+   * Parses a flag run according to the declared flag mode: single characters in
+   * {@code char} mode, character pairs packed into one {@code int} in {@code long}
+   * mode, and comma-separated decimal numbers in {@code num} mode.
+   *
+   * @param text The flag run without its leading {@code /}.
+   * @param mode The declared flag encoding.
+   * @param lineNumber The source line, for error messages.
+   * @return The parsed flags. Never {@code null}.
+   * @throws IOException Thrown if the run does not fit the declared encoding.
+   */
   private static int[] parseFlags(String text, FlagMode mode, int lineNumber)
       throws IOException {
     switch (mode) {
@@ -391,6 +479,16 @@ public final class HunspellDictionary {
     }
   }
 
+  /**
+   * Parses a field that must contain exactly one flag, such as the flag name in an
+   * affix block header.
+   *
+   * @param text The flag field.
+   * @param mode The declared flag encoding.
+   * @param lineNumber The source line, for error messages.
+   * @return The single parsed flag.
+   * @throws IOException Thrown if the field holds no flag or more than one.
+   */
   private static int parseFlag(String text, FlagMode mode, int lineNumber)
       throws IOException {
     final int[] flags = parseFlags(text, mode, lineNumber);
