@@ -35,7 +35,10 @@ import opennlp.tools.document.Layers;
  */
 public class LemmatizerAnnotator implements DocumentAnnotator {
 
-  /** Lemmas; aligned with the token layer, each annotation on its token's span. */
+  /**
+   * The lemma layer. It is aligned with the token layer by position, and each annotation
+   * carries the lemma of its token on that token's span.
+   */
   public static final LayerKey<String> LEMMAS = LayerKey.of("lemmas", String.class);
 
   private final Lemmatizer lemmatizer;

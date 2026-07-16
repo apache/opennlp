@@ -50,6 +50,6 @@ public final class Layers {
   public static final LayerKey<String> ENTITIES = LayerKey.of("entities", String.class);
 
   private Layers() {
-    // constants only
+    // This class holds constants only and is never instantiated.
   }
 }
