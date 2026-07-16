@@ -28,7 +28,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.ml.AlgorithmType;
+import opennlp.tools.util.Parameters;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.TrainingParameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -69,11 +72,11 @@ public class NameFinderMEWithDatesTest extends AbstractNameFinderTest {
       downloadVersion15Model("en-ner-date.bin");
       v15ModelEN = new TokenNameFinderModel(Files.newInputStream(
               OPENNLP_DIR.resolve("en-ner-date.bin")));
-      TokenNameFinderModel trainedModelEN = trainModel("eng",
+      TokenNameFinderModel trainedModelEN = trainDateModel("eng",
               "opennlp/tools/namefind/RandomNewsWithGeneratedDates_EN.train");
       assertNotNull(trainedModelEN);
       assertTrue(hasOtherAsOutcome(trainedModelEN));
-      TokenNameFinderModel trainedModelDE = trainModel("deu",
+      TokenNameFinderModel trainedModelDE = trainDateModel("deu",
               "opennlp/tools/namefind/RandomNewsWithGeneratedDates_DE.train");
       assertNotNull(trainedModelDE);
       assertTrue(hasOtherAsOutcome(trainedModelDE));
@@ -82,6 +85,17 @@ public class NameFinderMEWithDatesTest extends AbstractNameFinderTest {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static TokenNameFinderModel trainDateModel(String languageCode,
+                                                      String trainingFile) throws IOException {
+    TrainingParameters params = new TrainingParameters();
+    // This suite verifies date spans, so keep its established trainer independent of the default.
+    params.put(Parameters.ALGORITHM_PARAM, AlgorithmType.PERCEPTRON.getAlgorithmType());
+    params.put(Parameters.ITERATIONS_PARAM, 150);
+    params.put(Parameters.THREADS_PARAM, 4);
+    params.put(Parameters.CUTOFF_PARAM, 3);
+    return trainModel(languageCode, trainingFile, params);
   }
 
   /**

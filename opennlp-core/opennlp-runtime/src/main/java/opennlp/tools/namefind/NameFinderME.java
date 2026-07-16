@@ -28,7 +28,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import opennlp.tools.commons.ThreadSafe;
-import opennlp.tools.ml.AlgorithmType;
 import opennlp.tools.ml.BeamSearch;
 import opennlp.tools.ml.EventModelSequenceTrainer;
 import opennlp.tools.ml.EventTrainer;
@@ -273,8 +272,7 @@ public class NameFinderME implements TokenNameFinder, Probabilistic {
                                            ObjectStream<NameSample> samples, TrainingParameters params,
                                            TokenNameFinderFactory factory) throws IOException {
 
-    //FIXME OPENNLP-1742
-    params.putIfAbsent(Parameters.ALGORITHM_PARAM, AlgorithmType.PERCEPTRON.getAlgorithmType());
+    params.putIfAbsent(Parameters.ALGORITHM_PARAM, Parameters.ALGORITHM_DEFAULT_VALUE);
     params.putIfAbsent(Parameters.CUTOFF_PARAM, 0);
     params.putIfAbsent(Parameters.ITERATIONS_PARAM, 300);
 

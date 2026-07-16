@@ -76,6 +76,9 @@ public class NameFinderMETest extends AbstractNameFinderTest {
     TokenNameFinderModel nameFinderModel = NameFinderME.train("eng", null, sampleStream,
         params, TokenNameFinderFactory.create(null, null, Collections.emptyMap(), new BioCodec()));
 
+    assertEquals(Parameters.ALGORITHM_DEFAULT_VALUE,
+        params.getStringParameter(Parameters.ALGORITHM_PARAM, null));
+
     TokenNameFinder nameFinder = new NameFinderME(nameFinderModel);
 
     // now test if it can detect the sample sentences
