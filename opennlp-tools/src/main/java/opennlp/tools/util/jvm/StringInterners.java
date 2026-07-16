@@ -17,10 +17,10 @@
 
 package opennlp.tools.util.jvm;
 
-import java.lang.reflect.Constructor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import opennlp.tools.util.ext.ExtensionLoader;
 
 /**
  * Provides string interning utility methods. Interning mechanism can be configured via the
@@ -28,6 +28,10 @@ import org.slf4j.LoggerFactory;
  * fully qualified classname. It needs to implement {@link StringInterner}.
  * <p>
  * If not specified by the user, the default interner is {@link CHMStringInterner}.
+ * <p>
+ * The implementation is loaded via the {@link ExtensionLoader}. Custom implementations
+ * must provide a public no-arg constructor and reside in an allowed package,
+ * see {@link ExtensionLoader#registerAllowedPackage(String)}.
  */
 public class StringInterners {
 
@@ -40,9 +44,7 @@ public class StringInterners {
         CHMStringInterner.class.getCanonicalName());
 
     try {
-      final Class<?> clazz = Class.forName(clazzName);
-      final Constructor<?> cons = clazz.getDeclaredConstructor();
-      INTERNER = (StringInterner) cons.newInstance();
+      INTERNER = ExtensionLoader.instantiateExtension(StringInterner.class, clazzName);
       LOGGER.debug("Using '{}' as String interner implementation.", clazzName);
     } catch (Exception e) {
       throw new RuntimeException("Could not load specified String interner implementation: '"
