@@ -20,9 +20,11 @@ Usage:  derive-overture-divisions.py <release> [output.txt] [min_locality_popula
 
 Input:  the divisions theme, type=division (Point features), read as Parquet directly
         from the Overture release bucket. Requires the duckdb Python package with the
-        httpfs and spatial extensions, and network access. The data is published under
-        a permissive data license (CDLA-Permissive-2.0); check and record the license
-        of the release you pull.
+        httpfs and spatial extensions, and network access. The divisions theme is published
+        under the Open Database License (ODbL), which requires attribution and applies
+        share-alike terms to derivative databases, so the derived table carries those
+        terms too; check and record the license and attribution requirements of the
+        release you pull.
 Output: the tab-separated table read by opennlp.geo.OvertureGazetteer, one row per
         division: id, primary name, comma-separated alternate names, latitude,
         longitude, ISO 3166-1 alpha-2 country code, subtype, population. A '#' header
@@ -85,8 +87,9 @@ def main() -> None:
         out.write("# derivation of Overture Maps divisions (read by opennlp.geo.OvertureGazetteer).\n")
         out.write(f"# Derivation record: release {release}, subtypes {','.join(KEPT_SUBTYPES)},\n")
         out.write(f"# locality population floor {min_population}, derived {datetime.date.today()}\n")
-        out.write(f"# by dev/derive-overture-divisions.py. Upstream license: CDLA-Permissive-2.0\n")
-        out.write("# (verify against the release notes of the release named above).\n")
+        out.write("# by dev/derive-overture-divisions.py. Upstream license: ODbL, attribution and\n")
+        out.write("# database share-alike terms apply to this derived table (verify against the\n")
+        out.write("# licensing documentation of the release named above).\n")
         for row in rows:
             (division_id, name, alternates, lat, lon, country, subtype, population) = row
             if not name or lat is None or lon is None:
