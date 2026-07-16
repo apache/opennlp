@@ -22,6 +22,8 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * Verifies {@link RelationPattern} construction and path parsing, in particular the
  * whitespace handling of the step scan across ASCII and Unicode separator characters.
@@ -68,26 +70,25 @@ public class RelationPatternTest {
   }
 
   /**
-   * Verifies that the next line control U+0085 is not a separator: it is neither
-   * whitespace to the JDK nor a Unicode space separator, so it stays inside the step
-   * label and the path parses as one single step.
+   * Verifies that splitting follows {@link StringUtil#isWhitespace(char)} exactly for
+   * the characters whose classification differs between whitespace definitions: the
+   * next line control U+0085 and the information separators U+001C and U+001F. The
+   * expected step list is derived from the predicate itself, so this test asserts the
+   * contract, splitting wherever the project predicate sees whitespace, rather than
+   * pinning any one character table, and it stays correct when the predicate's
+   * character set changes.
    */
   @Test
-  void testNextLineControlStaysInsideALabel() {
-    Assertions.assertEquals(List.of("<nsubj" + NEL + ">obj"),
-        new RelationPattern("t", "<nsubj" + NEL + ">obj", null).steps());
-  }
-
-  /**
-   * Verifies that the information separator controls U+001C and U+001F, which the JDK
-   * counts as whitespace, split steps exactly like an ASCII blank.
-   */
-  @Test
-  void testInformationSeparatorsSplitSteps() {
-    Assertions.assertEquals(List.of("<nsubj", ">obj"),
-        new RelationPattern("t", "<nsubj" + FILE_SEPARATOR + ">obj", null).steps());
-    Assertions.assertEquals(List.of("<nsubj", ">obj"),
-        new RelationPattern("t", "<nsubj" + UNIT_SEPARATOR + ">obj", null).steps());
+  void testSplittingFollowsTheProjectWhitespacePredicate() {
+    for (final char divergent : new char[] {NEL, FILE_SEPARATOR, UNIT_SEPARATOR}) {
+      final List<String> expected = StringUtil.isWhitespace(divergent)
+          ? List.of("<nsubj", ">obj")
+          : List.of("<nsubj" + divergent + ">obj");
+      Assertions.assertEquals(expected,
+          new RelationPattern("t", "<nsubj" + divergent + ">obj", null).steps(),
+          "split behavior for U+" + String.format("%04X", (int) divergent)
+              + " must follow StringUtil.isWhitespace");
+    }
   }
 
   /**
