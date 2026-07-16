@@ -35,7 +35,7 @@ import java.util.List;
 public final class ArcStandardOracle {
 
   private ArcStandardOracle() {
-    // static oracle, not meant to be instantiated
+    // This class only exposes static derivation methods and is never instantiated.
   }
 
   /**
