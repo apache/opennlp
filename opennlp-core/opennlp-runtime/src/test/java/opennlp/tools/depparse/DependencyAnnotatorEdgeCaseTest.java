@@ -55,6 +55,7 @@ public class DependencyAnnotatorEdgeCaseTest {
    */
   private static Document twoTokens() {
     return Document.of("ab cd")
+        .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 5), "ab cd")))
         .with(Layers.TOKENS, List.of(
             new Annotation<>(new Span(0, 2), "ab"),
             new Annotation<>(new Span(3, 5), "cd")))
@@ -105,8 +106,79 @@ public class DependencyAnnotatorEdgeCaseTest {
   @Test
   void testRequiresAndProvidesDeclarationsAreExact() {
     final DependencyAnnotator annotator = new DependencyAnnotator(FIXED);
-    assertEquals(Set.of(Layers.TOKENS, Layers.POS_TAGS), annotator.requires());
+    assertEquals(Set.of(Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS),
+        annotator.requires());
     assertEquals(Set.of(DependencyAnnotator.DEPENDENCIES), annotator.provides());
+  }
+
+  /**
+   * Verifies the per-sentence contract: two one-token sentences are parsed as two
+   * separate calls, each yielding its own root arc, and the dependents come back as
+   * document-wide token indices.
+   */
+  @Test
+  void testEachSentenceGetsItsOwnTree() {
+    final DependencyParser oneTokenRoot = (tokens, tags) -> {
+      if (tokens.length != 1) {
+        throw new IllegalStateException("expected one-token sentences, got "
+            + tokens.length);
+      }
+      return DependencyGraph.of(new int[] {DependencyArc.ROOT_HEAD},
+          new String[] {"root"});
+    };
+    final Document document = Document.of("ab. cd.")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 3), "ab."),
+            new Annotation<>(new Span(4, 7), "cd.")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 2), "ab"),
+            new Annotation<>(new Span(4, 6), "cd")))
+        .with(Layers.POS_TAGS, List.of(
+            new Annotation<>(new Span(0, 2), "VB"),
+            new Annotation<>(new Span(4, 6), "VB")));
+
+    final List<Annotation<DependencyArc>> arcs =
+        new DependencyAnnotator(oneTokenRoot).annotate(document)
+            .get(DependencyAnnotator.DEPENDENCIES);
+    assertEquals(2, arcs.size());
+    assertEquals(new DependencyArc(DependencyArc.ROOT_HEAD, 0, "root"),
+        arcs.get(0).value());
+    assertEquals(new DependencyArc(DependencyArc.ROOT_HEAD, 1, "root"),
+        arcs.get(1).value());
+    assertEquals(new Span(0, 2), arcs.get(0).span());
+    assertEquals(new Span(4, 6), arcs.get(1).span());
+  }
+
+  /**
+   * Verifies the sentence-layer requirements fail loud: a token-bearing document
+   * without a sentence layer is rejected, and so is a token lying outside every
+   * sentence.
+   */
+  @Test
+  void testSentenceLayerProblemsAreRejected() {
+    final Document noSentences = Document.of("ab cd")
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 2), "ab"),
+            new Annotation<>(new Span(3, 5), "cd")))
+        .with(Layers.POS_TAGS, List.of(
+            new Annotation<>(new Span(0, 2), "VB"),
+            new Annotation<>(new Span(3, 5), "NN")));
+    final IllegalArgumentException missing = assertThrows(IllegalArgumentException.class,
+        () -> new DependencyAnnotator(FIXED).annotate(noSentences));
+    assertEquals("document needs a non-empty sentences<String> layer",
+        missing.getMessage());
+
+    final Document strayToken = Document.of("ab cd")
+        .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 2), "ab")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 2), "ab"),
+            new Annotation<>(new Span(3, 5), "cd")))
+        .with(Layers.POS_TAGS, List.of(
+            new Annotation<>(new Span(0, 2), "VB"),
+            new Annotation<>(new Span(3, 5), "NN")));
+    final IllegalArgumentException stray = assertThrows(IllegalArgumentException.class,
+        () -> new DependencyAnnotator(FIXED).annotate(strayToken));
+    assertEquals("token at [3..5) lies outside every sentence", stray.getMessage());
   }
 
   @Test
