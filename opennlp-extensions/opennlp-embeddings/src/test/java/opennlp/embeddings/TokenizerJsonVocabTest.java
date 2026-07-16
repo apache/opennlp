@@ -45,6 +45,13 @@ class TokenizerJsonVocabTest {
   }
 
   @Test
+  void testRejectsNullAndMissingFile() {
+    assertThrows(IllegalArgumentException.class, () -> TokenizerJsonVocab.rows(null));
+    assertThrows(IllegalArgumentException.class,
+        () -> TokenizerJsonVocab.rows(dir.resolve("absent.json")));
+  }
+
+  @Test
   void testVocabListOrderIsTheRowOrder() throws IOException {
     final Path file = write("{\"model\":{\"type\":\"Unigram\",\"unk_id\":1,"
         + "\"vocab\":[[\"<pad>\",0.0],[\"<unk>\",0.0],[\"\\u2581a\",-2.5],[\"b\",-3.0]]}}");

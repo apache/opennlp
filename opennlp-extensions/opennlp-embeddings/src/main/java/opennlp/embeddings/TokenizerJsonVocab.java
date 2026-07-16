@@ -35,6 +35,7 @@ import java.util.List;
  */
 final class TokenizerJsonVocab {
 
+  /** Not instantiable. */
   private TokenizerJsonVocab() {
   }
 
@@ -52,12 +53,18 @@ final class TokenizerJsonVocab {
    *
    * @param file The {@code tokenizer.json} file. Must not be {@code null} and must exist.
    * @return The pieces; the index is the matrix row.
-   * @throws IllegalArgumentException Thrown if the file is not a well-formed
-   *     {@code tokenizer.json}, its model is not Unigram, or an added token's id neither matches
-   *     an existing row nor appends as the next one.
+   * @throws IllegalArgumentException Thrown if {@code file} is {@code null} or missing, the
+   *     file is not a well-formed {@code tokenizer.json}, its model is not Unigram, or an added
+   *     token's id neither matches an existing row nor appends as the next one.
    * @throws IOException Thrown if reading the file fails.
    */
   static List<String> rows(Path file) throws IOException {
+    if (file == null) {
+      throw new IllegalArgumentException("File must not be null");
+    }
+    if (!Files.isRegularFile(file)) {
+      throw new IllegalArgumentException("File does not exist or is not a regular file: " + file);
+    }
     final String json = Files.readString(file);
     final JsonCursor cursor = new JsonCursor(json, file.getFileName().toString());
     cursor.skipWhitespace();

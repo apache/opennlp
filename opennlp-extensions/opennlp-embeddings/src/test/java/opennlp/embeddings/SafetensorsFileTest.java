@@ -23,10 +23,13 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,9 +38,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SafetensorsFileTest {
 
-  // Builds a well-formed safetensors file: an 8-byte little-endian header length, the header
-  // JSON verbatim, then the raw data bytes. The header's data_offsets are expected to already
-  // be correct for the given data layout; callers construct both together.
+  private static final String MODEL_FILE_NAME = "model.safetensors";
+
+  // Builds the header JSON of a file holding one tensor, for tests that hand-roll headers with
+  // deliberately odd dtypes, shapes, or data_offsets.
+  private static String singleTensorHeader(String name, String dtype, String shape,
+                                           long begin, long end) {
+    return "{\"" + name + "\":{\"dtype\":\"" + dtype + "\",\"shape\":" + shape
+        + ",\"data_offsets\":[" + begin + "," + end + "]}}";
+  }
+
+  // Builds a safetensors file byte for byte: an 8-byte little-endian header length, the header
+  // JSON verbatim, then the raw data bytes. Used by the negative tests whose headers
+  // SafetensorsTestFiles would refuse to write; well-formed fixtures use that helper instead.
   private static Path writeFile(Path dir, String name, String headerJson, byte[] data)
       throws IOException {
     final byte[] headerBytes = headerJson.getBytes(StandardCharsets.UTF_8);
@@ -61,11 +74,9 @@ class SafetensorsFileTest {
 
   @Test
   void testRoundTripsAFloat32Matrix(@TempDir Path dir) throws IOException {
-    final float[] values = {1f, 2f, 3f, 4f, 5f, 6f};
-    final byte[] data = floatsToLittleEndianBytes(values);
-    final String header = "{\"weight\":{\"dtype\":\"F32\",\"shape\":[2,3],"
-        + "\"data_offsets\":[0," + data.length + "]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, data);
+    final Path file = dir.resolve(MODEL_FILE_NAME);
+    SafetensorsTestFiles.write(file,
+        SafetensorsTestFiles.matrix("weight", new float[][] {{1f, 2f, 3f}, {4f, 5f, 6f}}));
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
@@ -75,25 +86,19 @@ class SafetensorsFileTest {
     assertEquals("F32", info.dtype());
     assertArrayEquals(new int[] {2, 3}, info.shape());
     assertEquals(6, info.elementCount());
-    assertArrayEquals(values, parsed.readFloat32("weight"));
+    assertArrayEquals(new float[] {1f, 2f, 3f, 4f, 5f, 6f}, parsed.readFloat32("weight"));
   }
 
   @Test
   void testMultipleTensorsPreserveHeaderOrder(@TempDir Path dir) throws IOException {
-    final byte[] a = floatsToLittleEndianBytes(1f, 2f);
-    final byte[] b = floatsToLittleEndianBytes(3f, 4f, 5f);
-    final String header = "{\"first\":{\"dtype\":\"F32\",\"shape\":[2],"
-        + "\"data_offsets\":[0," + a.length + "]},"
-        + "\"second\":{\"dtype\":\"F32\",\"shape\":[3],"
-        + "\"data_offsets\":[" + a.length + "," + (a.length + b.length) + "]}}";
-    final ByteArrayOutputStream data = new ByteArrayOutputStream();
-    data.write(a);
-    data.write(b);
-    final Path file = writeFile(dir, "model.safetensors", header, data.toByteArray());
+    final Path file = dir.resolve(MODEL_FILE_NAME);
+    SafetensorsTestFiles.write(file,
+        SafetensorsTestFiles.vector("first", new float[] {1f, 2f}),
+        SafetensorsTestFiles.vector("second", new float[] {3f, 4f, 5f}));
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
-    assertEquals(java.util.List.of("first", "second"), java.util.List.copyOf(parsed.tensorNames()));
+    assertEquals(List.of("first", "second"), List.copyOf(parsed.tensorNames()));
     assertArrayEquals(new float[] {1f, 2f}, parsed.readFloat32("first"));
     assertArrayEquals(new float[] {3f, 4f, 5f}, parsed.readFloat32("second"));
   }
@@ -103,7 +108,7 @@ class SafetensorsFileTest {
     final byte[] data = floatsToLittleEndianBytes(1f);
     final String header = "{\"__metadata__\":{\"format\":\"pt\",\"note\":\"line\\nbreak\"},"
         + "\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0," + data.length + "]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, data);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, data);
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
@@ -117,7 +122,7 @@ class SafetensorsFileTest {
     final byte[] data = floatsToLittleEndianBytes(1f, 2f);
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[2],"
         + "\"data_offsets\":[0," + data.length + "],\"future_field\":{\"nested\":[1,2,3]}}}";
-    final Path file = writeFile(dir, "model.safetensors", header, data);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, data);
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
@@ -126,16 +131,10 @@ class SafetensorsFileTest {
 
   @Test
   void testSingleMatrixTensorNameFindsTheOnly2DFloat32Tensor(@TempDir Path dir) throws IOException {
-    final byte[] scalar = floatsToLittleEndianBytes(9f);
-    final byte[] matrix = floatsToLittleEndianBytes(1f, 2f, 3f, 4f);
-    final String header = "{\"bias\":{\"dtype\":\"F32\",\"shape\":[1],"
-        + "\"data_offsets\":[0," + scalar.length + "]},"
-        + "\"embeddings\":{\"dtype\":\"F32\",\"shape\":[2,2],"
-        + "\"data_offsets\":[" + scalar.length + "," + (scalar.length + matrix.length) + "]}}";
-    final ByteArrayOutputStream data = new ByteArrayOutputStream();
-    data.write(scalar);
-    data.write(matrix);
-    final Path file = writeFile(dir, "model.safetensors", header, data.toByteArray());
+    final Path file = dir.resolve(MODEL_FILE_NAME);
+    SafetensorsTestFiles.write(file,
+        SafetensorsTestFiles.vector("bias", new float[] {9f}),
+        SafetensorsTestFiles.matrix("embeddings", new float[][] {{1f, 2f}, {3f, 4f}}));
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
@@ -144,16 +143,10 @@ class SafetensorsFileTest {
 
   @Test
   void testSingleMatrixTensorNameRejectsAmbiguity(@TempDir Path dir) throws IOException {
-    final byte[] a = floatsToLittleEndianBytes(1f, 2f, 3f, 4f);
-    final byte[] b = floatsToLittleEndianBytes(5f, 6f, 7f, 8f);
-    final String header = "{\"a\":{\"dtype\":\"F32\",\"shape\":[2,2],"
-        + "\"data_offsets\":[0," + a.length + "]},"
-        + "\"b\":{\"dtype\":\"F32\",\"shape\":[2,2],"
-        + "\"data_offsets\":[" + a.length + "," + (a.length + b.length) + "]}}";
-    final ByteArrayOutputStream data = new ByteArrayOutputStream();
-    data.write(a);
-    data.write(b);
-    final Path file = writeFile(dir, "model.safetensors", header, data.toByteArray());
+    final Path file = dir.resolve(MODEL_FILE_NAME);
+    SafetensorsTestFiles.write(file,
+        SafetensorsTestFiles.matrix("a", new float[][] {{1f, 2f}, {3f, 4f}}),
+        SafetensorsTestFiles.matrix("b", new float[][] {{5f, 6f}, {7f, 8f}}));
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
@@ -162,10 +155,8 @@ class SafetensorsFileTest {
 
   @Test
   void testSingleMatrixTensorNameRejectsNoCandidate(@TempDir Path dir) throws IOException {
-    final byte[] data = floatsToLittleEndianBytes(1f);
-    final String header = "{\"bias\":{\"dtype\":\"F32\",\"shape\":[1],"
-        + "\"data_offsets\":[0," + data.length + "]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, data);
+    final Path file = dir.resolve(MODEL_FILE_NAME);
+    SafetensorsTestFiles.write(file, SafetensorsTestFiles.vector("bias", new float[] {1f}));
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
@@ -175,9 +166,8 @@ class SafetensorsFileTest {
   @Test
   void testReadFloat32RejectsWrongDtype(@TempDir Path dir) throws IOException {
     final byte[] data = new byte[] {1, 2};
-    final String header = "{\"ids\":{\"dtype\":\"I64\",\"shape\":[1],"
-        + "\"data_offsets\":[0,2]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, data);
+    final String header = singleTensorHeader("ids", "I64", "[1]", 0, 2);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, data);
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
@@ -189,8 +179,8 @@ class SafetensorsFileTest {
   @Test
   void testTensorInfoRejectsUnknownName(@TempDir Path dir) throws IOException {
     final byte[] data = floatsToLittleEndianBytes(1f);
-    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, data);
+    final String header = singleTensorHeader("w", "F32", "[1]", 0, 4);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, data);
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
@@ -228,7 +218,7 @@ class SafetensorsFileTest {
     // header parser itself does not reject it; SafetensorsFile's post-parse check does.
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4]},"
         + "\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,4]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, new byte[] {1, 2, 3, 4});
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[] {1, 2, 3, 4});
 
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
@@ -238,15 +228,15 @@ class SafetensorsFileTest {
   @Test
   void testRejectsTensorMissingRequiredField(@TempDir Path dir) throws IOException {
     final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, new byte[0]);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[0]);
 
     assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
   }
 
   @Test
   void testRejectsDataOffsetsOutOfRange(@TempDir Path dir) throws IOException {
-    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":[0,999]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, new byte[] {1, 2, 3, 4});
+    final String header = singleTensorHeader("w", "F32", "[1]", 0, 999);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[] {1, 2, 3, 4});
 
     assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
   }
@@ -254,7 +244,7 @@ class SafetensorsFileTest {
   @Test
   void testRejectsUnterminatedString(@TempDir Path dir) throws IOException {
     final String header = "{\"w\":{\"dtype\":\"F32";
-    final Path file = writeFile(dir, "model.safetensors", header, new byte[0]);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[0]);
 
     assertThrows(IllegalArgumentException.class, () -> SafetensorsFile.read(file));
   }
@@ -264,9 +254,8 @@ class SafetensorsFileTest {
     // 2_000_000 * 2_000 = 4 billion elements, over the float[] ceiling. The bogus small data
     // range keeps the file tiny; the array-ceiling check fires before the range-mismatch check
     // because it subsumes it for tensors this large.
-    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[2000000,2000],"
-        + "\"data_offsets\":[0,4]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, new byte[] {1, 2, 3, 4});
+    final String header = singleTensorHeader("w", "F32", "[2000000,2000]", 0, 4);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, new byte[] {1, 2, 3, 4});
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
 
@@ -280,12 +269,11 @@ class SafetensorsFileTest {
     // Tensor data is streamed on demand rather than held in memory, so a file that shrinks
     // between read() and readFloat32() must fail loud, not return partial data.
     final byte[] data = floatsToLittleEndianBytes(1f, 2f);
-    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[2],"
-        + "\"data_offsets\":[0," + data.length + "]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, data);
+    final String header = singleTensorHeader("w", "F32", "[2]", 0, data.length);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, data);
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
-    writeFile(dir, "model.safetensors", header, floatsToLittleEndianBytes(1f));
+    writeFile(dir, MODEL_FILE_NAME, header, floatsToLittleEndianBytes(1f));
 
     final IllegalStateException e =
         assertThrows(IllegalStateException.class, () -> parsed.readFloat32("w"));
@@ -296,9 +284,8 @@ class SafetensorsFileTest {
   void testReadFloat32RejectsElementCountByteRangeMismatch(@TempDir Path dir) throws IOException {
     // Shape [2] declares two F32 elements (8 bytes) but the data range holds only one.
     final byte[] data = floatsToLittleEndianBytes(1f);
-    final String header = "{\"w\":{\"dtype\":\"F32\",\"shape\":[2],"
-        + "\"data_offsets\":[0," + data.length + "]}}";
-    final Path file = writeFile(dir, "model.safetensors", header, data);
+    final String header = singleTensorHeader("w", "F32", "[2]", 0, data.length);
+    final Path file = writeFile(dir, MODEL_FILE_NAME, header, data);
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
     final IllegalArgumentException e =
@@ -334,32 +321,23 @@ class SafetensorsFileTest {
     assertTrue(e.getMessage().contains("overflows"), e.getMessage());
   }
 
-  @Test
-  void testReadsF16TensorWidenedToFloat(@TempDir Path dir) throws IOException {
-    // F16 is model2vec's default output dtype, so this is the common downloaded-model case.
-    final Path file = dir.resolve("f16.safetensors");
-    final float[] expected = {1.0f, -2.0f, 0.5f, 3.5f}; // all exact in IEEE half
-    SafetensorsTestFiles.write(file, "F16", SafetensorsTestFiles.vector("w", expected));
+  // F16 is Model2Vec's default output dtype, so widening is the common downloaded-model case;
+  // BF16 takes the same path with a different bit layout.
+  @ParameterizedTest
+  @ValueSource(strings = {"F16", "BF16"})
+  void testReads16BitTensorWidenedToFloat(String dtype, @TempDir Path dir) throws IOException {
+    final Path file = dir.resolve(MODEL_FILE_NAME);
+    final float[] expected = {1.0f, -2.0f, 0.5f, 3.5f}; // exact in both 16-bit formats
+    SafetensorsTestFiles.write(file, dtype, SafetensorsTestFiles.vector("w", expected));
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
-    assertEquals("F16", parsed.tensorInfo("w").dtype());
-    assertArrayEquals(expected, parsed.readFloats("w"), 1e-3f);
-  }
-
-  @Test
-  void testReadsBf16TensorWidenedToFloat(@TempDir Path dir) throws IOException {
-    final Path file = dir.resolve("bf16.safetensors");
-    final float[] expected = {1.0f, -2.0f, 0.5f, 100.0f}; // exact in bfloat16
-    SafetensorsTestFiles.write(file, "BF16", SafetensorsTestFiles.vector("w", expected));
-
-    final SafetensorsFile parsed = SafetensorsFile.read(file);
-    assertEquals("BF16", parsed.tensorInfo("w").dtype());
+    assertEquals(dtype, parsed.tensorInfo("w").dtype());
     assertArrayEquals(expected, parsed.readFloats("w"), 1e-3f);
   }
 
   @Test
   void testSingleMatrixTensorNameAcceptsF16(@TempDir Path dir) throws IOException {
-    final Path file = dir.resolve("f16-matrix.safetensors");
+    final Path file = dir.resolve(MODEL_FILE_NAME);
     SafetensorsTestFiles.write(file, "F16",
         SafetensorsTestFiles.matrix("embeddings", new float[][] {{1f, 2f}, {3f, 4f}}));
 
@@ -369,7 +347,7 @@ class SafetensorsFileTest {
 
   @Test
   void testReadFloat32StrictlyRejectsF16(@TempDir Path dir) throws IOException {
-    final Path file = dir.resolve("f16-strict.safetensors");
+    final Path file = dir.resolve(MODEL_FILE_NAME);
     SafetensorsTestFiles.write(file, "F16", SafetensorsTestFiles.vector("w", new float[] {1f, 2f}));
 
     final SafetensorsFile parsed = SafetensorsFile.read(file);
