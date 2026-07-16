@@ -128,6 +128,155 @@ public class LatticeTokenizerTest {
     Assertions.assertEquals(0, tokenizer.analyze("").size());
   }
 
+  /**
+   * Verifies that empty input yields empty results from every view of the tokenizer.
+   */
+  @Test
+  void testEmptyInputYieldsEmptyResults() {
+    Assertions.assertArrayEquals(new String[0], tokenizer.tokenize(""));
+    Assertions.assertArrayEquals(new Span[0], tokenizer.tokenizePos(""));
+  }
+
+  /**
+   * Verifies single-character input for a listed surface and for an unlisted kanji:
+   * both come back as exactly one morpheme covering {@code [0, 1)}, and only the
+   * unlisted one is marked unknown.
+   */
+  @Test
+  void testSingleCharacterInput() {
+    Assertions.assertArrayEquals(new String[] {"に"}, tokenizer.tokenize("に"));
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 1)}, tokenizer.tokenizePos("に"));
+    Assertions.assertFalse(tokenizer.analyze("に").get(0).unknown());
+
+    final List<Morpheme> unknown = tokenizer.analyze("峠");
+    Assertions.assertEquals(1, unknown.size());
+    Assertions.assertEquals("峠", unknown.get(0).surface());
+    Assertions.assertEquals(new Span(0, 1), unknown.get(0).span());
+    Assertions.assertTrue(unknown.get(0).unknown());
+  }
+
+  /**
+   * Verifies input made entirely of characters absent from both the lexicon and the
+   * {@code char.def} mappings: they fall into the DEFAULT category, whose grouping
+   * setting joins the whole same-category run into one unknown morpheme carrying the
+   * DEFAULT template's features.
+   */
+  @Test
+  void testEntirelyUnknownInputGroupsIntoOneDefaultMorpheme() {
+    final List<Morpheme> morphemes = tokenizer.analyze("①②③");
+    Assertions.assertEquals(1, morphemes.size());
+    Assertions.assertEquals("①②③", morphemes.get(0).surface());
+    Assertions.assertEquals(new Span(0, 3), morphemes.get(0).span());
+    Assertions.assertTrue(morphemes.get(0).unknown());
+    Assertions.assertEquals(List.of("symbol", "unknown"), morphemes.get(0).features());
+  }
+
+  /**
+   * Verifies a mixed run of known and unknown text: the lexicon words around an
+   * unmapped character are kept intact, the unmapped character becomes its own
+   * unknown morpheme, and every span stays in original text coordinates.
+   */
+  @Test
+  void testMixedKnownAndUnknownRuns() {
+    final String text = "東京①に行く";
+    Assertions.assertArrayEquals(
+        new String[] {"東京", "①", "に", "行く"},
+        tokenizer.tokenize(text));
+    Assertions.assertArrayEquals(new Span[] {
+        new Span(0, 2), new Span(2, 3), new Span(3, 4), new Span(4, 6)},
+        tokenizer.tokenizePos(text));
+    final List<Morpheme> morphemes = tokenizer.analyze(text);
+    Assertions.assertFalse(morphemes.get(0).unknown());
+    Assertions.assertTrue(morphemes.get(1).unknown());
+    Assertions.assertFalse(morphemes.get(2).unknown());
+  }
+
+  /**
+   * Verifies that spans keep original text coordinates when the interesting content
+   * does not start at position zero because of leading whitespace.
+   */
+  @Test
+  void testSpansStayOriginalAfterLeadingWhitespace() {
+    final String text = "  東京都に行く";
+    Assertions.assertArrayEquals(
+        new String[] {"東京", "都", "に", "行く"},
+        tokenizer.tokenize(text));
+    Assertions.assertArrayEquals(new Span[] {
+        new Span(2, 4), new Span(4, 5), new Span(5, 6), new Span(6, 8)},
+        tokenizer.tokenizePos(text));
+  }
+
+  /**
+   * Verifies that a lexicon row with fewer than the four mandatory columns is
+   * rejected at load time.
+   */
+  @Test
+  void testShortLexiconRowFailsLoud(@TempDir Path broken) throws IOException {
+    Files.write(broken.resolve("lexicon.csv"),
+        "東,0,0\n".getBytes(StandardCharsets.UTF_8));
+    Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
+  }
+
+  /**
+   * Verifies that a non-numeric cost column in a lexicon row is rejected at load
+   * time.
+   */
+  @Test
+  void testNonNumericLexiconCostFailsLoud(@TempDir Path broken) throws IOException {
+    Files.write(broken.resolve("lexicon.csv"),
+        "東,0,0,abc,noun\n".getBytes(StandardCharsets.UTF_8));
+    Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
+  }
+
+  /**
+   * Verifies that a {@code matrix.def} data line with the wrong number of fields is
+   * rejected at load time.
+   */
+  @Test
+  void testMalformedMatrixLineFailsLoud(@TempDir Path broken) throws IOException {
+    Files.write(broken.resolve("lexicon.csv"),
+        "東,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(broken.resolve("matrix.def"), "1 1\n0 0\n".getBytes(StandardCharsets.UTF_8));
+    Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
+  }
+
+  /**
+   * Verifies that a {@code char.def} code point mapping without a category name is
+   * rejected at load time.
+   */
+  @Test
+  void testCharDefMappingWithoutCategoryFailsLoud(@TempDir Path broken)
+      throws IOException {
+    Files.write(broken.resolve("lexicon.csv"),
+        "東,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(broken.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(broken.resolve("char.def"),
+        "DEFAULT 0 1 0\n0x4E00..0x9FFF\n".getBytes(StandardCharsets.UTF_8));
+    Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
+  }
+
+  /**
+   * Verifies the fail-loud path when a loadable dictionary cannot cover the input: the
+   * {@code unk.def} has no DEFAULT template, so a character with neither a lexicon
+   * entry nor a category template stops segmentation with an exception instead of
+   * being dropped silently.
+   */
+  @Test
+  void testMissingDefaultTemplateFailsLoudAtTokenizeTime(@TempDir Path partial)
+      throws IOException {
+    Files.write(partial.resolve("lexicon.csv"),
+        "東,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(partial.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(partial.resolve("char.def"),
+        "DEFAULT 0 1 0\nKANJI 0 0 2\n0x4E00..0x9FFF KANJI\n"
+            .getBytes(StandardCharsets.UTF_8));
+    Files.write(partial.resolve("unk.def"),
+        "KANJI,0,0,8000,noun\n".getBytes(StandardCharsets.UTF_8));
+    final LatticeTokenizer limited =
+        new LatticeTokenizer(MecabDictionary.load(partial));
+    Assertions.assertThrows(IllegalStateException.class, () -> limited.analyze("①"));
+  }
+
   @Test
   void testMalformedDictionariesFailLoud(@TempDir Path broken) throws IOException {
     Files.write(broken.resolve("lexicon.csv"),

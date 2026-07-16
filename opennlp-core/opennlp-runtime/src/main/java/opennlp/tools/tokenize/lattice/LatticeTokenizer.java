@@ -225,7 +225,8 @@ public class LatticeTokenizer implements Tokenizer {
       }
     }
     if (candidates.isEmpty()) {
-      // no entry and no template: a single-character fallback keeps the lattice alive
+      // Neither the lexicon nor the character's category produced a candidate here, so a
+      // single-character entry from the DEFAULT template keeps the lattice connected.
       final List<WordEntry> fallback = dictionary.unknownEntries("DEFAULT");
       if (fallback != null) {
         for (final WordEntry entry : fallback) {
@@ -251,7 +252,8 @@ public class LatticeTokenizer implements Tokenizer {
     final int lengths = category.length();
     for (int length = 1; length <= lengths && position + length <= to; length++) {
       if (category.group() && position + length == runEnd) {
-        continue; // already emitted as the grouped run
+        // This length coincides with the grouped run emitted above; skip the duplicate.
+        continue;
       }
       for (final WordEntry entry : templates) {
         candidates.add(new Node(position, position + length, entry, true));
