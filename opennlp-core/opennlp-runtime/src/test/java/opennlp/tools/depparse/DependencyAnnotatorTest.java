@@ -45,13 +45,16 @@ public class DependencyAnnotatorTest {
       DependencyGraph.of(new int[] {1, 2, -1}, new String[] {"det", "nsubj", "root"});
 
   /**
-   * Builds a document over the text {@code "the dog barks"} carrying aligned token and tag
-   * layers, mirroring what the upstream tokenizer and tagger annotators would produce.
+   * Builds a document over the text {@code "the dog barks"} carrying a one-sentence layer plus
+   * aligned token and tag layers, mirroring what the upstream sentence, tokenizer, and
+   * tagger annotators would produce.
    *
    * @return A document ready for dependency annotation. Never {@code null}.
    */
   private static Document tokenized() {
     return Document.of("the dog barks")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 13), "the dog barks")))
         .with(Layers.TOKENS, List.of(
             new Annotation<>(new Span(0, 3), "the"),
             new Annotation<>(new Span(4, 7), "dog"),

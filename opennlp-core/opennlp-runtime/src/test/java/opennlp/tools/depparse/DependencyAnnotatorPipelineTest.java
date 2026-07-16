@@ -52,11 +52,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * it can memorize, so every expected head, relation, and span is exact and reproducible.
  *
  * <p>The central property under test is coordinate anchoring for multi-sentence input: the
- * annotator hands the whole token layer to the parser as one sequence, so the arcs it gets
- * back carry indices into the document-wide token layer, and each arc's annotation must sit
- * on its dependent token's span in document coordinates. For the second sentence this only
- * works when the token layer itself was anchored correctly, which the assertions verify by
- * reading the covered text of the arcs' spans back out of the original document.</p>
+ * annotator parses each sentence separately and shifts the sentence-local arcs by the
+ * sentence's first token position, so every head and dependent is an index into the
+ * document-wide token layer and each arc's annotation sits on its dependent token's span in
+ * document coordinates. For the second sentence this only works when the shift is applied
+ * consistently, which the assertions verify by reading the covered text of the arcs' spans
+ * back out of the original document.</p>
  */
 public class DependencyAnnotatorPipelineTest {
 
@@ -167,21 +168,25 @@ public class DependencyAnnotatorPipelineTest {
   private static DependencyParserME parser;
 
   /**
-   * Builds the training corpus: the token sequence of the two-sentence document with its
-   * gold tree, plus a one-token sentence, each repeated often enough for the model to
-   * memorize them. The document-wide sequence has a single root at {@code barks} with the
-   * second predicate attached as {@code parataxis}, because a dependency graph always
-   * forms one tree over the token sequence it is built for.
+   * Builds the training corpus: the two sentences of the example document with their
+   * gold trees, plus a one-token sentence, each repeated often enough for the model to
+   * memorize them. Every sample is one sentence, the unit the annotator hands to the
+   * parser, so each sentence carries its own root.
    *
    * @return The training samples. Never {@code null} or empty.
    */
   private static List<DependencySample> corpus() {
     final List<DependencySample> distinct = List.of(
         new DependencySample(
-            new String[] {"the", "dog", "barks", "she", "eats", "fish"},
-            new String[] {"DT", "NN", "VBZ", "PRP", "VBZ", "NN"},
-            DependencyGraph.of(new int[] {1, 2, -1, 4, 2, 4},
-                new String[] {"det", "nsubj", "root", "nsubj", "parataxis", "obj"})),
+            new String[] {"the", "dog", "barks"},
+            new String[] {"DT", "NN", "VBZ"},
+            DependencyGraph.of(new int[] {1, 2, -1},
+                new String[] {"det", "nsubj", "root"})),
+        new DependencySample(
+            new String[] {"she", "eats", "fish"},
+            new String[] {"PRP", "VBZ", "NN"},
+            DependencyGraph.of(new int[] {1, -1, 1},
+                new String[] {"nsubj", "root", "obj"})),
         new DependencySample(new String[] {"barks"}, new String[] {"VBZ"},
             DependencyGraph.of(new int[] {-1}, new String[] {"root"})));
     final List<DependencySample> corpus = new ArrayList<>();
@@ -232,9 +237,10 @@ public class DependencyAnnotatorPipelineTest {
         document.get(DependencyAnnotator.DEPENDENCIES);
     assertEquals(6, arcs.size());
 
-    // the memorized gold tree, with every span in document coordinates
-    final int[] heads = {1, 2, DependencyArc.ROOT_HEAD, 4, 2, 4};
-    final String[] relations = {"det", "nsubj", "root", "nsubj", "parataxis", "obj"};
+    // the memorized gold trees, one root per sentence, every span and head index in
+    // document coordinates
+    final int[] heads = {1, 2, DependencyArc.ROOT_HEAD, 4, DependencyArc.ROOT_HEAD, 4};
+    final String[] relations = {"det", "nsubj", "root", "nsubj", "root", "obj"};
     final Span[] spans = {new Span(0, 3), new Span(4, 7), new Span(8, 13),
         new Span(15, 18), new Span(19, 23), new Span(24, 28)};
     for (int i = 0; i < arcs.size(); i++) {

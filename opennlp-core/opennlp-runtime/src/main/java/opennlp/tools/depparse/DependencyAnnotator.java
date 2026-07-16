@@ -29,20 +29,22 @@ import opennlp.tools.document.Layers;
 
 /**
  * Adapts a {@link DependencyParser} to the document pipeline: reads
- * {@link Layers#TOKENS} and {@link Layers#POS_TAGS} and provides
- * {@link #DEPENDENCIES}, one {@link DependencyArc} per token on the token's span.
+ * {@link Layers#SENTENCES}, {@link Layers#TOKENS}, and {@link Layers#POS_TAGS} and
+ * provides {@link #DEPENDENCIES}, one {@link DependencyArc} per token on the token's
+ * span.
  *
  * <p>This is the first graph-shaped layer: an arc's {@link DependencyArc#head()} and
  * {@link DependencyArc#dependent()} are indices into the token layer, following the
  * container's rule that annotations reference each other by layer and index, never by
  * object identity.</p>
  *
- * <p>The whole token layer is handed to the parser as one sequence, so the result is a
- * single tree over all tokens of the document and the arc indices are positions in the
- * document-wide token layer. Because every token span already refers to the original
- * document text, anchoring an arc on its dependent token's span puts the arc in document
- * coordinates without any offset arithmetic, no matter which sentence the token came
- * from.</p>
+ * <p>Each sentence is parsed separately, the way the parser is trained, so every
+ * sentence gets its own tree and its own root arc. The sentence-local indices the
+ * parser produces are shifted by the sentence's first token position, which keeps every
+ * arc's head and dependent a position in the document-wide token layer. Because every
+ * token span already refers to the original document text, anchoring an arc on its
+ * dependent token's span puts the arc in document coordinates without further offset
+ * arithmetic.</p>
  *
  * @since 3.0.0
  */
@@ -71,21 +73,25 @@ public class DependencyAnnotator implements DocumentAnnotator {
   }
 
   /**
-   * Parses the document's token layer and adds the {@link #DEPENDENCIES} layer.
+   * Parses the document sentence by sentence and adds the {@link #DEPENDENCIES} layer.
    *
-   * <p>The token and tag values are read in layer order and passed to the parser as one
-   * sequence. The resulting arcs are emitted in token order, so the new layer is aligned
-   * with {@link Layers#TOKENS} by position, and each arc annotation reuses the span of
-   * its dependent token.</p>
+   * <p>For every sentence, the tokens whose spans lie inside the sentence span are
+   * passed to the parser with their tags as one sequence, and the resulting
+   * sentence-local arcs are shifted by the sentence's first token position. Arcs are
+   * emitted in token order, so the new layer is aligned with {@link Layers#TOKENS} by
+   * position, and each arc annotation reuses the span of its dependent token. A
+   * sentence containing no tokens contributes no arcs.</p>
    *
    * @param document The document to annotate. Must not be {@code null} and must carry a
-   *                 non-empty {@link Layers#TOKENS} layer plus a {@link Layers#POS_TAGS}
-   *                 layer of equal size.
+   *                 non-empty {@link Layers#SENTENCES} layer, a non-empty
+   *                 {@link Layers#TOKENS} layer whose every token lies inside a
+   *                 sentence, and a {@link Layers#POS_TAGS} layer of equal size.
    * @return A new {@link Document} with the {@link #DEPENDENCIES} layer added. Never
    *         {@code null}.
    * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, the
-   *         token layer is absent or empty, or the tag layer does not have exactly one
-   *         tag per token.
+   *         token layer is absent or empty, the tag layer does not have exactly one
+   *         tag per token, the sentence layer is absent or empty, or a token lies
+   *         outside every sentence.
    */
   @Override
   public Document annotate(Document document) {
@@ -98,27 +104,55 @@ public class DependencyAnnotator implements DocumentAnnotator {
       throw new IllegalArgumentException("document needs aligned "
           + Layers.TOKENS + " and " + Layers.POS_TAGS + " layers");
     }
-    // unwrap the aligned layers into the parallel arrays the parser interface expects
-    final String[] words = new String[tokens.size()];
-    final String[] posTags = new String[tokens.size()];
-    for (int i = 0; i < words.length; i++) {
-      words[i] = tokens.get(i).value();
-      posTags[i] = tags.get(i).value();
+    final List<Annotation<String>> sentences = document.get(Layers.SENTENCES);
+    if (sentences.isEmpty()) {
+      throw new IllegalArgumentException(
+          "document needs a non-empty " + Layers.SENTENCES + " layer");
     }
-    final DependencyGraph graph = parser.parse(words, posTags);
-    // graph.arcs() is in token order with one arc per token; anchoring each arc on its
-    // dependent token's span keeps the layer aligned with the token layer and puts the
-    // arc in document coordinates, since token spans refer to the original text
-    final List<Annotation<DependencyArc>> arcs = new ArrayList<>(graph.size());
-    for (final DependencyArc arc : graph.arcs()) {
-      arcs.add(new Annotation<>(tokens.get(arc.dependent()).span(), arc));
+    final List<Annotation<DependencyArc>> arcs = new ArrayList<>(tokens.size());
+    // Walk the token layer once: both layers are in text order, so each sentence
+    // consumes the contiguous run of tokens whose spans it encloses.
+    int next = 0;
+    for (final Annotation<String> sentence : sentences) {
+      final int first = next;
+      while (next < tokens.size()
+          && tokens.get(next).span().getStart() >= sentence.span().getStart()
+          && tokens.get(next).span().getEnd() <= sentence.span().getEnd()) {
+        next++;
+      }
+      final int count = next - first;
+      if (count == 0) {
+        continue;
+      }
+      // unwrap the sentence's slice into the parallel arrays the parser expects
+      final String[] words = new String[count];
+      final String[] posTags = new String[count];
+      for (int i = 0; i < count; i++) {
+        words[i] = tokens.get(first + i).value();
+        posTags[i] = tags.get(first + i).value();
+      }
+      final DependencyGraph graph = parser.parse(words, posTags);
+      // The parser indexes within the sentence; shifting by the sentence's first token
+      // position turns every head and dependent into a document-wide token index, and
+      // anchoring each arc on its dependent token's span puts the arc in document
+      // coordinates, since token spans refer to the original text.
+      for (final DependencyArc arc : graph.arcs()) {
+        final int head = arc.head() == DependencyArc.ROOT_HEAD
+            ? DependencyArc.ROOT_HEAD : arc.head() + first;
+        arcs.add(new Annotation<>(tokens.get(first + arc.dependent()).span(),
+            new DependencyArc(head, arc.dependent() + first, arc.relation())));
+      }
+    }
+    if (next != tokens.size()) {
+      throw new IllegalArgumentException("token at " + tokens.get(next).span()
+          + " lies outside every sentence");
     }
     return document.with(DEPENDENCIES, arcs);
   }
 
   @Override
   public Set<LayerKey<?>> requires() {
-    return Set.of(Layers.TOKENS, Layers.POS_TAGS);
+    return Set.of(Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS);
   }
 
   @Override
