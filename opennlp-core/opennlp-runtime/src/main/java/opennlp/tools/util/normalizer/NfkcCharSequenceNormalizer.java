@@ -30,7 +30,7 @@ import java.text.Normalizer;
  */
 public class NfkcCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 8273650194427108359L;
+  private static final long serialVersionUID = -167565018805144793L;
 
   private static final NfkcCharSequenceNormalizer INSTANCE = new NfkcCharSequenceNormalizer();
 
@@ -39,8 +39,12 @@ public class NfkcCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
     return Normalizer.normalize(text, Normalizer.Form.NFKC);
   }
 }

@@ -14,35 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package opennlp.tools.util.normalizer;
 
+import java.util.Random;
+
 /**
- * A {@link CharSequenceNormalizer} implementation that aggregates the
- * functionality of other normalizers.
+ * Input construction shared by the characterization tests of the de-regexed normalizers, so the
+ * generation and failure-reporting logic cannot drift apart between the four suites.
  */
-public class AggregateCharSequenceNormalizer implements CharSequenceNormalizer {
+final class CharacterizationInputs {
 
-  private static final long serialVersionUID = 5514902020184083235L;
-  private final CharSequenceNormalizer[] normalizers;
-
-  public AggregateCharSequenceNormalizer(CharSequenceNormalizer ... normalizers) {
-    this.normalizers = normalizers;
+  private CharacterizationInputs() {
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public CharSequence normalize (CharSequence text) {
-    if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
+  static String randomInput(Random random, String[] pool) {
+    final int pieces = random.nextInt(24);
+    final StringBuilder b = new StringBuilder();
+    for (int i = 0; i < pieces; i++) {
+      b.append(pool[random.nextInt(pool.length)]);
     }
-
-    for (CharSequenceNormalizer normalizers : normalizers) {
-      text = normalizers.normalize(text);
-    }
-
-    return text;
+    return b.toString();
   }
 
+  static String escape(String s) {
+    final StringBuilder b = new StringBuilder();
+    for (int i = 0; i < s.length(); i++) {
+      final char c = s.charAt(i);
+      if (c >= 0x20 && c <= 0x7E) {
+        b.append(c);
+      } else {
+        b.append(String.format("\\u%04X", (int) c));
+      }
+    }
+    return b.toString();
+  }
 }

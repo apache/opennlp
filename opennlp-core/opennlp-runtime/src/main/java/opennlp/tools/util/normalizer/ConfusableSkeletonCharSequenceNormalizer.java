@@ -27,7 +27,7 @@ package opennlp.tools.util.normalizer;
  */
 public class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 3074516628190437751L;
+  private static final long serialVersionUID = 1068969405606517368L;
 
   private static final ConfusableSkeletonCharSequenceNormalizer INSTANCE =
       new ConfusableSkeletonCharSequenceNormalizer();
@@ -40,8 +40,12 @@ public class ConfusableSkeletonCharSequenceNormalizer implements CharSequenceNor
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
     return Confusables.skeleton(text);
   }
 }

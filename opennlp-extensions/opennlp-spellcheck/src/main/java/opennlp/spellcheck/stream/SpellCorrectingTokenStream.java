@@ -18,8 +18,6 @@
 package opennlp.spellcheck.stream;
 
 import java.io.IOException;
-import java.util.Objects;
-import java.util.regex.Pattern;
 
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.dictionary.SymSpellModel;
@@ -33,11 +31,9 @@ import opennlp.tools.util.ObjectStream;
  * (whitespace by default). Every token is spell-corrected independently and the tokens
  * are re-joined with the same delimiter.
  *
- * <p>This is the shape produced by OpenNLP tokenizers / token-sample formats and is
- * what the trainable components consume: a fixed sequence of tokens per element. Unlike
- * {@link SpellCorrectingObjectStream} in compound mode, this stream is
- * <em>token-count preserving</em> &ndash; it never splits or merges tokens, so the
- * corrected element stays aligned with any parallel annotation (tags, spans).</p>
+ * <p>This is the shape produced by OpenNLP tokenizers and token-sample formats, a fixed
+ * sequence of tokens per element. This stream is token-count preserving: it never splits or
+ * merges tokens, so the corrected element stays aligned with any parallel annotation.</p>
  *
  * <p>Correction always runs in
  * {@link SpellCheckingCharSequenceNormalizer.Mode#PER_TOKEN per-token} mode and reuses
@@ -54,7 +50,6 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
 
   private final SpellCheckingCharSequenceNormalizer normalizer;
   private final String delimiter;
-  private final Pattern splitPattern;
 
   /**
    * Wraps {@code samples} with a default corrector ({@link #DEFAULT_DELIMITER space}
@@ -62,11 +57,12 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    *
    * @param samples      the source token-line stream; must not be {@code null}
    * @param spellChecker the engine used to correct tokens; must not be {@code null}
+   * @throws IllegalArgumentException if {@code samples} or {@code spellChecker} is {@code null}
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples, SpellChecker spellChecker) {
     this(samples,
         SpellCheckingCharSequenceNormalizer.builder(
-            Objects.requireNonNull(spellChecker, "spellChecker must not be null"))
+            requireNonNullArg(spellChecker, "spellChecker"))
             .mode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN).build(),
         DEFAULT_DELIMITER);
   }
@@ -77,9 +73,10 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    *
    * @param samples the source token-line stream; must not be {@code null}
    * @param model   the loaded model whose engine is used; must not be {@code null}
+   * @throws IllegalArgumentException if {@code samples} or {@code model} is {@code null}
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples, SymSpellModel model) {
-    this(samples, Objects.requireNonNull(model, "model must not be null").getSymSpell());
+    this(samples, requireNonNullArg(model, "model").getSymSpell());
   }
 
   /**
@@ -93,23 +90,43 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
    *                   {@code null}
    * @param delimiter  the literal token delimiter to split and re-join on; must not be
    *                   {@code null} or empty
-   * @throws NullPointerException     if {@code normalizer} or {@code delimiter} is
-   *                                  {@code null}
-   * @throws IllegalArgumentException if {@code delimiter} is empty
+   * @throws IllegalArgumentException if {@code samples}, {@code normalizer} or
+   *                                  {@code delimiter} is {@code null}, or if
+   *                                  {@code delimiter} is empty
    */
   public SpellCorrectingTokenStream(ObjectStream<String> samples,
                                     SpellCheckingCharSequenceNormalizer normalizer,
                                     String delimiter) {
-    super(samples);
-    this.normalizer = Objects.requireNonNull(normalizer, "normalizer must not be null");
-    Objects.requireNonNull(delimiter, "delimiter must not be null");
+    super(requireNonNullArg(samples, "samples"));
+    if (normalizer == null) {
+      throw new IllegalArgumentException("normalizer must not be null");
+    }
+    if (delimiter == null) {
+      throw new IllegalArgumentException("delimiter must not be null");
+    }
     if (delimiter.isEmpty()) {
       throw new IllegalArgumentException("delimiter must not be empty");
     }
+    this.normalizer = normalizer;
     this.delimiter = delimiter;
-    this.splitPattern = Pattern.compile(Pattern.quote(delimiter));
   }
 
+  /**
+   * Validates that a constructor argument is not {@code null}.
+   *
+   * @param value the argument to check
+   * @param name  the parameter name used in the error message
+   * @return {@code value}, never {@code null}
+   * @throws IllegalArgumentException if {@code value} is {@code null}
+   */
+  private static <T> T requireNonNullArg(T value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException(name + " must not be null");
+    }
+    return value;
+  }
+
+  /** {@inheritDoc} */
   @Override
   public String read() throws IOException {
     final String line = samples.read();
@@ -119,15 +136,19 @@ public class SpellCorrectingTokenStream extends FilterObjectStream<String, Strin
     if (line.isEmpty()) {
       return line;
     }
-    final String[] tokens = splitPattern.split(line, -1);
+    // Split on the literal delimiter and re-join, correcting each non-empty token.
     final StringBuilder out = new StringBuilder(line.length());
-    for (int i = 0; i < tokens.length; i++) {
-      if (i > 0) {
-        out.append(delimiter);
-      }
-      final String token = tokens[i];
+    int from = 0;
+    while (true) {
+      final int at = line.indexOf(delimiter, from);
+      final String token = at >= 0 ? line.substring(from, at) : line.substring(from);
       // Empty tokens (e.g. from leading/trailing/duplicate delimiters) pass through.
       out.append(token.isEmpty() ? token : normalizer.normalize(token));
+      if (at < 0) {
+        break;
+      }
+      out.append(delimiter);
+      from = at + delimiter.length();
     }
     return out.toString();
   }

@@ -18,7 +18,6 @@
 package opennlp.spellcheck.stream;
 
 import java.io.IOException;
-import java.util.Objects;
 
 import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.dictionary.SymSpellModel;
@@ -58,10 +57,11 @@ public class SpellCorrectingObjectStream extends FilterObjectStream<String, Stri
    *
    * @param samples      the source line stream; must not be {@code null}
    * @param spellChecker the engine used to correct lines; must not be {@code null}
+   * @throws IllegalArgumentException if {@code samples} or {@code spellChecker} is {@code null}
    */
   public SpellCorrectingObjectStream(ObjectStream<String> samples, SpellChecker spellChecker) {
     this(samples, new SpellCheckingCharSequenceNormalizer(
-        Objects.requireNonNull(spellChecker, "spellChecker must not be null")));
+        requireNonNullArg(spellChecker, "spellChecker")));
   }
 
   /**
@@ -70,10 +70,11 @@ public class SpellCorrectingObjectStream extends FilterObjectStream<String, Stri
    *
    * @param samples the source line stream; must not be {@code null}
    * @param model   the loaded model whose engine is used; must not be {@code null}
+   * @throws IllegalArgumentException if {@code samples} or {@code model} is {@code null}
    */
   public SpellCorrectingObjectStream(ObjectStream<String> samples, SymSpellModel model) {
     this(samples, new SpellCheckingCharSequenceNormalizer(
-        Objects.requireNonNull(model, "model must not be null")));
+        requireNonNullArg(model, "model")));
   }
 
   /**
@@ -82,13 +83,33 @@ public class SpellCorrectingObjectStream extends FilterObjectStream<String, Stri
    *
    * @param samples    the source line stream; must not be {@code null}
    * @param normalizer the corrector to apply to each line; must not be {@code null}
+   * @throws IllegalArgumentException if {@code samples} or {@code normalizer} is {@code null}
    */
   public SpellCorrectingObjectStream(ObjectStream<String> samples,
                                      SpellCheckingCharSequenceNormalizer normalizer) {
-    super(samples);
-    this.normalizer = Objects.requireNonNull(normalizer, "normalizer must not be null");
+    super(requireNonNullArg(samples, "samples"));
+    if (normalizer == null) {
+      throw new IllegalArgumentException("normalizer must not be null");
+    }
+    this.normalizer = normalizer;
   }
 
+  /**
+   * Validates that a constructor argument is not {@code null}.
+   *
+   * @param value the argument to check
+   * @param name  the parameter name used in the error message
+   * @return {@code value}, never {@code null}
+   * @throws IllegalArgumentException if {@code value} is {@code null}
+   */
+  private static <T> T requireNonNullArg(T value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException(name + " must not be null");
+    }
+    return value;
+  }
+
+  /** {@inheritDoc} */
   @Override
   public String read() throws IOException {
     final String line = samples.read();

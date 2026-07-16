@@ -25,6 +25,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import opennlp.spellcheck.SpellChecker;
+import opennlp.spellcheck.dictionary.SymSpellModel;
 import opennlp.spellcheck.normalizer.SpellCheckingCharSequenceNormalizer;
 import opennlp.spellcheck.symspell.SymSpell;
 import opennlp.spellcheck.symspell.TinyDictionary;
@@ -32,6 +34,7 @@ import opennlp.tools.util.ObjectStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SpellCorrectingTokenStreamTest {
 
@@ -124,5 +127,49 @@ public class SpellCorrectingTokenStreamTest {
       stream.reset();
       assertEquals("world fox", stream.read());
     }
+  }
+  @Test
+  void leadingAndTrailingDelimitersPreserveEmptyEdgeTokens() throws IOException {
+    // split(line, -1) kept empty edge tokens; the indexOf walk must re-join them unchanged.
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    try (ObjectStream<String> stream = new SpellCorrectingTokenStream(
+        new ListStream(" teh quikc "), normalizer, " ")) {
+      assertEquals(" the quick ", stream.read());
+    }
+  }
+
+  @Test
+  void multiCharacterDelimiterSplitsAndRejoinsLiterally() throws IOException {
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    try (ObjectStream<String> stream = new SpellCorrectingTokenStream(
+        new ListStream("teh::quikc::broen"), normalizer, "::")) {
+      assertEquals("the::quick::brown", stream.read());
+    }
+  }
+
+  @Test
+  void duplicateDelimitersAtTheEdgesSurviveTheRoundTrip() throws IOException {
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    try (ObjectStream<String> stream = new SpellCorrectingTokenStream(
+        new ListStream("--teh--broen--"), normalizer, "--")) {
+      assertEquals("--the--brown--", stream.read());
+    }
+  }
+
+  @Test
+  void nullArgumentsAreRejected() {
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .mode(SpellCheckingCharSequenceNormalizer.Mode.PER_TOKEN).build();
+    assertThrows(IllegalArgumentException.class,
+        () -> new SpellCorrectingTokenStream(null, symSpell));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SpellCorrectingTokenStream(new ListStream("a"), (SpellChecker) null));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SpellCorrectingTokenStream(new ListStream("a"), (SymSpellModel) null));
+    assertThrows(IllegalArgumentException.class,
+        () -> new SpellCorrectingTokenStream(null, normalizer, " "));
   }
 }

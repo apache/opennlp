@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +47,13 @@ public class SpellCheckingCharSequenceNormalizerTest {
 
   private static String norm(CharSequenceNormalizer n, String text) {
     return n.normalize(text).toString();
+  }
+
+  @Test
+  void nullTextThrowsIllegalArgumentException() {
+    // The CharSequenceNormalizer contract: null is rejected, not passed through.
+    final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
+    assertThrows(IllegalArgumentException.class, () -> normalizer.normalize(null));
   }
 
   @Test
@@ -113,6 +121,29 @@ public class SpellCheckingCharSequenceNormalizerTest {
   }
 
   @Test
+  void punctuationPeelingFollowsUnicodeLetterAndNumberCategories() {
+    // Characterization for the token guards: the peeling classes are the complement of
+    // \p{L} and \p{N}, so Unicode punctuation peels like ASCII, and a combining mark
+    // (category Mark) peels off as a suffix rather than staying attached to the core.
+    final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
+    assertEquals("\u00ABquick\u00BB", norm(normalizer, "\u00ABquikc\u00BB"));
+    assertEquals("quick\u0301", norm(normalizer, "quikc\u0301"));
+    assertEquals("!!!", norm(normalizer, "!!!"));
+  }
+
+  @Test
+  void numberAndUrlGuardsHoldAtTheirExactBoundaries() {
+    final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
+    // Number-like: optional sign, digits with grouping/decimal marks, optional percent.
+    assertEquals("+3,14%", norm(normalizer, "+3,14%"));
+    assertEquals("-42%", norm(normalizer, "-42%"));
+    assertEquals("1.2.3", norm(normalizer, "1.2.3"));
+    // URL-like third alternative: a bare domain with a known TLD is never corrected.
+    assertEquals("quikc.com", norm(normalizer, "quikc.com"));
+    assertEquals("www.quikc.com/broen", norm(normalizer, "www.quikc.com/broen"));
+  }
+
+  @Test
   void compoundModeRepairsSpaceMerges() {
     final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
         .mode(SpellCheckingCharSequenceNormalizer.Mode.COMPOUND).build();
@@ -140,10 +171,9 @@ public class SpellCheckingCharSequenceNormalizerTest {
   }
 
   @Test
-  void emptyAndNullInputsArePassedThrough() {
+  void emptyInputIsPassedThrough() {
     final var normalizer = new SpellCheckingCharSequenceNormalizer(symSpell);
     assertEquals("", norm(normalizer, ""));
-    org.junit.jupiter.api.Assertions.assertNull(normalizer.normalize(null));
   }
 
   @Test
@@ -178,7 +208,45 @@ public class SpellCheckingCharSequenceNormalizerTest {
 
   @Test
   void nullCheckerIsRejected() {
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> new SpellCheckingCharSequenceNormalizer((SymSpell) null));
+  }
+  private boolean numberLike(String core) {
+    return new SpellCheckingCharSequenceNormalizer(symSpell).isNumberLike(core);
+  }
+
+  @Test
+  void numberLikeRejectsShapesTheFormerRegexRejected() {
+    // Reject-side pins for the scan structure: at most one trailing percent, a digit required,
+    // no letters, no bare sign.
+    Assertions.assertFalse(numberLike("5%%"));
+    Assertions.assertFalse(numberLike("+%"));
+    Assertions.assertFalse(numberLike("1,2a"));
+    Assertions.assertFalse(numberLike("+"));
+    Assertions.assertFalse(numberLike(""));
+    Assertions.assertFalse(numberLike("%"));
+    Assertions.assertFalse(numberLike("..,,"));
+    Assertions.assertTrue(numberLike("+3,14%"));
+    Assertions.assertTrue(numberLike("5%"));
+  }
+
+  @Test
+  void numberLikeMatchesTheFormerRegexOverGeneratedTokens() {
+    // Differential over the token alphabet of the former "[+-]?[\\d.,]*\\d[\\d.,]*%?" guard.
+    final java.util.regex.Pattern former =
+        java.util.regex.Pattern.compile("[+-]?[\\d.,]*\\d[\\d.,]*%?");
+    final char[] alphabet = {'+', '-', '%', '.', ',', '0', '5', '9', 'a'};
+    final java.util.Random random = new java.util.Random(42);
+    for (int round = 0; round < 20_000; round++) {
+      final int length = random.nextInt(7);
+      final StringBuilder token = new StringBuilder();
+      for (int i = 0; i < length; i++) {
+        token.append(alphabet[random.nextInt(alphabet.length)]);
+      }
+      final String core = token.toString();
+      Assertions.assertEquals(former.matcher(core).matches(),
+          numberLike(core),
+          () -> "core: " + core);
+    }
   }
 }

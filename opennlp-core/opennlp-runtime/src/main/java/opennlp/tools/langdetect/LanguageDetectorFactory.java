@@ -23,7 +23,7 @@ import opennlp.tools.util.ext.ExtensionLoader;
 import opennlp.tools.util.normalizer.EmojiCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.NumberCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.ShrinkCharSequenceNormalizer;
-import opennlp.tools.util.normalizer.TwitterCharSequenceNormalizer;
+import opennlp.tools.util.normalizer.SocialMediaCharSequenceNormalizer;
 import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
 
 
@@ -33,14 +33,9 @@ import opennlp.tools.util.normalizer.UrlCharSequenceNormalizer;
  * Extend this class to change the Language Detector behaviour,
  * such as the {@link LanguageDetectorContextGenerator}.
  * The default {@link DefaultLanguageDetectorContextGenerator} will use char n-grams of
- * size 1 to 3 and the following normalizers:
- * <ul>
- * <li> {@link EmojiCharSequenceNormalizer}
- * <li> {@link UrlCharSequenceNormalizer}
- * <li> {@link TwitterCharSequenceNormalizer}
- * <li> {@link NumberCharSequenceNormalizer}
- * <li> {@link ShrinkCharSequenceNormalizer}
- * </ul>
+ * size 1 to 3 and the {@link EmojiCharSequenceNormalizer}, {@link UrlCharSequenceNormalizer},
+ * {@link SocialMediaCharSequenceNormalizer}, {@link NumberCharSequenceNormalizer}, and
+ * {@link ShrinkCharSequenceNormalizer}.
  */
 public class LanguageDetectorFactory extends BaseToolFactory {
 
@@ -53,7 +48,7 @@ public class LanguageDetectorFactory extends BaseToolFactory {
     return new DefaultLanguageDetectorContextGenerator(1, 3,
         EmojiCharSequenceNormalizer.getInstance(),
         UrlCharSequenceNormalizer.getInstance(),
-        TwitterCharSequenceNormalizer.getInstance(),
+        SocialMediaCharSequenceNormalizer.getInstance(),
         NumberCharSequenceNormalizer.getInstance(),
         ShrinkCharSequenceNormalizer.getInstance());
   }

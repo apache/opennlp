@@ -39,8 +39,12 @@ public class EmojiCharSequenceNormalizer implements CharSequenceNormalizer {
   private static final Pattern EMOJI_REGEX =
       Pattern.compile("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+");
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize (CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
     return EMOJI_REGEX.matcher(text).replaceAll(" ");
   }
 }

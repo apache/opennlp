@@ -29,7 +29,7 @@ import java.text.Normalizer;
  */
 public class NfcCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 5960421783304915649L;
+  private static final long serialVersionUID = -2229543110136546341L;
 
   private static final NfcCharSequenceNormalizer INSTANCE = new NfcCharSequenceNormalizer();
 
@@ -38,8 +38,12 @@ public class NfcCharSequenceNormalizer implements CharSequenceNormalizer {
     return INSTANCE;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
     return Normalizer.normalize(text, Normalizer.Form.NFC);
   }
 }

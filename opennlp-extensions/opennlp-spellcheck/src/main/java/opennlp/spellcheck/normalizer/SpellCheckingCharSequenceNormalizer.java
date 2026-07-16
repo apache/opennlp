@@ -19,7 +19,6 @@ package opennlp.spellcheck.normalizer;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import opennlp.spellcheck.SpellChecker;
@@ -48,56 +47,39 @@ import opennlp.tools.util.normalizer.CharSequenceNormalizer;
  *       input.</li>
  * </ul>
  *
- * <p>Several guards keep the corrector from "fixing" tokens that should be left as
- * they are (configurable through the {@link Builder}):</p>
- * <ul>
- *   <li>tokens shorter than {@code minTokenLength} are skipped;</li>
- *   <li>numeric tokens are skipped ({@code skipNumbers}, on by default);</li>
- *   <li>URL- and email-like tokens are skipped ({@code skipUrls}, on by default);</li>
- *   <li>a token whose lower-cased form is already in the dictionary is never
- *       changed (the engine returns it at edit distance {@code 0}).</li>
- * </ul>
+ * <p>Several guards, all configurable through the {@link Builder}, keep the corrector from
+ * "fixing" tokens that should be left as they are: tokens shorter than {@code minTokenLength}
+ * are skipped, numeric tokens are skipped when {@code skipNumbers} is set (on by default),
+ * URL- and email-like tokens are skipped when {@code skipUrls} is set (on by default), and a
+ * token whose lower-cased form is already in the dictionary is never changed.</p>
  *
- * <p><b>Casing.</b> Dictionaries are normally lower-cased, so lookups are performed on
- * the lower-cased token, and the original casing pattern is re-applied to the
- * correction: an all-upper token yields an all-upper correction, a leading-capital
- * token yields a leading-capital correction, otherwise the suggestion's own casing is
- * used. When no correction applies, the original token (including its casing and any
- * surrounding punctuation) is emitted unchanged.</p>
+ * <p><b>Casing.</b> Lookups are performed on the lower-cased token and the original casing
+ * pattern is re-applied to the correction: an all-upper token yields an all-upper correction,
+ * a leading-capital token yields a leading-capital correction, otherwise the suggestion's own
+ * casing is used. When no correction applies, the original token is emitted unchanged.</p>
  *
  * <p>This normalizer composes cleanly inside an
  * {@link AggregateCharSequenceNormalizer}; place it after noise-removing normalizers
  * (URL, emoji, shrink) so it sees clean tokens.</p>
  *
- * <p><b>Serialization.</b> {@link CharSequenceNormalizer} is {@link java.io.Serializable},
- * but the backing {@link SpellChecker} usually is not; it is therefore held in a
- * {@code transient} field and is {@code null} after Java deserialization. A deserialized
- * instance is inert until a checker is re-attached: obtain a working copy with the same
- * settings via {@link #withSpellChecker(SpellChecker)} (this matches how the engine is
- * rebuilt from a model rather than Java-serialized). Calling {@link #normalize} on an
- * instance with no checker throws {@link IllegalStateException}.</p>
+ * <p><b>Serialization.</b> The settings fields are serialized, but the backing
+ * {@link SpellChecker} is held in a {@code transient} field and is {@code null} after Java
+ * deserialization; re-attach a checker with {@link #withSpellChecker(SpellChecker)} to obtain
+ * a working copy with the same settings. Calling {@link #normalize} on an instance with no
+ * checker throws {@link IllegalStateException}.</p>
  */
 public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormalizer {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 488960282194566688L;
 
   /** The default minimum token length below which tokens are left untouched. */
   public static final int DEFAULT_MIN_TOKEN_LENGTH = 4;
-
-  /** Matches tokens that are entirely digits, optionally with grouping/decimal marks. */
-  private static final Pattern NUMBER_LIKE = Pattern.compile("[+-]?[\\d.,]*\\d[\\d.,]*%?");
 
   /** Matches URL- and email-like tokens that should never be spell-corrected. */
   private static final Pattern URL_LIKE = Pattern.compile(
       "(?:https?://|www\\.)\\S+"
           + "|[-+_.0-9A-Za-z]+@[-0-9A-Za-z]+\\.[-.0-9A-Za-z]+"
           + "|\\S+\\.(?:com|org|net|edu|gov|io)\\b\\S*");
-
-  /** Leading non-letter/digit run kept verbatim around a token (e.g. opening quotes). */
-  private static final Pattern LEADING_NON_WORD = Pattern.compile("^[^\\p{L}\\p{N}]+");
-
-  /** Trailing non-letter/digit run kept verbatim around a token (e.g. punctuation). */
-  private static final Pattern TRAILING_NON_WORD = Pattern.compile("[^\\p{L}\\p{N}]+$");
 
   /** The correction mode. */
   public enum Mode {
@@ -133,15 +115,17 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @param model the loaded model whose engine is used; must not be {@code null}
    */
   public SpellCheckingCharSequenceNormalizer(SymSpellModel model) {
-    this(Objects.requireNonNull(model, "model must not be null").getSymSpell());
+    this(builder(model));
   }
 
   private SpellCheckingCharSequenceNormalizer(Builder b) {
-    this.spellChecker = Objects.requireNonNull(b.spellChecker, "spellChecker must not be null");
+    if (b.spellChecker == null) {
+      throw new IllegalArgumentException("spellChecker must not be null");
+    }
+    this.spellChecker = b.spellChecker;
     this.mode = b.mode;
     this.minTokenLength = b.minTokenLength;
-    // The engine throws if a query exceeds its configured maximum, so clamp to it; an
-    // explicitly smaller requested distance is still honored.
+    // Clamp to the engine's configured maximum; a smaller requested distance is still honored.
     this.maxEditDistance = Math.min(b.maxEditDistance, this.spellChecker.maxEditDistance());
     this.skipNumbers = b.skipNumbers;
     this.skipUrls = b.skipUrls;
@@ -152,7 +136,10 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @return a new {@link Builder} seeded with sensible defaults
    */
   public static Builder builder(SpellChecker spellChecker) {
-    return new Builder(Objects.requireNonNull(spellChecker, "spellChecker must not be null"));
+    if (spellChecker == null) {
+      throw new IllegalArgumentException("spellChecker must not be null");
+    }
+    return new Builder(spellChecker);
   }
 
   /**
@@ -160,7 +147,10 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    * @return a new {@link Builder} seeded with sensible defaults
    */
   public static Builder builder(SymSpellModel model) {
-    return new Builder(Objects.requireNonNull(model, "model must not be null").getSymSpell());
+    if (model == null) {
+      throw new IllegalArgumentException("model must not be null");
+    }
+    return new Builder(model.getSymSpell());
   }
 
   /**
@@ -181,13 +171,17 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
         .build();
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     if (spellChecker == null) {
       throw new IllegalStateException("no SpellChecker attached; this instance was likely "
           + "restored by Java deserialization. Re-attach one via withSpellChecker(...).");
     }
-    if (text == null || text.isEmpty()) {
+    if (text == null) {
+      throw new IllegalArgumentException("The text must not be null.");
+    }
+    if (text.isEmpty()) {
       return text;
     }
     final String input = text.toString();
@@ -197,6 +191,14 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return normalizePerToken(input);
   }
 
+  /**
+   * Corrects the whole input as a phrase with {@link SpellChecker#lookupCompound}, repairing
+   * wrongly inserted or omitted spaces. Returns the input unchanged when it is blank or the
+   * engine offers no correction.
+   *
+   * @param input The text to correct; never null.
+   * @return The corrected phrase, or the input itself when nothing changed.
+   */
   private CharSequence normalizeCompound(String input) {
     if (input.isBlank()) {
       return input;
@@ -209,6 +211,13 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return corrected.isEmpty() ? input : corrected;
   }
 
+  /**
+   * Corrects each whitespace-delimited token independently, copying the whitespace runs
+   * between tokens verbatim so the shape of the line is kept.
+   *
+   * @param input The text to correct; never null.
+   * @return The text with each token corrected.
+   */
   private CharSequence normalizePerToken(String input) {
     final StringBuilder out = new StringBuilder(input.length());
     int i = 0;
@@ -240,10 +249,11 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
    */
   private String correctToken(String token) {
     // Peel off leading/trailing punctuation so the core word is what we look up.
-    final String prefix = match(LEADING_NON_WORD, token);
-    final String suffix = token.length() > prefix.length()
-        ? match(TRAILING_NON_WORD, token.substring(prefix.length())) : "";
-    final String core = token.substring(prefix.length(), token.length() - suffix.length());
+    final int coreStart = leadingNonWordLength(token);
+    final int coreEnd = token.length() - trailingNonWordLength(token, coreStart);
+    final String prefix = token.substring(0, coreStart);
+    final String suffix = token.substring(coreEnd);
+    final String core = token.substring(coreStart, coreEnd);
 
     if (!isCorrectable(core)) {
       return token;
@@ -274,7 +284,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     if (skipUrls && URL_LIKE.matcher(core).matches()) {
       return false;
     }
-    if (skipNumbers && NUMBER_LIKE.matcher(core).matches()) {
+    if (skipNumbers && isNumberLike(core)) {
       return false;
     }
     // A token with no letters at all (pure symbols) cannot be a spelling error.
@@ -306,6 +316,7 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return corrected;
   }
 
+  /** {@return whether {@code s} has more than one character and every letter in it is upper-case} */
   private static boolean isAllUpper(String s) {
     boolean sawLetter = false;
     for (int k = 0; k < s.length(); k++) {
@@ -320,9 +331,89 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
     return sawLetter && s.length() > 1;
   }
 
-  private static String match(Pattern pattern, String s) {
-    final var m = pattern.matcher(s);
-    return m.find() ? m.group() : "";
+  /**
+   * {@return the length of the leading run of non-letter, non-number code points of
+   * {@code token}}
+   *
+   * @param token The token to scan; never null.
+   */
+  private int leadingNonWordLength(String token) {
+    int i = 0;
+    while (i < token.length()) {
+      final int codePoint = token.codePointAt(i);
+      if (isLetterOrNumber(codePoint)) {
+        break;
+      }
+      i += Character.charCount(codePoint);
+    }
+    return i;
+  }
+
+  /**
+   * {@return the length of the trailing run of non-letter, non-number code points of
+   * {@code token}, looking only behind {@code from}}
+   *
+   * @param token The token to scan; never null.
+   * @param from  The index the backward scan must not cross.
+   */
+  private int trailingNonWordLength(String token, int from) {
+    int end = token.length();
+    while (end > from) {
+      final int codePoint = token.codePointBefore(end);
+      if (isLetterOrNumber(codePoint)) {
+        break;
+      }
+      end -= Character.charCount(codePoint);
+    }
+    return token.length() - end;
+  }
+
+  /**
+   * {@return whether {@code codePoint} is a letter or a number} Numbers cover the decimal,
+   * letter, and other number categories, not only the decimal digits.
+   *
+   * @param codePoint The code point to classify.
+   */
+  private boolean isLetterOrNumber(int codePoint) {
+    if (Character.isLetter(codePoint)) {
+      return true;
+    }
+    final int type = Character.getType(codePoint);
+    return type == Character.DECIMAL_DIGIT_NUMBER
+        || type == Character.LETTER_NUMBER
+        || type == Character.OTHER_NUMBER;
+  }
+
+  /**
+   * {@return whether {@code core} looks like a number: an optional sign, then digits with
+   * optional grouping or decimal marks containing at least one ASCII digit, then an optional
+   * trailing percent sign} Package private so the differential test can drive the
+   * classification directly.
+   *
+   * @param core The token to classify; never null.
+   */
+  boolean isNumberLike(String core) {
+    int start = 0;
+    if (start < core.length() && (core.charAt(start) == '+' || core.charAt(start) == '-')) {
+      start++;
+    }
+    int end = core.length();
+    if (end > start && core.charAt(end - 1) == '%') {
+      end--;
+    }
+    if (start >= end) {
+      return false;
+    }
+    boolean sawDigit = false;
+    for (int i = start; i < end; i++) {
+      final char c = core.charAt(i);
+      if (c >= '0' && c <= '9') {
+        sawDigit = true;
+      } else if (c != '.' && c != ',') {
+        return false;
+      }
+    }
+    return sawDigit;
   }
 
   /** A mutable builder for {@link SpellCheckingCharSequenceNormalizer}. */
@@ -344,7 +435,10 @@ public class SpellCheckingCharSequenceNormalizer implements CharSequenceNormaliz
      * @return this builder
      */
     public Builder mode(Mode value) {
-      this.mode = Objects.requireNonNull(value, "mode must not be null");
+      if (value == null) {
+        throw new IllegalArgumentException("mode must not be null");
+      }
+      this.mode = value;
       return this;
     }
 
