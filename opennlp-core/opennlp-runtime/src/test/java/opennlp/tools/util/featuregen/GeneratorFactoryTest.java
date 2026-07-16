@@ -17,8 +17,10 @@
 
 package opennlp.tools.util.featuregen;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,12 +30,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.ext.ExtensionNotLoadedException;
 import opennlp.tools.util.model.ArtifactSerializer;
 import opennlp.tools.util.model.DictionarySerializer;
 
 public class GeneratorFactoryTest {
 
-  static class TestParametersFeatureGeneratorFactory extends
+  public static class TestParametersFeatureGeneratorFactory extends
       GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 
     public TestParametersFeatureGeneratorFactory() {
@@ -238,6 +241,47 @@ public class GeneratorFactoryTest {
     for (AdaptiveFeatureGenerator afgen : aggregatedFeatureGenerator.getGenerators()) {
       Assertions.assertInstanceOf(OutcomePriorFeatureGenerator.class, afgen);
     }
+  }
+
+  /**
+   * Positive: class attribute referencing an opennlp.* factory loads without error.
+   * opennlp.* is in the default allowlist and the type matches AbstractXmlFeatureGeneratorFactory.
+   */
+  @Test
+  void testClassAttributeAllowedOpennlpPackage() throws Exception {
+    try (InputStream descIn = getClass().getResourceAsStream(
+        "/opennlp/tools/util/featuregen/TestParametersConfig.xml")) {
+      Assertions.assertNotNull(descIn);
+      Assertions.assertDoesNotThrow(() -> GeneratorFactory.create(descIn, null));
+    }
+  }
+
+  /**
+   * Negative: class attribute referencing a non-opennlp.* class is rejected by
+   * the ExtensionLoader allowlist before Class.forName() is called.
+   */
+  @Test
+  void testClassAttributeBlockedPackageThrows() {
+    String xml = "<?xml version=\"1.0\"?><featureGenerators>" +
+        "<generator class=\"com.malicious.Exploit\"/></featureGenerators>";
+    InputStream descIn = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RuntimeException ex = Assertions.assertThrows(RuntimeException.class,
+        () -> GeneratorFactory.create(descIn, null));
+    Assertions.assertInstanceOf(ExtensionNotLoadedException.class, ex.getCause());
+  }
+
+  /**
+   * Negative: class attribute referencing an opennlp.* class that does NOT extend
+   * AbstractXmlFeatureGeneratorFactory is rejected by the isAssignableFrom type check.
+   */
+  @Test
+  void testClassAttributeWrongTypeThrows() {
+    String xml = "<?xml version=\"1.0\"?><featureGenerators>" +
+        "<generator class=\"opennlp.tools.util.featuregen.TokenFeatureGenerator\"/></featureGenerators>";
+    InputStream descIn = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+    RuntimeException ex = Assertions.assertThrows(RuntimeException.class,
+        () -> GeneratorFactory.create(descIn, null));
+    Assertions.assertInstanceOf(ExtensionNotLoadedException.class, ex.getCause());
   }
 
   @Test
