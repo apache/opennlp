@@ -17,7 +17,6 @@
 
 package opennlp.tools.cmdline;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,6 +71,8 @@ import opennlp.tools.formats.nkjp.NKJPSentenceSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesNameSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesPOSSampleStreamFactory;
 import opennlp.tools.formats.ontonotes.OntoNotesParseSampleStreamFactory;
+import opennlp.tools.util.ext.ExtensionLoader;
+import opennlp.tools.util.ext.ExtensionNotLoadedException;
 
 /**
  * Registry for {@link ObjectStreamFactory object stream factories}.
@@ -208,10 +209,16 @@ public final class StreamFactoryRegistry {
   /**
    * Returns a factory which reads format named {@code formatName} and
    * instantiates streams producing objects of {@code sampleClass} class.
+   * <p>
+   * If no factory is registered for {@code formatName}, an attempt is made to
+   * interpret {@code formatName} as the fully qualified class name of an
+   * {@link ObjectStreamFactory} implementation and load it via the
+   * {@link ExtensionLoader}. Such a class must reside in an allowed package,
+   * see {@link ExtensionLoader#registerAllowedPackage(String)}.
    *
    * @param sampleClass class of the objects, produced by the streams instantiated by the factory
    * @param formatName  name of the format, if null, assumes OpenNLP format
-   * @return factory instance
+   * @return factory instance, or {@code null} if no factory could be found or loaded
    */
   @SuppressWarnings("unchecked")
   public static <T,P> ObjectStreamFactory<T,P> getFactory(Class<T> sampleClass, String formatName) {
@@ -227,19 +234,9 @@ public final class StreamFactoryRegistry {
     }
     else {
       try {
-        Class<?> factoryClazz = Class.forName(formatName);
-
-        // TODO: Need to check if it can produce the desired output
-        // Otherwise there will be class cast exceptions later in the flow
-
-        try {
-          return (ObjectStreamFactory<T,P>) factoryClazz.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | NoSuchMethodException |
-                 InvocationTargetException | IllegalAccessException e) {
-          return null;
-        }
-
-      } catch (ClassNotFoundException e) {
+        return (ObjectStreamFactory<T,P>)
+            ExtensionLoader.instantiateExtension(ObjectStreamFactory.class, formatName);
+      } catch (ExtensionNotLoadedException e) {
         return null;
       }
     }
