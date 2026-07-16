@@ -56,16 +56,16 @@ public final class CLI {
     toolLookupMap = Collections.unmodifiableMap(toolLookupMap);
   }
 
+  /** Not instantiable. */
   private CLI() {
   }
 
-  /**
-   * @return A set which contains all tool names.
-   */
+  /** {@return the names of all tools this command line dispatcher can run} */
   public static Set<String> getToolNames() {
     return toolLookupMap.keySet();
   }
 
+  /** Logs the version banner and the list of available tools with their short descriptions. */
   private static void usage() {
     logger.info("OpenNLP Static Embeddings {}.", Version.currentVersion());
     logger.info("Usage: {} TOOL", CMD);
@@ -93,6 +93,14 @@ public final class CLI {
     logger.info("Example: {} AssembleModel help", CMD);
   }
 
+  /**
+   * Runs the tool named by the first argument, passing it the remaining arguments. Without
+   * arguments it logs the usage overview instead, and a tool invoked with the {@code help}
+   * parameter logs that tool's help. Exits the JVM with the tool's error code when the tool
+   * terminates exceptionally.
+   *
+   * @param args The tool name followed by that tool's arguments; may be empty.
+   */
   public static void main(String[] args) {
 
     if (args.length == 0) {

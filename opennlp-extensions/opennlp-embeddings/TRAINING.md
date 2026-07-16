@@ -19,7 +19,7 @@
 
 This module loads static embedding tables; it does not produce them. A table is distilled once from a sentence-transformer teacher, offline, in Python, and then loaded in the JVM as many times as you like. This walks through distilling one and assembling the directory `StaticEmbeddingModel.load` expects, using a multilingual SentencePiece model (bge-m3) as the worked example.
 
-The distillation tool is [Model2Vec](https://github.com/MinishLab/model2vec). It runs the teacher over its own vocabulary once, applies PCA and a Zipf weighting, and writes a flat per-token matrix. There is no training loop and no labelled data; a distillation is minutes on CPU, not hours on a GPU.
+The distillation tool is [Model2Vec](https://github.com/MinishLab/model2vec). It runs the teacher over its own vocabulary once, applies principal component analysis (PCA) and a Zipf weighting (frequent tokens are down-weighted, after Zipf's law of word frequency), and writes a flat per-token matrix. There is no training loop and no labelled data; a distillation is minutes on CPU, not hours on a GPU.
 
 ## 1. Set up the distiller
 
@@ -30,7 +30,7 @@ uv pip install --python .venv-distill "model2vec[distill]"
 
 ## 2. Distill the teacher
 
-bge-m3 is an XLM-RoBERTa/SentencePiece model with a 250k multilingual vocabulary, native dimension 1024.
+bge-m3 is an [XLM-RoBERTa](https://arxiv.org/abs/1911.02116)/SentencePiece model with a 250k multilingual vocabulary, native dimension 1024.
 
 ```python
 # distill_bge_m3.py
@@ -106,4 +106,4 @@ A WordPiece teacher (a BERT-family model such as bge-large-en) distills the same
 
 ## Where a table's license comes from
 
-Distillation carries the teacher's license onto the table. bge-m3 is MIT, so its distillation is freely redistributable; a table distilled from a non-commercial or share-alike teacher inherits those terms. Check the teacher before publishing a table.
+Distillation carries the teacher's license onto the table. bge-m3 is published under the MIT license per its [model card](https://huggingface.co/BAAI/bge-m3) (verify at download time), so its distillation is freely redistributable; a table distilled from a non-commercial or share-alike teacher inherits those terms. Check the teacher before publishing a table.
