@@ -25,7 +25,7 @@ import opennlp.tools.commons.ThreadSafe;
  */
 @Internal
 @ThreadSafe
-class NoOpStringInterner implements StringInterner {
+public class NoOpStringInterner implements StringInterner {
 
   /**
    * {@inheritDoc}
