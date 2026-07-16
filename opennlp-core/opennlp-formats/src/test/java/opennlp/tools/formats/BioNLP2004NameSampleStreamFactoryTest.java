@@ -17,7 +17,9 @@
 
 package opennlp.tools.formats;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +34,7 @@ import opennlp.tools.util.ObjectStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BioNLP2004NameSampleStreamFactoryTest extends
@@ -84,6 +87,27 @@ public class BioNLP2004NameSampleStreamFactoryTest extends
       assertEquals("protein", sample.getNames()[2].getType());
       assertEquals("protein", sample.getNames()[3].getType());
       assertEquals("cell_type", sample.getNames()[4].getType());
+    }
+  }
+
+  @Test
+  void testConvertManualExample() throws IOException {
+    String input = "IL-2\tB-DNA\n"
+        + "receptor\tI-DNA\n"
+        + "activates\tO\n"
+        + "T\tB-cell_type\n"
+        + "cells\tI-cell_type\n"
+        + ".\tO\n\n";
+    int types = BioNLP2004NameSampleStream.GENERATE_DNA_ENTITIES
+        | BioNLP2004NameSampleStream.GENERATE_CELLTYPE_ENTITIES;
+
+    try (ObjectStream<NameSample> stream = new BioNLP2004NameSampleStream(
+        () -> new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), types)) {
+      NameSample sample = stream.read();
+      assertNotNull(sample);
+      assertEquals("<START:DNA> IL-2 receptor <END> activates "
+          + "<START:cell_type> T cells <END> .", sample.toString());
+      assertNull(stream.read());
     }
   }
 
