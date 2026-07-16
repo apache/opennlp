@@ -28,9 +28,10 @@ import opennlp.tools.commons.Internal;
  * entry, skipping whatever remains of the current one, and {@link #entryStream()}
  * exposes exactly the current entry's bytes. No external archive library is involved.
  *
- * <p>Reads classic and ustar headers: entry name, octal size, and type flag. Long-name
- * extensions are not interpreted; such entries appear under their extension header
- * names and are skippable like any other.</p>
+ * <p>Reads classic and ustar headers: entry name, octal size, and type flag. The ustar
+ * name prefix field is not consulted, so an entry's name is always the content of the
+ * 100-byte name field alone. Long-name extension entries are not interpreted either;
+ * they appear under their extension header names and are skippable like any other.</p>
  */
 @Internal
 public final class TarStream {
@@ -146,6 +147,13 @@ public final class TarStream {
     };
   }
 
+  /**
+   * Fills the header buffer with the next 512-byte block.
+   *
+   * @return {@code true} when a full block was read, {@code false} at a clean end of
+   *         the stream before any byte of the block.
+   * @throws IOException Thrown if the stream ends inside the block.
+   */
   private boolean readBlock() throws IOException {
     int filled = 0;
     while (filled < header.length) {
@@ -161,6 +169,10 @@ public final class TarStream {
     return true;
   }
 
+  /**
+   * @return {@code true} if the current header buffer is one of the all-zero blocks
+   *         that terminate a tar archive.
+   */
   private boolean isEndBlock() {
     for (final byte b : header) {
       if (b != 0) {
@@ -170,6 +182,14 @@ public final class TarStream {
     return true;
   }
 
+  /**
+   * Parses the octal size field of the current header, tolerating NUL and blank
+   * padding around the digits.
+   *
+   * @return The entry size in bytes.
+   * @throws IOException Thrown if the field contains a character that is not an octal
+   *         digit, a blank, or NUL padding.
+   */
   private long parseOctal() throws IOException {
     long value = 0;
     for (int i = SIZE_OFFSET; i < SIZE_OFFSET + SIZE_LENGTH; i++) {
@@ -185,11 +205,22 @@ public final class TarStream {
     return value;
   }
 
+  /**
+   * @param entrySize The size of an entry's content in bytes.
+   * @return The number of padding bytes that align the entry to the next 512-byte
+   *         block boundary.
+   */
   private long padding(long entrySize) {
     final long remainder = entrySize % BLOCK;
     return remainder == 0 ? 0 : BLOCK - remainder;
   }
 
+  /**
+   * Consumes and discards the given number of bytes from the underlying stream.
+   *
+   * @param bytes The number of bytes to discard.
+   * @throws IOException Thrown if the stream ends before all bytes were consumed.
+   */
   private void skip(long bytes) throws IOException {
     long toSkip = bytes;
     final byte[] buffer = new byte[8192];
