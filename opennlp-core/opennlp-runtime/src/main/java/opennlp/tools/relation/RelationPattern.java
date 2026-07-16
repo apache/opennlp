@@ -26,8 +26,11 @@ import opennlp.tools.util.StringUtil;
  * One extraction rule for {@link RelationAnnotator}: a dependency path shape between two
  * entity heads and the relation type to emit when the shape matches.
  *
- * <p>The path is a space-separated sequence of steps. A step {@code <label} walks up
- * from the subject's head token over an arc with that relation label; a step
+ * <p>The path is a whitespace-separated sequence of steps; every character that
+ * {@link StringUtil#isWhitespace(char)} accepts separates steps, so no-break spaces and
+ * the other Unicode space separators delimit exactly like ASCII blanks. A step
+ * {@code <label} walks up from the subject's head token over an arc with that relation
+ * label; a step
  * {@code >label} walks down toward the object's head token. All up steps come before all
  * down steps, so the path always runs from the subject up to a single pivot token and
  * down to the object. {@code <nsubj >obj} matches a subject and object of the same verb;
@@ -81,16 +84,22 @@ public record RelationPattern(String type, String path, String trigger) {
   /**
    * Splits the path into its steps.
    *
-   * @return The steps in order. Never {@code null} or empty.
+   * @return The steps in order. Never {@code null}. Empty only when the path consists
+   *         solely of characters that are whitespace to
+   *         {@link StringUtil#isWhitespace(char)} but not to {@link String#isBlank()},
+   *         for example the no-break space U+00A0; such a pattern never matches, since
+   *         every path between two distinct entity heads has at least one step.
    */
   public List<String> steps() {
     return splitSteps(path);
   }
 
   /**
-   * Splits a path on whitespace with a single character scan.
+   * Splits a path into whitespace-free steps with a single left-to-right character
+   * scan. Every character that {@link StringUtil#isWhitespace(char)} accepts acts as a
+   * separator, and runs of consecutive separators never produce empty steps.
    *
-   * @param path The path to split.
+   * @param path The path to split. Must not be {@code null}.
    * @return The whitespace-free steps in order. Never {@code null}.
    */
   private static List<String> splitSteps(String path) {

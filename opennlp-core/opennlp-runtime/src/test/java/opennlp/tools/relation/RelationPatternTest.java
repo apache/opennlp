@@ -22,6 +22,10 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Verifies {@link RelationPattern} construction and path parsing, in particular the
+ * whitespace handling of the step scan across ASCII and Unicode separator characters.
+ */
 public class RelationPatternTest {
 
   private static final char NBSP = (char) 0x00A0;
@@ -32,6 +36,10 @@ public class RelationPatternTest {
   private static final char FILE_SEPARATOR = (char) 0x001C;
   private static final char UNIT_SEPARATOR = (char) 0x001F;
 
+  /**
+   * Verifies splitting on ASCII blanks and tabs, including runs of separators at the
+   * start and end of the path, which never produce empty steps.
+   */
   @Test
   void testStepsSplitOnAsciiWhitespace() {
     Assertions.assertEquals(List.of("<nsubj", ">obj"),
@@ -40,35 +48,123 @@ public class RelationPatternTest {
         new RelationPattern("t", "  <nsubj\t>obj  ", null).steps());
   }
 
+  /**
+   * Verifies splitting on the Unicode space separators: the no-break space, the narrow
+   * no-break space, the figure space, and the ideographic space delimit steps exactly
+   * like an ASCII blank, alone as well as combined in one path.
+   */
   @Test
-  void testStepsSplitOnEveryUnicodeWhitespace() {
+  void testStepsSplitOnUnicodeSpaceSeparators() {
     Assertions.assertEquals(List.of("<nsubj", ">obj"),
         new RelationPattern("t", "<nsubj" + NBSP + ">obj", null).steps());
-    Assertions.assertEquals(List.of("<nsubj", ">obj"),
-        new RelationPattern("t", "<nsubj" + NEL + ">obj", null).steps());
     Assertions.assertEquals(List.of("<nsubj", ">obj"),
         new RelationPattern("t", "<nsubj" + NNBSP + ">obj", null).steps());
     Assertions.assertEquals(List.of("<nsubj", ">obj"),
         new RelationPattern("t", "<nsubj" + FIGURE_SPACE + ">obj", null).steps());
     Assertions.assertEquals(List.of("<nsubj", ">nmod", ">case"),
         new RelationPattern("t",
-            NBSP + "<nsubj" + IDEOGRAPHIC_SPACE + ">nmod" + NNBSP + ">case" + NEL,
+            NBSP + "<nsubj" + IDEOGRAPHIC_SPACE + ">nmod" + NNBSP + ">case" + NBSP,
             null).steps());
   }
 
+  /**
+   * Verifies that the next line control U+0085 is not a separator: it is neither
+   * whitespace to the JDK nor a Unicode space separator, so it stays inside the step
+   * label and the path parses as one single step.
+   */
   @Test
-  void testInformationSeparatorsStayInsideALabel() {
-    Assertions.assertEquals(List.of("<ns" + FILE_SEPARATOR + "ubj"),
-        new RelationPattern("t", "<ns" + FILE_SEPARATOR + "ubj", null).steps());
-    Assertions.assertEquals(List.of(">ab" + UNIT_SEPARATOR + "cd"),
-        new RelationPattern("t", ">ab" + UNIT_SEPARATOR + "cd", null).steps());
+  void testNextLineControlStaysInsideALabel() {
+    Assertions.assertEquals(List.of("<nsubj" + NEL + ">obj"),
+        new RelationPattern("t", "<nsubj" + NEL + ">obj", null).steps());
   }
 
+  /**
+   * Verifies that the information separator controls U+001C and U+001F, which the JDK
+   * counts as whitespace, split steps exactly like an ASCII blank.
+   */
+  @Test
+  void testInformationSeparatorsSplitSteps() {
+    Assertions.assertEquals(List.of("<nsubj", ">obj"),
+        new RelationPattern("t", "<nsubj" + FILE_SEPARATOR + ">obj", null).steps());
+    Assertions.assertEquals(List.of("<nsubj", ">obj"),
+        new RelationPattern("t", "<nsubj" + UNIT_SEPARATOR + ">obj", null).steps());
+  }
+
+  /**
+   * Verifies that the step order rule is enforced regardless of which whitespace
+   * character separates the steps.
+   */
   @Test
   void testUpStepsMustPrecedeDownStepsAcrossAllSeparators() {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new RelationPattern("t", ">obj <nsubj", null));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new RelationPattern("t", ">obj" + NBSP + "<nsubj", null));
+  }
+
+  /**
+   * Verifies that {@code null}, empty, and blank paths are all rejected at construction
+   * with the exact same message.
+   */
+  @Test
+  void testEmptyPathFailsLoudWithExactMessage() {
+    for (final String path : new String[] {null, "", " ", "\t\n"}) {
+      final IllegalArgumentException e = Assertions.assertThrows(
+          IllegalArgumentException.class, () -> new RelationPattern("t", path, null));
+      Assertions.assertEquals("path must not be null or blank", e.getMessage());
+    }
+  }
+
+  /**
+   * Verifies that a direction marker separated from its label forms an empty step and is
+   * rejected with a message naming the offending step, wherever it occurs in the path.
+   */
+  @Test
+  void testDirectionMarkerAloneIsRejectedAsEmptyStep() {
+    final IllegalArgumentException first = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> new RelationPattern("t", "< nsubj", null));
+    Assertions.assertEquals("not a valid path step: <", first.getMessage());
+
+    final IllegalArgumentException later = Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> new RelationPattern("t", "<nsubj > obj", null));
+    Assertions.assertEquals("not a valid path step: >", later.getMessage());
+  }
+
+  /**
+   * Verifies the exact message of the step order check: a path with an up step after a
+   * down step is rejected and the message quotes the whole path.
+   */
+  @Test
+  void testUpAfterDownReportsTheWholePath() {
+    final IllegalArgumentException e = Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> new RelationPattern("t", ">obj <nsubj", null));
+    Assertions.assertEquals("up steps must come before down steps: >obj <nsubj",
+        e.getMessage());
+  }
+
+  /**
+   * Verifies that leading and trailing no-break spaces (U+00A0, written as Unicode
+   * escapes in the source) are separators like any other whitespace and never produce
+   * empty steps.
+   */
+  @Test
+  void testLeadingAndTrailingNoBreakSpacesAreIgnored() {
+    Assertions.assertEquals(List.of("<nsubj", ">obj"),
+        new RelationPattern("t", "\u00A0<nsubj\u00A0>obj\u00A0", null).steps());
+  }
+
+  /**
+   * Documents the boundary between the blank guard and the whitespace scan: the blank
+   * check only recognizes the whitespace characters the JDK does, while the step scan
+   * also treats space separators such as {@code U+00A0} as whitespace. A path holding
+   * only a no-break space therefore passes construction but splits into zero steps, and
+   * such a pattern can never match because every computed path has at least one step.
+   */
+  @Test
+  void testNoBreakSpaceOnlyPathConstructsWithZeroSteps() {
+    final RelationPattern pattern = new RelationPattern("t", "\u00A0", null);
+    Assertions.assertEquals(List.of(), pattern.steps());
   }
 }
