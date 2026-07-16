@@ -203,7 +203,8 @@ EntityLinker<?> linker = EntityLinkerFactory.getLinker("location", properties);]
 		<screen>
 <![CDATA[The office is in <START:location> New York <END> .
 
-The second document starts after the blank line .]]>
+The second document starts after the blank line .
+]]>
 		</screen>
 		</para>
 	</section>
