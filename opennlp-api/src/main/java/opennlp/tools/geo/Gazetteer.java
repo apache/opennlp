@@ -61,14 +61,16 @@ public interface Gazetteer {
   Optional<GazetteerEntry> byId(String source, String recordId) throws IOException;
 
   /**
-   * Finds a representative entry for an ISO 3166-1 alpha-2 region code.
+   * Finds a representative entry for an
+   * <a href="https://www.iso.org/iso-3166-country-codes.html">ISO 3166-1</a> alpha-2 region code.
    *
-   * @param isoCountryCode The ISO 3166-1 alpha-2 code, two ASCII capital letters. Must not be
-   *                       {@code null}.
+   * @param isoCountryCode The ISO 3166-1 alpha-2 code, two ASCII letters of either case. Must
+   *                       not be {@code null}.
    * @return A representative entry for the region (which entry represents a region is the
    *     implementation's documented choice, for example the capital or the most populous record),
-   *     or empty when the region is unknown to this gazetteer.
-   * @throws IllegalArgumentException Thrown if {@code isoCountryCode} is {@code null}.
+   *     or empty when the code is well-formed but the region is unknown to this gazetteer.
+   * @throws IllegalArgumentException Thrown if {@code isoCountryCode} is {@code null} or is not
+   *     two ASCII letters.
    * @throws IOException Thrown if a backing store or remote service fails. An in-memory
    *     implementation never throws it.
    */

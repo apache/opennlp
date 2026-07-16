@@ -64,6 +64,12 @@ public final class GeoNamesGazetteer implements Gazetteer {
 
   private static final int COLUMNS = 19;
 
+  /** The separator between the fields of one row. */
+  private static final String FIELD_SEPARATOR = "\t";
+
+  /** The separator between the elements of the alternate-names field. */
+  private static final String LIST_SEPARATOR = ",";
+
   private final GazetteerIndex index;
 
   private GeoNamesGazetteer(GazetteerIndex index) {
@@ -121,6 +127,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
     return new GeoNamesGazetteer(index);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<GazetteerEntry> lookup(CharSequence name) {
     if (name == null) {
@@ -129,6 +136,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
     return index.lookup(name);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) {
     if (source == null || recordId == null) {
@@ -137,14 +145,13 @@ public final class GeoNamesGazetteer implements Gazetteer {
     return SOURCE.equals(source) ? index.byId(recordId) : Optional.empty();
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byRegion(String isoCountryCode) {
-    if (isoCountryCode == null) {
-      throw new IllegalArgumentException("isoCountryCode must not be null");
-    }
     return index.byRegion(isoCountryCode);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<String> sources() {
     return Set.of(SOURCE);
@@ -152,7 +159,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
 
   /** Parses one main-format row into an entry, failing loud with the line number. */
   private static GazetteerEntry parseRow(String line, int lineNumber) {
-    final String[] fields = line.split("\t", -1);
+    final String[] fields = line.split(FIELD_SEPARATOR, -1);
     if (fields.length < COLUMNS) {
       throw new IllegalArgumentException("line " + lineNumber + " has " + fields.length
           + " columns, expected " + COLUMNS);
@@ -165,7 +172,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
       if (!ascii.isEmpty() && !ascii.equals(name)) {
         alternates.add(ascii);
       }
-      for (final String alternate : fields[3].split(",")) {
+      for (final String alternate : fields[3].split(LIST_SEPARATOR)) {
         final String trimmed = alternate.trim();
         if (!trimmed.isEmpty() && !trimmed.equals(name)) {
           alternates.add(trimmed);

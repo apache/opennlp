@@ -40,6 +40,18 @@ import unicodedata
 EXTRACTION_DATE = '2026-07-06'
 MIRROR_COMMIT = '789c9904087846cc3361302857aa2e76b0ae71ff'
 
+# The separator between the fields of one output row.
+FIELD_SEPARATOR = ';'
+# The separator between the elements of a list-valued output field.
+LIST_SEPARATOR = '|'
+# The number of field separators in a well-formed output row (one less than the field count).
+SEPARATOR_COUNT = 10
+# The Unicode replacement character, an upstream marker of encoding damage.
+# Written as an escape so this file stays pure ASCII.
+REPLACEMENT_CHAR = '\uFFFD'
+# The first code point beyond the ASCII range.
+ASCII_LIMIT = 128
+
 # Letters NFD mark-stripping cannot reduce to ASCII; the standard transliterations.
 # Written as escapes so this file stays pure ASCII.
 TRANSLIT = {
@@ -164,7 +176,7 @@ def fold_ascii_tagged(value):
                 tags[-1] = True
             continue
         replacement = TRANSLIT.get(ch, ch)
-        source_nonascii = ord(ch) >= 128
+        source_nonascii = ord(ch) >= ASCII_LIMIT
         for c in replacement:
             out.append(c)
             tags.append(source_nonascii)
@@ -182,7 +194,7 @@ def damaged_variant_of(alt, folded_name, accent_tags):
 
 
 def is_ascii(value):
-    return all(ord(c) < 128 for c in value)
+    return all(ord(c) < ASCII_LIMIT for c in value)
 
 
 def collapse_ws(value):
@@ -191,7 +203,7 @@ def collapse_ws(value):
 
 def looks_corrupted(value):
     """True when an ASCII value carries a mojibake artifact signature."""
-    if '?' in value or '\uFFFD' in value:
+    if '?' in value or REPLACEMENT_CHAR in value:
         return True
     if value in LEGIT_CASE_ANOMALIES:
         return False
@@ -200,7 +212,7 @@ def looks_corrupted(value):
 
 def clean_field(value, what, ne_id):
     """A single table field: no ';' (field separator), no '|' (list separator), no newline."""
-    for banned in (';', '|', '\n', '\r'):
+    for banned in (FIELD_SEPARATOR, LIST_SEPARATOR, '\n', '\r'):
         if banned in value:
             raise SystemExit('Separator %r inside %s of NE_ID %s: %r' % (banned, what, ne_id, value))
     return value
@@ -267,7 +279,7 @@ def main():
         for alt_field in ('NAMEALT', 'NAMEPAR', 'MEGANAME'):
             value = (p.get(alt_field) or '').strip()
             if value:
-                raw_alts.extend(part.strip() for part in value.split('|'))
+                raw_alts.extend(part.strip() for part in value.split(LIST_SEPARATOR))
         for raw in raw_alts:
             if not raw:
                 continue
@@ -314,7 +326,7 @@ def main():
             used_repairs.add(('ADM1', adm0, adm1))
             adm1 = ADM1_REPAIRS[(adm0, adm1)]
             counts['adm1_repaired'] += 1
-        elif '?' in adm1 or '\uFFFD' in adm1:
+        elif '?' in adm1 or REPLACEMENT_CHAR in adm1:
             counts['adm1_omitted_damaged'] += 1
             adm1 = ''
         elif not is_ascii(adm1):
@@ -348,22 +360,22 @@ def main():
                 raise SystemExit('Non-integral WOF_ID for NE_ID %s: %r' % (ne_id, wof))
             attributes.append('whosonfirst=%d' % int(float(wof)))
 
-        row = ';'.join([
+        row = FIELD_SEPARATOR.join([
             'naturalearth',
             str(ne_id),
             name,
-            '|'.join(alt_names),
+            LIST_SEPARATOR.join(alt_names),
             '%.5f' % lat,
             '%.5f' % lon,
             iso,
             adm1,
             str(population),
             'CITY',
-            '|'.join(attributes),
+            LIST_SEPARATOR.join(attributes),
         ])
         if not is_ascii(row):
             raise SystemExit('Non-ASCII row for NE_ID %s: %r' % (ne_id, row))
-        if row.count(';') != 10:
+        if row.count(FIELD_SEPARATOR) != SEPARATOR_COUNT:
             raise SystemExit('Field-count drift for NE_ID %s: %r' % (ne_id, row))
         rows.append((ne_id, row))
 

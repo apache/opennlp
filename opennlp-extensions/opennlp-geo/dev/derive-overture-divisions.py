@@ -46,6 +46,9 @@ import duckdb
 
 KEPT_SUBTYPES = ("country", "dependency", "region", "county", "localadmin", "locality")
 
+# The separator between the fields of one output row.
+FIELD_SEPARATOR = "\t"
+
 
 def main() -> None:
     if len(sys.argv) < 2:
@@ -102,9 +105,9 @@ def main() -> None:
                 country, subtype, str(int(population)),
             )
             for field in fields:
-                if "\t" in field or "\n" in field:
+                if FIELD_SEPARATOR in field or "\n" in field:
                     sys.exit(f"field contains a separator, refusing to emit: {fields}")
-            out.write("\t".join(fields) + "\n")
+            out.write(FIELD_SEPARATOR.join(fields) + "\n")
             kept += 1
     print(f"wrote {kept} divisions to {output}")
 
