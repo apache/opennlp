@@ -18,6 +18,7 @@
 package opennlp.tools.relation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -30,11 +31,21 @@ import opennlp.tools.document.Document;
 import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
 
+/**
+ * Verifies {@link RelationAnnotator} against a document with directly constructed token,
+ * entity, and dependency layers, covering matching, direction handling, duplicate and
+ * invalid configurations, and documents without entities.
+ */
 public class RelationAnnotatorTest {
 
   /**
    * Builds the parsed document "Acme Corp acquired Bolt in 2024." with entities for
-   * Acme Corp, Bolt, and 2024.
+   * Acme Corp (index 0), Bolt (index 1), and 2024 (index 2). The dependency layer marks
+   * {@code acquired} as the root with {@code Corp} as {@code nsubj}, {@code Bolt} as
+   * {@code obj}, and {@code 2024} as {@code obl}.
+   *
+   * @return A document with aligned token, entity, and dependency layers. Never
+   *         {@code null}.
    */
   private static Document acquisitionDocument() {
     final String text = "Acme Corp acquired Bolt in 2024.";
@@ -67,6 +78,10 @@ public class RelationAnnotatorTest {
         .with(DependencyAnnotator.DEPENDENCIES, dependencies);
   }
 
+  /**
+   * Verifies the basic match: a subject-verb-object pattern with a trigger extracts
+   * exactly one relation with the expected type, entity indexes, and covering span.
+   */
   @Test
   void testMatchesSubjectVerbObjectPath() {
     final RelationAnnotator annotator = new RelationAnnotator(List.of(
@@ -85,6 +100,10 @@ public class RelationAnnotatorTest {
         relation.span().getStart(), relation.span().getEnd()).toString());
   }
 
+  /**
+   * Verifies that a matching path shape alone is not enough when a trigger is set: a
+   * pivot form different from the trigger suppresses the relation.
+   */
   @Test
   void testTriggerMismatchDoesNotMatch() {
     final RelationAnnotator annotator = new RelationAnnotator(List.of(
@@ -94,6 +113,10 @@ public class RelationAnnotatorTest {
         .get(RelationAnnotator.RELATIONS).isEmpty());
   }
 
+  /**
+   * Verifies that a pattern matches in one direction only: the subject-verb-object
+   * shape fires for the forward argument order and never for the reversed one.
+   */
   @Test
   void testDirectionMatters() {
     final RelationAnnotator annotator = new RelationAnnotator(List.of(
@@ -107,6 +130,10 @@ public class RelationAnnotatorTest {
     Assertions.assertEquals(1, relations.get(0).value().object());
   }
 
+  /**
+   * Verifies that independently registered patterns fire independently: two rules over
+   * different entity pairs produce two relations in registration order.
+   */
   @Test
   void testSeveralPatternsEmitSeveralRelations() {
     final RelationAnnotator annotator = new RelationAnnotator(List.of(
@@ -123,6 +150,11 @@ public class RelationAnnotatorTest {
     Assertions.assertEquals(2, relations.get(1).value().object());
   }
 
+  /**
+   * Verifies head selection for a multi-token entity: for "Acme Corp" the head is
+   * {@code Corp}, the token attached outside the entity, so the {@code nsubj} step
+   * starts there and the pattern still matches.
+   */
   @Test
   void testMultiwordEntityHeadIsTheOutwardToken() {
     final RelationAnnotator annotator = new RelationAnnotator(List.of(
@@ -135,6 +167,11 @@ public class RelationAnnotatorTest {
     Assertions.assertEquals(0, relations.get(0).value().subject());
   }
 
+  /**
+   * Verifies that malformed patterns and mentions are rejected at construction: wrong
+   * step order, a step without a direction marker, a marker without a label, a blank
+   * type or trigger, and a mention whose subject equals its object.
+   */
   @Test
   void testPatternValidation() {
     Assertions.assertThrows(IllegalArgumentException.class,
@@ -151,6 +188,11 @@ public class RelationAnnotatorTest {
         () -> new RelationMention("t", 1, 1));
   }
 
+  /**
+   * Verifies that the annotator rejects invalid configurations and inputs: a
+   * {@code null} or empty pattern collection, a {@code null} document, and a document
+   * without the required token and dependency layers.
+   */
   @Test
   void testInvalidArguments() {
     Assertions.assertThrows(IllegalArgumentException.class,
@@ -162,5 +204,116 @@ public class RelationAnnotatorTest {
     Assertions.assertThrows(IllegalArgumentException.class, () -> annotator.annotate(null));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> annotator.annotate(Document.of("no layers")));
+  }
+
+  /**
+   * Verifies that a path shape starting on the object arc binds the arguments the other
+   * way around: {@code <obj >nsubj} fires exactly once, with {@code Bolt} as the subject
+   * and {@code Acme Corp} as the object, and never for the forward argument order.
+   */
+  @Test
+  void testReversedPathShapeBindsSwappedRoles() {
+    final RelationAnnotator annotator = new RelationAnnotator(List.of(
+        new RelationPattern("acquisition", "<obj >nsubj", null)));
+
+    final List<Annotation<RelationMention>> relations =
+        annotator.annotate(acquisitionDocument()).get(RelationAnnotator.RELATIONS);
+
+    Assertions.assertEquals(1, relations.size());
+    Assertions.assertEquals(new RelationMention("acquisition", 1, 0),
+        relations.get(0).value());
+  }
+
+  /**
+   * Verifies that a pattern only matches the complete path between the two entity
+   * heads: {@code <nsubj} alone is a strict prefix of every connecting path in the
+   * document, so no relation is extracted.
+   */
+  @Test
+  void testPathLongerThanPatternDoesNotMatch() {
+    final RelationAnnotator annotator = new RelationAnnotator(List.of(
+        new RelationPattern("t", "<nsubj", null)));
+
+    Assertions.assertTrue(annotator.annotate(acquisitionDocument())
+        .get(RelationAnnotator.RELATIONS).isEmpty());
+  }
+
+  /**
+   * Verifies the behavior on a document without an entity layer: an absent layer reads
+   * as an empty list, so the annotator succeeds and adds an empty relations layer.
+   */
+  @Test
+  void testNoEntitiesProducesEmptyRelationsLayer() {
+    final String text = "Ada slept.";
+    final List<Annotation<String>> tokens = List.of(
+        new Annotation<>(new Span(0, 3), "Ada"),
+        new Annotation<>(new Span(4, 9), "slept"),
+        new Annotation<>(new Span(9, 10), "."));
+    final List<DependencyArc> arcs = List.of(
+        new DependencyArc(1, 0, "nsubj"),
+        new DependencyArc(DependencyArc.ROOT_HEAD, 1, "root"),
+        new DependencyArc(1, 2, "punct"));
+    final List<Annotation<DependencyArc>> dependencies = new ArrayList<>();
+    for (final DependencyArc arc : arcs) {
+      dependencies.add(new Annotation<>(tokens.get(arc.dependent()).span(), arc));
+    }
+    final Document document = Document.of(text)
+        .with(Layers.TOKENS, tokens)
+        .with(DependencyAnnotator.DEPENDENCIES, dependencies);
+    final RelationAnnotator annotator = new RelationAnnotator(List.of(
+        new RelationPattern("t", "<nsubj", null)));
+
+    final Document annotated = annotator.annotate(document);
+
+    Assertions.assertTrue(annotated.layers().contains(RelationAnnotator.RELATIONS));
+    Assertions.assertTrue(annotated.get(RelationAnnotator.RELATIONS).isEmpty());
+  }
+
+  /**
+   * Verifies that registering the same pattern twice is accepted and applies the rule
+   * twice: the annotator emits one relation per registered pattern, so the duplicate
+   * produces two identical annotations.
+   */
+  @Test
+  void testDuplicatePatternRegistrationEmitsDuplicateRelations() {
+    final RelationAnnotator annotator = new RelationAnnotator(List.of(
+        new RelationPattern("acquisition", "<nsubj >obj", "acquired"),
+        new RelationPattern("acquisition", "<nsubj >obj", "acquired")));
+
+    final List<Annotation<RelationMention>> relations =
+        annotator.annotate(acquisitionDocument()).get(RelationAnnotator.RELATIONS);
+
+    Assertions.assertEquals(2, relations.size());
+    Assertions.assertEquals(new RelationMention("acquisition", 0, 1),
+        relations.get(0).value());
+    Assertions.assertEquals(relations.get(0), relations.get(1));
+  }
+
+  /**
+   * Verifies that a pattern collection containing {@code null} is rejected at
+   * construction with the exact message.
+   */
+  @Test
+  void testNullPatternInCollectionIsRejected() {
+    final List<RelationPattern> patterns =
+        Arrays.asList(new RelationPattern("t", "<nsubj", null), null);
+    final IllegalArgumentException e = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> new RelationAnnotator(patterns));
+    Assertions.assertEquals("patterns must not contain null", e.getMessage());
+  }
+
+  /**
+   * Verifies that annotating a document that already carries a relations layer fails:
+   * documents reject duplicate layers, so the second annotation pass throws.
+   */
+  @Test
+  void testAnnotateRejectsAlreadyAnnotatedDocument() {
+    final RelationAnnotator annotator = new RelationAnnotator(List.of(
+        new RelationPattern("acquisition", "<nsubj >obj", "acquired")));
+
+    final Document annotated = annotator.annotate(acquisitionDocument());
+
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> annotator.annotate(annotated));
   }
 }

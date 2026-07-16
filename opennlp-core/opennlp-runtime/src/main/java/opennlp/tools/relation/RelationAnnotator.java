@@ -37,8 +37,9 @@ import opennlp.tools.util.Span;
  * rules against the dependency path connecting the two entity heads, and provides
  * {@link #RELATIONS}, one annotation per relation carrying its {@link RelationMention}.
  *
- * <p>Each entity's head is the token inside the entity span whose dependency head lies
- * outside the span. For every ordered entity pair the annotator computes the path from
+ * <p>Each entity's head is the first token overlapping the entity span whose dependency
+ * head lies outside the range of overlapping tokens. For every ordered entity pair the
+ * annotator computes the path from
  * the subject's head up to the lowest common ancestor and down to the object's head,
  * then emits one relation per pattern whose path shape and trigger match. The annotation
  * covers both entity spans; the mention references the entities by their index in
@@ -143,16 +144,20 @@ public class RelationAnnotator implements DocumentAnnotator {
 
   /**
    * Matches all patterns against one ordered entity pair and collects the resulting
-   * relations.
+   * relations. The pair contributes one relation per matching pattern; nothing is added
+   * when the two heads are not connected or the arcs contain a cycle.
    *
    * @param tokens The token layer.
-   * @param heads The dependency head of each token.
-   * @param relations The dependency relation of each token.
+   * @param heads The dependency head of each token, indexed by dependent token;
+   *              {@link DependencyArc#ROOT_HEAD} marks the sentence root.
+   * @param relations The relation label of each token's arc to its dependency head,
+   *                  indexed by dependent token.
    * @param entities The entity layer.
    * @param subject The subject entity index.
    * @param object The object entity index.
-   * @param entityHeads The head token of each entity.
-   * @param mentions The relation collector.
+   * @param entityHeads The head token of each entity, or {@code -1} where an entity
+   *                    overlaps no token.
+   * @param mentions The list that receives one annotation per matching pattern.
    */
   private void matchPair(List<Annotation<String>> tokens,
       int[] heads, String[] relations, List<Annotation<String>> entities,
@@ -202,12 +207,15 @@ public class RelationAnnotator implements DocumentAnnotator {
   }
 
   /**
-   * Finds the head token of an entity: the token inside the entity span whose
-   * dependency head lies outside the span.
+   * Finds the head token of an entity: the first token overlapping the entity span
+   * whose dependency head lies outside the index range of the overlapping tokens. A
+   * token overlaps the entity when their spans share at least one character. When no
+   * overlapping token is headed outside that range, which only cyclic arcs inside the
+   * range can cause, the first overlapping token is used as a fallback.
    *
    * @param entity The entity span in text coordinates.
    * @param tokens The token layer.
-   * @param heads The dependency head of each token.
+   * @param heads The dependency head of each token, indexed by dependent token.
    * @return The head token index, or {@code -1} if no token overlaps the entity.
    */
   private static int entityHead(Span entity, List<Annotation<String>> tokens, int[] heads) {
@@ -237,9 +245,10 @@ public class RelationAnnotator implements DocumentAnnotator {
    * Walks from a token to the root, collecting the visited tokens in order.
    *
    * @param start The token to start from.
-   * @param heads The dependency head of each token.
+   * @param heads The dependency head of each token, indexed by dependent token.
    * @return The chain including {@code start} and ending at the root token, or
-   *         {@code null} if the walk revisits a token and the arcs contain a cycle.
+   *         {@code null} when the walk takes more steps than there are tokens, which
+   *         only happens when the arcs contain a cycle.
    */
   private static List<Integer> chainToRoot(int start, int[] heads) {
     final List<Integer> chain = new ArrayList<>();
