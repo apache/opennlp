@@ -88,8 +88,6 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
 
   /**
    * {@inheritDoc}
-   *
-   * @throws IllegalArgumentException if {@code word} is {@code null}.
    */
   @Override
   public CharSequence stem(CharSequence word) {
@@ -110,8 +108,6 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
 
   /**
    * {@inheritDoc}
-   *
-   * @throws IllegalArgumentException if {@code word} is {@code null}.
    */
   @Override
   public List<CharSequence> stemAll(CharSequence word) {

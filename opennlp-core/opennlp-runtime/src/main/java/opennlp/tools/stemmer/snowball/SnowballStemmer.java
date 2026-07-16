@@ -56,6 +56,7 @@ public class SnowballStemmer implements Stemmer {
    * Creates a stemmer for the given algorithm with {@code repeat = 1}.
    *
    * @param algorithm The Snowball algorithm. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code algorithm} is {@code null}.
    */
   public SnowballStemmer(ALGORITHM algorithm) {
     this(algorithm, 1);

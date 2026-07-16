@@ -25,6 +25,9 @@ import opennlp.tools.commons.ThreadSafe;
 @ThreadSafe
 public record PorterStemmerFactory() implements StemmerFactory {
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Stemmer newStemmer() {
     return new PorterStemmer();

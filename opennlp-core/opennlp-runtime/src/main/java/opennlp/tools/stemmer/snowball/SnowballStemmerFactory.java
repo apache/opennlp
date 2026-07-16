@@ -60,6 +60,9 @@ public record SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm, int re
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Stemmer newStemmer() {
     return new ConfinedStemmer(SnowballStemmer.engineFor(algorithm).get(), repeat);
