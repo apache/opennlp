@@ -33,8 +33,8 @@ import java.util.zip.ZipInputStream;
 import opennlp.tools.util.archive.TarStream;
 
 /**
- * Fetches a user-chosen third-party resource, a training corpus, a dictionary archive,
- * a lexicon, into a local directory. The user supplies the location and thereby
+ * Fetches a user-chosen third-party resource, such as a training corpus, a dictionary
+ * archive, or a lexicon, into a local directory. The user supplies the location and thereby
  * accepts that resource's license; nothing is bundled and no location is built in,
  * which keeps externally licensed data entirely outside this library's distribution.
  *
@@ -51,7 +51,7 @@ import opennlp.tools.util.archive.TarStream;
 public final class ResourceInstaller {
 
   private ResourceInstaller() {
-    // static installer only
+    // This class exposes static methods only and is never instantiated.
   }
 
   /**
@@ -61,7 +61,7 @@ public final class ResourceInstaller {
    * @param targetDirectory The directory to install into; created when absent. Must
    *                        not be {@code null}.
    * @return The target directory. Never {@code null}.
-   * @throws IOException Thrown if fetching, verification, or unpacking fails.
+   * @throws IOException Thrown if fetching or unpacking fails.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static Path install(URI source, Path targetDirectory) throws IOException {
@@ -74,8 +74,9 @@ public final class ResourceInstaller {
    * @param source The resource location. Must not be {@code null}.
    * @param targetDirectory The directory to install into; created when absent. Must
    *                        not be {@code null}.
-   * @param sha256 The expected SHA-256 of the downloaded bytes as a hex string,
-   *               compared case-insensitively, or {@code null} to skip verification.
+   * @param sha256 The expected SHA-256 of the downloaded bytes as a hex string, compared
+   *               case-insensitively and ignoring leading and trailing whitespace, or
+   *               {@code null} to skip verification.
    * @return The target directory. Never {@code null}.
    * @throws IOException Thrown if fetching fails, the checksum does not match, or
    *         unpacking fails.
@@ -106,7 +107,10 @@ public final class ResourceInstaller {
     }
   }
 
-  /** Compares the file's SHA-256 with the expected hex digest. */
+  /**
+   * Computes the file's SHA-256 and compares it with the expected hex digest, ignoring
+   * hex letter case and any leading or trailing whitespace around the expected value.
+   */
   private static void verify(Path file, String expected) throws IOException {
     final MessageDigest digest;
     try {
@@ -176,6 +180,7 @@ public final class ResourceInstaller {
     }
   }
 
+  /** Unpacks every regular zip entry to its relative location beneath the target. */
   private static void unpackZip(InputStream raw, Path target) throws IOException {
     final ZipInputStream zip = new ZipInputStream(raw);
     ZipEntry entry;
@@ -204,7 +209,8 @@ public final class ResourceInstaller {
         && block[260] == 'a' && block[261] == 'r') {
       return true;
     }
-    // classic tar: a name and a valid octal size field
+    // Without the ustar magic, treat the block as a classic tar header when it starts
+    // with a name and its size field holds only octal digits, blanks, or NUL padding.
     if (block[0] == 0) {
       return false;
     }
