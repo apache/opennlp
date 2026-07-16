@@ -41,6 +41,21 @@ final class EmojiEmoticons {
 
   private static final String RESOURCE = "emoji-emoticons.txt";
 
+  /** Starts a comment line in {@code emoji-emoticons.txt}. */
+  private static final String COMMENT_PREFIX = "#";
+
+  /**
+   * Field separator in {@code emoji-emoticons.txt}
+   * ({@code source ; target ; fold_type ; standard ; unicode_version ; notes}).
+   */
+  private static final String FIELD_SEPARATOR = ";";
+
+  /**
+   * Separates hex code points inside a source or target field. The bundled table format uses
+   * ASCII space ({@code U+0020}), not a general whitespace class.
+   */
+  private static final String MAPPING_CODE_POINT_SEPARATOR = " ";
+
   private static final int ZERO_WIDTH_JOINER = 0x200D;
   private static final int VARIATION_SELECTOR_TEXT = 0xFE0E;
   private static final int VARIATION_SELECTOR_EMOJI = 0xFE0F;
@@ -342,12 +357,12 @@ final class EmojiEmoticons {
       while ((line = reader.readLine()) != null) {
         lineNumber++;
         final String content = line.strip();
-        if (content.isEmpty() || content.startsWith("#")) {
+        if (content.isEmpty() || content.startsWith(COMMENT_PREFIX)) {
           continue;
         }
         // The notes column is free text that may itself contain ';', so only the first five
         // separators are structural.
-        final String[] fields = content.split(";", 6);
+        final String[] fields = content.split(FIELD_SEPARATOR, 6);
         if (fields.length != 6) {
           throw new IllegalArgumentException("Malformed emoji/emoticon fold data in " + RESOURCE
               + " at line " + lineNumber + ": expected 6 fields, got " + fields.length
@@ -415,7 +430,7 @@ final class EmojiEmoticons {
     }
     try {
       final StringBuilder decoded = new StringBuilder();
-      for (final String hex : stripped.split(" ")) {
+      for (final String hex : stripped.split(MAPPING_CODE_POINT_SEPARATOR)) {
         decoded.appendCodePoint(Integer.parseInt(hex, 16));
       }
       return decoded.toString();

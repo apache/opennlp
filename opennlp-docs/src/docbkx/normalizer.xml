@@ -259,17 +259,17 @@ Span hit = aligned.toOriginalSpan(5, 14);   // "the-match" in the normalized tex
 			<code>OffsetMappingNameFinder</code>. Every per-code-point fold implements it: whitespace, the
 			line-break-preserving whitespace rung, dashes, invisible-control stripping, quotes, digits,
 			ellipsis, bullets, the German umlaut transliteration, Unicode full case folding
-				(<code>fullCaseFold()</code>, whose expansions come from a bundled table with known lengths, so
-				it reports its edits), and the emoji/emoticon folds (<code>emojiToEmoticon()</code> and
-				<code>emoticonToEmoji()</code>, backed by the same kind of known-length bundled table). The
+			(<code>fullCaseFold()</code>, whose expansions come from a bundled table with known lengths,
+			so it reports its edits), and the emoji/emoticon folds (<code>emojiToEmoticon()</code> and
+			<code>emoticonToEmoji()</code>, backed by the same kind of known-length bundled table). The
 			folds that route through
 			<code>java.text.Normalizer</code> (NFC, NFKC, accent folding, and confusable folding) or
-			through JDK case mapping (the locale-based <code>caseFold()</code>) cannot report their per-character edits, so they do
-			not implement the interface, and a chain that contains one is rejected by
-			<code>buildAligned()</code> with an <code>IllegalStateException</code> that names the rung,
-			rather than returning a pipeline that would hand back an offset that does not hold. The
-			per-stage maps and their composition use the <code>Alignment</code> machinery described in
-			<xref linkend="tools.normalizer.charclass"/>.
+			through JDK case mapping (the locale-based <code>caseFold()</code>) cannot report their
+			per-character edits, so they do not implement the interface, and a chain that contains one
+			is rejected by <code>buildAligned()</code> with an <code>IllegalStateException</code> that
+			names the rung, rather than returning a pipeline that would hand back an offset that does
+			not hold. The per-stage maps and their composition use the <code>Alignment</code> machinery
+			described in <xref linkend="tools.normalizer.charclass"/>.
 		</para>
 	</section>
 
