@@ -30,18 +30,22 @@ import opennlp.tools.util.Span;
 /**
  * Tests the frequency-driven segmenter against a project-authored miniature lexicon;
  * no external lexicon data is involved.
+ *
+ * <p>Source strings are written as Unicode escapes to keep this file ASCII-only; the
+ * class works over the same miniature Chinese frequency lexicon as the sibling usage
+ * example, whose javadoc spells out each fixture word.</p>
  */
 public class UnigramSegmenterTest {
 
   private static final String LEXICON = String.join("\n",
-      "我 5000 r",
-      "来到 2000 v",
-      "北京 3000 ns",
-      "清华大学 800 nt",
-      "清华 400 ns",
-      "华大 100 ns",
-      "大学 1500 n",
-      "的 9000 uj",
+      "\u6211 5000 r",
+      "\u6765\u5230 2000 v",
+      "\u5317\u4EAC 3000 ns",
+      "\u6E05\u534E\u5927\u5B66 800 nt",
+      "\u6E05\u534E 400 ns",
+      "\u534E\u5927 100 ns",
+      "\u5927\u5B66 1500 n",
+      "\u7684 9000 uj",
       "");
 
   private static UnigramSegmenter segmenter;
@@ -56,29 +60,29 @@ public class UnigramSegmenterTest {
   @Test
   void testPrefersWholeWordsOverFragments() {
     Assertions.assertArrayEquals(
-        new String[] {"我", "来到", "北京", "清华大学"},
-        segmenter.tokenize("我来到北京清华大学"));
+        new String[] {"\u6211", "\u6765\u5230", "\u5317\u4EAC", "\u6E05\u534E\u5927\u5B66"},
+        segmenter.tokenize("\u6211\u6765\u5230\u5317\u4EAC\u6E05\u534E\u5927\u5B66"));
   }
 
   @Test
   void testSpansStayInOriginalCoordinates() {
     Assertions.assertArrayEquals(new Span[] {
         new Span(0, 1), new Span(1, 3), new Span(3, 5), new Span(5, 9)},
-        segmenter.tokenizePos("我来到北京清华大学"));
+        segmenter.tokenizePos("\u6211\u6765\u5230\u5317\u4EAC\u6E05\u534E\u5927\u5B66"));
   }
 
   @Test
   void testUnknownCharactersFallBackToSingles() {
     Assertions.assertArrayEquals(
-        new String[] {"我", "爱", "北京"},
-        segmenter.tokenize("我爱北京"));
+        new String[] {"\u6211", "\u7231", "\u5317\u4EAC"},
+        segmenter.tokenize("\u6211\u7231\u5317\u4EAC"));
   }
 
   @Test
   void testWhitespaceSeparates() {
     Assertions.assertArrayEquals(
-        new String[] {"北京", "大学"},
-        segmenter.tokenize("北京 大学"));
+        new String[] {"\u5317\u4EAC", "\u5927\u5B66"},
+        segmenter.tokenize("\u5317\u4EAC \u5927\u5B66"));
     Assertions.assertEquals(0, segmenter.tokenizePos("  ").length);
   }
 
@@ -98,10 +102,10 @@ public class UnigramSegmenterTest {
    */
   @Test
   void testSingleCharacterInput() {
-    Assertions.assertArrayEquals(new String[] {"我"}, segmenter.tokenize("我"));
-    Assertions.assertArrayEquals(new Span[] {new Span(0, 1)}, segmenter.tokenizePos("我"));
-    Assertions.assertArrayEquals(new String[] {"爱"}, segmenter.tokenize("爱"));
-    Assertions.assertArrayEquals(new Span[] {new Span(0, 1)}, segmenter.tokenizePos("爱"));
+    Assertions.assertArrayEquals(new String[] {"\u6211"}, segmenter.tokenize("\u6211"));
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 1)}, segmenter.tokenizePos("\u6211"));
+    Assertions.assertArrayEquals(new String[] {"\u7231"}, segmenter.tokenize("\u7231"));
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 1)}, segmenter.tokenizePos("\u7231"));
   }
 
   /**
@@ -127,11 +131,11 @@ public class UnigramSegmenterTest {
   @Test
   void testMixedKnownAndUnknownRuns() {
     Assertions.assertArrayEquals(
-        new String[] {"我", "爱", "清华大学"},
-        segmenter.tokenize("我爱清华大学"));
+        new String[] {"\u6211", "\u7231", "\u6E05\u534E\u5927\u5B66"},
+        segmenter.tokenize("\u6211\u7231\u6E05\u534E\u5927\u5B66"));
     Assertions.assertArrayEquals(new Span[] {
         new Span(0, 1), new Span(1, 2), new Span(2, 6)},
-        segmenter.tokenizePos("我爱清华大学"));
+        segmenter.tokenizePos("\u6211\u7231\u6E05\u534E\u5927\u5B66"));
   }
 
   /**
@@ -140,9 +144,9 @@ public class UnigramSegmenterTest {
    */
   @Test
   void testSpansStayOriginalAfterLeadingWhitespace() {
-    final String text = "  我来到北京";
+    final String text = "  \u6211\u6765\u5230\u5317\u4EAC";
     Assertions.assertArrayEquals(
-        new String[] {"我", "来到", "北京"},
+        new String[] {"\u6211", "\u6765\u5230", "\u5317\u4EAC"},
         segmenter.tokenize(text));
     Assertions.assertArrayEquals(new Span[] {
         new Span(2, 3), new Span(3, 5), new Span(5, 7)},
