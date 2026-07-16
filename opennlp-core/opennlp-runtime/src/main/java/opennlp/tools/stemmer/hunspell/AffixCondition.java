@@ -29,6 +29,7 @@ import java.util.List;
  */
 final class AffixCondition {
 
+  /** The shared instance for the condition {@code .}, which accepts every stem. */
   private static final AffixCondition ANY = new AffixCondition(new char[0][], null, true);
 
   /** Per position: the accepted characters, or {@code null} for any character. */
@@ -44,7 +45,9 @@ final class AffixCondition {
   }
 
   /**
-   * Parses a condition field.
+   * Parses a condition field. Each pattern position is a literal character, a
+   * {@code .} matching any character, or a bracketed class such as {@code [sx]}; a
+   * class starting with {@code ^} is negated and matches any character outside it.
    *
    * @param pattern The condition text from the affix rule.
    * @param suffix Whether the owning rule is a suffix rule.
@@ -95,7 +98,9 @@ final class AffixCondition {
   }
 
   /**
-   * Tests a candidate stem against the condition at its anchored side.
+   * Tests a candidate stem against the condition at its anchored side: the last
+   * positions of the stem for a suffix condition, the first positions for a prefix
+   * condition. A stem shorter than the condition never matches.
    *
    * @param stem The candidate stem after affix removal and strip restoration.
    * @return {@code true} if the stem satisfies the condition.
