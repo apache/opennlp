@@ -377,6 +377,19 @@ public final class TermAnalyzer {
     }
 
     /**
+     * Enables {@link Dimension#EMOJI_FOLD}, folding emoji to ASCII emoticons. Only this direction
+     * exists as a per-token layer: the reverse (emoticon to emoji) is a pre-tokenization transform,
+     * because a tokenizer splits an emoticon such as {@code :-)} into punctuation, so it can never
+     * arrive as a single token; see {@link EmoticonToEmojiCharSequenceNormalizer}.
+     *
+     * @return this builder
+     */
+    public Builder emojiFold() {
+      chain.add(Dimension.EMOJI_FOLD);
+      return this;
+    }
+
+    /**
      * Enables {@link Dimension#CONFUSABLE_FOLD}.
      *
      * @return this builder

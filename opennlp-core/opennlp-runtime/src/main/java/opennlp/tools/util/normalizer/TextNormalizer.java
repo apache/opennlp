@@ -152,6 +152,29 @@ public final class TextNormalizer {
     }
 
     /**
+     * {@return this builder with emoji-to-emoticon folding appended}
+     *
+     * <p>Folds pictographs with a bundled ASCII emoticon mapping (for example U+1F642 to
+     * {@code :)}) and copies everything else through. It is offset-aware, so it composes into
+     * {@link #buildAligned()}.</p>
+     */
+    public Builder emojiToEmoticon() {
+      return add(Dimension.EMOJI_FOLD.defaultNormalizer());
+    }
+
+    /**
+     * {@return this builder with emoticon-to-emoji folding appended}
+     *
+     * <p>Folds a whitespace-delimited ASCII emoticon to its pictograph (for example {@code :-)} to
+     * U+1F642); an emoticon sequence embedded in other text, such as the {@code :/} in
+     * {@code https://}, is left alone. Apply before tokenization so emoticons survive as single
+     * emoji tokens. It is offset-aware, so it composes into {@link #buildAligned()}.</p>
+     */
+    public Builder emoticonToEmoji() {
+      return add(EmoticonToEmojiCharSequenceNormalizer.getInstance());
+    }
+
+    /**
      * Appends a custom normalizer.
      *
      * @param custom The normalizer to append. Must not be {@code null}.

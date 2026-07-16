@@ -55,6 +55,9 @@ public enum Dimension {
   /** Diacritic and accent folding; lossy, script gated, and language-wrong for some languages. */
   ACCENT_FOLD(AccentFoldCharSequenceNormalizer::getInstance),
 
+  /** Emoji folded to ASCII emoticons where a mapping exists; lossy, for matching only. */
+  EMOJI_FOLD(EmojiToEmoticonCharSequenceNormalizer::getInstance),
+
   /** Confusable (homoglyph) skeleton folding per UTS #39; lossy, for matching only. */
   CONFUSABLE_FOLD(ConfusableSkeletonCharSequenceNormalizer::getInstance),
 

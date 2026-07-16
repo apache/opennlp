@@ -1,0 +1,90 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Bidirectional emoji/emoticon fold data, authored by this project. One row per mapping:
+#
+#   source ; target ; fold_type ; standard ; unicode_version ; notes
+#
+# source and target are space-separated hexadecimal Unicode code points. fold_type EMOJI maps a
+# pictograph to its ASCII emoticon; EMOTICON maps an emoticon to its canonical pictograph. The
+# standard column is UNSPECIFIED (project-authored mapping). Every fold target is a source in the
+# opposite direction, asserted by EmojiEmoticonsTest. A line starting with '#' is a comment; the
+# notes column is the sixth and final field, so it may contain ';' but not '#'.
+#
+# fold_type EMOJI: pictograph to canonical ASCII emoticon (many to one).
+1F642 ; 003A 0029 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; SLIGHTLY SMILING FACE -> :)
+1F60A ; 003A 0029 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; SMILING FACE WITH SMILING EYES -> :)
+263A FE0F ; 003A 0029 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; WHITE SMILING FACE, emoji presentation -> :)
+263A ; 003A 0029 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; WHITE SMILING FACE -> :)
+1F600 ; 003A 0044 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; GRINNING FACE -> :D
+1F601 ; 003A 0044 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; GRINNING FACE WITH SMILING EYES -> :D
+1F603 ; 003A 0044 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; SMILING FACE WITH OPEN MOUTH -> :D
+1F604 ; 003A 0044 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; SMILING FACE WITH OPEN MOUTH AND SMILING EYES -> :D
+1F641 ; 003A 0028 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; SLIGHTLY FROWNING FACE -> :(
+2639 FE0F ; 003A 0028 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; WHITE FROWNING FACE, emoji presentation -> :(
+2639 ; 003A 0028 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; WHITE FROWNING FACE -> :(
+1F609 ; 003B 0029 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; WINKING FACE -> ;)
+1F61B ; 003A 0050 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; FACE WITH STUCK-OUT TONGUE -> :P
+1F61C ; 003A 0050 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; FACE WITH STUCK-OUT TONGUE AND WINKING EYE -> :P
+1F61D ; 003A 0050 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; FACE WITH STUCK-OUT TONGUE AND TIGHTLY-CLOSED EYES -> :P
+1F62E ; 003A 004F ; EMOJI ; UNSPECIFIED ; 17.0.0 ; FACE WITH OPEN MOUTH -> :O
+1F632 ; 003A 004F ; EMOJI ; UNSPECIFIED ; 17.0.0 ; ASTONISHED FACE -> :O
+1F622 ; 003A 0027 0028 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; CRYING FACE -> :'(
+1F62D ; 003A 0027 0028 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; LOUDLY CRYING FACE -> :'(
+1F610 ; 003A 007C ; EMOJI ; UNSPECIFIED ; 17.0.0 ; NEUTRAL FACE -> :|
+1F611 ; 003A 007C ; EMOJI ; UNSPECIFIED ; 17.0.0 ; EXPRESSIONLESS FACE -> :|
+1F615 ; 003A 002F ; EMOJI ; UNSPECIFIED ; 17.0.0 ; CONFUSED FACE -> :/
+1F617 ; 003A 002A ; EMOJI ; UNSPECIFIED ; 17.0.0 ; KISSING FACE -> :*
+1F618 ; 003A 002A ; EMOJI ; UNSPECIFIED ; 17.0.0 ; FACE THROWING A KISS -> :*
+2764 FE0F ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; HEAVY BLACK HEART, emoji presentation -> <3
+2764 ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; HEAVY BLACK HEART -> <3
+1F499 ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; BLUE HEART -> <3
+1F49A ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; GREEN HEART -> <3
+1F49B ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; YELLOW HEART -> <3
+1F49C ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; PURPLE HEART -> <3
+1F5A4 ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; BLACK HEART -> <3
+1F90D ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; WHITE HEART -> <3
+1F90E ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; BROWN HEART -> <3
+1F9E1 ; 003C 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; ORANGE HEART -> <3
+1F494 ; 003C 002F 0033 ; EMOJI ; UNSPECIFIED ; 17.0.0 ; BROKEN HEART -> </3
+#
+# fold_type EMOTICON: ASCII emoticon to canonical pictograph. The short form is the canonical
+# emoticon, so a round trip through both directions converges on it.
+003A 0029 ; 1F642 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :) -> SLIGHTLY SMILING FACE
+003A 002D 0029 ; 1F642 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-) -> SLIGHTLY SMILING FACE
+003D 0029 ; 1F642 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; =) -> SLIGHTLY SMILING FACE
+003A 0044 ; 1F600 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :D -> GRINNING FACE
+003A 002D 0044 ; 1F600 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-D -> GRINNING FACE
+003A 0028 ; 1F641 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :( -> SLIGHTLY FROWNING FACE
+003A 002D 0028 ; 1F641 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-( -> SLIGHTLY FROWNING FACE
+003B 0029 ; 1F609 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; ;) -> WINKING FACE
+003B 002D 0029 ; 1F609 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; ;-) -> WINKING FACE
+003A 0050 ; 1F61B ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :P -> FACE WITH STUCK-OUT TONGUE
+003A 002D 0050 ; 1F61B ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-P -> FACE WITH STUCK-OUT TONGUE
+003A 0070 ; 1F61B ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :p -> FACE WITH STUCK-OUT TONGUE
+003A 002D 0070 ; 1F61B ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-p -> FACE WITH STUCK-OUT TONGUE
+003A 004F ; 1F62E ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :O -> FACE WITH OPEN MOUTH
+003A 002D 004F ; 1F62E ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-O -> FACE WITH OPEN MOUTH
+003A 006F ; 1F62E ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :o -> FACE WITH OPEN MOUTH
+003A 002D 006F ; 1F62E ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-o -> FACE WITH OPEN MOUTH
+003A 0027 0028 ; 1F622 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :'( -> CRYING FACE
+003A 007C ; 1F610 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :| -> NEUTRAL FACE
+003A 002D 007C ; 1F610 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-| -> NEUTRAL FACE
+003A 002F ; 1F615 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :/ -> CONFUSED FACE
+003A 002D 002F ; 1F615 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-/ -> CONFUSED FACE
+003A 002A ; 1F617 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :* -> KISSING FACE
+003A 002D 002A ; 1F617 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; :-* -> KISSING FACE
+003C 0033 ; 2764 FE0F ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; <3 -> HEAVY BLACK HEART, emoji presentation
+003C 002F 0033 ; 1F494 ; EMOTICON ; UNSPECIFIED ; 17.0.0 ; </3 -> BROKEN HEART
