@@ -40,10 +40,11 @@ import opennlp.tools.geo.GeoPoint;
  * per division with id, primary name, comma-separated alternate names, coordinates,
  * country code, Overture subtype, and population.
  *
- * <p>The upstream data is published under a permissive data license and distributed as
- * partitioned Parquet, which this module deliberately does not parse; the derivation
- * script flattens the division features into this plain table, and the script's output
- * header carries the derivation record. Because divisions include countries and
+ * <p>The upstream divisions theme is published under the Open Database License, whose
+ * attribution and database share-alike terms follow the derived table; it is
+ * distributed as partitioned Parquet, which this module deliberately does not parse.
+ * The derivation script flattens the division features into this plain table, and the
+ * script's output header carries the derivation record. Because divisions include countries and
  * regions, not only settlements, a derived table also resolves mentions like
  * {@code Australia} or {@code Bavaria} that place-only gazetteers miss.</p>
  *
