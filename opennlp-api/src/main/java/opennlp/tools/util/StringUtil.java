@@ -18,6 +18,8 @@
 package opennlp.tools.util;
 
 import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +105,94 @@ public class StringUtil {
    */
   public static boolean isUnicodeWhitespace(int charCode) {
     return UnicodeWhitespace.isWhitespace(charCode);
+  }
+
+  /**
+   * Splits {@code input} on runs of Unicode {@code White_Space}. Leading and trailing
+   * runs are ignored, so whitespace-only input yields an empty array. This is a
+   * code-point scan, not a regular expression.
+   *
+   * @param input The text to split. Must not be {@code null}.
+   * @return The non-whitespace terms in order.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static String[] splitOnUnicodeWhitespace(CharSequence input) {
+    if (input == null) {
+      throw new IllegalArgumentException("input must not be null");
+    }
+    final List<String> terms = new ArrayList<>();
+    final int n = input.length();
+    int start = -1;
+    int i = 0;
+    while (i < n) {
+      final int cp = Character.codePointAt(input, i);
+      if (isUnicodeWhitespace(cp)) {
+        if (start >= 0) {
+          terms.add(input.subSequence(start, i).toString());
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+      i += Character.charCount(cp);
+    }
+    if (start >= 0) {
+      terms.add(input.subSequence(start, n).toString());
+    }
+    return terms.toArray(new String[0]);
+  }
+
+  /**
+   * Trims leading and trailing runs of Unicode {@code White_Space}, the same set
+   * {@link #splitOnUnicodeWhitespace(CharSequence)} breaks terms on.
+   *
+   * @param input The text to trim. Must not be {@code null}.
+   * @return The trimmed string; may be empty when {@code input} is whitespace-only.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static String trimUnicodeWhitespace(CharSequence input) {
+    if (input == null) {
+      throw new IllegalArgumentException("input must not be null");
+    }
+    int start = 0;
+    int end = input.length();
+    while (start < end) {
+      final int cp = Character.codePointAt(input, start);
+      if (!isUnicodeWhitespace(cp)) {
+        break;
+      }
+      start += Character.charCount(cp);
+    }
+    while (end > start) {
+      final int cp = Character.codePointBefore(input, end);
+      if (!isUnicodeWhitespace(cp)) {
+        break;
+      }
+      end -= Character.charCount(cp);
+    }
+    return input.subSequence(start, end).toString();
+  }
+
+  /**
+   * {@code true} when {@code input} is {@code null}, empty, or consists only of Unicode
+   * {@code White_Space} code points.
+   *
+   * @param input The text to test; {@code null} is treated as blank.
+   * @return {@code true} if there is no non-whitespace code point.
+   */
+  public static boolean isUnicodeBlank(CharSequence input) {
+    if (input == null || input.length() == 0) {
+      return true;
+    }
+    int i = 0;
+    while (i < input.length()) {
+      final int cp = Character.codePointAt(input, i);
+      if (!isUnicodeWhitespace(cp)) {
+        return false;
+      }
+      i += Character.charCount(cp);
+    }
+    return true;
   }
 
   /**

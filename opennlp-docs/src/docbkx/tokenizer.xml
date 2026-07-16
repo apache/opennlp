@@ -35,7 +35,7 @@
 		<para>
 			Tokenizers classify whitespace using the Unicode <code>White_Space</code> property by
 			default; see <xref linkend="intro.sysprops.whitespace"/> for the system property that
-			restores OpenNLP's legacy definition for models that need it.
+			restores OpenNLP's legacy definition for models trained with 1.x or 2.x.
 		</para>
 		<para>
 			<screen>

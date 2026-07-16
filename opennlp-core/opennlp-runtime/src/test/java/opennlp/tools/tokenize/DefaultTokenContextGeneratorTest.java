@@ -43,15 +43,14 @@ public class DefaultTokenContextGeneratorTest {
   }
 
   /**
-   * The {@code _ws} feature class follows the active {@link WhitespaceMode}; these features
-   * are part of every trained tokenizer model, so this pins the default behavior at the
-   * code points where the modes disagree: the next line control ({@code U+0085}) is
-   * classified as whitespace, the information separator ({@code U+001C}) is not.
+   * The {@code _ws} feature suffix (whitespace class; underscore is only a name separator,
+   * as in {@code f1_ws}) follows the active {@link WhitespaceMode}. These features are part
+   * of every trained tokenizer model, so this pins the default behavior at the code points
+   * where the modes disagree: the next line control ({@code U+0085}) is classified as
+   * whitespace, the information separator ({@code U+001C}) is not.
    */
   @Test
   void testNextLineControlProducesWhitespaceFeatureByDefault() {
-    WhitespaceMode.reset();
-
     char nextLine = (char) 0x0085;
     List<String> preds = Arrays.asList(cg.getContext("a" + nextLine + "b", 1));
     Assertions.assertTrue(preds.contains("f1_ws"), preds.toString());

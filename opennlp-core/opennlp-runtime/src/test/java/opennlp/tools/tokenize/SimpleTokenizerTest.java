@@ -166,8 +166,6 @@ public class SimpleTokenizerTest {
    */
   @Test
   void testNextLineControlIsWhitespaceByDefault() {
-    WhitespaceMode.reset();
-
     char nextLine = (char) 0x0085;
     Assertions.assertArrayEquals(new String[] {"a", "b"},
         mTokenizer.tokenize("a" + nextLine + "b"));

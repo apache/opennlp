@@ -396,57 +396,6 @@ public final class SymSpell implements SpellChecker {
   }
 
   /**
-   * Splits the input on runs of Unicode {@code White_Space}; leading and trailing runs are
-   * ignored, so whitespace-only input yields an empty array.
-   */
-  private static String[] splitOnWhitespace(String input) {
-    final List<String> terms = new ArrayList<>();
-    final int n = input.length();
-    int start = -1;
-    int i = 0;
-    while (i < n) {
-      final int cp = input.codePointAt(i);
-      if (StringUtil.isUnicodeWhitespace(cp)) {
-        if (start >= 0) {
-          terms.add(input.substring(start, i));
-          start = -1;
-        }
-      } else if (start < 0) {
-        start = i;
-      }
-      i += Character.charCount(cp);
-    }
-    if (start >= 0) {
-      terms.add(input.substring(start));
-    }
-    return terms.toArray(new String[0]);
-  }
-
-  /**
-   * Trims leading and trailing runs of Unicode {@code White_Space}, the same set
-   * {@link #splitOnWhitespace(String)} breaks terms on.
-   */
-  private static String trimWhitespace(String input) {
-    int start = 0;
-    int end = input.length();
-    while (start < end) {
-      final int cp = input.codePointAt(start);
-      if (!StringUtil.isUnicodeWhitespace(cp)) {
-        break;
-      }
-      start += Character.charCount(cp);
-    }
-    while (end > start) {
-      final int cp = input.codePointBefore(end);
-      if (!StringUtil.isUnicodeWhitespace(cp)) {
-        break;
-      }
-      end -= Character.charCount(cp);
-    }
-    return input.substring(start, end);
-  }
-
-  /**
    * {@inheritDoc}
    */
   @Override
@@ -456,7 +405,7 @@ public final class SymSpell implements SpellChecker {
       throw new IllegalArgumentException("maxEditDistance must not be negative: " + maxEditDistance);
     }
 
-    final String[] termList = splitOnWhitespace(input);
+    final String[] termList = StringUtil.splitOnUnicodeWhitespace(input);
     final List<SuggestItem> suggestionParts = new ArrayList<>();
 
     boolean lastCombi = false;
@@ -588,7 +537,7 @@ public final class SymSpell implements SpellChecker {
     final String corrected = joined.toString();
     // Trim on the same set the terms were split on, so the distance is not inflated.
     final int distance = editDistance.distance(
-        trimWhitespace(input), corrected, Integer.MAX_VALUE - 1);
+        StringUtil.trimUnicodeWhitespace(input), corrected, Integer.MAX_VALUE - 1);
     final long frequency = (long) freqProduct;
     return Collections.singletonList(
         new SuggestItem(corrected, Math.max(distance, 0), frequency));
