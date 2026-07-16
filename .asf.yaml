@@ -52,8 +52,9 @@ github:
     - compling
 
 notifications:
-  commits:      commits@opennlp.apache.org
-  issues:       dev@opennlp.apache.org
-  pullrequests_status: dev@opennlp.apache.org
-  pullrequests_comment: dev@opennlp.apache.org
+  jobs: commits@opennlp.apache.org
+  commits: commits@opennlp.apache.org
+  issues: commits@opennlp.apache.org
+  pullrequests: commits@opennlp.apache.org
+  discussions: commits@opennlp.apache.org
   jira_options: link worklog
