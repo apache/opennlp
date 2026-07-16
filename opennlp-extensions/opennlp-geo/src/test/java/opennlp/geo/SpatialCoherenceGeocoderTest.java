@@ -18,6 +18,7 @@
 package opennlp.geo;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +55,7 @@ public class SpatialCoherenceGeocoderTest {
   private final SpatialCoherenceGeocoder geocoder = new SpatialCoherenceGeocoder(GAZETTEER);
 
   private static List<Span> mentionsOf(String text, String... names) {
-    return java.util.Arrays.stream(names)
+    return Arrays.stream(names)
         .map(name -> new Span(text.indexOf(name), text.indexOf(name) + name.length()))
         .toList();
   }

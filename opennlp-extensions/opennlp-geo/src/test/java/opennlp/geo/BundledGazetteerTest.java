@@ -27,6 +27,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.geo.AttributeValue;
 import opennlp.tools.geo.GazetteerEntry;
@@ -218,15 +220,18 @@ public class BundledGazetteerTest {
   }
 
   @Test
-  void testByRegionMalformedCodeFailsLoud() {
+  void testByRegionNullFailsLoud() {
+    assertThrows(IllegalArgumentException.class, () -> fixture().byRegion(null));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "C", "CHE", "C1"})
+  void testByRegionMalformedCodeFailsLoud(String malformed) {
     final BundledGazetteer gazetteer = fixture();
-    assertThrows(IllegalArgumentException.class, () -> gazetteer.byRegion(null));
-    for (final String malformed : new String[] {"", "C", "CHE", "C1"}) {
-      final IllegalArgumentException e =
-          assertThrows(IllegalArgumentException.class, () -> gazetteer.byRegion(malformed));
-      assertTrue(e.getMessage().startsWith("IsoCountryCode must be an ISO 3166-1 alpha-2 code"),
-          e.getMessage());
-    }
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> gazetteer.byRegion(malformed));
+    assertTrue(e.getMessage().startsWith("IsoCountryCode must be an ISO 3166-1 alpha-2 code"),
+        e.getMessage());
   }
 
   @Test

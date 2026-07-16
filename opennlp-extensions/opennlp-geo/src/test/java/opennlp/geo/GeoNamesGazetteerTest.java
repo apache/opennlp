@@ -20,9 +20,14 @@ package opennlp.geo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.geo.GazetteerEntry;
 
@@ -51,7 +56,8 @@ public class GeoNamesGazetteerTest {
       "") + "\n";
 
   private static GeoNamesGazetteer gazetteer() throws IOException {
-    return GeoNamesGazetteer.load(new ByteArrayInputStream(FIXTURE.getBytes()));
+    return GeoNamesGazetteer.load(
+        new ByteArrayInputStream(FIXTURE.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Test
@@ -87,19 +93,38 @@ public class GeoNamesGazetteerTest {
     assertTrue(gazetteer.byId("elsewhere", "2").isEmpty());
     // the most populous entry represents the region
     assertEquals("Texas", gazetteer.byRegion("us").get().name());
-    assertEquals(java.util.Set.of(GeoNamesGazetteer.SOURCE), gazetteer.sources());
+    assertEquals(Set.of(GeoNamesGazetteer.SOURCE), gazetteer.sources());
   }
 
   @Test
-  void testMalformedContentFailsLoud() {
-    assertThrows(IllegalArgumentException.class,
-        () -> GeoNamesGazetteer.load(new ByteArrayInputStream("too\tfew\tcolumns\n".getBytes())));
+  void testByRegionUnknownCodeReturnsEmpty() throws IOException {
+    // well-formed but absent from the fixture
+    assertTrue(gazetteer().byRegion("XX").isEmpty());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"", "C", "CHE", "C1"})
+  void testByRegionMalformedCodeFailsLoud(String malformed) throws IOException {
+    final GeoNamesGazetteer gazetteer = gazetteer();
+    assertThrows(IllegalArgumentException.class, () -> gazetteer.byRegion(malformed));
+  }
+
+  @ParameterizedTest
+  @MethodSource("malformedContent")
+  void testMalformedContentFailsLoud(String content) {
     assertThrows(IllegalArgumentException.class, () -> GeoNamesGazetteer.load(
-        new ByteArrayInputStream(
-            (row("5", "Nowhere", "Nowhere", "", "not-a-lat", "0", "P", "DE", "1") + "\n")
-                .getBytes())));
-    assertThrows(IllegalArgumentException.class,
-        () -> GeoNamesGazetteer.load(new ByteArrayInputStream(new byte[0])));
+        new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))));
+  }
+
+  private static List<String> malformedContent() {
+    return List.of(
+        "too\tfew\tcolumns\n",
+        row("5", "Nowhere", "Nowhere", "", "not-a-lat", "0", "P", "DE", "1") + "\n",
+        "");
+  }
+
+  @Test
+  void testNullStreamFailsLoud() {
     assertThrows(IllegalArgumentException.class,
         () -> GeoNamesGazetteer.load((InputStream) null));
   }

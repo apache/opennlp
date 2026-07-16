@@ -46,9 +46,10 @@ import opennlp.tools.util.normalizer.TermAnalyzer;
  * thread-safe.
  *
  * <p>Indexed names and queries are folded through the same normalization chain (NFC, case fold,
- * accent fold with {@link TermAnalyzer} over UAX&#160;#29 word tokens), so matching is robust to
- * case, accents, and hyphenation. The bundled table is pure ASCII; native-script names are not
- * matchable against it.</p>
+ * accent fold with {@link TermAnalyzer} over
+ * <a href="https://unicode.org/reports/tr29/">UAX&#160;#29</a> word tokens), so matching is
+ * robust to case, accents, and hyphenation. The bundled table is pure ASCII; native-script names
+ * are not matchable against it.</p>
  *
  * <p>{@link #lookup(CharSequence)} returns candidates ordered by population descending, then a
  * feature-class prior ({@link GazetteerEntry#FEATURE_CLASS_CITY} before
@@ -61,6 +62,12 @@ import opennlp.tools.util.normalizer.TermAnalyzer;
 public final class BundledGazetteer implements Gazetteer {
 
   private static final String RESOURCE = "naturalearth-populated-places.txt";
+
+  /** The number of semicolon separated fields in one row of the bundled table format. */
+  private static final int FIELD_COUNT = 11;
+
+  /** The number of semicolons separating {@link #FIELD_COUNT} fields. */
+  private static final int SEPARATOR_COUNT = FIELD_COUNT - 1;
 
   // The character-level matching chain; stateless and thread-safe, shared by index and queries.
   private static final TermAnalyzer FOLD =
@@ -174,17 +181,7 @@ public final class BundledGazetteer implements Gazetteer {
   /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byRegion(String isoCountryCode) {
-    if (isoCountryCode == null) {
-      throw new IllegalArgumentException("IsoCountryCode must not be null");
-    }
-    if (isoCountryCode.length() != 2
-        || !isAsciiLetter(isoCountryCode.charAt(0)) || !isAsciiLetter(isoCountryCode.charAt(1))) {
-      throw new IllegalArgumentException(
-          "IsoCountryCode must be an ISO 3166-1 alpha-2 code (two ASCII letters), got: "
-              + isoCountryCode);
-    }
-    final String key = new String(new char[] {upperAscii(isoCountryCode.charAt(0)),
-        upperAscii(isoCountryCode.charAt(1))});
+    final String key = GazetteerIndex.normalizeRegionCode(isoCountryCode);
     return Optional.ofNullable(regionIndex.get(key));
   }
 
@@ -254,11 +251,11 @@ public final class BundledGazetteer implements Gazetteer {
    *     {@code resourceName} and {@code lineNumber}.
    */
   private static GazetteerEntry parseRow(String line, String resourceName, int lineNumber) {
-    // Scan the line into exactly 11 semicolon-separated fields.
-    final String[] fields = new String[11];
+    // Scan the line into exactly FIELD_COUNT semicolon-separated fields.
+    final String[] fields = new String[FIELD_COUNT];
     int fieldCount = 0;
     int start = 0;
-    while (fieldCount < 10) {
+    while (fieldCount < SEPARATOR_COUNT) {
       final int semicolon = line.indexOf(';', start);
       if (semicolon < 0) {
         throw malformed(resourceName, lineNumber, line, null);
@@ -269,7 +266,7 @@ public final class BundledGazetteer implements Gazetteer {
     if (line.indexOf(';', start) >= 0) {
       throw malformed(resourceName, lineNumber, line, null);
     }
-    fields[10] = line.substring(start);
+    fields[SEPARATOR_COUNT] = line.substring(start);
     try {
       final double latitude = Double.parseDouble(fields[4]);
       final double longitude = Double.parseDouble(fields[5]);
@@ -398,16 +395,6 @@ public final class BundledGazetteer implements Gazetteer {
     if (!entries.contains(entry)) {
       entries.add(entry);
     }
-  }
-
-  /** {@return {@code true} if {@code c} is an ASCII letter}. */
-  private static boolean isAsciiLetter(char c) {
-    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-  }
-
-  /** {@return {@code c} upper-cased if it is an ASCII lowercase letter, otherwise unchanged}. */
-  private static char upperAscii(char c) {
-    return c >= 'a' && c <= 'z' ? (char) (c - ('a' - 'A')) : c;
   }
 
   /**

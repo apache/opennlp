@@ -27,9 +27,10 @@ import opennlp.tools.commons.ThreadSafe;
  * anything a dataset knows beyond the common core goes into the {@link #attributes() attributes}
  * map as provenance-tagged {@link AttributeValue}s.
  *
- * <p>The {@link #countryCode() country code} is an ISO 3166-1 alpha-2 code. Attribute keys follow
- * the {@code ATTRIBUTE_KEY_*} convention published as constants on this record; an entry only
- * carries the keys its source actually provides, each with provenance in
+ * <p>The {@link #countryCode() country code} is an
+ * <a href="https://www.iso.org/iso-3166-country-codes.html">ISO 3166-1</a> alpha-2 code.
+ * Attribute keys follow the {@code ATTRIBUTE_KEY_*} convention published as constants on this
+ * record; an entry only carries the keys its source actually provides, each with provenance in
  * {@link AttributeValue#source()}, and a key is never fabricated.</p>
  *
  * <p>Instances are immutable and thread-safe: the list and map components are defensively copied

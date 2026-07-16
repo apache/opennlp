@@ -40,7 +40,8 @@ import opennlp.tools.geo.GeoPoint;
  * per division with id, primary name, comma-separated alternate names, coordinates,
  * country code, Overture subtype, and population.
  *
- * <p>The upstream divisions theme is published under the Open Database License, whose
+ * <p>The upstream divisions theme is published under the
+ * <a href="https://opendatacommons.org/licenses/odbl/1-0/">Open Database License</a>, whose
  * attribution and database share-alike terms follow the derived table; it is
  * distributed as partitioned Parquet, which this module deliberately does not parse.
  * The derivation script flattens the division features into this plain table, and the
@@ -66,6 +67,12 @@ public final class OvertureGazetteer implements Gazetteer {
   public static final String SOURCE = "overture";
 
   private static final int COLUMNS = 8;
+
+  /** The separator between the fields of one row. */
+  private static final String FIELD_SEPARATOR = "\t";
+
+  /** The separator between the elements of the alternate-names field. */
+  private static final String LIST_SEPARATOR = ",";
 
   private static final Set<String> SUB_LOCALITY_SUBTYPES =
       Set.of("borough", "macrohood", "neighborhood", "microhood");
@@ -128,6 +135,7 @@ public final class OvertureGazetteer implements Gazetteer {
     return new OvertureGazetteer(index);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<GazetteerEntry> lookup(CharSequence name) {
     if (name == null) {
@@ -136,6 +144,7 @@ public final class OvertureGazetteer implements Gazetteer {
     return index.lookup(name);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) {
     if (source == null || recordId == null) {
@@ -144,14 +153,13 @@ public final class OvertureGazetteer implements Gazetteer {
     return SOURCE.equals(source) ? index.byId(recordId) : Optional.empty();
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byRegion(String isoCountryCode) {
-    if (isoCountryCode == null) {
-      throw new IllegalArgumentException("isoCountryCode must not be null");
-    }
     return index.byRegion(isoCountryCode);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<String> sources() {
     return Set.of(SOURCE);
@@ -159,7 +167,7 @@ public final class OvertureGazetteer implements Gazetteer {
 
   /** Parses one derived row into an entry, failing loud with the line number. */
   private static GazetteerEntry parseRow(String line, int lineNumber) {
-    final String[] fields = line.split("\t", -1);
+    final String[] fields = line.split(FIELD_SEPARATOR, -1);
     if (fields.length < COLUMNS) {
       throw new IllegalArgumentException("line " + lineNumber + " has " + fields.length
           + " columns, expected " + COLUMNS);
@@ -168,7 +176,7 @@ public final class OvertureGazetteer implements Gazetteer {
       final String id = fields[0].trim();
       final String name = fields[1].trim();
       final Set<String> alternates = new LinkedHashSet<>();
-      for (final String alternate : fields[2].split(",")) {
+      for (final String alternate : fields[2].split(LIST_SEPARATOR)) {
         final String trimmed = alternate.trim();
         if (!trimmed.isEmpty() && !trimmed.equals(name)) {
           alternates.add(trimmed);

@@ -51,9 +51,16 @@ import opennlp.tools.util.Span;
  */
 public final class SpatialCoherenceGeocoder implements Geocoder {
 
+  /** An unambiguous mention scores high but never certain, since gazetteers are incomplete. */
   private static final double SINGLE_CANDIDATE_CONFIDENCE = 0.9;
+
+  /** An ambiguous mention with no separating evidence scores at the middle of the scale. */
   private static final double BASE_CONFIDENCE = 0.5;
+
+  /** Separation evidence lifts the base score to at most {@link #SINGLE_CANDIDATE_CONFIDENCE}. */
   private static final double SEPARATION_WEIGHT = 0.4;
+
+  /** The mean Earth radius used by the haversine distance. */
   private static final double EARTH_RADIUS_KM = 6371.0;
 
   private final Gazetteer gazetteer;
@@ -75,22 +82,7 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
   @Override
   public List<GeoResolution> resolve(CharSequence text, List<Span> locationMentions)
       throws IOException {
-    if (text == null) {
-      throw new IllegalArgumentException("Text must not be null");
-    }
-    if (locationMentions == null) {
-      throw new IllegalArgumentException("LocationMentions must not be null");
-    }
-    for (final Span mention : locationMentions) {
-      if (mention == null) {
-        throw new IllegalArgumentException(
-            "LocationMentions must not contain a null element, got: " + locationMentions);
-      }
-      if (mention.getEnd() > text.length()) {
-        throw new IllegalArgumentException("Mention " + mention
-            + " is outside the text, whose length is " + text.length());
-      }
-    }
+    GeocoderInput.validateResolveArguments(text, locationMentions);
 
     // first pass: candidates per mention, provisional pick by the population prior
     final List<Span> resolvedMentions = new ArrayList<>();
@@ -160,6 +152,7 @@ public final class SpatialCoherenceGeocoder implements Geocoder {
     return first <= 0.0 ? 0.0 : 1.0 - (second / first);
   }
 
+  /** {@return the mean great-circle distance from {@code from} to the context points, in km} */
   private static double meanDistanceKm(GeoPoint from, List<GeoPoint> context) {
     double sum = 0.0;
     for (final GeoPoint to : context) {

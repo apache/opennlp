@@ -61,7 +61,7 @@ final class GazetteerIndex {
     }
   }
 
-  /** @return {@code true} if nothing was indexed. */
+  /** {@return {@code true} if nothing was indexed} */
   boolean isEmpty() {
     return byId.isEmpty();
   }
@@ -77,16 +77,61 @@ final class GazetteerIndex {
     return Optional.ofNullable(byId.get(recordId));
   }
 
-  /** Finds the most populous entry of a country. */
+  /**
+   * Finds the most populous entry of a country.
+   *
+   * @param isoCountryCode The <a href="https://www.iso.org/iso-3166-country-codes.html">ISO
+   *                       3166-1</a> alpha-2 code, two ASCII letters of either case. Must
+   *                       not be {@code null}.
+   * @return The most populous entry, or empty when the code is well-formed but unknown.
+   * @throws IllegalArgumentException Thrown if {@code isoCountryCode} is {@code null} or is not
+   *     two ASCII letters.
+   */
   Optional<GazetteerEntry> byRegion(String isoCountryCode) {
-    return Optional.ofNullable(byCountry.get(isoCountryCode.toUpperCase(Locale.ROOT)));
+    return Optional.ofNullable(byCountry.get(normalizeRegionCode(isoCountryCode)));
   }
 
+  /**
+   * Validates an ISO 3166-1 alpha-2 region code and folds it to its canonical uppercase form.
+   *
+   * @param isoCountryCode The code to validate. Must not be {@code null}.
+   * @return The code with both letters upper-cased.
+   * @throws IllegalArgumentException Thrown if {@code isoCountryCode} is {@code null} or is not
+   *     two ASCII letters.
+   */
+  static String normalizeRegionCode(String isoCountryCode) {
+    if (isoCountryCode == null) {
+      throw new IllegalArgumentException("IsoCountryCode must not be null");
+    }
+    if (isoCountryCode.length() != 2
+        || !isAsciiLetter(isoCountryCode.charAt(0)) || !isAsciiLetter(isoCountryCode.charAt(1))) {
+      throw new IllegalArgumentException(
+          "IsoCountryCode must be an ISO 3166-1 alpha-2 code (two ASCII letters), got: "
+              + isoCountryCode);
+    }
+    return new String(new char[] {upperAscii(isoCountryCode.charAt(0)),
+        upperAscii(isoCountryCode.charAt(1))});
+  }
+
+  /**
+   * Indexes {@code entry} under the lower-cased form of {@code name}, listing it once even when
+   * several of its names fold to the same key.
+   */
   private void index(String name, GazetteerEntry entry) {
     final List<GazetteerEntry> entries =
         byName.computeIfAbsent(name.toLowerCase(Locale.ROOT), key -> new ArrayList<>(2));
     if (!entries.contains(entry)) {
       entries.add(entry);
     }
+  }
+
+  /** {@return {@code true} if {@code c} is an ASCII letter} */
+  private static boolean isAsciiLetter(char c) {
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+  }
+
+  /** {@return {@code c} upper-cased if it is an ASCII lowercase letter, otherwise unchanged} */
+  private static char upperAscii(char c) {
+    return c >= 'a' && c <= 'z' ? (char) (c - ('a' - 'A')) : c;
   }
 }

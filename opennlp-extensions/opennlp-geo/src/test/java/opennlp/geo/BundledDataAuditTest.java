@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.geo.GazetteerEntry;
 
@@ -53,11 +55,15 @@ public class BundledDataAuditTest {
       GazetteerEntry.ATTRIBUTE_KEY_GEONAMES,
       GazetteerEntry.ATTRIBUTE_KEY_WHOSONFIRST);
 
-  // Upstream mojibake signature: an uppercase letter directly after a lowercase one, or a
-  // lowercase letter after two uppercase ones at a word start (an accented letter replaced by a
-  // wrong ASCII letter, e.g. 'MUdenine' for Medenine). Mirrors the generation script's detector.
+  // Upstream mojibake (encoding-corrupted text) signature: an uppercase letter directly after a
+  // lowercase one, or a lowercase letter after two uppercase ones at a word start (an accented
+  // letter replaced by a wrong ASCII letter, e.g. 'MUdenine' for Medenine). Mirrors the
+  // generation script's detector.
   private static final Pattern CASE_ANOMALY = Pattern.compile("[a-z][A-Z]|\\b[A-Z][A-Z][a-z]");
   private static final Pattern MC_PREFIX = Pattern.compile("\\bMc(?=[A-Z])");
+
+  /** The header's row-count claim, e.g. {@code 7343 rows.}, checked against the parsed data. */
+  private static final Pattern ROW_COUNT_CLAIM = Pattern.compile("(\\d+) rows\\.");
 
   /** Values the anomaly pattern flags that are verified correct upstream spellings. */
   private static final Set<String> LEGIT_CASE_ANOMALIES =
@@ -77,13 +83,12 @@ public class BundledDataAuditTest {
   @Test
   void testRowCountMatchesTheHeaderClaimExactly() throws IOException {
     // The header states the row count; a regeneration with a stale header fails here.
-    final Pattern claim = Pattern.compile("(\\d+) rows\\.");
     Integer claimed = null;
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(
         BundledGazetteer.class.getResourceAsStream(RESOURCE), StandardCharsets.UTF_8))) {
       String line;
       while ((line = reader.readLine()) != null && line.startsWith("#")) {
-        final Matcher matcher = claim.matcher(line);
+        final Matcher matcher = ROW_COUNT_CLAIM.matcher(line);
         if (matcher.find()) {
           claimed = Integer.parseInt(matcher.group(1));
           break;
@@ -233,17 +238,15 @@ public class BundledDataAuditTest {
         gazetteer.byId("naturalearth", "1159112749").orElseThrow().containment());
   }
 
-  @Test
-  void testByRegionServesTheRegionJoinKeyShape() {
+  @ParameterizedTest
+  @ValueSource(strings = {"US", "DE", "FR", "JP", "GB", "BR", "IN", "CN"})
+  void testByRegionServesTheRegionJoinKeyShape(String code) {
     // ISO 3166-1 alpha-2 codes are the region join key of the seam (a flag emoji decodes to
     // the same code, for example). byRegion must answer for them, and the returned entry must
     // carry the very code it was asked for.
-    final BundledGazetteer gazetteer = BundledGazetteer.getInstance();
-    for (final String code : new String[] {"US", "DE", "FR", "JP", "GB", "BR", "IN", "CN"}) {
-      final GazetteerEntry entry = gazetteer.byRegion(code).orElseThrow(
-          () -> new AssertionError("No entry for region " + code));
-      assertEquals(code, entry.countryCode());
-    }
+    final GazetteerEntry entry = BundledGazetteer.getInstance().byRegion(code).orElseThrow(
+        () -> new AssertionError("No entry for region " + code));
+    assertEquals(code, entry.countryCode());
   }
 
   @Test
