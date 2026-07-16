@@ -34,9 +34,11 @@ import java.util.zip.GZIPInputStream;
  * built in.
  *
  * <p>The installer reads gzip-compressed tar archives, the format the common
- * distributions use, and extracts only the files a {@link MecabDictionary} reads:
- * {@code *.csv}, {@code *.def}, and {@code dicrc}. Entries are flattened to their base
- * names, which also means no archive path can escape the target directory.</p>
+ * distributions use, and extracts only the dictionary payload: the {@code *.csv}
+ * lexicon files and {@code *.def} definition files that a {@link MecabDictionary}
+ * reads, plus the {@code dicrc} configuration file distributions ship alongside them.
+ * Entries are flattened to their base names, which also means no archive path can
+ * escape the target directory.</p>
  *
  * @since 3.0.0
  */
@@ -49,7 +51,7 @@ public final class MecabDictionaryInstaller {
   private static final int TAR_TYPE_OFFSET = 156;
 
   private MecabDictionaryInstaller() {
-    // static installer only
+    // This class exposes only static methods and is never instantiated.
   }
 
   /**
@@ -122,6 +124,15 @@ public final class MecabDictionaryInstaller {
     return extracted;
   }
 
+  /**
+   * Fills one tar block from the stream.
+   *
+   * @param in The tar stream.
+   * @param block The block buffer to fill completely.
+   * @return {@code true} when a full block was read, {@code false} at a clean end of
+   *         stream before any byte of the block.
+   * @throws IOException Thrown if the stream ends inside the block or reading fails.
+   */
   private static boolean readBlock(InputStream in, byte[] block) throws IOException {
     int filled = 0;
     while (filled < block.length) {
@@ -137,6 +148,12 @@ public final class MecabDictionaryInstaller {
     return true;
   }
 
+  /**
+   * Recognizes the all-zero block that terminates a tar archive.
+   *
+   * @param block The block to inspect.
+   * @return {@code true} when every byte is zero.
+   */
   private static boolean isEndBlock(byte[] block) {
     for (final byte b : block) {
       if (b != 0) {
@@ -146,6 +163,12 @@ public final class MecabDictionaryInstaller {
     return true;
   }
 
+  /**
+   * Reads the NUL-terminated entry name from a tar header block.
+   *
+   * @param header The header block.
+   * @return The entry name. Never {@code null}.
+   */
   private static String headerName(byte[] header) {
     int end = 0;
     while (end < TAR_NAME_LENGTH && header[end] != 0) {
@@ -154,6 +177,13 @@ public final class MecabDictionaryInstaller {
     return new String(header, 0, end, StandardCharsets.UTF_8);
   }
 
+  /**
+   * Reads the octal entry size from a tar header block.
+   *
+   * @param header The header block.
+   * @return The entry size in bytes.
+   * @throws IOException Thrown if the size field holds a non-octal digit.
+   */
   private static long headerSize(byte[] header) throws IOException {
     long size = 0;
     for (int i = TAR_SIZE_OFFSET; i < TAR_SIZE_OFFSET + TAR_SIZE_LENGTH; i++) {
@@ -169,16 +199,35 @@ public final class MecabDictionaryInstaller {
     return size;
   }
 
+  /**
+   * Strips any directory prefix from an archive entry name.
+   *
+   * @param name The entry name as stored in the archive.
+   * @return The part after the last {@code /}, or the whole name when there is none.
+   */
   private static String baseName(String name) {
     final int slash = name.lastIndexOf('/');
     return slash < 0 ? name : name.substring(slash + 1);
   }
 
+  /**
+   * Computes the padding after an entry: tar content is stored in whole blocks.
+   *
+   * @param size The entry size in bytes.
+   * @return The number of padding bytes up to the next block boundary.
+   */
   private static long padding(long size) {
     final long remainder = size % TAR_BLOCK;
     return remainder == 0 ? 0 : TAR_BLOCK - remainder;
   }
 
+  /**
+   * Consumes and discards an exact number of bytes from the stream.
+   *
+   * @param in The stream to read from.
+   * @param bytes The number of bytes to discard.
+   * @throws IOException Thrown if the stream ends before that many bytes were read.
+   */
   private static void skip(InputStream in, long bytes) throws IOException {
     long remaining = bytes;
     final byte[] buffer = new byte[8192];

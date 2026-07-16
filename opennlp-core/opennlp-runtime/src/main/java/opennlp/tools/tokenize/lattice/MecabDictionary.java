@@ -293,7 +293,7 @@ public final class MecabDictionary {
     }
   }
 
-  /** @return The longest surface form in the lexicon, bounding prefix enumeration. */
+  /** @return The length in characters of the longest surface form in the lexicon. */
   int maxSurfaceLength() {
     return maxSurfaceLength;
   }
@@ -331,6 +331,14 @@ public final class MecabDictionary {
     return unknownEntries.get(category);
   }
 
+  /**
+   * Reads a required dictionary file into its lines, accepting LF and CRLF endings.
+   *
+   * @param file The file to read.
+   * @param charset The encoding to decode with.
+   * @return The lines without their line terminators. Never {@code null}.
+   * @throws IOException Thrown if the file is missing or reading fails.
+   */
   private static List<String> readLines(Path file, Charset charset) throws IOException {
     if (!Files.exists(file)) {
       throw new IOException("required dictionary file is missing: " + file);
@@ -351,11 +359,25 @@ public final class MecabDictionary {
     return lines;
   }
 
+  /**
+   * Removes a trailing {@code #} comment from a {@code char.def} line.
+   *
+   * @param line The raw line.
+   * @return The line up to but excluding the first {@code #}, or the whole line when
+   *         there is none.
+   */
   private static String stripComment(String line) {
     final int hash = line.indexOf('#');
     return hash < 0 ? line : line.substring(0, hash);
   }
 
+  /**
+   * Splits a lexicon line at every comma. Surfaces containing commas are not
+   * representable, matching the plain-text lexicon format.
+   *
+   * @param line The line to split.
+   * @return The fields in order, empty fields included. Never {@code null}.
+   */
   private static List<String> splitCsv(String line) {
     final List<String> fields = new ArrayList<>();
     int start = 0;
@@ -368,6 +390,12 @@ public final class MecabDictionary {
     return fields;
   }
 
+  /**
+   * Splits a line into its whitespace-separated fields.
+   *
+   * @param line The line to split.
+   * @return The non-empty fields in order. Never {@code null}.
+   */
   private static String[] splitWhitespace(String line) {
     final List<String> parts = new ArrayList<>();
     int start = -1;
@@ -384,6 +412,15 @@ public final class MecabDictionary {
     return parts.toArray(new String[0]);
   }
 
+  /**
+   * Parses a decimal integer field, reporting the file and line on failure.
+   *
+   * @param text The field text.
+   * @param file The file being read, for the error message.
+   * @param lineNumber The line being read, for the error message.
+   * @return The parsed value.
+   * @throws IOException Thrown if the field is not a valid integer.
+   */
   private static int parseInt(String text, String file, int lineNumber)
       throws IOException {
     try {
@@ -393,6 +430,15 @@ public final class MecabDictionary {
     }
   }
 
+  /**
+   * Parses a {@code 0x}-prefixed hexadecimal code point from {@code char.def}.
+   *
+   * @param text The field text including the {@code 0x} prefix.
+   * @param file The file being read, for the error message.
+   * @param lineNumber The line being read, for the error message.
+   * @return The parsed code point.
+   * @throws IOException Thrown if the field is not a valid hexadecimal code point.
+   */
   private static int parseCodePoint(String text, Path file, int lineNumber)
       throws IOException {
     try {
