@@ -167,7 +167,8 @@ public class UnigramSegmenter implements Tokenizer {
       }
       node.logProbability = Math.log(entry.getValue()) - logTotal;
     }
-    // rarer than any listed word: a fraction of a single count
+    // Charge an unlisted character half of one count out of the total, which makes it
+    // rarer than any listed word: every listed count is at least one.
     final double unknown = Math.log(0.5) - logTotal;
     return new UnigramSegmenter(root, unknown);
   }
@@ -216,7 +217,8 @@ public class UnigramSegmenter implements Tokenizer {
       if (best[i] == Double.NEGATIVE_INFINITY) {
         continue;
       }
-      // the single-character fallback keeps every position reachable
+      // A single-character step at the unknown log-probability keeps every position
+      // reachable even where no lexicon word matches.
       final double fallback = best[i] + unknownLogProbability;
       if (fallback > best[i + 1]) {
         best[i + 1] = fallback;
@@ -247,6 +249,13 @@ public class UnigramSegmenter implements Tokenizer {
     }
   }
 
+  /**
+   * Finds the first whitespace character in a lexicon line.
+   *
+   * @param text The line to scan.
+   * @return The index of the first whitespace character, or {@code -1} when the line
+   *         contains none.
+   */
   private static int whitespaceIndex(String text) {
     for (int i = 0; i < text.length(); i++) {
       if (StringUtil.isWhitespace(text.charAt(i))) {
