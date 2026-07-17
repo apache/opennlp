@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -374,7 +375,17 @@ public final class HunspellDictionary {
       final int slash = unescapedSlash(entry);
       if (slash >= 0) {
         word = entry.substring(0, slash);
-        flags = parseFlags(entry.substring(slash + 1), flagMode, i + 1);
+        String flagRun = entry.substring(slash + 1);
+        // The flag run ends at the first space or tabulator, the separators the
+        // word-list format defines; whatever follows is a morphological field even
+        // when it carries no two-letter tag, which hunspell tolerates and so do we.
+        for (int c = 0; c < flagRun.length(); c++) {
+          if (isFieldSeparator(flagRun.charAt(c))) {
+            flagRun = flagRun.substring(0, c);
+            break;
+          }
+        }
+        flags = parseFlags(flagRun, flagMode, i + 1);
       }
       entries.computeIfAbsent(word.replace("\\/", "/"), key -> new ArrayList<>(1))
           .add(flags);
@@ -421,9 +432,12 @@ public final class HunspellDictionary {
    * Finds where the trailing morphological fields of a word-list entry begin, which
    * terminates the word and its flag run. A morphological field is either introduced by
    * a tabulator, the older separator, or written as a two-letter tag followed by
-   * {@code :} and preceded by whitespace, such as {@code po:verb}. Whitespace that is
-   * not followed by such a tag belongs to the word, because a word-list entry may name
-   * several words.
+   * {@code :} and preceded by a separator, such as {@code po:verb}. A separator that
+   * is not followed by such a tag belongs to the word, because a word-list entry may
+   * name several words. The separators are the space and the tabulator, exactly the
+   * two characters the reference implementation's {@code hashmgr.cxx} splits on; they
+   * are format delimiters of the word-list grammar, not a whitespace judgment, so
+   * wider whitespace such as a no-break space stays part of the word by design.
    *
    * @param line The trimmed word-list line to scan.
    * @return The index at which the morphological fields begin, or {@code -1} if the
@@ -432,9 +446,9 @@ public final class HunspellDictionary {
   private static int morphologyIndex(String line) {
     int cut = -1;
     for (int i = 4; i < line.length(); i++) {
-      if (line.charAt(i) == ':' && StringUtil.isWhitespace(line.charAt(i - 3))) {
+      if (line.charAt(i) == ':' && isFieldSeparator(line.charAt(i - 3))) {
         int fieldStart = i - 3;
-        while (fieldStart > 0 && StringUtil.isWhitespace(line.charAt(fieldStart - 1))) {
+        while (fieldStart > 0 && isFieldSeparator(line.charAt(fieldStart - 1))) {
           fieldStart--;
         }
         // a tag with no word in front of it is not a morphological field
@@ -447,6 +461,18 @@ public final class HunspellDictionary {
       cut = tab;
     }
     return cut;
+  }
+
+  /**
+   * Checks one character against the word-list format's field separators, space and
+   * tabulator, the exact set the reference implementation splits morphological fields
+   * on.
+   *
+   * @param c The character to test.
+   * @return {@code true} if {@code c} separates fields in the word-list format.
+   */
+  private static boolean isFieldSeparator(char c) {
+    return c == ' ' || c == '\t';
   }
 
   /**
@@ -509,11 +535,25 @@ public final class HunspellDictionary {
         return flags;
       }
       default: {
-        final int[] flags = new int[text.length()];
-        for (int i = 0; i < flags.length; i++) {
-          flags[i] = text.charAt(i);
+        // One flag per code point: published dictionaries, the Spanish one of the
+        // LibreOffice collection among them, name affix rules with supplementary
+        // characters under FLAG UTF-8, and reading per UTF-16 unit would split such
+        // a flag into two and reject the rule header as carrying two flags. A
+        // variation selector after a flag character selects its presentation, the
+        // emoji telephone against the text telephone, and is no flag of its own; the
+        // same collection writes such selectors, so they are dropped from flag
+        // identity.
+        final int[] buffer = new int[text.codePointCount(0, text.length())];
+        int f = 0;
+        for (int i = 0; i < text.length(); ) {
+          final int codePoint = text.codePointAt(i);
+          i += Character.charCount(codePoint);
+          if (codePoint >= 0xFE00 && codePoint <= 0xFE0F) {
+            continue;
+          }
+          buffer[f++] = codePoint;
         }
-        return flags;
+        return f == buffer.length ? buffer : Arrays.copyOf(buffer, f);
       }
     }
   }
