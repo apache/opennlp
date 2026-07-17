@@ -43,9 +43,9 @@
 				<para>
 					<emphasis role="bold">Open key space.</emphasis> A layer is identified by a
 					<code>LayerKey</code> that also carries the type of its values, so reading a
-					layer back is statically typed. Two keys are equal when both their id and
-					their value type are equal, so independently created constants for the same
-					layer interoperate. The keys of the core linguistic layers live in
+					layer back is statically typed. Two keys are equal when their id, their
+					value type, and their scope are equal, so independently created constants
+					for the same layer interoperate. The keys of the core linguistic layers live in
 					<code>Layers</code>; a capability-specific layer's key lives on the annotator
 					that provides it, and adding a capability never changes the container. Ids
 					are namespaced: keys the toolkit defines carry the <code>opennlp:</code>
@@ -62,6 +62,19 @@
 				</para>
 			</listitem>
 		</itemizedlist>
+		<para>
+			A key declares its scope. Keys are positional by default: every annotation
+			carries a span, and consumers never null-check it. A document-scoped key
+			carries whole-document values without spans, which is where a language id,
+			a category distribution, or provenance belongs:
+		</para>
+		<programlisting language="java">
+				<![CDATA[
+LayerKey<String> LANGUAGE = LayerKey.document("app:language", String.class);
+
+Document tagged = document.with(LANGUAGE, List.of(Annotation.of("eng")));
+String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
+		</programlisting>
 	</section>
 
 	<section xml:id="tools.document.pipeline">

@@ -112,8 +112,11 @@ public class DocumentTest {
 
   @Test
   void testAnnotationValidation() {
-    assertThrows(IllegalArgumentException.class, () -> new Annotation<>(null, "the"));
+    // a span-less annotation is legal to build; the container judges it per key scope
     assertThrows(IllegalArgumentException.class, () -> new Annotation<>(new Span(0, 3), null));
+    assertThrows(IllegalArgumentException.class, () -> Annotation.of(null));
+    assertThrows(IllegalArgumentException.class, () -> Document.of("the")
+        .with(WORDS, List.of(Annotation.of("the"))));
   }
 
   @Test
@@ -121,5 +124,8 @@ public class DocumentTest {
     assertThrows(IllegalArgumentException.class, () -> LayerKey.of(" ", String.class));
     assertThrows(IllegalArgumentException.class, () -> LayerKey.of(null, String.class));
     assertThrows(IllegalArgumentException.class, () -> LayerKey.of("words", null));
+    assertThrows(IllegalArgumentException.class, () -> LayerKey.document(" ", String.class));
+    assertThrows(IllegalArgumentException.class, () -> LayerKey.document(null, String.class));
+    assertThrows(IllegalArgumentException.class, () -> LayerKey.document("lang", null));
   }
 }

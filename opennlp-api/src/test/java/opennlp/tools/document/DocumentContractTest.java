@@ -28,6 +28,7 @@ import opennlp.tools.util.Span;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -81,6 +82,44 @@ public class DocumentContractTest {
     assertEquals(Set.of(asString, asInteger), document.layers());
     assertEquals("a", document.get(asString).get(0).value());
     assertEquals(7, document.get(asInteger).get(0).value());
+  }
+
+  /**
+   * Verifies the per-key scope contract: a document-scoped layer carries span-less
+   * values and round-trips them, a spanned annotation under a document-scoped key is
+   * rejected with a message naming the layer, a span-less annotation under a
+   * positional key is rejected likewise, and two keys differing only in scope are
+   * unequal and never address the same layer.
+   */
+  @Test
+  void testDocumentScopedLayersCarrySpanlessValues() {
+    final LayerKey<String> language = LayerKey.document("language", String.class);
+    assertEquals(LayerKey.Scope.DOCUMENT, language.scope());
+    assertEquals(LayerKey.Scope.POSITIONAL, WORDS.scope());
+
+    final Document document = Document.of("the dog")
+        .with(language, List.of(Annotation.of("eng")));
+    assertEquals(1, document.get(language).size());
+    assertEquals("eng", document.get(language).get(0).value());
+    assertNull(document.get(language).get(0).span());
+
+    final IllegalArgumentException spanned = assertThrows(IllegalArgumentException.class,
+        () -> Document.of("the").with(language,
+            List.of(new Annotation<>(new Span(0, 3), "eng"))));
+    assertEquals("document-scoped layer language<String> must not carry spans",
+        spanned.getMessage());
+
+    final IllegalArgumentException spanless = assertThrows(IllegalArgumentException.class,
+        () -> Document.of("the").with(WORDS, List.of(Annotation.of("the"))));
+    assertEquals("positional layer words<String> requires a span on every annotation",
+        spanless.getMessage());
+
+    final LayerKey<String> positionalTwin = LayerKey.of("language", String.class);
+    assertNotEquals(language, positionalTwin);
+    final Document both = Document.of("the")
+        .with(language, List.of(Annotation.of("eng")))
+        .with(positionalTwin, List.of(new Annotation<>(new Span(0, 3), "the")));
+    assertEquals(2, both.layers().size());
   }
 
   /**
