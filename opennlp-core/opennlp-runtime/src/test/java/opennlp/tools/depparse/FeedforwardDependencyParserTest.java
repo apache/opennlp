@@ -19,6 +19,7 @@ package opennlp.tools.depparse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +36,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the pure-Java neural tier end to end: training on a tiny corpus must let the
@@ -188,6 +191,90 @@ public class FeedforwardDependencyParserTest {
     assertArrayEquals(before, local.score(features));
     // and the returned model really carries the refinement
     assertFalse(Arrays.equals(before, refined.score(features)));
+  }
+
+  /**
+   * Pins the one contextual rule layered over the per-code-point mapping: a Greek
+   * capital sigma preceded by a letter and not followed by one lowercases to the
+   * final form U+03C2, the way natural lowercase Greek spells it and the way every
+   * treebank-derived vocabulary key spells it, so an uppercase Greek word normalizes
+   * to a key the vocabulary can actually contain. The plain per-code-point mapping
+   * would produce the medial sigma there and miss the vocabulary.
+   */
+  @Test
+  void testNormalizeAppliesTheFinalSigmaRule() {
+    // ODOS, road, all caps: the trailing sigma position lowers to U+03C2
+    assertEquals("\u03BF\u03B4\u03BF\u03C2",
+        FeedforwardDependencyModel.normalize("\u039F\u0394\u039F\u03A3"));
+    // SOFIA: the word-initial sigma is not final and lowers to the medial U+03C3
+    assertEquals("\u03C3\u03BF\u03C6\u03B9\u03B1",
+        FeedforwardDependencyModel.normalize("\u03A3\u039F\u03A6\u0399\u0391"));
+    // a lone capital sigma has no preceding letter, so the rule does not fire
+    assertEquals("\u03C3", FeedforwardDependencyModel.normalize("\u03A3"));
+  }
+
+  /**
+   * Pins the allocation-free fast path: a word the mapping leaves unchanged, the
+   * overwhelming majority of parse-time input, is returned as the same instance
+   * rather than a fresh copy built on every lookup of the scoring loop.
+   */
+  @Test
+  void testNormalizeReturnsTheSameInstanceForLowercaseWords() {
+    final String plain = "barks";
+    assertSame(plain, FeedforwardDependencyModel.normalize(plain));
+    // lowercase Greek with its native final sigma is already normalized
+    final String greek = "\u03BF\u03B4\u03BF\u03C2";
+    assertSame(greek, FeedforwardDependencyModel.normalize(greek));
+  }
+
+  /**
+   * Pins the refinement contract for the sample kind the unknown-transition check
+   * never sees: a non-projective gold graph has no arc-standard derivation and is
+   * skipped before the transition inventory is consulted, so an unknown relation
+   * riding on it must not trigger the unknown-transition failure, and refinement
+   * proceeds on the remaining projective samples.
+   */
+  @Test
+  void testNonProjectiveSampleWithUnknownRelationIsSkippedNotFatal() throws IOException {
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, 17L);
+    // heads {2, 3, -1, 2}: the arcs from 2 to 0 and from 3 to 1 cross, so the graph
+    // is non-projective, and "dislocated" is a relation the model was never trained on
+    final List<DependencySample> mixed = List.of(
+        sample(new String[] {"a", "b", "c", "d"}, new String[] {"DT", "NN", "VBZ", "NN"},
+            new int[] {2, 3, -1, 2}, new String[] {"det", "dislocated", "root", "obj"}),
+        sample(new String[] {"the", "dog", "barks"}, new String[] {"DT", "NN", "VBZ"},
+            new int[] {1, 2, -1}, new String[] {"det", "nsubj", "root"}));
+
+    final FeedforwardDependencyModel refined = FeedforwardDependencyTrainer.refine(
+        model, ObjectStreamUtils.createObjectStream(mixed), settings, 2);
+    assertNotSame(model, refined);
+  }
+
+  /**
+   * Pins the serialized vocabulary order: entries are written in ascending id order,
+   * not in the iteration order of the underlying immutable maps, which the JDK salts
+   * per launch, so serializing the same model produces the same bytes on every run.
+   */
+  @Test
+  void testSerializedVocabulariesAreWrittenInAscendingIdOrder() throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    model.serialize(out);
+    try (DataInputStream data = new DataInputStream(
+        new ByteArrayInputStream(out.toByteArray()))) {
+      data.readUTF();
+      for (int vocab = 0; vocab < 3; vocab++) {
+        final int size = data.readInt();
+        int previous = Integer.MIN_VALUE;
+        for (int entry = 0; entry < size; entry++) {
+          data.readUTF();
+          final int id = data.readInt();
+          assertTrue(id > previous,
+              "vocabulary " + vocab + " must be written in ascending id order");
+          previous = id;
+        }
+      }
+    }
   }
 
   @Test
