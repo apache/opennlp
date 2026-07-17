@@ -218,11 +218,14 @@ public class UnigramSegmenter implements Tokenizer {
         continue;
       }
       // A single-character step at the unknown log-probability keeps every position
-      // reachable even where no lexicon word matches.
+      // reachable even where no lexicon word matches. The step advances one code
+      // point, never one code unit, so an unknown supplementary character is stepped
+      // over whole and no span boundary can land between its surrogate halves.
+      final int width = Character.charCount(text.codePointAt(from + i));
       final double fallback = best[i] + unknownLogProbability;
-      if (fallback > best[i + 1]) {
-        best[i + 1] = fallback;
-        previous[i + 1] = i;
+      if (i + width <= length && fallback > best[i + width]) {
+        best[i + width] = fallback;
+        previous[i + width] = i;
       }
       WordTrie node = trie;
       for (int j = from + i; j < to; j++) {
