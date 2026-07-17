@@ -484,4 +484,142 @@ public class LatticeTokenizerTest {
         () -> MecabDictionary.load(null));
     Assertions.assertThrows(IllegalArgumentException.class, () -> tokenizer.analyze(null));
   }
+
+  /**
+   * Verifies the supplementary range table's interval cutting and precedence: a later
+   * {@code char.def} mapping strictly inside an earlier one wins exactly on its own
+   * stretch, and the earlier category resumes after it, so the cut produces three
+   * intervals from two overlapping ranges.
+   */
+  @Test
+  void testLaterSupplementaryMappingWinsInsideAnEarlierRange(@TempDir Path overlapped)
+      throws IOException {
+    Files.write(overlapped.resolve("lexicon.csv"),
+        "\u6771,0,0,6000,noun\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(overlapped.resolve("matrix.def"),
+        "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(overlapped.resolve("char.def"), String.join("\n",
+        "DEFAULT 0 1 0",
+        "KANJI 0 0 2",
+        "LATIN 1 1 0",
+        "",
+        "0x20000..0x2FFFF KANJI",
+        "0x24000..0x25000 LATIN",
+        "").getBytes(StandardCharsets.UTF_8));
+    Files.write(overlapped.resolve("unk.def"),
+        "DEFAULT,0,0,10000,symbol,unknown\n".getBytes(StandardCharsets.UTF_8));
+
+    final MecabDictionary dictionary = MecabDictionary.load(overlapped);
+    Assertions.assertEquals("KANJI", dictionary.categoryOf(0x20000).name());
+    Assertions.assertEquals("KANJI", dictionary.categoryOf(0x23FFF).name());
+    Assertions.assertEquals("LATIN", dictionary.categoryOf(0x24000).name());
+    Assertions.assertEquals("LATIN", dictionary.categoryOf(0x25000).name());
+    Assertions.assertEquals("KANJI", dictionary.categoryOf(0x25001).name());
+    Assertions.assertEquals("KANJI", dictionary.categoryOf(0x2FFFF).name());
+    Assertions.assertEquals("DEFAULT", dictionary.categoryOf(0x30000).name());
+  }
+
+  /**
+   * Verifies a {@code char.def} range straddling the BMP boundary: the part up to
+   * U+FFFF lands in the directly indexed table and the rest in the range table, and
+   * both halves answer the same category with no gap at the seam.
+   */
+  @Test
+  void testCharDefRangeStraddlingTheBmpBoundary(@TempDir Path straddling)
+      throws IOException {
+    Files.write(straddling.resolve("lexicon.csv"),
+        "\u6771,0,0,6000,noun\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(straddling.resolve("matrix.def"),
+        "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(straddling.resolve("char.def"), String.join("\n",
+        "DEFAULT 0 1 0",
+        "LATIN 1 1 0",
+        "",
+        "0xFF00..0x10040 LATIN",
+        "").getBytes(StandardCharsets.UTF_8));
+    Files.write(straddling.resolve("unk.def"),
+        "DEFAULT,0,0,10000,symbol,unknown\n".getBytes(StandardCharsets.UTF_8));
+
+    final MecabDictionary dictionary = MecabDictionary.load(straddling);
+    Assertions.assertEquals("LATIN", dictionary.categoryOf(0xFF00).name());
+    Assertions.assertEquals("LATIN", dictionary.categoryOf(0xFFFF).name());
+    Assertions.assertEquals("LATIN", dictionary.categoryOf(0x10000).name());
+    Assertions.assertEquals("LATIN", dictionary.categoryOf(0x10040).name());
+    Assertions.assertEquals("DEFAULT", dictionary.categoryOf(0x10041).name());
+    Assertions.assertEquals("DEFAULT", dictionary.categoryOf(0xFEFF).name());
+  }
+
+  /**
+   * Verifies that a {@code char.def} mapping to a category its category section never
+   * defined fails at load, naming the code point and the ghost category, instead of
+   * silently falling back to DEFAULT at lookup time.
+   */
+  @Test
+  void testMappingToUndefinedCategoryFailsLoud(@TempDir Path ghost) throws IOException {
+    Files.write(ghost.resolve("lexicon.csv"),
+        "\u6771,0,0,6000,noun\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(ghost.resolve("matrix.def"),
+        "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(ghost.resolve("char.def"), String.join("\n",
+        "DEFAULT 0 1 0",
+        "",
+        "0x0100..0x0110 GHOST",
+        "").getBytes(StandardCharsets.UTF_8));
+    Files.write(ghost.resolve("unk.def"),
+        "DEFAULT,0,0,10000,symbol,unknown\n".getBytes(StandardCharsets.UTF_8));
+
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(ghost));
+    Assertions.assertEquals("char.def maps U+0100 to the undefined category GHOST",
+        e.getMessage());
+  }
+
+  /**
+   * Verifies that a connection cost outside the 16-bit range the binary matrix format
+   * defines is rejected at load instead of being truncated by the narrowing cast into
+   * a silently different cost.
+   */
+  @Test
+  void testMatrixCostOutsideShortRangeFailsLoud(@TempDir Path broken) throws IOException {
+    writeUnitMatrixDictionary(broken);
+    Files.write(broken.resolve("matrix.def"),
+        "1 1\n0 0 40000\n".getBytes(StandardCharsets.UTF_8));
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("malformed matrix.def line 2: connection cost 40000 is"
+        + " outside the 16-bit range the format defines", e.getMessage());
+  }
+
+  /**
+   * Verifies that {@code matrix.def} dimensions whose product exceeds the addressable
+   * array size fail loud at the header instead of overflowing the int multiplication
+   * into a negative or wrapped allocation size.
+   */
+  @Test
+  void testMatrixDimensionProductBeyondIntRangeFailsLoud(@TempDir Path broken)
+      throws IOException {
+    writeUnitMatrixDictionary(broken);
+    Files.write(broken.resolve("matrix.def"),
+        "70000 70000\n".getBytes(StandardCharsets.UTF_8));
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("matrix.def dimensions 70000 x 70000 overflow the"
+        + " addressable connection matrix", e.getMessage());
+  }
+
+  /**
+   * Verifies that a {@code matrix.def} data row naming context ids outside the
+   * declared dimensions is rejected at load with the offending line and ids.
+   */
+  @Test
+  void testMatrixRowContextIdsOutsideDimensionsFailLoud(@TempDir Path broken)
+      throws IOException {
+    writeUnitMatrixDictionary(broken);
+    Files.write(broken.resolve("matrix.def"),
+        "1 1\n2 0 5\n".getBytes(StandardCharsets.UTF_8));
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("malformed matrix.def line 2: context ids 2 0 are outside"
+        + " the declared dimensions 1 1", e.getMessage());
+  }
 }
