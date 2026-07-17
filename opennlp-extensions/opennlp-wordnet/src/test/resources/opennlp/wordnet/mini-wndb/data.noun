@@ -1,0 +1,27 @@
+  1 Licensed to the Apache Software Foundation (ASF) under one or more  
+  2 contributor license agreements.  See the NOTICE file distributed with  
+  3 this work for additional information regarding copyright ownership.  
+  4 The ASF licenses this file to You under the Apache License, Version 2.0  
+  5 (the "License"); you may not use this file except in compliance with  
+  6 the License. You may obtain a copy of the License at  
+  7   
+  8     http://www.apache.org/licenses/LICENSE-2.0  
+  9   
+  10 Unless required by applicable law or agreed to in writing, software  
+  11 distributed under the License is distributed on an "AS IS" BASIS,  
+  12 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+  13 See the License for the specific language governing permissions and  
+  14 limitations under the License.  
+  15   
+  16 Project-authored miniature WNDB fixture mirroring mini-wn-lmf.xml.  
+  17 License preamble lines begin with two spaces, as in released WNDB files,  
+  18 so readers skip them; data line offsets include this preamble.  
+00001075 03 n 02 dog 0 domestic_dog 0 001 @ 00001160 n 0000 | a domesticated canid  
+00001160 03 n 01 canid 0 001 ~ 00001075 n 0000 | a carnivorous mammal with nonretractile claws  
+00001257 03 n 01 mouse 0 001 @ 00001340 n 0000 | a small rodent with a long tail  
+00001340 03 n 01 rodent 0 001 ~ 00001257 n 0000 | a gnawing mammal with chisel teeth  
+00001427 03 n 01 run 0 001 + 00001075 v 0101 | an act of running at speed  
+00001503 03 n 01 box 0 000 | a rigid rectangular container  
+00001564 03 n 01 berry 0 000 | a small juicy fruit  
+00001617 03 n 01 man 0 000 | an adult male person  
+00001669 03 n 01 run 0 000 | a score made in baseball  
