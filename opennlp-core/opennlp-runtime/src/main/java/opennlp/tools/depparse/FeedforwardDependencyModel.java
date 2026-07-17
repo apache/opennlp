@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import opennlp.tools.util.StringUtil;
 
@@ -66,6 +68,9 @@ public class FeedforwardDependencyModel {
 
   static final String UNKNOWN = "*UNK*";
   static final String ABSENT = "*NULL*";
+
+  /** The lazy scoring cache; {@code null} until {@link #enableScoringCache()}. */
+  private volatile ContributionCache cache;
 
   private final Map<String, Integer> wordIds;
   private final Map<String, Integer> tagIds;
@@ -107,16 +112,31 @@ public class FeedforwardDependencyModel {
     final int hidden = hiddenBias.length;
     final double[] h = new double[hidden];
     for (int j = 0; j < hidden; j++) {
-      final float[] row = hiddenWeights[j];
-      double sum = hiddenBias[j];
-      for (int f = 0; f < features.length; f++) {
-        final float[] embedding = embeddings[features[f]];
+      h[j] = hiddenBias[j];
+    }
+    final ContributionCache cache = this.cache;
+    for (int f = 0; f < features.length; f++) {
+      final int row = features[f];
+      final float[] contribution = cache == null ? null : cache.contribution(this, f, row);
+      if (contribution != null) {
+        for (int j = 0; j < hidden; j++) {
+          h[j] += contribution[j];
+        }
+      } else {
+        final float[] embedding = embeddings[row];
         final int offset = f * embeddingSize;
-        for (int d = 0; d < embeddingSize; d++) {
-          sum += row[offset + d] * embedding[d];
+        for (int j = 0; j < hidden; j++) {
+          final float[] weights = hiddenWeights[j];
+          double sum = 0.0;
+          for (int d = 0; d < embeddingSize; d++) {
+            sum += weights[offset + d] * embedding[d];
+          }
+          h[j] += sum;
         }
       }
-      h[j] = sum * sum * sum;
+    }
+    for (int j = 0; j < hidden; j++) {
+      h[j] = h[j] * h[j] * h[j];
     }
     final double[] scores = new double[transitions.length];
     for (int o = 0; o < scores.length; o++) {
@@ -128,6 +148,93 @@ public class FeedforwardDependencyModel {
       scores[o] = sum;
     }
     return scores;
+  }
+
+  /**
+   * Turns on the scoring cache: the hidden-layer contribution of a (template
+   * position, embedding row) pair is a fixed vector for a frozen model, so it is
+   * computed once on first sight and afterwards added instead of being re-derived
+   * from the embedding on every configuration. Tag and label rows, whose inventories
+   * are small, are fully cached within a document or two; word rows follow their
+   * frequency, which is the adaptive form of the precomputation described for this
+   * architecture by Chen and Manning (2014).
+   *
+   * <p>Cached contributions are rounded to floats once, so scores may differ from the
+   * uncached path in the last bits; transition decisions are unaffected at any
+   * realistic margin. The cache is bounded, safe for concurrent readers, and only
+   * valid on a model whose weights no longer change: training and refinement work on
+   * uncached copies, and {@link #copy()} never carries a cache over.</p>
+   */
+  void enableScoringCache() {
+    if (cache == null) {
+      cache = new ContributionCache(2 * FeedforwardContext.POSITIONS
+          + FeedforwardContext.LABEL_POSITIONS, embeddings.length);
+    }
+  }
+
+  /**
+   * The bounded lazy contribution cache behind {@link #enableScoringCache()}: one
+   * slot per (template position, embedding row) pair, filled on first use. Filling is
+   * idempotent, so concurrent readers may compute a contribution twice but never see
+   * a partial one, and a shared budget bounds the total memory; pairs beyond the
+   * budget simply keep the direct path.
+   */
+  private static final class ContributionCache {
+
+    /** The most (position, row) pairs the cache will hold. At a hidden size of 400
+     * this bounds the cache near 100 MB; typical models stay far below the cap
+     * because tag and label inventories are small and word usage is Zipf-shaped. */
+    private static final int MAX_PAIRS = 65536;
+
+    private final AtomicReferenceArray<float[]>[] byPosition;
+    private final AtomicInteger remaining = new AtomicInteger(MAX_PAIRS);
+
+    @SuppressWarnings("unchecked")
+    private ContributionCache(int positions, int rows) {
+      byPosition = new AtomicReferenceArray[positions];
+      for (int f = 0; f < positions; f++) {
+        byPosition[f] = new AtomicReferenceArray<>(rows);
+      }
+    }
+
+    /**
+     * Returns the cached hidden-layer contribution of one pair, computing and
+     * publishing it on first sight while the budget lasts.
+     *
+     * @param model The frozen model the contributions derive from.
+     * @param position The template position.
+     * @param row The embedding row at that position.
+     * @return The contribution vector, or {@code null} when the budget is spent and
+     *         the pair is not cached.
+     */
+    private float[] contribution(FeedforwardDependencyModel model, int position, int row) {
+      final AtomicReferenceArray<float[]> slots = byPosition[position];
+      float[] contribution = slots.get(row);
+      if (contribution != null) {
+        return contribution;
+      }
+      if (remaining.get() <= 0) {
+        return null;
+      }
+      final int hidden = model.hiddenBias.length;
+      final float[] embedding = model.embeddings[row];
+      final int offset = position * model.embeddingSize;
+      contribution = new float[hidden];
+      for (int j = 0; j < hidden; j++) {
+        final float[] weights = model.hiddenWeights[j];
+        double sum = 0.0;
+        for (int d = 0; d < model.embeddingSize; d++) {
+          sum += weights[offset + d] * embedding[d];
+        }
+        contribution[j] = (float) sum;
+      }
+      if (slots.compareAndSet(row, null, contribution)) {
+        remaining.decrementAndGet();
+      } else {
+        contribution = slots.get(row);
+      }
+      return contribution;
+    }
   }
 
   /**
