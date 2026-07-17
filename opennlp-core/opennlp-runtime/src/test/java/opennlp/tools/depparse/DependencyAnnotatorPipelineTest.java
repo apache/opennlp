@@ -285,10 +285,13 @@ public class DependencyAnnotatorPipelineTest {
   }
 
   @Test
-  void testTextWithZeroSentencesFailsBeforeTheDependencyAnnotatorRuns() {
-    // empty text yields no sentences and no tokens, so the tagger already fails loud
+  void testTextWithZeroSentencesFailsAtTheDependencyAnnotator() {
+    // empty text yields present-but-empty sentence and token layers, which the
+    // upstream annotators pass through under the empty-versus-missing distinction;
+    // the dependency annotator itself then refuses to parse an empty token layer
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> pipeline().analyze(""));
-    assertEquals("document lacks the required layer tokens<String>", e.getMessage());
+    assertEquals("document needs aligned tokens<String> and pos<String> layers",
+        e.getMessage());
   }
 }
