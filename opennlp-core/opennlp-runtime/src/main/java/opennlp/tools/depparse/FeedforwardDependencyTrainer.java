@@ -169,19 +169,29 @@ public final class FeedforwardDependencyTrainer {
    * beamed parser scores them, summed log-probabilities, so training optimizes the
    * quantity decoding uses.
    *
-   * <p>The model is updated in place with per-sentence AdaGrad steps and no dropout;
-   * {@link Settings#epochs()} counts the refinement passes. Refinement is deterministic
-   * for a fixed {@link Settings#seed()}. Parse afterwards with the same beam size.</p>
+   * <p>The refined weights are a copy: {@code model} itself is never written to, so a
+   * model already being parsed with, possibly by several threads, keeps behaving exactly
+   * as before while a refined successor is trained from it. The copy is updated with
+   * per-sentence AdaGrad steps and no dropout; {@link Settings#epochs()} counts the
+   * refinement passes. Refinement is deterministic for a fixed {@link Settings#seed()}.
+   * Parse afterwards with the same beam size.</p>
    *
-   * @param model The locally trained model to refine. Must not be {@code null}.
+   * <p>The transition inventory comes from {@code model} and is not extended, because
+   * its size is the width of the trained output layer. A refinement corpus using a
+   * relation label the original training set lacked is therefore rejected rather than
+   * silently ignored.</p>
+   *
+   * @param model The locally trained model to refine. Left untouched. Must not be
+   *              {@code null}.
    * @param samples The training samples. Must not be {@code null}.
    * @param settings The hyperparameters; {@code epochs}, {@code learningRate},
    *                 {@code l2}, and {@code seed} apply. Must not be {@code null}.
    * @param beamSize The beam width to track the gold derivation in. Must be at least 2.
-   * @return The same model instance, refined. Never {@code null}.
+   * @return A new refined model, distinct from {@code model}. Never {@code null}.
    * @throws IOException Thrown if reading the samples fails.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null},
-   *         {@code beamSize} is below 2, or no trainable sample can be derived.
+   *         {@code beamSize} is below 2, no trainable sample can be derived, or a sample
+   *         requires a transition {@code model} does not know.
    */
   public static FeedforwardDependencyModel refine(FeedforwardDependencyModel model,
       ObjectStream<DependencySample> samples, Settings settings, int beamSize)
@@ -215,7 +225,15 @@ public final class FeedforwardDependencyTrainer {
       }
       final int[] encoded = new int[oracle.size()];
       for (int i = 0; i < encoded.length; i++) {
-        encoded[i] = transitionIds.get(oracle.get(i).encode());
+        final String outcome = oracle.get(i).encode();
+        final Integer id = transitionIds.get(outcome);
+        if (id == null) {
+          // The outcome space was fixed by the original training set, so a relation
+          // label it never saw has no output unit to push probability onto.
+          throw new IllegalArgumentException(
+              "unknown transition in the refinement samples: " + outcome);
+        }
+        encoded[i] = id;
       }
       trainable.add(s);
       oracles.add(encoded);
@@ -224,7 +242,8 @@ public final class FeedforwardDependencyTrainer {
       throw new IllegalArgumentException("no trainable samples for refinement");
     }
 
-    final GlobalOptimizer optimizer = new GlobalOptimizer(model, settings);
+    final FeedforwardDependencyModel refined = model.copy();
+    final GlobalOptimizer optimizer = new GlobalOptimizer(refined, settings);
     final Random random = new Random(settings.seed());
     final int[] order = new int[trainable.size()];
     for (int i = 0; i < order.length; i++) {
@@ -246,7 +265,7 @@ public final class FeedforwardDependencyTrainer {
       logger.info("refine epoch {}: loss {} over {} updates in {} ms", epoch,
           loss / Math.max(updates, 1), updates, System.currentTimeMillis() - epochStart);
     }
-    return model;
+    return refined;
   }
 
   /** One candidate path in the refinement beam: the parent link forms the history. */

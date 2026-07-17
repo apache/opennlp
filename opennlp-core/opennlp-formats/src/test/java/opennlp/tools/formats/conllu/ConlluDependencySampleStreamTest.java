@@ -159,6 +159,31 @@ public class ConlluDependencySampleStreamTest {
   }
 
   @Test
+  void testSeparatorLineOfNonBreakingSpaceSeparatesSentences() throws IOException {
+    // A separator line carrying a stray no-break space is still a separator: OpenNLP
+    // counts U+00A0 as whitespace, so such a line must not reach the word-line parser
+    // and abort the stream.
+    final String content = String.join("\n",
+        line("1", "Dogs", "dog", "NOUN", "NNS", "_", "2", "nsubj", "_", "_"),
+        line("2", "bark", "bark", "VERB", "VBP", "_", "0", "root", "_", "_"),
+        "\u00A0",
+        line("1", "Fine", "fine", "ADJ", "JJ", "_", "0", "root", "_", "_"),
+        "") + "\n";
+    final InputStreamFactory in =
+        () -> new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+    try (ConlluDependencySampleStream samples =
+        new ConlluDependencySampleStream(in, ConlluTagset.U)) {
+      final DependencySample first = samples.read();
+      assertNotNull(first);
+      assertArrayEquals(new String[] {"Dogs", "bark"}, first.getTokens());
+      final DependencySample second = samples.read();
+      assertNotNull(second);
+      assertArrayEquals(new String[] {"Fine"}, second.getTokens());
+      assertNull(samples.read());
+    }
+  }
+
+  @Test
   void testEmptyContentYieldsNoSample() throws IOException {
     final InputStreamFactory in = () -> new ByteArrayInputStream(new byte[0]);
     try (ConlluDependencySampleStream samples =
