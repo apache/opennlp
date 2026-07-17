@@ -119,4 +119,107 @@ gazetteer.lookup("Tokyo");     // unaffected base entries stay visible]]>
 			a database or fetched from a service compose the same way.
 		</para>
 	</section>
+
+	<section xml:id="tools.geo.custom">
+		<title>Bringing your own implementation</title>
+		<para>
+			The seam is registry-free: implementing the four methods of
+			<code>Gazetteer</code> is all it takes, there is nothing to declare or
+			register anywhere, and the instance is handed to whatever consumes the
+			interface, typically as the additions side of an
+			<code>OverlayGazetteer</code>. An implementation must be immutable and
+			thread-safe after construction and must document its own name-matching
+			semantics. Because the contract is one plain constructor-built object,
+			an implementation also drops directly into any dependency-injection
+			container as a bean, with no framework types anywhere in OpenNLP.
+		</para>
+		<para>
+			The following complete implementation serves an application-internal
+			store from two maps. It lives in the project's test sources as
+			<code>CrmGazetteer</code>, ready to copy, and
+			<code>CustomGazetteerExampleTest</code> asserts the behavior shown
+			here.
+			<programlisting language="java"><![CDATA[
+final class CrmGazetteer implements Gazetteer {
+
+  static final String SOURCE = "crm";
+
+  private final Map<String, GazetteerEntry> byName;
+  private final Map<String, GazetteerEntry> byId;
+
+  CrmGazetteer(List<GazetteerEntry> entries) {
+    if (entries == null) {
+      throw new IllegalArgumentException("entries must not be null");
+    }
+    final Map<String, GazetteerEntry> names = new HashMap<>();
+    final Map<String, GazetteerEntry> ids = new HashMap<>();
+    for (final GazetteerEntry entry : entries) {
+      names.put(entry.name().toLowerCase(Locale.ROOT), entry);
+      ids.put(entry.recordId(), entry);
+    }
+    this.byName = Map.copyOf(names);
+    this.byId = Map.copyOf(ids);
+  }
+
+  @Override
+  public List<GazetteerEntry> lookup(CharSequence name) {
+    if (name == null) {
+      throw new IllegalArgumentException("name must not be null");
+    }
+    final GazetteerEntry found = byName.get(name.toString().toLowerCase(Locale.ROOT));
+    return found == null ? List.of() : List.of(found);
+  }
+
+  @Override
+  public Optional<GazetteerEntry> byId(String source, String recordId) {
+    if (source == null || recordId == null) {
+      throw new IllegalArgumentException("source and recordId must not be null");
+    }
+    return SOURCE.equals(source) ? Optional.ofNullable(byId.get(recordId)) : Optional.empty();
+  }
+
+  @Override
+  public Optional<GazetteerEntry> byRegion(String isoCountryCode) {
+    if (isoCountryCode == null || isoCountryCode.length() != 2
+        || !isAsciiLetter(isoCountryCode.charAt(0)) || !isAsciiLetter(isoCountryCode.charAt(1))) {
+      throw new IllegalArgumentException(
+          "isoCountryCode must be two ASCII letters, got: " + isoCountryCode);
+    }
+    final String code = isoCountryCode.toUpperCase(Locale.ROOT);
+    GazetteerEntry best = null;
+    for (final GazetteerEntry entry : byId.values()) {
+      if (code.equals(entry.countryCode())
+          && (best == null || entry.population() > best.population())) {
+        best = entry;
+      }
+    }
+    return Optional.ofNullable(best);
+  }
+
+  @Override
+  public Set<String> sources() {
+    return Set.of(SOURCE);
+  }
+
+  private static boolean isAsciiLetter(char c) {
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+  }
+}]]>
+			</programlisting>
+		</para>
+		<para>
+			Composed over the bundled base, the custom entries answer their own
+			names while the base keeps answering everything else.
+			<programlisting language="java"><![CDATA[
+Gazetteer crm = new CrmGazetteer(List.of(new GazetteerEntry("crm", "cust-1", "Acme Plant 3",
+    List.of(), new GeoPoint(33.75, -84.39), "US", List.of(), 0L,
+    GazetteerEntry.FEATURE_CLASS_POI, Map.of())));
+Gazetteer gazetteer = new OverlayGazetteer(BundledGazetteer.getInstance(), crm, List.of());
+
+GazetteerEntry plant = gazetteer.lookup("Acme Plant 3").get(0);
+// plant.source() = "crm", plant.location() = new GeoPoint(33.75, -84.39)
+gazetteer.lookup("Tokyo");   // the base still answers everything else]]>
+			</programlisting>
+		</para>
+	</section>
 </chapter>
