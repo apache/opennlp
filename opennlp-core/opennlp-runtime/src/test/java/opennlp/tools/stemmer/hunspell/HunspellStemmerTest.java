@@ -725,4 +725,54 @@ public class HunspellStemmerTest {
     final HunspellDictionary numbers = load("FLAG num\n", "1\nwalk/39\n");
     Assertions.assertTrue(HunspellDictionary.hasFlag(numbers.lookup("walk"), 39));
   }
+
+  /**
+   * Verifies two-part compound decomposition under the general compounding flag: a
+   * word the affix analysis cannot explain splits into two listed parts that both
+   * carry the flag, reported left to right, while a part without the flag blocks the
+   * split and the word stays unanalyzed.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCompoundFlagDecomposesUnanalyzedWords() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\n",
+        "3\ndog/Z\nhouse/Z\ncat\n"));
+    Assertions.assertEquals(List.of("dog", "house"), stemmer.stemAll("doghouse"));
+    // cat is listed without the compounding flag, so no split may use it
+    Assertions.assertEquals(List.of("cathouse"), stemmer.stemAll("cathouse"));
+    // a listed word never decomposes; it is its own analysis
+    Assertions.assertEquals(List.of("dog"), stemmer.stemAll("dog"));
+  }
+
+  /**
+   * Verifies the positional compound flags: the begin flag only opens and the end
+   * flag only closes, so the parts compose in one order and refuse the other.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCompoundBeginAndEndFlagsArePositional() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "COMPOUNDBEGIN B\nCOMPOUNDEND E\nCOMPOUNDMIN 3\n",
+        "2\ndog/B\nhouse/E\n"));
+    Assertions.assertEquals(List.of("dog", "house"), stemmer.stemAll("doghouse"));
+    Assertions.assertEquals(List.of("housedog"), stemmer.stemAll("housedog"));
+  }
+
+  /**
+   * Verifies the minimum part length: a split leaving a side shorter than
+   * COMPOUNDMIN is never taken, although both sides are listed and flagged.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCompoundMinBoundsThePartLength() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 4\n",
+        "2\ndog/Z\nhouse/Z\n"));
+    // the left side would be three characters, below the declared minimum of four
+    Assertions.assertEquals(List.of("doghouse"), stemmer.stemAll("doghouse"));
+  }
 }

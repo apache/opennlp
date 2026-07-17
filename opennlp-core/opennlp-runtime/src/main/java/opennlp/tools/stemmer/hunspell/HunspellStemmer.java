@@ -81,6 +81,11 @@ public class HunspellStemmer implements Stemmer {
     for (final String variant : variants(surface)) {
       analyze(variant, analyses);
     }
+    if (analyses.isEmpty() && dictionary.compoundsDeclared()) {
+      for (final String variant : variants(surface)) {
+        decompose(variant, analyses);
+      }
+    }
     if (analyses.isEmpty()) {
       return List.of(surface);
     }
@@ -128,6 +133,35 @@ public class HunspellStemmer implements Stemmer {
     }
     for (final Affix prefix : dictionary.prefixesWithoutMaterial()) {
       undoPrefix(word, prefix, analyses);
+    }
+  }
+
+  /**
+   * Decomposes a word into two listed compound parts when the affix analysis found
+   * nothing: at every split point that leaves both sides at least the declared
+   * minimum length, the left side must be listed and allowed to open a compound and
+   * the right side listed and allowed to close one. The parts of the first splitting
+   * that succeeds are reported left to right, so the head-most material comes last,
+   * and further splittings add any parts not already reported.
+   *
+   * @param word The case variant to decompose.
+   * @param analyses The mutable, insertion-ordered set collecting the parts.
+   */
+  private void decompose(String word, Set<String> analyses) {
+    final int min = dictionary.compoundMin();
+    for (int split = min; split <= word.length() - min; split++) {
+      final String left = word.substring(0, split);
+      final List<int[]> leftFlags = dictionary.lookup(left);
+      if (leftFlags == null || !dictionary.mayBeginCompound(leftFlags)) {
+        continue;
+      }
+      final String right = word.substring(split);
+      final List<int[]> rightFlags = dictionary.lookup(right);
+      if (rightFlags == null || !dictionary.mayEndCompound(rightFlags)) {
+        continue;
+      }
+      analyses.add(left);
+      analyses.add(right);
     }
   }
 

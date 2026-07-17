@@ -89,9 +89,18 @@ public final class HunspellDictionary {
   private final List<Affix> suffixesWithoutMaterial;
   private final Map<Character, List<Affix>> prefixesByFirst;
   private final List<Affix> prefixesWithoutMaterial;
+  private final int compoundFlag;
+  private final int compoundBegin;
+  private final int compoundEnd;
+  private final int compoundMin;
 
   private HunspellDictionary(Map<String, List<int[]>> entries, List<Affix> prefixes,
-      List<Affix> suffixes) {
+      List<Affix> suffixes, int compoundFlag, int compoundBegin, int compoundEnd,
+      int compoundMin) {
+    this.compoundFlag = compoundFlag;
+    this.compoundBegin = compoundBegin;
+    this.compoundEnd = compoundEnd;
+    this.compoundMin = compoundMin;
     this.entries = entries;
     this.prefixes = prefixes;
     this.suffixes = suffixes;
@@ -168,7 +177,8 @@ public final class HunspellDictionary {
         new String(readAll(dictionaryStream), charset), affix.flagMode,
         affix.flagAliases);
     return new HunspellDictionary(entries, List.copyOf(affix.prefixes),
-        List.copyOf(affix.suffixes));
+        List.copyOf(affix.suffixes), affix.compoundFlag, affix.compoundBegin,
+        affix.compoundEnd, affix.compoundMin);
   }
 
   /**
@@ -223,6 +233,40 @@ public final class HunspellDictionary {
   /** @return The strip-only prefix rules, applicable to any word. Never {@code null}. */
   List<Affix> prefixesWithoutMaterial() {
     return prefixesWithoutMaterial;
+  }
+
+  /** @return Whether the affix file declares any compounding flag at all. */
+  boolean compoundsDeclared() {
+    return compoundFlag != 0 || compoundBegin != 0 || compoundEnd != 0;
+  }
+
+  /** @return The smallest length a compound part may have; at least {@code 1}. */
+  int compoundMin() {
+    return compoundMin;
+  }
+
+  /**
+   * Checks whether a listed word may open a compound: it carries the general
+   * compounding flag or the dedicated begin flag.
+   *
+   * @param flagSets The word's flag sets from {@link #lookup(String)}.
+   * @return {@code true} if the word may stand first in a compound.
+   */
+  boolean mayBeginCompound(List<int[]> flagSets) {
+    return (compoundFlag != 0 && hasFlag(flagSets, compoundFlag))
+        || (compoundBegin != 0 && hasFlag(flagSets, compoundBegin));
+  }
+
+  /**
+   * Checks whether a listed word may close a compound: it carries the general
+   * compounding flag or the dedicated end flag.
+   *
+   * @param flagSets The word's flag sets from {@link #lookup(String)}.
+   * @return {@code true} if the word may stand last in a compound.
+   */
+  boolean mayEndCompound(List<int[]> flagSets) {
+    return (compoundFlag != 0 && hasFlag(flagSets, compoundFlag))
+        || (compoundEnd != 0 && hasFlag(flagSets, compoundEnd));
   }
 
   /**
@@ -306,6 +350,10 @@ public final class HunspellDictionary {
     private final List<int[]> flagAliases = new ArrayList<>();
     private boolean aliasHeaderSeen;
     private FlagMode flagMode = FlagMode.CHAR;
+    private int compoundFlag;
+    private int compoundBegin;
+    private int compoundEnd;
+    private int compoundMin = 3;
   }
 
   /**
@@ -341,6 +389,31 @@ public final class HunspellDictionary {
             default -> throw new IOException(
                 "unsupported FLAG mode '" + fields[1] + "' at line " + (i + 1));
           };
+          i++;
+          break;
+        case "COMPOUNDFLAG":
+        case "COMPOUNDBEGIN":
+        case "COMPOUNDEND":
+          if (fields.length < 2) {
+            throw new IOException(fields[0] + " line without a flag at line " + (i + 1));
+          }
+          final int compound = parseFlag(fields[1], result.flagMode, i + 1);
+          switch (fields[0]) {
+            case "COMPOUNDFLAG" -> result.compoundFlag = compound;
+            case "COMPOUNDBEGIN" -> result.compoundBegin = compound;
+            default -> result.compoundEnd = compound;
+          }
+          i++;
+          break;
+        case "COMPOUNDMIN":
+          if (fields.length < 2) {
+            throw new IOException("COMPOUNDMIN line without a value at line " + (i + 1));
+          }
+          try {
+            result.compoundMin = Math.max(1, Integer.parseInt(fields[1]));
+          } catch (NumberFormatException e) {
+            throw new IOException("malformed COMPOUNDMIN at line " + (i + 1), e);
+          }
           i++;
           break;
         case "AF":
