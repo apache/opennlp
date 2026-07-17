@@ -85,12 +85,44 @@ public final class HunspellDictionary {
   private final Map<String, List<int[]>> entries;
   private final List<Affix> prefixes;
   private final List<Affix> suffixes;
+  private final Map<Character, List<Affix>> suffixesByLast;
+  private final List<Affix> suffixesWithoutMaterial;
+  private final Map<Character, List<Affix>> prefixesByFirst;
+  private final List<Affix> prefixesWithoutMaterial;
 
   private HunspellDictionary(Map<String, List<int[]>> entries, List<Affix> prefixes,
       List<Affix> suffixes) {
     this.entries = entries;
     this.prefixes = prefixes;
     this.suffixes = suffixes;
+    // Undoing a suffix requires the word to end with the rule's affix material, so
+    // only rules whose material ends in the word's last character can ever apply;
+    // the same holds for prefixes and the first character. Bucketing by that
+    // boundary character turns the per-word rule scan from the whole inventory into
+    // the one bucket plus the strip-only rules, whose empty material matches
+    // everywhere.
+    this.suffixesByLast = new HashMap<>();
+    this.suffixesWithoutMaterial = new ArrayList<>();
+    for (final Affix suffix : suffixes) {
+      final String material = suffix.affix();
+      if (material.isEmpty()) {
+        suffixesWithoutMaterial.add(suffix);
+      } else {
+        suffixesByLast.computeIfAbsent(material.charAt(material.length() - 1),
+            key -> new ArrayList<>()).add(suffix);
+      }
+    }
+    this.prefixesByFirst = new HashMap<>();
+    this.prefixesWithoutMaterial = new ArrayList<>();
+    for (final Affix prefix : prefixes) {
+      final String material = prefix.affix();
+      if (material.isEmpty()) {
+        prefixesWithoutMaterial.add(prefix);
+      } else {
+        prefixesByFirst.computeIfAbsent(material.charAt(0),
+            key -> new ArrayList<>()).add(prefix);
+      }
+    }
   }
 
   /**
@@ -157,6 +189,40 @@ public final class HunspellDictionary {
   /** @return The suffix rules. */
   List<Affix> suffixes() {
     return suffixes;
+  }
+
+  private static final List<Affix> NO_AFFIXES = List.of();
+
+  /**
+   * The suffix rules whose affix material ends in the given character, which are the
+   * only material-bearing rules that can be undone from a word ending in it.
+   *
+   * @param last The word's last character.
+   * @return The bucket, possibly empty. Never {@code null}.
+   */
+  List<Affix> suffixesEndingWith(char last) {
+    return suffixesByLast.getOrDefault(last, NO_AFFIXES);
+  }
+
+  /** @return The strip-only suffix rules, applicable to any word. Never {@code null}. */
+  List<Affix> suffixesWithoutMaterial() {
+    return suffixesWithoutMaterial;
+  }
+
+  /**
+   * The prefix rules whose affix material starts with the given character, which are
+   * the only material-bearing rules that can be undone from a word starting with it.
+   *
+   * @param first The word's first character.
+   * @return The bucket, possibly empty. Never {@code null}.
+   */
+  List<Affix> prefixesStartingWith(char first) {
+    return prefixesByFirst.getOrDefault(first, NO_AFFIXES);
+  }
+
+  /** @return The strip-only prefix rules, applicable to any word. Never {@code null}. */
+  List<Affix> prefixesWithoutMaterial() {
+    return prefixesWithoutMaterial;
   }
 
   /**
