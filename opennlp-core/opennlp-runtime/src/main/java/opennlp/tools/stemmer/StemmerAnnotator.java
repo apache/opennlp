@@ -59,10 +59,27 @@ public class StemmerAnnotator implements DocumentAnnotator {
     this.stemmer = stemmer;
   }
 
+  /**
+   * Stems the token layer and adds the {@link #STEMS} layer.
+   *
+   * <p>The token layer must be present, but it may be empty: a document without tokens
+   * yields a present-but-empty stem layer.</p>
+   *
+   * @param document The document to annotate. Must not be {@code null} and must carry
+   *                 the {@link Layers#TOKENS} layer.
+   * @return A new {@link Document} with the {@link #STEMS} layer added. Never
+   *         {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code document} is {@code null} or the
+   *         token layer is absent.
+   */
   @Override
   public Document annotate(Document document) {
     if (document == null) {
       throw new IllegalArgumentException("document must not be null");
+    }
+    if (!document.layers().contains(Layers.TOKENS)) {
+      throw new IllegalArgumentException("document lacks the required layer "
+          + Layers.TOKENS);
     }
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> layer = new ArrayList<>(tokens.size());

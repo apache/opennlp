@@ -56,10 +56,33 @@ public class LemmatizerAnnotator implements DocumentAnnotator {
     this.lemmatizer = lemmatizer;
   }
 
+  /**
+   * Lemmatizes the token layer with its tags and adds the {@link #LEMMAS} layer.
+   *
+   * <p>The required layers must be present, but they may be empty: a document without
+   * tokens yields a present-but-empty lemma layer.</p>
+   *
+   * @param document The document to annotate. Must not be {@code null} and must carry
+   *                 the {@link Layers#TOKENS} layer and a {@link Layers#POS_TAGS} layer
+   *                 of equal size.
+   * @return A new {@link Document} with the {@link #LEMMAS} layer added. Never
+   *         {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, the
+   *         token layer or the tag layer is absent, the tag layer does not have exactly
+   *         one tag per token, or the lemmatizer does not return one lemma per token.
+   */
   @Override
   public Document annotate(Document document) {
     if (document == null) {
       throw new IllegalArgumentException("document must not be null");
+    }
+    if (!document.layers().contains(Layers.TOKENS)) {
+      throw new IllegalArgumentException("document lacks the required layer "
+          + Layers.TOKENS);
+    }
+    if (!document.layers().contains(Layers.POS_TAGS)) {
+      throw new IllegalArgumentException("document lacks the required layer "
+          + Layers.POS_TAGS);
     }
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> tags = document.get(Layers.POS_TAGS);

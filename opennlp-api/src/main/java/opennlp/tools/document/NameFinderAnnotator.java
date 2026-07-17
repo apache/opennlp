@@ -25,16 +25,31 @@ import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
 
 /**
- * Adapts a {@link TokenNameFinder} to the document pipeline: reads {@link Layers#TOKENS},
- * maps the finder's token-index spans to character spans on the original text, and
- * provides {@link Layers#ENTITIES} carrying the entity type.
+ * Adapts a {@link TokenNameFinder} to the document pipeline: reads
+ * {@link Layers#SENTENCES} and {@link Layers#TOKENS}, maps the finder's token-index
+ * spans to character spans on the original text, and provides {@link Layers#ENTITIES}
+ * carrying the entity type.
  *
- * <p>The finder's adaptive data is cleared after each document, so document order does
- * not leak between pipeline runs.</p>
+ * <p>Each sentence's tokens are passed to {@link TokenNameFinder#find(String[])} as one
+ * sequence, the way the finder contract expects its input, so no mention can straddle a
+ * sentence boundary. The finder's adaptive data is cleared once after all sentences of a
+ * document are processed, as the {@link TokenNameFinder#clearAdaptiveData()} contract
+ * asks, so document order does not leak between pipeline runs.</p>
+ *
+ * <p>Spans the finder returns without a type are recorded with the {@link #UNTYPED}
+ * entity type.</p>
  *
  * @since 3.0.0
  */
 public class NameFinderAnnotator implements DocumentAnnotator {
+
+  /**
+   * The entity type recorded when the wrapped finder returns a span without a type. It
+   * equals {@link opennlp.tools.namefind.NameSample#DEFAULT_TYPE}. Type-aware consumers
+   * should treat this label as an unknown type rather than as a distinct one, since it
+   * carries no information about what kind of entity was found.
+   */
+  public static final String UNTYPED = "default";
 
   private final TokenNameFinder finder;
 
@@ -51,26 +66,74 @@ public class NameFinderAnnotator implements DocumentAnnotator {
     this.finder = finder;
   }
 
+  /**
+   * Finds names sentence by sentence and adds the {@link Layers#ENTITIES} layer.
+   *
+   * <p>For every sentence, the tokens whose spans lie inside the sentence span are
+   * passed to the finder as one sequence, and each sentence-local mention is mapped
+   * through the sentence's first token position onto character spans of the original
+   * text. The required layers must be present, but they may be empty: a document
+   * without sentences or tokens yields a present-but-empty entity layer, and a sentence
+   * containing no tokens contributes nothing. A mention without a type is recorded with
+   * the type {@link #UNTYPED}.</p>
+   *
+   * @param document The document to annotate. Must not be {@code null} and must carry
+   *                 the {@link Layers#SENTENCES} and {@link Layers#TOKENS} layers, with
+   *                 every token lying inside a sentence.
+   * @return A new {@link Document} with the {@link Layers#ENTITIES} layer added. Never
+   *         {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, the
+   *         sentence layer or the token layer is absent, or a token lies outside every
+   *         sentence.
+   */
   @Override
   public Document annotate(Document document) {
     if (document == null) {
       throw new IllegalArgumentException("document must not be null");
     }
-    final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
-    if (tokens.isEmpty()) {
+    final Set<LayerKey<?>> present = document.layers();
+    if (!present.contains(Layers.SENTENCES)) {
+      throw new IllegalArgumentException("document lacks the required layer "
+          + Layers.SENTENCES);
+    }
+    if (!present.contains(Layers.TOKENS)) {
       throw new IllegalArgumentException("document lacks the required layer "
           + Layers.TOKENS);
     }
-    final String[] words = new String[tokens.size()];
-    for (int i = 0; i < words.length; i++) {
-      words[i] = tokens.get(i).value();
-    }
+    final List<Annotation<String>> sentences = document.get(Layers.SENTENCES);
+    final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> entities = new ArrayList<>();
-    for (final Span mention : finder.find(words)) {
-      final int start = tokens.get(mention.getStart()).span().getStart();
-      final int end = tokens.get(mention.getEnd() - 1).span().getEnd();
-      final String type = mention.getType() == null ? "default" : mention.getType();
-      entities.add(new Annotation<>(new Span(start, end, type), type));
+    // Walk the token layer once: both layers are in text order, so each sentence
+    // consumes the contiguous run of tokens whose spans it encloses.
+    int next = 0;
+    for (final Annotation<String> sentence : sentences) {
+      final int first = next;
+      while (next < tokens.size()
+          && tokens.get(next).span().getStart() >= sentence.span().getStart()
+          && tokens.get(next).span().getEnd() <= sentence.span().getEnd()) {
+        next++;
+      }
+      final int count = next - first;
+      if (count == 0) {
+        continue;
+      }
+      final String[] words = new String[count];
+      for (int i = 0; i < count; i++) {
+        words[i] = tokens.get(first + i).value();
+      }
+      // The finder indexes within the sentence; shifting by the sentence's first token
+      // position turns every mention boundary into a document-wide token index, whose
+      // token spans already refer to the original text.
+      for (final Span mention : finder.find(words)) {
+        final int start = tokens.get(first + mention.getStart()).span().getStart();
+        final int end = tokens.get(first + mention.getEnd() - 1).span().getEnd();
+        final String type = mention.getType() == null ? UNTYPED : mention.getType();
+        entities.add(new Annotation<>(new Span(start, end, type), type));
+      }
+    }
+    if (next != tokens.size()) {
+      throw new IllegalArgumentException("token at " + tokens.get(next).span()
+          + " lies outside every sentence");
     }
     finder.clearAdaptiveData();
     return document.with(Layers.ENTITIES, entities);
@@ -78,7 +141,7 @@ public class NameFinderAnnotator implements DocumentAnnotator {
 
   @Override
   public Set<LayerKey<?>> requires() {
-    return Set.of(Layers.TOKENS);
+    return Set.of(Layers.SENTENCES, Layers.TOKENS);
   }
 
   @Override

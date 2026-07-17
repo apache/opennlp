@@ -17,7 +17,9 @@
 
 package opennlp.tools.document;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests that {@link NameFinderAnnotator} maps token-index mentions to character spans on
@@ -52,6 +55,8 @@ public class NameFinderAnnotatorTest {
     };
 
     final Document document = Document.of("in New York today")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 17), "in New York today")))
         .with(Layers.TOKENS, List.of(
             new Annotation<>(new Span(0, 2), "in"),
             new Annotation<>(new Span(3, 6), "New"),
@@ -83,5 +88,130 @@ public class NameFinderAnnotatorTest {
     };
     assertThrows(IllegalArgumentException.class,
         () -> new NameFinderAnnotator(finder).annotate(Document.of("no tokens")));
+  }
+
+  /**
+   * Verifies that the finder is invoked once per sentence with exactly that sentence's
+   * tokens, that sentence-local mention indices are mapped through the sentence's first
+   * token position into document character spans, and that the adaptive data is cleared
+   * exactly once after the whole document.
+   */
+  @Test
+  void testFindsPerSentenceAndMapsSentenceLocalIndices() {
+    final List<List<String>> calls = new ArrayList<>();
+    final AtomicInteger cleared = new AtomicInteger();
+    final TokenNameFinder finder = new TokenNameFinder() {
+
+      @Override
+      public Span[] find(String[] tokens) {
+        calls.add(List.of(tokens));
+        // the first token of every sentence is a person mention, in sentence-local indices
+        return new Span[] {new Span(0, 1, "person")};
+      }
+
+      @Override
+      public void clearAdaptiveData() {
+        cleared.incrementAndGet();
+      }
+    };
+
+    final Document document = Document.of("Ana runs. Bob sits.")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 9), "Ana runs."),
+            new Annotation<>(new Span(10, 19), "Bob sits.")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 3), "Ana"),
+            new Annotation<>(new Span(4, 9), "runs."),
+            new Annotation<>(new Span(10, 13), "Bob"),
+            new Annotation<>(new Span(14, 19), "sits.")));
+
+    final Document annotated = new NameFinderAnnotator(finder).annotate(document);
+
+    assertEquals(List.of(
+        List.of("Ana", "runs."),
+        List.of("Bob", "sits.")), calls);
+
+    final List<Annotation<String>> entities = annotated.get(Layers.ENTITIES);
+    assertEquals(2, entities.size());
+    assertEquals(new Span(0, 3, "person"), entities.get(0).span());
+    assertEquals(new Span(10, 13, "person"), entities.get(1).span());
+    assertEquals("Bob",
+        entities.get(1).span().getCoveredText(annotated.text()).toString());
+    assertEquals(1, cleared.get());
+  }
+
+  /**
+   * Verifies that the annotator declares both the sentence layer and the token layer as
+   * required, so a pipeline without a sentence step fails at build time.
+   */
+  @Test
+  void testRequiresSentencesAndTokens() {
+    final TokenNameFinder finder = new TokenNameFinder() {
+
+      @Override
+      public Span[] find(String[] tokens) {
+        return new Span[0];
+      }
+
+      @Override
+      public void clearAdaptiveData() {
+      }
+    };
+    assertEquals(Set.of(Layers.SENTENCES, Layers.TOKENS),
+        new NameFinderAnnotator(finder).requires());
+  }
+
+  /**
+   * Verifies that present-but-empty sentence and token layers yield a present-but-empty
+   * entity layer without invoking the finder, rather than an exception.
+   */
+  @Test
+  void testEmptyPresentLayersYieldEmptyEntityLayer() {
+    final AtomicInteger found = new AtomicInteger();
+    final TokenNameFinder finder = new TokenNameFinder() {
+
+      @Override
+      public Span[] find(String[] tokens) {
+        found.incrementAndGet();
+        return new Span[0];
+      }
+
+      @Override
+      public void clearAdaptiveData() {
+      }
+    };
+    final Document document = Document.of("")
+        .with(Layers.SENTENCES, List.of())
+        .with(Layers.TOKENS, List.of());
+
+    final Document annotated = new NameFinderAnnotator(finder).annotate(document);
+
+    assertTrue(annotated.layers().contains(Layers.ENTITIES));
+    assertTrue(annotated.get(Layers.ENTITIES).isEmpty());
+    assertEquals(0, found.get());
+  }
+
+  /**
+   * Verifies that a document without a sentence layer is rejected with a message naming
+   * the missing layer.
+   */
+  @Test
+  void testAbsentSentenceLayerThrowsWithExactMessage() {
+    final TokenNameFinder finder = new TokenNameFinder() {
+
+      @Override
+      public Span[] find(String[] tokens) {
+        return new Span[0];
+      }
+
+      @Override
+      public void clearAdaptiveData() {
+      }
+    };
+    final Document document = Document.of("Ana")
+        .with(Layers.TOKENS, List.of(new Annotation<>(new Span(0, 3), "Ana")));
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new NameFinderAnnotator(finder).annotate(document));
+    assertEquals("document lacks the required layer sentences<String>", e.getMessage());
   }
 }
