@@ -291,7 +291,7 @@ public class DependencyAnnotatorPipelineTest {
     // the dependency annotator itself then refuses to parse an empty token layer
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> pipeline().analyze(""));
-    assertEquals("document needs aligned tokens<String> and pos<String> layers",
+    assertEquals("document needs aligned opennlp:tokens<String> and opennlp:pos<String> layers",
         e.getMessage());
   }
 }
