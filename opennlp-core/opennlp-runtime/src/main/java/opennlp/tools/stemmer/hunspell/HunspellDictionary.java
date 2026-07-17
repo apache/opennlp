@@ -41,8 +41,9 @@ import opennlp.tools.util.StringUtil;
  * <p>Supported affix features: {@code PFX} and {@code SFX} rules with strip strings,
  * character-class conditions, and cross-product combination of one prefix with one
  * suffix; twofold suffixes through the continuation classes on suffix rules;
- * {@code FLAG} modes {@code char} (default), {@code long}, and {@code num}; the
- * {@code SET} encoding declaration. Compounding and conversion tables are not
+ * {@code FLAG} modes {@code char} (default), {@code UTF-8}, {@code long}, and
+ * {@code num}; the {@code SET} encoding declaration. Compounding and conversion tables
+ * are not
  * interpreted in this version; rules using them simply do not fire, so unsupported
  * analyses are missed rather than invented.</p>
  *
@@ -203,9 +204,9 @@ public final class HunspellDictionary {
   private static Charset declaredCharset(byte[] affixBytes) throws IOException {
     final String ascii = new String(affixBytes, StandardCharsets.US_ASCII);
     for (final String line : splitLines(ascii)) {
-      final String trimmed = line.trim();
+      final String trimmed = trim(line);
       if (trimmed.startsWith("SET ") || trimmed.startsWith("SET\t")) {
-        final String name = trimmed.substring(4).trim();
+        final String name = trim(trimmed.substring(4));
         try {
           return Charset.forName(name);
         } catch (RuntimeException e) {
@@ -218,7 +219,11 @@ public final class HunspellDictionary {
 
   /** The flag encodings a dictionary may declare with the {@code FLAG} directive. */
   private enum FlagMode {
-    /** The default: each single character is one flag. */
+    /**
+     * The default: each single character is one flag. Also what {@code FLAG UTF-8}
+     * declares, which asks for single-character flags in a file the {@code SET}
+     * declaration already had decoded.
+     */
     CHAR,
     /** Declared as {@code FLAG long}: each pair of characters is one flag. */
     LONG,
@@ -261,6 +266,7 @@ public final class HunspellDictionary {
           result.flagMode = switch (fields[1]) {
             case "long" -> FlagMode.LONG;
             case "num" -> FlagMode.NUM;
+            case "UTF-8" -> FlagMode.CHAR;
             default -> throw new IOException(
                 "unsupported FLAG mode '" + fields[1] + "' at line " + (i + 1));
           };
@@ -337,9 +343,11 @@ public final class HunspellDictionary {
 
   /**
    * Parses the word list: an optional leading entry count, then one entry per line
-   * consisting of the word, an optional {@code /flags} run, and optional
-   * whitespace-separated morphological fields, which are ignored. A slash escaped as
-   * {@code \/} belongs to the word itself and is unescaped in the stored key.
+   * consisting of the word, an optional {@code /flags} run, and optional trailing
+   * morphological fields, which are ignored. The morphological fields are cut off
+   * first, because the flag separator is only meaningful in what precedes them; a word
+   * may itself contain spaces. A slash escaped as {@code \/} belongs to the word itself
+   * and is unescaped in the stored key.
    *
    * @param content The decoded word-list content.
    * @param flagMode The flag encoding declared by the affix file.
@@ -351,30 +359,22 @@ public final class HunspellDictionary {
     final String[] lines = splitLines(content);
     final Map<String, List<int[]>> entries = new HashMap<>();
     int start = 0;
-    if (lines.length > 0 && isCount(lines[0].trim())) {
+    if (lines.length > 0 && isCount(trim(lines[0]))) {
       start = 1;
     }
     for (int i = start; i < lines.length; i++) {
-      final String line = lines[i].trim();
+      final String line = trim(lines[i]);
       if (line.isEmpty()) {
         continue;
       }
-      String word = line;
+      final int morphology = morphologyIndex(line);
+      final String entry = morphology < 0 ? line : trim(line.substring(0, morphology));
+      String word = entry;
       int[] flags = new int[0];
-      final int slash = unescapedSlash(line);
+      final int slash = unescapedSlash(entry);
       if (slash >= 0) {
-        word = line.substring(0, slash);
-        String flagText = line.substring(slash + 1);
-        final int fieldEnd = whitespaceIndex(flagText);
-        if (fieldEnd >= 0) {
-          flagText = flagText.substring(0, fieldEnd);
-        }
-        flags = parseFlags(flagText, flagMode, i + 1);
-      } else {
-        final int fieldEnd = whitespaceIndex(word);
-        if (fieldEnd >= 0) {
-          word = word.substring(0, fieldEnd);
-        }
+        word = entry.substring(0, slash);
+        flags = parseFlags(entry.substring(slash + 1), flagMode, i + 1);
       }
       entries.computeIfAbsent(word.replace("\\/", "/"), key -> new ArrayList<>(1))
           .add(flags);
@@ -418,19 +418,54 @@ public final class HunspellDictionary {
   }
 
   /**
-   * Finds the first whitespace character, which terminates the word or flag field of
-   * a word-list entry before its optional morphological fields.
+   * Finds where the trailing morphological fields of a word-list entry begin, which
+   * terminates the word and its flag run. A morphological field is either introduced by
+   * a tabulator, the older separator, or written as a two-letter tag followed by
+   * {@code :} and preceded by whitespace, such as {@code po:verb}. Whitespace that is
+   * not followed by such a tag belongs to the word, because a word-list entry may name
+   * several words.
    *
-   * @param text The text to scan.
-   * @return The index of the first whitespace character, or {@code -1} if none.
+   * @param line The trimmed word-list line to scan.
+   * @return The index at which the morphological fields begin, or {@code -1} if the
+   *         entry carries none.
    */
-  private static int whitespaceIndex(String text) {
-    for (int i = 0; i < text.length(); i++) {
-      if (StringUtil.isWhitespace(text.charAt(i))) {
-        return i;
+  private static int morphologyIndex(String line) {
+    int cut = -1;
+    for (int i = 4; i < line.length(); i++) {
+      if (line.charAt(i) == ':' && StringUtil.isWhitespace(line.charAt(i - 3))) {
+        int fieldStart = i - 3;
+        while (fieldStart > 0 && StringUtil.isWhitespace(line.charAt(fieldStart - 1))) {
+          fieldStart--;
+        }
+        // a tag with no word in front of it is not a morphological field
+        cut = fieldStart == 0 ? -1 : fieldStart;
+        break;
       }
     }
-    return -1;
+    final int tab = line.indexOf('\t');
+    if (tab >= 0 && (cut < 0 || tab < cut)) {
+      cut = tab;
+    }
+    return cut;
+  }
+
+  /**
+   * Removes leading and trailing whitespace, using the whitespace definition the rest
+   * of the parser scans with.
+   *
+   * @param text The text to trim.
+   * @return The text without leading or trailing whitespace. Never {@code null}.
+   */
+  private static String trim(String text) {
+    int start = 0;
+    int end = text.length();
+    while (start < end && StringUtil.isWhitespace(text.charAt(start))) {
+      start++;
+    }
+    while (end > start && StringUtil.isWhitespace(text.charAt(end - 1))) {
+      end--;
+    }
+    return text.substring(start, end);
   }
 
   /**
@@ -438,7 +473,8 @@ public final class HunspellDictionary {
    * {@code char} mode, character pairs packed into one {@code int} in {@code long}
    * mode, and comma-separated decimal numbers in {@code num} mode.
    *
-   * @param text The flag run without its leading {@code /}.
+   * @param text The flag run without its leading {@code /}. An empty run carries no
+   *             flags in every mode.
    * @param mode The declared flag encoding.
    * @param lineNumber The source line, for error messages.
    * @return The parsed flags. Never {@code null}.
@@ -446,13 +482,16 @@ public final class HunspellDictionary {
    */
   private static int[] parseFlags(String text, FlagMode mode, int lineNumber)
       throws IOException {
+    if (text.isEmpty()) {
+      return new int[0];
+    }
     switch (mode) {
       case NUM: {
         final String[] parts = splitOn(text, ',');
         final int[] flags = new int[parts.length];
         for (int i = 0; i < parts.length; i++) {
           try {
-            flags[i] = Integer.parseInt(parts[i].trim());
+            flags[i] = Integer.parseInt(trim(parts[i]));
           } catch (NumberFormatException e) {
             throw new IOException("malformed numeric flag at line " + lineNumber, e);
           }
