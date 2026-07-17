@@ -20,7 +20,6 @@ package opennlp.tools.relation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import opennlp.tools.depparse.DependencyAnnotator;
@@ -31,6 +30,7 @@ import opennlp.tools.document.DocumentAnnotator;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Extracts typed relations between entity pairs by matching {@link RelationPattern}
@@ -189,7 +189,7 @@ public class RelationAnnotator implements DocumentAnnotator {
       steps.add(">" + relations[objectChain.get(o)]);
     }
     final int pivot = subjectChain.get(pivotOnSubject);
-    final String pivotForm = tokens.get(pivot).value().toLowerCase(Locale.ROOT);
+    final String pivotForm = StringUtil.toLowerCase(tokens.get(pivot).value());
 
     for (int p = 0; p < patterns.size(); p++) {
       final RelationPattern pattern = patterns.get(p);

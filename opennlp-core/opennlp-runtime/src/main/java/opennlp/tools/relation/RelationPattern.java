@@ -37,14 +37,18 @@ import opennlp.tools.util.StringUtil;
  * {@code >nmod} matches an object directly attached below the subject.</p>
  *
  * <p>The optional trigger constrains the pivot token, the highest token on the path: the
- * pattern matches only when the pivot's lowercased form equals the trigger. Without a
- * trigger the path shape alone decides.</p>
+ * pattern matches only when the pivot's form, lowercased with
+ * {@link StringUtil#toLowerCase(CharSequence)}, equals the trigger. Without a trigger the
+ * path shape alone decides. The trigger must already be lowercased under that same
+ * mapping and is rejected otherwise, because a trigger the mapping would change can never
+ * equal any pivot form and the pattern would silently match nothing. The trigger is never
+ * rewritten, so {@code founded} is a valid trigger while {@code Founded} is rejected.</p>
  *
  * @param type The relation type to emit. Must not be {@code null} or blank.
  * @param path The path shape as described above. Must not be {@code null} or blank, and
  *             every up step must come before the first down step.
- * @param trigger The required lowercased pivot form, or {@code null} for any pivot. Must
- *                not be blank.
+ * @param trigger The required pivot form, or {@code null} for any pivot. Must not be
+ *                blank, and must be unchanged by {@link StringUtil#toLowerCase(CharSequence)}.
  *
  * @since 3.0.0
  */
@@ -54,8 +58,9 @@ public record RelationPattern(String type, String path, String trigger) {
    * Validates the rule.
    *
    * @throws IllegalArgumentException Thrown if {@code type} or {@code path} is
-   *         {@code null} or blank, {@code path} is malformed, or {@code trigger} is
-   *         blank.
+   *         {@code null} or blank, {@code path} is malformed, or {@code trigger} is blank
+   *         or not already lowercased under
+   *         {@link StringUtil#toLowerCase(CharSequence)}.
    */
   public RelationPattern {
     if (type == null || type.isBlank()) {
@@ -64,8 +69,13 @@ public record RelationPattern(String type, String path, String trigger) {
     if (path == null || path.isBlank()) {
       throw new IllegalArgumentException("path must not be null or blank");
     }
-    if (trigger != null && trigger.isBlank()) {
-      throw new IllegalArgumentException("trigger must not be blank");
+    if (trigger != null) {
+      if (trigger.isBlank()) {
+        throw new IllegalArgumentException("trigger must not be blank");
+      }
+      if (!StringUtil.toLowerCase(trigger).equals(trigger)) {
+        throw new IllegalArgumentException("trigger must be lowercased, but was: " + trigger);
+      }
     }
     boolean down = false;
     for (final String step : splitSteps(path)) {
