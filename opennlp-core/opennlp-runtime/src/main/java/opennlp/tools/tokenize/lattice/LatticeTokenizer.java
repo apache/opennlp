@@ -67,7 +67,11 @@ public class LatticeTokenizer implements Tokenizer {
     this.dictionary = dictionary;
   }
 
-  /** One lattice node: a candidate morpheme with its best path cost so far. */
+  /**
+   * One lattice node: a candidate morpheme with its best path cost so far. Nodes
+   * ending at one position chain through {@link #nextEndingHere}, so the lattice
+   * needs one head reference per position instead of a list allocation.
+   */
   private static final class Node {
     private final int start;
     private final int end;
@@ -75,6 +79,7 @@ public class LatticeTokenizer implements Tokenizer {
     private final boolean unknown;
     private long pathCost = Long.MAX_VALUE;
     private Node previous;
+    private Node nextEndingHere;
 
     private Node(int start, int end, WordEntry entry, boolean unknown) {
       this.start = start;
@@ -136,12 +141,9 @@ public class LatticeTokenizer implements Tokenizer {
   /** Runs the Viterbi search over one whitespace-free stretch of text. */
   private void decode(String text, int from, int to, List<Morpheme> morphemes) {
     final int length = to - from;
-    final List<List<Node>> endingAt = new ArrayList<>(length + 1);
-    for (int i = 0; i <= length; i++) {
-      endingAt.add(new ArrayList<>());
-    }
-    final boolean[] reachable = new boolean[length + 1];
-    reachable[0] = true;
+    // One head reference per position; nodes ending there chain through the node's
+    // own link, so building the lattice allocates nothing besides the nodes.
+    final Node[] endingAt = new Node[length + 1];
 
     // One right-to-left pass fixes each position's category and same-category run end,
     // so candidate generation reads them instead of rescanning the run from every
@@ -150,23 +152,25 @@ public class LatticeTokenizer implements Tokenizer {
     final int[] runEndAt = new int[length];
     computeCategoryRuns(text, from, to, categoryAt, runEndAt);
 
+    final List<Node> candidates = new ArrayList<>();
     for (int i = 0; i < length; i++) {
-      if (!reachable[i]) {
+      if (i > 0 && endingAt[i] == null) {
         continue;
       }
-      final List<Node> candidates =
-          candidates(text, from, to, i, categoryAt[i], runEndAt[i]);
+      candidates.clear();
+      candidates(text, from, to, i, categoryAt[i], runEndAt[i], candidates);
       for (final Node candidate : candidates) {
-        relax(candidate, i == 0 ? null : endingAt.get(i));
+        relax(candidate, i == 0 ? null : endingAt[i]);
         if (candidate.pathCost < Long.MAX_VALUE) {
-          endingAt.get(candidate.end - from).add(candidate);
-          reachable[candidate.end - from] = true;
+          final int end = candidate.end - from;
+          candidate.nextEndingHere = endingAt[end];
+          endingAt[end] = candidate;
         }
       }
     }
 
     Node best = null;
-    for (final Node node : endingAt.get(length)) {
+    for (Node node = endingAt[length]; node != null; node = node.nextEndingHere) {
       final long total = node.pathCost
           + dictionary.connectionCost(node.entry.rightId(), BOUNDARY_CONTEXT);
       if (best == null || total < best.pathCost
@@ -190,13 +194,14 @@ public class LatticeTokenizer implements Tokenizer {
   }
 
   /** Connects a candidate to the cheapest predecessor ending where it starts. */
-  private void relax(Node candidate, List<Node> predecessors) {
+  private void relax(Node candidate, Node predecessors) {
     if (predecessors == null) {
       candidate.pathCost = candidate.entry.cost()
           + dictionary.connectionCost(BOUNDARY_CONTEXT, candidate.entry.leftId());
       return;
     }
-    for (final Node predecessor : predecessors) {
+    for (Node predecessor = predecessors; predecessor != null;
+        predecessor = predecessor.nextEndingHere) {
       final long total = predecessor.pathCost
           + dictionary.connectionCost(predecessor.entry.rightId(), candidate.entry.leftId())
           + candidate.entry.cost();
@@ -238,10 +243,9 @@ public class LatticeTokenizer implements Tokenizer {
   }
 
   /** Gathers lexicon matches and unknown-word candidates starting at one position. */
-  private List<Node> candidates(String text, int from, int to, int offset,
-      Category positionCategory, int positionRunEnd) {
+  private void candidates(String text, int from, int to, int offset,
+      Category positionCategory, int positionRunEnd, List<Node> candidates) {
     final int position = from + offset;
-    final List<Node> candidates = new ArrayList<>();
     final boolean[] matched = new boolean[1];
     dictionary.prefixMatches(text, position, to, (length, entries) -> {
       matched[0] = true;
@@ -285,7 +289,6 @@ public class LatticeTokenizer implements Tokenizer {
       throw new IllegalStateException("dictionary provides no candidate at position "
           + position + "; unk.def lacks a DEFAULT template");
     }
-    return candidates;
   }
 
   /**
