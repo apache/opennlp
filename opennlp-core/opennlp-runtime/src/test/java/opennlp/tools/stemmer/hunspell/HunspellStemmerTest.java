@@ -668,4 +668,61 @@ public class HunspellStemmerTest {
         "1\nwalk/X\n"));
     Assertions.assertEquals(List.of("walk"), identity.stemAll("walk"));
   }
+
+  /**
+   * Verifies the AF flag alias table: the first AF line declares the count, every
+   * further AF line is one flag run, and a purely numeric flag field in the word
+   * list is a 1-based reference into that table, the layout the published Hungarian
+   * dictionary uses for all of its ninety-seven thousand entries. Alias lines may
+   * carry trailing comments, which the field split already discards.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testNumericDictionaryFlagsResolveThroughTheAliasTable() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        String.join("\n",
+            "AF 2",
+            "AF S # 1",
+            "AF SP # 2",
+            "SFX S Y 1",
+            "SFX S 0 s .",
+            "PFX P Y 1",
+            "PFX P 0 re .",
+            ""),
+        "2\nwalk/1\nplay/2\n"));
+    Assertions.assertEquals("walk", stemmer.stem("walks").toString());
+    Assertions.assertEquals("play", stemmer.stem("plays").toString());
+    Assertions.assertEquals("play", stemmer.stem("replay").toString());
+    // walk carries alias 1, the suffix-only run, so the prefix must not apply
+    Assertions.assertEquals("rewalk", stemmer.stem("rewalk").toString());
+  }
+
+  /**
+   * Verifies that an alias reference outside the AF table fails loud with the line
+   * and the table size, instead of silently flagging the entry with nothing.
+   *
+   * @throws IOException Thrown if the affix fixture fails to load.
+   */
+  @Test
+  void testAliasReferenceOutsideTheTableFailsLoud() {
+    final IOException e = Assertions.assertThrows(IOException.class, () -> load(
+        "AF 1\nAF S # 1\nSFX S Y 1\nSFX S 0 s .\n",
+        "1\nwalk/2\n"));
+    Assertions.assertEquals(
+        "flag alias 2 at line 2 is outside the AF table of 1 aliases",
+        e.getMessage());
+  }
+
+  /**
+   * Verifies that numeric flag fields stay ordinary flags when no AF table exists:
+   * under FLAG num a digit run is a flag value, not an alias reference.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testNumericFlagsWithoutAliasTableStayFlags() throws IOException {
+    final HunspellDictionary numbers = load("FLAG num\n", "1\nwalk/39\n");
+    Assertions.assertTrue(HunspellDictionary.hasFlag(numbers.lookup("walk"), 39));
+  }
 }

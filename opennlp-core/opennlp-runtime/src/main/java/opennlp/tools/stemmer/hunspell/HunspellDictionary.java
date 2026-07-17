@@ -132,8 +132,9 @@ public final class HunspellDictionary {
     final byte[] affixBytes = readAll(affixStream);
     final Charset charset = declaredCharset(affixBytes);
     final AffixFile affix = parseAffix(new String(affixBytes, charset));
-    final Map<String, List<int[]>> entries =
-        parseWordList(new String(readAll(dictionaryStream), charset), affix.flagMode);
+    final Map<String, List<int[]>> entries = parseWordList(
+        new String(readAll(dictionaryStream), charset), affix.flagMode,
+        affix.flagAliases);
     return new HunspellDictionary(entries, List.copyOf(affix.prefixes),
         List.copyOf(affix.suffixes));
   }
@@ -236,14 +237,17 @@ public final class HunspellDictionary {
   private static final class AffixFile {
     private final List<Affix> prefixes = new ArrayList<>();
     private final List<Affix> suffixes = new ArrayList<>();
+    private final List<int[]> flagAliases = new ArrayList<>();
+    private boolean aliasHeaderSeen;
     private FlagMode flagMode = FlagMode.CHAR;
   }
 
   /**
-   * Parses the affix file: the {@code FLAG} declaration and the {@code PFX} and
-   * {@code SFX} blocks. Directives outside the supported set (compounding,
-   * conversion tables, suggestion options, ...) are skipped, so their rules never
-   * fire and unsupported analyses are missed rather than invented.
+   * Parses the affix file: the {@code FLAG} declaration, the {@code AF} flag alias
+   * table, and the {@code PFX} and {@code SFX} blocks. Directives outside the
+   * supported set (compounding, conversion tables, suggestion options, ...) are
+   * skipped, so their rules never fire and unsupported analyses are missed rather
+   * than invented.
    *
    * @param content The decoded affix file content.
    * @return The parsed rules and flag mode. Never {@code null}.
@@ -271,6 +275,18 @@ public final class HunspellDictionary {
             default -> throw new IOException(
                 "unsupported FLAG mode '" + fields[1] + "' at line " + (i + 1));
           };
+          i++;
+          break;
+        case "AF":
+          // the first AF line declares the alias count; every further AF line is one
+          // alias, a flag run whose 1-based position numeric dictionary flags refer to
+          if (fields.length >= 2) {
+            if (!result.aliasHeaderSeen) {
+              result.aliasHeaderSeen = true;
+            } else {
+              result.flagAliases.add(parseFlags(fields[1], result.flagMode, i + 1));
+            }
+          }
           i++;
           break;
         case "PFX":
@@ -352,11 +368,15 @@ public final class HunspellDictionary {
    *
    * @param content The decoded word-list content.
    * @param flagMode The flag encoding declared by the affix file.
+   * @param flagAliases The affix file's {@code AF} alias table, possibly empty. When
+   *                    it is not empty, a purely numeric flag field is a 1-based
+   *                    reference into it rather than a flag run of its own.
    * @return The words mapped to the flag sets of their entries. Never {@code null}.
-   * @throws IOException Thrown if a flag run is malformed.
+   * @throws IOException Thrown if a flag run is malformed or an alias reference is
+   *         out of range.
    */
   private static Map<String, List<int[]>> parseWordList(String content,
-      FlagMode flagMode) throws IOException {
+      FlagMode flagMode, List<int[]> flagAliases) throws IOException {
     final String[] lines = splitLines(content);
     final Map<String, List<int[]>> entries = new HashMap<>();
     int start = 0;
@@ -385,7 +405,16 @@ public final class HunspellDictionary {
             break;
           }
         }
-        flags = parseFlags(flagRun, flagMode, i + 1);
+        if (!flagAliases.isEmpty() && isCount(flagRun)) {
+          final int alias = Integer.parseInt(flagRun);
+          if (alias < 1 || alias > flagAliases.size()) {
+            throw new IOException("flag alias " + alias + " at line " + (i + 1)
+                + " is outside the AF table of " + flagAliases.size() + " aliases");
+          }
+          flags = flagAliases.get(alias - 1);
+        } else {
+          flags = parseFlags(flagRun, flagMode, i + 1);
+        }
       }
       entries.computeIfAbsent(word.replace("\\/", "/"), key -> new ArrayList<>(1))
           .add(flags);
