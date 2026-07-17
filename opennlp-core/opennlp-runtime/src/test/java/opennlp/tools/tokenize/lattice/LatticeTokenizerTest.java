@@ -119,6 +119,37 @@ public class LatticeTokenizerTest {
     Assertions.assertEquals(true, morphemes.get(0).unknown());
   }
 
+  /**
+   * Verifies that an unknown-word candidate never spans a character category boundary.
+   * An unlisted kanji directly followed by a Latin letter must be analyzed as two
+   * morphemes of their own categories, never as one KANJI morpheme whose surface glues
+   * the kanji to the letter.
+   */
+  @Test
+  void testUnknownCandidatesNeverSpanCategoryBoundaries() {
+    final String text = "\u5CE0a";
+    Assertions.assertArrayEquals(new String[] {"\u5CE0", "a"}, tokenizer.tokenize(text));
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 1), new Span(1, 2)},
+        tokenizer.tokenizePos(text));
+    final List<Morpheme> morphemes = tokenizer.analyze(text);
+    Assertions.assertEquals(List.of("noun", "unknown"), morphemes.get(0).features());
+    Assertions.assertEquals(List.of("noun", "foreign"), morphemes.get(1).features());
+  }
+
+  /**
+   * Verifies that bounding unknown-word candidates by the category run does not under
+   * generate inside the run: a two-kanji unlisted run followed by a Latin letter still
+   * offers the length-two KANJI candidate, which wins over two single-kanji morphemes.
+   */
+  @Test
+  void testUnknownRunStillOffersWithinCategoryLengths() {
+    final String text = "\u5CE0\u9053a";
+    Assertions.assertArrayEquals(new String[] {"\u5CE0\u9053", "a"},
+        tokenizer.tokenize(text));
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 2), new Span(2, 3)},
+        tokenizer.tokenizePos(text));
+  }
+
   @Test
   void testWhitespaceSeparatesAndIsNeverAMorpheme() {
     final String text = "\u6771\u4EAC \u306B \u884C\u304F";
@@ -216,6 +247,8 @@ public class LatticeTokenizerTest {
    */
   @Test
   void testShortLexiconRowFailsLoud(@TempDir Path broken) throws IOException {
+    // The rest of the dictionary is well formed, so the short row is what load rejects.
+    writeUnitMatrixDictionary(broken);
     Files.write(broken.resolve("lexicon.csv"),
         "\u6771,0,0\n".getBytes(StandardCharsets.UTF_8));
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
@@ -227,6 +260,8 @@ public class LatticeTokenizerTest {
    */
   @Test
   void testNonNumericLexiconCostFailsLoud(@TempDir Path broken) throws IOException {
+    // The rest of the dictionary is well formed, so the cost column is what load rejects.
+    writeUnitMatrixDictionary(broken);
     Files.write(broken.resolve("lexicon.csv"),
         "\u6771,0,0,abc,noun\n".getBytes(StandardCharsets.UTF_8));
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
@@ -293,6 +328,152 @@ public class LatticeTokenizerTest {
     Files.write(broken.resolve("unk.def"),
         "KANJI,0,0,8000,noun\n".getBytes(StandardCharsets.UTF_8));
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
+  }
+
+  /**
+   * Writes a miniature dictionary whose {@code char.def} maps a supplementary plane
+   * range, the shape a UniDic-style distribution uses for the CJK extension blocks.
+   *
+   * @param target The directory to write the dictionary files into. Must not be
+   *               {@code null} and must exist.
+   * @throws IOException Thrown if writing any of the files fails.
+   */
+  private static void writeSupplementaryDictionary(Path target) throws IOException {
+    Files.write(target.resolve("lexicon.csv"),
+        "\u6771,0,0,6000,noun,common\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(target.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(target.resolve("char.def"), String.join("\n",
+        "DEFAULT 0 1 0",
+        "KANJI 0 0 2",
+        "LATIN 1 1 0",
+        "",
+        "0x4E00..0x9FFF KANJI",
+        "0x20000..0x2A6DF KANJI",
+        "0x0061..0x007A LATIN",
+        "").getBytes(StandardCharsets.UTF_8));
+    Files.write(target.resolve("unk.def"), String.join("\n",
+        "DEFAULT,0,0,10000,symbol,unknown",
+        "KANJI,0,0,8000,noun,unknown",
+        "LATIN,0,0,4000,noun,foreign",
+        "").getBytes(StandardCharsets.UTF_8));
+  }
+
+  /**
+   * Verifies that a {@code char.def} range above U+FFFF is honored rather than
+   * discarded: a supplementary plane ideograph inside the mapped range takes the
+   * category the range names, while a supplementary code point outside every mapped
+   * range still falls back to DEFAULT.
+   */
+  @Test
+  void testSupplementaryCharDefRangeIsHonored(@TempDir Path supplementary)
+      throws IOException {
+    writeSupplementaryDictionary(supplementary);
+    final MecabDictionary dictionary = MecabDictionary.load(supplementary);
+    // U+20BB7 is a CJK extension B ideograph inside the mapped range.
+    Assertions.assertEquals("KANJI", dictionary.categoryOf(0x20BB7).name());
+    Assertions.assertEquals("KANJI", dictionary.categoryOf(0x6771).name());
+    Assertions.assertEquals("DEFAULT", dictionary.categoryOf(0x2460).name());
+    Assertions.assertEquals("DEFAULT", dictionary.categoryOf(0x2A6E0).name());
+    Assertions.assertEquals("LATIN", dictionary.categoryOf('a').name());
+  }
+
+  /**
+   * Verifies that a supplementary plane ideograph is analyzed as the single character
+   * it is: one morpheme whose span covers both code units and which carries the
+   * features of the category its {@code char.def} range names, never one morpheme per
+   * surrogate. The second case shows the category's length templates count characters,
+   * not code units, so a run of two supplementary ideographs is still reachable by the
+   * length-two template.
+   */
+  @Test
+  void testSupplementaryIdeographIsOneMorpheme(@TempDir Path supplementary)
+      throws IOException {
+    writeSupplementaryDictionary(supplementary);
+    final LatticeTokenizer supplementaryTokenizer =
+        new LatticeTokenizer(MecabDictionary.load(supplementary));
+    // U+20BB7 written as its surrogate pair, per this file's ASCII-only convention.
+    final String text = "\uD842\uDFB7";
+    final List<Morpheme> morphemes = supplementaryTokenizer.analyze(text);
+    Assertions.assertEquals(1, morphemes.size());
+    Assertions.assertEquals(text, morphemes.get(0).surface());
+    Assertions.assertEquals(new Span(0, 2), morphemes.get(0).span());
+    Assertions.assertEquals(List.of("noun", "unknown"), morphemes.get(0).features());
+
+    final List<Morpheme> pair = supplementaryTokenizer.analyze(text + text);
+    Assertions.assertEquals(1, pair.size());
+    Assertions.assertEquals(new Span(0, 4), pair.get(0).span());
+    Assertions.assertEquals(List.of("noun", "unknown"), pair.get(0).features());
+  }
+
+  /**
+   * Verifies that a supplementary plane ideograph does not absorb neighbouring text of
+   * another category: the ideograph and an unmapped symbol beside it stay two
+   * morphemes, each span covering whole characters.
+   */
+  @Test
+  void testSupplementaryIdeographDoesNotAbsorbItsNeighbour(@TempDir Path supplementary)
+      throws IOException {
+    writeSupplementaryDictionary(supplementary);
+    final LatticeTokenizer supplementaryTokenizer =
+        new LatticeTokenizer(MecabDictionary.load(supplementary));
+    final String text = "\uD842\uDFB7\u2460";
+    Assertions.assertArrayEquals(new String[] {"\uD842\uDFB7", "\u2460"},
+        supplementaryTokenizer.tokenize(text));
+    Assertions.assertArrayEquals(new Span[] {new Span(0, 2), new Span(2, 3)},
+        supplementaryTokenizer.tokenizePos(text));
+  }
+
+  /**
+   * Writes every dictionary file except the lexicon, so a test can supply a lexicon of
+   * its own against a one by one connection matrix.
+   *
+   * @param target The directory to write the dictionary files into. Must not be
+   *               {@code null} and must exist.
+   * @throws IOException Thrown if writing any of the files fails.
+   */
+  private static void writeUnitMatrixDictionary(Path target) throws IOException {
+    Files.write(target.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(target.resolve("char.def"),
+        "DEFAULT 0 1 0\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(target.resolve("unk.def"),
+        "DEFAULT,0,0,10000,symbol,unknown\n".getBytes(StandardCharsets.UTF_8));
+  }
+
+  /**
+   * Verifies that a lexicon row whose right context id is outside the
+   * {@code matrix.def} dimensions is rejected at load time, naming the file, the line,
+   * and the offending id, rather than reaching the cost matrix with an out of range
+   * index during segmentation.
+   */
+  @Test
+  void testRightContextIdBeyondMatrixFailsLoudAtLoad(@TempDir Path mismatched)
+      throws IOException {
+    writeUnitMatrixDictionary(mismatched);
+    Files.write(mismatched.resolve("lexicon.csv"),
+        "\u6771,0,5,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(mismatched));
+    Assertions.assertEquals("malformed entry at " + mismatched.resolve("lexicon.csv")
+        + " line 1: right context id 5 is outside the matrix.def dimensions 1 1",
+        e.getMessage());
+  }
+
+  /**
+   * Verifies that a lexicon row whose left context id is outside the {@code matrix.def}
+   * dimensions is rejected at load time, naming the file, the line, and the offending
+   * id.
+   */
+  @Test
+  void testLeftContextIdBeyondMatrixFailsLoudAtLoad(@TempDir Path mismatched)
+      throws IOException {
+    writeUnitMatrixDictionary(mismatched);
+    Files.write(mismatched.resolve("lexicon.csv"),
+        "\u6771,0,0,3000,noun\n\u90FD,7,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(mismatched));
+    Assertions.assertEquals("malformed entry at " + mismatched.resolve("lexicon.csv")
+        + " line 2: left context id 7 is outside the matrix.def dimensions 1 1",
+        e.getMessage());
   }
 
   @Test
