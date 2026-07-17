@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * An immutable dependency tree over one sentence: for every token, the index of its head
  * and the label of the relation to that head.
@@ -77,7 +79,7 @@ public final class DependencyGraph {
       } else if (heads[i] == i) {
         throw new IllegalArgumentException("token " + i + " must not head itself");
       }
-      if (relations[i] == null || relations[i].isBlank()) {
+      if (relations[i] == null || blank(relations[i])) {
         throw new IllegalArgumentException("relation of token " + i + " must not be blank");
       }
     }
@@ -85,6 +87,22 @@ public final class DependencyGraph {
       throw new IllegalArgumentException("expected exactly one root, found " + roots);
     }
     return new DependencyGraph(heads.clone(), relations.clone());
+  }
+
+  /**
+   * Reports whether a relation label is blank under the project whitespace
+   * definition, which unlike the JDK's includes no-break spaces, so a label spelled
+   * entirely from them cannot pass as a relation.
+   */
+  private static boolean blank(String value) {
+    for (int i = 0; i < value.length(); ) {
+      final int cp = value.codePointAt(i);
+      if (!StringUtil.isWhitespace(cp)) {
+        return false;
+      }
+      i += Character.charCount(cp);
+    }
+    return true;
   }
 
   /**

@@ -26,7 +26,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.util.StringUtil;
@@ -55,6 +57,12 @@ import opennlp.tools.util.StringUtil;
 public class FeedforwardDependencyModel {
 
   private static final String MAGIC = "ONLP-FFDP-1";
+
+  /** U+03A3, GREEK CAPITAL LETTER SIGMA, the one code point with a contextual lowering. */
+  private static final int GREEK_CAPITAL_SIGMA = 0x03A3;
+
+  /** U+03C2, GREEK SMALL LETTER FINAL SIGMA, the word-final lowering of the capital. */
+  private static final char GREEK_SMALL_FINAL_SIGMA = '\u03C2';
 
   static final String UNKNOWN = "*UNK*";
   static final String ABSENT = "*NULL*";
@@ -152,9 +160,15 @@ public class FeedforwardDependencyModel {
   /**
    * Lowercases a word symbol; special symbols and absences pass through.
    *
-   * <p>Case is mapped with {@link StringUtil#toLowerCase(CharSequence)}, which maps each
-   * code point through UnicodeData, so no word grows a character on the way into the
-   * vocabulary and every OpenNLP component derives the same key for the same word.</p>
+   * <p>Case is mapped per code point through UnicodeData, the same mapping as
+   * {@link StringUtil#toLowerCase(CharSequence)}, with one contextual rule on top: a
+   * Greek capital sigma preceded by a letter and not followed by one lowercases to
+   * the final form U+03C2, the Final_Sigma condition of the Unicode SpecialCasing
+   * file restricted to a single token. Natural lowercase Greek text, and with it
+   * every vocabulary key derived from a treebank, spells a word-final sigma that
+   * way, so without the rule an uppercase Greek word would normalize to a spelling
+   * the vocabulary never contains. A word that is already lowercase, the common
+   * case at parse time, is returned unchanged without allocating.</p>
    *
    * @param word The word to normalize. May be {@code null}.
    * @return The vocabulary key of {@code word}, or {@code null} if {@code word} is
@@ -164,7 +178,36 @@ public class FeedforwardDependencyModel {
     if (word == null) {
       return null;
     }
-    return word.startsWith("*") ? word : StringUtil.toLowerCase(word);
+    if (word.startsWith("*")) {
+      return word;
+    }
+    int i = 0;
+    while (i < word.length()) {
+      final int cp = word.codePointAt(i);
+      if (Character.toLowerCase(cp) != cp) {
+        break;
+      }
+      i += Character.charCount(cp);
+    }
+    if (i == word.length()) {
+      return word;
+    }
+    final StringBuilder lowered = new StringBuilder(word.length());
+    lowered.append(word, 0, i);
+    while (i < word.length()) {
+      final int cp = word.codePointAt(i);
+      final int width = Character.charCount(cp);
+      if (cp == GREEK_CAPITAL_SIGMA && i > 0
+          && Character.isLetter(word.codePointBefore(i))
+          && (i + width >= word.length()
+              || !Character.isLetter(word.codePointAt(i + width)))) {
+        lowered.append(GREEK_SMALL_FINAL_SIGMA);
+      } else {
+        lowered.appendCodePoint(Character.toLowerCase(cp));
+      }
+      i += width;
+    }
+    return lowered.toString();
   }
 
   private static int lookup(Map<String, Integer> ids, String symbol) {
@@ -251,7 +294,12 @@ public class FeedforwardDependencyModel {
   private static void writeVocabulary(DataOutputStream data, Map<String, Integer> ids)
       throws IOException {
     data.writeInt(ids.size());
-    for (final Map.Entry<String, Integer> entry : ids.entrySet()) {
+    // Entries are written in ascending id order: the iteration order of the immutable
+    // maps is salted per JVM launch, and serializing the same model must produce the
+    // same bytes on every run.
+    final List<Map.Entry<String, Integer>> entries = new ArrayList<>(ids.entrySet());
+    entries.sort(Map.Entry.comparingByValue());
+    for (final Map.Entry<String, Integer> entry : entries) {
       data.writeUTF(entry.getKey());
       data.writeInt(entry.getValue());
     }
@@ -307,8 +355,9 @@ public class FeedforwardDependencyModel {
   }
 
   /**
-   * Creates an independent copy of this model: the weights are deep-copied, and the
-   * vocabularies and the transition inventory are shared because they are immutable.
+   * Creates an independent copy of this model: the weights and the transition
+   * inventory array are deep-copied, and the vocabularies are shared because their
+   * maps are immutable.
    *
    * <p>This lets a training pass update the copy without ever writing to a model a
    * caller already holds, which is what keeps the immutability this class documents
