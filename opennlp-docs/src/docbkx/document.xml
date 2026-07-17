@@ -58,7 +58,11 @@
 				<para>
 					<emphasis role="bold">Immutable.</emphasis> Adding a layer returns a new
 					document that shares the unchanged layers with its ancestor. Documents are
-					safe to share between threads.
+					safe to share between threads. Three invariants make index references
+					sound: a layer preserves its insertion order and is never sorted or
+					reordered, a layer is immutable once added and detached from the caller's
+					input list, and providing a layer that already exists is rejected, so an
+					index reference stays valid for the lifetime of the document.
 				</para>
 			</listitem>
 		</itemizedlist>
