@@ -195,9 +195,11 @@ public class RelationPatternTest {
    */
   @Test
   void testTriggerCheckFollowsTheProjectCaseMapping() {
+    // the Deseret pair is supplementary-plane: capital long I, U+10400, lowercases to
+    // U+10428, so acceptance must follow the mapping across surrogate pairs as well
     for (final String candidate : new String[] {"founded", "Founded",
         DOTTED_CAPITAL_ISTANBUL, "istanbul", JDK_LOWERCASED_ISTANBUL, "STRASSE",
-        SHARP_S_STRASSE}) {
+        SHARP_S_STRASSE, "\uD801\uDC00", "\uD801\uDC28"}) {
       final String message = "trigger acceptance for " + candidate
           + " must follow StringUtil.toLowerCase";
       if (StringUtil.toLowerCase(candidate).equals(candidate)) {
@@ -211,15 +213,42 @@ public class RelationPatternTest {
   }
 
   /**
-   * Documents the boundary between the blank guard and the whitespace scan: the blank
-   * check only recognizes the whitespace characters the JDK does, while the step scan
-   * also treats space separators such as {@code U+00A0} as whitespace. A path holding
-   * only a no-break space therefore passes construction but splits into zero steps, and
-   * such a pattern can never match because every computed path has at least one step.
+   * Verifies that blankness is judged by the same whitespace definition the step scan
+   * separates on: a path holding only a no-break space would split into zero steps and
+   * could never match, so it is rejected at construction instead of building a dead
+   * rule, and the same holds for a type spelled from nothing but no-break spaces.
    */
   @Test
-  void testNoBreakSpaceOnlyPathConstructsWithZeroSteps() {
-    final RelationPattern pattern = new RelationPattern("t", "\u00A0", null);
-    Assertions.assertEquals(List.of(), pattern.steps());
+  void testNoBreakSpaceOnlyValuesAreRejectedAsBlank() {
+    final IllegalArgumentException path = Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> new RelationPattern("t", "\u00A0", null));
+    Assertions.assertEquals("path must not be null or blank", path.getMessage());
+
+    final IllegalArgumentException type = Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> new RelationPattern("\u00A0", "<nsubj", null));
+    Assertions.assertEquals("type must not be null or blank", type.getMessage());
+  }
+
+  /**
+   * Verifies that a trigger containing whitespace is rejected at construction: the
+   * trigger is compared against a single pivot token, which the tokenizer guarantees
+   * carries no whitespace, so a multi-word or padded trigger is a rule that could
+   * never match. The whitespace scan follows the project predicate, so a no-break
+   * space inside or around the trigger is caught the same way as a plain space.
+   */
+  @Test
+  void testTriggerContainingWhitespaceIsRejected() {
+    final IllegalArgumentException spaced = Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> new RelationPattern("t", "<nsubj", "new york"));
+    Assertions.assertEquals("trigger must not contain whitespace, since it is matched"
+        + " against a single token: new york", spaced.getMessage());
+
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new RelationPattern("t", "<nsubj", "founded\u00A0"));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new RelationPattern("t", "<nsubj", "\u00A0"));
   }
 }
