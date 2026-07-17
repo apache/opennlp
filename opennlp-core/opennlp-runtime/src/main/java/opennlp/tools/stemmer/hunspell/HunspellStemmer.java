@@ -114,55 +114,121 @@ public class HunspellStemmer implements Stemmer {
     if (dictionary.lookup(word) != null) {
       analyses.add(word);
     }
-    for (final Affix suffix : dictionary.suffixes()) {
-      final String stem = removeSuffix(word, suffix);
-      if (stem == null) {
-        continue;
-      }
-      final List<int[]> flagSets = dictionary.lookup(stem);
-      if (flagSets != null && HunspellDictionary.hasFlag(flagSets, suffix.flag())) {
-        analyses.add(stem);
-      }
-      for (final Affix inner : dictionary.suffixes()) {
-        if (!inner.allowsContinuation(suffix.flag())) {
-          continue;
-        }
-        final String doubleStem = removeSuffix(stem, inner);
-        if (doubleStem == null) {
-          continue;
-        }
-        final List<int[]> innerFlags = dictionary.lookup(doubleStem);
-        if (innerFlags != null && HunspellDictionary.hasFlag(innerFlags, inner.flag())) {
-          analyses.add(doubleStem);
-        }
-      }
+    // Only rules whose affix material ends in the word's last character can be
+    // undone from it, so each scan walks that bucket plus the strip-only rules
+    // instead of the whole inventory.
+    for (final Affix suffix : dictionary.suffixesEndingWith(word.charAt(word.length() - 1))) {
+      undoSuffix(word, suffix, analyses);
     }
-    for (final Affix prefix : dictionary.prefixes()) {
-      final String stem = removePrefix(word, prefix);
-      if (stem == null) {
-        continue;
-      }
-      final List<int[]> flagSets = dictionary.lookup(stem);
-      if (flagSets != null && HunspellDictionary.hasFlag(flagSets, prefix.flag())) {
-        analyses.add(stem);
-      }
-      if (!prefix.crossProduct()) {
-        continue;
-      }
-      for (final Affix suffix : dictionary.suffixes()) {
-        if (!suffix.crossProduct()) {
-          continue;
-        }
-        final String doubleStem = removeSuffix(stem, suffix);
-        if (doubleStem == null) {
-          continue;
-        }
-        final List<int[]> both = dictionary.lookup(doubleStem);
-        if (both != null && HunspellDictionary.hasFlag(both, prefix.flag())
-            && HunspellDictionary.hasFlag(both, suffix.flag())) {
-          analyses.add(doubleStem);
-        }
-      }
+    for (final Affix suffix : dictionary.suffixesWithoutMaterial()) {
+      undoSuffix(word, suffix, analyses);
+    }
+    for (final Affix prefix : dictionary.prefixesStartingWith(word.charAt(0))) {
+      undoPrefix(word, prefix, analyses);
+    }
+    for (final Affix prefix : dictionary.prefixesWithoutMaterial()) {
+      undoPrefix(word, prefix, analyses);
+    }
+  }
+
+  /**
+   * Undoes one suffix rule and, through continuation classes, one further suffix on
+   * the intermediate stem, adding every dictionary-confirmed analysis.
+   *
+   * @param word The case variant under analysis.
+   * @param suffix The suffix rule to undo.
+   * @param analyses The mutable, insertion-ordered set collecting the stems found.
+   */
+  private void undoSuffix(String word, Affix suffix, Set<String> analyses) {
+    final String stem = removeSuffix(word, suffix);
+    if (stem == null) {
+      return;
+    }
+    final List<int[]> flagSets = dictionary.lookup(stem);
+    if (flagSets != null && HunspellDictionary.hasFlag(flagSets, suffix.flag())) {
+      analyses.add(stem);
+    }
+    for (final Affix inner : dictionary.suffixesEndingWith(stem.charAt(stem.length() - 1))) {
+      undoInnerSuffix(stem, suffix, inner, analyses);
+    }
+    for (final Affix inner : dictionary.suffixesWithoutMaterial()) {
+      undoInnerSuffix(stem, suffix, inner, analyses);
+    }
+  }
+
+  /**
+   * Undoes the second suffix of a twofold removal when the inner rule's continuation
+   * classes allow it after the outer one.
+   *
+   * @param stem The intermediate stem after the outer removal.
+   * @param outer The already-undone outer suffix rule.
+   * @param inner The candidate inner suffix rule.
+   * @param analyses The mutable, insertion-ordered set collecting the stems found.
+   */
+  private void undoInnerSuffix(String stem, Affix outer, Affix inner,
+      Set<String> analyses) {
+    if (!inner.allowsContinuation(outer.flag())) {
+      return;
+    }
+    final String doubleStem = removeSuffix(stem, inner);
+    if (doubleStem == null) {
+      return;
+    }
+    final List<int[]> innerFlags = dictionary.lookup(doubleStem);
+    if (innerFlags != null && HunspellDictionary.hasFlag(innerFlags, inner.flag())) {
+      analyses.add(doubleStem);
+    }
+  }
+
+  /**
+   * Undoes one prefix rule and, for cross-product rules, one further suffix on the
+   * intermediate stem, adding every dictionary-confirmed analysis.
+   *
+   * @param word The case variant under analysis.
+   * @param prefix The prefix rule to undo.
+   * @param analyses The mutable, insertion-ordered set collecting the stems found.
+   */
+  private void undoPrefix(String word, Affix prefix, Set<String> analyses) {
+    final String stem = removePrefix(word, prefix);
+    if (stem == null) {
+      return;
+    }
+    final List<int[]> flagSets = dictionary.lookup(stem);
+    if (flagSets != null && HunspellDictionary.hasFlag(flagSets, prefix.flag())) {
+      analyses.add(stem);
+    }
+    if (!prefix.crossProduct()) {
+      return;
+    }
+    for (final Affix suffix : dictionary.suffixesEndingWith(stem.charAt(stem.length() - 1))) {
+      undoCrossProductSuffix(stem, prefix, suffix, analyses);
+    }
+    for (final Affix suffix : dictionary.suffixesWithoutMaterial()) {
+      undoCrossProductSuffix(stem, prefix, suffix, analyses);
+    }
+  }
+
+  /**
+   * Undoes the suffix half of a cross-product removal when both rules opted in.
+   *
+   * @param stem The intermediate stem after the prefix removal.
+   * @param prefix The already-undone prefix rule.
+   * @param suffix The candidate suffix rule.
+   * @param analyses The mutable, insertion-ordered set collecting the stems found.
+   */
+  private void undoCrossProductSuffix(String stem, Affix prefix, Affix suffix,
+      Set<String> analyses) {
+    if (!suffix.crossProduct()) {
+      return;
+    }
+    final String doubleStem = removeSuffix(stem, suffix);
+    if (doubleStem == null) {
+      return;
+    }
+    final List<int[]> both = dictionary.lookup(doubleStem);
+    if (both != null && HunspellDictionary.hasFlag(both, prefix.flag())
+        && HunspellDictionary.hasFlag(both, suffix.flag())) {
+      analyses.add(doubleStem);
     }
   }
 
