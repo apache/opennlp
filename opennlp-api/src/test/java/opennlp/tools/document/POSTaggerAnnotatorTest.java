@@ -201,4 +201,42 @@ public class POSTaggerAnnotatorTest {
     assertEquals(List.of(List.of("The")), tagger.calls);
     assertEquals(1, annotated.get(Layers.POS_TAGS).size());
   }
+
+  /**
+   * Verifies that a tagger returning a wrong number of tags for a sentence is rejected
+   * loudly instead of silently misaligning the tag layer with the token layer.
+   */
+  @Test
+  void testWrongTagCountFailsLoud() {
+    final POSTagger shortTagger = new POSTagger() {
+
+      @Override
+      public String[] tag(String[] sentence) {
+        return new String[] {"X"};
+      }
+
+      @Override
+      public String[] tag(String[] sentence, Object[] additionalContext) {
+        return tag(sentence);
+      }
+
+      @Override
+      public Sequence[] topKSequences(String[] sentence) {
+        throw new UnsupportedOperationException("the adapter only calls tag");
+      }
+
+      @Override
+      public Sequence[] topKSequences(String[] sentence, Object[] additionalContext) {
+        throw new UnsupportedOperationException("the adapter only calls tag");
+      }
+    };
+    final Document document = Document.of("The dog")
+        .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 7), "The dog")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 3), "The"),
+            new Annotation<>(new Span(4, 7), "dog")));
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new POSTaggerAnnotator(shortTagger).annotate(document));
+    assertEquals("tagger returned 1 tags for 2 tokens", e.getMessage());
+  }
 }

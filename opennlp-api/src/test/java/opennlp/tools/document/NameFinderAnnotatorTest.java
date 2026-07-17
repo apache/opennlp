@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
 
@@ -73,6 +74,11 @@ public class NameFinderAnnotatorTest {
     assertEquals(1, cleared.get());
   }
 
+  /**
+   * Verifies that a document carrying sentences but no token layer is rejected with a
+   * message naming the token layer, so the token check is exercised on its own rather
+   * than being shadowed by the sentence check.
+   */
   @Test
   void testMissingTokenLayerThrows() {
     final TokenNameFinder finder = new TokenNameFinder() {
@@ -86,8 +92,115 @@ public class NameFinderAnnotatorTest {
       public void clearAdaptiveData() {
       }
     };
-    assertThrows(IllegalArgumentException.class,
-        () -> new NameFinderAnnotator(finder).annotate(Document.of("no tokens")));
+    final Document document = Document.of("no tokens")
+        .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 9), "no tokens")));
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new NameFinderAnnotator(finder).annotate(document));
+    assertEquals("document lacks the required layer tokens<String>", e.getMessage());
+  }
+
+  /**
+   * Verifies that a mention the finder returns without a type is recorded with the
+   * {@link NameFinderAnnotator#UNTYPED} label, and that the label is the name-sample
+   * default type, so downstream consumers can rely on the two being interchangeable.
+   */
+  @Test
+  void testUntypedMentionRecordedAsUntyped() {
+    final TokenNameFinder finder = new TokenNameFinder() {
+
+      @Override
+      public Span[] find(String[] tokens) {
+        return new Span[] {new Span(0, 1)};
+      }
+
+      @Override
+      public void clearAdaptiveData() {
+      }
+    };
+    final Document document = Document.of("Ana runs.")
+        .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 9), "Ana runs.")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 3), "Ana"),
+            new Annotation<>(new Span(4, 9), "runs.")));
+
+    final Document annotated = new NameFinderAnnotator(finder).annotate(document);
+    final List<Annotation<String>> entities = annotated.get(Layers.ENTITIES);
+    assertEquals(1, entities.size());
+    assertEquals(NameSample.DEFAULT_TYPE, NameFinderAnnotator.UNTYPED);
+    assertEquals(NameFinderAnnotator.UNTYPED, entities.get(0).value());
+    assertEquals(new Span(0, 3, NameFinderAnnotator.UNTYPED), entities.get(0).span());
+    assertEquals(NameFinderAnnotator.UNTYPED, entities.get(0).span().getType());
+  }
+
+  /**
+   * Verifies that a mention whose token indices reach beyond its sentence's tokens is
+   * rejected loudly instead of silently taking its character span from the following
+   * sentence's tokens, and that the adaptive data is still cleared on that failure.
+   */
+  @Test
+  void testMentionOutsideSentenceTokensFailsLoud() {
+    final AtomicInteger cleared = new AtomicInteger();
+    final TokenNameFinder finder = new TokenNameFinder() {
+
+      @Override
+      public Span[] find(String[] tokens) {
+        // two tokens in the sentence, but the mention claims three
+        return new Span[] {new Span(0, 3, "person")};
+      }
+
+      @Override
+      public void clearAdaptiveData() {
+        cleared.incrementAndGet();
+      }
+    };
+    final Document document = Document.of("Ana runs. Bob sits.")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 9), "Ana runs."),
+            new Annotation<>(new Span(10, 19), "Bob sits.")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 3), "Ana"),
+            new Annotation<>(new Span(4, 9), "runs."),
+            new Annotation<>(new Span(10, 13), "Bob"),
+            new Annotation<>(new Span(14, 19), "sits.")));
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new NameFinderAnnotator(finder).annotate(document));
+    assertEquals("finder returned mention [0..3) person outside the sentence's 2 tokens",
+        e.getMessage());
+    assertEquals(1, cleared.get());
+  }
+
+  /**
+   * Verifies that a token lying outside every sentence is rejected loudly and that the
+   * adaptive data is still cleared on that failure, so a rejected document cannot leak
+   * finder state into the next one.
+   */
+  @Test
+  void testTokenOutsideEverySentenceThrowsAndStillClears() {
+    final AtomicInteger cleared = new AtomicInteger();
+    final TokenNameFinder finder = new TokenNameFinder() {
+
+      @Override
+      public Span[] find(String[] tokens) {
+        return new Span[0];
+      }
+
+      @Override
+      public void clearAdaptiveData() {
+        cleared.incrementAndGet();
+      }
+    };
+    final Document document = Document.of("Ana runs. Bob")
+        .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 9), "Ana runs.")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 3), "Ana"),
+            new Annotation<>(new Span(4, 9), "runs."),
+            new Annotation<>(new Span(10, 13), "Bob")));
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new NameFinderAnnotator(finder).annotate(document));
+    assertEquals("token at [10..13) lies outside every sentence", e.getMessage());
+    assertEquals(1, cleared.get());
   }
 
   /**
