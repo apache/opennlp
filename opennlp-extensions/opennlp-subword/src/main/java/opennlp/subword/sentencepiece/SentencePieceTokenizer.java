@@ -18,6 +18,10 @@ package opennlp.subword.sentencepiece;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputFilter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.IntUnaryOperator;
 
 import opennlp.tools.tokenize.SubwordPiece;
@@ -46,6 +51,12 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  *
  * <p>Instances are immutable after loading and safe for concurrent use by multiple threads.</p>
  *
+ * <p>Beyond {@link #load(Path) loading} the native {@code .model} format, a tokenizer can be
+ * persisted with {@link #serialize(OutputStream)} and read back with
+ * {@link #deserialize(InputStream)}. Reads are guarded by an {@link java.io.ObjectInputFilter}
+ * that allow-lists only the classes reachable from a legitimate tokenizer graph and bounds graph
+ * depth, references, and array length.</p>
+ *
  * @see <a href="https://github.com/google/sentencepiece">SentencePiece</a>
  * @see <a href="https://aclanthology.org/D18-2012/">Kudo &amp; Richardson (EMNLP 2018),
  *     "SentencePiece: A simple and language independent subword tokenizer and detokenizer for
@@ -54,7 +65,7 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
 public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwareNormalizer {
 
   // Serializable through the OffsetAwareNormalizer contract.
-  private static final long serialVersionUID = -7114394869301531147L;
+  private static final long serialVersionUID = -4472058014098085134L;
 
   /** The segmentation algorithm a model was trained with. */
   public enum Algorithm {
@@ -265,6 +276,194 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
       throw new IllegalArgumentException("The input stream must not be null.");
     }
     return new SentencePieceTokenizer(ModelProtoReader.read(in.readAllBytes()));
+  }
+
+  /**
+   * Serializes this tokenizer to the given {@link OutputStream} using Java object serialization.
+   * The resulting stream can be read back with {@link #deserialize(InputStream)}.
+   *
+   * @param out The {@link OutputStream} to write to; must not be null.
+   * @throws IOException Thrown if IO errors occurred during serialization.
+   * @throws IllegalArgumentException Thrown if {@code out} is null.
+   */
+  public void serialize(OutputStream out) throws IOException {
+    if (out == null) {
+      throw new IllegalArgumentException("The output stream must not be null.");
+    }
+    try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+      oos.writeObject(this);
+    }
+  }
+
+  /**
+   * Deserializes a {@link SentencePieceTokenizer} from the given {@link InputStream} using
+   * {@link DeserializationLimits#DEFAULT default} resource limits.
+   *
+   * <p>The stream is filtered via an {@link ObjectInputFilter} that allow-lists only the classes
+   * required to reconstruct a {@link SentencePieceTokenizer}, plus resource limits on graph depth,
+   * references, and array length. Foreign payloads are rejected with
+   * {@link java.io.InvalidClassException} before {@link ObjectInputStream#readObject()}
+   * returns.</p>
+   *
+   * <p>Callers should still treat this method as defense-in-depth: only invoke it on streams from
+   * trusted sources. If the default limits are too tight for an unusually large model, use
+   * {@link #deserialize(InputStream, DeserializationLimits)} to supply higher limits. The class
+   * allow-list is intentionally not configurable; loosening it would defeat the purpose of the
+   * filter.</p>
+   *
+   * @param in The {@link InputStream} to read from; must not be null.
+   * @return The reconstructed tokenizer.
+   * @throws IOException Thrown if IO errors occurred during deserialization, including
+   *         {@link java.io.InvalidClassException} when the stream contains a class outside the
+   *         allow-list or exceeds a resource limit.
+   * @throws ClassNotFoundException Thrown if required classes are not found.
+   * @throws IllegalArgumentException Thrown if {@code in} is null.
+   */
+  public static SentencePieceTokenizer deserialize(InputStream in)
+      throws IOException, ClassNotFoundException {
+    return deserialize(in, DeserializationLimits.DEFAULT);
+  }
+
+  /**
+   * Deserializes a {@link SentencePieceTokenizer} from the given {@link InputStream} using the
+   * supplied {@link DeserializationLimits resource limits}.
+   *
+   * <p>Use this overload when the {@link DeserializationLimits#DEFAULT default limits} reject a
+   * legitimate model, for example one with a very large vocabulary. The class allow-list applied
+   * to the stream is the same as for {@link #deserialize(InputStream)}; only the numeric limits
+   * change.</p>
+   *
+   * @param in The {@link InputStream} to read from; must not be null.
+   * @param limits The {@link DeserializationLimits} to apply; must not be null.
+   * @return The reconstructed tokenizer.
+   * @throws IOException Thrown if IO errors occurred during deserialization, including
+   *         {@link java.io.InvalidClassException} when the stream contains a class outside the
+   *         allow-list or exceeds one of the supplied limits.
+   * @throws ClassNotFoundException Thrown if required classes are not found.
+   * @throws IllegalArgumentException Thrown if {@code in} or {@code limits} is null.
+   */
+  public static SentencePieceTokenizer deserialize(InputStream in, DeserializationLimits limits)
+      throws IOException, ClassNotFoundException {
+    if (in == null) {
+      throw new IllegalArgumentException("The input stream must not be null.");
+    }
+    if (limits == null) {
+      throw new IllegalArgumentException("The limits must not be null.");
+    }
+    try (ObjectInputStream ois = new ObjectInputStream(in)) {
+      ois.setObjectInputFilter(buildFilter(limits));
+      return (SentencePieceTokenizer) ois.readObject();
+    }
+  }
+
+  /**
+   * Resource limits applied by the {@link ObjectInputFilter} used by
+   * {@link SentencePieceTokenizer#deserialize(InputStream, DeserializationLimits)}.
+   *
+   * <p>The limits bound graph traversal regardless of the class allow-list and provide
+   * defense-in-depth against pathological streams. The {@linkplain #DEFAULT default values} are
+   * generous enough for typical production models; raise them only if a legitimate model is
+   * rejected.</p>
+   *
+   * @param maxDepth Maximum object-graph nesting depth. Must be {@code > 0}.
+   * @param maxRefs Maximum number of internal references the stream may create.
+   *                Must be {@code > 0}.
+   * @param maxArrayLength Maximum length of any single array allocation requested by the stream.
+   *                       Must be {@code > 0}.
+   */
+  public record DeserializationLimits(long maxDepth, long maxRefs, long maxArrayLength) {
+
+    /**
+     * Default limits. Sized so that models with vocabularies of several hundred thousand pieces
+     * round-trip while pathological streams stay bounded.
+     */
+    public static final DeserializationLimits DEFAULT =
+        new DeserializationLimits(MAX_DEPTH_DEFAULT, MAX_REFS_DEFAULT, MAX_ARRAY_DEFAULT);
+
+    /**
+     * Validates the limits.
+     *
+     * @throws IllegalArgumentException Thrown if any of {@code maxDepth}, {@code maxRefs}, or
+     *         {@code maxArrayLength} is {@code <= 0}.
+     */
+    public DeserializationLimits {
+      if (maxDepth <= 0) {
+        throw new IllegalArgumentException("maxDepth must be > 0");
+      }
+      if (maxRefs <= 0) {
+        throw new IllegalArgumentException("maxRefs must be > 0");
+      }
+      if (maxArrayLength <= 0) {
+        throw new IllegalArgumentException("maxArrayLength must be > 0");
+      }
+    }
+  }
+
+  private static final long MAX_DEPTH_DEFAULT = 64;
+  private static final long MAX_REFS_DEFAULT = 5_000_000;
+  private static final long MAX_ARRAY_DEFAULT = 10_000_000;
+
+  // Allow-list of fully qualified class names that may appear in the serialized graph of a
+  // SentencePieceTokenizer. Anything else is rejected.
+  private static final Set<String> ALLOWED_CLASSES = Set.of(
+      "opennlp.subword.sentencepiece.SentencePieceTokenizer",
+      "opennlp.subword.sentencepiece.SentencePieceTokenizer$Algorithm",
+      "opennlp.subword.sentencepiece.SentencePieceNormalizer",
+      "opennlp.subword.sentencepiece.UnigramEncoder",
+      "opennlp.subword.sentencepiece.BpeEncoder",
+      "opennlp.subword.sentencepiece.PieceTrie",
+      "opennlp.subword.sentencepiece.DoubleArrayTrie",
+      // JDK types used in field declarations. ObjectInputStream invokes the filter for every
+      // class descriptor in the inheritance chain, not only for the runtime class - so the
+      // abstract superclasses java.lang.Number (super of Integer) and java.lang.Enum (super of
+      // Algorithm) must be allow-listed even though no instance of either appears in the stream.
+      "java.lang.String",
+      "java.lang.Number",
+      "java.lang.Integer",
+      "java.lang.Enum",
+      "java.util.HashMap",
+      // HashMap.readObject() requests permission to allocate a Map.Entry[] before reading
+      // entries; the array type itself never appears as a value in the stream.
+      "java.util.Map$Entry",
+      // The unmodifiable lists created by List.copyOf serialize through the CollSer proxy,
+      // which requests an Object[] allocation for the elements, and the filter is also invoked
+      // for the concrete list class the proxy resolves to.
+      "java.util.CollSer",
+      "java.util.ImmutableCollections$List12",
+      "java.util.ImmutableCollections$ListN",
+      "java.lang.Object"
+  );
+
+  /**
+   * Builds the {@link ObjectInputFilter} enforcing the class allow-list and the given limits.
+   *
+   * @param limits The resource limits to enforce; never null here.
+   * @return The filter to install on the reading {@link ObjectInputStream}.
+   */
+  private static ObjectInputFilter buildFilter(DeserializationLimits limits) {
+    return info -> {
+      if (info.depth() > limits.maxDepth()
+          || info.references() > limits.maxRefs()
+          || info.arrayLength() > limits.maxArrayLength()) {
+        return ObjectInputFilter.Status.REJECTED;
+      }
+
+      final Class<?> serialClass = info.serialClass();
+      if (serialClass == null) {
+        return ObjectInputFilter.Status.UNDECIDED;
+      }
+
+      Class<?> componentType = serialClass;
+      while (componentType.isArray()) {
+        componentType = componentType.getComponentType();
+      }
+      if (componentType.isPrimitive()) {
+        return ObjectInputFilter.Status.ALLOWED;
+      }
+      return ALLOWED_CLASSES.contains(componentType.getName())
+          ? ObjectInputFilter.Status.ALLOWED
+          : ObjectInputFilter.Status.REJECTED;
+    };
   }
 
   /** {@inheritDoc} */
