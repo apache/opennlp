@@ -35,6 +35,15 @@ import java.util.Set;
  * <p>Documents are immutable: {@link #with(LayerKey, List)} returns a new document that
  * shares the unchanged layers. Instances are safe to share between threads.</p>
  *
+ * <p>Three invariants make index-based references sound. A layer preserves its
+ * insertion order, and the container never sorts or reorders it. A layer is immutable
+ * once added: the returned lists reject modification and are detached from the
+ * caller's input list. Providing a layer that already exists is rejected loudly: the
+ * add is once-only, and the exception names the offending key. An annotation that
+ * references another annotation by its index within a layer, for example a dependency
+ * arc naming its head token, therefore stays valid for the lifetime of the
+ * document.</p>
+ *
  * @since 3.0.0
  */
 public interface Document {
