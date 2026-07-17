@@ -679,4 +679,23 @@ public class StringUtilTest {
     String lc = StringUtil.toLowerCase(input);
     Assertions.assertArrayEquals(expectedCodePoints, lc.codePoints().toArray());
   }
+
+  /**
+   * Verifies the blank check against the toolkit's whitespace definition: the
+   * no-break space is blank here although the JDK's own check does not cover it,
+   * whitespace-only and empty values are blank, and any non-whitespace code point,
+   * supplementary ones included, makes a value non-blank.
+   */
+  @Test
+  void testIsBlankFollowsTheToolkitWhitespaceDefinition() {
+    Assertions.assertTrue(StringUtil.isBlank(""));
+    Assertions.assertTrue(StringUtil.isBlank(" \t\n"));
+    // U+00A0 no-break space and U+2007 figure space: JDK String.isBlank says false
+    Assertions.assertTrue(StringUtil.isBlank("\u00A0"));
+    Assertions.assertTrue(StringUtil.isBlank(" \u00A0\u2007 "));
+    Assertions.assertFalse(StringUtil.isBlank("a"));
+    Assertions.assertFalse(StringUtil.isBlank(" a "));
+    // U+10428, a supplementary-plane letter read as one code point, not two chars
+    Assertions.assertFalse(StringUtil.isBlank("\uD801\uDC28"));
+  }
 }
