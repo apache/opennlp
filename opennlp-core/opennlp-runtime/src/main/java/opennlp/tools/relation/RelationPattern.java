@@ -67,10 +67,10 @@ public record RelationPattern(String type, String path, String trigger) {
    *         {@link StringUtil#toLowerCase(CharSequence)}.
    */
   public RelationPattern {
-    if (type == null || blank(type)) {
+    if (type == null || StringUtil.isBlank(type)) {
       throw new IllegalArgumentException("type must not be null or blank");
     }
-    if (path == null || blank(path)) {
+    if (path == null || StringUtil.isBlank(path)) {
       throw new IllegalArgumentException("path must not be null or blank");
     }
     if (trigger != null) {
@@ -114,20 +114,6 @@ public record RelationPattern(String type, String path, String trigger) {
     return splitSteps(path);
   }
 
-  /**
-   * Reports whether a value is blank under the project whitespace definition, which
-   * unlike the JDK's includes no-break spaces.
-   */
-  private static boolean blank(String value) {
-    for (int i = 0; i < value.length(); ) {
-      final int cp = value.codePointAt(i);
-      if (!StringUtil.isWhitespace(cp)) {
-        return false;
-      }
-      i += Character.charCount(cp);
-    }
-    return true;
-  }
 
   /**
    * Splits a path into whitespace-free steps with a single left-to-right character
