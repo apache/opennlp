@@ -31,6 +31,7 @@ import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Walks through the document pipeline the way a first-time user would: wrap existing
@@ -188,6 +189,21 @@ public class DocumentPipelineExampleTest {
     public Set<LayerKey<?>> provides() {
       return Set.of(TOKEN_LENGTHS);
     }
+  }
+
+  /**
+   * Mirrors the manual's document-scoped layer example: a language id rides a
+   * document-scoped key as a span-less value with exactly the id, value, and null span
+   * the chapter shows.
+   */
+  @Test
+  void testDocumentScopedLayerExample() {
+    final LayerKey<String> language = LayerKey.document("app:language", String.class);
+    final Document document = Document.of("The dog barks. It naps.");
+
+    final Document tagged = document.with(language, List.of(Annotation.of("eng")));
+    assertEquals("eng", tagged.get(language).get(0).value());
+    assertNull(tagged.get(language).get(0).span());
   }
 
   /**

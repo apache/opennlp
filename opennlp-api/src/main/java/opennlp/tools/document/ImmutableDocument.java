@@ -96,9 +96,18 @@ final class ImmutableDocument implements Document {
             + annotation.value().getClass().getName() + " does not match layer " + layer);
       }
       final Span span = annotation.span();
-      if (span.getEnd() > text.length()) {
-        throw new IllegalArgumentException("span " + span + " exceeds the text length "
-            + text.length() + " in layer " + layer);
+      if (layer.scope() == LayerKey.Scope.POSITIONAL) {
+        if (span == null) {
+          throw new IllegalArgumentException(
+              "positional layer " + layer + " requires a span on every annotation");
+        }
+        if (span.getEnd() > text.length()) {
+          throw new IllegalArgumentException("span " + span + " exceeds the text length "
+              + text.length() + " in layer " + layer);
+        }
+      } else if (span != null) {
+        throw new IllegalArgumentException(
+            "document-scoped layer " + layer + " must not carry spans");
       }
     }
     final Map<LayerKey<?>, List<Annotation<?>>> grown = new LinkedHashMap<>(layers);

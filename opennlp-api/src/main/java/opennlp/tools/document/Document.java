@@ -28,7 +28,9 @@ import java.util.Set;
  * {@link LayerKey}. The container itself knows nothing about specific layers; every
  * analysis capability contributes its results as one more layer without any change to
  * this interface, which is what keeps new capabilities additive. All spans refer to
- * {@link #text()} as supplied, never to a derived form.</p>
+ * {@link #text()} as supplied, never to a derived form. A
+ * {@link LayerKey.Scope#DOCUMENT document-scoped} layer carries whole-document values
+ * without spans, for example a language id.</p>
  *
  * <p>Documents are immutable: {@link #with(LayerKey, List)} returns a new document that
  * shares the unchanged layers. Instances are safe to share between threads.</p>
@@ -76,8 +78,10 @@ public interface Document {
    * @param layer The key of the layer to add. Must not be {@code null} and must not
    *              already be present.
    * @param annotations The annotations of the layer. Must not be {@code null}, must not
-   *                    contain {@code null}, every value must be assignable to the
-   *                    layer's type, and every span must lie within the text bounds.
+   *                    contain {@code null}, and every value must be assignable to the
+   *                    layer's type. Under a positional key every annotation must carry
+   *                    a span within the text bounds; under a document-scoped key no
+   *                    annotation may carry a span.
    * @param <T> The type of the layer's annotation values.
    * @return A new {@link Document} sharing this document's text and existing layers.
    *         Never {@code null}.
