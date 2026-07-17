@@ -375,6 +375,150 @@ public class HunspellStemmerTest {
     Assertions.assertEquals("unsupported SET encoding: NO-SUCH-ENCODING", e.getMessage());
   }
 
+  /**
+   * Verifies that a morphological field is cut off the entry before the flag separator
+   * is looked for, so a slash inside a morphological field is not mistaken for the
+   * separator: the entry {@code walk po:verb/noun} registers the word {@code walk}
+   * with no flags in every flag mode, and its morphology is ignored.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testMorphologicalFieldsAreCutBeforeTheFlagSeparator() throws IOException {
+    final HunspellDictionary chars = load("SFX G Y 1\nSFX G 0 ing .\n",
+        "1\nwalk po:verb/noun\n");
+    Assertions.assertNotNull(chars.lookup("walk"));
+    Assertions.assertEquals(0, chars.lookup("walk").get(0).length);
+    Assertions.assertNull(chars.lookup("walk po:verb"));
+
+    final HunspellDictionary numbers = load("FLAG num\nSFX 1 Y 1\nSFX 1 0 ing .\n",
+        "1\nwalk po:verb/noun\n");
+    Assertions.assertNotNull(numbers.lookup("walk"));
+    Assertions.assertEquals(0, numbers.lookup("walk").get(0).length);
+
+    // the tabulator is the older morphological field separator
+    final HunspellDictionary tabbed = load("SFX G Y 1\nSFX G 0 ing .\n",
+        "1\nwalk\tpo:verb/noun\n");
+    Assertions.assertNotNull(tabbed.lookup("walk"));
+    Assertions.assertEquals(0, tabbed.lookup("walk").get(0).length);
+  }
+
+  /**
+   * Verifies that an entry keeps its flags when it carries both a flag run and a
+   * morphological field holding a slash, in every flag mode.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testFlaggedEntriesKeepTheirFlagsBesideMorphology() throws IOException {
+    final HunspellDictionary chars = load("SFX A Y 1\nSFX A 0 ing .\n",
+        "1\nwalk/AB po:verb/noun\n");
+    Assertions.assertArrayEquals(new int[] {'A', 'B'}, chars.lookup("walk").get(0));
+    Assertions.assertEquals("walk",
+        new HunspellStemmer(chars).stem("walking").toString());
+
+    final HunspellDictionary numbers = load("FLAG num\nSFX 1 Y 1\nSFX 1 0 ing .\n",
+        "1\nwalk/1,2 po:verb/noun\n");
+    Assertions.assertArrayEquals(new int[] {1, 2}, numbers.lookup("walk").get(0));
+    Assertions.assertEquals("walk",
+        new HunspellStemmer(numbers).stem("walking").toString());
+  }
+
+  /**
+   * Verifies that a multi-word entry keeps both its spaces and its flags: the word of
+   * a word-list entry runs up to its morphological fields, not up to its first space.
+   *
+   * @throws IOException Thrown if the fixture fails to load.
+   */
+  @Test
+  void testMultiWordEntriesKeepTheirSpacesAndFlags() throws IOException {
+    final HunspellDictionary dictionary = load("FLAG num\nSFX 39 Y 1\nSFX 39 0 s .\n",
+        "1\nall right/39\n");
+    Assertions.assertArrayEquals(new int[] {39}, dictionary.lookup("all right").get(0));
+    Assertions.assertNull(dictionary.lookup("all"));
+  }
+
+  /**
+   * Verifies that the parser trims word-list entries with the same whitespace
+   * definition it uses to find their fields: an entry led by a no-break space is
+   * registered under its real word, both with and without a flag run.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testEntriesLedByNoBreakSpaceAreTrimmed() throws IOException {
+    // \u00A0 is the no-break space, which StringUtil.isWhitespace treats as whitespace
+    final HunspellDictionary dictionary = load("SFX S Y 1\nSFX S 0 s .\n",
+        "2\n\u00A0fish\n\u00A0cat/S\n");
+    Assertions.assertNotNull(dictionary.lookup("fish"));
+    Assertions.assertNotNull(dictionary.lookup("cat"));
+    Assertions.assertNull(dictionary.lookup(""));
+    Assertions.assertEquals("cat", new HunspellStemmer(dictionary).stem("cats").toString());
+  }
+
+  /**
+   * Verifies that {@code FLAG UTF-8}, which declares single-character flags, is
+   * accepted and read exactly like the default single-character mode, including a flag
+   * outside ASCII.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testUtf8FlagModeDeclaresSingleCharacterFlags() throws IOException {
+    final HunspellStemmer plain = new HunspellStemmer(load(String.join("\n",
+        "FLAG UTF-8",
+        "SFX S Y 1",
+        "SFX S 0 s .",
+        ""), "1\nwalk/S\n"));
+    Assertions.assertEquals("walk", plain.stem("walks").toString());
+
+    // \u00E9 is e with an acute accent, a single-character flag outside ASCII
+    final HunspellStemmer accented = new HunspellStemmer(load(String.join("\n",
+        "FLAG UTF-8",
+        "SFX \u00E9 Y 1",
+        "SFX \u00E9 0 s .",
+        ""), "1\nwalk/\u00E9\n"));
+    Assertions.assertEquals("walk", accented.stem("walks").toString());
+  }
+
+  /**
+   * Verifies that a strip-only rule, whose affix material is empty and which therefore
+   * only removes stem material, is undone: the suffix rule turns the entry
+   * {@code bake} into the surface form {@code bak}, and the prefix rule turns
+   * {@code apple} into {@code pple}.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testStripOnlyAffixRulesAreUndone() throws IOException {
+    final HunspellStemmer suffixStripping = new HunspellStemmer(load(String.join("\n",
+        "SFX A Y 1",
+        "SFX A e 0 e",
+        ""), "1\nbake/A\n"));
+    Assertions.assertEquals("bake", suffixStripping.stem("bak").toString());
+
+    final HunspellStemmer prefixStripping = new HunspellStemmer(load(String.join("\n",
+        "PFX B Y 1",
+        "PFX B a 0 a",
+        ""), "1\napple/B\n"));
+    Assertions.assertEquals("apple", prefixStripping.stem("pple").toString());
+  }
+
+  /**
+   * Verifies that an entry written with an empty flag run loads and carries no flags in
+   * every flag mode, rather than failing the load in {@code FLAG num} mode alone.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testEmptyFlagRunYieldsNoFlagsInEveryMode() throws IOException {
+    Assertions.assertEquals(0, load("", "1\nword/\n").lookup("word").get(0).length);
+    Assertions.assertEquals(0,
+        load("FLAG long\n", "1\nword/\n").lookup("word").get(0).length);
+    Assertions.assertEquals(0,
+        load("FLAG num\n", "1\nword/\n").lookup("word").get(0).length);
+  }
+
   @Test
   void testMalformedInputFailsLoud() {
     Assertions.assertThrows(IOException.class, () -> HunspellDictionary.load(

@@ -164,39 +164,44 @@ public class HunspellStemmer implements Stemmer {
   /**
    * Undoes one suffix rule: cuts the affix material off the end of the word, restores
    * the strip string the rule removed on application, and checks the rule's condition
-   * against the restored stem. Rules with empty affix material and candidates that
-   * would leave an empty stem are rejected.
+   * against the restored stem. A strip-only rule, whose affix material is empty, is
+   * undone by restoring its strip string alone. Rules that neither add nor remove
+   * material and candidates that would leave an empty stem are rejected.
    *
    * @param word The surface form.
    * @param suffix The rule to undo.
    * @return The candidate stem, or {@code null} when the rule does not apply.
    */
   private static String removeSuffix(String word, Affix suffix) {
-    if (suffix.affix().isEmpty() || !word.endsWith(suffix.affix())
-        || word.length() - suffix.affix().length() + suffix.strip().length() == 0) {
+    final String affix = suffix.affix();
+    final String strip = suffix.strip();
+    if (affix.isEmpty() && strip.isEmpty() || !word.endsWith(affix)
+        || word.length() - affix.length() + strip.length() == 0) {
       return null;
     }
-    final String stem =
-        word.substring(0, word.length() - suffix.affix().length()) + suffix.strip();
+    final String stem = word.substring(0, word.length() - affix.length()) + strip;
     return suffix.condition().matches(stem) ? stem : null;
   }
 
   /**
    * Undoes one prefix rule: cuts the affix material off the start of the word,
    * restores the strip string the rule removed on application, and checks the rule's
-   * condition against the restored stem. Rules with empty affix material and
-   * candidates that would leave an empty stem are rejected.
+   * condition against the restored stem. A strip-only rule, whose affix material is
+   * empty, is undone by restoring its strip string alone. Rules that neither add nor
+   * remove material and candidates that would leave an empty stem are rejected.
    *
    * @param word The surface form.
    * @param prefix The rule to undo.
    * @return The candidate stem, or {@code null} when the rule does not apply.
    */
   private static String removePrefix(String word, Affix prefix) {
-    if (prefix.affix().isEmpty() || !word.startsWith(prefix.affix())
-        || word.length() - prefix.affix().length() + prefix.strip().length() == 0) {
+    final String affix = prefix.affix();
+    final String strip = prefix.strip();
+    if (affix.isEmpty() && strip.isEmpty() || !word.startsWith(affix)
+        || word.length() - affix.length() + strip.length() == 0) {
       return null;
     }
-    final String stem = prefix.strip() + word.substring(prefix.affix().length());
+    final String stem = strip + word.substring(affix.length());
     return prefix.condition().matches(stem) ? stem : null;
   }
 }
