@@ -88,7 +88,7 @@ public class DependencyAnnotatorEdgeCaseTest {
         .with(Layers.POS_TAGS, List.of());
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new DependencyAnnotator(FIXED).annotate(empty));
-    assertEquals("document needs aligned tokens<String> and pos<String> layers",
+    assertEquals("document needs aligned opennlp:tokens<String> and opennlp:pos<String> layers",
         e.getMessage());
   }
 
@@ -103,7 +103,7 @@ public class DependencyAnnotatorEdgeCaseTest {
             new Annotation<>(new Span(0, 2), "VB")));
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new DependencyAnnotator(FIXED).annotate(misaligned));
-    assertEquals("document needs aligned tokens<String> and pos<String> layers",
+    assertEquals("document needs aligned opennlp:tokens<String> and opennlp:pos<String> layers",
         e.getMessage());
   }
 
@@ -116,7 +116,7 @@ public class DependencyAnnotatorEdgeCaseTest {
     // documents are immutable and layers are add-once: a second pass must not overwrite
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> annotator.annotate(once));
-    assertEquals("layer is already present: dependencies<DependencyArc>", e.getMessage());
+    assertEquals("layer is already present: opennlp:dependencies<DependencyArc>", e.getMessage());
   }
 
   @Test
@@ -181,7 +181,7 @@ public class DependencyAnnotatorEdgeCaseTest {
             new Annotation<>(new Span(3, 5), "NN")));
     final IllegalArgumentException missing = assertThrows(IllegalArgumentException.class,
         () -> new DependencyAnnotator(FIXED).annotate(noSentences));
-    assertEquals("document needs a non-empty sentences<String> layer",
+    assertEquals("document needs a non-empty opennlp:sentences<String> layer",
         missing.getMessage());
 
     final Document strayToken = Document.of("ab cd")

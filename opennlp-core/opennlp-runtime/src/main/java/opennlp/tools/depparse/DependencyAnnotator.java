@@ -55,7 +55,7 @@ public class DependencyAnnotator implements DocumentAnnotator {
    * position, anchored on the dependent token's span.
    */
   public static final LayerKey<DependencyArc> DEPENDENCIES =
-      LayerKey.of("dependencies", DependencyArc.class);
+      Layers.key("dependencies", DependencyArc.class);
 
   private final DependencyParser parser;
 
