@@ -48,6 +48,22 @@ public class DependencyAnnotatorEdgeCaseTest {
           new String[] {"root", "obj"});
 
   /**
+   * A parser stub that returns a flat tree of the requested size, for assertions that
+   * must get past the annotator's graph-size validation with sentences of any length.
+   */
+  private static final DependencyParser SIZE_MATCHING = (tokens, tags) -> {
+    final int[] heads = new int[tokens.length];
+    final String[] relations = new String[tokens.length];
+    heads[0] = DependencyArc.ROOT_HEAD;
+    relations[0] = "root";
+    for (int i = 1; i < heads.length; i++) {
+      heads[i] = 0;
+      relations[i] = "dep";
+    }
+    return DependencyGraph.of(heads, relations);
+  };
+
+  /**
    * Builds a document over the text {@code "ab cd"} carrying aligned two-entry token and
    * tag layers, mirroring what the upstream tokenizer and tagger annotators would produce.
    *
@@ -177,7 +193,7 @@ public class DependencyAnnotatorEdgeCaseTest {
             new Annotation<>(new Span(0, 2), "VB"),
             new Annotation<>(new Span(3, 5), "NN")));
     final IllegalArgumentException stray = assertThrows(IllegalArgumentException.class,
-        () -> new DependencyAnnotator(FIXED).annotate(strayToken));
+        () -> new DependencyAnnotator(SIZE_MATCHING).annotate(strayToken));
     assertEquals("token at [3..5) lies outside every sentence", stray.getMessage());
   }
 
@@ -187,5 +203,117 @@ public class DependencyAnnotatorEdgeCaseTest {
     final DocumentAnalyzer.Builder builder = DocumentAnalyzer.builder()
         .add(new DependencyAnnotator(FIXED));
     assertThrows(IllegalArgumentException.class, builder::build);
+  }
+
+  /**
+   * Verifies the javadoc-promised behavior for a sentence containing no tokens: it
+   * contributes no arcs and no parser call, and the token indices of the sentence
+   * after it still shift by the correct first-token position rather than by a count
+   * that includes the empty sentence.
+   */
+  @Test
+  void testEmptySentenceContributesNoArcsAndKeepsTheIndexShift() {
+    final DependencyParser oneTokenRoot = (tokens, tags) -> {
+      if (tokens.length != 1) {
+        throw new IllegalStateException("expected one-token sentences, got "
+            + tokens.length);
+      }
+      return DependencyGraph.of(new int[] {DependencyArc.ROOT_HEAD},
+          new String[] {"root"});
+    };
+    final Document document = Document.of("ab. ??? cd.")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 3), "ab."),
+            new Annotation<>(new Span(4, 7), "???"),
+            new Annotation<>(new Span(8, 11), "cd.")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 2), "ab"),
+            new Annotation<>(new Span(8, 10), "cd")))
+        .with(Layers.POS_TAGS, List.of(
+            new Annotation<>(new Span(0, 2), "VB"),
+            new Annotation<>(new Span(8, 10), "VB")));
+
+    final List<Annotation<DependencyArc>> arcs =
+        new DependencyAnnotator(oneTokenRoot).annotate(document)
+            .get(DependencyAnnotator.DEPENDENCIES);
+    assertEquals(2, arcs.size());
+    assertEquals(new DependencyArc(DependencyArc.ROOT_HEAD, 1, "root"),
+        arcs.get(1).value());
+    assertEquals(new Span(8, 10), arcs.get(1).span());
+  }
+
+  /**
+   * Verifies the text-order walk on a token straddling two sentence spans: the token
+   * belongs to neither sentence under the enclosure rule, the scan sticks at it, and
+   * the annotator reports it as lying outside every sentence instead of silently
+   * attaching it to one of its neighbors.
+   */
+  @Test
+  void testTokenStraddlingTwoSentencesIsRejected() {
+    final Document document = Document.of("ab cd ef")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 4), "ab c"),
+            new Annotation<>(new Span(4, 8), "d ef")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 2), "ab"),
+            new Annotation<>(new Span(3, 5), "cd"),
+            new Annotation<>(new Span(6, 8), "ef")))
+        .with(Layers.POS_TAGS, List.of(
+            new Annotation<>(new Span(0, 2), "VB"),
+            new Annotation<>(new Span(3, 5), "NN"),
+            new Annotation<>(new Span(6, 8), "NN")));
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new DependencyAnnotator(SIZE_MATCHING).annotate(document));
+    assertEquals("token at [3..5) lies outside every sentence", e.getMessage());
+  }
+
+  /**
+   * Verifies the stuck-scan path: a gap token between sentences stops the walk, and
+   * the token-bearing sentence after the gap does not pull the scan forward past the
+   * stray token, which is still reported rather than skipped.
+   */
+  @Test
+  void testGapTokenBeforeATokenBearingSentenceIsStillRejected() {
+    final Document document = Document.of("ab cd ef.")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 2), "ab"),
+            new Annotation<>(new Span(6, 9), "ef.")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 2), "ab"),
+            new Annotation<>(new Span(3, 5), "cd"),
+            new Annotation<>(new Span(6, 8), "ef")))
+        .with(Layers.POS_TAGS, List.of(
+            new Annotation<>(new Span(0, 2), "VB"),
+            new Annotation<>(new Span(3, 5), "NN"),
+            new Annotation<>(new Span(6, 8), "NN")));
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new DependencyAnnotator(SIZE_MATCHING).annotate(document));
+    assertEquals("token at [3..5) lies outside every sentence", e.getMessage());
+  }
+
+  /**
+   * Verifies that a parser returning a wrong-size graph is rejected loudly instead of
+   * silently misaligning the dependency layer with the token layer: the fixed
+   * two-token stub meets a three-token sentence and the annotator names both counts.
+   */
+  @Test
+  void testWrongSizeGraphFailsLoud() {
+    final Document document = Document.of("ab cd ef")
+        .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 8), "ab cd ef")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 2), "ab"),
+            new Annotation<>(new Span(3, 5), "cd"),
+            new Annotation<>(new Span(6, 8), "ef")))
+        .with(Layers.POS_TAGS, List.of(
+            new Annotation<>(new Span(0, 2), "VB"),
+            new Annotation<>(new Span(3, 5), "NN"),
+            new Annotation<>(new Span(6, 8), "NN")));
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new DependencyAnnotator(FIXED).annotate(document));
+    assertEquals("parser returned a graph over 2 tokens for a sentence of 3",
+        e.getMessage());
   }
 }

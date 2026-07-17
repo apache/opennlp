@@ -82,16 +82,24 @@ public class DependencyAnnotator implements DocumentAnnotator {
    * position, and each arc annotation reuses the span of its dependent token. A
    * sentence containing no tokens contributes no arcs.</p>
    *
+   * <p>The sentence and token layers must both be in text order: the walk assigns each
+   * sentence the contiguous run of tokens its span encloses, so a token that appears
+   * before its sentence in the layer, or a token overlapping a sentence boundary, is
+   * reported as lying outside every sentence rather than being silently attached to a
+   * neighboring sentence.</p>
+   *
    * @param document The document to annotate. Must not be {@code null} and must carry a
-   *                 non-empty {@link Layers#SENTENCES} layer, a non-empty
-   *                 {@link Layers#TOKENS} layer whose every token lies inside a
-   *                 sentence, and a {@link Layers#POS_TAGS} layer of equal size.
+   *                 non-empty {@link Layers#SENTENCES} layer, in text order, a
+   *                 non-empty {@link Layers#TOKENS} layer, in text order, whose every
+   *                 token lies inside a sentence, and a {@link Layers#POS_TAGS} layer
+   *                 of equal size.
    * @return A new {@link Document} with the {@link #DEPENDENCIES} layer added. Never
    *         {@code null}.
    * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, the
    *         token layer is absent or empty, the tag layer does not have exactly one
-   *         tag per token, the sentence layer is absent or empty, or a token lies
-   *         outside every sentence.
+   *         tag per token, the sentence layer is absent or empty, a token lies
+   *         outside every sentence under the text-order walk, or the parser returns a
+   *         graph whose size differs from its sentence's token count.
    */
   @Override
   public Document annotate(Document document) {
@@ -132,6 +140,10 @@ public class DependencyAnnotator implements DocumentAnnotator {
         posTags[i] = tags.get(first + i).value();
       }
       final DependencyGraph graph = parser.parse(words, posTags);
+      if (graph.size() != count) {
+        throw new IllegalArgumentException("parser returned a graph over " + graph.size()
+            + " tokens for a sentence of " + count);
+      }
       // The parser indexes within the sentence; shifting by the sentence's first token
       // position turns every head and dependent into a document-wide token index, and
       // anchoring each arc on its dependent token's span puts the arc in document
