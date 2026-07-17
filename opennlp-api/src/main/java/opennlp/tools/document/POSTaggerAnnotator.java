@@ -68,8 +68,8 @@ public class POSTaggerAnnotator implements DocumentAnnotator {
    * @return A new {@link Document} with the {@link Layers#POS_TAGS} layer added. Never
    *         {@code null}.
    * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, the
-   *         sentence layer or the token layer is absent, or a token lies outside every
-   *         sentence.
+   *         sentence layer or the token layer is absent, a token lies outside every
+   *         sentence, or the tagger does not return one tag per token of a sentence.
    */
   @Override
   public Document annotate(Document document) {
@@ -107,6 +107,10 @@ public class POSTaggerAnnotator implements DocumentAnnotator {
         words[i] = tokens.get(first + i).value();
       }
       final String[] tags = tagger.tag(words);
+      if (tags.length != count) {
+        throw new IllegalArgumentException(
+            "tagger returned " + tags.length + " tags for " + count + " tokens");
+      }
       for (int i = 0; i < count; i++) {
         tagAnnotations.add(new Annotation<>(tokens.get(first + i).span(), tags[i]));
       }

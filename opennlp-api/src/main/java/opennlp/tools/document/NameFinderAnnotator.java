@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.tools.namefind.NameSample;
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
 
@@ -32,9 +33,9 @@ import opennlp.tools.util.Span;
  *
  * <p>Each sentence's tokens are passed to {@link TokenNameFinder#find(String[])} as one
  * sequence, the way the finder contract expects its input, so no mention can straddle a
- * sentence boundary. The finder's adaptive data is cleared once after all sentences of a
- * document are processed, as the {@link TokenNameFinder#clearAdaptiveData()} contract
- * asks, so document order does not leak between pipeline runs.</p>
+ * sentence boundary. The finder's adaptive data is cleared exactly once per call, as the
+ * {@link TokenNameFinder#clearAdaptiveData()} contract asks, whether annotation succeeds
+ * or fails, so no document can leak finder state into the next one.</p>
  *
  * <p>Spans the finder returns without a type are recorded with the {@link #UNTYPED}
  * entity type.</p>
@@ -45,11 +46,11 @@ public class NameFinderAnnotator implements DocumentAnnotator {
 
   /**
    * The entity type recorded when the wrapped finder returns a span without a type. It
-   * equals {@link opennlp.tools.namefind.NameSample#DEFAULT_TYPE}. Type-aware consumers
-   * should treat this label as an unknown type rather than as a distinct one, since it
-   * carries no information about what kind of entity was found.
+   * is {@link NameSample#DEFAULT_TYPE}. Type-aware consumers should treat this label as
+   * an unknown type rather than as a distinct one, since it carries no information about
+   * what kind of entity was found.
    */
-  public static final String UNTYPED = "default";
+  public static final String UNTYPED = NameSample.DEFAULT_TYPE;
 
   private final TokenNameFinder finder;
 
@@ -83,8 +84,9 @@ public class NameFinderAnnotator implements DocumentAnnotator {
    * @return A new {@link Document} with the {@link Layers#ENTITIES} layer added. Never
    *         {@code null}.
    * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, the
-   *         sentence layer or the token layer is absent, or a token lies outside every
-   *         sentence.
+   *         sentence layer or the token layer is absent, a token lies outside every
+   *         sentence, or the finder returns a mention whose token indices lie outside
+   *         its sentence's tokens.
    */
   @Override
   public Document annotate(Document document) {
@@ -104,38 +106,47 @@ public class NameFinderAnnotator implements DocumentAnnotator {
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> entities = new ArrayList<>();
     // Walk the token layer once: both layers are in text order, so each sentence
-    // consumes the contiguous run of tokens whose spans it encloses.
-    int next = 0;
-    for (final Annotation<String> sentence : sentences) {
-      final int first = next;
-      while (next < tokens.size()
-          && tokens.get(next).span().getStart() >= sentence.span().getStart()
-          && tokens.get(next).span().getEnd() <= sentence.span().getEnd()) {
-        next++;
+    // consumes the contiguous run of tokens whose spans it encloses. The adaptive data
+    // is cleared even when annotation fails, so a rejected document cannot leak finder
+    // state into the next one.
+    try {
+      int next = 0;
+      for (final Annotation<String> sentence : sentences) {
+        final int first = next;
+        while (next < tokens.size()
+            && tokens.get(next).span().getStart() >= sentence.span().getStart()
+            && tokens.get(next).span().getEnd() <= sentence.span().getEnd()) {
+          next++;
+        }
+        final int count = next - first;
+        if (count == 0) {
+          continue;
+        }
+        final String[] words = new String[count];
+        for (int i = 0; i < count; i++) {
+          words[i] = tokens.get(first + i).value();
+        }
+        // The finder indexes within the sentence; shifting by the sentence's first token
+        // position turns every mention boundary into a document-wide token index, whose
+        // token spans already refer to the original text.
+        for (final Span mention : finder.find(words)) {
+          if (mention.getStart() < 0 || mention.getEnd() > count) {
+            throw new IllegalArgumentException("finder returned mention " + mention
+                + " outside the sentence's " + count + " tokens");
+          }
+          final int start = tokens.get(first + mention.getStart()).span().getStart();
+          final int end = tokens.get(first + mention.getEnd() - 1).span().getEnd();
+          final String type = mention.getType() == null ? UNTYPED : mention.getType();
+          entities.add(new Annotation<>(new Span(start, end, type), type));
+        }
       }
-      final int count = next - first;
-      if (count == 0) {
-        continue;
+      if (next != tokens.size()) {
+        throw new IllegalArgumentException("token at " + tokens.get(next).span()
+            + " lies outside every sentence");
       }
-      final String[] words = new String[count];
-      for (int i = 0; i < count; i++) {
-        words[i] = tokens.get(first + i).value();
-      }
-      // The finder indexes within the sentence; shifting by the sentence's first token
-      // position turns every mention boundary into a document-wide token index, whose
-      // token spans already refer to the original text.
-      for (final Span mention : finder.find(words)) {
-        final int start = tokens.get(first + mention.getStart()).span().getStart();
-        final int end = tokens.get(first + mention.getEnd() - 1).span().getEnd();
-        final String type = mention.getType() == null ? UNTYPED : mention.getType();
-        entities.add(new Annotation<>(new Span(start, end, type), type));
-      }
+    } finally {
+      finder.clearAdaptiveData();
     }
-    if (next != tokens.size()) {
-      throw new IllegalArgumentException("token at " + tokens.get(next).span()
-          + " lies outside every sentence");
-    }
-    finder.clearAdaptiveData();
     return document.with(Layers.ENTITIES, entities);
   }
 
