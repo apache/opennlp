@@ -51,7 +51,8 @@
 					are namespaced: keys the toolkit defines carry the <code>opennlp:</code>
 					prefix, an extension uses its own prefix, and a bare id, like the
 					<code>token-lengths</code> key below, is legal for an application-local
-					layer.
+					layer. Toolkit keys are created through <code>Layers.key</code> and
+					<code>Layers.documentKey</code>, which apply the prefix.
 				</para>
 			</listitem>
 			<listitem>

@@ -123,6 +123,34 @@ public class DocumentContractTest {
   }
 
   /**
+   * Verifies the toolkit-namespace factories: {@link Layers#key(String, Class)} and
+   * {@link Layers#documentKey(String, Class)} apply the {@code opennlp:} prefix and
+   * yield keys equal to independently spelled ones, and a name that is null, blank, or
+   * already carries a namespace is rejected.
+   */
+  @Test
+  void testToolkitKeysCarryTheNamespacePrefix() {
+    assertEquals(LayerKey.of("opennlp:things", String.class),
+        Layers.key("things", String.class));
+    assertEquals("opennlp:things", Layers.key("things", String.class).id());
+    assertEquals(Layers.TOKENS, Layers.key("tokens", String.class));
+
+    final LayerKey<String> whole = Layers.documentKey("language", String.class);
+    assertEquals("opennlp:language", whole.id());
+    assertEquals(LayerKey.Scope.DOCUMENT, whole.scope());
+
+    assertThrows(IllegalArgumentException.class, () -> Layers.key(" ", String.class));
+    assertThrows(IllegalArgumentException.class, () -> Layers.key(null, String.class));
+    assertThrows(IllegalArgumentException.class, () -> Layers.key("things", null));
+    final IllegalArgumentException nested = assertThrows(IllegalArgumentException.class,
+        () -> Layers.key("opennlp:things", String.class));
+    assertEquals("name must not contain ':', the namespace is applied by this factory: "
+        + "opennlp:things", nested.getMessage());
+    assertThrows(IllegalArgumentException.class,
+        () -> Layers.documentKey("app:x", String.class));
+  }
+
+  /**
    * Verifies the gold-layer convention: a hand-annotated version of a layer lives
    * under the {@code gold:} prefixed key beside the produced layer, both are readable
    * independently, and the once-only rule keeps either from replacing the other.
