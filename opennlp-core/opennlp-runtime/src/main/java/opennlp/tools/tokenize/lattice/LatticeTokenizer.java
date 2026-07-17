@@ -212,16 +212,20 @@ public class LatticeTokenizer implements Tokenizer {
     });
     final boolean lexiconMatch = matched[0];
 
-    final Category category = dictionary.categoryOf(text.charAt(position));
+    final int codePoint = text.codePointAt(position);
+    final Category category = dictionary.categoryOf(codePoint);
     if (!lexiconMatch || category.invoke()) {
-      int run = position + 1;
-      while (run < to
-          && dictionary.categoryOf(text.charAt(run)).name().equals(category.name())) {
-        run++;
+      int run = position + Character.charCount(codePoint);
+      while (run < to) {
+        final int next = text.codePointAt(run);
+        if (!dictionary.categoryOf(next).name().equals(category.name())) {
+          break;
+        }
+        run += Character.charCount(next);
       }
       final List<WordEntry> templates = dictionary.unknownEntries(category.name());
       if (templates != null) {
-        addUnknown(candidates, position, run, to, category, templates);
+        addUnknown(candidates, text, position, run, category, templates);
       }
     }
     if (candidates.isEmpty()) {
@@ -230,7 +234,8 @@ public class LatticeTokenizer implements Tokenizer {
       final List<WordEntry> fallback = dictionary.unknownEntries("DEFAULT");
       if (fallback != null) {
         for (final WordEntry entry : fallback) {
-          candidates.add(new Node(position, position + 1, entry, true));
+          candidates.add(
+              new Node(position, position + Character.charCount(codePoint), entry, true));
         }
       }
     }
@@ -241,22 +246,38 @@ public class LatticeTokenizer implements Tokenizer {
     return candidates;
   }
 
-  /** Emits unknown-word candidates per the category's grouping and length settings. */
-  private static void addUnknown(List<Node> candidates, int position, int runEnd,
-      int to, Category category, List<WordEntry> templates) {
+  /**
+   * Emits unknown-word candidates per the category's grouping and length settings.
+   *
+   * <p>Every candidate stays inside the same-category run, so an unknown word never
+   * glues characters of different categories together, and every length counts whole
+   * characters rather than code units.</p>
+   *
+   * @param candidates Receives the candidates.
+   * @param text The text being segmented.
+   * @param position The position the candidates start at.
+   * @param runEnd The exclusive end of the same-category run starting at
+   *               {@code position}.
+   * @param category The category of that run.
+   * @param templates The category's unknown-word templates.
+   */
+  private static void addUnknown(List<Node> candidates, String text, int position,
+      int runEnd, Category category, List<WordEntry> templates) {
     if (category.group()) {
       for (final WordEntry entry : templates) {
         candidates.add(new Node(position, runEnd, entry, true));
       }
     }
     final int lengths = category.length();
-    for (int length = 1; length <= lengths && position + length <= to; length++) {
-      if (category.group() && position + length == runEnd) {
+    int end = position;
+    for (int length = 1; length <= lengths && end < runEnd; length++) {
+      end += Character.charCount(text.codePointAt(end));
+      if (category.group() && end == runEnd) {
         // This length coincides with the grouped run emitted above; skip the duplicate.
         continue;
       }
       for (final WordEntry entry : templates) {
-        candidates.add(new Node(position, position + length, entry, true));
+        candidates.add(new Node(position, end, entry, true));
       }
     }
   }
