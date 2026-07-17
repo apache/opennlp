@@ -31,6 +31,7 @@ import opennlp.tools.depparse.DependencyGraph;
 import opennlp.tools.depparse.DependencySample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Reads {@link DependencySample samples} directly from CoNLL-U content, mapping the
@@ -112,7 +113,7 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
     final List<String[]> words = new ArrayList<>();
     String line;
     while ((line = reader.readLine()) != null) {
-      if (line.isBlank()) {
+      if (isBlank(line)) {
         if (!words.isEmpty()) {
           return words;
         }
@@ -131,6 +132,29 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
       }
     }
     return words;
+  }
+
+  /**
+   * Determines whether a line separates two sentences, that is whether it is empty or
+   * consists entirely of whitespace.
+   *
+   * <p>Blankness is decided with {@link StringUtil#isWhitespace(int)} rather than
+   * {@link String#isBlank()}, because OpenNLP counts the Unicode {@code Zs} category as
+   * whitespace while the JDK predicate does not: a separator line carrying a stray
+   * no-break space is still a separator, not a malformed word line.</p>
+   *
+   * @param line The line to inspect. Must not be {@code null}.
+   * @return {@code true} if the line is blank, {@code false} otherwise.
+   */
+  private static boolean isBlank(String line) {
+    for (int i = 0; i < line.length(); ) {
+      final int codePoint = line.codePointAt(i);
+      if (!StringUtil.isWhitespace(codePoint)) {
+        return false;
+      }
+      i += Character.charCount(codePoint);
+    }
+    return true;
   }
 
   /**

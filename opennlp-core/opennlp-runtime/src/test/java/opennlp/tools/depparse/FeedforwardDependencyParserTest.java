@@ -21,14 +21,20 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.util.ObjectStreamUtils;
+import opennlp.tools.util.StringUtil;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -140,6 +146,61 @@ public class FeedforwardDependencyParserTest {
     evaluator.evaluate(ObjectStreamUtils.createObjectStream(corpus()));
     assertEquals(1.0d, evaluator.getUas());
     assertEquals(1.0d, evaluator.getLas());
+  }
+
+  @Test
+  void testRefineWithAnUnknownRelationFailsLoud() throws IOException {
+    // A refinement corpus may carry a relation label the original training set never
+    // used; the transition inventory is fixed at training time, so refinement cannot
+    // score it and must say which transition it does not know.
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 1, 32, 0.01, 0.0, 0.0, 1, 17L);
+    final List<DependencySample> unseenRelation = List.of(
+        sample(new String[] {"the", "dog", "barks"}, new String[] {"DT", "NN", "VBZ"},
+            new int[] {1, 2, -1}, new String[] {"det", "dislocated", "root"}));
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> FeedforwardDependencyTrainer.refine(model,
+            ObjectStreamUtils.createObjectStream(unseenRelation), settings, 2));
+    assertEquals("unknown transition in the refinement samples: LEFT_ARC:dislocated",
+        e.getMessage());
+  }
+
+  @Test
+  void testRefineReturnsANewModelAndLeavesTheOriginalUntouched() throws IOException {
+    final FeedforwardDependencyTrainer.Settings settings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 60, 32, 0.05, 0.0, 0.0, 1, 17L);
+    final FeedforwardDependencyModel local = FeedforwardDependencyTrainer.train(
+        ObjectStreamUtils.createObjectStream(corpus()), settings);
+    final String[] tokens = {"the", "dog", "barks"};
+    final String[] tags = {"DT", "NN", "VBZ"};
+    final int[] features = local.featureIds(
+        FeedforwardContext.extract(new ArcStandardState(tokens.length), tokens, tags));
+    final double[] before = local.score(features);
+
+    final FeedforwardDependencyTrainer.Settings refineSettings =
+        new FeedforwardDependencyTrainer.Settings(16, 32, 2, 32, 0.01, 0.0, 0.0, 1, 17L);
+    final FeedforwardDependencyModel refined = FeedforwardDependencyTrainer.refine(
+        local, ObjectStreamUtils.createObjectStream(corpus()), refineSettings, 2);
+
+    // refinement produces a distinct model, so a model already shared between threads
+    // cannot change underneath them
+    assertNotSame(local, refined);
+    assertArrayEquals(before, local.score(features));
+    // and the returned model really carries the refinement
+    assertFalse(Arrays.equals(before, refined.score(features)));
+  }
+
+  @Test
+  void testNormalizeUsesTheUnicodeDataCaseMapping() {
+    // StringUtil maps per code point via UnicodeData, so no character expands; the JDK's
+    // String.toLowerCase would render this word as "i" + COMBINING DOT ABOVE instead.
+    assertEquals(StringUtil.toLowerCase("\u0130STANBUL"),
+        FeedforwardDependencyModel.normalize("\u0130STANBUL"));
+    assertEquals("istanbul", FeedforwardDependencyModel.normalize("\u0130STANBUL"));
+    // special symbols still pass through untouched
+    assertEquals(FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.normalize(FeedforwardDependencyModel.UNKNOWN));
+    assertNull(FeedforwardDependencyModel.normalize(null));
   }
 
   @Test
