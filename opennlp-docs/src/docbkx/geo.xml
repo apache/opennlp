@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.geo">
+
+	<title>Gazetteers and Geocoding</title>
+
+	<section xml:id="tools.geo.overview">
+		<title>Overview</title>
+		<para>
+			A gazetteer maps place names to place records. The
+			<code>opennlp.tools.geo.Gazetteer</code> interface is the one seam every
+			lookup goes through: a bundled table, a downloaded dataset, an ingested
+			database, and a remote service client are all implementations of this
+			one interface, and any of them can be handed to the components that
+			consume it. Each record is a <code>GazetteerEntry</code> carrying the
+			canonical and alternate names, a point location, an optional bounding
+			box, the ISO 3166-1 country code, a coarse feature class, the
+			population, and dataset-specific extras as provenance-tagged
+			attributes.
+		</para>
+		<para>
+			The <code>opennlp-geo</code> module ships three file-backed
+			implementations: <code>BundledGazetteer</code> over the bundled Natural
+			Earth populated-places table, <code>GeoNamesGazetteer</code> over a
+			user-downloaded GeoNames extract, and <code>OvertureGazetteer</code>
+			over an Overture divisions export. All implementations are immutable
+			and thread-safe after loading, so one instance can be shared across
+			threads.
+		</para>
+	</section>
+
+	<section xml:id="tools.geo.user">
+		<title>User-supplied places</title>
+		<para>
+			<code>UserGazetteer</code> loads places a public dataset does not know,
+			for example customer sites or internal facility names, from a
+			user-authored file, so they take part in geocoding and everything
+			downstream of it. The file holds one place per line with tab-separated
+			columns in this order, where trailing columns may be omitted and an
+			empty column means absent: record id, canonical name, alternate names
+			separated by <code>|</code>, latitude, longitude, country code, feature
+			class, population, bounding box as
+			<code>west,south,east,north</code>, containment chain separated by
+			<code>|</code>, and one <code>key=value</code> attribute per further
+			column. Lines starting with <code>#</code> and blank lines are
+			skipped.
+		</para>
+		<para>
+			A row needs either both coordinates or a bounding box; with only a
+			bounding box the point location becomes the box's center. Free-text
+			metadata such as a postal address belongs in an attribute column: it is
+			carried verbatim on the entry and is never parsed or matched. The
+			following file, whose columns are separated by single tab characters,
+			defines a plant with an address attribute and a campus located through
+			its bounding box alone.
+			<programlisting><![CDATA[
+# id	name	alternates	lat	lon	cc	class	pop	bbox	containment	attributes
+plant-3	Acme Plant 3	Plant 3|The Plant	33.75	-84.39	US	POI	0		Georgia|Fulton County	address=123 Main St, Atlanta GA 30303
+campus-east	Acme Campus East				US	POI	0	-84.5,33.6,-84.2,33.9]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.geo.overlay">
+		<title>Overlaying a base gazetteer</title>
+		<para>
+			<code>OverlayGazetteer</code> composes a base gazetteer with
+			user-supplied changes: additions from a second gazetteer, and
+			suppression rules hiding base entries. Consumers see one merged view
+			through the same <code>Gazetteer</code> interface, so every component
+			downstream picks the changes up without knowing they exist. Additions
+			rank first in lookups. Suppressions hide entries of the base only,
+			never additions, so a rule plus an addition with the same name replaces
+			a base entry.
+		</para>
+		<para>
+			A suppression rule is a place name with optional country and
+			feature-class filters, one rule per line with tab-separated columns.
+			The following file removes the city of Mobile, Alabama, from a corpus
+			where that reading is always noise, while leaving every other
+			<code>Mobile</code>-named record intact.
+			<programlisting><![CDATA[
+# name	country	feature class
+Mobile	US	CITY]]>
+			</programlisting>
+		</para>
+		<para>
+			The composed gazetteer then answers lookups from both sides: the
+			customer file wins for its own names, and the suppressed city is gone
+			from every query.
+			<programlisting language="java"><![CDATA[
+Gazetteer base = BundledGazetteer.getInstance();
+Gazetteer customer = UserGazetteer.load(Path.of("customer_places.txt"), "customer");
+List<Suppression> rules = UserGazetteer.loadSuppressions(Path.of("suppress.txt"));
+Gazetteer gazetteer = new OverlayGazetteer(base, customer, rules);
+
+GazetteerEntry plant = gazetteer.lookup("Plant 3").get(0);
+// plant.name() = "Acme Plant 3", plant.source() = "customer"
+// plant.attributes().get("address").value() = "123 Main St, Atlanta GA 30303"
+
+gazetteer.lookup("Mobile");    // empty: the Alabama city is suppressed
+gazetteer.lookup("Tokyo");     // unaffected base entries stay visible]]>
+			</programlisting>
+			The additions side does not have to be a file: any
+			<code>Gazetteer</code> implementation serves, so entries ingested from
+			a database or fetched from a service compose the same way.
+		</para>
+	</section>
+</chapter>

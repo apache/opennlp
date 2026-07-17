@@ -45,6 +45,9 @@ import opennlp.tools.commons.ThreadSafe;
  * @param alternateNames The alternate names, possibly empty. Must not be {@code null} or contain
  *                       {@code null} or empty elements.
  * @param location       The point location. Must not be {@code null}.
+ * @param boundingBox    The bounding box enclosing the place's extent, or {@code null} when the
+ *                       source provides none. Whether {@code location} lies inside the box is the
+ *                       source's concern and is not validated here.
  * @param countryCode    The ISO 3166-1 alpha-2 country code, or {@code null} when not applicable
  *                       (for example a disputed territory the source assigns no code). When
  *                       present it must be exactly two ASCII capital letters.
@@ -69,6 +72,7 @@ public record GazetteerEntry(
     String name,
     List<String> alternateNames,
     GeoPoint location,
+    GeoBoundingBox boundingBox,
     String countryCode,
     List<String> containment,
     long population,
@@ -161,6 +165,18 @@ public record GazetteerEntry(
     alternateNames = List.copyOf(alternateNames);
     containment = List.copyOf(containment);
     attributes = Map.copyOf(attributes);
+  }
+
+  /**
+   * Creates an entry without a bounding box, for sources that provide only a point location.
+   *
+   * @throws IllegalArgumentException Thrown if any component violates its documented constraint.
+   */
+  public GazetteerEntry(String source, String recordId, String name, List<String> alternateNames,
+      GeoPoint location, String countryCode, List<String> containment, long population,
+      String featureClass, Map<String, AttributeValue> attributes) {
+    this(source, recordId, name, alternateNames, location, null, countryCode, containment,
+        population, featureClass, attributes);
   }
 
   /** {@return {@code true} if {@code code} is two ASCII uppercase letters}. */

@@ -76,6 +76,20 @@ public class GazetteerEntryTest {
     assertTrue(e.containment().isEmpty());
   }
 
+  /**
+   * Asserts that the ten-argument constructor yields an entry without a bounding box and the
+   * canonical constructor carries one, usable for containment checks against the location.
+   */
+  @Test
+  void testBoundingBoxIsOptionalAndCarried() {
+    assertNull(validEntry().boundingBox());
+    final GeoBoundingBox box = new GeoBoundingBox(138.9, 35.0, 140.9, 36.1);
+    final GazetteerEntry e = new GazetteerEntry("naturalearth", "1159151479", "Tokyo",
+        List.of(), TOKYO, box, "JP", List.of(), 37977000L, "CITY", Map.of());
+    assertEquals(box, e.boundingBox());
+    assertTrue(e.boundingBox().contains(e.location()));
+  }
+
   @Test
   void testDefensivelyCopiesCollections() {
     final List<String> alternateNames = new ArrayList<>(Arrays.asList("Tokio"));
