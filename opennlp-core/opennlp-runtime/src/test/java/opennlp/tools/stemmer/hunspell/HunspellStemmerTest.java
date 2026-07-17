@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -538,5 +539,133 @@ public class HunspellStemmerTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new HunspellStemmerFactory(null));
     Assertions.assertThrows(IllegalArgumentException.class, () -> stemmer.stemAll(null));
+  }
+
+  /**
+   * Verifies hunspell's tolerance for trailing text after a numeric or long flag run:
+   * the flag run ends at the first space, and whatever follows is a morphological
+   * field even without a two-letter tag, so such an entry loads instead of aborting
+   * the whole dictionary.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testTrailingTextAfterNumericFlagRunIsMorphologyNotAnError() throws IOException {
+    final HunspellDictionary numbers = load("FLAG num\n",
+        "2\nwalk/39 blah\nrun/7,9 xyz abc\n");
+    Assertions.assertNotNull(numbers.lookup("walk"));
+    Assertions.assertTrue(HunspellDictionary.hasFlag(numbers.lookup("walk"), 39));
+    Assertions.assertTrue(HunspellDictionary.hasFlag(numbers.lookup("run"), 7));
+    Assertions.assertTrue(HunspellDictionary.hasFlag(numbers.lookup("run"), 9));
+
+    final HunspellDictionary longs = load("FLAG long\n", "1\nwalk/AB cd\n");
+    Assertions.assertTrue(HunspellDictionary.hasFlag(longs.lookup("walk"),
+        ('A' << 16) | 'B'));
+  }
+
+  /**
+   * Verifies that stemming the empty word answers the empty word: a zero-length
+   * surface has no morphology, and a strip-only rule must not restore its strip
+   * string onto nothing and answer a non-empty stem.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testEmptyWordStemsToItself() throws IOException {
+    final HunspellStemmer stripOnly = new HunspellStemmer(load(
+        "PFX P Y 1\nPFX P xy 0 .\n",
+        "1\nxy/P\n"));
+    Assertions.assertEquals("", stripOnly.stem("").toString());
+    Assertions.assertEquals(List.of(""), stripOnly.stemAll(""));
+  }
+
+  /**
+   * Verifies the escaped-slash feature: {@code \/} belongs to the word, so an entry
+   * naming a slashed term keeps its slash while the first unescaped slash still
+   * separates the flag run.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testEscapedSlashBelongsToTheWord() throws IOException {
+    final HunspellDictionary slashed = load("FLAG num\n",
+        "2\nTCP\\/IP/39\nAC\\/DC\n");
+    Assertions.assertNotNull(slashed.lookup("TCP/IP"));
+    Assertions.assertTrue(HunspellDictionary.hasFlag(slashed.lookup("TCP/IP"), 39));
+    Assertions.assertNotNull(slashed.lookup("AC/DC"));
+    Assertions.assertNull(slashed.lookup("TCP"));
+  }
+
+  /**
+   * Verifies the sharpest combination of the morphology cut: an entry that is both a
+   * multi-word term and carries trailing tag morphology keeps the whole multi-word
+   * surface and its flags, and the tags stay out of the word.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testMultiWordEntryWithTrailingTagMorphology() throws IOException {
+    final HunspellDictionary phrases = load("FLAG num\n",
+        "1\nall right/39 po:phrase st:allright\n");
+    Assertions.assertNotNull(phrases.lookup("all right"));
+    Assertions.assertTrue(HunspellDictionary.hasFlag(phrases.lookup("all right"), 39));
+    Assertions.assertNull(phrases.lookup("all right po:phrase st:allright"));
+  }
+
+  /**
+   * Pins FLAG UTF-8 for a supplementary flag character: a flag is one code point, so
+   * a character above U+FFFF is one flag carrying its code point value, never two
+   * surrogate-unit flags. The Spanish dictionary of the LibreOffice collection names
+   * affix rules with such characters, so an affix keyed by a supplementary flag must
+   * connect to the entries that carry it.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testSupplementaryFlagCharacterIsOneCodePointFlag() throws IOException {
+    // U+1F600 as a flag, written as its surrogate pair
+    final HunspellDictionary emoji = load("FLAG UTF-8\n",
+        "1\nwalk/\uD83D\uDE00\n");
+    Assertions.assertTrue(HunspellDictionary.hasFlag(emoji.lookup("walk"), 0x1F600));
+    Assertions.assertFalse(HunspellDictionary.hasFlag(emoji.lookup("walk"), 0xD83D));
+
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "FLAG UTF-8\nSFX \uD83D\uDE00 Y 1\nSFX \uD83D\uDE00 0 s .\n",
+        "1\nwalk/\uD83D\uDE00\n"));
+    Assertions.assertEquals("walk", stemmer.stem("walks").toString());
+  }
+
+  /**
+   * Pins the variation-selector rule the Spanish dictionary of the LibreOffice
+   * collection relies on: a variation selector after a flag character selects its
+   * presentation and is no flag of its own, so an affix rule named with the emoji
+   * form of a character connects to entries flagged with either spelling.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testVariationSelectorIsDroppedFromFlagIdentity() throws IOException {
+    // U+260E BLACK TELEPHONE followed by U+FE0F VARIATION SELECTOR-16, the exact
+    // shape of a prefix flag in the published es_ES affix file
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "FLAG UTF-8\nPFX \u260E\uFE0F Y 1\nPFX \u260E\uFE0F 0 tele .\n",
+        "1\nfono/\u260E\n"));
+    Assertions.assertEquals("fono", stemmer.stem("telefono").toString());
+  }
+
+  /**
+   * Pins the documented rejection of rules that neither add nor remove material: a
+   * suffix rule with strip {@code 0} and affix {@code 0} loads without error and
+   * never fires, so stemming a flagged dictionary word answers that word exactly
+   * once.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testRuleThatNeitherAddsNorRemovesLoadsAndNeverFires() throws IOException {
+    final HunspellStemmer identity = new HunspellStemmer(load(
+        "SFX X Y 1\nSFX X 0 0 .\n",
+        "1\nwalk/X\n"));
+    Assertions.assertEquals(List.of("walk"), identity.stemAll("walk"));
   }
 }

@@ -72,6 +72,11 @@ public class HunspellStemmer implements Stemmer {
       throw new IllegalArgumentException("word must not be null");
     }
     final String surface = word.toString();
+    if (surface.isEmpty()) {
+      // a zero-length word has no morphology; without this guard a strip-only rule
+      // could restore its strip string onto nothing and answer a non-empty stem
+      return List.of(surface);
+    }
     final Set<String> analyses = new LinkedHashSet<>();
     for (final String variant : variants(surface)) {
       analyze(variant, analyses);
