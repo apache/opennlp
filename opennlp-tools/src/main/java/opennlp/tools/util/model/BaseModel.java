@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -685,9 +686,46 @@ public abstract class BaseModel implements ArtifactProvider, Serializable {
     this.serialize(out);
   }
 
+  /**
+   * Allowlist for classes that may legitimately appear while deserializing a
+   * {@link BaseModel} via the standard {@link Serializable} mechanism.
+   */
+  private static final ObjectInputFilter DESERIALIZE_FILTER = ObjectInputFilter.Config.createFilter(
+      "opennlp.tools.**;" +
+      "java.util.HashMap;" +
+      "java.lang.String;" +
+      "!*");
+
+  /**
+   * Deserializes a {@link BaseModel} from the given {@link InputStream} using the
+   * standard {@link Serializable} mechanism, with {@link #DESERIALIZE_FILTER} applied
+   * to reject any class outside the allowlist - including the top-level object itself.
+   * <p>
+   * Prefer this method (or the {@code BaseModel(String, InputStream|File|Path|URL)}
+   * constructors) over calling {@code new ObjectInputStream(in).readObject()} directly,
+   * since a filter installed inside {@link #readObject} cannot protect the top-level
+   * object - the JDK only allows an {@link ObjectInputFilter} to be set on a stream
+   * before the first object is read.
+   *
+   * @param modelClass The expected {@link BaseModel} subclass.
+   * @param in The {@link InputStream} to read from. Must not be {@code null}.
+   * @param <T> The type of the expected model.
+   * @return A valid {@link BaseModel} instance of type {@code T}.
+   *
+   * @throws IOException Thrown if IO errors occurred, including a rejection by
+   *                      {@link #DESERIALIZE_FILTER}.
+   * @throws ClassNotFoundException Thrown if required classes are not found.
+   */
+  public static <T extends BaseModel> T deserialize(Class<T> modelClass, InputStream in)
+      throws IOException, ClassNotFoundException {
+    try (ObjectInputStream ois = new ObjectInputStream(in)) {
+      ois.setObjectInputFilter(DESERIALIZE_FILTER);
+      return modelClass.cast(ois.readObject());
+    }
+  }
+
   @Serial
   private void readObject(final ObjectInputStream in) throws IOException {
-
     isLoadedFromSerialized = true;
     artifactSerializers = new HashMap<>();
     artifactMap = new HashMap<>();
