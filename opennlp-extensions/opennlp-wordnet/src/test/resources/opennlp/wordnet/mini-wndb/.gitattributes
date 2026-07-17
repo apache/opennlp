@@ -1,0 +1,7 @@
+# WNDB is a byte-offset format: each data line embeds its own byte position in the
+# file, and WndbReader validates that offset against the actual position. Line-ending
+# normalization on checkout (the repo root's `* text=auto`) would insert a CR before
+# every LF on Windows, shifting every offset after the first line and breaking every
+# fixture that has more than one line. Disable it here so checkout is byte-identical
+# on every platform.
+* -text

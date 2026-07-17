@@ -217,6 +217,12 @@
 			</dependency>
 
 			<dependency>
+				<artifactId>opennlp-wordnet</artifactId>
+				<groupId>${project.groupId}</groupId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
 				<artifactId>opennlp-uima</artifactId>
 				<groupId>${project.groupId}</groupId>
 				<version>${project.version}</version>

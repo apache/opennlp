@@ -1,0 +1,22 @@
+  1 Licensed to the Apache Software Foundation (ASF) under one or more  
+  2 contributor license agreements.  See the NOTICE file distributed with  
+  3 this work for additional information regarding copyright ownership.  
+  4 The ASF licenses this file to You under the Apache License, Version 2.0  
+  5 (the "License"); you may not use this file except in compliance with  
+  6 the License. You may obtain a copy of the License at  
+  7   
+  8     http://www.apache.org/licenses/LICENSE-2.0  
+  9   
+  10 Unless required by applicable law or agreed to in writing, software  
+  11 distributed under the License is distributed on an "AS IS" BASIS,  
+  12 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+  13 See the License for the specific language governing permissions and  
+  14 limitations under the License.  
+  15   
+  16 Project-authored miniature WNDB fixture mirroring mini-wn-lmf.xml.  
+  17 License preamble lines begin with two spaces, as in released WNDB files,  
+  18 so readers skip them; data line offsets include this preamble.  
+big a 1 1 & 1 0 00001211  
+large a 1 1 & 1 0 00001274  
+short a 1 1 ! 1 0 00001141  
+tall a 1 1 ! 1 0 00001075  
