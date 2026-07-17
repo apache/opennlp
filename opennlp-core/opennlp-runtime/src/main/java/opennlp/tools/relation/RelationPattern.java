@@ -48,30 +48,42 @@ import opennlp.tools.util.StringUtil;
  * @param path The path shape as described above. Must not be {@code null} or blank, and
  *             every up step must come before the first down step.
  * @param trigger The required pivot form, or {@code null} for any pivot. Must not be
- *                blank, and must be unchanged by {@link StringUtil#toLowerCase(CharSequence)}.
+ *                blank or contain whitespace, since it is matched against a single
+ *                token, and must be unchanged by
+ *                {@link StringUtil#toLowerCase(CharSequence)}.
  *
  * @since 3.0.0
  */
 public record RelationPattern(String type, String path, String trigger) {
 
   /**
-   * Validates the rule.
+   * Validates the rule. Blankness is judged under the project whitespace definition,
+   * which unlike the JDK's includes no-break spaces, so a value spelled entirely from
+   * them cannot construct a rule that could never match.
    *
    * @throws IllegalArgumentException Thrown if {@code type} or {@code path} is
-   *         {@code null} or blank, {@code path} is malformed, or {@code trigger} is blank
-   *         or not already lowercased under
+   *         {@code null} or blank, {@code path} is malformed, or {@code trigger} is
+   *         blank, contains whitespace, or is not already lowercased under
    *         {@link StringUtil#toLowerCase(CharSequence)}.
    */
   public RelationPattern {
-    if (type == null || type.isBlank()) {
+    if (type == null || blank(type)) {
       throw new IllegalArgumentException("type must not be null or blank");
     }
-    if (path == null || path.isBlank()) {
+    if (path == null || blank(path)) {
       throw new IllegalArgumentException("path must not be null or blank");
     }
     if (trigger != null) {
-      if (trigger.isBlank()) {
+      if (trigger.isEmpty()) {
         throw new IllegalArgumentException("trigger must not be blank");
+      }
+      for (int i = 0; i < trigger.length(); ) {
+        final int cp = trigger.codePointAt(i);
+        if (StringUtil.isWhitespace(cp)) {
+          throw new IllegalArgumentException("trigger must not contain whitespace,"
+              + " since it is matched against a single token: " + trigger);
+        }
+        i += Character.charCount(cp);
       }
       if (!StringUtil.toLowerCase(trigger).equals(trigger)) {
         throw new IllegalArgumentException("trigger must be lowercased, but was: " + trigger);
@@ -94,14 +106,27 @@ public record RelationPattern(String type, String path, String trigger) {
   /**
    * Splits the path into its steps.
    *
-   * @return The steps in order. Never {@code null}. Empty only when the path consists
-   *         solely of characters that are whitespace to
-   *         {@link StringUtil#isWhitespace(char)} but not to {@link String#isBlank()},
-   *         for example the no-break space U+00A0; such a pattern never matches, since
-   *         every path between two distinct entity heads has at least one step.
+   * @return The steps in order. Never {@code null} and never empty: the constructor
+   *         judges blankness by the same whitespace definition this split separates
+   *         on, so every constructible path holds at least one step.
    */
   public List<String> steps() {
     return splitSteps(path);
+  }
+
+  /**
+   * Reports whether a value is blank under the project whitespace definition, which
+   * unlike the JDK's includes no-break spaces.
+   */
+  private static boolean blank(String value) {
+    for (int i = 0; i < value.length(); ) {
+      final int cp = value.codePointAt(i);
+      if (!StringUtil.isWhitespace(cp)) {
+        return false;
+      }
+      i += Character.charCount(cp);
+    }
+    return true;
   }
 
   /**

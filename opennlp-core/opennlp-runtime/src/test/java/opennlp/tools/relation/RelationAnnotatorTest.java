@@ -367,6 +367,24 @@ public class RelationAnnotatorTest {
   }
 
   /**
+   * The negative side of the mapping seam: the JDK's locale-independent lowercasing of
+   * the dotted capital I expands to an {@code i} followed by the combining dot above
+   * (U+0307), a spelling the project mapping never produces for the pivot, so a
+   * trigger written that way matches nothing. This pins that the annotator compares
+   * through the project mapping alone, and that a trigger prepared with
+   * {@link String#toLowerCase()} does not silently work by accident.
+   */
+  @Test
+  void testJdkLowercasedTriggerSpellingDoesNotMatchThePivot() {
+    final RelationAnnotator annotator = new RelationAnnotator(List.of(
+        new RelationPattern("located_in", ">appos >nmod", "i\u0307stanbul")));
+
+    final Document document = annotator.annotate(dottedCapitalPivotDocument());
+
+    Assertions.assertTrue(document.get(RelationAnnotator.RELATIONS).isEmpty());
+  }
+
+  /**
    * Verifies that annotating a document that already carries a relations layer fails:
    * documents reject duplicate layers, so the second annotation pass throws.
    */
