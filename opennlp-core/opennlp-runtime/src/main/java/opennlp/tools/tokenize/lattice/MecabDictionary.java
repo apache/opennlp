@@ -59,54 +59,250 @@ public final class MecabDictionary {
   }
 
   /**
-   * One frozen node of the lexicon trie: children are held as a sorted character
-   * array with a parallel node array and found by binary search, so a descent never
-   * boxes the character the way a map keyed by {@link Character} would on every step
-   * of the innermost matching loop.
+   * The lexicon as a double-array trie: one transition is one array read and one
+   * comparison, so the per-position prefix walk of the tokenizer never hashes, never
+   * binary-searches a fan-out, and never boxes. Characters are recoded into dense
+   * labels ordered by frequency before the array is built, which keeps the array
+   * compact although CJK surfaces draw from tens of thousands of distinct
+   * characters; a character the lexicon never uses misses in the recode table before
+   * the array is even consulted.
+   *
+   * <p>The layout is the classic base/check pair: from state {@code s}, label
+   * {@code c} leads to {@code t = base[s] + c} exactly when {@code check[t] == s}.
+   * Label {@code 0} terminates a surface and leads to a state whose negative base
+   * encodes the index of the surface's entry list.</p>
    */
-  private static final class TrieNode {
+  private static final class DoubleArrayLexicon {
 
-    private final char[] keys;
-    private final TrieNode[] nodes;
-    private final List<WordEntry> entries;
+    private final int[] base;
+    private final int[] check;
+    private final int[] codeOf;
+    private final List<WordEntry>[] values;
 
-    private TrieNode(char[] keys, TrieNode[] nodes, List<WordEntry> entries) {
-      this.keys = keys;
-      this.nodes = nodes;
-      this.entries = entries;
+    private DoubleArrayLexicon(int[] base, int[] check, int[] codeOf,
+        List<WordEntry>[] values) {
+      this.base = base;
+      this.check = check;
+      this.codeOf = codeOf;
+      this.values = values;
     }
 
     /**
-     * Descends one character.
+     * Builds the trie from the surface-keyed lexicon.
      *
-     * @param c The next surface character.
-     * @return The child node, or {@code null} when no surface continues with {@code c}.
+     * @param lexicon The entries keyed by surface form.
+     * @return The built trie. Never {@code null}.
      */
-    private TrieNode child(char c) {
-      final int index = Arrays.binarySearch(keys, c);
-      return index >= 0 ? nodes[index] : null;
+    @SuppressWarnings("unchecked")
+    private static DoubleArrayLexicon build(Map<String, List<WordEntry>> lexicon) {
+      final String[] surfaces = lexicon.keySet().toArray(new String[0]);
+      Arrays.sort(surfaces);
+      final List<WordEntry>[] values = new List[surfaces.length];
+      for (int i = 0; i < surfaces.length; i++) {
+        values[i] = List.copyOf(lexicon.get(surfaces[i]));
+      }
+
+      // Dense recode: labels ordered by descending frequency get the small codes, so
+      // busy transitions cluster at the low end of the array.
+      final int[] frequency = new int[Character.MAX_VALUE + 1];
+      for (final String surface : surfaces) {
+        for (int i = 0; i < surface.length(); i++) {
+          frequency[surface.charAt(i)]++;
+        }
+      }
+      final Integer[] chars = new Integer[Character.MAX_VALUE + 1];
+      int distinct = 0;
+      for (int c = 0; c <= Character.MAX_VALUE; c++) {
+        if (frequency[c] > 0) {
+          chars[distinct++] = c;
+        }
+      }
+      final Integer[] ordered = Arrays.copyOf(chars, distinct);
+      Arrays.sort(ordered, (a, b) -> frequency[b] - frequency[a]);
+      final int[] codeOf = new int[Character.MAX_VALUE + 1];
+      Arrays.fill(codeOf, -1);
+      for (int rank = 0; rank < ordered.length; rank++) {
+        codeOf[ordered[rank]] = rank + 1;
+      }
+
+      final Builder builder = new Builder(surfaces, codeOf);
+      builder.insert(0, surfaces.length, 0, Builder.ROOT);
+      return new DoubleArrayLexicon(Arrays.copyOf(builder.base, builder.high + 1),
+          Arrays.copyOf(builder.check, builder.high + 1), codeOf, values);
     }
-  }
 
-  /** One mutable trie node during construction, frozen into a {@link TrieNode}. */
-  private static final class TrieBuilderNode {
-
-    private final Map<Character, TrieBuilderNode> children = new HashMap<>();
-    private List<WordEntry> entries;
-
-    /** Freezes this node and its subtree into the sorted-array form. */
-    private TrieNode freeze() {
-      final char[] keys = new char[children.size()];
-      int i = 0;
-      for (final Character key : children.keySet()) {
-        keys[i++] = key;
+    /**
+     * Reports every surface starting at a text position, walking the array once.
+     *
+     * @param text The text being segmented.
+     * @param from The position surfaces must start at.
+     * @param to The exclusive end of the searchable stretch.
+     * @param consumer Receives each match length with its entries.
+     */
+    private void prefixMatches(String text, int from, int to,
+        PrefixMatchConsumer consumer) {
+      int state = Builder.ROOT;
+      for (int i = from; i < to; i++) {
+        final char c = text.charAt(i);
+        final int code = codeOf[c];
+        if (code < 0) {
+          return;
+        }
+        final int next = base[state] + code;
+        if (next >= check.length || check[next] != state) {
+          return;
+        }
+        state = next;
+        final int terminal = base[state];
+        if (terminal < check.length && check[terminal] == state && base[terminal] < 0) {
+          consumer.accept(i - from + 1, values[-base[terminal] - 1]);
+        }
       }
-      Arrays.sort(keys);
-      final TrieNode[] nodes = new TrieNode[keys.length];
-      for (int k = 0; k < keys.length; k++) {
-        nodes[k] = children.get(keys[k]).freeze();
+    }
+
+    /**
+     * Looks up the entries of an exact surface form.
+     *
+     * @param surface The surface form.
+     * @return The entries, or {@code null} when the surface is not listed.
+     */
+    private List<WordEntry> lookup(String surface) {
+      int state = Builder.ROOT;
+      for (int i = 0; i < surface.length(); i++) {
+        final int code = codeOf[surface.charAt(i)];
+        if (code < 0) {
+          return null;
+        }
+        final int next = base[state] + code;
+        if (next >= check.length || check[next] != state) {
+          return null;
+        }
+        state = next;
       }
-      return new TrieNode(keys, nodes, entries);
+      final int terminal = base[state];
+      if (terminal < check.length && check[terminal] == state && base[terminal] < 0) {
+        return values[-base[terminal] - 1];
+      }
+      return null;
+    }
+
+    /**
+     * The recursive sorted-range builder: each call places one node's children by
+     * finding a base at which every child label lands on a free slot, then recurses
+     * per child range. A moving watermark keeps the free-slot search near-linear over
+     * real lexicons.
+     */
+    private static final class Builder {
+
+      private static final int ROOT = 1;
+      private static final int EMPTY = -1;
+
+      private final String[] surfaces;
+      private final int[] codeOf;
+      private int[] base;
+      private int[] check;
+      private int high = ROOT;
+      private int watermark = ROOT + 1;
+      private int valueIndex;
+
+      private Builder(String[] surfaces, int[] codeOf) {
+        this.surfaces = surfaces;
+        this.codeOf = codeOf;
+        base = new int[1 << 16];
+        check = new int[1 << 16];
+        Arrays.fill(check, EMPTY);
+      }
+
+      /**
+       * Places the children of one trie node.
+       *
+       * @param left The first surface of the node's range.
+       * @param right The exclusive last surface of the node's range.
+       * @param depth The character depth of the node.
+       * @param state The node's own slot.
+       */
+      private void insert(int left, int right, int depth, int state) {
+        // gather the distinct child labels of this range, terminator first
+        final int[] labels = new int[right - left];
+        int labelCount = 0;
+        int previous = -2;
+        for (int k = left; k < right; k++) {
+          final int label = surfaces[k].length() == depth
+              ? 0 : codeOf[surfaces[k].charAt(depth)];
+          if (label != previous) {
+            labels[labelCount++] = label;
+            previous = label;
+          }
+        }
+        final int found = findBase(labels, labelCount);
+        base[state] = found;
+        for (int k = 0; k < labelCount; k++) {
+          final int child = found + labels[k];
+          check[child] = state;
+          if (child > high) {
+            high = child;
+          }
+        }
+        // recurse over each child's sub-range
+        int start = left;
+        for (int k = 0; k < labelCount; k++) {
+          final int label = labels[k];
+          int end = start;
+          while (end < right && (surfaces[end].length() == depth
+              ? 0 : codeOf[surfaces[end].charAt(depth)]) == label) {
+            end++;
+          }
+          final int child = found + label;
+          if (label == 0) {
+            base[child] = -(++valueIndex);
+          } else {
+            insert(start, end, depth + 1, child);
+          }
+          start = end;
+        }
+      }
+
+      /**
+       * Finds the lowest base at which every label lands on a free slot. Labels
+       * arrive in surface-character order, not numeric order, so the smallest and
+       * largest label are computed rather than assumed positional.
+       */
+      private int findBase(int[] labels, int labelCount) {
+        int smallest = labels[0];
+        int largest = labels[0];
+        for (int k = 1; k < labelCount; k++) {
+          smallest = Math.min(smallest, labels[k]);
+          largest = Math.max(largest, labels[k]);
+        }
+        int candidate = Math.max(1, watermark - smallest);
+        while (true) {
+          ensureCapacity(candidate + largest);
+          boolean fits = true;
+          for (int k = 0; fits && k < labelCount; k++) {
+            fits = check[candidate + labels[k]] == EMPTY;
+          }
+          if (fits) {
+            while (watermark < check.length && check[watermark] != EMPTY) {
+              watermark++;
+            }
+            return candidate;
+          }
+          candidate++;
+        }
+      }
+
+      private void ensureCapacity(int slot) {
+        if (slot >= check.length) {
+          int capacity = check.length;
+          while (capacity <= slot) {
+            capacity += capacity >> 1;
+          }
+          base = Arrays.copyOf(base, capacity);
+          final int old = check.length;
+          check = Arrays.copyOf(check, capacity);
+          Arrays.fill(check, old, capacity, EMPTY);
+        }
+      }
     }
   }
 
@@ -291,7 +487,7 @@ public final class MecabDictionary {
     void accept(int length, List<WordEntry> entries);
   }
 
-  private final TrieNode lexicon;
+  private final DoubleArrayLexicon lexicon;
   private final int maxSurfaceLength;
   private final short[] connectionCosts;
   private final int rightSize;
@@ -300,7 +496,7 @@ public final class MecabDictionary {
   private final Category defaultCategory;
   private final Map<String, List<WordEntry>> unknownEntries;
 
-  private MecabDictionary(TrieNode lexicon, int maxSurfaceLength,
+  private MecabDictionary(DoubleArrayLexicon lexicon, int maxSurfaceLength,
       short[] connectionCosts, int rightSize, Map<String, Category> categories,
       CategoryTable categoryTable, Map<String, List<WordEntry>> unknownEntries) {
     this.lexicon = lexicon;
@@ -409,23 +605,8 @@ public final class MecabDictionary {
     final Map<String, List<WordEntry>> unknown = new HashMap<>();
     readLexicon(directory.resolve("unk.def"), charset, unknown, leftSize, rightSize);
 
-    return new MecabDictionary(buildTrie(lexicon), maxSurface, costs, rightSize,
-        categories, categoryTable.build(categories), unknown);
-  }
-
-  /** Folds the surface-keyed lexicon into a character trie for prefix search. */
-  private static TrieNode buildTrie(Map<String, List<WordEntry>> lexicon) {
-    final TrieBuilderNode root = new TrieBuilderNode();
-    for (final Map.Entry<String, List<WordEntry>> entry : lexicon.entrySet()) {
-      TrieBuilderNode node = root;
-      final String surface = entry.getKey();
-      for (int i = 0; i < surface.length(); i++) {
-        node = node.children.computeIfAbsent(surface.charAt(i),
-            key -> new TrieBuilderNode());
-      }
-      node.entries = List.copyOf(entry.getValue());
-    }
-    return root.freeze();
+    return new MecabDictionary(DoubleArrayLexicon.build(lexicon), maxSurface, costs,
+        rightSize, categories, categoryTable.build(categories), unknown);
   }
 
   /**
@@ -534,11 +715,7 @@ public final class MecabDictionary {
    * @return The entries, or {@code null} when the surface is not listed.
    */
   List<WordEntry> lookup(String surface) {
-    TrieNode node = lexicon;
-    for (int i = 0; i < surface.length() && node != null; i++) {
-      node = node.child(surface.charAt(i));
-    }
-    return node == null ? null : node.entries;
+    return lexicon.lookup(surface);
   }
 
   /**
@@ -551,16 +728,7 @@ public final class MecabDictionary {
    * @param consumer Receives each match.
    */
   void prefixMatches(String text, int from, int to, PrefixMatchConsumer consumer) {
-    TrieNode node = lexicon;
-    for (int i = from; i < to; i++) {
-      node = node.child(text.charAt(i));
-      if (node == null) {
-        return;
-      }
-      if (node.entries != null) {
-        consumer.accept(i - from + 1, node.entries);
-      }
-    }
+    lexicon.prefixMatches(text, from, to, consumer);
   }
 
   /** @return The length in characters of the longest surface form in the lexicon. */
