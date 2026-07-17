@@ -152,7 +152,7 @@ public class POSTaggerAnnotatorTest {
             new Annotation<>(new Span(4, 7), "dog")));
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new POSTaggerAnnotator(new RecordingTagger()).annotate(document));
-    assertEquals("document lacks the required layer sentences<String>", e.getMessage());
+    assertEquals("document lacks the required layer opennlp:sentences<String>", e.getMessage());
   }
 
   /**
@@ -165,7 +165,7 @@ public class POSTaggerAnnotatorTest {
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 7), "The dog")));
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new POSTaggerAnnotator(new RecordingTagger()).annotate(document));
-    assertEquals("document lacks the required layer tokens<String>", e.getMessage());
+    assertEquals("document lacks the required layer opennlp:tokens<String>", e.getMessage());
   }
 
   /**

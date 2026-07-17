@@ -46,7 +46,7 @@ public class LemmatizerAnnotator implements DocumentAnnotator {
    * The lemma layer. It is aligned with the token layer by position, and each annotation
    * carries the lemma of its token on that token's span.
    */
-  public static final LayerKey<String> LEMMAS = LayerKey.of("lemmas", String.class);
+  public static final LayerKey<String> LEMMAS = LayerKey.of("opennlp:lemmas", String.class);
 
   /** The message prefix of every absent-required-layer rejection in this adapter. */
   private static final String MISSING_LAYER = "document lacks the required layer ";

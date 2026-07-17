@@ -234,7 +234,7 @@ public class DocumentContractTest {
     final DocumentAnalyzer.Builder builder = DocumentAnalyzer.builder().add(needsTags);
     final IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, builder::build);
-    assertEquals("annotator tag-consumer requires layer pos<String>,"
+    assertEquals("annotator tag-consumer requires layer opennlp:pos<String>,"
         + " which no earlier annotator provides", e.getMessage());
   }
 

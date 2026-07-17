@@ -104,7 +104,7 @@ public class NameFinderAnnotatorTest {
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 9), "no tokens")));
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new NameFinderAnnotator(finder).annotate(document));
-    assertEquals("document lacks the required layer tokens<String>", e.getMessage());
+    assertEquals("document lacks the required layer opennlp:tokens<String>", e.getMessage());
   }
 
   /**
@@ -266,6 +266,6 @@ public class NameFinderAnnotatorTest {
         .with(Layers.TOKENS, List.of(new Annotation<>(new Span(0, 3), "Ana")));
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new NameFinderAnnotator(finder).annotate(document));
-    assertEquals("document lacks the required layer sentences<String>", e.getMessage());
+    assertEquals("document lacks the required layer opennlp:sentences<String>", e.getMessage());
   }
 }

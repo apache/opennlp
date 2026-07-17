@@ -63,7 +63,7 @@ public class StemmerAnnotatorTest {
     final StemmerAnnotator annotator = new StemmerAnnotator(new PorterStemmer());
     final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> annotator.annotate(Document.of("no tokens")));
-    Assertions.assertEquals("document lacks the required layer tokens<String>", e.getMessage());
+    Assertions.assertEquals("document lacks the required layer opennlp:tokens<String>", e.getMessage());
   }
 
   /**

@@ -139,21 +139,21 @@ public class LemmatizerAnnotatorTest {
     final LemmatizerAnnotator annotator = new LemmatizerAnnotator(FIXTURE);
     final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> annotator.annotate(Document.of("no layers")));
-    Assertions.assertEquals("document lacks the required layer sentences<String>",
+    Assertions.assertEquals("document lacks the required layer opennlp:sentences<String>",
         e.getMessage());
 
     final Document sentencesOnly = Document.of("a")
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 1), "a")));
     final IllegalArgumentException tokenless = Assertions.assertThrows(
         IllegalArgumentException.class, () -> annotator.annotate(sentencesOnly));
-    Assertions.assertEquals("document lacks the required layer tokens<String>",
+    Assertions.assertEquals("document lacks the required layer opennlp:tokens<String>",
         tokenless.getMessage());
 
     final Document untagged = sentencesOnly
         .with(Layers.TOKENS, List.of(new Annotation<>(new Span(0, 1), "a")));
     final IllegalArgumentException tagless = Assertions.assertThrows(
         IllegalArgumentException.class, () -> annotator.annotate(untagged));
-    Assertions.assertEquals("document lacks the required layer pos<String>",
+    Assertions.assertEquals("document lacks the required layer opennlp:pos<String>",
         tagless.getMessage());
   }
 
