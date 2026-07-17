@@ -19,6 +19,8 @@ package opennlp.tools.document;
 
 import java.util.Objects;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * Identifies one annotation layer of a {@link Document} and carries the type of that
  * layer's annotation values, so reading a layer back is statically typed.
@@ -56,7 +58,7 @@ public final class LayerKey<T> {
    *         {@code type} is {@code null}.
    */
   public static <T> LayerKey<T> of(String id, Class<T> type) {
-    if (id == null || id.isBlank()) {
+    if (id == null || StringUtil.isBlank(id)) {
       throw new IllegalArgumentException("id must not be null or blank");
     }
     if (type == null) {

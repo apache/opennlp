@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.document" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<title>Document Annotation Container</title>
+
+	<section xml:id="tools.document.introduction">
+		<title>Introduction</title>
+		<para>
+			The package <code>opennlp.tools.document</code> provides an immutable container
+			that carries the original text of one document together with any number of typed
+			annotation layers over it. Every annotation is anchored to a
+			<code>Span</code> of the text exactly as the caller supplied it, never to a
+			normalized or otherwise derived form, so any result of any pipeline step can be
+			highlighted in the source text.
+		</para>
+		<para>
+			The design follows three rules:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>
+					<emphasis role="bold">Offset-anchored.</emphasis> A layer is a list of
+					<code>Annotation</code> values, each pairing a <code>Span</code> in original
+					text coordinates with a typed value. Annotations reference other annotations
+					by index within their layer, never by object identity.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<emphasis role="bold">Open key space.</emphasis> A layer is identified by a
+					<code>LayerKey</code> that also carries the type of its values, so reading a
+					layer back is statically typed. Two keys are equal when both their id and
+					their value type are equal, so independently created constants for the same
+					layer interoperate. The keys of the core linguistic layers live in
+					<code>Layers</code>; a capability-specific layer's key lives on the annotator
+					that provides it, and adding a capability never changes the container.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<emphasis role="bold">Immutable.</emphasis> Adding a layer returns a new
+					document that shares the unchanged layers with its ancestor. Documents are
+					safe to share between threads.
+				</para>
+			</listitem>
+		</itemizedlist>
+	</section>
+
+	<section xml:id="tools.document.pipeline">
+		<title>Building a pipeline</title>
+		<para>
+			A pipeline step implements <code>DocumentAnnotator</code>: it reads layers from a
+			document and returns a new document with its own layers added. An annotator
+			declares the layers it requires and provides, and a
+			<code>DocumentAnalyzer</code> validates those declarations when the pipeline is
+			assembled: every required layer must be provided by an earlier annotator, and no
+			two annotators may provide the same layer, so a misordered pipeline fails at
+			build time rather than midway through a document.
+		</para>
+		<para>
+			Adapters for the toolkit's own components are provided:
+			<code>SentenceDetectorAnnotator</code>, <code>TokenizerAnnotator</code>,
+			<code>POSTaggerAnnotator</code>, <code>NameFinderAnnotator</code>,
+			<code>LemmatizerAnnotator</code>, and <code>StemmerAnnotator</code>. Each wraps
+			the existing single-task API, which stays the primary API for single-task use.
+			The following pipeline combines three adapters with one custom annotator and
+			analyzes a two-sentence text; the components behind the adapters are any
+			<code>SentenceDetector</code>, <code>Tokenizer</code>, and
+			<code>POSTagger</code>, for example the ME implementations loaded from models:
+		</para>
+		<programlisting language="java">
+				<![CDATA[
+DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
+    .add(new SentenceDetectorAnnotator(sentenceDetector))
+    .add(new TokenizerAnnotator(tokenizer))
+    .add(new POSTaggerAnnotator(tagger))
+    .add(new TokenLengthAnnotator())
+    .build();
+
+Document document = analyzer.analyze("The dog barks. It naps.");]]>
+		</programlisting>
+		<para>
+			The resulting document carries exactly the four layers the pipeline provides.
+			The sentence layer holds two annotations, <code>[0..14)</code> covering
+			<code>The dog barks.</code> and <code>[15..23)</code> covering
+			<code>It naps.</code>. The token layer holds five tokens whose spans refer to
+			the document text even inside the second sentence, so
+			<code>It</code> is <code>[15..17)</code> and <code>naps.</code> is
+			<code>[18..23)</code>. Layers produced per token stay aligned with the token
+			layer by position:
+		</para>
+		<programlisting language="java">
+				<![CDATA[
+List<Annotation<String>> tokens = document.get(Layers.TOKENS);
+List<Annotation<String>> tags = document.get(Layers.POS_TAGS);
+for (int i = 0; i < tags.size(); i++) {
+  // each tag sits on its token's span, e.g. "DT" on [0..3) for "The"
+  Span span = tags.get(i).span();
+}
+
+// every span refers to the original text, so covered text round-trips
+for (Annotation<String> token : tokens) {
+  CharSequence covered = token.span().getCoveredText(document.text());
+}]]>
+		</programlisting>
+	</section>
+
+	<section xml:id="tools.document.custom">
+		<title>Writing a custom annotator</title>
+		<para>
+			A new capability contributes its results as one more layer without any change to
+			the container. The annotator below defines its own key in its own code, reads
+			the token layer, and provides one integer annotation per token; the analyzer's
+			build-time validation guarantees a tokenizer ran earlier:
+		</para>
+		<programlisting language="java">
+				<![CDATA[
+static final LayerKey<Integer> TOKEN_LENGTHS =
+    LayerKey.of("token-lengths", Integer.class);
+
+class TokenLengthAnnotator implements DocumentAnnotator {
+
+  @Override
+  public Document annotate(Document document) {
+    if (document == null) {
+      throw new IllegalArgumentException("document must not be null");
+    }
+    List<Annotation<String>> tokens = document.get(Layers.TOKENS);
+    List<Annotation<Integer>> lengths = new ArrayList<>(tokens.size());
+    for (Annotation<String> token : tokens) {
+      lengths.add(new Annotation<>(token.span(), token.value().length()));
+    }
+    return document.with(TOKEN_LENGTHS, lengths);
+  }
+
+  @Override
+  public Set<LayerKey<?>> requires() {
+    return Set.of(Layers.TOKENS);
+  }
+
+  @Override
+  public Set<LayerKey<?>> provides() {
+    return Set.of(TOKEN_LENGTHS);
+  }
+}]]>
+		</programlisting>
+		<para>
+			Reading the layer back is statically typed by the key, so the values are used as
+			numbers without a cast; for the text above the five values are
+			<code>3, 3, 6, 2, 5</code>, each on its token's span:
+		</para>
+		<programlisting language="java">
+				<![CDATA[
+List<Annotation<Integer>> lengths = document.get(TOKEN_LENGTHS);
+int firstTokenLength = lengths.get(0).value(); // 3, for "The" at [0..3)]]>
+		</programlisting>
+		<para>
+			Required layers must be present, but they may be empty: an empty token layer
+			yields the annotator's provided layers present but empty, so a pipeline degrades
+			gracefully on documents without content. An absent required layer is rejected
+			with an <code>IllegalArgumentException</code> naming the layer, because a
+			missing pipeline stage is an assembly error, not an empty document.
+		</para>
+	</section>
+</chapter>

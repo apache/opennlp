@@ -24,6 +24,11 @@ package opennlp.tools.document;
  * producer may define further keys in its own package. New capabilities must never
  * require an addition here to function.</p>
  *
+ * <p>Placement rule: this class holds only the keys of the core linguistic layers
+ * every pipeline shares (sentences, tokens, tags, entities). A capability-specific
+ * layer's key lives on the annotator that provides it, for example the lemma layer's
+ * key on its adapter, so adding a capability never touches this class.</p>
+ *
  * @since 3.0.0
  */
 public final class Layers {

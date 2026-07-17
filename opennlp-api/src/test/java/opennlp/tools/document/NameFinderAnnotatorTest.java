@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
@@ -38,22 +39,39 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class NameFinderAnnotatorTest {
 
-  @Test
-  void testTokenIndexSpansBecomeCharacterSpans() {
-    final AtomicInteger cleared = new AtomicInteger();
-    final TokenNameFinder finder = new TokenNameFinder() {
+  /**
+   * Builds a finder over a fixed find function, with adaptive-data clearing counted
+   * in the given counter when one is supplied.
+   *
+   * @param find Maps a sentence's tokens to its mentions.
+   * @param cleared Counts {@code clearAdaptiveData} calls, or {@code null} to ignore.
+   * @return The finder fixture. Never {@code null}.
+   */
+  private static TokenNameFinder finder(Function<String[], Span[]> find,
+      AtomicInteger cleared) {
+    return new TokenNameFinder() {
 
       @Override
       public Span[] find(String[] tokens) {
-        // "New York" as a two-token person-free location mention
-        return new Span[] {new Span(1, 3, "location")};
+        return find.apply(tokens);
       }
 
       @Override
       public void clearAdaptiveData() {
-        cleared.incrementAndGet();
+        if (cleared != null) {
+          cleared.incrementAndGet();
+        }
       }
     };
+  }
+
+  @Test
+  void testTokenIndexSpansBecomeCharacterSpans() {
+    final AtomicInteger cleared = new AtomicInteger();
+    final TokenNameFinder finder = finder(tokens -> {
+      // "New York" as a two-token person-free location mention
+      return new Span[] {new Span(1, 3, "location")};
+    }, cleared);
 
     final Document document = Document.of("in New York today")
         .with(Layers.SENTENCES, List.of(
@@ -81,17 +99,7 @@ public class NameFinderAnnotatorTest {
    */
   @Test
   void testMissingTokenLayerThrows() {
-    final TokenNameFinder finder = new TokenNameFinder() {
-
-      @Override
-      public Span[] find(String[] tokens) {
-        return new Span[0];
-      }
-
-      @Override
-      public void clearAdaptiveData() {
-      }
-    };
+    final TokenNameFinder finder = finder(tokens -> new Span[0], null);
     final Document document = Document.of("no tokens")
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 9), "no tokens")));
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
@@ -106,17 +114,7 @@ public class NameFinderAnnotatorTest {
    */
   @Test
   void testUntypedMentionRecordedAsUntyped() {
-    final TokenNameFinder finder = new TokenNameFinder() {
-
-      @Override
-      public Span[] find(String[] tokens) {
-        return new Span[] {new Span(0, 1)};
-      }
-
-      @Override
-      public void clearAdaptiveData() {
-      }
-    };
+    final TokenNameFinder finder = finder(tokens -> new Span[] {new Span(0, 1)}, null);
     final Document document = Document.of("Ana runs.")
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 9), "Ana runs.")))
         .with(Layers.TOKENS, List.of(
@@ -140,19 +138,10 @@ public class NameFinderAnnotatorTest {
   @Test
   void testMentionOutsideSentenceTokensFailsLoud() {
     final AtomicInteger cleared = new AtomicInteger();
-    final TokenNameFinder finder = new TokenNameFinder() {
-
-      @Override
-      public Span[] find(String[] tokens) {
-        // two tokens in the sentence, but the mention claims three
-        return new Span[] {new Span(0, 3, "person")};
-      }
-
-      @Override
-      public void clearAdaptiveData() {
-        cleared.incrementAndGet();
-      }
-    };
+    final TokenNameFinder finder = finder(tokens -> {
+      // two tokens in the sentence, but the mention claims three
+      return new Span[] {new Span(0, 3, "person")};
+    }, cleared);
     final Document document = Document.of("Ana runs. Bob sits.")
         .with(Layers.SENTENCES, List.of(
             new Annotation<>(new Span(0, 9), "Ana runs."),
@@ -178,18 +167,7 @@ public class NameFinderAnnotatorTest {
   @Test
   void testTokenOutsideEverySentenceThrowsAndStillClears() {
     final AtomicInteger cleared = new AtomicInteger();
-    final TokenNameFinder finder = new TokenNameFinder() {
-
-      @Override
-      public Span[] find(String[] tokens) {
-        return new Span[0];
-      }
-
-      @Override
-      public void clearAdaptiveData() {
-        cleared.incrementAndGet();
-      }
-    };
+    final TokenNameFinder finder = finder(tokens -> new Span[0], cleared);
     final Document document = Document.of("Ana runs. Bob")
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 9), "Ana runs.")))
         .with(Layers.TOKENS, List.of(
@@ -213,20 +191,11 @@ public class NameFinderAnnotatorTest {
   void testFindsPerSentenceAndMapsSentenceLocalIndices() {
     final List<List<String>> calls = new ArrayList<>();
     final AtomicInteger cleared = new AtomicInteger();
-    final TokenNameFinder finder = new TokenNameFinder() {
-
-      @Override
-      public Span[] find(String[] tokens) {
-        calls.add(List.of(tokens));
-        // the first token of every sentence is a person mention, in sentence-local indices
-        return new Span[] {new Span(0, 1, "person")};
-      }
-
-      @Override
-      public void clearAdaptiveData() {
-        cleared.incrementAndGet();
-      }
-    };
+    final TokenNameFinder finder = finder(tokens -> {
+      calls.add(List.of(tokens));
+      // the first token of every sentence is a person mention, in sentence-local indices
+      return new Span[] {new Span(0, 1, "person")};
+    }, cleared);
 
     final Document document = Document.of("Ana runs. Bob sits.")
         .with(Layers.SENTENCES, List.of(
@@ -259,17 +228,7 @@ public class NameFinderAnnotatorTest {
    */
   @Test
   void testRequiresSentencesAndTokens() {
-    final TokenNameFinder finder = new TokenNameFinder() {
-
-      @Override
-      public Span[] find(String[] tokens) {
-        return new Span[0];
-      }
-
-      @Override
-      public void clearAdaptiveData() {
-      }
-    };
+    final TokenNameFinder finder = finder(tokens -> new Span[0], null);
     assertEquals(Set.of(Layers.SENTENCES, Layers.TOKENS),
         new NameFinderAnnotator(finder).requires());
   }
@@ -281,18 +240,10 @@ public class NameFinderAnnotatorTest {
   @Test
   void testEmptyPresentLayersYieldEmptyEntityLayer() {
     final AtomicInteger found = new AtomicInteger();
-    final TokenNameFinder finder = new TokenNameFinder() {
-
-      @Override
-      public Span[] find(String[] tokens) {
-        found.incrementAndGet();
-        return new Span[0];
-      }
-
-      @Override
-      public void clearAdaptiveData() {
-      }
-    };
+    final TokenNameFinder finder = finder(tokens -> {
+      found.incrementAndGet();
+      return new Span[0];
+    }, null);
     final Document document = Document.of("")
         .with(Layers.SENTENCES, List.of())
         .with(Layers.TOKENS, List.of());
@@ -310,17 +261,7 @@ public class NameFinderAnnotatorTest {
    */
   @Test
   void testAbsentSentenceLayerThrowsWithExactMessage() {
-    final TokenNameFinder finder = new TokenNameFinder() {
-
-      @Override
-      public Span[] find(String[] tokens) {
-        return new Span[0];
-      }
-
-      @Override
-      public void clearAdaptiveData() {
-      }
-    };
+    final TokenNameFinder finder = finder(tokens -> new Span[0], null);
     final Document document = Document.of("Ana")
         .with(Layers.TOKENS, List.of(new Annotation<>(new Span(0, 3), "Ana")));
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
