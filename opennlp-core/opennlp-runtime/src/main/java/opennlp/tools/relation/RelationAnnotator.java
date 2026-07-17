@@ -56,7 +56,7 @@ public class RelationAnnotator implements DocumentAnnotator {
    * {@link RelationMention}.
    */
   public static final LayerKey<RelationMention> RELATIONS =
-      LayerKey.of("relations", RelationMention.class);
+      Layers.key("relations", RelationMention.class);
 
   private final List<RelationPattern> patterns;
   private final List<List<String>> patternSteps;
