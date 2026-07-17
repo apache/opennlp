@@ -123,6 +123,26 @@ public class DocumentContractTest {
   }
 
   /**
+   * Verifies the gold-layer convention: a hand-annotated version of a layer lives
+   * under the {@code gold:} prefixed key beside the produced layer, both are readable
+   * independently, and the once-only rule keeps either from replacing the other.
+   */
+  @Test
+  void testGoldLayerLivesBesideThePredictedLayer() {
+    final LayerKey<String> gold = LayerKey.of("gold:" + Layers.TOKENS.id(), String.class);
+    final Document document = Document.of("the dog")
+        .with(Layers.TOKENS, List.of(new Annotation<>(new Span(0, 3), "the")))
+        .with(gold, List.of(
+            new Annotation<>(new Span(0, 3), "the"),
+            new Annotation<>(new Span(4, 7), "dog")));
+    assertEquals("gold:opennlp:tokens", gold.id());
+    assertEquals(1, document.get(Layers.TOKENS).size());
+    assertEquals(2, document.get(gold).size());
+    assertThrows(IllegalArgumentException.class,
+        () -> document.with(gold, List.of()));
+  }
+
+  /**
    * Verifies that a layer preserves the insertion order of its annotations: the
    * container does not sort by span, so a producer that wants span order must supply
    * span order.

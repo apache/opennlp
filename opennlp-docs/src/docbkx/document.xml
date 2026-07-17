@@ -79,6 +79,13 @@ LayerKey<String> LANGUAGE = LayerKey.document("app:language", String.class);
 Document tagged = document.with(LANGUAGE, List.of(Annotation.of("eng")));
 String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
 		</programlisting>
+		<para>
+			A corpus may carry a hand-annotated version of a layer beside a produced one.
+			The convention is a <code>gold:</code> id prefix on the same key scheme, for
+			example <code>gold:opennlp:tokens</code> beside <code>opennlp:tokens</code>;
+			since adding a layer is once-only, competing versions always live under
+			distinct keys and never replace each other.
+		</para>
 	</section>
 
 	<section xml:id="tools.document.pipeline">

@@ -29,6 +29,12 @@ package opennlp.tools.document;
  * a bare id without a prefix is legal for an application-local layer, so ids from
  * independent producers cannot collide.</p>
  *
+ * <p>Gold versus predicted: a corpus may carry a hand-annotated version of a layer
+ * beside a produced one. The convention is a {@code gold:} id prefix on the same key
+ * scheme, for example {@code gold:opennlp:tokens} beside {@code opennlp:tokens}.
+ * Because adding a layer is once-only, competing versions of a layer always live under
+ * distinct keys and never replace each other.</p>
+ *
  * <p>Placement rule: this class holds only the keys of the core linguistic layers
  * every pipeline shares (sentences, tokens, tags, entities). A capability-specific
  * layer's key lives on the annotator that provides it, for example the lemma layer's
