@@ -277,6 +277,42 @@ public class FeedforwardDependencyParserTest {
     }
   }
 
+  /**
+   * Pins the scoring cache against the direct path: the parser built in setup turned
+   * the cache on for the shared model, so scoring the same configuration through a
+   * fresh uncached copy must agree to float rounding, and the winning transition must
+   * be identical. Repeated scoring exercises the cache-hit path as well as the
+   * first-sight fill.
+   */
+  @Test
+  void testScoringCacheMatchesTheDirectPath() {
+    final FeedforwardDependencyModel uncached = model.copy();
+    final String[] tokens = {"the", "dog", "barks"};
+    final String[] tags = {"DT", "NN", "VBZ"};
+    final int[] features = model.featureIds(
+        FeedforwardContext.extract(new ArcStandardState(tokens.length), tokens, tags));
+
+    for (int round = 0; round < 3; round++) {
+      final double[] cached = model.score(features);
+      final double[] direct = uncached.score(features);
+      assertEquals(direct.length, cached.length);
+      int bestCached = 0;
+      int bestDirect = 0;
+      for (int o = 0; o < cached.length; o++) {
+        assertEquals(direct[o], cached[o],
+            Math.max(1.0e-6, Math.abs(direct[o]) * 1.0e-6),
+            "score " + o + " must agree to float rounding");
+        if (cached[o] > cached[bestCached]) {
+          bestCached = o;
+        }
+        if (direct[o] > direct[bestDirect]) {
+          bestDirect = o;
+        }
+      }
+      assertEquals(bestDirect, bestCached, "the winning transition must be identical");
+    }
+  }
+
   @Test
   void testNormalizeUsesTheUnicodeDataCaseMapping() {
     // StringUtil maps per code point via UnicodeData, so no character expands; the JDK's

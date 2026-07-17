@@ -78,6 +78,9 @@ public class FeedforwardDependencyParser implements DependencyParser {
     }
     this.model = model;
     this.beamSize = beamSize;
+    // A parser only ever reads a frozen model, so the scoring cache is safe to turn
+    // on here; training and refinement work on uncached copies.
+    model.enableScoringCache();
     final String[] outcomes = model.transitions();
     this.transitions = new Transition[outcomes.length];
     for (int i = 0; i < outcomes.length; i++) {
