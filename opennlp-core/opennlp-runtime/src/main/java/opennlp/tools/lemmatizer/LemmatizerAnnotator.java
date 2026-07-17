@@ -48,6 +48,9 @@ public class LemmatizerAnnotator implements DocumentAnnotator {
    */
   public static final LayerKey<String> LEMMAS = LayerKey.of("lemmas", String.class);
 
+  /** The message prefix of every absent-required-layer rejection in this adapter. */
+  private static final String MISSING_LAYER = "document lacks the required layer ";
+
   private final Lemmatizer lemmatizer;
 
   /**
@@ -90,15 +93,15 @@ public class LemmatizerAnnotator implements DocumentAnnotator {
       throw new IllegalArgumentException("document must not be null");
     }
     if (!document.layers().contains(Layers.SENTENCES)) {
-      throw new IllegalArgumentException("document lacks the required layer "
+      throw new IllegalArgumentException(MISSING_LAYER
           + Layers.SENTENCES);
     }
     if (!document.layers().contains(Layers.TOKENS)) {
-      throw new IllegalArgumentException("document lacks the required layer "
+      throw new IllegalArgumentException(MISSING_LAYER
           + Layers.TOKENS);
     }
     if (!document.layers().contains(Layers.POS_TAGS)) {
-      throw new IllegalArgumentException("document lacks the required layer "
+      throw new IllegalArgumentException(MISSING_LAYER
           + Layers.POS_TAGS);
     }
     final List<Annotation<String>> sentences = document.get(Layers.SENTENCES);

@@ -25,9 +25,8 @@ import java.util.Set;
  *
  * <p>An annotator declares the layers it {@link #requires()} and {@link #provides()}, so
  * a {@link DocumentAnalyzer} can validate a pipeline before running it. Annotators are
- * usually thin adapters over an existing analysis component and should hold no per-call
- * state, so one instance can serve concurrent pipelines when the wrapped component
- * allows it.</p>
+ * usually thin adapters over an existing analysis component. Thread safety is
+ * implementation specific.</p>
  *
  * @since 3.0.0
  */

@@ -41,9 +41,10 @@ public class POSTaggerAnnotatorTest {
 
   /**
    * A tagger that records the exact token sequence of every call and answers with one
-   * {@code "X"} tag per token, so the per-call slicing is observable.
+   * {@code "X"} tag per token, so the per-call slicing is observable. Tests override
+   * {@link #tag(String[])} where a deviant answer is the fixture.
    */
-  private static final class RecordingTagger implements POSTagger {
+  private static class RecordingTagger implements POSTagger {
 
     private final List<List<String>> calls = new ArrayList<>();
 
@@ -208,26 +209,12 @@ public class POSTaggerAnnotatorTest {
    */
   @Test
   void testWrongTagCountFailsLoud() {
-    final POSTagger shortTagger = new POSTagger() {
+    // one tag regardless of sentence length, so a two-token sentence trips the check
+    final POSTagger shortTagger = new RecordingTagger() {
 
       @Override
       public String[] tag(String[] sentence) {
         return new String[] {"X"};
-      }
-
-      @Override
-      public String[] tag(String[] sentence, Object[] additionalContext) {
-        return tag(sentence);
-      }
-
-      @Override
-      public Sequence[] topKSequences(String[] sentence) {
-        throw new UnsupportedOperationException("the adapter only calls tag");
-      }
-
-      @Override
-      public Sequence[] topKSequences(String[] sentence, Object[] additionalContext) {
-        throw new UnsupportedOperationException("the adapter only calls tag");
       }
     };
     final Document document = Document.of("The dog")

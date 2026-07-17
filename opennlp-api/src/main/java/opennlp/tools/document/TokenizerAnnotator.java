@@ -52,6 +52,16 @@ public class TokenizerAnnotator implements DocumentAnnotator {
     this.tokenizer = tokenizer;
   }
 
+  /**
+   * Tokenizes the document and adds the {@link Layers#TOKENS} layer, sentence by
+   * sentence when a sentence layer is present and over the whole text otherwise.
+   *
+   * @param document The document to annotate. Must not be {@code null}.
+   * @return A new {@link Document} with the {@link Layers#TOKENS} layer added. Never
+   *         {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code document} is {@code null} or
+   *         already carries the {@link Layers#TOKENS} layer.
+   */
   @Override
   public Document annotate(Document document) {
     if (document == null) {
@@ -70,6 +80,14 @@ public class TokenizerAnnotator implements DocumentAnnotator {
     return document.with(Layers.TOKENS, tokens);
   }
 
+  /**
+   * Tokenizes one stretch of text and appends its tokens, shifted back into document
+   * coordinates.
+   *
+   * @param tokens The layer under construction.
+   * @param text The stretch to tokenize.
+   * @param offset The stretch's start offset in the document text.
+   */
   private void addTokens(List<Annotation<String>> tokens, String text, int offset) {
     for (final Span span : tokenizer.tokenizePos(text)) {
       final Span shifted = new Span(span.getStart() + offset, span.getEnd() + offset);

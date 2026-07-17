@@ -38,6 +38,9 @@ import opennlp.tools.postag.POSTagger;
  */
 public class POSTaggerAnnotator implements DocumentAnnotator {
 
+  /** The message prefix of every absent-required-layer rejection in this adapter. */
+  private static final String MISSING_LAYER = "document lacks the required layer ";
+
   private final POSTagger tagger;
 
   /**
@@ -78,11 +81,11 @@ public class POSTaggerAnnotator implements DocumentAnnotator {
     }
     final Set<LayerKey<?>> present = document.layers();
     if (!present.contains(Layers.SENTENCES)) {
-      throw new IllegalArgumentException("document lacks the required layer "
+      throw new IllegalArgumentException(MISSING_LAYER
           + Layers.SENTENCES);
     }
     if (!present.contains(Layers.TOKENS)) {
-      throw new IllegalArgumentException("document lacks the required layer "
+      throw new IllegalArgumentException(MISSING_LAYER
           + Layers.TOKENS);
     }
     final List<Annotation<String>> sentences = document.get(Layers.SENTENCES);
