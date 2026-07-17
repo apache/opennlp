@@ -38,6 +38,9 @@ import opennlp.tools.util.Span;
  */
 public class RelationAnnotatorTest {
 
+  /** {@code Istanbul} with the Turkish capital I with dot above, U+0130, as its initial. */
+  private static final String DOTTED_CAPITAL_ISTANBUL = "\u0130stanbul";
+
   /**
    * Builds the parsed document "Acme Corp acquired Bolt in 2024." with entities for
    * Acme Corp (index 0), Bolt (index 1), and 2024 (index 2). The dependency layer marks
@@ -300,6 +303,67 @@ public class RelationAnnotatorTest {
     final IllegalArgumentException e = Assertions.assertThrows(
         IllegalArgumentException.class, () -> new RelationAnnotator(patterns));
     Assertions.assertEquals("patterns must not contain null", e.getMessage());
+  }
+
+  /**
+   * Builds the parsed document "Istanbul, home of Bolt." whose first token is written
+   * with the Turkish capital I with dot above (U+0130), with entities for that city
+   * (index 0) and Bolt (index 1). The city is the sentence root, {@code home} is its
+   * apposition, and {@code Bolt} is an {@code nmod} of {@code home}, so the path from the
+   * city down to Bolt is {@code >appos >nmod} and the city itself is the pivot.
+   *
+   * @return A document with aligned token, entity, and dependency layers. Never
+   *         {@code null}.
+   */
+  private static Document dottedCapitalPivotDocument() {
+    final String text = "\u0130stanbul, home of Bolt.";
+    final List<Annotation<String>> tokens = List.of(
+        new Annotation<>(new Span(0, 8), DOTTED_CAPITAL_ISTANBUL),
+        new Annotation<>(new Span(8, 9), ","),
+        new Annotation<>(new Span(10, 14), "home"),
+        new Annotation<>(new Span(15, 17), "of"),
+        new Annotation<>(new Span(18, 22), "Bolt"),
+        new Annotation<>(new Span(22, 23), "."));
+    final List<DependencyArc> arcs = List.of(
+        new DependencyArc(DependencyArc.ROOT_HEAD, 0, "root"),
+        new DependencyArc(2, 1, "punct"),
+        new DependencyArc(0, 2, "appos"),
+        new DependencyArc(4, 3, "case"),
+        new DependencyArc(2, 4, "nmod"),
+        new DependencyArc(0, 5, "punct"));
+    final List<Annotation<DependencyArc>> dependencies = new ArrayList<>();
+    for (final DependencyArc arc : arcs) {
+      dependencies.add(new Annotation<>(tokens.get(arc.dependent()).span(), arc));
+    }
+    return Document.of(text)
+        .with(Layers.TOKENS, tokens)
+        .with(Layers.ENTITIES, List.of(
+            new Annotation<>(new Span(0, 8), "location"),
+            new Annotation<>(new Span(18, 22), "organization")))
+        .with(DependencyAnnotator.DEPENDENCIES, dependencies);
+  }
+
+  /**
+   * Verifies that the pivot form is lowercased with the project's case mapping: the pivot
+   * token written with the Turkish capital I with dot above (U+0130) lowercases per code
+   * point to {@code istanbul}, so a pattern carrying that trigger matches. The JDK's
+   * locale-independent lowercasing instead expands U+0130 to an i followed by U+0307, a
+   * form no constructible trigger can equal, which would silently drop the relation.
+   */
+  @Test
+  void testPivotFormUsesTheProjectCaseMapping() {
+    final RelationAnnotator annotator = new RelationAnnotator(List.of(
+        new RelationPattern("located_in", ">appos >nmod", "istanbul")));
+
+    final Document document = annotator.annotate(dottedCapitalPivotDocument());
+
+    final List<Annotation<RelationMention>> relations =
+        document.get(RelationAnnotator.RELATIONS);
+    Assertions.assertEquals(1, relations.size());
+    Assertions.assertEquals(new RelationMention("located_in", 0, 1),
+        relations.get(0).value());
+    Assertions.assertEquals(DOTTED_CAPITAL_ISTANBUL + ", home of Bolt", document.text().subSequence(
+        relations.get(0).span().getStart(), relations.get(0).span().getEnd()).toString());
   }
 
   /**

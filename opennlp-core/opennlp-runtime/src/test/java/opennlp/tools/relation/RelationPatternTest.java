@@ -38,6 +38,15 @@ public class RelationPatternTest {
   private static final char FILE_SEPARATOR = (char) 0x001C;
   private static final char UNIT_SEPARATOR = (char) 0x001F;
 
+  /** {@code Istanbul} with the Turkish capital I with dot above, U+0130, as its initial. */
+  private static final String DOTTED_CAPITAL_ISTANBUL = "\u0130stanbul";
+
+  /** {@code Istanbul} as the JDK lowercases U+0130: an i plus U+0307 combining dot above. */
+  private static final String JDK_LOWERCASED_ISTANBUL = "i\u0307stanbul";
+
+  /** The German {@code Strasse} spelled with U+00DF, the small sharp s. */
+  private static final String SHARP_S_STRASSE = "stra\u00DFe";
+
   /**
    * Verifies splitting on ASCII blanks and tabs, including runs of separators at the
    * start and end of the path, which never produce empty steps.
@@ -154,6 +163,51 @@ public class RelationPatternTest {
   void testLeadingAndTrailingNoBreakSpacesAreIgnored() {
     Assertions.assertEquals(List.of("<nsubj", ">obj"),
         new RelationPattern("t", "\u00A0<nsubj\u00A0>obj\u00A0", null).steps());
+  }
+
+  /**
+   * Verifies that a trigger which is not already lowercased is rejected at construction
+   * with a message naming the offending trigger. Such a trigger could never equal the
+   * lowercased pivot form the annotator compares it against, so the pattern would match
+   * nothing without any error; the check turns that silent dead rule into a failure at
+   * the boundary where the user can fix it.
+   */
+  @Test
+  void testNonLowercasedTriggerFailsLoudWithExactMessage() {
+    final IllegalArgumentException e = Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> new RelationPattern("t", "<nsubj >obj", "Founded"));
+    Assertions.assertEquals("trigger must be lowercased, but was: Founded", e.getMessage());
+    Assertions.assertEquals("founded",
+        new RelationPattern("t", "<nsubj >obj", "founded").trigger());
+  }
+
+  /**
+   * Verifies that the trigger check follows {@link StringUtil#toLowerCase(CharSequence)},
+   * the same mapping {@link RelationAnnotator} applies to the pivot form: a trigger is
+   * accepted exactly when that mapping leaves it unchanged. The expectation is derived
+   * from the mapping itself rather than pinned per character, so this test asserts the
+   * contract that construction accepts exactly the forms a pivot can lowercase to, and it
+   * stays correct when the mapping's character set changes. The candidates include
+   * {@code Istanbul} written with the Turkish capital I with dot above (U+0130), whose
+   * JDK lowercasing expands beyond the per code point mapping, and the German sharp s,
+   * which is already lowercase while its uppercase form expands.
+   */
+  @Test
+  void testTriggerCheckFollowsTheProjectCaseMapping() {
+    for (final String candidate : new String[] {"founded", "Founded",
+        DOTTED_CAPITAL_ISTANBUL, "istanbul", JDK_LOWERCASED_ISTANBUL, "STRASSE",
+        SHARP_S_STRASSE}) {
+      final String message = "trigger acceptance for " + candidate
+          + " must follow StringUtil.toLowerCase";
+      if (StringUtil.toLowerCase(candidate).equals(candidate)) {
+        Assertions.assertEquals(candidate,
+            new RelationPattern("t", "<nsubj", candidate).trigger(), message);
+      } else {
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> new RelationPattern("t", "<nsubj", candidate), message);
+      }
+    }
   }
 
   /**
