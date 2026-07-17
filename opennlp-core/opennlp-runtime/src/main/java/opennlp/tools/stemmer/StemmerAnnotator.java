@@ -42,7 +42,7 @@ public class StemmerAnnotator implements DocumentAnnotator {
    * The stem layer. It is aligned with the token layer by position, and each annotation
    * carries the stem of its token on that token's span.
    */
-  public static final LayerKey<String> STEMS = LayerKey.of("stems", String.class);
+  public static final LayerKey<String> STEMS = LayerKey.of("opennlp:stems", String.class);
 
   private final Stemmer stemmer;
 

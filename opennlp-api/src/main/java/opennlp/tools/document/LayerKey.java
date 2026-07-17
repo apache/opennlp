@@ -48,8 +48,10 @@ public final class LayerKey<T> {
   /**
    * Creates a {@link LayerKey}.
    *
-   * @param id The layer identifier, for example {@code tokens}. Must not be {@code null}
-   *           or blank.
+   * @param id The layer identifier, for example {@code opennlp:tokens}. Keys defined by
+   *           the toolkit carry the {@code opennlp:} prefix, an extension uses its own
+   *           prefix, and a bare id is legal for an application-local layer. Must not
+   *           be {@code null} or blank.
    * @param type The class of the annotation values stored under the key. Must not be
    *             {@code null}.
    * @param <T> The type of the annotation values.
