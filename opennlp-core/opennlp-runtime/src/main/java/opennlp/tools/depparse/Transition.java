@@ -17,6 +17,8 @@
 
 package opennlp.tools.depparse;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * One action of the arc-standard transition system: shift the next buffer token onto the
  * stack, or attach one of the two topmost stack tokens to the other under a relation label.
@@ -62,9 +64,25 @@ public record Transition(Type type, String label) {
       if (label != null) {
         throw new IllegalArgumentException("a shift must not carry a label: " + label);
       }
-    } else if (label == null || label.isBlank()) {
+    } else if (label == null || blank(label)) {
       throw new IllegalArgumentException("an arc transition needs a relation label");
     }
+  }
+
+  /**
+   * Reports whether a label is blank under the project whitespace definition, which
+   * unlike the JDK's includes no-break spaces, so a label spelled entirely from them
+   * cannot pass as a relation.
+   */
+  private static boolean blank(String value) {
+    for (int i = 0; i < value.length(); ) {
+      final int cp = value.codePointAt(i);
+      if (!StringUtil.isWhitespace(cp)) {
+        return false;
+      }
+      i += Character.charCount(cp);
+    }
+    return true;
   }
 
   /**
