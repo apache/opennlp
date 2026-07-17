@@ -33,6 +33,7 @@ import java.util.Set;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
+import opennlp.tools.util.StringUtil;
 
 /**
  * A {@link Gazetteer} over a user-supplied file in the GeoNames main table format: one
@@ -115,7 +116,7 @@ public final class GeoNamesGazetteer implements Gazetteer {
     int lineNumber = 0;
     while ((line = reader.readLine()) != null) {
       lineNumber++;
-      if (line.isBlank()) {
+      if (StringUtil.isBlank(line)) {
         continue;
       }
       index.add(parseRow(line, lineNumber));

@@ -33,6 +33,7 @@ import java.util.Set;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
+import opennlp.tools.util.StringUtil;
 
 /**
  * A {@link Gazetteer} over a division table derived from Overture Maps data with the
@@ -123,7 +124,7 @@ public final class OvertureGazetteer implements Gazetteer {
     int lineNumber = 0;
     while ((line = reader.readLine()) != null) {
       lineNumber++;
-      if (line.isBlank() || line.charAt(0) == '#') {
+      if (StringUtil.isBlank(line) || line.charAt(0) == '#') {
         continue;
       }
       index.add(parseRow(line, lineNumber));
