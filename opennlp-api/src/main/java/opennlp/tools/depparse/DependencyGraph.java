@@ -79,7 +79,7 @@ public final class DependencyGraph {
       } else if (heads[i] == i) {
         throw new IllegalArgumentException("token " + i + " must not head itself");
       }
-      if (relations[i] == null || blank(relations[i])) {
+      if (relations[i] == null || StringUtil.isBlank(relations[i])) {
         throw new IllegalArgumentException("relation of token " + i + " must not be blank");
       }
     }
@@ -89,21 +89,6 @@ public final class DependencyGraph {
     return new DependencyGraph(heads.clone(), relations.clone());
   }
 
-  /**
-   * Reports whether a relation label is blank under the project whitespace
-   * definition, which unlike the JDK's includes no-break spaces, so a label spelled
-   * entirely from them cannot pass as a relation.
-   */
-  private static boolean blank(String value) {
-    for (int i = 0; i < value.length(); ) {
-      final int cp = value.codePointAt(i);
-      if (!StringUtil.isWhitespace(cp)) {
-        return false;
-      }
-      i += Character.charCount(cp);
-    }
-    return true;
-  }
 
   /**
    * @return The number of tokens the graph spans.
