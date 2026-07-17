@@ -28,9 +28,10 @@ import opennlp.tools.util.Span;
  * Adapts a {@link Tokenizer} to the document pipeline: provides {@link Layers#TOKENS}.
  *
  * <p>When {@link Layers#SENTENCES} is present, each sentence is tokenized separately and
- * the token spans are shifted back to document coordinates; otherwise the whole text is
- * tokenized at once. Either way, every token span refers to the original document
- * text.</p>
+ * the token spans are shifted back to document coordinates; a present-but-empty sentence
+ * layer therefore yields a present-but-empty token layer. Only when the sentence layer
+ * is absent is the whole text tokenized at once. Either way, every token span refers to
+ * the original document text.</p>
  *
  * @since 3.0.0
  */
@@ -58,11 +59,10 @@ public class TokenizerAnnotator implements DocumentAnnotator {
     }
     final String text = document.text().toString();
     final List<Annotation<String>> tokens = new ArrayList<>();
-    final List<Annotation<String>> sentences = document.get(Layers.SENTENCES);
-    if (sentences.isEmpty()) {
+    if (!document.layers().contains(Layers.SENTENCES)) {
       addTokens(tokens, text, 0);
     } else {
-      for (final Annotation<String> sentence : sentences) {
+      for (final Annotation<String> sentence : document.get(Layers.SENTENCES)) {
         final Span span = sentence.span();
         addTokens(tokens, text.substring(span.getStart(), span.getEnd()), span.getStart());
       }

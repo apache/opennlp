@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.postag.POSTagger;
 import opennlp.tools.sentdetect.SentenceDetector;
 import opennlp.tools.tokenize.Tokenizer;
@@ -29,6 +30,7 @@ import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the {@link DocumentAnalyzer} pipeline over the adapter annotators, using simple
@@ -136,6 +138,53 @@ public class DocumentAnalyzerTest {
     assertEquals(5, tags.size());
     assertEquals("VBZ", tags.get(2).value());
     assertEquals(tokens.get(2).span(), tags.get(2).span());
+  }
+
+  /**
+   * Verifies that a full pipeline over empty and whitespace-only input produces a
+   * document on which every provided layer is present and empty, rather than failing:
+   * zero sentences legitimately yield zero tokens, zero tags, and zero entities.
+   */
+  @Test
+  void testEmptyAndBlankInputProduceEmptyLayers() {
+    final TokenNameFinder finder = new TokenNameFinder() {
+
+      @Override
+      public Span[] find(String[] tokens) {
+        return new Span[0];
+      }
+
+      @Override
+      public void clearAdaptiveData() {
+      }
+    };
+    final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
+        .add(new SentenceDetectorAnnotator(SPLITTER))
+        .add(new TokenizerAnnotator(WHITESPACE))
+        .add(new POSTaggerAnnotator(TAGGER))
+        .add(new NameFinderAnnotator(finder))
+        .build();
+
+    for (final String text : new String[] {"", "   "}) {
+      final Document document = analyzer.analyze(text);
+      assertEquals(Set.of(Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS, Layers.ENTITIES),
+          document.layers());
+      for (final LayerKey<?> layer : document.layers()) {
+        assertTrue(document.get(layer).isEmpty());
+      }
+    }
+  }
+
+  /**
+   * Verifies that a present-but-empty sentence layer is honored as "no sentences": the
+   * tokenizer adds a present-but-empty token layer instead of tokenizing the whole text.
+   */
+  @Test
+  void testTokenizerHonorsPresentButEmptySentenceLayer() {
+    final Document document = new TokenizerAnnotator(WHITESPACE)
+        .annotate(Document.of("the dog").with(Layers.SENTENCES, List.of()));
+    assertTrue(document.layers().contains(Layers.TOKENS));
+    assertTrue(document.get(Layers.TOKENS).isEmpty());
   }
 
   @Test

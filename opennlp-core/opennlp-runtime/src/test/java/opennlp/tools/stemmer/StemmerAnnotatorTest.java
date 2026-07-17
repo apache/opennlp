@@ -53,4 +53,28 @@ public class StemmerAnnotatorTest {
     final StemmerAnnotator annotator = new StemmerAnnotator(new PorterStemmer());
     Assertions.assertThrows(IllegalArgumentException.class, () -> annotator.annotate(null));
   }
+
+  /**
+   * Verifies that a document without a token layer is rejected with a message naming the
+   * missing layer, instead of silently producing an empty stem layer.
+   */
+  @Test
+  void testAbsentTokenLayerThrowsWithExactMessage() {
+    final StemmerAnnotator annotator = new StemmerAnnotator(new PorterStemmer());
+    final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> annotator.annotate(Document.of("no tokens")));
+    Assertions.assertEquals("document lacks the required layer tokens<String>", e.getMessage());
+  }
+
+  /**
+   * Verifies that a present-but-empty token layer yields a present-but-empty stem layer
+   * rather than an exception.
+   */
+  @Test
+  void testEmptyPresentTokenLayerYieldsEmptyStemLayer() {
+    final Document document = Document.of("").with(Layers.TOKENS, List.of());
+    final Document stemmed = new StemmerAnnotator(new PorterStemmer()).annotate(document);
+    Assertions.assertTrue(stemmed.layers().contains(StemmerAnnotator.STEMS));
+    Assertions.assertTrue(stemmed.get(StemmerAnnotator.STEMS).isEmpty());
+  }
 }

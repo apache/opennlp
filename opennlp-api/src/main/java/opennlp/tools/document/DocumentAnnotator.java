@@ -36,6 +36,10 @@ public interface DocumentAnnotator {
   /**
    * Annotates a document.
    *
+   * <p>A required layer must be present on the document, but it may be empty: an empty
+   * required layer is valid input and yields the annotator's provided layers present but
+   * empty, so a pipeline degrades gracefully on documents without content.</p>
+   *
    * @param document The document to annotate. Must not be {@code null} and must contain
    *                 every layer named by {@link #requires()}.
    * @return A new {@link Document} carrying the layers named by {@link #provides()} in

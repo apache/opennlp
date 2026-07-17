@@ -239,6 +239,33 @@ public class DocumentContractTest {
   }
 
   /**
+   * Verifies that an analyzer whose annotators would provide the same layer twice fails
+   * at build time with a message naming the layer and the positions of both providers,
+   * instead of crashing midway through the first document.
+   */
+  @Test
+  void testDuplicateProviderFailsAtBuildTimeWithExactMessage() {
+    final DocumentAnnotator provider = new DocumentAnnotator() {
+
+      @Override
+      public Document annotate(Document document) {
+        throw new IllegalStateException("must never run; the pipeline must not build");
+      }
+
+      @Override
+      public Set<LayerKey<?>> provides() {
+        return Set.of(WORDS);
+      }
+    };
+    final DocumentAnalyzer.Builder builder = DocumentAnalyzer.builder()
+        .add(provider).add(provider);
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, builder::build);
+    assertEquals("annotators at positions 0 and 1 both provide layer words<String>",
+        e.getMessage());
+  }
+
+  /**
    * Verifies that building an analyzer without any annotator fails with a message
    * stating that a pipeline needs at least one annotator.
    */

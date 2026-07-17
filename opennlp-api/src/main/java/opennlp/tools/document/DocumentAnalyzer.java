@@ -18,18 +18,19 @@
 package opennlp.tools.document;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Runs a fixed sequence of {@link DocumentAnnotator annotators} over a text, producing
  * one {@link Document} that carries every step's layers.
  *
  * <p>The pipeline is validated at build time: every annotator's required layers must be
- * provided by an earlier annotator, so a misordered pipeline fails when it is assembled
- * rather than midway through a document. The analyzer holds no per-call state; it is as
- * thread-safe as the annotators it is built from.</p>
+ * provided by an earlier annotator, and no two annotators may provide the same layer, so
+ * a misordered or conflicting pipeline fails when it is assembled rather than midway
+ * through a document. The analyzer holds no per-call state; it is as thread-safe as the
+ * annotators it is built from.</p>
  *
  * @since 3.0.0
  */
@@ -93,22 +94,30 @@ public final class DocumentAnalyzer {
      * Validates the pipeline and builds the analyzer.
      *
      * @return A {@link DocumentAnalyzer}. Never {@code null}.
-     * @throws IllegalArgumentException Thrown if the pipeline is empty or an annotator
-     *         requires a layer no earlier annotator provides.
+     * @throws IllegalArgumentException Thrown if the pipeline is empty, an annotator
+     *         requires a layer no earlier annotator provides, or two annotators provide
+     *         the same layer.
      */
     public DocumentAnalyzer build() {
       if (annotators.isEmpty()) {
         throw new IllegalArgumentException("a pipeline needs at least one annotator");
       }
-      final Set<LayerKey<?>> available = new HashSet<>();
-      for (final DocumentAnnotator annotator : annotators) {
+      final Map<LayerKey<?>, Integer> providers = new HashMap<>();
+      for (int position = 0; position < annotators.size(); position++) {
+        final DocumentAnnotator annotator = annotators.get(position);
         for (final LayerKey<?> required : annotator.requires()) {
-          if (!available.contains(required)) {
+          if (!providers.containsKey(required)) {
             throw new IllegalArgumentException("annotator " + annotator
                 + " requires layer " + required + ", which no earlier annotator provides");
           }
         }
-        available.addAll(annotator.provides());
+        for (final LayerKey<?> provided : annotator.provides()) {
+          final Integer earlier = providers.putIfAbsent(provided, position);
+          if (earlier != null) {
+            throw new IllegalArgumentException("annotators at positions " + earlier
+                + " and " + position + " both provide layer " + provided);
+          }
+        }
       }
       return new DocumentAnalyzer(List.copyOf(annotators));
     }

@@ -79,4 +79,37 @@ public class LemmatizerAnnotatorTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> annotator.annotate(misaligned));
   }
+
+  /**
+   * Verifies that a document lacking a required layer is rejected with a message naming
+   * the missing layer, instead of silently producing an empty lemma layer.
+   */
+  @Test
+  void testAbsentRequiredLayerThrowsWithExactMessage() {
+    final LemmatizerAnnotator annotator = new LemmatizerAnnotator(FIXTURE);
+    final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> annotator.annotate(Document.of("no layers")));
+    Assertions.assertEquals("document lacks the required layer tokens<String>", e.getMessage());
+
+    final Document tokensOnly = Document.of("a")
+        .with(Layers.TOKENS, List.of(new Annotation<>(new Span(0, 1), "a")));
+    final IllegalArgumentException tagless = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> annotator.annotate(tokensOnly));
+    Assertions.assertEquals("document lacks the required layer pos<String>",
+        tagless.getMessage());
+  }
+
+  /**
+   * Verifies that present-but-empty token and tag layers yield a present-but-empty lemma
+   * layer rather than an exception.
+   */
+  @Test
+  void testEmptyPresentLayersYieldEmptyLemmaLayer() {
+    final Document document = Document.of("")
+        .with(Layers.TOKENS, List.of())
+        .with(Layers.POS_TAGS, List.of());
+    final Document lemmatized = new LemmatizerAnnotator(FIXTURE).annotate(document);
+    Assertions.assertTrue(lemmatized.layers().contains(LemmatizerAnnotator.LEMMAS));
+    Assertions.assertTrue(lemmatized.get(LemmatizerAnnotator.LEMMAS).isEmpty());
+  }
 }
