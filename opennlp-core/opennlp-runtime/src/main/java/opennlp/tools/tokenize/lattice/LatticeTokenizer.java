@@ -143,11 +143,19 @@ public class LatticeTokenizer implements Tokenizer {
     final boolean[] reachable = new boolean[length + 1];
     reachable[0] = true;
 
+    // One right-to-left pass fixes each position's category and same-category run end,
+    // so candidate generation reads them instead of rescanning the run from every
+    // position, which would cost the square of the run length on long uniform runs.
+    final Category[] categoryAt = new Category[length];
+    final int[] runEndAt = new int[length];
+    computeCategoryRuns(text, from, to, categoryAt, runEndAt);
+
     for (int i = 0; i < length; i++) {
       if (!reachable[i]) {
         continue;
       }
-      final List<Node> candidates = candidates(text, from, to, i);
+      final List<Node> candidates =
+          candidates(text, from, to, i, categoryAt[i], runEndAt[i]);
       for (final Node candidate : candidates) {
         relax(candidate, i == 0 ? null : endingAt.get(i));
         if (candidate.pathCost < Long.MAX_VALUE) {
@@ -199,8 +207,39 @@ public class LatticeTokenizer implements Tokenizer {
     }
   }
 
+  /**
+   * Fills the per-position category and same-category run end for one stretch, in one
+   * right-to-left pass over its code points. Positions inside a surrogate pair keep a
+   * {@code null} category; no candidate ever starts there.
+   *
+   * @param text The text being segmented.
+   * @param from The stretch start.
+   * @param to The exclusive stretch end.
+   * @param categoryAt Receives each position's category, indexed by {@code
+   *                   position - from}.
+   * @param runEndAt Receives each position's exclusive same-category run end, indexed
+   *                 the same way.
+   */
+  private void computeCategoryRuns(String text, int from, int to,
+      Category[] categoryAt, int[] runEndAt) {
+    int next = -1;
+    for (int position = to; position > from; ) {
+      final int codePoint = text.codePointBefore(position);
+      position -= Character.charCount(codePoint);
+      final int index = position - from;
+      categoryAt[index] = dictionary.categoryOf(codePoint);
+      if (next >= 0 && categoryAt[next] == categoryAt[index]) {
+        runEndAt[index] = runEndAt[next];
+      } else {
+        runEndAt[index] = next >= 0 ? next + from : to;
+      }
+      next = index;
+    }
+  }
+
   /** Gathers lexicon matches and unknown-word candidates starting at one position. */
-  private List<Node> candidates(String text, int from, int to, int offset) {
+  private List<Node> candidates(String text, int from, int to, int offset,
+      Category positionCategory, int positionRunEnd) {
     final int position = from + offset;
     final List<Node> candidates = new ArrayList<>();
     final boolean[] matched = new boolean[1];
@@ -213,19 +252,22 @@ public class LatticeTokenizer implements Tokenizer {
     final boolean lexiconMatch = matched[0];
 
     final int codePoint = text.codePointAt(position);
-    final Category category = dictionary.categoryOf(codePoint);
+    final Category category;
+    final int runEnd;
+    if (positionCategory == null) {
+      // Only a lexicon surface ending inside a surrogate pair could make such a
+      // position reachable; classify the stray code unit on the spot so the lattice
+      // stays connected the way it always did.
+      category = dictionary.categoryOf(codePoint);
+      runEnd = position + Character.charCount(codePoint);
+    } else {
+      category = positionCategory;
+      runEnd = positionRunEnd;
+    }
     if (!lexiconMatch || category.invoke()) {
-      int run = position + Character.charCount(codePoint);
-      while (run < to) {
-        final int next = text.codePointAt(run);
-        if (!dictionary.categoryOf(next).name().equals(category.name())) {
-          break;
-        }
-        run += Character.charCount(next);
-      }
       final List<WordEntry> templates = dictionary.unknownEntries(category.name());
       if (templates != null) {
-        addUnknown(candidates, text, position, run, category, templates);
+        addUnknown(candidates, text, position, runEnd, category, templates);
       }
     }
     if (candidates.isEmpty()) {

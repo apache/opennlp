@@ -58,10 +58,56 @@ public final class MecabDictionary {
   record Category(String name, boolean invoke, boolean group, int length) {
   }
 
-  /** One node of the lexicon trie, keyed by the next surface character. */
+  /**
+   * One frozen node of the lexicon trie: children are held as a sorted character
+   * array with a parallel node array and found by binary search, so a descent never
+   * boxes the character the way a map keyed by {@link Character} would on every step
+   * of the innermost matching loop.
+   */
   private static final class TrieNode {
-    private final Map<Character, TrieNode> children = new HashMap<>();
+
+    private final char[] keys;
+    private final TrieNode[] nodes;
+    private final List<WordEntry> entries;
+
+    private TrieNode(char[] keys, TrieNode[] nodes, List<WordEntry> entries) {
+      this.keys = keys;
+      this.nodes = nodes;
+      this.entries = entries;
+    }
+
+    /**
+     * Descends one character.
+     *
+     * @param c The next surface character.
+     * @return The child node, or {@code null} when no surface continues with {@code c}.
+     */
+    private TrieNode child(char c) {
+      final int index = Arrays.binarySearch(keys, c);
+      return index >= 0 ? nodes[index] : null;
+    }
+  }
+
+  /** One mutable trie node during construction, frozen into a {@link TrieNode}. */
+  private static final class TrieBuilderNode {
+
+    private final Map<Character, TrieBuilderNode> children = new HashMap<>();
     private List<WordEntry> entries;
+
+    /** Freezes this node and its subtree into the sorted-array form. */
+    private TrieNode freeze() {
+      final char[] keys = new char[children.size()];
+      int i = 0;
+      for (final Character key : children.keySet()) {
+        keys[i++] = key;
+      }
+      Arrays.sort(keys);
+      final TrieNode[] nodes = new TrieNode[keys.length];
+      for (int k = 0; k < keys.length; k++) {
+        nodes[k] = children.get(keys[k]).freeze();
+      }
+      return new TrieNode(keys, nodes, entries);
+    }
   }
 
   /**
@@ -77,13 +123,13 @@ public final class MecabDictionary {
    */
   private static final class CategoryTable {
 
-    private final String[] bmp;
+    private final Category[] bmp;
     private final int[] rangeStart;
     private final int[] rangeEnd;
-    private final String[] rangeCategory;
+    private final Category[] rangeCategory;
 
-    private CategoryTable(String[] bmp, int[] rangeStart, int[] rangeEnd,
-        String[] rangeCategory) {
+    private CategoryTable(Category[] bmp, int[] rangeStart, int[] rangeEnd,
+        Category[] rangeCategory) {
       this.bmp = bmp;
       this.rangeStart = rangeStart;
       this.rangeEnd = rangeEnd;
@@ -91,12 +137,16 @@ public final class MecabDictionary {
     }
 
     /**
-     * Looks up the category name a {@code char.def} mapping gives a code point.
+     * Looks up the category a {@code char.def} mapping gives a code point. The table
+     * holds the {@link Category} instances themselves, so a lookup on the tokenizer's
+     * per-character path costs one array read or one binary search, never a name map
+     * access, and two code points of one category share one instance to compare by
+     * identity.
      *
      * @param codePoint The code point to classify.
-     * @return The category name, or {@code null} when no mapping covers the code point.
+     * @return The category, or {@code null} when no mapping covers the code point.
      */
-    private String categoryOf(int codePoint) {
+    private Category categoryOf(int codePoint) {
       if (codePoint <= Character.MAX_VALUE) {
         return bmp[codePoint];
       }
@@ -149,7 +199,7 @@ public final class MecabDictionary {
      *
      * @return The table. Never {@code null}.
      */
-    private CategoryTable build() {
+    private CategoryTable build(Map<String, Category> categories) throws IOException {
       // Cut the supplementary ranges at every boundary they introduce, so that each
       // resulting elementary interval is covered by a single winning range and the
       // table stays sorted and non-overlapping for binary search.
@@ -160,7 +210,7 @@ public final class MecabDictionary {
       }
       Arrays.sort(edges);
       final List<int[]> intervals = new ArrayList<>();
-      final List<String> categories = new ArrayList<>();
+      final List<String> winners = new ArrayList<>();
       for (int i = 0; i < edges.length - 1; i++) {
         if (edges[i] == edges[i + 1]) {
           continue;
@@ -171,11 +221,11 @@ public final class MecabDictionary {
         }
         final int previous = intervals.size() - 1;
         if (previous >= 0 && intervals.get(previous)[1] == edges[i] - 1
-            && categories.get(previous).equals(winner)) {
+            && winners.get(previous).equals(winner)) {
           intervals.get(previous)[1] = edges[i + 1] - 1;
         } else {
           intervals.add(new int[] {edges[i], edges[i + 1] - 1});
-          categories.add(winner);
+          winners.add(winner);
         }
       }
       final int[] starts = new int[intervals.size()];
@@ -184,7 +234,32 @@ public final class MecabDictionary {
         starts[i] = intervals.get(i)[0];
         ends[i] = intervals.get(i)[1];
       }
-      return new CategoryTable(bmp, starts, ends, categories.toArray(new String[0]));
+      final Category[] resolvedBmp = new Category[bmp.length];
+      for (int c = 0; c < bmp.length; c++) {
+        if (bmp[c] != null) {
+          resolvedBmp[c] = resolve(bmp[c], categories, c);
+        }
+      }
+      final Category[] resolvedRanges = new Category[winners.size()];
+      for (int i = 0; i < winners.size(); i++) {
+        resolvedRanges[i] = resolve(winners.get(i), categories, starts[i]);
+      }
+      return new CategoryTable(resolvedBmp, starts, ends, resolvedRanges);
+    }
+
+    /**
+     * Resolves a mapped category name against the defined categories, so a mapping to
+     * a name the {@code char.def} category section never defined fails at load with
+     * the offending code point instead of falling back silently at lookup time.
+     */
+    private static Category resolve(String name, Map<String, Category> categories,
+        int codePoint) throws IOException {
+      final Category category = categories.get(name);
+      if (category == null) {
+        throw new IOException(String.format(
+            "char.def maps U+%04X to the undefined category %s", codePoint, name));
+      }
+      return category;
     }
 
     /**
@@ -222,6 +297,7 @@ public final class MecabDictionary {
   private final int rightSize;
   private final Map<String, Category> categories;
   private final CategoryTable categoryTable;
+  private final Category defaultCategory;
   private final Map<String, List<WordEntry>> unknownEntries;
 
   private MecabDictionary(TrieNode lexicon, int maxSurfaceLength,
@@ -233,6 +309,7 @@ public final class MecabDictionary {
     this.rightSize = rightSize;
     this.categories = categories;
     this.categoryTable = categoryTable;
+    this.defaultCategory = categories.get("DEFAULT");
     this.unknownEntries = unknownEntries;
   }
 
@@ -282,7 +359,12 @@ public final class MecabDictionary {
       throw new IOException("matrix.def dimensions must be positive, got "
           + leftSize + " " + rightSize);
     }
-    final short[] costs = new short[leftSize * rightSize];
+    final long cells = (long) leftSize * rightSize;
+    if (cells > Integer.MAX_VALUE) {
+      throw new IOException("matrix.def dimensions " + leftSize + " x " + rightSize
+          + " overflow the addressable connection matrix");
+    }
+    final short[] costs = new short[(int) cells];
     for (int i = 1; i < matrixLines.size(); i++) {
       final String line = matrixLines.get(i).trim();
       if (line.isEmpty()) {
@@ -299,7 +381,13 @@ public final class MecabDictionary {
             + ": context ids " + right + " " + left
             + " are outside the declared dimensions " + leftSize + " " + rightSize);
       }
-      costs[right * rightSize + left] = (short) parseInt(fields[2], "matrix.def", i + 1);
+      final int cost = parseInt(fields[2], "matrix.def", i + 1);
+      if (cost < Short.MIN_VALUE || cost > Short.MAX_VALUE) {
+        throw new IOException("malformed matrix.def line " + (i + 1)
+            + ": connection cost " + cost + " is outside the 16-bit range the"
+            + " format defines");
+      }
+      costs[right * rightSize + left] = (short) cost;
     }
 
     final Map<String, List<WordEntry>> lexicon = new HashMap<>();
@@ -318,26 +406,26 @@ public final class MecabDictionary {
     final CategoryTableBuilder categoryTable = new CategoryTableBuilder();
     readCharacterDefinition(directory.resolve("char.def"), charset, categories,
         categoryTable);
-
     final Map<String, List<WordEntry>> unknown = new HashMap<>();
     readLexicon(directory.resolve("unk.def"), charset, unknown, leftSize, rightSize);
 
     return new MecabDictionary(buildTrie(lexicon), maxSurface, costs, rightSize,
-        categories, categoryTable.build(), unknown);
+        categories, categoryTable.build(categories), unknown);
   }
 
   /** Folds the surface-keyed lexicon into a character trie for prefix search. */
   private static TrieNode buildTrie(Map<String, List<WordEntry>> lexicon) {
-    final TrieNode root = new TrieNode();
+    final TrieBuilderNode root = new TrieBuilderNode();
     for (final Map.Entry<String, List<WordEntry>> entry : lexicon.entrySet()) {
-      TrieNode node = root;
+      TrieBuilderNode node = root;
       final String surface = entry.getKey();
       for (int i = 0; i < surface.length(); i++) {
-        node = node.children.computeIfAbsent(surface.charAt(i), key -> new TrieNode());
+        node = node.children.computeIfAbsent(surface.charAt(i),
+            key -> new TrieBuilderNode());
       }
       node.entries = List.copyOf(entry.getValue());
     }
-    return root;
+    return root.freeze();
   }
 
   /**
@@ -448,7 +536,7 @@ public final class MecabDictionary {
   List<WordEntry> lookup(String surface) {
     TrieNode node = lexicon;
     for (int i = 0; i < surface.length() && node != null; i++) {
-      node = node.children.get(surface.charAt(i));
+      node = node.child(surface.charAt(i));
     }
     return node == null ? null : node.entries;
   }
@@ -465,7 +553,7 @@ public final class MecabDictionary {
   void prefixMatches(String text, int from, int to, PrefixMatchConsumer consumer) {
     TrieNode node = lexicon;
     for (int i = from; i < to; i++) {
-      node = node.children.get(text.charAt(i));
+      node = node.child(text.charAt(i));
       if (node == null) {
         return;
       }
@@ -501,9 +589,8 @@ public final class MecabDictionary {
    *         mapping covers the code point. Never {@code null}.
    */
   Category categoryOf(int codePoint) {
-    final String name = categoryTable.categoryOf(codePoint);
-    final Category category = name == null ? null : categories.get(name);
-    return category != null ? category : categories.get("DEFAULT");
+    final Category category = categoryTable.categoryOf(codePoint);
+    return category != null ? category : defaultCategory;
   }
 
   /**
