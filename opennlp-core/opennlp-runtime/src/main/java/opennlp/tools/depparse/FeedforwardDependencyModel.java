@@ -27,8 +27,9 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
+
+import opennlp.tools.util.StringUtil;
 
 /**
  * The weights of the feedforward transition parser: embeddings for words, tags, and arc
@@ -38,8 +39,14 @@ import java.util.Map;
  * <p>This is the pure-Java neural tier: the network is executed with ordinary array
  * arithmetic, so parsing needs no native runtime, and the same class scores
  * configurations for training and decoding. Unknown words fall back to a learned
- * unknown symbol; words are matched case-insensitively. Instances are immutable and
- * safe to share between threads.</p>
+ * unknown symbol; words are matched case-insensitively after
+ * {@link #normalize(String) normalization}.</p>
+ *
+ * <p>An instance is immutable and safe to share between threads once it has been handed
+ * to a caller. {@link FeedforwardDependencyTrainer} fills the weights while building a
+ * model and before that model escapes, and
+ * {@link FeedforwardDependencyTrainer#refine refine} trains a copy rather than the model
+ * it is given, so no model a caller holds ever changes underneath it.</p>
  *
  * @see FeedforwardDependencyParser
  * @see FeedforwardDependencyTrainer
@@ -68,9 +75,9 @@ public class FeedforwardDependencyModel {
       Map<String, Integer> labelIds, String[] transitions, int embeddingSize,
       float[][] embeddings, float[][] hiddenWeights, float[] hiddenBias,
       float[][] outputWeights, float[] outputBias) {
-    this.wordIds = wordIds;
-    this.tagIds = tagIds;
-    this.labelIds = labelIds;
+    this.wordIds = Map.copyOf(wordIds);
+    this.tagIds = Map.copyOf(tagIds);
+    this.labelIds = Map.copyOf(labelIds);
     this.transitions = transitions;
     this.embeddingSize = embeddingSize;
     this.embeddings = embeddings;
@@ -142,12 +149,22 @@ public class FeedforwardDependencyModel {
     return transitions.clone();
   }
 
-  /** Lowercases a word symbol; special symbols and absences pass through. */
+  /**
+   * Lowercases a word symbol; special symbols and absences pass through.
+   *
+   * <p>Case is mapped with {@link StringUtil#toLowerCase(CharSequence)}, which maps each
+   * code point through UnicodeData, so no word grows a character on the way into the
+   * vocabulary and every OpenNLP component derives the same key for the same word.</p>
+   *
+   * @param word The word to normalize. May be {@code null}.
+   * @return The vocabulary key of {@code word}, or {@code null} if {@code word} is
+   *         {@code null}.
+   */
   static String normalize(String word) {
     if (word == null) {
       return null;
     }
-    return word.startsWith("*") ? word : word.toLowerCase(Locale.ROOT);
+    return word.startsWith("*") ? word : StringUtil.toLowerCase(word);
   }
 
   private static int lookup(Map<String, Integer> ids, String symbol) {
@@ -287,6 +304,30 @@ public class FeedforwardDependencyModel {
       vector[i] = data.readFloat();
     }
     return vector;
+  }
+
+  /**
+   * Creates an independent copy of this model: the weights are deep-copied, and the
+   * vocabularies and the transition inventory are shared because they are immutable.
+   *
+   * <p>This lets a training pass update the copy without ever writing to a model a
+   * caller already holds, which is what keeps the immutability this class documents
+   * true.</p>
+   *
+   * @return A copy of this model sharing no mutable state with it. Never {@code null}.
+   */
+  FeedforwardDependencyModel copy() {
+    return new FeedforwardDependencyModel(wordIds, tagIds, labelIds, transitions.clone(),
+        embeddingSize, copyOf(embeddings), copyOf(hiddenWeights), hiddenBias.clone(),
+        copyOf(outputWeights), outputBias.clone());
+  }
+
+  private static float[][] copyOf(float[][] matrix) {
+    final float[][] copy = new float[matrix.length][];
+    for (int r = 0; r < matrix.length; r++) {
+      copy[r] = matrix[r].clone();
+    }
+    return copy;
   }
 
   Map<String, Integer> wordIds() {
