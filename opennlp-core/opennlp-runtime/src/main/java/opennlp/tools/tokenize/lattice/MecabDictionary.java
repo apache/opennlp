@@ -24,6 +24,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,146 @@ public final class MecabDictionary {
     private List<WordEntry> entries;
   }
 
+  /**
+   * The {@code char.def} code point to category name mapping, over the whole Unicode
+   * code point range.
+   *
+   * <p>The Basic Multilingual Plane is held in a directly indexed array, which is one
+   * reference per BMP code point and is the entire mapping for a BMP-only dictionary.
+   * The supplementary planes are held as a sorted, non-overlapping range table searched
+   * by binary search, because dictionaries map them in a handful of large blocks: a
+   * directly indexed array over all of Unicode would spend more than four megabytes of
+   * references to say what a few range rows already say.</p>
+   */
+  private static final class CategoryTable {
+
+    private final String[] bmp;
+    private final int[] rangeStart;
+    private final int[] rangeEnd;
+    private final String[] rangeCategory;
+
+    private CategoryTable(String[] bmp, int[] rangeStart, int[] rangeEnd,
+        String[] rangeCategory) {
+      this.bmp = bmp;
+      this.rangeStart = rangeStart;
+      this.rangeEnd = rangeEnd;
+      this.rangeCategory = rangeCategory;
+    }
+
+    /**
+     * Looks up the category name a {@code char.def} mapping gives a code point.
+     *
+     * @param codePoint The code point to classify.
+     * @return The category name, or {@code null} when no mapping covers the code point.
+     */
+    private String categoryOf(int codePoint) {
+      if (codePoint <= Character.MAX_VALUE) {
+        return bmp[codePoint];
+      }
+      int low = 0;
+      int high = rangeStart.length - 1;
+      while (low <= high) {
+        final int middle = (low + high) >>> 1;
+        if (codePoint < rangeStart[middle]) {
+          high = middle - 1;
+        } else if (codePoint > rangeEnd[middle]) {
+          low = middle + 1;
+        } else {
+          return rangeCategory[middle];
+        }
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Collects {@code char.def} mappings in file order and folds them into a
+   * {@link CategoryTable}, giving a later mapping precedence over an earlier one that
+   * covers the same code point, which is what direct indexing does for the BMP.
+   */
+  private static final class CategoryTableBuilder {
+
+    private final String[] bmp = new String[Character.MAX_VALUE + 1];
+    private final List<int[]> bounds = new ArrayList<>();
+    private final List<String> names = new ArrayList<>();
+
+    /**
+     * Records one inclusive code point range's category.
+     *
+     * @param from The first code point of the range.
+     * @param to The last code point of the range, inclusive.
+     * @param category The category name to give the range. Must not be {@code null}.
+     */
+    private void map(int from, int to, String category) {
+      for (int c = from; c <= Math.min(to, Character.MAX_VALUE); c++) {
+        bmp[c] = category;
+      }
+      if (to > Character.MAX_VALUE) {
+        bounds.add(new int[] {Math.max(from, Character.MAX_VALUE + 1), to});
+        names.add(category);
+      }
+    }
+
+    /**
+     * Folds the recorded mappings into their lookup table.
+     *
+     * @return The table. Never {@code null}.
+     */
+    private CategoryTable build() {
+      // Cut the supplementary ranges at every boundary they introduce, so that each
+      // resulting elementary interval is covered by a single winning range and the
+      // table stays sorted and non-overlapping for binary search.
+      final int[] edges = new int[bounds.size() * 2];
+      for (int i = 0; i < bounds.size(); i++) {
+        edges[i * 2] = bounds.get(i)[0];
+        edges[i * 2 + 1] = bounds.get(i)[1] + 1;
+      }
+      Arrays.sort(edges);
+      final List<int[]> intervals = new ArrayList<>();
+      final List<String> categories = new ArrayList<>();
+      for (int i = 0; i < edges.length - 1; i++) {
+        if (edges[i] == edges[i + 1]) {
+          continue;
+        }
+        final String winner = lastCovering(edges[i]);
+        if (winner == null) {
+          continue;
+        }
+        final int previous = intervals.size() - 1;
+        if (previous >= 0 && intervals.get(previous)[1] == edges[i] - 1
+            && categories.get(previous).equals(winner)) {
+          intervals.get(previous)[1] = edges[i + 1] - 1;
+        } else {
+          intervals.add(new int[] {edges[i], edges[i + 1] - 1});
+          categories.add(winner);
+        }
+      }
+      final int[] starts = new int[intervals.size()];
+      final int[] ends = new int[intervals.size()];
+      for (int i = 0; i < intervals.size(); i++) {
+        starts[i] = intervals.get(i)[0];
+        ends[i] = intervals.get(i)[1];
+      }
+      return new CategoryTable(bmp, starts, ends, categories.toArray(new String[0]));
+    }
+
+    /**
+     * Finds the category of the last recorded range covering a code point.
+     *
+     * @param codePoint The code point to look up.
+     * @return The category name, or {@code null} when no recorded range covers it.
+     */
+    private String lastCovering(int codePoint) {
+      for (int i = bounds.size() - 1; i >= 0; i--) {
+        final int[] range = bounds.get(i);
+        if (codePoint >= range[0] && codePoint <= range[1]) {
+          return names.get(i);
+        }
+      }
+      return null;
+    }
+  }
+
   /** Receives one common-prefix match during {@link #prefixMatches}. */
   interface PrefixMatchConsumer {
 
@@ -80,18 +221,18 @@ public final class MecabDictionary {
   private final short[] connectionCosts;
   private final int rightSize;
   private final Map<String, Category> categories;
-  private final String[] categoryOfChar;
+  private final CategoryTable categoryTable;
   private final Map<String, List<WordEntry>> unknownEntries;
 
   private MecabDictionary(TrieNode lexicon, int maxSurfaceLength,
       short[] connectionCosts, int rightSize, Map<String, Category> categories,
-      String[] categoryOfChar, Map<String, List<WordEntry>> unknownEntries) {
+      CategoryTable categoryTable, Map<String, List<WordEntry>> unknownEntries) {
     this.lexicon = lexicon;
     this.maxSurfaceLength = maxSurfaceLength;
     this.connectionCosts = connectionCosts;
     this.rightSize = rightSize;
     this.categories = categories;
-    this.categoryOfChar = categoryOfChar;
+    this.categoryTable = categoryTable;
     this.unknownEntries = unknownEntries;
   }
 
@@ -116,25 +257,17 @@ public final class MecabDictionary {
    * @param charset The encoding the distribution uses, for example UTF-8 or EUC-JP.
    *                Must not be {@code null}.
    * @return The loaded dictionary. Never {@code null}.
-   * @throws IOException Thrown if reading fails, a required file is missing, or a file
-   *         is malformed.
+   * @throws IOException Thrown if reading fails, a required file is missing, a file is
+   *         malformed, or a lexicon entry's context ids are outside the
+   *         {@code matrix.def} dimensions.
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static MecabDictionary load(Path directory, Charset charset) throws IOException {
     if (directory == null || charset == null) {
       throw new IllegalArgumentException("directory and charset must not be null");
     }
-    final Map<String, List<WordEntry>> lexicon = new HashMap<>();
-    int maxSurface = 0;
-    try (DirectoryStream<Path> csvFiles = Files.newDirectoryStream(directory, "*.csv")) {
-      for (final Path csv : csvFiles) {
-        maxSurface = Math.max(maxSurface, readLexicon(csv, charset, lexicon));
-      }
-    }
-    if (lexicon.isEmpty()) {
-      throw new IOException("no lexicon entries found under " + directory);
-    }
-
+    // The connection matrix is read first because its dimensions are what every
+    // lexicon entry's context ids have to be inside of.
     final List<String> matrixLines = readLines(directory.resolve("matrix.def"), charset);
     if (matrixLines.isEmpty()) {
       throw new IOException("empty matrix.def under " + directory);
@@ -145,6 +278,10 @@ public final class MecabDictionary {
     }
     final int leftSize = parseInt(header[0], "matrix.def", 1);
     final int rightSize = parseInt(header[1], "matrix.def", 1);
+    if (leftSize < 1 || rightSize < 1) {
+      throw new IOException("matrix.def dimensions must be positive, got "
+          + leftSize + " " + rightSize);
+    }
     final short[] costs = new short[leftSize * rightSize];
     for (int i = 1; i < matrixLines.size(); i++) {
       final String line = matrixLines.get(i).trim();
@@ -157,19 +294,36 @@ public final class MecabDictionary {
       }
       final int right = parseInt(fields[0], "matrix.def", i + 1);
       final int left = parseInt(fields[1], "matrix.def", i + 1);
+      if (right < 0 || right >= leftSize || left < 0 || left >= rightSize) {
+        throw new IOException("malformed matrix.def line " + (i + 1)
+            + ": context ids " + right + " " + left
+            + " are outside the declared dimensions " + leftSize + " " + rightSize);
+      }
       costs[right * rightSize + left] = (short) parseInt(fields[2], "matrix.def", i + 1);
     }
 
+    final Map<String, List<WordEntry>> lexicon = new HashMap<>();
+    int maxSurface = 0;
+    try (DirectoryStream<Path> csvFiles = Files.newDirectoryStream(directory, "*.csv")) {
+      for (final Path csv : csvFiles) {
+        maxSurface = Math.max(maxSurface,
+            readLexicon(csv, charset, lexicon, leftSize, rightSize));
+      }
+    }
+    if (lexicon.isEmpty()) {
+      throw new IOException("no lexicon entries found under " + directory);
+    }
+
     final Map<String, Category> categories = new HashMap<>();
-    final String[] categoryOfChar = new String[Character.MAX_VALUE + 1];
+    final CategoryTableBuilder categoryTable = new CategoryTableBuilder();
     readCharacterDefinition(directory.resolve("char.def"), charset, categories,
-        categoryOfChar);
+        categoryTable);
 
     final Map<String, List<WordEntry>> unknown = new HashMap<>();
-    readLexicon(directory.resolve("unk.def"), charset, unknown);
+    readLexicon(directory.resolve("unk.def"), charset, unknown, leftSize, rightSize);
 
     return new MecabDictionary(buildTrie(lexicon), maxSurface, costs, rightSize,
-        categories, categoryOfChar, unknown);
+        categories, categoryTable.build(), unknown);
   }
 
   /** Folds the surface-keyed lexicon into a character trie for prefix search. */
@@ -186,9 +340,24 @@ public final class MecabDictionary {
     return root;
   }
 
-  /** Reads one lexicon-format CSV file; returns the longest surface seen. */
+  /**
+   * Reads one lexicon-format CSV file, rejecting any entry whose context ids the
+   * connection matrix cannot be indexed with.
+   *
+   * @param file The file to read.
+   * @param charset The encoding to decode with.
+   * @param target Receives the entries, keyed by surface form.
+   * @param leftSize The first {@code matrix.def} dimension, which bounds right context
+   *                 ids.
+   * @param rightSize The second {@code matrix.def} dimension, which bounds left context
+   *                  ids.
+   * @return The length in characters of the longest surface form read.
+   * @throws IOException Thrown if the file is missing, an entry is malformed, or an
+   *         entry's context id is outside the matrix dimensions.
+   */
   private static int readLexicon(Path file, Charset charset,
-      Map<String, List<WordEntry>> target) throws IOException {
+      Map<String, List<WordEntry>> target, int leftSize, int rightSize)
+      throws IOException {
     int maxSurface = 0;
     int lineNumber = 0;
     for (final String line : readLines(file, charset)) {
@@ -204,9 +373,19 @@ public final class MecabDictionary {
       if (surface.isEmpty()) {
         continue;
       }
-      final WordEntry entry = new WordEntry(
-          parseInt(fields.get(1), file.toString(), lineNumber),
-          parseInt(fields.get(2), file.toString(), lineNumber),
+      final int leftId = parseInt(fields.get(1), file.toString(), lineNumber);
+      final int rightId = parseInt(fields.get(2), file.toString(), lineNumber);
+      if (leftId < 0 || leftId >= rightSize) {
+        throw new IOException("malformed entry at " + file + " line " + lineNumber
+            + ": left context id " + leftId + " is outside the matrix.def dimensions "
+            + leftSize + " " + rightSize);
+      }
+      if (rightId < 0 || rightId >= leftSize) {
+        throw new IOException("malformed entry at " + file + " line " + lineNumber
+            + ": right context id " + rightId + " is outside the matrix.def dimensions "
+            + leftSize + " " + rightSize);
+      }
+      final WordEntry entry = new WordEntry(leftId, rightId,
           parseInt(fields.get(3), file.toString(), lineNumber),
           List.copyOf(fields.subList(4, fields.size())));
       target.computeIfAbsent(surface, key -> new ArrayList<>(1)).add(entry);
@@ -217,7 +396,8 @@ public final class MecabDictionary {
 
   /** Reads char.def: category behavior lines and code point mapping lines. */
   private static void readCharacterDefinition(Path file, Charset charset,
-      Map<String, Category> categories, String[] categoryOfChar) throws IOException {
+      Map<String, Category> categories, CategoryTableBuilder categoryTable)
+      throws IOException {
     int lineNumber = 0;
     for (final String raw : readLines(file, charset)) {
       lineNumber++;
@@ -240,9 +420,11 @@ public final class MecabDictionary {
         if (fields.length < 2) {
           throw new IOException("mapping without category at " + file + " line " + lineNumber);
         }
-        for (int c = from; c <= to && c <= Character.MAX_VALUE; c++) {
-          categoryOfChar[c] = fields[1];
+        if (from > to) {
+          throw new IOException("code point range descends at " + file + " line "
+              + lineNumber);
         }
+        categoryTable.map(from, to, fields[1]);
       } else {
         if (fields.length < 4) {
           throw new IOException("malformed category at " + file + " line " + lineNumber);
@@ -310,13 +492,16 @@ public final class MecabDictionary {
   }
 
   /**
-   * Classifies a character.
+   * Classifies a character by code point, so that a character outside the Basic
+   * Multilingual Plane is classified as the one character it is rather than as its two
+   * surrogates.
    *
-   * @param c The character.
-   * @return Its category, falling back to {@code DEFAULT}. Never {@code null}.
+   * @param codePoint The code point to classify.
+   * @return Its category, falling back to {@code DEFAULT} when no {@code char.def}
+   *         mapping covers the code point. Never {@code null}.
    */
-  Category categoryOf(char c) {
-    final String name = categoryOfChar[c];
+  Category categoryOf(int codePoint) {
+    final String name = categoryTable.categoryOf(codePoint);
     final Category category = name == null ? null : categories.get(name);
     return category != null ? category : categories.get("DEFAULT");
   }
@@ -436,15 +621,21 @@ public final class MecabDictionary {
    * @param text The field text including the {@code 0x} prefix.
    * @param file The file being read, for the error message.
    * @param lineNumber The line being read, for the error message.
-   * @return The parsed code point.
-   * @throws IOException Thrown if the field is not a valid hexadecimal code point.
+   * @return The parsed code point, which may be in a supplementary plane.
+   * @throws IOException Thrown if the field is not a valid hexadecimal code point or
+   *         names a value no Unicode code point has.
    */
   private static int parseCodePoint(String text, Path file, int lineNumber)
       throws IOException {
+    final int codePoint;
     try {
-      return Integer.parseInt(text.trim().substring(2), 16);
+      codePoint = Integer.parseInt(text.trim().substring(2), 16);
     } catch (RuntimeException e) {
       throw new IOException("malformed code point in " + file + " line " + lineNumber, e);
     }
+    if (!Character.isValidCodePoint(codePoint)) {
+      throw new IOException("code point out of range in " + file + " line " + lineNumber);
+    }
+    return codePoint;
   }
 }
