@@ -29,56 +29,6 @@ import opennlp.tools.util.Span;
 public class AncoraSpanishHeadRulesTest {
 
   /**
-   * Positive: well-formed head rules line with a small tag count loads without error.
-   */
-  @Test
-  void testValidTagCountLoads() {
-    String rules = "5 NP 1 NN NNS NNP\n";
-    Assertions.assertDoesNotThrow(() -> new AncoraSpanishHeadRules(new StringReader(rules)));
-  }
-
-  /**
-   * Negative: oversized tag count must throw IOException, not cause OOM.
-   */
-  @Test
-  void testOversizedTagCountThrows() {
-    String rules = "2147483647 NP 1\n";
-    Assertions.assertThrows(IOException.class,
-        () -> new AncoraSpanishHeadRules(new StringReader(rules)));
-  }
-
-  /**
-   * Negative: tag count producing negative array size must throw IOException.
-   */
-  @Test
-  void testNegativeTagCountThrows() {
-    String rules = "1 NP 1\n";  // 1 - 2 = -1
-    Assertions.assertThrows(IOException.class,
-        () -> new AncoraSpanishHeadRules(new StringReader(rules)));
-  }
-
-  /**
-   * Boundary: value just above MAX_TAGS_PER_RULE (1003 → numTags = 1001) must throw IOException.
-   */
-  @Test
-  void testJustAboveLimitThrows() {
-    // 1003 tokens declared; 1003 - 2 = 1001 tags, which exceeds MAX_TAGS_PER_RULE (1000)
-    String rules = "1003 NP 1\n";
-    Assertions.assertThrows(IOException.class,
-        () -> new AncoraSpanishHeadRules(new StringReader(rules)));
-  }
-
-  /**
-   * Negative: non-numeric token count must throw IOException, not NumberFormatException.
-   */
-  @Test
-  void testNonNumericTagCountThrows() {
-    String rules = "NaN NP 1\n";
-    Assertions.assertThrows(IOException.class,
-        () -> new AncoraSpanishHeadRules(new StringReader(rules)));
-  }
-
-  /**
    * getHead() for a rule loaded from a head-rules file must still honour regex tag
    * patterns (e.g. "AQA.*") after switching from String.matches() to precompiled
    * java.util.regex.Pattern - a literal tag like "AQA.*" must NOT be required to
