@@ -18,55 +18,182 @@
 package opennlp.tools.util;
 
 import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import opennlp.tools.util.normalizer.UnicodeWhitespace;
 
 public class StringUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
   /**
-   * Determines if the specified {@link Character} is a whitespace.
-   * A character is considered a whitespace when one of the following conditions is met:
-   * <ul>
-   * <li>It's a {@link Character#isWhitespace(int)} whitespace.</li>
-   * <li>It's a part of the Unicode Zs category ({@link Character#SPACE_SEPARATOR}).</li>
-   * </ul>
+   * Determines if the specified {@link Character} is a whitespace under the active
+   * {@link WhitespaceMode}: the Unicode {@code White_Space} property by default, or, when
+   * the {@value WhitespaceMode#MODE_PROPERTY} system property selects
+   * {@link WhitespaceMode#LEGACY}, the union of {@link Character#isWhitespace(int)} and the
+   * Unicode {@code Zs} category ({@link Character#SPACE_SEPARATOR}) that OpenNLP 1.x and 2.x
+   * used.
    *
-   * {@link Character#isWhitespace(int)} does not include no-break spaces.
-   * In OpenNLP no-break spaces are also considered as white spaces.
+   * <p>Tokenization, corpus format parsing, and feature generation all resolve whitespace
+   * through this method, so they share one {@link WhitespaceMode} for the life of the
+   * process; use {@link #isUnicodeWhitespace(char)} directly where the Unicode definition
+   * should apply unconditionally, such as user-text normalization with no trained-model
+   * dependency.</p>
    *
    * @param charCode The character to check.
-   *                 
-   * @return {@code true} if {@code charCode} represents a white space, {@code false} otherwise.
+   *
+   * @return {@code true} if {@code charCode} represents a white space under the active
+   *     {@link WhitespaceMode}, {@code false} otherwise.
    */
   public static boolean isWhitespace(char charCode) {
-    return Character.isWhitespace(charCode)  ||
+    return WhitespaceMode.current() == WhitespaceMode.LEGACY
+        ? isLegacyWhitespace(charCode) : isUnicodeWhitespace(charCode);
+  }
+
+  /**
+   * Determines if the specified code point is a whitespace under the active
+   * {@link WhitespaceMode}; see {@link #isWhitespace(char)} for details.
+   *
+   * @param charCode An int representation of a character to check.
+   *
+   * @return {@code true} if {@code charCode} represents a white space under the active
+   *     {@link WhitespaceMode}, {@code false} otherwise.
+   */
+  public static boolean isWhitespace(int charCode) {
+    return WhitespaceMode.current() == WhitespaceMode.LEGACY
+        ? isLegacyWhitespace(charCode) : isUnicodeWhitespace(charCode);
+  }
+
+  /**
+   * The OpenNLP 1.x/2.x definition: {@link Character#isWhitespace(int)} or the Unicode
+   * {@code Zs} category.
+   */
+  private static boolean isLegacyWhitespace(int charCode) {
+    return Character.isWhitespace(charCode) ||
         Character.getType(charCode) == Character.SPACE_SEPARATOR;
   }
 
   /**
-   * Determines if the specified {@link Character} is a whitespace.
-   * A character is considered a whitespace when one of the following conditions is met:
+   * Determines if the specified {@link Character} is a whitespace under the Unicode
+   * {@code White_Space} property; delegates to
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)}. This is also
+   * what {@link #isWhitespace(char)} resolves to under the default {@link WhitespaceMode}.
    *
-   * <ul>
-   * <li>Its a {@link Character#isWhitespace(int)} whitespace.</li>
-   * <li>Its a part of the Unicode Zs category ({@link Character#SPACE_SEPARATOR}).</li>
-   * </ul>
+   * @param charCode The character to check.
    *
-   * {@link Character#isWhitespace(int)} does not include no-break spaces.
-   * In OpenNLP no-break spaces are also considered as white spaces.
+   * @return {@code true} if {@code charCode} has the {@code White_Space} property,
+   *     {@code false} otherwise.
+   */
+  public static boolean isUnicodeWhitespace(char charCode) {
+    return UnicodeWhitespace.isWhitespace(charCode);
+  }
+
+  /**
+   * Determines if the specified code point is a whitespace under the Unicode
+   * {@code White_Space} property; delegates to
+   * {@link opennlp.tools.util.normalizer.UnicodeWhitespace#isWhitespace(int)}. This is also
+   * what {@link #isWhitespace(int)} resolves to under the default {@link WhitespaceMode}.
    *
    * @param charCode An int representation of a character to check.
    *
-   * @return {@code true} if {@code charCode} represents a white space, {@code false} otherwise.
+   * @return {@code true} if {@code charCode} has the {@code White_Space} property,
+   *     {@code false} otherwise.
    */
-  public static boolean isWhitespace(int charCode) {
-    return Character.isWhitespace(charCode)  ||
-        Character.getType(charCode) == Character.SPACE_SEPARATOR;
+  public static boolean isUnicodeWhitespace(int charCode) {
+    return UnicodeWhitespace.isWhitespace(charCode);
   }
 
+  /**
+   * Splits {@code input} on runs of Unicode {@code White_Space}. Leading and trailing
+   * runs are ignored, so whitespace-only input yields an empty array. This is a
+   * code-point scan, not a regular expression.
+   *
+   * @param input The text to split. Must not be {@code null}.
+   * @return The non-whitespace terms in order.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static String[] splitOnUnicodeWhitespace(CharSequence input) {
+    if (input == null) {
+      throw new IllegalArgumentException("input must not be null");
+    }
+    final List<String> terms = new ArrayList<>();
+    final int n = input.length();
+    int start = -1;
+    int i = 0;
+    while (i < n) {
+      final int cp = Character.codePointAt(input, i);
+      if (isUnicodeWhitespace(cp)) {
+        if (start >= 0) {
+          terms.add(input.subSequence(start, i).toString());
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+      i += Character.charCount(cp);
+    }
+    if (start >= 0) {
+      terms.add(input.subSequence(start, n).toString());
+    }
+    return terms.toArray(new String[0]);
+  }
+
+  /**
+   * Trims leading and trailing runs of Unicode {@code White_Space}, the same set
+   * {@link #splitOnUnicodeWhitespace(CharSequence)} breaks terms on.
+   *
+   * @param input The text to trim. Must not be {@code null}.
+   * @return The trimmed string; may be empty when {@code input} is whitespace-only.
+   * @throws IllegalArgumentException If {@code input} is {@code null}.
+   */
+  public static String trimUnicodeWhitespace(CharSequence input) {
+    if (input == null) {
+      throw new IllegalArgumentException("input must not be null");
+    }
+    int start = 0;
+    int end = input.length();
+    while (start < end) {
+      final int cp = Character.codePointAt(input, start);
+      if (!isUnicodeWhitespace(cp)) {
+        break;
+      }
+      start += Character.charCount(cp);
+    }
+    while (end > start) {
+      final int cp = Character.codePointBefore(input, end);
+      if (!isUnicodeWhitespace(cp)) {
+        break;
+      }
+      end -= Character.charCount(cp);
+    }
+    return input.subSequence(start, end).toString();
+  }
+
+  /**
+   * {@code true} when {@code input} is {@code null}, empty, or consists only of Unicode
+   * {@code White_Space} code points.
+   *
+   * @param input The text to test; {@code null} is treated as blank.
+   * @return {@code true} if there is no non-whitespace code point.
+   */
+  public static boolean isUnicodeBlank(CharSequence input) {
+    if (input == null || input.length() == 0) {
+      return true;
+    }
+    int i = 0;
+    while (i < input.length()) {
+      final int cp = Character.codePointAt(input, i);
+      if (!isUnicodeWhitespace(cp)) {
+        return false;
+      }
+      i += Character.charCount(cp);
+    }
+    return true;
+  }
 
   /**
    * Converts a {@link CharSequence} to lower case, independent of the current

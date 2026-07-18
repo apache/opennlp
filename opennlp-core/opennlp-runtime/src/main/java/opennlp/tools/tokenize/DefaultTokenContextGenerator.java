@@ -114,6 +114,12 @@ public class DefaultTokenContextGenerator implements TokenContextGenerator {
    * a fixed text sequence depending on {@code c}. The resulting combination is added
    * to the given list {@code preds}.
    *
+   * <p>
+   * The {@code _ws} class uses {@link StringUtil#isWhitespace(char)}, whose result depends
+   * on the active {@link opennlp.tools.util.WhitespaceMode}; the feature strings it produces
+   * are part of every trained tokenizer model, so training and decoding must use the same
+   * {@link opennlp.tools.util.WhitespaceMode}.
+   *
    * @param key The input string to process.
    * @param c   A character used to discriminate which fixed text shall be appended.
    * @param preds The list into which the resulting combinations will be added.

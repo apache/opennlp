@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.Span;
+import opennlp.tools.util.WhitespaceMode;
 
 /**
  * Characterization tests for the end-of-sentence position to {@link Span} mapping of
@@ -43,6 +45,9 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
 
   @BeforeAll
   static void prepareResources() throws IOException {
+    // DefaultSDContextGenerator's features depend on the active WhitespaceMode, so training
+    // must be pinned to WhitespaceMode.LEGACY to reproduce the expectations pinned below.
+    WhitespaceMode.setActive(WhitespaceMode.LEGACY);
     Dictionary abb = loadAbbDictionary(Locale.ENGLISH);
     tokenEnd = new SentenceDetectorME(
         train(new SentenceDetectorFactory("eng", true, abb, null), Locale.ENGLISH));
@@ -304,5 +309,14 @@ public class SentenceDetectorMESpanMappingTest extends AbstractSentenceDetectorT
     String input = "z.\u001Cb. x";
     assertSpans(tokenEnd, input, new Span(0, 5), new Span(6, 7));
     assertSpans(noTokenEnd, input, new Span(0, 5), new Span(6, 7));
+  }
+
+  /**
+   * Reverts the {@link WhitespaceMode} pin, so later test classes sharing this JVM fork
+   * resolve the mode from the system property again.
+   */
+  @AfterAll
+  static void resetWhitespaceMode() {
+    WhitespaceMode.reset();
   }
 }

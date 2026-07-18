@@ -30,6 +30,7 @@ import opennlp.spellcheck.SpellChecker;
 import opennlp.spellcheck.SuggestItem;
 import opennlp.spellcheck.Verbosity;
 import opennlp.spellcheck.distance.EditDistance;
+import opennlp.tools.util.StringUtil;
 
 /**
  * Symmetric Delete spelling correction engine (SymSpell).
@@ -394,6 +395,9 @@ public final class SymSpell implements SpellChecker {
     return suggestions;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<SuggestItem> lookupCompound(String input, int maxEditDistance) {
     Objects.requireNonNull(input, "input must not be null");
@@ -401,7 +405,7 @@ public final class SymSpell implements SpellChecker {
       throw new IllegalArgumentException("maxEditDistance must not be negative: " + maxEditDistance);
     }
 
-    final String[] termList = input.trim().isEmpty() ? new String[0] : input.trim().split("\\s+");
+    final String[] termList = StringUtil.splitOnUnicodeWhitespace(input);
     final List<SuggestItem> suggestionParts = new ArrayList<>();
 
     boolean lastCombi = false;
@@ -531,8 +535,9 @@ public final class SymSpell implements SpellChecker {
     }
 
     final String corrected = joined.toString();
+    // Trim on the same set the terms were split on, so the distance is not inflated.
     final int distance = editDistance.distance(
-        input.trim(), corrected, Integer.MAX_VALUE - 1);
+        StringUtil.trimUnicodeWhitespace(input), corrected, Integer.MAX_VALUE - 1);
     final long frequency = (long) freqProduct;
     return Collections.singletonList(
         new SuggestItem(corrected, Math.max(distance, 0), frequency));

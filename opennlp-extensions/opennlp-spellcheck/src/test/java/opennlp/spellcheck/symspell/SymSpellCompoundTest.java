@@ -139,4 +139,68 @@ public class SymSpellCompoundTest {
   void nullInputIsRejected() {
     assertThrows(NullPointerException.class, () -> tiny.lookupCompound(null, 2));
   }
+
+  // ------------------------------------------------------------------
+  // Whitespace boundary code points.
+  // ------------------------------------------------------------------
+
+  @Test
+  void noBreakSpaceSeparatesTerms() {
+    // Since 3.0 lookupCompound splits terms on the Unicode White_Space set, so the
+    // NBSP-joined pair is two known terms. The reported edit distance is still 1 because
+    // it is measured against the trimmed input, where the interior NBSP differs from the
+    // space the corrected phrase is joined with.
+    final List<SuggestItem> r = tiny.lookupCompound("hello" + cp(0x00A0) + "world", 2);
+    assertEquals(1, r.size());
+    assertEquals("hello world", r.get(0).term());
+    assertEquals(1, r.get(0).editDistance());
+  }
+
+  @Test
+  void noBreakSpaceJoinedTripleIsFullyRepaired() {
+    // Since 3.0 the three NBSP-separated words are three terms; under the previous ASCII
+    // \s+ split this was one term and the single-split heuristic could not repair it.
+    String input = "hello" + cp(0x00A0) + "world" + cp(0x00A0) + "hello";
+    assertEquals("hello world hello", correct(tiny, input));
+  }
+
+  @Test
+  void nextLineControlJoinedTripleIsFullyRepaired() {
+    // U+0085 NEL carries the Unicode White_Space property, so since 3.0 it separates terms.
+    String input = "hello" + cp(0x0085) + "world" + cp(0x0085) + "hello";
+    assertEquals("hello world hello", correct(tiny, input));
+  }
+
+  @Test
+  void lineSeparatorJoinedTripleIsFullyRepaired() {
+    // U+2028 LINE SEPARATOR is Unicode White_Space, so since 3.0 it separates terms.
+    String input = "hello" + cp(0x2028) + "world" + cp(0x2028) + "hello";
+    assertEquals("hello world hello", correct(tiny, input));
+  }
+
+  @Test
+  void noBreakSpaceOnlyInputReportsDistanceZero() {
+    // The distance path trims the input on the same Unicode White_Space set the terms are
+    // split on: a whitespace-only input corrects to the empty phrase at distance 0, exactly
+    // like an ASCII-space-only input (the ASCII String.trim() kept the NBSP and reported 1).
+    final List<SuggestItem> r = tiny.lookupCompound(cp(0x00A0), 2);
+    assertEquals(1, r.size());
+    assertEquals("", r.get(0).term());
+    assertEquals(0, r.get(0).editDistance());
+  }
+
+  @Test
+  void leadingAndTrailingNoBreakSpacesDoNotInflateDistance() {
+    // Leading and trailing NBSP runs are trimmed before the distance is measured, so a
+    // correct NBSP-padded phrase reports distance 0 like its ASCII-space-padded twin.
+    final String padded = cp(0x00A0) + "hello world" + cp(0x00A0) + cp(0x0085);
+    final List<SuggestItem> r = tiny.lookupCompound(padded, 2);
+    assertEquals(1, r.size());
+    assertEquals("hello world", r.get(0).term());
+    assertEquals(0, r.get(0).editDistance());
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
 }

@@ -249,4 +249,52 @@ public class SpellCheckingCharSequenceNormalizerTest {
           () -> "core: " + core);
     }
   }
+
+  @Test
+  void perTokenTreatsNoBreakSpaceAsTokenBoundary() {
+    // Since 3.0 PER_TOKEN boundaries use the Unicode White_Space set, which includes the
+    // no-break spaces; both sides are corrected and the separator is copied verbatim
+    // (Character.isWhitespace excluded the Zs no-break spaces).
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    assertEquals("the" + cp(0x00A0) + "fox",
+        norm(normalizer, "teh" + cp(0x00A0) + "fxo"));
+    assertEquals("the" + cp(0x202F) + "fox",
+        norm(normalizer, "teh" + cp(0x202F) + "fxo"));
+  }
+
+  @Test
+  void perTokenTreatsNextLineControlAsTokenBoundary() {
+    // U+0085 NEL carries the Unicode White_Space property, so since 3.0 it separates
+    // tokens (Character.isWhitespace excludes it).
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    assertEquals("the" + cp(0x0085) + "fox",
+        norm(normalizer, "teh" + cp(0x0085) + "fxo"));
+  }
+
+  @Test
+  void perTokenTreatsInformationSeparatorAsPartOfTheToken() {
+    // The U+001C..U+001F information separators are not Unicode White_Space, so since 3.0
+    // they no longer separate tokens; the joined token has no dictionary entry within
+    // reach and passes through unchanged (Character.isWhitespace treated U+001C as
+    // whitespace and corrected both sides).
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    String input = "teh" + cp(0x001C) + "fxo";
+    assertEquals(input, norm(normalizer, input));
+  }
+
+  @Test
+  void perTokenTreatsLineSeparatorAsTokenBoundary() {
+    // U+2028 is whitespace under both Character.isWhitespace and Unicode White_Space.
+    final var normalizer = SpellCheckingCharSequenceNormalizer.builder(symSpell)
+        .minTokenLength(3).build();
+    assertEquals("the" + cp(0x2028) + "fox",
+        norm(normalizer, "teh" + cp(0x2028) + "fxo"));
+  }
+
+  private static String cp(int codePoint) {
+    return new String(Character.toChars(codePoint));
+  }
 }

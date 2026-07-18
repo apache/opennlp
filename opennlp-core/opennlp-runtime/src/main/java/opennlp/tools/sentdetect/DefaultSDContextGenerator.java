@@ -27,7 +27,11 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * Generate event contexts for maxent decisions for sentence detection.
- *
+ * <p>
+ * Features reflect {@link StringUtil#isWhitespace(char)}, whose result depends on the
+ * active {@link opennlp.tools.util.WhitespaceMode}; they are part of every trained
+ * sentence detector model, so training and decoding must use the same
+ * {@link opennlp.tools.util.WhitespaceMode}.
  */
 public class DefaultSDContextGenerator implements SDContextGenerator {
 

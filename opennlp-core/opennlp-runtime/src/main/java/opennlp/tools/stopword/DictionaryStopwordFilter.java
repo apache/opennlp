@@ -34,6 +34,7 @@ import java.util.Set;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.dictionary.Dictionary;
 import opennlp.tools.util.StringList;
+import opennlp.tools.util.StringUtil;
 
 /**
  * An immutable, thread-safe {@link StopwordFilter} backed by an OpenNLP
@@ -254,11 +255,11 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
          BufferedReader lineReader = new BufferedReader(reader)) {
       String line;
       while ((line = lineReader.readLine()) != null) {
-        final String trimmed = line.trim();
+        final String trimmed = StringUtil.trimUnicodeWhitespace(line);
         if (trimmed.isEmpty() || trimmed.startsWith(COMMENT_PREFIX)) {
           continue;
         }
-        final String[] tokens = trimmed.split("\\s+");
+        final String[] tokens = StringUtil.splitOnUnicodeWhitespace(trimmed);
         if (tokens.length > 0) {
           dict.put(new StringList(tokens));
         }
@@ -390,11 +391,11 @@ public final class DictionaryStopwordFilter implements StopwordFilter {
            BufferedReader lineReader = new BufferedReader(reader)) {
         String line;
         while ((line = lineReader.readLine()) != null) {
-          final String trimmed = line.trim();
+          final String trimmed = StringUtil.trimUnicodeWhitespace(line);
           if (trimmed.isEmpty() || trimmed.startsWith(COMMENT_PREFIX)) {
             continue;
           }
-          addEntries.add(trimmed.split("\\s+"));
+          addEntries.add(StringUtil.splitOnUnicodeWhitespace(trimmed));
         }
       }
       return this;

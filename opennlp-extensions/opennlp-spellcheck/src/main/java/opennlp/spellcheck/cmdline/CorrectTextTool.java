@@ -45,6 +45,7 @@ import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.BasicCmdLineTool;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.TerminateToolException;
+import opennlp.tools.util.StringUtil;
 
 /**
  * A command line tool that corrects spelling in text using a {@link SymSpellModel}.
@@ -136,11 +137,12 @@ public class CorrectTextTool extends BasicCmdLineTool {
     final int effectiveMax = Math.min(maxEditDistance, checker.maxEditDistance());
     String line;
     while ((line = in.readLine()) != null) {
-      if (line.isBlank()) {
+      final String[] tokens = StringUtil.splitOnUnicodeWhitespace(line);
+      if (tokens.length == 0) {
         out.newLine();
         continue;
       }
-      for (String token : line.trim().split("\\s+")) {
+      for (String token : tokens) {
         final List<SuggestItem> suggestions =
             checker.lookup(token.toLowerCase(Locale.ROOT), verbosity, effectiveMax);
         final StringBuilder terms = new StringBuilder();
