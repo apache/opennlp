@@ -19,13 +19,24 @@ package opennlp.tools.util.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.chunker.ChunkSample;
+import opennlp.tools.chunker.ChunkSampleStream;
+import opennlp.tools.chunker.ChunkerFactory;
+import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
+import opennlp.tools.formats.ResourceAsStreamFactory;
+import opennlp.tools.util.ObjectStream;
+import opennlp.tools.util.PlainTextByLineStream;
+import opennlp.tools.util.TrainingParameters;
 
 /**
  * Tests {@link BaseModel#deserialize(Class, java.io.InputStream)} and the
@@ -33,10 +44,25 @@ import opennlp.tools.chunker.ChunkerModel;
  */
 public class BaseModelTest {
 
+  private static ChunkerModel model;
+
+  @BeforeAll
+  static void trainModel() throws IOException {
+    ResourceAsStreamFactory in = new ResourceAsStreamFactory(BaseModelTest.class,
+        "/opennlp/tools/chunker/test.txt");
+
+    ObjectStream<ChunkSample> sampleStream = new ChunkSampleStream(
+        new PlainTextByLineStream(in, StandardCharsets.UTF_8));
+
+    TrainingParameters params = new TrainingParameters();
+    params.put(TrainingParameters.ITERATIONS_PARAM, 5);
+    params.put(TrainingParameters.CUTOFF_PARAM, 1);
+
+    model = ChunkerME.train("eng", sampleStream, params, new ChunkerFactory());
+  }
+
   @Test
   void testDeserializeRoundTrip() throws Exception {
-    ChunkerModel model = new ChunkerModel(
-        this.getClass().getResourceAsStream("/opennlp/tools/chunker/chunker170default.bin"));
 
     final ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
     try (ObjectOutputStream oos = new ObjectOutputStream(bytesOut)) {
