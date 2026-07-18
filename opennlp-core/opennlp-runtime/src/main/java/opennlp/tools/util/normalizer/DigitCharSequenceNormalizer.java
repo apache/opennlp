@@ -16,6 +16,8 @@
  */
 package opennlp.tools.util.normalizer;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * A {@link CharSequenceNormalizer} that maps Unicode decimal digits to their ASCII equivalents,
  * so for example Arabic-Indic, Devanagari, or fullwidth digits all become {@code 0}-{@code 9}.
@@ -31,11 +33,6 @@ public class DigitCharSequenceNormalizer implements OffsetAwareNormalizer {
   private static final long serialVersionUID = -3478452280126315708L;
 
   private static final DigitCharSequenceNormalizer INSTANCE = new DigitCharSequenceNormalizer();
-
-  // The ten ASCII digit strings, precomputed so the mapper does not allocate a new single-char
-  // String for every digit it folds.
-  private static final String[] ASCII_DIGITS =
-      {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
   /** {@return the shared, stateless instance} */
   public static DigitCharSequenceNormalizer getInstance() {
@@ -57,7 +54,8 @@ public class DigitCharSequenceNormalizer implements OffsetAwareNormalizer {
    */
   private static String toAscii(int codePoint) {
     final int value = Character.digit(codePoint, 10);
-    return value >= 0 && codePoint != '0' + value ? ASCII_DIGITS[value] : null;
+    return value >= 0 && codePoint != '0' + value
+        ? StringUtil.ASCII_DIGIT_STRINGS.get(value) : null;
   }
 
   /** {@inheritDoc} */

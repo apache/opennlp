@@ -105,6 +105,8 @@ public final class Confusables {
         final int firstSemicolon = content.indexOf(';');
         final int secondSemicolon = content.indexOf(';', firstSemicolon + 1);
         if (firstSemicolon < 0 || secondSemicolon < 0) {
+          // A present-but-structurally-wrong line (fewer than two ';') is a hard error, like the
+          // malformed-hex path below and the sibling loaders -- never silently dropped.
           throw new IllegalArgumentException("Malformed confusables data in " + RESOURCE + " at line "
               + lineNumber + ": " + content);
         }
