@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import opennlp.tools.parser.Constituent;
 import opennlp.tools.parser.GapLabeler;
@@ -84,6 +85,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
   private static class HeadRule {
     public final boolean leftToRight;
     public final String[] tags;
+    public final Pattern[] tagPatterns;
 
     public HeadRule(boolean l2r, String[] tags) {
       leftToRight = l2r;
@@ -93,6 +95,7 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
       }
 
       this.tags = tags;
+      this.tagPatterns = compile(tags);
     }
 
     @Override
@@ -114,6 +117,29 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
 
       return false;
     }
+  }
+
+  // Tag patterns are regexes (e.g. "AQA.*", "GRUP\\.A"), not literals, so they must be
+  // matched with Pattern/matches() semantics - they are precompiled once here (and once
+  // per HeadRule, see HeadRule.tagPatterns) instead of via String.matches(), which would
+  // otherwise recompile the same regex on every single constituent comparison.
+  private static final String[] TAGS1 =
+      {"AQA.*", "AQC.*", "GRUP\\.A", "S\\.A", "NC.*S.*", "NP.*", "NC.*P.*", "GRUP\\.NOM"};
+  private static final Pattern[] TAGS1_PATTERNS = compile(TAGS1);
+
+  private static final String[] TAGS2 = {"\\$", "GRUP\\.A", "SA"};
+  private static final Pattern[] TAGS2_PATTERNS = compile(TAGS2);
+
+  private static final String[] TAGS3 =
+      {"AQ0.*", "AQ[AC].*", "AO.*", "GRUP\\.A", "S\\.A", "RG", "RN", "GRUP\\.NOM"};
+  private static final Pattern[] TAGS3_PATTERNS = compile(TAGS3);
+
+  private static Pattern[] compile(String[] tags) {
+    Pattern[] patterns = new Pattern[tags.length];
+    for (int i = 0; i < tags.length; i++) {
+      patterns[i] = Pattern.compile(tags[i]);
+    }
+    return patterns;
   }
 
   private Map<String, HeadRule> headRules;
@@ -150,11 +176,9 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
     }
     HeadRule hr;
     if (type.equals("SN") || type.equals("GRUP.NOM")) {
-      String[] tags1 = {"AQA.*","AQC.*","GRUP\\.A","S\\.A","NC.*S.*", "NP.*","NC.*P.*", "GRUP\\.NOM"};
-
       for (Parse constituent : constituents) {
-        for (int t = tags1.length - 1; t >= 0; t--) {
-          if (constituent.getType().matches(tags1[t])) {
+        for (int t = TAGS1_PATTERNS.length - 1; t >= 0; t--) {
+          if (TAGS1_PATTERNS[t].matcher(constituent.getType()).matches()) {
             return constituent;
           }
         }
@@ -164,18 +188,16 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
           return constituent;
         }
       }
-      String[] tags2 = {"\\$","GRUP\\.A","SA"};
       for (int ci = constituents.length - 1; ci >= 0; ci--) {
-        for (int ti = tags2.length - 1; ti >= 0; ti--) {
-          if (constituents[ci].getType().matches(tags2[ti])) {
+        for (int ti = TAGS2_PATTERNS.length - 1; ti >= 0; ti--) {
+          if (TAGS2_PATTERNS[ti].matcher(constituents[ci].getType()).matches()) {
             return constituents[ci];
           }
         }
       }
-      String[] tags3 = {"AQ0.*", "AQ[AC].*","AO.*","GRUP\\.A","S\\.A","RG","RN","GRUP\\.NOM"};
       for (int ci = constituents.length - 1; ci >= 0; ci--) {
-        for (int ti = tags3.length - 1; ti >= 0; ti--) {
-          if (constituents[ci].getType().matches(tags3[ti])) {
+        for (int ti = TAGS3_PATTERNS.length - 1; ti >= 0; ti--) {
+          if (TAGS3_PATTERNS[ti].matcher(constituents[ci].getType()).matches()) {
             return constituents[ci];
           }
         }
@@ -183,13 +205,12 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
       return constituents[constituents.length - 1].getHead();
     }
     else if ((hr = headRules.get(type)) != null) {
-      String[] tags = hr.tags;
+      Pattern[] tagPatterns = hr.tagPatterns;
       int cl = constituents.length;
-      int tl = tags.length;
       if (hr.leftToRight) {
-        for (String tag : tags) {
+        for (Pattern tagPattern : tagPatterns) {
           for (Parse constituent : constituents) {
-            if (constituent.getType().matches(tag)) {
+            if (tagPattern.matcher(constituent.getType()).matches()) {
               return constituent;
             }
           }
@@ -197,9 +218,9 @@ public class AncoraSpanishHeadRules implements HeadRules, GapLabeler, Serializab
         return constituents[0].getHead();
       }
       else {
-        for (String tag : tags) {
+        for (Pattern tagPattern : tagPatterns) {
           for (int ci = cl - 1; ci >= 0; ci--) {
-            if (constituents[ci].getType().matches(tag)) {
+            if (tagPattern.matcher(constituents[ci].getType()).matches()) {
               return constituents[ci];
             }
           }
