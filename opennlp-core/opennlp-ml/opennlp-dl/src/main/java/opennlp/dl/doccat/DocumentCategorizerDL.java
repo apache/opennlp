@@ -22,10 +22,10 @@ import java.io.IOException;
 import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -214,7 +214,7 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
           "The document to categorize must contain at least one non-whitespace token");
     }
 
-    final List<double[]> scores = new LinkedList<>();
+    final List<double[]> scores = new ArrayList<>(tokens.size());
     for (final Tokens t : tokens) {
       scores.add(softmax(infer(t)));
     }
@@ -240,7 +240,8 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
    */
   private float[] infer(final Tokens t) {
 
-    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    // At most three inputs (ids, attention mask, token type ids), so size for exactly that.
+    final Map<String, OnnxTensor> inputs = HashMap.newHashMap(3);
     final Object output;
     try {
       inputs.put(INPUT_IDS, OnnxTensor.createTensor(env,
@@ -367,12 +368,13 @@ public class DocumentCategorizerDL extends AbstractDL implements DocumentCategor
   private List<Tokens> tokenize(final String input) {
 
     final String text = normalizeInput(input, normalizeWhitespace, normalizeDashes);
-    final List<Tokens> t = new LinkedList<>();
 
     // Segment long input text into overlapping chunks (split on Unicode whitespace) configured by
     // InferenceOptions before feeding each chunk into BERT.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    for (final String group : whitespaceChunks(text, documentSplitSize, splitOverlapSize)) {
+    final List<String> groups = whitespaceChunks(text, documentSplitSize, splitOverlapSize);
+    final List<Tokens> t = new ArrayList<>(groups.size());
+    for (final String group : groups) {
 
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(group);

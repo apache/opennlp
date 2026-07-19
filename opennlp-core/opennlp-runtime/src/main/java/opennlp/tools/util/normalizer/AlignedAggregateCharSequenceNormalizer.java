@@ -34,6 +34,7 @@ final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormali
     this.steps = steps;
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     CharSequence result = text;
@@ -43,6 +44,7 @@ final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormali
     return result;
   }
 
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     if (steps.length == 0) {
@@ -50,7 +52,8 @@ final class AlignedAggregateCharSequenceNormalizer implements OffsetAwareNormali
       // from the stored original for a CharSequence whose length() differs from its toString().
       final String identity = text.toString();
       return new AlignedText(identity, identity,
-          new Alignment.Builder().equal(identity.length()).build(identity.length()));
+          new Alignment.Builder(identity.length()).equal(identity.length())
+              .build(identity.length()));
     }
     // Normalize the input to a String once so the stored original and the per-stage alignment
     // lengths agree even for a CharSequence whose length() differs from its toString().

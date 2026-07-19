@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,53 +35,60 @@ import java.util.Map;
  * lookalikes, exactly when their skeletons are equal.
  *
  * <p>The mapping is loaded once from the {@code confusables.txt} resource of the Unicode security
- * data (parsed with simple cursor scanning, no regular expression). The skeleton of a string is
- * {@code NFD(map(NFD(s)))}: decompose, replace each code point with its prototype, and decompose
- * again. This changes length and offsets, so it belongs to the derived, matching-only form rather
- * than to any offset-preserving transform.</p>
+ * data. The skeleton of a string is {@code NFD(map(NFD(s)))}: decompose, replace each code point
+ * with its prototype, and decompose again. This changes length and offsets, so it is a
+ * matching-only comparison form, not an offset-preserving transform.</p>
  *
- * <p>This implements only the skeleton transform and the confusable-detection test built on
- * skeleton equality. The other mechanisms defined in UTS&#160;#39, such as identifier
+ * <p>This implements only the UTS&#160;#39 skeleton transform and the confusable-detection test
+ * built on skeleton equality. The other mechanisms defined in the report, such as identifier
  * restriction levels, mixed-script and whole-script confusable detection, and the bidirectional
- * skeleton, are out of scope; the skeleton here is a comparison form, not a security-grade
- * conformance claim for the full report.</p>
+ * skeleton, are out of scope.</p>
  */
 public final class Confusables {
 
   private static final String RESOURCE = "confusables.txt";
 
-  // Maps a single confusable code point to its prototype sequence (one or more code points).
-  private static volatile Map<Integer, String> prototypes;
+  private record Data(Map<Integer, String> prototypes, BitSet keys) {
+  }
+
+  private static final Data DATA = load();
 
   private Confusables() {
   }
 
-  private static Map<Integer, String> prototypes() {
-    Map<Integer, String> map = prototypes;
-    if (map == null) {
-      synchronized (Confusables.class) {
-        map = prototypes;
-        if (map == null) {
-          map = load();
-          prototypes = map;
-        }
-      }
-    }
-    return map;
-  }
-
-  private static Map<Integer, String> load() {
+  /**
+   * {@return the prototype mapping and key set parsed from the bundled {@code confusables.txt}
+   * resource}
+   *
+   * @throws IllegalStateException Thrown if the resource is missing.
+   * @throws UncheckedIOException Thrown if the resource cannot be read.
+   */
+  private static Data load() {
     try (InputStream in = Confusables.class.getResourceAsStream(RESOURCE)) {
       if (in == null) {
         throw new IllegalStateException("Missing confusables data resource: " + RESOURCE);
       }
-      return parse(in);
+      final Map<Integer, String> prototypes = parse(in);
+      final BitSet keys = new BitSet();
+      for (final int codePoint : prototypes.keySet()) {
+        keys.set(codePoint);
+      }
+      return new Data(prototypes, keys);
     } catch (IOException e) {
       throw new UncheckedIOException("Unable to read confusables data resource " + RESOURCE, e);
     }
   }
 
-  // Package-private so the malformed-data handling can be exercised without the bundled resource.
+  /**
+   * Parses the source-to-prototype mappings from the {@code confusables.txt} data. Package-private
+   * so the malformed-data handling can be exercised without the bundled resource.
+   *
+   * @param in The data stream.
+   * @return The source code point to prototype string mapping.
+   * @throws IOException Thrown if the stream cannot be read.
+   * @throws IllegalArgumentException Thrown if a line is structurally malformed or holds a
+   *     non-hexadecimal code point.
+   */
   static Map<Integer, String> parse(InputStream in) throws IOException {
     final Map<Integer, String> map = new HashMap<>();
     try (BufferedReader reader =
@@ -106,8 +114,7 @@ public final class Confusables {
           final int source = Integer.parseInt(content.substring(0, firstSemicolon).strip(), 16);
           final String target = content.substring(firstSemicolon + 1, secondSemicolon).strip();
           final StringBuilder prototype = new StringBuilder();
-          // Scan the whitespace-delimited hex tokens by hand to honor the no-regex contract and
-          // avoid compiling a Pattern for every one of the ~10k lines during static init.
+          // Scan the whitespace-delimited hex tokens by hand, with no regular expression.
           final int targetLength = target.length();
           int pos = 0;
           while (pos < targetLength) {
@@ -140,15 +147,42 @@ public final class Confusables {
    *
    * @param text The text to reduce.
    * @return The skeleton.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   public static String skeleton(CharSequence text) {
-    final Map<Integer, String> map = prototypes();
+    if (text == null) {
+      throw new IllegalArgumentException("text must not be null");
+    }
+    final Data d = DATA;
+    final BitSet keys = d.keys();
+
+    // Clean ASCII or NFD text with no confusable keys skips both Normalizer passes.
+    final int length = text.length();
+    boolean asciiOnly = true;
+    boolean anyKey = false;
+    int i = 0;
+    while (i < length) {
+      final int codePoint = Character.codePointAt(text, i);
+      if (codePoint >= 0x80) {
+        asciiOnly = false;
+      }
+      if (keys.get(codePoint)) {
+        anyKey = true;
+        break;
+      }
+      i += Character.charCount(codePoint);
+    }
+    if (!anyKey && (asciiOnly || Normalizer.isNormalized(text, Normalizer.Form.NFD))) {
+      return text.toString();
+    }
+
+    final Map<Integer, String> map = d.prototypes();
     final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFD);
     final StringBuilder mapped = new StringBuilder(decomposed.length());
-    for (int i = 0; i < decomposed.length(); ) {
-      final int codePoint = decomposed.codePointAt(i);
-      i += Character.charCount(codePoint);
-      final String prototype = map.get(codePoint);
+    for (int j = 0; j < decomposed.length(); ) {
+      final int codePoint = decomposed.codePointAt(j);
+      j += Character.charCount(codePoint);
+      final String prototype = keys.get(codePoint) ? map.get(codePoint) : null;
       if (prototype != null) {
         mapped.append(prototype);
       } else {
@@ -164,8 +198,15 @@ public final class Confusables {
    *
    * @param left  The first string.
    * @param right The second string.
+   * @throws IllegalArgumentException Thrown if {@code left} or {@code right} is {@code null}.
    */
   public static boolean confusable(CharSequence left, CharSequence right) {
+    if (left == null) {
+      throw new IllegalArgumentException("left must not be null");
+    }
+    if (right == null) {
+      throw new IllegalArgumentException("right must not be null");
+    }
     return skeleton(left).equals(skeleton(right));
   }
 }

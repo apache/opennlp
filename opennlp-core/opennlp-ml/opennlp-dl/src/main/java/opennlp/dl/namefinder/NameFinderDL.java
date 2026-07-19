@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -352,7 +351,8 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
    */
   private float[][] infer(final Tokens tokens) {
 
-    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    // At most three inputs (ids, attention mask, token type ids), so size for exactly that.
+    final Map<String, OnnxTensor> inputs = HashMap.newHashMap(3);
     final Object output;
     try {
       inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, LongBuffer.wrap(tokens.ids()),
@@ -781,13 +781,13 @@ public class NameFinderDL extends AbstractDL implements OffsetMappingNameFinder 
 
   private List<ChunkTokens> tokenize(final String text) {
 
-    final List<ChunkTokens> t = new LinkedList<>();
-
     // Segment long input text into overlapping chunks (split on Unicode whitespace) configured by
     // InferenceOptions before feeding each chunk into BERT, keeping each chunk's character span so
     // its decoded spans can be bounded to the region the chunk covers.
     // https://medium.com/analytics-vidhya/text-classification-with-bert-using-transformers-for-long-text-inputs-f54833994dfd
-    for (final TextChunk chunk : whitespaceChunkSpans(text, documentSplitSize, splitOverlapSize)) {
+    final List<TextChunk> chunks = whitespaceChunkSpans(text, documentSplitSize, splitOverlapSize);
+    final List<ChunkTokens> t = new ArrayList<>(chunks.size());
+    for (final TextChunk chunk : chunks) {
 
       // Now we can tokenize the group and continue.
       final String[] tokens = tokenizer.tokenize(chunk.text());

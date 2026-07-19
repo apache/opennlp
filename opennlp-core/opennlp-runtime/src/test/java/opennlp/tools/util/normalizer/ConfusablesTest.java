@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConfusablesTest {
@@ -73,9 +75,56 @@ public class ConfusablesTest {
   }
 
   @Test
+  void testSkeletonReturnsCleanAsciiUnchanged() {
+    // No code point of the text is a prototype key, so the fast path returns the input as-is.
+    final String clean = "hello";
+    assertSame(clean, Confusables.skeleton(clean));
+  }
+
+  @Test
+  void testSkeletonStillMapsAsciiPrototypeKeys() {
+    // ASCII code points that ARE prototype keys must defeat the fast path and map as before.
+    assertEquals("rn", Confusables.skeleton("m"));
+    assertEquals("l", Confusables.skeleton("I"));
+    assertEquals("l", Confusables.skeleton("1"));
+    assertEquals("O", Confusables.skeleton("0"));
+    assertEquals("corn", Confusables.skeleton("com"));
+  }
+
+  @Test
+  void testSkeletonStillDecomposesPrecomposedText() {
+    // A precomposed character is not in NFD form, so it must take the full path and decompose,
+    // and the result must agree with the already-decomposed spelling (canonical equivalence).
+    final String precomposed = cp(0x00E9);          // e with acute, single code point
+    final String decomposed = "e" + cp(0x0301);     // e + combining acute
+    assertEquals(decomposed, Confusables.skeleton(precomposed));
+    assertEquals(Confusables.skeleton(precomposed), Confusables.skeleton(decomposed));
+  }
+
+  @Test
+  void testSkeletonReturnsNfdStableNonKeyTextUnchanged() {
+    // Non-ASCII, already in NFD form, and no prototype key: the fast path applies.
+    final String hiragana = cp(0x3042);
+    assertSame(hiragana, Confusables.skeleton(hiragana));
+  }
+
+  @Test
+  void testSkeletonStillMapsNonAsciiPrototypeKeys() {
+    // U+4E00 is a prototype key (maps to the prolonged sound mark), so it must still map.
+    assertEquals(cp(0x30FC), Confusables.skeleton(cp(0x4E00)));
+  }
+
+  @Test
   void testTermConfusableFoldDimension() {
     final String spoof = "p" + cp(0x0430) + "yp" + cp(0x0430) + "l";
     final TermAnalyzer analyzer = TermAnalyzer.builder().confusableFold().build();
     assertEquals(Confusables.skeleton("paypal"), analyzer.analyze(spoof).get(0).normalized());
+  }
+
+  @Test
+  void testNullArgumentsAreRejected() {
+    assertThrows(IllegalArgumentException.class, () -> Confusables.skeleton(null));
+    assertThrows(IllegalArgumentException.class, () -> Confusables.confusable(null, "a"));
+    assertThrows(IllegalArgumentException.class, () -> Confusables.confusable("a", null));
   }
 }

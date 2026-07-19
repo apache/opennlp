@@ -17,6 +17,7 @@
 package opennlp.tools.util.normalizer;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,7 @@ import opennlp.tools.util.normalizer.UnicodeWhitespace.WhitespaceCharacter;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -152,6 +154,92 @@ public class CharClassTest {
   @Test
   void testRemoveAll() {
     assertEquals("abcd", WS.removeAll("a b\tc d"));
+  }
+
+  // --- identity short-circuit (member-free input is returned uncopied) ----------------------
+
+  @Test
+  void testNormalizeReturnsSameInstanceWhenNoMember() {
+    final String text = "plain ascii token";
+    assertSame(text, DASH.normalize(text), "member-free input must be returned uncopied");
+    final String noWhitespace = "token";
+    assertSame(noWhitespace, WS.normalize(noWhitespace));
+  }
+
+  @Test
+  void testCollapseReturnsSameInstanceWhenNoMember() {
+    final String text = "token";
+    assertSame(text, WS.collapse(text));
+    assertSame(text, DASH.collapse(text));
+  }
+
+  @Test
+  void testRemoveAllReturnsSameInstanceWhenNoMember() {
+    final String text = "token" + GRINNING_FACE;
+    assertSame(text, WS.removeAll(text));
+    assertSame(text, DASH.removeAll(text));
+  }
+
+  @Test
+  void testSubstituteReturnsSameInstanceWhenMapperNeverFires() {
+    final String text = "token 123";
+    assertSame(text, CharClass.substitute(text, codePoint -> null));
+  }
+
+  @Test
+  void testIdentityShortCircuitConvertsNonStringInput() {
+    final StringBuilder text = new StringBuilder("token");
+    assertEquals("token", WS.normalize(text), "a CharSequence input still yields its string form");
+    assertEquals("token", WS.collapse(text));
+    assertEquals("token", WS.removeAll(text));
+    assertEquals("token", CharClass.substitute(text, codePoint -> null));
+  }
+
+  @Test
+  void testLazyBuilderCopiesUnchangedPrefixBeforeFirstMember() {
+    // The first member appears after a supplementary character, so the pre-filled prefix must be
+    // copied by chars, not code points, to stay byte-identical.
+    final String text = GRINNING_FACE + "ab" + NBSP + NBSP + "cd";
+    assertEquals(GRINNING_FACE + "ab  cd", WS.normalize(text));
+    assertEquals(GRINNING_FACE + "ab cd", WS.collapse(text));
+    assertEquals(GRINNING_FACE + "abcd", WS.removeAll(text));
+    assertEquals(GRINNING_FACE + "ab__cd",
+        CharClass.substitute(text, codePoint -> codePoint == 0x00A0 ? "_" : null));
+  }
+
+  @Test
+  void testSubstituteAppliesMapperOncePerCodePoint() {
+    final String text = "a" + GRINNING_FACE + "1b2";
+    final AtomicInteger calls = new AtomicInteger();
+    final String unchanged = CharClass.substitute(text, codePoint -> {
+      calls.incrementAndGet();
+      return null;
+    });
+    assertSame(text, unchanged);
+    assertEquals(5, calls.get(), "the mapper must be applied exactly once per code point");
+
+    calls.set(0);
+    final String replaced = CharClass.substitute(text, codePoint -> {
+      calls.incrementAndGet();
+      return Character.isDigit(codePoint) ? "#" : null;
+    });
+    assertEquals("a" + GRINNING_FACE + "#b#", replaced);
+    assertEquals(5, calls.get(), "the lazy builder must not re-apply the mapper");
+  }
+
+  // --- BMP fast path: unpaired surrogates must decode exactly like Character.codePointAt ----
+
+  @Test
+  void testUnpairedSurrogatesPassThroughUnchanged() {
+    final String loneHigh = "\uD83D"; // high surrogate with no low surrogate following
+    final String loneLow = "\uDE00";  // low surrogate with no high surrogate preceding
+    final String text = "a" + loneHigh + " " + loneLow + "b";
+    assertEquals(text, WS.normalize(text));
+    assertEquals(text, WS.collapse(text));
+    assertEquals("a" + loneHigh + loneLow + "b", WS.removeAll(text));
+    assertEquals(text, WS.trim(" " + text + "\t"));
+    assertArrayEquals(new String[] {"a" + loneHigh, loneLow + "b"}, WS.split(text));
+    assertEquals(text, CharClass.substitute(text, codePoint -> null));
   }
 
   // --- split / splitSpans ------------------------------------------------------------------
@@ -398,9 +486,6 @@ public class CharClassTest {
 
   @Test
   void nullParametersAreRejectedWithIllegalArgumentException() {
-    // The whole class reports IllegalArgumentException for a null parameter rather than
-    // requireNonNull's NullPointerException, so an invalid parameter and an invalid code point
-    // surface through the same exception type (review).
     final CharClass ws = CharClass.whitespace();
     final CodePointSet nl = CodePointSet.of('\n');
     assertThrows(IllegalArgumentException.class, () -> CharClass.of(null, ' '));

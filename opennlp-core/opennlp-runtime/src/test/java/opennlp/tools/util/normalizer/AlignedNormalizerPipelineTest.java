@@ -319,6 +319,23 @@ public class AlignedNormalizerPipelineTest {
   }
 
   @Test
+  void digitFoldOfMixedAsciiAndNonAsciiDigitsMapsSpansBackToOriginal() {
+    // ASCII digits take the copy-through path (recorded as equal runs), non-ASCII digits are
+    // replaced; the resulting alignment must be indistinguishable from a full replace pass.
+    final String original = "4" + cp(0x0665) + "2" + cp(0xFF11); // '4', arabic-indic 5, '2', fullwidth 1
+    final AlignedText aligned = DigitCharSequenceNormalizer.getInstance()
+        .normalizeAligned(original);
+    assertEquals("4521", aligned.normalized());
+    // Every position folds one for one, so each normalized digit maps back to its own source.
+    assertEquals("4", covered(aligned, 0, 1));
+    assertEquals(cp(0x0665), covered(aligned, 1, 2));
+    assertEquals("2", covered(aligned, 2, 3));
+    assertEquals(cp(0xFF11), covered(aligned, 3, 4));
+    // And the reverse direction: the ASCII '2' at original index 2 maps to normalized index 2.
+    assertEquals(new Span(2, 3), aligned.toNormalizedSpan(2, 3));
+  }
+
+  @Test
   void quoteFoldMapsSpanBackToOriginal() {
     final String original = cp(0x201C) + "hi" + cp(0x201D);   // curly double quotes
     final AlignedText aligned = QuoteCharSequenceNormalizer.getInstance()
