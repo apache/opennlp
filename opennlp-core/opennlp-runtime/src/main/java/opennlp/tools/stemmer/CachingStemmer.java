@@ -100,7 +100,6 @@ public final class CachingStemmer extends DelegatingStemmer<CachingStemmer.Threa
     if (cached != null) {
       return cached;
     }
-    // toString() copies the result out of any buffer the delegate reuses.
     final String stemmed = ts.delegate.stem(key).toString();
     ts.cache.put(key, stemmed);
     return stemmed;
