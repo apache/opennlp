@@ -42,20 +42,10 @@ import java.util.Optional;
  * project judgments tagged {@code UNSPECIFIED}. No third-party sentiment data set is copied; in
  * particular the Emoji Sentiment Ranking (CC&#160;BY-SA) is not used in any form.</p>
  *
- * <p>Design note: these annotations are surfaced beside the {@link Term} model rather than as new
- * {@link Dimension} constants. A {@code Dimension} is a character-level text <em>transform</em>
- * whose result is another string layer of the token (each layer feeds the next, and
- * {@link Term#peel()}/{@link Term#normalized()} walk that stack), while an annotation is typed,
- * per-symbol <em>metadata</em> about the original pictograph: it has no place in the transform
- * pipeline, would not compose with the layers below it, and would force typed facts through a
- * stringly {@code Map<Dimension, String>}. The parallel accessor surface is
- * {@code EmojiAnnotator}, which consumes a {@code Term} and returns the record.</p>
- *
- * <p>Lookups strip U+FE0F VARIATION SELECTOR-16 (the emoji presentation selector) from the queried
- * sequence, because presentation selection does not change a symbol's identity; the bundled rows
- * are keyed without it. Flag emoji intentionally have no bundled rows: their region decodes from
- * the code point sequence itself (the derived-facts layer), and gazetteer identifiers are never
- * baked into bundled data.</p>
+ * <p>Annotations are typed metadata beside {@link Term}, not {@link Dimension} string transforms;
+ * {@link EmojiAnnotator} is the accessor. Lookups strip U+FE0F (emoji presentation selector)
+ * because it does not change identity; bundled rows are keyed without it. Flag emoji have no
+ * bundled rows: region is derived, and gazetteer ids are never baked in.</p>
  */
 public final class EmojiAnnotations {
 

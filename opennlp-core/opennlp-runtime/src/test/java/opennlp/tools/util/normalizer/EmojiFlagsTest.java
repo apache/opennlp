@@ -17,8 +17,11 @@
 package opennlp.tools.util.normalizer;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -96,39 +99,37 @@ public class EmojiFlagsTest {
     assertEquals(Optional.empty(), EmojiFlags.isoRegion("A" + cp(ri('D'), ri('E'))));
   }
 
-  @Test
-  void malformedRegionalIndicatorSequencesFailLoud() {
+  static Stream<String> malformedRegionalIndicatorSequences() {
     // A lone indicator, an odd run, adjacent flags passed as one symbol, and an indicator followed
     // by other content are all malformed for the strict decoder.
-    assertThrows(IllegalArgumentException.class, () -> EmojiFlags.isoRegion(cp(ri('D'))));
-    assertThrows(IllegalArgumentException.class,
-        () -> EmojiFlags.isoRegion(cp(ri('D'), ri('E'), ri('F'))));
-    assertThrows(IllegalArgumentException.class,
-        () -> EmojiFlags.isoRegion(cp(ri('D'), ri('E'), ri('F'), ri('R'))));
-    assertThrows(IllegalArgumentException.class, () -> EmojiFlags.isoRegion(cp(ri('D')) + "E"));
-    assertThrows(IllegalArgumentException.class,
-        () -> EmojiFlags.isoRegion(cp(ri('D'), ri('E')) + "!"));
+    return Stream.of(
+        cp(ri('D')),
+        cp(ri('D'), ri('E'), ri('F')),
+        cp(ri('D'), ri('E'), ri('F'), ri('R')),
+        cp(ri('D')) + "E",
+        cp(ri('D'), ri('E')) + "!");
   }
 
-  @Test
-  void malformedTagSequencesFailLoud() {
-    // Unterminated.
-    assertThrows(IllegalArgumentException.class,
-        () -> EmojiFlags.isoRegion(BLACK_FLAG + tags("gbeng")));
-    // Terminator only, no code.
-    assertThrows(IllegalArgumentException.class, () -> EmojiFlags.isoRegion(BLACK_FLAG + CANCEL));
-    // Too short for a subdivision code.
-    assertThrows(IllegalArgumentException.class,
-        () -> EmojiFlags.isoRegion(BLACK_FLAG + tags("gb") + CANCEL));
-    // Region part must be two letters.
-    assertThrows(IllegalArgumentException.class,
-        () -> EmojiFlags.isoRegion(BLACK_FLAG + tags("1beng") + CANCEL));
-    // Non-tag content inside the sequence.
-    assertThrows(IllegalArgumentException.class,
-        () -> EmojiFlags.isoRegion(BLACK_FLAG + tags("gb") + "e" + tags("ng") + CANCEL));
-    // Content after the terminator.
-    assertThrows(IllegalArgumentException.class,
-        () -> EmojiFlags.isoRegion(BLACK_FLAG + tags("gbeng") + CANCEL + "x"));
+  @ParameterizedTest
+  @MethodSource("malformedRegionalIndicatorSequences")
+  void malformedRegionalIndicatorSequencesFailLoud(String input) {
+    assertThrows(IllegalArgumentException.class, () -> EmojiFlags.isoRegion(input));
+  }
+
+  static Stream<String> malformedTagSequences() {
+    return Stream.of(
+        BLACK_FLAG + tags("gbeng"),
+        BLACK_FLAG + CANCEL,
+        BLACK_FLAG + tags("gb") + CANCEL,
+        BLACK_FLAG + tags("1beng") + CANCEL,
+        BLACK_FLAG + tags("gb") + "e" + tags("ng") + CANCEL,
+        BLACK_FLAG + tags("gbeng") + CANCEL + "x");
+  }
+
+  @ParameterizedTest
+  @MethodSource("malformedTagSequences")
+  void malformedTagSequencesFailLoud(String input) {
+    assertThrows(IllegalArgumentException.class, () -> EmojiFlags.isoRegion(input));
   }
 
   @Test

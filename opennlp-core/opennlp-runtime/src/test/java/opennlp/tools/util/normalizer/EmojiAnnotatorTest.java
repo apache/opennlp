@@ -20,8 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -96,17 +99,17 @@ public class EmojiAnnotatorTest {
         annotation.attribute(EmojiAnnotation.ISO_REGION).orElseThrow().source());
   }
 
-  @Test
-  void annotationIsTotalOverArbitraryTokens() {
-    final EmojiAnnotator annotator = new EmojiAnnotator();
-    assertEquals(Optional.empty(), annotator.annotate("word"));
-    assertEquals(Optional.empty(), annotator.annotate(""));
-    assertEquals(Optional.empty(), annotator.annotate(":-)"));
+  static Stream<String> nonAnnotatedTokens() {
     // A lone regional indicator in damaged text yields no annotation, never an exception; the
-    // fail-loud contract lives on EmojiFlags.isoRegion for direct callers.
-    assertEquals(Optional.empty(), annotator.annotate(cp(0x1F1E9)));
-    // An unmapped pictograph is not annotated either.
-    assertEquals(Optional.empty(), annotator.annotate(cp(0x1F9F8)));
+    // fail-loud contract lives on EmojiFlags.isoRegion for direct callers. An unmapped pictograph
+    // is not annotated either.
+    return Stream.of("word", "", ":-)", cp(0x1F1E9), cp(0x1F9F8));
+  }
+
+  @ParameterizedTest
+  @MethodSource("nonAnnotatedTokens")
+  void annotationIsTotalOverArbitraryTokens(String token) {
+    assertEquals(Optional.empty(), new EmojiAnnotator().annotate(token));
   }
 
   @Test

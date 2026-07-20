@@ -556,6 +556,7 @@ for (Term term : analyzer.analyze(text)) {
 }]]>
 		</programlisting>
 		<para>
+			<code>EmojiAnnotatorUsageExampleTest</code> asserts the behavior shown here.
 			Annotations are per-symbol <emphasis>metadata</emphasis>, not text transforms, so they are a
 			parallel accessor surface beside <code>Term</code> rather than additional
 			<code>Dimension</code>s: <code>annotate(Term)</code> reads the token's original layer, which

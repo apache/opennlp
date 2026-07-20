@@ -21,35 +21,12 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * The opt-in annotation surface of the emoji record store: assembles one {@link EmojiAnnotation}
- * per symbol from the three strictly separated layers, bundled facts
- * ({@link EmojiAnnotations}), derived facts ({@link EmojiFlags}), and joined facts (an optional
- * {@link EmojiAnnotationJoin}).
- *
- * <p><strong>Design note: a parallel accessor surface beside {@link Term}, not new
- * {@link Dimension} constants.</strong> A {@code Dimension} is a character-level text transform:
- * each constant produces another <em>string form</em> of the token, the constants form an ordered
- * pipeline in which every layer feeds the next, and {@link Term#normalized()},
- * {@link Term#at(Dimension)}, and {@link Term#peel()} all walk that stack of strings. An emoji
- * annotation is neither a string form nor a pipeline stage: it is typed, per-symbol
- * <em>metadata</em> (a score, two enums, a name, a region code, each with provenance) that
- * describes the original pictograph and composes with nothing downstream of it. Modeling it as
- * {@code Dimension} constants would force those typed facts through the stringly
- * {@code Map<Dimension, String>} layer cache, would give them a meaningless position in the
- * transform order, and would break the {@code Dimension} contract that every layer is applied on
- * top of the previous one. So annotations stay a parallel, opt-in lookup keyed by the token:
- * consumers that only want folded text never touch this class and pay nothing for it.</p>
- *
- * <p>{@link #annotate(Term)} reads {@link Term#original()}, the source of truth: the derived
- * layers exist for matching and may have folded the pictograph away entirely (for example
- * {@link Dimension#EMOJI_FOLD} rewrites it to an ASCII emoticon), while annotations describe the
- * symbol the author actually wrote.</p>
- *
- * <p>Bulk safety: annotation is total over arbitrary token text. A token that is not an annotated
- * symbol returns empty, and degenerate flag-shaped text (a lone regional indicator in damaged
- * input) returns no region rather than throwing; the strict, fail-loud decoding contract lives on
- * {@link EmojiFlags#isoRegion(CharSequence)} for callers that want it. An instance is immutable
- * and thread-safe when its join is.</p>
+ * Assembles one {@link EmojiAnnotation} per symbol from bundled facts
+ * ({@link EmojiAnnotations}), derived facts ({@link EmojiFlags}), and optional joined facts
+ * ({@link EmojiAnnotationJoin}). Annotations are typed metadata beside {@link Term}, not
+ * {@link Dimension} string transforms. {@link #annotate(Term)} keys on
+ * {@link Term#original()}; non-emoji tokens and degenerate flag-shaped text return empty.
+ * Instances are immutable and thread-safe when the join is.
  */
 public final class EmojiAnnotator {
 
