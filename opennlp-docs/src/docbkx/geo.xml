@@ -222,4 +222,24 @@ gazetteer.lookup("Tokyo");   // the base still answers everything else]]>
 			</programlisting>
 		</para>
 	</section>
+
+	<section xml:id="tools.geo.geocoder">
+		<title>Geocoder</title>
+		<para>
+			A <code>Geocoder</code> turns location mention spans into
+			<code>GeoResolution</code> records against a <code>Gazetteer</code>.
+			<code>PopulationPriorGeocoder</code> picks the most populous candidate for
+			each mention; unresolved mentions are omitted.
+			<code>GeocoderUsageExampleTest</code> asserts the workflow shown here.
+			<programlisting language="java"><![CDATA[
+Geocoder geocoder = new PopulationPriorGeocoder(gazetteer);
+String text = "She grew up in Springfield.";
+Span mention = new Span(text.indexOf("Springfield"),
+    text.indexOf("Springfield") + "Springfield".length());
+
+List<GeoResolution> resolutions = geocoder.resolve(text, List.of(mention));
+// resolutions.get(0).entry() is the most populous Springfield]]>
+			</programlisting>
+		</para>
+	</section>
 </chapter>
