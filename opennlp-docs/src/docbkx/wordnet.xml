@@ -25,7 +25,9 @@
 			of speech. Two readers are provided: <code>WnLmfReader</code> for the
 			Global WordNet Association WN-LMF XML interchange format, and
 			<code>WndbReader</code> for the classic Princeton WordNet database file
-			layout. Both return an immutable, thread-safe knowledge base.
+			layout. Both return an immutable, thread-safe knowledge base. On top of
+			lookup, the module can Morphy-lemmatize, expand a term through synonym and
+			hypernym links, and score synset similarity on the hypernym graph.
 		</para>
 	</section>
 
@@ -100,6 +102,51 @@ MorphyLemmatizer lemmatizer = new MorphyLemmatizer(lexicon, exceptions);
 
 lemmatizer.lemmatize(new String[] {"mice"}, new String[] {"NNS"})[0];  // "mouse"
 lemmatizer.lemmatize(new String[] {"dogs"}, new String[] {"NNS"})[0];  // "dog"]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.expansion">
+		<title>Lexical expansion</title>
+		<para>
+			<code>LexicalExpander</code> turns a term into related terms from the
+			knowledge base: synonyms sharing its synsets, hypernym ancestors up to a
+			configured depth, and optionally direct hyponyms. Each
+			<code>Expansion</code> carries a heuristic weight in
+			<code>(0, 1]</code>: the first sense starts at <code>1.0</code>, later
+			senses multiply by the sense decay, and each hypernym or hyponym step
+			multiplies by the depth decay. The input term itself is never returned.
+			Defaults use depth <code>1</code>, sense decay <code>0.5</code>, and
+			depth decay <code>0.5</code>.
+			<code>LexicalExpansionUsageExampleTest</code> asserts the behavior shown
+			here.
+			<programlisting language="java"><![CDATA[
+List<Expansion> expansions = LexicalExpander.builder(lexicon)
+    .build()
+    .expand("dog", WordNetPOS.NOUN);
+
+// "domestic dog": SYNONYM, senseRank 0, weight 1.0
+// "canid":        HYPERNYM, depth 1, weight 0.5
+// "frank":        SYNONYM, senseRank 1, weight 0.5]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.wordnet.similarity">
+		<title>Synset similarity</title>
+		<para>
+			<code>SynsetSimilarity</code> scores two synset identifiers on the
+			hypernym graph. Path similarity is <code>1 / (1 + d)</code> for the
+			shortest distance <code>d</code> through a common ancestor. Wu-Palmer
+			similarity relates the depth of the deepest common ancestor to the depths
+			of both synsets. Unrelated synsets score <code>0</code>.
+			<code>LexicalExpansionUsageExampleTest</code> asserts the behavior shown
+			here.
+			<programlisting language="java"><![CDATA[
+SynsetSimilarity similarity = new SynsetSimilarity(lexicon);
+
+similarity.path("n6", "n5");       // 0.5   (chemist to scientist)
+similarity.wuPalmer("n5", "n6");   // 8.0/9.0]]>
 			</programlisting>
 		</para>
 	</section>
