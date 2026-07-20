@@ -74,6 +74,10 @@ List<Neighbor> neighbors = model.mostSimilar("coffee", 5);
 List<Neighbor> analogy = model.analogy("man", "king", "woman", 1);]]>
 		</programlisting>
 		<para>
+			<code>StaticEmbeddingUsageExampleTest</code> asserts the load-and-query workflow
+			shown here.
+		</para>
+		<para>
 			For a model laid out differently, the explicit overloads take the data files and the
 			switches directly. The WordPiece overload takes whether the tokenizer lower-cases
 			(and strips accents) and whether embeddings are L2-normalized; both are properties of
