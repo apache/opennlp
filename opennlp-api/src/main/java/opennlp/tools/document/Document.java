@@ -33,7 +33,7 @@ import java.util.Set;
  * without spans, for example a language id.</p>
  *
  * <p>Documents are immutable: {@link #with(LayerKey, List)} returns a new document that
- * shares the unchanged layers. Instances are safe to share between threads.</p>
+ * shares the unchanged layers. That immutability makes instances safe to share between threads.</p>
  *
  * <p>Three invariants make index-based references sound. A layer preserves its
  * insertion order, and the container never sorts or reorders it. A layer is immutable
