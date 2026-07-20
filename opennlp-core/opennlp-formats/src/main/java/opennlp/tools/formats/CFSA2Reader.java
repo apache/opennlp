@@ -116,24 +116,24 @@ public final class CFSA2Reader implements FsaSequenceReader {
     if (action == null) {
       throw new IllegalArgumentException("action must not be null");
     }
-    enumerate(rootNode, new byte[0], action);
+    enumerate(rootNode, new GrowableByteSequence(), action);
   }
 
-  private void enumerate(int node, byte[] prefix, Consumer<byte[]> action) {
-    if (prefix.length > MAX_SEQUENCE_LENGTH) {
+  private void enumerate(int node, GrowableByteSequence path, Consumer<byte[]> action) {
+    if (path.length() > MAX_SEQUENCE_LENGTH) {
       throw new IllegalStateException(
           "CFSA2 sequence exceeds " + MAX_SEQUENCE_LENGTH + " bytes; automaton may be malformed");
     }
     for (int arc = firstArc(node); arc != NO_ARC; arc = nextArc(arc)) {
-      final byte[] sequence = Arrays.copyOf(prefix, prefix.length + 1);
-      sequence[prefix.length] = arcLabel(arc);
+      path.push(arcLabel(arc));
       if ((arcs[arc] & BIT_FINAL_ARC) != 0) {
-        action.accept(sequence);
+        action.accept(path.toByteArray());
       }
       final int destination = destinationNode(arc);
       if (destination != TERMINAL_NODE) {
-        enumerate(destination, sequence, action);
+        enumerate(destination, path, action);
       }
+      path.pop();
     }
   }
 
