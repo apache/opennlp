@@ -139,6 +139,7 @@ public final class LayerKey<T> {
     return scope;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -150,11 +151,13 @@ public final class LayerKey<T> {
     return id.equals(other.id) && type.equals(other.type) && scope == other.scope;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int hashCode() {
     return Objects.hash(id, type, scope);
   }
 
+  /** {@inheritDoc} */
   @Override
   public String toString() {
     return id + '<' + type.getSimpleName() + '>';

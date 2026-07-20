@@ -123,6 +123,10 @@ DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
 Document document = analyzer.analyze("The dog barks. It naps.");]]>
 		</programlisting>
 		<para>
+			<code>DocumentPipelineExampleTest</code> asserts the pipeline and layer
+			round-trip shown here.
+		</para>
+		<para>
 			The resulting document carries exactly the four layers the pipeline provides.
 			The sentence layer holds two annotations, <code>[0..14)</code> covering
 			<code>The dog barks.</code> and <code>[15..23)</code> covering

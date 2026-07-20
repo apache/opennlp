@@ -153,11 +153,13 @@ public class NameFinderAnnotator implements DocumentAnnotator {
     return document.with(Layers.ENTITIES, entities);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> requires() {
     return Set.of(Layers.SENTENCES, Layers.TOKENS);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> provides() {
     return Set.of(Layers.ENTITIES);

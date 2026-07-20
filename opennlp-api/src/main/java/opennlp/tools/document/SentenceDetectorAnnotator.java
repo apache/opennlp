@@ -73,6 +73,7 @@ public class SentenceDetectorAnnotator implements DocumentAnnotator {
     return document.with(Layers.SENTENCES, sentences);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> provides() {
     return Set.of(Layers.SENTENCES);
