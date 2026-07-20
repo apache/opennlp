@@ -38,12 +38,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class GeocoderUsageExampleTest {
 
+  /** Three same-named Springfields with different populations; the Illinois row is largest. */
   private static final String[] ROWS = {
       "naturalearth;1;Springfield;;39.79968;-89.64399;US;Illinois;750000;CITY;",
       "naturalearth;2;Springfield;;37.18095;-93.29229;US;Missouri;450000;CITY;",
       "naturalearth;3;Springfield;;42.10148;-72.58982;US;Massachusetts;680000;CITY;",
   };
 
+  /**
+   * Loads the three example rows into an in-memory gazetteer.
+   *
+   * @return A {@link BundledGazetteer} over the example rows. Never {@code null}.
+   */
   private static BundledGazetteer fixtureGazetteer() {
     final StringBuilder data = new StringBuilder();
     for (final String row : ROWS) {
@@ -58,6 +64,11 @@ public class GeocoderUsageExampleTest {
     }
   }
 
+  /**
+   * Resolves the ambiguous {@code Springfield} mention and asserts that the
+   * population-prior geocoder returns the single most populous candidate, the Illinois
+   * row, on the mention's original span.
+   */
   @Test
   void testPopulationPriorResolvesAmbiguousMention() throws IOException {
     final Geocoder geocoder = new PopulationPriorGeocoder(fixtureGazetteer());
