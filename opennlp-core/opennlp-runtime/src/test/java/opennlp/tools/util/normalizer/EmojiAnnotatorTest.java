@@ -26,20 +26,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EmojiAnnotatorTest {
-
-  private static String cp(int... codePoints) {
-    final StringBuilder sb = new StringBuilder();
-    for (final int codePoint : codePoints) {
-      sb.appendCodePoint(codePoint);
-    }
-    return sb.toString();
-  }
 
   private static final String GERMAN_FLAG = cp(0x1F1E9, 0x1F1EA);
 

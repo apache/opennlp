@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -30,14 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * typed fields of the resulting {@link EmojiAnnotation}.
  */
 public class EmojiAnnotatorUsageExampleTest {
-
-  private static String cp(int... codePoints) {
-    final StringBuilder sb = new StringBuilder();
-    for (final int codePoint : codePoints) {
-      sb.appendCodePoint(codePoint);
-    }
-    return sb.toString();
-  }
 
   @Test
   void testAnnotatesFlagAndHeartFromDocumentedExample() {
