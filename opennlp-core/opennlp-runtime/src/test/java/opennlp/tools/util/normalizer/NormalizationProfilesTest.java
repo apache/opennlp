@@ -19,6 +19,9 @@ package opennlp.tools.util.normalizer;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
@@ -200,5 +203,25 @@ public class NormalizationProfilesTest {
     };
     assertThrows(IllegalArgumentException.class, () -> NormalizationProfiles.detect(null, detector));
     assertThrows(IllegalArgumentException.class, () -> NormalizationProfiles.detect("text", null));
+  }
+
+  @Test
+  void testMatchingAnalyzerIsThreadSafeForStemming() throws Exception {
+    final TermAnalyzer analyzer = NormalizationProfiles.forLanguage("eng").orElseThrow().matchingAnalyzer();
+    final String expected = analyzer.analyze("running").getFirst().at(Dimension.STEM);
+
+    try (ExecutorService pool = Executors.newFixedThreadPool(8)) {
+      final Future<?>[] tasks = new Future<?>[32];
+      for (int i = 0; i < tasks.length; i++) {
+        tasks[i] = pool.submit(() -> {
+          for (int n = 0; n < 50; n++) {
+            assertEquals(expected, analyzer.analyze("running").getFirst().at(Dimension.STEM));
+          }
+        });
+      }
+      for (final Future<?> task : tasks) {
+        task.get(30, java.util.concurrent.TimeUnit.SECONDS);
+      }
+    }
   }
 }

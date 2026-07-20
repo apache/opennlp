@@ -17,10 +17,33 @@
 
 package opennlp.tools.stemmer;
 
+import java.util.List;
+
 /**
- * The stemmer is reducing a word to its stem.
+ * Reduces a word to its root form.
+ *
+ * <p>Thread safety is implementation specific.</p>
  */
 public interface Stemmer {
 
+  /**
+   * Stems {@code word}.
+   *
+   * @param word The input word. Must not be {@code null}.
+   * @return The stemmed form.
+   * @throws IllegalArgumentException Thrown if {@code word} is {@code null}.
+   */
   CharSequence stem(CharSequence word);
+
+  /**
+   * {@return all stem forms for {@code word}} Defaults to a single-element list from
+   * {@link #stem(CharSequence)}. Dictionary-based engines may override this to return
+   * multiple roots; delegating wrappers must forward it to preserve the full list.
+   *
+   * @param word The input word. Must not be {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code word} is {@code null}.
+   */
+  default List<CharSequence> stemAll(CharSequence word) {
+    return List.of(stem(word));
+  }
 }

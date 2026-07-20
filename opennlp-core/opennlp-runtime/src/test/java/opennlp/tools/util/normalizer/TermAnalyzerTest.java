@@ -30,6 +30,10 @@ import org.junit.jupiter.api.Test;
 
 import opennlp.tools.lemmatizer.Lemmatizer;
 import opennlp.tools.stemmer.PorterStemmer;
+import opennlp.tools.stemmer.Stemmer;
+import opennlp.tools.stemmer.StemmerFactory;
+import opennlp.tools.stemmer.snowball.SnowballStemmer;
+import opennlp.tools.stemmer.snowball.SnowballStemmerFactory;
 import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -318,9 +322,31 @@ public class TermAnalyzerTest {
         .transform(null, CaseFoldCharSequenceNormalizer.getInstance()));
     assertThrows(IllegalArgumentException.class,
         () -> TermAnalyzer.builder().transform(Dimension.CASE_FOLD, null));
-    assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().stem(null));
+    assertThrows(IllegalArgumentException.class,
+        () -> TermAnalyzer.builder().stem((Stemmer) null));
+    assertThrows(IllegalArgumentException.class,
+        () -> TermAnalyzer.builder().stem((StemmerFactory) null));
+    assertThrows(IllegalArgumentException.class,
+        () -> TermAnalyzer.builder().stem(new SnowballStemmerFactory(
+            SnowballStemmer.ALGORITHM.ENGLISH), 0));
     assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().lemmatize(null));
     assertThrows(IllegalArgumentException.class, () -> TermAnalyzer.builder().tokenizer(null));
+  }
+
+  @Test
+  void testStemFactoryCachedResultsMatchDirectStemmer() {
+    final TermAnalyzer cached = TermAnalyzer.builder().caseFold()
+        .stem(new SnowballStemmerFactory(SnowballStemmer.ALGORITHM.ENGLISH)).build();
+    final TermAnalyzer direct = TermAnalyzer.builder().caseFold()
+        .stem(new SnowballStemmer(SnowballStemmer.ALGORITHM.ENGLISH)).build();
+
+    final String text = "Running runners kept running while the RUNNING continued";
+    final List<Term> cachedTerms = cached.analyze(text);
+    final List<Term> directTerms = direct.analyze(text);
+    assertEquals(directTerms.size(), cachedTerms.size());
+    for (int i = 0; i < directTerms.size(); i++) {
+      assertEquals(directTerms.get(i).at(Dimension.STEM), cachedTerms.get(i).at(Dimension.STEM));
+    }
   }
 
   @Test

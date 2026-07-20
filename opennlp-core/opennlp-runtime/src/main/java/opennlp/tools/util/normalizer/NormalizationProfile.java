@@ -17,7 +17,9 @@
 package opennlp.tools.util.normalizer;
 
 import opennlp.tools.stemmer.Stemmer;
+import opennlp.tools.stemmer.StemmerFactory;
 import opennlp.tools.stemmer.snowball.SnowballStemmer;
+import opennlp.tools.stemmer.snowball.SnowballStemmerFactory;
 
 /**
  * Per-language normalization settings, mirroring how OpenNLP already selects a Snowball stemmer by
@@ -61,8 +63,17 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
   }
 
   /**
-   * {@return a new {@link Stemmer} for this language} A fresh instance is returned on each call
-   * because the Snowball stemmers are stateful and not thread-safe.
+   * {@return a thread-safe factory for this language's Snowball stemmer} The factory may be
+   * shared; each {@linkplain StemmerFactory#newStemmer() minted stemmer} is confined to the
+   * calling thread.
+   */
+  public StemmerFactory stemmerFactory() {
+    return new SnowballStemmerFactory(stemmerAlgorithm);
+  }
+
+  /**
+   * {@return a new {@link Stemmer} for this language} The returned {@link SnowballStemmer} is
+   * thread-safe and may be shared across threads.
    */
   public Stemmer newStemmer() {
     return new SnowballStemmer(stemmerAlgorithm);
@@ -70,8 +81,10 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
 
   /**
    * Returns a matching analyzer for this language: NFC, case folding, the language's
-   * {@linkplain #accentFold() diacritic fold} when it has one, then stemming. Each call builds an
-   * independent analyzer with its own stemmer, so use one per thread when stemming.
+   * {@linkplain #accentFold() diacritic fold} when it has one, then stemming. The returned
+   * analyzer is thread-safe, and repeated words resolve from a bounded per-thread stem cache
+   * instead of being re-stemmed. The cache is keyed to the thread, so build the analyzer once
+   * and reuse it from threads that live across many calls, such as a fixed platform-thread pool.
    *
    * @return the analyzer.
    */
@@ -80,6 +93,6 @@ public record NormalizationProfile(String language, SnowballStemmer.ALGORITHM st
     if (accentFold != null) {
       builder.transform(Dimension.ACCENT_FOLD, accentFold);
     }
-    return builder.stem(newStemmer()).build();
+    return builder.stem(stemmerFactory()).build();
   }
 }
