@@ -21,10 +21,11 @@
 		<title>Introduction</title>
 		<para>
 			A stemmer reduces a word form to a shorter root. OpenNLP ships rule-based
-			engines such as Snowball and Porter through the
-			<code>opennlp.tools.stemmer.Stemmer</code> interface. Stemming is
-			language-specific and lossy: it is useful for search and feature reduction,
-			not as a substitute for lemmatization when a dictionary form is required.
+			engines such as Snowball, Porter, and the UniNE light and minimal stemmers
+			through the <code>opennlp.tools.stemmer.Stemmer</code> interface. Stemming
+			is language-specific and lossy: it is useful for search and feature
+			reduction, not as a substitute for lemmatization when a dictionary form is
+			required.
 		</para>
 	</section>
 
@@ -64,9 +65,39 @@ new SharingStemmer(factory).stem("running");   // "run"
 new CachingStemmer(factory).stem("running");   // "run"]]>
 			</programlisting>
 			Thread-safe stemmers such as the shareable <code>SnowballStemmer</code>
-			class do not need <code>SharingStemmer</code>. Long-running containers
+			class and the UniNE light stemmers do not need
+			<code>SharingStemmer</code>. Long-running containers
 			should call <code>clearThreadLocalState()</code> when a pooled thread no
 			longer uses a sharing or caching stemmer.
+		</para>
+	</section>
+
+	<section xml:id="tools.stemmer.light">
+		<title>Light and minimal UniNE stemmers</title>
+		<para>
+			The package <code>opennlp.tools.stemmer.light</code> ports Jacques Savoy's
+			UniNE light and minimal stemming algorithms (the same family Apache Lucene
+			ships in analysis-common). Light stemmers strip a modest set of endings;
+			minimal stemmers strip fewer. Instances are stateless, safe for concurrent
+			use, and each instance is also its own <code>StemmerFactory</code>. Input
+			is expected to be lowercase; the stemmers do not fold case.
+		</para>
+		<para>
+			Languages with a light stemmer include German, Spanish, Finnish, French,
+			Hungarian, Italian, Norwegian, Portuguese, Russian, and Swedish. Minimal
+			stemmers are available for German, English, Spanish, French, Norwegian, and
+			Swedish. Norwegian variants are selected through
+			<code>NorwegianVariety</code>.
+			<code>LightStemmerUsageExampleTest</code> asserts the behavior shown here.
+			<programlisting language="java"><![CDATA[
+GermanLightStemmer light = new GermanLightStemmer();
+light.stem("häusern");                         // "haus"
+
+Stemmer shared = new SharingStemmer(light);
+shared.stem("häusern");                        // "haus"
+
+new GermanMinimalStemmer().stem("vaterhäusern"); // "vaterhauser"]]>
+			</programlisting>
 		</para>
 	</section>
 </chapter>
