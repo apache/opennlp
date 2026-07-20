@@ -574,10 +574,11 @@ for (SubwordPiece piece : tokenizer.encode("Subword pieces keep their original o
 
 int[] ids = tokenizer.encodeToIds("Ready for the embedding layer.");]]>
 				</programlisting>
-				The vocabulary can be inspected through <code>vocabularySize</code>,
-				<code>idToPiece</code>, <code>pieceToId</code>, and <code>score</code>, and the
-				<code>algorithm</code> method reports whether the model uses the unigram or the
-				byte-pair encoding algorithm.
+				<code>SentencePieceUsageExampleTest</code> asserts the load-and-encode workflow
+				shown here. The vocabulary can be inspected through
+				<code>vocabularySize</code>, <code>idToPiece</code>, <code>pieceToId</code>, and
+				<code>score</code>, and the <code>algorithm</code> method reports whether the
+				model uses the unigram or the byte-pair encoding algorithm.
 			</para>
 			<para>
 				The model's own normalizer is also exposed directly:
