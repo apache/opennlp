@@ -24,6 +24,7 @@ import java.util.Set;
 
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.Affix;
+import opennlp.tools.stemmer.hunspell.HunspellDictionary.CompoundPosition;
 import opennlp.tools.util.StringUtil;
 
 /**
@@ -35,7 +36,10 @@ import opennlp.tools.util.StringUtil;
  * dictionary entry; {@link #stemAll(CharSequence)} returns every distinct analysis. A
  * word with no analysis is returned unchanged, so the stemmer degrades to identity on
  * unknown vocabulary. A form containing uppercase characters is also analyzed in its
- * lowercase variant, so sentence-initial capitalization does not hide an entry.</p>
+ * lowercase variant, so sentence-initial capitalization does not hide an entry.
+ * Entries the dictionary marks as virtual stems ({@code NEEDAFFIX}), compound-only
+ * parts ({@code ONLYINCOMPOUND}), or forbidden words ({@code FORBIDDENWORD}) never
+ * count as standalone analyses, matching how hunspell reads those flags.</p>
  *
  * <p>The {@link Stemmer} interface leaves thread safety to the implementation. This
  * implementation reads only the immutable dictionary state, so a single instance is
@@ -83,7 +87,7 @@ public class HunspellStemmer implements Stemmer {
     }
     if (analyses.isEmpty() && dictionary.compoundsDeclared()) {
       for (final String variant : variants(surface)) {
-        decompose(variant, analyses);
+        decompose(variant, surface, analyses);
       }
     }
     if (analyses.isEmpty()) {
@@ -116,7 +120,8 @@ public class HunspellStemmer implements Stemmer {
    * @param analyses The mutable, insertion-ordered set collecting the stems found.
    */
   private void analyze(String word, Set<String> analyses) {
-    if (dictionary.lookup(word) != null) {
+    final List<int[]> own = dictionary.lookup(word);
+    if (own != null && dictionary.validStandalone(own)) {
       analyses.add(word);
     }
     // Only rules whose affix material ends in the word's last character can be
@@ -137,50 +142,314 @@ public class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Decomposes a word into two listed compound parts when the affix analysis found
-   * nothing: at every split point that leaves both sides at least the declared
-   * minimum length, the left side must be listed and allowed to open a compound and
-   * the right side listed and allowed to close one. The parts of the first splitting
-   * that succeeds are reported left to right, so the head-most material comes last,
-   * and further splittings add any parts not already reported.
+   * The most part-licensing attempts one decomposition search may spend. Compounding
+   * searches every split of every tail, which on adversarial input with a
+   * one-character minimum part length grows without useful bound; the budget stops
+   * the search there, missing analyses rather than stalling, in line with the
+   * engine's fail-closed posture.
+   */
+  private static final int PART_CHECK_BUDGET = 2048;
+
+  /**
+   * Decomposes a word into listed compound parts when the affix analysis found
+   * nothing: the first part must be admitted to open a compound, every further part
+   * to continue or close one, each at least the declared minimum length and counted
+   * against the declared maximum. A part stands on its own entry or on an entry plus
+   * one affix, the way published dictionaries position their linking forms through
+   * zero or dash suffixes. The stems of the parts of every successful splitting are
+   * reported left to right, so the head-most material comes last. A word the
+   * dictionary lists as forbidden never decomposes; that is how one specific
+   * ill-formed compound is blocked while its parts stay productive.
    *
    * @param word The case variant to decompose.
-   * @param analyses The mutable, insertion-ordered set collecting the parts.
+   * @param surface The surface form the variant was derived from; character case at
+   *                junctions is judged against it, so lowercasing a variant cannot
+   *                sidestep a {@code CHECKCOMPOUNDCASE} declaration.
+   * @param analyses The mutable, insertion-ordered set collecting the part stems.
    */
-  private void decompose(String word, Set<String> analyses) {
+  private void decompose(String word, String surface, Set<String> analyses) {
+    final List<int[]> own = dictionary.lookup(word);
+    if (own != null && dictionary.anyForbidden(own)) {
+      return;
+    }
+    if (word.length() < 2 * dictionary.compoundMin()) {
+      return;
+    }
+    // lowercasing may change the length in exceptional mappings, in which case the
+    // offsets no longer align and the variant itself is the only usable case source
+    final String caseSource = surface.length() == word.length() ? surface : word;
+    search(word, caseSource, 0, new ArrayList<>(), new ArrayList<>(), analyses,
+        new int[] {PART_CHECK_BUDGET});
+  }
+
+  /**
+   * Extends a partial decomposition with the part starting at {@code from}, trying
+   * every admissible length and recursing on the remainder. The boundary into this
+   * part honors the {@code CHECKCOMPOUNDCASE} and {@code CHECKCOMPOUNDTRIPLE}
+   * declarations, a part repeating its left neighbor honors
+   * {@code CHECKCOMPOUNDDUP}, and a completed decomposition flushes every part's
+   * stems into the analyses in part order.
+   *
+   * @param word The case variant under decomposition.
+   * @param caseSource The character-case source for junction checks, the surface
+   *                   form when its offsets align with the variant.
+   * @param from The index the next part starts at.
+   * @param surfaces The surface strings of the parts taken so far.
+   * @param stems The licensed stems of the parts taken so far, one list per part.
+   * @param analyses The mutable, insertion-ordered set collecting the part stems.
+   * @param budget The remaining part-licensing attempts, counted down in place.
+   */
+  private void search(String word, String caseSource, int from, List<String> surfaces,
+      List<List<String>> stems, Set<String> analyses, int[] budget) {
+    if (from > 0 && violatesBoundaryChecks(word, caseSource, from)) {
+      return;
+    }
     final int min = dictionary.compoundMin();
-    for (int split = min; split <= word.length() - min; split++) {
-      final String left = word.substring(0, split);
-      final List<int[]> leftFlags = dictionary.lookup(left);
-      if (leftFlags == null || !dictionary.mayBeginCompound(leftFlags)) {
-        continue;
+    final int max = dictionary.compoundWordMax();
+    final boolean first = from == 0;
+    // every split leaving room for a further part; a first-position part must also
+    // leave the closing part, so the whole word is never one part
+    if (max == 0 || surfaces.size() + 2 <= max) {
+      for (int end = from + min; end <= word.length() - min; end++) {
+        if (budget[0] <= 0) {
+          return;
+        }
+        budget[0]--;
+        final String part = word.substring(from, end);
+        if (duplicatesNeighbor(part, surfaces)) {
+          continue;
+        }
+        final List<String> partStems = partStems(part,
+            first ? CompoundPosition.BEGIN : CompoundPosition.MIDDLE, first, false);
+        if (partStems.isEmpty()) {
+          continue;
+        }
+        surfaces.add(part);
+        stems.add(partStems);
+        search(word, caseSource, end, surfaces, stems, analyses, budget);
+        surfaces.remove(surfaces.size() - 1);
+        stems.remove(stems.size() - 1);
       }
-      final String right = word.substring(split);
-      final List<int[]> rightFlags = dictionary.lookup(right);
-      if (rightFlags == null || !dictionary.mayEndCompound(rightFlags)) {
-        continue;
+    }
+    // the closing part takes the whole remainder; a compound has at least two parts
+    if (first || word.length() - from < min
+        || (max > 0 && surfaces.size() + 1 > max) || budget[0] <= 0) {
+      return;
+    }
+    budget[0]--;
+    final String part = word.substring(from);
+    if (duplicatesNeighbor(part, surfaces)) {
+      return;
+    }
+    final List<String> partStems = partStems(part, CompoundPosition.END, false, true);
+    if (partStems.isEmpty()) {
+      return;
+    }
+    for (final List<String> earlier : stems) {
+      analyses.addAll(earlier);
+    }
+    analyses.addAll(partStems);
+  }
+
+  /**
+   * Applies the {@code CHECKCOMPOUNDDUP} declaration: a part must not repeat the
+   * part directly before it.
+   *
+   * @param part The candidate part.
+   * @param surfaces The surface strings of the parts taken so far.
+   * @return {@code true} if the declaration forbids this part here.
+   */
+  private boolean duplicatesNeighbor(String part, List<String> surfaces) {
+    return dictionary.checkCompoundDup() && !surfaces.isEmpty()
+        && part.equals(surfaces.get(surfaces.size() - 1));
+  }
+
+  /**
+   * Applies the character-level boundary declarations at the junction before
+   * {@code from}: {@code CHECKCOMPOUNDCASE} forbids an uppercase character on either
+   * side of the junction, and {@code CHECKCOMPOUNDTRIPLE} forbids the same character
+   * three times in a row across it.
+   *
+   * @param word The case variant under decomposition.
+   * @param caseSource The character-case source for the uppercase judgment.
+   * @param from The index the junction sits before; greater than zero.
+   * @return {@code true} if a declaration forbids this junction.
+   */
+  private boolean violatesBoundaryChecks(String word, String caseSource, int from) {
+    final char before = word.charAt(from - 1);
+    final char after = word.charAt(from);
+    if (dictionary.checkCompoundCase()
+        && (Character.isUpperCase(caseSource.charAt(from - 1))
+            || Character.isUpperCase(caseSource.charAt(from)))) {
+      return true;
+    }
+    if (dictionary.checkCompoundTriple() && before == after
+        && ((from >= 2 && word.charAt(from - 2) == after)
+            || (from + 1 < word.length() && word.charAt(from + 1) == after))) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Collects the listed stems that admit one part at its compound position: the part
+   * as its own entry, or an entry plus one suffix or one prefix whose removal leaves
+   * a listed stem, zero-material rules included, because published dictionaries
+   * position their linking forms through zero and dash suffixes. An affix at a
+   * compound-internal boundary must carry the permit flag, a suffix facing the next
+   * part or a prefix facing the previous one. A part not found as written is also
+   * tried with its first letter uppercased, the way nouns listed capitalized appear
+   * lowercase inside a compound.
+   *
+   * @param part The part's surface text.
+   * @param position The part's place in the compound.
+   * @param first Whether the part opens the word.
+   * @param last Whether the part closes the word.
+   * @return The stems admitting the part, in discovery order. Never {@code null}.
+   */
+  private List<String> partStems(String part, CompoundPosition position,
+      boolean first, boolean last) {
+    final Set<String> stems = new LinkedHashSet<>();
+    collectPartStems(part, position, first, last, stems);
+    if (stems.isEmpty() && !part.isEmpty()) {
+      final int initial = part.codePointAt(0);
+      final int upper = Character.toUpperCase(initial);
+      if (upper != initial) {
+        collectPartStems(new StringBuilder().appendCodePoint(upper)
+            .append(part, Character.charCount(initial), part.length()).toString(),
+            position, first, last, stems);
       }
-      analyses.add(left);
-      analyses.add(right);
+    }
+    return List.copyOf(stems);
+  }
+
+  /**
+   * Collects the stems admitting one spelling of a part, bare and through one affix.
+   *
+   * @param part The part spelling to look up.
+   * @param position The part's place in the compound.
+   * @param first Whether the part opens the word.
+   * @param last Whether the part closes the word.
+   * @param stems The mutable, insertion-ordered set collecting the stems.
+   */
+  private void collectPartStems(String part, CompoundPosition position,
+      boolean first, boolean last, Set<String> stems) {
+    final List<int[]> own = dictionary.lookup(part);
+    if (own != null && dictionary.mayStand(own, position)) {
+      stems.add(part);
+    }
+    for (final Affix suffix : dictionary.suffixesEndingWith(part.charAt(part.length() - 1))) {
+      collectSuffixedPartStem(part, suffix, position, last, stems);
+    }
+    for (final Affix suffix : dictionary.suffixesWithoutMaterial()) {
+      collectSuffixedPartStem(part, suffix, position, last, stems);
+    }
+    for (final Affix prefix : dictionary.prefixesStartingWith(part.charAt(0))) {
+      collectPrefixedPartStem(part, prefix, position, first, stems);
+    }
+    for (final Affix prefix : dictionary.prefixesWithoutMaterial()) {
+      collectPrefixedPartStem(part, prefix, position, first, stems);
     }
   }
 
   /**
+   * Adds the stem of one suffixed part reading when the rule and the stem's entry
+   * admit it at the position.
+   *
+   * @param part The part spelling under analysis.
+   * @param suffix The suffix rule to undo.
+   * @param position The part's place in the compound.
+   * @param last Whether the part closes the word.
+   * @param stems The mutable, insertion-ordered set collecting the stems.
+   */
+  private void collectSuffixedPartStem(String part, Affix suffix,
+      CompoundPosition position, boolean last, Set<String> stems) {
+    if (dictionary.circumfixOnly(suffix) || dictionary.forbidsInCompound(suffix)
+        || (!last && !dictionary.permitsInside(suffix))) {
+      return;
+    }
+    final String stem = removeAffixInCompound(part, suffix, true);
+    if (stem == null) {
+      return;
+    }
+    final List<int[]> flagSets = dictionary.lookup(stem);
+    if (flagSets != null && dictionary.supportsPart(flagSets, suffix.flag(), position,
+        dictionary.affixAdmits(suffix, position))) {
+      stems.add(stem);
+    }
+  }
+
+  /**
+   * Adds the stem of one prefixed part reading when the rule and the stem's entry
+   * admit it at the position.
+   *
+   * @param part The part spelling under analysis.
+   * @param prefix The prefix rule to undo.
+   * @param position The part's place in the compound.
+   * @param first Whether the part opens the word.
+   * @param stems The mutable, insertion-ordered set collecting the stems.
+   */
+  private void collectPrefixedPartStem(String part, Affix prefix,
+      CompoundPosition position, boolean first, Set<String> stems) {
+    if (dictionary.circumfixOnly(prefix) || dictionary.forbidsInCompound(prefix)
+        || (!first && !dictionary.permitsInside(prefix))) {
+      return;
+    }
+    final String stem = removeAffixInCompound(part, prefix, false);
+    if (stem == null) {
+      return;
+    }
+    final List<int[]> flagSets = dictionary.lookup(stem);
+    if (flagSets != null && dictionary.supportsPart(flagSets, prefix.flag(), position,
+        dictionary.affixAdmits(prefix, position))) {
+      stems.add(stem);
+    }
+  }
+
+  /**
+   * Undoes one affix rule on a compound part. Unlike the standalone removals, a rule
+   * that neither adds nor removes material is undone here, to its own spelling with
+   * the condition checked, because dictionaries position compound parts through
+   * exactly such zero rules.
+   *
+   * @param part The part spelling under analysis.
+   * @param affix The rule to undo.
+   * @param suffix Whether the rule is a suffix rule.
+   * @return The candidate stem, or {@code null} when the rule does not apply.
+   */
+  private static String removeAffixInCompound(String part, Affix affix, boolean suffix) {
+    if (affix.affix().isEmpty() && affix.strip().isEmpty()) {
+      return affix.condition().matches(part) ? part : null;
+    }
+    return suffix ? removeSuffix(part, affix) : removePrefix(part, affix);
+  }
+
+  /**
    * Undoes one suffix rule and, through continuation classes, one further suffix on
-   * the intermediate stem, adding every dictionary-confirmed analysis.
+   * the intermediate stem, adding every dictionary-confirmed analysis. A rule that
+   * applies only inside compounds or only as half of a circumfix is not undone at all,
+   * the latter because no prefix accompanies it on this path; a rule marked as needing
+   * a further affix yields no single-removal analysis, because the surface form it
+   * makes alone is a virtual stem; its twofold analyses stand, the inner affix being
+   * exactly the further one required.
    *
    * @param word The case variant under analysis.
    * @param suffix The suffix rule to undo.
    * @param analyses The mutable, insertion-ordered set collecting the stems found.
    */
   private void undoSuffix(String word, Affix suffix, Set<String> analyses) {
+    if (dictionary.compoundOnly(suffix) || dictionary.circumfixOnly(suffix)) {
+      return;
+    }
     final String stem = removeSuffix(word, suffix);
     if (stem == null) {
       return;
     }
-    final List<int[]> flagSets = dictionary.lookup(stem);
-    if (flagSets != null && HunspellDictionary.hasFlag(flagSets, suffix.flag())) {
-      analyses.add(stem);
+    if (!dictionary.needsFurtherAffix(suffix)) {
+      final List<int[]> flagSets = dictionary.lookup(stem);
+      if (flagSets != null && dictionary.supports(flagSets, suffix.flag())) {
+        analyses.add(stem);
+      }
     }
     for (final Affix inner : dictionary.suffixesEndingWith(stem.charAt(stem.length() - 1))) {
       undoInnerSuffix(stem, suffix, inner, analyses);
@@ -201,7 +470,8 @@ public class HunspellStemmer implements Stemmer {
    */
   private void undoInnerSuffix(String stem, Affix outer, Affix inner,
       Set<String> analyses) {
-    if (!inner.allowsContinuation(outer.flag())) {
+    if (!inner.allowsContinuation(outer.flag()) || dictionary.compoundOnly(inner)
+        || dictionary.circumfixOnly(inner)) {
       return;
     }
     final String doubleStem = removeSuffix(stem, inner);
@@ -209,27 +479,36 @@ public class HunspellStemmer implements Stemmer {
       return;
     }
     final List<int[]> innerFlags = dictionary.lookup(doubleStem);
-    if (innerFlags != null && HunspellDictionary.hasFlag(innerFlags, inner.flag())) {
+    if (innerFlags != null && dictionary.supports(innerFlags, inner.flag())) {
       analyses.add(doubleStem);
     }
   }
 
   /**
    * Undoes one prefix rule and, for cross-product rules, one further suffix on the
-   * intermediate stem, adding every dictionary-confirmed analysis.
+   * intermediate stem, adding every dictionary-confirmed analysis. A rule that
+   * applies only inside compounds is not undone at all. A rule marked as needing a
+   * further affix or as half of a circumfix yields no single-removal analysis; its
+   * cross-product analyses stand, the suffix being exactly the further affix or the
+   * other circumfix half required.
    *
    * @param word The case variant under analysis.
    * @param prefix The prefix rule to undo.
    * @param analyses The mutable, insertion-ordered set collecting the stems found.
    */
   private void undoPrefix(String word, Affix prefix, Set<String> analyses) {
+    if (dictionary.compoundOnly(prefix)) {
+      return;
+    }
     final String stem = removePrefix(word, prefix);
     if (stem == null) {
       return;
     }
-    final List<int[]> flagSets = dictionary.lookup(stem);
-    if (flagSets != null && HunspellDictionary.hasFlag(flagSets, prefix.flag())) {
-      analyses.add(stem);
+    if (!dictionary.needsFurtherAffix(prefix) && !dictionary.circumfixOnly(prefix)) {
+      final List<int[]> flagSets = dictionary.lookup(stem);
+      if (flagSets != null && dictionary.supports(flagSets, prefix.flag())) {
+        analyses.add(stem);
+      }
     }
     if (!prefix.crossProduct()) {
       return;
@@ -243,7 +522,10 @@ public class HunspellStemmer implements Stemmer {
   }
 
   /**
-   * Undoes the suffix half of a cross-product removal when both rules opted in.
+   * Undoes the suffix half of a cross-product removal when both rules opted in. The
+   * two rules must agree on circumfixing: a circumfix-marked affix is only valid with
+   * a marked affix of the other kind, so a pair of which exactly one is marked mixes
+   * an ordinary affix into a circumfix and is rejected.
    *
    * @param stem The intermediate stem after the prefix removal.
    * @param prefix The already-undone prefix rule.
@@ -252,16 +534,18 @@ public class HunspellStemmer implements Stemmer {
    */
   private void undoCrossProductSuffix(String stem, Affix prefix, Affix suffix,
       Set<String> analyses) {
-    if (!suffix.crossProduct()) {
+    if (!suffix.crossProduct() || dictionary.compoundOnly(suffix)
+        || dictionary.circumfixOnly(prefix) != dictionary.circumfixOnly(suffix)) {
       return;
     }
     final String doubleStem = removeSuffix(stem, suffix);
     if (doubleStem == null) {
       return;
     }
+    // a needs-further-affix marker on either rule is satisfied by the other rule,
+    // so no such check applies here; both flags must sit in one homonym's flag set
     final List<int[]> both = dictionary.lookup(doubleStem);
-    if (both != null && HunspellDictionary.hasFlag(both, prefix.flag())
-        && HunspellDictionary.hasFlag(both, suffix.flag())) {
+    if (both != null && dictionary.supports(both, prefix.flag(), suffix.flag())) {
       analyses.add(doubleStem);
     }
   }
