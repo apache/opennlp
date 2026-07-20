@@ -23,7 +23,7 @@ import opennlp.tools.commons.ThreadSafe;
  * A thread-safe factory for {@link PorterStemmer} instances.
  */
 @ThreadSafe
-public record PorterStemmerFactory() implements StemmerFactory {
+public class PorterStemmerFactory implements StemmerFactory {
 
   /**
    * {@inheritDoc}

@@ -28,36 +28,40 @@ import opennlp.tools.stemmer.StemmerFactory;
  * <p>Use this factory for the classic one-stemmer-per-thread pattern: {@link #newStemmer()}
  * returns a plain, thread-confined stemmer without the per-call thread routing of the
  * shareable {@link SnowballStemmer}.</p>
- *
- * @param algorithm The Snowball algorithm. Must not be {@code null}.
- * @param repeat    How many times to apply the stemmer per word; must be positive.
  */
 @ThreadSafe
-public record SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm, int repeat)
-    implements StemmerFactory {
+public class SnowballStemmerFactory implements StemmerFactory {
+
+  private final SnowballStemmer.ALGORITHM algorithm;
+  private final int repeat;
 
   /**
    * Creates a factory with {@code repeat = 1}.
    *
    * @param algorithm The Snowball algorithm. Must not be {@code null}.
+   * @throws IllegalArgumentException if {@code algorithm} is {@code null}.
    */
   public SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm) {
     this(algorithm, 1);
   }
 
   /**
-   * Validates the components.
+   * Creates a factory over the given algorithm and repeat count.
    *
-   * @throws IllegalArgumentException Thrown if {@code algorithm} is {@code null} or
-   *     {@code repeat} is not positive.
+   * @param algorithm The Snowball algorithm. Must not be {@code null}.
+   * @param repeat    How many times to apply the stemmer per word; must be positive.
+   * @throws IllegalArgumentException if {@code algorithm} is {@code null} or {@code repeat}
+   *     is not positive.
    */
-  public SnowballStemmerFactory {
+  public SnowballStemmerFactory(SnowballStemmer.ALGORITHM algorithm, int repeat) {
     if (algorithm == null) {
       throw new IllegalArgumentException("algorithm must not be null");
     }
     if (repeat <= 0) {
       throw new IllegalArgumentException("repeat must be positive, got " + repeat);
     }
+    this.algorithm = algorithm;
+    this.repeat = repeat;
   }
 
   /**

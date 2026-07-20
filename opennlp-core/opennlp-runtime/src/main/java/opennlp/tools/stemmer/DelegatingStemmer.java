@@ -34,7 +34,7 @@ import opennlp.tools.util.OwnerOrPerThreadState;
 abstract class DelegatingStemmer<P> implements Stemmer {
 
   /** The per-thread payload holder. */
-  final OwnerOrPerThreadState<P> state;
+  protected final OwnerOrPerThreadState<P> state;
 
   /**
    * @param init    Mints the per-thread payload on first use by the owner and by each extra thread.
