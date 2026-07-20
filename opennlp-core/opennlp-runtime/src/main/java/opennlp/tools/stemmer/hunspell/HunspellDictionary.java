@@ -43,10 +43,21 @@ import opennlp.tools.util.StringUtil;
  * character-class conditions, and cross-product combination of one prefix with one
  * suffix; twofold suffixes through the continuation classes on suffix rules;
  * {@code FLAG} modes {@code char} (default), {@code UTF-8}, {@code long}, and
- * {@code num}; the {@code SET} encoding declaration. Compounding and conversion tables
- * are not
- * interpreted in this version; rules using them simply do not fire, so unsupported
- * analyses are missed rather than invented.</p>
+ * {@code num}; the {@code AF} flag alias table; the {@code SET} encoding declaration;
+ * compound decomposition under {@code COMPOUNDFLAG}, the positional
+ * {@code COMPOUNDBEGIN}/{@code COMPOUNDMIDDLE}/{@code COMPOUNDEND} flags,
+ * {@code COMPOUNDMIN}, {@code COMPOUNDWORDMAX}, {@code COMPOUNDPERMITFLAG},
+ * {@code COMPOUNDFORBIDFLAG}, and the {@code CHECKCOMPOUNDDUP},
+ * {@code CHECKCOMPOUNDCASE}, and {@code CHECKCOMPOUNDTRIPLE} declarations, with
+ * compound parts standing on their entries alone or on an entry plus one affix; the
+ * blocking flags
+ * {@code NEEDAFFIX} (with its historical alias {@code PSEUDOROOT}),
+ * {@code ONLYINCOMPOUND}, and {@code FORBIDDENWORD}, which suppress analyses the
+ * dictionary marks as virtual stems, compound-only parts, or forbidden words; and
+ * {@code CIRCUMFIX}, which binds marked prefix and suffix halves to one another.
+ * Conversion tables and the remaining compound machinery are not interpreted in this
+ * version; rules using them simply do not fire, so unsupported analyses are missed
+ * rather than invented.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  *
@@ -93,17 +104,47 @@ public final class HunspellDictionary {
   private final int compoundBegin;
   private final int compoundEnd;
   private final int compoundMin;
+  /** The place a part takes in a compound, deciding which positional flag admits it. */
+  enum CompoundPosition {
+    /** The first part. */
+    BEGIN,
+    /** Any part between the first and the last. */
+    MIDDLE,
+    /** The last part. */
+    END
+  }
 
-  private HunspellDictionary(Map<String, List<int[]>> entries, List<Affix> prefixes,
-      List<Affix> suffixes, int compoundFlag, int compoundBegin, int compoundEnd,
-      int compoundMin) {
-    this.compoundFlag = compoundFlag;
-    this.compoundBegin = compoundBegin;
-    this.compoundEnd = compoundEnd;
-    this.compoundMin = compoundMin;
+  private final int needAffix;
+  private final int onlyInCompound;
+  private final int forbiddenWord;
+  private final int circumfix;
+  private final int compoundMiddle;
+  private final int compoundPermit;
+  private final int compoundForbid;
+  private final int compoundWordMax;
+  private final boolean checkCompoundDup;
+  private final boolean checkCompoundCase;
+  private final boolean checkCompoundTriple;
+
+  private HunspellDictionary(Map<String, List<int[]>> entries, AffixFile affix) {
+    this.compoundFlag = affix.compoundFlag;
+    this.compoundBegin = affix.compoundBegin;
+    this.compoundEnd = affix.compoundEnd;
+    this.compoundMin = affix.compoundMin;
+    this.needAffix = affix.needAffix;
+    this.onlyInCompound = affix.onlyInCompound;
+    this.forbiddenWord = affix.forbiddenWord;
+    this.circumfix = affix.circumfix;
+    this.compoundMiddle = affix.compoundMiddle;
+    this.compoundPermit = affix.compoundPermit;
+    this.compoundForbid = affix.compoundForbid;
+    this.compoundWordMax = affix.compoundWordMax;
+    this.checkCompoundDup = affix.checkCompoundDup;
+    this.checkCompoundCase = affix.checkCompoundCase;
+    this.checkCompoundTriple = affix.checkCompoundTriple;
     this.entries = entries;
-    this.prefixes = prefixes;
-    this.suffixes = suffixes;
+    this.prefixes = List.copyOf(affix.prefixes);
+    this.suffixes = List.copyOf(affix.suffixes);
     // Undoing a suffix requires the word to end with the rule's affix material, so
     // only rules whose material ends in the word's last character can ever apply;
     // the same holds for prefixes and the first character. Bucketing by that
@@ -176,9 +217,7 @@ public final class HunspellDictionary {
     final Map<String, List<int[]>> entries = parseWordList(
         new String(readAll(dictionaryStream), charset), affix.flagMode,
         affix.flagAliases);
-    return new HunspellDictionary(entries, List.copyOf(affix.prefixes),
-        List.copyOf(affix.suffixes), affix.compoundFlag, affix.compoundBegin,
-        affix.compoundEnd, affix.compoundMin);
+    return new HunspellDictionary(entries, affix);
   }
 
   /**
@@ -237,7 +276,8 @@ public final class HunspellDictionary {
 
   /** @return Whether the affix file declares any compounding flag at all. */
   boolean compoundsDeclared() {
-    return compoundFlag != 0 || compoundBegin != 0 || compoundEnd != 0;
+    return compoundFlag != 0 || compoundBegin != 0 || compoundEnd != 0
+        || compoundMiddle != 0;
   }
 
   /** @return The smallest length a compound part may have; at least {@code 1}. */
@@ -245,28 +285,136 @@ public final class HunspellDictionary {
     return compoundMin;
   }
 
-  /**
-   * Checks whether a listed word may open a compound: it carries the general
-   * compounding flag or the dedicated begin flag.
-   *
-   * @param flagSets The word's flag sets from {@link #lookup(String)}.
-   * @return {@code true} if the word may stand first in a compound.
-   */
-  boolean mayBeginCompound(List<int[]> flagSets) {
-    return (compoundFlag != 0 && hasFlag(flagSets, compoundFlag))
-        || (compoundBegin != 0 && hasFlag(flagSets, compoundBegin));
+  /** @return The largest number of parts a compound may have; {@code 0} is unbounded. */
+  int compoundWordMax() {
+    return compoundWordMax;
+  }
+
+  /** @return Whether {@code CHECKCOMPOUNDDUP} forbids a part repeating its neighbor. */
+  boolean checkCompoundDup() {
+    return checkCompoundDup;
+  }
+
+  /** @return Whether {@code CHECKCOMPOUNDCASE} forbids uppercase at part boundaries. */
+  boolean checkCompoundCase() {
+    return checkCompoundCase;
+  }
+
+  /** @return Whether {@code CHECKCOMPOUNDTRIPLE} forbids triple letters at boundaries. */
+  boolean checkCompoundTriple() {
+    return checkCompoundTriple;
   }
 
   /**
-   * Checks whether a listed word may close a compound: it carries the general
-   * compounding flag or the dedicated end flag.
+   * The flag admitting a part at a compound position, next to the general
+   * compounding flag.
+   *
+   * @param position The part's place in the compound.
+   * @return The dedicated positional flag, or {@code 0} when undeclared.
+   */
+  private int positionalFlag(CompoundPosition position) {
+    return switch (position) {
+      case BEGIN -> compoundBegin;
+      case MIDDLE -> compoundMiddle;
+      case END -> compoundEnd;
+    };
+  }
+
+  /**
+   * Checks whether a listed word may stand at a compound position: some homonym's
+   * flag set carries the general compounding flag or the position's dedicated flag
+   * and is not forbidden. A compound-only or virtual-stem homonym may take the
+   * position; that is what those flags permit.
    *
    * @param flagSets The word's flag sets from {@link #lookup(String)}.
-   * @return {@code true} if the word may stand last in a compound.
+   * @param position The part's place in the compound.
+   * @return {@code true} if the word may stand at the position.
    */
-  boolean mayEndCompound(List<int[]> flagSets) {
-    return (compoundFlag != 0 && hasFlag(flagSets, compoundFlag))
-        || (compoundEnd != 0 && hasFlag(flagSets, compoundEnd));
+  boolean mayStand(List<int[]> flagSets, CompoundPosition position) {
+    final int positional = positionalFlag(position);
+    for (final int[] flags : flagSets) {
+      if ((contains(flags, compoundFlag) || contains(flags, positional))
+          && !contains(flags, forbiddenWord) && !contains(flags, needAffix)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether some homonym supports an affixed compound part: its flag set
+   * carries the removed affix's flag, is not forbidden, and either the affix itself
+   * admits the position or the set carries the compounding or positional flag.
+   *
+   * @param flagSets The part stem's flag sets from {@link #lookup(String)}.
+   * @param affixFlag The removed affix's flag.
+   * @param position The part's place in the compound.
+   * @param affixAdmits Whether the affix's continuation classes admit the position,
+   *                    from {@link #affixAdmits(Affix, CompoundPosition)}.
+   * @return {@code true} if some homonym stands affixed at the position.
+   */
+  boolean supportsPart(List<int[]> flagSets, int affixFlag, CompoundPosition position,
+      boolean affixAdmits) {
+    final int positional = positionalFlag(position);
+    for (final int[] flags : flagSets) {
+      if (contains(flags, affixFlag) && !contains(flags, forbiddenWord)
+          && (affixAdmits || contains(flags, compoundFlag)
+              || contains(flags, positional))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether an affix admits its derived form at a compound position: its
+   * continuation classes carry the general compounding flag or the position's
+   * dedicated flag. Published dictionaries position their linking forms this way,
+   * through zero or dash suffixes whose continuation classes hold the positional
+   * flags.
+   *
+   * @param affix The affix rule applied to the part.
+   * @param position The part's place in the compound.
+   * @return {@code true} if the affixed form may stand at the position.
+   */
+  boolean affixAdmits(Affix affix, CompoundPosition position) {
+    return (compoundFlag != 0 && affix.allowsContinuation(compoundFlag))
+        || (positionalFlag(position) != 0
+            && affix.allowsContinuation(positionalFlag(position)));
+  }
+
+  /**
+   * Checks whether an affix may sit at a compound-internal boundary: it carries the
+   * {@code COMPOUNDPERMITFLAG} among its continuation classes. Without the flag a
+   * suffix fits only the last part and a prefix only the first.
+   *
+   * @param affix The affix rule applied to the part.
+   * @return {@code true} if the affix may face another part.
+   */
+  boolean permitsInside(Affix affix) {
+    return compoundPermit != 0 && affix.allowsContinuation(compoundPermit);
+  }
+
+  /**
+   * Checks whether an affix bars its derived form from compounds altogether: it
+   * carries the {@code COMPOUNDFORBIDFLAG} among its continuation classes.
+   *
+   * @param affix The affix rule applied to the part.
+   * @return {@code true} if the affixed form may not join a compound.
+   */
+  boolean forbidsInCompound(Affix affix) {
+    return compoundForbid != 0 && affix.allowsContinuation(compoundForbid);
+  }
+
+  /**
+   * Checks whether any of a word's flag sets is forbidden, which a dictionary uses
+   * to block one specific ill-formed compound while its parts stay productive.
+   *
+   * @param flagSets The word's flag sets from {@link #lookup(String)}.
+   * @return {@code true} if some homonym carries the forbidden-word flag.
+   */
+  boolean anyForbidden(List<int[]> flagSets) {
+    return hasFlag(flagSets, forbiddenWord);
   }
 
   /**
@@ -278,13 +426,128 @@ public final class HunspellDictionary {
    */
   static boolean hasFlag(List<int[]> flagSets, int flag) {
     for (final int[] flags : flagSets) {
-      for (final int candidate : flags) {
-        if (candidate == flag) {
-          return true;
-        }
+      if (contains(flags, flag)) {
+        return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Checks one flag set for a flag. An undeclared flag, encoded as {@code 0}, is
+   * carried by no entry.
+   *
+   * @param flags One entry's flag set.
+   * @param flag The flag to look for.
+   * @return {@code true} if the set contains the flag.
+   */
+  private static boolean contains(int[] flags, int flag) {
+    if (flag == 0) {
+      return false;
+    }
+    for (final int candidate : flags) {
+      if (candidate == flag) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether a listed word is valid on its own: some homonym's flag set carries
+   * none of the blocking flags. An entry whose every flag set is marked
+   * {@code NEEDAFFIX} is a virtual stem that exists only to be affixed, one marked
+   * {@code ONLYINCOMPOUND} appears only inside compounds, and one marked
+   * {@code FORBIDDENWORD} is listed to be blocked; none of them is a word by itself.
+   *
+   * @param flagSets The word's flag sets from {@link #lookup(String)}.
+   * @return {@code true} if some homonym stands on its own.
+   */
+  boolean validStandalone(List<int[]> flagSets) {
+    for (final int[] flags : flagSets) {
+      if (!contains(flags, needAffix) && !contains(flags, onlyInCompound)
+          && !contains(flags, forbiddenWord)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether some homonym supports an affix analysis: its flag set carries the
+   * affix's flag and is neither compound-only nor forbidden. A {@code NEEDAFFIX} set
+   * does support the analysis, because the removed affix is exactly what the virtual
+   * stem needs.
+   *
+   * @param flagSets The stem's flag sets from {@link #lookup(String)}.
+   * @param flag The removed affix's flag.
+   * @return {@code true} if some homonym carries the flag and may stand affixed.
+   */
+  boolean supports(List<int[]> flagSets, int flag) {
+    for (final int[] flags : flagSets) {
+      if (contains(flags, flag) && !contains(flags, onlyInCompound)
+          && !contains(flags, forbiddenWord)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether some homonym supports a cross-product analysis: one flag set
+   * carries both removed affixes' flags and is neither compound-only nor forbidden.
+   * The two flags must sit in the same set, because homonyms are separate words and
+   * each removal must be licensed by the same one.
+   *
+   * @param flagSets The stem's flag sets from {@link #lookup(String)}.
+   * @param prefixFlag The removed prefix's flag.
+   * @param suffixFlag The removed suffix's flag.
+   * @return {@code true} if some homonym carries both flags and may stand affixed.
+   */
+  boolean supports(List<int[]> flagSets, int prefixFlag, int suffixFlag) {
+    for (final int[] flags : flagSets) {
+      if (contains(flags, prefixFlag) && contains(flags, suffixFlag)
+          && !contains(flags, onlyInCompound) && !contains(flags, forbiddenWord)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether a form made with this affix alone is still a virtual stem: the
+   * affix carries the {@code NEEDAFFIX} flag among its continuation classes, so a
+   * further affix must join before the form is a word.
+   *
+   * @param affix The affix rule to inspect.
+   * @return {@code true} if the affix alone does not finish a word.
+   */
+  boolean needsFurtherAffix(Affix affix) {
+    return needAffix != 0 && affix.allowsContinuation(needAffix);
+  }
+
+  /**
+   * Checks whether an affix applies only inside compounds: it carries the
+   * {@code ONLYINCOMPOUND} flag among its continuation classes.
+   *
+   * @param affix The affix rule to inspect.
+   * @return {@code true} if the affix never applies to a standalone word.
+   */
+  boolean compoundOnly(Affix affix) {
+    return onlyInCompound != 0 && affix.allowsContinuation(onlyInCompound);
+  }
+
+  /**
+   * Checks whether an affix is one half of a circumfix: it carries the
+   * {@code CIRCUMFIX} flag among its continuation classes, so it is only valid on a
+   * word that also carries a circumfix-marked affix of the other kind, the German
+   * {@code ge...t} participle being the model.
+   *
+   * @param affix The affix rule to inspect.
+   * @return {@code true} if the affix never applies without its other half.
+   */
+  boolean circumfixOnly(Affix affix) {
+    return circumfix != 0 && affix.allowsContinuation(circumfix);
   }
 
   /**
@@ -354,14 +617,25 @@ public final class HunspellDictionary {
     private int compoundBegin;
     private int compoundEnd;
     private int compoundMin = 3;
+    private int needAffix;
+    private int onlyInCompound;
+    private int forbiddenWord;
+    private int circumfix;
+    private int compoundMiddle;
+    private int compoundPermit;
+    private int compoundForbid;
+    private int compoundWordMax;
+    private boolean checkCompoundDup;
+    private boolean checkCompoundCase;
+    private boolean checkCompoundTriple;
   }
 
   /**
    * Parses the affix file: the {@code FLAG} declaration, the {@code AF} flag alias
-   * table, and the {@code PFX} and {@code SFX} blocks. Directives outside the
-   * supported set (compounding, conversion tables, suggestion options, ...) are
-   * skipped, so their rules never fire and unsupported analyses are missed rather
-   * than invented.
+   * table, the compound and blocking flag declarations, and the {@code PFX} and
+   * {@code SFX} blocks. Directives outside the supported set (conversion tables,
+   * suggestion options, the remaining compound machinery, ...) are skipped, so their
+   * rules never fire and unsupported analyses are missed rather than invented.
    *
    * @param content The decoded affix file content.
    * @return The parsed rules and flag mode. Never {@code null}.
@@ -393,27 +667,60 @@ public final class HunspellDictionary {
           break;
         case "COMPOUNDFLAG":
         case "COMPOUNDBEGIN":
+        case "COMPOUNDMIDDLE":
         case "COMPOUNDEND":
+        case "COMPOUNDPERMITFLAG":
+        case "COMPOUNDFORBIDFLAG":
+        case "NEEDAFFIX":
+        case "PSEUDOROOT":
+        case "ONLYINCOMPOUND":
+        case "FORBIDDENWORD":
+        case "CIRCUMFIX":
           if (fields.length < 2) {
             throw new IOException(fields[0] + " line without a flag at line " + (i + 1));
           }
-          final int compound = parseFlag(fields[1], result.flagMode, i + 1);
+          final int declared = parseFlag(fields[1], result.flagMode, i + 1);
           switch (fields[0]) {
-            case "COMPOUNDFLAG" -> result.compoundFlag = compound;
-            case "COMPOUNDBEGIN" -> result.compoundBegin = compound;
-            default -> result.compoundEnd = compound;
+            case "COMPOUNDFLAG" -> result.compoundFlag = declared;
+            case "COMPOUNDBEGIN" -> result.compoundBegin = declared;
+            case "COMPOUNDMIDDLE" -> result.compoundMiddle = declared;
+            case "COMPOUNDEND" -> result.compoundEnd = declared;
+            case "COMPOUNDPERMITFLAG" -> result.compoundPermit = declared;
+            case "COMPOUNDFORBIDFLAG" -> result.compoundForbid = declared;
+            // PSEUDOROOT is the directive's name before hunspell renamed it
+            case "NEEDAFFIX", "PSEUDOROOT" -> result.needAffix = declared;
+            case "ONLYINCOMPOUND" -> result.onlyInCompound = declared;
+            case "CIRCUMFIX" -> result.circumfix = declared;
+            default -> result.forbiddenWord = declared;
           }
           i++;
           break;
         case "COMPOUNDMIN":
+        case "COMPOUNDWORDMAX":
           if (fields.length < 2) {
-            throw new IOException("COMPOUNDMIN line without a value at line " + (i + 1));
+            throw new IOException(fields[0] + " line without a value at line " + (i + 1));
           }
           try {
-            result.compoundMin = Math.max(1, Integer.parseInt(fields[1]));
+            if ("COMPOUNDMIN".equals(fields[0])) {
+              result.compoundMin = Math.max(1, Integer.parseInt(fields[1]));
+            } else {
+              result.compoundWordMax = Math.max(0, Integer.parseInt(fields[1]));
+            }
           } catch (NumberFormatException e) {
-            throw new IOException("malformed COMPOUNDMIN at line " + (i + 1), e);
+            throw new IOException("malformed " + fields[0] + " at line " + (i + 1), e);
           }
+          i++;
+          break;
+        case "CHECKCOMPOUNDDUP":
+          result.checkCompoundDup = true;
+          i++;
+          break;
+        case "CHECKCOMPOUNDCASE":
+          result.checkCompoundCase = true;
+          i++;
+          break;
+        case "CHECKCOMPOUNDTRIPLE":
+          result.checkCompoundTriple = true;
           i++;
           break;
         case "AF":

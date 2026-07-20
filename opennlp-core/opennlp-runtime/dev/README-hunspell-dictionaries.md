@@ -50,6 +50,15 @@ What `stem` evaluates to is decided by the dictionary you loaded, and this proje
 
 The dictionary is immutable and safe to share between threads; the factory hands out a fresh stemmer per call, so each thread takes its own from `newStemmer()`. A dictionary that declares a non-UTF-8 encoding through the `SET` directive in its `.aff` file is decoded accordingly; nothing needs converting beforehand.
 
+## Testing against real dictionaries
+
+The in-tree tests run against project-authored fixtures only. An opt-in test class, `HunspellRealDictionaryTest`, additionally checks everyday morphology against published dictionaries when pointed at a directory of `<name>.aff`/`<name>.dic` pairs (each test skips when its pair is absent):
+
+```
+./mvnw test -pl opennlp-core/opennlp-runtime -Dtest=HunspellRealDictionaryTest \
+    -Dopennlp.hunspell.dict.dir=/tmp/hunspell-dicts
+```
+
 ## What the engine supports
 
-Supported affix features: `PFX` and `SFX` rules with strip strings, character-class conditions, cross-product combination of one prefix with one suffix, twofold suffixes through continuation classes, `FLAG` modes `char`, `UTF-8`, `long`, and `num`, and the `SET` encoding declaration. Compounding and conversion tables are not interpreted; rules that use them simply do not fire, so unsupported analyses are missed rather than invented. A malformed `.aff` file fails loudly at load time with the offending line number in the message.
+Supported affix features: `PFX` and `SFX` rules with strip strings, character-class conditions, cross-product combination of one prefix with one suffix, twofold suffixes through continuation classes, `FLAG` modes `char`, `UTF-8`, `long`, and `num`, the `AF` flag alias table, the `SET` encoding declaration, compound decomposition under `COMPOUNDFLAG`, the positional `COMPOUNDBEGIN`/`COMPOUNDMIDDLE`/`COMPOUNDEND` flags, `COMPOUNDMIN`, `COMPOUNDWORDMAX`, `COMPOUNDPERMITFLAG`, `COMPOUNDFORBIDFLAG`, and the `CHECKCOMPOUNDDUP`/`CHECKCOMPOUNDCASE`/`CHECKCOMPOUNDTRIPLE` declarations (compound parts stand on their entries alone or on an entry plus one affix, the zero and dash suffixes dictionaries position linking forms with included), the blocking flags `NEEDAFFIX` (alias `PSEUDOROOT`), `ONLYINCOMPOUND`, and `FORBIDDENWORD`, which keep virtual stems, compound-only parts, and forbidden words out of the reported analyses, and `CIRCUMFIX`, which binds marked prefix and suffix halves to one another as in the German `ge...t` participle. Conversion tables and the remaining compound machinery are not interpreted; rules that use them simply do not fire, so unsupported analyses are missed rather than invented. A malformed `.aff` file fails loudly at load time with the offending line number in the message.
