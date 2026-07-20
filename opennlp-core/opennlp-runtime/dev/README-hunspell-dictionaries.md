@@ -46,7 +46,7 @@ Stemmer stemmer = factory.newStemmer();
 CharSequence stem = stemmer.stem("workers");
 ```
 
-What `stem` evaluates to is decided by the dictionary you loaded, and this project ships no dictionary data, so no result is claimed here for `en_US`. What is verified is the flow above: `HunspellStemmerFactoryTest#testEndToEndUsageFromFiles` runs exactly these calls against a project-authored `.aff`/`.dic` pair written to disk, in which `work` carries the agentive `-er` rule and its continuation class for the plural `-s`, and asserts that `stemmer.stem("workers")` returns `work`.
+What `stem` evaluates to is decided by the dictionary you loaded, and this project ships no dictionary data, so no result is claimed here for `en_US`. The same load-and-stem flow is pinned by `HunspellManualExampleTest` (miniature in-memory dictionary, asserted stems for `workers` and `worker`) and by `HunspellStemmerFactoryTest#testEndToEndUsageFromFiles` (the same pair written to disk). The developer manual chapter `stemmer.xml` cites `HunspellManualExampleTest`.
 
 The dictionary is immutable and safe to share between threads; the factory hands out a fresh stemmer per call, so each thread takes its own from `newStemmer()`. A dictionary that declares a non-UTF-8 encoding through the `SET` directive in its `.aff` file is decoded accordingly; nothing needs converting beforehand.
 
