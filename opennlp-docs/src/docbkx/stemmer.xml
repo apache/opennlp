@@ -69,4 +69,30 @@ new CachingStemmer(factory).stem("running");   // "run"]]>
 			longer uses a sharing or caching stemmer.
 		</para>
 	</section>
+
+	<section xml:id="tools.stemmer.hunspell">
+		<title>Hunspell dictionaries</title>
+		<para>
+			<code>opennlp.tools.stemmer.hunspell</code> is a clean-room engine over the
+			documented Hunspell dictionary format: a user-supplied
+			<code>.aff</code> affix file and its <code>.dic</code> word list. OpenNLP
+			bundles no dictionary data, so each dictionary's own license stays with
+			the files you download. The dictionary is immutable and safe to share;
+			<code>HunspellStemmerFactory</code> hands out a fresh stemmer per call.
+			<code>HunspellManualExampleTest</code> asserts the behavior shown here.
+			<programlisting language="java"><![CDATA[
+HunspellDictionary dictionary = HunspellDictionary.load(
+    Path.of("en_US.aff"), Path.of("en_US.dic"));
+Stemmer stemmer = new HunspellStemmerFactory(dictionary).newStemmer();
+
+stemmer.stem("workers");   // "work"
+stemmer.stem("table");     // "table" (unknown vocabulary is unchanged)]]>
+			</programlisting>
+			The in-tree test uses a project-authored miniature dictionary instead of a
+			published one, and asserts the same stems for <code>workers</code> and
+			<code>worker</code>. Acquisition helpers and the supported affix feature
+			set live in
+			<code>opennlp-core/opennlp-runtime/dev/README-hunspell-dictionaries.md</code>.
+		</para>
+	</section>
 </chapter>
