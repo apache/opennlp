@@ -316,4 +316,34 @@ Accuracy: 0.9659110277825124]]>
 			 </screen>
 				</para>
 		</section>
+		<section xml:id="tools.lemmatizer.polimorf">
+			<title>Dictionary lemmatization from PoliMorf tables</title>
+			<para>
+				<code>DictionaryLemmatizer</code> reads a <code>word</code>, <code>postag</code>,
+				<code>lemma</code> table. Many published morphological dictionaries use the opposite
+				column order, one <code>surfaceForm</code>, <code>lemma</code>, <code>tag</code> row
+				per entry. This is the layout of PoliMorf, the successor grammatical dictionary of
+				Polish, which is released under a permissive BSD 2-Clause license, and it is also
+				what exporting a morfologik dictionary to text produces.
+				<code>PoliMorfDictionaryReader</code> adapts such a table into a
+				<code>DictionaryLemmatizer</code>: it re-orders the columns, lower-cases each surface
+				form to match the case-insensitive lookup, and merges every lemma listed for the same
+				form and tag into one entry. The dictionary data is supplied by the caller and never
+				bundled. <code>PoliMorfDictionaryReaderUsageExampleTest</code> asserts the behavior
+				shown here over a small in-repo table in this format:
+				<programlisting language="java"><![CDATA[
+// surfaceForm<TAB>lemma<TAB>tag, one row per entry
+String table = "psa\tpies\tsubst:sg:gen:m2\n"
+    + "psy\tpies\tsubst:pl:nom:m2\n"
+    + "kota\tkot\tsubst:sg:gen:m2\n";
+
+Lemmatizer lemmatizer = PoliMorfDictionaryReader.read(
+    new ByteArrayInputStream(table.getBytes(StandardCharsets.UTF_8)));
+
+lemmatizer.lemmatize(new String[] {"psa"}, new String[] {"subst:sg:gen:m2"});   // ["pies"]
+lemmatizer.lemmatize(new String[] {"Psa"}, new String[] {"subst:sg:gen:m2"});   // ["pies"], case-insensitive
+lemmatizer.lemmatize(new String[] {"psa"}, new String[] {"adj:sg:nom:m2:pos"}); // ["O"], tag miss]]>
+				</programlisting>
+			</para>
+		</section>
 </chapter>
