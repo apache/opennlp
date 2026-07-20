@@ -31,8 +31,8 @@ import java.util.Properties;
 import opennlp.tools.lemmatizer.DictionaryLemmatizer;
 
 /**
- * Builds a {@link DictionaryLemmatizer} from a morfologik-format morphological dictionary: a
- * CFSA2 automaton (read by {@link CFSA2Reader}) whose accepted byte sequences are
+ * Builds a {@link DictionaryLemmatizer} from a morfologik-format morphological dictionary: an
+ * FSA5 or CFSA2 automaton (read by {@link FsaSequenceReader}) whose accepted byte sequences are
  * {@code surfaceForm SEP encodedBase SEP tag}, paired with the {@code .info} metadata that
  * declares the separator byte, the character encoding, and the base-form encoder.
  *
@@ -94,7 +94,7 @@ public final class MorfologikDictionaryReader {
       throw new IllegalArgumentException("charset must not be null");
     }
 
-    final CFSA2Reader automaton = CFSA2Reader.read(dictionary);
+    final FsaSequenceReader automaton = FsaSequenceReader.read(dictionary);
     final Map<String, LinkedHashSet<String>> entries = new LinkedHashMap<>();
     try {
       automaton.forEachSequence(sequence -> addEntry(sequence, separator, encoding, charset, entries));

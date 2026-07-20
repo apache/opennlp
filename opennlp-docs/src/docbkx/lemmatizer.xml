@@ -346,4 +346,30 @@ lemmatizer.lemmatize(new String[] {"psa"}, new String[] {"adj:sg:nom:m2:pos"}); 
 				</programlisting>
 			</para>
 		</section>
+
+		<section xml:id="tools.lemmatizer.morfologik">
+			<title>Reading morfologik dictionaries</title>
+			<para>
+				Many languages publish a morphological dictionary as a compact finite-state
+				automaton (a <code>.dict</code> file) paired with a <code>.info</code> metadata
+				file. <code>MorfologikDictionaryReader</code> reads both automaton formats,
+				FSA5 and CFSA2, with no third-party dependency, and decodes each entry, which is
+				a surface form, a base form stored relative to it, and a tag, into a
+				<code>DictionaryLemmatizer</code>. The four base-form encoders (none, suffix,
+				prefix, infix) are all decoded. The separator, character encoding, and encoder
+				are read from the <code>.info</code> file, or passed explicitly. The dictionary
+				data is supplied by the caller and never bundled.
+				<code>MorfologikDictionaryReaderTest</code> asserts the behavior shown here.
+				<programlisting language="java"><![CDATA[
+// dict is a .dict automaton stream, info is its .info metadata stream
+Lemmatizer lemmatizer = MorfologikDictionaryReader.read(dict, info);
+
+lemmatizer.lemmatize(new String[] {"mice"}, new String[] {"NN"});  // ["mouse"]]]>
+				</programlisting>
+				The companion <code>PoliMorfDictionaryReader</code> covers the same job for a
+				plain tab-separated table rather than an automaton, so a permissively licensed
+				dictionary such as PoliMorf and an existing automaton dictionary both reach the
+				same lemmatizer.
+			</para>
+		</section>
 </chapter>
