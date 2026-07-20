@@ -23,7 +23,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Pins the cookbook path documented in {@code normalizer.xml}: segment with
@@ -49,17 +48,25 @@ public class EmojiAnnotatorUsageExampleTest {
     final String text = "Berlin " + cp(0x1F1E9, 0x1F1EA) + " " + cp(0x2764, 0xFE0F);
     final List<String> regions = new ArrayList<>();
     final List<String> names = new ArrayList<>();
+    final List<EmojiEntityType> entityTypes = new ArrayList<>();
+    final List<EmojiCategory> categories = new ArrayList<>();
+    final List<Integer> sentiments = new ArrayList<>();
     for (final Term term : analyzer.analyze(text)) {
       annotator.annotate(term).ifPresent(a -> {
         a.isoRegion().ifPresent(regions::add);
         a.name().ifPresent(names::add);
-        assertTrue(a.entityType().isPresent());
-        assertTrue(a.category().isPresent());
+        a.entityType().ifPresent(entityTypes::add);
+        a.category().ifPresent(categories::add);
+        a.sentiment().ifPresent(s -> sentiments.add(s));
       });
     }
 
+    // Exactly the values the manual prints, in term order: the flag is derived, the heart bundled.
     assertEquals(List.of("DE"), regions);
     assertEquals(List.of("red heart"), names);
+    assertEquals(List.of(EmojiEntityType.FLAG, EmojiEntityType.HEART), entityTypes);
+    assertEquals(List.of(EmojiCategory.FLAGS, EmojiCategory.SMILEYS_AND_EMOTION), categories);
+    assertEquals(List.of(2), sentiments);
     assertEquals(Optional.empty(), annotator.annotate("Berlin"));
   }
 }
