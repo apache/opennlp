@@ -35,9 +35,8 @@ import java.util.function.Consumer;
  * <p>Thread safety is implementation specific; a constructed instance holds only immutable state
  * and its {@link #forEachSequence(Consumer)} may be called concurrently.</p>
  */
-public final class CFSA2Reader {
+public final class CFSA2Reader implements FsaSequenceReader {
 
-  private static final byte[] MAGIC = {0x5c, 0x66, 0x73, 0x61};
   private static final byte VERSION = (byte) 0xc6;
 
   private static final int FLAG_NUMBERS = 0x0100;
@@ -79,7 +78,10 @@ public final class CFSA2Reader {
     if (in == null) {
       throw new IllegalArgumentException("in must not be null");
     }
-    final byte[] bytes = in.readAllBytes();
+    return fromBytes(in.readAllBytes());
+  }
+
+  static CFSA2Reader fromBytes(byte[] bytes) throws IOException {
     if (bytes.length < HEADER_SIZE
         || bytes[0] != MAGIC[0] || bytes[1] != MAGIC[1]
         || bytes[2] != MAGIC[2] || bytes[3] != MAGIC[3]) {
@@ -109,6 +111,7 @@ public final class CFSA2Reader {
    * @throws IllegalStateException if a path exceeds {@value #MAX_SEQUENCE_LENGTH} bytes, which
    *                               indicates a malformed automaton.
    */
+  @Override
   public void forEachSequence(Consumer<byte[]> action) {
     if (action == null) {
       throw new IllegalArgumentException("action must not be null");

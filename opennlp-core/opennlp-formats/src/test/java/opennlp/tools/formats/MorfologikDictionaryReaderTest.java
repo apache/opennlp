@@ -43,6 +43,11 @@ public class MorfologikDictionaryReaderTest {
   private static final String DICTIONARY_BASE64 =
       "XGZzYcYABxIAdXRtaWdkYVNEQkFvZWNzTitAXgMOHwYVw8TOzdHJzMHPzdHQcADMxc/RytHQ0GgAx8KRTxhLEQ==";
 
+  // The same dictionary serialized in the older FSA5 format, to prove both formats are read.
+  private static final String FSA5_DICTIONARY_BASE64 =
+      "XGZzYQVfKwIAAABeBmPIAWQwAW0GaQZjBmUGKwZEBm8GdQZzBmUGKwZOBk4DAG8G"
+          + "ZwZzBisGQgYrBk4GTgZTAwBhBnQGKxgCc2IBQfoA";
+
   private static byte[] iso(String s) {
     return s.getBytes(StandardCharsets.ISO_8859_1);
   }
@@ -91,6 +96,19 @@ public class MorfologikDictionaryReaderTest {
         lemmatizer.lemmatize(new String[] {"cat"}, new String[] {"NN"}));
     Assertions.assertArrayEquals(new String[] {"O"},
         lemmatizer.lemmatize(new String[] {"mice"}, new String[] {"NNS"}));
+  }
+
+  /** The same dictionary in the older FSA5 format is read identically. */
+  @Test
+  void testReadsFsa5DictionaryEndToEnd() throws IOException {
+    final DictionaryLemmatizer lemmatizer = MorfologikDictionaryReader.read(
+        new ByteArrayInputStream(Base64.getDecoder().decode(FSA5_DICTIONARY_BASE64)),
+        (byte) '+', BaseFormEncoding.SUFFIX, StandardCharsets.ISO_8859_1);
+
+    Assertions.assertArrayEquals(new String[] {"mouse"},
+        lemmatizer.lemmatize(new String[] {"mice"}, new String[] {"NN"}));
+    Assertions.assertArrayEquals(new String[] {"cat"},
+        lemmatizer.lemmatize(new String[] {"cats"}, new String[] {"NNS"}));
   }
 
   /** The separator, encoding, and encoder are taken from .info metadata when supplied. */
