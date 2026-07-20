@@ -23,7 +23,7 @@
 			<code>RelationAnnotator</code> reads the token, entity, and dependency
 			layers and writes <code>RelationAnnotator.RELATIONS</code>. Each
 			<code>RelationPattern</code> names a relation type, a dependency path
-			between subject and object entities, and an optional trigger lemma on the
+			between subject and object entities, and an optional trigger word on the
 			path. Extracted mentions carry subject and object entity indexes and a
 			span covering the arguments in original text coordinates.
 		</para>
@@ -38,8 +38,8 @@
 			acquisition date linking the object organization to the date.
 			<code>RelationExtractionExampleTest</code> asserts the behavior shown
 			here.
-			<programlisting language="java"><![CDATA[
-RelationAnnotator annotator = new RelationAnnotator(List.of(
+			<programlisting language="java">
+<![CDATA[RelationAnnotator annotator = new RelationAnnotator(List.of(
     new RelationPattern("acquisition", "<nsubj >obj", "acquired"),
     new RelationPattern("acquisition_date", "<obj >obl", null)));
 
