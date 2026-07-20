@@ -775,4 +775,383 @@ public class HunspellStemmerTest {
     // the left side would be three characters, below the declared minimum of four
     Assertions.assertEquals(List.of("doghouse"), stemmer.stemAll("doghouse"));
   }
+
+  /**
+   * Verifies the NEEDAFFIX flag on entries: a virtual stem exists only to be affixed,
+   * the linking forms of the published German dictionary being the model, so its bare
+   * form is no analysis of itself while its affixed forms still reduce to it.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testNeedAffixEntryIsNoStandaloneAnalysis() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "NEEDAFFIX h\nSFX S Y 1\nSFX S 0 s .\nSFX K Y 1\nSFX K 0 k .\n",
+        "2\nlink/hS\nlin/K\n"));
+    // the virtual entry no longer explains the bare form; only the k analysis remains
+    Assertions.assertEquals(List.of("lin"), stemmer.stemAll("link"));
+    // affixed, the virtual stem is exactly what the s removal lands on
+    Assertions.assertEquals(List.of("link"), stemmer.stemAll("links"));
+  }
+
+  /**
+   * Verifies NEEDAFFIX against homonyms: the flag blocks one entry's flag set, not
+   * the word, so a second listing without the flag keeps the bare form valid.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testNeedAffixHomonymKeepsTheBareWord() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "NEEDAFFIX h\nSFX S Y 1\nSFX S 0 s .\n",
+        "2\nlink/hS\nlink\n"));
+    Assertions.assertEquals(List.of("link"), stemmer.stemAll("link"));
+  }
+
+  /**
+   * Verifies the historical PSEUDOROOT alias, the directive's name before hunspell
+   * renamed it to NEEDAFFIX; older dictionaries still declare it.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testPseudoRootIsNeedAffixByItsOldName() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "PSEUDOROOT h\nSFX S Y 1\nSFX S 0 s .\nSFX K Y 1\nSFX K 0 k .\n",
+        "2\nlink/hS\nlin/K\n"));
+    Assertions.assertEquals(List.of("lin"), stemmer.stemAll("link"));
+  }
+
+  /**
+   * Verifies the NEEDAFFIX flag on affix rules: a rule carrying the flag among its
+   * continuation classes makes a form that still needs another affix, so its
+   * single-removal analysis is suppressed while a twofold removal, whose inner affix
+   * is the further one required, still reports the stem.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testNeedAffixOnAnAffixRequiresAnotherAffix() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        String.join("\n",
+            "NEEDAFFIX h",
+            "SFX A Y 1",
+            "SFX A 0 er/hB .",
+            "SFX B Y 1",
+            "SFX B 0 s .",
+            ""),
+        "1\nwork/A\n"));
+    // work + er alone is virtual, so worker has no analysis and passes through
+    Assertions.assertEquals(List.of("worker"), stemmer.stemAll("worker"));
+    // work + er + s is complete; the twofold removal reaches the listed stem
+    Assertions.assertEquals(List.of("work"), stemmer.stemAll("workers"));
+  }
+
+  /**
+   * Verifies that a cross-product analysis satisfies an affix's NEEDAFFIX marker:
+   * the prefix is the further affix the marked suffix requires, mirroring how
+   * hunspell accepts a prefix plus a needs-affix suffix together.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCrossProductSatisfiesNeedAffixOnTheSuffix() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        String.join("\n",
+            "NEEDAFFIX h",
+            "PFX P Y 1",
+            "PFX P 0 un .",
+            "SFX A Y 1",
+            "SFX A 0 er/h .",
+            ""),
+        "1\nwork/AP\n"));
+    Assertions.assertEquals(List.of("worker"), stemmer.stemAll("worker"));
+    Assertions.assertEquals(List.of("work"), stemmer.stemAll("unworker"));
+  }
+
+  /**
+   * Verifies the ONLYINCOMPOUND flag: an entry carrying it appears only inside
+   * compounds, the ordinal parts of the published US English dictionary being the
+   * model, so neither its bare form nor its affixed forms are standalone analyses,
+   * while compound decomposition may still use it.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testOnlyInCompoundEntrySupportsNoStandaloneAnalyses() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "ONLYINCOMPOUND c\nCOMPOUNDFLAG Z\nCOMPOUNDMIN 3\nSFX S Y 1\nSFX S 0 s .\n",
+        "3\npart/cSZ\nhouse/Z\nwalk/S\n"));
+    // the affix analysis is suppressed because part's only flag set is compound-only
+    Assertions.assertEquals(List.of("parts"), stemmer.stemAll("parts"));
+    Assertions.assertEquals(List.of("part"), stemmer.stemAll("part"));
+    // inside a compound the entry serves exactly its declared purpose
+    Assertions.assertEquals(List.of("part", "house"), stemmer.stemAll("parthouse"));
+    Assertions.assertEquals(List.of("walk"), stemmer.stemAll("walks"));
+  }
+
+  /**
+   * Verifies the FORBIDDENWORD flag: an entry carrying it is listed to be blocked,
+   * so it supports no analysis and no compound part.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testForbiddenWordSupportsNothing() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "FORBIDDENWORD w\nCOMPOUNDFLAG Z\nCOMPOUNDMIN 3\nSFX S Y 1\nSFX S 0 s .\n",
+        "3\nfoo/wSZ\nhouse/Z\nbar/S\n"));
+    Assertions.assertEquals(List.of("foo"), stemmer.stemAll("foo"));
+    Assertions.assertEquals(List.of("foos"), stemmer.stemAll("foos"));
+    Assertions.assertEquals(List.of("foohouse"), stemmer.stemAll("foohouse"));
+    Assertions.assertEquals(List.of("bar"), stemmer.stemAll("bars"));
+  }
+
+  /** The circumfix fixture: the German {@code ge...t} participle in miniature. */
+  private static final String CIRCUMFIX_AFFIX = String.join("\n",
+      "CIRCUMFIX f",
+      "PFX G Y 1",
+      "PFX G 0 ge/f .",
+      "SFX T Y 1",
+      "SFX T en et/f en",
+      "PFX U Y 1",
+      "PFX U 0 un .",
+      "SFX S Y 1",
+      "SFX S 0 s .",
+      "");
+
+  /**
+   * Verifies the CIRCUMFIX flag: two marked halves analyze together and neither
+   * analyzes alone, so the participle reduces to its verb while the half-applied
+   * forms stay unexplained.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCircumfixHalvesOnlyAnalyzeTogether() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        CIRCUMFIX_AFFIX, "1\narbeiten/GT\n"));
+    Assertions.assertEquals(List.of("arbeiten"), stemmer.stemAll("gearbeitet"));
+    // the suffix half alone is no word, although the stem carries its flag
+    Assertions.assertEquals(List.of("arbeitet"), stemmer.stemAll("arbeitet"));
+    // the prefix half alone is no word either
+    Assertions.assertEquals(List.of("gearbeiten"), stemmer.stemAll("gearbeiten"));
+  }
+
+  /**
+   * Verifies that circumfixing rejects mixed pairs: a marked half never combines
+   * with an unmarked affix of the other kind, in either direction, while a fully
+   * unmarked cross-product in the same dictionary still analyzes.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCircumfixRejectsMixedPairs() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        CIRCUMFIX_AFFIX, "2\narbeiten/GTUS\nlauf/US\n"));
+    // unmarked prefix with the marked suffix half
+    Assertions.assertEquals(List.of("unarbeitet"), stemmer.stemAll("unarbeitet"));
+    // the marked prefix half with an unmarked suffix
+    Assertions.assertEquals(List.of("gearbeitens"), stemmer.stemAll("gearbeitens"));
+    // both halves marked still analyze beside the rejected mixtures
+    Assertions.assertEquals(List.of("arbeiten"), stemmer.stemAll("gearbeitet"));
+    // a fully unmarked cross-product is untouched by the circumfix declaration
+    Assertions.assertEquals(List.of("lauf"), stemmer.stemAll("unlaufs"));
+  }
+
+  /**
+   * Verifies decomposition beyond two parts: the positional flags admit a begin, a
+   * middle, and an end part, a part fit only for the middle neither opens nor closes,
+   * and repeated middles fold into the reported set.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCompoundMiddleAdmitsInnerParts() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "COMPOUNDBEGIN B\nCOMPOUNDMIDDLE M\nCOMPOUNDEND E\nCOMPOUNDMIN 3\n",
+        "3\ndog/B\ncat/M\nhouse/E\n"));
+    Assertions.assertEquals(List.of("dog", "cat", "house"),
+        stemmer.stemAll("dogcathouse"));
+    Assertions.assertEquals(List.of("dog", "cat", "house"),
+        stemmer.stemAll("dogcatcathouse"));
+    Assertions.assertEquals(List.of("dog", "house"), stemmer.stemAll("doghouse"));
+    // cat holds only the middle flag, so it neither opens nor closes
+    Assertions.assertEquals(List.of("cathouse"), stemmer.stemAll("cathouse"));
+    Assertions.assertEquals(List.of("dogcat"), stemmer.stemAll("dogcat"));
+  }
+
+  /**
+   * Verifies COMPOUNDWORDMAX: a decomposition needing more parts than declared is
+   * rejected while one within the bound still analyzes.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCompoundWordMaxBoundsThePartCount() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "COMPOUNDBEGIN B\nCOMPOUNDMIDDLE M\nCOMPOUNDEND E\nCOMPOUNDMIN 3\n"
+            + "COMPOUNDWORDMAX 2\n",
+        "3\ndog/B\ncat/M\nhouse/E\n"));
+    Assertions.assertEquals(List.of("dog", "house"), stemmer.stemAll("doghouse"));
+    Assertions.assertEquals(List.of("dogcathouse"), stemmer.stemAll("dogcathouse"));
+  }
+
+  /**
+   * Verifies affixed compound parts, the German linking form being the model: a part
+   * is its entry plus one suffix whose continuation classes position the derived form
+   * and permit it at the internal boundary, and the reported analysis is the entry,
+   * not the linking form. The lowercase interior spelling of a capitalized entry is
+   * found through the part's uppercased retry.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testLinkingSuffixJoinsCompoundParts() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        String.join("\n",
+            "COMPOUNDBEGIN x",
+            "COMPOUNDEND z",
+            "COMPOUNDPERMITFLAG c",
+            "COMPOUNDMIN 2",
+            "SFX j Y 1",
+            "SFX j 0 s/xc .",
+            ""),
+        "2\nAbbildung/j\nVerzeichnis/z\n"));
+    Assertions.assertEquals(List.of("Abbildung", "Verzeichnis"),
+        stemmer.stemAll("Abbildungsverzeichnis"));
+    // without the linking s the first part has no admitting reading
+    Assertions.assertEquals(List.of("Abbildungverzeichnis"),
+        stemmer.stemAll("Abbildungverzeichnis"));
+  }
+
+  /**
+   * Verifies zero-suffix part positioning, the pattern the published German
+   * dictionary uses: a virtual stem enters compounds through a rule that adds no
+   * material but whose continuation classes carry the positional and permit flags.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testZeroSuffixPositionsAVirtualStemInCompounds() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        String.join("\n",
+            "NEEDAFFIX h",
+            "COMPOUNDBEGIN x",
+            "COMPOUNDEND z",
+            "COMPOUNDPERMITFLAG c",
+            "COMPOUNDMIN 3",
+            "SFX j Y 1",
+            "SFX j 0 0/xc .",
+            ""),
+        "2\nfugen/hj\nwerk/z\n"));
+    Assertions.assertEquals(List.of("fugen", "werk"), stemmer.stemAll("fugenwerk"));
+    // the virtual stem alone is still no word
+    Assertions.assertEquals(List.of("fugen"), stemmer.stemAll("fugen"));
+  }
+
+  /**
+   * Verifies COMPOUNDFORBIDFLAG: an affixed form whose rule carries the flag stays
+   * out of compounds although its positioning otherwise admits it.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCompoundForbidFlagBarsAnAffixedPart() throws IOException {
+    final String words = "2\ndog/ZS\nhouse/Z\n";
+    final HunspellStemmer barred = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDPERMITFLAG c\nCOMPOUNDFORBIDFLAG F\nCOMPOUNDMIN 3\n"
+            + "SFX S Y 1\nSFX S 0 s/cF .\n",
+        words));
+    Assertions.assertEquals(List.of("dogshouse"), barred.stemAll("dogshouse"));
+    final HunspellStemmer allowed = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDPERMITFLAG c\nCOMPOUNDMIN 3\n"
+            + "SFX S Y 1\nSFX S 0 s/c .\n",
+        words));
+    Assertions.assertEquals(List.of("dog", "house"), allowed.stemAll("dogshouse"));
+  }
+
+  /**
+   * Verifies that an affix without the permit flag keeps off internal boundaries: a
+   * suffixed reading fits the last part but not an earlier one.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testAffixWithoutPermitFlagStaysAtTheEdge() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\nSFX S Y 1\nSFX S 0 s .\n",
+        "2\ndog/ZS\nhouse/ZS\n"));
+    // the suffix closes the word, so the last part may carry it
+    Assertions.assertEquals(List.of("dog", "house"), stemmer.stemAll("doghouses"));
+    // an internal suffix without the permit flag blocks the split
+    Assertions.assertEquals(List.of("dogshouse"), stemmer.stemAll("dogshouse"));
+  }
+
+  /**
+   * Verifies CHECKCOMPOUNDDUP: a part must not repeat its left neighbor, while the
+   * same dictionary without the declaration accepts the repetition.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCheckCompoundDupForbidsRepeatedParts() throws IOException {
+    final String words = "2\ndog/Z\nhouse/Z\n";
+    final HunspellStemmer checked = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\nCHECKCOMPOUNDDUP\n", words));
+    Assertions.assertEquals(List.of("dogdoghouse"), checked.stemAll("dogdoghouse"));
+    final HunspellStemmer unchecked = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\n", words));
+    Assertions.assertEquals(List.of("dog", "house"), unchecked.stemAll("dogdoghouse"));
+  }
+
+  /**
+   * Verifies CHECKCOMPOUNDCASE: an uppercase character on either side of a junction
+   * forbids the split, while the same dictionary without the declaration accepts it.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCheckCompoundCaseForbidsUppercaseJunctions() throws IOException {
+    final String words = "2\ndog/Z\nHouse/Z\n";
+    final HunspellStemmer checked = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\nCHECKCOMPOUNDCASE\n", words));
+    Assertions.assertEquals(List.of("dogHouse"), checked.stemAll("dogHouse"));
+    final HunspellStemmer unchecked = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\n", words));
+    Assertions.assertEquals(List.of("dog", "House"), unchecked.stemAll("dogHouse"));
+  }
+
+  /**
+   * Verifies CHECKCOMPOUNDTRIPLE: the same character three times in a row across a
+   * junction forbids the split, while the same dictionary without the declaration
+   * accepts it.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testCheckCompoundTripleForbidsTripleLetters() throws IOException {
+    final String words = "2\nbell/Z\nlow/Z\n";
+    final HunspellStemmer checked = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\nCHECKCOMPOUNDTRIPLE\n", words));
+    Assertions.assertEquals(List.of("belllow"), checked.stemAll("belllow"));
+    final HunspellStemmer unchecked = new HunspellStemmer(load(
+        "COMPOUNDFLAG Z\nCOMPOUNDMIN 3\n", words));
+    Assertions.assertEquals(List.of("bell", "low"), unchecked.stemAll("belllow"));
+  }
+
+  /**
+   * Verifies that a listed forbidden word never decomposes: the dictionary blocks
+   * one specific ill-formed compound while its parts stay productive elsewhere.
+   *
+   * @throws IOException Thrown if a fixture fails to load.
+   */
+  @Test
+  void testForbiddenEntryBlocksItsDecomposition() throws IOException {
+    final HunspellStemmer stemmer = new HunspellStemmer(load(
+        "FORBIDDENWORD w\nCOMPOUNDFLAG Z\nCOMPOUNDMIN 3\n",
+        "4\ndog/Z\nhouse/Z\ncat/Z\ndoghouse/w\n"));
+    Assertions.assertEquals(List.of("doghouse"), stemmer.stemAll("doghouse"));
+    Assertions.assertEquals(List.of("cat", "house"), stemmer.stemAll("cathouse"));
+  }
 }
