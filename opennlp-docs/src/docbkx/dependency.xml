@@ -65,8 +65,8 @@ DependencyGraph graph = parser.parse(
 			arc annotation sits on its dependent token's span in original text
 			coordinates. <code>DependencyAnnotatorPipelineTest</code> asserts the
 			behavior shown here.
-			<programlisting language="java"><![CDATA[
-DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
+			<programlisting language="java">
+<![CDATA[DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
     .add(new SentenceDetectorAnnotator(sentenceDetector))
     .add(new TokenizerAnnotator(tokenizer))
     .add(new POSTaggerAnnotator(tagger))
