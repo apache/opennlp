@@ -164,4 +164,22 @@ for(ClassPathModelEntry entry : models) {
 
     </para>
   </section>
+
+	<section xml:id="tools.model.resource-installer">
+		<title>Installing archived resources</title>
+		<para>
+			<code>ResourceInstaller</code> downloads or copies a resource URI into a
+			target directory, verifies an optional SHA-256 digest, and unpacks
+			<code>tar.gz</code>, <code>tgz</code>, zip, or plain gzip payloads while
+			rejecting path-traversal entries. The end-to-end flow packages a small
+			corpus, installs it through the public API, and leaves only the archived
+			files on disk. <code>ResourceInstallerTest</code> asserts the behavior
+			shown here.
+			<programlisting language="java"><![CDATA[
+Path result = ResourceInstaller.install(
+    corpusTarGz.toUri(), targetDirectory, expectedSha256);
+// result equals targetDirectory; corpus files unpack with their archive paths]]>
+			</programlisting>
+		</para>
+	</section>
 </chapter>
