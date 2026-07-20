@@ -54,11 +54,13 @@ final class ImmutableDocument implements Document {
     return new ImmutableDocument(text, Collections.emptyMap());
   }
 
+  /** {@inheritDoc} */
   @Override
   public CharSequence text() {
     return text;
   }
 
+  /** {@inheritDoc} */
   @Override
   @SuppressWarnings("unchecked")
   public <T> List<Annotation<T>> get(LayerKey<T> layer) {
@@ -74,11 +76,13 @@ final class ImmutableDocument implements Document {
     return (List<Annotation<T>>) (List<?>) annotations;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> layers() {
     return Collections.unmodifiableSet(layers.keySet());
   }
 
+  /** {@inheritDoc} */
   @Override
   public <T> Document with(LayerKey<T> layer, List<Annotation<T>> annotations) {
     if (layer == null || annotations == null) {

@@ -95,6 +95,7 @@ public class TokenizerAnnotator implements DocumentAnnotator {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> provides() {
     return Set.of(Layers.TOKENS);

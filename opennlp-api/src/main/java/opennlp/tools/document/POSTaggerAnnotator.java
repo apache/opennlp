@@ -125,11 +125,13 @@ public class POSTaggerAnnotator implements DocumentAnnotator {
     return document.with(Layers.POS_TAGS, tagAnnotations);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> requires() {
     return Set.of(Layers.SENTENCES, Layers.TOKENS);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> provides() {
     return Set.of(Layers.POS_TAGS);
