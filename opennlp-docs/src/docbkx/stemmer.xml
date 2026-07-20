@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.stemmer">
+
+	<title>Stemmer</title>
+
+	<section xml:id="tools.stemmer.introduction">
+		<title>Introduction</title>
+		<para>
+			A stemmer reduces a word form to a shorter root. OpenNLP ships rule-based
+			engines such as Snowball and Porter through the
+			<code>opennlp.tools.stemmer.Stemmer</code> interface. Stemming is
+			language-specific and lossy: it is useful for search and feature reduction,
+			not as a substitute for lemmatization when a dictionary form is required.
+		</para>
+	</section>
+
+	<section xml:id="tools.stemmer.factory">
+		<title>StemmerFactory</title>
+		<para>
+			<code>StemmerFactory</code> captures a stemmer configuration once and mints
+			configured <code>Stemmer</code> instances on demand. It is a plain supplier
+			of stemmers, not a <code>BaseToolFactory</code> loaded from a model
+			manifest. The English Snowball factory needs no external data:
+			<code>StemmerFactoryUsageExampleTest</code> asserts the behavior shown
+			here.
+			<programlisting language="java"><![CDATA[
+StemmerFactory factory = new SnowballStemmerFactory(SnowballStemmer.ALGORITHM.ENGLISH);
+Stemmer stemmer = factory.newStemmer();
+
+stemmer.stem("running");       // "run"
+stemmer.stemAll("running");    // ["run"]]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.stemmer.sharing">
+		<title>Sharing and caching</title>
+		<para>
+			Some stemmer implementations keep mutable engine state and must not be
+			called from several threads at once. <code>SharingStemmer</code> wraps a
+			<code>StemmerFactory</code> and routes each call to a per-thread delegate,
+			so one instance can be shared safely. <code>CachingStemmer</code> adds a
+			bounded per-thread LRU cache of word-to-stem mappings on top of the same
+			factory pattern. Both wrappers return the same stem as a fresh factory
+			stemmer for the same word:
+			<programlisting language="java"><![CDATA[
+StemmerFactory factory = new SnowballStemmerFactory(SnowballStemmer.ALGORITHM.ENGLISH);
+
+new SharingStemmer(factory).stem("running");   // "run"
+new CachingStemmer(factory).stem("running");   // "run"]]>
+			</programlisting>
+			Thread-safe stemmers such as the shareable <code>SnowballStemmer</code>
+			class do not need <code>SharingStemmer</code>. Long-running containers
+			should call <code>clearThreadLocalState()</code> when a pooled thread no
+			longer uses a sharing or caching stemmer.
+		</para>
+	</section>
+</chapter>

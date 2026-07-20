@@ -18,13 +18,9 @@
 package opennlp.tools.stemmer;
 
 /**
- * A factory for {@link Stemmer} instances: it captures a stemmer configuration (algorithm,
- * repeat count, dictionary path, ...) once and mints configured stemmers on demand.
- *
- * <p>Despite the name, this is not one of the {@code BaseToolFactory}-based tool factories (such
- * as {@code LemmatizerFactory}) that are instantiated by name from a model manifest. It is a
- * plain supplier of configured {@link Stemmer} instances and takes no part in the model-loading
- * mechanism.</p>
+ * A factory that captures a stemmer configuration and mints configured {@link Stemmer}
+ * instances on demand. Unlike {@code BaseToolFactory}, this type is not loaded from a model
+ * manifest.
  */
 public interface StemmerFactory {
 
