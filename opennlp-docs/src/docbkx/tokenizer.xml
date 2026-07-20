@@ -538,5 +538,30 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 				</programlisting>
 			</para>
 		</section>
+		<section xml:id="tools.tokenizer.lattice">
+			<title>Lattice tokenization for CJK</title>
+			<para>
+				Languages written without spaces need a dictionary-backed segmenter.
+				<code>LatticeTokenizer</code> scores paths over a mecab-format dictionary and
+				emits the cheapest segmentation with spans in original text coordinates.
+				<code>UnigramSegmenter</code> does the same from a plain frequency lexicon.
+				Install a dictionary archive with <code>MecabDictionaryInstaller</code>, load it
+				as a <code>MecabDictionary</code>, and tokenize.
+				<code>LatticeUsageExampleTest</code> asserts the install-load-tokenize and
+				lexicon flows shown here.
+				<programlisting language="java">
+<![CDATA[MecabDictionaryInstaller.install(archiveUri, dictionaryDirectory);
+LatticeTokenizer tokenizer =
+    new LatticeTokenizer(MecabDictionary.load(dictionaryDirectory));
+
+String[] tokens = tokenizer.tokenize(text);
+Span[] spans = tokenizer.tokenizePos(text);
+List<Morpheme> morphemes = tokenizer.analyze(text);
+
+UnigramSegmenter segmenter = UnigramSegmenter.load(Path.of("words.txt"));
+String[] words = segmenter.tokenize(text);]]>
+				</programlisting>
+			</para>
+		</section>
 	</section>
 </chapter>
