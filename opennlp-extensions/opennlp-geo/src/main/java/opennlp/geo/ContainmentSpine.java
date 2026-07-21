@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.PlaceAncestor;
 import opennlp.tools.geo.PlaceHierarchy;
 import opennlp.tools.util.StringUtil;
@@ -40,8 +41,8 @@ import opennlp.tools.util.StringUtil;
 /**
  * An immutable, in-memory containment hierarchy over user-supplied place tables: each
  * place carries its parent, name, and type, and {@link #ancestors(String)} walks the
- * chain outward. No hierarchy data is bundled; the user supplies the tables and thereby
- * accepts their licenses, the pattern shared with the gazetteers and dictionaries.
+ * chain outward. No hierarchy data is bundled; the user supplies the tables, and the
+ * license of a supplied table stays with its files.
  *
  * <p>Two table formats load through the builder. The neutral tab-separated format
  * carries {@code id}, {@code parent_id}, {@code name}, and {@code type} columns, one
@@ -52,9 +53,8 @@ import opennlp.tools.util.StringUtil;
  * parent, as in the source data.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
- *
- * @since 3.0.0
  */
+@ThreadSafe
 public final class ContainmentSpine implements PlaceHierarchy {
 
   /**

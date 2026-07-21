@@ -24,7 +24,6 @@ import java.util.List;
  * chain of enclosing places, so a mention expands into the places it belongs to.
  *
  * @see PlaceAncestor
- * @since 3.0.0
  */
 public interface PlaceHierarchy {
 

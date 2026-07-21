@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
@@ -46,9 +47,8 @@ import opennlp.tools.util.Span;
  * distance, or between the top population priors when no coherence evidence exists.
  * Unresolved mentions are omitted, never fabricated. Instances hold no per-call state
  * and are safe to share between threads.</p>
- *
- * @since 3.0.0
  */
+@ThreadSafe
 public final class SpatialCoherenceGeocoder implements Geocoder {
 
   /** An unambiguous mention scores high but never certain, since gazetteers are incomplete. */

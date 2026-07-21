@@ -79,8 +79,11 @@ final class CrmGazetteer implements Gazetteer {
   /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) {
-    if (source == null || recordId == null) {
-      throw new IllegalArgumentException("source and recordId must not be null");
+    if (source == null) {
+      throw new IllegalArgumentException("source must not be null");
+    }
+    if (recordId == null) {
+      throw new IllegalArgumentException("recordId must not be null");
     }
     return SOURCE.equals(source) ? Optional.ofNullable(byId.get(recordId)) : Optional.empty();
   }

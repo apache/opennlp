@@ -48,7 +48,7 @@ public class GeoNamesGazetteerTest {
   }
 
   private static final String FIXTURE = String.join("\n",
-      row("1", "München", "Munchen", "Munich,Monaco di Baviera", "48.14", "11.58",
+      row("1", "M\u00fcnchen", "Munchen", "Munich,Monaco di Baviera", "48.14", "11.58",
           "P", "DE", "1500000"),
       row("2", "Paris", "Paris", "Lutetia", "48.85", "2.35", "P", "FR", "2100000"),
       row("3", "Paris", "Paris", "", "33.66", "-95.56", "P", "US", "25000"),
@@ -63,7 +63,7 @@ public class GeoNamesGazetteerTest {
   @Test
   void testLookupMatchesCanonicalAsciiAndAlternateNames() throws IOException {
     final GeoNamesGazetteer gazetteer = gazetteer();
-    assertEquals("1", gazetteer.lookup("München").get(0).recordId());
+    assertEquals("1", gazetteer.lookup("M\u00fcnchen").get(0).recordId());
     assertEquals("1", gazetteer.lookup("munchen").get(0).recordId());
     assertEquals("1", gazetteer.lookup("MUNICH").get(0).recordId());
     assertEquals("1", gazetteer.lookup("Monaco di Baviera").get(0).recordId());

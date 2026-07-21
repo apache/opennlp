@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoResolution;
@@ -42,6 +43,7 @@ import opennlp.tools.util.Span;
  * omitted from the result. Instances are immutable and thread-safe when the supplied
  * {@link Gazetteer} is.</p>
  */
+@ThreadSafe
 public final class PopulationPriorGeocoder implements Geocoder {
 
   private static final double SINGLE_CANDIDATE_CONFIDENCE = 0.9;
