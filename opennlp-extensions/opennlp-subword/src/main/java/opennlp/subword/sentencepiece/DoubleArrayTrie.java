@@ -53,6 +53,7 @@ final class DoubleArrayTrie implements Serializable {
    * @param data   The bytes holding the units; must not be null.
    * @param offset The offset of the first unit byte.
    * @param length The number of bytes; must be a positive multiple of four.
+   * @throws IllegalArgumentException Thrown if {@code length} is not a positive multiple of four.
    */
   DoubleArrayTrie(byte[] data, int offset, int length) {
     if (length <= 0 || (length & 3) != 0) {
@@ -75,6 +76,8 @@ final class DoubleArrayTrie implements Serializable {
    * @param to   The exclusive end of the query window.
    * @return {@code (value << 32) | matchedLength} for the longest match, or {@code -1} when no
    *     key matches. Values are non-negative, so the result is negative only on no-match.
+   * @throws IllegalArgumentException Thrown if the trie data references a unit outside its
+   *     bounds, indicating corrupt data.
    */
   long longestPrefixMatch(byte[] key, int from, int to) {
     // The JVM's own bounds checks guard the walk; the catch below translates an out-of-range unit
