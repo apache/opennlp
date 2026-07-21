@@ -81,28 +81,28 @@ public final class GermanLightStemmer extends AbstractCharArrayStemmer
   int stem(char[] s, int len) {
     for (int i = 0; i < len; i++)
       switch (s[i]) {
-        case 'ä':
-        case 'à':
-        case 'á':
-        case 'â':
+        case '\u00E4':
+        case '\u00E0':
+        case '\u00E1':
+        case '\u00E2':
           s[i] = 'a';
           break;
-        case 'ö':
-        case 'ò':
-        case 'ó':
-        case 'ô':
+        case '\u00F6':
+        case '\u00F2':
+        case '\u00F3':
+        case '\u00F4':
           s[i] = 'o';
           break;
-        case 'ï':
-        case 'ì':
-        case 'í':
-        case 'î':
+        case '\u00EF':
+        case '\u00EC':
+        case '\u00ED':
+        case '\u00EE':
           s[i] = 'i';
           break;
-        case 'ü':
-        case 'ù':
-        case 'ú':
-        case 'û':
+        case '\u00FC':
+        case '\u00F9':
+        case '\u00FA':
+        case '\u00FB':
           s[i] = 'u';
           break;
       }
