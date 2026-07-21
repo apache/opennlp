@@ -64,8 +64,11 @@ public class LexicalExpansionUsageExampleTest {
     return new LexicalKnowledgeBase() {
       @Override
       public List<Synset> lookup(String lemma, WordNetPOS pos) {
-        if (lemma == null || pos == null) {
-          throw new IllegalArgumentException("lemma and pos must not be null");
+        if (lemma == null) {
+          throw new IllegalArgumentException("lemma must not be null");
+        }
+        if (pos == null) {
+          throw new IllegalArgumentException("pos must not be null");
         }
         return senses.getOrDefault(LemmaFolding.fold(lemma) + "|" + pos, List.of());
       }

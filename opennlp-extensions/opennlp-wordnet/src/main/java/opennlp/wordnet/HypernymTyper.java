@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.StringUtil;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
 import opennlp.tools.wordnet.Synset;
@@ -45,9 +46,8 @@ import opennlp.tools.wordnet.WordNetRelation;
  * sense reaching an anchor get no type.</p>
  *
  * <p>The typer reads only immutable state and is safe to share between threads.</p>
- *
- * @since 3.0.0
  */
+@ThreadSafe
 public class HypernymTyper {
 
   /** The relations that lead from a synset to its generalizations. */
