@@ -15,8 +15,8 @@
 
 """Distills the multilingual bge-m3 teacher into a static embedding table.
 
-This is the worked example from TRAINING.md as a runnable script. It needs a Python
-environment with model2vec's distill extra installed:
+This is the worked example from opennlp-extensions/opennlp-embeddings/TRAINING.md as a
+runnable script. It needs a Python environment with model2vec's distill extra installed:
 
     uv venv .venv-distill
     uv pip install --python .venv-distill "model2vec[distill]"
