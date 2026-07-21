@@ -58,7 +58,7 @@ import opennlp.tools.stemmer.StemmerFactory;
 import static opennlp.tools.stemmer.light.StemmerUtil.endsWith;
 
 /**
- * Minimal Stemmer for Norwegian Bokmål ({@code nb}) and Nynorsk ({@code nn}).
+ * Minimal Stemmer for Norwegian Bokm\u00E5l ({@code nb}) and Nynorsk ({@code nn}).
  *
  * <p>Stems known plural forms for Norwegian nouns only, together with the genitive {@code -s}.
  *
@@ -79,17 +79,21 @@ public final class NorwegianMinimalStemmer extends AbstractCharArrayStemmer
    *
    * @param first The first standard whose endings are removed; must not be null.
    * @param more  Further standards; must not be or contain null.
-   * @throws IllegalArgumentException Thrown if a variety is null.
+   * @throws IllegalArgumentException Thrown if {@code first} or {@code more} is null,
+   *         or {@code more} contains null.
    */
   public NorwegianMinimalStemmer(NorwegianVariety first, NorwegianVariety... more) {
-    if (first == null || more == null) {
-      throw new IllegalArgumentException("The variety must not be null.");
+    if (first == null) {
+      throw new IllegalArgumentException("first must not be null");
+    }
+    if (more == null) {
+      throw new IllegalArgumentException("more must not be null");
     }
     boolean bokmaal = first == NorwegianVariety.BOKMAAL;
     boolean nynorsk = first == NorwegianVariety.NYNORSK;
     for (final NorwegianVariety variety : more) {
       if (variety == null) {
-        throw new IllegalArgumentException("The variety must not be null.");
+        throw new IllegalArgumentException("more must not contain null");
       }
       bokmaal |= variety == NorwegianVariety.BOKMAAL;
       nynorsk |= variety == NorwegianVariety.NYNORSK;

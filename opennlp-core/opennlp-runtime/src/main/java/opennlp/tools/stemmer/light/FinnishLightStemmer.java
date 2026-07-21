@@ -89,11 +89,11 @@ public final class FinnishLightStemmer extends AbstractCharArrayStemmer
 
     for (int i = 0; i < len; i++)
       switch (s[i]) {
-        case 'ä':
-        case 'å':
+        case '\u00E4':
+        case '\u00E5':
           s[i] = 'a';
           break;
-        case 'ö':
+        case '\u00F6':
           s[i] = 'o';
           break;
       }

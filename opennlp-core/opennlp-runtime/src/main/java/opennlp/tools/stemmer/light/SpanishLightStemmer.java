@@ -83,34 +83,34 @@ public final class SpanishLightStemmer extends AbstractCharArrayStemmer
 
     for (int i = 0; i < len; i++)
       switch (s[i]) {
-        case 'à':
-        case 'á':
-        case 'â':
-        case 'ä':
+        case '\u00E0':
+        case '\u00E1':
+        case '\u00E2':
+        case '\u00E4':
           s[i] = 'a';
           break;
-        case 'ò':
-        case 'ó':
-        case 'ô':
-        case 'ö':
+        case '\u00F2':
+        case '\u00F3':
+        case '\u00F4':
+        case '\u00F6':
           s[i] = 'o';
           break;
-        case 'è':
-        case 'é':
-        case 'ê':
-        case 'ë':
+        case '\u00E8':
+        case '\u00E9':
+        case '\u00EA':
+        case '\u00EB':
           s[i] = 'e';
           break;
-        case 'ù':
-        case 'ú':
-        case 'û':
-        case 'ü':
+        case '\u00F9':
+        case '\u00FA':
+        case '\u00FB':
+        case '\u00FC':
           s[i] = 'u';
           break;
-        case 'ì':
-        case 'í':
-        case 'î':
-        case 'ï':
+        case '\u00EC':
+        case '\u00ED':
+        case '\u00EE':
+        case '\u00EF':
           s[i] = 'i';
           break;
       }
