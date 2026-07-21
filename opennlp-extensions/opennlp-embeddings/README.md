@@ -117,7 +117,7 @@ Two things drive the numbers, and the benchmark separates them. `embed()` is tok
 | potion-base-8M | WordPiece, 29.5k | ~295k ops/s | ~9,000 ops/s |
 | bge-m3 (distilled) | SentencePiece, 250k | ~1.47M ops/s | ~550 ops/s |
 
-So a large multilingual vocabulary is free for embedding and expensive for a full nearest-neighbor scan; that scan is where an approximate index earns its place once the table is large. Separately, `scripts/parity/` holds a harness that reruns the single-thread speed comparison against the Model2Vec Python reference and checks that the output vectors match it within floating-point tolerance, so a cross-runtime comparison is something you reproduce on your own hardware rather than quote. Treat all of these as a starting expectation and run the benchmark on the model you plan to use.
+So a large multilingual vocabulary is free for embedding and expensive for a full nearest-neighbor scan; that scan is where an approximate index earns its place once the table is large. Separately, the repository's `dev/embeddings/parity/` directory holds a harness that reruns the single-thread speed comparison against the Model2Vec Python reference and checks that the output vectors match it within floating-point tolerance, so a cross-runtime comparison is something you reproduce on your own hardware rather than quote. Treat all of these as a starting expectation and run the benchmark on the model you plan to use.
 
 ## Usage
 
