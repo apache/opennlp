@@ -100,8 +100,11 @@ public final class MorphyLemmatizer implements Lemmatizer {
    */
   @Override
   public String[] lemmatize(String[] toks, String[] tags) {
-    if (toks == null || tags == null) {
-      throw new IllegalArgumentException("Toks and tags must not be null");
+    if (toks == null) {
+      throw new IllegalArgumentException("Toks must not be null");
+    }
+    if (tags == null) {
+      throw new IllegalArgumentException("Tags must not be null");
     }
     if (toks.length != tags.length) {
       throw new IllegalArgumentException("Toks and tags must have the same length, got "
@@ -123,8 +126,11 @@ public final class MorphyLemmatizer implements Lemmatizer {
    */
   @Override
   public List<List<String>> lemmatize(List<String> toks, List<String> tags) {
-    if (toks == null || tags == null) {
-      throw new IllegalArgumentException("Toks and tags must not be null");
+    if (toks == null) {
+      throw new IllegalArgumentException("Toks must not be null");
+    }
+    if (tags == null) {
+      throw new IllegalArgumentException("Tags must not be null");
     }
     if (toks.size() != tags.size()) {
       throw new IllegalArgumentException("Toks and tags must have the same size, got "
