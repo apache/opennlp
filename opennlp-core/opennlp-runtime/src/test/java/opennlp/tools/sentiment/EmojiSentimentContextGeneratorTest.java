@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EmojiSentimentContextGeneratorTest {
@@ -60,5 +61,12 @@ public class EmojiSentimentContextGeneratorTest {
         new EmojiSentimentFactory().createContextGenerator().getClass());
     assertEquals(SentimentContextGenerator.class,
         new SentimentFactory().createContextGenerator().getClass());
+  }
+  @Test
+  void nullTextFailsLoud() {
+    final EmojiSentimentContextGenerator generator = new EmojiSentimentContextGenerator();
+    final IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> generator.getContext(null));
+    assertEquals("Text must not be null", e.getMessage());
   }
 }

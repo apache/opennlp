@@ -92,8 +92,14 @@ public final class EmojiAnnotations {
     return Optional.ofNullable(ANNOTATIONS.get(key));
   }
 
-  // Removes every U+FE0F VARIATION SELECTOR-16; allocation-free when none is present.
-  // Package-visible so EmojiAnnotator keys derived-only records the same way.
+  /**
+   * Removes every U+FE0F VARIATION SELECTOR-16 from {@code symbol}; allocation-free when none
+   * is present. Package-visible so {@link EmojiAnnotator} keys derived-only records the same way.
+   *
+   * @param symbol The code point sequence to strip.
+   * @return The sequence without presentation selectors; {@code symbol}'s own text when it
+   *     contains none.
+   */
   static String stripPresentationSelector(CharSequence symbol) {
     final int length = symbol.length();
     int i = 0;
@@ -125,10 +131,16 @@ public final class EmojiAnnotations {
     }
   }
 
-  // Package-private so the malformed-data handling can be exercised without the bundled resource.
-  // Parses rows of "codepoints ; attribute ; value ; source ; notes" with space-separated
-  // hexadecimal code points; '#' starts a comment line. The notes column is the fifth and final
-  // field, so it may contain ';'.
+  /**
+   * Parses annotation rows of the form {@code codepoints ; attribute ; value ; source ; notes}
+   * with space-separated hexadecimal code points; {@code '#'} starts a comment line. The notes
+   * column is the fifth and final field, so it may contain {@code ';'}. Package-private so the
+   * malformed-data handling can be exercised without the bundled resource.
+   *
+   * @param in The stream to read, in UTF-8; consumed and closed by this method.
+   * @return One immutable record per annotated symbol, keyed by the selector-stripped symbol.
+   * @throws IOException Thrown if reading fails or a row is malformed.
+   */
   static Map<String, EmojiAnnotation> parse(InputStream in) throws IOException {
     final Map<String, Map<String, EmojiAnnotation.Value>> rows = new HashMap<>();
     try (BufferedReader reader =

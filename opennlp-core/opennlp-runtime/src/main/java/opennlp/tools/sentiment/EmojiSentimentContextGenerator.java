@@ -69,9 +69,14 @@ public class EmojiSentimentContextGenerator extends SentimentContextGenerator {
    *
    * <p>Appends the emoji annotation features of every annotated token to the default token
    * context.</p>
+   *
+   * @throws IllegalArgumentException if {@code text} is {@code null}.
    */
   @Override
   public String[] getContext(String[] text) {
+    if (text == null) {
+      throw new IllegalArgumentException("Text must not be null");
+    }
     final List<String> context = new ArrayList<>(text.length);
     Collections.addAll(context, super.getContext(text));
     for (final String token : text) {

@@ -66,10 +66,18 @@ public class EmojiAnnotationFeatureGenerator implements AdaptiveFeatureGenerator
    * {@inheritDoc}
    *
    * <p>Adds one feature per present annotation attribute of the token at {@code index}.</p>
+   *
+   * @throws IllegalArgumentException if {@code features} or {@code tokens} is {@code null}.
    */
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
                              String[] previousOutcomes) {
+    if (features == null) {
+      throw new IllegalArgumentException("Features must not be null");
+    }
+    if (tokens == null) {
+      throw new IllegalArgumentException("Tokens must not be null");
+    }
     annotator.collectFeatures(tokens[index], features);
   }
 }

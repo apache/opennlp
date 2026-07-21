@@ -110,6 +110,9 @@ public final class EmojiAnnotator {
     if (symbol == null) {
       throw new IllegalArgumentException("Symbol must not be null");
     }
+    if (!isAnnotatableToken(symbol)) {
+      return Optional.empty();
+    }
     final EmojiAnnotation bundled = EmojiAnnotations.lookup(symbol).orElse(null);
     // The lenient decode, not the strict one: degenerate flag-shaped tokens in real-world text
     // must yield no region, not an exception. Decoded once on this per-token hot path.
@@ -172,9 +175,6 @@ public final class EmojiAnnotator {
     if (features == null) {
       throw new IllegalArgumentException("Features must not be null");
     }
-    if (!isAnnotatableToken(token)) {
-      return;
-    }
     final EmojiAnnotation annotation = annotate(token).orElse(null);
     if (annotation == null) {
       return;
@@ -188,7 +188,8 @@ public final class EmojiAnnotator {
   /**
    * {@return whether {@code token} could carry an emoji annotation and is worth looking up} Every
    * annotatable symbol (a pictograph, a regional indicator, or the waving black flag) starts beyond
-   * ASCII, audited in {@code EmojiAnnotationsTest}; this fast-paths ordinary tokens.
+   * ASCII, audited in {@code EmojiAnnotationsTest}; this fast-paths empty and ordinary tokens
+   * before any lookup or decode runs.
    */
   private static boolean isAnnotatableToken(CharSequence token) {
     return token.length() != 0 && token.charAt(0) >= FIRST_NON_ASCII;

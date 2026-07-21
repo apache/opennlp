@@ -114,4 +114,14 @@ public class EmojiAnnotationFeatureGeneratorTest {
     assertEquals("category", EmojiAnnotation.CATEGORY);
     assertEquals("isoRegion", EmojiAnnotation.ISO_REGION);
   }
+  @Test
+  void nullArgumentsFailLoud() {
+    final AdaptiveFeatureGenerator generator = new EmojiAnnotationFeatureGenerator();
+    final IllegalArgumentException nullFeatures = assertThrows(IllegalArgumentException.class,
+        () -> generator.createFeatures(null, new String[] {"x"}, 0, null));
+    assertEquals("Features must not be null", nullFeatures.getMessage());
+    final IllegalArgumentException nullTokens = assertThrows(IllegalArgumentException.class,
+        () -> generator.createFeatures(new ArrayList<>(), null, 0, null));
+    assertEquals("Tokens must not be null", nullTokens.getMessage());
+  }
 }
