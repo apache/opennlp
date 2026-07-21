@@ -17,14 +17,12 @@
 
 package opennlp.tools.tokenize.lattice;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -51,70 +49,6 @@ import opennlp.tools.util.Span;
 public class LatticeUsageExampleTest {
 
   /**
-   * Appends one ustar file entry to a growing tar image: a 512-byte header block
-   * followed by the content padded to a block boundary.
-   *
-   * @param tar The tar image under construction. Must not be {@code null}.
-   * @param name The entry name including any directory prefix. Must not be
-   *             {@code null}, empty, or longer than the 100-byte header name field.
-   * @param content The entry content bytes. Must not be {@code null}.
-   * @throws IOException Thrown if writing to the in-memory stream fails.
-   * @throws IllegalArgumentException Thrown if {@code name} does not fit the header.
-   */
-  private static void tarEntry(ByteArrayOutputStream tar, String name, byte[] content)
-      throws IOException {
-    final byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
-    if (nameBytes.length == 0 || nameBytes.length > 100) {
-      throw new IllegalArgumentException(
-          "entry name must be 1..100 bytes, got " + nameBytes.length);
-    }
-    final byte[] header = new byte[512];
-    System.arraycopy(nameBytes, 0, header, 0, nameBytes.length);
-    final byte[] mode = "0000644".getBytes(StandardCharsets.US_ASCII);
-    System.arraycopy(mode, 0, header, 100, mode.length);
-    final String size = String.format("%011o", content.length);
-    System.arraycopy(size.getBytes(StandardCharsets.US_ASCII), 0, header, 124, 11);
-    header[156] = '0';
-    for (int i = 148; i < 156; i++) {
-      header[i] = ' ';
-    }
-    int checksum = 0;
-    for (final byte b : header) {
-      checksum += b & 0xFF;
-    }
-    final String checksumText = String.format("%06o", checksum);
-    System.arraycopy(checksumText.getBytes(StandardCharsets.US_ASCII), 0, header, 148, 6);
-    header[154] = 0;
-    header[155] = ' ';
-    tar.write(header);
-    tar.write(content);
-    final int padding = (512 - content.length % 512) % 512;
-    tar.write(new byte[padding]);
-  }
-
-  /**
-   * Builds a gzip-compressed tar archive from name and content pairs, the layout a
-   * dictionary distribution ships in.
-   *
-   * @param entries The entries as {@code {name, content}} pairs. Must not be
-   *                {@code null}.
-   * @return The compressed archive bytes. Never {@code null}.
-   * @throws IOException Thrown if writing to the in-memory streams fails.
-   */
-  private static byte[] gzippedTar(String[][] entries) throws IOException {
-    final ByteArrayOutputStream tar = new ByteArrayOutputStream();
-    for (final String[] entry : entries) {
-      tarEntry(tar, entry[0], entry[1].getBytes(StandardCharsets.UTF_8));
-    }
-    tar.write(new byte[1024]);
-    final ByteArrayOutputStream compressed = new ByteArrayOutputStream();
-    try (GZIPOutputStream gzip = new GZIPOutputStream(compressed)) {
-      gzip.write(tar.toByteArray());
-    }
-    return compressed.toByteArray();
-  }
-
-  /**
    * Walks the full mecab-format flow: package a miniature Japanese dictionary as a
    * {@code tar.gz} archive, install it from a file URI, load it, and tokenize. The
    * segmentation must pick the cheaper path (Tokyo plus the metropolis suffix) over
@@ -126,7 +60,7 @@ public class LatticeUsageExampleTest {
       throws IOException {
     // A minimal but complete dictionary: one lexicon file plus the three definition
     // files every mecab-format distribution contains, wrapped like a release archive.
-    final byte[] archive = gzippedTar(new String[][] {
+    final byte[] archive = TarGzArchives.gzippedTar(new String[][] {
         {"mini-dict-0.1/lexicon.csv", String.join("\n",
             "\u6771\u4EAC,0,0,3000,noun,proper",
             "\u4EAC\u90FD,0,0,3000,noun,proper",

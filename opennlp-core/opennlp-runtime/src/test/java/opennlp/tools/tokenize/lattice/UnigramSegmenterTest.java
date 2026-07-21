@@ -183,19 +183,19 @@ public class UnigramSegmenterTest {
    * span over both of its surrogate halves, and no span boundary ever lands between
    * them.
    */
-  @org.junit.jupiter.api.Test
+  @Test
   void testUnknownSupplementaryCharacterIsNeverSplit() {
     // U+20BB7, a CJK extension B ideograph, written as its surrogate pair
     final String text = "\uD842\uDFB7\uD842\uDFB7";
-    final opennlp.tools.util.Span[] spans = segmenter.tokenizePos(text);
-    for (final opennlp.tools.util.Span span : spans) {
+    final Span[] spans = segmenter.tokenizePos(text);
+    for (final Span span : spans) {
       Assertions.assertEquals(0, span.getStart() % 2,
           "span must start on a code point boundary: " + span);
       Assertions.assertEquals(0, span.getEnd() % 2,
           "span must end on a code point boundary: " + span);
     }
     int covered = 0;
-    for (final opennlp.tools.util.Span span : spans) {
+    for (final Span span : spans) {
       covered += span.length();
     }
     Assertions.assertEquals(text.length(), covered);
