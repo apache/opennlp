@@ -26,6 +26,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -77,7 +78,7 @@ class PieceTrieTest {
           final boolean anyKeyHasPrefix =
               keys.stream().anyMatch(k -> k.startsWith(prefix));
           if (node == PieceTrie.DEAD) {
-            assertEquals(false, anyKeyHasPrefix, "dead end despite live prefix: " + prefix);
+            assertFalse(anyKeyHasPrefix, "dead end despite live prefix: " + prefix);
             break;
           }
           final Integer expected = reference.get(prefix);
