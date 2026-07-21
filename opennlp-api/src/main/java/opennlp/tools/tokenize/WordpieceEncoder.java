@@ -26,6 +26,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
+
 /**
  * A {@link SubwordTokenizer} running the full BERT tokenization pipeline of the reference
  * implementation: basic tokenization (control removal, whitespace normalization, CJK
@@ -47,6 +49,7 @@ import java.util.Set;
  *
  * @see WordpieceTokenizer
  */
+@ThreadSafe
 public final class WordpieceEncoder implements SubwordTokenizer {
 
   // The wordpiece vocabulary convention: a piece with this prefix continues the current word,
@@ -71,6 +74,8 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    *
    * @param vocabulary The ordered vocabulary; a piece's id is its index. Must not be null,
    *                   must not contain nulls or duplicates.
+   * @throws IllegalArgumentException Thrown if the vocabulary is null, contains a null or
+   *     duplicate entry, or a BERT special token is missing from it.
    */
   public WordpieceEncoder(List<String> vocabulary) {
     this(vocabulary, true);
@@ -83,6 +88,8 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    *                   must not contain nulls or duplicates.
    * @param lowerCase  True for uncased models (lower casing and accent stripping), false for
    *                   cased models.
+   * @throws IllegalArgumentException Thrown if the vocabulary is null, contains a null or
+   *     duplicate entry, or a BERT special token is missing from it.
    */
   public WordpieceEncoder(List<String> vocabulary, boolean lowerCase) {
     this(vocabulary, lowerCase, WordpieceTokenizer.BERT_CLS_TOKEN,
@@ -126,9 +133,17 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   public WordpieceEncoder(Map<String, Integer> vocabularyIds, boolean lowerCase,
                           String classificationToken, String separatorToken,
                           String unknownToken) {
-    if (vocabularyIds == null || classificationToken == null || separatorToken == null
-        || unknownToken == null) {
-      throw new IllegalArgumentException("The vocabulary and special tokens must not be null.");
+    if (vocabularyIds == null) {
+      throw new IllegalArgumentException("vocabularyIds must not be null.");
+    }
+    if (classificationToken == null) {
+      throw new IllegalArgumentException("classificationToken must not be null.");
+    }
+    if (separatorToken == null) {
+      throw new IllegalArgumentException("separatorToken must not be null.");
+    }
+    if (unknownToken == null) {
+      throw new IllegalArgumentException("unknownToken must not be null.");
     }
     final Map<String, Integer> byPiece = new HashMap<>(vocabularyIds.size() * 2);
     for (final Map.Entry<String, Integer> entry : vocabularyIds.entrySet()) {

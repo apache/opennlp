@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.IntUnaryOperator;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
 import opennlp.tools.util.normalizer.AlignedText;
@@ -62,6 +63,7 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  *     "SentencePiece: A simple and language independent subword tokenizer and detokenizer for
  *     Neural Text Processing"</a>
  */
+@ThreadSafe
 public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwareNormalizer {
 
   // Serializable through the OffsetAwareNormalizer contract.
