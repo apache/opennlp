@@ -1,0 +1,212 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Bundled emoji annotation facts, authored by this project and loaded by EmojiAnnotations. One row
+# per attribute of one pictograph. Row format:
+#
+#   codepoints ; attribute ; value ; source ; notes
+#
+# codepoints is the space-separated hexadecimal code point sequence of the pictograph, keyed
+# without U+FE0F VARIATION SELECTOR-16 (the emoji presentation selector); lookups strip it.
+#
+# Attributes and their provenance:
+#   name        The CLDR short name as printed in the upstream emoji-test.txt (Emoji
+#               Keyboard/Display Test Data for UTS #51, version 17.0); source CLDR:annotation.
+#   sentiment   A project-authored coarse polarity score, an integer in -2..2; source UNSPECIFIED,
+#               the marker for a project judgment. No third-party sentiment data set is copied
+#               here; in particular the Emoji Sentiment Ranking (CC BY-SA) is NOT used in any form.
+#   entityType  A coarse entity type (an EmojiEntityType constant), assigned by this project from
+#               the subgroup header of the upstream emoji-test.txt; source UCD:emoji-test, the
+#               subgroup is cited in the notes.
+#   category    A document-category hint (an EmojiCategory constant), the group header of the
+#               upstream emoji-test.txt; source UCD:emoji-test, the group is cited in the notes.
+#
+# Coverage claim (audited by EmojiAnnotationsTest): every pictograph that emoji-emoticons.txt
+# folds (every EMOJI-direction source, presentation selector stripped) has a record here, and
+# every record carries all four attributes. Flag emoji have no rows: their region is derived from
+# the code point sequence (see EmojiFlags), not bundled.
+#
+# Code points, names, and group/subgroup headers checked against emoji-test.txt version 17.0.
+#
+# A line starting with '#' is a comment; data rows carry no inline comments. The notes column is
+# the fifth and final field, so it may contain ';'.
+#
+# Smileys & Emotion
+1F600 ; name ; grinning face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F600 ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F600 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-smiling
+1F600 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F603 ; name ; grinning face with big eyes ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F603 ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F603 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-smiling
+1F603 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F604 ; name ; grinning face with smiling eyes ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F604 ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F604 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-smiling
+1F604 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F601 ; name ; beaming face with smiling eyes ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F601 ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F601 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-smiling
+1F601 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F642 ; name ; slightly smiling face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F642 ; sentiment ; 1 ; UNSPECIFIED ; project judgment
+1F642 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-smiling
+1F642 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F609 ; name ; winking face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F609 ; sentiment ; 1 ; UNSPECIFIED ; project judgment
+1F609 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-smiling
+1F609 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F60A ; name ; smiling face with smiling eyes ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F60A ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F60A ; entityType ; FACE ; UCD:emoji-test ; subgroup face-smiling
+1F60A ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+263A ; name ; smiling face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+263A ; sentiment ; 1 ; UNSPECIFIED ; project judgment
+263A ; entityType ; FACE ; UCD:emoji-test ; subgroup face-affection
+263A ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F617 ; name ; kissing face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F617 ; sentiment ; 1 ; UNSPECIFIED ; project judgment
+1F617 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-affection
+1F617 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F618 ; name ; face blowing a kiss ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F618 ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F618 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-affection
+1F618 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F61B ; name ; face with tongue ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F61B ; sentiment ; 1 ; UNSPECIFIED ; project judgment
+1F61B ; entityType ; FACE ; UCD:emoji-test ; subgroup face-tongue
+1F61B ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F61C ; name ; winking face with tongue ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F61C ; sentiment ; 1 ; UNSPECIFIED ; project judgment
+1F61C ; entityType ; FACE ; UCD:emoji-test ; subgroup face-tongue
+1F61C ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F61D ; name ; squinting face with tongue ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F61D ; sentiment ; 1 ; UNSPECIFIED ; project judgment
+1F61D ; entityType ; FACE ; UCD:emoji-test ; subgroup face-tongue
+1F61D ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F610 ; name ; neutral face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F610 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F610 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-neutral-skeptical
+1F610 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F611 ; name ; expressionless face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F611 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F611 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-neutral-skeptical
+1F611 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F615 ; name ; confused face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F615 ; sentiment ; -1 ; UNSPECIFIED ; project judgment
+1F615 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-concerned
+1F615 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F641 ; name ; slightly frowning face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F641 ; sentiment ; -1 ; UNSPECIFIED ; project judgment
+1F641 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-concerned
+1F641 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+2639 ; name ; frowning face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+2639 ; sentiment ; -1 ; UNSPECIFIED ; project judgment
+2639 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-concerned
+2639 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F62E ; name ; face with open mouth ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F62E ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F62E ; entityType ; FACE ; UCD:emoji-test ; subgroup face-concerned
+1F62E ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F632 ; name ; astonished face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F632 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F632 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-concerned
+1F632 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F622 ; name ; crying face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F622 ; sentiment ; -2 ; UNSPECIFIED ; project judgment
+1F622 ; entityType ; FACE ; UCD:emoji-test ; subgroup face-concerned
+1F622 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F62D ; name ; loudly crying face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F62D ; sentiment ; -2 ; UNSPECIFIED ; project judgment
+1F62D ; entityType ; FACE ; UCD:emoji-test ; subgroup face-concerned
+1F62D ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+2764 ; name ; red heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+2764 ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+2764 ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+2764 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F9E1 ; name ; orange heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F9E1 ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F9E1 ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+1F9E1 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F49B ; name ; yellow heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F49B ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F49B ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+1F49B ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F49A ; name ; green heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F49A ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F49A ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+1F49A ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F499 ; name ; blue heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F499 ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F499 ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+1F499 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F49C ; name ; purple heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F49C ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F49C ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+1F49C ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F90E ; name ; brown heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F90E ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F90E ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+1F90E ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F5A4 ; name ; black heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F5A4 ; sentiment ; 0 ; UNSPECIFIED ; project judgment, polarity ambiguous in running text
+1F5A4 ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+1F5A4 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F90D ; name ; white heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F90D ; sentiment ; 2 ; UNSPECIFIED ; project judgment
+1F90D ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+1F90D ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+1F494 ; name ; broken heart ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F494 ; sentiment ; -2 ; UNSPECIFIED ; project judgment
+1F494 ; entityType ; HEART ; UCD:emoji-test ; subgroup heart
+1F494 ; category ; SMILEYS_AND_EMOTION ; UCD:emoji-test ; group Smileys & Emotion
+#
+# Animals & Nature
+1F436 ; name ; dog face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F436 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F436 ; entityType ; ANIMAL ; UCD:emoji-test ; subgroup animal-mammal
+1F436 ; category ; ANIMALS_AND_NATURE ; UCD:emoji-test ; group Animals & Nature
+1F431 ; name ; cat face ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F431 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F431 ; entityType ; ANIMAL ; UCD:emoji-test ; subgroup animal-mammal
+1F431 ; category ; ANIMALS_AND_NATURE ; UCD:emoji-test ; group Animals & Nature
+#
+# Food & Drink
+1F355 ; name ; pizza ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F355 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F355 ; entityType ; FOOD ; UCD:emoji-test ; subgroup food-prepared
+1F355 ; category ; FOOD_AND_DRINK ; UCD:emoji-test ; group Food & Drink
+1F34E ; name ; red apple ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F34E ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F34E ; entityType ; FOOD ; UCD:emoji-test ; subgroup food-fruit
+1F34E ; category ; FOOD_AND_DRINK ; UCD:emoji-test ; group Food & Drink
+#
+# Travel & Places
+1F697 ; name ; automobile ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F697 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F697 ; entityType ; VEHICLE ; UCD:emoji-test ; subgroup transport-ground
+1F697 ; category ; TRAVEL_AND_PLACES ; UCD:emoji-test ; group Travel & Places
+2708 ; name ; airplane ; CLDR:annotation ; emoji-test.txt v17.0 short name
+2708 ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+2708 ; entityType ; VEHICLE ; UCD:emoji-test ; subgroup transport-air
+2708 ; category ; TRAVEL_AND_PLACES ; UCD:emoji-test ; group Travel & Places
+1F5FD ; name ; Statue of Liberty ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F5FD ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F5FD ; entityType ; LANDMARK ; UCD:emoji-test ; subgroup place-building
+1F5FD ; category ; TRAVEL_AND_PLACES ; UCD:emoji-test ; group Travel & Places
+1F5FC ; name ; Tokyo tower ; CLDR:annotation ; emoji-test.txt v17.0 short name
+1F5FC ; sentiment ; 0 ; UNSPECIFIED ; project judgment
+1F5FC ; entityType ; LANDMARK ; UCD:emoji-test ; subgroup place-building
+1F5FC ; category ; TRAVEL_AND_PLACES ; UCD:emoji-test ; group Travel & Places

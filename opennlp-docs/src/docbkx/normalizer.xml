@@ -62,10 +62,12 @@
 		<para>
 			Two engines underpin everything: the <code>CharSequenceNormalizer</code> family offers
 			ready-made, composable normalizers, and the <code>CharClass</code> engine is the low-level,
-			configurable building block they are made of. Built on these are three higher-level
+			configurable building block they are made of. Built on these are four higher-level
 			features documented below: a layered term model that projects a token through a
 			configurable stack of transforms while keeping every intermediate form (see
-			<xref linkend="tools.normalizer.term"/>), per-language profiles that select the transforms
+			<xref linkend="tools.normalizer.term"/>), an opt-in emoji annotation layer that turns
+			pictographs into typed signal (see <xref linkend="tools.normalizer.emojiannotations"/>),
+			per-language profiles that select the transforms
 			appropriate to a language (see <xref linkend="tools.normalizer.language"/>), and confusable
 			folding that reduces lookalike characters for matching (see
 			<xref linkend="tools.normalizer.confusables"/>).
@@ -518,6 +520,67 @@ Term term = analyzer.analyze("Running").get(0);
 			The case-fold method takes a <code>Locale</code> for language-specific rules such as the
 			Turkish dotted/dotless i, and the accent-fold method takes the scripts to fold and whether
 			to fold stroke letters.
+		</para>
+	</section>
+
+	<section xml:id="tools.normalizer.emojiannotations">
+		<title>Emoji annotations</title>
+		<para>
+			Beyond folding, a pictograph carries signal worth keeping: a name, a coarse sentiment, an
+			entity type, a document category, and for flags a region. <code>EmojiAnnotator</code> is the
+			opt-in surface for that signal. It assembles one <code>EmojiAnnotation</code> record per
+			symbol from three strictly separated layers: <emphasis>bundled facts</emphasis> from the
+			provenance-tagged, project-authored <code>emoji-annotations.txt</code> table,
+			<emphasis>derived facts</emphasis> computed from the code point sequence itself
+			(<code>EmojiFlags</code> decodes a regional indicator pair to its ISO 3166-1 alpha-2 code and
+			a subdivision tag sequence to its ISO 3166-2 code, with no data file), and optional
+			<emphasis>joined facts</emphasis> resolved at run time through an
+			<code>EmojiAnnotationJoin</code> hook against user-installed data such as a gazetteer.
+			Every attribute value carries its own provenance source, and gazetteer identifiers are never
+			baked into the bundled table.
+		</para>
+		<programlisting language="java">
+<![CDATA[EmojiAnnotator annotator = new EmojiAnnotator();
+TermAnalyzer analyzer = TermAnalyzer.builder().emojiFold().build();
+
+// "Berlin <German flag> <red heart>"
+String text = "Berlin \uD83C\uDDE9\uD83C\uDDEA \u2764\uFE0F";
+for (Term term : analyzer.analyze(text)) {
+  annotator.annotate(term).ifPresent(a -> {
+    a.name();        // "red heart" for the heart (CLDR short name)
+    a.sentiment();   // 2 for the heart (project-authored coarse score, -2..2)
+    a.entityType();  // FLAG for the flag, HEART for the heart
+    a.category();    // FLAGS / SMILEYS_AND_EMOTION
+    a.isoRegion();   // "DE" for the flag, decoded from the sequence itself
+  });
+}]]>
+		</programlisting>
+		<para>
+			<code>EmojiAnnotatorUsageExampleTest</code> asserts the behavior shown here.
+			Annotations are per-symbol <emphasis>metadata</emphasis>, not text transforms, so they are a
+			parallel accessor surface beside <code>Term</code> rather than additional
+			<code>Dimension</code>s: <code>annotate(Term)</code> reads the token's original layer, which
+			is the symbol the author actually wrote even after a fold dimension has rewritten it to
+			ASCII. Annotation is total over arbitrary tokens (a non-emoji token is simply empty, and
+			degenerate flag-shaped text yields no region instead of an exception), while the strict
+			decoder <code>EmojiFlags.isoRegion()</code> fails loudly on malformed sequences for callers
+			that want the contract. The bundled table's sentiment scores are original project judgments
+			(tagged <code>UNSPECIFIED</code>); its names and its entity-type/category assignments derive
+			from the Unicode-licensed CLDR short names and <code>emoji-test.txt</code> group headers, and
+			no third-party sentiment data set is included.
+		</para>
+		<para>
+			The annotations are wired as strictly opt-in feature inputs to three components, each
+			through its existing extension seam so that default behavior and existing models are
+			unchanged: the name finder (and any consumer of feature generation descriptors) activates
+			<code>EmojiAnnotationFeatureGenerator</code> by naming
+			<code>EmojiAnnotationFeatureGeneratorFactory</code> in a descriptor, the document
+			categorizer takes <code>EmojiFeatureGenerator</code> alongside its defaults through the
+			<code>DoccatFactory</code> feature generator array, and sentiment analysis trains with
+			<code>EmojiSentimentFactory</code>, whose context generator adds the emoji evidence and is
+			re-created from the model manifest at prediction time. A flag token then carries
+			gazetteer-like evidence (<code>emojiType=FLAG</code>, <code>emojiRegion=DE</code>) with no
+			dictionary, and a heart or crying face contributes its coarse polarity directly.
 		</para>
 	</section>
 

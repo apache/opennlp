@@ -123,6 +123,15 @@ top of each bundled file. These files are distributed under the Unicode License
 V3, the full text of which is reproduced in the LICENSE file accompanying this
 distribution.
 
+The project-authored annotation table
+opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/emoji-annotations.txt
+is licensed under the Apache License 2.0, but its name values (the CLDR short
+names) and its entity-type/category derivations are transcribed from the
+upstream emoji-test.txt (Emoji Keyboard/Display Test Data for UTS #51,
+version 17.0), distributed under the Unicode License V3 reproduced in the
+LICENSE file. Its sentiment scores are original project judgments; no
+third-party sentiment data set is included.
+
 Copyright (c) 1991-2025 Unicode, Inc. All rights reserved.
 
 ============================================================================

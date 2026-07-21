@@ -375,9 +375,13 @@ The following license applies to the bundled Unicode data files in
 opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/tokenize/uax29
 (WordBreakProperty.txt, ExtendedPictographic.txt),
 opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer
-(confusables.txt, CaseFolding.txt), and
+(confusables.txt, CaseFolding.txt),
 opennlp-core/opennlp-runtime/src/test/resources/opennlp/tools/tokenize/uax29
-(WordBreakTest.txt):
+(WordBreakTest.txt), and to the Unicode-derived values (the CLDR short names
+and the emoji-test.txt group/subgroup classifications) in the otherwise
+project-authored
+opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/emoji-annotations.txt
+(see NOTICE):
 
     UNICODE LICENSE V3
 
