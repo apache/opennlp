@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import opennlp.tools.util.normalizer.EmojiAnnotation;
 import opennlp.tools.util.normalizer.EmojiAnnotator;
 
 /**
@@ -76,21 +75,7 @@ public class EmojiFeatureGenerator implements FeatureGenerator {
     }
     final List<String> features = new ArrayList<>();
     for (final String token : text) {
-      if (!EmojiAnnotator.isAnnotatableToken(token)) {
-        continue;
-      }
-      final EmojiAnnotation annotation = annotator.annotate(token).orElse(null);
-      if (annotation == null) {
-        continue;
-      }
-      annotation.sentiment().ifPresent(
-          score -> features.add(EmojiAnnotator.FEATURE_SENTIMENT_PREFIX + score));
-      annotation.entityType().ifPresent(
-          type -> features.add(EmojiAnnotator.FEATURE_TYPE_PREFIX + type));
-      annotation.category().ifPresent(
-          category -> features.add(EmojiAnnotator.FEATURE_CATEGORY_PREFIX + category));
-      annotation.isoRegion().ifPresent(
-          region -> features.add(EmojiAnnotator.FEATURE_REGION_PREFIX + region));
+      annotator.collectFeatures(token, features);
     }
     return features;
   }

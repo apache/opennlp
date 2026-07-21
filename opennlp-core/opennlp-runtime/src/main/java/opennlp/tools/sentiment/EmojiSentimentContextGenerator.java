@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import opennlp.tools.util.normalizer.EmojiAnnotation;
 import opennlp.tools.util.normalizer.EmojiAnnotator;
 
 /**
@@ -76,21 +75,7 @@ public class EmojiSentimentContextGenerator extends SentimentContextGenerator {
     final List<String> context = new ArrayList<>(text.length);
     Collections.addAll(context, super.getContext(text));
     for (final String token : text) {
-      if (!EmojiAnnotator.isAnnotatableToken(token)) {
-        continue;
-      }
-      final EmojiAnnotation annotation = annotator.annotate(token).orElse(null);
-      if (annotation == null) {
-        continue;
-      }
-      annotation.sentiment().ifPresent(
-          score -> context.add(EmojiAnnotator.FEATURE_SENTIMENT_PREFIX + score));
-      annotation.entityType().ifPresent(
-          type -> context.add(EmojiAnnotator.FEATURE_TYPE_PREFIX + type));
-      annotation.category().ifPresent(
-          category -> context.add(EmojiAnnotator.FEATURE_CATEGORY_PREFIX + category));
-      annotation.isoRegion().ifPresent(
-          region -> context.add(EmojiAnnotator.FEATURE_REGION_PREFIX + region));
+      annotator.collectFeatures(token, context);
     }
     return context.toArray(new String[0]);
   }

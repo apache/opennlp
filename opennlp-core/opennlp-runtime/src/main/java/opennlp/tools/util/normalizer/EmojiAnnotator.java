@@ -16,6 +16,7 @@
  */
 package opennlp.tools.util.normalizer;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -33,19 +34,19 @@ import java.util.Optional;
 public final class EmojiAnnotator {
 
   /** Feature-name prefix for the coarse sentiment score, for example {@code emojiSentiment=2}. */
-  public static final String FEATURE_SENTIMENT_PREFIX = "emojiSentiment=";
+  private static final String FEATURE_SENTIMENT_PREFIX = "emojiSentiment=";
 
   /** Feature-name prefix for the coarse entity type, for example {@code emojiType=HEART}. */
-  public static final String FEATURE_TYPE_PREFIX = "emojiType=";
+  private static final String FEATURE_TYPE_PREFIX = "emojiType=";
 
   /**
    * Feature-name prefix for the document-category hint, for example
    * {@code emojiCategory=SMILEYS_AND_EMOTION}.
    */
-  public static final String FEATURE_CATEGORY_PREFIX = "emojiCategory=";
+  private static final String FEATURE_CATEGORY_PREFIX = "emojiCategory=";
 
   /** Feature-name prefix for a flag's ISO 3166 region, for example {@code emojiRegion=DE}. */
-  public static final String FEATURE_REGION_PREFIX = "emojiRegion=";
+  private static final String FEATURE_REGION_PREFIX = "emojiRegion=";
 
   // Provenance tags of the derived facts; the mechanisms are defined by UTS #51.
   private static final String FLAG_SEQUENCE = "UTS51:flag-sequence";
@@ -154,18 +155,42 @@ public final class EmojiAnnotator {
   }
 
   /**
-   * {@return whether {@code token} could carry an emoji annotation and so is worth looking up}
-   * Every annotatable symbol (a pictograph, a regional indicator, or the waving black flag) starts
-   * beyond ASCII, audited in {@code EmojiAnnotationsTest}; feature generators call this to
-   * fast-path ordinary tokens without touching the annotation layer.
+   * Appends this annotator's features for {@code token} to {@code features}: one entry per present
+   * annotation attribute (sentiment, entity type, category, region), each already name-prefixed. A
+   * token that carries no emoji annotation contributes nothing, so callers may pass every token.
    *
-   * @param token The token to test. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code token} is {@code null}.
+   * @param token    The token to describe. Must not be {@code null}.
+   * @param features The collection to append feature strings to. Must not be {@code null}.
+   * @throws IllegalArgumentException if {@code token} or {@code features} is {@code null}.
+   * @throws IllegalStateException if the configured join violates its contract (see
+   *     {@link #annotate(CharSequence)}).
    */
-  public static boolean isAnnotatableToken(CharSequence token) {
+  public void collectFeatures(CharSequence token, Collection<String> features) {
     if (token == null) {
       throw new IllegalArgumentException("Token must not be null");
     }
+    if (features == null) {
+      throw new IllegalArgumentException("Features must not be null");
+    }
+    if (!isAnnotatableToken(token)) {
+      return;
+    }
+    final EmojiAnnotation annotation = annotate(token).orElse(null);
+    if (annotation == null) {
+      return;
+    }
+    annotation.sentiment().ifPresent(score -> features.add(FEATURE_SENTIMENT_PREFIX + score));
+    annotation.entityType().ifPresent(type -> features.add(FEATURE_TYPE_PREFIX + type));
+    annotation.category().ifPresent(category -> features.add(FEATURE_CATEGORY_PREFIX + category));
+    annotation.isoRegion().ifPresent(region -> features.add(FEATURE_REGION_PREFIX + region));
+  }
+
+  /**
+   * {@return whether {@code token} could carry an emoji annotation and is worth looking up} Every
+   * annotatable symbol (a pictograph, a regional indicator, or the waving black flag) starts beyond
+   * ASCII, audited in {@code EmojiAnnotationsTest}; this fast-paths ordinary tokens.
+   */
+  private static boolean isAnnotatableToken(CharSequence token) {
     return token.length() != 0 && token.charAt(0) >= FIRST_NON_ASCII;
   }
 }

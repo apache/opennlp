@@ -19,7 +19,6 @@ package opennlp.tools.util.featuregen;
 
 import java.util.List;
 
-import opennlp.tools.util.normalizer.EmojiAnnotation;
 import opennlp.tools.util.normalizer.EmojiAnnotator;
 
 /**
@@ -71,21 +70,6 @@ public class EmojiAnnotationFeatureGenerator implements AdaptiveFeatureGenerator
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
                              String[] previousOutcomes) {
-    final String token = tokens[index];
-    if (!EmojiAnnotator.isAnnotatableToken(token)) {
-      return;
-    }
-    final EmojiAnnotation annotation = annotator.annotate(token).orElse(null);
-    if (annotation == null) {
-      return;
-    }
-    annotation.sentiment().ifPresent(
-        score -> features.add(EmojiAnnotator.FEATURE_SENTIMENT_PREFIX + score));
-    annotation.entityType().ifPresent(
-        type -> features.add(EmojiAnnotator.FEATURE_TYPE_PREFIX + type));
-    annotation.category().ifPresent(
-        category -> features.add(EmojiAnnotator.FEATURE_CATEGORY_PREFIX + category));
-    annotation.isoRegion().ifPresent(
-        region -> features.add(EmojiAnnotator.FEATURE_REGION_PREFIX + region));
+    annotator.collectFeatures(tokens[index], features);
   }
 }
