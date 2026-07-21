@@ -17,6 +17,7 @@
 
 package opennlp.tools.stemmer.hunspell;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.StemmerFactory;
 
@@ -26,8 +27,8 @@ import opennlp.tools.stemmer.StemmerFactory;
  *
  * <p>The factory is immutable and safe to share across threads.</p>
  *
- * @since 3.0.0
  */
+@ThreadSafe
 public class HunspellStemmerFactory implements StemmerFactory {
 
   private final HunspellDictionary dictionary;

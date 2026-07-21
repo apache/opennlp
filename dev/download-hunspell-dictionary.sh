@@ -16,10 +16,9 @@
 
 # Fetches one Hunspell dictionary pair (.aff and .dic) plus its license/readme files
 # from the LibreOffice dictionaries collection. Each dictionary carries its own
-# license, stated in the readme files this script downloads alongside it, and you
-# accept that license by using the dictionary. Apache OpenNLP bundles no dictionary
-# data. See README-hunspell-dictionaries.md in this directory for the Java steps that
-# follow.
+# license, stated in the readme files this script downloads alongside it. Apache
+# OpenNLP bundles no dictionary data. See README-hunspell-dictionaries.md in this
+# directory for the Java steps that follow.
 
 set -euo pipefail
 

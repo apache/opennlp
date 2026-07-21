@@ -75,7 +75,8 @@ public class HunspellRealDictionaryTest {
   void testGermanInflections() throws IOException {
     final HunspellStemmer stemmer = loadOrSkip("de_DE_frami");
     Assertions.assertEquals("Kind", stemmer.stem("Kinder").toString());
-    Assertions.assertEquals("Haus", stemmer.stem("Häuser").toString());
+    // Haeuser, written with a-umlaut, stems to Haus
+    Assertions.assertEquals("Haus", stemmer.stem("H\u00E4user").toString());
     Assertions.assertEquals("schnell", stemmer.stem("schnellsten").toString());
   }
 
@@ -84,7 +85,8 @@ public class HunspellRealDictionaryTest {
     final HunspellStemmer stemmer = loadOrSkip("de_DE_frami");
     // the exact part spellings follow the dictionary's own entries and may shift
     // between revisions; that ordinary compounds decompose at all must not
-    Assertions.assertTrue(stemmer.stemAll("Haustür").size() >= 2);
+    // Haustuer, written with u-umlaut, is Haus + Tuer
+    Assertions.assertTrue(stemmer.stemAll("Haust\u00FCr").size() >= 2);
     Assertions.assertTrue(stemmer.stemAll("Kinderzimmer").size() >= 2);
     Assertions.assertTrue(stemmer.stemAll("Abbildungsverzeichnis").size() >= 2);
   }
@@ -92,8 +94,10 @@ public class HunspellRealDictionaryTest {
   @Test
   void testHungarianInflections() throws IOException {
     final HunspellStemmer stemmer = loadOrSkip("hu_HU");
-    Assertions.assertEquals("kutya", stemmer.stem("kutyák").toString());
+    // kutyak, written with a-acute, is the plural of kutya
+    Assertions.assertEquals("kutya", stemmer.stem("kuty\u00E1k").toString());
     Assertions.assertEquals("asztal", stemmer.stem("asztalon").toString());
-    Assertions.assertEquals("könyv", stemmer.stem("könyveket").toString());
+    // konyveket, written with o-umlaut, is an inflected form of konyv
+    Assertions.assertEquals("k\u00F6nyv", stemmer.stem("k\u00F6nyveket").toString());
   }
 }
