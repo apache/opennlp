@@ -17,11 +17,11 @@
 
 # Hunspell dictionaries for the affix stemmer
 
-The Hunspell stemmer (`opennlp.tools.stemmer.hunspell`) is a clean-room engine over the documented Hunspell dictionary format: a `.dic` word list plus its `.aff` affix companion, both supplied by the user. Apache OpenNLP bundles no dictionary data, so the dictionaries' own licenses never attach to the library; whichever dictionary you download, its license is stated in the readme shipped alongside it and is yours to comply with.
+The Hunspell stemmer (`opennlp.tools.stemmer.hunspell`) implements the documented Hunspell dictionary format: a `.dic` word list plus its `.aff` affix companion, both supplied by the user. Apache OpenNLP bundles no dictionary data; whichever dictionary you download, its license is stated in the readme shipped alongside it.
 
 ## Where dictionaries come from
 
-The LibreOffice project maintains a large collection of Hunspell dictionaries, one directory per language, at `github.com/LibreOffice/dictionaries`. Licenses differ per dictionary, which is exactly why nothing is bundled: for example, the `en_US` dictionary derives from SCOWL and states its terms in `README_en_US.txt` in the same directory. Many other sources work too; the engine only cares that the pair follows the Hunspell format.
+The LibreOffice project maintains a large collection of Hunspell dictionaries, one directory per language, at `github.com/LibreOffice/dictionaries`. Licenses differ per dictionary, which is why nothing is bundled: for example, the `en_US` dictionary derives from SCOWL and states its terms in `README_en_US.txt` in the same directory. Many other sources work too; the engine only cares that the pair follows the Hunspell format.
 
 The helper next to this file fetches a pair together with its readme files:
 

@@ -22,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.Affix;
 import opennlp.tools.stemmer.hunspell.HunspellDictionary.CompoundPosition;
@@ -45,9 +46,18 @@ import opennlp.tools.util.StringUtil;
  * implementation reads only the immutable dictionary state, so a single instance is
  * safe to share between threads.</p>
  *
- * @since 3.0.0
  */
+@ThreadSafe
 public class HunspellStemmer implements Stemmer {
+
+  /**
+   * The most part-licensing attempts one decomposition search may spend. Compounding
+   * searches every split of every tail, which on adversarial input with a
+   * one-character minimum part length grows without useful bound; the budget stops
+   * the search there, missing analyses rather than stalling, in line with the
+   * engine's fail-closed posture.
+   */
+  private static final int PART_CHECK_BUDGET = 2048;
 
   private final HunspellDictionary dictionary;
 
@@ -93,7 +103,7 @@ public class HunspellStemmer implements Stemmer {
     if (analyses.isEmpty()) {
       return List.of(surface);
     }
-    return List.copyOf(new ArrayList<CharSequence>(analyses));
+    return List.copyOf(analyses);
   }
 
   /**
@@ -104,7 +114,7 @@ public class HunspellStemmer implements Stemmer {
    * @param surface The surface form.
    * @return The variants in analysis order. Never {@code null} or empty.
    */
-  private static List<String> variants(String surface) {
+  private List<String> variants(String surface) {
     final String lowered = StringUtil.toLowerCase(surface);
     return lowered.equals(surface) ? List.of(surface) : List.of(surface, lowered);
   }
@@ -140,15 +150,6 @@ public class HunspellStemmer implements Stemmer {
       undoPrefix(word, prefix, analyses);
     }
   }
-
-  /**
-   * The most part-licensing attempts one decomposition search may spend. Compounding
-   * searches every split of every tail, which on adversarial input with a
-   * one-character minimum part length grows without useful bound; the budget stops
-   * the search there, missing analyses rather than stalling, in line with the
-   * engine's fail-closed posture.
-   */
-  private static final int PART_CHECK_BUDGET = 2048;
 
   /**
    * Decomposes a word into listed compound parts when the affix analysis found
@@ -417,7 +418,7 @@ public class HunspellStemmer implements Stemmer {
    * @param suffix Whether the rule is a suffix rule.
    * @return The candidate stem, or {@code null} when the rule does not apply.
    */
-  private static String removeAffixInCompound(String part, Affix affix, boolean suffix) {
+  private String removeAffixInCompound(String part, Affix affix, boolean suffix) {
     if (affix.affix().isEmpty() && affix.strip().isEmpty()) {
       return affix.condition().matches(part) ? part : null;
     }
@@ -561,7 +562,7 @@ public class HunspellStemmer implements Stemmer {
    * @param suffix The rule to undo.
    * @return The candidate stem, or {@code null} when the rule does not apply.
    */
-  private static String removeSuffix(String word, Affix suffix) {
+  private String removeSuffix(String word, Affix suffix) {
     final String affix = suffix.affix();
     final String strip = suffix.strip();
     if (affix.isEmpty() && strip.isEmpty() || !word.endsWith(affix)
@@ -583,7 +584,7 @@ public class HunspellStemmer implements Stemmer {
    * @param prefix The rule to undo.
    * @return The candidate stem, or {@code null} when the rule does not apply.
    */
-  private static String removePrefix(String word, Affix prefix) {
+  private String removePrefix(String word, Affix prefix) {
     final String affix = prefix.affix();
     final String strip = prefix.strip();
     if (affix.isEmpty() && strip.isEmpty() || !word.startsWith(affix)

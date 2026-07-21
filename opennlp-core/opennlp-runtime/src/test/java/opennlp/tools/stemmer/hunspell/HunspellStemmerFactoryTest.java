@@ -167,13 +167,20 @@ public class HunspellStemmerFactoryTest {
   }
 
   /**
-   * Verifies that the file-based entry point rejects {@code null} paths with the
-   * documented exception instead of failing later with an obscure error.
+   * Verifies that the file-based entry point rejects each {@code null} path with the
+   * documented exception naming the offending argument.
+   *
+   * @param tempDir A scratch directory managed by the test framework.
    */
   @Test
-  void testNullPathsAreRejected() {
-    final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
-        () -> HunspellDictionary.load((Path) null, (Path) null));
-    Assertions.assertEquals("affixFile and dictionaryFile must not be null", e.getMessage());
+  void testNullPathsAreRejected(@TempDir Path tempDir) {
+    final Path present = tempDir.resolve("present.aff");
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> HunspellDictionary.load(null, present));
+    Assertions.assertEquals("affixFile must not be null", e.getMessage());
+
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> HunspellDictionary.load(present, null));
+    Assertions.assertEquals("dictionaryFile must not be null", e.getMessage());
   }
 }
