@@ -19,6 +19,7 @@ package opennlp.tools.stemmer.hunspell;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -532,8 +533,7 @@ public class HunspellStemmerTest {
         new ByteArrayInputStream("SFX S 0 s [a\n".getBytes(StandardCharsets.UTF_8)),
         new ByteArrayInputStream("0\n".getBytes(StandardCharsets.UTF_8))));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> HunspellDictionary.load((java.io.InputStream) null,
-            (java.io.InputStream) null));
+        () -> HunspellDictionary.load((InputStream) null, (InputStream) null));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new HunspellStemmer(null));
     Assertions.assertThrows(IllegalArgumentException.class,
@@ -629,10 +629,10 @@ public class HunspellStemmerTest {
     Assertions.assertTrue(HunspellDictionary.hasFlag(emoji.lookup("walk"), 0x1F600));
     Assertions.assertFalse(HunspellDictionary.hasFlag(emoji.lookup("walk"), 0xD83D));
 
-    final HunspellStemmer stemmer = new HunspellStemmer(load(
+    final HunspellStemmer supplementaryFlags = new HunspellStemmer(load(
         "FLAG UTF-8\nSFX \uD83D\uDE00 Y 1\nSFX \uD83D\uDE00 0 s .\n",
         "1\nwalk/\uD83D\uDE00\n"));
-    Assertions.assertEquals("walk", stemmer.stem("walks").toString());
+    Assertions.assertEquals("walk", supplementaryFlags.stem("walks").toString());
   }
 
   /**
@@ -700,17 +700,23 @@ public class HunspellStemmerTest {
 
   /**
    * Verifies that an alias reference outside the AF table fails loud with the line
-   * and the table size, instead of silently flagging the entry with nothing.
-   *
-   * @throws IOException Thrown if the affix fixture fails to load.
+   * and the table size, instead of silently flagging the entry with nothing, and that
+   * a digit run too large for an alias number fails loud as well.
    */
   @Test
   void testAliasReferenceOutsideTheTableFailsLoud() {
-    final IOException e = Assertions.assertThrows(IOException.class, () -> load(
+    IOException e = Assertions.assertThrows(IOException.class, () -> load(
         "AF 1\nAF S # 1\nSFX S Y 1\nSFX S 0 s .\n",
         "1\nwalk/2\n"));
     Assertions.assertEquals(
         "flag alias 2 at line 2 is outside the AF table of 1 aliases",
+        e.getMessage());
+
+    e = Assertions.assertThrows(IOException.class, () -> load(
+        "AF 1\nAF S # 1\nSFX S Y 1\nSFX S 0 s .\n",
+        "1\nwalk/99999999999999999999\n"));
+    Assertions.assertEquals(
+        "malformed flag alias '99999999999999999999' at line 2",
         e.getMessage());
   }
 

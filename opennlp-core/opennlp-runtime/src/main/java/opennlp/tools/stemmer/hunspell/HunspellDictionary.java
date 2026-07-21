@@ -17,11 +17,12 @@
 
 package opennlp.tools.stemmer.hunspell;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,14 +31,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.StringUtil;
 
 /**
  * An immutable, in-memory Hunspell-format dictionary: the word list of a {@code .dic}
  * file and the prefix and suffix rules of its {@code .aff} companion, loaded from
- * user-supplied files. The engine is a clean-room implementation of the documented
- * format; no dictionary data is bundled, so the dictionaries' own licenses never attach
- * to this library.
+ * user-supplied files. The engine implements the documented format directly; no
+ * dictionary data is bundled, dictionaries are supplied by the user.
  *
  * <p>Supported affix features: {@code PFX} and {@code SFX} rules with strip strings,
  * character-class conditions, and cross-product combination of one prefix with one
@@ -63,8 +64,8 @@ import opennlp.tools.util.StringUtil;
  *
  * @see HunspellStemmer
  * @see HunspellStemmerFactory
- * @since 3.0.0
  */
+@ThreadSafe
 public final class HunspellDictionary {
 
   /**
@@ -93,17 +94,6 @@ public final class HunspellDictionary {
     }
   }
 
-  private final Map<String, List<int[]>> entries;
-  private final List<Affix> prefixes;
-  private final List<Affix> suffixes;
-  private final Map<Character, List<Affix>> suffixesByLast;
-  private final List<Affix> suffixesWithoutMaterial;
-  private final Map<Character, List<Affix>> prefixesByFirst;
-  private final List<Affix> prefixesWithoutMaterial;
-  private final int compoundFlag;
-  private final int compoundBegin;
-  private final int compoundEnd;
-  private final int compoundMin;
   /** The place a part takes in a compound, deciding which positional flag admits it. */
   enum CompoundPosition {
     /** The first part. */
@@ -114,6 +104,18 @@ public final class HunspellDictionary {
     END
   }
 
+  /** The shared empty bucket answered for characters no affix rule is keyed under. */
+  private static final List<Affix> NO_AFFIXES = List.of();
+
+  private final Map<String, List<int[]>> entries;
+  private final Map<Character, List<Affix>> suffixesByLast;
+  private final List<Affix> suffixesWithoutMaterial;
+  private final Map<Character, List<Affix>> prefixesByFirst;
+  private final List<Affix> prefixesWithoutMaterial;
+  private final int compoundFlag;
+  private final int compoundBegin;
+  private final int compoundEnd;
+  private final int compoundMin;
   private final int needAffix;
   private final int onlyInCompound;
   private final int forbiddenWord;
@@ -143,8 +145,6 @@ public final class HunspellDictionary {
     this.checkCompoundCase = affix.checkCompoundCase;
     this.checkCompoundTriple = affix.checkCompoundTriple;
     this.entries = entries;
-    this.prefixes = List.copyOf(affix.prefixes);
-    this.suffixes = List.copyOf(affix.suffixes);
     // Undoing a suffix requires the word to end with the rule's affix material, so
     // only rules whose material ends in the word's last character can ever apply;
     // the same holds for prefixes and the first character. Bucketing by that
@@ -153,7 +153,7 @@ public final class HunspellDictionary {
     // everywhere.
     this.suffixesByLast = new HashMap<>();
     this.suffixesWithoutMaterial = new ArrayList<>();
-    for (final Affix suffix : suffixes) {
+    for (final Affix suffix : affix.suffixes) {
       final String material = suffix.affix();
       if (material.isEmpty()) {
         suffixesWithoutMaterial.add(suffix);
@@ -164,7 +164,7 @@ public final class HunspellDictionary {
     }
     this.prefixesByFirst = new HashMap<>();
     this.prefixesWithoutMaterial = new ArrayList<>();
-    for (final Affix prefix : prefixes) {
+    for (final Affix prefix : affix.prefixes) {
       final String material = prefix.affix();
       if (material.isEmpty()) {
         prefixesWithoutMaterial.add(prefix);
@@ -186,8 +186,11 @@ public final class HunspellDictionary {
    */
   public static HunspellDictionary load(Path affixFile, Path dictionaryFile)
       throws IOException {
-    if (affixFile == null || dictionaryFile == null) {
-      throw new IllegalArgumentException("affixFile and dictionaryFile must not be null");
+    if (affixFile == null) {
+      throw new IllegalArgumentException("affixFile must not be null");
+    }
+    if (dictionaryFile == null) {
+      throw new IllegalArgumentException("dictionaryFile must not be null");
     }
     try (InputStream affix = Files.newInputStream(affixFile);
          InputStream dictionary = Files.newInputStream(dictionaryFile)) {
@@ -208,14 +211,17 @@ public final class HunspellDictionary {
    */
   public static HunspellDictionary load(InputStream affixStream,
       InputStream dictionaryStream) throws IOException {
-    if (affixStream == null || dictionaryStream == null) {
-      throw new IllegalArgumentException("streams must not be null");
+    if (affixStream == null) {
+      throw new IllegalArgumentException("affixStream must not be null");
     }
-    final byte[] affixBytes = readAll(affixStream);
+    if (dictionaryStream == null) {
+      throw new IllegalArgumentException("dictionaryStream must not be null");
+    }
+    final byte[] affixBytes = affixStream.readAllBytes();
     final Charset charset = declaredCharset(affixBytes);
     final AffixFile affix = parseAffix(new String(affixBytes, charset));
     final Map<String, List<int[]>> entries = parseWordList(
-        new String(readAll(dictionaryStream), charset), affix.flagMode,
+        new String(dictionaryStream.readAllBytes(), charset), affix.flagMode,
         affix.flagAliases);
     return new HunspellDictionary(entries, affix);
   }
@@ -229,18 +235,6 @@ public final class HunspellDictionary {
   List<int[]> lookup(String word) {
     return entries.get(word);
   }
-
-  /** @return The prefix rules. */
-  List<Affix> prefixes() {
-    return prefixes;
-  }
-
-  /** @return The suffix rules. */
-  List<Affix> suffixes() {
-    return suffixes;
-  }
-
-  private static final List<Affix> NO_AFFIXES = List.of();
 
   /**
    * The suffix rules whose affix material ends in the given character, which are the
@@ -551,23 +545,6 @@ public final class HunspellDictionary {
   }
 
   /**
-   * Reads a stream fully into memory. The stream is not closed.
-   *
-   * @param in The stream to drain.
-   * @return All bytes the stream produced. Never {@code null}.
-   * @throws IOException Thrown if reading fails.
-   */
-  private static byte[] readAll(InputStream in) throws IOException {
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    final byte[] buffer = new byte[8192];
-    int read;
-    while ((read = in.read(buffer)) >= 0) {
-      out.write(buffer, 0, read);
-    }
-    return out.toByteArray();
-  }
-
-  /**
    * Finds the {@code SET} declaration by scanning the raw affix bytes as ASCII, which
    * is safe because the declaration itself is ASCII in every supported encoding. Both
    * files are then decoded with the declared charset.
@@ -584,7 +561,7 @@ public final class HunspellDictionary {
         final String name = trim(trimmed.substring(4));
         try {
           return Charset.forName(name);
-        } catch (RuntimeException e) {
+        } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
           throw new IOException("unsupported SET encoding: " + name, e);
         }
       }
@@ -852,7 +829,13 @@ public final class HunspellDictionary {
           }
         }
         if (!flagAliases.isEmpty() && isCount(flagRun)) {
-          final int alias = Integer.parseInt(flagRun);
+          final int alias;
+          try {
+            alias = Integer.parseInt(flagRun);
+          } catch (NumberFormatException e) {
+            throw new IOException("malformed flag alias '" + flagRun + "' at line "
+                + (i + 1), e);
+          }
           if (alias < 1 || alias > flagAliases.size()) {
             throw new IOException("flag alias " + alias + " at line " + (i + 1)
                 + " is outside the AF table of " + flagAliases.size() + " aliases");
