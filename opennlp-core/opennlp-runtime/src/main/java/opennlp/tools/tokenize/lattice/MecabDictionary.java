@@ -35,9 +35,8 @@ import opennlp.tools.util.StringUtil;
  * An immutable, in-memory dictionary in the mecab directory format: lexicon entries
  * from the {@code *.csv} files, connection costs from {@code matrix.def}, character
  * categories from {@code char.def}, and unknown-word templates from {@code unk.def},
- * loaded from a user-supplied dictionary directory. The reader is a clean-room
- * implementation of the documented format; no dictionary data is bundled or downloaded
- * by this class, so the dictionaries' own licenses never attach to this library.
+ * loaded from a user-supplied dictionary directory. No dictionary data is bundled or
+ * downloaded by this class.
  *
  * <p>The same format serves multiple languages: the Japanese IPADIC and UniDic
  * distributions and the Korean mecab-ko-dic all load through this one reader, with the
@@ -60,12 +59,9 @@ public final class MecabDictionary {
 
   /**
    * The lexicon as a double-array trie: one transition is one array read and one
-   * comparison, so the per-position prefix walk of the tokenizer never hashes, never
-   * binary-searches a fan-out, and never boxes. Characters are recoded into dense
-   * labels ordered by frequency before the array is built, which keeps the array
-   * compact although CJK surfaces draw from tens of thousands of distinct
-   * characters; a character the lexicon never uses misses in the recode table before
-   * the array is even consulted.
+   * comparison. Characters are recoded into dense labels ordered by descending
+   * frequency before the array is built, which keeps the array compact; a character
+   * the lexicon never uses misses in the recode table before the array is consulted.
    *
    * <p>The layout is the classic base/check pair: from state {@code s}, label
    * {@code c} leads to {@code t = base[s] + c} exactly when {@code check[t] == s}.
@@ -158,32 +154,6 @@ public final class MecabDictionary {
           consumer.accept(i - from + 1, values[-base[terminal] - 1]);
         }
       }
-    }
-
-    /**
-     * Looks up the entries of an exact surface form.
-     *
-     * @param surface The surface form.
-     * @return The entries, or {@code null} when the surface is not listed.
-     */
-    private List<WordEntry> lookup(String surface) {
-      int state = Builder.ROOT;
-      for (int i = 0; i < surface.length(); i++) {
-        final int code = codeOf[surface.charAt(i)];
-        if (code < 0) {
-          return null;
-        }
-        final int next = base[state] + code;
-        if (next >= check.length || check[next] != state) {
-          return null;
-        }
-        state = next;
-      }
-      final int terminal = base[state];
-      if (terminal < check.length && check[terminal] == state && base[terminal] < 0) {
-        return values[-base[terminal] - 1];
-      }
-      return null;
     }
 
     /**
@@ -310,12 +280,9 @@ public final class MecabDictionary {
    * The {@code char.def} code point to category name mapping, over the whole Unicode
    * code point range.
    *
-   * <p>The Basic Multilingual Plane is held in a directly indexed array, which is one
-   * reference per BMP code point and is the entire mapping for a BMP-only dictionary.
-   * The supplementary planes are held as a sorted, non-overlapping range table searched
-   * by binary search, because dictionaries map them in a handful of large blocks: a
-   * directly indexed array over all of Unicode would spend more than four megabytes of
-   * references to say what a few range rows already say.</p>
+   * <p>The Basic Multilingual Plane is held in a directly indexed array. The
+   * supplementary planes are held as a sorted, non-overlapping range table searched by
+   * binary search, because dictionaries map them in a handful of large blocks.</p>
    */
   private static final class CategoryTable {
 
@@ -334,10 +301,8 @@ public final class MecabDictionary {
 
     /**
      * Looks up the category a {@code char.def} mapping gives a code point. The table
-     * holds the {@link Category} instances themselves, so a lookup on the tokenizer's
-     * per-character path costs one array read or one binary search, never a name map
-     * access, and two code points of one category share one instance to compare by
-     * identity.
+     * holds the {@link Category} instances themselves, and two code points of one
+     * category share one instance, so categories may be compared by identity.
      *
      * @param codePoint The code point to classify.
      * @return The category, or {@code null} when no mapping covers the code point.
@@ -488,7 +453,6 @@ public final class MecabDictionary {
   }
 
   private final DoubleArrayLexicon lexicon;
-  private final int maxSurfaceLength;
   private final short[] connectionCosts;
   private final int rightSize;
   private final Map<String, Category> categories;
@@ -496,11 +460,10 @@ public final class MecabDictionary {
   private final Category defaultCategory;
   private final Map<String, List<WordEntry>> unknownEntries;
 
-  private MecabDictionary(DoubleArrayLexicon lexicon, int maxSurfaceLength,
+  private MecabDictionary(DoubleArrayLexicon lexicon,
       short[] connectionCosts, int rightSize, Map<String, Category> categories,
       CategoryTable categoryTable, Map<String, List<WordEntry>> unknownEntries) {
     this.lexicon = lexicon;
-    this.maxSurfaceLength = maxSurfaceLength;
     this.connectionCosts = connectionCosts;
     this.rightSize = rightSize;
     this.categories = categories;
@@ -536,8 +499,11 @@ public final class MecabDictionary {
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static MecabDictionary load(Path directory, Charset charset) throws IOException {
-    if (directory == null || charset == null) {
-      throw new IllegalArgumentException("directory and charset must not be null");
+    if (directory == null) {
+      throw new IllegalArgumentException("directory must not be null");
+    }
+    if (charset == null) {
+      throw new IllegalArgumentException("charset must not be null");
     }
     // The connection matrix is read first because its dimensions are what every
     // lexicon entry's context ids have to be inside of.
@@ -587,11 +553,9 @@ public final class MecabDictionary {
     }
 
     final Map<String, List<WordEntry>> lexicon = new HashMap<>();
-    int maxSurface = 0;
     try (DirectoryStream<Path> csvFiles = Files.newDirectoryStream(directory, "*.csv")) {
       for (final Path csv : csvFiles) {
-        maxSurface = Math.max(maxSurface,
-            readLexicon(csv, charset, lexicon, leftSize, rightSize));
+        readLexicon(csv, charset, lexicon, leftSize, rightSize);
       }
     }
     if (lexicon.isEmpty()) {
@@ -605,7 +569,7 @@ public final class MecabDictionary {
     final Map<String, List<WordEntry>> unknown = new HashMap<>();
     readLexicon(directory.resolve("unk.def"), charset, unknown, leftSize, rightSize);
 
-    return new MecabDictionary(DoubleArrayLexicon.build(lexicon), maxSurface, costs,
+    return new MecabDictionary(DoubleArrayLexicon.build(lexicon), costs,
         rightSize, categories, categoryTable.build(categories), unknown);
   }
 
@@ -620,14 +584,12 @@ public final class MecabDictionary {
    *                 ids.
    * @param rightSize The second {@code matrix.def} dimension, which bounds left context
    *                  ids.
-   * @return The length in characters of the longest surface form read.
    * @throws IOException Thrown if the file is missing, an entry is malformed, or an
    *         entry's context id is outside the matrix dimensions.
    */
-  private static int readLexicon(Path file, Charset charset,
+  private static void readLexicon(Path file, Charset charset,
       Map<String, List<WordEntry>> target, int leftSize, int rightSize)
       throws IOException {
-    int maxSurface = 0;
     int lineNumber = 0;
     for (final String line : readLines(file, charset)) {
       lineNumber++;
@@ -658,9 +620,7 @@ public final class MecabDictionary {
           parseInt(fields.get(3), file.toString(), lineNumber),
           List.copyOf(fields.subList(4, fields.size())));
       target.computeIfAbsent(surface, key -> new ArrayList<>(1)).add(entry);
-      maxSurface = Math.max(maxSurface, surface.length());
     }
-    return maxSurface;
   }
 
   /** Reads char.def: category behavior lines and code point mapping lines. */
@@ -709,16 +669,6 @@ public final class MecabDictionary {
   }
 
   /**
-   * Looks up the lexicon entries for an exact surface form.
-   *
-   * @param surface The surface form.
-   * @return The entries, or {@code null} when the surface is not listed.
-   */
-  List<WordEntry> lookup(String surface) {
-    return lexicon.lookup(surface);
-  }
-
-  /**
    * Reports every lexicon surface starting at a text position, walking the trie once
    * with no substring allocation.
    *
@@ -729,11 +679,6 @@ public final class MecabDictionary {
    */
   void prefixMatches(String text, int from, int to, PrefixMatchConsumer consumer) {
     lexicon.prefixMatches(text, from, to, consumer);
-  }
-
-  /** @return The length in characters of the longest surface form in the lexicon. */
-  int maxSurfaceLength() {
-    return maxSurfaceLength;
   }
 
   /**

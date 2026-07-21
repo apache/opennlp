@@ -23,8 +23,8 @@
 # this directory for the known dictionary projects, their encodings, and the Java
 # steps that follow the download.
 #
-# The dictionary you download carries its own license, which you accept by using it.
-# Nothing is bundled with Apache OpenNLP and no dictionary location is built in.
+# The dictionary you download carries its own license. Nothing is bundled with
+# Apache OpenNLP and no dictionary location is built in.
 
 set -euo pipefail
 

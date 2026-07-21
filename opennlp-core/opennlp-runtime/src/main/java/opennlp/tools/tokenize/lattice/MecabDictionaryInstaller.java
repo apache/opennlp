@@ -29,9 +29,8 @@ import java.util.zip.GZIPInputStream;
 /**
  * Fetches and unpacks a mecab-format dictionary archive into a local directory, so the
  * dictionary is acquired by the user at install time and never ships with this library.
- * The user supplies the archive location from the dictionary project of their choice
- * and thereby accepts that dictionary's license; nothing is bundled and no location is
- * built in.
+ * The archive location is user-supplied; no dictionary data is bundled and no download
+ * location is built in.
  *
  * <p>The installer reads gzip-compressed tar archives, the format the common
  * distributions use, and extracts only the dictionary payload: the {@code *.csv}
@@ -64,11 +63,15 @@ public final class MecabDictionaryInstaller {
    * @return The number of dictionary files extracted.
    * @throws IOException Thrown if fetching, reading, or writing fails, or the archive
    *         contains no dictionary file.
-   * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null} or
+   *         {@code archive} is not an absolute URI.
    */
   public static int install(URI archive, Path targetDirectory) throws IOException {
-    if (archive == null || targetDirectory == null) {
-      throw new IllegalArgumentException("archive and targetDirectory must not be null");
+    if (archive == null) {
+      throw new IllegalArgumentException("archive must not be null");
+    }
+    if (targetDirectory == null) {
+      throw new IllegalArgumentException("targetDirectory must not be null");
     }
     try (InputStream in = archive.toURL().openStream()) {
       return extract(in, targetDirectory);
@@ -89,8 +92,11 @@ public final class MecabDictionaryInstaller {
    */
   public static int extract(InputStream archiveStream, Path targetDirectory)
       throws IOException {
-    if (archiveStream == null || targetDirectory == null) {
-      throw new IllegalArgumentException("stream and targetDirectory must not be null");
+    if (archiveStream == null) {
+      throw new IllegalArgumentException("archiveStream must not be null");
+    }
+    if (targetDirectory == null) {
+      throw new IllegalArgumentException("targetDirectory must not be null");
     }
     Files.createDirectories(targetDirectory);
     final InputStream tar = new GZIPInputStream(archiveStream);

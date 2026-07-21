@@ -542,7 +542,7 @@ wordTokenizer.tokenize("The quick brown fox.", (start, end, type) -> {
 			<title>Lattice tokenization for CJK</title>
 			<para>
 				Languages written without spaces need a dictionary-backed segmenter.
-				<code>LatticeTokenizer</code> scores paths over a mecab-format dictionary and
+				<code>LatticeTokenizer</code> scores paths over a MeCab-format dictionary and
 				emits the cheapest segmentation with spans in original text coordinates.
 				<code>UnigramSegmenter</code> does the same from a plain frequency lexicon.
 				Install a dictionary archive with <code>MecabDictionaryInstaller</code>, load it

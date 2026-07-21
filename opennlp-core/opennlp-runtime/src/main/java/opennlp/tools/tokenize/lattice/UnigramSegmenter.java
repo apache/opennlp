@@ -41,9 +41,8 @@ import opennlp.tools.util.StringUtil;
  * and counts.
  *
  * <p>The lexicon format is one entry per line: the word, its count, and optionally a
- * tag, separated by whitespace. The user supplies the lexicon file and thereby accepts
- * its license; nothing is bundled. Every reported span is in original text
- * coordinates.</p>
+ * tag, separated by whitespace. The lexicon file is user-supplied; no lexicon data is
+ * bundled. Every reported span is in original text coordinates.</p>
  *
  * <p>Instances are immutable and safe to share between threads.</p>
  *
@@ -90,8 +89,11 @@ public class UnigramSegmenter implements Tokenizer {
    * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
    */
   public static UnigramSegmenter load(Path lexicon, Charset charset) throws IOException {
-    if (lexicon == null || charset == null) {
-      throw new IllegalArgumentException("lexicon and charset must not be null");
+    if (lexicon == null) {
+      throw new IllegalArgumentException("lexicon must not be null");
+    }
+    if (charset == null) {
+      throw new IllegalArgumentException("charset must not be null");
     }
     try (InputStream in = Files.newInputStream(lexicon)) {
       return load(in, charset);
@@ -109,8 +111,11 @@ public class UnigramSegmenter implements Tokenizer {
    */
   public static UnigramSegmenter load(InputStream lexiconStream, Charset charset)
       throws IOException {
-    if (lexiconStream == null || charset == null) {
-      throw new IllegalArgumentException("stream and charset must not be null");
+    if (lexiconStream == null) {
+      throw new IllegalArgumentException("lexiconStream must not be null");
+    }
+    if (charset == null) {
+      throw new IllegalArgumentException("charset must not be null");
     }
     final Map<String, Long> counts = new HashMap<>();
     long total = 0;

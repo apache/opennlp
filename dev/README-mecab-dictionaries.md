@@ -17,7 +17,7 @@
 
 # CJK dictionaries for the lattice tokenizer
 
-The lattice tokenizer (`opennlp.tools.tokenize.lattice`) segments Japanese and Korean over a mecab-format dictionary, and the unigram segmenter handles Chinese over a plain word-frequency lexicon. Apache OpenNLP bundles no dictionary data: you download a dictionary from the project of your choice, and by using it you accept that dictionary's license. Read the license file inside the archive before use; nothing in this repository grants you those terms.
+The lattice tokenizer (`opennlp.tools.tokenize.lattice`) segments Japanese and Korean over a mecab-format dictionary, and the unigram segmenter handles Chinese over a plain word-frequency lexicon. Apache OpenNLP bundles no dictionary data: you download a dictionary from the project of your choice, and each dictionary carries its own license. Read the license file inside the archive before use.
 
 ## Known mecab-format dictionary projects
 
@@ -63,7 +63,8 @@ import opennlp.tools.tokenize.lattice.MecabDictionary;
 MecabDictionary dictionary =
     MecabDictionary.load(Path.of("ipadic"), Charset.forName("EUC-JP"));
 LatticeTokenizer tokenizer = new LatticeTokenizer(dictionary);
-String[] tokens = tokenizer.tokenize("東京都に行く");
+// "Tokyo-to ni iku" (go to the Tokyo metropolis), escaped to keep this file ASCII
+String[] tokens = tokenizer.tokenize("\u6771\u4EAC\u90FD\u306B\u884C\u304F");
 ```
 
 For a UTF-8 dictionary such as mecab-ko-dic, `MecabDictionary.load(Path.of("ko-dic"))` is enough. Loaded dictionaries and tokenizers are immutable and safe to share between threads, so load once and reuse.
@@ -77,7 +78,8 @@ import java.nio.file.Path;
 import opennlp.tools.tokenize.lattice.UnigramSegmenter;
 
 UnigramSegmenter segmenter = UnigramSegmenter.load(Path.of("words.txt"));
-String[] tokens = segmenter.tokenize("我来到北京天安门");
+// "wo laidao Beijing Tian'anmen" (I arrive at Beijing Tiananmen), escaped as above
+String[] tokens = segmenter.tokenize("\u6211\u6765\u5230\u5317\u4EAC\u5929\u5B89\u95E8");
 ```
 
-As with the dictionaries, the lexicon's license is between you and its publisher; nothing is bundled.
+As with the dictionaries, the lexicon carries its own license; nothing is bundled.
