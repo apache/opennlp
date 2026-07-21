@@ -83,13 +83,13 @@ public final class GermanMinimalStemmer extends AbstractCharArrayStemmer
 
     for (int i = 0; i < len; i++)
       switch (s[i]) {
-        case 'ä':
+        case '\u00E4':
           s[i] = 'a';
           break;
-        case 'ö':
+        case '\u00F6':
           s[i] = 'o';
           break;
-        case 'ü':
+        case '\u00FC':
           s[i] = 'u';
           break;
       }

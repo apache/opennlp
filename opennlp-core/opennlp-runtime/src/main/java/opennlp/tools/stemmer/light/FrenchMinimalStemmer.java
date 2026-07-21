@@ -90,7 +90,7 @@ public final class FrenchMinimalStemmer extends AbstractCharArrayStemmer
     if (s[len - 1] == 's') len--;
     if (s[len - 1] == 'r') len--;
     if (s[len - 1] == 'e') len--;
-    if (s[len - 1] == 'é') len--;
+    if (s[len - 1] == '\u00E9') len--;
     // Character.isLetter is intentional: it is the letter test of the ported algorithm.
     if (s[len - 1] == s[len - 2] && Character.isLetter(s[len - 1])) len--;
     return len;

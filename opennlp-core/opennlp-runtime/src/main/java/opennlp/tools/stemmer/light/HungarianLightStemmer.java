@@ -86,27 +86,27 @@ public final class HungarianLightStemmer extends AbstractCharArrayStemmer
   int stem(char[] s, int len) {
     for (int i = 0; i < len; i++)
       switch (s[i]) {
-        case 'á':
+        case '\u00E1':
           s[i] = 'a';
           break;
-        case 'ë':
-        case 'é':
+        case '\u00EB':
+        case '\u00E9':
           s[i] = 'e';
           break;
-        case 'í':
+        case '\u00ED':
           s[i] = 'i';
           break;
-        case 'ó':
-        case 'ő':
-        case 'õ':
-        case 'ö':
+        case '\u00F3':
+        case '\u0151':
+        case '\u00F5':
+        case '\u00F6':
           s[i] = 'o';
           break;
-        case 'ú':
-        case 'ű':
-        case 'ũ':
-        case 'û':
-        case 'ü':
+        case '\u00FA':
+        case '\u0171':
+        case '\u0169':
+        case '\u00FB':
+        case '\u00FC':
           s[i] = 'u';
           break;
       }

@@ -100,39 +100,39 @@ public final class PortugueseLightStemmer extends AbstractCharArrayStemmer
 
     for (int i = 0; i < len; i++)
       switch (s[i]) {
-        case 'à':
-        case 'á':
-        case 'â':
-        case 'ä':
-        case 'ã':
+        case '\u00E0':
+        case '\u00E1':
+        case '\u00E2':
+        case '\u00E4':
+        case '\u00E3':
           s[i] = 'a';
           break;
-        case 'ò':
-        case 'ó':
-        case 'ô':
-        case 'ö':
-        case 'õ':
+        case '\u00F2':
+        case '\u00F3':
+        case '\u00F4':
+        case '\u00F6':
+        case '\u00F5':
           s[i] = 'o';
           break;
-        case 'è':
-        case 'é':
-        case 'ê':
-        case 'ë':
+        case '\u00E8':
+        case '\u00E9':
+        case '\u00EA':
+        case '\u00EB':
           s[i] = 'e';
           break;
-        case 'ù':
-        case 'ú':
-        case 'û':
-        case 'ü':
+        case '\u00F9':
+        case '\u00FA':
+        case '\u00FB':
+        case '\u00FC':
           s[i] = 'u';
           break;
-        case 'ì':
-        case 'í':
-        case 'î':
-        case 'ï':
+        case '\u00EC':
+        case '\u00ED':
+        case '\u00EE':
+        case '\u00EF':
           s[i] = 'i';
           break;
-        case 'ç':
+        case '\u00E7':
           s[i] = 'c';
           break;
       }
@@ -155,7 +155,7 @@ public final class PortugueseLightStemmer extends AbstractCharArrayStemmer
       return len - 1;
     }
 
-    if (len > 4 && (endsWith(s, len, "eis") || endsWith(s, len, "éis"))) {
+    if (len > 4 && (endsWith(s, len, "eis") || endsWith(s, len, "\u00E9is"))) {
       s[len - 3] = 'e';
       s[len - 2] = 'l';
       return len - 1;
@@ -166,7 +166,7 @@ public final class PortugueseLightStemmer extends AbstractCharArrayStemmer
       return len - 1;
     }
 
-    if (len > 4 && endsWith(s, len, "óis")) {
+    if (len > 4 && endsWith(s, len, "\u00F3is")) {
       s[len - 3] = 'o';
       s[len - 2] = 'l';
       return len - 1;
@@ -177,9 +177,9 @@ public final class PortugueseLightStemmer extends AbstractCharArrayStemmer
       return len;
     }
 
-    if (len > 3 && (endsWith(s, len, "ões") || endsWith(s, len, "ães"))) {
+    if (len > 3 && (endsWith(s, len, "\u00F5es") || endsWith(s, len, "\u00E3es"))) {
       len--;
-      s[len - 2] = 'ã';
+      s[len - 2] = '\u00E3';
       s[len - 1] = 'o';
       return len;
     }
@@ -209,7 +209,7 @@ public final class PortugueseLightStemmer extends AbstractCharArrayStemmer
       }
 
       if (endsWith(s, len, "ona")) {
-        s[len - 3] = 'ã';
+        s[len - 3] = '\u00E3';
         s[len - 2] = 'o';
         return len - 1;
       }
@@ -217,7 +217,7 @@ public final class PortugueseLightStemmer extends AbstractCharArrayStemmer
       if (endsWith(s, len, "ora")) return len - 1;
 
       if (endsWith(s, len, "esa")) {
-        s[len - 3] = 'ê';
+        s[len - 3] = '\u00EA';
         return len - 1;
       }
 

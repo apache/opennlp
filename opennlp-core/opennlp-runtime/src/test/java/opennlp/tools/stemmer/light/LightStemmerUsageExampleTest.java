@@ -38,11 +38,11 @@ public class LightStemmerUsageExampleTest {
   @Test
   void testGermanLightStemmerStemsPlural() {
     final GermanLightStemmer light = new GermanLightStemmer();
-    Assertions.assertEquals("haus", light.stem("häusern").toString());
+    Assertions.assertEquals("haus", light.stem("h\u00E4usern").toString());
 
     final StemmerFactory factory = light;
     final Stemmer shared = new SharingStemmer(factory);
-    Assertions.assertEquals("haus", shared.stem("häusern").toString());
+    Assertions.assertEquals("haus", shared.stem("h\u00E4usern").toString());
   }
 
   /**
@@ -51,6 +51,6 @@ public class LightStemmerUsageExampleTest {
   @Test
   void testGermanMinimalStemmerIsShallower() {
     Assertions.assertEquals("vaterhauser",
-        new GermanMinimalStemmer().stem("vaterhäusern").toString());
+        new GermanMinimalStemmer().stem("vaterh\u00E4usern").toString());
   }
 }

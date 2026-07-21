@@ -167,7 +167,7 @@ public final class FrenchLightStemmer extends AbstractCharArrayStemmer
       s[len - 1] = 'r';
     }
 
-    if (len > 5 && endsWith(s, len, "ième")) return norm(s, len - 4);
+    if (len > 5 && endsWith(s, len, "i\u00E8me")) return norm(s, len - 4);
 
     if (len > 7 && endsWith(s, len, "teuse")) {
       len -= 2;
@@ -183,7 +183,7 @@ public final class FrenchLightStemmer extends AbstractCharArrayStemmer
 
     if (len > 5 && endsWith(s, len, "euse")) return norm(s, len - 2);
 
-    if (len > 8 && endsWith(s, len, "ère")) {
+    if (len > 8 && endsWith(s, len, "\u00E8re")) {
       len--;
       s[len - 2] = 'e';
       return norm(s, len);
@@ -205,7 +205,7 @@ public final class FrenchLightStemmer extends AbstractCharArrayStemmer
 
     if (len > 9 && endsWith(s, len, "nnel")) return norm(s, len - 3);
 
-    if (len > 4 && endsWith(s, len, "ète")) {
+    if (len > 4 && endsWith(s, len, "\u00E8te")) {
       len--;
       s[len - 2] = 'e';
     }
@@ -235,27 +235,27 @@ public final class FrenchLightStemmer extends AbstractCharArrayStemmer
     if (len > 4) {
       for (int i = 0; i < len; i++)
         switch (s[i]) {
-          case 'à':
-          case 'á':
-          case 'â':
+          case '\u00E0':
+          case '\u00E1':
+          case '\u00E2':
             s[i] = 'a';
             break;
-          case 'ô':
+          case '\u00F4':
             s[i] = 'o';
             break;
-          case 'è':
-          case 'é':
-          case 'ê':
+          case '\u00E8':
+          case '\u00E9':
+          case '\u00EA':
             s[i] = 'e';
             break;
-          case 'ù':
-          case 'û':
+          case '\u00F9':
+          case '\u00FB':
             s[i] = 'u';
             break;
-          case 'î':
+          case '\u00EE':
             s[i] = 'i';
             break;
-          case 'ç':
+          case '\u00E7':
             s[i] = 'c';
             break;
         }

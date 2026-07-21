@@ -81,17 +81,21 @@ public final class NorwegianLightStemmer extends AbstractCharArrayStemmer
    *
    * @param first The first standard whose endings are removed; must not be null.
    * @param more  Further standards; must not be or contain null.
-   * @throws IllegalArgumentException Thrown if a variety is null.
+   * @throws IllegalArgumentException Thrown if {@code first} or {@code more} is null,
+   *         or {@code more} contains null.
    */
   public NorwegianLightStemmer(NorwegianVariety first, NorwegianVariety... more) {
-    if (first == null || more == null) {
-      throw new IllegalArgumentException("The variety must not be null.");
+    if (first == null) {
+      throw new IllegalArgumentException("first must not be null");
+    }
+    if (more == null) {
+      throw new IllegalArgumentException("more must not be null");
     }
     boolean bokmaal = first == NorwegianVariety.BOKMAAL;
     boolean nynorsk = first == NorwegianVariety.NYNORSK;
     for (final NorwegianVariety variety : more) {
       if (variety == null) {
-        throw new IllegalArgumentException("The variety must not be null.");
+        throw new IllegalArgumentException("more must not contain null");
       }
       bokmaal |= variety == NorwegianVariety.BOKMAAL;
       nynorsk |= variety == NorwegianVariety.NYNORSK;
@@ -149,8 +153,8 @@ public final class NorwegianLightStemmer extends AbstractCharArrayStemmer
 
     if (len > 7
         && (endsWith(s, len, "elser")
-            || // general ending (føl-elser -> føl)
-            endsWith(s, len, "elsen"))) // general ending (føl-elsen -> føl)
+            || // general ending (f\u00F8l-elser -> f\u00F8l)
+            endsWith(s, len, "elsen"))) // general ending (f\u00F8l-elsen -> f\u00F8l)
       return len - 5;
 
     if (len > 6
@@ -159,7 +163,7 @@ public final class NorwegianLightStemmer extends AbstractCharArrayStemmer
             (endsWith(s, len, "ande") && useNynorsk)
             || // (sov-ande -> sov)
             endsWith(s, len, "else")
-            || // general ending (føl-else -> føl)
+            || // general ending (f\u00F8l-else -> f\u00F8l)
             (endsWith(s, len, "este") && useBokmaal)
             || // adj (fin-este -> fin)
             (endsWith(s, len, "aste") && useNynorsk)

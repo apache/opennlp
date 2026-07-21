@@ -90,78 +90,80 @@ public final class RussianLightStemmer extends AbstractCharArrayStemmer
   private int normalize(char[] s, int len) {
     if (len > 3)
       switch (s[len - 1]) {
-        case 'ь':
-        case 'и':
+        case '\u044C':
+        case '\u0438':
           return len - 1;
-        case 'н':
-          if (s[len - 2] == 'н') return len - 1;
+        case '\u043D':
+          if (s[len - 2] == '\u043D') return len - 1;
       }
     return len;
   }
 
   private int removeCase(char[] s, int len) {
-    if (len > 6 && (endsWith(s, len, "иями") || endsWith(s, len, "оями"))) return len - 4;
+    if (len > 6
+        && (endsWith(s, len, "\u0438\u044F\u043C\u0438")
+            || endsWith(s, len, "\u043E\u044F\u043C\u0438"))) return len - 4;
 
     if (len > 5
-        && (endsWith(s, len, "иям")
-            || endsWith(s, len, "иях")
-            || endsWith(s, len, "оях")
-            || endsWith(s, len, "ями")
-            || endsWith(s, len, "оям")
-            || endsWith(s, len, "оьв")
-            || endsWith(s, len, "ами")
-            || endsWith(s, len, "его")
-            || endsWith(s, len, "ему")
-            || endsWith(s, len, "ери")
-            || endsWith(s, len, "ими")
-            || endsWith(s, len, "ого")
-            || endsWith(s, len, "ому")
-            || endsWith(s, len, "ыми")
-            || endsWith(s, len, "оев"))) return len - 3;
+        && (endsWith(s, len, "\u0438\u044F\u043C")
+            || endsWith(s, len, "\u0438\u044F\u0445")
+            || endsWith(s, len, "\u043E\u044F\u0445")
+            || endsWith(s, len, "\u044F\u043C\u0438")
+            || endsWith(s, len, "\u043E\u044F\u043C")
+            || endsWith(s, len, "\u043E\u044C\u0432")
+            || endsWith(s, len, "\u0430\u043C\u0438")
+            || endsWith(s, len, "\u0435\u0433\u043E")
+            || endsWith(s, len, "\u0435\u043C\u0443")
+            || endsWith(s, len, "\u0435\u0440\u0438")
+            || endsWith(s, len, "\u0438\u043C\u0438")
+            || endsWith(s, len, "\u043E\u0433\u043E")
+            || endsWith(s, len, "\u043E\u043C\u0443")
+            || endsWith(s, len, "\u044B\u043C\u0438")
+            || endsWith(s, len, "\u043E\u0435\u0432"))) return len - 3;
 
     if (len > 4
-        && (endsWith(s, len, "ая")
-            || endsWith(s, len, "яя")
-            || endsWith(s, len, "ях")
-            || endsWith(s, len, "юю")
-            || endsWith(s, len, "ах")
-            || endsWith(s, len, "ею")
-            || endsWith(s, len, "их")
-            || endsWith(s, len, "ия")
-            || endsWith(s, len, "ию")
-            || endsWith(s, len, "ьв")
-            || endsWith(s, len, "ою")
-            || endsWith(s, len, "ую")
-            || endsWith(s, len, "ям")
-            || endsWith(s, len, "ых")
-            || endsWith(s, len, "ея")
-            || endsWith(s, len, "ам")
-            || endsWith(s, len, "ем")
-            || endsWith(s, len, "ей")
-            || endsWith(s, len, "ём")
-            || endsWith(s, len, "ев")
-            || endsWith(s, len, "ий")
-            || endsWith(s, len, "им")
-            || endsWith(s, len, "ое")
-            || endsWith(s, len, "ой")
-            || endsWith(s, len, "ом")
-            || endsWith(s, len, "ов")
-            || endsWith(s, len, "ые")
-            || endsWith(s, len, "ый")
-            || endsWith(s, len, "ым")
-            || endsWith(s, len, "ми"))) return len - 2;
+        && (endsWith(s, len, "\u0430\u044F")
+            || endsWith(s, len, "\u044F\u044F")
+            || endsWith(s, len, "\u044F\u0445")
+            || endsWith(s, len, "\u044E\u044E")
+            || endsWith(s, len, "\u0430\u0445")
+            || endsWith(s, len, "\u0435\u044E")
+            || endsWith(s, len, "\u0438\u0445")
+            || endsWith(s, len, "\u0438\u044F")
+            || endsWith(s, len, "\u0438\u044E")
+            || endsWith(s, len, "\u044C\u0432")
+            || endsWith(s, len, "\u043E\u044E")
+            || endsWith(s, len, "\u0443\u044E")
+            || endsWith(s, len, "\u044F\u043C")
+            || endsWith(s, len, "\u044B\u0445")
+            || endsWith(s, len, "\u0435\u044F")
+            || endsWith(s, len, "\u0430\u043C")
+            || endsWith(s, len, "\u0435\u043C")
+            || endsWith(s, len, "\u0435\u0439")
+            || endsWith(s, len, "\u0451\u043C")
+            || endsWith(s, len, "\u0435\u0432")
+            || endsWith(s, len, "\u0438\u0439")
+            || endsWith(s, len, "\u0438\u043C")
+            || endsWith(s, len, "\u043E\u0435")
+            || endsWith(s, len, "\u043E\u0439")
+            || endsWith(s, len, "\u043E\u043C")
+            || endsWith(s, len, "\u043E\u0432")
+            || endsWith(s, len, "\u044B\u0435")
+            || endsWith(s, len, "\u044B\u0439")
+            || endsWith(s, len, "\u044B\u043C")
+            || endsWith(s, len, "\u043C\u0438"))) return len - 2;
 
     if (len > 3)
       switch (s[len - 1]) {
-        case 'а':
-        case 'е':
-        case 'и':
-        case 'о':
-        case 'у':
-        case 'й':
-        case 'ы':
-        case 'я':
-        case 'ь':
+        case '\u0430':
+        case '\u0435':
+        case '\u0438':
+        case '\u043E':
+        case '\u0443':
+        case '\u0439':
+        case '\u044B':
+        case '\u044F':
+        case '\u044C':
           return len - 1;
       }
 
