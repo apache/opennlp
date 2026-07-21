@@ -69,8 +69,7 @@ public class LatticeTokenizer implements Tokenizer {
 
   /**
    * One lattice node: a candidate morpheme with its best path cost so far. Nodes
-   * ending at one position chain through {@link #nextEndingHere}, so the lattice
-   * needs one head reference per position instead of a list allocation.
+   * ending at one position chain through {@link #nextEndingHere}.
    */
   private static final class Node {
     private final int start;
@@ -141,13 +140,9 @@ public class LatticeTokenizer implements Tokenizer {
   /** Runs the Viterbi search over one whitespace-free stretch of text. */
   private void decode(String text, int from, int to, List<Morpheme> morphemes) {
     final int length = to - from;
-    // One head reference per position; nodes ending there chain through the node's
-    // own link, so building the lattice allocates nothing besides the nodes.
+    // Each element heads the chain of nodes ending at that position.
     final Node[] endingAt = new Node[length + 1];
 
-    // One right-to-left pass fixes each position's category and same-category run end,
-    // so candidate generation reads them instead of rescanning the run from every
-    // position, which would cost the square of the run length on long uniform runs.
     final Category[] categoryAt = new Category[length];
     final int[] runEndAt = new int[length];
     computeCategoryRuns(text, from, to, categoryAt, runEndAt);
@@ -259,9 +254,9 @@ public class LatticeTokenizer implements Tokenizer {
     final Category category;
     final int runEnd;
     if (positionCategory == null) {
-      // Only a lexicon surface ending inside a surrogate pair could make such a
+      // Only a lexicon surface ending inside a surrogate pair can make such a
       // position reachable; classify the stray code unit on the spot so the lattice
-      // stays connected the way it always did.
+      // stays connected.
       category = dictionary.categoryOf(codePoint);
       runEnd = position + Character.charCount(codePoint);
     } else {

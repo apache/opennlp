@@ -99,7 +99,7 @@ public class LatticeTokenizerTest {
     Assertions.assertEquals(4, morphemes.size());
     Assertions.assertEquals(List.of("noun", "proper"), morphemes.get(0).features());
     Assertions.assertEquals(List.of("particle", "case"), morphemes.get(2).features());
-    Assertions.assertEquals(false, morphemes.get(0).unknown());
+    Assertions.assertFalse(morphemes.get(0).unknown());
   }
 
   @Test
@@ -107,7 +107,7 @@ public class LatticeTokenizerTest {
     final List<Morpheme> morphemes = tokenizer.analyze("ABC\u306B\u884C\u304F");
     Assertions.assertEquals(3, morphemes.size());
     Assertions.assertEquals("ABC", morphemes.get(0).surface());
-    Assertions.assertEquals(true, morphemes.get(0).unknown());
+    Assertions.assertTrue(morphemes.get(0).unknown());
     Assertions.assertEquals(List.of("noun", "foreign"), morphemes.get(0).features());
   }
 
@@ -116,7 +116,7 @@ public class LatticeTokenizerTest {
     final List<Morpheme> morphemes = tokenizer.analyze("\u5CE0\u9053\u306B\u884C\u304F");
     Assertions.assertEquals(3, morphemes.size());
     Assertions.assertEquals("\u5CE0\u9053", morphemes.get(0).surface());
-    Assertions.assertEquals(true, morphemes.get(0).unknown());
+    Assertions.assertTrue(morphemes.get(0).unknown());
   }
 
   /**
