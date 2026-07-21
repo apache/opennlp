@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
@@ -37,7 +38,7 @@ import opennlp.tools.util.StringUtil;
 
 /**
  * A {@link Gazetteer} over a division table derived from Overture Maps data with the
- * {@code dev/derive-overture-divisions.py} script in this module: one tab-separated row
+ * {@code dev/derive-overture-divisions.py} script in the project source tree: one tab-separated row
  * per division with id, primary name, comma-separated alternate names, coordinates,
  * country code, Overture subtype, and population.
  *
@@ -59,9 +60,8 @@ import opennlp.tools.util.StringUtil;
  * {@link GazetteerEntry#FEATURE_CLASS_ADMIN}.</p>
  *
  * <p>Instances are immutable after loading and safe to share between threads.</p>
- *
- * @since 3.0.0
  */
+@ThreadSafe
 public final class OvertureGazetteer implements Gazetteer {
 
   /** The dataset identifier this gazetteer scopes its record ids to. */
@@ -148,8 +148,11 @@ public final class OvertureGazetteer implements Gazetteer {
   /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) {
-    if (source == null || recordId == null) {
-      throw new IllegalArgumentException("source and recordId must not be null");
+    if (source == null) {
+      throw new IllegalArgumentException("source must not be null");
+    }
+    if (recordId == null) {
+      throw new IllegalArgumentException("recordId must not be null");
     }
     return SOURCE.equals(source) ? index.byId(recordId) : Optional.empty();
   }

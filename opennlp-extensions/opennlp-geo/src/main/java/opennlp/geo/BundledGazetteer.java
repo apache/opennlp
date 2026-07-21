@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.AttributeValue;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
@@ -59,6 +60,7 @@ import opennlp.tools.util.normalizer.TermAnalyzer;
  * over caller-supplied entries with the same indexing and ranking, without touching the bundled
  * table or the shared instance.</p>
  */
+@ThreadSafe
 public final class BundledGazetteer implements Gazetteer {
 
   private static final String RESOURCE = "naturalearth-populated-places.txt";

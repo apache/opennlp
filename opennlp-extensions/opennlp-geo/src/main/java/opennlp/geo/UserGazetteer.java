@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.AttributeValue;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
@@ -76,9 +77,8 @@ import opennlp.tools.util.StringUtil;
  * folding; candidates are ranked like the other loaders of this module, by population descending
  * with the feature-class prior on ties. Instances are immutable after loading and safe to share
  * between threads.</p>
- *
- * @since 3.0.0
  */
+@ThreadSafe
 public final class UserGazetteer implements Gazetteer {
 
   /** The separator between the fields of one row. */
@@ -243,8 +243,11 @@ public final class UserGazetteer implements Gazetteer {
   /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) {
-    if (source == null || recordId == null) {
-      throw new IllegalArgumentException("source and recordId must not be null");
+    if (source == null) {
+      throw new IllegalArgumentException("source must not be null");
+    }
+    if (recordId == null) {
+      throw new IllegalArgumentException("recordId must not be null");
     }
     return this.source.equals(source) ? index.byId(recordId) : Optional.empty();
   }

@@ -44,7 +44,6 @@ import opennlp.tools.util.StringUtil;
  * @param featureClass The feature-class filter, conventionally one of the
  *                     {@code FEATURE_CLASS_*} constants on {@link GazetteerEntry}, or
  *                     {@code null} to match any feature class. Must not be blank when present.
- * @since 3.0.0
  */
 @ThreadSafe
 public record Suppression(String name, String countryCode, String featureClass) {
