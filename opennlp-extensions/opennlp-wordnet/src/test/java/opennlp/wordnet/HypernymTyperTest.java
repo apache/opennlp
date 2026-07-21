@@ -121,7 +121,7 @@ public class HypernymTyperTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new HypernymTyper(taxonomy(), Map.of(" ", "person")));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new HypernymTyper(taxonomy(), Map.of("person", " ")));
+        () -> new HypernymTyper(taxonomy(), Map.of("person", "\u00A0")));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new HypernymTyper(taxonomy(), Map.of("notaword", "label")));
     final HypernymTyper typer = typer();

@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.lemmatizer.Lemmatizer;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
 import opennlp.tools.wordnet.Synset;
 import opennlp.tools.wordnet.WordNetPOS;
@@ -237,7 +238,7 @@ class LexicalExpanderTest {
   @Test
   void testLemmatizerFallbackExpandsInflectedInput() {
     final LexicalExpander expander = LexicalExpander.builder(lexicon())
-        .lemmatizer(new opennlp.tools.lemmatizer.Lemmatizer() {
+        .lemmatizer(new Lemmatizer() {
           @Override
           public String[] lemmatize(String[] tokens, String[] tags) {
             final String[] lemmas = new String[tokens.length];

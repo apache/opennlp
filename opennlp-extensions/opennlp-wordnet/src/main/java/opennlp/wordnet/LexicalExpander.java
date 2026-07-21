@@ -27,6 +27,7 @@ import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.lemmatizer.Lemmatizer;
+import opennlp.tools.util.StringUtil;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
 import opennlp.tools.wordnet.Synset;
 import opennlp.tools.wordnet.WordNetPOS;
@@ -91,7 +92,7 @@ public final class LexicalExpander {
      *         {@code weight} is not in {@code (0, 1]}.
      */
     public Expansion {
-      if (term == null || term.isBlank()) {
+      if (term == null || StringUtil.isBlank(term)) {
         throw new IllegalArgumentException("term must not be null or blank");
       }
       if (kind == null) {
@@ -184,7 +185,7 @@ public final class LexicalExpander {
    * @throws IllegalArgumentException Thrown if {@code term} is {@code null} or blank.
    */
   private List<Expansion> collect(String term, List<WordNetPOS> poses) {
-    if (term == null || term.isBlank()) {
+    if (term == null || StringUtil.isBlank(term)) {
       throw new IllegalArgumentException("The term must not be null or blank.");
     }
     final Map<String, Expansion> best = new HashMap<>();

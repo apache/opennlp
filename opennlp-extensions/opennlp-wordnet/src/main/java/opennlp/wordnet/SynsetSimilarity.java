@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
 import opennlp.tools.wordnet.WordNetRelation;
 
@@ -42,9 +43,8 @@ import opennlp.tools.wordnet.WordNetRelation;
  * <p>Both plain and instance hypernyms count as taxonomy edges. The measures read only
  * the knowledge base and hold no mutable state, so instances are as thread-safe as
  * their knowledge base.</p>
- *
- * @since 3.0.0
  */
+@ThreadSafe
 public class SynsetSimilarity {
 
   private final LexicalKnowledgeBase knowledgeBase;
@@ -70,7 +70,8 @@ public class SynsetSimilarity {
    * @param otherSynsetId The second synset identifier. Must not be {@code null}.
    * @return The similarity in {@code (0, 1]}, or {@code 0} when the synsets share no
    *         ancestor.
-   * @throws IllegalArgumentException Thrown if an identifier is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}.
    */
   public double path(String synsetId, String otherSynsetId) {
     final int distance = shortestDistance(synsetId, otherSynsetId);
@@ -86,9 +87,11 @@ public class SynsetSimilarity {
    * @param otherSynsetId The second synset identifier. Must not be {@code null}.
    * @return The similarity in {@code (0, 1]}, or {@code 0} when the synsets share no
    *         ancestor.
-   * @throws IllegalArgumentException Thrown if an identifier is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}.
    */
   public double wuPalmer(String synsetId, String otherSynsetId) {
+    validateIds(synsetId, otherSynsetId);
     final Map<String, Integer> up = depthsAbove(synsetId);
     final Map<String, Integer> otherUp = depthsAbove(otherSynsetId);
     double best = 0.0;
@@ -120,8 +123,9 @@ public class SynsetSimilarity {
    *                      be positive.
    * @return The similarity, higher for closer synsets, or {@code 0} when the synsets
    *         share no ancestor.
-   * @throws IllegalArgumentException Thrown if an identifier is {@code null} or
-   *         {@code taxonomyDepth} is not positive.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}, or {@code taxonomyDepth} is not
+   *         positive.
    */
   public double leacockChodorow(String synsetId, String otherSynsetId,
       int taxonomyDepth) {
@@ -143,9 +147,11 @@ public class SynsetSimilarity {
    * @param otherSynsetId The second synset identifier. Must not be {@code null}.
    * @return The edge count of the shortest connecting path, or {@code -1} when no
    *         common ancestor exists.
-   * @throws IllegalArgumentException Thrown if an identifier is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}.
    */
   public int shortestDistance(String synsetId, String otherSynsetId) {
+    validateIds(synsetId, otherSynsetId);
     final Map<String, Integer> up = depthsAbove(synsetId);
     final Map<String, Integer> otherUp = depthsAbove(otherSynsetId);
     int best = -1;
@@ -161,11 +167,25 @@ public class SynsetSimilarity {
     return best;
   }
 
+  /**
+   * Validates the identifier arguments of the public measures.
+   *
+   * @param synsetId The first synset identifier.
+   * @param otherSynsetId The second synset identifier.
+   * @throws IllegalArgumentException Thrown if {@code synsetId} or
+   *         {@code otherSynsetId} is {@code null}.
+   */
+  private void validateIds(String synsetId, String otherSynsetId) {
+    if (synsetId == null) {
+      throw new IllegalArgumentException("synsetId must not be null");
+    }
+    if (otherSynsetId == null) {
+      throw new IllegalArgumentException("otherSynsetId must not be null");
+    }
+  }
+
   /** Collects every ancestor with its minimal upward distance, the synset included. */
   private Map<String, Integer> depthsAbove(String synsetId) {
-    if (synsetId == null) {
-      throw new IllegalArgumentException("synset identifiers must not be null");
-    }
     final Map<String, Integer> depths = new HashMap<>();
     final Deque<String> queue = new ArrayDeque<>();
     depths.put(synsetId, 0);
