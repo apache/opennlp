@@ -40,6 +40,9 @@ final class PieceTrie implements Serializable {
   // this; otherwise a linear scan of the sorted label slice is used.
   private static final int DIRECT_THRESHOLD = 8;
 
+  /** The width of a wide node's direct dispatch slice. */
+  private static final int DIRECT_TABLE_SIZE = 256;
+
   // Per node: the slice [childStart[n], childStart[n + 1]) of labels/childNodes, and the piece id
   // accepted at the node, or -1. Wide nodes additionally index directPool at directStart[n].
   private final int[] childStart;
@@ -67,13 +70,13 @@ final class PieceTrie implements Serializable {
     int wide = 0;
     for (int node = 0; node < values.length; node++) {
       if (childStart[node + 1] - childStart[node] > DIRECT_THRESHOLD) {
-        directStart[node] = wide * 256;
+        directStart[node] = wide * DIRECT_TABLE_SIZE;
         wide++;
       } else {
         directStart[node] = -1;
       }
     }
-    this.directPool = new int[wide * 256];
+    this.directPool = new int[wide * DIRECT_TABLE_SIZE];
     Arrays.fill(directPool, DEAD);
     for (int node = 0; node < values.length; node++) {
       final int direct = directStart[node];
@@ -91,6 +94,7 @@ final class PieceTrie implements Serializable {
    * @param pieces The UTF-8 bytes of each piece; must not be null or contain empty keys.
    * @param ids    The id stored for each piece, parallel to {@code pieces}.
    * @return The packed trie.
+   * @throws IllegalArgumentException Thrown if a piece is defined more than once.
    */
   static PieceTrie build(byte[][] pieces, int[] ids) {
     final Integer[] order = new Integer[pieces.length];
