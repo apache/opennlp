@@ -33,6 +33,7 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.tokenize.SubwordPiece;
+import opennlp.tools.util.InvalidFormatException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,14 +51,14 @@ class SentencePieceModelValidationTest {
         () -> SentencePieceTokenizer.load((Path) null));
     assertThrows(IllegalArgumentException.class,
         () -> SentencePieceTokenizer.load((InputStream) null));
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(InvalidFormatException.class,
         () -> SentencePieceTokenizer.load(new ByteArrayInputStream(new byte[0])));
   }
 
   @Test
   void testGarbageBytesFailLoudly() {
     final byte[] garbage = "this is not a model file at all".getBytes(StandardCharsets.UTF_8);
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(InvalidFormatException.class,
         () -> SentencePieceTokenizer.load(new ByteArrayInputStream(garbage)));
   }
 
@@ -65,7 +66,7 @@ class SentencePieceModelValidationTest {
   void testTruncatedModelFailsLoudly() throws IOException {
     final byte[] whole = readModel();
     final byte[] truncated = Arrays.copyOf(whole, whole.length / 3);
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(InvalidFormatException.class,
         () -> SentencePieceTokenizer.load(new ByteArrayInputStream(truncated)));
   }
 
@@ -73,7 +74,7 @@ class SentencePieceModelValidationTest {
   void testUnsupportedModelTypeFailsLoudly() {
     // A minimal well-formed model claiming the WORD algorithm (model_type = 3).
     final byte[] model = minimalModel(3);
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> SentencePieceTokenizer.load(new ByteArrayInputStream(model)));
     assertTrue(e.getMessage().contains("not supported"), e.getMessage());
   }
@@ -81,7 +82,7 @@ class SentencePieceModelValidationTest {
   @Test
   void testMissingUnknownPieceFailsLoudly() {
     final byte[] model = minimalModelWithoutUnk();
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+    final InvalidFormatException e = assertThrows(InvalidFormatException.class,
         () -> SentencePieceTokenizer.load(new ByteArrayInputStream(model)));
     assertTrue(e.getMessage().contains("unknown piece"), e.getMessage());
   }

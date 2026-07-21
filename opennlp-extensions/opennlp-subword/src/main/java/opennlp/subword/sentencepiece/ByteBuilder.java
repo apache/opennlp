@@ -21,6 +21,9 @@ import java.util.Arrays;
 /** A growable byte buffer supporting append, truncate, and suffix comparison. */
 final class ByteBuilder {
 
+  /** The smallest backing array, so tiny requested capacities still grow geometrically. */
+  private static final int MIN_CAPACITY = 16;
+
   private byte[] data;
   private int length;
 
@@ -30,7 +33,7 @@ final class ByteBuilder {
    * @param capacity The initial capacity hint.
    */
   ByteBuilder(int capacity) {
-    data = new byte[Math.max(capacity, 16)];
+    data = new byte[Math.max(capacity, MIN_CAPACITY)];
   }
 
   /**
@@ -40,7 +43,7 @@ final class ByteBuilder {
    */
   void append(byte b) {
     if (length == data.length) {
-      data = Arrays.copyOf(data, data.length + (data.length >> 1));
+      data = Arrays.copyOf(data, grownLength());
     }
     data[length++] = b;
   }
@@ -54,10 +57,15 @@ final class ByteBuilder {
    */
   void append(byte[] source, int from, int count) {
     while (length + count > data.length) {
-      data = Arrays.copyOf(data, data.length + (data.length >> 1));
+      data = Arrays.copyOf(data, grownLength());
     }
     System.arraycopy(source, from, data, length, count);
     length += count;
+  }
+
+  /** {@return the next backing-array length under the 1.5x growth policy} */
+  private int grownLength() {
+    return data.length + (data.length >> 1);
   }
 
   /** {@return the number of valid bytes} */
