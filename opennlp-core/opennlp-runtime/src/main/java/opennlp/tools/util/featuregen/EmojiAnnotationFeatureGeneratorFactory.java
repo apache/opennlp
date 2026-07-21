@@ -32,10 +32,18 @@ import opennlp.tools.util.InvalidFormatException;
 public class EmojiAnnotationFeatureGeneratorFactory
     extends GeneratorFactory.AbstractXmlFeatureGeneratorFactory {
 
+  /**
+   * Instantiates a factory that produces {@link EmojiAnnotationFeatureGenerator} instances.
+   */
   public EmojiAnnotationFeatureGeneratorFactory() {
     super();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns a new {@link EmojiAnnotationFeatureGenerator}.</p>
+   */
   @Override
   public AdaptiveFeatureGenerator create() throws InvalidFormatException {
     return new EmojiAnnotationFeatureGenerator();

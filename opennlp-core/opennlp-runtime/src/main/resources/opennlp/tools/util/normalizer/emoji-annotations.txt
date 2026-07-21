@@ -13,41 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Bundled emoji annotation facts, authored by this project. This is the bundled-facts layer of
-# the emoji annotation record store (loaded by EmojiAnnotations): one row per attribute of one
-# pictograph, so adding an attribute later is new rows plus loader support instead of a file
-# format break, and every value carries its own provenance. Row format:
+# Bundled emoji annotation facts, authored by this project and loaded by EmojiAnnotations. One row
+# per attribute of one pictograph. Row format:
 #
 #   codepoints ; attribute ; value ; source ; notes
 #
 # codepoints is the space-separated hexadecimal code point sequence of the pictograph, keyed
-# without U+FE0F VARIATION SELECTOR-16 (the emoji presentation selector); lookups strip it,
-# because presentation selection does not change a symbol's identity.
+# without U+FE0F VARIATION SELECTOR-16 (the emoji presentation selector); lookups strip it.
 #
 # Attributes and their provenance:
 #   name        The CLDR short name as printed in the upstream emoji-test.txt (Emoji
 #               Keyboard/Display Test Data for UTS #51, version 17.0); source CLDR:annotation.
-#   sentiment   A project-authored coarse polarity score, an integer in -2..2; original work,
-#               source UNSPECIFIED, the explicit marker for a project judgment. No third-party
-#               sentiment data set is copied here; in particular the Emoji Sentiment Ranking
-#               (CC BY-SA) is NOT used in any form.
-#   entityType  A coarse entity type (an EmojiEntityType constant), assigned by this project
-#               from the subgroup header of the upstream emoji-test.txt; source UCD:emoji-test,
-#               the subgroup is cited in the notes.
+#   sentiment   A project-authored coarse polarity score, an integer in -2..2; source UNSPECIFIED,
+#               the marker for a project judgment. No third-party sentiment data set is copied
+#               here; in particular the Emoji Sentiment Ranking (CC BY-SA) is NOT used in any form.
+#   entityType  A coarse entity type (an EmojiEntityType constant), assigned by this project from
+#               the subgroup header of the upstream emoji-test.txt; source UCD:emoji-test, the
+#               subgroup is cited in the notes.
 #   category    A document-category hint (an EmojiCategory constant), the group header of the
 #               upstream emoji-test.txt; source UCD:emoji-test, the group is cited in the notes.
 #
-# The loader fails loud on an unknown attribute or a malformed row: the data and the code move
-# together, so an unrecognized attribute is corruption, not extensibility.
-#
 # Coverage claim (audited by EmojiAnnotationsTest): every pictograph that emoji-emoticons.txt
 # folds (every EMOJI-direction source, presentation selector stripped) has a record here, and
-# every record carries all four attributes.
-#
-# Flag emoji deliberately have no rows: their region decodes algorithmically from the code point
-# sequence (the derived-facts layer), and gazetteer identifiers are never baked into bundled data
-# (they churn, the gazetteer is an optional download, and baked identifiers would couple this
-# file's version to the gazetteer's version; the joined-facts layer resolves them at run time).
+# every record carries all four attributes. Flag emoji have no rows: their region is derived from
+# the code point sequence (see EmojiFlags), not bundled.
 #
 # Code points, names, and group/subgroup headers checked against emoji-test.txt version 17.0.
 #

@@ -18,6 +18,7 @@
 package opennlp.tools.sentiment;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import opennlp.tools.util.normalizer.EmojiAnnotation;
@@ -26,7 +27,7 @@ import opennlp.tools.util.normalizer.EmojiAnnotator;
 /**
  * A {@link SentimentContextGenerator} that adds emoji annotation features to the default
  * token context: for every annotated token the project-authored coarse sentiment score
- * ({@code emojiSentiment=2}), the entity type ({@code emojiEntityType=HEART}), the category
+ * ({@code emojiSentiment=2}), the entity type ({@code emojiType=HEART}), the category
  * ({@code emojiCategory=SMILEYS_AND_EMOTION}), and for flags the region ({@code emojiRegion=DE}).
  * A crying-face or heart pictograph thereby becomes direct evidence for the sentiment model
  * instead of an opaque token.
@@ -41,33 +42,55 @@ import opennlp.tools.util.normalizer.EmojiAnnotator;
  */
 public class EmojiSentimentContextGenerator extends SentimentContextGenerator {
 
-  private static final String SENTIMENT_PREFIX = "emojiSentiment=";
-  private static final String ENTITY_TYPE_PREFIX = "emojiEntityType=";
-  private static final String CATEGORY_PREFIX = "emojiCategory=";
-  private static final String REGION_PREFIX = "emojiRegion=";
+  private final EmojiAnnotator annotator;
 
-  private final EmojiAnnotator annotator = new EmojiAnnotator();
+  /**
+   * Instantiates a context generator over the bundled and derived annotation layers.
+   */
+  public EmojiSentimentContextGenerator() {
+    this(new EmojiAnnotator());
+  }
 
+  /**
+   * Instantiates a context generator over a configured annotator, for example one with a
+   * gazetteer join.
+   *
+   * @param annotator The annotator to use. Must not be {@code null}.
+   * @throws IllegalArgumentException if {@code annotator} is {@code null}.
+   */
+  public EmojiSentimentContextGenerator(EmojiAnnotator annotator) {
+    if (annotator == null) {
+      throw new IllegalArgumentException("Annotator must not be null");
+    }
+    this.annotator = annotator;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Appends the emoji annotation features of every annotated token to the default token
+   * context.</p>
+   */
   @Override
   public String[] getContext(String[] text) {
     final List<String> context = new ArrayList<>(text.length);
+    Collections.addAll(context, super.getContext(text));
     for (final String token : text) {
-      context.add(token); // the default context: every token is a feature
-    }
-    for (final String token : text) {
-      // Every annotatable symbol starts beyond ASCII (audited in EmojiAnnotationsTest), so
-      // ordinary tokens exit here without touching the annotation layer.
-      if (token.isEmpty() || token.charAt(0) < 0x80) {
+      if (!EmojiAnnotator.isAnnotatableToken(token)) {
         continue;
       }
       final EmojiAnnotation annotation = annotator.annotate(token).orElse(null);
       if (annotation == null) {
         continue;
       }
-      annotation.sentiment().ifPresent(score -> context.add(SENTIMENT_PREFIX + score));
-      annotation.entityType().ifPresent(type -> context.add(ENTITY_TYPE_PREFIX + type));
-      annotation.category().ifPresent(category -> context.add(CATEGORY_PREFIX + category));
-      annotation.isoRegion().ifPresent(region -> context.add(REGION_PREFIX + region));
+      annotation.sentiment().ifPresent(
+          score -> context.add(EmojiAnnotator.FEATURE_SENTIMENT_PREFIX + score));
+      annotation.entityType().ifPresent(
+          type -> context.add(EmojiAnnotator.FEATURE_TYPE_PREFIX + type));
+      annotation.category().ifPresent(
+          category -> context.add(EmojiAnnotator.FEATURE_CATEGORY_PREFIX + category));
+      annotation.isoRegion().ifPresent(
+          region -> context.add(EmojiAnnotator.FEATURE_REGION_PREFIX + region));
     }
     return context.toArray(new String[0]);
   }

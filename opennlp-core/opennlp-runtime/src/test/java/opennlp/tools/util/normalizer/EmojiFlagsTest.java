@@ -144,13 +144,4 @@ public class EmojiFlagsTest {
     assertThrows(IllegalArgumentException.class, () -> EmojiFlags.isoRegion(null));
     assertThrows(IllegalArgumentException.class, () -> EmojiFlags.isFlag(null));
   }
-
-  @Test
-  void regionalIndicatorPredicateCoversTheBlock() {
-    assertTrue(EmojiFlags.isRegionalIndicator(0x1F1E6));
-    assertTrue(EmojiFlags.isRegionalIndicator(0x1F1FF));
-    assertFalse(EmojiFlags.isRegionalIndicator(0x1F1E5));
-    assertFalse(EmojiFlags.isRegionalIndicator(0x1F200));
-    assertFalse(EmojiFlags.isRegionalIndicator('A'));
-  }
 }

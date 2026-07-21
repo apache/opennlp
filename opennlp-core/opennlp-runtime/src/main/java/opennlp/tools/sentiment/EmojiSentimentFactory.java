@@ -27,10 +27,18 @@ package opennlp.tools.sentiment;
  */
 public class EmojiSentimentFactory extends SentimentFactory {
 
+  /**
+   * Instantiates a factory whose context generator adds emoji annotation features.
+   */
   public EmojiSentimentFactory() {
     super();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns an {@link EmojiSentimentContextGenerator}.</p>
+   */
   @Override
   public SentimentContextGenerator createContextGenerator() {
     return new EmojiSentimentContextGenerator();

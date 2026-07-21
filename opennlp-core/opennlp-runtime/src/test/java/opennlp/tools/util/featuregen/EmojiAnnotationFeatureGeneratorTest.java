@@ -28,19 +28,12 @@ import org.junit.jupiter.api.Test;
 import opennlp.tools.util.normalizer.EmojiAnnotation;
 import opennlp.tools.util.normalizer.EmojiAnnotator;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EmojiAnnotationFeatureGeneratorTest {
-
-  private static String cp(int... codePoints) {
-    final StringBuilder sb = new StringBuilder();
-    for (final int codePoint : codePoints) {
-      sb.appendCodePoint(codePoint);
-    }
-    return sb.toString();
-  }
 
   @Test
   void annotatedTokensContributeTypedFeatures() {
@@ -48,14 +41,14 @@ public class EmojiAnnotationFeatureGeneratorTest {
     final String[] tokens = {"I", cp(0x2764, 0xFE0F), "Berlin", cp(0x1F1E9, 0x1F1EA)};
     final List<String> features = new ArrayList<>();
     generator.createFeatures(features, tokens, 1, null);
-    assertEquals(List.of("emoji.sentiment=2", "emoji.type=HEART",
-        "emoji.category=SMILEYS_AND_EMOTION"), features);
+    assertEquals(List.of("emojiSentiment=2", "emojiType=HEART",
+        "emojiCategory=SMILEYS_AND_EMOTION"), features);
     features.clear();
     generator.createFeatures(features, tokens, 3, null);
     // The flag's entity type acts as gazetteer-like evidence for the name finder, and the region
     // is decoded from the sequence with no dictionary. There is no sentiment feature: a record
     // never fabricates a value it has no source for.
-    assertEquals(List.of("emoji.type=FLAG", "emoji.category=FLAGS", "emoji.region=DE"), features);
+    assertEquals(List.of("emojiType=FLAG", "emojiCategory=FLAGS", "emojiRegion=DE"), features);
   }
 
   @Test
@@ -76,8 +69,8 @@ public class EmojiAnnotationFeatureGeneratorTest {
     final AdaptiveFeatureGenerator generator = new EmojiAnnotationFeatureGenerator(annotator);
     final List<String> features = new ArrayList<>();
     generator.createFeatures(features, new String[] {cp(0x1F642)}, 0, null);
-    assertEquals(List.of("emoji.sentiment=1", "emoji.type=FACE",
-        "emoji.category=SMILEYS_AND_EMOTION"), features);
+    assertEquals(List.of("emojiSentiment=1", "emojiType=FACE",
+        "emojiCategory=SMILEYS_AND_EMOTION"), features);
     assertThrows(IllegalArgumentException.class,
         () -> new EmojiAnnotationFeatureGenerator(null));
   }
@@ -98,8 +91,8 @@ public class EmojiAnnotationFeatureGeneratorTest {
     final List<String> features = new ArrayList<>();
     generator.createFeatures(features, new String[] {cp(0x1F622)}, 0, null);
     assertTrue(features.contains("w=" + cp(0x1F622)), "Missing token feature in: " + features);
-    assertTrue(features.contains("emoji.sentiment=-2"), "Missing emoji feature in: " + features);
-    assertTrue(features.contains("emoji.type=FACE"), "Missing emoji feature in: " + features);
+    assertTrue(features.contains("emojiSentiment=-2"), "Missing emoji feature in: " + features);
+    assertTrue(features.contains("emojiType=FACE"), "Missing emoji feature in: " + features);
   }
 
   @Test

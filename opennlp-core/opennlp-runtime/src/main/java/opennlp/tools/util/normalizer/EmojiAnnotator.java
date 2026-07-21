@@ -23,17 +23,37 @@ import java.util.Optional;
 /**
  * Assembles one {@link EmojiAnnotation} per symbol from bundled facts
  * ({@link EmojiAnnotations}), derived facts ({@link EmojiFlags}), and optional joined facts
- * ({@link EmojiAnnotationJoin}). Annotations are typed metadata beside {@link Term}, not
- * {@link Dimension} string transforms. {@link #annotate(Term)} keys on
- * {@link Term#original()}; non-emoji tokens and degenerate flag-shaped text return empty.
- * Instances are immutable and thread-safe when the join is.
+ * ({@link EmojiAnnotationJoin}). {@link #annotate(Term)} keys on {@link Term#original()};
+ * non-emoji tokens and degenerate flag-shaped text return empty. Instances are immutable and
+ * thread-safe when the join is.
+ *
+ * <p>Annotations are per-symbol metadata, not text transforms; a parallel surface beside
+ * {@link Term} rather than {@link Dimension} constants. See OPENNLP-1870.</p>
  */
 public final class EmojiAnnotator {
+
+  /** Feature-name prefix for the coarse sentiment score, for example {@code emojiSentiment=2}. */
+  public static final String FEATURE_SENTIMENT_PREFIX = "emojiSentiment=";
+
+  /** Feature-name prefix for the coarse entity type, for example {@code emojiType=HEART}. */
+  public static final String FEATURE_TYPE_PREFIX = "emojiType=";
+
+  /**
+   * Feature-name prefix for the document-category hint, for example
+   * {@code emojiCategory=SMILEYS_AND_EMOTION}.
+   */
+  public static final String FEATURE_CATEGORY_PREFIX = "emojiCategory=";
+
+  /** Feature-name prefix for a flag's ISO 3166 region, for example {@code emojiRegion=DE}. */
+  public static final String FEATURE_REGION_PREFIX = "emojiRegion=";
 
   // Provenance tags of the derived facts; the mechanisms are defined by UTS #51.
   private static final String FLAG_SEQUENCE = "UTS51:flag-sequence";
   private static final String TAG_SEQUENCE = "UTS51:tag-sequence";
   private static final String DERIVED_NOTE = "decoded from the code point sequence";
+
+  // The first non-ASCII code unit; every annotatable symbol starts at or beyond it.
+  private static final char FIRST_NON_ASCII = 0x80;
 
   private final EmojiAnnotationJoin join;
 
@@ -90,10 +110,9 @@ public final class EmojiAnnotator {
       throw new IllegalArgumentException("Symbol must not be null");
     }
     final EmojiAnnotation bundled = EmojiAnnotations.lookup(symbol).orElse(null);
-    // The total predicate, not the strict decoder: degenerate flag-shaped tokens in real-world
-    // text must yield no region, not an exception.
-    final String isoRegion = EmojiFlags.isFlag(symbol)
-        ? EmojiFlags.isoRegion(symbol).orElseThrow() : null;
+    // The lenient decode, not the strict one: degenerate flag-shaped tokens in real-world text
+    // must yield no region, not an exception. Decoded once on this per-token hot path.
+    final String isoRegion = EmojiFlags.isoRegionOrNull(symbol);
     if (bundled == null && isoRegion == null) {
       return Optional.empty(); // nothing bundled, nothing derived: the join never creates records
     }
@@ -132,5 +151,21 @@ public final class EmojiAnnotator {
       return Optional.of(bundled);
     }
     return Optional.of(new EmojiAnnotation(recordSymbol, attributes));
+  }
+
+  /**
+   * {@return whether {@code token} could carry an emoji annotation and so is worth looking up}
+   * Every annotatable symbol (a pictograph, a regional indicator, or the waving black flag) starts
+   * beyond ASCII, audited in {@code EmojiAnnotationsTest}; feature generators call this to
+   * fast-path ordinary tokens without touching the annotation layer.
+   *
+   * @param token The token to test. Must not be {@code null}.
+   * @throws IllegalArgumentException if {@code token} is {@code null}.
+   */
+  public static boolean isAnnotatableToken(CharSequence token) {
+    if (token == null) {
+      throw new IllegalArgumentException("Token must not be null");
+    }
+    return token.length() != 0 && token.charAt(0) >= FIRST_NON_ASCII;
   }
 }

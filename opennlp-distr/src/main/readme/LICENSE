@@ -615,7 +615,10 @@ The following license applies to the Unicode data files bundled inside the
 opennlp-runtime jar (opennlp/tools/util/normalizer/confusables.txt,
 opennlp/tools/util/normalizer/CaseFolding.txt,
 opennlp/tools/tokenize/uax29/WordBreakProperty.txt, and
-opennlp/tools/tokenize/uax29/ExtendedPictographic.txt):
+opennlp/tools/tokenize/uax29/ExtendedPictographic.txt), and to the
+Unicode-derived values (the CLDR short names and the emoji-test.txt
+group/subgroup classifications) in the otherwise project-authored
+opennlp/tools/util/normalizer/emoji-annotations.txt:
 
     UNICODE LICENSE V3
 

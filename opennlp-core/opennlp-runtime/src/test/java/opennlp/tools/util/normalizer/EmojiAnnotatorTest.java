@@ -28,9 +28,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EmojiAnnotatorTest {
 
@@ -169,7 +169,7 @@ public class EmojiAnnotatorTest {
     final EmojiAnnotation annotation = new EmojiAnnotator().annotate(GERMAN_FLAG).orElseThrow();
     for (final Map.Entry<String, EmojiAnnotation.Value> entry :
         annotation.attributes().entrySet()) {
-      assertTrue(!entry.getValue().source().isEmpty(), "Empty source for " + entry.getKey());
+      assertFalse(entry.getValue().source().isEmpty(), "Empty source for " + entry.getKey());
     }
     assertEquals(3, annotation.attributes().size()); // isoRegion, entityType, category
   }

@@ -26,13 +26,10 @@ import java.util.Map;
  * {@link EmojiAnnotator#EmojiAnnotator(EmojiAnnotationJoin) EmojiAnnotator}; no implementation is
  * shipped.
  *
- * <p>Foreign identifiers are never baked into the bundled data file, by design: they get
- * deprecated and superseded upstream (identifier churn), the datasets they point into are
- * optional downloads, and baking them in would couple the bundled table's version to the
- * dataset's version. The stable join key is the ISO 3166 code decoded by {@link EmojiFlags}, so
- * a flag emoji resolves against whatever region data the user has installed. Checking that a
- * decoded code is an <em>assigned</em> region also happens here, not in bundled or derived
- * data.</p>
+ * <p>The stable join key is the ISO 3166 code decoded by {@link EmojiFlags}: a flag emoji
+ * resolves against whatever region data the user has installed. Foreign identifiers (for example
+ * GeoNames or Who's On First) and the check that a decoded code is an <em>assigned</em> region
+ * live in the join, not in the bundled or derived data.</p>
  */
 @FunctionalInterface
 public interface EmojiAnnotationJoin {

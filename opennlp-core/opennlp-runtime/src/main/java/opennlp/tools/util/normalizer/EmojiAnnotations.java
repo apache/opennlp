@@ -42,8 +42,7 @@ import java.util.Optional;
  * project judgments tagged {@code UNSPECIFIED}. No third-party sentiment data set is copied; in
  * particular the Emoji Sentiment Ranking (CC&#160;BY-SA) is not used in any form.</p>
  *
- * <p>Annotations are typed metadata beside {@link Term}, not {@link Dimension} string transforms;
- * {@link EmojiAnnotator} is the accessor. Lookups strip U+FE0F (emoji presentation selector)
+ * <p>{@link EmojiAnnotator} is the accessor. Lookups strip U+FE0F (emoji presentation selector)
  * because it does not change identity; bundled rows are keyed without it. Flag emoji have no
  * bundled rows: region is derived, and gazetteer ids are never baked in.</p>
  */
@@ -51,9 +50,23 @@ public final class EmojiAnnotations {
 
   private static final String RESOURCE = "emoji-annotations.txt";
 
-  // The records keyed by code point sequence, loaded lazily on first use and cached. Volatile so
-  // the fully built, immutable map is safely published to every thread that observes it non-null.
-  private static volatile Map<String, EmojiAnnotation> annotations;
+  /** Starts a comment line in {@code emoji-annotations.txt}. */
+  private static final String COMMENT_PREFIX = "#";
+
+  /**
+   * Field separator in {@code emoji-annotations.txt}
+   * ({@code codepoints ; attribute ; value ; source ; notes}).
+   */
+  private static final String FIELD_SEPARATOR = ";";
+
+  /**
+   * Separates hex code points inside the code point field. The bundled table format uses ASCII
+   * space ({@code U+0020}), not a general whitespace class.
+   */
+  private static final String MAPPING_CODE_POINT_SEPARATOR = " ";
+
+  // The records keyed by code point sequence, loaded once when this class initializes.
+  private static final Map<String, EmojiAnnotation> ANNOTATIONS = load();
 
   private EmojiAnnotations() {
   }
@@ -76,7 +89,7 @@ public final class EmojiAnnotations {
     if (key.isEmpty()) {
       return Optional.empty();
     }
-    return Optional.ofNullable(annotations().get(key));
+    return Optional.ofNullable(ANNOTATIONS.get(key));
   }
 
   // Removes every U+FE0F VARIATION SELECTOR-16; allocation-free when none is present.
@@ -99,20 +112,6 @@ public final class EmojiAnnotations {
       }
     }
     return stripped.toString();
-  }
-
-  private static Map<String, EmojiAnnotation> annotations() {
-    Map<String, EmojiAnnotation> map = annotations;
-    if (map == null) {
-      synchronized (EmojiAnnotations.class) {
-        map = annotations;
-        if (map == null) {
-          map = load();
-          annotations = map;
-        }
-      }
-    }
-    return map;
   }
 
   private static Map<String, EmojiAnnotation> load() {
@@ -139,11 +138,11 @@ public final class EmojiAnnotations {
       while ((line = reader.readLine()) != null) {
         lineNumber++;
         final String content = line.strip();
-        if (content.isEmpty() || content.startsWith("#")) {
+        if (content.isEmpty() || content.startsWith(COMMENT_PREFIX)) {
           continue;
         }
         // Bounded split: only the first four separators are structural.
-        final String[] fields = content.split(";", 5);
+        final String[] fields = content.split(FIELD_SEPARATOR, 5);
         if (fields.length != 5) {
           throw new IllegalArgumentException("Malformed emoji annotation data in " + RESOURCE
               + " at line " + lineNumber + ": expected 5 fields, got " + fields.length
@@ -233,7 +232,7 @@ public final class EmojiAnnotations {
     }
     try {
       final StringBuilder decoded = new StringBuilder();
-      for (final String hex : stripped.split(" ")) {
+      for (final String hex : stripped.split(MAPPING_CODE_POINT_SEPARATOR)) {
         decoded.appendCodePoint(Integer.parseInt(hex, 16));
       }
       return decoded.toString();

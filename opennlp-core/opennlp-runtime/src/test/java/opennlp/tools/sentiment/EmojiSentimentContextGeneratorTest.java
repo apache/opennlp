@@ -21,19 +21,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EmojiSentimentContextGeneratorTest {
-
-  private static String cp(int... codePoints) {
-    final StringBuilder sb = new StringBuilder();
-    for (final int codePoint : codePoints) {
-      sb.appendCodePoint(codePoint);
-    }
-    return sb.toString();
-  }
 
   @Test
   void emojiFeaturesAreAppendedToTheTokenContext() {
@@ -44,7 +37,7 @@ public class EmojiSentimentContextGeneratorTest {
     assertEquals(List.of(tokens), features.subList(0, tokens.length));
     // ...and the pictograph additionally contributes its typed evidence.
     assertTrue(features.contains("emojiSentiment=-2"), "Missing feature in: " + features);
-    assertTrue(features.contains("emojiEntityType=FACE"), "Missing feature in: " + features);
+    assertTrue(features.contains("emojiType=FACE"), "Missing feature in: " + features);
     assertTrue(features.contains("emojiCategory=SMILEYS_AND_EMOTION"),
         "Missing feature in: " + features);
   }

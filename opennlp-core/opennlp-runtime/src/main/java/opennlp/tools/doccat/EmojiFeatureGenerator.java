@@ -28,7 +28,7 @@ import opennlp.tools.util.normalizer.EmojiAnnotator;
 /**
  * Generates document features from the emoji annotation layer: for every annotated token the
  * project-authored coarse sentiment score ({@code emojiSentiment=2}), the entity type
- * ({@code emojiEntityType=HEART}), the document category hint
+ * ({@code emojiType=HEART}), the document category hint
  * ({@code emojiCategory=SMILEYS_AND_EMOTION}), and for flags the ISO 3166 region
  * ({@code emojiRegion=DE}). Tokens that are not annotated symbols contribute nothing.
  *
@@ -41,11 +41,6 @@ import opennlp.tools.util.normalizer.EmojiAnnotator;
  * @see EmojiAnnotator
  */
 public class EmojiFeatureGenerator implements FeatureGenerator {
-
-  private static final String SENTIMENT_PREFIX = "emojiSentiment=";
-  private static final String ENTITY_TYPE_PREFIX = "emojiEntityType=";
-  private static final String CATEGORY_PREFIX = "emojiCategory=";
-  private static final String REGION_PREFIX = "emojiRegion=";
 
   private final EmojiAnnotator annotator;
 
@@ -69,6 +64,11 @@ public class EmojiFeatureGenerator implements FeatureGenerator {
     this.annotator = annotator;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @throws IllegalArgumentException if {@code text} is {@code null}.
+   */
   @Override
   public Collection<String> extractFeatures(String[] text, Map<String, Object> extraInformation) {
     if (text == null) {
@@ -76,19 +76,21 @@ public class EmojiFeatureGenerator implements FeatureGenerator {
     }
     final List<String> features = new ArrayList<>();
     for (final String token : text) {
-      // Every annotatable symbol starts beyond ASCII (audited in EmojiAnnotationsTest), so
-      // ordinary tokens exit here without touching the annotation layer.
-      if (token.isEmpty() || token.charAt(0) < 0x80) {
+      if (!EmojiAnnotator.isAnnotatableToken(token)) {
         continue;
       }
       final EmojiAnnotation annotation = annotator.annotate(token).orElse(null);
       if (annotation == null) {
         continue;
       }
-      annotation.sentiment().ifPresent(score -> features.add(SENTIMENT_PREFIX + score));
-      annotation.entityType().ifPresent(type -> features.add(ENTITY_TYPE_PREFIX + type));
-      annotation.category().ifPresent(category -> features.add(CATEGORY_PREFIX + category));
-      annotation.isoRegion().ifPresent(region -> features.add(REGION_PREFIX + region));
+      annotation.sentiment().ifPresent(
+          score -> features.add(EmojiAnnotator.FEATURE_SENTIMENT_PREFIX + score));
+      annotation.entityType().ifPresent(
+          type -> features.add(EmojiAnnotator.FEATURE_TYPE_PREFIX + type));
+      annotation.category().ifPresent(
+          category -> features.add(EmojiAnnotator.FEATURE_CATEGORY_PREFIX + category));
+      annotation.isoRegion().ifPresent(
+          region -> features.add(EmojiAnnotator.FEATURE_REGION_PREFIX + region));
     }
     return features;
   }

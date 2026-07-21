@@ -56,7 +56,7 @@ public final class EmojiFlags {
    *
    * @param codePoint The code point to test.
    */
-  public static boolean isRegionalIndicator(int codePoint) {
+  private static boolean isRegionalIndicator(int codePoint) {
     return codePoint >= FIRST_REGIONAL_INDICATOR && codePoint <= LAST_REGIONAL_INDICATOR;
   }
 
@@ -97,6 +97,22 @@ public final class EmojiFlags {
     return Optional.ofNullable(decode(symbol, false));
   }
 
+  /**
+   * Leniently decodes one flag emoji, the total decode for bulk per-token callers: it returns the
+   * ISO 3166 code, or {@code null} when {@code symbol} is not a well-formed flag (whether not
+   * flag-shaped at all or flag-shaped but malformed), never throwing on degenerate real-world text.
+   *
+   * @param symbol The code point sequence of one symbol. Must not be {@code null}.
+   * @return The ISO 3166 code, or {@code null} when {@code symbol} is not a well-formed flag.
+   * @throws IllegalArgumentException if {@code symbol} is {@code null}.
+   */
+  static String isoRegionOrNull(CharSequence symbol) {
+    if (symbol == null) {
+      throw new IllegalArgumentException("Symbol must not be null");
+    }
+    return decode(symbol, true);
+  }
+
   // Returns the ISO code, or null when symbol is not flag-shaped. A flag-shaped but malformed
   // sequence returns null when lenient, otherwise fails loud.
   private static String decode(CharSequence symbol, boolean lenient) {
@@ -118,14 +134,14 @@ public final class EmojiFlags {
   // (a lone indicator, an odd run, adjacent flags passed as one symbol) is malformed.
   private static String decodeRegionalIndicators(CharSequence symbol, int first, boolean lenient) {
     final int firstCount = Character.charCount(first);
-    if (symbol.length() < firstCount + 2) {
+    if (symbol.length() == firstCount) {
       return malformed(lenient, "Malformed regional indicator sequence: a flag is a regional"
           + " indicator pair, got a lone indicator in: " + symbol);
     }
     final int second = Character.codePointAt(symbol, firstCount);
     if (!isRegionalIndicator(second)) {
-      return malformed(lenient, "Malformed regional indicator sequence: expected a second"
-          + " regional indicator in: " + symbol);
+      return malformed(lenient, "Malformed regional indicator sequence: a flag is a regional"
+          + " indicator pair, got a non-indicator after the first indicator in: " + symbol);
     }
     if (symbol.length() > firstCount + Character.charCount(second)) {
       return malformed(lenient, "Malformed regional indicator sequence: expected exactly one"

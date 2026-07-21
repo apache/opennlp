@@ -20,7 +20,7 @@ package opennlp.tools.util.normalizer;
 /**
  * Test helpers shared across the normalizer test package.
  */
-final class NormalizerTestUtil {
+public final class NormalizerTestUtil {
 
   private NormalizerTestUtil() {
   }
@@ -32,7 +32,7 @@ final class NormalizerTestUtil {
    * @param codePoints The code points to append, in order.
    * @return The string holding those code points. Never {@code null}.
    */
-  static String cp(int... codePoints) {
+  public static String cp(int... codePoints) {
     final StringBuilder sb = new StringBuilder();
     for (final int codePoint : codePoints) {
       sb.appendCodePoint(codePoint);

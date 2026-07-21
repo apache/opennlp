@@ -22,19 +22,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EmojiFeatureGeneratorTest {
-
-  private static String cp(int... codePoints) {
-    final StringBuilder sb = new StringBuilder();
-    for (final int codePoint : codePoints) {
-      sb.appendCodePoint(codePoint);
-    }
-    return sb.toString();
-  }
 
   @Test
   void annotatedTokensContributeDocumentFeatures() {
@@ -42,8 +35,8 @@ public class EmojiFeatureGeneratorTest {
     final Collection<String> features = generator.extractFeatures(
         new String[] {"great", "pizza", cp(0x1F355), cp(0x1F600)}, null);
     assertEquals(List.of(
-        "emojiSentiment=0", "emojiEntityType=FOOD", "emojiCategory=FOOD_AND_DRINK",
-        "emojiSentiment=2", "emojiEntityType=FACE", "emojiCategory=SMILEYS_AND_EMOTION"),
+        "emojiSentiment=0", "emojiType=FOOD", "emojiCategory=FOOD_AND_DRINK",
+        "emojiSentiment=2", "emojiType=FACE", "emojiCategory=SMILEYS_AND_EMOTION"),
         List.copyOf(features));
   }
 
@@ -53,7 +46,7 @@ public class EmojiFeatureGeneratorTest {
     final Collection<String> features = generator.extractFeatures(
         new String[] {"match", cp(0x1F1EB, 0x1F1F7)}, null);
     assertTrue(features.contains("emojiRegion=FR"), "Missing region feature in: " + features);
-    assertTrue(features.contains("emojiEntityType=FLAG"), "Missing type feature in: " + features);
+    assertTrue(features.contains("emojiType=FLAG"), "Missing type feature in: " + features);
   }
 
   @Test

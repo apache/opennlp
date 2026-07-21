@@ -579,7 +579,7 @@ for (Term term : analyzer.analyze(text)) {
 			<code>DoccatFactory</code> feature generator array, and sentiment analysis trains with
 			<code>EmojiSentimentFactory</code>, whose context generator adds the emoji evidence and is
 			re-created from the model manifest at prediction time. A flag token then carries
-			gazetteer-like evidence (<code>emoji.type=FLAG</code>, <code>emoji.region=DE</code>) with no
+			gazetteer-like evidence (<code>emojiType=FLAG</code>, <code>emojiRegion=DE</code>) with no
 			dictionary, and a heart or crying face contributes its coarse polarity directly.
 		</para>
 	</section>

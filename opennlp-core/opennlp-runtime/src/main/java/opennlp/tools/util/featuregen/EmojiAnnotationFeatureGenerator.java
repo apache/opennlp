@@ -24,10 +24,10 @@ import opennlp.tools.util.normalizer.EmojiAnnotator;
 
 /**
  * Generates features from the emoji annotation layer for the token at the given index: the
- * project-authored coarse sentiment score ({@code emoji.sentiment=2}), the entity type
- * ({@code emoji.type=HEART}), the document category ({@code emoji.category=SMILEYS_AND_EMOTION}),
- * and for flags the ISO 3166 region ({@code emoji.region=DE}). For the name finder the entity
- * type behaves like gazetteer evidence: a flag token carries {@code emoji.type=FLAG} and its
+ * project-authored coarse sentiment score ({@code emojiSentiment=2}), the entity type
+ * ({@code emojiType=HEART}), the document category ({@code emojiCategory=SMILEYS_AND_EMOTION}),
+ * and for flags the ISO 3166 region ({@code emojiRegion=DE}). For the name finder the entity
+ * type behaves like gazetteer evidence: a flag token carries {@code emojiType=FLAG} and its
  * region without any dictionary.
  *
  * <p>Strictly opt-in: this generator only runs when a feature generation descriptor names
@@ -40,11 +40,6 @@ import opennlp.tools.util.normalizer.EmojiAnnotator;
  * @see EmojiAnnotator
  */
 public class EmojiAnnotationFeatureGenerator implements AdaptiveFeatureGenerator {
-
-  private static final String SENTIMENT_PREFIX = "emoji.sentiment=";
-  private static final String TYPE_PREFIX = "emoji.type=";
-  private static final String CATEGORY_PREFIX = "emoji.category=";
-  private static final String REGION_PREFIX = "emoji.region=";
 
   private final EmojiAnnotator annotator;
 
@@ -68,23 +63,29 @@ public class EmojiAnnotationFeatureGenerator implements AdaptiveFeatureGenerator
     this.annotator = annotator;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Adds one feature per present annotation attribute of the token at {@code index}.</p>
+   */
   @Override
   public void createFeatures(List<String> features, String[] tokens, int index,
                              String[] previousOutcomes) {
     final String token = tokens[index];
-    // Every annotatable symbol starts beyond ASCII (a pictograph, a regional indicator, or the
-    // waving black flag; audited in EmojiAnnotationsTest), so ordinary tokens exit here without
-    // touching the annotation layer.
-    if (token.isEmpty() || token.charAt(0) < 0x80) {
+    if (!EmojiAnnotator.isAnnotatableToken(token)) {
       return;
     }
     final EmojiAnnotation annotation = annotator.annotate(token).orElse(null);
     if (annotation == null) {
       return;
     }
-    annotation.sentiment().ifPresent(score -> features.add(SENTIMENT_PREFIX + score));
-    annotation.entityType().ifPresent(type -> features.add(TYPE_PREFIX + type));
-    annotation.category().ifPresent(category -> features.add(CATEGORY_PREFIX + category));
-    annotation.isoRegion().ifPresent(region -> features.add(REGION_PREFIX + region));
+    annotation.sentiment().ifPresent(
+        score -> features.add(EmojiAnnotator.FEATURE_SENTIMENT_PREFIX + score));
+    annotation.entityType().ifPresent(
+        type -> features.add(EmojiAnnotator.FEATURE_TYPE_PREFIX + type));
+    annotation.category().ifPresent(
+        category -> features.add(EmojiAnnotator.FEATURE_CATEGORY_PREFIX + category));
+    annotation.isoRegion().ifPresent(
+        region -> features.add(EmojiAnnotator.FEATURE_REGION_PREFIX + region));
   }
 }

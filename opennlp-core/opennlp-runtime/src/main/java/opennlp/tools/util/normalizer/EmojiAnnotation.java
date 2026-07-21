@@ -33,9 +33,6 @@ import java.util.OptionalInt;
  * rest, and a record never fabricates a value it has no source for. Instances are immutable and
  * thread-safe.</p>
  *
- * <p>These annotations are per-symbol <em>metadata</em>, not text transforms, which is why they
- * are not {@link Dimension} constants; see {@link EmojiAnnotations} for the design note.</p>
- *
  * @param symbol     The annotated code point sequence, without the U+FE0F presentation selector.
  * @param attributes The attribute values keyed by attribute name ({@link #NAME},
  *                   {@link #SENTIMENT}, {@link #ENTITY_TYPE}, {@link #CATEGORY}).

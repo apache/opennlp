@@ -23,10 +23,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import static opennlp.tools.util.normalizer.NormalizerTestUtil.cp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,10 +39,6 @@ public class EmojiAnnotationsTest {
 
   private static final String[] ATTRIBUTES = {EmojiAnnotation.NAME, EmojiAnnotation.SENTIMENT,
       EmojiAnnotation.ENTITY_TYPE, EmojiAnnotation.CATEGORY};
-
-  private static String cp(int codePoint) {
-    return new String(Character.toChars(codePoint));
-  }
 
   private static Map<String, EmojiAnnotation> bundled() throws IOException {
     try (InputStream in = EmojiAnnotations.class.getResourceAsStream("emoji-annotations.txt")) {
@@ -80,7 +81,7 @@ public class EmojiAnnotationsTest {
         final EmojiAnnotation.Value value = entry.getValue();
         assertEquals(expectedSource.get(entry.getKey()), value.source(),
             "Unexpected source for " + annotation.symbol() + " " + entry.getKey());
-        assertTrue(!value.notes().isEmpty(),
+        assertFalse(value.notes().isEmpty(),
             "Empty notes for " + annotation.symbol() + " " + entry.getKey());
       }
     }
@@ -187,58 +188,30 @@ public class EmojiAnnotationsTest {
 
   // --- fail-loud parsing ---
 
-  @Test
-  void parseFailsLoudOnWrongFieldCount() {
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; name ; slightly smiling face ; CLDR:annotation\n"));
+  static Stream<String> malformedData() {
+    // The data and the code move together, so every malformed row fails loud rather than loading
+    // quietly: wrong field count, an unknown attribute, malformed hex, an empty structural field,
+    // a sentiment outside the coarse scale, an unrecognized enum value, and a duplicate row.
+    return Stream.of(
+        "1F642 ; name ; slightly smiling face ; CLDR:annotation\n",
+        "1F642 ; shortName ; slightly smiling face ; CLDR:annotation ; n\n",
+        "1F64X ; name ; slightly smiling face ; CLDR:annotation ; n\n",
+        " ; name ; slightly smiling face ; CLDR:annotation ; n\n",
+        "1F642 ; name ; ; CLDR:annotation ; n\n",
+        "1F642 ; name ; slightly smiling face ; ; n\n",
+        "1F642 ; sentiment ; 3 ; UNSPECIFIED ; n\n",
+        "1F642 ; sentiment ; -3 ; UNSPECIFIED ; n\n",
+        "1F642 ; sentiment ; positive ; UNSPECIFIED ; n\n",
+        "1F642 ; entityType ; SMILEY ; UCD:emoji-test ; n\n",
+        "1F642 ; category ; EMOTION ; UCD:emoji-test ; n\n",
+        "1F642 ; sentiment ; 1 ; UNSPECIFIED ; first\n"
+            + "1F642 ; sentiment ; 2 ; UNSPECIFIED ; duplicate\n");
   }
 
-  @Test
-  void parseFailsLoudOnUnknownAttribute() {
-    // An unknown attribute is corruption, not extensibility: the data and the code move together.
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; shortName ; slightly smiling face ; CLDR:annotation ; n\n"));
-  }
-
-  @Test
-  void parseFailsLoudOnMalformedHex() {
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F64X ; name ; slightly smiling face ; CLDR:annotation ; n\n"));
-  }
-
-  @Test
-  void parseFailsLoudOnEmptyFields() {
-    assertThrows(IllegalArgumentException.class,
-        () -> parse(" ; name ; slightly smiling face ; CLDR:annotation ; n\n"));
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; name ; ; CLDR:annotation ; n\n"));
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; name ; slightly smiling face ; ; n\n"));
-  }
-
-  @Test
-  void parseFailsLoudOnSentimentOutsideTheCoarseScale() {
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; sentiment ; 3 ; UNSPECIFIED ; n\n"));
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; sentiment ; -3 ; UNSPECIFIED ; n\n"));
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; sentiment ; positive ; UNSPECIFIED ; n\n"));
-  }
-
-  @Test
-  void parseFailsLoudOnUnrecognizedEnumValues() {
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; entityType ; SMILEY ; UCD:emoji-test ; n\n"));
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; category ; EMOTION ; UCD:emoji-test ; n\n"));
-  }
-
-  @Test
-  void parseFailsLoudOnDuplicateAttributeRows() {
-    assertThrows(IllegalArgumentException.class,
-        () -> parse("1F642 ; sentiment ; 1 ; UNSPECIFIED ; first\n"
-            + "1F642 ; sentiment ; 2 ; UNSPECIFIED ; duplicate\n"));
+  @ParameterizedTest
+  @MethodSource("malformedData")
+  void parseFailsLoud(String data) {
+    assertThrows(IllegalArgumentException.class, () -> parse(data));
   }
 
   @Test
@@ -259,7 +232,10 @@ public class EmojiAnnotationsTest {
     assertThrows(IllegalArgumentException.class, () -> new EmojiAnnotation(null, attributes));
     assertThrows(IllegalArgumentException.class, () -> new EmojiAnnotation("", attributes));
     assertThrows(IllegalArgumentException.class, () -> new EmojiAnnotation(cp(0x1F642), null));
+    // A Value rejects a null or empty value and a null or empty source, and a null notes.
+    assertThrows(IllegalArgumentException.class, () -> new EmojiAnnotation.Value(null, "s", ""));
     assertThrows(IllegalArgumentException.class, () -> new EmojiAnnotation.Value("", "s", ""));
+    assertThrows(IllegalArgumentException.class, () -> new EmojiAnnotation.Value("v", null, ""));
     assertThrows(IllegalArgumentException.class, () -> new EmojiAnnotation.Value("v", "", ""));
     assertThrows(IllegalArgumentException.class, () -> new EmojiAnnotation.Value("v", "s", null));
   }
