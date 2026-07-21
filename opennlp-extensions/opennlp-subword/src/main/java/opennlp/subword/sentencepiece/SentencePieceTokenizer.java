@@ -36,6 +36,7 @@ import java.util.function.IntUnaryOperator;
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.tokenize.SubwordPiece;
 import opennlp.tools.tokenize.SubwordTokenizer;
+import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.normalizer.AlignedText;
 import opennlp.tools.util.normalizer.Alignment;
 import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
@@ -107,9 +108,9 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    * table, the normalizer, and the encoder matching the model's algorithm.
    *
    * @param model The parsed model description.
-   * @throws IllegalArgumentException Thrown if the model is structurally invalid.
+   * @throws InvalidFormatException Thrown if the model is structurally invalid.
    */
-  private SentencePieceTokenizer(ModelProtoReader.RawModel model) {
+  private SentencePieceTokenizer(ModelProtoReader.RawModel model) throws InvalidFormatException {
     final int count = model.pieces.size();
     pieces = model.pieces.toArray(new String[0]);
     scores = new float[count];
@@ -122,7 +123,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     algorithm = switch (model.modelType) {
       case ModelProtoReader.RawModel.MODEL_TYPE_UNIGRAM -> Algorithm.UNIGRAM;
       case ModelProtoReader.RawModel.MODEL_TYPE_BPE -> Algorithm.BPE;
-      default -> throw new IllegalArgumentException(
+      default -> throw new InvalidFormatException(
           "The model type " + model.modelType + " is not supported; only the unigram and BPE"
               + " algorithms are.");
     };
@@ -139,11 +140,11 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     for (int i = 0; i < count; i++) {
       final String piece = pieces[i];
       if (piece.length() >= MAX_PIECE_LENGTH) {
-        throw new IllegalArgumentException("The piece with id " + i + " is longer than "
+        throw new InvalidFormatException("The piece with id " + i + " is longer than "
             + MAX_PIECE_LENGTH + " characters.");
       }
       if (piece.indexOf(0) >= 0) {
-        throw new IllegalArgumentException(
+        throw new InvalidFormatException(
             "The piece with id " + i + " contains a null character.");
       }
       final boolean isMain =
@@ -151,7 +152,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
       final Map<String, Integer> target =
           isMain || algorithm == Algorithm.BPE ? mainPieces : reservedPieces;
       if (mainPieces.containsKey(piece) || reservedPieces.containsKey(piece)) {
-        throw PieceTrie.duplicatePiece(piece);
+        throw new InvalidFormatException(PieceTrie.duplicatePiece(piece).getMessage());
       }
       target.put(piece, i);
       switch (types[i]) {
@@ -159,18 +160,18 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
         case TYPE_USER_DEFINED -> userDefined.add(piece);
         case TYPE_UNKNOWN -> {
           if (foundUnkId >= 0) {
-            throw new IllegalArgumentException("The model defines more than one unknown piece.");
+            throw new InvalidFormatException("The model defines more than one unknown piece.");
           }
           foundUnkId = i;
         }
         case TYPE_BYTE -> {
           if (!byteFallback) {
-            throw new IllegalArgumentException("The model defines the byte piece '" + piece
+            throw new InvalidFormatException("The model defines the byte piece '" + piece
                 + "' although byte fallback is disabled.");
           }
           final int b = parseBytePiece(piece);
           if (b < 0) {
-            throw new IllegalArgumentException("The byte piece '" + piece + "' is invalid.");
+            throw new InvalidFormatException("The byte piece '" + piece + "' is invalid.");
           }
           byteToId[b] = i;
         }
@@ -180,13 +181,13 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
       }
     }
     if (foundUnkId < 0) {
-      throw new IllegalArgumentException("The model defines no unknown piece.");
+      throw new InvalidFormatException("The model defines no unknown piece.");
     }
     unkId = foundUnkId;
     if (byteFallback) {
       for (int b = 0; b < 256; b++) {
         if (byteToId[b] < 0) {
-          throw new IllegalArgumentException("The model enables byte fallback but defines no"
+          throw new InvalidFormatException("The model enables byte fallback but defines no"
               + " piece for byte " + b + ".");
         }
       }
@@ -255,7 +256,8 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    * @param modelFile The {@code .model} file to load; must not be null.
    * @return The ready-to-use tokenizer.
    * @throws IOException Thrown if the file cannot be read.
-   * @throws IllegalArgumentException Thrown if the file is not a valid model.
+   * @throws InvalidFormatException Thrown if the content is not a valid model.
+   * @throws IllegalArgumentException Thrown if {@code modelFile} is null.
    */
   public static SentencePieceTokenizer load(Path modelFile) throws IOException {
     if (modelFile == null) {
@@ -271,7 +273,8 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    *           null.
    * @return The ready-to-use tokenizer.
    * @throws IOException Thrown if the stream cannot be read.
-   * @throws IllegalArgumentException Thrown if the bytes are not a valid model.
+   * @throws InvalidFormatException Thrown if the content is not a valid model.
+   * @throws IllegalArgumentException Thrown if {@code in} is null.
    */
   public static SentencePieceTokenizer load(InputStream in) throws IOException {
     if (in == null) {

@@ -151,7 +151,7 @@ final class SentencePieceNormalizer implements Serializable {
     int from = 0;
     int consumed = 0;
 
-    // Ignores heading whitespace.
+    // Ignores leading whitespace.
     if (removeExtraWhitespaces) {
       while (from < inputLength) {
         normalizePrefix(input, inputLength, from, chunk);
@@ -194,7 +194,7 @@ final class SentencePieceNormalizer implements Serializable {
       final int spTo = chunk.to;
       final byte[] spData = chunk.data;
 
-      // Removes heading spaces in the chunk if the previous chunk ended with whitespace.
+      // Removes leading spaces in the chunk if the previous chunk ended with whitespace.
       while (isPrevSpace && spFrom < spTo && spData[spFrom] == ' ') {
         spFrom++;
       }

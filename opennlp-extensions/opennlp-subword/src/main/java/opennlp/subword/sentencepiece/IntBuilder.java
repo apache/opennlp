@@ -21,6 +21,9 @@ import java.util.Arrays;
 /** A growable int buffer supporting append, indexed read, and truncate. */
 final class IntBuilder {
 
+  /** The smallest backing array, so tiny requested capacities still grow geometrically. */
+  private static final int MIN_CAPACITY = 16;
+
   private int[] data;
   private int length;
 
@@ -30,7 +33,7 @@ final class IntBuilder {
    * @param capacity The initial capacity hint.
    */
   IntBuilder(int capacity) {
-    data = new int[Math.max(capacity, 16)];
+    data = new int[Math.max(capacity, MIN_CAPACITY)];
   }
 
   /**
@@ -40,9 +43,14 @@ final class IntBuilder {
    */
   void append(int value) {
     if (length == data.length) {
-      data = Arrays.copyOf(data, data.length + (data.length >> 1));
+      data = Arrays.copyOf(data, grownLength());
     }
     data[length++] = value;
+  }
+
+  /** {@return the next backing-array length under the 1.5x growth policy} */
+  private int grownLength() {
+    return data.length + (data.length >> 1);
   }
 
   /**
