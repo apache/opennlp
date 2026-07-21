@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 
@@ -45,9 +46,8 @@ import opennlp.tools.geo.GazetteerEntry;
  *
  * <p>Instances are immutable and as thread-safe as the composed gazetteers, which the
  * {@link Gazetteer} contract requires to be thread-safe themselves.</p>
- *
- * @since 3.0.0
  */
+@ThreadSafe
 public final class OverlayGazetteer implements Gazetteer {
 
   private final Gazetteer base;
@@ -120,8 +120,11 @@ public final class OverlayGazetteer implements Gazetteer {
    */
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) throws IOException {
-    if (source == null || recordId == null) {
-      throw new IllegalArgumentException("source and recordId must not be null");
+    if (source == null) {
+      throw new IllegalArgumentException("source must not be null");
+    }
+    if (recordId == null) {
+      throw new IllegalArgumentException("recordId must not be null");
     }
     if (additions != null) {
       final Optional<GazetteerEntry> added = additions.byId(source, recordId);

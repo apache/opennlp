@@ -24,10 +24,10 @@ The `opennlp-geo` module reads plain text tables instead of parsing upstream dis
 | Gazetteer | Data source | License of the data | Shipped in the jar? |
 |---|---|---|---|
 | `opennlp.geo.BundledGazetteer` | Natural Earth, Populated Places theme | Public domain | Yes: `naturalearth-populated-places.txt` |
-| `opennlp.geo.GeoNamesGazetteer` | GeoNames main-table extracts, downloaded by the user | CC-BY 4.0 (see the `readme.txt` alongside the downloads) | No. The user downloads the file at their own explicit action; attribution and license compliance are the caller's responsibility, as the class javadoc states. |
-| `opennlp.geo.OvertureGazetteer` | Overture Maps, divisions theme, flattened by a script in this directory | ODbL 1.0. Attribution and database share-alike terms apply, and they follow the derived table, which is built and owned by the user. | No. Nothing ODbL-licensed is distributed by the project in any form. |
+| `opennlp.geo.GeoNamesGazetteer` | GeoNames main-table extracts, downloaded by the user | CC-BY 4.0 (see the `readme.txt` alongside the downloads) | No. The user downloads the file; the CC-BY license terms, including attribution, stay with the downloaded files. |
+| `opennlp.geo.OvertureGazetteer` | Overture Maps, divisions theme, flattened by a script in this directory | ODbL 1.0. Attribution and database share-alike terms apply and follow the derived table, which the user builds. | No. Nothing ODbL-licensed is distributed by the project in any form. |
 
-Only public-domain data is bundled; every other dataset is acquired by the user on the user's own infrastructure, so the project never redistributes it. The license classifications behind this split are on record in LEGAL-732: CDLA-Permissive-2.0 was judged Category A, ODbL Category X, public-domain/CC0 data needs only a LICENSE section, and data fetched at runtime on the user's machine creates no ASF licensing obligation at all because nothing is redistributed. Note the theme distinction inside Overture: the Places theme is CDLA-Permissive-2.0, but the divisions theme this module consumes is ODbL, and the two must not be conflated.
+No gazetteer data beyond the bundled public-domain table is added to the project; every other dataset is downloaded by the user and is not redistributed by the project. The license classifications behind this split are on record in LEGAL-732: CDLA-Permissive-2.0 was judged Category A, ODbL Category X, and public-domain/CC0 data needs only a LICENSE section. Note the theme distinction inside Overture: the Places theme is CDLA-Permissive-2.0, but the divisions theme this module consumes is ODbL, and the two must not be conflated.
 
 ## `derive-populated-places.py`
 

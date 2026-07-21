@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.geo.Gazetteer;
 import opennlp.tools.geo.GazetteerEntry;
 import opennlp.tools.geo.GeoPoint;
@@ -40,8 +41,8 @@ import opennlp.tools.util.StringUtil;
  * tab-separated row per place with name, ASCII name, comma-separated alternate names,
  * coordinates, feature class, country code, and population.
  *
- * <p>The file is downloaded by the caller; nothing is bundled, and complying with the
- * publisher's license terms, including attribution, is the caller's responsibility.
+ * <p>The file is downloaded by the caller; nothing is bundled, and the publisher's
+ * license terms, including attribution, stay with the downloaded file.
  * The whole table is indexed in memory, so this loader is meant for the filtered city
  * extracts rather than the full multi-gigabyte dump; memory grows with row and
  * alternate-name count.</p>
@@ -55,9 +56,8 @@ import opennlp.tools.util.StringUtil;
  * {@link GazetteerEntry#FEATURE_CLASS_POI}.</p>
  *
  * <p>Instances are immutable after loading and safe to share between threads.</p>
- *
- * @since 3.0.0
  */
+@ThreadSafe
 public final class GeoNamesGazetteer implements Gazetteer {
 
   /** The dataset identifier this gazetteer scopes its record ids to. */
@@ -140,8 +140,11 @@ public final class GeoNamesGazetteer implements Gazetteer {
   /** {@inheritDoc} */
   @Override
   public Optional<GazetteerEntry> byId(String source, String recordId) {
-    if (source == null || recordId == null) {
-      throw new IllegalArgumentException("source and recordId must not be null");
+    if (source == null) {
+      throw new IllegalArgumentException("source must not be null");
+    }
+    if (recordId == null) {
+      throw new IllegalArgumentException("recordId must not be null");
     }
     return SOURCE.equals(source) ? index.byId(recordId) : Optional.empty();
   }

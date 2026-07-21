@@ -411,7 +411,7 @@ def main():
 HEADER_TEMPLATE = '''\
 # Bundled gazetteer table, authored by the Apache OpenNLP project as a derivation of the
 # Natural Earth "Populated Places" dataset (loaded by opennlp.geo.BundledGazetteer).
-# {count} rows. Regenerated with dev/derive-populated-places.py in this module; the
+# {count} rows. Regenerated with dev/derive-populated-places.py in the project source tree; the
 # underlying data is in the public domain (see the derivation record below), so this file
 # carries the derivation record instead of a source license header. See the Natural Earth
 # section of the LICENSE file.
