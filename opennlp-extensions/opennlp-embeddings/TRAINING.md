@@ -45,7 +45,7 @@ print("dim:", static.dim)
 .venv-distill/bin/python distill_bge_m3.py
 ```
 
-This exact script ships in the module as `scripts/distill_bge_m3.py`, and `scripts/parity/` holds a harness that reruns the parity check and the single-thread speed comparison against the Python reference on any machine.
+This exact script lives in the repository as `dev/embeddings/distill_bge_m3.py`, and `dev/embeddings/parity/` holds a harness that reruns the parity check and the single-thread speed comparison against the Python reference on any machine.
 
 ### On the dimension
 

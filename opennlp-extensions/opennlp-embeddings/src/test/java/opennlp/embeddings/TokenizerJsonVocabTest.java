@@ -56,7 +56,7 @@ class TokenizerJsonVocabTest {
     final Path file = write("{\"model\":{\"type\":\"Unigram\",\"unk_id\":1,"
         + "\"vocab\":[[\"<pad>\",0.0],[\"<unk>\",0.0],[\"\\u2581a\",-2.5],[\"b\",-3.0]]}}");
 
-    assertEquals(List.of("<pad>", "<unk>", "▁a", "b"), TokenizerJsonVocab.rows(file));
+    assertEquals(List.of("<pad>", "<unk>", "\u2581a", "b"), TokenizerJsonVocab.rows(file));
   }
 
   @Test

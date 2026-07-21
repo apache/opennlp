@@ -16,22 +16,23 @@
 #   specific language governing permissions and limitations
 #   under the License.
 
-# Reproduces the parity and single-thread speed comparison between this module and the
+# Reproduces the parity and single-thread speed comparison between opennlp-embeddings and the
 # model2vec Python reference: the same model and the same sentences on both sides, with the
 # vector sets checked against each other. Run from this directory after building the project
 # (mvn install, or at least mvn compile from the repository root).
 #
 # Environment overrides:
 #   MODEL_DIR  the static model directory (default: bge-m3-static in this directory;
-#              see ../distill_bge_m3.py and the module's TRAINING.md to produce one)
+#              see ../distill_bge_m3.py and opennlp-extensions/opennlp-embeddings/TRAINING.md
+#              to produce one)
 #   PYTHON     a Python interpreter with model2vec installed (default: python3)
 set -e
 
 MODEL_DIR="${MODEL_DIR:-bge-m3-static}"
 PYTHON="${PYTHON:-python3}"
 
-# The repository root is four levels above this script.
-ROOT=$(cd "$(dirname "$0")/../../../.." && pwd)
+# The repository root is three levels above this script.
+ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 CP="$ROOT/opennlp-api/target/classes:$ROOT/opennlp-core/opennlp-runtime/target/classes:$ROOT/opennlp-extensions/opennlp-subword/target/classes:$ROOT/opennlp-extensions/opennlp-embeddings/target/classes"
 
 echo "Model: $MODEL_DIR"

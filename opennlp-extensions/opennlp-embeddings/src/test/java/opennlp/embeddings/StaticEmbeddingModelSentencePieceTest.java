@@ -160,8 +160,8 @@ class StaticEmbeddingModelSentencePieceTest {
   void testEmbedGathersRowsByPieceStringAcrossTheIdOffset(@TempDir Path dir) throws IOException {
     final StaticEmbeddingModel model = loadFromDirectory(writeModelDirectory(dir, null));
 
-    // "a" segments to the single piece "▁a"; the embedding must be exactly that piece's matrix
-    // row, found by string in the reordered vocabulary, not by the tokenizer's id.
+    // "a" segments to the single piece U+2581 + "a"; the embedding must be exactly that piece's
+    // matrix row, found by string in the reordered vocabulary, not by the tokenizer's id.
     final List<SubwordPiece> pieces = tokenizer.encode("a");
     assertEquals(1, pieces.size());
     final int row = rows.indexOf(pieces.get(0).piece());
@@ -206,7 +206,7 @@ class StaticEmbeddingModelSentencePieceTest {
     // The euro sign is outside the tiny training corpus, so it segments to the dummy-prefix
     // piece plus an unknown piece carrying the surface text. The unknown piece's string is not
     // a vocabulary entry, so pooling must skip it by its id, leaving only the mapped pieces.
-    final List<SubwordPiece> pieces = tokenizer.encode("€");
+    final List<SubwordPiece> pieces = tokenizer.encode("\u20AC");
     final float[] expected = new float[DIMENSION];
     int pooled = 0;
     int unknown = 0;
@@ -224,11 +224,11 @@ class StaticEmbeddingModelSentencePieceTest {
       }
       pooled++;
     }
-    assertTrue(unknown > 0, "fixture assumption: '€' must produce an unknown piece");
+    assertTrue(unknown > 0, "fixture assumption: the euro sign must produce an unknown piece");
     for (int d = 0; d < DIMENSION; d++) {
       expected[d] /= Math.max(pooled, 1);
     }
-    assertArrayEquals(expected, model.embed("€"), 1e-5f);
+    assertArrayEquals(expected, model.embed("\u20AC"), 1e-5f);
   }
 
   @Test
