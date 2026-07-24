@@ -127,7 +127,7 @@ public class UnigramSegmenter implements Tokenizer {
         continue;
       }
       lineNumber++;
-      final String line = content.substring(lineStart, i).trim();
+      final String line = StringUtil.trimUnicodeWhitespace(content.substring(lineStart, i));
       lineStart = i + 1;
       if (line.isEmpty()) {
         continue;
@@ -178,6 +178,13 @@ public class UnigramSegmenter implements Tokenizer {
     return new UnigramSegmenter(root, unknown);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Reports the segmented surfaces, whitespace omitted.</p>
+   *
+   * @throws IllegalArgumentException Thrown if {@code s} is {@code null}.
+   */
   @Override
   public String[] tokenize(String s) {
     final Span[] spans = tokenizePos(s);
@@ -188,6 +195,13 @@ public class UnigramSegmenter implements Tokenizer {
     return tokens;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Reports the segmented spans in original text coordinates, whitespace omitted.</p>
+   *
+   * @throws IllegalArgumentException Thrown if {@code s} is {@code null}.
+   */
   @Override
   public Span[] tokenizePos(String s) {
     if (s == null) {
