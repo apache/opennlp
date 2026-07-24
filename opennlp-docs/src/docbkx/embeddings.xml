@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.embeddings" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<title>Static Embeddings</title>
+
+	<section xml:id="tools.embeddings.introduction">
+		<title>Introduction</title>
+		<para>
+			The <code>opennlp-embeddings</code> extension module produces sentence and word
+			embedding vectors from a static (non-contextual) embedding table: a per-token vector
+			matrix plus subword tokenization, WordPiece or SentencePiece. It is the modern
+			successor to the word2vec and GloVe workflow. Distillation tools can compress a
+			sentence-transformer into such a flat table (the Model2Vec family of releases is the
+			primary target), and looking a sentence up in the table approximates the transformer's
+			semantics at a small fraction of the cost: embedding a text is tokenize, gather,
+			mean-pool, and normalize, with no model forward pass, no GPU, and no native runtime.
+			SentencePiece support covers multilingual tables distilled from encoders of the
+			XLM-RoBERTa family, whose vectors embed different languages into the same space.
+		</para>
+		<para>
+			Use it when embedding throughput and a pure-JVM deployment matter more than the last
+			few points of retrieval quality: semantic similarity and deduplication, candidate
+			retrieval for a heavier reranker, clustering, or classification features. A
+			contextual model remains the better choice when distinguishing word senses in context
+			is the point of the task.
+		</para>
+		<para>
+			OpenNLP supports contextual, ONNX-backed sentence vectors as well, in the
+			<code>opennlp-dl</code> module. Those are inherently more accurate; Model2Vec trades
+			some accuracy for a large speed gain. Both paths implement the same
+			<code>TextEmbedder</code> interface (in <code>opennlp-api</code>), so an application can
+			swap one for the other without changing its calling code.
+		</para>
+		<para>
+			No model is bundled with the module. Callers point it at a model directory they
+			downloaded; the table's own license applies to the table.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.api">
+		<title>Embedding Text with the API</title>
+		<para>
+			A model directory loads with a single call, and the tokenizer family is detected from
+			the files present. A WordPiece model carries <code>vocab.txt</code>,
+			<code>model.safetensors</code>, <code>config.json</code>, and
+			<code>tokenizer_config.json</code>; a SentencePiece model carries a trained
+			<code>.model</code> file (<code>sentencepiece.bpe.model</code>,
+			<code>spiece.model</code>, or <code>tokenizer.model</code>) next to
+			<code>tokenizer.json</code>, <code>model.safetensors</code>, and
+			<code>config.json</code>. The tokenizer and pooling switches are read from the model's
+			own configuration files:
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(Path.of("/path/to/model-directory"));
+
+float[] vector = model.embed("The quick brown fox");
+double similarity = model.similarity("coffee", "espresso");
+List<Neighbor> neighbors = model.mostSimilar("coffee", 5);
+List<Neighbor> analogy = model.analogy("man", "king", "woman", 1);]]>
+		</programlisting>
+		<para>
+			<code>StaticEmbeddingUsageExampleTest</code> asserts the load-and-query workflow
+			shown here.
+		</para>
+		<para>
+			For a model laid out differently, the explicit overloads take the data files and the
+			switches directly. The WordPiece overload takes whether the tokenizer lower-cases
+			(and strips accents) and whether embeddings are L2-normalized; both are properties of
+			the model, published in its configuration. The SentencePiece overload has no casing
+			switch, because the trained <code>.model</code> file carries the model's own text
+			normalizer.
+		</para>
+		<programlisting language="java">
+			<![CDATA[
+StaticEmbeddingModel model = StaticEmbeddingModel.load(
+    Path.of("vocab.txt"), Path.of("model.safetensors"),
+    StaticEmbeddingModel.Casing.UNCASED,      // from the model's do_lower_case
+    StaticEmbeddingModel.Normalization.L2);   // from the model's config
+
+StaticEmbeddingModel multilingual = StaticEmbeddingModel.loadSentencePiece(
+    Path.of("sentencepiece.bpe.model"), Path.of("tokenizer.json"),
+    Path.of("model.safetensors"),
+    StaticEmbeddingModel.Normalization.L2);
+]]>
+		</programlisting>
+		<para>
+			Matrix rows are resolved by piece string, never by tokenizer id, because the two
+			files of a SentencePiece model routinely order and offset their ids differently. A
+			poolable piece with no matrix row fails loud at load time. Distillation output
+			usually ships without the trained <code>.model</code> file; copy that one file from
+			the teacher model's own repository into the model directory, and the loader names
+			exactly this fix if the file is missing.
+		</para>
+		<para>
+			Instances are immutable and safe for concurrent use, so one loaded model can serve
+			every thread of an application. Texts with no in-vocabulary tokens embed to a zero
+			vector rather than raising an error (matching the reference implementation), and
+			<code>similarity</code> reports <code>0</code> for them. This is a rare edge case for
+			text in the model's language, since subword tokenization backs off to smaller pieces;
+			it mostly happens for empty input or text outside the vocabulary's coverage.
+		</para>
+	</section>
+
+	<section xml:id="tools.embeddings.safetensors">
+		<title>The safetensors Reader</title>
+		<para>
+			Weights are read with a purpose-built reader for the safetensors format. Unlike
+			pickle-based checkpoint formats, a safetensors file carries no executable content
+			(the header is data-only JSON and the body is raw tensor bytes), so loading one
+			cannot execute arbitrary code. Only the header is read eagerly; tensor data streams
+			directly into the decoded array, so the file size is not limited by Java's
+			int-indexed arrays. One decoded tensor is capped at the maximum Java array length
+			(about 2.1 billion float elements), checked explicitly.
+		</para>
+	</section>
+</chapter>
