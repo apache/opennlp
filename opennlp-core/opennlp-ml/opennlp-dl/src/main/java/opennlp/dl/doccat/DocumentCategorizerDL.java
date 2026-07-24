@@ -51,7 +51,7 @@ import opennlp.tools.doccat.DocumentCategorizer;
  * using ONNX models.
  *
  * <p>Tokenization performs BERT basic tokenization (text normalization)
- * before wordpiece, see {@link opennlp.tools.tokenize.BertTokenizer}. Input
+ * before wordpiece, see {@link opennlp.tools.tokenize.WordpieceEncoder}. Input
  * text is lower cased and accent stripped by default, matching the uncased
  * models commonly used for classification. For cased models, set
  * {@link InferenceOptions#setLowerCase(boolean)} to {@code false}.</p>

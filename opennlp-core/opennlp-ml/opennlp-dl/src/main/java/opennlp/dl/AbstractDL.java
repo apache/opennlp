@@ -36,8 +36,8 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
-import opennlp.tools.tokenize.BertTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.WordpieceEncoder;
 import opennlp.tools.tokenize.WordpieceTokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.normalizer.AlignedText;
@@ -105,7 +105,7 @@ public abstract class AbstractDL implements AutoCloseable {
       final OrtSession createdSession = env.createSession(model.getPath(), sessionOptions);
       try {
         this.vocab = Map.copyOf(loadVocabFile(vocabulary));
-        this.tokenizer = createBertTokenizer(vocab, lowerCase);
+        this.tokenizer = createPipelineTokenizer(vocab, lowerCase);
       } catch (IOException | RuntimeException e) {
         // Vocabulary/tokenizer init failed after the native session was created; close it
         // so a partially constructed instance never leaks the ONNX session.
@@ -136,7 +136,7 @@ public abstract class AbstractDL implements AutoCloseable {
     this.env = env;
     this.session = session;
     this.vocab = vocab;
-    this.tokenizer = createBertTokenizer(vocab, lowerCase);
+    this.tokenizer = createPipelineTokenizer(vocab, lowerCase);
   }
 
   /**
@@ -238,38 +238,54 @@ public abstract class AbstractDL implements AutoCloseable {
   }
 
   /**
-   * Creates a {@link BertTokenizer} that performs the full BERT tokenization
-   * pipeline: basic tokenization (text normalization) followed by wordpiece.
-   * The special tokens are selected based on the vocabulary: if it contains
-   * RoBERTa-style tokens, those are used, otherwise the BERT defaults.
+   * Creates a {@link Tokenizer} that performs the full BERT tokenization
+   * pipeline: basic tokenization (text normalization) followed by wordpiece,
+   * backed by a {@link WordpieceEncoder}. The special tokens are selected
+   * based on the vocabulary: if it contains RoBERTa-style tokens, those are
+   * used, otherwise the BERT defaults.
    *
    * @param vocab The vocabulary map.
    * @param lowerCase {@code true} for uncased models (lower casing and accent
    *     stripping), {@code false} for cased models.
-   * @return A configured {@link BertTokenizer}.
-   * @throws IllegalArgumentException Thrown if a RoBERTa-style vocabulary
-   *     contains no supported unknown token.
+   * @return A configured {@link Tokenizer}.
+   * @throws IllegalArgumentException Thrown if the selected special tokens
+   *     are not all present in the vocabulary.
    */
-  protected BertTokenizer createTokenizer(
+  protected Tokenizer createTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
 
-    return createBertTokenizer(vocab, lowerCase);
+    return createPipelineTokenizer(vocab, lowerCase);
   }
 
-  static BertTokenizer createBertTokenizer(
+  /**
+   * Builds the pipeline tokenizer, selecting the RoBERTa special tokens when the vocabulary
+   * carries them and the BERT defaults otherwise.
+   *
+   * @param vocab     The vocabulary map.
+   * @param lowerCase {@code true} for uncased models, {@code false} for cased models.
+   * @return A configured {@link Tokenizer}.
+   * @throws IllegalArgumentException Thrown if the selected special tokens are not all present in
+   *     the vocabulary.
+   */
+  static Tokenizer createPipelineTokenizer(
       final Map<String, Integer> vocab, final boolean lowerCase) {
     if (vocab.containsKey(
             WordpieceTokenizer.ROBERTA_CLS_TOKEN)
         && vocab.containsKey(
             WordpieceTokenizer.ROBERTA_SEP_TOKEN)) {
-      return new BertTokenizer(
-          vocab.keySet(),
+      return new EncoderTokenizer(new WordpieceEncoder(
+          vocab,
           lowerCase,
           WordpieceTokenizer.ROBERTA_CLS_TOKEN,
           WordpieceTokenizer.ROBERTA_SEP_TOKEN,
-          resolveUnknownToken(vocab));
+          resolveUnknownToken(vocab)));
     }
-    return new BertTokenizer(vocab.keySet(), lowerCase);
+    return new EncoderTokenizer(new WordpieceEncoder(
+        vocab,
+        lowerCase,
+        WordpieceTokenizer.BERT_CLS_TOKEN,
+        WordpieceTokenizer.BERT_SEP_TOKEN,
+        WordpieceTokenizer.BERT_UNK_TOKEN));
   }
 
   /**
