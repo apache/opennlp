@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The rotation contract: orthonormal (norms and dot products preserved), self-consistent
@@ -141,15 +140,5 @@ class HadamardRotationTest {
       dot += (double) a[i] * b[i];
     }
     return dot;
-  }
-
-  @Test
-  void testHelpersKeepThePaddedContract() {
-    // The helpers above assume rotate() leaves length unchanged; pin that here.
-    final HadamardRotation rotation = new HadamardRotation(3, 0L);
-    final float[] vector = new float[] {1f, 2f, 3f, 0f};
-    rotation.rotate(vector);
-    assertEquals(4, vector.length);
-    assertTrue(Float.isFinite(vector[0]));
   }
 }

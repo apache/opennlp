@@ -23,11 +23,13 @@ import java.util.Arrays;
  * minimizing the mean squared error over {@code N(0,1)}, with encoding by nearest level. The
  * coordinates of a {@link HadamardRotation rotated} unit vector, scaled by the square root of the
  * padded dimension, follow this distribution closely, which is what makes one fixed grid
- * near-optimal for every coordinate of every vector (Zandieh et al., <i>TurboQuant: Online Vector
- * Quantization with Near-optimal Distortion Rate</i>, arXiv:2504.19874).
+ * near-optimal for every coordinate of every vector (Zandieh et al.,
+ * <a href="https://arxiv.org/abs/2504.19874"><i>TurboQuant: Online Vector Quantization with
+ * Near-optimal Distortion Rate</i></a>).
  *
- * <p>The levels are the classic Lloyd-Max quantizer of the Gaussian (Max, <i>Quantizing for
- * minimum distortion</i>, IRE Transactions on Information Theory, 1960), computed here by Lloyd
+ * <p>The levels are the classic Lloyd-Max quantizer of the Gaussian (Max,
+ * <a href="https://doi.org/10.1109/TIT.1960.1057548"><i>Quantizing for minimum
+ * distortion</i></a>, IRE Transactions on Information Theory, 1960), computed here by Lloyd
  * iteration over a fine discretization of the density rather than copied from published tables,
  * so the derivation is in this file and reproducible. Computed grids are cached per bit width.
  * Encoding compares against the midpoints between adjacent levels, which is exactly the

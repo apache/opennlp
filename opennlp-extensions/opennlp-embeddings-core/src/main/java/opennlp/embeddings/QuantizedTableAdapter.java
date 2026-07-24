@@ -35,41 +35,49 @@ final class QuantizedTableAdapter implements EmbeddingTable {
     this.matrix = matrix;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int rowCount() {
     return matrix.rowCount();
   }
 
+  /** {@inheritDoc} */
   @Override
   public int dimension() {
     return matrix.dimension();
   }
 
+  /** {@inheritDoc} */
   @Override
   public int pooledLength() {
     return matrix.paddedDimension();
   }
 
+  /** {@inheritDoc} */
   @Override
   public void addRow(int row, float weight, float[] sum) {
     matrix.addRowRotated(row, weight, sum);
   }
 
+  /** {@inheritDoc} */
   @Override
   public float[] finishPooling(float[] sum) {
     return matrix.toOriginal(sum);
   }
 
+  /** {@inheritDoc} */
   @Override
   public float[] prepareQuery(float[] query) {
     return matrix.rotate(query);
   }
 
+  /** {@inheritDoc} */
   @Override
   public double dot(int row, float[] preparedQuery) {
     return matrix.dotRotated(row, preparedQuery);
   }
 
+  /** {@inheritDoc} */
   @Override
   public double rowNorm(int row) {
     return matrix.rowNorm(row);

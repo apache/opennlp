@@ -32,8 +32,9 @@ import opennlp.tools.commons.ThreadSafe;
 
 /**
  * An embedding matrix quantized to {@code 2}-{@code 4} bits per dimension, following the
- * TurboQuant construction (Zandieh, Daliri, Hadian, Mirrokni, <i>TurboQuant: Online Vector
- * Quantization with Near-optimal Distortion Rate</i>, arXiv:2504.19874): each row is rotated by
+ * TurboQuant construction (Zandieh, Daliri, Hadian, Mirrokni,
+ * <a href="https://arxiv.org/abs/2504.19874"><i>TurboQuant: Online Vector Quantization with
+ * Near-optimal Distortion Rate</i></a>): each row is rotated by
  * a seeded {@link HadamardRotation}, so its coordinates become near-independent and
  * near-Gaussian, and each rotated coordinate is encoded independently with the
  * {@link GaussianQuantizer} grid of the chosen bit width. A row decodes to a per-row scale times
@@ -611,15 +612,5 @@ public final class QuantizedEmbeddingMatrix {
     if (shift + bits > 8) {
       codes[byteIndex + 1] |= (byte) (code >>> (8 - shift));
     }
-  }
-
-  /**
-   * {@return this row's code at an index, for tests}
-   *
-   * @param row   The row.
-   * @param index The code index within the row, up to the padded dimension.
-   */
-  int code(int row, int index) {
-    return readCode(codes, row * rowBytes, bits, index);
   }
 }

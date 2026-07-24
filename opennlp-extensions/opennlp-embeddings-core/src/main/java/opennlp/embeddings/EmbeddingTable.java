@@ -18,19 +18,17 @@ package opennlp.embeddings;
 
 /**
  * The row storage behind {@link StaticEmbeddingModel}: gathering rows into a pooled vector and
- * scoring rows against a query, independent of whether the rows are float or quantized.
+ * scoring rows against a query.
  *
- * <p>The seam is shaped so a storage form may pool in a working space of its own.
- * {@link #addRow(int, float, float[])} accumulates into a vector of {@link #pooledLength()}, and
- * {@link #finishPooling(float[])} maps the accumulated vector to original space once per pooled
- * result. The float table's working space is original space and its finish is the identity; the
- * quantized table pools in rotated space, where decoding a row is a grid lookup, and pays its
- * single inverse rotation in the finish. Scoring mirrors this: {@link #prepareQuery(float[])}
- * maps a query into the working space once, and {@link #dot(int, float[])} scores every row
- * against the prepared query there.</p>
+ * <p>A table may work in a space of its own choosing. {@link #addRow(int, float, float[])}
+ * accumulates into a vector of {@link #pooledLength()}, and {@link #finishPooling(float[])}
+ * maps the accumulated vector to original space once per pooled result. Scoring mirrors this:
+ * {@link #prepareQuery(float[])} maps a query into the working space once, and
+ * {@link #dot(int, float[])} scores every row against the prepared query there. The working
+ * space must preserve norms and dot products, so cosine math is space-independent.</p>
  *
- * <p>Implementations are immutable and safe for concurrent use; the accumulator and prepared
- * query arrays belong to the caller.</p>
+ * <p>Implementations must be safe for concurrent use; the accumulator and prepared query
+ * arrays belong to the caller.</p>
  */
 interface EmbeddingTable {
 

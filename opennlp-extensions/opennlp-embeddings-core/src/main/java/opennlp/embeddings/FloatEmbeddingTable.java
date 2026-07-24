@@ -53,21 +53,25 @@ final class FloatEmbeddingTable implements EmbeddingTable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public int rowCount() {
     return rowCount;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int dimension() {
     return dimension;
   }
 
+  /** {@inheritDoc} */
   @Override
   public int pooledLength() {
     return dimension;
   }
 
+  /** {@inheritDoc} */
   @Override
   public void addRow(int row, float weight, float[] sum) {
     final int base = row * dimension;
@@ -82,16 +86,19 @@ final class FloatEmbeddingTable implements EmbeddingTable {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public float[] finishPooling(float[] sum) {
     return sum;
   }
 
+  /** {@inheritDoc} */
   @Override
   public float[] prepareQuery(float[] query) {
     return query;
   }
 
+  /** {@inheritDoc} */
   @Override
   public double dot(int row, float[] preparedQuery) {
     final int base = row * dimension;
@@ -114,6 +121,7 @@ final class FloatEmbeddingTable implements EmbeddingTable {
     return dot;
   }
 
+  /** {@inheritDoc} */
   @Override
   public double rowNorm(int row) {
     return rowNorms[row];
