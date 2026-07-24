@@ -1,0 +1,1084 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package opennlp.tools.stemmer.hunspell;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import opennlp.tools.commons.ThreadSafe;
+import opennlp.tools.util.StringUtil;
+
+/**
+ * An immutable, in-memory Hunspell-format dictionary: the word list of a {@code .dic}
+ * file and the prefix and suffix rules of its {@code .aff} companion, loaded from
+ * user-supplied files. The engine implements the documented format directly; no
+ * dictionary data is bundled, dictionaries are supplied by the user.
+ *
+ * <p>Supported affix features: {@code PFX} and {@code SFX} rules with strip strings,
+ * character-class conditions, and cross-product combination of one prefix with one
+ * suffix; twofold suffixes through the continuation classes on suffix rules;
+ * {@code FLAG} modes {@code char} (default), {@code UTF-8}, {@code long}, and
+ * {@code num}; the {@code AF} flag alias table; the {@code SET} encoding declaration;
+ * compound decomposition under {@code COMPOUNDFLAG}, the positional
+ * {@code COMPOUNDBEGIN}/{@code COMPOUNDMIDDLE}/{@code COMPOUNDEND} flags,
+ * {@code COMPOUNDMIN}, {@code COMPOUNDWORDMAX}, {@code COMPOUNDPERMITFLAG},
+ * {@code COMPOUNDFORBIDFLAG}, and the {@code CHECKCOMPOUNDDUP},
+ * {@code CHECKCOMPOUNDCASE}, and {@code CHECKCOMPOUNDTRIPLE} declarations, with
+ * compound parts standing on their entries alone or on an entry plus one affix; the
+ * blocking flags
+ * {@code NEEDAFFIX} (with its historical alias {@code PSEUDOROOT}),
+ * {@code ONLYINCOMPOUND}, and {@code FORBIDDENWORD}, which suppress analyses the
+ * dictionary marks as virtual stems, compound-only parts, or forbidden words; and
+ * {@code CIRCUMFIX}, which binds marked prefix and suffix halves to one another.
+ * Conversion tables and the remaining compound machinery are not interpreted in this
+ * version; rules using them simply do not fire, so unsupported analyses are missed
+ * rather than invented.</p>
+ *
+ * <p>Instances are immutable and safe to share between threads.</p>
+ *
+ * @see HunspellStemmer
+ * @see HunspellStemmerFactory
+ */
+@ThreadSafe
+public final class HunspellDictionary {
+
+  /**
+   * One parsed affix rule. {@code affix} is the surface material the rule adds to the
+   * stem, {@code strip} is the stem material the rule replaces (restored during
+   * analysis), {@code crossProduct} states whether the rule may combine with an affix
+   * of the opposite kind, and {@code continuation} lists the flags of further affixes
+   * that may stack on top of this one.
+   */
+  record Affix(int flag, boolean crossProduct, String strip, String affix,
+      AffixCondition condition, int[] continuation) {
+
+    /**
+     * Checks whether a further affix may stack on this one.
+     *
+     * @param otherFlag The stacking affix's flag.
+     * @return {@code true} if this affix's continuation classes allow it.
+     */
+    boolean allowsContinuation(int otherFlag) {
+      for (final int candidate : continuation) {
+        if (candidate == otherFlag) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
+  /** The place a part takes in a compound, deciding which positional flag admits it. */
+  enum CompoundPosition {
+    /** The first part. */
+    BEGIN,
+    /** Any part between the first and the last. */
+    MIDDLE,
+    /** The last part. */
+    END
+  }
+
+  /** The shared empty bucket answered for characters no affix rule is keyed under. */
+  private static final List<Affix> NO_AFFIXES = List.of();
+
+  private final Map<String, List<int[]>> entries;
+  private final Map<Character, List<Affix>> suffixesByLast;
+  private final List<Affix> suffixesWithoutMaterial;
+  private final Map<Character, List<Affix>> prefixesByFirst;
+  private final List<Affix> prefixesWithoutMaterial;
+  private final int compoundFlag;
+  private final int compoundBegin;
+  private final int compoundEnd;
+  private final int compoundMin;
+  private final int needAffix;
+  private final int onlyInCompound;
+  private final int forbiddenWord;
+  private final int circumfix;
+  private final int compoundMiddle;
+  private final int compoundPermit;
+  private final int compoundForbid;
+  private final int compoundWordMax;
+  private final boolean checkCompoundDup;
+  private final boolean checkCompoundCase;
+  private final boolean checkCompoundTriple;
+
+  private HunspellDictionary(Map<String, List<int[]>> entries, AffixFile affix) {
+    this.compoundFlag = affix.compoundFlag;
+    this.compoundBegin = affix.compoundBegin;
+    this.compoundEnd = affix.compoundEnd;
+    this.compoundMin = affix.compoundMin;
+    this.needAffix = affix.needAffix;
+    this.onlyInCompound = affix.onlyInCompound;
+    this.forbiddenWord = affix.forbiddenWord;
+    this.circumfix = affix.circumfix;
+    this.compoundMiddle = affix.compoundMiddle;
+    this.compoundPermit = affix.compoundPermit;
+    this.compoundForbid = affix.compoundForbid;
+    this.compoundWordMax = affix.compoundWordMax;
+    this.checkCompoundDup = affix.checkCompoundDup;
+    this.checkCompoundCase = affix.checkCompoundCase;
+    this.checkCompoundTriple = affix.checkCompoundTriple;
+    this.entries = entries;
+    // Undoing a suffix requires the word to end with the rule's affix material, so
+    // only rules whose material ends in the word's last character can ever apply;
+    // the same holds for prefixes and the first character. Bucketing by that
+    // boundary character turns the per-word rule scan from the whole inventory into
+    // the one bucket plus the strip-only rules, whose empty material matches
+    // everywhere.
+    this.suffixesByLast = new HashMap<>();
+    this.suffixesWithoutMaterial = new ArrayList<>();
+    for (final Affix suffix : affix.suffixes) {
+      final String material = suffix.affix();
+      if (material.isEmpty()) {
+        suffixesWithoutMaterial.add(suffix);
+      } else {
+        suffixesByLast.computeIfAbsent(material.charAt(material.length() - 1),
+            key -> new ArrayList<>()).add(suffix);
+      }
+    }
+    this.prefixesByFirst = new HashMap<>();
+    this.prefixesWithoutMaterial = new ArrayList<>();
+    for (final Affix prefix : affix.prefixes) {
+      final String material = prefix.affix();
+      if (material.isEmpty()) {
+        prefixesWithoutMaterial.add(prefix);
+      } else {
+        prefixesByFirst.computeIfAbsent(material.charAt(0),
+            key -> new ArrayList<>()).add(prefix);
+      }
+    }
+  }
+
+  /**
+   * Loads a dictionary from its two files.
+   *
+   * @param affixFile The {@code .aff} affix file. Must not be {@code null}.
+   * @param dictionaryFile The {@code .dic} word list. Must not be {@code null}.
+   * @return The loaded dictionary. Never {@code null}.
+   * @throws IOException Thrown if reading fails or a file is malformed.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
+   */
+  public static HunspellDictionary load(Path affixFile, Path dictionaryFile)
+      throws IOException {
+    if (affixFile == null) {
+      throw new IllegalArgumentException("affixFile must not be null");
+    }
+    if (dictionaryFile == null) {
+      throw new IllegalArgumentException("dictionaryFile must not be null");
+    }
+    try (InputStream affix = Files.newInputStream(affixFile);
+         InputStream dictionary = Files.newInputStream(dictionaryFile)) {
+      return load(affix, dictionary);
+    }
+  }
+
+  /**
+   * Loads a dictionary from its two streams.
+   *
+   * @param affixStream The {@code .aff} affix content. Must not be {@code null}. Not
+   *                    closed.
+   * @param dictionaryStream The {@code .dic} word list content. Must not be
+   *                         {@code null}. Not closed.
+   * @return The loaded dictionary. Never {@code null}.
+   * @throws IOException Thrown if reading fails or the content is malformed.
+   * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
+   */
+  public static HunspellDictionary load(InputStream affixStream,
+      InputStream dictionaryStream) throws IOException {
+    if (affixStream == null) {
+      throw new IllegalArgumentException("affixStream must not be null");
+    }
+    if (dictionaryStream == null) {
+      throw new IllegalArgumentException("dictionaryStream must not be null");
+    }
+    final byte[] affixBytes = affixStream.readAllBytes();
+    final Charset charset = declaredCharset(affixBytes);
+    final AffixFile affix = parseAffix(new String(affixBytes, charset));
+    final Map<String, List<int[]>> entries = parseWordList(
+        new String(dictionaryStream.readAllBytes(), charset), affix.flagMode,
+        affix.flagAliases);
+    return new HunspellDictionary(entries, affix);
+  }
+
+  /**
+   * Looks up a word's flag sets.
+   *
+   * @param word The word exactly as listed.
+   * @return The flag sets of all matching entries, or {@code null} when absent.
+   */
+  List<int[]> lookup(String word) {
+    return entries.get(word);
+  }
+
+  /**
+   * The suffix rules whose affix material ends in the given character, which are the
+   * only material-bearing rules that can be undone from a word ending in it.
+   *
+   * @param last The word's last character.
+   * @return The bucket, possibly empty. Never {@code null}.
+   */
+  List<Affix> suffixesEndingWith(char last) {
+    return suffixesByLast.getOrDefault(last, NO_AFFIXES);
+  }
+
+  /** @return The strip-only suffix rules, applicable to any word. Never {@code null}. */
+  List<Affix> suffixesWithoutMaterial() {
+    return suffixesWithoutMaterial;
+  }
+
+  /**
+   * The prefix rules whose affix material starts with the given character, which are
+   * the only material-bearing rules that can be undone from a word starting with it.
+   *
+   * @param first The word's first character.
+   * @return The bucket, possibly empty. Never {@code null}.
+   */
+  List<Affix> prefixesStartingWith(char first) {
+    return prefixesByFirst.getOrDefault(first, NO_AFFIXES);
+  }
+
+  /** @return The strip-only prefix rules, applicable to any word. Never {@code null}. */
+  List<Affix> prefixesWithoutMaterial() {
+    return prefixesWithoutMaterial;
+  }
+
+  /** @return Whether the affix file declares any compounding flag at all. */
+  boolean compoundsDeclared() {
+    return compoundFlag != 0 || compoundBegin != 0 || compoundEnd != 0
+        || compoundMiddle != 0;
+  }
+
+  /** @return The smallest length a compound part may have; at least {@code 1}. */
+  int compoundMin() {
+    return compoundMin;
+  }
+
+  /** @return The largest number of parts a compound may have; {@code 0} is unbounded. */
+  int compoundWordMax() {
+    return compoundWordMax;
+  }
+
+  /** @return Whether {@code CHECKCOMPOUNDDUP} forbids a part repeating its neighbor. */
+  boolean checkCompoundDup() {
+    return checkCompoundDup;
+  }
+
+  /** @return Whether {@code CHECKCOMPOUNDCASE} forbids uppercase at part boundaries. */
+  boolean checkCompoundCase() {
+    return checkCompoundCase;
+  }
+
+  /** @return Whether {@code CHECKCOMPOUNDTRIPLE} forbids triple letters at boundaries. */
+  boolean checkCompoundTriple() {
+    return checkCompoundTriple;
+  }
+
+  /**
+   * The flag admitting a part at a compound position, next to the general
+   * compounding flag.
+   *
+   * @param position The part's place in the compound.
+   * @return The dedicated positional flag, or {@code 0} when undeclared.
+   */
+  private int positionalFlag(CompoundPosition position) {
+    return switch (position) {
+      case BEGIN -> compoundBegin;
+      case MIDDLE -> compoundMiddle;
+      case END -> compoundEnd;
+    };
+  }
+
+  /**
+   * Checks whether a listed word may stand at a compound position: some homonym's
+   * flag set carries the general compounding flag or the position's dedicated flag
+   * and is not forbidden. A compound-only or virtual-stem homonym may take the
+   * position; that is what those flags permit.
+   *
+   * @param flagSets The word's flag sets from {@link #lookup(String)}.
+   * @param position The part's place in the compound.
+   * @return {@code true} if the word may stand at the position.
+   */
+  boolean mayStand(List<int[]> flagSets, CompoundPosition position) {
+    final int positional = positionalFlag(position);
+    for (final int[] flags : flagSets) {
+      if ((contains(flags, compoundFlag) || contains(flags, positional))
+          && !contains(flags, forbiddenWord) && !contains(flags, needAffix)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether some homonym supports an affixed compound part: its flag set
+   * carries the removed affix's flag, is not forbidden, and either the affix itself
+   * admits the position or the set carries the compounding or positional flag.
+   *
+   * @param flagSets The part stem's flag sets from {@link #lookup(String)}.
+   * @param affixFlag The removed affix's flag.
+   * @param position The part's place in the compound.
+   * @param affixAdmits Whether the affix's continuation classes admit the position,
+   *                    from {@link #affixAdmits(Affix, CompoundPosition)}.
+   * @return {@code true} if some homonym stands affixed at the position.
+   */
+  boolean supportsPart(List<int[]> flagSets, int affixFlag, CompoundPosition position,
+      boolean affixAdmits) {
+    final int positional = positionalFlag(position);
+    for (final int[] flags : flagSets) {
+      if (contains(flags, affixFlag) && !contains(flags, forbiddenWord)
+          && (affixAdmits || contains(flags, compoundFlag)
+              || contains(flags, positional))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether an affix admits its derived form at a compound position: its
+   * continuation classes carry the general compounding flag or the position's
+   * dedicated flag. Published dictionaries position their linking forms this way,
+   * through zero or dash suffixes whose continuation classes hold the positional
+   * flags.
+   *
+   * @param affix The affix rule applied to the part.
+   * @param position The part's place in the compound.
+   * @return {@code true} if the affixed form may stand at the position.
+   */
+  boolean affixAdmits(Affix affix, CompoundPosition position) {
+    return (compoundFlag != 0 && affix.allowsContinuation(compoundFlag))
+        || (positionalFlag(position) != 0
+            && affix.allowsContinuation(positionalFlag(position)));
+  }
+
+  /**
+   * Checks whether an affix may sit at a compound-internal boundary: it carries the
+   * {@code COMPOUNDPERMITFLAG} among its continuation classes. Without the flag a
+   * suffix fits only the last part and a prefix only the first.
+   *
+   * @param affix The affix rule applied to the part.
+   * @return {@code true} if the affix may face another part.
+   */
+  boolean permitsInside(Affix affix) {
+    return compoundPermit != 0 && affix.allowsContinuation(compoundPermit);
+  }
+
+  /**
+   * Checks whether an affix bars its derived form from compounds altogether: it
+   * carries the {@code COMPOUNDFORBIDFLAG} among its continuation classes.
+   *
+   * @param affix The affix rule applied to the part.
+   * @return {@code true} if the affixed form may not join a compound.
+   */
+  boolean forbidsInCompound(Affix affix) {
+    return compoundForbid != 0 && affix.allowsContinuation(compoundForbid);
+  }
+
+  /**
+   * Checks whether any of a word's flag sets is forbidden, which a dictionary uses
+   * to block one specific ill-formed compound while its parts stay productive.
+   *
+   * @param flagSets The word's flag sets from {@link #lookup(String)}.
+   * @return {@code true} if some homonym carries the forbidden-word flag.
+   */
+  boolean anyForbidden(List<int[]> flagSets) {
+    return hasFlag(flagSets, forbiddenWord);
+  }
+
+  /**
+   * Checks whether any of a word's flag sets carries a flag.
+   *
+   * @param flagSets The flag sets from {@link #lookup(String)}.
+   * @param flag The flag to look for.
+   * @return {@code true} if some flag set contains the flag.
+   */
+  static boolean hasFlag(List<int[]> flagSets, int flag) {
+    for (final int[] flags : flagSets) {
+      if (contains(flags, flag)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks one flag set for a flag. An undeclared flag, encoded as {@code 0}, is
+   * carried by no entry.
+   *
+   * @param flags One entry's flag set.
+   * @param flag The flag to look for.
+   * @return {@code true} if the set contains the flag.
+   */
+  private static boolean contains(int[] flags, int flag) {
+    if (flag == 0) {
+      return false;
+    }
+    for (final int candidate : flags) {
+      if (candidate == flag) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether a listed word is valid on its own: some homonym's flag set carries
+   * none of the blocking flags. An entry whose every flag set is marked
+   * {@code NEEDAFFIX} is a virtual stem that exists only to be affixed, one marked
+   * {@code ONLYINCOMPOUND} appears only inside compounds, and one marked
+   * {@code FORBIDDENWORD} is listed to be blocked; none of them is a word by itself.
+   *
+   * @param flagSets The word's flag sets from {@link #lookup(String)}.
+   * @return {@code true} if some homonym stands on its own.
+   */
+  boolean validStandalone(List<int[]> flagSets) {
+    for (final int[] flags : flagSets) {
+      if (!contains(flags, needAffix) && !contains(flags, onlyInCompound)
+          && !contains(flags, forbiddenWord)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether some homonym supports an affix analysis: its flag set carries the
+   * affix's flag and is neither compound-only nor forbidden. A {@code NEEDAFFIX} set
+   * does support the analysis, because the removed affix is exactly what the virtual
+   * stem needs.
+   *
+   * @param flagSets The stem's flag sets from {@link #lookup(String)}.
+   * @param flag The removed affix's flag.
+   * @return {@code true} if some homonym carries the flag and may stand affixed.
+   */
+  boolean supports(List<int[]> flagSets, int flag) {
+    for (final int[] flags : flagSets) {
+      if (contains(flags, flag) && !contains(flags, onlyInCompound)
+          && !contains(flags, forbiddenWord)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether some homonym supports a cross-product analysis: one flag set
+   * carries both removed affixes' flags and is neither compound-only nor forbidden.
+   * The two flags must sit in the same set, because homonyms are separate words and
+   * each removal must be licensed by the same one.
+   *
+   * @param flagSets The stem's flag sets from {@link #lookup(String)}.
+   * @param prefixFlag The removed prefix's flag.
+   * @param suffixFlag The removed suffix's flag.
+   * @return {@code true} if some homonym carries both flags and may stand affixed.
+   */
+  boolean supports(List<int[]> flagSets, int prefixFlag, int suffixFlag) {
+    for (final int[] flags : flagSets) {
+      if (contains(flags, prefixFlag) && contains(flags, suffixFlag)
+          && !contains(flags, onlyInCompound) && !contains(flags, forbiddenWord)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether a form made with this affix alone is still a virtual stem: the
+   * affix carries the {@code NEEDAFFIX} flag among its continuation classes, so a
+   * further affix must join before the form is a word.
+   *
+   * @param affix The affix rule to inspect.
+   * @return {@code true} if the affix alone does not finish a word.
+   */
+  boolean needsFurtherAffix(Affix affix) {
+    return needAffix != 0 && affix.allowsContinuation(needAffix);
+  }
+
+  /**
+   * Checks whether an affix applies only inside compounds: it carries the
+   * {@code ONLYINCOMPOUND} flag among its continuation classes.
+   *
+   * @param affix The affix rule to inspect.
+   * @return {@code true} if the affix never applies to a standalone word.
+   */
+  boolean compoundOnly(Affix affix) {
+    return onlyInCompound != 0 && affix.allowsContinuation(onlyInCompound);
+  }
+
+  /**
+   * Checks whether an affix is one half of a circumfix: it carries the
+   * {@code CIRCUMFIX} flag among its continuation classes, so it is only valid on a
+   * word that also carries a circumfix-marked affix of the other kind, the German
+   * {@code ge...t} participle being the model.
+   *
+   * @param affix The affix rule to inspect.
+   * @return {@code true} if the affix never applies without its other half.
+   */
+  boolean circumfixOnly(Affix affix) {
+    return circumfix != 0 && affix.allowsContinuation(circumfix);
+  }
+
+  /**
+   * Finds the {@code SET} declaration by scanning the raw affix bytes as ASCII, which
+   * is safe because the declaration itself is ASCII in every supported encoding. Both
+   * files are then decoded with the declared charset.
+   *
+   * @param affixBytes The raw affix file content.
+   * @return The declared charset, or UTF-8 when no declaration is present.
+   * @throws IOException Thrown if the declared encoding name is not supported.
+   */
+  private static Charset declaredCharset(byte[] affixBytes) throws IOException {
+    final String ascii = new String(affixBytes, StandardCharsets.US_ASCII);
+    for (final String line : splitLines(ascii)) {
+      final String trimmed = trim(line);
+      if (trimmed.startsWith("SET ") || trimmed.startsWith("SET\t")) {
+        final String name = trim(trimmed.substring(4));
+        try {
+          return Charset.forName(name);
+        } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
+          throw new IOException("unsupported SET encoding: " + name, e);
+        }
+      }
+    }
+    return StandardCharsets.UTF_8;
+  }
+
+  /** The flag encodings a dictionary may declare with the {@code FLAG} directive. */
+  private enum FlagMode {
+    /**
+     * The default: each single character is one flag. Also what {@code FLAG UTF-8}
+     * declares, which asks for single-character flags in a file the {@code SET}
+     * declaration already had decoded.
+     */
+    CHAR,
+    /** Declared as {@code FLAG long}: each pair of characters is one flag. */
+    LONG,
+    /** Declared as {@code FLAG num}: comma-separated decimal numbers are flags. */
+    NUM
+  }
+
+  /** The parsed affix file content. */
+  private static final class AffixFile {
+    private final List<Affix> prefixes = new ArrayList<>();
+    private final List<Affix> suffixes = new ArrayList<>();
+    private final List<int[]> flagAliases = new ArrayList<>();
+    private boolean aliasHeaderSeen;
+    private FlagMode flagMode = FlagMode.CHAR;
+    private int compoundFlag;
+    private int compoundBegin;
+    private int compoundEnd;
+    private int compoundMin = 3;
+    private int needAffix;
+    private int onlyInCompound;
+    private int forbiddenWord;
+    private int circumfix;
+    private int compoundMiddle;
+    private int compoundPermit;
+    private int compoundForbid;
+    private int compoundWordMax;
+    private boolean checkCompoundDup;
+    private boolean checkCompoundCase;
+    private boolean checkCompoundTriple;
+  }
+
+  /**
+   * Parses the affix file: the {@code FLAG} declaration, the {@code AF} flag alias
+   * table, the compound and blocking flag declarations, and the {@code PFX} and
+   * {@code SFX} blocks. Directives outside the supported set (conversion tables,
+   * suggestion options, the remaining compound machinery, ...) are skipped, so their
+   * rules never fire and unsupported analyses are missed rather than invented.
+   *
+   * @param content The decoded affix file content.
+   * @return The parsed rules and flag mode. Never {@code null}.
+   * @throws IOException Thrown if a supported directive is malformed.
+   */
+  private static AffixFile parseAffix(String content) throws IOException {
+    final AffixFile result = new AffixFile();
+    final String[] lines = splitLines(content);
+    int i = 0;
+    while (i < lines.length) {
+      final String[] fields = split(lines[i]);
+      if (fields.length == 0 || fields[0].startsWith("#")) {
+        i++;
+        continue;
+      }
+      switch (fields[0]) {
+        case "FLAG":
+          if (fields.length < 2) {
+            throw new IOException("FLAG line without a mode at line " + (i + 1));
+          }
+          result.flagMode = switch (fields[1]) {
+            case "long" -> FlagMode.LONG;
+            case "num" -> FlagMode.NUM;
+            case "UTF-8" -> FlagMode.CHAR;
+            default -> throw new IOException(
+                "unsupported FLAG mode '" + fields[1] + "' at line " + (i + 1));
+          };
+          i++;
+          break;
+        case "COMPOUNDFLAG":
+        case "COMPOUNDBEGIN":
+        case "COMPOUNDMIDDLE":
+        case "COMPOUNDEND":
+        case "COMPOUNDPERMITFLAG":
+        case "COMPOUNDFORBIDFLAG":
+        case "NEEDAFFIX":
+        case "PSEUDOROOT":
+        case "ONLYINCOMPOUND":
+        case "FORBIDDENWORD":
+        case "CIRCUMFIX":
+          if (fields.length < 2) {
+            throw new IOException(fields[0] + " line without a flag at line " + (i + 1));
+          }
+          final int declared = parseFlag(fields[1], result.flagMode, i + 1);
+          switch (fields[0]) {
+            case "COMPOUNDFLAG" -> result.compoundFlag = declared;
+            case "COMPOUNDBEGIN" -> result.compoundBegin = declared;
+            case "COMPOUNDMIDDLE" -> result.compoundMiddle = declared;
+            case "COMPOUNDEND" -> result.compoundEnd = declared;
+            case "COMPOUNDPERMITFLAG" -> result.compoundPermit = declared;
+            case "COMPOUNDFORBIDFLAG" -> result.compoundForbid = declared;
+            // PSEUDOROOT is the directive's name before hunspell renamed it
+            case "NEEDAFFIX", "PSEUDOROOT" -> result.needAffix = declared;
+            case "ONLYINCOMPOUND" -> result.onlyInCompound = declared;
+            case "CIRCUMFIX" -> result.circumfix = declared;
+            default -> result.forbiddenWord = declared;
+          }
+          i++;
+          break;
+        case "COMPOUNDMIN":
+        case "COMPOUNDWORDMAX":
+          if (fields.length < 2) {
+            throw new IOException(fields[0] + " line without a value at line " + (i + 1));
+          }
+          try {
+            if ("COMPOUNDMIN".equals(fields[0])) {
+              result.compoundMin = Math.max(1, Integer.parseInt(fields[1]));
+            } else {
+              result.compoundWordMax = Math.max(0, Integer.parseInt(fields[1]));
+            }
+          } catch (NumberFormatException e) {
+            throw new IOException("malformed " + fields[0] + " at line " + (i + 1), e);
+          }
+          i++;
+          break;
+        case "CHECKCOMPOUNDDUP":
+          result.checkCompoundDup = true;
+          i++;
+          break;
+        case "CHECKCOMPOUNDCASE":
+          result.checkCompoundCase = true;
+          i++;
+          break;
+        case "CHECKCOMPOUNDTRIPLE":
+          result.checkCompoundTriple = true;
+          i++;
+          break;
+        case "AF":
+          // the first AF line declares the alias count; every further AF line is one
+          // alias, a flag run whose 1-based position numeric dictionary flags refer to
+          if (fields.length >= 2) {
+            if (!result.aliasHeaderSeen) {
+              result.aliasHeaderSeen = true;
+            } else {
+              result.flagAliases.add(parseFlags(fields[1], result.flagMode, i + 1));
+            }
+          }
+          i++;
+          break;
+        case "PFX":
+        case "SFX":
+          i = parseAffixBlock(lines, i, fields, result);
+          break;
+        default:
+          i++;
+          break;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Parses one {@code PFX} or {@code SFX} block: the header line naming the flag, the
+   * cross-product marker, and the rule count, followed by exactly that many rule
+   * lines.
+   *
+   * @param lines All lines of the affix file.
+   * @param index The line index of the block header.
+   * @param header The already-split header fields.
+   * @param result The parse target the rules are added to.
+   * @return The index of the first line after the block.
+   * @throws IOException Thrown if the header or a rule line is malformed.
+   */
+  private static int parseAffixBlock(String[] lines, int index, String[] header,
+      AffixFile result) throws IOException {
+    if (header.length < 4) {
+      throw new IOException("malformed affix header at line " + (index + 1));
+    }
+    final boolean suffix = "SFX".equals(header[0]);
+    final int flag = parseFlag(header[1], result.flagMode, index + 1);
+    final boolean crossProduct = "Y".equals(header[2]);
+    final int count;
+    try {
+      count = Integer.parseInt(header[3]);
+    } catch (NumberFormatException e) {
+      throw new IOException("malformed affix rule count at line " + (index + 1), e);
+    }
+    int line = index + 1;
+    for (int rule = 0; rule < count; rule++, line++) {
+      if (line >= lines.length) {
+        throw new IOException("affix block truncated at line " + (line + 1));
+      }
+      final String[] fields = split(lines[line]);
+      if (fields.length < 5 || !fields[0].equals(header[0])) {
+        throw new IOException("malformed affix rule at line " + (line + 1));
+      }
+      final String strip = "0".equals(fields[2]) ? "" : fields[2];
+      String affixText = fields[3];
+      int[] continuation = new int[0];
+      final int slash = affixText.indexOf('/');
+      if (slash >= 0) {
+        continuation = parseFlags(affixText.substring(slash + 1), result.flagMode, line + 1);
+        affixText = affixText.substring(0, slash);
+      }
+      if ("0".equals(affixText)) {
+        affixText = "";
+      }
+      final Affix affix = new Affix(flag, crossProduct, strip, affixText,
+          AffixCondition.parse(fields[4], suffix, line + 1), continuation);
+      if (suffix) {
+        result.suffixes.add(affix);
+      } else {
+        result.prefixes.add(affix);
+      }
+    }
+    return line;
+  }
+
+  /**
+   * Parses the word list: an optional leading entry count, then one entry per line
+   * consisting of the word, an optional {@code /flags} run, and optional trailing
+   * morphological fields, which are ignored. The morphological fields are cut off
+   * first, because the flag separator is only meaningful in what precedes them; a word
+   * may itself contain spaces. A slash escaped as {@code \/} belongs to the word itself
+   * and is unescaped in the stored key.
+   *
+   * @param content The decoded word-list content.
+   * @param flagMode The flag encoding declared by the affix file.
+   * @param flagAliases The affix file's {@code AF} alias table, possibly empty. When
+   *                    it is not empty, a purely numeric flag field is a 1-based
+   *                    reference into it rather than a flag run of its own.
+   * @return The words mapped to the flag sets of their entries. Never {@code null}.
+   * @throws IOException Thrown if a flag run is malformed or an alias reference is
+   *         out of range.
+   */
+  private static Map<String, List<int[]>> parseWordList(String content,
+      FlagMode flagMode, List<int[]> flagAliases) throws IOException {
+    final String[] lines = splitLines(content);
+    final Map<String, List<int[]>> entries = new HashMap<>();
+    int start = 0;
+    if (lines.length > 0 && isCount(trim(lines[0]))) {
+      start = 1;
+    }
+    for (int i = start; i < lines.length; i++) {
+      final String line = trim(lines[i]);
+      if (line.isEmpty()) {
+        continue;
+      }
+      final int morphology = morphologyIndex(line);
+      final String entry = morphology < 0 ? line : trim(line.substring(0, morphology));
+      String word = entry;
+      int[] flags = new int[0];
+      final int slash = unescapedSlash(entry);
+      if (slash >= 0) {
+        word = entry.substring(0, slash);
+        String flagRun = entry.substring(slash + 1);
+        // The flag run ends at the first space or tabulator, the separators the
+        // word-list format defines; whatever follows is a morphological field even
+        // when it carries no two-letter tag, which hunspell tolerates and so do we.
+        for (int c = 0; c < flagRun.length(); c++) {
+          if (isFieldSeparator(flagRun.charAt(c))) {
+            flagRun = flagRun.substring(0, c);
+            break;
+          }
+        }
+        if (!flagAliases.isEmpty() && isCount(flagRun)) {
+          final int alias;
+          try {
+            alias = Integer.parseInt(flagRun);
+          } catch (NumberFormatException e) {
+            throw new IOException("malformed flag alias '" + flagRun + "' at line "
+                + (i + 1), e);
+          }
+          if (alias < 1 || alias > flagAliases.size()) {
+            throw new IOException("flag alias " + alias + " at line " + (i + 1)
+                + " is outside the AF table of " + flagAliases.size() + " aliases");
+          }
+          flags = flagAliases.get(alias - 1);
+        } else {
+          flags = parseFlags(flagRun, flagMode, i + 1);
+        }
+      }
+      entries.computeIfAbsent(word.replace("\\/", "/"), key -> new ArrayList<>(1))
+          .add(flags);
+    }
+    return entries;
+  }
+
+  /**
+   * Checks whether a line consists purely of decimal digits, which identifies the
+   * optional entry-count header of a word list.
+   *
+   * @param line The trimmed line to inspect.
+   * @return {@code true} if the line is a non-empty digit run.
+   */
+  private static boolean isCount(String line) {
+    if (line.isEmpty()) {
+      return false;
+    }
+    for (int i = 0; i < line.length(); i++) {
+      if (line.charAt(i) < '0' || line.charAt(i) > '9') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Finds the first {@code /} that is not escaped as {@code \/}, which separates the
+   * word from its flag run in a word-list entry.
+   *
+   * @param line The word-list line to scan.
+   * @return The index of the separator, or {@code -1} when the entry has no flags.
+   */
+  private static int unescapedSlash(String line) {
+    for (int i = 0; i < line.length(); i++) {
+      if (line.charAt(i) == '/' && (i == 0 || line.charAt(i - 1) != '\\')) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Finds where the trailing morphological fields of a word-list entry begin, which
+   * terminates the word and its flag run. A morphological field is either introduced by
+   * a tabulator, the older separator, or written as a two-letter tag followed by
+   * {@code :} and preceded by a separator, such as {@code po:verb}. A separator that
+   * is not followed by such a tag belongs to the word, because a word-list entry may
+   * name several words. The separators are the space and the tabulator, exactly the
+   * two characters the reference implementation's {@code hashmgr.cxx} splits on; they
+   * are format delimiters of the word-list grammar, not a whitespace judgment, so
+   * wider whitespace such as a no-break space stays part of the word by design.
+   *
+   * @param line The trimmed word-list line to scan.
+   * @return The index at which the morphological fields begin, or {@code -1} if the
+   *         entry carries none.
+   */
+  private static int morphologyIndex(String line) {
+    int cut = -1;
+    for (int i = 4; i < line.length(); i++) {
+      if (line.charAt(i) == ':' && isFieldSeparator(line.charAt(i - 3))) {
+        int fieldStart = i - 3;
+        while (fieldStart > 0 && isFieldSeparator(line.charAt(fieldStart - 1))) {
+          fieldStart--;
+        }
+        // a tag with no word in front of it is not a morphological field
+        cut = fieldStart == 0 ? -1 : fieldStart;
+        break;
+      }
+    }
+    final int tab = line.indexOf('\t');
+    if (tab >= 0 && (cut < 0 || tab < cut)) {
+      cut = tab;
+    }
+    return cut;
+  }
+
+  /**
+   * Checks one character against the word-list format's field separators, space and
+   * tabulator, the exact set the reference implementation splits morphological fields
+   * on.
+   *
+   * @param c The character to test.
+   * @return {@code true} if {@code c} separates fields in the word-list format.
+   */
+  private static boolean isFieldSeparator(char c) {
+    return c == ' ' || c == '\t';
+  }
+
+  /**
+   * Removes leading and trailing whitespace, using the whitespace definition the rest
+   * of the parser scans with.
+   *
+   * @param text The text to trim.
+   * @return The text without leading or trailing whitespace. Never {@code null}.
+   */
+  private static String trim(String text) {
+    int start = 0;
+    int end = text.length();
+    while (start < end && StringUtil.isWhitespace(text.charAt(start))) {
+      start++;
+    }
+    while (end > start && StringUtil.isWhitespace(text.charAt(end - 1))) {
+      end--;
+    }
+    return text.substring(start, end);
+  }
+
+  /**
+   * Parses a flag run according to the declared flag mode: single characters in
+   * {@code char} mode, character pairs packed into one {@code int} in {@code long}
+   * mode, and comma-separated decimal numbers in {@code num} mode.
+   *
+   * @param text The flag run without its leading {@code /}. An empty run carries no
+   *             flags in every mode.
+   * @param mode The declared flag encoding.
+   * @param lineNumber The source line, for error messages.
+   * @return The parsed flags. Never {@code null}.
+   * @throws IOException Thrown if the run does not fit the declared encoding.
+   */
+  private static int[] parseFlags(String text, FlagMode mode, int lineNumber)
+      throws IOException {
+    if (text.isEmpty()) {
+      return new int[0];
+    }
+    switch (mode) {
+      case NUM: {
+        final String[] parts = splitOn(text, ',');
+        final int[] flags = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+          try {
+            flags[i] = Integer.parseInt(trim(parts[i]));
+          } catch (NumberFormatException e) {
+            throw new IOException("malformed numeric flag at line " + lineNumber, e);
+          }
+        }
+        return flags;
+      }
+      case LONG: {
+        if (text.length() % 2 != 0) {
+          throw new IOException("odd long-flag run at line " + lineNumber);
+        }
+        final int[] flags = new int[text.length() / 2];
+        for (int i = 0; i < flags.length; i++) {
+          flags[i] = (text.charAt(2 * i) << 16) | text.charAt(2 * i + 1);
+        }
+        return flags;
+      }
+      default: {
+        // One flag per code point: published dictionaries, the Spanish one of the
+        // LibreOffice collection among them, name affix rules with supplementary
+        // characters under FLAG UTF-8, and reading per UTF-16 unit would split such
+        // a flag into two and reject the rule header as carrying two flags. A
+        // variation selector after a flag character selects its presentation, the
+        // emoji telephone against the text telephone, and is no flag of its own; the
+        // same collection writes such selectors, so they are dropped from flag
+        // identity.
+        final int[] buffer = new int[text.codePointCount(0, text.length())];
+        int f = 0;
+        for (int i = 0; i < text.length(); ) {
+          final int codePoint = text.codePointAt(i);
+          i += Character.charCount(codePoint);
+          if (codePoint >= 0xFE00 && codePoint <= 0xFE0F) {
+            continue;
+          }
+          buffer[f++] = codePoint;
+        }
+        return f == buffer.length ? buffer : Arrays.copyOf(buffer, f);
+      }
+    }
+  }
+
+  /**
+   * Parses a field that must contain exactly one flag, such as the flag name in an
+   * affix block header.
+   *
+   * @param text The flag field.
+   * @param mode The declared flag encoding.
+   * @param lineNumber The source line, for error messages.
+   * @return The single parsed flag.
+   * @throws IOException Thrown if the field holds no flag or more than one.
+   */
+  private static int parseFlag(String text, FlagMode mode, int lineNumber)
+      throws IOException {
+    final int[] flags = parseFlags(text, mode, lineNumber);
+    if (flags.length != 1) {
+      throw new IOException("expected exactly one flag at line " + lineNumber);
+    }
+    return flags[0];
+  }
+
+  /** Splits text into lines with a single character scan, tolerating CRLF endings. */
+  private static String[] splitLines(String content) {
+    final List<String> lines = new ArrayList<>();
+    int start = 0;
+    for (int i = 0; i <= content.length(); i++) {
+      if (i == content.length() || content.charAt(i) == '\n') {
+        int end = i;
+        if (end > start && content.charAt(end - 1) == '\r') {
+          end--;
+        }
+        lines.add(content.substring(start, end));
+        start = i + 1;
+      }
+    }
+    return lines.toArray(new String[0]);
+  }
+
+  /** Splits text on a separator character with a single character scan. */
+  private static String[] splitOn(String text, char separator) {
+    final List<String> parts = new ArrayList<>();
+    int start = 0;
+    for (int i = 0; i <= text.length(); i++) {
+      if (i == text.length() || text.charAt(i) == separator) {
+        parts.add(text.substring(start, i));
+        start = i + 1;
+      }
+    }
+    return parts.toArray(new String[0]);
+  }
+
+  /** Splits a line on whitespace with a single character scan. */
+  private static String[] split(String line) {
+    final List<String> parts = new ArrayList<>();
+    int start = -1;
+    for (int i = 0; i <= line.length(); i++) {
+      if (i == line.length() || StringUtil.isWhitespace(line.charAt(i))) {
+        if (start >= 0) {
+          parts.add(line.substring(start, i));
+          start = -1;
+        }
+      } else if (start < 0) {
+        start = i;
+      }
+    }
+    return parts.toArray(new String[0]);
+  }
+}
