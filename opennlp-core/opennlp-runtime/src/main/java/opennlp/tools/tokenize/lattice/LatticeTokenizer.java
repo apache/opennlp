@@ -117,6 +117,13 @@ public class LatticeTokenizer implements Tokenizer {
     return morphemes;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Reports the segmented surfaces, whitespace omitted.</p>
+   *
+   * @throws IllegalArgumentException Thrown if {@code s} is {@code null}.
+   */
   @Override
   public String[] tokenize(String s) {
     final List<Morpheme> morphemes = analyze(s);
@@ -127,6 +134,13 @@ public class LatticeTokenizer implements Tokenizer {
     return tokens;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Reports the segmented spans in original text coordinates, whitespace omitted.</p>
+   *
+   * @throws IllegalArgumentException Thrown if {@code s} is {@code null}.
+   */
   @Override
   public Span[] tokenizePos(String s) {
     final List<Morpheme> morphemes = analyze(s);
@@ -301,7 +315,7 @@ public class LatticeTokenizer implements Tokenizer {
    * @param category The category of that run.
    * @param templates The category's unknown-word templates.
    */
-  private static void addUnknown(List<Node> candidates, String text, int position,
+  private void addUnknown(List<Node> candidates, String text, int position,
       int runEnd, Category category, List<WordEntry> templates) {
     if (category.group()) {
       for (final WordEntry entry : templates) {

@@ -528,7 +528,7 @@ public final class MecabDictionary {
     }
     final short[] costs = new short[(int) cells];
     for (int i = 1; i < matrixLines.size(); i++) {
-      final String line = matrixLines.get(i).trim();
+      final String line = StringUtil.trimUnicodeWhitespace(matrixLines.get(i));
       if (line.isEmpty()) {
         continue;
       }
@@ -630,7 +630,7 @@ public final class MecabDictionary {
     int lineNumber = 0;
     for (final String raw : readLines(file, charset)) {
       lineNumber++;
-      final String line = stripComment(raw).trim();
+      final String line = StringUtil.trimUnicodeWhitespace(stripComment(raw));
       if (line.isEmpty()) {
         continue;
       }
@@ -809,7 +809,7 @@ public final class MecabDictionary {
   private static int parseInt(String text, String file, int lineNumber)
       throws IOException {
     try {
-      return Integer.parseInt(text.trim());
+      return Integer.parseInt(StringUtil.trimUnicodeWhitespace(text));
     } catch (NumberFormatException e) {
       throw new IOException("malformed number in " + file + " line " + lineNumber, e);
     }
@@ -829,7 +829,7 @@ public final class MecabDictionary {
       throws IOException {
     final int codePoint;
     try {
-      codePoint = Integer.parseInt(text.trim().substring(2), 16);
+      codePoint = Integer.parseInt(StringUtil.trimUnicodeWhitespace(text).substring(2), 16);
     } catch (RuntimeException e) {
       throw new IOException("malformed code point in " + file + " line " + lineNumber, e);
     }

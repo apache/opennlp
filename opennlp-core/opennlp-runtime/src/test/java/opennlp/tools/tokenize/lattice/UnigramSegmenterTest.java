@@ -200,4 +200,19 @@ public class UnigramSegmenterTest {
     }
     Assertions.assertEquals(text.length(), covered);
   }
+
+  /**
+   * Pins Unicode-whitespace trimming of lexicon lines: a leading ideographic space
+   * (U+3000), common in hand-edited CJK text files, is stripped like ASCII whitespace,
+   * so the entry loads rather than failing as a malformed count.
+   */
+  @Test
+  void testLeadingIdeographicSpaceIsTrimmed() throws IOException {
+    // U+3000 ideographic space, then the fixture word U+6211 and its count
+    final String lexicon = "\u3000\u6211 5000 r\n";
+    final UnigramSegmenter loaded = UnigramSegmenter.load(
+        new ByteArrayInputStream(lexicon.getBytes(StandardCharsets.UTF_8)),
+        StandardCharsets.UTF_8);
+    Assertions.assertArrayEquals(new String[] {"\u6211"}, loaded.tokenize("\u6211"));
+  }
 }
