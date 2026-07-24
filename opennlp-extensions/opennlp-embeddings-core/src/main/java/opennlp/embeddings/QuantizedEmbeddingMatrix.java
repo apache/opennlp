@@ -91,13 +91,17 @@ public final class QuantizedEmbeddingMatrix {
   // time (one inverse rotation per row) and stored in the file rather than recomputed from the
   // codes on load.
   private final float[] decodedNorms;
+  // Optional per-row pooling weights carried alongside the matrix, so a quantized file can
+  // fully replace a safetensors file that bundled a "weights" tensor; null when absent. The
+  // weights are stored as they are, not quantized.
+  private final float[] poolingWeights;
 
   /**
    * Holds validated state; callers reach this through {@link #quantize} or {@link #read}.
    */
   private QuantizedEmbeddingMatrix(int rowCount, int dimension, int bits, long seed,
                                    GaussianQuantizer quantizer, float[] scales, byte[] codes,
-                                   float[] decodedNorms) {
+                                   float[] decodedNorms, float[] poolingWeights) {
     this.rowCount = rowCount;
     this.dimension = dimension;
     this.paddedDimension = HadamardRotation.paddedDimension(dimension);
@@ -109,6 +113,7 @@ public final class QuantizedEmbeddingMatrix {
     this.scales = scales;
     this.codes = codes;
     this.decodedNorms = decodedNorms;
+    this.poolingWeights = poolingWeights;
   }
 
   /**
@@ -208,7 +213,45 @@ public final class QuantizedEmbeddingMatrix {
       decodedNorms[row] = (float) Math.sqrt(decodedSumOfSquares);
     }
     return new QuantizedEmbeddingMatrix(rowCount, dimension, bits, seed, quantizer, scales,
-        codes, decodedNorms);
+        codes, decodedNorms, null);
+  }
+
+  /**
+   * {@return a copy of this matrix carrying per-row pooling weights} The weights ride along in
+   * the file unquantized, so a quantized file can fully replace a safetensors file that bundled
+   * a {@code weights} tensor.
+   *
+   * @param weights One weight per row, or {@code null} to carry none. Every weight must be
+   *                finite. The array is copied.
+   * @return A matrix sharing this one's codes and scales, with the given weights.
+   * @throws IllegalArgumentException Thrown if {@code weights} has the wrong length or a
+   *     non-finite value.
+   */
+  public QuantizedEmbeddingMatrix withPoolingWeights(float[] weights) {
+    if (weights == null) {
+      return new QuantizedEmbeddingMatrix(rowCount, dimension, bits, seed, quantizer, scales,
+          codes, decodedNorms, null);
+    }
+    if (weights.length != rowCount) {
+      throw new IllegalArgumentException("Weights has " + weights.length + " values but this "
+          + "matrix has " + rowCount + " rows");
+    }
+    for (int row = 0; row < rowCount; row++) {
+      if (!Float.isFinite(weights[row])) {
+        throw new IllegalArgumentException("Weight for row " + row + " is not finite: "
+            + weights[row]);
+      }
+    }
+    return new QuantizedEmbeddingMatrix(rowCount, dimension, bits, seed, quantizer, scales,
+        codes, decodedNorms, Arrays.copyOf(weights, weights.length));
+  }
+
+  /**
+   * {@return a copy of the per-row pooling weights, or {@code null} when this matrix carries
+   * none}
+   */
+  public float[] poolingWeights() {
+    return poolingWeights == null ? null : Arrays.copyOf(poolingWeights, poolingWeights.length);
   }
 
   /**
@@ -429,6 +472,12 @@ public final class QuantizedEmbeddingMatrix {
       for (final float decodedNorm : decodedNorms) {
         data.writeFloat(decodedNorm);
       }
+      data.writeBoolean(poolingWeights != null);
+      if (poolingWeights != null) {
+        for (final float weight : poolingWeights) {
+          data.writeFloat(weight);
+        }
+      }
       data.write(codes);
     }
   }
@@ -494,6 +543,17 @@ public final class QuantizedEmbeddingMatrix {
               + row + ": " + decodedNorms[row]);
         }
       }
+      float[] poolingWeights = null;
+      if (data.readBoolean()) {
+        poolingWeights = new float[rowCount];
+        for (int row = 0; row < rowCount; row++) {
+          poolingWeights[row] = data.readFloat();
+          if (!Float.isFinite(poolingWeights[row])) {
+            throw new IllegalArgumentException(file + " has a non-finite pooling weight for "
+                + "row " + row + ": " + poolingWeights[row]);
+          }
+        }
+      }
       final int paddedDimension = HadamardRotation.paddedDimension(dimension);
       final int rowBytes = (paddedDimension * bits + 7) / 8;
       requireStorableSize(rowCount, rowBytes);
@@ -509,7 +569,7 @@ public final class QuantizedEmbeddingMatrix {
             + "content; it is not a quantized matrix of this version");
       }
       return new QuantizedEmbeddingMatrix(rowCount, dimension, bits, seed, quantizer, scales,
-          codes, decodedNorms);
+          codes, decodedNorms, poolingWeights);
     }
   }
 

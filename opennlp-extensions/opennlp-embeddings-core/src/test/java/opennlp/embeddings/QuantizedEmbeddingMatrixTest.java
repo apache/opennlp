@@ -208,6 +208,54 @@ class QuantizedEmbeddingMatrixTest {
   }
 
   @Test
+  void testPoolingWeightsRoundTripThroughTheFile(@TempDir Path directory) throws IOException {
+    final float[] matrix = testMatrix();
+    final float[] weights = new float[ROWS];
+    for (int row = 0; row < ROWS; row++) {
+      weights[row] = 0.5f + row / 100f;
+    }
+    final QuantizedEmbeddingMatrix withWeights =
+        QuantizedEmbeddingMatrix.quantize(matrix, ROWS, DIMENSION, 4, SEED)
+            .withPoolingWeights(weights);
+    final Path file = directory.resolve("weighted.bin");
+    withWeights.write(file);
+    final QuantizedEmbeddingMatrix read = QuantizedEmbeddingMatrix.read(file);
+    assertArrayEquals(weights, read.poolingWeights(), 0f);
+    // Rewriting reproduces the file, so the weights block loses nothing.
+    final Path rewritten = directory.resolve("rewritten.bin");
+    read.write(rewritten);
+    assertArrayEquals(Files.readAllBytes(file), Files.readAllBytes(rewritten));
+    // Without weights the accessor answers null and the file omits the block.
+    final QuantizedEmbeddingMatrix withoutWeights = withWeights.withPoolingWeights(null);
+    assertEquals(null, withoutWeights.poolingWeights());
+    assertTrue(Files.size(file) > sizeWithoutWeights(directory, withoutWeights),
+        "the weights block must add to the file size");
+  }
+
+  /**
+   * {@return the file size of a matrix written without weights}
+   *
+   * @param directory The directory to write into.
+   * @param matrix    The matrix to write.
+   */
+  private static long sizeWithoutWeights(Path directory, QuantizedEmbeddingMatrix matrix)
+      throws IOException {
+    final Path file = directory.resolve("unweighted.bin");
+    matrix.write(file);
+    return Files.size(file);
+  }
+
+  @Test
+  void testWithPoolingWeightsValidates() {
+    final QuantizedEmbeddingMatrix quantized =
+        QuantizedEmbeddingMatrix.quantize(new float[4 * 8], 4, 8, 2, SEED);
+    assertThrows(IllegalArgumentException.class,
+        () -> quantized.withPoolingWeights(new float[3]));
+    assertThrows(IllegalArgumentException.class,
+        () -> quantized.withPoolingWeights(new float[] {1f, 2f, Float.NaN, 4f}));
+  }
+
+  @Test
   void testQuantizeValidatesItsArguments() {
     final float[] matrix = new float[2 * 4];
     assertThrows(IllegalArgumentException.class,
