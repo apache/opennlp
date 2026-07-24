@@ -26,7 +26,6 @@ import opennlp.tools.stemmer.StemmerFactory;
  * {@link HunspellDictionary} and hands out {@link HunspellStemmer} instances over it.
  *
  * <p>The factory is immutable and safe to share across threads.</p>
- *
  */
 @ThreadSafe
 public class HunspellStemmerFactory implements StemmerFactory {

@@ -45,7 +45,6 @@ import opennlp.tools.util.StringUtil;
  * <p>The {@link Stemmer} interface leaves thread safety to the implementation. This
  * implementation reads only the immutable dictionary state, so a single instance is
  * safe to share between threads.</p>
- *
  */
 @ThreadSafe
 public class HunspellStemmer implements Stemmer {
@@ -74,12 +73,23 @@ public class HunspellStemmer implements Stemmer {
     this.dictionary = dictionary;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns the first analysis, which prefers the word's own dictionary entry.</p>
+   */
   @Override
   public CharSequence stem(CharSequence word) {
     final List<CharSequence> analyses = stemAll(word);
     return analyses.get(0);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns every distinct analysis, or a single-element list of the unchanged word
+   * when it has none.</p>
+   */
   @Override
   public List<CharSequence> stemAll(CharSequence word) {
     if (word == null) {
