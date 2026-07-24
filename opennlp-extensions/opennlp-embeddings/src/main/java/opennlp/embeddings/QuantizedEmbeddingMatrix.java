@@ -108,7 +108,7 @@ public final class QuantizedEmbeddingMatrix {
     this.paddedDimension = HadamardRotation.paddedDimension(dimension);
     this.bits = bits;
     this.seed = seed;
-    this.rowBytes = (paddedDimension * bits + 7) / 8;
+    this.rowBytes = rowByteCount(paddedDimension, bits);
     this.quantizer = quantizer;
     this.rotation = new HadamardRotation(dimension, seed);
     this.scales = scales;
@@ -152,7 +152,7 @@ public final class QuantizedEmbeddingMatrix {
     final GaussianQuantizer quantizer = GaussianQuantizer.forBits(bits);
     final HadamardRotation rotation = new HadamardRotation(dimension, seed);
     final int paddedDimension = rotation.paddedDimension();
-    final int rowBytes = (paddedDimension * bits + 7) / 8;
+    final int rowBytes = rowByteCount(paddedDimension, bits);
     requireStorableSize(rowCount, rowBytes);
     final float[] scales = new float[rowCount];
     final byte[] codes = new byte[rowCount * rowBytes];
@@ -267,6 +267,26 @@ public final class QuantizedEmbeddingMatrix {
       throw new IllegalArgumentException("The packed codes need " + ((long) rowCount * rowBytes)
           + " bytes, more than one array can hold; split the matrix");
     }
+  }
+
+  /**
+   * {@return the packed byte count of one row} Computed in long arithmetic and range-checked, so
+   * a padded dimension large enough to overflow {@code paddedDimension * bits} as a signed int
+   * (which would silently produce a negative or wrapped byte count) is rejected instead.
+   *
+   * @param paddedDimension The power-of-two padded dimension.
+   * @param bits            The bit width per padded dimension.
+   * @throws IllegalArgumentException Thrown if the padded bit count exceeds what an {@code int}
+   *     can address.
+   */
+  private static int rowByteCount(int paddedDimension, int bits) {
+    final long paddedBits = (long) paddedDimension * bits;
+    if (paddedBits > Integer.MAX_VALUE - 7) {
+      throw new IllegalArgumentException("A padded dimension of " + paddedDimension + " at "
+          + bits + " bits needs " + paddedBits + " bits per row, more than a quantized matrix "
+          + "can address; use a smaller dimension");
+    }
+    return (int) ((paddedBits + 7) / 8);
   }
 
   /** {@return the number of rows} */
@@ -556,7 +576,7 @@ public final class QuantizedEmbeddingMatrix {
         }
       }
       final int paddedDimension = HadamardRotation.paddedDimension(dimension);
-      final int rowBytes = (paddedDimension * bits + 7) / 8;
+      final int rowBytes = rowByteCount(paddedDimension, bits);
       requireStorableSize(rowCount, rowBytes);
       final byte[] codes = new byte[rowCount * rowBytes];
       try {
