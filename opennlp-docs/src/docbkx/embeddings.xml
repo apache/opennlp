@@ -223,6 +223,45 @@ results.sort(Comparator.comparingDouble(Scored::score).reversed());]]>
 		</section>
 	</section>
 
+	<section xml:id="tools.embeddings.quantized">
+		<title>Quantized Models</title>
+		<para>
+			A static embedding table can be quantized to 2, 3, or 4 bits per dimension, shrinking
+			it by roughly 8 to 16 times against the 32-bit float matrix (a 500,000-row,
+			300-dimension table drops from about 600 MB to 77 MB at 4 bits). Because embedding is
+			memory-bound row gathering, reading fewer bytes is also the throughput lever. The
+			method is the TurboQuant construction: each row is rotated so its coordinates become
+			near-independent and near-Gaussian, and each rotated coordinate is encoded against an
+			optimal scalar grid, with a least-squares scale fitted per row.
+		</para>
+		<para>
+			The <code>QuantizeModel</code> tool quantizes a model directory's
+			<code>model.safetensors</code> in place, writing <code>model.quantized</code> next to
+			it and reporting the sizes and the reconstruction quality it measured from the written
+			file:
+		</para>
+		<programlisting language="text">
+			<![CDATA[
+opennlp-embeddings QuantizeModel -modelDir /path/to/model-directory -bits 4]]>
+		</programlisting>
+		<para>
+			A directory presents exactly one matrix file. After quantizing, delete the
+			<code>model.safetensors</code> to deploy the quantized matrix; the loader then reads
+			<code>model.quantized</code> with no code change, and any per-token pooling weights
+			are carried inside the quantized file. A directory that still holds both files is
+			rejected at load time, so the deployment must choose which matrix is authoritative.
+			Embedding, <code>similarity</code>, and <code>mostSimilar</code> behave the same as on
+			the float model, up to the quantization error of the chosen bit width; fewer bits
+			trade fidelity for size.
+		</para>
+		<para>
+			<code>StaticEmbeddingModelQuantizedTest</code> asserts this workflow end to end:
+			quantizing a directory, loading it after the safetensors is removed, and matching the
+			float model's embeddings and rankings; <code>QuantizedEmbeddingMatrixTest</code> pins
+			the reconstruction quality at each bit width.
+		</para>
+	</section>
+
 	<section xml:id="tools.embeddings.safetensors">
 		<title>The safetensors Reader</title>
 		<para>

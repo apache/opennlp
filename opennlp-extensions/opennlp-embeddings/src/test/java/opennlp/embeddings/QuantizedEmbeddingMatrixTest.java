@@ -24,9 +24,12 @@ import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -57,31 +60,20 @@ class QuantizedEmbeddingMatrixTest {
     return matrix;
   }
 
-  @Test
-  void testReconstructionQualityPerBitWidth() {
-    // The mean squared error of the Gaussian Lloyd-Max grids translates to an expected cosine
-    // between a row and its reconstruction; these thresholds sit safely below the analytic
-    // expectation (about 0.945 at 2 bits, 0.983 at 3, 0.995 at 4) but far above what a broken
-    // rotation, grid, or scale would produce.
-    assertMeanCosineAtLeast(2, 0.92);
-    assertMeanCosineAtLeast(3, 0.97);
-    assertMeanCosineAtLeast(4, 0.99);
-  }
-
-  /**
-   * Asserts the mean cosine between original and decoded rows for a bit width.
-   *
-   * @param bits      The bit width under test.
-   * @param threshold The minimum acceptable mean cosine.
-   */
-  private static void assertMeanCosineAtLeast(int bits, double threshold) {
+  // The mean squared error of the Gaussian Lloyd-Max grids translates to an expected cosine
+  // between a row and its reconstruction; these thresholds sit safely below the analytic
+  // expectation (about 0.945 at 2 bits, 0.983 at 3, 0.995 at 4) but far above what a broken
+  // rotation, grid, or scale would produce.
+  @ParameterizedTest
+  @CsvSource({"2, 0.92", "3, 0.97", "4, 0.99"})
+  void testReconstructionQualityPerBitWidth(int bits, double threshold) {
     final float[] matrix = testMatrix();
     final QuantizedEmbeddingMatrix quantized =
         QuantizedEmbeddingMatrix.quantize(matrix, ROWS, DIMENSION, bits, SEED);
     double cosineSum = 0;
     for (int row = 0; row < ROWS; row++) {
       final float[] decoded = quantized.decodeRow(row);
-      cosineSum += cosine(matrix, row * DIMENSION, decoded);
+      cosineSum += ModelQuantizer.cosine(matrix, row * DIMENSION, DIMENSION, decoded);
     }
     final double meanCosine = cosineSum / ROWS;
     assertTrue(meanCosine >= threshold, bits + " bits reconstructed a mean cosine of "
@@ -227,7 +219,7 @@ class QuantizedEmbeddingMatrixTest {
     assertArrayEquals(Files.readAllBytes(file), Files.readAllBytes(rewritten));
     // Without weights the accessor answers null and the file omits the block.
     final QuantizedEmbeddingMatrix withoutWeights = withWeights.withPoolingWeights(null);
-    assertEquals(null, withoutWeights.poolingWeights());
+    assertNull(withoutWeights.poolingWeights());
     assertTrue(Files.size(file) > sizeWithoutWeights(directory, withoutWeights),
         "the weights block must add to the file size");
   }
@@ -316,22 +308,4 @@ class QuantizedEmbeddingMatrixTest {
     assertThrows(IllegalArgumentException.class, () -> QuantizedEmbeddingMatrix.read(trailing));
   }
 
-  /**
-   * {@return the cosine between a matrix row and a decoded vector}
-   *
-   * @param matrix  The flat row-major matrix.
-   * @param base    The row's first index.
-   * @param decoded The decoded row.
-   */
-  private static double cosine(float[] matrix, int base, float[] decoded) {
-    double dot = 0;
-    double normASquared = 0;
-    double normBSquared = 0;
-    for (int d = 0; d < decoded.length; d++) {
-      dot += (double) matrix[base + d] * decoded[d];
-      normASquared += (double) matrix[base + d] * matrix[base + d];
-      normBSquared += (double) decoded[d] * decoded[d];
-    }
-    return dot / (Math.sqrt(normASquared) * Math.sqrt(normBSquared));
-  }
 }
