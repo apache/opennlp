@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML 5.0//EN"
+"http://docbook.org/xml/5.0/dtd/docbook.dtd"[
+]>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor
+	license agreements. See the NOTICE file distributed with this work for additional
+	information regarding copyright ownership. The ASF licenses this file to
+	you under the Apache License, Version 2.0 (the "License"); you may not use
+	this file except in compliance with the License. You may obtain a copy of
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required
+	by applicable law or agreed to in writing, software distributed under the
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+	OF ANY KIND, either express or implied. See the License for the specific
+	language governing permissions and limitations under the License. -->
+
+<chapter xml:id="tools.geo">
+
+	<title>Gazetteers and Geocoding</title>
+
+	<section xml:id="tools.geo.overview">
+		<title>Overview</title>
+		<para>
+			A gazetteer maps place names to place records. The
+			<code>opennlp.tools.geo.Gazetteer</code> interface is the one seam every
+			lookup goes through: a bundled table, a downloaded dataset, an ingested
+			database, and a remote service client are all implementations of this
+			one interface, and any of them can be handed to the components that
+			consume it. Each record is a <code>GazetteerEntry</code> carrying the
+			canonical and alternate names, a point location, an optional bounding
+			box, the ISO 3166-1 country code, a coarse feature class, the
+			population, and dataset-specific extras as provenance-tagged
+			attributes.
+		</para>
+		<para>
+			The <code>opennlp-geo</code> module ships three file-backed
+			implementations: <code>BundledGazetteer</code> over the bundled Natural
+			Earth populated-places table, <code>GeoNamesGazetteer</code> over a
+			user-downloaded GeoNames extract, and <code>OvertureGazetteer</code>
+			over an Overture divisions export. All implementations are immutable
+			and thread-safe after loading, so one instance can be shared across
+			threads.
+		</para>
+	</section>
+
+	<section xml:id="tools.geo.user">
+		<title>User-supplied places</title>
+		<para>
+			<code>UserGazetteer</code> loads places a public dataset does not know,
+			for example customer sites or internal facility names, from a
+			user-authored file, so they take part in geocoding and everything
+			downstream of it. The file holds one place per line with tab-separated
+			columns in this order, where trailing columns may be omitted and an
+			empty column means absent: record id, canonical name, alternate names
+			separated by <code>|</code>, latitude, longitude, country code, feature
+			class, population, bounding box as
+			<code>west,south,east,north</code>, containment chain separated by
+			<code>|</code>, and one <code>key=value</code> attribute per further
+			column. Lines starting with <code>#</code> and blank lines are
+			skipped.
+		</para>
+		<para>
+			A row needs either both coordinates or a bounding box; with only a
+			bounding box the point location becomes the box's center. Free-text
+			metadata such as a postal address belongs in an attribute column: it is
+			carried verbatim on the entry and is never parsed or matched. The
+			following file, whose columns are separated by single tab characters,
+			defines a plant with an address attribute and a campus located through
+			its bounding box alone.
+			<programlisting><![CDATA[
+# id	name	alternates	lat	lon	cc	class	pop	bbox	containment	attributes
+plant-3	Acme Plant 3	Plant 3|The Plant	33.75	-84.39	US	POI	0		Georgia|Fulton County	address=123 Main St, Atlanta GA 30303
+campus-east	Acme Campus East				US	POI	0	-84.5,33.6,-84.2,33.9]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.geo.overlay">
+		<title>Overlaying a base gazetteer</title>
+		<para>
+			<code>OverlayGazetteer</code> composes a base gazetteer with
+			user-supplied changes: additions from a second gazetteer, and
+			suppression rules hiding base entries. Consumers see one merged view
+			through the same <code>Gazetteer</code> interface, so every component
+			downstream picks the changes up without knowing they exist. Additions
+			rank first in lookups. Suppressions hide entries of the base only,
+			never additions, so a rule plus an addition with the same name replaces
+			a base entry.
+		</para>
+		<para>
+			A suppression rule is a place name with optional country and
+			feature-class filters, one rule per line with tab-separated columns.
+			The following file removes the city of Mobile, Alabama, from a corpus
+			where that reading is always noise, while leaving every other
+			<code>Mobile</code>-named record intact.
+			<programlisting><![CDATA[
+# name	country	feature class
+Mobile	US	CITY]]>
+			</programlisting>
+		</para>
+		<para>
+			The composed gazetteer then answers lookups from both sides: the
+			customer file wins for its own names, and the suppressed city is gone
+			from every query.
+			<programlisting language="java"><![CDATA[
+Gazetteer base = BundledGazetteer.getInstance();
+Gazetteer customer = UserGazetteer.load(Path.of("customer_places.txt"), "customer");
+List<Suppression> rules = UserGazetteer.loadSuppressions(Path.of("suppress.txt"));
+Gazetteer gazetteer = new OverlayGazetteer(base, customer, rules);
+
+GazetteerEntry plant = gazetteer.lookup("Plant 3").get(0);
+// plant.name() = "Acme Plant 3", plant.source() = "customer"
+// plant.attributes().get("address").value() = "123 Main St, Atlanta GA 30303"
+
+gazetteer.lookup("Mobile");    // empty: the Alabama city is suppressed
+gazetteer.lookup("Tokyo");     // unaffected base entries stay visible]]>
+			</programlisting>
+			The additions side does not have to be a file: any
+			<code>Gazetteer</code> implementation serves, so entries ingested from
+			a database or fetched from a service compose the same way.
+		</para>
+	</section>
+
+	<section xml:id="tools.geo.custom">
+		<title>Bringing your own implementation</title>
+		<para>
+			The seam is registry-free: implementing the four methods of
+			<code>Gazetteer</code> is all it takes, there is nothing to declare or
+			register anywhere, and the instance is handed to whatever consumes the
+			interface, typically as the additions side of an
+			<code>OverlayGazetteer</code>. An implementation must be immutable and
+			thread-safe after construction and must document its own name-matching
+			semantics. Because the contract is one plain constructor-built object,
+			an implementation also drops directly into any dependency-injection
+			container as a bean, with no framework types anywhere in OpenNLP.
+		</para>
+		<para>
+			The following complete implementation serves an application-internal
+			store from two maps. It lives in the project's test sources as
+			<code>CrmGazetteer</code>, ready to copy, and
+			<code>CustomGazetteerExampleTest</code> asserts the behavior shown
+			here.
+			<programlisting language="java"><![CDATA[
+final class CrmGazetteer implements Gazetteer {
+
+  static final String SOURCE = "crm";
+
+  private final Map<String, GazetteerEntry> byName;
+  private final Map<String, GazetteerEntry> byId;
+
+  CrmGazetteer(List<GazetteerEntry> entries) {
+    if (entries == null) {
+      throw new IllegalArgumentException("entries must not be null");
+    }
+    final Map<String, GazetteerEntry> names = new HashMap<>();
+    final Map<String, GazetteerEntry> ids = new HashMap<>();
+    for (final GazetteerEntry entry : entries) {
+      names.put(entry.name().toLowerCase(Locale.ROOT), entry);
+      ids.put(entry.recordId(), entry);
+    }
+    this.byName = Map.copyOf(names);
+    this.byId = Map.copyOf(ids);
+  }
+
+  @Override
+  public List<GazetteerEntry> lookup(CharSequence name) {
+    if (name == null) {
+      throw new IllegalArgumentException("name must not be null");
+    }
+    final GazetteerEntry found = byName.get(name.toString().toLowerCase(Locale.ROOT));
+    return found == null ? List.of() : List.of(found);
+  }
+
+  @Override
+  public Optional<GazetteerEntry> byId(String source, String recordId) {
+    if (source == null || recordId == null) {
+      throw new IllegalArgumentException("source and recordId must not be null");
+    }
+    return SOURCE.equals(source) ? Optional.ofNullable(byId.get(recordId)) : Optional.empty();
+  }
+
+  @Override
+  public Optional<GazetteerEntry> byRegion(String isoCountryCode) {
+    if (isoCountryCode == null || isoCountryCode.length() != 2
+        || !isAsciiLetter(isoCountryCode.charAt(0)) || !isAsciiLetter(isoCountryCode.charAt(1))) {
+      throw new IllegalArgumentException(
+          "isoCountryCode must be two ASCII letters, got: " + isoCountryCode);
+    }
+    final String code = isoCountryCode.toUpperCase(Locale.ROOT);
+    GazetteerEntry best = null;
+    for (final GazetteerEntry entry : byId.values()) {
+      if (code.equals(entry.countryCode())
+          && (best == null || entry.population() > best.population())) {
+        best = entry;
+      }
+    }
+    return Optional.ofNullable(best);
+  }
+
+  @Override
+  public Set<String> sources() {
+    return Set.of(SOURCE);
+  }
+
+  private static boolean isAsciiLetter(char c) {
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+  }
+}]]>
+			</programlisting>
+		</para>
+		<para>
+			Composed over the bundled base, the custom entries answer their own
+			names while the base keeps answering everything else.
+			<programlisting language="java"><![CDATA[
+Gazetteer crm = new CrmGazetteer(List.of(new GazetteerEntry("crm", "cust-1", "Acme Plant 3",
+    List.of(), new GeoPoint(33.75, -84.39), "US", List.of(), 0L,
+    GazetteerEntry.FEATURE_CLASS_POI, Map.of())));
+Gazetteer gazetteer = new OverlayGazetteer(BundledGazetteer.getInstance(), crm, List.of());
+
+GazetteerEntry plant = gazetteer.lookup("Acme Plant 3").get(0);
+// plant.source() = "crm", plant.location() = new GeoPoint(33.75, -84.39)
+gazetteer.lookup("Tokyo");   // the base still answers everything else]]>
+			</programlisting>
+		</para>
+	</section>
+
+	<section xml:id="tools.geo.geocoder">
+		<title>Geocoder</title>
+		<para>
+			A <code>Geocoder</code> turns location mention spans into
+			<code>GeoResolution</code> records against a <code>Gazetteer</code>.
+			<code>PopulationPriorGeocoder</code> picks the most populous candidate for
+			each mention; unresolved mentions are omitted.
+			<code>GeocoderUsageExampleTest</code> asserts the workflow shown here.
+			<programlisting language="java"><![CDATA[
+Geocoder geocoder = new PopulationPriorGeocoder(gazetteer);
+String text = "She grew up in Springfield.";
+Span mention = new Span(text.indexOf("Springfield"),
+    text.indexOf("Springfield") + "Springfield".length());
+
+List<GeoResolution> resolutions = geocoder.resolve(text, List.of(mention));
+// resolutions.get(0).entry() is the most populous Springfield]]>
+			</programlisting>
+		</para>
+	</section>
+</chapter>

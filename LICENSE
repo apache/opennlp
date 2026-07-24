@@ -422,3 +422,21 @@ opennlp-core/opennlp-runtime/src/main/resources/opennlp/tools/util/normalizer/em
     not be used in advertising or otherwise to promote the sale, use or other
     dealings in these Data Files or Software without prior written
     authorization of the copyright holder.
+
+The following applies to the bundled gazetteer data in
+opennlp-extensions/opennlp-geo/src/main/resources/opennlp/geo
+(naturalearth-populated-places.txt). This table is a derivation of the
+Natural Earth "Populated Places" dataset (https://www.naturalearthdata.com/),
+which is dedicated to the public domain by its terms of use
+(https://www.naturalearthdata.com/about/terms-of-use/):
+
+    All versions of Natural Earth raster + vector map data found on this
+    website are in the public domain. You may use the maps in any manner,
+    including modifying the content and design, electronic dissemination,
+    and offset printing. The primary authors, Tom Patterson and Nathaniel
+    Vaughn Kelso, and all other contributors renounce all financial claim
+    to the maps and invites you to use them for personal, educational, and
+    commercial purposes.
+
+    No permission is needed to use Natural Earth. Crediting the authors is
+    unnecessary.

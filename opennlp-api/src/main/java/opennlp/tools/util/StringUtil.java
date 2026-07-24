@@ -269,6 +269,27 @@ public class StringUtil {
   }
 
   /**
+   * Determines whether a {@link CharSequence} is blank: empty, or made up entirely of
+   * code points that {@link #isWhitespace(int)} accepts. Unlike
+   * {@link String#isBlank()}, this follows the toolkit's whitespace definition, which
+   * includes the no-break spaces the JDK predicate leaves out, so a value spelled
+   * entirely from them cannot pass a blank check as content.
+   *
+   * @param theString The {@link CharSequence} to examine. Must not be {@code null}.
+   * @return {@code true} if {@code theString} is empty or all whitespace.
+   */
+  public static boolean isBlank(CharSequence theString) {
+    for (int i = 0; i < theString.length(); ) {
+      final int codePoint = Character.codePointAt(theString, i);
+      if (!isWhitespace(codePoint)) {
+        return false;
+      }
+      i += Character.charCount(codePoint);
+    }
+    return true;
+  }
+
+  /**
    * Get the minimum of three values.
    *
    * @param a number a
