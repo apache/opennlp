@@ -23,25 +23,37 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.opennlp</groupId>
-    <artifactId>opennlp</artifactId>
+    <artifactId>opennlp-extensions</artifactId>
     <version>3.0.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>opennlp-extensions</artifactId>
-  <packaging>pom</packaging>
-  <name>Apache OpenNLP :: Ext</name>
+  <artifactId>opennlp-wordnet</artifactId>
+  <packaging>jar</packaging>
+  <name>Apache OpenNLP :: Ext :: WordNet</name>
 
-  <properties>
-    <uimaj.version>3.6.1</uimaj.version>
-    <morfologik.version>2.2.0</morfologik.version>
-  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.opennlp</groupId>
+      <artifactId>opennlp-api</artifactId>
+    </dependency>
 
-  <modules>
-    <module>opennlp-morfologik</module>
-    <module>opennlp-spellcheck</module>
-    <module>opennlp-uima</module>
-    <module>opennlp-wordnet</module>
-  </modules>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
 </project>
