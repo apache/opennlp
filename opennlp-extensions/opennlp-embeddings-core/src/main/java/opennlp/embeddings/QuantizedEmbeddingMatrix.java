@@ -359,6 +359,18 @@ public final class QuantizedEmbeddingMatrix {
   }
 
   /**
+   * Rotates an internal double-precision query without narrowing analogy results to floats.
+   *
+   * @param query The query, of length {@link #dimension()}. Not modified.
+   * @return A new rotated query of length {@link #paddedDimension()}.
+   */
+  double[] rotateQuery(double[] query) {
+    final double[] padded = Arrays.copyOf(query, paddedDimension);
+    rotation.rotate(padded);
+    return padded;
+  }
+
+  /**
    * Maps a rotated-space vector back to original space. Apply this once per pooled result, after
    * accumulating rows with {@link #addRowRotated(int, float, double[])}; rotation is linear, so
    * the sum of rotated rows is the rotation of the summed rows.

@@ -57,7 +57,7 @@ final class GaussianQuantizer {
   private final float[] levels;
   // Midpoints between adjacent levels: level i is nearest when the value lies in
   // (thresholds[i-1], thresholds[i]], with the outermost intervals unbounded.
-  private final float[] thresholds;
+  private final double[] thresholds;
 
   /**
    * Constructs a validated grid for {@link #forBits(int)} and
@@ -67,9 +67,9 @@ final class GaussianQuantizer {
    */
   private GaussianQuantizer(float[] levels) {
     this.levels = levels;
-    this.thresholds = new float[levels.length - 1];
+    this.thresholds = new double[levels.length - 1];
     for (int i = 0; i < thresholds.length; i++) {
-      thresholds[i] = (float) (((double) levels[i] + levels[i + 1]) / 2.0);
+      thresholds[i] = ((double) levels[i] + levels[i + 1]) / 2.0;
     }
   }
 
