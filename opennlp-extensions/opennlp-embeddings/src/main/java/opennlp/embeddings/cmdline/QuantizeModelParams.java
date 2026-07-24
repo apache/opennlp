@@ -47,5 +47,5 @@ interface QuantizeModelParams {
   @ParameterDescription(valueName = "seed",
       description = "the rotation seed; the same matrix, bits, and seed write the same file")
   @OptionalParameter(defaultValue = "0")
-  Integer getSeed();
+  Long getSeed();
 }

@@ -93,10 +93,11 @@ public final class ModelQuantizer {
     final int dimension = matrixInfo.shape()[1];
     final float[] matrix = tensors.readFloats(matrixName);
     float[] weights = null;
-    if (tensors.tensorNames().contains("weights")) {
-      weights = tensors.readFloats("weights");
+    if (tensors.tensorNames().contains(StaticEmbeddingModel.WEIGHTS_TENSOR_NAME)) {
+      weights = tensors.readFloats(StaticEmbeddingModel.WEIGHTS_TENSOR_NAME);
       if (weights.length != rowCount) {
-        throw new IllegalArgumentException("Tensor 'weights' in " + safetensorsFile + " has "
+        throw new IllegalArgumentException("Tensor '"
+            + StaticEmbeddingModel.WEIGHTS_TENSOR_NAME + "' in " + safetensorsFile + " has "
             + weights.length + " elements but the matrix has " + rowCount + " rows");
       }
     }
@@ -125,14 +126,14 @@ public final class ModelQuantizer {
 
   /**
    * {@return the cosine between a matrix row and its reconstruction, or {@code Double.NaN} when
-   * either has no direction}
+   * either has no direction} Also the shared fidelity measure of this package's tests.
    *
    * @param matrix    The flat row-major matrix.
    * @param base      The row's first index.
    * @param dimension The row width.
    * @param decoded   The reconstructed row.
    */
-  private static double cosine(float[] matrix, int base, int dimension, float[] decoded) {
+  static double cosine(float[] matrix, int base, int dimension, float[] decoded) {
     double dot = 0;
     double normASquared = 0;
     double normBSquared = 0;
