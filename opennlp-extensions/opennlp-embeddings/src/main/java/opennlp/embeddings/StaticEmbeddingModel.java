@@ -60,6 +60,15 @@ import opennlp.tools.util.java.Experimental;
  * count of pooled pieces, not the sum of weights. A text with no in-vocabulary pieces yields a
  * zero vector.</p>
  *
+ * <p>Either layout may carry its matrix quantized in a {@code model.quantized} file (written by
+ * the {@code QuantizeModel} tool), which holds the matrix and any per-token pooling weights
+ * itself. A directory presents exactly one matrix file: the quantized file or the safetensors,
+ * not both. A directory carrying both is rejected, because the quantizer writes the quantized
+ * file next to the safetensors it read and so a directory holding both has not declared which
+ * is authoritative; delete one to choose. Embedding and similarity over a quantized matrix
+ * behave identically up to the quantization error of the chosen bit width; see
+ * {@link QuantizedEmbeddingMatrix} for the storage and its cost.</p>
+ *
  * <p>A model directory may additionally carry a {@code terms.txt}: whole words and multi-word
  * phrases distilled through the teacher as units, owning the matrix rows after the subword rows
  * (see {@link ModelDistiller}). Embedding then matches the text against these terms greedily
@@ -96,7 +105,8 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   }
 
   private static final float NORMALIZE_EPSILON = 1e-12f;
-  private static final String WEIGHTS_TENSOR_NAME = "weights";
+  // Shared with ModelQuantizer, which carries this tensor into the quantized file.
+  static final String WEIGHTS_TENSOR_NAME = "weights";
   // The only pooling this model implements; the value the distiller writes into config.json.
   private static final String MEAN_POOLING = "mean";
   private static final int[] NO_EXCLUDED_ROWS = new int[0];
@@ -107,7 +117,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   private static final Set<String> SENTENCEPIECE_SPECIAL_TOKENS =
       Set.of("<s>", "</s>", "<pad>", "<unk>", "<mask>");
 
-  private final float[] embeddings;
+  private final EmbeddingTable table;
   private final float[] weights;
   private final int dimension;
   private final EmbeddingVocabulary vocabulary;
@@ -115,27 +125,58 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   // Tokenizer-id test for pieces that are never pooled (delimiter, control, unknown pieces).
   private final IntPredicate skipPieceId;
   private final boolean normalize;
-  // Per-row L2 norms and special-token mask, precomputed at load time for the neighbor scan.
-  private final double[] rowNorms;
+  // Special-token mask, precomputed at load time for the neighbor scan.
   private final boolean[] specialRows;
   // The term rows after the subword rows; empty for a model without a term table.
   private final TermTable terms;
 
   /** Holds the loaded, validated state; callers reach this through the {@code load} factories. */
-  private StaticEmbeddingModel(float[] embeddings, float[] weights, int dimension,
+  private StaticEmbeddingModel(EmbeddingTable table, float[] weights,
                                 EmbeddingVocabulary vocabulary, SubwordTokenizer tokenizer,
-                                IntPredicate skipPieceId, boolean normalize, double[] rowNorms,
+                                IntPredicate skipPieceId, boolean normalize,
                                 boolean[] specialRows, TermTable terms) {
-    this.embeddings = embeddings;
+    this.table = table;
     this.weights = weights;
-    this.dimension = dimension;
+    this.dimension = table.dimension();
     this.vocabulary = vocabulary;
     this.tokenizer = tokenizer;
     this.skipPieceId = skipPieceId;
     this.normalize = normalize;
-    this.rowNorms = rowNorms;
     this.specialRows = specialRows;
     this.terms = terms;
+  }
+
+  /** An embedding table and the optional per-token pooling weights that came with it. */
+  private record TableAndWeights(EmbeddingTable table, float[] weights) {
+  }
+
+  /**
+   * Reads a quantized table, holding its row count to the vocabulary's size plus the term
+   * count.
+   *
+   * @param quantizedFile        The quantized matrix file.
+   * @param vocabulary           The matrix row vocabulary.
+   * @param termCount            The number of term rows after the vocabulary rows.
+   * @param vocabularySourceName The vocabulary's source, for error messages.
+   * @return The table and the pooling weights the file carries, if any.
+   * @throws InvalidFormatException Thrown if the row count disagrees with the vocabulary.
+   * @throws IOException Thrown if reading the file fails.
+   */
+  private static TableAndWeights readQuantizedTable(Path quantizedFile,
+                                                    EmbeddingVocabulary vocabulary,
+                                                    int termCount,
+                                                    String vocabularySourceName)
+      throws IOException {
+    final QuantizedEmbeddingMatrix matrix = QuantizedEmbeddingMatrix.read(quantizedFile);
+    final int expectedRows = vocabulary.size() + termCount;
+    if (matrix.rowCount() != expectedRows) {
+      throw new InvalidFormatException("Vocabulary " + vocabularySourceName + " has "
+          + vocabulary.size() + " tokens"
+          + (termCount > 0 ? " plus " + termCount + " terms" : "")
+          + " but quantized matrix " + quantizedFile + " has "
+          + matrix.rowCount() + " rows; these files do not belong to the same model");
+    }
+    return new TableAndWeights(new QuantizedTableAdapter(matrix), matrix.poolingWeights());
   }
 
   /**
@@ -156,6 +197,11 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * directly from JSON. A legacy directory may instead carry a trained SentencePiece file
    * ({@code sentencepiece.bpe.model}, {@code spiece.model}, or {@code tokenizer.model}) next to
    * the JSON vocabulary; that file remains supported.</p>
+   *
+   * <p>In either layout, the matrix comes from a {@code model.quantized} file when the directory
+   * has one and no {@code model.safetensors}; a directory holding both is rejected (see the
+   * class comment). After quantizing, delete the safetensors to deploy the quantized matrix, or
+   * delete the quantized file to fall back to the float matrix.</p>
    *
    * @param modelDirectory The model directory. Must not be {@code null} and must be a
    *                       directory.
@@ -187,9 +233,15 @@ public final class StaticEmbeddingModel implements TextEmbedder {
         ModelFileNames.SENTENCEPIECE_MODELS);
     final Path tokenizerJsonFile = modelDirectory.resolve(ModelFileNames.TOKENIZER_JSON);
     if (sentencePieceModelFile != null && Files.isRegularFile(tokenizerJsonFile)) {
+      final Normalization normalization =
+          requiredNormalize(requiredFile(modelDirectory, ModelFileNames.CONFIG));
+      final Path quantizedFile = quantizedMatrixFileOrNull(modelDirectory);
+      if (quantizedFile != null) {
+        return loadSentencePieceQuantized(sentencePieceModelFile, tokenizerJsonFile,
+            quantizedFile, normalization, termLines, termsFile.toString());
+      }
       return loadSentencePiece(sentencePieceModelFile, tokenizerJsonFile,
-          requiredFile(modelDirectory, ModelFileNames.SAFETENSORS),
-          requiredNormalize(requiredFile(modelDirectory, ModelFileNames.CONFIG)),
+          requiredFile(modelDirectory, ModelFileNames.SAFETENSORS), normalization,
           termLines, termsFile.toString());
     }
     if (Files.isRegularFile(tokenizerJsonFile)) {
@@ -259,7 +311,6 @@ public final class StaticEmbeddingModel implements TextEmbedder {
                                                              List<String> termLines,
                                                              String termsSourceName)
       throws IOException {
-    final Path safetensorsFile = requiredFile(modelDirectory, ModelFileNames.SAFETENSORS);
     final Path tokenizerConfigFile =
         requiredFile(modelDirectory, ModelFileNames.TOKENIZER_CONFIG);
     final Normalization normalization =
@@ -280,8 +331,44 @@ public final class StaticEmbeddingModel implements TextEmbedder {
           + "with load(vocabularyFile, safetensorsFile, casing, normalization) after choosing "
           + "deliberately");
     }
-    return loadWordpiece(vocabularyFile, safetensorsFile,
-        lowerCase ? Casing.UNCASED : Casing.CASED, normalization, termLines, termsSourceName);
+    final Casing casing = lowerCase ? Casing.UNCASED : Casing.CASED;
+    final Path quantizedFile = quantizedMatrixFileOrNull(modelDirectory);
+    if (quantizedFile != null) {
+      final EmbeddingVocabulary vocabulary = EmbeddingVocabulary.fromVocabTxt(vocabularyFile);
+      final TermTable terms = TermTable.of(termLines, vocabulary.size(), termsSourceName);
+      return createWordpiece(vocabulary,
+          readQuantizedTable(quantizedFile, vocabulary, terms.size(),
+              vocabularyFile.toString()),
+          casing, normalization, vocabularyFile.toString(), terms);
+    }
+    return loadWordpiece(vocabularyFile,
+        requiredFile(modelDirectory, ModelFileNames.SAFETENSORS),
+        casing, normalization, termLines, termsSourceName);
+  }
+
+  /**
+   * Resolves which matrix file a model directory presents, failing loud when the choice is
+   * ambiguous. The quantizer writes {@code model.quantized} next to the {@code model.safetensors}
+   * it read, so a directory holding both has not declared which is authoritative; deleting one
+   * makes the deployment's choice explicit rather than letting the loader guess.
+   *
+   * @param modelDirectory The model directory.
+   * @return the {@code model.quantized} file when it is the directory's only matrix file, or
+   *     {@code null} when the directory presents only a {@code model.safetensors}.
+   * @throws InvalidFormatException Thrown if the directory holds both matrix files.
+   */
+  private static Path quantizedMatrixFileOrNull(Path modelDirectory) throws InvalidFormatException {
+    final Path quantizedFile = modelDirectory.resolve(ModelFileNames.QUANTIZED);
+    if (!Files.isRegularFile(quantizedFile)) {
+      return null;
+    }
+    if (Files.isRegularFile(modelDirectory.resolve(ModelFileNames.SAFETENSORS))) {
+      throw new InvalidFormatException("Model directory " + modelDirectory + " has both "
+          + ModelFileNames.QUANTIZED + " and " + ModelFileNames.SAFETENSORS + "; delete one so "
+          + "the matrix source is unambiguous (keep " + ModelFileNames.QUANTIZED + " for a "
+          + "quantized deployment, or " + ModelFileNames.SAFETENSORS + " for the float matrix)");
+    }
+    return quantizedFile;
   }
 
   /**
@@ -396,9 +483,36 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     final TermTable terms = TermTable.of(termLines, vocabulary.size(), termsSourceName);
     final Matrix matrix = readMatrix(vocabulary, terms.size(), safetensorsFile,
         vocabularyFile.toString());
+    final TableAndWeights tableAndWeights = new TableAndWeights(
+        new FloatEmbeddingTable(matrix.embeddings(), matrix.dimension(),
+            vocabulary.size() + terms.size()),
+        matrix.weights());
+    return createWordpiece(vocabulary, tableAndWeights, casing, normalization,
+        vocabularyFile.toString(), terms);
+  }
+
+  /**
+   * Builds a WordPiece model over a loaded table, whatever its storage form.
+   *
+   * @param vocabulary           The matrix row vocabulary.
+   * @param tableAndWeights      The table and its optional pooling weights.
+   * @param casing               The tokenizer casing.
+   * @param normalization        The pooling normalization.
+   * @param vocabularySourceName The vocabulary's source, for error messages.
+   * @param terms                The term rows after the subword rows; empty for none.
+   * @return The loaded model.
+   * @throws InvalidFormatException Thrown if the vocabulary has no unknown token.
+   */
+  private static StaticEmbeddingModel createWordpiece(EmbeddingVocabulary vocabulary,
+                                                      TableAndWeights tableAndWeights,
+                                                      Casing casing,
+                                                      Normalization normalization,
+                                                      String vocabularySourceName,
+                                                      TermTable terms)
+      throws InvalidFormatException {
     final int unknownId = vocabulary.id(WordpieceTokenizer.BERT_UNK_TOKEN);
     if (unknownId < 0) {
-      throw new InvalidFormatException("Vocabulary " + vocabularyFile + " has no "
+      throw new InvalidFormatException("Vocabulary " + vocabularySourceName + " has no "
           + WordpieceTokenizer.BERT_UNK_TOKEN + " token; a WordPiece embedding model needs an "
           + "unknown token as the fallback for out-of-vocabulary text");
     }
@@ -410,10 +524,9 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     final int separatorId = vocabulary.id(WordpieceTokenizer.BERT_SEP_TOKEN);
     final IntPredicate skipPieceId =
         id -> id == unknownId || id == classificationId || id == separatorId;
-    return new StaticEmbeddingModel(matrix.embeddings(), matrix.weights(), matrix.dimension(),
+    return new StaticEmbeddingModel(tableAndWeights.table(), tableAndWeights.weights(),
         vocabulary, tokenizer, skipPieceId, normalization == Normalization.L2,
-        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size() + terms.size()),
-        specialRows(vocabulary, WORDPIECE_SPECIAL_TOKENS, vocabulary.size() + terms.size()),
+        specialRows(vocabulary, WORDPIECE_SPECIAL_TOKENS, tableAndWeights.table().rowCount()),
         terms);
   }
 
@@ -530,13 +643,65 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     requireVocabularyCoverage(tokenizer, vocabulary, sentencePieceModelFile, tokenizerJsonFile);
     final Matrix matrix = readMatrix(vocabulary, terms.size(), safetensorsFile,
         tokenizerJsonFile.toString());
+    final TableAndWeights tableAndWeights = new TableAndWeights(
+        new FloatEmbeddingTable(matrix.embeddings(), matrix.dimension(),
+            vocabulary.size() + terms.size()),
+        matrix.weights());
+    return createSentencePiece(tokenizer, vocabulary, tableAndWeights, normalization, terms);
+  }
+
+  /**
+   * Loads the SentencePiece layout over a quantized matrix file.
+   *
+   * @param sentencePieceModelFile The trained SentencePiece {@code .model} file.
+   * @param tokenizerJsonFile      The Unigram {@code tokenizer.json} naming the matrix rows.
+   * @param quantizedFile          The quantized matrix file.
+   * @param normalization          The pooling normalization.
+   * @param termLines              The terms in row order; empty without a term table.
+   * @param termsSourceName        The terms' source, for error messages.
+   * @return The loaded model.
+   * @throws IOException Thrown if reading a file fails.
+   */
+  private static StaticEmbeddingModel loadSentencePieceQuantized(Path sentencePieceModelFile,
+                                                                 Path tokenizerJsonFile,
+                                                                 Path quantizedFile,
+                                                                 Normalization normalization,
+                                                                 List<String> termLines,
+                                                                 String termsSourceName)
+      throws IOException {
+    final EmbeddingVocabulary vocabulary =
+        EmbeddingVocabulary.fromTokenizerJson(tokenizerJsonFile);
+    final TermTable terms = TermTable.of(termLines, vocabulary.size(), termsSourceName);
+    final SentencePieceTokenizer tokenizer =
+        SentencePieceTokenizer.load(sentencePieceModelFile);
+    requireVocabularyCoverage(tokenizer, vocabulary, sentencePieceModelFile, tokenizerJsonFile);
+    return createSentencePiece(tokenizer, vocabulary,
+        readQuantizedTable(quantizedFile, vocabulary, terms.size(),
+            tokenizerJsonFile.toString()),
+        normalization, terms);
+  }
+
+  /**
+   * Builds a SentencePiece model over a loaded table, whatever its storage form.
+   *
+   * @param tokenizer       The loaded SentencePiece tokenizer.
+   * @param vocabulary      The matrix row vocabulary.
+   * @param tableAndWeights The table and its optional pooling weights.
+   * @param normalization   The pooling normalization.
+   * @param terms           The term rows after the subword rows; empty for none.
+   * @return The loaded model.
+   */
+  private static StaticEmbeddingModel createSentencePiece(SentencePieceTokenizer tokenizer,
+                                                          EmbeddingVocabulary vocabulary,
+                                                          TableAndWeights tableAndWeights,
+                                                          Normalization normalization,
+                                                          TermTable terms) {
     final IntPredicate skipPieceId =
         id -> tokenizer.isUnknown(id) || tokenizer.isControl(id);
-    return new StaticEmbeddingModel(matrix.embeddings(), matrix.weights(), matrix.dimension(),
+    return new StaticEmbeddingModel(tableAndWeights.table(), tableAndWeights.weights(),
         vocabulary, tokenizer, skipPieceId, normalization == Normalization.L2,
-        rowNorms(matrix.embeddings(), matrix.dimension(), vocabulary.size() + terms.size()),
         specialRows(vocabulary, SENTENCEPIECE_SPECIAL_TOKENS,
-            vocabulary.size() + terms.size()),
+            tableAndWeights.table().rowCount()),
         terms);
   }
 
@@ -637,27 +802,6 @@ public final class StaticEmbeddingModel implements TextEmbedder {
   }
 
   /**
-   * {@return the L2 norm of every matrix row, precomputed for the neighbor scan}
-   *
-   * @param embeddings The flat row-major matrix.
-   * @param dimension  The row width.
-   * @param rowCount   The number of rows.
-   */
-  private static double[] rowNorms(float[] embeddings, int dimension, int rowCount) {
-    final double[] rowNorms = new double[rowCount];
-    for (int row = 0; row < rowCount; row++) {
-      final int base = row * dimension;
-      double sumOfSquares = 0;
-      for (int d = 0; d < dimension; d++) {
-        final float value = embeddings[base + d];
-        sumOfSquares += (double) value * value;
-      }
-      rowNorms[row] = Math.sqrt(sumOfSquares);
-    }
-    return rowNorms;
-  }
-
-  /**
    * {@return the mask of rows holding special tokens, excluded from neighbor results; term rows
    * are never special}
    *
@@ -705,38 +849,31 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (text == null) {
       throw new IllegalArgumentException("Text must not be null");
     }
-    final float[] sum = new float[dimension];
+    // Pooling accumulates in the table's working space (original space for the float table,
+    // rotated space for the quantized one) and maps to original space once per text.
+    final float[] sum = new float[table.pooledLength()];
     // The count travels through the IntConsumer as a one-element array.
-    final int[] pooled = new int[1];
+    final int[] pooledCount = new int[1];
     forEachPooledRow(text, row -> {
-      final int base = row * dimension;
-      if (weights == null) {
-        for (int d = 0; d < dimension; d++) {
-          sum[d] += embeddings[base + d];
-        }
-      } else {
-        final float weight = weights[row];
-        for (int d = 0; d < dimension; d++) {
-          sum[d] += embeddings[base + d] * weight;
-        }
-      }
-      pooled[0]++;
+      table.addRow(row, weights == null ? 1f : weights[row], sum);
+      pooledCount[0]++;
     });
-    final int denominator = Math.max(pooled[0], 1);
-    for (int d = 0; d < dimension; d++) {
-      sum[d] /= denominator;
+    final int denominator = Math.max(pooledCount[0], 1);
+    for (int i = 0; i < sum.length; i++) {
+      sum[i] /= denominator;
     }
+    final float[] pooled = table.finishPooling(sum);
     if (normalize) {
       double sumOfSquares = 0;
-      for (final float value : sum) {
+      for (final float value : pooled) {
         sumOfSquares += (double) value * value;
       }
       final float norm = (float) Math.max(Math.sqrt(sumOfSquares), NORMALIZE_EPSILON);
       for (int d = 0; d < dimension; d++) {
-        sum[d] /= norm;
+        pooled[d] /= norm;
       }
     }
-    return sum;
+    return pooled;
   }
 
   /**
@@ -931,7 +1068,10 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (queryNorm < NORMALIZE_EPSILON) {
       return List.of();
     }
-    final int rowCount = rowNorms.length;
+    // The query maps into the table's working space once; every row is scored there. Norms are
+    // unchanged by the mapping, so the cosine denominator uses the original query norm.
+    final float[] preparedQuery = table.prepareQuery(query);
+    final int rowCount = table.rowCount();
     // The capacity sizes the candidate arrays; a topK beyond the vocabulary (the scan can never
     // yield more than every row) would otherwise allocate topK-sized arrays or overflow.
     final TopK best = new TopK(Math.min(topK, rowCount));
@@ -944,30 +1084,13 @@ public final class StaticEmbeddingModel implements TextEmbedder {
       if (specialRows[row]) {
         continue;
       }
-      final double rowNorm = rowNorms[row];
+      final double rowNorm = table.rowNorm(row);
       if (rowNorm < NORMALIZE_EPSILON) {
         // A zero row has no direction; scored 0 rather than NaN from a 0/0 division.
         best.offer(row, 0.0);
         continue;
       }
-      final int base = row * dimension;
-      // Four accumulators so the JIT can vectorize the dot product without reordering FP adds.
-      double dot0 = 0;
-      double dot1 = 0;
-      double dot2 = 0;
-      double dot3 = 0;
-      int d = 0;
-      for (final int limit = dimension - 3; d < limit; d += 4) {
-        dot0 += query[d] * embeddings[base + d];
-        dot1 += query[d + 1] * embeddings[base + d + 1];
-        dot2 += query[d + 2] * embeddings[base + d + 2];
-        dot3 += query[d + 3] * embeddings[base + d + 3];
-      }
-      double dot = dot0 + dot1 + dot2 + dot3;
-      for (; d < dimension; d++) {
-        dot += query[d] * embeddings[base + d];
-      }
-      best.offer(row, dot / (queryNorm * rowNorm));
+      best.offer(row, table.dot(row, preparedQuery) / (queryNorm * rowNorm));
     }
     final Neighbor[] ordered = new Neighbor[best.size()];
     for (int i = ordered.length - 1; i >= 0; i--) {

@@ -49,6 +49,7 @@ public final class CLI {
 
     tools.add(new AssembleModelTool());
     tools.add(new DistillModelTool());
+    tools.add(new QuantizeModelTool());
 
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);
