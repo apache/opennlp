@@ -290,6 +290,26 @@ class QuantizedEmbeddingMatrixTest {
   }
 
   @Test
+  void testReadRejectsADimensionThatOverflowsTheRowByteCount(@TempDir Path directory)
+      throws IOException {
+    // A header declaring dimension 2^29 makes paddedDimension*bits overflow a signed int, so
+    // the per-row byte count goes negative. A corrupt or hostile file must be rejected cleanly,
+    // not crash the reader with an undocumented NegativeArraySizeException.
+    final Path file = directory.resolve("matrix.bin");
+    QuantizedEmbeddingMatrix.quantize(new float[] {1f, 2f, 3f, 4f}, 1, 4, 4, SEED).write(file);
+    final byte[] bytes = Files.readAllBytes(file);
+    // dimension is the third big-endian int: after magic[4] and rowCount[4], at offset 8.
+    final int overflowingDimension = 1 << 29;
+    bytes[8] = (byte) (overflowingDimension >>> 24);
+    bytes[9] = (byte) (overflowingDimension >>> 16);
+    bytes[10] = (byte) (overflowingDimension >>> 8);
+    bytes[11] = (byte) overflowingDimension;
+    final Path patched = directory.resolve("overflow.bin");
+    Files.write(patched, bytes);
+    assertThrows(IllegalArgumentException.class, () -> QuantizedEmbeddingMatrix.read(patched));
+  }
+
+  @Test
   void testReadRejectsForeignAndTruncatedFiles(@TempDir Path directory) throws IOException {
     final Path foreign = directory.resolve("foreign.bin");
     Files.write(foreign, new byte[] {1, 2, 3, 4, 5, 6, 7, 8});
