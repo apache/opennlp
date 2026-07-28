@@ -17,20 +17,37 @@
 
 package opennlp.tools.util.archive;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Exercises {@link TarStream} against archives built byte by byte in the test, covering
  * regular traversal as well as boundary and corruption cases.
  */
 public class TarStreamTest {
+
+  private static final int BLOCK = 512;
+  private static final int TERMINATOR_SIZE = 2 * BLOCK;
+  private static final int NAME_LENGTH = 100;
+  private static final int SIZE_OFFSET = 124;
+  private static final int TYPE_OFFSET = 156;
+  private static final String SIZE_FORMAT = "%011o";
+  private static final String MODE = "0000644 ";
+  private static final char TYPE_REGULAR_FILE = '0';
+  private static final char TYPE_REGULAR_FILE_CLASSIC = '\0';
+  private static final char TYPE_DIRECTORY = '5';
 
   /**
    * Builds one 512-byte tar header block with the given name, declared content size,
@@ -50,19 +67,21 @@ public class TarStreamTest {
    */
   private static byte[] header(String name, long size, char typeFlag) {
     final byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
-    if (nameBytes.length > 100) {
-      throw new IllegalArgumentException("entry name exceeds 100 bytes: " + name);
+    if (nameBytes.length > NAME_LENGTH) {
+      throw new IllegalArgumentException(
+          "entry name exceeds " + NAME_LENGTH + " bytes: " + name);
     }
     if (size < 0) {
       throw new IllegalArgumentException("size must not be negative: " + size);
     }
-    final byte[] block = new byte[512];
+    final byte[] block = new byte[BLOCK];
     System.arraycopy(nameBytes, 0, block, 0, nameBytes.length);
-    final byte[] mode = "0000644 ".getBytes(StandardCharsets.US_ASCII);
-    System.arraycopy(mode, 0, block, 100, mode.length);
-    final String sizeOctal = String.format("%011o", size);
-    System.arraycopy(sizeOctal.getBytes(StandardCharsets.US_ASCII), 0, block, 124, 11);
-    block[156] = (byte) typeFlag;
+    final byte[] mode = MODE.getBytes(StandardCharsets.US_ASCII);
+    System.arraycopy(mode, 0, block, NAME_LENGTH, mode.length);
+    final byte[] sizeOctal = String.format(SIZE_FORMAT, size)
+        .getBytes(StandardCharsets.US_ASCII);
+    System.arraycopy(sizeOctal, 0, block, SIZE_OFFSET, sizeOctal.length);
+    block[TYPE_OFFSET] = (byte) typeFlag;
     return block;
   }
 
@@ -81,7 +100,23 @@ public class TarStreamTest {
       char typeFlag) throws IOException {
     tar.write(header(name, content.length, typeFlag));
     tar.write(content);
-    tar.write(new byte[(512 - content.length % 512) % 512]);
+    tar.write(new byte[(BLOCK - content.length % BLOCK) % BLOCK]);
+  }
+
+  /**
+   * Supplies blocks that must not be mistaken for a tar header, each with a description
+   * naming the reason.
+   *
+   * @return The rejection cases. Never {@code null}.
+   */
+  private static Stream<Arguments> nonHeaderContent() {
+    final byte[] filler = new byte[BLOCK];
+    Arrays.fill(filler, (byte) 'x');
+    return Stream.of(
+        Arguments.of("fewer bytes than one block",
+            "too short to be a tar header".getBytes(StandardCharsets.US_ASCII)),
+        Arguments.of("no ustar magic and a non-octal size field", filler),
+        Arguments.of("an all-zero block", new byte[BLOCK]));
   }
 
   /**
@@ -100,7 +135,8 @@ public class TarStreamTest {
    */
   @Test
   void testTerminatorOnlyArchiveHasNoEntries() throws IOException {
-    final TarStream stream = new TarStream(new ByteArrayInputStream(new byte[1024]));
+    final TarStream stream =
+        new TarStream(new ByteArrayInputStream(new byte[TERMINATOR_SIZE]));
     Assertions.assertFalse(stream.next());
   }
 
@@ -112,16 +148,18 @@ public class TarStreamTest {
    */
   @Test
   void testReadsEntriesSizesTypesAndContent() throws IOException {
-    final byte[] blockSized = new byte[512];
+    final byte[] blockSized = new byte[BLOCK];
     for (int i = 0; i < blockSized.length; i++) {
       blockSized[i] = (byte) (i % 251);
     }
     final ByteArrayOutputStream tar = new ByteArrayOutputStream();
-    entry(tar, "data/", new byte[0], '5');
-    entry(tar, "data/skip.bin", "0123456789".getBytes(StandardCharsets.US_ASCII), '0');
-    entry(tar, "data/alpha.txt", "alpha\n".getBytes(StandardCharsets.UTF_8), '\0');
-    entry(tar, "block.bin", blockSized, '0');
-    tar.write(new byte[1024]);
+    entry(tar, "data/", new byte[0], TYPE_DIRECTORY);
+    entry(tar, "data/skip.bin", "0123456789".getBytes(StandardCharsets.US_ASCII),
+        TYPE_REGULAR_FILE);
+    entry(tar, "data/alpha.txt", "alpha\n".getBytes(StandardCharsets.UTF_8),
+        TYPE_REGULAR_FILE_CLASSIC);
+    entry(tar, "block.bin", blockSized, TYPE_REGULAR_FILE);
+    tar.write(new byte[TERMINATOR_SIZE]);
     final TarStream stream = new TarStream(new ByteArrayInputStream(tar.toByteArray()));
 
     Assertions.assertTrue(stream.next());
@@ -144,7 +182,7 @@ public class TarStreamTest {
 
     Assertions.assertTrue(stream.next());
     Assertions.assertEquals("block.bin", stream.name());
-    Assertions.assertEquals(512, stream.size());
+    Assertions.assertEquals(BLOCK, stream.size());
     Assertions.assertTrue(stream.isFile());
     Assertions.assertArrayEquals(blockSized, stream.entryStream().readAllBytes());
 
@@ -158,17 +196,17 @@ public class TarStreamTest {
   @Test
   void testNameFillsFullHundredByteField() throws IOException {
     final StringBuilder longName = new StringBuilder("d/");
-    while (longName.length() < 100) {
+    while (longName.length() < NAME_LENGTH) {
       longName.append('x');
     }
     final String name = longName.toString();
     final ByteArrayOutputStream tar = new ByteArrayOutputStream();
-    entry(tar, name, "n".getBytes(StandardCharsets.US_ASCII), '0');
-    tar.write(new byte[1024]);
+    entry(tar, name, "n".getBytes(StandardCharsets.US_ASCII), TYPE_REGULAR_FILE);
+    tar.write(new byte[TERMINATOR_SIZE]);
     final TarStream stream = new TarStream(new ByteArrayInputStream(tar.toByteArray()));
 
     Assertions.assertTrue(stream.next());
-    Assertions.assertEquals(100, stream.name().length());
+    Assertions.assertEquals(NAME_LENGTH, stream.name().length());
     Assertions.assertEquals(name, stream.name());
     Assertions.assertArrayEquals("n".getBytes(StandardCharsets.US_ASCII),
         stream.entryStream().readAllBytes());
@@ -181,7 +219,8 @@ public class TarStreamTest {
    */
   @Test
   void testTruncatedHeaderFailsLoud() {
-    final byte[] partial = Arrays.copyOf(header("cut.bin", 0, '0'), 200);
+    final byte[] partial =
+        Arrays.copyOf(header("cut.bin", 0, TYPE_REGULAR_FILE), BLOCK / 2);
     final TarStream stream = new TarStream(new ByteArrayInputStream(partial));
 
     final IOException thrown = Assertions.assertThrows(IOException.class, stream::next);
@@ -195,7 +234,7 @@ public class TarStreamTest {
   @Test
   void testTruncatedEntryContentFailsLoud() throws IOException {
     final ByteArrayOutputStream tar = new ByteArrayOutputStream();
-    tar.write(header("data.bin", 10, '0'));
+    tar.write(header("data.bin", 10, TYPE_REGULAR_FILE));
     tar.write("1234".getBytes(StandardCharsets.US_ASCII));
     final TarStream stream = new TarStream(new ByteArrayInputStream(tar.toByteArray()));
 
@@ -212,7 +251,7 @@ public class TarStreamTest {
   @Test
   void testTruncatedArchiveWhenSkippingFailsLoud() throws IOException {
     final TarStream stream = new TarStream(
-        new ByteArrayInputStream(header("gone.bin", 600, '0')));
+        new ByteArrayInputStream(header("gone.bin", 600, TYPE_REGULAR_FILE)));
 
     Assertions.assertTrue(stream.next());
     final IOException thrown = Assertions.assertThrows(IOException.class, stream::next);
@@ -225,13 +264,66 @@ public class TarStreamTest {
    */
   @Test
   void testMalformedSizeFieldFailsLoud() {
-    final byte[] block = header("bad.bin", 0, '0');
-    block[124] = '9';
+    final byte[] block = header("bad.bin", 0, TYPE_REGULAR_FILE);
+    block[SIZE_OFFSET] = '9';
     final TarStream stream = new TarStream(new ByteArrayInputStream(block));
 
     final IOException thrown = Assertions.assertThrows(IOException.class, stream::next);
     Assertions.assertEquals("malformed tar size field in entry header",
         thrown.getMessage());
+  }
+
+  /**
+   * Proves that a stream positioned at a tar header is detected as such and that the
+   * detection leaves the position untouched, so the archive can still be read from its
+   * first entry.
+   */
+  @Test
+  void testStartsWithHeaderDetectsTarAndKeepsPosition() throws IOException {
+    final ByteArrayOutputStream tar = new ByteArrayOutputStream();
+    entry(tar, "data/alpha.txt", "alpha\n".getBytes(StandardCharsets.UTF_8),
+        TYPE_REGULAR_FILE);
+    tar.write(new byte[TERMINATOR_SIZE]);
+    final InputStream in =
+        new BufferedInputStream(new ByteArrayInputStream(tar.toByteArray()));
+
+    Assertions.assertTrue(TarStream.startsWithHeader(in));
+
+    final TarStream stream = new TarStream(in);
+    Assertions.assertTrue(stream.next());
+    Assertions.assertEquals("data/alpha.txt", stream.name());
+    Assertions.assertArrayEquals("alpha\n".getBytes(StandardCharsets.UTF_8),
+        stream.entryStream().readAllBytes());
+  }
+
+  /**
+   * Proves that content which is not a tar header is reported as such, whatever the
+   * reason.
+   */
+  @ParameterizedTest
+  @MethodSource("nonHeaderContent")
+  void testStartsWithHeaderRejectsNonTarContent(String description, byte[] content)
+      throws IOException {
+    Assertions.assertFalse(
+        TarStream.startsWithHeader(new ByteArrayInputStream(content)), description);
+  }
+
+  /**
+   * Proves that detection rejects a missing stream and one that cannot be repositioned,
+   * rather than consuming bytes the caller still needs.
+   */
+  @Test
+  void testStartsWithHeaderRejectsUnusableStreams() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> TarStream.startsWithHeader(null));
+    final InputStream notMarkable = new InputStream() {
+      @Override
+      public int read() {
+        return -1;
+      }
+    };
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> TarStream.startsWithHeader(notMarkable));
   }
 
   /**

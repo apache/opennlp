@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -33,25 +34,33 @@ import java.util.zip.ZipInputStream;
 import opennlp.tools.util.archive.TarStream;
 
 /**
- * Fetches a user-chosen third-party resource, such as a training corpus, a dictionary
- * archive, or a lexicon, into a local directory. The user supplies the location and thereby
- * accepts that resource's license; nothing is bundled and no location is built in,
- * which keeps externally licensed data entirely outside this library's distribution.
+ * Fetches a third-party resource, such as a training corpus, a dictionary archive, or a
+ * lexicon, into a local directory. The caller supplies the location and thereby accepts
+ * that resource's license; no locations are built in and no data is bundled.
  *
  * <p>An optional SHA-256 checksum is verified against the downloaded bytes before
- * anything is unpacked, so a corrupted or substituted archive fails loud without side
- * effects. The content format is detected from the bytes, not the name: gzip-compressed
- * tar archives and zip archives are unpacked with their relative structure, entries
- * that would escape the target directory are rejected, plain gzip files are
- * decompressed, and anything else is stored as a file under its source name.</p>
+ * anything is unpacked. The content format is detected from the bytes, not from the
+ * name: gzip-compressed tar archives and zip archives are unpacked with their relative
+ * structure, entries that would escape the target directory are rejected, plain gzip
+ * files are decompressed, and anything else is stored as a file under its source
+ * name.</p>
  *
- * @see DownloadUtil DownloadUtil, which fetches this project's own published models
+ * @see DownloadUtil
  * @since 3.0.0
  */
 public final class ResourceInstaller {
 
+  private static final String SHA_256 = "SHA-256";
+  private static final String GZIP_SUFFIX = ".gz";
+  private static final String DEFAULT_RESOURCE_NAME = "resource";
+  private static final int BUFFER_SIZE = 8192;
+  private static final int MAGIC_LENGTH = 2;
+  private static final int GZIP_MAGIC_FIRST = 0x1F;
+  private static final int GZIP_MAGIC_SECOND = 0x8B;
+  private static final int ZIP_MAGIC_FIRST = 'P';
+  private static final int ZIP_MAGIC_SECOND = 'K';
+
   private ResourceInstaller() {
-    // This class exposes static methods only and is never instantiated.
   }
 
   /**
@@ -62,7 +71,8 @@ public final class ResourceInstaller {
    *                        not be {@code null}.
    * @return The target directory. Never {@code null}.
    * @throws IOException Thrown if fetching or unpacking fails.
-   * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code source} or
+   *         {@code targetDirectory} is {@code null}.
    */
   public static Path install(URI source, Path targetDirectory) throws IOException {
     return install(source, targetDirectory, null);
@@ -85,8 +95,11 @@ public final class ResourceInstaller {
    */
   public static Path install(URI source, Path targetDirectory, String sha256)
       throws IOException {
-    if (source == null || targetDirectory == null) {
-      throw new IllegalArgumentException("source and targetDirectory must not be null");
+    if (source == null) {
+      throw new IllegalArgumentException("source must not be null");
+    }
+    if (targetDirectory == null) {
+      throw new IllegalArgumentException("targetDirectory must not be null");
     }
     if (sha256 != null && sha256.isBlank()) {
       throw new IllegalArgumentException("sha256 must not be blank; pass null to skip");
@@ -110,43 +123,50 @@ public final class ResourceInstaller {
   /**
    * Computes the file's SHA-256 and compares it with the expected hex digest, ignoring
    * hex letter case and any leading or trailing whitespace around the expected value.
+   *
+   * @param file The file to digest.
+   * @param expected The expected hex digest.
+   * @throws IOException Thrown if the file cannot be read or the digests differ.
    */
   private static void verify(Path file, String expected) throws IOException {
     final MessageDigest digest;
     try {
-      digest = MessageDigest.getInstance("SHA-256");
+      digest = MessageDigest.getInstance(SHA_256);
     } catch (NoSuchAlgorithmException e) {
-      throw new IOException("SHA-256 is unavailable in this runtime", e);
+      throw new IOException(SHA_256 + " is unavailable in this runtime", e);
     }
     try (InputStream in = Files.newInputStream(file)) {
-      final byte[] buffer = new byte[8192];
+      final byte[] buffer = new byte[BUFFER_SIZE];
       int read;
       while ((read = in.read(buffer)) >= 0) {
         digest.update(buffer, 0, read);
       }
     }
-    final StringBuilder actual = new StringBuilder();
-    for (final byte b : digest.digest()) {
-      actual.append(Character.forDigit((b >> 4) & 0xF, 16))
-          .append(Character.forDigit(b & 0xF, 16));
-    }
-    if (!actual.toString().equalsIgnoreCase(expected.trim())) {
+    final String actual = HexFormat.of().formatHex(digest.digest());
+    if (!actual.equalsIgnoreCase(expected.trim())) {
       throw new IOException(
           "checksum mismatch: expected " + expected + " but downloaded " + actual);
     }
   }
 
-  /** Detects the content format from its leading bytes and unpacks accordingly. */
+  /**
+   * Detects the content format from its leading bytes and unpacks accordingly.
+   *
+   * @param downloaded The fetched file.
+   * @param name The file name derived from the source location.
+   * @param target The directory to unpack into.
+   * @throws IOException Thrown if reading or unpacking fails.
+   */
   private static void unpack(Path downloaded, String name, Path target)
       throws IOException {
     try (InputStream raw = new BufferedInputStream(Files.newInputStream(downloaded))) {
-      raw.mark(2);
+      raw.mark(MAGIC_LENGTH);
       final int first = raw.read();
       final int second = raw.read();
       raw.reset();
-      if (first == 0x1F && second == 0x8B) {
+      if (first == GZIP_MAGIC_FIRST && second == GZIP_MAGIC_SECOND) {
         unpackGzip(raw, name, target);
-      } else if (first == 'P' && second == 'K') {
+      } else if (first == ZIP_MAGIC_FIRST && second == ZIP_MAGIC_SECOND) {
         unpackZip(raw, target);
       } else {
         Files.copy(raw, safeChild(target, name), StandardCopyOption.REPLACE_EXISTING);
@@ -154,33 +174,58 @@ public final class ResourceInstaller {
     }
   }
 
-  /** Unpacks gzip content: a tar archive inside when present, a plain file otherwise. */
+  /**
+   * Unpacks gzip content: a tar archive inside when present, a plain file otherwise. A
+   * plain file loses the {@code .gz} suffix of its source name.
+   *
+   * @param raw The gzip-compressed content.
+   * @param name The file name derived from the source location.
+   * @param target The directory to unpack into.
+   * @throws IOException Thrown if decompressing or unpacking fails.
+   */
   private static void unpackGzip(InputStream raw, String name, Path target)
       throws IOException {
-    final BufferedInputStream decompressed =
-        new BufferedInputStream(new GZIPInputStream(raw), 8192);
-    decompressed.mark(512);
-    final boolean tar = looksLikeTar(decompressed);
-    decompressed.reset();
-    if (tar) {
-      final TarStream entries = new TarStream(decompressed);
-      while (entries.next()) {
-        if (!entries.isFile()) {
-          continue;
-        }
-        final Path file = safeChild(target, entries.name());
-        Files.createDirectories(file.getParent());
-        Files.copy(entries.entryStream(), file, StandardCopyOption.REPLACE_EXISTING);
-      }
+    final InputStream decompressed =
+        new BufferedInputStream(new GZIPInputStream(raw), BUFFER_SIZE);
+    if (TarStream.startsWithHeader(decompressed)) {
+      unpackTar(decompressed, target);
     } else {
-      final String plainName = name.endsWith(".gz")
-          ? name.substring(0, name.length() - 3) : name;
+      final String plainName = name.endsWith(GZIP_SUFFIX)
+          ? name.substring(0, name.length() - GZIP_SUFFIX.length()) : name;
       Files.copy(decompressed, safeChild(target, plainName),
           StandardCopyOption.REPLACE_EXISTING);
     }
   }
 
-  /** Unpacks every regular zip entry to its relative location beneath the target. */
+  /**
+   * Unpacks every regular tar entry to its relative location beneath the target.
+   *
+   * @param decompressed The uncompressed tar content.
+   * @param target The directory to unpack into.
+   * @throws IOException Thrown if the archive is malformed or an entry escapes the
+   *         target directory.
+   */
+  private static void unpackTar(InputStream decompressed, Path target)
+      throws IOException {
+    final TarStream entries = new TarStream(decompressed);
+    while (entries.next()) {
+      if (!entries.isFile()) {
+        continue;
+      }
+      final Path file = safeChild(target, entries.name());
+      Files.createDirectories(file.getParent());
+      Files.copy(entries.entryStream(), file, StandardCopyOption.REPLACE_EXISTING);
+    }
+  }
+
+  /**
+   * Unpacks every regular zip entry to its relative location beneath the target.
+   *
+   * @param raw The zip content.
+   * @param target The directory to unpack into.
+   * @throws IOException Thrown if the archive is malformed or an entry escapes the
+   *         target directory.
+   */
   private static void unpackZip(InputStream raw, Path target) throws IOException {
     final ZipInputStream zip = new ZipInputStream(raw);
     ZipEntry entry;
@@ -194,36 +239,14 @@ public final class ResourceInstaller {
     }
   }
 
-  /** Peeks whether gzip content holds a tar archive, by the ustar magic or a header. */
-  private static boolean looksLikeTar(InputStream decompressed) throws IOException {
-    final byte[] block = new byte[512];
-    int filled = 0;
-    while (filled < block.length) {
-      final int read = decompressed.read(block, filled, block.length - filled);
-      if (read < 0) {
-        return false;
-      }
-      filled += read;
-    }
-    if (block[257] == 'u' && block[258] == 's' && block[259] == 't'
-        && block[260] == 'a' && block[261] == 'r') {
-      return true;
-    }
-    // Without the ustar magic, treat the block as a classic tar header when it starts
-    // with a name and its size field holds only octal digits, blanks, or NUL padding.
-    if (block[0] == 0) {
-      return false;
-    }
-    for (int i = 124; i < 136; i++) {
-      final byte b = block[i];
-      if (b != 0 && b != ' ' && (b < '0' || b > '7')) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /** Resolves an archive entry inside the target, rejecting escaping paths. */
+  /**
+   * Resolves an archive entry inside the target, rejecting escaping paths.
+   *
+   * @param target The directory to unpack into.
+   * @param entryName The entry name as stored in the archive.
+   * @return The resolved path beneath the target. Never {@code null}.
+   * @throws IOException Thrown if the entry resolves outside the target directory.
+   */
   private static Path safeChild(Path target, String entryName) throws IOException {
     final Path resolved = target.resolve(entryName).normalize();
     if (!resolved.startsWith(target.normalize())) {
@@ -232,14 +255,19 @@ public final class ResourceInstaller {
     return resolved;
   }
 
-  /** Derives a file name from the source URI for non-archive content. */
+  /**
+   * Derives a file name from the source URI for non-archive content.
+   *
+   * @param source The resource location.
+   * @return The last path segment, or {@code resource} if the location has none.
+   */
   private static String sourceName(URI source) {
     final String path = source.getPath();
     if (path == null || path.isEmpty()) {
-      return "resource";
+      return DEFAULT_RESOURCE_NAME;
     }
     final int slash = path.lastIndexOf('/');
     final String name = slash < 0 ? path : path.substring(slash + 1);
-    return name.isEmpty() ? "resource" : name;
+    return name.isEmpty() ? DEFAULT_RESOURCE_NAME : name;
   }
 }

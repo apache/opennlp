@@ -17,6 +17,7 @@
 
 package opennlp.tools.util.archive;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +27,7 @@ import opennlp.tools.commons.Internal;
 /**
  * A forward-only reader over a tar stream: {@link #next()} advances to the following
  * entry, skipping whatever remains of the current one, and {@link #entryStream()}
- * exposes exactly the current entry's bytes. No external archive library is involved.
+ * exposes exactly the current entry's bytes.
  *
  * <p>Reads classic and ustar headers: entry name, octal size, and type flag. The ustar
  * name prefix field is not consulted, so an entry's name is always the content of the
@@ -41,6 +42,10 @@ public final class TarStream {
   private static final int SIZE_OFFSET = 124;
   private static final int SIZE_LENGTH = 12;
   private static final int TYPE_OFFSET = 156;
+  private static final int MAGIC_OFFSET = 257;
+  private static final String USTAR_MAGIC = "ustar";
+  private static final char TYPE_REGULAR_FILE = '0';
+  private static final char TYPE_REGULAR_FILE_CLASSIC = 0;
 
   private final InputStream in;
   private final byte[] header = new byte[BLOCK];
@@ -61,6 +66,34 @@ public final class TarStream {
       throw new IllegalArgumentException("in must not be null");
     }
     this.in = in;
+  }
+
+  /**
+   * Checks whether the given stream is positioned at a tar entry header, leaving its
+   * position unchanged.
+   *
+   * @param in The stream to inspect. Must not be {@code null} and must support
+   *           {@link InputStream#mark(int) mark} and {@link InputStream#reset() reset}.
+   * @return {@code true} if the next 512 bytes read as a tar header, {@code false} if
+   *         they do not or if fewer than 512 bytes are available.
+   * @throws IOException Thrown if reading from or repositioning the stream fails.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null} or does not
+   *         support mark and reset.
+   */
+  public static boolean startsWithHeader(InputStream in) throws IOException {
+    if (in == null) {
+      throw new IllegalArgumentException("in must not be null");
+    }
+    if (!in.markSupported()) {
+      throw new IllegalArgumentException("in must support mark and reset");
+    }
+    in.mark(BLOCK);
+    try {
+      final byte[] block = new byte[BLOCK];
+      return in.readNBytes(block, 0, BLOCK) == BLOCK && isHeader(block);
+    } finally {
+      in.reset();
+    }
   }
 
   /**
@@ -108,7 +141,7 @@ public final class TarStream {
    * @return {@code true} if the current entry is a regular file.
    */
   public boolean isFile() {
-    return type == '0' || type == 0;
+    return type == TYPE_REGULAR_FILE || type == TYPE_REGULAR_FILE_CLASSIC;
   }
 
   /**
@@ -148,6 +181,52 @@ public final class TarStream {
   }
 
   /**
+   * Checks whether a full 512-byte block reads as a tar entry header. A block carrying
+   * the ustar magic is accepted outright; without it, the block is accepted as a classic
+   * header when it starts with a name and its size field holds only octal digits, blanks,
+   * or NUL padding.
+   *
+   * @param block The block to inspect. Must be 512 bytes long.
+   * @return {@code true} if the block reads as a tar header.
+   */
+  private static boolean isHeader(byte[] block) {
+    if (hasUstarMagic(block)) {
+      return true;
+    }
+    if (block[0] == 0) {
+      return false;
+    }
+    for (int i = SIZE_OFFSET; i < SIZE_OFFSET + SIZE_LENGTH; i++) {
+      final byte b = block[i];
+      if (b != 0 && b != ' ' && !isOctalDigit(b)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * @param block The block to inspect. Must be 512 bytes long.
+   * @return {@code true} if the block carries the ustar magic in its magic field.
+   */
+  private static boolean hasUstarMagic(byte[] block) {
+    for (int i = 0; i < USTAR_MAGIC.length(); i++) {
+      if (block[MAGIC_OFFSET + i] != USTAR_MAGIC.charAt(i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * @param b The byte to classify.
+   * @return {@code true} if the byte is one of the digits {@code 0} to {@code 7}.
+   */
+  private static boolean isOctalDigit(byte b) {
+    return b >= '0' && b <= '7';
+  }
+
+  /**
    * Fills the header buffer with the next 512-byte block.
    *
    * @return {@code true} when a full block was read, {@code false} at a clean end of
@@ -155,16 +234,12 @@ public final class TarStream {
    * @throws IOException Thrown if the stream ends inside the block.
    */
   private boolean readBlock() throws IOException {
-    int filled = 0;
-    while (filled < header.length) {
-      final int read = in.read(header, filled, header.length - filled);
-      if (read < 0) {
-        if (filled == 0) {
-          return false;
-        }
-        throw new IOException("truncated tar header");
-      }
-      filled += read;
+    final int filled = in.readNBytes(header, 0, header.length);
+    if (filled == 0) {
+      return false;
+    }
+    if (filled < header.length) {
+      throw new IOException("truncated tar header");
     }
     return true;
   }
@@ -197,7 +272,7 @@ public final class TarStream {
       if (b == 0 || b == ' ') {
         continue;
       }
-      if (b < '0' || b > '7') {
+      if (!isOctalDigit(b)) {
         throw new IOException("malformed tar size field in entry header");
       }
       value = value * 8 + (b - '0');
@@ -222,14 +297,10 @@ public final class TarStream {
    * @throws IOException Thrown if the stream ends before all bytes were consumed.
    */
   private void skip(long bytes) throws IOException {
-    long toSkip = bytes;
-    final byte[] buffer = new byte[8192];
-    while (toSkip > 0) {
-      final int read = in.read(buffer, 0, (int) Math.min(buffer.length, toSkip));
-      if (read < 0) {
-        throw new IOException("truncated tar archive");
-      }
-      toSkip -= read;
+    try {
+      in.skipNBytes(bytes);
+    } catch (EOFException e) {
+      throw new IOException("truncated tar archive", e);
     }
   }
 }
