@@ -24,8 +24,6 @@
 			<code>DependencyParserME</code> trains on <code>DependencySample</code> streams
 			and returns a <code>DependencyGraph</code> of heads and relations. CoNLL-U
 			treebanks are read through <code>ConlluDependencySampleStream</code>.
-			<code>ConlluDependencyParserUsageTest</code> asserts the train-parse-evaluate
-			workflow shown here.
 		</para>
 	</section>
 
@@ -63,8 +61,8 @@ DependencyGraph graph = parser.parse(
 			parses each sentence separately, and shifts sentence-local arcs so every
 			head and dependent is an index into the document-wide token layer. Each
 			arc annotation sits on its dependent token's span in original text
-			coordinates. <code>DependencyAnnotatorPipelineTest</code> asserts the
-			behavior shown here.
+			coordinates. The required layers must be present, but they may be empty:
+			a document without content yields a present-but-empty arc layer.
 			<programlisting language="java">
 <![CDATA[DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
     .add(new SentenceDetectorAnnotator(sentenceDetector))
@@ -76,7 +74,7 @@ DependencyGraph graph = parser.parse(
 Document document = analyzer.analyze("the dog barks. she eats fish.");
 List<Annotation<DependencyArc>> arcs =
     document.get(DependencyAnnotator.DEPENDENCIES);
-// one arc per token; second-sentence heads are document-wide indexes
+// one arc per token; second-sentence heads are document-wide indices
 // "she" is token 3 with head 4 ("eats"), span [15..18)]]>
 			</programlisting>
 		</para>

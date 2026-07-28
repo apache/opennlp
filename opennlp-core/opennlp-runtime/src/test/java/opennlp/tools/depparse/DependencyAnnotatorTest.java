@@ -97,8 +97,9 @@ public class DependencyAnnotatorTest {
   @Test
   void testMissingLayersThrow() {
     final DependencyAnnotator annotator = new DependencyAnnotator(FIXED);
-    assertThrows(IllegalArgumentException.class,
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> annotator.annotate(Document.of("no layers")));
+    assertEquals("document lacks the required layer " + Layers.SENTENCES, e.getMessage());
   }
 
   @Test

@@ -42,7 +42,6 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Demonstrates {@link DependencyAnnotator} at the end of a complete {@link DocumentAnalyzer}
@@ -285,13 +284,12 @@ public class DependencyAnnotatorPipelineTest {
   }
 
   @Test
-  void testTextWithZeroSentencesFailsAtTheDependencyAnnotator() {
-    // empty text yields present-but-empty sentence and token layers, which the
-    // upstream annotators pass through under the empty-versus-missing distinction;
-    // the dependency annotator itself then refuses to parse an empty token layer
-    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-        () -> pipeline().analyze(""));
-    assertEquals("document needs aligned opennlp:tokens<String> and opennlp:pos<String> layers",
-        e.getMessage());
+  void testTextWithZeroSentencesYieldsAnEmptyDependencyLayer() {
+    // empty text yields present-but-empty sentence, token, and tag layers, which every
+    // annotator of the pipeline passes through under the empty-versus-absent
+    // distinction, so the dependency layer comes out present and empty
+    final Document document = pipeline().analyze("");
+    assertEquals(List.of(), document.get(Layers.TOKENS));
+    assertEquals(List.of(), document.get(DependencyAnnotator.DEPENDENCIES));
   }
 }
