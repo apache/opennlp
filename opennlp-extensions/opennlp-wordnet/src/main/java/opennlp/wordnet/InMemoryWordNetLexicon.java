@@ -148,6 +148,7 @@ final class InMemoryWordNetLexicon implements LexicalKnowledgeBase {
      * @param writtenForm The lemma as written in the source or query. Must not be {@code null}.
      * @param pos         The part of speech. Must not be {@code null}.
      * @return The folded key.
+     * @throws IllegalArgumentException Thrown if {@code writtenForm} is {@code null}.
      */
     static LemmaKey of(String writtenForm, WordNetPOS pos) {
       return new LemmaKey(LemmaFolding.fold(writtenForm), pos);

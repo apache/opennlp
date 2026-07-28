@@ -35,6 +35,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MorphyExceptionsTest {
 
+  /**
+   * Loads the exception lists from the miniature WNDB fixture directory.
+   *
+   * @return The loaded fixture exception lists.
+   */
   static MorphyExceptions fixture() {
     try {
       return MorphyExceptions.load(WndbReaderTest.fixtureDirectory());

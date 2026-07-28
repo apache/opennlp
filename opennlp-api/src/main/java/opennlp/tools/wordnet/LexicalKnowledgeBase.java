@@ -24,14 +24,11 @@ import java.util.Optional;
  * identity is opaque and source-qualified (see {@link Synset#id()}). Lookups return their matches
  * in the source's sense order and never return {@code null}.
  *
- * <p>Lemma matching semantics are the implementation's concern. The reference implementations
- * match case-insensitively (case folding with the root locale) and treat the underscore some
- * formats store in multiword lemmas as a space; an implementation with different semantics must
- * document them. Returned {@link Synset#lemmas() lemmas} preserve the source's written forms,
- * with spaces in multiword lemmas.</p>
+ * <p>How a queried lemma is matched against the source's written forms is implementation
+ * specific and documented there. Returned {@link Synset#lemmas() lemmas} preserve the source's
+ * written forms, with spaces in multiword lemmas.</p>
  *
- * <p>Implementations must be immutable and thread-safe after loading: one instance is meant to
- * be shared across an application's threads for concurrent lookups.</p>
+ * <p>Thread safety is implementation specific.</p>
  */
 public interface LexicalKnowledgeBase {
 
@@ -74,9 +71,8 @@ public interface LexicalKnowledgeBase {
   }
 
   /**
-   * Tests whether the lexicon contains a lemma with a part of speech. This is the membership
-   * check morphological rules validate their candidates against; implementations may override
-   * it with a cheaper check than {@link #lookup(String, WordNetPOS)}.
+   * Tests whether the lexicon contains a lemma with a part of speech. The default implementation
+   * delegates to {@link #lookup(String, WordNetPOS)}.
    *
    * @param lemma The lemma to test. Must not be {@code null}.
    * @param pos   The part of speech to test it as. Must not be {@code null}.

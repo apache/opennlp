@@ -66,6 +66,7 @@ import opennlp.tools.wordnet.WordNetRelation;
  */
 public final class WnLmfReader {
 
+  /** The WN-LMF relation names this reader accepts, mapped to the contract relations. */
   private static final Map<String, WordNetRelation> RELATION_NAMES = relationNames();
 
   /** The format's escape-hatch relation type; carries no type the contract can express. */
@@ -79,6 +80,21 @@ public final class WnLmfReader {
 
   /** The element declaring a synset; opened and closed by the same handlers. */
   private static final String SYNSET_ELEMENT = "Synset";
+
+  /** The identifier attribute shared by entries, senses, and synsets. */
+  private static final String ID_ATTRIBUTE = "id";
+
+  /** The part-of-speech attribute shared by lemmas and synsets. */
+  private static final String PART_OF_SPEECH_ATTRIBUTE = "partOfSpeech";
+
+  /** The relation-type attribute shared by sense and synset relations. */
+  private static final String REL_TYPE_ATTRIBUTE = "relType";
+
+  /** The relation-target attribute shared by sense and synset relations. */
+  private static final String TARGET_ATTRIBUTE = "target";
+
+  /** The opening of every malformed-document message, before the resource name. */
+  private static final String MALFORMED_PREFIX = "Malformed WN-LMF document ";
 
   /** Not instantiable. */
   private WnLmfReader() {
@@ -227,7 +243,7 @@ public final class WnLmfReader {
       final String name = reader.getLocalName();
       switch (name) {
         case LEXICAL_ENTRY_ELEMENT -> {
-          currentEntryId = requireAttribute(reader, "id");
+          currentEntryId = requireAttribute(reader, ID_ATTRIBUTE);
           if (!entryIds.add(currentEntryId)) {
             throw malformed(reader.getLocation(),
                 "Duplicate lexical entry id " + currentEntryId, null);
@@ -240,7 +256,7 @@ public final class WnLmfReader {
             throw malformed(reader.getLocation(), "Lemma outside a LexicalEntry", null);
           }
           currentEntryLemma = requireAttribute(reader, "writtenForm");
-          currentEntryPos = parsePos(requireAttribute(reader, "partOfSpeech"),
+          currentEntryPos = parsePos(requireAttribute(reader, PART_OF_SPEECH_ATTRIBUTE),
               reader.getLocation());
           lemmaByEntryId.put(currentEntryId, currentEntryLemma);
           posByEntryId.put(currentEntryId, currentEntryPos);
@@ -250,7 +266,7 @@ public final class WnLmfReader {
             throw malformed(reader.getLocation(),
                 "Sense before its entry's Lemma in LexicalEntry " + currentEntryId, null);
           }
-          currentSenseId = requireAttribute(reader, "id");
+          currentSenseId = requireAttribute(reader, ID_ATTRIBUTE);
           final String synsetId = requireAttribute(reader, "synset");
           if (synsetBySenseId.putIfAbsent(currentSenseId, synsetId) != null) {
             throw malformed(reader.getLocation(), "Duplicate sense id " + currentSenseId, null);
@@ -269,12 +285,12 @@ public final class WnLmfReader {
             throw malformed(reader.getLocation(), "SenseRelation outside a Sense", null);
           }
           senseRelations.add(new RawSenseRelation(currentSenseId,
-              requireAttribute(reader, "relType"), requireAttribute(reader, "target"),
-              line(reader.getLocation())));
+              requireAttribute(reader, REL_TYPE_ATTRIBUTE),
+              requireAttribute(reader, TARGET_ATTRIBUTE), line(reader.getLocation())));
         }
         case SYNSET_ELEMENT -> {
-          final String id = requireAttribute(reader, "id");
-          final WordNetPOS pos = parsePos(requireAttribute(reader, "partOfSpeech"),
+          final String id = requireAttribute(reader, ID_ATTRIBUTE);
+          final WordNetPOS pos = parsePos(requireAttribute(reader, PART_OF_SPEECH_ATTRIBUTE),
               reader.getLocation());
           currentSynset = new RawSynset(id, pos, reader.getAttributeValue(null, "members"),
               line(reader.getLocation()));
@@ -291,8 +307,8 @@ public final class WnLmfReader {
           if (currentSynset == null) {
             throw malformed(reader.getLocation(), "SynsetRelation outside a Synset", null);
           }
-          final String relType = requireAttribute(reader, "relType");
-          final String target = requireAttribute(reader, "target");
+          final String relType = requireAttribute(reader, REL_TYPE_ATTRIBUTE);
+          final String target = requireAttribute(reader, TARGET_ATTRIBUTE);
           // The escape-hatch type is a documented skip, not a rejection.
           if (!OTHER_RELATION.equals(relType)) {
             currentSynset.relations.add(
@@ -335,7 +351,8 @@ public final class WnLmfReader {
      *     target, or a synset has no members.
      */
     LexicalKnowledgeBase build() throws InvalidFormatException {
-      // Every sense must point to a declared synset, with a consistent part of speech.
+      // Every sense must point to a declared synset; part-of-speech consistency between a
+      // synset and its member entries is checked in memberLemmas.
       for (final Map.Entry<String, String> sense : synsetBySenseId.entrySet()) {
         final RawSynset target = rawSynsets.get(sense.getValue());
         if (target == null) {
@@ -507,10 +524,10 @@ public final class WnLmfReader {
      * @param cause    The underlying cause, or {@code null}.
      * @return The exception to throw.
      */
-    InvalidFormatException malformed(Location location, String message, Throwable cause) {
+    private InvalidFormatException malformed(Location location, String message, Throwable cause) {
       final int line = line(location);
-      final String prefix = line < 0 ? "Malformed WN-LMF document " + resourceName + ": "
-          : "Malformed WN-LMF document " + resourceName + " at line " + line + ": ";
+      final String prefix = line < 0 ? MALFORMED_PREFIX + resourceName + ": "
+          : MALFORMED_PREFIX + resourceName + " at line " + line + ": ";
       return cause == null ? new InvalidFormatException(prefix + message)
           : new InvalidFormatException(prefix + message, cause);
     }
@@ -521,11 +538,12 @@ public final class WnLmfReader {
      * @param location The location, or {@code null}.
      * @return The line number, or {@code -1} when unknown.
      */
-    private static int line(Location location) {
+    private int line(Location location) {
       return location == null ? -1 : location.getLineNumber();
     }
   }
 
+  /** A parsed synset, kept until its members and relation targets can be resolved. */
   private static final class RawSynset {
     private final String id;
     private final WordNetPOS pos;

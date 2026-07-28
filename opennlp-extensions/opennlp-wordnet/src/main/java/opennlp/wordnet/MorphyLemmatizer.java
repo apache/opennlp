@@ -112,6 +112,12 @@ public final class MorphyLemmatizer implements Lemmatizer {
     }
     final String[] lemmas = new String[toks.length];
     for (int i = 0; i < toks.length; i++) {
+      if (toks[i] == null) {
+        throw new IllegalArgumentException("Toks must not contain a null element");
+      }
+      if (tags[i] == null) {
+        throw new IllegalArgumentException("Tags must not contain a null element");
+      }
       final List<String> candidates = lemmasOf(toks[i], tags[i]);
       lemmas[i] = candidates.isEmpty() ? UNKNOWN_LEMMA : candidates.get(0);
     }
@@ -138,6 +144,12 @@ public final class MorphyLemmatizer implements Lemmatizer {
     }
     final List<List<String>> lemmas = new ArrayList<>(toks.size());
     for (int i = 0; i < toks.size(); i++) {
+      if (toks.get(i) == null) {
+        throw new IllegalArgumentException("Toks must not contain a null element");
+      }
+      if (tags.get(i) == null) {
+        throw new IllegalArgumentException("Tags must not contain a null element");
+      }
       final List<String> candidates = lemmasOf(toks.get(i), tags.get(i));
       lemmas.add(candidates.isEmpty() ? List.of(UNKNOWN_LEMMA) : candidates);
     }
@@ -147,15 +159,12 @@ public final class MorphyLemmatizer implements Lemmatizer {
   /**
    * Finds all lemmas of one token, most preferred first.
    *
-   * @param token The token to lemmatize.
-   * @param tag   The part-of-speech tag.
+   * @param token The token to lemmatize. Validated at the public boundary.
+   * @param tag   The part-of-speech tag. Validated at the public boundary.
    * @return The candidate lemmas, empty when the word is unknown or the tag maps to no part of
    *     speech.
    */
   private List<String> lemmasOf(String token, String tag) {
-    if (token == null || tag == null) {
-      throw new IllegalArgumentException("Tokens and tags must not contain null elements");
-    }
     final WordNetPOS pos = posFromTag(tag);
     if (pos == null) {
       return List.of();
@@ -188,7 +197,7 @@ public final class MorphyLemmatizer implements Lemmatizer {
    * @param pos The part of speech.
    * @return The suffix-substitution rules, empty for adverbs.
    */
-  private static String[][] rulesFor(WordNetPOS pos) {
+  private String[][] rulesFor(WordNetPOS pos) {
     return switch (pos) {
       case NOUN -> NOUN_RULES;
       case VERB -> VERB_RULES;

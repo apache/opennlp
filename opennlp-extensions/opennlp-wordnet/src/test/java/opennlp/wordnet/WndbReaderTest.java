@@ -28,6 +28,8 @@ import java.util.function.UnaryOperator;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
@@ -43,9 +45,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WndbReaderTest {
 
-  private static final String DOG_ID = "wndb-00001075-n";
-  private static final String CANID_ID = "wndb-00001160-n";
+  /** The minted id of the fixture's dog synset, shared with the other tests over this fixture. */
+  static final String DOG_ID = "wndb-00001075-n";
 
+  /** The minted id of the fixture's canid synset, the hypernym of {@link #DOG_ID}. */
+  static final String CANID_ID = "wndb-00001160-n";
+
+  /**
+   * Locates the miniature WNDB database directory on the test classpath.
+   *
+   * @return The fixture directory.
+   */
   static Path fixtureDirectory() {
     final URL url = WndbReaderTest.class.getResource("mini-wndb");
     assertNotNull(url, "Fixture directory mini-wndb must be on the test classpath");
@@ -56,6 +66,11 @@ public class WndbReaderTest {
     }
   }
 
+  /**
+   * Loads the miniature WNDB database into a lexicon.
+   *
+   * @return The loaded fixture lexicon.
+   */
   static LexicalKnowledgeBase fixture() {
     try {
       return WndbReader.read(fixtureDirectory());
@@ -243,6 +258,28 @@ public class WndbReaderTest {
     assertTrue(e.getMessage().contains("line 1"));
   }
 
+  @ParameterizedTest
+  @CsvSource({
+      // One field-level rejection per row, each driven by a same-length edit of a single fixture
+      // line so that every following line's byte offset stays valid.
+      "data.noun, 00001564 03 n, 0000156x 03 n, Synset offset must be 8 digits",
+      "data.noun, 00001075 03 n, 00001075 03 v, Synset type v does not belong in",
+      "data.noun, n 01 box, n 0z box, is not a base-16 integer: 0z",
+      "data.noun, n 01 man, n 00 man, Word count must be at least 1",
+      "data.noun, 00001160 n 0000, 00001160 q 0000, Pointer pos must be one of",
+      "data.noun, | a domesticated canid, ! a domesticated canid, Expected the | gloss separator",
+      "data.adj, short(p), short(x), Unknown syntactic marker on word: short(x)",
+      "index.noun, berry n 1, berry v 1, Index pos v does not belong in",
+  })
+  void testRejectsMalformedField(String fileName, String find, String replacement,
+                                 String expected, @TempDir Path tempDir) throws IOException {
+    copyFixture(tempDir);
+    mutate(tempDir, fileName, line -> line.replace(find, replacement));
+    final InvalidFormatException e =
+        assertThrows(InvalidFormatException.class, () -> WndbReader.read(tempDir));
+    assertTrue(e.getMessage().contains(expected), e.getMessage());
+  }
+
   private static void writeEmptyDb(Path directory, String... suffixes) throws IOException {
     for (final String suffix : suffixes) {
       Files.writeString(directory.resolve("data." + suffix), "");
@@ -258,8 +295,9 @@ public class WndbReaderTest {
     }
   }
 
-  // Applies a line transformation to one fixture file. The mutations only ever keep or shrink
-  // line lengths of the affected line's own fields, so surrounding offsets stay valid.
+  // Applies a line transformation to one fixture file. A same-length edit keeps every following
+  // line's byte offset valid; an edit that changes a line's length is only safe when the reader
+  // is expected to fail on that line itself, before it reads the ones after it.
   private static void mutate(Path directory, String fileName, UnaryOperator<String> edit)
       throws IOException {
     final Path file = directory.resolve(fileName);
