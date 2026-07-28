@@ -16,12 +16,12 @@
  */
 package opennlp.embeddings;
 
-
 /**
  * One vocabulary token found near a query vector by {@link StaticEmbeddingModel#mostSimilar}
  * or {@link StaticEmbeddingModel#analogy}, most similar first.
  *
- * @param token      The vocabulary token (a single WordPiece, not necessarily a whole word).
+ * @param token      The vocabulary token: one subword piece of the model's tokenizer, which is
+ *                   not necessarily a whole word.
  * @param similarity Cosine similarity to the query vector, in {@code [-1, 1]}.
  */
 public record Neighbor(String token, double similarity) {
