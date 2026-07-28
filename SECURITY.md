@@ -53,6 +53,8 @@ and which it is not.
 
 ### The short version
 
+When you build on OpenNLP, this is the mindset to bring to what you feed it:
+
 - **Text you analyze is untrusted.** OpenNLP is designed to process hostile text
   safely. Crashes, hangs, and unbounded memory growth caused by crafted *text*
   are vulnerabilities. Report them.
@@ -105,6 +107,9 @@ That is our position on guarantees. It is not our position on effort. We recogni
 that models are shipped, downloaded, cached, and passed between systems, and that
 in real deployments they do not always come from where an operator assumes. So:
 
+- We **recommend against loading a model you do not trust.** The judgment you
+  already apply to an `.exe`, a `.sh`, or a JAR applies here too: obtain models
+  from a source you trust, and verify them before use.
 - We **do not guarantee** that OpenNLP can safely load a maliciously crafted model
   file. Do not build a system whose security depends on that.
 - We **do strive for it**, and we harden these paths continuously.
@@ -119,9 +124,11 @@ Existing hardening in this area includes:
 - **Bounded count fields.** `AbstractModelReader` validates outcome, predicate,
   and pattern counts against an upper bound before allocating, defaulting to
   10,000,000 and configurable at JVM startup via `-DOPENNLP_MAX_ENTRIES=<n>`.
-- **Filtered Java deserialization.** `BaseModel` and `SvmDoccatModel` install an
-  `ObjectInputFilter` allowlist, with limits on graph depth, reference count, and
-  array length, so foreign payloads are rejected before they are materialized.
+- **Filtered Java deserialization.** `BaseModel` installs an `ObjectInputFilter`
+  allowlist that rejects any class outside `opennlp.tools`, including the
+  top-level object, so foreign payloads are rejected before they are
+  materialized. `SvmDoccatModel` installs an allowlist as well, and additionally
+  bounds graph depth, reference count, and array length.
 - **Hardened XML parsing.** `XmlUtil` enables secure processing and disables
   DOCTYPE declarations and external DTD and schema access, so dictionary and
   descriptor XML cannot pull in external entities.
@@ -140,6 +147,11 @@ JVM arguments, or the `OPENNLP_MAX_ENTRIES` setting.
 `DownloadUtil` fetches pretrained models over HTTPS from the Apache distribution
 CDN (`https://dlcdn.apache.org/opennlp/`) and verifies each download against the
 published SHA-512 checksum before use. A mismatch fails the load.
+
+Note that verification happens at **download** time. A model already present in
+the local download cache is currently not re-verified when it is loaded again, so
+treat the cache directory (`~/.opennlp` by default) as trusted storage and protect
+it accordingly.
 
 The base URL can be overridden with the `OPENNLP_DOWNLOAD_BASE_URL` system
 property. That property is **operator configuration**. Pointing it at a host you
