@@ -17,6 +17,7 @@
 
 package opennlp.tools.depparse;
 
+import java.util.Arrays;
 
 /**
  * The mutable configuration of an arc-standard parse: a stack, a buffer of remaining
@@ -72,8 +73,8 @@ public final class ArcStandardState {
     this.assignedDependents = new int[tokenCount];
     this.leftmostDependents = new int[tokenCount];
     this.rightmostDependents = new int[tokenCount];
-    java.util.Arrays.fill(this.leftmostDependents, NONE);
-    java.util.Arrays.fill(this.rightmostDependents, NONE);
+    Arrays.fill(this.leftmostDependents, NONE);
+    Arrays.fill(this.rightmostDependents, NONE);
   }
 
   private ArcStandardState(ArcStandardState source) {

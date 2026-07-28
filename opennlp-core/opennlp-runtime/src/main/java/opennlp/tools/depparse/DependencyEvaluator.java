@@ -48,10 +48,10 @@ public class DependencyEvaluator extends Evaluator<DependencySample> {
   }
 
   /**
-   * Parses the sample's sentence and scores the prediction against the gold graph.
+   * {@inheritDoc}
    *
-   * @param reference The gold sample. Must not be {@code null}.
-   * @return A {@link DependencySample} carrying the predicted graph. Never {@code null}.
+   * <p>The returned sample carries the predicted graph over the reference tokens, and
+   * every token of the reference contributes to both scores.</p>
    */
   @Override
   protected DependencySample processSample(DependencySample reference) {
