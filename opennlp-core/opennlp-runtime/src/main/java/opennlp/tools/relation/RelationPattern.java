@@ -30,19 +30,18 @@ import opennlp.tools.util.StringUtil;
  * {@link StringUtil#isWhitespace(char)} accepts separates steps, so no-break spaces and
  * the other Unicode space separators delimit exactly like ASCII blanks. A step
  * {@code <label} walks up from the subject's head token over an arc with that relation
- * label; a step
- * {@code >label} walks down toward the object's head token. All up steps come before all
- * down steps, so the path always runs from the subject up to a single pivot token and
- * down to the object. {@code <nsubj >obj} matches a subject and object of the same verb;
- * {@code >nmod} matches an object directly attached below the subject.</p>
+ * label; a step {@code >label} walks down toward the object's head token. All up steps
+ * come before all down steps, so the path always runs from the subject up to a single
+ * pivot token and down to the object. {@code <nsubj >obj} matches a subject and object
+ * of the same verb; {@code >nmod} matches an object directly attached below the
+ * subject.</p>
  *
  * <p>The optional trigger constrains the pivot token, the highest token on the path: the
  * pattern matches only when the pivot's form, lowercased with
  * {@link StringUtil#toLowerCase(CharSequence)}, equals the trigger. Without a trigger the
- * path shape alone decides. The trigger must already be lowercased under that same
- * mapping and is rejected otherwise, because a trigger the mapping would change can never
- * equal any pivot form and the pattern would silently match nothing. The trigger is never
- * rewritten, so {@code founded} is a valid trigger while {@code Founded} is rejected.</p>
+ * path shape alone decides. The trigger is never rewritten and must already be lowercased
+ * under that mapping, so {@code founded} is accepted and {@code Founded} is rejected; a
+ * trigger the mapping would change could never equal a pivot form.</p>
  *
  * @param type The relation type to emit. Must not be {@code null} or blank.
  * @param path The path shape as described above. Must not be {@code null} or blank, and
@@ -56,10 +55,15 @@ import opennlp.tools.util.StringUtil;
  */
 public record RelationPattern(String type, String path, String trigger) {
 
+  /** The step prefix walking up from the subject's head token toward the pivot token. */
+  public static final char UP_STEP = '<';
+
+  /** The step prefix walking down from the pivot token toward the object's head token. */
+  public static final char DOWN_STEP = '>';
+
   /**
-   * Validates the rule. Blankness is judged under the project whitespace definition,
-   * which unlike the JDK's includes no-break spaces, so a value spelled entirely from
-   * them cannot construct a rule that could never match.
+   * Validates the rule. Blankness follows {@link StringUtil#isBlank(CharSequence)}, the
+   * same whitespace definition the step scan splits on.
    *
    * @throws IllegalArgumentException Thrown if {@code type} or {@code path} is
    *         {@code null} or blank, {@code path} is malformed, or {@code trigger} is
@@ -91,10 +95,10 @@ public record RelationPattern(String type, String path, String trigger) {
     }
     boolean down = false;
     for (final String step : splitSteps(path)) {
-      if (step.length() < 2 || (step.charAt(0) != '<' && step.charAt(0) != '>')) {
+      if (step.length() < 2 || (step.charAt(0) != UP_STEP && step.charAt(0) != DOWN_STEP)) {
         throw new IllegalArgumentException("not a valid path step: " + step);
       }
-      if (step.charAt(0) == '>') {
+      if (step.charAt(0) == DOWN_STEP) {
         down = true;
       } else if (down) {
         throw new IllegalArgumentException(
@@ -106,19 +110,15 @@ public record RelationPattern(String type, String path, String trigger) {
   /**
    * Splits the path into its steps.
    *
-   * @return The steps in order. Never {@code null} and never empty: the constructor
-   *         judges blankness by the same whitespace definition this split separates
-   *         on, so every constructible path holds at least one step.
+   * @return The steps in order. Never {@code null} and never empty.
    */
   public List<String> steps() {
     return splitSteps(path);
   }
 
-
   /**
-   * Splits a path into whitespace-free steps with a single left-to-right character
-   * scan. Every character that {@link StringUtil#isWhitespace(char)} accepts acts as a
-   * separator, and runs of consecutive separators never produce empty steps.
+   * Splits a path on every character {@link StringUtil#isWhitespace(char)} accepts. Runs
+   * of consecutive separators never produce empty steps.
    *
    * @param path The path to split. Must not be {@code null}.
    * @return The whitespace-free steps in order. Never {@code null}.

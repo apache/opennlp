@@ -17,12 +17,15 @@
 
 package opennlp.tools.relation;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * One typed relation between two entity mentions: the relation type and the positions of
  * the subject and object in the entity layer the relation was extracted from.
  *
- * <p>Entities are referenced by their index in the entity layer, not by object identity,
- * so a relation stays valid across document copies and serialization boundaries.</p>
+ * <p>Entities are referenced by their index in the entity layer, following the
+ * container's rule that annotations reference each other by layer and index, never by
+ * object identity.</p>
  *
  * @param type The relation type, for example {@code acquisition}. Must not be
  *             {@code null} or blank.
@@ -36,13 +39,14 @@ package opennlp.tools.relation;
 public record RelationMention(String type, int subject, int object) {
 
   /**
-   * Validates the relation.
+   * Validates the relation. Blankness follows {@link StringUtil#isBlank(CharSequence)},
+   * the same definition {@code RelationPattern} judges a relation type by.
    *
    * @throws IllegalArgumentException Thrown if {@code type} is {@code null} or blank,
    *         an index is negative, or {@code subject} equals {@code object}.
    */
   public RelationMention {
-    if (type == null || type.isBlank()) {
+    if (type == null || StringUtil.isBlank(type)) {
       throw new IllegalArgumentException("type must not be null or blank");
     }
     if (subject < 0 || object < 0) {

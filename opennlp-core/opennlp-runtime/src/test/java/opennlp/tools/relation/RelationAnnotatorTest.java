@@ -41,6 +41,12 @@ public class RelationAnnotatorTest {
   /** {@code Istanbul} with the Turkish capital I with dot above, U+0130, as its initial. */
   private static final String DOTTED_CAPITAL_ISTANBUL = "\u0130stanbul";
 
+  /** {@code Istanbul} as the JDK lowercases U+0130: an i plus U+0307 combining dot above. */
+  private static final String JDK_LOWERCASED_ISTANBUL = "i\u0307stanbul";
+
+  /** A single no-break space, U+00A0, whitespace to the toolkit but not to the JDK. */
+  private static final String NO_BREAK_SPACE = "\u00A0";
+
   /**
    * Builds the parsed document "Acme Corp acquired Bolt in 2024." with entities for
    * Acme Corp (index 0), Bolt (index 1), and 2024 (index 2). The dependency layer marks
@@ -171,9 +177,9 @@ public class RelationAnnotatorTest {
   }
 
   /**
-   * Verifies that malformed patterns and mentions are rejected at construction: wrong
-   * step order, a step without a direction marker, a marker without a label, a blank
-   * type or trigger, and a mention whose subject equals its object.
+   * Verifies that malformed patterns are rejected at construction: wrong step order, a
+   * step without a direction marker, a marker without a label, a blank type, and a
+   * trigger that is not a single token.
    */
   @Test
   void testPatternValidation() {
@@ -187,8 +193,37 @@ public class RelationAnnotatorTest {
         () -> new RelationPattern(" ", "<nsubj", null));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new RelationPattern("t", "<nsubj", " "));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new RelationMention("t", 1, 1));
+  }
+
+  /**
+   * Verifies that every invalid {@link RelationMention} component is rejected at
+   * construction with the exact message: a {@code null}, blank, or no-break space only
+   * type, a negative entity index, and a subject that equals its object. Blankness
+   * follows the project whitespace definition, the same one a pattern's type is judged
+   * by, so a type spelled from no-break spaces alone is content in neither.
+   */
+  @Test
+  void testRelationMentionValidation() {
+    final IllegalArgumentException nullType = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> new RelationMention(null, 0, 1));
+    Assertions.assertEquals("type must not be null or blank", nullType.getMessage());
+
+    final IllegalArgumentException blankType = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> new RelationMention(" ", 0, 1));
+    Assertions.assertEquals("type must not be null or blank", blankType.getMessage());
+
+    final IllegalArgumentException noBreakSpaceType = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> new RelationMention(NO_BREAK_SPACE, 0, 1));
+    Assertions.assertEquals("type must not be null or blank", noBreakSpaceType.getMessage());
+
+    final IllegalArgumentException negative = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> new RelationMention("t", 0, -1));
+    Assertions.assertEquals("entity indexes must not be negative: 0, -1",
+        negative.getMessage());
+
+    final IllegalArgumentException same = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> new RelationMention("t", 1, 1));
+    Assertions.assertEquals("subject and object must differ: 1", same.getMessage());
   }
 
   /**
@@ -316,7 +351,7 @@ public class RelationAnnotatorTest {
    *         {@code null}.
    */
   private static Document dottedCapitalPivotDocument() {
-    final String text = "\u0130stanbul, home of Bolt.";
+    final String text = DOTTED_CAPITAL_ISTANBUL + ", home of Bolt.";
     final List<Annotation<String>> tokens = List.of(
         new Annotation<>(new Span(0, 8), DOTTED_CAPITAL_ISTANBUL),
         new Annotation<>(new Span(8, 9), ","),
@@ -377,7 +412,7 @@ public class RelationAnnotatorTest {
   @Test
   void testJdkLowercasedTriggerSpellingDoesNotMatchThePivot() {
     final RelationAnnotator annotator = new RelationAnnotator(List.of(
-        new RelationPattern("located_in", ">appos >nmod", "i\u0307stanbul")));
+        new RelationPattern("located_in", ">appos >nmod", JDK_LOWERCASED_ISTANBUL)));
 
     final Document document = annotator.annotate(dottedCapitalPivotDocument());
 

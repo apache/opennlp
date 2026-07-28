@@ -29,6 +29,28 @@
 		</para>
 	</section>
 
+	<section xml:id="tools.relation.syntax">
+		<title>Pattern syntax</title>
+		<para>
+			A path is a whitespace-separated sequence of steps. A step
+			<code>&lt;label</code> walks up from the subject entity's head token over an
+			arc carrying that dependency relation, a step <code>&gt;label</code> walks
+			down toward the object entity's head token, and every up step must come
+			before the first down step. A path therefore always runs from the subject up
+			to a single pivot token, the lowest common ancestor of the two entity heads,
+			and down to the object. The head of a multi-token entity is the first token
+			overlapping the entity span whose own dependency head lies outside the
+			entity.
+		</para>
+		<para>
+			The trigger is optional and constrains the pivot token: the pattern matches
+			only when the pivot's lowercased form equals it. A <code>null</code> trigger
+			accepts any pivot. A trigger is never rewritten, so it must already be
+			lowercase and must not contain whitespace; anything else is rejected when the
+			pattern is constructed.
+		</para>
+	</section>
+
 	<section xml:id="tools.relation.patterns">
 		<title>Pattern-based extraction</title>
 		<para>

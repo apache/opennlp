@@ -39,11 +39,10 @@ import opennlp.tools.util.StringUtil;
  *
  * <p>Each entity's head is the first token overlapping the entity span whose dependency
  * head lies outside the range of overlapping tokens. For every ordered entity pair the
- * annotator computes the path from
- * the subject's head up to the lowest common ancestor and down to the object's head,
- * then emits one relation per pattern whose path shape and trigger match. The annotation
- * covers both entity spans; the mention references the entities by their index in
- * {@link Layers#ENTITIES}.</p>
+ * annotator computes the path from the subject's head up to the lowest common ancestor
+ * and down to the object's head, then emits one relation per pattern whose path shape
+ * and trigger match. The annotation covers both entity spans; the mention references the
+ * entities by their index in {@link Layers#ENTITIES}.</p>
  *
  * <p>The annotator holds no per-call state and is safe to share between threads.</p>
  *
@@ -85,6 +84,28 @@ public class RelationAnnotator implements DocumentAnnotator {
     }
   }
 
+  /**
+   * Matches every registered pattern against every ordered entity pair and adds the
+   * {@link #RELATIONS} layer.
+   *
+   * <p>Pairs are visited in entity layer order and the patterns are applied in
+   * registration order, so the extracted relations are in a stable order. A pair whose
+   * entities share a head token, or whose heads are not connected in the dependency
+   * graph, contributes no relation.</p>
+   *
+   * @param document The document to annotate. Must not be {@code null} and must carry a
+   *                 non-empty {@link Layers#TOKENS} layer and a
+   *                 {@link DependencyAnnotator#DEPENDENCIES} layer holding exactly one
+   *                 arc per token. An absent {@link Layers#ENTITIES} layer reads as
+   *                 empty, which yields an empty {@link #RELATIONS} layer.
+   * @return A new {@link Document} with the {@link #RELATIONS} layer added. Never
+   *         {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code document} is {@code null}, the
+   *         token layer is absent or empty, the dependency layer does not hold exactly
+   *         one arc per token, two arcs share a dependent, an arc refers to a token
+   *         outside the token layer, or the document already carries the
+   *         {@link #RELATIONS} layer.
+   */
   @Override
   public Document annotate(Document document) {
     if (document == null) {
@@ -112,21 +133,24 @@ public class RelationAnnotator implements DocumentAnnotator {
       relations[dependent] = arc.value().relation();
     }
 
+    // Each entity's chain to the root depends only on that entity, so walking it once
+    // per entity keeps the pair loop below from repeating the walk for every partner.
     final int[] entityHeads = new int[entities.size()];
+    final List<List<Integer>> chains = new ArrayList<>(entities.size());
     for (int e = 0; e < entities.size(); e++) {
       entityHeads[e] = entityHead(entities.get(e).span(), tokens, heads);
+      chains.add(entityHeads[e] < 0 ? null : chainToRoot(entityHeads[e], heads));
     }
 
     final List<Annotation<RelationMention>> mentions = new ArrayList<>();
     for (int subject = 0; subject < entities.size(); subject++) {
       for (int object = 0; object < entities.size(); object++) {
-        if (subject == object
-            || entityHeads[subject] < 0 || entityHeads[object] < 0
-            || entityHeads[subject] == entityHeads[object]) {
+        if (subject == object || entityHeads[subject] == entityHeads[object]
+            || chains.get(subject) == null || chains.get(object) == null) {
           continue;
         }
-        matchPair(tokens, heads, relations, entities,
-            subject, object, entityHeads, mentions);
+        matchPair(tokens, relations, entities, subject, object,
+            chains.get(subject), chains.get(object), mentions);
       }
     }
     return document.with(RELATIONS, mentions);
@@ -144,30 +168,24 @@ public class RelationAnnotator implements DocumentAnnotator {
 
   /**
    * Matches all patterns against one ordered entity pair and collects the resulting
-   * relations. The pair contributes one relation per matching pattern; nothing is added
-   * when the two heads are not connected or the arcs contain a cycle.
+   * relations. The pair contributes one relation per matching pattern, and nothing when
+   * the two chains do not meet.
    *
    * @param tokens The token layer.
-   * @param heads The dependency head of each token, indexed by dependent token;
-   *              {@link DependencyArc#ROOT_HEAD} marks the sentence root.
    * @param relations The relation label of each token's arc to its dependency head,
    *                  indexed by dependent token.
    * @param entities The entity layer.
    * @param subject The subject entity index.
    * @param object The object entity index.
-   * @param entityHeads The head token of each entity, or {@code -1} where an entity
-   *                    overlaps no token.
+   * @param subjectChain The chain from the subject's head token to the root.
+   * @param objectChain The chain from the object's head token to the root.
    * @param mentions The list that receives one annotation per matching pattern.
    */
   private void matchPair(List<Annotation<String>> tokens,
-      int[] heads, String[] relations, List<Annotation<String>> entities,
-      int subject, int object, int[] entityHeads,
+      String[] relations, List<Annotation<String>> entities,
+      int subject, int object,
+      List<Integer> subjectChain, List<Integer> objectChain,
       List<Annotation<RelationMention>> mentions) {
-    final List<Integer> subjectChain = chainToRoot(entityHeads[subject], heads);
-    final List<Integer> objectChain = chainToRoot(entityHeads[object], heads);
-    if (subjectChain == null || objectChain == null) {
-      return;
-    }
     int pivotOnSubject = -1;
     int pivotOnObject = -1;
     for (int o = 0; o < objectChain.size() && pivotOnSubject < 0; o++) {
@@ -183,10 +201,10 @@ public class RelationAnnotator implements DocumentAnnotator {
 
     final List<String> steps = new ArrayList<>();
     for (int s = 0; s < pivotOnSubject; s++) {
-      steps.add("<" + relations[subjectChain.get(s)]);
+      steps.add(RelationPattern.UP_STEP + relations[subjectChain.get(s)]);
     }
     for (int o = pivotOnObject - 1; o >= 0; o--) {
-      steps.add(">" + relations[objectChain.get(o)]);
+      steps.add(RelationPattern.DOWN_STEP + relations[objectChain.get(o)]);
     }
     final int pivot = subjectChain.get(pivotOnSubject);
     final String pivotForm = StringUtil.toLowerCase(tokens.get(pivot).value());
@@ -218,7 +236,7 @@ public class RelationAnnotator implements DocumentAnnotator {
    * @param heads The dependency head of each token, indexed by dependent token.
    * @return The head token index, or {@code -1} if no token overlaps the entity.
    */
-  private static int entityHead(Span entity, List<Annotation<String>> tokens, int[] heads) {
+  private int entityHead(Span entity, List<Annotation<String>> tokens, int[] heads) {
     int first = -1;
     int last = -1;
     for (int t = 0; t < tokens.size(); t++) {
@@ -250,7 +268,7 @@ public class RelationAnnotator implements DocumentAnnotator {
    *         {@code null} when the walk takes more steps than there are tokens, which
    *         only happens when the arcs contain a cycle.
    */
-  private static List<Integer> chainToRoot(int start, int[] heads) {
+  private List<Integer> chainToRoot(int start, int[] heads) {
     final List<Integer> chain = new ArrayList<>();
     int current = start;
     while (current != DependencyArc.ROOT_HEAD) {
