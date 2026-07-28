@@ -261,7 +261,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    */
   public static SentencePieceTokenizer load(Path modelFile) throws IOException {
     if (modelFile == null) {
-      throw new IllegalArgumentException("The model file must not be null.");
+      throw new IllegalArgumentException("modelFile must not be null");
     }
     return new SentencePieceTokenizer(ModelProtoReader.read(Files.readAllBytes(modelFile)));
   }
@@ -278,7 +278,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    */
   public static SentencePieceTokenizer load(InputStream in) throws IOException {
     if (in == null) {
-      throw new IllegalArgumentException("The input stream must not be null.");
+      throw new IllegalArgumentException("in must not be null");
     }
     return new SentencePieceTokenizer(ModelProtoReader.read(in.readAllBytes()));
   }
@@ -293,7 +293,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    */
   public void serialize(OutputStream out) throws IOException {
     if (out == null) {
-      throw new IllegalArgumentException("The output stream must not be null.");
+      throw new IllegalArgumentException("out must not be null");
     }
     try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
       oos.writeObject(this);
@@ -350,10 +350,10 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
   public static SentencePieceTokenizer deserialize(InputStream in, DeserializationLimits limits)
       throws IOException, ClassNotFoundException {
     if (in == null) {
-      throw new IllegalArgumentException("The input stream must not be null.");
+      throw new IllegalArgumentException("in must not be null");
     }
     if (limits == null) {
-      throw new IllegalArgumentException("The limits must not be null.");
+      throw new IllegalArgumentException("limits must not be null");
     }
     try (ObjectInputStream ois = new ObjectInputStream(in)) {
       ois.setObjectInputFilter(buildFilter(limits));
@@ -475,7 +475,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
   @Override
   public List<SubwordPiece> encode(CharSequence text) {
     if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
+      throw new IllegalArgumentException("text must not be null");
     }
     final Utf8Text input = Utf8Text.of(text);
     final SentencePieceNormalizer.Normalized normalized =
@@ -549,25 +549,17 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
     return out;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @throws IllegalArgumentException Thrown if {@code text} is null.
-   */
+  /** {@inheritDoc} */
   @Override
   public CharSequence normalize(CharSequence text) {
     return normalizeAligned(text).normalized();
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @throws IllegalArgumentException Thrown if {@code text} is null.
-   */
+  /** {@inheritDoc} */
   @Override
   public AlignedText normalizeAligned(CharSequence text) {
     if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
+      throw new IllegalArgumentException("text must not be null");
     }
     final Utf8Text input = Utf8Text.of(text);
     final SentencePieceNormalizer.Normalized result =
@@ -662,7 +654,7 @@ public final class SentencePieceTokenizer implements SubwordTokenizer, OffsetAwa
    */
   public int pieceToId(String piece) {
     if (piece == null) {
-      throw new IllegalArgumentException("The piece must not be null.");
+      throw new IllegalArgumentException("piece must not be null");
     }
     final Integer reserved = reservedPieces.get(piece);
     if (reserved != null) {

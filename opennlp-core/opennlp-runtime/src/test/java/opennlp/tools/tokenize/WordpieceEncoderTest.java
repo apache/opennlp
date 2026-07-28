@@ -34,6 +34,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import opennlp.tools.util.Span;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -65,6 +67,7 @@ class WordpieceEncoderTest {
     assertEquals(expectedId, piece.id());
     assertEquals(expectedStart, piece.start(), "start of " + piece);
     assertEquals(expectedEnd, piece.end(), "end of " + piece);
+    assertEquals(new Span(expectedStart, expectedEnd), piece.span(), "span of " + piece);
   }
 
   @Test

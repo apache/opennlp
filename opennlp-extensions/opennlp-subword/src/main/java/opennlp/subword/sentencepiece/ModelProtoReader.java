@@ -94,7 +94,7 @@ final class ModelProtoReader {
    */
   static RawModel read(byte[] data) throws InvalidFormatException {
     if (data == null) {
-      throw new IllegalArgumentException("The model data must not be null.");
+      throw new IllegalArgumentException("data must not be null");
     }
     final ModelProtoReader reader = new ModelProtoReader(data);
     final RawModel model = new RawModel();

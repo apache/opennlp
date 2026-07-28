@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SentencePieceAlignmentTest {
 
   private static SentencePieceTokenizer unigram() {
-    return SentencePieceParityTest.tokenizer("tiny-unigram");
+    return SentencePieceFixtures.tokenizer("tiny-unigram");
   }
 
   @ParameterizedTest
