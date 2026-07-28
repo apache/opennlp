@@ -23,7 +23,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -34,6 +37,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 public class ResourceInstallerTest {
+
+  private static final int BLOCK = 512;
+  private static final int TERMINATOR_SIZE = 2 * BLOCK;
+  private static final int NAME_LENGTH = 100;
+  private static final int SIZE_OFFSET = 124;
+  private static final int TYPE_OFFSET = 156;
+  private static final String SIZE_FORMAT = "%011o";
+  private static final char TYPE_REGULAR_FILE = '0';
 
   /**
    * Writes one tar entry into the given buffer: a 512-byte header block carrying the
@@ -48,19 +59,20 @@ public class ResourceInstallerTest {
    */
   private static void tarEntry(ByteArrayOutputStream tar, String name, byte[] content)
       throws IOException {
-    final byte[] header = new byte[512];
+    final byte[] header = new byte[BLOCK];
     final byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
-    if (nameBytes.length > 100) {
-      throw new IllegalArgumentException("entry name exceeds 100 bytes: " + name);
+    if (nameBytes.length > NAME_LENGTH) {
+      throw new IllegalArgumentException(
+          "entry name exceeds " + NAME_LENGTH + " bytes: " + name);
     }
     System.arraycopy(nameBytes, 0, header, 0, nameBytes.length);
-    final String size = String.format("%011o", content.length);
-    System.arraycopy(size.getBytes(StandardCharsets.US_ASCII), 0, header, 124, 11);
-    header[156] = '0';
+    final byte[] size = String.format(SIZE_FORMAT, content.length)
+        .getBytes(StandardCharsets.US_ASCII);
+    System.arraycopy(size, 0, header, SIZE_OFFSET, size.length);
+    header[TYPE_OFFSET] = TYPE_REGULAR_FILE;
     tar.write(header);
     tar.write(content);
-    final int padding = (512 - content.length % 512) % 512;
-    tar.write(new byte[padding]);
+    tar.write(new byte[(BLOCK - content.length % BLOCK) % BLOCK]);
   }
 
   /**
@@ -76,7 +88,7 @@ public class ResourceInstallerTest {
     for (final String[] entry : entries) {
       tarEntry(tar, entry[0], entry[1].getBytes(StandardCharsets.UTF_8));
     }
-    tar.write(new byte[1024]);
+    tar.write(new byte[TERMINATOR_SIZE]);
     final ByteArrayOutputStream compressed = new ByteArrayOutputStream();
     try (GZIPOutputStream gzip = new GZIPOutputStream(compressed)) {
       gzip.write(tar.toByteArray());
@@ -89,33 +101,22 @@ public class ResourceInstallerTest {
    *
    * @param content The bytes to digest. Must not be {@code null}.
    * @return The 64-character lowercase hex digest. Never {@code null}.
-   * @throws Exception Thrown if the digest algorithm is unavailable.
+   * @throws NoSuchAlgorithmException Thrown if the digest algorithm is unavailable.
    */
-  private static String sha256(byte[] content) throws Exception {
-    final StringBuilder hex = new StringBuilder();
-    for (final byte b : MessageDigest.getInstance("SHA-256").digest(content)) {
-      hex.append(Character.forDigit((b >> 4) & 0xF, 16))
-          .append(Character.forDigit(b & 0xF, 16));
-    }
-    return hex.toString();
+  private static String sha256(byte[] content) throws NoSuchAlgorithmException {
+    return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content));
   }
 
   /**
-   * Computes the SHA-256 of the given bytes as an uppercase hex string, built from an
-   * uppercase digit table, so tests can prove that checksum comparison does not depend
-   * on the hex letter case.
+   * Computes the SHA-256 of the given bytes as an uppercase hex string, so tests can
+   * prove that checksum comparison does not depend on the hex letter case.
    *
    * @param content The bytes to digest. Must not be {@code null}.
    * @return The 64-character uppercase hex digest. Never {@code null}.
-   * @throws Exception Thrown if the digest algorithm is unavailable.
+   * @throws NoSuchAlgorithmException Thrown if the digest algorithm is unavailable.
    */
-  private static String sha256UpperCase(byte[] content) throws Exception {
-    final String digits = "0123456789ABCDEF";
-    final StringBuilder hex = new StringBuilder();
-    for (final byte b : MessageDigest.getInstance("SHA-256").digest(content)) {
-      hex.append(digits.charAt((b >> 4) & 0xF)).append(digits.charAt(b & 0xF));
-    }
-    return hex.toString();
+  private static String sha256UpperCase(byte[] content) throws NoSuchAlgorithmException {
+    return sha256(content).toUpperCase(Locale.ROOT);
   }
 
   /**
@@ -196,7 +197,7 @@ public class ResourceInstallerTest {
     Assertions.assertEquals(IOException.class, thrown.getClass());
     Assertions.assertEquals("checksum mismatch: expected " + wrong
         + " but downloaded " + sha256(archive), thrown.getMessage());
-    Assertions.assertEquals(0, Files.list(target).count());
+    Assertions.assertEquals(List.of(), installedFiles(target));
   }
 
   /**
@@ -251,7 +252,7 @@ public class ResourceInstallerTest {
     Assertions.assertEquals(
         "archive entry escapes the target directory: /absolute-escape-attempt/evil.txt",
         thrown.getMessage());
-    Assertions.assertEquals(0, Files.list(target).count());
+    Assertions.assertEquals(List.of(), installedFiles(target));
     Assertions.assertTrue(Files.notExists(Path.of("/absolute-escape-attempt")));
   }
 
@@ -277,7 +278,7 @@ public class ResourceInstallerTest {
         "archive entry escapes the target directory: ../zip-escape.txt",
         thrown.getMessage());
     Assertions.assertTrue(Files.notExists(target.getParent().resolve("zip-escape.txt")));
-    Assertions.assertEquals(0, Files.list(target).count());
+    Assertions.assertEquals(List.of(), installedFiles(target));
   }
 
   @Test
@@ -326,11 +327,17 @@ public class ResourceInstallerTest {
 
   @Test
   void testInvalidArguments(@TempDir Path target) {
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> ResourceInstaller.install(null, target));
-    Assertions.assertThrows(IllegalArgumentException.class,
+    IllegalArgumentException thrown = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> ResourceInstaller.install(null, target));
+    Assertions.assertEquals("source must not be null", thrown.getMessage());
+
+    thrown = Assertions.assertThrows(IllegalArgumentException.class,
         () -> ResourceInstaller.install(target.toUri(), null));
-    Assertions.assertThrows(IllegalArgumentException.class,
+    Assertions.assertEquals("targetDirectory must not be null", thrown.getMessage());
+
+    thrown = Assertions.assertThrows(IllegalArgumentException.class,
         () -> ResourceInstaller.install(target.toUri(), target, " "));
+    Assertions.assertEquals("sha256 must not be blank; pass null to skip",
+        thrown.getMessage());
   }
 }
