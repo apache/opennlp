@@ -21,12 +21,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -40,6 +43,24 @@ import opennlp.tools.util.Span;
  */
 public class LatticeTokenizerTest {
 
+  private static final String LEXICON_CSV = "lexicon.csv";
+  private static final String MATRIX_DEF = "matrix.def";
+  private static final String CHAR_DEF = "char.def";
+  private static final String UNK_DEF = "unk.def";
+
+  /** A one by one connection matrix charging cost zero, for single-context fixtures. */
+  private static final String UNIT_MATRIX = "1 1\n0 0 0\n";
+
+  /**
+   * The {@code char.def} line defining the DEFAULT category: it does not invoke
+   * unknown-word handling beside a lexicon match, it groups a whole run into one
+   * candidate, and it offers no fixed-length candidates.
+   */
+  private static final String DEFAULT_CATEGORY_LINE = "DEFAULT 0 1 0";
+
+  /** The {@code unk.def} template line for the DEFAULT category. */
+  private static final String DEFAULT_UNKNOWN_TEMPLATE = "DEFAULT,0,0,10000,symbol,unknown";
+
   @TempDir
   static Path directory;
 
@@ -47,7 +68,7 @@ public class LatticeTokenizerTest {
 
   @BeforeAll
   static void loadDictionary() throws IOException {
-    write("lexicon.csv", String.join("\n",
+    write(LEXICON_CSV, String.join("\n",
         "\u6771\u4EAC,0,0,3000,noun,proper",
         "\u4EAC\u90FD,0,0,3000,noun,proper",
         "\u6771,0,0,6000,noun,common",
@@ -55,9 +76,9 @@ public class LatticeTokenizerTest {
         "\u306B,0,0,1000,particle,case",
         "\u884C\u304F,0,0,3000,verb,base",
         ""));
-    write("matrix.def", "1 1\n0 0 0\n");
-    write("char.def", String.join("\n",
-        "DEFAULT 0 1 0",
+    write(MATRIX_DEF, UNIT_MATRIX);
+    write(CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
         "KANJI 0 0 2",
         "HIRAGANA 0 1 0",
         "LATIN 1 1 0",
@@ -67,8 +88,8 @@ public class LatticeTokenizerTest {
         "0x0041..0x005A LATIN",
         "0x0061..0x007A LATIN",
         ""));
-    write("unk.def", String.join("\n",
-        "DEFAULT,0,0,10000,symbol,unknown",
+    write(UNK_DEF, String.join("\n",
+        DEFAULT_UNKNOWN_TEMPLATE,
         "LATIN,0,0,4000,noun,foreign",
         "KANJI,0,0,8000,noun,unknown",
         "HIRAGANA,0,0,9000,particle,unknown",
@@ -76,13 +97,19 @@ public class LatticeTokenizerTest {
     tokenizer = new LatticeTokenizer(MecabDictionary.load(directory));
   }
 
+  /** Writes one UTF-8 dictionary file into the shared dictionary directory. */
   private static void write(String name, String content) throws IOException {
-    Files.write(directory.resolve(name), content.getBytes(StandardCharsets.UTF_8));
+    write(directory, name, content);
+  }
+
+  /** Writes one UTF-8 dictionary file into a test-supplied directory. */
+  private static void write(Path target, String name, String content) throws IOException {
+    Files.write(target.resolve(name), content.getBytes(StandardCharsets.UTF_8));
   }
 
   @Test
   void testLatticePrefersTheCheaperSegmentation() {
-    // the famous case: Tokyo+Metro must win over East+Kyoto
+    // Tokyo plus the metropolis suffix must beat the competing reading east plus Kyoto.
     final String text = "\u6771\u4EAC\u90FD\u306B\u884C\u304F";
     Assertions.assertArrayEquals(
         new String[] {"\u6771\u4EAC", "\u90FD", "\u306B", "\u884C\u304F"},
@@ -249,8 +276,7 @@ public class LatticeTokenizerTest {
   void testShortLexiconRowFailsLoud(@TempDir Path broken) throws IOException {
     // The rest of the dictionary is well formed, so the short row is what load rejects.
     writeUnitMatrixDictionary(broken);
-    Files.write(broken.resolve("lexicon.csv"),
-        "\u6771,0,0\n".getBytes(StandardCharsets.UTF_8));
+    write(broken, LEXICON_CSV, "\u6771,0,0\n");
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
   }
 
@@ -262,8 +288,7 @@ public class LatticeTokenizerTest {
   void testNonNumericLexiconCostFailsLoud(@TempDir Path broken) throws IOException {
     // The rest of the dictionary is well formed, so the cost column is what load rejects.
     writeUnitMatrixDictionary(broken);
-    Files.write(broken.resolve("lexicon.csv"),
-        "\u6771,0,0,abc,noun\n".getBytes(StandardCharsets.UTF_8));
+    write(broken, LEXICON_CSV, "\u6771,0,0,abc,noun\n");
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
   }
 
@@ -273,9 +298,8 @@ public class LatticeTokenizerTest {
    */
   @Test
   void testMalformedMatrixLineFailsLoud(@TempDir Path broken) throws IOException {
-    Files.write(broken.resolve("lexicon.csv"),
-        "\u6771,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(broken.resolve("matrix.def"), "1 1\n0 0\n".getBytes(StandardCharsets.UTF_8));
+    write(broken, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    write(broken, MATRIX_DEF, "1 1\n0 0\n");
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
   }
 
@@ -286,11 +310,9 @@ public class LatticeTokenizerTest {
   @Test
   void testCharDefMappingWithoutCategoryFailsLoud(@TempDir Path broken)
       throws IOException {
-    Files.write(broken.resolve("lexicon.csv"),
-        "\u6771,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(broken.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(broken.resolve("char.def"),
-        "DEFAULT 0 1 0\n0x4E00..0x9FFF\n".getBytes(StandardCharsets.UTF_8));
+    write(broken, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    write(broken, MATRIX_DEF, UNIT_MATRIX);
+    write(broken, CHAR_DEF, DEFAULT_CATEGORY_LINE + "\n0x4E00..0x9FFF\n");
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
   }
 
@@ -303,30 +325,90 @@ public class LatticeTokenizerTest {
   @Test
   void testMissingDefaultTemplateFailsLoudAtTokenizeTime(@TempDir Path partial)
       throws IOException {
-    Files.write(partial.resolve("lexicon.csv"),
-        "\u6771,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(partial.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(partial.resolve("char.def"),
-        "DEFAULT 0 1 0\nKANJI 0 0 2\n0x4E00..0x9FFF KANJI\n"
-            .getBytes(StandardCharsets.UTF_8));
-    Files.write(partial.resolve("unk.def"),
-        "KANJI,0,0,8000,noun\n".getBytes(StandardCharsets.UTF_8));
+    write(partial, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    write(partial, MATRIX_DEF, UNIT_MATRIX);
+    write(partial, CHAR_DEF, DEFAULT_CATEGORY_LINE + "\nKANJI 0 0 2\n0x4E00..0x9FFF KANJI\n");
+    write(partial, UNK_DEF, "KANJI,0,0,8000,noun\n");
     final LatticeTokenizer limited =
         new LatticeTokenizer(MecabDictionary.load(partial));
     Assertions.assertThrows(IllegalStateException.class, () -> limited.analyze("\u2460"));
   }
 
+  /**
+   * Verifies that a directory holding a lexicon but none of the definition files is
+   * rejected at load time, naming the first file that is missing.
+   */
   @Test
-  void testMalformedDictionariesFailLoud(@TempDir Path broken) throws IOException {
-    Files.write(broken.resolve("lexicon.csv"),
-        "\u6771,0,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
-    Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
+  void testMissingDefinitionFileFailsLoud(@TempDir Path broken) throws IOException {
+    write(broken, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("required dictionary file is missing: "
+        + broken.resolve(MATRIX_DEF), e.getMessage());
+  }
 
-    Files.write(broken.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(broken.resolve("char.def"),
-        "KANJI 0 0 2\n0x4E00..0x9FFF KANJI\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(broken.resolve("unk.def"),
-        "KANJI,0,0,8000,noun\n".getBytes(StandardCharsets.UTF_8));
+  /**
+   * Verifies that a {@code char.def} without the mandatory DEFAULT category is rejected
+   * at load time rather than leaving unmapped code points without a fallback.
+   */
+  @Test
+  void testCharDefWithoutDefaultCategoryFailsLoud(@TempDir Path broken) throws IOException {
+    write(broken, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    write(broken, MATRIX_DEF, UNIT_MATRIX);
+    write(broken, CHAR_DEF, "KANJI 0 0 2\n0x4E00..0x9FFF KANJI\n");
+    write(broken, UNK_DEF, "KANJI,0,0,8000,noun\n");
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("char.def defines no DEFAULT category: "
+        + broken.resolve(CHAR_DEF), e.getMessage());
+  }
+
+  /**
+   * Verifies that a directory with the definition files but no lexicon entry at all is
+   * rejected at load time, since no text could be segmented against it.
+   */
+  @Test
+  void testDictionaryWithoutLexiconEntriesFailsLoud(@TempDir Path empty) throws IOException {
+    writeUnitMatrixDictionary(empty);
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(empty));
+    Assertions.assertEquals("no lexicon entries found under " + empty, e.getMessage());
+  }
+
+  /**
+   * Verifies that an empty {@code matrix.def} is reported as such instead of as a
+   * malformed header with nothing to show.
+   */
+  @Test
+  void testEmptyMatrixDefFailsLoud(@TempDir Path broken) throws IOException {
+    write(broken, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    write(broken, MATRIX_DEF, "");
+    final IOException e = Assertions.assertThrows(IOException.class,
+        () -> MecabDictionary.load(broken));
+    Assertions.assertEquals("empty matrix.def under " + broken, e.getMessage());
+  }
+
+  /**
+   * Verifies the {@code char.def} fail-loud paths that a malformed line can take: a
+   * descending code point range, a code point outside the Unicode range, a code point
+   * field that is not hexadecimal, and a category line missing its length column.
+   *
+   * @param charDef The {@code char.def} content under test.
+   * @param broken The directory the fixture dictionary is written into.
+   * @throws IOException Thrown if writing the fixture fails.
+   */
+  @ParameterizedTest(name = "[{index}] char.def {0}")
+  @ValueSource(strings = {
+      DEFAULT_CATEGORY_LINE + "\n0x0110..0x0100 LATIN\n",
+      DEFAULT_CATEGORY_LINE + "\n0x110000 LATIN\n",
+      DEFAULT_CATEGORY_LINE + "\n0xZZ LATIN\n",
+      "DEFAULT 0 1\n"})
+  void testMalformedCharDefFailsLoud(String charDef, @TempDir Path broken)
+      throws IOException {
+    write(broken, LEXICON_CSV, "\u6771,0,0,3000,noun\n");
+    write(broken, MATRIX_DEF, UNIT_MATRIX);
+    write(broken, CHAR_DEF, charDef);
+    write(broken, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
     Assertions.assertThrows(IOException.class, () -> MecabDictionary.load(broken));
   }
 
@@ -339,23 +421,22 @@ public class LatticeTokenizerTest {
    * @throws IOException Thrown if writing any of the files fails.
    */
   private static void writeSupplementaryDictionary(Path target) throws IOException {
-    Files.write(target.resolve("lexicon.csv"),
-        "\u6771,0,0,6000,noun,common\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(target.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(target.resolve("char.def"), String.join("\n",
-        "DEFAULT 0 1 0",
+    write(target, LEXICON_CSV, "\u6771,0,0,6000,noun,common\n");
+    write(target, MATRIX_DEF, UNIT_MATRIX);
+    write(target, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
         "KANJI 0 0 2",
         "LATIN 1 1 0",
         "",
         "0x4E00..0x9FFF KANJI",
         "0x20000..0x2A6DF KANJI",
         "0x0061..0x007A LATIN",
-        "").getBytes(StandardCharsets.UTF_8));
-    Files.write(target.resolve("unk.def"), String.join("\n",
-        "DEFAULT,0,0,10000,symbol,unknown",
+        ""));
+    write(target, UNK_DEF, String.join("\n",
+        DEFAULT_UNKNOWN_TEMPLATE,
         "KANJI,0,0,8000,noun,unknown",
         "LATIN,0,0,4000,noun,foreign",
-        "").getBytes(StandardCharsets.UTF_8));
+        ""));
   }
 
   /**
@@ -432,11 +513,9 @@ public class LatticeTokenizerTest {
    * @throws IOException Thrown if writing any of the files fails.
    */
   private static void writeUnitMatrixDictionary(Path target) throws IOException {
-    Files.write(target.resolve("matrix.def"), "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(target.resolve("char.def"),
-        "DEFAULT 0 1 0\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(target.resolve("unk.def"),
-        "DEFAULT,0,0,10000,symbol,unknown\n".getBytes(StandardCharsets.UTF_8));
+    write(target, MATRIX_DEF, UNIT_MATRIX);
+    write(target, CHAR_DEF, DEFAULT_CATEGORY_LINE + "\n");
+    write(target, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
   }
 
   /**
@@ -449,11 +528,10 @@ public class LatticeTokenizerTest {
   void testRightContextIdBeyondMatrixFailsLoudAtLoad(@TempDir Path mismatched)
       throws IOException {
     writeUnitMatrixDictionary(mismatched);
-    Files.write(mismatched.resolve("lexicon.csv"),
-        "\u6771,0,5,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+    write(mismatched, LEXICON_CSV, "\u6771,0,5,3000,noun\n");
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionary.load(mismatched));
-    Assertions.assertEquals("malformed entry at " + mismatched.resolve("lexicon.csv")
+    Assertions.assertEquals("malformed entry at " + mismatched.resolve(LEXICON_CSV)
         + " line 1: right context id 5 is outside the matrix.def dimensions 1 1",
         e.getMessage());
   }
@@ -467,11 +545,10 @@ public class LatticeTokenizerTest {
   void testLeftContextIdBeyondMatrixFailsLoudAtLoad(@TempDir Path mismatched)
       throws IOException {
     writeUnitMatrixDictionary(mismatched);
-    Files.write(mismatched.resolve("lexicon.csv"),
-        "\u6771,0,0,3000,noun\n\u90FD,7,0,3000,noun\n".getBytes(StandardCharsets.UTF_8));
+    write(mismatched, LEXICON_CSV, "\u6771,0,0,3000,noun\n\u90FD,7,0,3000,noun\n");
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionary.load(mismatched));
-    Assertions.assertEquals("malformed entry at " + mismatched.resolve("lexicon.csv")
+    Assertions.assertEquals("malformed entry at " + mismatched.resolve(LEXICON_CSV)
         + " line 2: left context id 7 is outside the matrix.def dimensions 1 1",
         e.getMessage());
   }
@@ -482,7 +559,38 @@ public class LatticeTokenizerTest {
         () -> new LatticeTokenizer(null));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> MecabDictionary.load(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MecabDictionary.load(null, StandardCharsets.UTF_8));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MecabDictionary.load(directory, null));
     Assertions.assertThrows(IllegalArgumentException.class, () -> tokenizer.analyze(null));
+    Assertions.assertThrows(IllegalArgumentException.class, () -> tokenizer.tokenize(null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> tokenizer.tokenizePos(null));
+  }
+
+  /**
+   * Verifies the {@link Morpheme} contract every segmentation result is built from: a
+   * {@code null} span, a {@code null} or empty surface, and {@code null} features are
+   * all rejected, and the feature list is copied so a later change to the caller's list
+   * cannot be seen through the morpheme.
+   */
+  @Test
+  void testMorphemeRejectsInvalidArguments() {
+    final Span span = new Span(0, 1);
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Morpheme(null, "東", List.of("noun"), false));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Morpheme(span, null, List.of("noun"), false));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Morpheme(span, "", List.of("noun"), false));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> new Morpheme(span, "東", null, false));
+
+    final List<String> features = new ArrayList<>(List.of("noun"));
+    final Morpheme morpheme = new Morpheme(span, "東", features, false);
+    features.add("proper");
+    Assertions.assertEquals(List.of("noun"), morpheme.features());
   }
 
   /**
@@ -494,20 +602,17 @@ public class LatticeTokenizerTest {
   @Test
   void testLaterSupplementaryMappingWinsInsideAnEarlierRange(@TempDir Path overlapped)
       throws IOException {
-    Files.write(overlapped.resolve("lexicon.csv"),
-        "\u6771,0,0,6000,noun\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(overlapped.resolve("matrix.def"),
-        "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(overlapped.resolve("char.def"), String.join("\n",
-        "DEFAULT 0 1 0",
+    write(overlapped, LEXICON_CSV, "\u6771,0,0,6000,noun\n");
+    write(overlapped, MATRIX_DEF, UNIT_MATRIX);
+    write(overlapped, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
         "KANJI 0 0 2",
         "LATIN 1 1 0",
         "",
         "0x20000..0x2FFFF KANJI",
         "0x24000..0x25000 LATIN",
-        "").getBytes(StandardCharsets.UTF_8));
-    Files.write(overlapped.resolve("unk.def"),
-        "DEFAULT,0,0,10000,symbol,unknown\n".getBytes(StandardCharsets.UTF_8));
+        ""));
+    write(overlapped, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
 
     final MecabDictionary dictionary = MecabDictionary.load(overlapped);
     Assertions.assertEquals("KANJI", dictionary.categoryOf(0x20000).name());
@@ -527,18 +632,15 @@ public class LatticeTokenizerTest {
   @Test
   void testCharDefRangeStraddlingTheBmpBoundary(@TempDir Path straddling)
       throws IOException {
-    Files.write(straddling.resolve("lexicon.csv"),
-        "\u6771,0,0,6000,noun\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(straddling.resolve("matrix.def"),
-        "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(straddling.resolve("char.def"), String.join("\n",
-        "DEFAULT 0 1 0",
+    write(straddling, LEXICON_CSV, "\u6771,0,0,6000,noun\n");
+    write(straddling, MATRIX_DEF, UNIT_MATRIX);
+    write(straddling, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
         "LATIN 1 1 0",
         "",
         "0xFF00..0x10040 LATIN",
-        "").getBytes(StandardCharsets.UTF_8));
-    Files.write(straddling.resolve("unk.def"),
-        "DEFAULT,0,0,10000,symbol,unknown\n".getBytes(StandardCharsets.UTF_8));
+        ""));
+    write(straddling, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
 
     final MecabDictionary dictionary = MecabDictionary.load(straddling);
     Assertions.assertEquals("LATIN", dictionary.categoryOf(0xFF00).name());
@@ -556,17 +658,14 @@ public class LatticeTokenizerTest {
    */
   @Test
   void testMappingToUndefinedCategoryFailsLoud(@TempDir Path ghost) throws IOException {
-    Files.write(ghost.resolve("lexicon.csv"),
-        "\u6771,0,0,6000,noun\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(ghost.resolve("matrix.def"),
-        "1 1\n0 0 0\n".getBytes(StandardCharsets.UTF_8));
-    Files.write(ghost.resolve("char.def"), String.join("\n",
-        "DEFAULT 0 1 0",
+    write(ghost, LEXICON_CSV, "\u6771,0,0,6000,noun\n");
+    write(ghost, MATRIX_DEF, UNIT_MATRIX);
+    write(ghost, CHAR_DEF, String.join("\n",
+        DEFAULT_CATEGORY_LINE,
         "",
         "0x0100..0x0110 GHOST",
-        "").getBytes(StandardCharsets.UTF_8));
-    Files.write(ghost.resolve("unk.def"),
-        "DEFAULT,0,0,10000,symbol,unknown\n".getBytes(StandardCharsets.UTF_8));
+        ""));
+    write(ghost, UNK_DEF, DEFAULT_UNKNOWN_TEMPLATE + "\n");
 
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionary.load(ghost));
@@ -582,8 +681,7 @@ public class LatticeTokenizerTest {
   @Test
   void testMatrixCostOutsideShortRangeFailsLoud(@TempDir Path broken) throws IOException {
     writeUnitMatrixDictionary(broken);
-    Files.write(broken.resolve("matrix.def"),
-        "1 1\n0 0 40000\n".getBytes(StandardCharsets.UTF_8));
+    write(broken, MATRIX_DEF, "1 1\n0 0 40000\n");
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionary.load(broken));
     Assertions.assertEquals("malformed matrix.def line 2: connection cost 40000 is"
@@ -599,8 +697,7 @@ public class LatticeTokenizerTest {
   void testMatrixDimensionProductBeyondIntRangeFailsLoud(@TempDir Path broken)
       throws IOException {
     writeUnitMatrixDictionary(broken);
-    Files.write(broken.resolve("matrix.def"),
-        "70000 70000\n".getBytes(StandardCharsets.UTF_8));
+    write(broken, MATRIX_DEF, "70000 70000\n");
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionary.load(broken));
     Assertions.assertEquals("matrix.def dimensions 70000 x 70000 overflow the"
@@ -615,8 +712,7 @@ public class LatticeTokenizerTest {
   void testMatrixRowContextIdsOutsideDimensionsFailLoud(@TempDir Path broken)
       throws IOException {
     writeUnitMatrixDictionary(broken);
-    Files.write(broken.resolve("matrix.def"),
-        "1 1\n2 0 5\n".getBytes(StandardCharsets.UTF_8));
+    write(broken, MATRIX_DEF, "1 1\n2 0 5\n");
     final IOException e = Assertions.assertThrows(IOException.class,
         () -> MecabDictionary.load(broken));
     Assertions.assertEquals("malformed matrix.def line 2: context ids 2 0 are outside"

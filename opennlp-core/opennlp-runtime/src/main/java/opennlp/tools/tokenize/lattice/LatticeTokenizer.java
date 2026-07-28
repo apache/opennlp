@@ -95,6 +95,8 @@ public class LatticeTokenizer implements Tokenizer {
    * @return The morphemes in text order, spans in original coordinates, whitespace
    *         omitted. Never {@code null}; empty for empty or all-whitespace input.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * @throws IllegalStateException Thrown if the dictionary offers no candidate at some
+   *         position, which a {@code unk.def} without a {@code DEFAULT} template does.
    */
   public List<Morpheme> analyze(String text) {
     if (text == null) {
@@ -122,11 +124,13 @@ public class LatticeTokenizer implements Tokenizer {
    *
    * <p>Reports the segmented surfaces, whitespace omitted.</p>
    *
-   * @throws IllegalArgumentException Thrown if {@code s} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * @throws IllegalStateException Thrown if the dictionary offers no candidate at some
+   *         position; see {@link #analyze(String)}.
    */
   @Override
-  public String[] tokenize(String s) {
-    final List<Morpheme> morphemes = analyze(s);
+  public String[] tokenize(String text) {
+    final List<Morpheme> morphemes = analyze(text);
     final String[] tokens = new String[morphemes.size()];
     for (int i = 0; i < tokens.length; i++) {
       tokens[i] = morphemes.get(i).surface();
@@ -139,11 +143,13 @@ public class LatticeTokenizer implements Tokenizer {
    *
    * <p>Reports the segmented spans in original text coordinates, whitespace omitted.</p>
    *
-   * @throws IllegalArgumentException Thrown if {@code s} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
+   * @throws IllegalStateException Thrown if the dictionary offers no candidate at some
+   *         position; see {@link #analyze(String)}.
    */
   @Override
-  public Span[] tokenizePos(String s) {
-    final List<Morpheme> morphemes = analyze(s);
+  public Span[] tokenizePos(String text) {
+    final List<Morpheme> morphemes = analyze(text);
     final Span[] spans = new Span[morphemes.size()];
     for (int i = 0; i < spans.length; i++) {
       spans[i] = morphemes.get(i).span();
@@ -151,7 +157,15 @@ public class LatticeTokenizer implements Tokenizer {
     return spans;
   }
 
-  /** Runs the Viterbi search over one whitespace-free stretch of text. */
+  /**
+   * Runs the Viterbi search over one whitespace-free stretch of text.
+   *
+   * @param text The text being segmented.
+   * @param from The stretch start.
+   * @param to The exclusive stretch end.
+   * @param morphemes Receives the cheapest path's morphemes, in text order.
+   * @throws IllegalStateException Thrown if no path reaches the end of the stretch.
+   */
   private void decode(String text, int from, int to, List<Morpheme> morphemes) {
     final int length = to - from;
     // Each element heads the chain of nodes ending at that position.
@@ -179,12 +193,13 @@ public class LatticeTokenizer implements Tokenizer {
     }
 
     Node best = null;
+    long bestTotal = Long.MAX_VALUE;
     for (Node node = endingAt[length]; node != null; node = node.nextEndingHere) {
       final long total = node.pathCost
           + dictionary.connectionCost(node.entry.rightId(), BOUNDARY_CONTEXT);
-      if (best == null || total < best.pathCost
-          + dictionary.connectionCost(best.entry.rightId(), BOUNDARY_CONTEXT)) {
+      if (best == null || total < bestTotal) {
         best = node;
+        bestTotal = total;
       }
     }
     if (best == null) {
@@ -202,7 +217,13 @@ public class LatticeTokenizer implements Tokenizer {
     }
   }
 
-  /** Connects a candidate to the cheapest predecessor ending where it starts. */
+  /**
+   * Connects a candidate to the cheapest predecessor ending where it starts.
+   *
+   * @param candidate The node to give a path cost and a predecessor.
+   * @param predecessors The head of the chain of nodes ending where the candidate
+   *                     starts, or {@code null} when it starts at the stretch start.
+   */
   private void relax(Node candidate, Node predecessors) {
     if (predecessors == null) {
       candidate.pathCost = candidate.entry.cost()
@@ -251,18 +272,31 @@ public class LatticeTokenizer implements Tokenizer {
     }
   }
 
-  /** Gathers lexicon matches and unknown-word candidates starting at one position. */
+  /**
+   * Gathers lexicon matches and unknown-word candidates starting at one position.
+   *
+   * @param text The text being segmented.
+   * @param from The stretch start.
+   * @param to The exclusive stretch end, which no candidate may reach past.
+   * @param offset The candidate start, relative to {@code from}.
+   * @param positionCategory The category of that position, or {@code null} for a
+   *                         position inside a surrogate pair.
+   * @param positionRunEnd The exclusive end of the same-category run starting there,
+   *                       meaningful only when {@code positionCategory} is not
+   *                       {@code null}.
+   * @param candidates Receives the candidates. Must be empty on entry.
+   * @throws IllegalStateException Thrown if neither the lexicon, the position's
+   *         category, nor the {@code DEFAULT} template offers a candidate.
+   */
   private void candidates(String text, int from, int to, int offset,
       Category positionCategory, int positionRunEnd, List<Node> candidates) {
     final int position = from + offset;
-    final boolean[] matched = new boolean[1];
     dictionary.prefixMatches(text, position, to, (length, entries) -> {
-      matched[0] = true;
       for (final WordEntry entry : entries) {
         candidates.add(new Node(position, position + length, entry, false));
       }
     });
-    final boolean lexiconMatch = matched[0];
+    final boolean lexiconMatch = !candidates.isEmpty();
 
     final int codePoint = text.codePointAt(position);
     final Category category;
@@ -286,7 +320,8 @@ public class LatticeTokenizer implements Tokenizer {
     if (candidates.isEmpty()) {
       // Neither the lexicon nor the character's category produced a candidate here, so a
       // single-character entry from the DEFAULT template keeps the lattice connected.
-      final List<WordEntry> fallback = dictionary.unknownEntries("DEFAULT");
+      final List<WordEntry> fallback =
+          dictionary.unknownEntries(MecabDictionary.DEFAULT_CATEGORY);
       if (fallback != null) {
         for (final WordEntry entry : fallback) {
           candidates.add(

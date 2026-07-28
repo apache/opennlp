@@ -86,6 +86,8 @@ public class MecabDictionaryInstallerTest {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> MecabDictionaryInstaller.install(null, target));
     Assertions.assertThrows(IllegalArgumentException.class,
+        () -> MecabDictionaryInstaller.install(target.toUri(), null));
+    Assertions.assertThrows(IllegalArgumentException.class,
         () -> MecabDictionaryInstaller.extract(null, target));
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> MecabDictionaryInstaller.extract(

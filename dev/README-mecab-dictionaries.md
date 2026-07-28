@@ -40,7 +40,7 @@ On the first run without a checksum the script prints the SHA-256 it computed; r
 
 ## Step 2: unpack with the installer
 
-The installer extracts only the files a `MecabDictionary` reads (`*.csv`, `*.def`, and `dicrc`), flattens them into the target directory, and by the same flattening makes it impossible for an archive path to escape that directory:
+The installer extracts only the dictionary payload: the `*.csv` and `*.def` files a `MecabDictionary` reads, plus the `dicrc` configuration file the distributions ship alongside them. It flattens the entries into the target directory, and by the same flattening makes it impossible for an archive path to escape that directory:
 
 ```java
 import java.nio.file.Path;
