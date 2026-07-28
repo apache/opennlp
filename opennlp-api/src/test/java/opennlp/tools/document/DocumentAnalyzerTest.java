@@ -70,6 +70,19 @@ public class DocumentAnalyzerTest {
     }
   };
 
+  /** A finder that finds no names, for tests that only exercise the pipeline plumbing. */
+  private static final TokenNameFinder NO_NAMES = new TokenNameFinder() {
+
+    @Override
+    public Span[] find(String[] tokens) {
+      return new Span[0];
+    }
+
+    @Override
+    public void clearAdaptiveData() {
+    }
+  };
+
   @Test
   void testPipelineProducesAlignedLayersInOriginalCoordinates() {
     final Document document = DocumentAnalyzer.builder()
@@ -103,22 +116,11 @@ public class DocumentAnalyzerTest {
   @ParameterizedTest
   @ValueSource(strings = {"", "   "})
   void testEmptyAndBlankInputProduceEmptyLayers(String text) {
-    final TokenNameFinder finder = new TokenNameFinder() {
-
-      @Override
-      public Span[] find(String[] tokens) {
-        return new Span[0];
-      }
-
-      @Override
-      public void clearAdaptiveData() {
-      }
-    };
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
         .add(new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER))
         .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
         .add(new POSTaggerAnnotator(TAGGER))
-        .add(new NameFinderAnnotator(finder))
+        .add(new NameFinderAnnotator(NO_NAMES))
         .build();
 
     final Document document = analyzer.analyze(text);
@@ -193,5 +195,24 @@ public class DocumentAnalyzerTest {
     assertThrows(IllegalArgumentException.class, () -> new TokenizerAnnotator(null));
     assertThrows(IllegalArgumentException.class, () -> new POSTaggerAnnotator(null));
     assertThrows(IllegalArgumentException.class, () -> new NameFinderAnnotator(null));
+  }
+
+  /**
+   * Verifies that every adapter rejects a {@code null} document with the shared
+   * message, whether it checks itself or through
+   * {@link DocumentAnnotators#requireLayers(Document, LayerKey[])}.
+   */
+  @Test
+  void testAnnotatorAdaptersRejectNullDocuments() {
+    final List<DocumentAnnotator> adapters = List.of(
+        new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER),
+        new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER),
+        new POSTaggerAnnotator(TAGGER),
+        new NameFinderAnnotator(NO_NAMES));
+    for (final DocumentAnnotator adapter : adapters) {
+      final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+          () -> adapter.annotate(null));
+      assertEquals("document must not be null", e.getMessage());
+    }
   }
 }

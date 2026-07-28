@@ -67,11 +67,27 @@ public class NameFinderAnnotatorTest {
     };
   }
 
+  /**
+   * @return A two-sentence document with sentence and token layers over
+   *         {@code "Ana runs. Bob sits."}. Never {@code null}.
+   */
+  private static Document twoSentenceDocument() {
+    return Document.of("Ana runs. Bob sits.")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 9), "Ana runs."),
+            new Annotation<>(new Span(10, 19), "Bob sits.")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 3), "Ana"),
+            new Annotation<>(new Span(4, 9), "runs."),
+            new Annotation<>(new Span(10, 13), "Bob"),
+            new Annotation<>(new Span(14, 19), "sits.")));
+  }
+
   @Test
   void testTokenIndexSpansBecomeCharacterSpans() {
     final AtomicInteger cleared = new AtomicInteger();
     final TokenNameFinder finder = finder(tokens -> {
-      // "New York" as a two-token person-free location mention
+      // "New York" as a two-token location mention
       return new Span[] {new Span(1, 3, "location")};
     }, cleared);
 
@@ -146,15 +162,7 @@ public class NameFinderAnnotatorTest {
       // two tokens in the sentence, but the mention claims three
       return new Span[] {new Span(0, 3, "person")};
     }, cleared);
-    final Document document = Document.of("Ana runs. Bob sits.")
-        .with(Layers.SENTENCES, List.of(
-            new Annotation<>(new Span(0, 9), "Ana runs."),
-            new Annotation<>(new Span(10, 19), "Bob sits.")))
-        .with(Layers.TOKENS, List.of(
-            new Annotation<>(new Span(0, 3), "Ana"),
-            new Annotation<>(new Span(4, 9), "runs."),
-            new Annotation<>(new Span(10, 13), "Bob"),
-            new Annotation<>(new Span(14, 19), "sits.")));
+    final Document document = twoSentenceDocument();
 
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new NameFinderAnnotator(finder).annotate(document));
@@ -176,15 +184,7 @@ public class NameFinderAnnotatorTest {
     final AtomicInteger cleared = new AtomicInteger();
     final TokenNameFinder finder = finder(tokens ->
         "Bob".equals(tokens[0]) ? new Span[] {new Span(0, 0)} : new Span[0], cleared);
-    final Document document = Document.of("Ana runs. Bob sits.")
-        .with(Layers.SENTENCES, List.of(
-            new Annotation<>(new Span(0, 9), "Ana runs."),
-            new Annotation<>(new Span(10, 19), "Bob sits.")))
-        .with(Layers.TOKENS, List.of(
-            new Annotation<>(new Span(0, 3), "Ana"),
-            new Annotation<>(new Span(4, 9), "runs."),
-            new Annotation<>(new Span(10, 13), "Bob"),
-            new Annotation<>(new Span(14, 19), "sits.")));
+    final Document document = twoSentenceDocument();
 
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new NameFinderAnnotator(finder).annotate(document));
@@ -231,17 +231,7 @@ public class NameFinderAnnotatorTest {
       return new Span[] {new Span(0, 1, "person")};
     }, cleared);
 
-    final Document document = Document.of("Ana runs. Bob sits.")
-        .with(Layers.SENTENCES, List.of(
-            new Annotation<>(new Span(0, 9), "Ana runs."),
-            new Annotation<>(new Span(10, 19), "Bob sits.")))
-        .with(Layers.TOKENS, List.of(
-            new Annotation<>(new Span(0, 3), "Ana"),
-            new Annotation<>(new Span(4, 9), "runs."),
-            new Annotation<>(new Span(10, 13), "Bob"),
-            new Annotation<>(new Span(14, 19), "sits.")));
-
-    final Document annotated = new NameFinderAnnotator(finder).annotate(document);
+    final Document annotated = new NameFinderAnnotator(finder).annotate(twoSentenceDocument());
 
     assertEquals(List.of(
         List.of("Ana", "runs."),
