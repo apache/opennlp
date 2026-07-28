@@ -90,8 +90,8 @@ public final class ModelDistiller {
 
   /**
    * Distills a teacher into a model directory, resolving the teacher reference first: a local
-   * directory is used as-is, a Hugging Face model id ({@code org/model}) is downloaded into a
-   * local cache on first use.
+   * directory is used as-is, a Hugging Face model id ({@code org/model}, or
+   * {@code org/model@revision} to pin a revision) is downloaded into a local cache on first use.
    *
    * @param teacher         The teacher: a local directory or a Hugging Face model id. Must not
    *                        be {@code null}.
@@ -100,8 +100,9 @@ public final class ModelDistiller {
    * @param listener        Receives progress lines; may be {@code null}.
    * @return The distillation result, read back from the verified directory.
    * @throws IllegalArgumentException Thrown if an argument is {@code null} or invalid, the
-   *     teacher cannot be resolved, or the teacher cannot be run.
-   * @throws IOException Thrown if reading or writing a file fails.
+   *     teacher reference is malformed, or the teacher cannot be run.
+   * @throws IOException Thrown if reading or writing a file fails, or if a teacher cannot be
+   *     downloaded and verified.
    */
   public static Result distill(String teacher, Path outputDirectory, int pcaDims,
                                ProgressListener listener) throws IOException {
@@ -307,6 +308,7 @@ public final class ModelDistiller {
         + "  \"model_type\": \"model2vec\",\n"
         + "  \"architectures\": [\"StaticModel\"],\n"
         + "  \"tokenizer_name\": \"" + (name == null ? teacherDirectory : name) + "\",\n"
+        + teacherRevisionField(teacherDirectory)
         + "  \"apply_pca\": " + pcaDims + ",\n"
         + "  \"sif_coefficient\": " + SIF_COEFFICIENT + ",\n"
         + "  \"hidden_dim\": " + components + ",\n"
@@ -315,6 +317,21 @@ public final class ModelDistiller {
         + "  \"pooling\": \"mean\",\n"
         + "  \"embedding_dtype\": \"float32\"\n"
         + "}\n";
+  }
+
+  /**
+   * {@return the {@code config.json} field naming the commit the teacher's files came from, or an
+   * empty string when the teacher directory is not a cached hub download}
+   *
+   * <p>A distilled table is not reproducible without the exact revision of the teacher it was
+   * distilled from, and the teacher can move under its branch name, so the sha travels with the
+   * table rather than only staying in the cache directory it was downloaded into.</p>
+   *
+   * @param teacherDirectory The teacher's directory.
+   */
+  private static String teacherRevisionField(Path teacherDirectory) {
+    final String revision = HuggingFaceModelCache.pinnedRevision(teacherDirectory);
+    return revision == null ? "" : "  \"teacher_revision\": \"" + revision + "\",\n";
   }
 
   /**
