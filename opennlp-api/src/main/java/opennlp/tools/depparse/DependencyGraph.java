@@ -89,7 +89,6 @@ public final class DependencyGraph {
     return new DependencyGraph(heads.clone(), relations.clone());
   }
 
-
   /**
    * @return The number of tokens the graph spans.
    */

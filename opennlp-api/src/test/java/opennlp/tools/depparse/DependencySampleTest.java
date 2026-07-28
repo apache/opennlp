@@ -69,6 +69,12 @@ public class DependencySampleTest {
   }
 
   @Test
+  void testEmptySampleThrows() {
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencySample(new String[0], new String[0], graph()));
+  }
+
+  @Test
   void testInputArraysAreCopied() {
     final String[] tokens = TOKENS.clone();
     final DependencySample sample = new DependencySample(tokens, TAGS, graph());

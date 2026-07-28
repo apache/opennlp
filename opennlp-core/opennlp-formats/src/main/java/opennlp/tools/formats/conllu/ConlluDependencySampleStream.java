@@ -108,12 +108,20 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
   /**
    * Reads the syntactic word lines of the next sentence: comments, multiword token
    * ranges, and empty nodes are dropped; an empty list means the end of the content.
+   *
+   * <p>Sentences are separated by any line {@link StringUtil#isBlank(CharSequence)}
+   * accepts, so a separator carrying a stray no-break space still separates rather than
+   * reaching the word line parser.</p>
+   *
+   * @return The word lines of the next sentence, or an empty list at the end of the
+   *         content. Never {@code null}.
+   * @throws IOException Thrown if reading fails or a word line has too few columns.
    */
   private List<String[]> nextSentence() throws IOException {
     final List<String[]> words = new ArrayList<>();
     String line;
     while ((line = reader.readLine()) != null) {
-      if (isBlank(line)) {
+      if (StringUtil.isBlank(line)) {
         if (!words.isEmpty()) {
           return words;
         }
@@ -135,30 +143,11 @@ public class ConlluDependencySampleStream implements ObjectStream<DependencySamp
   }
 
   /**
-   * Determines whether a line separates two sentences, that is whether it is empty or
-   * consists entirely of whitespace.
+   * Converts one sentence into a sample.
    *
-   * <p>Blankness is decided with {@link StringUtil#isWhitespace(int)} rather than
-   * {@link String#isBlank()}, because OpenNLP counts the Unicode {@code Zs} category as
-   * whitespace while the JDK predicate does not: a separator line carrying a stray
-   * no-break space is still a separator, not a malformed word line.</p>
-   *
-   * @param line The line to inspect. Must not be {@code null}.
-   * @return {@code true} if the line is blank, {@code false} otherwise.
-   */
-  private static boolean isBlank(String line) {
-    for (int i = 0; i < line.length(); ) {
-      final int codePoint = line.codePointAt(i);
-      if (!StringUtil.isWhitespace(codePoint)) {
-        return false;
-      }
-      i += Character.charCount(codePoint);
-    }
-    return true;
-  }
-
-  /**
-   * Converts one sentence, or returns {@code null} when its annotation is unusable.
+   * @param words The word lines of the sentence.
+   * @return The converted sample, or {@code null} when the sentence's annotation is
+   *         unusable, for example an underscore head or a graph that is not a tree.
    */
   private DependencySample convert(List<String[]> words) {
     final int n = words.size();

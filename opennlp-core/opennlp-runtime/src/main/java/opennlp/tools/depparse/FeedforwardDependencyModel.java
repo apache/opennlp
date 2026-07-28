@@ -66,8 +66,17 @@ public class FeedforwardDependencyModel {
   /** U+03C2, GREEK SMALL LETTER FINAL SIGMA, the word-final lowering of the capital. */
   private static final char GREEK_SMALL_FINAL_SIGMA = '\u03C2';
 
+  /** The vocabulary key of every word, tag, or label the model has no embedding row for. */
   static final String UNKNOWN = "*UNK*";
+
+  /** The vocabulary key of a template position that does not exist in a configuration. */
   static final String ABSENT = "*NULL*";
+
+  /** The vocabulary key of the artificial root node. */
+  static final String ROOT_SYMBOL = "*ROOT*";
+
+  /** The prefix marking a vocabulary key as one of the special symbols above. */
+  static final String SPECIAL_SYMBOL_PREFIX = "*";
 
   /** The lazy scoring cache; {@code null} until {@link #enableScoringCache()}. */
   private volatile ContributionCache cache;
@@ -107,8 +116,12 @@ public class FeedforwardDependencyModel {
    *                 {@link #featureIds(String[])}. Must not be {@code null}.
    * @return One unnormalized score per transition, indexed like
    *         {@link #transitions()}. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code features} is {@code null}.
    */
   public double[] score(int[] features) {
+    if (features == null) {
+      throw new IllegalArgumentException("features must not be null");
+    }
     final int hidden = hiddenBias.length;
     final double[] h = new double[hidden];
     for (int j = 0; j < hidden; j++) {
@@ -151,19 +164,15 @@ public class FeedforwardDependencyModel {
   }
 
   /**
-   * Turns on the scoring cache: the hidden-layer contribution of a (template
-   * position, embedding row) pair is a fixed vector for a frozen model, so it is
-   * computed once on first sight and afterwards added instead of being re-derived
-   * from the embedding on every configuration. Tag and label rows, whose inventories
-   * are small, are fully cached within a document or two; word rows follow their
-   * frequency, which is the adaptive form of the precomputation described for this
-   * architecture by Chen and Manning (2014).
+   * Turns on the scoring cache: the hidden-layer contribution of a (template position,
+   * embedding row) pair is a fixed vector while the weights do not change, so it is
+   * computed once on first sight and afterwards added instead of being re-derived from
+   * the embedding on every configuration.
    *
    * <p>Cached contributions are rounded to floats once, so scores may differ from the
-   * uncached path in the last bits; transition decisions are unaffected at any
-   * realistic margin. The cache is bounded, safe for concurrent readers, and only
-   * valid on a model whose weights no longer change: training and refinement work on
-   * uncached copies, and {@link #copy()} never carries a cache over.</p>
+   * uncached path in the last bits. The cache is bounded, safe for concurrent readers,
+   * and only valid on a model whose weights no longer change: training and refinement
+   * work on uncached copies, and {@link #copy()} never carries a cache over.</p>
    */
   void enableScoringCache() {
     if (cache == null) {
@@ -242,8 +251,12 @@ public class FeedforwardDependencyModel {
    *
    * @param symbols The symbolic features. Must not be {@code null}.
    * @return The embedding row per feature. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code symbols} is {@code null}.
    */
   public int[] featureIds(String[] symbols) {
+    if (symbols == null) {
+      throw new IllegalArgumentException("symbols must not be null");
+    }
     final int[] ids = new int[symbols.length];
     for (int i = 0; i < FeedforwardContext.POSITIONS; i++) {
       ids[i] = lookup(wordIds, normalize(symbols[i]));
@@ -285,7 +298,7 @@ public class FeedforwardDependencyModel {
     if (word == null) {
       return null;
     }
-    if (word.startsWith("*")) {
+    if (word.startsWith(SPECIAL_SYMBOL_PREFIX)) {
       return word;
     }
     int i = 0;
@@ -321,6 +334,9 @@ public class FeedforwardDependencyModel {
     Integer id = ids.get(symbol == null ? ABSENT : symbol);
     if (id == null) {
       id = ids.get(UNKNOWN);
+    }
+    if (id == null) {
+      throw new IllegalStateException("vocabulary has no " + UNKNOWN + " row to fall back on");
     }
     return id;
   }
@@ -486,38 +502,68 @@ public class FeedforwardDependencyModel {
     return copy;
   }
 
+  /**
+   * @return The immutable map from a normalized word to its embedding row. Never {@code null}.
+   */
   Map<String, Integer> wordIds() {
     return wordIds;
   }
 
+  /**
+   * @return The immutable map from a tag to its embedding row. Never {@code null}.
+   */
   Map<String, Integer> tagIds() {
     return tagIds;
   }
 
+  /**
+   * @return The immutable map from an arc label to its embedding row. Never {@code null}.
+   */
   Map<String, Integer> labelIds() {
     return labelIds;
   }
 
+  /**
+   * @return The width of one embedding row.
+   */
   int embeddingSize() {
     return embeddingSize;
   }
 
+  /**
+   * @return The live embedding matrix, one row per vocabulary entry, not a copy: the
+   *         trainer writes its updates into it. Never {@code null}.
+   */
   float[][] embeddings() {
     return embeddings;
   }
 
+  /**
+   * @return The live hidden layer weights, not a copy. Never {@code null}.
+   */
   float[][] hiddenWeights() {
     return hiddenWeights;
   }
 
+  /**
+   * @return The live hidden layer bias, not a copy. Never {@code null}.
+   */
   float[] hiddenBias() {
     return hiddenBias;
   }
 
+  /**
+   * @return The live output layer weights, one row per transition, not a copy. Never
+   *         {@code null}.
+   */
   float[][] outputWeights() {
     return outputWeights;
   }
 
+  /**
+   * @return The live output layer bias, one entry per transition, not a copy. Never
+   *         {@code null}.
+   */
   float[] outputBias() {
     return outputBias;
   }

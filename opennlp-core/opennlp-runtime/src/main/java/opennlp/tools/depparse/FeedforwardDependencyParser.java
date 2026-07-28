@@ -200,7 +200,7 @@ public class FeedforwardDependencyParser implements DependencyParser {
    * @param scores The raw output scores.
    * @return The log-softmax of {@code scores}. Never {@code null}.
    */
-  private static double[] logSoftmax(double[] scores) {
+  private double[] logSoftmax(double[] scores) {
     double max = Double.NEGATIVE_INFINITY;
     for (final double score : scores) {
       max = Math.max(max, score);

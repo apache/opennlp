@@ -17,6 +17,8 @@
 
 package opennlp.tools.depparse;
 
+import opennlp.tools.util.StringUtil;
+
 /**
  * One labeled edge of a {@link DependencyGraph}: the token at {@code dependent} is governed
  * by the token at {@code head} under the given {@code relation}.
@@ -56,7 +58,7 @@ public record DependencyArc(int head, int dependent, String relation) {
     if (head == dependent) {
       throw new IllegalArgumentException("arc must not be a self-loop: " + head);
     }
-    if (relation == null || relation.isBlank()) {
+    if (relation == null || StringUtil.isBlank(relation)) {
       throw new IllegalArgumentException("relation must not be null or blank");
     }
   }

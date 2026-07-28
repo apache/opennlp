@@ -36,6 +36,9 @@ final class FeedforwardContext {
   /** The number of dependent positions whose arc label is embedded. */
   static final int LABEL_POSITIONS = 8;
 
+  /** The index of the first dependent position; the stack and buffer items precede it. */
+  private static final int FIRST_DEPENDENT_POSITION = 6;
+
   private FeedforwardContext() {
     // This class only exposes the static feature template and is never instantiated.
   }
@@ -44,6 +47,12 @@ final class FeedforwardContext {
    * Extracts the symbolic features of a configuration: {@link #POSITIONS} words, then
    * {@link #POSITIONS} tags, then {@link #LABEL_POSITIONS} labels; absent positions
    * yield {@code null} entries, which the vocabulary maps to its padding symbol.
+   *
+   * @param state The configuration to describe. Must not be {@code null}.
+   * @param tokens The sentence tokens. Must not be {@code null}.
+   * @param tags The part-of-speech tags aligned with {@code tokens}. Must not be
+   *             {@code null}.
+   * @return The symbolic features, in the order described above. Never {@code null}.
    */
   static String[] extract(ArcStandardState state, String[] tokens, String[] tags) {
     final int s0 = state.stack(0);
@@ -62,7 +71,7 @@ final class FeedforwardContext {
       features[POSITIONS + i] = symbol(tags, positions[i]);
     }
     for (int i = 0; i < LABEL_POSITIONS; i++) {
-      final int position = positions[6 + i];
+      final int position = positions[FIRST_DEPENDENT_POSITION + i];
       features[2 * POSITIONS + i] =
           position >= 0 ? state.assignedRelation(position) : null;
     }
@@ -79,7 +88,7 @@ final class FeedforwardContext {
 
   private static String symbol(String[] values, int index) {
     if (index == ArcStandardState.ROOT) {
-      return "*ROOT*";
+      return FeedforwardDependencyModel.ROOT_SYMBOL;
     }
     return index == ArcStandardState.NONE ? null : values[index];
   }
