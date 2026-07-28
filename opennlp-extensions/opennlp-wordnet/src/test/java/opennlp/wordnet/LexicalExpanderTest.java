@@ -20,8 +20,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import opennlp.tools.lemmatizer.Lemmatizer;
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
@@ -33,6 +37,7 @@ import opennlp.wordnet.LexicalExpander.Kind;
 
 import static opennlp.wordnet.ExpansionAssertions.find;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * ranking, hypernym depth and decay, hyponym opt-in, deduplication, exclusion of the input,
  * cycle termination, and configuration validation.
  */
-class LexicalExpanderTest {
+public class LexicalExpanderTest {
 
   // dog: sense 1 = {dog, domestic dog} -> canid -> carnivore, with hyponym puppy;
   //      sense 2 = {dog, frank, hot dog} -> sausage. The verb sense = {dog, chase}.
@@ -140,7 +145,7 @@ class LexicalExpanderTest {
   void testTheInputTermIsNeverAnExpansion() {
     for (final Expansion expansion :
         LexicalExpander.builder(lexicon()).build().expand("dog", WordNetPOS.NOUN)) {
-      assertTrue(!expansion.term().equalsIgnoreCase("dog"), "got " + expansion);
+      assertFalse(expansion.term().equalsIgnoreCase("dog"), "got " + expansion);
     }
   }
 
@@ -306,27 +311,39 @@ class LexicalExpanderTest {
     }
   }
 
+  private static Stream<Arguments> invalidExpansions() {
+    return Stream.of(
+        Arguments.of(null, Kind.SYNONYM, 0, 0, 1.0),
+        Arguments.of(" ", Kind.SYNONYM, 0, 0, 1.0),
+        Arguments.of("dog", null, 0, 0, 1.0),
+        Arguments.of("dog", Kind.SYNONYM, -1, 0, 1.0),
+        Arguments.of("dog", Kind.SYNONYM, 0, -1, 1.0),
+        Arguments.of("dog", Kind.SYNONYM, 0, 0, 0.0),
+        Arguments.of("dog", Kind.SYNONYM, 0, 0, 1.5),
+        Arguments.of("dog", Kind.SYNONYM, 0, 0, Double.NaN));
+  }
+
   /**
    * Verifies that the {@link Expansion} record rejects every component
    * outside its documented range with a loud exception.
    */
+  @ParameterizedTest
+  @MethodSource("invalidExpansions")
+  void testExpansionValidatesItsComponents(String term, Kind kind, int depth, int senseRank,
+                                           double weight) {
+    assertThrows(IllegalArgumentException.class,
+        () -> new Expansion(term, kind, depth, senseRank, weight));
+  }
+
+  /** Verifies that a fully valid component set is accepted. */
   @Test
-  void testExpansionValidatesItsComponents() {
-    assertThrows(IllegalArgumentException.class, () -> new Expansion(
-        null, Kind.SYNONYM, 0, 0, 1.0));
-    assertThrows(IllegalArgumentException.class, () -> new Expansion(
-        " ", Kind.SYNONYM, 0, 0, 1.0));
-    assertThrows(IllegalArgumentException.class, () -> new Expansion(
-        "dog", null, 0, 0, 1.0));
-    assertThrows(IllegalArgumentException.class, () -> new Expansion(
-        "dog", Kind.SYNONYM, -1, 0, 1.0));
-    assertThrows(IllegalArgumentException.class, () -> new Expansion(
-        "dog", Kind.SYNONYM, 0, -1, 1.0));
-    assertThrows(IllegalArgumentException.class, () -> new Expansion(
-        "dog", Kind.SYNONYM, 0, 0, 0.0));
-    assertThrows(IllegalArgumentException.class, () -> new Expansion(
-        "dog", Kind.SYNONYM, 0, 0, 1.5));
-    assertThrows(IllegalArgumentException.class, () -> new Expansion(
-        "dog", Kind.SYNONYM, 0, 0, Double.NaN));
+  void testExpansionAcceptsValidComponents() {
+    final Expansion expansion = new Expansion("dog", Kind.HYPERNYM, 2, 1, 0.25);
+
+    assertEquals("dog", expansion.term());
+    assertEquals(Kind.HYPERNYM, expansion.kind());
+    assertEquals(2, expansion.depth());
+    assertEquals(1, expansion.senseRank());
+    assertEquals(0.25, expansion.weight());
   }
 }
