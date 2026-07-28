@@ -29,8 +29,9 @@ import opennlp.tools.cmdline.TerminateToolException;
  * (teacher forward pass over the vocabulary, PCA, Zipf weighting) in Java, so producing a table
  * no longer needs a Python environment; see {@link ModelDistiller} for the pipeline.
  *
- * <p>The teacher is a Hugging Face model id (its files download once into a local cache) or a
- * local directory holding {@code tokenizer.json} and {@code onnx/model.onnx}. A SentencePiece
+ * <p>The teacher is a Hugging Face model id (its files download once into a local cache, pinned to
+ * the commit its revision resolved to and verified against the digests the hub publishes for them)
+ * or a local directory holding {@code tokenizer.json} and {@code onnx/model.onnx}. A SentencePiece
  * teacher also needs its trained {@code .model} file, downloaded or supplied alongside. The
  * written directory is completed and verified by loading it, so a run that prints a summary is a
  * directory that works.</p>

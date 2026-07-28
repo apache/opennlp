@@ -28,8 +28,9 @@ interface DistillModelParams {
    * {@return the teacher to distill: a local directory or a Hugging Face model id}
    */
   @ParameterDescription(valueName = "hf-id-or-path",
-      description = "The sentence-transformer teacher: a Hugging Face model id (org/model) or a "
-          + "local directory holding tokenizer.json and onnx/model.onnx.")
+      description = "The sentence-transformer teacher: a Hugging Face model id (org/model, or "
+          + "org/model@revision to pin a branch, tag, or commit) or a local directory holding "
+          + "tokenizer.json and onnx/model.onnx.")
   String getTeacher();
 
   /**

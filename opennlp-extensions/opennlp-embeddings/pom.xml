@@ -78,6 +78,24 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>de.thetaphi</groupId>
+        <artifactId>forbiddenapis</artifactId>
+        <configuration>
+          <!-- HuggingFaceModelCacheTest serves its fixtures from the JDK's own HTTP server
+               (module jdk.httpserver) on the loopback interface, so that the teacher downloader
+               can be tested without the network. That server is a com.sun.* type, which the
+               jdk-non-portable signatures reject. -->
+          <excludes>
+            <exclude>opennlp/embeddings/HuggingFaceModelCacheTest*.class</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <profiles>
     <profile>
       <id>jmh</id>
