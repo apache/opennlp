@@ -120,6 +120,13 @@ public class DependencyGraphTest {
   void testBlankRelationThrows() {
     assertThrows(IllegalArgumentException.class,
         () -> DependencyGraph.of(new int[] {1, -1}, new String[] {" ", "root"}));
+    // blankness follows the toolkit whitespace definition, which covers the no-break
+    // space U+00A0 that the JDK predicate leaves out
+    assertThrows(IllegalArgumentException.class,
+        () -> DependencyGraph.of(new int[] {1, -1}, new String[] {"\u00A0", "root"}));
+    // and a label that only looks unusual is still content
+    assertEquals("nmod:poss", DependencyGraph.of(new int[] {1, -1},
+        new String[] {"nmod:poss", "root"}).relationOf(0));
   }
 
   @Test
@@ -135,6 +142,8 @@ public class DependencyGraphTest {
     assertThrows(IllegalArgumentException.class, () -> new DependencyArc(1, -1, "det"));
     assertThrows(IllegalArgumentException.class, () -> new DependencyArc(-2, 0, "det"));
     assertThrows(IllegalArgumentException.class, () -> new DependencyArc(1, 0, " "));
+    assertThrows(IllegalArgumentException.class, () -> new DependencyArc(1, 0, "\u00A0"));
     assertThrows(IllegalArgumentException.class, () -> new DependencyArc(1, 0, null));
+    assertEquals("det", new DependencyArc(1, 0, "det").relation());
   }
 }

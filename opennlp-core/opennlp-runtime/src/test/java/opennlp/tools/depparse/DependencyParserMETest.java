@@ -17,17 +17,19 @@
 
 package opennlp.tools.depparse;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import opennlp.tools.ml.model.MaxentModel;
 import opennlp.tools.util.ObjectStreamUtils;
 import opennlp.tools.util.Parameters;
 import opennlp.tools.util.TrainingParameters;
 
+import static opennlp.tools.depparse.DependencyTestSamples.corpus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -40,26 +42,6 @@ public class DependencyParserMETest {
 
   private static DependencyModel model;
   private static DependencyParserME parser;
-
-  private static DependencySample sample(String[] tokens, String[] tags, int[] heads,
-      String[] relations) {
-    return new DependencySample(tokens, tags, DependencyGraph.of(heads, relations));
-  }
-
-  private static List<DependencySample> corpus() {
-    final List<DependencySample> distinct = List.of(
-        sample(new String[] {"the", "dog", "barks"}, new String[] {"DT", "NN", "VBZ"},
-            new int[] {1, 2, -1}, new String[] {"det", "nsubj", "root"}),
-        sample(new String[] {"dogs", "bark"}, new String[] {"NNS", "VBP"},
-            new int[] {1, -1}, new String[] {"nsubj", "root"}),
-        sample(new String[] {"she", "eats", "fish"}, new String[] {"PRP", "VBZ", "NN"},
-            new int[] {1, -1, 1}, new String[] {"nsubj", "root", "obj"}));
-    final List<DependencySample> corpus = new ArrayList<>();
-    for (int i = 0; i < 40; i++) {
-      corpus.addAll(distinct);
-    }
-    return corpus;
-  }
 
   @BeforeAll
   static void trainParser() throws IOException {
@@ -113,7 +95,7 @@ public class DependencyParserMETest {
     assertThrows(IllegalArgumentException.class,
         () -> new DependencyParserME((DependencyModel) null));
     assertThrows(IllegalArgumentException.class,
-        () -> new DependencyParserME((opennlp.tools.ml.model.MaxentModel) null));
+        () -> new DependencyParserME((MaxentModel) null));
   }
 
   @Test
@@ -131,10 +113,10 @@ public class DependencyParserMETest {
 
   @Test
   void testModelRoundTripThroughSerialization() throws IOException {
-    final java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
     model.serialize(out);
     final DependencyModel reloaded = new DependencyModel(
-        new java.io.ByteArrayInputStream(out.toByteArray()));
+        new ByteArrayInputStream(out.toByteArray()));
     final DependencyGraph parsed = new DependencyParserME(reloaded)
         .parse(new String[] {"the", "dog", "barks"}, new String[] {"DT", "NN", "VBZ"});
     assertEquals(DependencyGraph.of(new int[] {1, 2, -1},
@@ -145,5 +127,60 @@ public class DependencyParserMETest {
   void testModelRejectsNullParserModel() {
     assertThrows(IllegalArgumentException.class,
         () -> new DependencyModel("eng", null, null));
+  }
+
+  @Test
+  void testModelWithForeignOutcomesIsRejectedAtConstruction() {
+    // The outcome inventory is decoded once up front, so a model trained for another
+    // task is rejected when the parser is built rather than mid-sentence.
+    assertThrows(IllegalArgumentException.class,
+        () -> new DependencyParserME(new OutcomeOnlyModel("NN", "VB")));
+  }
+
+  /**
+   * A {@link MaxentModel} that only knows its outcome inventory, enough to build a
+   * parser from; any other use fails.
+   */
+  private record OutcomeOnlyModel(String... outcomes) implements MaxentModel {
+
+    @Override
+    public String getOutcome(int i) {
+      return outcomes[i];
+    }
+
+    @Override
+    public int getNumOutcomes() {
+      return outcomes.length;
+    }
+
+    @Override
+    public double[] eval(String[] context) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public double[] eval(String[] context, double[] probs) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public double[] eval(String[] context, float[] values) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getBestOutcome(double[] outcomeScores) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getAllOutcomes(double[] outcomeScores) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getIndex(String outcome) {
+      throw new UnsupportedOperationException();
+    }
   }
 }

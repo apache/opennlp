@@ -19,10 +19,12 @@ package opennlp.tools.depparse;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,7 +139,7 @@ public final class FeedforwardDependencyTrainer {
    *         has the wrong dimensionality.
    */
   public static FeedforwardDependencyModel train(ObjectStream<DependencySample> samples,
-      Settings settings, java.util.function.Function<String, float[]> pretrained)
+      Settings settings, Function<String, float[]> pretrained)
       throws IOException {
     if (samples == null || settings == null) {
       throw new IllegalArgumentException("samples and settings must not be null");
@@ -207,11 +209,12 @@ public final class FeedforwardDependencyTrainer {
     while ((sample = samples.read()) != null) {
       corpus.add(sample);
     }
+    final String[] outcomes = model.transitions();
     final Map<String, Integer> transitionIds = new HashMap<>();
-    final Transition[] transitions = new Transition[model.transitions().length];
+    final Transition[] transitions = new Transition[outcomes.length];
     for (int i = 0; i < transitions.length; i++) {
-      transitionIds.put(model.transitions()[i], i);
-      transitions[i] = Transition.decode(model.transitions()[i]);
+      transitionIds.put(outcomes[i], i);
+      transitions[i] = Transition.decode(outcomes[i]);
     }
 
     final List<DependencySample> trainable = new ArrayList<>();
@@ -428,9 +431,9 @@ public final class FeedforwardDependencyTrainer {
       final double logNormalizer = max + Math.log(normalizer);
 
       zero(hiddenGradient);
-      java.util.Arrays.fill(hiddenBiasGradient, 0.0);
+      Arrays.fill(hiddenBiasGradient, 0.0);
       zero(outputGradient);
-      java.util.Arrays.fill(outputBiasGradient, 0.0);
+      Arrays.fill(outputBiasGradient, 0.0);
       embeddingGradients.clear();
       for (final BeamNode candidate : candidates) {
         final double weight = Math.exp(candidate.score - logNormalizer)
@@ -514,8 +517,8 @@ public final class FeedforwardDependencyTrainer {
         probabilities[o] = Math.exp(probabilities[o] - max);
         normalizer += probabilities[o];
       }
-      java.util.Arrays.fill(hiddenDelta, 0.0);
-      java.util.Arrays.fill(inputDelta, 0.0);
+      Arrays.fill(hiddenDelta, 0.0);
+      Arrays.fill(inputDelta, 0.0);
       final float[][] outputWeights = model.outputWeights();
       for (int o = 0; o < outputSize; o++) {
         // dL/dlogit for a path's step under the conditional likelihood: the path weight
@@ -552,7 +555,7 @@ public final class FeedforwardDependencyTrainer {
     }
 
     /** Turns raw scores into log-probabilities in place. */
-    private static void logSoftmaxInPlace(double[] scores) {
+    private void logSoftmaxInPlace(double[] scores) {
       double max = Double.NEGATIVE_INFINITY;
       for (final double score : scores) {
         max = Math.max(max, score);
@@ -570,10 +573,10 @@ public final class FeedforwardDependencyTrainer {
 
   /** Overwrites the random word rows with pretrained vectors where available. */
   private static void seed(FeedforwardDependencyModel model,
-      java.util.function.Function<String, float[]> pretrained, Settings settings) {
+      Function<String, float[]> pretrained, Settings settings) {
     int seeded = 0;
     for (final Map.Entry<String, Integer> entry : model.wordIds().entrySet()) {
-      if (entry.getKey().startsWith("*")) {
+      if (entry.getKey().startsWith(FeedforwardDependencyModel.SPECIAL_SYMBOL_PREFIX)) {
         // The special unknown, padding, and root symbols have no pretrained
         // counterpart, so they keep their random initialization.
         continue;
@@ -623,28 +626,22 @@ public final class FeedforwardDependencyTrainer {
 
     int row = 0;
     final Map<String, Integer> wordIds = new HashMap<>();
-    for (final String special : List.of(FeedforwardDependencyModel.UNKNOWN,
-        FeedforwardDependencyModel.ABSENT, "*ROOT*")) {
-      wordIds.put(special, row++);
-    }
+    row = addSpecialSymbols(wordIds, row, FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT, FeedforwardDependencyModel.ROOT_SYMBOL);
     for (final Map.Entry<String, Integer> entry : wordCounts.entrySet()) {
       if (entry.getValue() >= settings.wordCutoff() && !wordIds.containsKey(entry.getKey())) {
         wordIds.put(entry.getKey(), row++);
       }
     }
     final Map<String, Integer> tags = new HashMap<>();
-    for (final String special : List.of(FeedforwardDependencyModel.UNKNOWN,
-        FeedforwardDependencyModel.ABSENT, "*ROOT*")) {
-      tags.put(special, row++);
-    }
+    row = addSpecialSymbols(tags, row, FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT, FeedforwardDependencyModel.ROOT_SYMBOL);
     for (final String tag : tagIds.keySet()) {
       tags.put(tag, row++);
     }
     final Map<String, Integer> labels = new HashMap<>();
-    for (final String special : List.of(FeedforwardDependencyModel.UNKNOWN,
-        FeedforwardDependencyModel.ABSENT)) {
-      labels.put(special, row++);
-    }
+    row = addSpecialSymbols(labels, row, FeedforwardDependencyModel.UNKNOWN,
+        FeedforwardDependencyModel.ABSENT);
     for (final String label : labelIds.keySet()) {
       labels.put(label, row++);
     }
@@ -669,6 +666,23 @@ public final class FeedforwardDependencyTrainer {
     return new FeedforwardDependencyModel(wordIds, tags, labels, transitions,
         settings.embeddingSize(), embeddings, hiddenWeights,
         new float[settings.hiddenSize()], outputWeights, new float[transitions.length]);
+  }
+
+  /**
+   * Assigns the next embedding rows to the special symbols of one vocabulary.
+   *
+   * @param ids The vocabulary to fill.
+   * @param row The next free embedding row.
+   * @param symbols The special symbols, in the order they take their rows.
+   * @return The next free embedding row after the symbols.
+   */
+  private static int addSpecialSymbols(Map<String, Integer> ids, int row, String... symbols) {
+    int next = row;
+    for (final String symbol : symbols) {
+      ids.put(symbol, next);
+      next++;
+    }
+    return next;
   }
 
   /** Replays the oracle over every projective sample, emitting one example per step. */
@@ -760,9 +774,9 @@ public final class FeedforwardDependencyTrainer {
         final int batchEnd = Math.min(batchStart + settings.batchSize(), exampleCount);
         final int batch = batchEnd - batchStart;
         zero(hiddenGradient);
-        java.util.Arrays.fill(hiddenBiasGradient, 0.0);
+        Arrays.fill(hiddenBiasGradient, 0.0);
         zero(outputGradient);
-        java.util.Arrays.fill(outputBiasGradient, 0.0);
+        Arrays.fill(outputBiasGradient, 0.0);
         embeddingGradients.clear();
 
         for (int b = batchStart; b < batchEnd; b++) {
@@ -810,8 +824,8 @@ public final class FeedforwardDependencyTrainer {
           }
           loss -= Math.log(Math.max(probabilities[goldTransition], 1e-12));
 
-          java.util.Arrays.fill(hiddenDelta, 0.0);
-          java.util.Arrays.fill(inputDelta, 0.0);
+          Arrays.fill(hiddenDelta, 0.0);
+          Arrays.fill(inputDelta, 0.0);
           for (int o = 0; o < outputSize; o++) {
             final double delta = probabilities[o] - (o == goldTransition ? 1.0 : 0.0);
             outputBiasGradient[o] += delta;
@@ -903,7 +917,7 @@ public final class FeedforwardDependencyTrainer {
 
   private static void zero(double[][] matrix) {
     for (final double[] row : matrix) {
-      java.util.Arrays.fill(row, 0.0);
+      Arrays.fill(row, 0.0);
     }
   }
 
