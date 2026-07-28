@@ -57,10 +57,14 @@ import opennlp.tools.wordnet.WordNetRelation;
  */
 public final class WndbReader {
 
+  /** The WNDB pointer symbols this reader accepts, mapped to the contract relations. */
   private static final Map<String, WordNetRelation> POINTER_SYMBOLS = pointerSymbols();
 
   /** The prefix of every synset id this reader mints. */
   private static final String SYNSET_ID_PREFIX = "wndb-";
+
+  /** The failure detail for a synset offset field that is not exactly 8 digits. */
+  private static final String MALFORMED_OFFSET = "Synset offset must be 8 digits, got: ";
 
   /** Not instantiable. */
   private WndbReader() {
@@ -146,7 +150,7 @@ public final class WndbReader {
   private static void parseDataFile(Path directory, FilePos filePos,
                                     Map<String, RawSynset> rawSynsets) throws IOException {
     final String fileName = "data." + filePos.suffix;
-    final byte[] bytes = readAll(directory.resolve(fileName), fileName);
+    final byte[] bytes = readAll(directory.resolve(fileName));
     int lineStart = 0;
     int lineNumber = 0;
     while (lineStart < bytes.length) {
@@ -281,7 +285,7 @@ public final class WndbReader {
                                      Map<InMemoryWordNetLexicon.LemmaKey, List<String>> senses)
       throws IOException {
     final String fileName = "index." + filePos.suffix;
-    final byte[] bytes = readAll(directory.resolve(fileName), fileName);
+    final byte[] bytes = readAll(directory.resolve(fileName));
     final String content = new String(bytes, StandardCharsets.ISO_8859_1);
     int lineNumber = 0;
     int lineStart = 0;
@@ -399,13 +403,13 @@ public final class WndbReader {
    */
   private static int parseOffset(String offset, Tokenizer tokens) throws InvalidFormatException {
     if (offset.length() != 8) {
-      throw tokens.malformedToken("Synset offset must be 8 digits, got: " + offset);
+      throw tokens.malformedToken(MALFORMED_OFFSET + offset);
     }
     int value = 0;
     for (int i = 0; i < 8; i++) {
       final char c = offset.charAt(i);
       if (c < '0' || c > '9') {
-        throw tokens.malformedToken("Synset offset must be 8 digits, got: " + offset);
+        throw tokens.malformedToken(MALFORMED_OFFSET + offset);
       }
       value = value * 10 + (c - '0');
     }
@@ -433,13 +437,12 @@ public final class WndbReader {
   /**
    * Reads a required database file in full.
    *
-   * @param file     The file path.
-   * @param fileName The file name, for error reporting.
+   * @param file The file path.
    * @return The file bytes.
    * @throws InvalidFormatException Thrown if the file is missing.
    * @throws IOException Thrown if reading fails.
    */
-  private static byte[] readAll(Path file, String fileName) throws IOException {
+  private static byte[] readAll(Path file) throws IOException {
     if (!Files.isRegularFile(file)) {
       throw new InvalidFormatException("Missing WNDB database file: " + file);
     }
@@ -456,8 +459,19 @@ public final class WndbReader {
    */
   private static InvalidFormatException malformed(String fileName, int lineNumber,
                                                   String message) {
-    return new InvalidFormatException(
-        "Malformed WNDB file " + fileName + " at line " + lineNumber + ": " + message);
+    return new InvalidFormatException(malformedMessage(fileName, lineNumber, message));
+  }
+
+  /**
+   * Builds the malformed-file message naming the file and line.
+   *
+   * @param fileName   The file name.
+   * @param lineNumber The 1-based line number.
+   * @param message    The failure detail.
+   * @return The message text.
+   */
+  private static String malformedMessage(String fileName, int lineNumber, String message) {
+    return "Malformed WNDB file " + fileName + " at line " + lineNumber + ": " + message;
   }
 
   /** A cursor over one line's space-separated fields. */
@@ -515,8 +529,8 @@ public final class WndbReader {
       try {
         return Integer.parseInt(token, radix);
       } catch (NumberFormatException e) {
-        throw new InvalidFormatException(malformed(fileName, lineNumber,
-            "Field " + field + " is not a base-" + radix + " integer: " + token).getMessage(), e);
+        throw new InvalidFormatException(malformedMessage(fileName, lineNumber,
+            "Field " + field + " is not a base-" + radix + " integer: " + token), e);
       }
     }
 
@@ -557,6 +571,7 @@ public final class WndbReader {
   private record RawPointer(WordNetRelation relation, String targetId, int lineNumber) {
   }
 
+  /** A parsed data-file synset, kept until its pointer targets can be resolved. */
   private static final class RawSynset {
     private final String id;
     private final WordNetPOS pos;

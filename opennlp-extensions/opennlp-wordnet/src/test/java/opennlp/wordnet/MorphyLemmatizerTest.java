@@ -16,6 +16,7 @@
  */
 package opennlp.wordnet;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -184,5 +185,10 @@ public class MorphyLemmatizerTest {
         () -> morphy.lemmatize(new String[] {null}, new String[] {"NN"}));
     assertThrows(IllegalArgumentException.class,
         () -> morphy.lemmatize(new String[] {"dog"}, new String[] {null}));
+    final List<String> withNull = Collections.singletonList(null);
+    assertThrows(IllegalArgumentException.class,
+        () -> morphy.lemmatize(withNull, List.of("NN")));
+    assertThrows(IllegalArgumentException.class,
+        () -> morphy.lemmatize(List.of("dog"), withNull));
   }
 }
