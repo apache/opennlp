@@ -71,14 +71,14 @@ public class LexiconConcurrencyTest {
   }
 
   private static void verifyOnce(LexicalKnowledgeBase lexicon, Queue<String> problems) {
-    if (!"wndb-00001075-n".equals(lexicon.lookup("dog", WordNetPOS.NOUN).get(0).id())) {
+    if (!WndbReaderTest.DOG_ID.equals(lexicon.lookup("dog", WordNetPOS.NOUN).get(0).id())) {
       problems.add("Wrong dog lookup");
     }
     if (lexicon.lookup("run", WordNetPOS.NOUN).size() != 2) {
       problems.add("Wrong run sense count");
     }
-    if (!List.of("wndb-00001160-n")
-        .equals(lexicon.related("wndb-00001075-n", WordNetRelation.HYPERNYM))) {
+    if (!List.of(WndbReaderTest.CANID_ID)
+        .equals(lexicon.related(WndbReaderTest.DOG_ID, WordNetRelation.HYPERNYM))) {
       problems.add("Wrong dog hypernym");
     }
     if (lexicon.contains("zebra", WordNetPOS.NOUN)) {

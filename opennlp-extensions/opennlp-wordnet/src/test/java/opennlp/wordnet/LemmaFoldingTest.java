@@ -63,4 +63,9 @@ public class LemmaFoldingTest {
   void testFoldRejectsNull() {
     assertThrows(IllegalArgumentException.class, () -> LemmaFolding.fold(null));
   }
+
+  @Test
+  void testSplitOnSpacesRejectsNull() {
+    assertThrows(IllegalArgumentException.class, () -> LemmaFolding.splitOnSpaces(null));
+  }
 }

@@ -41,7 +41,7 @@ final class LemmaFolding {
    */
   static String fold(String writtenForm) {
     if (writtenForm == null) {
-      throw new IllegalArgumentException("writtenForm must not be null");
+      throw new IllegalArgumentException("WrittenForm must not be null");
     }
     return writtenForm.replace('_', ' ').toLowerCase(Locale.ROOT);
   }
@@ -51,8 +51,12 @@ final class LemmaFolding {
    *
    * @param value The field list. Must not be {@code null}.
    * @return The non-empty fields in order, never {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code value} is {@code null}.
    */
   static List<String> splitOnSpaces(String value) {
+    if (value == null) {
+      throw new IllegalArgumentException("Value must not be null");
+    }
     final List<String> parts = new ArrayList<>(4);
     int start = 0;
     while (start < value.length()) {

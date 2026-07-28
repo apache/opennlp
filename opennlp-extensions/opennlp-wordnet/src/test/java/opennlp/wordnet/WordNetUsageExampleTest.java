@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package opennlp.wordnet;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.wordnet.LexicalKnowledgeBase;
 import opennlp.tools.wordnet.Synset;
 import opennlp.tools.wordnet.WordNetPOS;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Runs the manual's WordNet examples (docbkx {@code wordnet.xml}) verbatim: every value
@@ -39,40 +35,23 @@ import opennlp.tools.wordnet.WordNetPOS;
  */
 public class WordNetUsageExampleTest {
 
-  private static LexicalKnowledgeBase loadMiniWnLmf() throws IOException {
-    try (InputStream in = WordNetUsageExampleTest.class.getResourceAsStream("mini-wn-lmf.xml")) {
-      Assertions.assertNotNull(in, "Fixture mini-wn-lmf.xml must be on the test classpath");
-      return WnLmfReader.read(in, "mini-wn-lmf.xml");
-    }
-  }
-
-  private static Path miniWndbDirectory() {
-    final URL url = WordNetUsageExampleTest.class.getResource("mini-wndb");
-    Assertions.assertNotNull(url, "Fixture directory mini-wndb must be on the test classpath");
-    try {
-      return Path.of(url.toURI());
-    } catch (URISyntaxException e) {
-      throw new IllegalStateException("Unexpected fixture URI: " + url, e);
-    }
-  }
-
   /**
    * Load, lookup, and Morphy lemmatize as the chapter shows.
    */
   @Test
   void testLoadLookupAndLemmatize() throws IOException {
-    final LexicalKnowledgeBase lexicon = loadMiniWnLmf();
+    final LexicalKnowledgeBase lexicon = WnLmfReaderTest.fixture();
     final List<Synset> senses = lexicon.lookup("dog", WordNetPOS.NOUN);
-    Assertions.assertEquals(1, senses.size());
-    Assertions.assertEquals("mini-n1", senses.get(0).id());
-    Assertions.assertEquals(List.of("dog", "domestic dog"), senses.get(0).lemmas());
-    Assertions.assertEquals("a domesticated canid", senses.get(0).gloss());
+    assertEquals(1, senses.size());
+    assertEquals("mini-n1", senses.get(0).id());
+    assertEquals(List.of("dog", "domestic dog"), senses.get(0).lemmas());
+    assertEquals("a domesticated canid", senses.get(0).gloss());
 
-    final MorphyLemmatizer lemmatizer =
-        new MorphyLemmatizer(lexicon, MorphyExceptions.load(miniWndbDirectory()));
-    Assertions.assertEquals("mouse",
+    final MorphyLemmatizer lemmatizer = new MorphyLemmatizer(lexicon,
+        MorphyExceptions.load(WndbReaderTest.fixtureDirectory()));
+    assertEquals("mouse",
         lemmatizer.lemmatize(new String[] {"mice"}, new String[] {"NNS"})[0]);
-    Assertions.assertEquals("dog",
+    assertEquals("dog",
         lemmatizer.lemmatize(new String[] {"dogs"}, new String[] {"NNS"})[0]);
   }
 }
