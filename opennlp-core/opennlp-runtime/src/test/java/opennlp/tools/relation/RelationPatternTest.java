@@ -21,6 +21,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.StringUtil;
 
@@ -82,22 +85,21 @@ public class RelationPatternTest {
    * Verifies that splitting follows {@link StringUtil#isWhitespace(char)} exactly for
    * the characters whose classification differs between whitespace definitions: the
    * next line control U+0085 and the information separators U+001C and U+001F. The
-   * expected step list is derived from the predicate itself, so this test asserts the
-   * contract, splitting wherever the project predicate sees whitespace, rather than
-   * pinning any one character table, and it stays correct when the predicate's
-   * character set changes.
+   * expected step list is derived from the predicate itself, so the test asserts the
+   * contract rather than pinning one character table.
+   *
+   * @param divergent The character to separate the two steps with.
    */
-  @Test
-  void testSplittingFollowsTheProjectWhitespacePredicate() {
-    for (final char divergent : new char[] {NEL, FILE_SEPARATOR, UNIT_SEPARATOR}) {
-      final List<String> expected = StringUtil.isWhitespace(divergent)
-          ? List.of("<nsubj", ">obj")
-          : List.of("<nsubj" + divergent + ">obj");
-      Assertions.assertEquals(expected,
-          new RelationPattern("t", "<nsubj" + divergent + ">obj", null).steps(),
-          "split behavior for U+" + String.format("%04X", (int) divergent)
-              + " must follow StringUtil.isWhitespace");
-    }
+  @ParameterizedTest
+  @ValueSource(chars = {NEL, FILE_SEPARATOR, UNIT_SEPARATOR})
+  void testSplittingFollowsTheProjectWhitespacePredicate(char divergent) {
+    final List<String> expected = StringUtil.isWhitespace(divergent)
+        ? List.of("<nsubj", ">obj")
+        : List.of("<nsubj" + divergent + ">obj");
+    Assertions.assertEquals(expected,
+        new RelationPattern("t", "<nsubj" + divergent + ">obj", null).steps(),
+        "split behavior for U+" + String.format("%04X", (int) divergent)
+            + " must follow StringUtil.isWhitespace");
   }
 
   /**
@@ -115,14 +117,16 @@ public class RelationPatternTest {
   /**
    * Verifies that {@code null}, empty, and blank paths are all rejected at construction
    * with the exact same message.
+   *
+   * @param path The path to reject.
    */
-  @Test
-  void testEmptyPathFailsLoudWithExactMessage() {
-    for (final String path : new String[] {null, "", " ", "\t\n"}) {
-      final IllegalArgumentException e = Assertions.assertThrows(
-          IllegalArgumentException.class, () -> new RelationPattern("t", path, null));
-      Assertions.assertEquals("path must not be null or blank", e.getMessage());
-    }
+  @ParameterizedTest
+  @NullSource
+  @ValueSource(strings = {"", " ", "\t\n"})
+  void testEmptyPathFailsLoudWithExactMessage(String path) {
+    final IllegalArgumentException e = Assertions.assertThrows(
+        IllegalArgumentException.class, () -> new RelationPattern("t", path, null));
+    Assertions.assertEquals("path must not be null or blank", e.getMessage());
   }
 
   /**
@@ -155,17 +159,6 @@ public class RelationPatternTest {
   }
 
   /**
-   * Verifies that leading and trailing no-break spaces (U+00A0, written as Unicode
-   * escapes in the source) are separators like any other whitespace and never produce
-   * empty steps.
-   */
-  @Test
-  void testLeadingAndTrailingNoBreakSpacesAreIgnored() {
-    Assertions.assertEquals(List.of("<nsubj", ">obj"),
-        new RelationPattern("t", "\u00A0<nsubj\u00A0>obj\u00A0", null).steps());
-  }
-
-  /**
    * Verifies that a trigger which is not already lowercased is rejected at construction
    * with a message naming the offending trigger. Such a trigger could never equal the
    * lowercased pivot form the annotator compares it against, so the pattern would match
@@ -186,29 +179,27 @@ public class RelationPatternTest {
    * Verifies that the trigger check follows {@link StringUtil#toLowerCase(CharSequence)},
    * the same mapping {@link RelationAnnotator} applies to the pivot form: a trigger is
    * accepted exactly when that mapping leaves it unchanged. The expectation is derived
-   * from the mapping itself rather than pinned per character, so this test asserts the
-   * contract that construction accepts exactly the forms a pivot can lowercase to, and it
-   * stays correct when the mapping's character set changes. The candidates include
-   * {@code Istanbul} written with the Turkish capital I with dot above (U+0130), whose
-   * JDK lowercasing expands beyond the per code point mapping, and the German sharp s,
-   * which is already lowercase while its uppercase form expands.
+   * from the mapping itself rather than pinned per character, so the test asserts the
+   * contract rather than one character table. The candidates cover {@code Istanbul}
+   * written with the Turkish capital I with dot above (U+0130), whose JDK lowercasing
+   * expands beyond the per code point mapping, the German sharp s, which is already
+   * lowercase while its uppercase form expands, and the supplementary-plane Deseret pair
+   * U+10400 and U+10428, so acceptance is asserted across surrogate pairs as well.
+   *
+   * @param candidate The trigger to construct a pattern with.
    */
-  @Test
-  void testTriggerCheckFollowsTheProjectCaseMapping() {
-    // the Deseret pair is supplementary-plane: capital long I, U+10400, lowercases to
-    // U+10428, so acceptance must follow the mapping across surrogate pairs as well
-    for (final String candidate : new String[] {"founded", "Founded",
-        DOTTED_CAPITAL_ISTANBUL, "istanbul", JDK_LOWERCASED_ISTANBUL, "STRASSE",
-        SHARP_S_STRASSE, "\uD801\uDC00", "\uD801\uDC28"}) {
-      final String message = "trigger acceptance for " + candidate
-          + " must follow StringUtil.toLowerCase";
-      if (StringUtil.toLowerCase(candidate).equals(candidate)) {
-        Assertions.assertEquals(candidate,
-            new RelationPattern("t", "<nsubj", candidate).trigger(), message);
-      } else {
-        Assertions.assertThrows(IllegalArgumentException.class,
-            () -> new RelationPattern("t", "<nsubj", candidate), message);
-      }
+  @ParameterizedTest
+  @ValueSource(strings = {"founded", "Founded", DOTTED_CAPITAL_ISTANBUL, "istanbul",
+      JDK_LOWERCASED_ISTANBUL, "STRASSE", SHARP_S_STRASSE, "\uD801\uDC00", "\uD801\uDC28"})
+  void testTriggerCheckFollowsTheProjectCaseMapping(String candidate) {
+    final String message = "trigger acceptance for " + candidate
+        + " must follow StringUtil.toLowerCase";
+    if (StringUtil.toLowerCase(candidate).equals(candidate)) {
+      Assertions.assertEquals(candidate,
+          new RelationPattern("t", "<nsubj", candidate).trigger(), message);
+    } else {
+      Assertions.assertThrows(IllegalArgumentException.class,
+          () -> new RelationPattern("t", "<nsubj", candidate), message);
     }
   }
 
@@ -222,12 +213,12 @@ public class RelationPatternTest {
   void testNoBreakSpaceOnlyValuesAreRejectedAsBlank() {
     final IllegalArgumentException path = Assertions.assertThrows(
         IllegalArgumentException.class,
-        () -> new RelationPattern("t", "\u00A0", null));
+        () -> new RelationPattern("t", String.valueOf(NBSP), null));
     Assertions.assertEquals("path must not be null or blank", path.getMessage());
 
     final IllegalArgumentException type = Assertions.assertThrows(
         IllegalArgumentException.class,
-        () -> new RelationPattern("\u00A0", "<nsubj", null));
+        () -> new RelationPattern(String.valueOf(NBSP), "<nsubj", null));
     Assertions.assertEquals("type must not be null or blank", type.getMessage());
   }
 
@@ -247,8 +238,8 @@ public class RelationPatternTest {
         + " against a single token: new york", spaced.getMessage());
 
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new RelationPattern("t", "<nsubj", "founded\u00A0"));
+        () -> new RelationPattern("t", "<nsubj", "founded" + NBSP));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new RelationPattern("t", "<nsubj", "\u00A0"));
+        () -> new RelationPattern("t", "<nsubj", String.valueOf(NBSP)));
   }
 }
