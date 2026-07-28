@@ -61,7 +61,7 @@ public class AssembleModelTool extends BasicCmdLineTool {
     try {
       result = ModelAssembler.assemble(modelDir.toPath());
     } catch (IllegalArgumentException e) {
-      throw new TerminateToolException(1, e.getMessage());
+      throw new TerminateToolException(1, e.getMessage(), e);
     } catch (IOException e) {
       throw new TerminateToolException(-1,
           "IO error while assembling " + modelDir + ": " + e.getMessage(), e);

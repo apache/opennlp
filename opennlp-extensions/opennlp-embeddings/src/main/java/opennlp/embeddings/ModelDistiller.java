@@ -58,14 +58,12 @@ public final class ModelDistiller {
   /** The fixed seed of the PCA range finder, so a distillation is reproducible. */
   private static final long PCA_SEED = 42;
 
-  /** The ONNX graph inside a teacher directory. */
-  private static final String ONNX_MODEL = "onnx/model.onnx";
-
   /** Not instantiable. */
   private ModelDistiller() {
   }
 
   /** Receives progress messages; the command-line tool prints them. */
+  @FunctionalInterface
   public interface ProgressListener {
 
     /**
@@ -107,6 +105,7 @@ public final class ModelDistiller {
    */
   public static Result distill(String teacher, Path outputDirectory, int pcaDims,
                                ProgressListener listener) throws IOException {
+    checkOutput(outputDirectory, pcaDims);
     return distill(HuggingFaceModelCache.resolve(teacher, listener), outputDirectory, pcaDims,
         listener);
   }
@@ -117,15 +116,18 @@ public final class ModelDistiller {
    * @param teacherDirectory The teacher's directory, holding {@code tokenizer.json} and
    *                         {@code onnx/model.onnx}. Must not be {@code null} and must be a
    *                         directory.
-   * @param outputDirectory  The model directory to write. Created when missing; an existing
-   *                         directory's distillation files are replaced. Must not be
-   *                         {@code null}.
+   * @param outputDirectory  The model directory to write. Created when missing. The four files
+   *                         a distillation produces are replaced, but files a previous run's
+   *                         assembly derived ({@code vocab.txt}, {@code tokenizer_config.json})
+   *                         are not, so distil into a fresh or emptied directory when the
+   *                         vocabulary or the dimension changes. A failure part way through
+   *                         leaves whatever was written so far. Must not be {@code null}.
    * @param pcaDims          The number of principal components to keep; clamped to the teacher's
    *                         hidden dimension, and skipped entirely when it would not reduce a
    *                         tiny vocabulary. Model2Vec's default (and the recommended value) is
    *                         256.
-   * @param listener         Receives one progress line per forward-pass batch; may be
-   *                         {@code null}.
+   * @param listener         Receives one progress line per distillation phase and one per
+   *                         forward-pass batch; may be {@code null}.
    * @return The distillation result, read back from the verified directory.
    * @throws IllegalArgumentException Thrown if an argument is {@code null} or invalid, the
    *     teacher directory lacks its files, or the teacher cannot be run.
@@ -141,23 +143,24 @@ public final class ModelDistiller {
       throw new IllegalArgumentException("Teacher directory does not exist or is not a "
           + "directory: " + teacherDirectory);
     }
-    if (outputDirectory == null) {
-      throw new IllegalArgumentException("OutputDirectory must not be null");
-    }
-    if (pcaDims < 1) {
-      throw new IllegalArgumentException("PcaDims must be at least 1, got " + pcaDims);
-    }
-    final Path onnxFile = teacherDirectory.resolve(ONNX_MODEL);
+    checkOutput(outputDirectory, pcaDims);
+    final Path onnxFile = teacherDirectory.resolve(ModelFileNames.ONNX_MODEL);
     if (!Files.isRegularFile(onnxFile)) {
       throw new IllegalArgumentException("Teacher directory " + teacherDirectory + " has no "
-          + ONNX_MODEL + "; the distillation runs the teacher's ONNX export, which "
+          + ModelFileNames.ONNX_MODEL + "; the distillation runs the teacher's ONNX export, which "
           + "sentence-transformers ship on the Hugging Face hub");
     }
     final TeacherTokenizer tokenizer = TeacherTokenizer.read(
         teacherDirectory.resolve(ModelFileNames.TOKENIZER_JSON),
         teacherDirectory.resolve(ModelFileNames.TOKENIZER_CONFIG));
     final int rows = tokenizer.vocabularySize();
+    if (rows < 1) {
+      throw new IllegalArgumentException("Teacher directory " + teacherDirectory + " has no "
+          + "vocabulary token left after cleaning; there is nothing to distill");
+    }
 
+    report(listener, "Encoding " + rows + " vocabulary tokens of " + teacherDirectory
+        + " through its ONNX graph");
     final float[] embeddings;
     final int teacherDimension;
     try (OnnxTeacherEncoder encoder = OnnxTeacherEncoder.load(onnxFile)) {
@@ -178,24 +181,27 @@ public final class ModelDistiller {
               teacherDimension);
         }
         row += batchSize;
-        if (listener != null) {
-          listener.progress("Encoded " + row + " / " + rows + " vocabulary tokens");
-        }
+        report(listener, "Encoded " + row + " / " + rows + " vocabulary tokens");
       }
     }
-    nanToZero(embeddings);
+    nonFiniteToZero(embeddings);
 
-    final int components = Math.min(pcaDims, teacherDimension);
+    final int requested = Math.min(pcaDims, teacherDimension);
     final float[] transformed;
+    final int components;
     double explainedVarianceRatio = 1.0;
-    if (components >= rows) {
+    if (requested >= rows) {
       // A PCA with more components than rows is not a reduction; Model2Vec skips it with a
-      // warning. Only reachable for toy vocabularies.
+      // warning. Only reachable for toy vocabularies, which then keep the teacher's dimension.
       transformed = embeddings;
+      components = teacherDimension;
     } else {
+      report(listener, "Reducing " + rows + " x " + teacherDimension + " to " + requested
+          + " principal components");
       final RandomizedPca.Result pca = RandomizedPca.fitTransform(embeddings, rows,
-          teacherDimension, components, PCA_SEED);
+          teacherDimension, requested, PCA_SEED);
       transformed = pca.transformed();
+      components = requested;
       explainedVarianceRatio = pca.explainedVarianceRatio();
     }
     final float[] weights = zipfWeights(rows, SIF_COEFFICIENT);
@@ -207,6 +213,7 @@ public final class ModelDistiller {
       }
     }
 
+    report(listener, "Writing and verifying the model directory " + outputDirectory);
     Files.createDirectories(outputDirectory);
     SafetensorsWriter.writeMatrix(outputDirectory.resolve(ModelFileNames.SAFETENSORS), rows,
         components, transformed);
@@ -217,6 +224,36 @@ public final class ModelDistiller {
     final ModelAssembler.Result assembled = ModelAssembler.assemble(outputDirectory);
     return new Result(assembled.family(), assembled.vocabularySize(), teacherDimension,
         assembled.dimension(), explainedVarianceRatio);
+  }
+
+  /**
+   * Validates the arguments that do not depend on the teacher, so that a distillation naming a
+   * hub teacher fails before it downloads anything.
+   *
+   * @param outputDirectory The model directory to write.
+   * @param pcaDims         The number of principal components to keep.
+   * @throws IllegalArgumentException Thrown if the directory is {@code null} or {@code pcaDims}
+   *     is below 1.
+   */
+  private static void checkOutput(Path outputDirectory, int pcaDims) {
+    if (outputDirectory == null) {
+      throw new IllegalArgumentException("OutputDirectory must not be null");
+    }
+    if (pcaDims < 1) {
+      throw new IllegalArgumentException("PcaDims must be at least 1, got " + pcaDims);
+    }
+  }
+
+  /**
+   * Reports one progress line, if anyone is listening.
+   *
+   * @param listener The listener; may be {@code null}.
+   * @param message  The message.
+   */
+  private static void report(ProgressListener listener, String message) {
+    if (listener != null) {
+      listener.progress(message);
+    }
   }
 
   /**
@@ -241,14 +278,16 @@ public final class ModelDistiller {
   }
 
   /**
-   * Replaces NaN values with zero, Model2Vec's {@code nan_to_num} guard against a teacher
-   * emitting a non-finite hidden state.
+   * Replaces non-finite values with zero, the guard against a teacher emitting a NaN or infinite
+   * hidden state. Model2Vec applies numpy's {@code nan_to_num} here, which maps an infinity to the
+   * largest finite float; zero is used instead because an infinity of that magnitude still leaves
+   * the principal component analysis with nothing but that one row.
    *
    * @param values The matrix, modified in place.
    */
-  private static void nanToZero(float[] values) {
+  private static void nonFiniteToZero(float[] values) {
     for (int i = 0; i < values.length; i++) {
-      if (Float.isNaN(values[i])) {
+      if (!Float.isFinite(values[i])) {
         values[i] = 0;
       }
     }

@@ -25,13 +25,15 @@ This module loads static embedding tables and, with the `DistillModel` command, 
 opennlp-embeddings DistillModel -teacher BAAI/bge-m3 -out bge-m3-static -pcaDims 256
 ```
 
-`-teacher` is a Hugging Face model id (its `tokenizer.json`, `tokenizer_config.json`, and `onnx/model.onnx` download once into `~/.cache/opennlp-embeddings`) or a local directory holding those files. `-pcaDims` defaults to 256. For a SentencePiece teacher like bge-m3 the trained `sentencepiece.bpe.model` is fetched alongside, because the static table keeps the teacher's segmentation. The command ends by completing the directory (the `AssembleModel` step) and verifying it by loading it, so a run that prints a summary is a directory that works.
+`-teacher` is a Hugging Face model id (its `tokenizer.json`, `tokenizer_config.json`, `onnx/model.onnx`, and, for an export that splits its weights out, `onnx/model.onnx_data` download once into `~/.cache/opennlp-embeddings/<org>-<model>`) or a local directory holding those files. `-pcaDims` defaults to 256. For a SentencePiece teacher like bge-m3 the trained `sentencepiece.bpe.model` is fetched alongside, because the static table keeps the teacher's segmentation. The command ends by completing the directory (the `AssembleModel` step) and verifying it by loading it, so a run that prints a summary is a directory that works.
+
+Distil into a fresh directory. The command replaces the files it writes itself, but the assembly step never overwrites a `vocab.txt` or `tokenizer_config.json` an earlier run left behind, and a run that fails part way through leaves whatever it had written.
 
 bge-m3 is an [XLM-RoBERTa](https://arxiv.org/abs/1911.02116)/SentencePiece model with a 250k multilingual vocabulary, native dimension 1024.
 
 ### On the dimension
 
-`pcaDims` is the one quality knob worth thinking about, and bigger is not better. Distilling bge-m3 at 256 and at 512 gives the same cross-lingual similarity within noise (English/Chinese paraphrase around 0.69 either way), while 512 doubles the matrix on disk and in memory and cuts embedding throughput. PCA to 256 already captures the useful variance of the teacher; the extra dimensions are mostly noise that dilutes the signal. 256 is a good default, and it is where the reference potion tables sit too.
+`pcaDims` is the one quality knob worth thinking about, and bigger is not better. Distilling bge-m3 at 256 and at 512 gives the same cross-lingual similarity within noise (English/Chinese paraphrase around 0.69 either way), while 512 doubles the matrix on disk and in memory and cuts embedding throughput. PCA to 256 already captures the useful variance of the teacher; the extra dimensions are mostly noise that dilutes the signal. 256 is a good default, and it is where the reference Model2Vec tables (the MinishLab "potion" series) sit too.
 
 ## 2. Assemble the model directory
 
@@ -76,7 +78,7 @@ Two tables distilled independently from the same teacher (one with this command,
 
 A WordPiece teacher (a BERT-family model such as bge-large-en) distills the same way. Its directory layout is the BERT one instead: `vocab.txt` (one token per line, line number is the row), `model.safetensors`, `config.json`, and `tokenizer_config.json` (whose `do_lower_case` sets the casing). `load` detects WordPiece from the presence of `vocab.txt`.
 
-A distillation writes `tokenizer.json` rather than a `vocab.txt` for these, so run `AssembleModel` on the output directory: it derives `vocab.txt` from the `tokenizer.json` vocabulary in id order and `tokenizer_config.json` from the normalizer's lowercase flag.
+A distillation writes `tokenizer.json` rather than a `vocab.txt`, so the two BERT files are derived: `vocab.txt` from the `tokenizer.json` vocabulary in id order, `tokenizer_config.json` from the normalizer's lowercase flag (absent, it defaults to lower-casing). `DistillModel` does this itself as its final step; `AssembleModel` is the same step run on its own, for a directory assembled by hand.
 
 ## Where a table's license comes from
 
