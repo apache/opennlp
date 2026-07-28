@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * feed the expander, and the Morphy lemmatizer bridges inflected input, exercising the whole
  * stack the way a consumer wires it.
  */
-class LexicalExpanderLexiconTest {
+public class LexicalExpanderLexiconTest {
 
   @Test
   void testExpansionOverTheWnLmfLexicon() {

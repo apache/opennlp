@@ -138,9 +138,9 @@ public final class LexicalExpander {
   /**
    * Starts a builder.
    *
-   * @param lexicon The knowledge base to expand against; must not be null.
+   * @param lexicon The knowledge base to expand against. Must not be {@code null}.
    * @return A builder with the default configuration.
-   * @throws IllegalArgumentException Thrown if {@code lexicon} is null.
+   * @throws IllegalArgumentException Thrown if {@code lexicon} is {@code null}.
    */
   public static Builder builder(LexicalKnowledgeBase lexicon) {
     return new Builder(lexicon);
@@ -149,16 +149,16 @@ public final class LexicalExpander {
   /**
    * Expands a term for one part of speech.
    *
-   * @param term The term to expand; must not be null or blank.
-   * @param pos  The part of speech to expand as; must not be null.
+   * @param term The term to expand. Must not be {@code null} or blank.
+   * @param pos  The part of speech to expand as. Must not be {@code null}.
    * @return The expansions, deduplicated and ordered by descending weight; empty when the term
    *     (and its lemma, when a lemmatizer is configured) is not in the lexicon.
-   * @throws IllegalArgumentException Thrown if {@code term} is null or blank or {@code pos} is
-   *     null.
+   * @throws IllegalArgumentException Thrown if {@code term} is {@code null} or blank or
+   *     {@code pos} is {@code null}.
    */
   public List<Expansion> expand(String term, WordNetPOS pos) {
     if (pos == null) {
-      throw new IllegalArgumentException("The pos must not be null.");
+      throw new IllegalArgumentException("pos must not be null");
     }
     return collect(term, List.of(pos));
   }
@@ -166,10 +166,10 @@ public final class LexicalExpander {
   /**
    * Expands a term across all parts of speech.
    *
-   * @param term The term to expand; must not be null or blank.
+   * @param term The term to expand. Must not be {@code null} or blank.
    * @return The expansions across every part of speech, deduplicated and ordered by descending
    *     weight; empty when the term is not in the lexicon.
-   * @throws IllegalArgumentException Thrown if {@code term} is null or blank.
+   * @throws IllegalArgumentException Thrown if {@code term} is {@code null} or blank.
    */
   public List<Expansion> expand(String term) {
     return collect(term, List.of(WordNetPOS.values()));
@@ -186,7 +186,7 @@ public final class LexicalExpander {
    */
   private List<Expansion> collect(String term, List<WordNetPOS> poses) {
     if (term == null || StringUtil.isBlank(term)) {
-      throw new IllegalArgumentException("The term must not be null or blank.");
+      throw new IllegalArgumentException("term must not be null or blank");
     }
     final Map<String, Expansion> best = new HashMap<>();
     final Set<String> excluded = new HashSet<>();
@@ -255,9 +255,7 @@ public final class LexicalExpander {
   private void expandSense(Synset sense, int rank, double senseWeight,
                            Map<String, Expansion> best, Set<String> excluded) {
     if (senseWeight == 0.0) {
-      // The decay product underflowed to zero in double arithmetic. A zero weight
-      // carries no ranking signal, so the sense and everything derived from it is
-      // dropped instead of emitted outside the documented (0, 1] weight range.
+      // Underflowed to zero: no ranking signal left, and zero is outside the documented range.
       return;
     }
     for (final String lemma : sense.lemmas()) {
@@ -316,7 +314,7 @@ public final class LexicalExpander {
    * @param synset The synset whose hypernyms are collected. Must not be {@code null}.
    * @return The hypernym synset ids in source order, direct relations first.
    */
-  private static List<String> hypernymsOf(Synset synset) {
+  private List<String> hypernymsOf(Synset synset) {
     final List<String> direct = synset.related(WordNetRelation.HYPERNYM);
     final List<String> instance = synset.related(WordNetRelation.INSTANCE_HYPERNYM);
     if (instance.isEmpty()) {
@@ -337,8 +335,8 @@ public final class LexicalExpander {
    * @param excluded  The folded terms that are never reported.
    * @param candidate The expansion to offer. Must not be {@code null}.
    */
-  private static void offer(Map<String, Expansion> best, Set<String> excluded,
-                            Expansion candidate) {
+  private void offer(Map<String, Expansion> best, Set<String> excluded,
+                     Expansion candidate) {
     final String key = LemmaFolding.fold(candidate.term());
     if (excluded.contains(key)) {
       return;
@@ -365,11 +363,11 @@ public final class LexicalExpander {
      * Creates a builder over the given lexicon; use {@link LexicalExpander#builder}.
      *
      * @param lexicon The knowledge base to expand against. Must not be {@code null}.
-     * @throws IllegalArgumentException Thrown if {@code lexicon} is null.
+     * @throws IllegalArgumentException Thrown if {@code lexicon} is {@code null}.
      */
     private Builder(LexicalKnowledgeBase lexicon) {
       if (lexicon == null) {
-        throw new IllegalArgumentException("The lexicon must not be null.");
+        throw new IllegalArgumentException("lexicon must not be null");
       }
       this.lexicon = lexicon;
     }
@@ -378,13 +376,13 @@ public final class LexicalExpander {
      * Configures a lemmatizer used when the input term itself is not in the lexicon. It is
      * invoked with the {@link WordNetPOS} name as the tag.
      *
-     * @param lemmatizer The fallback lemmatizer; must not be null.
+     * @param lemmatizer The fallback lemmatizer. Must not be {@code null}.
      * @return This builder.
-     * @throws IllegalArgumentException Thrown if {@code lemmatizer} is null.
+     * @throws IllegalArgumentException Thrown if {@code lemmatizer} is {@code null}.
      */
     public Builder lemmatizer(Lemmatizer lemmatizer) {
       if (lemmatizer == null) {
-        throw new IllegalArgumentException("The lemmatizer must not be null.");
+        throw new IllegalArgumentException("lemmatizer must not be null");
       }
       this.lemmatizer = lemmatizer;
       return this;
@@ -399,7 +397,7 @@ public final class LexicalExpander {
      */
     public Builder maxSenses(int maxSenses) {
       if (maxSenses < 1) {
-        throw new IllegalArgumentException("The maxSenses must be positive: " + maxSenses);
+        throw new IllegalArgumentException("maxSenses must be positive: " + maxSenses);
       }
       this.maxSenses = maxSenses;
       return this;
@@ -415,7 +413,7 @@ public final class LexicalExpander {
     public Builder hypernymDepth(int hypernymDepth) {
       if (hypernymDepth < 0) {
         throw new IllegalArgumentException(
-            "The hypernymDepth must not be negative: " + hypernymDepth);
+            "hypernymDepth must not be negative: " + hypernymDepth);
       }
       this.hypernymDepth = hypernymDepth;
       return this;
@@ -442,7 +440,7 @@ public final class LexicalExpander {
     public Builder maxExpansions(int maxExpansions) {
       if (maxExpansions < 1) {
         throw new IllegalArgumentException(
-            "The maxExpansions must be positive: " + maxExpansions);
+            "maxExpansions must be positive: " + maxExpansions);
       }
       this.maxExpansions = maxExpansions;
       return this;
@@ -458,7 +456,7 @@ public final class LexicalExpander {
     public Builder senseDecay(double senseDecay) {
       if (!(senseDecay > 0 && senseDecay <= 1)) {
         throw new IllegalArgumentException(
-            "The senseDecay must be in (0, 1]: " + senseDecay);
+            "senseDecay must be in (0, 1]: " + senseDecay);
       }
       this.senseDecay = senseDecay;
       return this;
@@ -474,7 +472,7 @@ public final class LexicalExpander {
     public Builder depthDecay(double depthDecay) {
       if (!(depthDecay > 0 && depthDecay <= 1)) {
         throw new IllegalArgumentException(
-            "The depthDecay must be in (0, 1]: " + depthDecay);
+            "depthDecay must be in (0, 1]: " + depthDecay);
       }
       this.depthDecay = depthDecay;
       return this;
