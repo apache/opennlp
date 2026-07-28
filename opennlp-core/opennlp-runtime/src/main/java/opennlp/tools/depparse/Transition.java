@@ -69,7 +69,6 @@ public record Transition(Type type, String label) {
     }
   }
 
-
   /**
    * Creates a left-arc transition.
    *

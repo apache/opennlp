@@ -44,12 +44,14 @@ public class DependencyParserME implements DependencyParser {
 
   private final MaxentModel model;
   private final DependencyContextGenerator contextGenerator;
+  private final Transition[] transitions;
 
   /**
    * Initializes a {@link DependencyParserME} from a {@link DependencyModel}.
    *
    * @param model The model to parse with. Must not be {@code null}.
-   * @throws IllegalArgumentException Thrown if {@code model} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null} or an
+   *         outcome of the model does not decode to a transition.
    */
   public DependencyParserME(DependencyModel model) {
     if (model == null) {
@@ -57,13 +59,15 @@ public class DependencyParserME implements DependencyParser {
     }
     this.model = model.getParserModel();
     this.contextGenerator = new DependencyContextGenerator();
+    this.transitions = decodeOutcomes(this.model);
   }
 
   /**
    * Initializes a {@link DependencyParserME} with a raw transition model.
    *
    * @param model The transition classification model. Must not be {@code null}.
-   * @throws IllegalArgumentException Thrown if {@code model} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code model} is {@code null} or an
+   *         outcome of the model does not decode to a transition.
    */
   public DependencyParserME(MaxentModel model) {
     if (model == null) {
@@ -71,6 +75,29 @@ public class DependencyParserME implements DependencyParser {
     }
     this.model = model;
     this.contextGenerator = new DependencyContextGenerator();
+    this.transitions = decodeOutcomes(model);
+  }
+
+  /**
+   * Decodes the outcome inventory once, so that decoding a sentence indexes it instead
+   * of parsing an outcome string per configuration and outcome.
+   *
+   * @param model The transition classification model.
+   * @return The transitions by outcome index. Never {@code null}.
+   * @throws IllegalArgumentException Thrown if an outcome does not decode to a
+   *         transition, which means the model is not a dependency parser model.
+   */
+  private static Transition[] decodeOutcomes(MaxentModel model) {
+    final Transition[] decoded = new Transition[model.getNumOutcomes()];
+    for (int i = 0; i < decoded.length; i++) {
+      final String outcome = model.getOutcome(i);
+      try {
+        decoded[i] = Transition.decode(outcome);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("model outcome is not a transition: " + outcome, e);
+      }
+    }
+    return decoded;
   }
 
   @Override
@@ -104,15 +131,8 @@ public class DependencyParserME implements DependencyParser {
       if (probabilities[i] <= bestProbability) {
         continue;
       }
-      final Transition candidate;
-      try {
-        candidate = Transition.decode(model.getOutcome(i));
-      } catch (IllegalArgumentException e) {
-        throw new IllegalStateException(
-            "model outcome is not a transition: " + model.getOutcome(i), e);
-      }
-      if (state.canApply(candidate)) {
-        best = candidate;
+      if (state.canApply(transitions[i])) {
+        best = transitions[i];
         bestProbability = probabilities[i];
       }
     }
