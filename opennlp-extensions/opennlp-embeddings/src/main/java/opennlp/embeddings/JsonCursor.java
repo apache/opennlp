@@ -18,8 +18,9 @@ package opennlp.embeddings;
 
 /**
  * Cursor primitives shared by this package's purpose-built JSON readers
- * ({@link SafetensorsHeaderParser}, {@link FlatJsonFields}): string and integer scalars,
- * literals, whitespace, and skipping one value of any type. Deliberately not a general JSON
+ * ({@link SafetensorsHeaderParser}, {@link FlatJsonFields}, {@link TokenizerJsonVocab},
+ * {@link ModelAssembler}): string and integer scalars, literals, whitespace, and skipping one
+ * value of any type. Deliberately not a general JSON
  * library: no floating-point decoding, no document model; each reader drives the cursor over
  * its own known-shape input and fails loud on anything else, with the input's name and the
  * offending offset in every message.
@@ -47,6 +48,11 @@ final class JsonCursor {
     while (position < text.length() && Character.isWhitespace(text.charAt(position))) {
       position++;
     }
+  }
+
+  /** {@return the cursor's current offset into the text, for readers that capture raw spans} */
+  int position() {
+    return position;
   }
 
   /**
@@ -85,7 +91,13 @@ final class JsonCursor {
     }
   }
 
-  /** Consumes the given literal (e.g. {@code "true"}) if it starts here; returns whether. */
+  /**
+   * Consumes the given literal (for example {@code "true"}) when it starts at the cursor,
+   * leaving the cursor untouched when it does not.
+   *
+   * @param literal The literal to match.
+   * @return {@code true} when the literal was consumed.
+   */
   boolean consumeLiteral(String literal) {
     if (text.startsWith(literal, position)) {
       position += literal.length();
@@ -94,7 +106,12 @@ final class JsonCursor {
     return false;
   }
 
-  /** Requires the rest of the input to be whitespace only. */
+  /**
+   * Requires the rest of the input to be whitespace only.
+   *
+   * @param message What to report when other content follows.
+   * @throws IllegalArgumentException Thrown if non-whitespace content follows the cursor.
+   */
   void requireEnd(String message) {
     skipWhitespace();
     if (position < text.length()) {

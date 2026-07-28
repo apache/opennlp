@@ -54,6 +54,12 @@ final class SafetensorsTestFiles {
     return new Tensor(name, new int[] {rows.length, dimension}, values);
   }
 
+  /**
+   * {@return a tensor of the given 1-D values}
+   *
+   * @param name   The tensor name.
+   * @param values The values.
+   */
   static Tensor vector(String name, float[] values) {
     return new Tensor(name, new int[] {values.length}, values);
   }
@@ -61,6 +67,10 @@ final class SafetensorsTestFiles {
   /**
    * Writes a safetensors file holding the given tensors as {@code F32}, header first, data in
    * declaration order.
+   *
+   * @param file    The file to write.
+   * @param tensors The tensors, in the order they should appear in the header and data.
+   * @throws IOException Thrown if writing the file fails.
    */
   static void write(Path file, Tensor... tensors) throws IOException {
     write(file, "F32", tensors);
@@ -70,6 +80,12 @@ final class SafetensorsTestFiles {
    * Writes a safetensors file encoding each tensor value as {@code dtype}, one of {@code F32},
    * {@code F16} (IEEE half), or {@code BF16} (bfloat16). The {@link Tensor} values stay
    * {@code float}; they are converted to the target dtype's bytes here.
+   *
+   * @param file    The file to write.
+   * @param dtype   The dtype to encode every value as.
+   * @param tensors The tensors, in the order they should appear in the header and data.
+   * @throws IllegalArgumentException Thrown if {@code dtype} is not one of the three supported.
+   * @throws IOException Thrown if writing the file fails.
    */
   static void write(Path file, String dtype, Tensor... tensors) throws IOException {
     final int elementBytes = switch (dtype) {

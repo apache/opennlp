@@ -71,7 +71,7 @@ class SentenceVectorsDLEmbedderTest {
   void testEmbedderContractOverARealSession(@TempDir Path dir) throws Exception {
     try (SentenceVectorsDL vectors = new SentenceVectorsDL(model(dir), vocab(dir))) {
 
-      // The original entry point is untouched by the interface adoption.
+      // The primary entry point, against which the adapter below is compared.
       assertArrayEquals(CLS_VECTOR, vectors.getVectors("hello world"), 1e-5f);
 
       final TextEmbedder embedder = vectors;

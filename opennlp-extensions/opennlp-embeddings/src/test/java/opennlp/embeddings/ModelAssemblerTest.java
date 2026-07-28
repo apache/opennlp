@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import opennlp.embeddings.cmdline.AssembleModelTool;
+import opennlp.subword.sentencepiece.SentencePieceTokenizer;
 import opennlp.tools.cmdline.TerminateToolException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -148,15 +149,16 @@ class ModelAssemblerTest {
     Files.writeString(dir.resolve("config.json"), "{\"normalize\":false}");
     // A tokenizer.json whose vocab is the model's own poolable pieces, so the coverage check
     // passes; the matrix carries one row per piece.
-    final opennlp.subword.sentencepiece.SentencePieceTokenizer tokenizer =
-        opennlp.subword.sentencepiece.SentencePieceTokenizer.load(dir.resolve("sentencepiece.bpe.model"));
+    final SentencePieceTokenizer tokenizer =
+        SentencePieceTokenizer.load(dir.resolve("sentencepiece.bpe.model"));
     final StringBuilder vocab = new StringBuilder("{\"model\":{\"type\":\"Unigram\",\"vocab\":[");
     int rows = 0;
     for (int id = 0; id < tokenizer.vocabularySize(); id++) {
       if (rows > 0) {
         vocab.append(',');
       }
-      vocab.append('[').append(jsonString(tokenizer.idToPiece(id))).append(",-1.0]");
+      vocab.append('[').append(EmbeddingTestFixtures.jsonString(tokenizer.idToPiece(id)))
+          .append(",-1.0]");
       rows++;
     }
     vocab.append("]}}");
@@ -183,24 +185,5 @@ class ModelAssemblerTest {
         () -> new AssembleModelTool().run(new String[] {"-modelDir", empty.toString()}));
     assertTrue(e.getMessage().contains("tokenizer.json") || e.getMessage().contains("distilled"),
         e.getMessage());
-  }
-
-  private static String jsonString(String s) {
-    final StringBuilder out = new StringBuilder("\"");
-    for (int i = 0; i < s.length(); i++) {
-      final char c = s.charAt(i);
-      switch (c) {
-        case '"' -> out.append("\\\"");
-        case '\\' -> out.append("\\\\");
-        default -> {
-          if (c < 0x20) {
-            out.append(String.format("\\u%04x", (int) c));
-          } else {
-            out.append(c);
-          }
-        }
-      }
-    }
-    return out.append('"').toString();
   }
 }

@@ -48,6 +48,7 @@ public final class CLI {
     final List<CmdLineTool> tools = new LinkedList<>();
 
     tools.add(new AssembleModelTool());
+    tools.add(new DistillModelTool());
 
     for (CmdLineTool tool : tools) {
       toolLookupMap.put(tool.getName(), tool);

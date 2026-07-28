@@ -40,8 +40,8 @@
   <modules>
     <module>opennlp-embeddings</module>
     <module>opennlp-morfologik</module>
-    <module>opennlp-subword</module>
     <module>opennlp-spellcheck</module>
+    <module>opennlp-subword</module>
     <module>opennlp-uima</module>
   </modules>
 

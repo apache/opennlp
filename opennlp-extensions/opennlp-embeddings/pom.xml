@@ -52,6 +52,13 @@
       <artifactId>opennlp-cli</artifactId>
     </dependency>
 
+    <!-- Runs the teacher's ONNX graph during distillation (same engine as opennlp-dl). -->
+    <dependency>
+      <groupId>com.microsoft.onnxruntime</groupId>
+      <artifactId>onnxruntime</artifactId>
+      <version>${onnxruntime.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>

@@ -16,11 +16,7 @@
  */
 package opennlp.embeddings;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -261,31 +257,10 @@ class StaticEmbeddingModelTest {
   @Test
   void testLoadRejectsWeightsSizeMismatch(@TempDir Path dir) throws IOException {
     // A weights tensor sized for a different (smaller) vocabulary than the embedding matrix.
-    final ByteArrayOutputStream data = new ByteArrayOutputStream();
-    final ByteBuffer embeddingBuffer =
-        ByteBuffer.allocate(ROWS.length * DIMENSION * 4).order(ByteOrder.LITTLE_ENDIAN);
-    for (final float[] row : ROWS) {
-      for (final float value : row) {
-        embeddingBuffer.putFloat(value);
-      }
-    }
-    final byte[] embeddingBytes = embeddingBuffer.array();
-    data.write(embeddingBytes);
-    final byte[] weightBytes = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
-        .putFloat(1f).array();
-    data.write(weightBytes);
-    final String header = "{\"embeddings\":{\"dtype\":\"F32\",\"shape\":[" + ROWS.length + ","
-        + DIMENSION + "],\"data_offsets\":[0," + embeddingBytes.length + "]},"
-        + "\"weights\":{\"dtype\":\"F32\",\"shape\":[1],\"data_offsets\":["
-        + embeddingBytes.length + "," + (embeddingBytes.length + weightBytes.length) + "]}}";
-    final byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    out.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
-        .putLong(headerBytes.length).array());
-    out.write(headerBytes);
-    out.write(data.toByteArray());
     final Path file = dir.resolve("mismatched.safetensors");
-    Files.write(file, out.toByteArray());
+    SafetensorsTestFiles.write(file,
+        SafetensorsTestFiles.matrix("embeddings", ROWS),
+        SafetensorsTestFiles.vector("weights", new float[] {1f}));
 
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> StaticEmbeddingModel.load(writeVocab(dir), file, Casing.UNCASED, Normalization.NONE));
