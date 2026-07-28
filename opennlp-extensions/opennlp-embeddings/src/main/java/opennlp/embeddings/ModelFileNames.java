@@ -16,6 +16,8 @@
  */
 package opennlp.embeddings;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -45,6 +47,23 @@ final class ModelFileNames {
   /** The file names SentencePiece models ship their trained {@code .model} under, in try order. */
   static final List<String> SENTENCEPIECE_MODELS =
       List.of("sentencepiece.bpe.model", "spiece.model", "tokenizer.model");
+
+  /**
+   * {@return the first of the given file names that exists as a regular file in the directory,
+   * or {@code null} when none does}
+   *
+   * @param directory The directory to look in.
+   * @param names     The file names to try, in order.
+   */
+  static Path firstRegularFile(Path directory, List<String> names) {
+    for (final String name : names) {
+      final Path file = directory.resolve(name);
+      if (Files.isRegularFile(file)) {
+        return file;
+      }
+    }
+    return null;
+  }
 
   /** Not instantiable. */
   private ModelFileNames() {

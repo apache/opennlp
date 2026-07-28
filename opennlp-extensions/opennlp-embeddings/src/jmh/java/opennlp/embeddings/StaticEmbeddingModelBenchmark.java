@@ -46,14 +46,13 @@ import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+
 import opennlp.embeddings.StaticEmbeddingModel.Casing;
 import opennlp.embeddings.StaticEmbeddingModel.Normalization;
 
 /**
- * JMH benchmark for {@link StaticEmbeddingModel}, the raw-lookup-throughput number the module's
- * design doc calls for before any "faster than Python" claim is made (a concurrent gRPC-traffic
- * comparison against a Python baseline is a separate, later benchmark; this one is the JVM-only
- * baseline).
+ * JMH benchmark for {@link StaticEmbeddingModel}: single-JVM embedding and neighbor-scan
+ * throughput.
  *
  * <p>The {@code modelDir} parameter selects the table to benchmark. Its default,
  * {@code "synthetic"}, builds a fixture sized to {@code minishlab/potion-base-8M} (29,528 rows,
@@ -73,8 +72,7 @@ public class StaticEmbeddingModelBenchmark {
   /** The synthetic-fixture selector; any other value is treated as a model directory path. */
   private static final String SYNTHETIC = "synthetic";
 
-  // Matches minishlab/potion-base-8M's config.json (hidden_dim) and its reported total
-  // parameter count (7,559,168 / 256), verified against the real model repo, not guessed.
+  // Matches minishlab/potion-base-8M: hidden_dim 256 and 7,559,168 / 256 = 29,528 rows.
   private static final int VOCAB_SIZE = 29_528;
   private static final int DIMENSION = 256;
 

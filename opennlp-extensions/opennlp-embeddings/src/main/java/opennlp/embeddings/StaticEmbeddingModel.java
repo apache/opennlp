@@ -156,7 +156,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
     if (Files.isRegularFile(vocabularyFile)) {
       return loadWordpieceDirectory(modelDirectory, vocabularyFile);
     }
-    final Path sentencePieceModelFile = firstRegularFile(modelDirectory,
+    final Path sentencePieceModelFile = ModelFileNames.firstRegularFile(modelDirectory,
         ModelFileNames.SENTENCEPIECE_MODELS);
     final Path tokenizerJsonFile = modelDirectory.resolve(ModelFileNames.TOKENIZER_JSON);
     if (sentencePieceModelFile != null && Files.isRegularFile(tokenizerJsonFile)) {
@@ -228,23 +228,6 @@ public final class StaticEmbeddingModel implements TextEmbedder {
           + "use the explicit load overloads and choose the normalization deliberately");
     }
     return normalize ? Normalization.L2 : Normalization.NONE;
-  }
-
-  /**
-   * {@return the first of the given file names that exists as a regular file in the directory,
-   * or {@code null} when none does}
-   *
-   * @param directory The directory to look in.
-   * @param names     The file names to try, in order.
-   */
-  private static Path firstRegularFile(Path directory, List<String> names) {
-    for (final String name : names) {
-      final Path file = directory.resolve(name);
-      if (Files.isRegularFile(file)) {
-        return file;
-      }
-    }
-    return null;
   }
 
   /**
@@ -703,7 +686,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @param topK The requested result count.
    * @throws IllegalArgumentException Thrown if {@code topK} is less than 1.
    */
-  private static void requirePositive(int topK) {
+  private void requirePositive(int topK) {
     if (topK < 1) {
       throw new IllegalArgumentException("TopK must be at least 1, got " + topK);
     }
@@ -802,7 +785,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    * @param a The first vector.
    * @param b The second vector, of the same length as {@code a}.
    */
-  private static double cosineSimilarity(float[] a, float[] b) {
+  private double cosineSimilarity(float[] a, float[] b) {
     double dot = 0;
     double normASquared = 0;
     double normBSquared = 0;
@@ -820,7 +803,7 @@ public final class StaticEmbeddingModel implements TextEmbedder {
    *
    * @param vector The vector to measure.
    */
-  private static double norm(float[] vector) {
+  private double norm(float[] vector) {
     double sumOfSquares = 0;
     for (final float value : vector) {
       sumOfSquares += (double) value * value;

@@ -178,7 +178,7 @@ Here `dot` is any dot product over two float arrays. For a full retrieval-augmen
 
 ## Getting a model
 
-No model is bundled. Point the module at files you download, and the table's own license applies to the table. The Model2Vec distilled releases (for example potion-base-8M) publish the exact directory layout the one-argument `load` expects: download that release's `vocab.txt`, `model.safetensors`, `config.json`, and `tokenizer_config.json` into one directory and pass the directory to `load`.
+No model is bundled. Point the module at files you download, and the table's own license applies to the table. The Model2Vec distilled releases (for example potion-base-8M) publish the exact directory layout the one-argument `load` expects: download that release's `vocab.txt`, `model.safetensors`, `config.json`, and `tokenizer_config.json` into one directory and pass the directory to `load`. Or distill your own teacher with the module's `DistillModel` command (see `TRAINING.md`).
 
 For a multilingual SentencePiece table (for example one distilled from a bge-m3 or XLM-RoBERTa teacher), the distillation output ships `tokenizer.json`, `model.safetensors`, and `config.json` but usually not the trained SentencePiece `.model` file; copy that one file from the teacher model's own repository (it is named `sentencepiece.bpe.model` there) into the same directory. The loader tells you exactly this if the file is missing.
 

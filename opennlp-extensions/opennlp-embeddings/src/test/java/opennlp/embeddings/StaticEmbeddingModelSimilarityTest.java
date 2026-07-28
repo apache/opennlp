@@ -16,11 +16,7 @@
  */
 package opennlp.embeddings;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -38,45 +34,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Exercises {@link StaticEmbeddingModel#similarity}, {@link StaticEmbeddingModel#mostSimilar},
- * and {@link StaticEmbeddingModel#analogy} against a small fixture whose vectors point in
- * genuinely different directions (unlike {@link StaticEmbeddingModelTest}'s collinear rows,
- * which are ideal for pooling-math assertions but would make every pairwise cosine similarity
- * trivially 1.0). The fixture is built so the classic word2vec analogy has an exact answer:
- * {@code king - man + woman == queen}.
+ * and {@link StaticEmbeddingModel#analogy} against {@link EmbeddingTestFixtures}' analogy table,
+ * whose vectors point in genuinely different directions (unlike {@link StaticEmbeddingModelTest}'s
+ * collinear rows, which are ideal for pooling-math assertions but would make every pairwise cosine
+ * similarity trivially 1.0).
  */
 class StaticEmbeddingModelSimilarityTest {
 
-  private static final List<String> VOCAB_TOKENS =
-      List.of("[CLS]", "[SEP]", "[UNK]", "king", "queen", "man", "woman", "apple");
-  private static final int DIMENSION = 2;
-
-  // king - man + woman = [3,3] - [2,1] + [1,2] = [2,4] = queen, exactly.
-  private static final float[][] ROWS = {
-      {0f, 0f},   // [CLS]
-      {0f, 0f},   // [SEP]
-      {0f, 0f},   // [UNK]
-      {3f, 3f},   // king
-      {2f, 4f},   // queen
-      {2f, 1f},   // man
-      {1f, 2f},   // woman
-      {-3f, -1f}, // apple: unrelated, opposite-ish direction
-  };
-
-  private static Path writeVocab(Path dir) throws IOException {
-    final Path file = dir.resolve("vocab.txt");
-    Files.write(file, VOCAB_TOKENS);
-    return file;
-  }
-
-  private static Path writeSafetensors(Path dir) throws IOException {
-    final Path file = dir.resolve("model.safetensors");
-    SafetensorsTestFiles.write(file, SafetensorsTestFiles.matrix("embeddings", ROWS));
-    return file;
-  }
-
   private static StaticEmbeddingModel load(Path dir) throws IOException {
-    return StaticEmbeddingModel.load(writeVocab(dir), writeSafetensors(dir),
-            Casing.UNCASED, Normalization.NONE);
+    return EmbeddingTestFixtures.loadAnalogyModel(dir, Normalization.NONE);
   }
 
   @Test
@@ -174,9 +140,8 @@ class StaticEmbeddingModelSimilarityTest {
 
   @Test
   void testAnalogyToleratesEqualTerms(@TempDir Path dir) throws IOException {
-    // A duplicate term used to crash with IllegalArgumentException("duplicate element") from
-    // Set.of before the exclusion moved to tokenized rows. b - a + c with a == b is just c's
-    // vector, so with man and woman excluded the exactly collinear queen must win.
+    // Repeating a term is legal: b - a + c with a == b is just c's vector, so with man and woman
+    // excluded the exactly collinear queen must win.
     final StaticEmbeddingModel model = load(dir);
 
     final List<Neighbor> result = model.analogy("man", "man", "woman", 2);
@@ -187,9 +152,8 @@ class StaticEmbeddingModelSimilarityTest {
 
   @Test
   void testAnalogyExclusionFoldsLikeEmbed(@TempDir Path dir) throws IOException {
-    // On an uncased model, capitalized inputs must exclude their lower-cased vocabulary rows.
-    // Before the fix the exclusion compared raw input strings, so "King" failed to exclude
-    // "king" and the analogy handed an input term back as a result.
+    // The exclusion folds terms through the model's own tokenizer, so on an uncased model a
+    // capitalized input excludes its lower-cased vocabulary row rather than handing it back.
     final StaticEmbeddingModel model = load(dir);
 
     final List<Neighbor> result = model.analogy("Man", "King", "Woman", 4);
@@ -207,24 +171,8 @@ class StaticEmbeddingModelSimilarityTest {
     final Path vocab = dir.resolve("zero-vocab.txt");
     Files.write(vocab, List.of("[CLS]", "[SEP]", "[UNK]", "a", "zero"));
     final float[][] rows = {{0f, 0f}, {0f, 0f}, {0f, 0f}, {1f, 0f}, {0f, 0f}};
-    final ByteBuffer buffer = ByteBuffer.allocate(rows.length * 2 * 4)
-        .order(ByteOrder.LITTLE_ENDIAN);
-    for (final float[] row : rows) {
-      for (final float value : row) {
-        buffer.putFloat(value);
-      }
-    }
-    final byte[] data = buffer.array();
-    final String header = "{\"embeddings\":{\"dtype\":\"F32\",\"shape\":[" + rows.length
-        + ",2],\"data_offsets\":[0," + data.length + "]}}";
-    final byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    out.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN)
-        .putLong(headerBytes.length).array());
-    out.write(headerBytes);
-    out.write(data);
     final Path tensors = dir.resolve("zero-model.safetensors");
-    Files.write(tensors, out.toByteArray());
+    SafetensorsTestFiles.write(tensors, SafetensorsTestFiles.matrix("embeddings", rows));
     final StaticEmbeddingModel model =
         StaticEmbeddingModel.load(vocab, tensors, Casing.UNCASED, Normalization.NONE);
 

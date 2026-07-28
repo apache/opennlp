@@ -27,10 +27,8 @@ import java.util.List;
  * looks up a stored vector for a single word; an embedder composes a vector for text it has
  * never seen, handling tokenization and pooling internally.</p>
  *
- * <p>Implementations are expected to be safe for concurrent use by multiple threads; any
- * implementation that is not must document it. Implementation failures during encoding (a
- * backing runtime error, a corrupted model) surface as unchecked exceptions carrying the
- * underlying cause.</p>
+ * <p>Thread safety is implementation specific. Failures during encoding surface as unchecked
+ * exceptions carrying the underlying cause.</p>
  */
 public interface TextEmbedder {
 
@@ -42,9 +40,9 @@ public interface TextEmbedder {
    * or fallback token, or something else, and should document its choice. Callers that need a
    * uniform response should handle it themselves.</p>
    *
-   * @param text The text to embed; must not be null.
+   * @param text The text to embed. Must not be {@code null}.
    * @return The embedding vector, of length {@link #dimension()}.
-   * @throws IllegalArgumentException Thrown if {@code text} is null.
+   * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
   float[] embed(CharSequence text);
 
@@ -55,9 +53,10 @@ public interface TextEmbedder {
    * runtime that executes batches more efficiently than single inputs should override this
    * method.</p>
    *
-   * @param texts The texts to embed; must not be null and must not contain null.
+   * @param texts The texts to embed. Must not be {@code null} and must not contain {@code null}.
    * @return One embedding vector per input, in input order.
-   * @throws IllegalArgumentException Thrown if {@code texts} is null or contains null.
+   * @throws IllegalArgumentException Thrown if {@code texts} is {@code null} or contains
+   *     {@code null}.
    */
   default float[][] embedAll(List<? extends CharSequence> texts) {
     if (texts == null) {

@@ -17,14 +17,12 @@
 package opennlp.embeddings;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import opennlp.embeddings.StaticEmbeddingModel.Casing;
 import opennlp.embeddings.StaticEmbeddingModel.Normalization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,32 +35,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class StaticEmbeddingUsageExampleTest {
 
-  private static final List<String> VOCAB_TOKENS =
-      List.of("[CLS]", "[SEP]", "[UNK]", "king", "queen", "man", "woman", "apple");
-
-  // king - man + woman = [3,3] - [2,1] + [1,2] = [2,4] = queen, exactly.
-  private static final float[][] ROWS = {
-      {0f, 0f},
-      {0f, 0f},
-      {0f, 0f},
-      {3f, 3f},
-      {2f, 4f},
-      {2f, 1f},
-      {1f, 2f},
-      {-3f, -1f},
-  };
-
-  private static StaticEmbeddingModel load(Path dir) throws IOException {
-    final Path vocab = dir.resolve("vocab.txt");
-    Files.write(vocab, VOCAB_TOKENS);
-    final Path weights = dir.resolve("model.safetensors");
-    SafetensorsTestFiles.write(weights, SafetensorsTestFiles.matrix("embeddings", ROWS));
-    return StaticEmbeddingModel.load(vocab, weights, Casing.UNCASED, Normalization.NONE);
-  }
-
   @Test
   void testEmbedSimilarityNeighborsAndAnalogy(@TempDir Path dir) throws IOException {
-    final StaticEmbeddingModel model = load(dir);
+    final StaticEmbeddingModel model =
+        EmbeddingTestFixtures.loadAnalogyModel(dir, Normalization.NONE);
 
     final float[] vector = model.embed("king");
     assertEquals(2, vector.length);

@@ -59,12 +59,7 @@ final class EmbeddingVocabulary {
    * @throws IOException Thrown if reading the file fails.
    */
   static EmbeddingVocabulary fromVocabTxt(Path file) throws IOException {
-    if (file == null) {
-      throw new IllegalArgumentException("File must not be null");
-    }
-    if (!Files.isRegularFile(file)) {
-      throw new IllegalArgumentException("File does not exist or is not a regular file: " + file);
-    }
+    requireRegularFile(file);
     return fromLines(Files.readAllLines(file), file.toString());
   }
 
@@ -79,13 +74,24 @@ final class EmbeddingVocabulary {
    * @throws IOException Thrown if reading the file fails.
    */
   static EmbeddingVocabulary fromTokenizerJson(Path file) throws IOException {
+    requireRegularFile(file);
+    return fromLines(TokenizerJsonVocab.rows(file), file.toString());
+  }
+
+  /**
+   * Requires {@code file} to be an existing regular file.
+   *
+   * @param file The file to check.
+   * @throws IllegalArgumentException Thrown if {@code file} is {@code null}, missing, or not a
+   *     regular file.
+   */
+  private static void requireRegularFile(Path file) {
     if (file == null) {
       throw new IllegalArgumentException("File must not be null");
     }
     if (!Files.isRegularFile(file)) {
       throw new IllegalArgumentException("File does not exist or is not a regular file: " + file);
     }
-    return fromLines(TokenizerJsonVocab.rows(file), file.toString());
   }
 
   /**

@@ -17,7 +17,6 @@
 package opennlp.embeddings;
 
 import java.io.IOException;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -115,5 +114,60 @@ class FlatJsonFieldsTest {
   void testMissingFileFailsAsAnIoProblem(@TempDir Path dir) {
     assertThrows(IOException.class,
         () -> FlatJsonFields.topLevelBoolean(dir.resolve("absent.json"), "normalize"));
+  }
+
+  @Test
+  void testReadsTopLevelStrings(@TempDir Path dir) throws IOException {
+    final Path file = write(dir, "{\"pad_token\":\"[PAD]\",\"unk_token\":\"esc\\\"aped\"}");
+
+    assertEquals("[PAD]", FlatJsonFields.topLevelString(file, "pad_token"));
+    assertEquals("esc\"aped", FlatJsonFields.topLevelString(file, "unk_token"));
+  }
+
+  @Test
+  void testAbsentStringFieldAndExplicitNullBothReadAsNull(@TempDir Path dir) throws IOException {
+    final Path file = write(dir, "{\"pad_token\":null}");
+
+    assertNull(FlatJsonFields.topLevelString(file, "pad_token"));
+    assertNull(FlatJsonFields.topLevelString(file, "missing"));
+  }
+
+  @Test
+  void testNestedOccurrencesOfAStringNameDoNotMatch(@TempDir Path dir) throws IOException {
+    final Path file = write(dir, "{\"outer\":{\"pad_token\":\"[PAD]\"}}");
+
+    assertNull(FlatJsonFields.topLevelString(file, "pad_token"));
+  }
+
+  @Test
+  void testRejectsANonStringValue(@TempDir Path dir) throws IOException {
+    final Path file = write(dir, "{\"pad_token\":true}");
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> FlatJsonFields.topLevelString(file, "pad_token"));
+    assertTrue(e.getMessage().contains("must be a string"));
+  }
+
+  @Test
+  void testRejectsADuplicateStringField(@TempDir Path dir) throws IOException {
+    final Path file = write(dir, "{\"pad_token\":\"a\",\"pad_token\":\"b\"}");
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> FlatJsonFields.topLevelString(file, "pad_token"));
+    assertTrue(e.getMessage().contains("more than once"));
+  }
+
+  @Test
+  void testRejectsNullFileAndFieldArguments(@TempDir Path dir) throws IOException {
+    final Path file = write(dir, "{\"normalize\":true}");
+
+    assertThrows(IllegalArgumentException.class,
+        () -> FlatJsonFields.topLevelBoolean(null, "normalize"));
+    assertThrows(IllegalArgumentException.class,
+        () -> FlatJsonFields.topLevelBoolean(file, null));
+    assertThrows(IllegalArgumentException.class,
+        () -> FlatJsonFields.topLevelString(null, "pad_token"));
+    assertThrows(IllegalArgumentException.class,
+        () -> FlatJsonFields.topLevelString(file, null));
   }
 }

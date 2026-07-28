@@ -131,29 +131,10 @@ class StaticEmbeddingModelSentencePieceTest {
       if (i > 0) {
         json.append(',');
       }
-      json.append('[').append(quote(pieces.get(i))).append(",-").append(i % 7).append(".5]");
+      json.append('[').append(EmbeddingTestFixtures.jsonString(pieces.get(i)))
+          .append(",-").append(i % 7).append(".5]");
     }
     return json.append("]}}").toString();
-  }
-
-  /** {@return {@code s} as a JSON string literal} */
-  private static String quote(String s) {
-    final StringBuilder quoted = new StringBuilder("\"");
-    for (int i = 0; i < s.length(); i++) {
-      final char c = s.charAt(i);
-      switch (c) {
-        case '"' -> quoted.append("\\\"");
-        case '\\' -> quoted.append("\\\\");
-        default -> {
-          if (c < 0x20) {
-            quoted.append(String.format("\\u%04x", (int) c));
-          } else {
-            quoted.append(c);
-          }
-        }
-      }
-    }
-    return quoted.append('"').toString();
   }
 
   @Test
