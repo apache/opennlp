@@ -36,10 +36,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Wires the {@link TermVectorAnnotator} into a {@link DocumentAnalyzer} behind a
- * {@link TokenizerAnnotator}, the way {@code DocumentPipelineExampleTest} demonstrates
- * the pipeline: the token layer goes in, the term vector layer comes out, and nothing
- * else about the document changes. The tokenizer is a deterministic stand-in defined
- * here, so every expected span follows directly from the input text.
+ * {@link TokenizerAnnotator}: the token layer goes in, the term vector layer comes out,
+ * and nothing else about the document changes. The tokenizer is a deterministic stand-in
+ * defined here, so every expected span follows directly from the input text.
  */
 public class TermVectorPipelineTest {
 
@@ -100,11 +99,10 @@ public class TermVectorPipelineTest {
     assertEquals(new TermVector("naps.", 1, List.of(new Span(23, 28))),
         vectors.get(3).value());
 
-    // Every occurrence span indexes into the original text.
+    // Every occurrence span indexes into the original text and covers its own term.
     for (final Annotation<TermVector> vector : vectors) {
       for (final Span span : vector.value().spans()) {
-        assertEquals(span.getCoveredText(document.text()).toString(),
-            document.text().subSequence(span.getStart(), span.getEnd()).toString());
+        assertEquals(vector.value().term(), span.getCoveredText(document.text()).toString());
       }
     }
   }

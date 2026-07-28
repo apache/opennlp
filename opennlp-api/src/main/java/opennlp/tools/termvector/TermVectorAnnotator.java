@@ -37,14 +37,13 @@ import opennlp.tools.util.normalizer.OffsetAwareNormalizer;
  * {@link TermVector} per distinct term, carrying the term string, its occurrence count,
  * and (in {@link Mode#FULL full mode}) the occurrence offsets.
  *
- * <p>The annotator aggregates; it does not analyze. What makes two tokens the same term
- * is decided by the inputs it is given, never by logic of its own. Without a normalizer,
- * the term is the token layer's value as-is, that is, the token's covered text in the
- * original document. With an {@link OffsetAwareNormalizer}, the whole document text is
- * normalized once with its alignment recorded, each token span is mapped forward to the
- * normalized form, and the covered normalized text is the term, so tokens that differ
- * only by a normalization fold (case, an eszett expansion, collapsed whitespace around
- * them) group together. Either way, the occurrence spans emitted in
+ * <p>Term identity comes from the annotator's inputs, not from logic of its own. Without
+ * a normalizer, the term is the token layer's value as-is, that is, the token's covered
+ * text in the original document. With an {@link OffsetAwareNormalizer}, the whole
+ * document text is normalized once with its alignment recorded, each token span is
+ * mapped forward to the normalized form, and the covered normalized text is the term, so
+ * tokens that differ only by a normalization fold (case, an eszett expansion, collapsed
+ * whitespace) group together. Either way, the occurrence spans emitted in
  * {@link Mode#FULL full mode} are the token layer's own spans and therefore always
  * point into the original text. A token whose normalized form is empty, for example one
  * the normalizer deleted entirely, groups under the empty string rather than being
@@ -90,8 +89,7 @@ public class TermVectorAnnotator implements DocumentAnnotator {
    * covered text as-is.
    */
   public TermVectorAnnotator() {
-    this.normalizer = null;
-    this.mode = Mode.FULL;
+    this(Mode.FULL);
   }
 
   /**
@@ -101,8 +99,11 @@ public class TermVectorAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code mode} is {@code null}.
    */
   public TermVectorAnnotator(Mode mode) {
+    if (mode == null) {
+      throw new IllegalArgumentException("mode must not be null");
+    }
     this.normalizer = null;
-    this.mode = requireMode(mode);
+    this.mode = mode;
   }
 
   /**
@@ -115,8 +116,7 @@ public class TermVectorAnnotator implements DocumentAnnotator {
    * @throws IllegalArgumentException Thrown if {@code normalizer} is {@code null}.
    */
   public TermVectorAnnotator(OffsetAwareNormalizer normalizer) {
-    this.normalizer = requireNormalizer(normalizer);
-    this.mode = Mode.FULL;
+    this(normalizer, Mode.FULL);
   }
 
   /**
@@ -130,8 +130,14 @@ public class TermVectorAnnotator implements DocumentAnnotator {
    *         {@code null}.
    */
   public TermVectorAnnotator(OffsetAwareNormalizer normalizer, Mode mode) {
-    this.normalizer = requireNormalizer(normalizer);
-    this.mode = requireMode(mode);
+    if (normalizer == null) {
+      throw new IllegalArgumentException("normalizer must not be null");
+    }
+    if (mode == null) {
+      throw new IllegalArgumentException("mode must not be null");
+    }
+    this.normalizer = normalizer;
+    this.mode = mode;
   }
 
   /**
@@ -159,27 +165,57 @@ public class TermVectorAnnotator implements DocumentAnnotator {
     final AlignedText aligned =
         normalizer != null ? normalizer.normalizeAligned(document.text()) : null;
     final String normalized = aligned != null ? aligned.normalizedString() : null;
+    return document.with(TERM_VECTORS, mode == Mode.FULL
+        ? fullVectors(tokens, aligned, normalized)
+        : countVectors(tokens, aligned, normalized));
+  }
 
-    final Map<String, Integer> frequencies = new LinkedHashMap<>();
-    // Null in SCORING_ONLY mode, so offset storage is never allocated.
-    final Map<String, List<Span>> spansByTerm = mode == Mode.FULL
-        ? new LinkedHashMap<>() : null;
+  /**
+   * Aggregates the tokens into full term vectors, keeping every occurrence span.
+   *
+   * @param tokens The token layer.
+   * @param aligned The normalized document text with its alignment, or {@code null} when
+   *                no normalizer is present.
+   * @param normalized The normalized document text, or {@code null} when no normalizer is
+   *                   present.
+   * @return One annotation per distinct term, in first-occurrence order.
+   */
+  private List<Annotation<TermVector>> fullVectors(List<Annotation<String>> tokens,
+      AlignedText aligned, String normalized) {
+    final Map<String, List<Span>> spansByTerm = new LinkedHashMap<>();
     for (final Annotation<String> token : tokens) {
-      final String term = termOf(token, aligned, normalized);
-      frequencies.merge(term, 1, Integer::sum);
-      if (spansByTerm != null) {
-        spansByTerm.computeIfAbsent(term, key -> new ArrayList<>()).add(token.span());
-      }
+      spansByTerm.computeIfAbsent(termOf(token, aligned, normalized), key -> new ArrayList<>())
+          .add(token.span());
     }
+    final List<Annotation<TermVector>> vectors = new ArrayList<>(spansByTerm.size());
+    for (final Map.Entry<String, List<Span>> entry : spansByTerm.entrySet()) {
+      vectors.add(Annotation.of(TermVector.withSpans(entry.getKey(), entry.getValue())));
+    }
+    return vectors;
+  }
 
+  /**
+   * Aggregates the tokens into scoring-only term vectors, so no offset storage is ever
+   * allocated.
+   *
+   * @param tokens The token layer.
+   * @param aligned The normalized document text with its alignment, or {@code null} when
+   *                no normalizer is present.
+   * @param normalized The normalized document text, or {@code null} when no normalizer is
+   *                   present.
+   * @return One annotation per distinct term, in first-occurrence order.
+   */
+  private List<Annotation<TermVector>> countVectors(List<Annotation<String>> tokens,
+      AlignedText aligned, String normalized) {
+    final Map<String, Integer> frequencies = new LinkedHashMap<>();
+    for (final Annotation<String> token : tokens) {
+      frequencies.merge(termOf(token, aligned, normalized), 1, Integer::sum);
+    }
     final List<Annotation<TermVector>> vectors = new ArrayList<>(frequencies.size());
     for (final Map.Entry<String, Integer> entry : frequencies.entrySet()) {
-      final TermVector vector = spansByTerm != null
-          ? TermVector.withSpans(entry.getKey(), spansByTerm.get(entry.getKey()))
-          : TermVector.count(entry.getKey(), entry.getValue());
-      vectors.add(Annotation.of(vector));
+      vectors.add(Annotation.of(TermVector.count(entry.getKey(), entry.getValue())));
     }
-    return document.with(TERM_VECTORS, vectors);
+    return vectors;
   }
 
   /** {@inheritDoc} */
@@ -201,43 +237,15 @@ public class TermVectorAnnotator implements DocumentAnnotator {
    * @param token The token annotation.
    * @param aligned The normalized document text with its alignment, or {@code null}
    *                when no normalizer is present.
-   * @param normalized The normalized document text, or {@code null} likewise.
+   * @param normalized The normalized document text, or {@code null} when no normalizer is
+   *                   present.
    * @return The term string. Never {@code null}, possibly empty.
    */
-  private static String termOf(Annotation<String> token, AlignedText aligned,
-      String normalized) {
+  private String termOf(Annotation<String> token, AlignedText aligned, String normalized) {
     if (aligned == null) {
       return token.value();
     }
     final Span span = aligned.toNormalizedSpan(token.span().getStart(), token.span().getEnd());
     return normalized.substring(span.getStart(), span.getEnd());
-  }
-
-  /**
-   * Validates a mode argument.
-   *
-   * @param mode The mode to validate.
-   * @return The validated mode.
-   * @throws IllegalArgumentException Thrown if {@code mode} is {@code null}.
-   */
-  private static Mode requireMode(Mode mode) {
-    if (mode == null) {
-      throw new IllegalArgumentException("mode must not be null");
-    }
-    return mode;
-  }
-
-  /**
-   * Validates a normalizer argument.
-   *
-   * @param normalizer The normalizer to validate.
-   * @return The validated normalizer.
-   * @throws IllegalArgumentException Thrown if {@code normalizer} is {@code null}.
-   */
-  private static OffsetAwareNormalizer requireNormalizer(OffsetAwareNormalizer normalizer) {
-    if (normalizer == null) {
-      throw new IllegalArgumentException("normalizer must not be null");
-    }
-    return normalizer;
   }
 }
