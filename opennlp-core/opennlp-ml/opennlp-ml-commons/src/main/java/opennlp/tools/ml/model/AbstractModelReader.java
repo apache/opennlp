@@ -41,8 +41,11 @@ public abstract class AbstractModelReader {
    * Upper bound on count fields read from a model file.
    * Prevents OOM on crafted inputs with oversized array size declarations.
    * Configurable via the {@link #MAX_ENTRIES_PROPERTY} system property.
+   * <p>
+   * Public so that deserializers outside this package which implement their own binary
+   * format can apply the same bound to their count fields.
    */
-  static final int MAX_ENTRIES = initMaxEntries();
+  public static final int MAX_ENTRIES = initMaxEntries();
 
   private static int initMaxEntries() {
     String prop = System.getProperty(MAX_ENTRIES_PROPERTY, "").trim();
