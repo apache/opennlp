@@ -37,8 +37,17 @@ final class SafetensorsWriter {
   /** The name of the embedding matrix tensor, the Model2Vec convention. */
   static final String EMBEDDINGS_TENSOR = "embeddings";
 
-  // Encoding chunk, a multiple of Float.BYTES.
+  /** The size of the encoding buffer the matrix is streamed through; a multiple of Float.BYTES. */
   private static final int WRITE_CHUNK_BYTES = 1 << 20;
+
+  /**
+   * The boundary the header is space-padded to, so the tensor data starts aligned. The reference
+   * safetensors writer pads the same way, and readers that memory-map the data section rely on it.
+   */
+  private static final int HEADER_ALIGNMENT_BYTES = 8;
+
+  /** The byte the header is padded with; JSON treats it as insignificant whitespace. */
+  private static final byte HEADER_PADDING = ' ';
 
   /** Not instantiable. */
   private SafetensorsWriter() {
@@ -71,16 +80,21 @@ final class SafetensorsWriter {
     final String header = "{\"" + EMBEDDINGS_TENSOR + "\":{\"dtype\":\"F32\",\"shape\":[" + rows
         + "," + cols + "],\"data_offsets\":[0," + dataBytes + "]}}";
     final byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
+    final int padding = (HEADER_ALIGNMENT_BYTES
+        - (Long.BYTES + headerBytes.length) % HEADER_ALIGNMENT_BYTES) % HEADER_ALIGNMENT_BYTES;
     final Path parent = file.getParent();
     if (parent != null) {
       Files.createDirectories(parent);
     }
     try (FileChannel channel = FileChannel.open(file, StandardOpenOption.CREATE,
         StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
-      final ByteBuffer prefix = ByteBuffer.allocate(8 + headerBytes.length)
+      final ByteBuffer prefix = ByteBuffer.allocate(Long.BYTES + headerBytes.length + padding)
           .order(ByteOrder.LITTLE_ENDIAN);
-      prefix.putLong(headerBytes.length);
+      prefix.putLong((long) headerBytes.length + padding);
       prefix.put(headerBytes);
+      for (int i = 0; i < padding; i++) {
+        prefix.put(HEADER_PADDING);
+      }
       prefix.flip();
       writeFully(channel, prefix);
       final ByteBuffer chunk = ByteBuffer.allocate(WRITE_CHUNK_BYTES)
