@@ -26,8 +26,7 @@ import java.util.List;
  * model's normalized form, so a piece is generally not a substring of the input. The offsets
  * carried by each {@link SubwordPiece} always refer to the caller's original text.</p>
  *
- * <p>Implementations are expected to be safe for concurrent use by multiple threads; any
- * implementation that is not must document it.</p>
+ * <p>Thread safety is implementation specific.</p>
  */
 public interface SubwordTokenizer {
 
