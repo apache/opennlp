@@ -155,6 +155,7 @@ class SafetensorsHeaderParserTest {
     assertTrue(e.getMessage().contains("Malformed safetensors header at offset"),
         () -> "Message should carry the offset, got: " + e.getMessage());
   }
+
   @Test
   void testSignedUnicodeEscapeFailsLoudly() {
     // Integer.parseInt would accept "-0FF" and decode the wrong character; the parser must not.

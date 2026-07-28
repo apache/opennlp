@@ -18,10 +18,9 @@ package opennlp.embeddings;
 
 import java.util.Arrays;
 
-
 /**
  * Header metadata for one tensor in a safetensors file, as declared by the file's own JSON
- * header. Carries no data; {@link SafetensorsFile#readFloat32(String)} resolves the bytes.
+ * header. Carries no data; {@link SafetensorsFile#readFloats(String)} resolves the bytes.
  *
  * @param name             The tensor's name, the key it was declared under. Never {@code null}.
  * @param dtype            The declared element type (e.g. {@code "F32"}, {@code "F16"},
@@ -65,7 +64,8 @@ public record TensorInfo(String name, String dtype, int[] shape, long dataOffset
   }
 
   /**
-   * @return The number of elements the tensor holds, the product of {@link #shape()}.
+   * {@return the number of elements the tensor holds, the product of {@link #shape()}}
+   *
    * @throws IllegalArgumentException Thrown if the product overflows a {@code long}, which only
    *     a crafted header can produce.
    */
