@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.LongBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import ai.onnxruntime.NodeInfo;
@@ -149,8 +150,7 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    *
    * <p>Adapts {@link #getVectors(String)} to the {@link TextEmbedder} contract. Empty or
    * unrecognized input is still run through the model, which returns the vector for the
-   * wrapped {@code [CLS] ... [SEP]} sequence; it is not special-cased to a zero vector the way
-   * the static-table embedder is.</p>
+   * wrapped {@code [CLS] ... [SEP]} sequence rather than a zero vector.</p>
    *
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    * @throws IllegalStateException Thrown if inference fails; the cause carries the
@@ -197,17 +197,13 @@ public class SentenceVectorsDL extends AbstractDL implements TextEmbedder {
    * @throws OrtException Thrown if reading the output metadata fails.
    */
   private static int declaredOutputDimension(final OrtSession session) throws OrtException {
-    for (final NodeInfo output : session.getOutputInfo().values()) {
-      if (output.getInfo() instanceof TensorInfo tensorInfo) {
-        final long[] shape = tensorInfo.getShape();
-        final long last = shape.length > 0 ? shape[shape.length - 1] : -1;
-        if (last > 0 && last <= Integer.MAX_VALUE) {
-          return (int) last;
-        }
-      }
+    final Iterator<NodeInfo> outputs = session.getOutputInfo().values().iterator();
+    if (!outputs.hasNext() || !(outputs.next().getInfo() instanceof TensorInfo tensorInfo)) {
       return -1;
     }
-    return -1;
+    final long[] shape = tensorInfo.getShape();
+    final long last = shape.length > 0 ? shape[shape.length - 1] : -1;
+    return last > 0 && last <= Integer.MAX_VALUE ? (int) last : -1;
   }
 
   /**

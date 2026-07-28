@@ -149,7 +149,8 @@ public final class ModelAssembler {
    * @throws IOException Thrown if loading fails to read a file.
    */
   private static Result assembleSentencePiece(Path modelDirectory) throws IOException {
-    if (firstExisting(modelDirectory, ModelFileNames.SENTENCEPIECE_MODELS) == null) {
+    if (ModelFileNames.firstRegularFile(modelDirectory,
+        ModelFileNames.SENTENCEPIECE_MODELS) == null) {
       throw new IllegalArgumentException("Model directory " + modelDirectory + " is a "
           + FAMILY_SENTENCEPIECE + " model but has no trained model file (one of "
           + String.join(", ", ModelFileNames.SENTENCEPIECE_MODELS) + "); copy it from the "
@@ -192,22 +193,6 @@ public final class ModelAssembler {
           + "; it does not look like a distilled model directory");
     }
     return file;
-  }
-
-  /**
-   * {@return the first of the given names that exists in the directory, or {@code null}}
-   *
-   * @param directory The directory to look in.
-   * @param names     The names to try, in order.
-   */
-  private static Path firstExisting(Path directory, List<String> names) {
-    for (final String name : names) {
-      final Path file = directory.resolve(name);
-      if (Files.isRegularFile(file)) {
-        return file;
-      }
-    }
-    return null;
   }
 
   /**
