@@ -43,7 +43,7 @@ public record SubwordPiece(String piece, int id, int start, int end) {
    */
   public SubwordPiece {
     if (piece == null || piece.isEmpty()) {
-      throw new IllegalArgumentException("The piece must not be null or empty.");
+      throw new IllegalArgumentException("piece must not be null or empty");
     }
     if (start < 0 || end < start) {
       throw new IllegalArgumentException(
