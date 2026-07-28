@@ -20,12 +20,10 @@ package opennlp.wordnet;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import opennlp.tools.commons.ThreadSafe;
 import opennlp.tools.util.StringUtil;
@@ -134,13 +132,19 @@ public class HypernymTyper {
     return Optional.ofNullable(nearestAnchor(synsetId, new int[1]));
   }
 
-  /** Breadth-first walk up the hypernym graph to the closest anchored synset. */
+  /**
+   * Walks up the hypernym graph breadth first to the closest anchored synset. Visiting each
+   * synset once bounds the walk even on cyclic data.
+   *
+   * @param synsetId    The synset to start from. Must not be {@code null}.
+   * @param distanceOut A single-element array that receives the edge count to the anchor found;
+   *                    left untouched when no ancestor is anchored.
+   * @return The label of the nearest anchored synset, or {@code null} when none is reachable.
+   */
   private String nearestAnchor(String synsetId, int[] distanceOut) {
-    final Set<String> visited = new HashSet<>();
     final Deque<String> queue = new ArrayDeque<>();
     final Map<String, Integer> depths = new HashMap<>();
     queue.add(synsetId);
-    visited.add(synsetId);
     depths.put(synsetId, 0);
     while (!queue.isEmpty()) {
       final String current = queue.remove();
@@ -149,10 +153,10 @@ public class HypernymTyper {
         distanceOut[0] = depths.get(current);
         return label;
       }
+      final int parentDepth = depths.get(current) + 1;
       for (final WordNetRelation relation : UPWARD_RELATIONS) {
         for (final String parent : knowledgeBase.related(current, relation)) {
-          if (visited.add(parent)) {
-            depths.put(parent, depths.get(current) + 1);
+          if (depths.putIfAbsent(parent, parentDepth) == null) {
             queue.add(parent);
           }
         }

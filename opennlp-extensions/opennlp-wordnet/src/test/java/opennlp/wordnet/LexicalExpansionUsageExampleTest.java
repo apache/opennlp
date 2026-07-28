@@ -32,6 +32,8 @@ import opennlp.tools.wordnet.WordNetRelation;
 import opennlp.wordnet.LexicalExpander.Expansion;
 import opennlp.wordnet.LexicalExpander.Kind;
 
+import static opennlp.wordnet.ExpansionAssertions.find;
+
 /**
  * Runs the manual's lexical expansion and synset similarity examples (docbkx
  * {@code wordnet.xml}) verbatim: every value the chapter states is asserted here, so a
@@ -111,15 +113,6 @@ public class LexicalExpansionUsageExampleTest {
     final Map<WordNetRelation, List<String>> relations = parents.length == 0
         ? Map.of() : Map.of(WordNetRelation.HYPERNYM, List.of(parents));
     byId.put(id, new Synset(id, WordNetPOS.NOUN, List.of(lemma), "fixture", relations));
-  }
-
-  private static Expansion find(List<Expansion> expansions, String term) {
-    for (final Expansion expansion : expansions) {
-      if (term.equals(expansion.term())) {
-        return expansion;
-      }
-    }
-    return null;
   }
 
   /**

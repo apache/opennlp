@@ -17,6 +17,7 @@
 
 package opennlp.wordnet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +32,8 @@ import opennlp.tools.wordnet.WordNetPOS;
 import opennlp.tools.wordnet.WordNetRelation;
 
 /**
- * Tests the taxonomy measures and the hypernym typer against a project-authored
- * miniature taxonomy; no external lexicon data is involved.
+ * Tests the taxonomy measures against a project-authored miniature taxonomy; no external
+ * lexicon data is involved. {@link HypernymTyperTest} shares the same taxonomy.
  */
 public class SynsetSimilarityTest {
 
@@ -47,7 +48,7 @@ public class SynsetSimilarityTest {
       final Synset synset =
           new Synset(id, WordNetPOS.NOUN, List.of(lemma), "fixture", relations);
       byId.put(id, synset);
-      byLemma.computeIfAbsent(lemma, key -> new java.util.ArrayList<>()).add(synset);
+      byLemma.computeIfAbsent(lemma, key -> new ArrayList<>()).add(synset);
     }
 
     @Override
@@ -61,7 +62,8 @@ public class SynsetSimilarityTest {
     }
   }
 
-  private static FixtureKnowledgeBase taxonomy() {
+  /** {@return the taxonomy both this test and {@link HypernymTyperTest} assert against} */
+  static FixtureKnowledgeBase taxonomy() {
     final FixtureKnowledgeBase kb = new FixtureKnowledgeBase();
     kb.add("n1", "entity", WordNetRelation.HYPERNYM);
     kb.add("n2", "physical", WordNetRelation.HYPERNYM, "n1");
@@ -116,36 +118,28 @@ public class SynsetSimilarityTest {
   }
 
   @Test
-  void testTyperFindsTheNearestAnchor() {
-    final HypernymTyper typer = new HypernymTyper(taxonomy(), Map.of(
-        "person", "person", "location", "location", "organization", "organization"));
-    Assertions.assertEquals("person", typer.type("chemist").orElseThrow());
-    Assertions.assertEquals("location", typer.type("city").orElseThrow());
-    Assertions.assertEquals("organization", typer.type("company").orElseThrow());
-    Assertions.assertEquals("location", typer.typeSynset("n11").orElseThrow());
-    Assertions.assertTrue(typer.type("entity").isEmpty());
-    Assertions.assertTrue(typer.type("blorp").isEmpty());
-  }
-
-  @Test
-  void testMoreSpecificAnchorsWin() {
-    final HypernymTyper typer = new HypernymTyper(taxonomy(), Map.of(
-        "person", "person", "scientist", "researcher"));
-    Assertions.assertEquals("researcher", typer.type("chemist").orElseThrow());
-    Assertions.assertEquals("person", typer.type("person").orElseThrow());
-  }
-
-  @Test
   void testInvalidArguments() {
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> new SynsetSimilarity(null));
+    final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new SynsetSimilarity(taxonomy()).path(null, "n1"));
+        () -> similarity.path(null, "n1"));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new HypernymTyper(taxonomy(), Map.of()));
+        () -> similarity.path("n1", null));
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> new HypernymTyper(taxonomy(), Map.of("blorp", "thing")));
-    final HypernymTyper typer = new HypernymTyper(taxonomy(), Map.of("person", "person"));
-    Assertions.assertThrows(IllegalArgumentException.class, () -> typer.type(" "));
+        () -> similarity.wuPalmer(null, "n1"));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> similarity.shortestDistance("n1", null));
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> similarity.leacockChodorow(null, "n1", 10));
+  }
+
+  @Test
+  void testUnknownSynsetsAreUnrelatedRatherThanFatal() {
+    final SynsetSimilarity similarity = new SynsetSimilarity(taxonomy());
+    Assertions.assertEquals(-1, similarity.shortestDistance("n5", "missing"));
+    Assertions.assertEquals(0.0, similarity.path("n5", "missing"), 1e-9);
+    Assertions.assertEquals(0.0, similarity.wuPalmer("n5", "missing"), 1e-9);
+    Assertions.assertEquals(0.0, similarity.leacockChodorow("n5", "missing", 10), 1e-9);
   }
 }

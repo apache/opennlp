@@ -129,6 +129,7 @@ public class SynsetSimilarity {
    */
   public double leacockChodorow(String synsetId, String otherSynsetId,
       int taxonomyDepth) {
+    validateIds(synsetId, otherSynsetId);
     if (taxonomyDepth <= 0) {
       throw new IllegalArgumentException(
           "taxonomyDepth must be positive: " + taxonomyDepth);
@@ -184,7 +185,13 @@ public class SynsetSimilarity {
     }
   }
 
-  /** Collects every ancestor with its minimal upward distance, the synset included. */
+  /**
+   * Collects every ancestor with its minimal upward distance, the synset itself included at
+   * distance zero.
+   *
+   * @param synsetId The synset to walk up from.
+   * @return The upward distance to each reachable ancestor, keyed by synset identifier.
+   */
   private Map<String, Integer> depthsAbove(String synsetId) {
     final Map<String, Integer> depths = new HashMap<>();
     final Deque<String> queue = new ArrayDeque<>();
@@ -203,7 +210,13 @@ public class SynsetSimilarity {
     return depths;
   }
 
-  /** Measures a synset's depth from its taxonomy root, the shortest way up. */
+  /**
+   * Measures a synset's depth as the distance to its farthest ancestor, which is the taxonomy
+   * root reached the long way round when several paths lead up.
+   *
+   * @param synsetId The synset to measure.
+   * @return The edge count to the farthest ancestor, {@code 0} for a root.
+   */
   private int depthFromRoot(String synsetId) {
     final Map<String, Integer> above = depthsAbove(synsetId);
     int deepest = 0;
@@ -213,6 +226,12 @@ public class SynsetSimilarity {
     return deepest;
   }
 
+  /**
+   * Collects the synsets one taxonomy edge above a synset.
+   *
+   * @param synsetId The synset whose parents are collected.
+   * @return The plain hypernyms followed by the instance hypernyms.
+   */
   private Iterable<String> hypernyms(String synsetId) {
     final List<String> parents = new ArrayList<>(
         knowledgeBase.related(synsetId, WordNetRelation.HYPERNYM));

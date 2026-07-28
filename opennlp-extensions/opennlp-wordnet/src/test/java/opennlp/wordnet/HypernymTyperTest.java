@@ -24,8 +24,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import opennlp.tools.wordnet.WordNetRelation;
-
 /**
  * Tests that {@link HypernymTyper} labels a word by its nearest anchored hypernym over
  * the fixture taxonomy of {@link SynsetSimilarityTest}, follows instance hypernymy,
@@ -43,22 +41,10 @@ public class HypernymTyperTest {
   }
 
   /**
-   * @return The shared fixture taxonomy. Never {@code null}.
+   * @return The taxonomy shared with {@link SynsetSimilarityTest}. Never {@code null}.
    */
   private static SynsetSimilarityTest.FixtureKnowledgeBase taxonomy() {
-    final SynsetSimilarityTest.FixtureKnowledgeBase kb =
-        new SynsetSimilarityTest.FixtureKnowledgeBase();
-    kb.add("n1", "entity", WordNetRelation.HYPERNYM);
-    kb.add("n2", "physical", WordNetRelation.HYPERNYM, "n1");
-    kb.add("n3", "organism", WordNetRelation.HYPERNYM, "n2");
-    kb.add("n4", "person", WordNetRelation.HYPERNYM, "n3");
-    kb.add("n5", "scientist", WordNetRelation.HYPERNYM, "n4");
-    kb.add("n6", "chemist", WordNetRelation.HYPERNYM, "n5");
-    kb.add("n7", "location", WordNetRelation.HYPERNYM, "n2");
-    kb.add("n8", "city", WordNetRelation.HYPERNYM, "n7");
-    kb.add("n11", "paris", WordNetRelation.INSTANCE_HYPERNYM, "n8");
-    kb.add("n12", "abstract", WordNetRelation.HYPERNYM);
-    return kb;
+    return SynsetSimilarityTest.taxonomy();
   }
 
   /**
