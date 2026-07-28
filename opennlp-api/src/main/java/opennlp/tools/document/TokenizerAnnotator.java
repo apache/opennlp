@@ -35,7 +35,7 @@ import opennlp.tools.util.Span;
  *
  * @since 3.0.0
  */
-public class TokenizerAnnotator implements DocumentAnnotator {
+public final class TokenizerAnnotator implements DocumentAnnotator {
 
   private final Tokenizer tokenizer;
 

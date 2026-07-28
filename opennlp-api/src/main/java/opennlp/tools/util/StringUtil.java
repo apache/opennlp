@@ -277,6 +277,7 @@ public class StringUtil {
    *
    * @param theString The {@link CharSequence} to examine. Must not be {@code null}.
    * @return {@code true} if {@code theString} is empty or all whitespace.
+   * @throws NullPointerException Thrown if {@code theString} is {@code null}.
    */
   public static boolean isBlank(CharSequence theString) {
     for (int i = 0; i < theString.length(); ) {

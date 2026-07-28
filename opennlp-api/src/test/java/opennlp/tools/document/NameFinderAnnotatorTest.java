@@ -30,12 +30,14 @@ import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests that {@link NameFinderAnnotator} maps token-index mentions to character spans on
- * the original text and clears the finder's adaptive data per document.
+ * the original text, carries the entity type as the annotation value on an untyped span,
+ * and clears the finder's adaptive data per document.
  */
 public class NameFinderAnnotatorTest {
 
@@ -85,8 +87,10 @@ public class NameFinderAnnotatorTest {
     final Document annotated = new NameFinderAnnotator(finder).annotate(document);
     final List<Annotation<String>> entities = annotated.get(Layers.ENTITIES);
     assertEquals(1, entities.size());
-    assertEquals(new Span(3, 11, "location"), entities.get(0).span());
+    assertEquals(new Span(3, 11), entities.get(0).span());
+    // the annotation value is the single source of the entity type; the span is untyped
     assertEquals("location", entities.get(0).value());
+    assertNull(entities.get(0).span().getType());
     assertEquals("New York",
         entities.get(0).span().getCoveredText(annotated.text()).toString());
     assertEquals(1, cleared.get());
@@ -126,8 +130,8 @@ public class NameFinderAnnotatorTest {
     assertEquals(1, entities.size());
     assertEquals(NameSample.DEFAULT_TYPE, NameFinderAnnotator.UNTYPED);
     assertEquals(NameFinderAnnotator.UNTYPED, entities.get(0).value());
-    assertEquals(new Span(0, 3, NameFinderAnnotator.UNTYPED), entities.get(0).span());
-    assertEquals(NameFinderAnnotator.UNTYPED, entities.get(0).span().getType());
+    assertEquals(new Span(0, 3), entities.get(0).span());
+    assertNull(entities.get(0).span().getType());
   }
 
   /**
@@ -155,6 +159,36 @@ public class NameFinderAnnotatorTest {
     final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new NameFinderAnnotator(finder).annotate(document));
     assertEquals("finder returned mention [0..3) person outside the sentence's 2 tokens",
+        e.getMessage());
+    assertEquals(1, cleared.get());
+  }
+
+  /**
+   * Verifies that a zero-length mention is rejected loudly. {@link Span} permits
+   * {@code start == end}, but such a mention covers no token, so mapping its end
+   * through {@code end - 1} would read the previous sentence's last token instead of
+   * failing. The finder here returns the empty mention for the second sentence, the
+   * case that would otherwise be mapped silently wrong, and the adaptive data is still
+   * cleared on the failure.
+   */
+  @Test
+  void testZeroLengthMentionFailsLoud() {
+    final AtomicInteger cleared = new AtomicInteger();
+    final TokenNameFinder finder = finder(tokens ->
+        "Bob".equals(tokens[0]) ? new Span[] {new Span(0, 0)} : new Span[0], cleared);
+    final Document document = Document.of("Ana runs. Bob sits.")
+        .with(Layers.SENTENCES, List.of(
+            new Annotation<>(new Span(0, 9), "Ana runs."),
+            new Annotation<>(new Span(10, 19), "Bob sits.")))
+        .with(Layers.TOKENS, List.of(
+            new Annotation<>(new Span(0, 3), "Ana"),
+            new Annotation<>(new Span(4, 9), "runs."),
+            new Annotation<>(new Span(10, 13), "Bob"),
+            new Annotation<>(new Span(14, 19), "sits.")));
+
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+        () -> new NameFinderAnnotator(finder).annotate(document));
+    assertEquals("finder returned mention [0..0) outside the sentence's 2 tokens",
         e.getMessage());
     assertEquals(1, cleared.get());
   }
@@ -215,8 +249,10 @@ public class NameFinderAnnotatorTest {
 
     final List<Annotation<String>> entities = annotated.get(Layers.ENTITIES);
     assertEquals(2, entities.size());
-    assertEquals(new Span(0, 3, "person"), entities.get(0).span());
-    assertEquals(new Span(10, 13, "person"), entities.get(1).span());
+    assertEquals(new Span(0, 3), entities.get(0).span());
+    assertEquals("person", entities.get(0).value());
+    assertEquals(new Span(10, 13), entities.get(1).span());
+    assertEquals("person", entities.get(1).value());
     assertEquals("Bob",
         entities.get(1).span().getCoveredText(annotated.text()).toString());
     assertEquals(1, cleared.get());

@@ -25,8 +25,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.postag.POSTagger;
-import opennlp.tools.sentdetect.SentenceDetector;
-import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 
@@ -39,9 +37,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * {@link DocumentAnalyzer}, analyze a two-sentence text, and read every layer back with
  * its spans in original text coordinates.
  *
- * <p>The wrapped components are tiny deterministic stand-ins defined in this class, so
- * every expected span and value below follows directly from the input text. The point
- * under demonstration is how the layers connect, not the quality of any single step.</p>
+ * <p>The wrapped components are the tiny deterministic stand-ins from
+ * {@link TestComponents}, so every expected span and value below follows directly from
+ * the input text. The point under demonstration is how the layers connect, not the
+ * quality of any single step.</p>
  */
 public class DocumentPipelineExampleTest {
 
@@ -51,62 +50,6 @@ public class DocumentPipelineExampleTest {
    */
   private static final LayerKey<Integer> TOKEN_LENGTHS =
       LayerKey.of("token-lengths", Integer.class);
-
-  /**
-   * A deterministic sentence detector that ends a sentence after every period and
-   * expects a single space between sentences. Only the span-producing method is
-   * implemented because the adapter calls no other method.
-   */
-  private static final SentenceDetector PERIOD_SPLITTER = new SentenceDetector() {
-
-    @Override
-    public String[] sentDetect(CharSequence s) {
-      throw new UnsupportedOperationException("the adapter only calls sentPosDetect");
-    }
-
-    @Override
-    public Span[] sentPosDetect(CharSequence s) {
-      final String text = s.toString();
-      final List<Span> spans = new ArrayList<>();
-      int start = 0;
-      for (int i = 0; i < text.length(); i++) {
-        if (text.charAt(i) == '.') {
-          spans.add(new Span(start, i + 1));
-          start = i + 2;
-        }
-      }
-      return spans.toArray(new Span[0]);
-    }
-  };
-
-  /**
-   * A deterministic tokenizer that splits on single space characters and keeps all
-   * other characters, including sentence-final periods, attached to their token. Only
-   * the span-producing method is implemented because the adapter calls no other method.
-   */
-  private static final Tokenizer SPACE_TOKENIZER = new Tokenizer() {
-
-    @Override
-    public String[] tokenize(String s) {
-      throw new UnsupportedOperationException("the adapter only calls tokenizePos");
-    }
-
-    @Override
-    public Span[] tokenizePos(String s) {
-      final List<Span> spans = new ArrayList<>();
-      int start = -1;
-      for (int i = 0; i <= s.length(); i++) {
-        final boolean boundary = i == s.length() || s.charAt(i) == ' ';
-        if (boundary && start >= 0) {
-          spans.add(new Span(start, i));
-          start = -1;
-        } else if (!boundary && start < 0) {
-          start = i;
-        }
-      }
-      return spans.toArray(new Span[0]);
-    }
-  };
 
   /**
    * A deterministic tagger backed by a fixed dictionary covering exactly the tokens of
@@ -158,21 +101,15 @@ public class DocumentPipelineExampleTest {
      * Adds the {@link #TOKEN_LENGTHS} layer computed from {@link Layers#TOKENS}.
      *
      * @param document The document to annotate. Must not be {@code null} and must
-     *                 contain the token layer.
+     *                 contain the token layer, which may be empty.
      * @return A new {@link Document} carrying the token length layer. Never {@code null}.
      * @throws IllegalArgumentException Thrown if {@code document} is {@code null} or the
      *         token layer is absent.
      */
     @Override
     public Document annotate(Document document) {
-      if (document == null) {
-        throw new IllegalArgumentException("document must not be null");
-      }
+      DocumentAnnotators.requireLayers(document, Layers.TOKENS);
       final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
-      if (tokens.isEmpty()) {
-        throw new IllegalArgumentException("document lacks the required layer "
-            + Layers.TOKENS);
-      }
       final List<Annotation<Integer>> lengths = new ArrayList<>(tokens.size());
       for (final Annotation<String> token : tokens) {
         lengths.add(new Annotation<>(token.span(), token.value().length()));
@@ -214,8 +151,8 @@ public class DocumentPipelineExampleTest {
   @Test
   void testFullPipelineStory() {
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new SentenceDetectorAnnotator(PERIOD_SPLITTER))
-        .add(new TokenizerAnnotator(SPACE_TOKENIZER))
+        .add(new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER))
+        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
         .add(new POSTaggerAnnotator(DICTIONARY_TAGGER))
         .add(new TokenLengthAnnotator())
         .build();
@@ -289,8 +226,8 @@ public class DocumentPipelineExampleTest {
   @Test
   void testAnalyzerIsReusableAcrossTexts() {
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new SentenceDetectorAnnotator(PERIOD_SPLITTER))
-        .add(new TokenizerAnnotator(SPACE_TOKENIZER))
+        .add(new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER))
+        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
         .build();
 
     final Document first = analyzer.analyze("The dog barks.");

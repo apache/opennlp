@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * An immutable, offset-anchored annotation container: the original text of one document
- * plus any number of typed annotation layers over it.
+ * An offset-anchored annotation container: the original text of one document plus any
+ * number of typed annotation layers over it.
  *
  * <p>A layer is a list of {@link Annotation annotations} identified by a
  * {@link LayerKey}. The container itself knows nothing about specific layers; every
@@ -32,8 +32,9 @@ import java.util.Set;
  * {@link LayerKey.Scope#DOCUMENT document-scoped} layer carries whole-document values
  * without spans, for example a language id.</p>
  *
- * <p>Documents are immutable: {@link #with(LayerKey, List)} returns a new document that
- * shares the unchanged layers. That immutability makes instances safe to share between threads.</p>
+ * <p>A document is never modified in place: {@link #with(LayerKey, List)} leaves its
+ * receiver untouched and returns a new document. Thread safety is implementation
+ * specific.</p>
  *
  * <p>Three invariants make index-based references sound. A layer preserves its
  * insertion order, and the container never sorts or reorders it. A layer is immutable
@@ -49,7 +50,9 @@ import java.util.Set;
 public interface Document {
 
   /**
-   * Creates an empty {@link Document} over a text.
+   * Creates an empty {@link Document} over a text. The returned document is immutable
+   * and safe to share between threads: it captures the text's content at construction,
+   * so later changes to a mutable {@code CharSequence} do not reach the document.
    *
    * @param text The original document text. Must not be {@code null}.
    * @return A {@link Document} without any layers. Never {@code null}.

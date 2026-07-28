@@ -21,13 +21,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.Layers;
 import opennlp.tools.util.Span;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LemmatizerAnnotatorTest {
 
@@ -65,10 +68,10 @@ public class LemmatizerAnnotatorTest {
     final Document lemmatized = new LemmatizerAnnotator(FIXTURE).annotate(document);
 
     final List<Annotation<String>> lemmas = lemmatized.get(LemmatizerAnnotator.LEMMAS);
-    Assertions.assertEquals(3, lemmas.size());
-    Assertions.assertEquals("run", lemmas.get(1).value());
-    Assertions.assertEquals(new Span(4, 7), lemmas.get(1).span());
-    Assertions.assertEquals("home", lemmas.get(2).value());
+    assertEquals(3, lemmas.size());
+    assertEquals("run", lemmas.get(1).value());
+    assertEquals(new Span(4, 7), lemmas.get(1).span());
+    assertEquals("home", lemmas.get(2).value());
   }
 
   /**
@@ -108,25 +111,25 @@ public class LemmatizerAnnotatorTest {
 
     final Document lemmatized = new LemmatizerAnnotator(recording).annotate(document);
 
-    Assertions.assertEquals(List.of(
+    assertEquals(List.of(
         List.of("Ana", "runs."),
         List.of("Bob", "sits.")), calls);
-    Assertions.assertEquals(4, lemmatized.get(LemmatizerAnnotator.LEMMAS).size());
-    Assertions.assertEquals(new Span(10, 13),
+    assertEquals(4, lemmatized.get(LemmatizerAnnotator.LEMMAS).size());
+    assertEquals(new Span(10, 13),
         lemmatized.get(LemmatizerAnnotator.LEMMAS).get(2).span());
   }
 
   @Test
   void testInvalidArguments() {
-    Assertions.assertThrows(IllegalArgumentException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> new LemmatizerAnnotator(null));
     final LemmatizerAnnotator annotator = new LemmatizerAnnotator(FIXTURE);
-    Assertions.assertThrows(IllegalArgumentException.class, () -> annotator.annotate(null));
+    assertThrows(IllegalArgumentException.class, () -> annotator.annotate(null));
     final Document misaligned = Document.of("a b")
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 3), "a b")))
         .with(Layers.TOKENS, List.of(new Annotation<>(new Span(0, 1), "a")))
         .with(Layers.POS_TAGS, List.of());
-    Assertions.assertThrows(IllegalArgumentException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> annotator.annotate(misaligned));
   }
 
@@ -137,23 +140,23 @@ public class LemmatizerAnnotatorTest {
   @Test
   void testAbsentRequiredLayerThrowsWithExactMessage() {
     final LemmatizerAnnotator annotator = new LemmatizerAnnotator(FIXTURE);
-    final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> annotator.annotate(Document.of("no layers")));
-    Assertions.assertEquals("document lacks the required layer opennlp:sentences<String>",
+    assertEquals("document lacks the required layer opennlp:sentences<String>",
         e.getMessage());
 
     final Document sentencesOnly = Document.of("a")
         .with(Layers.SENTENCES, List.of(new Annotation<>(new Span(0, 1), "a")));
-    final IllegalArgumentException tokenless = Assertions.assertThrows(
+    final IllegalArgumentException tokenless = assertThrows(
         IllegalArgumentException.class, () -> annotator.annotate(sentencesOnly));
-    Assertions.assertEquals("document lacks the required layer opennlp:tokens<String>",
+    assertEquals("document lacks the required layer opennlp:tokens<String>",
         tokenless.getMessage());
 
     final Document untagged = sentencesOnly
         .with(Layers.TOKENS, List.of(new Annotation<>(new Span(0, 1), "a")));
-    final IllegalArgumentException tagless = Assertions.assertThrows(
+    final IllegalArgumentException tagless = assertThrows(
         IllegalArgumentException.class, () -> annotator.annotate(untagged));
-    Assertions.assertEquals("document lacks the required layer opennlp:pos<String>",
+    assertEquals("document lacks the required layer opennlp:pos<String>",
         tagless.getMessage());
   }
 
@@ -168,8 +171,8 @@ public class LemmatizerAnnotatorTest {
         .with(Layers.TOKENS, List.of())
         .with(Layers.POS_TAGS, List.of());
     final Document lemmatized = new LemmatizerAnnotator(FIXTURE).annotate(document);
-    Assertions.assertTrue(lemmatized.layers().contains(LemmatizerAnnotator.LEMMAS));
-    Assertions.assertTrue(lemmatized.get(LemmatizerAnnotator.LEMMAS).isEmpty());
+    assertTrue(lemmatized.layers().contains(LemmatizerAnnotator.LEMMAS));
+    assertTrue(lemmatized.get(LemmatizerAnnotator.LEMMAS).isEmpty());
   }
 
   /**
@@ -188,9 +191,9 @@ public class LemmatizerAnnotatorTest {
             new Annotation<>(new Span(0, 3), "PROPN"),
             new Annotation<>(new Span(4, 9), "VERB"),
             new Annotation<>(new Span(10, 13), "PROPN")));
-    final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new LemmatizerAnnotator(FIXTURE).annotate(document));
-    Assertions.assertEquals("token at [10..13) lies outside every sentence", e.getMessage());
+    assertEquals("token at [10..13) lies outside every sentence", e.getMessage());
   }
 
   /**
@@ -218,9 +221,9 @@ public class LemmatizerAnnotatorTest {
         .with(Layers.POS_TAGS, List.of(
             new Annotation<>(new Span(0, 1), "X"),
             new Annotation<>(new Span(2, 3), "X")));
-    final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+    final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
         () -> new LemmatizerAnnotator(shortLemmatizer).annotate(document));
-    Assertions.assertEquals("lemmatizer returned 1 lemmas for 2 tokens", e.getMessage());
+    assertEquals("lemmatizer returned 1 lemmas for 2 tokens", e.getMessage());
   }
 
   /**
@@ -229,7 +232,7 @@ public class LemmatizerAnnotatorTest {
    */
   @Test
   void testRequiresSentencesTokensAndTags() {
-    Assertions.assertEquals(Set.of(Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS),
+    assertEquals(Set.of(Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS),
         new LemmatizerAnnotator(FIXTURE).requires());
   }
 }

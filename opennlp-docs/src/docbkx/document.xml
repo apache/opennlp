@@ -58,8 +58,9 @@
 			<listitem>
 				<para>
 					<emphasis role="bold">Immutable.</emphasis> Adding a layer returns a new
-					document that shares the unchanged layers with its ancestor. Documents are
-					safe to share between threads. Three invariants make index references
+					document that shares the unchanged layers with its ancestor. Documents
+					created through <code>Document.of</code> capture their text at construction
+					and are safe to share between threads. Three invariants make index references
 					sound: a layer preserves its insertion order and is never sorted or
 					reordered, a layer is immutable once added and detached from the caller's
 					input list, and providing a layer that already exists is rejected, so an
@@ -73,8 +74,7 @@
 			carries whole-document values without spans, which is where a language id,
 			a category distribution, or provenance belongs:
 		</para>
-		<programlisting language="java">
-				<![CDATA[
+		<programlisting language="java"><![CDATA[
 LayerKey<String> LANGUAGE = LayerKey.document("app:language", String.class);
 
 Document tagged = document.with(LANGUAGE, List.of(Annotation.of("eng")));
@@ -111,8 +111,7 @@ String language = tagged.get(LANGUAGE).get(0).value(); // "eng", span is null]]>
 			<code>SentenceDetector</code>, <code>Tokenizer</code>, and
 			<code>POSTagger</code>, for example the ME implementations loaded from models:
 		</para>
-		<programlisting language="java">
-				<![CDATA[
+		<programlisting language="java"><![CDATA[
 DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
     .add(new SentenceDetectorAnnotator(sentenceDetector))
     .add(new TokenizerAnnotator(tokenizer))
@@ -136,8 +135,7 @@ Document document = analyzer.analyze("The dog barks. It naps.");]]>
 			<code>[18..23)</code>. Layers produced per token stay aligned with the token
 			layer by position:
 		</para>
-		<programlisting language="java">
-				<![CDATA[
+		<programlisting language="java"><![CDATA[
 List<Annotation<String>> tokens = document.get(Layers.TOKENS);
 List<Annotation<String>> tags = document.get(Layers.POS_TAGS);
 for (int i = 0; i < tags.size(); i++) {
@@ -160,8 +158,7 @@ for (Annotation<String> token : tokens) {
 			the token layer, and provides one integer annotation per token; the analyzer's
 			build-time validation guarantees a tokenizer ran earlier:
 		</para>
-		<programlisting language="java">
-				<![CDATA[
+		<programlisting language="java"><![CDATA[
 static final LayerKey<Integer> TOKEN_LENGTHS =
     LayerKey.of("token-lengths", Integer.class);
 
@@ -169,9 +166,7 @@ class TokenLengthAnnotator implements DocumentAnnotator {
 
   @Override
   public Document annotate(Document document) {
-    if (document == null) {
-      throw new IllegalArgumentException("document must not be null");
-    }
+    DocumentAnnotators.requireLayers(document, Layers.TOKENS);
     List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     List<Annotation<Integer>> lengths = new ArrayList<>(tokens.size());
     for (Annotation<String> token : tokens) {
@@ -196,8 +191,7 @@ class TokenLengthAnnotator implements DocumentAnnotator {
 			numbers without a cast; for the text above the five values are
 			<code>3, 3, 6, 2, 5</code>, each on its token's span:
 		</para>
-		<programlisting language="java">
-				<![CDATA[
+		<programlisting language="java"><![CDATA[
 List<Annotation<Integer>> lengths = document.get(TOKEN_LENGTHS);
 int firstTokenLength = lengths.get(0).value(); // 3, for "The" at [0..3)]]>
 		</programlisting>
@@ -207,6 +201,9 @@ int firstTokenLength = lengths.get(0).value(); // 3, for "The" at [0..3)]]>
 			gracefully on documents without content. An absent required layer is rejected
 			with an <code>IllegalArgumentException</code> naming the layer, because a
 			missing pipeline stage is an assembly error, not an empty document.
+			<code>DocumentAnnotators.requireLayers</code> performs exactly that rejection,
+			including the null check on the document, and is what the toolkit's own
+			adapters use.
 		</para>
 	</section>
 </chapter>

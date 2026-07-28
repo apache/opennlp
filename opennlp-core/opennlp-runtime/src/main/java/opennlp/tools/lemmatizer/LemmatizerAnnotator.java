@@ -24,6 +24,7 @@ import java.util.Set;
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnnotator;
+import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
 
@@ -40,16 +41,13 @@ import opennlp.tools.document.Layers;
  *
  * @since 3.0.0
  */
-public class LemmatizerAnnotator implements DocumentAnnotator {
+public final class LemmatizerAnnotator implements DocumentAnnotator {
 
   /**
    * The lemma layer. It is aligned with the token layer by position, and each annotation
    * carries the lemma of its token on that token's span.
    */
   public static final LayerKey<String> LEMMAS = Layers.key("lemmas", String.class);
-
-  /** The message prefix of every absent-required-layer rejection in this adapter. */
-  private static final String MISSING_LAYER = "document lacks the required layer ";
 
   private final Lemmatizer lemmatizer;
 
@@ -89,21 +87,8 @@ public class LemmatizerAnnotator implements DocumentAnnotator {
    */
   @Override
   public Document annotate(Document document) {
-    if (document == null) {
-      throw new IllegalArgumentException("document must not be null");
-    }
-    if (!document.layers().contains(Layers.SENTENCES)) {
-      throw new IllegalArgumentException(MISSING_LAYER
-          + Layers.SENTENCES);
-    }
-    if (!document.layers().contains(Layers.TOKENS)) {
-      throw new IllegalArgumentException(MISSING_LAYER
-          + Layers.TOKENS);
-    }
-    if (!document.layers().contains(Layers.POS_TAGS)) {
-      throw new IllegalArgumentException(MISSING_LAYER
-          + Layers.POS_TAGS);
-    }
+    DocumentAnnotators.requireLayers(document,
+        Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS);
     final List<Annotation<String>> sentences = document.get(Layers.SENTENCES);
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> tags = document.get(Layers.POS_TAGS);
@@ -112,47 +97,30 @@ public class LemmatizerAnnotator implements DocumentAnnotator {
           + Layers.TOKENS + " and " + Layers.POS_TAGS + " layers");
     }
     final List<Annotation<String>> layer = new ArrayList<>(tokens.size());
-    // Walk the token layer once: both layers are in text order, so each sentence
-    // consumes the contiguous run of tokens whose spans it encloses.
-    int next = 0;
-    for (final Annotation<String> sentence : sentences) {
-      final int first = next;
-      while (next < tokens.size()
-          && tokens.get(next).span().getStart() >= sentence.span().getStart()
-          && tokens.get(next).span().getEnd() <= sentence.span().getEnd()) {
-        next++;
-      }
-      final int count = next - first;
-      if (count == 0) {
-        continue;
-      }
-      final String[] words = new String[count];
-      final String[] posTags = new String[count];
-      for (int i = 0; i < count; i++) {
-        words[i] = tokens.get(first + i).value();
+    DocumentAnnotators.forEachSentence(sentences, tokens, (first, words) -> {
+      final String[] posTags = new String[words.length];
+      for (int i = 0; i < words.length; i++) {
         posTags[i] = tags.get(first + i).value();
       }
       final String[] lemmas = lemmatizer.lemmatize(words, posTags);
-      if (lemmas.length != count) {
-        throw new IllegalArgumentException(
-            "lemmatizer returned " + lemmas.length + " lemmas for " + count + " tokens");
+      if (lemmas.length != words.length) {
+        throw new IllegalArgumentException("lemmatizer returned " + lemmas.length
+            + " lemmas for " + words.length + " tokens");
       }
-      for (int i = 0; i < count; i++) {
+      for (int i = 0; i < words.length; i++) {
         layer.add(new Annotation<>(tokens.get(first + i).span(), lemmas[i]));
       }
-    }
-    if (next != tokens.size()) {
-      throw new IllegalArgumentException("token at " + tokens.get(next).span()
-          + " lies outside every sentence");
-    }
+    });
     return document.with(LEMMAS, layer);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> requires() {
     return Set.of(Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> provides() {
     return Set.of(LEMMAS);

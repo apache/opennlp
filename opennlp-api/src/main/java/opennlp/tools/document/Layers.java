@@ -68,7 +68,8 @@ public final class Layers {
   public static final LayerKey<String> POS_TAGS = key("pos", String.class);
 
   /**
-   * Named entities; each annotation covers one mention and carries the entity type.
+   * Named entities; each annotation covers one mention and carries the entity type as
+   * its value. The annotation's span carries offsets only.
    */
   public static final LayerKey<String> ENTITIES = key("entities", String.class);
 
@@ -128,6 +129,6 @@ public final class Layers {
   }
 
   private Layers() {
-    // This class holds constants only and is never instantiated.
+    // Not instantiated; this class provides constants and static key factories only.
   }
 }

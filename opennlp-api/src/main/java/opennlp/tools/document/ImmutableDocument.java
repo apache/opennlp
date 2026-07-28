@@ -27,15 +27,21 @@ import opennlp.tools.util.Span;
 
 /**
  * The default {@link Document} implementation: an unmodifiable map from layer key to an
- * unmodifiable annotation list. Adding a layer copies the map, not the layers, so
- * documents grown from a common ancestor share their layer lists.
+ * unmodifiable annotation list.
+ *
+ * <p>Instances are immutable: {@link #with(LayerKey, List)} returns a new document that
+ * shares the unchanged layers with its ancestor, copying the map but not the layers, so
+ * documents grown from a common ancestor share their layer lists. The text is captured
+ * as a {@link String} at construction, so a mutable {@link CharSequence} handed to
+ * {@link #empty(CharSequence)} cannot change the document afterwards. That immutability
+ * makes instances safe to share between threads.</p>
  */
 final class ImmutableDocument implements Document {
 
-  private final CharSequence text;
+  private final String text;
   private final Map<LayerKey<?>, List<Annotation<?>>> layers;
 
-  private ImmutableDocument(CharSequence text, Map<LayerKey<?>, List<Annotation<?>>> layers) {
+  private ImmutableDocument(String text, Map<LayerKey<?>, List<Annotation<?>>> layers) {
     this.text = text;
     this.layers = layers;
   }
@@ -43,7 +49,8 @@ final class ImmutableDocument implements Document {
   /**
    * Creates a document without any layers.
    *
-   * @param text The original document text. Must not be {@code null}.
+   * @param text The original document text, captured as its content at this moment.
+   *             Must not be {@code null}.
    * @return An empty {@link ImmutableDocument}. Never {@code null}.
    * @throws IllegalArgumentException Thrown if {@code text} is {@code null}.
    */
@@ -51,7 +58,7 @@ final class ImmutableDocument implements Document {
     if (text == null) {
       throw new IllegalArgumentException("text must not be null");
     }
-    return new ImmutableDocument(text, Collections.emptyMap());
+    return new ImmutableDocument(text.toString(), Collections.emptyMap());
   }
 
   /** {@inheritDoc} */

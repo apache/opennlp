@@ -24,6 +24,7 @@ import java.util.Set;
 import opennlp.tools.document.Annotation;
 import opennlp.tools.document.Document;
 import opennlp.tools.document.DocumentAnnotator;
+import opennlp.tools.document.DocumentAnnotators;
 import opennlp.tools.document.LayerKey;
 import opennlp.tools.document.Layers;
 
@@ -36,7 +37,7 @@ import opennlp.tools.document.Layers;
  *
  * @since 3.0.0
  */
-public class StemmerAnnotator implements DocumentAnnotator {
+public final class StemmerAnnotator implements DocumentAnnotator {
 
   /**
    * The stem layer. It is aligned with the token layer by position, and each annotation
@@ -74,13 +75,7 @@ public class StemmerAnnotator implements DocumentAnnotator {
    */
   @Override
   public Document annotate(Document document) {
-    if (document == null) {
-      throw new IllegalArgumentException("document must not be null");
-    }
-    if (!document.layers().contains(Layers.TOKENS)) {
-      throw new IllegalArgumentException("document lacks the required layer "
-          + Layers.TOKENS);
-    }
+    DocumentAnnotators.requireLayers(document, Layers.TOKENS);
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> layer = new ArrayList<>(tokens.size());
     for (final Annotation<String> token : tokens) {
@@ -89,11 +84,13 @@ public class StemmerAnnotator implements DocumentAnnotator {
     return document.with(STEMS, layer);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> requires() {
     return Set.of(Layers.TOKENS);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<LayerKey<?>> provides() {
     return Set.of(STEMS);

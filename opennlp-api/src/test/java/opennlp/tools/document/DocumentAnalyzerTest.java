@@ -21,11 +21,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.namefind.TokenNameFinder;
 import opennlp.tools.postag.POSTagger;
-import opennlp.tools.sentdetect.SentenceDetector;
-import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.util.Sequence;
 import opennlp.tools.util.Span;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,67 +34,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests the {@link DocumentAnalyzer} pipeline over the adapter annotators, using simple
- * inline implementations of the task interfaces: whitespace tokenization, period sentence
- * splitting, and a dictionary tagger. The point under test is the pipeline mechanics and
- * span arithmetic, not model quality.
+ * Tests the {@link DocumentAnalyzer} pipeline over the adapter annotators, using the
+ * deterministic components from {@link TestComponents} and a fixed-vocabulary tagger.
+ * The point under test is the pipeline mechanics and span arithmetic, not model quality.
  */
 public class DocumentAnalyzerTest {
 
-  private static final SentenceDetector SPLITTER = new SentenceDetector() {
-
-    @Override
-    public String[] sentDetect(CharSequence s) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Span[] sentPosDetect(CharSequence s) {
-      // split after each period; keep it simple for the test
-      final String text = s.toString();
-      int start = 0;
-      final java.util.List<Span> spans = new java.util.ArrayList<>();
-      for (int i = 0; i < text.length(); i++) {
-        if (text.charAt(i) == '.') {
-          spans.add(new Span(start, i + 1));
-          start = i + 2;
-        }
-      }
-      return spans.toArray(new Span[0]);
-    }
-  };
-
-  private static final Tokenizer WHITESPACE = new Tokenizer() {
-
-    @Override
-    public String[] tokenize(String s) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Span[] tokenizePos(String s) {
-      final java.util.List<Span> spans = new java.util.ArrayList<>();
-      int start = -1;
-      for (int i = 0; i <= s.length(); i++) {
-        final boolean boundary = i == s.length() || s.charAt(i) == ' ';
-        if (boundary && start >= 0) {
-          spans.add(new Span(start, i));
-          start = -1;
-        } else if (!boundary && start < 0) {
-          start = i;
-        }
-      }
-      return spans.toArray(new Span[0]);
-    }
-  };
-
+  /** Tags the known verbs of the test texts {@code VBZ} and everything else {@code X}. */
   private static final POSTagger TAGGER = new POSTagger() {
+
+    private final Set<String> verbs = Set.of("barks.", "eats.");
 
     @Override
     public String[] tag(String[] sentence) {
       final String[] tags = new String[sentence.length];
       for (int i = 0; i < sentence.length; i++) {
-        tags[i] = "barks.".contains(sentence[i]) ? "VBZ" : "X";
+        tags[i] = verbs.contains(sentence[i]) ? "VBZ" : "X";
       }
       return tags;
     }
@@ -104,13 +60,12 @@ public class DocumentAnalyzerTest {
     }
 
     @Override
-    public opennlp.tools.util.Sequence[] topKSequences(String[] sentence) {
+    public Sequence[] topKSequences(String[] sentence) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public opennlp.tools.util.Sequence[] topKSequences(String[] sentence,
-        Object[] additionalContext) {
+    public Sequence[] topKSequences(String[] sentence, Object[] additionalContext) {
       throw new UnsupportedOperationException();
     }
   };
@@ -118,8 +73,8 @@ public class DocumentAnalyzerTest {
   @Test
   void testPipelineProducesAlignedLayersInOriginalCoordinates() {
     final Document document = DocumentAnalyzer.builder()
-        .add(new SentenceDetectorAnnotator(SPLITTER))
-        .add(new TokenizerAnnotator(WHITESPACE))
+        .add(new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER))
+        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
         .add(new POSTaggerAnnotator(TAGGER))
         .build()
         .analyze("the dog barks. she eats.");
@@ -145,8 +100,9 @@ public class DocumentAnalyzerTest {
    * document on which every provided layer is present and empty, rather than failing:
    * zero sentences legitimately yield zero tokens, zero tags, and zero entities.
    */
-  @Test
-  void testEmptyAndBlankInputProduceEmptyLayers() {
+  @ParameterizedTest
+  @ValueSource(strings = {"", "   "})
+  void testEmptyAndBlankInputProduceEmptyLayers(String text) {
     final TokenNameFinder finder = new TokenNameFinder() {
 
       @Override
@@ -159,19 +115,17 @@ public class DocumentAnalyzerTest {
       }
     };
     final DocumentAnalyzer analyzer = DocumentAnalyzer.builder()
-        .add(new SentenceDetectorAnnotator(SPLITTER))
-        .add(new TokenizerAnnotator(WHITESPACE))
+        .add(new SentenceDetectorAnnotator(TestComponents.PERIOD_SPLITTER))
+        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
         .add(new POSTaggerAnnotator(TAGGER))
         .add(new NameFinderAnnotator(finder))
         .build();
 
-    for (final String text : new String[] {"", "   "}) {
-      final Document document = analyzer.analyze(text);
-      assertEquals(Set.of(Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS, Layers.ENTITIES),
-          document.layers());
-      for (final LayerKey<?> layer : document.layers()) {
-        assertTrue(document.get(layer).isEmpty());
-      }
+    final Document document = analyzer.analyze(text);
+    assertEquals(Set.of(Layers.SENTENCES, Layers.TOKENS, Layers.POS_TAGS, Layers.ENTITIES),
+        document.layers());
+    for (final LayerKey<?> layer : document.layers()) {
+      assertTrue(document.get(layer).isEmpty());
     }
   }
 
@@ -181,7 +135,7 @@ public class DocumentAnalyzerTest {
    */
   @Test
   void testTokenizerHonorsPresentButEmptySentenceLayer() {
-    final Document document = new TokenizerAnnotator(WHITESPACE)
+    final Document document = new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER)
         .annotate(Document.of("the dog").with(Layers.SENTENCES, List.of()));
     assertTrue(document.layers().contains(Layers.TOKENS));
     assertTrue(document.get(Layers.TOKENS).isEmpty());
@@ -190,7 +144,7 @@ public class DocumentAnalyzerTest {
   @Test
   void testTokenizerWorksWithoutSentences() {
     final Document document = DocumentAnalyzer.builder()
-        .add(new TokenizerAnnotator(WHITESPACE))
+        .add(new TokenizerAnnotator(TestComponents.SPACE_TOKENIZER))
         .build()
         .analyze("the dog");
     assertEquals(2, document.get(Layers.TOKENS).size());

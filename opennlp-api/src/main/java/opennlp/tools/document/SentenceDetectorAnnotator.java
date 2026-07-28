@@ -33,7 +33,7 @@ import opennlp.tools.util.Span;
  *
  * @since 3.0.0
  */
-public class SentenceDetectorAnnotator implements DocumentAnnotator {
+public final class SentenceDetectorAnnotator implements DocumentAnnotator {
 
   private final SentenceDetector detector;
 

@@ -36,10 +36,7 @@ import opennlp.tools.postag.POSTagger;
  *
  * @since 3.0.0
  */
-public class POSTaggerAnnotator implements DocumentAnnotator {
-
-  /** The message prefix of every absent-required-layer rejection in this adapter. */
-  private static final String MISSING_LAYER = "document lacks the required layer ";
+public final class POSTaggerAnnotator implements DocumentAnnotator {
 
   private final POSTagger tagger;
 
@@ -76,52 +73,20 @@ public class POSTaggerAnnotator implements DocumentAnnotator {
    */
   @Override
   public Document annotate(Document document) {
-    if (document == null) {
-      throw new IllegalArgumentException("document must not be null");
-    }
-    final Set<LayerKey<?>> present = document.layers();
-    if (!present.contains(Layers.SENTENCES)) {
-      throw new IllegalArgumentException(MISSING_LAYER
-          + Layers.SENTENCES);
-    }
-    if (!present.contains(Layers.TOKENS)) {
-      throw new IllegalArgumentException(MISSING_LAYER
-          + Layers.TOKENS);
-    }
+    DocumentAnnotators.requireLayers(document, Layers.SENTENCES, Layers.TOKENS);
     final List<Annotation<String>> sentences = document.get(Layers.SENTENCES);
     final List<Annotation<String>> tokens = document.get(Layers.TOKENS);
     final List<Annotation<String>> tagAnnotations = new ArrayList<>(tokens.size());
-    // Walk the token layer once: both layers are in text order, so each sentence
-    // consumes the contiguous run of tokens whose spans it encloses.
-    int next = 0;
-    for (final Annotation<String> sentence : sentences) {
-      final int first = next;
-      while (next < tokens.size()
-          && tokens.get(next).span().getStart() >= sentence.span().getStart()
-          && tokens.get(next).span().getEnd() <= sentence.span().getEnd()) {
-        next++;
-      }
-      final int count = next - first;
-      if (count == 0) {
-        continue;
-      }
-      final String[] words = new String[count];
-      for (int i = 0; i < count; i++) {
-        words[i] = tokens.get(first + i).value();
-      }
+    DocumentAnnotators.forEachSentence(sentences, tokens, (first, words) -> {
       final String[] tags = tagger.tag(words);
-      if (tags.length != count) {
+      if (tags.length != words.length) {
         throw new IllegalArgumentException(
-            "tagger returned " + tags.length + " tags for " + count + " tokens");
+            "tagger returned " + tags.length + " tags for " + words.length + " tokens");
       }
-      for (int i = 0; i < count; i++) {
+      for (int i = 0; i < words.length; i++) {
         tagAnnotations.add(new Annotation<>(tokens.get(first + i).span(), tags[i]));
       }
-    }
-    if (next != tokens.size()) {
-      throw new IllegalArgumentException("token at " + tokens.get(next).span()
-          + " lies outside every sentence");
-    }
+    });
     return document.with(Layers.POS_TAGS, tagAnnotations);
   }
 

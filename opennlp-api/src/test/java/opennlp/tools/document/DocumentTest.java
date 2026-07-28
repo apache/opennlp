@@ -47,6 +47,23 @@ public class DocumentTest {
     assertTrue(document.get(WORDS).isEmpty());
   }
 
+  /**
+   * Verifies that the text is captured at construction: mutating a
+   * {@link StringBuilder} handed to {@link Document#of(CharSequence)} does not reach
+   * the document, so the span bounds validated on insertion stay valid for its
+   * lifetime.
+   */
+  @Test
+  void testTextIsCapturedAtConstruction() {
+    final StringBuilder mutable = new StringBuilder("the dog");
+    final Document document = Document.of(mutable)
+        .with(WORDS, List.of(new Annotation<>(new Span(4, 7), "dog")));
+    mutable.setLength(0);
+    assertEquals("the dog", document.text().toString());
+    assertEquals("dog",
+        document.get(WORDS).get(0).span().getCoveredText(document.text()).toString());
+  }
+
   @Test
   void testWithAddsATypedLayer() {
     final Document document = Document.of("the dog")
