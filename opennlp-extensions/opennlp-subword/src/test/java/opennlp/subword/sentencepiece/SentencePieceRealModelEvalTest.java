@@ -47,10 +47,13 @@ class SentencePieceRealModelEvalTest {
 
     int models = 0;
     try (Stream<Path> files = Files.list(Path.of(dir))) {
-      for (final Path model : files.filter(f -> f.toString().endsWith(".model")).sorted()
-          .toList()) {
-        final Path fixtures = Path.of(model.toString()
-            .substring(0, model.toString().length() - ".model".length()) + ".fixtures.tsv");
+      for (final Path model : files
+          .filter(f -> f.toString().endsWith(SentencePieceFixtures.MODEL_SUFFIX))
+          .sorted().toList()) {
+        final String path = model.toString();
+        final Path fixtures = Path.of(
+            path.substring(0, path.length() - SentencePieceFixtures.MODEL_SUFFIX.length())
+                + SentencePieceFixtures.FIXTURES_SUFFIX);
         assumeTrue(Files.exists(fixtures), "no fixtures for " + model.getFileName());
         models++;
         assertModel(model, fixtures);

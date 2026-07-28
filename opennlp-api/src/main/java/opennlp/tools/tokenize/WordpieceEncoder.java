@@ -134,16 +134,16 @@ public final class WordpieceEncoder implements SubwordTokenizer {
                           String classificationToken, String separatorToken,
                           String unknownToken) {
     if (vocabularyIds == null) {
-      throw new IllegalArgumentException("vocabularyIds must not be null.");
+      throw new IllegalArgumentException("vocabularyIds must not be null");
     }
     if (classificationToken == null) {
-      throw new IllegalArgumentException("classificationToken must not be null.");
+      throw new IllegalArgumentException("classificationToken must not be null");
     }
     if (separatorToken == null) {
-      throw new IllegalArgumentException("separatorToken must not be null.");
+      throw new IllegalArgumentException("separatorToken must not be null");
     }
     if (unknownToken == null) {
-      throw new IllegalArgumentException("unknownToken must not be null.");
+      throw new IllegalArgumentException("unknownToken must not be null");
     }
     final Map<String, Integer> byPiece = new HashMap<>(vocabularyIds.size() * 2);
     for (final Map.Entry<String, Integer> entry : vocabularyIds.entrySet()) {
@@ -175,7 +175,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
    */
   private static Map<String, Integer> byPiece(List<String> vocabulary) {
     if (vocabulary == null) {
-      throw new IllegalArgumentException("The vocabulary must not be null.");
+      throw new IllegalArgumentException("vocabulary must not be null");
     }
     final Map<String, Integer> byPiece = new HashMap<>(vocabulary.size() * 2);
     for (int id = 0; id < vocabulary.size(); id++) {
@@ -212,7 +212,7 @@ public final class WordpieceEncoder implements SubwordTokenizer {
   @Override
   public List<SubwordPiece> encode(CharSequence text) {
     if (text == null) {
-      throw new IllegalArgumentException("The text must not be null.");
+      throw new IllegalArgumentException("text must not be null");
     }
     final String original = text.toString();
 

@@ -18,22 +18,81 @@ package opennlp.subword.sentencepiece;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import opennlp.tools.tokenize.SubwordPiece;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
- * Shared support for the tab-separated parity fixture files produced by the
- * {@code gen_fixtures.py} and {@code gen_real_fixtures.py} scripts in the test resources: one
- * line per input, holding the input, the expected piece count, four columns per expected piece
- * (content, id, start, end), and the expected normalized form.
+ * Shared support for the bundled test models and for the tab-separated parity fixture files
+ * produced by the {@code gen_fixtures.py} and {@code gen_real_fixtures.py} scripts in the test
+ * resources: one line per input, holding the input, the expected piece count, four columns per
+ * expected piece (content, id, start, end), and the expected normalized form.
  */
 final class SentencePieceFixtures {
 
+  /** The file name suffix of a bundled or downloaded SentencePiece model. */
+  static final String MODEL_SUFFIX = ".model";
+
+  /** The file name suffix of the fixture file belonging to a model. */
+  static final String FIXTURES_SUFFIX = ".fixtures.tsv";
+
+  private static final Map<String, SentencePieceTokenizer> LOADED = new ConcurrentHashMap<>();
+
   private SentencePieceFixtures() {
+  }
+
+  /**
+   * The bundled models, one per algorithm and normalizer variant the reader must handle.
+   *
+   * @return The model names, usable as {@code @MethodSource} arguments.
+   */
+  static Stream<String> models() {
+    return Stream.of("tiny-unigram", "tiny-unigram-bytefb", "tiny-bpe", "tiny-unigram-identity",
+        "tiny-unigram-suffix");
+  }
+
+  /**
+   * Loads a bundled model from the test resources, caching the result so the parsing cost is paid
+   * once per model across all test classes.
+   *
+   * @param model The bundled model name, without the {@link #MODEL_SUFFIX} suffix.
+   * @return The loaded tokenizer, shared by all callers.
+   */
+  static SentencePieceTokenizer tokenizer(String model) {
+    return LOADED.computeIfAbsent(model, name -> {
+      try (InputStream in =
+               SentencePieceFixtures.class.getResourceAsStream(name + MODEL_SUFFIX)) {
+        assertNotNull(in, "missing test resource " + name + MODEL_SUFFIX);
+        return SentencePieceTokenizer.load(in);
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    });
+  }
+
+  /**
+   * Reads the fixture file belonging to a bundled model.
+   *
+   * @param model The bundled model name, without the {@link #MODEL_SUFFIX} suffix.
+   * @return The parsed fixtures in file order.
+   * @throws IOException Thrown if the fixture resource cannot be read.
+   */
+  static List<Fixture> fixtures(String model) throws IOException {
+    try (InputStream in =
+             SentencePieceFixtures.class.getResourceAsStream(model + FIXTURES_SUFFIX)) {
+      assertNotNull(in, "missing test resource " + model + FIXTURES_SUFFIX);
+      return read(new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)));
+    }
   }
 
   /**
