@@ -46,8 +46,6 @@ import opennlp.tools.util.StringUtil;
  * <p>Surface forms are lower-cased on load because {@link DictionaryLemmatizer} lower-cases the
  * queried token before lookup, so an entry keyed on a mixed-case form would otherwise be
  * unreachable. Tags are kept verbatim and must match the tags the caller's tagger emits.</p>
- *
- * <p>Thread safety is implementation specific.</p>
  */
 public final class PoliMorfDictionaryReader {
 
@@ -55,6 +53,7 @@ public final class PoliMorfDictionaryReader {
   private static final String LEMMA_SEPARATOR = "#";
   private static final int MIN_FIELDS = 3;
 
+  /** Not instantiable. */
   private PoliMorfDictionaryReader() {
   }
 
@@ -64,7 +63,7 @@ public final class PoliMorfDictionaryReader {
    * @param dictionary The dictionary referenced by an open {@link InputStream}. Must not be
    *                   {@code null}.
    * @return A {@link DictionaryLemmatizer} over the adapted entries.
-   * @throws IllegalArgumentException if {@code dictionary} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code dictionary} is {@code null}.
    * @throws IOException Thrown if IO errors occur while reading, or a non-blank line carries
    *                     fewer than three tab-separated fields.
    */
@@ -79,7 +78,8 @@ public final class PoliMorfDictionaryReader {
    *                   {@code null}.
    * @param charset    The character encoding of the dictionary. Must not be {@code null}.
    * @return A {@link DictionaryLemmatizer} over the adapted entries.
-   * @throws IllegalArgumentException if {@code dictionary} or {@code charset} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code dictionary} or {@code charset} is
+   *                                  {@code null}.
    * @throws IOException Thrown if IO errors occur while reading, or a non-blank line carries
    *                     fewer than three tab-separated fields.
    */

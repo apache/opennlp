@@ -30,8 +30,8 @@ import java.util.function.Consumer;
  * This is a clean-room reader written from the published format, with no dependency on that
  * library. Interpreting the accepted sequences as morphological entries is left to the caller.</p>
  *
- * <p>Thread safety is implementation specific; a constructed instance holds only immutable state
- * and its {@link #forEachSequence(Consumer)} may be called concurrently.</p>
+ * <p>A constructed instance holds only immutable state, so {@link #forEachSequence(Consumer)} may
+ * be called concurrently.</p>
  */
 public final class FSA5Reader implements FsaSequenceReader {
 
@@ -40,7 +40,6 @@ public final class FSA5Reader implements FsaSequenceReader {
   private static final int BIT_FINAL_ARC = 0x01;
   private static final int BIT_LAST_ARC = 0x02;
   private static final int BIT_TARGET_NEXT = 0x04;
-  private static final int FLAGS_MASK = 0x07;
 
   /** Offset of the flags/goto field within an arc; the label occupies the byte before it. */
   private static final int ADDRESS_OFFSET = 1;
@@ -48,16 +47,24 @@ public final class FSA5Reader implements FsaSequenceReader {
   private static final int TERMINAL_NODE = 0;
   private static final int NO_ARC = 0;
 
+  /** Guards against runaway recursion on a malformed automaton. */
   private static final int MAX_SEQUENCE_LENGTH = 8192;
 
   private final byte[] arcs;
-  private final int gtl;
+  private final int gotoLength;
   private final int nodeDataLength;
   private final int rootNode;
 
-  private FSA5Reader(byte[] arcs, int gtl, int nodeDataLength) {
+  /**
+   * Initializes the reader over the automaton's arc block.
+   *
+   * @param arcs           The arc block, the automaton bytes after the header.
+   * @param gotoLength     The width in bytes of an arc's flags and goto address field.
+   * @param nodeDataLength The width in bytes of the optional data preceding a node's arcs.
+   */
+  private FSA5Reader(byte[] arcs, int gotoLength, int nodeDataLength) {
     this.arcs = arcs;
-    this.gtl = gtl;
+    this.gotoLength = gotoLength;
     this.nodeDataLength = nodeDataLength;
     // FSA5 keeps a dummy node ahead of the epsilon node: skip the dummy's arc to reach the
     // epsilon node, then the root is its single arc's destination.
@@ -71,7 +78,7 @@ public final class FSA5Reader implements FsaSequenceReader {
    * @param in The automaton bytes, referenced by an open {@link InputStream}. Must not be
    *           {@code null}.
    * @return A reader over the automaton.
-   * @throws IllegalArgumentException if {@code in} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
    * @throws IOException Thrown on IO errors, or if the stream is not an FSA5 automaton.
    */
   public static FSA5Reader read(InputStream in) throws IOException {
@@ -81,26 +88,41 @@ public final class FSA5Reader implements FsaSequenceReader {
     return fromBytes(in.readAllBytes());
   }
 
+  /**
+   * Reads an automaton from a byte block already held in memory.
+   *
+   * @param bytes The automaton bytes, header included.
+   * @return A reader over the automaton.
+   * @throws IOException Thrown if the block is not an FSA5 automaton or its header is truncated.
+   */
   static FSA5Reader fromBytes(byte[] bytes) throws IOException {
-    if (bytes.length < HEADER_SIZE
-        || bytes[0] != MAGIC[0] || bytes[1] != MAGIC[1]
-        || bytes[2] != MAGIC[2] || bytes[3] != MAGIC[3]) {
-      throw new IOException("not an FSA automaton: bad magic header");
+    FsaSequenceReader.requireFsaHeader(bytes);
+    if (bytes.length < HEADER_SIZE) {
+      throw new IOException("truncated FSA5 header: fewer than " + HEADER_SIZE + " bytes");
     }
     if (bytes[4] != VERSION) {
       throw new IOException("unsupported FSA version 0x"
           + Integer.toHexString(bytes[4] & 0xff) + "; only FSA5 (0x05) is read here");
     }
-    final int hgtl = bytes[7] & 0xff;
-    final int gtl = hgtl & 0x0f;
-    final int nodeDataLength = (hgtl >>> 4) & 0x0f;
-    if (gtl < 1) {
-      throw new IOException("invalid FSA5 goto length: " + gtl);
+    // One header byte packs both widths: the goto length low, the node data length high.
+    final int packedLengths = bytes[7] & 0xff;
+    final int gotoLength = packedLengths & 0x0f;
+    final int nodeDataLength = (packedLengths >>> 4) & 0x0f;
+    if (gotoLength < 1) {
+      throw new IOException("invalid FSA5 goto length: " + gotoLength);
     }
     final byte[] arcs = Arrays.copyOfRange(bytes, HEADER_SIZE, bytes.length);
-    return new FSA5Reader(arcs, gtl, nodeDataLength);
+    return new FSA5Reader(arcs, gotoLength, nodeDataLength);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The stored order of an FSA5 automaton is lexicographic.</p>
+   *
+   * @throws IllegalStateException Thrown if a path exceeds {@value #MAX_SEQUENCE_LENGTH} bytes,
+   *                               which indicates a malformed automaton.
+   */
   @Override
   public void forEachSequence(Consumer<byte[]> action) {
     if (action == null) {
@@ -109,6 +131,13 @@ public final class FSA5Reader implements FsaSequenceReader {
     enumerate(rootNode, new GrowableByteSequence(), action);
   }
 
+  /**
+   * Walks the automaton depth first, reporting the path of every arc that ends a word.
+   *
+   * @param node   The node whose arcs are walked.
+   * @param path   The labels of the arcs walked so far; pushed and popped in place.
+   * @param action The action to run for each accepted sequence.
+   */
   private void enumerate(int node, GrowableByteSequence path, Consumer<byte[]> action) {
     if (path.length() > MAX_SEQUENCE_LENGTH) {
       throw new IllegalStateException(
@@ -127,28 +156,54 @@ public final class FSA5Reader implements FsaSequenceReader {
     }
   }
 
+  /**
+   * Locates the first arc of a node, skipping the node data when the automaton stores any.
+   *
+   * @param node The offset of the node.
+   * @return The offset of the node's first arc.
+   */
   private int firstArc(int node) {
     return nodeDataLength + node;
   }
 
+  /**
+   * Locates the arc following one within the same node.
+   *
+   * @param arc The offset of the current arc.
+   * @return The offset of the next arc, or {@link #NO_ARC} when the current arc is the last.
+   */
   private int nextArc(int arc) {
     return (arcs[arc + ADDRESS_OFFSET] & BIT_LAST_ARC) != 0 ? NO_ARC : skipArc(arc);
   }
 
+  /**
+   * Reads the node an arc leads to, following either its goto address or the next-node bit.
+   *
+   * @param arc The offset of the arc.
+   * @return The offset of the destination node, {@link #TERMINAL_NODE} when the arc ends a word
+   *         without continuing.
+   */
   private int destinationNode(int arc) {
     if ((arcs[arc + ADDRESS_OFFSET] & BIT_TARGET_NEXT) != 0) {
       return skipArc(arc);
     }
     int value = 0;
-    for (int i = gtl - 1; i >= 0; i--) {
+    for (int i = gotoLength - 1; i >= 0; i--) {
       value = (value << 8) | (arcs[arc + ADDRESS_OFFSET + i] & 0xff);
     }
+    // The three flag bits share the low end of the goto field.
     return value >>> 3;
   }
 
+  /**
+   * Skips over one arc, whose width depends on whether it carries a goto address.
+   *
+   * @param arc The offset of the arc.
+   * @return The offset just past the arc.
+   */
   private int skipArc(int arc) {
     return (arcs[arc + ADDRESS_OFFSET] & BIT_TARGET_NEXT) != 0
         ? arc + ADDRESS_OFFSET + 1
-        : arc + ADDRESS_OFFSET + gtl;
+        : arc + ADDRESS_OFFSET + gotoLength;
   }
 }

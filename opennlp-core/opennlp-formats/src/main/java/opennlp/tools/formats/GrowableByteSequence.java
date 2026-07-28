@@ -30,10 +30,16 @@ final class GrowableByteSequence {
   private byte[] data = new byte[64];
   private int length;
 
+  /** {@return the number of bytes currently on the stack} */
   int length() {
     return length;
   }
 
+  /**
+   * Appends one byte, growing the buffer when it is full.
+   *
+   * @param value The byte to append.
+   */
   void push(byte value) {
     if (length == data.length) {
       data = Arrays.copyOf(data, data.length << 1);
@@ -41,10 +47,12 @@ final class GrowableByteSequence {
     data[length++] = value;
   }
 
+  /** Drops the last byte. The caller must not pop more bytes than it pushed. */
   void pop() {
     length--;
   }
 
+  /** {@return a copy of the bytes currently on the stack} */
   byte[] toByteArray() {
     return Arrays.copyOf(data, length);
   }

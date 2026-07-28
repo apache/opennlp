@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 public interface FsaSequenceReader {
 
   /** ASCII {@code \fsa}, the shared magic header of both automaton formats. */
-  byte[] MAGIC = {0x5c, 0x66, 0x73, 0x61};
+  String MAGIC = "\\fsa";
 
   /** Version byte of the FSA5 format. */
   int VERSION_FSA5 = 0x05;
@@ -44,9 +44,26 @@ public interface FsaSequenceReader {
    * sequence is a fresh array owned by the callee.
    *
    * @param action The action to run for each accepted sequence. Must not be {@code null}.
-   * @throws IllegalArgumentException if {@code action} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code action} is {@code null}.
    */
   void forEachSequence(Consumer<byte[]> action);
+
+  /**
+   * Checks that a byte block starts with {@link #MAGIC} and carries a version byte.
+   *
+   * @param bytes The automaton bytes. Must not be {@code null}.
+   * @throws IOException Thrown if the block is too short or does not start with {@link #MAGIC}.
+   */
+  static void requireFsaHeader(byte[] bytes) throws IOException {
+    if (bytes.length <= MAGIC.length()) {
+      throw new IOException("not an FSA automaton: bad magic header");
+    }
+    for (int i = 0; i < MAGIC.length(); i++) {
+      if (bytes[i] != (byte) MAGIC.charAt(i)) {
+        throw new IOException("not an FSA automaton: bad magic header");
+      }
+    }
+  }
 
   /**
    * Reads an FSA5 or CFSA2 automaton, dispatching on the version byte.
@@ -54,7 +71,7 @@ public interface FsaSequenceReader {
    * @param in The automaton bytes, referenced by an open {@link InputStream}. Must not be
    *           {@code null}.
    * @return A reader over the automaton.
-   * @throws IllegalArgumentException if {@code in} is {@code null}.
+   * @throws IllegalArgumentException Thrown if {@code in} is {@code null}.
    * @throws IOException Thrown on IO errors, or if the stream is not a supported FSA automaton.
    */
   static FsaSequenceReader read(InputStream in) throws IOException {
@@ -62,11 +79,7 @@ public interface FsaSequenceReader {
       throw new IllegalArgumentException("in must not be null");
     }
     final byte[] bytes = in.readAllBytes();
-    if (bytes.length < MAGIC.length + 1
-        || bytes[0] != MAGIC[0] || bytes[1] != MAGIC[1]
-        || bytes[2] != MAGIC[2] || bytes[3] != MAGIC[3]) {
-      throw new IOException("not an FSA automaton: bad magic header");
-    }
+    requireFsaHeader(bytes);
     final int version = bytes[4] & 0xff;
     switch (version) {
       case VERSION_CFSA2:
