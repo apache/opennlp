@@ -58,7 +58,7 @@ import opennlp.tools.stemmer.StemmerFactory;
 import static opennlp.tools.stemmer.light.StemmerUtil.endsWith;
 
 /**
- * Light Stemmer for Portuguese
+ * Light Stemmer for Portuguese.
  *
  * <p>This stemmer implements the "UniNE" algorithm in:
  * <a href="https://doi.org/10.1145/1141277.1141523"><i>Light Stemming Approaches for the French,
@@ -74,7 +74,11 @@ import static opennlp.tools.stemmer.light.StemmerUtil.endsWith;
 @ThreadSafe
 public final class PortugueseLightStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
+   */
   @Override
   public Stemmer newStemmer() {
     return this;

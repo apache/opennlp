@@ -65,10 +65,9 @@ new SharingStemmer(factory).stem("running");   // "run"
 new CachingStemmer(factory).stem("running");   // "run"]]>
 			</programlisting>
 			Thread-safe stemmers such as the shareable <code>SnowballStemmer</code>
-			class and the UniNE light stemmers do not need
-			<code>SharingStemmer</code>. Long-running containers
-			should call <code>clearThreadLocalState()</code> when a pooled thread no
-			longer uses a sharing or caching stemmer.
+			class and the UniNE light stemmers do not need <code>SharingStemmer</code>.
+			Long-running containers should call <code>clearThreadLocalState()</code>
+			when a pooled thread no longer uses a sharing or caching stemmer.
 		</para>
 	</section>
 
@@ -78,7 +77,7 @@ new CachingStemmer(factory).stem("running");   // "run"]]>
 			The package <code>opennlp.tools.stemmer.light</code> ports Jacques Savoy's
 			UniNE light and minimal stemming algorithms (the same family Apache Lucene
 			ships in analysis-common). Light stemmers strip a modest set of endings;
-			minimal stemmers strip fewer. Instances are stateless, safe for concurrent
+			minimal stemmers strip fewer. Instances are immutable, safe for concurrent
 			use, and each instance is also its own <code>StemmerFactory</code>. Input
 			is expected to be lowercase; the stemmers do not fold case.
 		</para>

@@ -56,7 +56,7 @@ import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.StemmerFactory;
 
 /**
- * Light Stemmer for Spanish
+ * Light Stemmer for Spanish.
  *
  * <p>This stemmer implements the algorithm described in:
  * <a href="https://doi.org/10.1007/3-540-45691-0_3"><i>Report on CLEF-2001 Experiments</i></a>
@@ -70,7 +70,11 @@ import opennlp.tools.stemmer.StemmerFactory;
 @ThreadSafe
 public final class SpanishLightStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
+   */
   @Override
   public Stemmer newStemmer() {
     return this;

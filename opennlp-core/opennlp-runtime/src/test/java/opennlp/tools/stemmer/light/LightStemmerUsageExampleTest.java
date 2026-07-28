@@ -29,7 +29,7 @@ import opennlp.tools.stemmer.StemmerFactory;
  * value the chapter states is asserted here, so a change breaking this test breaks the
  * manual.
  */
-public class LightStemmerUsageExampleTest {
+class LightStemmerUsageExampleTest {
 
   /**
    * German light stemming of a plural form, and the same result through

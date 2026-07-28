@@ -57,9 +57,11 @@ import opennlp.tools.stemmer.StemmerFactory;
 import static opennlp.tools.stemmer.light.StemmerUtil.endsWith;
 
 /**
- * Minimal Stemmer for Swedish. The algorithm is an adapted version of the
- * {@link SwedishLightStemmer}, but only stripping the most common plural suffixes for nouns:
- * -ar/arne/arna/aren, -at, -er/erna, -et, -or/orna, -en. We do not strip -an or -ans suffixes,
+ * Minimal Stemmer for Swedish.
+ *
+ * <p>The algorithm is an adapted version of the {@link SwedishLightStemmer}, restricted to the
+ * most common noun plural endings -ar/are/arne/arna/aren, -at, -er/erna, -et, -or/orna and -en,
+ * plus the genitive -s and a trailing -a, -e or -n. The -an and -ans endings are not stripped,
  * since that would require a large dictionary of exceptions.
  *
  * <p>Adapted from the identically named algorithm in Apache Lucene's analysis-common module.
@@ -70,7 +72,11 @@ import static opennlp.tools.stemmer.light.StemmerUtil.endsWith;
 @ThreadSafe
 public final class SwedishMinimalStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
+   */
   @Override
   public Stemmer newStemmer() {
     return this;

@@ -69,6 +69,8 @@ class LightStemmerContractTest {
   void testNorwegianVarietyValidation() {
     assertThrows(IllegalArgumentException.class, () -> new NorwegianLightStemmer(null));
     assertThrows(IllegalArgumentException.class,
+        () -> new NorwegianLightStemmer(NorwegianVariety.BOKMAAL, (NorwegianVariety[]) null));
+    assertThrows(IllegalArgumentException.class,
         () -> new NorwegianMinimalStemmer(NorwegianVariety.BOKMAAL, (NorwegianVariety) null));
   }
 }

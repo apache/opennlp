@@ -56,7 +56,7 @@ import opennlp.tools.stemmer.Stemmer;
 import opennlp.tools.stemmer.StemmerFactory;
 
 /**
- * Light Stemmer for French.
+ * Minimal Stemmer for French.
  *
  * <p>This stemmer implements the following algorithm:
  * <a href="https://doi.org/10.1002/(SICI)1097-4571(1999)50:10%3C944::AID-ASI9%3E3.0.CO;2-Q">
@@ -71,7 +71,11 @@ import opennlp.tools.stemmer.StemmerFactory;
 @ThreadSafe
 public final class FrenchMinimalStemmer extends AbstractCharArrayStemmer
     implements StemmerFactory {
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Returns this instance rather than a new one; the stemmer is thread-safe.</p>
+   */
   @Override
   public Stemmer newStemmer() {
     return this;
