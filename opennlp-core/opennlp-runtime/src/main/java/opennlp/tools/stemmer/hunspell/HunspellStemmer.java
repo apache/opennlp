@@ -144,9 +144,6 @@ public class HunspellStemmer implements Stemmer {
     if (own != null && dictionary.validStandalone(own)) {
       analyses.add(word);
     }
-    // Only rules whose affix material ends in the word's last character can be
-    // undone from it, so each scan walks that bucket plus the strip-only rules
-    // instead of the whole inventory.
     for (final Affix suffix : dictionary.suffixesEndingWith(word.charAt(word.length() - 1))) {
       undoSuffix(word, suffix, analyses);
     }
@@ -350,69 +347,45 @@ public class HunspellStemmer implements Stemmer {
       stems.add(part);
     }
     for (final Affix suffix : dictionary.suffixesEndingWith(part.charAt(part.length() - 1))) {
-      collectSuffixedPartStem(part, suffix, position, last, stems);
+      collectAffixedPartStem(part, suffix, true, position, last, stems);
     }
     for (final Affix suffix : dictionary.suffixesWithoutMaterial()) {
-      collectSuffixedPartStem(part, suffix, position, last, stems);
+      collectAffixedPartStem(part, suffix, true, position, last, stems);
     }
     for (final Affix prefix : dictionary.prefixesStartingWith(part.charAt(0))) {
-      collectPrefixedPartStem(part, prefix, position, first, stems);
+      collectAffixedPartStem(part, prefix, false, position, first, stems);
     }
     for (final Affix prefix : dictionary.prefixesWithoutMaterial()) {
-      collectPrefixedPartStem(part, prefix, position, first, stems);
+      collectAffixedPartStem(part, prefix, false, position, first, stems);
     }
   }
 
   /**
-   * Adds the stem of one suffixed part reading when the rule and the stem's entry
-   * admit it at the position.
+   * Adds the stem of one affixed part reading when the rule and the stem's entry admit
+   * it at the position.
    *
    * @param part The part spelling under analysis.
-   * @param suffix The suffix rule to undo.
+   * @param affix The rule to undo.
+   * @param suffix Whether the rule is a suffix rule.
    * @param position The part's place in the compound.
-   * @param last Whether the part closes the word.
+   * @param atEdge Whether the part sits at the word end the rule faces, the closing part
+   *               for a suffix rule and the opening part for a prefix rule; an affix
+   *               facing another part instead needs the permit flag.
    * @param stems The mutable, insertion-ordered set collecting the stems.
    */
-  private void collectSuffixedPartStem(String part, Affix suffix,
-      CompoundPosition position, boolean last, Set<String> stems) {
-    if (dictionary.circumfixOnly(suffix) || dictionary.forbidsInCompound(suffix)
-        || (!last && !dictionary.permitsInside(suffix))) {
+  private void collectAffixedPartStem(String part, Affix affix, boolean suffix,
+      CompoundPosition position, boolean atEdge, Set<String> stems) {
+    if (dictionary.circumfixOnly(affix) || dictionary.forbidsInCompound(affix)
+        || (!atEdge && !dictionary.permitsInside(affix))) {
       return;
     }
-    final String stem = removeAffixInCompound(part, suffix, true);
+    final String stem = removeAffixInCompound(part, affix, suffix);
     if (stem == null) {
       return;
     }
     final List<int[]> flagSets = dictionary.lookup(stem);
-    if (flagSets != null && dictionary.supportsPart(flagSets, suffix.flag(), position,
-        dictionary.affixAdmits(suffix, position))) {
-      stems.add(stem);
-    }
-  }
-
-  /**
-   * Adds the stem of one prefixed part reading when the rule and the stem's entry
-   * admit it at the position.
-   *
-   * @param part The part spelling under analysis.
-   * @param prefix The prefix rule to undo.
-   * @param position The part's place in the compound.
-   * @param first Whether the part opens the word.
-   * @param stems The mutable, insertion-ordered set collecting the stems.
-   */
-  private void collectPrefixedPartStem(String part, Affix prefix,
-      CompoundPosition position, boolean first, Set<String> stems) {
-    if (dictionary.circumfixOnly(prefix) || dictionary.forbidsInCompound(prefix)
-        || (!first && !dictionary.permitsInside(prefix))) {
-      return;
-    }
-    final String stem = removeAffixInCompound(part, prefix, false);
-    if (stem == null) {
-      return;
-    }
-    final List<int[]> flagSets = dictionary.lookup(stem);
-    if (flagSets != null && dictionary.supportsPart(flagSets, prefix.flag(), position,
-        dictionary.affixAdmits(prefix, position))) {
+    if (flagSets != null && dictionary.supportsPart(flagSets, affix.flag(), position,
+        dictionary.affixAdmits(affix, position))) {
       stems.add(stem);
     }
   }

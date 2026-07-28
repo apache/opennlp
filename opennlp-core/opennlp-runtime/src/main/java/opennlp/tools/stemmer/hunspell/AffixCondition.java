@@ -36,8 +36,16 @@ final class AffixCondition {
   private final char[][] accepted;
   /** Per position with a class: whether the class is negated; {@code null} rows unused. */
   private final boolean[] negated;
+  /** Whether the owning rule is a suffix rule, which anchors the condition at the end. */
   private final boolean suffix;
 
+  /**
+   * Initializes the condition.
+   *
+   * @param accepted The accepted characters per position.
+   * @param negated The negation marker per position.
+   * @param suffix Whether the owning rule is a suffix rule.
+   */
   private AffixCondition(char[][] accepted, boolean[] negated, boolean suffix) {
     this.accepted = accepted;
     this.negated = negated;

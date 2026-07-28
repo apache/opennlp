@@ -27,6 +27,8 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import opennlp.tools.stemmer.Stemmer;
 
@@ -67,51 +69,103 @@ public class HunspellStemmerTest {
 
   @BeforeAll
   static void loadDictionary() throws IOException {
-    final HunspellDictionary dictionary = HunspellDictionary.load(
-        new ByteArrayInputStream(AFFIX.getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayInputStream(WORDS.getBytes(StandardCharsets.UTF_8)));
-    stemmer = new HunspellStemmer(dictionary);
+    stemmer = new HunspellStemmer(load(AFFIX, WORDS));
   }
 
-  @Test
-  void testSuffixRules() {
-    Assertions.assertEquals("cat", stemmer.stem("cats").toString());
-    Assertions.assertEquals("pony", stemmer.stem("ponies").toString());
-    Assertions.assertEquals("box", stemmer.stem("boxes").toString());
-    Assertions.assertEquals("make", stemmer.stem("making").toString());
-    Assertions.assertEquals("lock", stemmer.stem("locking").toString());
+  /**
+   * Loads a dictionary from in-memory affix and word-list content, both encoded as
+   * UTF-8, through the stream-based entry point.
+   *
+   * @param affix The {@code .aff} content.
+   * @param words The {@code .dic} content.
+   * @return The loaded dictionary. Never {@code null}.
+   * @throws IOException Thrown if the content is malformed.
+   */
+  private static HunspellDictionary load(String affix, String words) throws IOException {
+    return load(affix, words, StandardCharsets.UTF_8);
   }
 
-  @Test
-  void testPrefixAndCrossProduct() {
-    Assertions.assertEquals("lock", stemmer.stem("unlock").toString());
-    Assertions.assertEquals("lock", stemmer.stem("unlocks").toString());
-    Assertions.assertEquals("lock", stemmer.stem("unlocking").toString());
+  /**
+   * Loads a dictionary from in-memory affix and word-list content encoded in the given
+   * charset, through the stream-based entry point.
+   *
+   * @param affix The {@code .aff} content.
+   * @param words The {@code .dic} content.
+   * @param charset The charset both contents are encoded with.
+   * @return The loaded dictionary. Never {@code null}.
+   * @throws IOException Thrown if the content is malformed.
+   */
+  private static HunspellDictionary load(String affix, String words, Charset charset)
+      throws IOException {
+    return HunspellDictionary.load(new ByteArrayInputStream(affix.getBytes(charset)),
+        new ByteArrayInputStream(words.getBytes(charset)));
   }
 
-  @Test
-  void testConditionsBlockWrongAnalyses() {
-    // the s rule requires a stem not ending in s, x, or y
-    Assertions.assertEquals("boxs", stemmer.stem("boxs").toString());
-    // cat carries no G flag, so no ing analysis exists
-    Assertions.assertEquals("cating", stemmer.stem("cating").toString());
-    // fish carries no flags at all
-    Assertions.assertEquals("fishs", stemmer.stem("fishs").toString());
+  /**
+   * Verifies the fixture's suffix rules: the plural {@code -s}, the {@code y} to
+   * {@code ies} replacement, the {@code -es} plural after a sibilant, and the
+   * progressive {@code -ing} with and without the silent {@code e}.
+   *
+   * @param word The surface form to stem.
+   * @param expected The stem the fixture licenses.
+   */
+  @ParameterizedTest
+  @CsvSource({"cats,cat", "ponies,pony", "boxes,box", "making,make", "locking,lock"})
+  void testSuffixRules(String word, String expected) {
+    Assertions.assertEquals(expected, stemmer.stem(word).toString());
   }
 
-  @Test
-  void testDirectLookupAndCase() {
-    Assertions.assertEquals("fish", stemmer.stem("fish").toString());
-    Assertions.assertEquals("cat", stemmer.stem("Cats").toString());
-    Assertions.assertEquals("lock", stemmer.stem("Unlocks").toString());
+  /**
+   * Verifies prefix removal alone and combined with a suffix through the cross-product
+   * marker both rules declare.
+   *
+   * @param word The surface form to stem.
+   * @param expected The stem the fixture licenses.
+   */
+  @ParameterizedTest
+  @CsvSource({"unlock,lock", "unlocks,lock", "unlocking,lock"})
+  void testPrefixAndCrossProduct(String word, String expected) {
+    Assertions.assertEquals(expected, stemmer.stem(word).toString());
   }
 
+  /**
+   * Verifies that an analysis a rule condition or a missing flag rejects is not
+   * reported: {@code boxs} fails the {@code [^sxy]} condition of the {@code -s} rule,
+   * {@code cat} carries no {@code G} flag, and {@code fish} carries no flag at all, so
+   * each surface form falls through unchanged.
+   *
+   * @param word The surface form to stem.
+   */
+  @ParameterizedTest
+  @CsvSource({"boxs", "cating", "fishs"})
+  void testConditionsBlockWrongAnalyses(String word) {
+    Assertions.assertEquals(word, stemmer.stem(word).toString());
+  }
+
+  /**
+   * Verifies that a listed word stems to itself and that a capitalized surface form is
+   * analyzed through its lowercase variant.
+   *
+   * @param word The surface form to stem.
+   * @param expected The stem the fixture licenses.
+   */
+  @ParameterizedTest
+  @CsvSource({"fish,fish", "Cats,cat", "Unlocks,lock"})
+  void testDirectLookupAndCase(String word, String expected) {
+    Assertions.assertEquals(expected, stemmer.stem(word).toString());
+  }
+
+  /** Verifies that a word with no analysis is returned unchanged as its only analysis. */
   @Test
   void testUnknownWordsPassThroughUnchanged() {
     Assertions.assertEquals("zebras", stemmer.stem("zebras").toString());
     Assertions.assertEquals(1, stemmer.stemAll("zebras").size());
   }
 
+  /**
+   * Verifies that {@link HunspellStemmer#stemAll(CharSequence)} reports the analyses
+   * and that {@link HunspellStemmer#stem(CharSequence)} answers the first of them.
+   */
   @Test
   void testStemAllReportsEveryAnalysis() {
     Assertions.assertEquals(1, stemmer.stemAll("unlocks").size());
@@ -120,20 +174,22 @@ public class HunspellStemmerTest {
     Assertions.assertEquals("lock", stemmer.stemAll("lock").get(0).toString());
   }
 
+  /**
+   * Verifies twofold suffix removal: the plural {@code -s} stacks on the comparative
+   * {@code -er} through the continuation class the outer rule declares, while the inner
+   * flag alone licenses nothing because no entry carries it.
+   *
+   * @throws IOException Thrown if the fixture fails to load.
+   */
   @Test
   void testTwofoldSuffixesThroughContinuationClasses() throws IOException {
-    final String affix = String.join("\n",
+    final HunspellStemmer twofold = new HunspellStemmer(load(String.join("\n",
         "SET UTF-8",
         "SFX A Y 1",
         "SFX A 0 er/B .",
         "SFX B Y 1",
         "SFX B 0 s .",
-        "");
-    final String words = String.join("\n", "1", "kind/A", "");
-    final HunspellDictionary dictionary = HunspellDictionary.load(
-        new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayInputStream(words.getBytes(StandardCharsets.UTF_8)));
-    final HunspellStemmer twofold = new HunspellStemmer(dictionary);
+        ""), String.join("\n", "1", "kind/A", "")));
 
     Assertions.assertEquals("kind", twofold.stem("kinder").toString());
     Assertions.assertEquals("kind", twofold.stem("kinders").toString());
@@ -141,64 +197,51 @@ public class HunspellStemmerTest {
     Assertions.assertEquals("kinds", twofold.stem("kinds").toString());
   }
 
+  /**
+   * Verifies {@code FLAG num} mode: a comma-separated run of decimal numbers is the
+   * entry's flag set, and an affix block named by one of them applies.
+   *
+   * @throws IOException Thrown if the fixture fails to load.
+   */
   @Test
   void testNumericFlagMode() throws IOException {
-    final String affix = String.join("\n",
+    final HunspellDictionary dictionary = load(String.join("\n",
         "SET UTF-8",
         "FLAG num",
         "SFX 100 Y 1",
         "SFX 100 0 s .",
-        "");
-    final String words = String.join("\n", "1", "walk/100,7", "");
-    final HunspellDictionary dictionary = HunspellDictionary.load(
-        new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayInputStream(words.getBytes(StandardCharsets.UTF_8)));
+        ""), String.join("\n", "1", "walk/100,7", ""));
     Assertions.assertEquals("walk",
         new HunspellStemmer(dictionary).stem("walks").toString());
   }
 
+  /**
+   * Verifies {@code FLAG long} mode: each pair of characters in the run is one flag,
+   * and an affix block named by such a pair applies.
+   *
+   * @throws IOException Thrown if the fixture fails to load.
+   */
   @Test
   void testLongFlagMode() throws IOException {
-    final String affix = String.join("\n",
+    final HunspellDictionary dictionary = load(String.join("\n",
         "SET UTF-8",
         "FLAG long",
         "SFX Aa Y 1",
         "SFX Aa 0 s .",
-        "");
-    final String words = String.join("\n", "1", "walk/AaBb", "");
-    final HunspellDictionary dictionary = HunspellDictionary.load(
-        new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayInputStream(words.getBytes(StandardCharsets.UTF_8)));
+        ""), String.join("\n", "1", "walk/AaBb", ""));
     Assertions.assertEquals("walk",
         new HunspellStemmer(dictionary).stem("walks").toString());
   }
 
+  /**
+   * Verifies that a stemmer minted by the factory analyzes against the same dictionary.
+   *
+   * @throws IOException Thrown if the fixture fails to load.
+   */
   @Test
   void testFactoryHandsOutWorkingStemmers() throws IOException {
-    final HunspellDictionary dictionary = HunspellDictionary.load(
-        new ByteArrayInputStream(AFFIX.getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayInputStream(WORDS.getBytes(StandardCharsets.UTF_8)));
-    final Stemmer fresh = new HunspellStemmerFactory(dictionary).newStemmer();
+    final Stemmer fresh = new HunspellStemmerFactory(load(AFFIX, WORDS)).newStemmer();
     Assertions.assertEquals("pony", fresh.stem("ponies").toString());
-  }
-
-  /**
-   * Loads a dictionary from in-memory affix and word-list content, both encoded as
-   * UTF-8, through the stream-based entry point.
-   *
-   * @param affix The {@code .aff} content. Must not be {@code null}.
-   * @param words The {@code .dic} content. Must not be {@code null}.
-   * @return The loaded dictionary. Never {@code null}.
-   * @throws IOException Thrown if the content is malformed.
-   * @throws IllegalArgumentException Thrown if a parameter is {@code null}.
-   */
-  private static HunspellDictionary load(String affix, String words) throws IOException {
-    if (affix == null || words == null) {
-      throw new IllegalArgumentException("affix and words must not be null");
-    }
-    return HunspellDictionary.load(
-        new ByteArrayInputStream(affix.getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayInputStream(words.getBytes(StandardCharsets.UTF_8)));
   }
 
   /**
@@ -255,15 +298,11 @@ public class HunspellStemmerTest {
   @Test
   void testSetDeclarationSelectsEncoding() throws IOException {
     final Charset latin1 = StandardCharsets.ISO_8859_1;
-    final String affix = String.join("\n",
+    final HunspellDictionary dictionary = load(String.join("\n",
         "SET ISO8859-1",
         "SFX S Y 1",
         "SFX S 0 s .",
-        "");
-    final String words = "1\ncaf\u00E9/S\n";
-    final HunspellDictionary dictionary = HunspellDictionary.load(
-        new ByteArrayInputStream(affix.getBytes(latin1)),
-        new ByteArrayInputStream(words.getBytes(latin1)));
+        ""), "1\ncaf\u00E9/S\n", latin1);
     final HunspellStemmer latin1Stemmer = new HunspellStemmer(dictionary);
     Assertions.assertEquals("caf\u00E9", latin1Stemmer.stem("caf\u00E9s").toString());
     Assertions.assertEquals("caf\u00E9", latin1Stemmer.stem("caf\u00E9").toString());
@@ -521,24 +560,43 @@ public class HunspellStemmerTest {
         load("FLAG num\n", "1\nword/\n").lookup("word").get(0).length);
   }
 
+  /** Verifies that a malformed affix file aborts the load instead of loading partially. */
   @Test
   void testMalformedInputFailsLoud() {
-    Assertions.assertThrows(IOException.class, () -> HunspellDictionary.load(
-        new ByteArrayInputStream("SFX S Y 2\nSFX S 0 s .\n".getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayInputStream("1\ncat/S\n".getBytes(StandardCharsets.UTF_8))));
-    Assertions.assertThrows(IOException.class, () -> HunspellDictionary.load(
-        new ByteArrayInputStream("SET NO-SUCH-ENCODING\n".getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayInputStream("0\n".getBytes(StandardCharsets.UTF_8))));
-    Assertions.assertThrows(IOException.class, () -> HunspellDictionary.load(
-        new ByteArrayInputStream("SFX S 0 s [a\n".getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayInputStream("0\n".getBytes(StandardCharsets.UTF_8))));
-    Assertions.assertThrows(IllegalArgumentException.class,
-        () -> HunspellDictionary.load((InputStream) null, (InputStream) null));
-    Assertions.assertThrows(IllegalArgumentException.class,
+    Assertions.assertThrows(IOException.class,
+        () -> load("SFX S Y 2\nSFX S 0 s .\n", "1\ncat/S\n"));
+    Assertions.assertThrows(IOException.class,
+        () -> load("SET NO-SUCH-ENCODING\n", "0\n"));
+    Assertions.assertThrows(IOException.class, () -> load("SFX S 0 s [a\n", "0\n"));
+  }
+
+  /**
+   * Verifies that every entry point rejects a {@code null} argument with the documented
+   * exception, and that the stream-based loader names the offending argument the way
+   * its file-based sibling does.
+   */
+  @Test
+  void testNullArgumentsAreRejected() {
+    final InputStream present = new ByteArrayInputStream(new byte[0]);
+    IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> HunspellDictionary.load(null, present));
+    Assertions.assertEquals("affixStream must not be null", e.getMessage());
+
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> HunspellDictionary.load(present, null));
+    Assertions.assertEquals("dictionaryStream must not be null", e.getMessage());
+
+    e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new HunspellStemmer(null));
-    Assertions.assertThrows(IllegalArgumentException.class,
+    Assertions.assertEquals("dictionary must not be null", e.getMessage());
+
+    e = Assertions.assertThrows(IllegalArgumentException.class,
         () -> new HunspellStemmerFactory(null));
-    Assertions.assertThrows(IllegalArgumentException.class, () -> stemmer.stemAll(null));
+    Assertions.assertEquals("dictionary must not be null", e.getMessage());
+
+    e = Assertions.assertThrows(IllegalArgumentException.class,
+        () -> stemmer.stemAll(null));
+    Assertions.assertEquals("word must not be null", e.getMessage());
   }
 
   /**

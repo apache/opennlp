@@ -69,11 +69,14 @@ import opennlp.tools.util.StringUtil;
 public final class HunspellDictionary {
 
   /**
-   * One parsed affix rule. {@code affix} is the surface material the rule adds to the
-   * stem, {@code strip} is the stem material the rule replaces (restored during
-   * analysis), {@code crossProduct} states whether the rule may combine with an affix
-   * of the opposite kind, and {@code continuation} lists the flags of further affixes
-   * that may stack on top of this one.
+   * One parsed affix rule of a {@code PFX} or {@code SFX} block.
+   *
+   * @param flag The flag naming the rule's block, which an entry carries to accept it.
+   * @param crossProduct Whether the rule may combine with an affix of the opposite kind.
+   * @param strip The stem material the rule replaces, restored during analysis.
+   * @param affix The surface material the rule adds to the stem.
+   * @param condition The condition the stem must satisfy for the rule to apply.
+   * @param continuation The flags of the further affixes that may stack on this one.
    */
   record Affix(int flag, boolean crossProduct, String strip, String affix,
       AffixCondition condition, int[] continuation) {
@@ -107,6 +110,15 @@ public final class HunspellDictionary {
   /** The shared empty bucket answered for characters no affix rule is keyed under. */
   private static final List<Affix> NO_AFFIXES = List.of();
 
+  /** The line tag of a prefix block and of every rule line inside it. */
+  private static final String PREFIX_TAG = "PFX";
+
+  /** The line tag of a suffix block and of every rule line inside it. */
+  private static final String SUFFIX_TAG = "SFX";
+
+  /** The affix format's marker for absent strip or affix material. */
+  private static final String NO_MATERIAL = "0";
+
   private final Map<String, List<int[]>> entries;
   private final Map<Character, List<Affix>> suffixesByLast;
   private final List<Affix> suffixesWithoutMaterial;
@@ -128,6 +140,12 @@ public final class HunspellDictionary {
   private final boolean checkCompoundCase;
   private final boolean checkCompoundTriple;
 
+  /**
+   * Initializes the dictionary from the two parsed files.
+   *
+   * @param entries The words mapped to the flag sets of their entries.
+   * @param affix The parsed affix file.
+   */
   private HunspellDictionary(Map<String, List<int[]>> entries, AffixFile affix) {
     this.compoundFlag = affix.compoundFlag;
     this.compoundBegin = affix.compoundBegin;
@@ -145,34 +163,39 @@ public final class HunspellDictionary {
     this.checkCompoundCase = affix.checkCompoundCase;
     this.checkCompoundTriple = affix.checkCompoundTriple;
     this.entries = entries;
-    // Undoing a suffix requires the word to end with the rule's affix material, so
-    // only rules whose material ends in the word's last character can ever apply;
-    // the same holds for prefixes and the first character. Bucketing by that
-    // boundary character turns the per-word rule scan from the whole inventory into
-    // the one bucket plus the strip-only rules, whose empty material matches
-    // everywhere.
-    this.suffixesByLast = new HashMap<>();
+    // A material-bearing rule can only be undone from a word whose boundary
+    // character matches its affix material, so bucketing by that character
+    // narrows each scan to one bucket plus the strip-only rules.
     this.suffixesWithoutMaterial = new ArrayList<>();
-    for (final Affix suffix : affix.suffixes) {
-      final String material = suffix.affix();
-      if (material.isEmpty()) {
-        suffixesWithoutMaterial.add(suffix);
-      } else {
-        suffixesByLast.computeIfAbsent(material.charAt(material.length() - 1),
-            key -> new ArrayList<>()).add(suffix);
-      }
-    }
-    this.prefixesByFirst = new HashMap<>();
+    this.suffixesByLast = bucketByBoundary(affix.suffixes, true, suffixesWithoutMaterial);
     this.prefixesWithoutMaterial = new ArrayList<>();
-    for (final Affix prefix : affix.prefixes) {
-      final String material = prefix.affix();
+    this.prefixesByFirst = bucketByBoundary(affix.prefixes, false, prefixesWithoutMaterial);
+  }
+
+  /**
+   * Buckets affix rules by the boundary character of their affix material, the last
+   * character for a suffix rule and the first for a prefix rule.
+   *
+   * @param rules The rules of one kind, in file order.
+   * @param suffix Whether the rules are suffix rules.
+   * @param withoutMaterial Collects the rules with empty affix material, which no
+   *                        boundary character keys.
+   * @return The rules keyed by their boundary character. Never {@code null}.
+   */
+  private static Map<Character, List<Affix>> bucketByBoundary(List<Affix> rules,
+      boolean suffix, List<Affix> withoutMaterial) {
+    final Map<Character, List<Affix>> byBoundary = new HashMap<>();
+    for (final Affix rule : rules) {
+      final String material = rule.affix();
       if (material.isEmpty()) {
-        prefixesWithoutMaterial.add(prefix);
+        withoutMaterial.add(rule);
       } else {
-        prefixesByFirst.computeIfAbsent(material.charAt(0),
-            key -> new ArrayList<>()).add(prefix);
+        final char boundary =
+            suffix ? material.charAt(material.length() - 1) : material.charAt(0);
+        byBoundary.computeIfAbsent(boundary, key -> new ArrayList<>()).add(rule);
       }
     }
+    return byBoundary;
   }
 
   /**
@@ -247,7 +270,7 @@ public final class HunspellDictionary {
     return suffixesByLast.getOrDefault(last, NO_AFFIXES);
   }
 
-  /** @return The strip-only suffix rules, applicable to any word. Never {@code null}. */
+  /** {@return the strip-only suffix rules, applicable to any word} Never {@code null}. */
   List<Affix> suffixesWithoutMaterial() {
     return suffixesWithoutMaterial;
   }
@@ -263,38 +286,38 @@ public final class HunspellDictionary {
     return prefixesByFirst.getOrDefault(first, NO_AFFIXES);
   }
 
-  /** @return The strip-only prefix rules, applicable to any word. Never {@code null}. */
+  /** {@return the strip-only prefix rules, applicable to any word} Never {@code null}. */
   List<Affix> prefixesWithoutMaterial() {
     return prefixesWithoutMaterial;
   }
 
-  /** @return Whether the affix file declares any compounding flag at all. */
+  /** {@return whether the affix file declares any compounding flag at all} */
   boolean compoundsDeclared() {
     return compoundFlag != 0 || compoundBegin != 0 || compoundEnd != 0
         || compoundMiddle != 0;
   }
 
-  /** @return The smallest length a compound part may have; at least {@code 1}. */
+  /** {@return the smallest length a compound part may have} At least {@code 1}. */
   int compoundMin() {
     return compoundMin;
   }
 
-  /** @return The largest number of parts a compound may have; {@code 0} is unbounded. */
+  /** {@return the largest number of parts a compound may have} {@code 0} is unbounded. */
   int compoundWordMax() {
     return compoundWordMax;
   }
 
-  /** @return Whether {@code CHECKCOMPOUNDDUP} forbids a part repeating its neighbor. */
+  /** {@return whether {@code CHECKCOMPOUNDDUP} forbids a part repeating its neighbor} */
   boolean checkCompoundDup() {
     return checkCompoundDup;
   }
 
-  /** @return Whether {@code CHECKCOMPOUNDCASE} forbids uppercase at part boundaries. */
+  /** {@return whether {@code CHECKCOMPOUNDCASE} forbids uppercase at part boundaries} */
   boolean checkCompoundCase() {
     return checkCompoundCase;
   }
 
-  /** @return Whether {@code CHECKCOMPOUNDTRIPLE} forbids triple letters at boundaries. */
+  /** {@return whether {@code CHECKCOMPOUNDTRIPLE} forbids triple letters at boundaries} */
   boolean checkCompoundTriple() {
     return checkCompoundTriple;
   }
@@ -668,24 +691,18 @@ public final class HunspellDictionary {
             case "NEEDAFFIX", "PSEUDOROOT" -> result.needAffix = declared;
             case "ONLYINCOMPOUND" -> result.onlyInCompound = declared;
             case "CIRCUMFIX" -> result.circumfix = declared;
-            default -> result.forbiddenWord = declared;
+            case "FORBIDDENWORD" -> result.forbiddenWord = declared;
+            default -> throw new IOException(
+                "unhandled flag directive " + fields[0] + " at line " + (i + 1));
           }
           i++;
           break;
         case "COMPOUNDMIN":
+          result.compoundMin = Math.max(1, parseValue(fields, i + 1));
+          i++;
+          break;
         case "COMPOUNDWORDMAX":
-          if (fields.length < 2) {
-            throw new IOException(fields[0] + " line without a value at line " + (i + 1));
-          }
-          try {
-            if ("COMPOUNDMIN".equals(fields[0])) {
-              result.compoundMin = Math.max(1, Integer.parseInt(fields[1]));
-            } else {
-              result.compoundWordMax = Math.max(0, Integer.parseInt(fields[1]));
-            }
-          } catch (NumberFormatException e) {
-            throw new IOException("malformed " + fields[0] + " at line " + (i + 1), e);
-          }
+          result.compoundWordMax = Math.max(0, parseValue(fields, i + 1));
           i++;
           break;
         case "CHECKCOMPOUNDDUP":
@@ -712,8 +729,8 @@ public final class HunspellDictionary {
           }
           i++;
           break;
-        case "PFX":
-        case "SFX":
+        case PREFIX_TAG:
+        case SUFFIX_TAG:
           i = parseAffixBlock(lines, i, fields, result);
           break;
         default:
@@ -722,6 +739,25 @@ public final class HunspellDictionary {
       }
     }
     return result;
+  }
+
+  /**
+   * Parses the integer value of a directive that carries exactly one.
+   *
+   * @param fields The already-split directive line.
+   * @param lineNumber The source line, for error messages.
+   * @return The parsed value.
+   * @throws IOException Thrown if the value is missing or is not an integer.
+   */
+  private static int parseValue(String[] fields, int lineNumber) throws IOException {
+    if (fields.length < 2) {
+      throw new IOException(fields[0] + " line without a value at line " + lineNumber);
+    }
+    try {
+      return Integer.parseInt(fields[1]);
+    } catch (NumberFormatException e) {
+      throw new IOException("malformed " + fields[0] + " at line " + lineNumber, e);
+    }
   }
 
   /**
@@ -741,7 +777,7 @@ public final class HunspellDictionary {
     if (header.length < 4) {
       throw new IOException("malformed affix header at line " + (index + 1));
     }
-    final boolean suffix = "SFX".equals(header[0]);
+    final boolean suffix = SUFFIX_TAG.equals(header[0]);
     final int flag = parseFlag(header[1], result.flagMode, index + 1);
     final boolean crossProduct = "Y".equals(header[2]);
     final int count;
@@ -759,7 +795,7 @@ public final class HunspellDictionary {
       if (fields.length < 5 || !fields[0].equals(header[0])) {
         throw new IOException("malformed affix rule at line " + (line + 1));
       }
-      final String strip = "0".equals(fields[2]) ? "" : fields[2];
+      final String strip = NO_MATERIAL.equals(fields[2]) ? "" : fields[2];
       String affixText = fields[3];
       int[] continuation = new int[0];
       final int slash = affixText.indexOf('/');
@@ -767,7 +803,7 @@ public final class HunspellDictionary {
         continuation = parseFlags(affixText.substring(slash + 1), result.flagMode, line + 1);
         affixText = affixText.substring(0, slash);
       }
-      if ("0".equals(affixText)) {
+      if (NO_MATERIAL.equals(affixText)) {
         affixText = "";
       }
       final Affix affix = new Affix(flag, crossProduct, strip, affixText,
@@ -993,14 +1029,11 @@ public final class HunspellDictionary {
         return flags;
       }
       default: {
-        // One flag per code point: published dictionaries, the Spanish one of the
-        // LibreOffice collection among them, name affix rules with supplementary
-        // characters under FLAG UTF-8, and reading per UTF-16 unit would split such
-        // a flag into two and reject the rule header as carrying two flags. A
-        // variation selector after a flag character selects its presentation, the
-        // emoji telephone against the text telephone, and is no flag of its own; the
-        // same collection writes such selectors, so they are dropped from flag
-        // identity.
+        // One flag per code point: published dictionaries name affix rules with
+        // supplementary characters under FLAG UTF-8, and reading per UTF-16 unit
+        // would split such a flag into a surrogate pair. A variation selector
+        // (U+FE00..U+FE0F) only selects a flag character's presentation and is
+        // dropped from flag identity.
         final int[] buffer = new int[text.codePointCount(0, text.length())];
         int f = 0;
         for (int i = 0; i < text.length(); ) {
@@ -1035,7 +1068,12 @@ public final class HunspellDictionary {
     return flags[0];
   }
 
-  /** Splits text into lines with a single character scan, tolerating CRLF endings. */
+  /**
+   * Splits text into lines with a single character scan, tolerating CRLF endings.
+   *
+   * @param content The text to split.
+   * @return The lines without their terminators. Never {@code null}.
+   */
   private static String[] splitLines(String content) {
     final List<String> lines = new ArrayList<>();
     int start = 0;
@@ -1052,7 +1090,13 @@ public final class HunspellDictionary {
     return lines.toArray(new String[0]);
   }
 
-  /** Splits text on a separator character with a single character scan. */
+  /**
+   * Splits text on a separator character with a single character scan.
+   *
+   * @param text The text to split.
+   * @param separator The separator character.
+   * @return The parts between the separators, empty ones included. Never {@code null}.
+   */
   private static String[] splitOn(String text, char separator) {
     final List<String> parts = new ArrayList<>();
     int start = 0;
@@ -1065,7 +1109,12 @@ public final class HunspellDictionary {
     return parts.toArray(new String[0]);
   }
 
-  /** Splits a line on whitespace with a single character scan. */
+  /**
+   * Splits a line on whitespace with a single character scan.
+   *
+   * @param line The line to split.
+   * @return The whitespace-separated fields, without empty ones. Never {@code null}.
+   */
   private static String[] split(String line) {
     final List<String> parts = new ArrayList<>();
     int start = -1;

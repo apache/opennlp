@@ -77,16 +77,11 @@ public class HunspellStemmerFactoryTest {
    * Writes the fixture dictionary pair into a directory and loads it through the
    * file-based {@link HunspellDictionary#load(Path, Path)} entry point.
    *
-   * @param directory The directory to write into. Must not be {@code null} and must
-   *                  denote an existing directory.
+   * @param directory The directory to write into.
    * @return The loaded dictionary. Never {@code null}.
    * @throws IOException Thrown if writing or loading fails.
-   * @throws IllegalArgumentException Thrown if {@code directory} is unusable.
    */
   private static HunspellDictionary writeAndLoadFixture(Path directory) throws IOException {
-    if (directory == null || !Files.isDirectory(directory)) {
-      throw new IllegalArgumentException("directory must be an existing directory");
-    }
     final Path affixFile = directory.resolve("fixture.aff");
     final Path dictionaryFile = directory.resolve("fixture.dic");
     Files.write(affixFile, AFFIX.getBytes(StandardCharsets.UTF_8));
