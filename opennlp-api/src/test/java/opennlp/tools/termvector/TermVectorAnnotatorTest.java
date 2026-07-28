@@ -50,9 +50,8 @@ public class TermVectorAnnotatorTest {
   /**
    * A deterministic {@link OffsetAwareNormalizer} that collapses every run of
    * whitespace to one space and applies a full case fold, including the German eszett
-   * expansion {@code ß -> ss}. Every edit is recorded in an {@link Alignment} built the
-   * way {@code AlignmentTest} builds them, so the expected spans below follow directly
-   * from the input text.
+   * expansion {@code ß -> ss}. Every edit is recorded in an {@link Alignment}, so the
+   * expected spans below follow directly from the input text.
    */
   private static final class WhitespaceCaseFoldNormalizer implements OffsetAwareNormalizer {
 
@@ -99,7 +98,42 @@ public class TermVectorAnnotatorTest {
     }
   }
 
+  /**
+   * A deterministic {@link OffsetAwareNormalizer} that deletes every digit and copies
+   * every other character unchanged, so a token made up of digits alone normalizes to
+   * the empty string.
+   */
+  private static final class DigitDeletingNormalizer implements OffsetAwareNormalizer {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public CharSequence normalize(CharSequence text) {
+      return normalizeAligned(text).normalized();
+    }
+
+    @Override
+    public AlignedText normalizeAligned(CharSequence text) {
+      final String source = text.toString();
+      final StringBuilder out = new StringBuilder(source.length());
+      final Alignment.Builder alignment = new Alignment.Builder(source.length());
+      for (int i = 0; i < source.length(); i++) {
+        final char c = source.charAt(i);
+        if (Character.isDigit(c)) {
+          alignment.replace(1, 0);
+        } else {
+          out.append(c);
+          alignment.equal(1);
+        }
+      }
+      return new AlignedText(source, out.toString(), alignment.build(source.length()));
+    }
+  }
+
   private static final OffsetAwareNormalizer FOLD = new WhitespaceCaseFoldNormalizer();
+
+  private static final OffsetAwareNormalizer DROP_DIGITS = new DigitDeletingNormalizer();
 
   /**
    * Splits a text on single space characters into a token layer, skipping the empty
@@ -230,6 +264,24 @@ public class TermVectorAnnotatorTest {
         document.get(TermVectorAnnotator.TERM_VECTORS);
     assertEquals(1, vectors.size());
     assertEquals(TermVector.count("gross", 3), vectors.get(0).value());
+  }
+
+  /**
+   * A token the normalizer deletes entirely groups under the empty string instead of
+   * being dropped, so the term vector layer still accounts for every token.
+   */
+  @Test
+  void testTokensNormalizedAwayGroupUnderTheEmptyTerm() {
+    final Document document = new TermVectorAnnotator(DROP_DIGITS)
+        .annotate(documentWithTokens("dog 42 dog 7"));
+
+    final List<Annotation<TermVector>> vectors =
+        document.get(TermVectorAnnotator.TERM_VECTORS);
+    assertEquals(2, vectors.size());
+    assertEquals(new TermVector("dog", 2, List.of(new Span(0, 3), new Span(7, 10))),
+        vectors.get(0).value());
+    assertEquals(new TermVector("", 2, List.of(new Span(4, 6), new Span(11, 12))),
+        vectors.get(1).value());
   }
 
   @Test

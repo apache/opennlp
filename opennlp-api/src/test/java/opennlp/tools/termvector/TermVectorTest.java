@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import opennlp.tools.util.Span;
 
@@ -73,9 +75,10 @@ public class TermVectorTest {
     assertThrows(IllegalArgumentException.class, () -> new TermVector("dog", 1, null));
   }
 
-  @Test
-  void testZeroFrequencyIsRejected() {
-    assertThrows(IllegalArgumentException.class, () -> TermVector.count("dog", 0));
+  @ParameterizedTest
+  @ValueSource(ints = {0, -1, Integer.MIN_VALUE})
+  void testFrequencyBelowOneIsRejected(int frequency) {
+    assertThrows(IllegalArgumentException.class, () -> TermVector.count("dog", frequency));
   }
 
   @Test

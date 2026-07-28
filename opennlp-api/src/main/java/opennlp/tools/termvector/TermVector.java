@@ -31,12 +31,11 @@ import opennlp.tools.util.Span;
  * always point into the document's <em>original</em> text, never into a normalized form,
  * so an index consumer can highlight every occurrence in what the caller supplied.</p>
  *
- * <p>A term vector comes in one of two shapes. A <em>full</em> vector carries one span
- * per occurrence, so {@code spans().size() == frequency()}. A <em>scoring-only</em>
- * vector carries no spans at all, so consumers that only need term frequencies do not
- * pay for offset storage; the empty span list is what distinguishes the shape, never a
- * flag. These are the only legal shapes: a non-empty span list must match the frequency
- * exactly.</p>
+ * <p>A term vector comes in one of two shapes, told apart by whether {@link #spans()} is
+ * empty. A <em>full</em> vector carries one span per occurrence, so
+ * {@code spans().size() == frequency()}. A <em>scoring-only</em> vector carries no spans
+ * at all, so consumers that only need term frequencies do not pay for offset storage.
+ * There is no third shape: a non-empty span list must match the frequency exactly.</p>
  *
  * <p>Instances are immutable: the span list is copied on construction and the copy is
  * unmodifiable.</p>
